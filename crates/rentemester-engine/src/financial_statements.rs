@@ -1,5 +1,8 @@
 //! Exact derived financial statements over the shared trial balance. No file or SQL access.
-use crate::{money::Money, trial_balance::Report};
+use crate::{
+    money::Money,
+    trial_balance::{Account, Report},
+};
 
 #[derive(Clone)]
 pub struct Line {
@@ -39,9 +42,13 @@ impl Section {
     }
 }
 pub fn profit_and_loss(report: &Report) -> ProfitAndLoss {
+    profit_and_loss_accounts(&report.accounts)
+}
+/// Exact reducer over already selected accounts; no period is inferred.
+pub fn profit_and_loss_accounts(accounts: &[Account]) -> ProfitAndLoss {
     let mut income = Section::default();
     let mut expense = Section::default();
-    for account in &report.accounts {
+    for account in accounts {
         match account.kind.as_str() {
             "income" => income.push(
                 &account.account_no,
@@ -61,11 +68,15 @@ pub fn profit_and_loss(report: &Report) -> ProfitAndLoss {
 }
 /// Input must cover all journal history through the requested balance date.
 pub fn balance_sheet(cumulative: &Report) -> BalanceSheet {
+    balance_sheet_accounts(&cumulative.accounts)
+}
+/// Closing-source reducer; caller owns the source basis and completeness.
+pub fn balance_sheet_accounts(accounts: &[Account]) -> BalanceSheet {
     let mut assets = Section::default();
     let mut liabilities = Section::default();
     let mut equity = Section::default();
-    let pnl = profit_and_loss(cumulative);
-    for account in &cumulative.accounts {
+    let pnl = profit_and_loss_accounts(accounts);
+    for account in accounts {
         let section = match account.kind.as_str() {
             "vat" if account.normal_balance == "debit" => "asset",
             "vat" => "liability",

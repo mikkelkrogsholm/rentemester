@@ -23,6 +23,46 @@ pub(crate) fn number(money: &Money) -> Result<Value, Error> {
         .map(Value::Number)
         .ok_or_else(|| invalid("amount cannot be displayed"))
 }
+fn inventory(
+    tx: &Transaction<'_>,
+    today: &str,
+    start: StartMonth,
+    strategy_value: LabelStrategy,
+) -> Result<BTreeMap<String, fiscal_year::FiscalYear>, Error> {
+    let mut years = BTreeMap::new();
+    let current = fiscal_year::for_date(Date::parse(today)?, start, strategy_value)?;
+    years.insert(current.display_label.clone(), current);
+    let mut statement = tx
+        .prepare("SELECT DISTINCT transaction_date FROM journal_entries ORDER BY transaction_date")
+        .map_err(invalid)?;
+    let dates = statement
+        .query_map([], |r| r.get::<_, String>(0))
+        .map_err(invalid)?;
+    for date in dates {
+        let year =
+            fiscal_year::for_date(Date::parse(&date.map_err(invalid)?)?, start, strategy_value)?;
+        years.insert(year.display_label.clone(), year);
+    }
+    Ok(years)
+}
+/// The actual native inventory only: current year plus years with journal evidence.
+pub fn live_years(tx: &Transaction<'_>, today: &str) -> Result<Value, Error> {
+    crate::validate(tx)?;
+    let (month, strategy): (i32, String) = tx
+        .query_row(
+            "SELECT fiscal_year_start_month,fiscal_year_label_strategy FROM companies WHERE id=1",
+            [],
+            |r| Ok((r.get(0)?, r.get(1)?)),
+        )
+        .map_err(invalid)?;
+    let years = inventory(
+        tx,
+        today,
+        StartMonth::new(month)?,
+        LabelStrategy::try_from(strategy.as_str())?,
+    )?;
+    Ok(json!(years.values().map(|y|json!({"label":y.display_label,"start":y.start.to_string(),"end":y.end.to_string(),"source":"live"})).collect::<Vec<_>>()))
+}
 /// Calculations remain exact Money; only the existing cockpit's numeric display wire uses f64.
 pub fn read(
     tx: &Transaction<'_>,
@@ -53,21 +93,9 @@ pub fn read(
     }
     let start = StartMonth::new(month)?;
     let strategy_value = LabelStrategy::try_from(strategy.as_str())?;
-    let mut years = BTreeMap::new();
-    let current = fiscal_year::for_date(Date::parse(today)?, start, strategy_value)?;
-    let current_label = current.display_label.clone();
-    years.insert(current.display_label.clone(), current);
-    let mut statement = tx
-        .prepare("SELECT DISTINCT transaction_date FROM journal_entries ORDER BY transaction_date")
-        .map_err(invalid)?;
-    let dates = statement
-        .query_map([], |r| r.get::<_, String>(0))
-        .map_err(invalid)?;
-    for date in dates {
-        let year =
-            fiscal_year::for_date(Date::parse(&date.map_err(invalid)?)?, start, strategy_value)?;
-        years.insert(year.display_label.clone(), year);
-    }
+    let current_label =
+        fiscal_year::for_date(Date::parse(today)?, start, strategy_value)?.display_label;
+    let years = inventory(tx, today, start, strategy_value)?;
     let label = selected.unwrap_or(&current_label);
     let year = years
         .get(label)
@@ -91,7 +119,8 @@ pub fn read(
         )?)
     } else {
         None
-    };
+    }
+    .filter(|p| years.contains_key(&p.display_label));
     let current_pnl = rentemester_engine::financial_statements::profit_and_loss(&report);
     let prior_report = prior_year
         .as_ref()
@@ -110,12 +139,12 @@ pub fn read(
     income_statement["income"] = statement_lines(
         &current_pnl.income,
         prior_pnl.as_ref().map(|p| &p.income),
-        false,
+        true,
     )?;
     income_statement["expense"] = statement_lines(
         &current_pnl.expense,
         prior_pnl.as_ref().map(|p| &p.expense),
-        false,
+        true,
     )?;
     income_statement["totalIncome"] = number(&current_pnl.income.total)?;
     income_statement["totalExpense"] = number(&current_pnl.expense.total)?;
@@ -123,18 +152,23 @@ pub fn read(
         .as_ref()
         .map(|p| number(&p.income.total))
         .transpose()?
-        .unwrap_or(json!(0));
+        .unwrap_or(Value::Null);
     income_statement["priorTotalExpense"] = prior_pnl
         .as_ref()
         .map(|p| number(&p.expense.total))
         .transpose()?
-        .unwrap_or(json!(0));
+        .unwrap_or(Value::Null);
+    income_statement["comparison"] = if prior_pnl.is_some() {
+        json!({"status":"available","reason":null})
+    } else {
+        json!({"status":"unavailable","reason":"prior_native_year_not_present"})
+    };
     income_statement["result"] = number(&current_pnl.result)?;
     income_statement["priorResult"] = prior_pnl
         .as_ref()
         .map(|p| number(&p.result))
         .transpose()?
-        .unwrap_or(json!(0));
+        .unwrap_or(Value::Null);
     let cumulative = crate::trial_balance_owned(tx, Period::new("0000-01-01", &period.end)?)?;
     let sheet = rentemester_engine::financial_statements::balance_sheet(&cumulative);
     let prior_sheet = prior_year
@@ -244,13 +278,24 @@ fn balance_section(
 #[cfg(test)]
 mod tests {
     fn fixture(month: i32, strategy: &str) -> (tempfile::TempDir, rusqlite::Connection) {
+        fixture_with_prior(month, strategy, true)
+    }
+    fn fixture_with_prior(
+        month: i32,
+        strategy: &str,
+        prior: bool,
+    ) -> (tempfile::TempDir, rusqlite::Connection) {
         let root = tempfile::tempdir().unwrap();
         let mut control = rusqlite::Connection::open(root.path().join("control.sqlite")).unwrap();
         let mut company = rusqlite::Connection::open(root.path().join("company.sqlite")).unwrap();
         crate::fresh::initialize_empty_pair(&mut control, &mut company, "Synthetic Reports")
             .unwrap();
         company.execute("UPDATE companies SET fiscal_year_start_month=?1,fiscal_year_label_strategy=?2 WHERE id=1",rusqlite::params![month,strategy]).unwrap();
-        company.execute_batch("INSERT INTO accounts(id,account_no,name,type,normal_balance) VALUES(1,'A','Synthetic cash','asset','debit'),(2,'I','Synthetic revenue','income','credit'),(3,'X','Synthetic expense','expense','debit'); INSERT INTO journal_entries(id,entry_no,transaction_date,text,rule_version,entry_hash) VALUES(1,'S-1','2025-06-01','Synthetic prior sale','fixture','synthetic-hash-1'),(2,'S-2','2026-06-01','Synthetic current expense','fixture','synthetic-hash-2'); INSERT INTO journal_lines(journal_entry_id,account_id,debit_amount,credit_amount) VALUES(1,1,100,0),(1,2,0,100),(2,3,40,0),(2,1,0,40);").unwrap();
+        company.execute_batch("INSERT INTO accounts(id,account_no,name,type,normal_balance) VALUES(1,'A','Synthetic cash','asset','debit'),(2,'I','Synthetic revenue','income','credit'),(3,'X','Synthetic expense','expense','debit');").unwrap();
+        if prior {
+            company.execute_batch("INSERT INTO journal_entries(id,entry_no,transaction_date,text,rule_version,entry_hash) VALUES(1,'S-1','2025-06-01','Synthetic prior sale','fixture','synthetic-hash-1');INSERT INTO journal_lines(journal_entry_id,account_id,debit_amount,credit_amount)VALUES(1,1,100,0),(1,2,0,100);").unwrap();
+        }
+        company.execute_batch("INSERT INTO journal_entries(id,entry_no,transaction_date,text,rule_version,entry_hash) VALUES(2,'S-2','2026-06-01','Synthetic current expense','fixture','synthetic-hash-2');INSERT INTO journal_lines(journal_entry_id,account_id,debit_amount,credit_amount)VALUES(2,3,40,0),(2,1,0,40);").unwrap();
         (root, company)
     }
     #[test]
@@ -331,5 +376,33 @@ mod tests {
         assert_eq!(shifted.income_statement["priorYearLabel"], "2024/25");
         assert_eq!(shifted.balance["priorAsOfDate"], "2025-06-30");
         assert_eq!(shifted.income_statement["result"].as_f64(), Some(-40.0));
+    }
+    #[test]
+    fn absent_native_prior_inventory_is_null_even_with_archive_only_year() {
+        let (_root, mut company) = fixture_with_prior(1, "end-year", false);
+        // An archive label is not comparable native period evidence.
+        company.execute_batch("INSERT INTO import_archive_years(source_system,fiscal_year,posting_count,balance_count)VALUES('dinero',2025,0,0);").unwrap();
+        let tx = company.transaction().unwrap();
+        let result = super::read(&tx, "synthetic", "2026-10-18", Some("2026"), None).unwrap();
+        let pnl = result.income_statement;
+        for field in [
+            "priorYearLabel",
+            "priorTotalIncome",
+            "priorTotalExpense",
+            "priorResult",
+        ] {
+            assert!(pnl[field].is_null(), "{field}");
+        }
+        assert!(pnl["expense"][0]["priorAmount"].is_null());
+        assert_eq!(pnl["comparison"]["reason"], "prior_native_year_not_present");
+        assert!(result.balance["priorAsOfDate"].is_null());
+        assert_eq!(
+            super::live_years(&tx, "2026-10-18")
+                .unwrap()
+                .as_array()
+                .unwrap()
+                .len(),
+            1
+        );
     }
 }
