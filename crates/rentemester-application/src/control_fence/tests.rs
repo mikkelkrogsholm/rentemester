@@ -99,6 +99,18 @@ fn current_observation_commit_and_business_rollback() {
             .unwrap(),
         1
     );
+    let denied_admin = execute(
+        &mut c, &mut l, principal(), selection(), Permission::CompanyAdmin,
+        |_| -> Result<(), Error> { panic!("bookkeeper cannot administer company") },
+    ).unwrap_err();
+    assert_eq!(denied_admin.error.code, "access_denied");
+    assert!(denied_admin.control_reusable && denied_admin.company_reusable);
+    let still_readable = execute(
+        &mut c, &mut l, principal(), selection(), Permission::CompanyRead,
+        |tx| tx.query_row("SELECT count(*) FROM companion", [], |r| r.get::<_, i64>(0))
+            .map_err(|_| error("synthetic_sql")),
+    ).unwrap();
+    assert_eq!(still_readable.value, 1);
     c.execute_batch("DELETE FROM session WHERE id='s';")
         .unwrap();
     let denied = execute(
@@ -111,6 +123,7 @@ fn current_observation_commit_and_business_rollback() {
     )
     .unwrap_err();
     assert_eq!(denied.error.code, "access_denied");
+    assert!(denied.control_reusable && denied.company_reusable);
     assert!(c.is_autocommit() && l.is_autocommit());
 }
 #[test]

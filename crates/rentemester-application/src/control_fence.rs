@@ -294,9 +294,12 @@ pub(crate) fn execute_authorized<T>(
     let subject = match authorize {
         Ok(subject) => subject,
         Err(error) => {
-            let reusable = control_tx.rollback().is_ok();
+            let rolled_back = control_tx.rollback().is_ok();
             return Err(Failure {
-                control_reusable: reusable,
+                // A refused principal never entered a company transaction.
+                // Reuse is safe only after rollback and the usual readiness checks.
+                control_reusable: rolled_back && connection_ready(control).is_ok(),
+                company_reusable: connection_ready(company).is_ok(),
                 ..initial(error)
             });
         }
