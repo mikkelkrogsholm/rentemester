@@ -59,6 +59,7 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
             "/api/companies/{slug}/budget",
             get(budget::handle).post(budget::handle),
         )
+        .route("/api/companies/{slug}/budget-dimension-actuals", get(budget::handle))
         .route(
             "/api/companies/{slug}/budget-vs-actual",
             get(budget::handle),

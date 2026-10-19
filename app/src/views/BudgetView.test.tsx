@@ -11,9 +11,9 @@
 import { describe, expect, test } from "bun:test";
 import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { BudgetView } from "./BudgetView";
-import { renderAt } from "../test/render";
 import { budget, budgetDimensionActuals, budgetVsActual, mockFetch } from "../test/fixtures";
+import { renderAt } from "../test/render";
+import { BudgetView } from "./BudgetView";
 
 function route(over: {
   budget?: Parameters<typeof budget>[0];
@@ -188,4 +188,22 @@ test("native account budget disables unavailable dimension comparison explicitly
   expect(await screen.findByText(/Dimensionssammenligning er endnu ikke tilgængelig/)).toBeInTheDocument();
   expect(screen.queryByLabelText("Filter dimension")).not.toBeInTheDocument();
   expect(screen.getByRole("columnheader",{name:"Faktisk"})).toBeInTheDocument();
+});
+
+test("native dimension comparison renders server projection and explicit unallocated/context amounts", async () => {
+  mockFetch(route({ budget: { dimensionActualsAvailable: true }, budgetVsActual: { dimensionActualsAvailable: true }, budgetDimensionActuals: {
+    serverCalculated: true,
+    dimensionOptions: [{ value: "project:alpha", label: "Project Alpha", dimensionId: "project", memberId: "alpha" }],
+    comparison: [{ accountNo: "2200", period: "2026-06", actual: 7.77, accountActual: 15.55, accountBudget: 20, otherMembersActual: 2.33, unallocatedActual: 5.45, budget: null, variance: null, journalLineIds: [41] }],
+  } }));
+  renderView();
+  await userEvent.click(await screen.findByRole("button", { name: /Sammenlign med faktisk/i }));
+  await userEvent.selectOptions(await screen.findByLabelText("Filter dimension"), "project:alpha");
+  expect(await screen.findByRole("link", { name: "Journal-linje 41" })).toHaveAttribute("href", "/companies/acme-aps/posteringer?year=2026&journalLineId=41");
+  expect(screen.getByText("7,77 kr.")).toBeInTheDocument();
+  expect(screen.getByText("5,45 kr.")).toBeInTheDocument();
+  expect(screen.getByRole("columnheader", { name: "Ufordelt" })).toBeInTheDocument();
+  expect(screen.getAllByText("Ukendt")).toHaveLength(2);
+  const calls = (fetch as unknown as { mock: { calls: Array<[string]> } }).mock.calls;
+  expect(calls.some(([url]) => url.includes("dimension=project&member=alpha"))).toBe(true);
 });

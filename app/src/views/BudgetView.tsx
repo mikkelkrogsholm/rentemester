@@ -1,6 +1,7 @@
+import { Button, ButtonLink, Input, PageHeader, Select } from "../components/ui";
 import { useMutationOutcome } from "../lib/useMutationOutcome";
 import { useUnsavedChanges } from "../lib/useUnsavedChanges";
-import { ButtonLink, Button, Input, PageHeader, Select } from "../components/ui";
+
 // Budget — the per-company budget vs. faktisk view (#339).
 //
 // Two faces of the same data, toggled by a single switch:
@@ -22,19 +23,20 @@ import { ButtonLink, Button, Input, PageHeader, Select } from "../components/ui"
 
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import { CompanyNav, useCompanyYear } from "../components/CompanyNav";
+import { ErrorState, Loading } from "../components/Feedback";
 import { api } from "../lib/api";
 import { formatKroner, formatPercent, parseDanishAmount } from "../lib/format";
-import { useAsync } from "../lib/useAsync";
-import { useCapabilities } from "../lib/useCapabilities";
 import type {
   CompanyBudget,
+  CompanyBudgetDimensionActuals,
   CompanyBudgetLine,
   CompanyBudgetVsActual,
   CompanyBudgetVsActualLine,
-  CompanyBudgetDimensionActuals,
 } from "../lib/types";
-import { ErrorState, Loading } from "../components/Feedback";
-import { CompanyNav, useCompanyYear } from "../components/CompanyNav";
+import { useAsync } from "../lib/useAsync";
+import { useCapabilities } from "../lib/useCapabilities";
+import { NativeBudgetDimensions } from "./NativeBudgetDimensions";
 
 /** Danish month abbreviations, jan→dec — same set the other views use. */
 const MONTH_LABELS_DK = [
@@ -138,6 +140,7 @@ export function BudgetView() {
         <>
           <BudgetVsActualTable data={compare.data!} currency={currency} />
           {data.dimensionActualsAvailable === false && <p className="muted" role="status">Dimensionssammenligning er endnu ikke tilgængelig. Budget og faktisk vises på kontoniveau.</p>}
+          {dimensionActuals.error && <ErrorState message={dimensionActuals.error} onRetry={dimensionActuals.reload} />}
           <DimensionBudgetComparison
             slug={slug}
             data={dimensionActuals.data ?? null}
@@ -159,6 +162,7 @@ function DimensionBudgetComparison({ slug, data, currency }: {
 }) {
   const [selection, setSelection] = useState("");
   if (!data || data.archived) return null;
+  if (data.serverCalculated) return <NativeBudgetDimensions slug={slug} initial={data} currency={currency} />;
   const selected = selection === "" ? [] : data.rows.filter((row) =>
     selection.includes(":") ? `${row.dimensionId}:${row.memberId}` === selection : row.dimensionId === selection,
   );

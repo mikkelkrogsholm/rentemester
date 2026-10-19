@@ -101,9 +101,17 @@ export type CompanyBudgetDimensionActuals = {
   }>;
   accountTotals: Array<{ accountNo: string; period: string; actual: number }>;
   dimensionBudgets: Array<{ dimensionId: string; memberId: string; accountNo: string; period: string; budget: number; sourceRef: string; id: number }>;
-  dimensionOptions: Array<{ value: string; label: string }>;
+  dimensionOptions: Array<{ value: string; label: string; dimensionId?: string; memberId?: string | null }>;
   /** Explicitly prevents the UI from pretending this is a dimension budget. */
   budgetScope: "account";
+  serverCalculated?: boolean;
+  selection?: { dimensionId: string | null; memberId: string | null };
+  notes?: string[];
+  comparison?: Array<{
+    accountNo: string; period: string; actual: number; accountActual: number;
+    accountBudget: number; unallocatedActual: number; otherMembersActual: number;
+    budget: number | null; variance: number | null; journalLineIds: number[];
+  }>;
 };
 
 export type BudgetDimensionActualsResponse = {

@@ -11,6 +11,11 @@ pub enum Action<'a> {
         year: Option<&'a str>,
         compare: bool,
     },
+    Dimensions {
+        year: Option<&'a str>,
+        dimension: Option<&'a str>,
+        member: Option<&'a str>,
+    },
     Set(&'a rentemester_storage::budget::Set),
 }
 pub fn execute(
@@ -22,7 +27,7 @@ pub fn execute(
 ) -> Result<Committed<Value>, Failure> {
     let slug = context.selection.slug;
     let permission = match action {
-        Action::Read { .. } => Permission::CompanyRead,
+        Action::Read { .. } | Action::Dimensions { .. } => Permission::CompanyRead,
         Action::Set(_) => Permission::CompanyAdmin,
     };
     control_fence::execute_cookie_subject(
@@ -39,6 +44,13 @@ pub fn execute(
             Action::Read { year, compare } => {
                 rentemester_storage::budget::read(tx, slug, today, year, compare)
             }
+            Action::Dimensions {
+                year,
+                dimension,
+                member,
+            } => rentemester_storage::budget::dimensions::read(
+                tx, slug, today, year, dimension, member,
+            ),
             Action::Set(input) => rentemester_storage::budget::set(tx, input, actor),
         },
     )

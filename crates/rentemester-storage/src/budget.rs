@@ -1,4 +1,5 @@
 //! Immutable account/month plans. Budget changes never post journal entries.
+pub mod dimensions;
 use crate::{invalid, legacy_money};
 use rentemester_engine::{
     Error,
@@ -117,7 +118,7 @@ pub fn read(
             m += 1;
         }
     }
-    let mut base = json!({"slug":slug,"selectedYear":label,"archived":false,"company":company,"fiscalYears":years.values().map(|v|json!({"label":v.display_label,"start":v.start.to_string(),"end":v.end.to_string(),"source":"live"})).collect::<Vec<_>>(),"periodStart":from,"periodEnd":to,"periods":periods,"dimensionActualsAvailable":false});
+    let mut base = json!({"slug":slug,"selectedYear":label,"archived":false,"company":company,"fiscalYears":years.values().map(|v|json!({"label":v.display_label,"start":v.start.to_string(),"end":v.end.to_string(),"source":"live"})).collect::<Vec<_>>(),"periodStart":from,"periodEnd":to,"periods":periods,"dimensionActualsAvailable":true});
     let mut cells: BTreeMap<(String, String), Cell> = BTreeMap::new();
     let mut lines = vec![];
     let mut total_budget = Money::default();
@@ -146,7 +147,7 @@ pub fn read(
         return Ok(base);
     }
     // Read each amount through exact Money before summing (never SQL REAL sums).
-    let mut q=tx.prepare("SELECT a.account_no,a.name,a.type,substr(j.transaction_date,1,7),l.debit_amount,l.credit_amount FROM journal_lines l JOIN journal_entries j ON j.id=l.journal_entry_id JOIN accounts a ON a.id=l.account_id WHERE j.status='posted' AND j.transaction_date BETWEEN ?1 AND ?2 ORDER BY j.id,l.id").map_err(invalid)?;
+    let mut q=tx.prepare("SELECT a.account_no,a.name,a.type,substr(j.transaction_date,1,7),l.debit_amount,l.credit_amount FROM journal_lines l JOIN journal_entries j ON j.id=l.journal_entry_id JOIN accounts a ON a.id=l.account_id WHERE j.status IN ('posted','reversed') AND j.transaction_date BETWEEN ?1 AND ?2 ORDER BY j.id,l.id").map_err(invalid)?;
     let mut rows = q
         .query(params![year.start.to_string(), year.end.to_string()])
         .map_err(invalid)?;
@@ -265,6 +266,20 @@ mod tests {
             read(&tx, "synthetic", "2026-02-28", None, false).unwrap()["totalBudget"],
             80.4
         );
+    }
+    #[test]
+    fn original_and_reversed_counter_entry_remain_part_of_exact_actual() {
+        let mut db = fixture(false);
+        db.execute_batch("INSERT INTO journal_entries(id,entry_no,transaction_date,text,status,rule_version,entry_hash,reversal_of_entry_id) VALUES(4,'R1','2026-02-02','Original','posted','fixture','hash4',NULL),(5,'R2','2026-02-03','Counter-entry','reversed','fixture','hash5',4);INSERT INTO journal_lines(journal_entry_id,account_id,debit_amount,credit_amount)VALUES(4,3,10,0),(4,1,0,10),(5,3,0,10),(5,1,10,0);").unwrap();
+        let tx = db.transaction().unwrap();
+        let value = read(&tx, "synthetic", "2026-02-28", None, true).unwrap();
+        let expense = value["lines"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|r| r["accountNo"] == "X" && r["period"] == "2026-02")
+            .unwrap();
+        assert_eq!(expense["actual"], 0.3);
     }
     #[test]
     fn shifted_fiscal_bounds_and_budget_only_years() {

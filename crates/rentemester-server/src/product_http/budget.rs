@@ -9,18 +9,34 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
     if !selected(&state, &request) {
         return refused(StatusCode::NOT_FOUND, "company_not_found");
     }
-    let query = match query(&request) {
-        Ok(q)
-            if q.account.is_none()
-                && q.format.is_none()
-                && (!mutation || request.uri().query().is_none()) =>
-        {
-            q
+    if mutation && request.uri().query().is_some() {
+        return refused(StatusCode::BAD_REQUEST, "invalid_query");
+    }
+    let dimensions = request.uri().path().ends_with("/budget-dimension-actuals");
+    let mut year = None;
+    let mut dimension = None;
+    let mut member = None;
+    for (key, value) in url::form_urlencoded::parse(request.uri().query().unwrap_or("").as_bytes())
+    {
+        let slot = match key.as_ref() {
+            "year" => &mut year,
+            "dimension" if dimensions => &mut dimension,
+            "member" if dimensions => &mut member,
+            _ => return refused(StatusCode::BAD_REQUEST, "invalid_query"),
+        };
+        if mutation || slot.is_some() || value.is_empty() || value.len() > 128 {
+            return refused(StatusCode::BAD_REQUEST, "invalid_query");
         }
-        _ => return refused(StatusCode::BAD_REQUEST, "invalid_query"),
-    };
+        *slot = Some(value.into_owned());
+    }
     let compare = request.uri().path().ends_with("/budget-vs-actual");
-    let key = if compare { "budgetVsActual" } else { "budget" };
+    let key = if dimensions {
+        "budgetDimensionActuals"
+    } else if compare {
+        "budgetVsActual"
+    } else {
+        "budget"
+    };
     let input = if mutation {
         if request.headers().contains_key("content-encoding")
             || !one(request.headers(), "content-type")
@@ -52,8 +68,13 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
         let mut owner = state.native.owner.lock().map_err(|_| ())?;
         let action = match &input {
             Some(i) => Action::Set(i),
+            None if dimensions => Action::Dimensions {
+                year: year.as_deref(),
+                dimension: dimension.as_deref(),
+                member: member.as_deref(),
+            },
             None => Action::Read {
-                year: query.year.as_deref(),
+                year: year.as_deref(),
                 compare,
             },
         };

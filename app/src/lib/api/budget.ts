@@ -1,10 +1,10 @@
 import type {
-  BudgetResponse,
   BudgetDimensionActualsResponse,
+  BudgetResponse,
   BudgetVsActualResponse,
   SetBudgetInput,
 } from "../types";
-import { request, type ReadRequestOptions } from "./_shared";
+import { type ReadRequestOptions, request } from "./_shared";
 
 export const budgetApi = {
   /**
@@ -33,11 +33,11 @@ export const budgetApi = {
 
   /** Current approved dimension actuals. This is deliberately separate from
    * budget-vs-actual because budget lines have no dimension allocation model. */
-  budgetDimensionActuals: (slug: string, year?: string, options?: ReadRequestOptions) =>
+  budgetDimensionActuals: (slug: string, year?: string, options?: ReadRequestOptions, filter?: { dimension: string; member?: string }) =>
     request<BudgetDimensionActualsResponse>(
-      `/api/companies/${encodeURIComponent(slug)}/budget-dimension-actuals${
-        year ? `?year=${encodeURIComponent(year)}` : ""
-      }`, options,
+      `/api/companies/${encodeURIComponent(slug)}/budget-dimension-actuals?${new URLSearchParams({
+        ...(year ? { year } : {}), ...(filter ? { dimension: filter.dimension, ...(filter.member ? { member: filter.member } : {}) } : {}),
+      })}`, options,
     ).then((r) => r.budgetDimensionActuals),
 
   /**
