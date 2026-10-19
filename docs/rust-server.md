@@ -952,7 +952,7 @@ gennemgåede JSON én gang. Serveren validerer original, metadata, dubletter og
 opbevaring. Originalfilen må højst være 25 MiB; JSON-upload må højst være
 35 MiB. MCP tillader kun den større inputramme ved `ingest_document`; andre
 værktøjer beholder deres grænse på 1 MiB. Original-læsningen returnerer
-filtype og præcise bytes. De 59 agentværktøjer er bygget og kontrakttestet. Indlæsning, afvisninger og
+filtype og præcise bytes. Agentværktøjerne er bygget og kontrakttestet. Indlæsning, afvisninger og
 præcise originalbytes har også bestået den første samlede browserfase;
 den seneste kørsel nåede endnu ikke genstartskontrollen.
 
@@ -979,7 +979,63 @@ linje til en allerede bogført postering med begrundelse og bekræftelse.
 Serveren kontrollerer den arkiverede CSV-kilde, beløb, postering og det
 aktuelle bevis igen. Handlingen gemmer afstemningslink og auditspor uden
 nye journalposteringer eller ændringer af leverandørgæld. Forældede beviser
-og gentagelser afvises. CLI/MCP har de samme kandidatlæsninger og bekræftede links. Den første
-browserfase har verificeret webforløbet; faktisk CLI/MCP-paritet og genstart
-afventer næste samlede kontrol. Rettelse af et tidligere link udvikles særskilt;
-den oprindelige postering og historik bevares.
+og gentagelser afvises. CLI/MCP har de samme kandidatlæsninger og bekræftede
+links. Webforløbet og faktisk CLI/MCP-paritet har bestået den første samlede
+fase; genstart afventer ny kontrol.
+
+**Ret** gennemgår et forkert link, efter at den oprindelige postering er
+tilbageført og en korrekt erstatning er bogført særskilt. Serveren kræver
+den faktiske tilbageførselsrelation og kontrollerer kilde, beløb og historik.
+Bekræftelse med begrundelse gemmer en ny afstemningshændelse og en varig
+kvittering; den foretager ikke selv tilbageførsel eller ny bogføring.
+CLI/MCP tilbyder samme plan og bekræftelse med den oprindelige nøgle.
+Build og fokuserede tests består; samlet browser- og genstartskontrol udestår.
+
+
+## Tilbagevendende fakturaer gennem agentklienterne
+
+CLI har `recurring-invoices`, `create-recurring-invoice`,
+`generate-recurring-invoice` og `retire-recurring-invoice`; MCP har de samme
+navne med underscore. Oprettelse, generering og afslutning kræver præcist
+JSON og udtrykkelig bekræftelse. Generering udsteder en faktura med original
+PDF; bogføring foretages særskilt. Samme skabelon og periode kan udtrykkeligt
+hente den allerede udstedte faktura. En afsluttet skabelon afviser generering.
+Den første samlede serverfase har verificeret CLI/MCP, PDF og afvisninger;
+genstartskontrollen udestår.
+
+## Når sessionskontrollen ikke svarer
+
+En midlertidig fejl under kontrol af session eller adgang blokerer visning af
+regnskaber og giver **Prøv igen**. Den bliver ikke behandlet som en bekræftet
+udlogning. En faktisk udløbet eller afvist session kræver fortsat login.
+Serverens læsebudget for almindelig navigation fornyes efter minutvinduet;
+grænserne for adgangskode og MFA er uændrede.
+
+
+## Invitationer og brugeradgang
+
+**Brugere** kan invitere en person til en valgt virksomhed, vise invitationens
+status og annullere den. Modtageren accepterer invitationen uden at få en
+session, bekræfter sin e-mail og opsætter MFA før almindeligt login. Ejerens
+adgangsstyring kan ændre roller og tilbagekalde eller gentildele adgang;
+den sidste aktive ejer er beskyttet. Invitationslinks vises ikke i lister
+eller audit. Den lokale server leverer linket i sin private outbox, ligesom
+bekræftelseslinks; der er ikke sendt ekstern e-mail i kontrollen.
+
+Det integrerede forløb er verificeret på den native Mac-server med to normale
+brugere, herunder afvisning, tilbagekaldelse, gentildeling, ugyldige eller
+brugte invitationer og login med MFA efter servergenstart. Testen oprettede
+ikke brugere eller rettigheder direkte i databasen.
+
+## Anlæg og periodisering gennem agentklienterne
+
+CLI/MCP kan registrere et anlæg fra det faktiske oprindelige købsgrundlag,
+hente næste afskrivning og bekræfte en udtrykkeligt valgt afskrivningsperiode.
+Serveren beregner beløb og bogfører. Den første samlede serverfase har
+verificeret forløbet og afvisninger mod den kanoniske plan og journal.
+
+Periodisering har tilsvarende registrering, serverberegnet plan og bekræftet
+indregning af en valgt periode. Registrering kan selv bogføre en postering;
+begge skrivninger kræver udtrykkelig bekræftelse. Klienterne beregner ikke
+fordeling og starter ikke indregning automatisk. Den nye periodiseringskontrol
+og genstartskontrollen kører som del af den samlede kvalifikation.

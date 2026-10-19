@@ -1,15 +1,15 @@
 {
   "goal": "Complete Rust server/web, GPUI local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "parallel-platform-15",
-  "code_revision": "git:17100d5e",
+  "current_increment": "parallel-platform-18",
+  "code_revision": "git:121b89a2",
   "spec_revision": "sha256:13a0386803d4f4e35af6fdf8a020cd851d759c4369c9d172a4e0f29459510cd0",
-  "state": "59-tool bank-link client parity and native paid-receipt flow integrated. Group14 initial document/dimension-budget/bank-link journeys passed before unclassified retention navigation failure; targeted capture added. Group15 actual combined qualification starts with59tools. Native GUI pending human unlock.",
+  "state": "Ordinary invitations/member management integrated; actual integrated native two-user verify/MFA/revoke/regrant/restart PASS with no offline identity seed. Shared clients now73tools including assets/accruals; root135tests passed. Group17 initial asset+recurring clients passed before bank helper chose hidden history note; corrected exact proof scope verified by headless counterexample. Group18 composed actual running; native GUI still pending human unlock.",
   "issues_closed": [],
   "next": [
-    "Qualify59-tool bank-link parity and capture any actual retention navigation failure before diagnosing it.",
-    "Integrate source-defined bank correction and agent parity while invitations enable ordinary two-user review; native paid expense GUI remains pending unlock.",
-    "Complete actual native window journeys after human Mac unlock; continue remaining epic requirements."
+    "Finish actual Group18 correction/accrual/asset/retention and restart qualification.",
+    "Integrate queued budget/mileage/privacy clients while building genuine multi-company owner/catalog dispatch and native unpaid bill/payment.",
+    "Continue remaining epic scope and native window acceptance after human Mac unlock; no full-goal completion claim."
   ],
   "preserve_unrelated_paths": [
     ".claude/settings.json",
@@ -182,8 +182,82 @@
     "platform15_combined": {
       "log": "/tmp/rm-platform15-combined.log",
       "revision": "17100d5e",
-      "state": "starting; no new actual pass or restart claimed",
-      "scope": "59tools, initial bank link CLI/MCP helper and retention diagnostic capture; Group14 webdist preserved, desktop changes not GUI-qualified"
+      "state": "Initial59-tool bank-link agent equality passed; retention navigation showed login, no retention request, no pageerrors; restart not reached",
+      "scope": "59tools, initial bank link CLI/MCP helper and retention diagnostic capture; Group14 webdist preserved, desktop changes not GUI-qualified",
+      "exit": 1,
+      "failure": "Failed screenshot captured. Source showed transient getSession/api-me errors mapped to logout and read quotas requiring60sec idle; exact failed auth status unrecorded. Fixed actual source defects796fd565, preserved credential budgets/TTL. Owned runtime cleaned."
+    },
+    "platform16_auth": {
+      "commit": "796fd565",
+      "server_tests": "/tmp/rm-platform16-auth-server-tests.log (41PASS/2existingignored)",
+      "ui_tests": "/tmp/rm-platform16-auth-ui-tests.log (3PASS)",
+      "rate_regression_before": "/tmp/rm-platform16-auth-rate-before.log (FAIL before fix)",
+      "scope": "Transient auth error blocks old grants and offers explicit read retry;401/null remains unauthenticated.120/min navigation read window replenishes; credential/sensitive idle cooldowns and session/MFA lifetimes unchanged."
+    },
+    "platform16_bank_correction": {
+      "commit": "e90a9b17",
+      "client_commit": "efe8a8e0",
+      "storage_tests": "/tmp/rm-platform16-bank-correction-tests.log (6PASS)",
+      "ui_tests": "/tmp/rm-platform16-integrated-ui-tests.log (29PASS incl3auth)",
+      "scope": "Real reversal child and independent replacement, exact source/history proof, append-only evidence with true caller-key receipts. Actual browser/restart pending."
+    },
+    "platform16_recurring_clients": {
+      "commit": "a18846aa",
+      "tests": "/tmp/rm-platform16-all-clients-tests.log (116PASS/3existingignored)",
+      "scope": "65tool union. Actual Group16 initial CLIcreate/generate + explicit MCP sameperiod dedup/PDF equality/retire/refusals and no hidden posting PASS; restart not reached."
+    },
+    "platform16_combined": {
+      "log": "/tmp/rm-platform16-combined.log",
+      "exit": 1,
+      "revision": "ca65fbf9",
+      "failure": "Expanded bank proof history shows note twice; strict exact locator ambiguous. Root narrowed to first visible exact note, canonical link/reason/hash checks preserved. New correction, retention and restart not reached. Owned runtime cleaned."
+    },
+    "platform16_web_build": "/tmp/rm-platform16-web-build.log (PASS)",
+    "platform16_strict_clippy": "/tmp/rm-platform16-integrated-clippy.log (PASS selected server/client/CLI/MCP all-targets)",
+    "authorization_refusal_reuse": {
+      "commit": "09b693f6",
+      "before": "/tmp/rm-platform16-control-reuse-before.log (regression FAIL)",
+      "tests": "/tmp/rm-platform16-control-reuse-tests.log (5PASS/2existingignored)",
+      "scope": "Ordinary authorization rejection preserves untouched company only after readiness checks and control rollback+readiness. Root before-regression failed,5fence tests passed; integrated normal native invitation/revoke/regrant/restart now actual PASS."
+    },
+    "platform17_asset_clients": {
+      "commit": "1610d5a9",
+      "tests": "/tmp/rm-platform17-clients-tests.log (125PASS/3existingignored)",
+      "scope": "Group17 initial actual own original/account sourcecapitalisation, CLIregister and explicit MCPdepreciation exactlyonejournal, next schedule/full report equality, uncapitalised/wrongaccount/duplicate refusals PASS; restart not reached."
+    },
+    "platform17_combined": {
+      "log": "/tmp/rm-platform17-combined.log",
+      "exit": 1,
+      "revision": "911fbbd6",
+      "failure": "Initial originalnote locator.first selected hidden history note. Correctedc35685ea scopes Afstemningsbevis details by exact summary; actual headless reproduction confirmed oldfirst hidden/newscoped visible. Canonical link/reason/proof checks preserved. Recurring+asset agent initial PASS; correction/retention/restart not reached. Owned runtime cleaned."
+    },
+    "integrated_native_invitations": {
+      "commit": "1f6265e3",
+      "fence_dependency": "09b693f6",
+      "report": "/tmp/rentemester-rust-reports/native-workspace-invitations.json",
+      "log": "/tmp/rm-platform18-native-invitations.log",
+      "exit": 0,
+      "server_sha256": "327bfd06ac80fb7c788b81eb685b766b2c5bf0f531015924a8b00a3bc1ad2551",
+      "web_index_sha256": "3bc05225671b582cd78fca791b9e2ec2e35ce46d62ac83e3f0c15d7eee08feeb",
+      "scope": "Actual local-user-macos integrated server: ordinary owner invitation, sessionless claim, email verification, independent MFA/password/recovery login, reviewer reports/admin refusal, live revoke/regrant, lastowner/cancel/replay protection and both logins/report readback after restart. No offline identity/access seed. Exact owned runtime removed. Earlier worker evidence preserved -worker.json/png."
+    },
+    "platform18_invitation_checks": {
+      "app_tests": "/tmp/rm-platform18-invitation-tests.log (3PASS)",
+      "ui_tests": "/tmp/rm-platform18-invitation-ui.log (8PASS incl3auth)",
+      "clippy": "/tmp/rm-platform18-invitation-clippy.log (PASS server/application all-target strict)",
+      "native_build": "/tmp/rm-platform18-native-server-build.log (PASS)",
+      "web_build": "/tmp/rm-platform18-web-build.log (PASS)"
+    },
+    "platform18_accrual_clients": {
+      "commit": "ce34e2f5",
+      "tests": "/tmp/rm-platform18-clients-tests.log (135PASS/3existingignored)",
+      "scope": "73tools, actual confirmed registration/schedule/explicit recognition via SDK/CLI/MCP; actual server/restart qualification pending Group18."
+    },
+    "platform18_combined": {
+      "log": "/tmp/rm-platform18-combined.log",
+      "revision": "121b89a2",
+      "state": "running; no terminal/restart pass claimed",
+      "scope": "73tools, source-linked asset/accrual agent workflows, recurring agent lifecycle, bank correction web+clients, precise current proof selector, rootauth/fence/invitation code; private separate Linux Docker runtime. Native invitation proof is separate."
     }
   },
   "verified_history": [
@@ -524,90 +598,86 @@
   "active_work": [
     {
       "owner": "root",
-      "result": "Integrate ready user journeys and qualify combined product",
+      "result": "Integrate ready domains and qualify69-tool actual composed server/web/client flows",
       "depends_on": [
-        "worker deliveries and actual runtime results"
+        "worker commits and actual runtime evidence"
       ],
-      "acceptance": "Preserve earlier effects and unrelated local changes; integrated verification; full goal remains open"
+      "acceptance": "Preserve full Rust goal, caller authority/accounting and prior effects; no full-goal completion claim"
     },
     {
       "owner": "rust_mileage",
-      "result": "Group15 combined59-tool initial and restart qualification",
-      "ownership": "read-only main; exact owned Docker/tmp",
+      "result": "Group18 composed73-tool initial/restart qualification; integrated native invitations alreadyPASS",
+      "ownership": "read-only main and exact isolated owned Docker/tmp",
       "depends_on": [
-        "17100d5e snapshot and rebuilt59-tool hostbinaries, unchangedGroup14appdist"
+        "121b89a2 snapshot/current73-tool artifacts and18appdist"
       ],
-      "parallel_with": [
-        "bank correction",
-        "agent correction parity",
-        "native paid expense"
-      ],
-      "acceptance": "Actual confirmed agent bank links and current canonical reads; exact retention failure diagnostic or successful initial/restart; terminal result/owned cleanup"
+      "acceptance": "Terminal complete/refusal/restart evidence and exact cleanup; earlier partial failures retained"
     },
     {
       "owner": "rust_accruals",
-      "result": "Correct a bank reconciliation through actual reversal and reviewed replacement",
-      "ownership": "bank reconciliation storage/application/HTTP/UI and own helper",
+      "result": "Create real second company, switch and post/read separate ledgers",
+      "ownership": "isolated rust-multi-company runtime admitted catalog/manifest selection, host creation and atomic per-request dispatch, AddCompany UI",
       "depends_on": [
-        "integrated initial link and canonical reversal child"
+        "one continuous workspace/control owner, explicit WorkspaceManage fence and fresh company-only initializer"
       ],
       "parallel_with": [
-        "agent correction parity",
-        "native paid expense",
-        "Group14 qualification"
+        "invitations",
+        "agent domains",
+        "composed qualification"
       ],
-      "acceptance": "Immutable supersession/history/current proof, true caller-key durable receipt, no accounting side effect, actual browser/restart"
-    },
-    {
-      "owner": "rust_client_cli",
-      "result": "Bank link and correction through shared agent clients",
-      "ownership": "client/CLI/MCP modules/tests and separate helpers",
-      "depends_on": [
-        "source-defined initial and correction routes"
-      ],
-      "parallel_with": [
-        "bank correction",
-        "native paid expense",
-        "Group14 qualification"
-      ],
-      "acceptance": "Exact confirmed body/server proof, full JSON, explicit caller-key replay only for supported correction, canonical equality and no accounting effects"
+      "acceptance": "Distinct UUIDs and actual journals/reports, exact company permissions/concurrent selection/restart, no fake catalog or production data"
     },
     {
       "owner": "rust_budget",
-      "result": "Invite ordinary second user, verify/enroll MFA and grant/revoke access through existing web UI",
-      "ownership": "isolated rust-invitations new storage/application/HTTP/identity delivery modules and existing access/claim UI; additive shared wiring",
+      "result": "Native unpaid original→explicit payable registration→later bank payment",
+      "ownership": "isolated desktop payables child/state and additive navigation",
       "depends_on": [
-        "Existing credential hashing, verification outbox, MFA, current-cookie control fence and access events"
+        "source-reviewed original, existing shared payable/bank APIs and corrected native documents base"
       ],
       "parallel_with": [
-        "bank correction",
-        "agent correction parity",
+        "multi-company foundation",
+        "agent domains",
         "composed qualification"
       ],
-      "acceptance": "Normal email-bound expiring single-use claim without session or bootstrap bypass, ordinary verify/MFA, current authority and last-owner protection, two-user flow/restart"
+      "acceptance": "Two distinct confirmations, current original/vendor/accounts/bank and canonical obligation/report readback; private manual unknown recovery; focused native build/tests and real GUI when unlocked"
+    },
+    {
+      "owner": "rust_client_cli",
+      "result": "Budget/mileage and scoped privacy agent client closures",
+      "ownership": "isolated client/CLI/MCP new accrual modules/tests and own helper",
+      "depends_on": [
+        "existing exact native budget/mileage/privacy contracts"
+      ],
+      "parallel_with": [
+        "multi-company foundation",
+        "invitations",
+        "composed qualification"
+      ],
+      "acceptance": "Exact source-shaped confirmation and full responses, no math/hidden mutations/retries, explicit partial GDPR coverage and immutable retained originals; actual parity/restart"
     }
   ],
   "integrated_pending_browser": [
     {
-      "source_commit": "9e9b3dd8",
-      "journey": "Initial bank line to existing journal",
-      "state": "Group14 initial PASS; restart not reached due retention navigation failure"
+      "source_commit": "e90a9b17",
+      "journey": "Reviewed bank correction web plus agent clients",
+      "state": "Group18 actual running after precise proof selector correction"
     },
     {
-      "source_commit": "e5a68f2d",
-      "journey": "Dimension budget allocation versus actuals",
-      "state": "Group14 initial PASS; restart not reached due retention navigation failure"
+      "source_commit": "1610d5a9",
+      "journey": "Asset agent registration and explicit depreciation",
+      "state": "Group17 initial PASS; Group18 restart pending"
     },
     {
-      "source_commit": "05b8ea7f",
-      "journey": "Document CLI/MCP upload and exact originals",
-      "state": "Group14 initial PASS; restart not reached due retention navigation failure"
-    },
-    {
-      "source_commit": "b125556e",
-      "journey": "Initial bank link CLI/MCP",
-      "state": "root100tests pass; actual qualification pending"
+      "source_commit": "ce34e2f5",
+      "journey": "Accrual agent registration and explicit recognition",
+      "state": "Group18 actual running"
     }
   ],
-  "pending_deliveries": []
+  "pending_deliveries": [
+    {
+      "source_commit": "2bfe2911",
+      "journey": "Budget comparisons/revisions and mileage registration/reports via shared clients",
+      "state": "79tool worker delivery;146tests/3existingignored andClippy pass. Root integration deferred until pinned Group18 completes."
+    }
+  ]
 }
