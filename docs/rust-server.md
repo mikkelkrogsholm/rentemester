@@ -59,8 +59,7 @@ adgang afvises. Alle otte særskilte CLI/MCP-handlinger består også i et
 separat workspace med begge retninger, uafhængig godkendelse, fuld paritet
 med HTTP-svarene og uændrede posteringer før og efter genstart.
 
-Der er 185 verificerede MCP-tools efter dispositionsforløbet i Group59.
-Kontaktimportens næste værktøj er under integration.
+Der er 186 verificerede MCP-tools efter kontaktimporten i Group60.
 De samlede native tests består med 191 beståede og én eksisterende ignoreret
 test; native build består. Mac’en er låst op. Administreret
 lokal opstart, almindelig ejeroprettelse, verificering, MFA og læsning af
@@ -1782,3 +1781,43 @@ version 2 med dispositioner, begivenheder, posteringstilknytninger og
 livscyklushistorik. Version 1 læses med tom dispositionshistorik. Gendannelse
 skal validere de oprindelige journalbeviser og bevare historiske aktører uden
 at give dem aktuel adgang.
+
+## Importér kunder og leverandører fra Dinero
+
+Den eksisterende kontaktvisning bruger `Importér` og filen `Kontakter.csv`.
+Det native Group60-forløb har bestået den samlede browser- og backupprøve
+med almindelig MFA, faktiske syntetiske HTTPS-opslag, genimport gennem web,
+CLI og MCP uden ekstra kontakter, audit- eller providerkald, samt genstart.
+Signerede snapshots bevarer kontakter og CVR-cache uden providercredentials;
+gendannelse hos en ny ejer efter fjernelse af kilde og privat nøgle,
+genimport og endnu en genstart består også. Importen opretter kunder og leverandører ud fra
+filens salgs- og købshistorik og viser oprettelser, eksisterende kontakter og
+rækkefejl. Den opretter ingen posteringer. Genimport bruger den præcise
+kombination af navn og skatte-ID i hver kontakttabel og ændrer ikke allerede
+oprettede kontakter. EAN lagres som kontaktdata; dette aktiverer ikke Peppol.
+
+Valget om CVR-berigelse er fortsat synligt og slået til fra begyndelsen.
+CSV-felter har forrang. Serveren bruger først et aktuelt CVR-snapshot; et
+providerproblem kan bruge et ældre bevaret snapshot. Uden snapshot og et
+gyldigt opslag importeres CSV-data med en synlig fejl ved berigelsen.
+Fejltælleren gælder kontaktroller, så en kontakt med begge roller kan have
+to fejl. Ingen vellykket berigelse påstås, når opslaget fejler.
+
+Operatøren konfigurerer `CVR_USERNAME`, `CVR_PASSWORD` og valgfrit
+`RENTEMESTER_CVR_ENDPOINT` i serverprocessens beskyttede miljø.
+Standardendpoint er `https://distribution.virk.dk/cvr-permanent`.
+`RENTEMESTER_CVR_TRUSTED_CA_FILE` kan pege på en privat, betroet CA-fil.
+Endpoint og credentials modtages ikke fra import-JSON, gemmes ikke i
+kontakternes cache og følger ikke med backup. Transporten kræver verificeret
+HTTPS, bruger højst 12 sekunder og 4 MiB svar pr. opslag og følger hverken
+redirects eller automatiske genforsøg. Højst 64 MiB rå CVR-data beholdes pr.
+import; derefter bliver resterende opslag til synlige berigelsesfejl eller
+brug af et faktisk ældre snapshot, mens CSV-data stadig kan importeres.
+
+CLI-kaldet er `remote import-contacts --company SLUG --confirm` med de
+almindelige eksplicitte server- og cookievalg. Stdin er serverens præcise
+JSON `{fileName,content,enrichCvr?,confirm:true}`, højst 12 MiB. MCP hedder
+`import_contacts` med `company`, den samme JSON som `body` og `confirm:true`.
+Klienterne bevarer hele svaret, inklusive delvise rækkefejl. Ved ukendt
+udfald skal kontaktregistret læses før en ny eksplicit import; der findes
+ingen automatisk genafsendelse eller opfundet kvitteringsnøgle.
