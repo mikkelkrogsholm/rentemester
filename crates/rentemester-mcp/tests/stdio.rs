@@ -151,7 +151,7 @@ fn lifecycle_negotiation_discovery_notifications_and_validation() {
     assert_eq!(values[2]["error"]["code"], -32002);
     assert_eq!(values[3]["result"], json!({}));
     let tools = values[4]["result"]["tools"].as_array().unwrap();
-    assert_eq!(tools.len(), 65);
+    assert_eq!(tools.len(), 69);
     let write = tools.iter().find(|v| v["name"] == "post_journal").unwrap();
     assert_eq!(
         write["inputSchema"]["required"],
@@ -1263,7 +1263,7 @@ fn recurring_tools_discovery_and_strict_read_write_admission() {
         ],
     ));
     let tools = v[1]["result"]["tools"].as_array().unwrap();
-    assert_eq!(tools.len(), 65);
+    assert_eq!(tools.len(), 69);
     assert_eq!(
         tools
             .iter()
@@ -1286,6 +1286,73 @@ fn recurring_tools_discovery_and_strict_read_write_admission() {
         ),
         (
             "retire_recurring_invoice",
+            json!({"company":"synthetic","id":7,"body":" ".repeat(256*1024+1),"confirm":true}),
+        ),
+    ] {
+        let v = parsed(&run(
+            "http://127.0.0.1:9",
+            &[init("2025-11-25"), ready(), call(2, name, args)],
+        ));
+        assert!(v[1].get("error").is_some(), "{v:?}");
+    }
+}
+
+#[test]
+fn asset_mcp_exact_explicit_period_and_unknown_semantics() {
+    let (origin, request, task) =
+        http("HTTP/1.1 503 Unavailable\r\nContent-Length:0\r\nConnection:close\r\n\r\n");
+    let body = "{ \"transactionDate\":\"2026-01-01\",\"periodIndex\":1,\"confirm\":true }\n";
+    let v = parsed(&run(
+        &origin,
+        &[
+            init("2025-11-25"),
+            ready(),
+            call(
+                2,
+                "depreciate_asset",
+                json!({"company":"synthetic","id":7,"body":body,"confirm":true}),
+            ),
+        ],
+    ));
+    assert_eq!(
+        v[1]["result"]["structuredContent"]["error"]["code"],
+        "outcome_unknown"
+    );
+    let wire = String::from_utf8(request.recv().unwrap()).unwrap();
+    assert!(wire.starts_with("POST /api/companies/synthetic/assets/7/depreciate HTTP/1.1"));
+    assert!(wire.ends_with(body));
+    task.join().unwrap();
+}
+#[test]
+fn asset_readonly_discovery_and_native_body_gates() {
+    let v = parsed(&run(
+        "http://127.0.0.1:9",
+        &[
+            init("2025-11-25"),
+            ready(),
+            json!({"jsonrpc":"2.0","id":2,"method":"tools/list"}),
+        ],
+    ));
+    let tools = v[1]["result"]["tools"].as_array().unwrap();
+    assert_eq!(tools.len(), 69);
+    for name in ["assets", "next_asset_depreciation"] {
+        assert_eq!(
+            tools.iter().find(|t| t["name"] == name).unwrap()["annotations"]["readOnlyHint"],
+            true
+        );
+    }
+    for (name, args) in [
+        ("assets", json!({"company":"synthetic","confirm":true})),
+        (
+            "next_asset_depreciation",
+            json!({"company":"synthetic","id":0}),
+        ),
+        (
+            "register_asset",
+            json!({"company":"synthetic","id":7,"body":"{}","confirm":true}),
+        ),
+        (
+            "depreciate_asset",
             json!({"company":"synthetic","id":7,"body":" ".repeat(256*1024+1),"confirm":true}),
         ),
     ] {

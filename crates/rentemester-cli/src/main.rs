@@ -1,6 +1,7 @@
 use rentemester_engine::{Error, trial_balance::Period};
 use serde_json::json;
 use std::{collections::BTreeMap, io::Read, path::Path, process::ExitCode};
+mod assets;
 mod recurring_invoices;
 mod bank_correction;
 mod bank_reconciliation;
