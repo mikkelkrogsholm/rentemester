@@ -1,16 +1,16 @@
 {
   "goal": "Complete Rust server/web, GPUI local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "Rust shared inbox and corporate records across clients, native ownership, and signed corporate backup integration",
-  "code_revision": "538573fe plus root bounded registry read capacity fix and actual diagnostics",
+  "current_increment": "Native intercompany reconciliation across server/web/CLI/MCP and source-authoritative group reporting",
+  "code_revision": "63763c87 plus scoped native navigation and ordinary intercompany fixtures",
   "spec_revision": "sha256:13a0386803d4f4e35af6fdf8a020cd851d759c4369c9d172a4e0f29459510cd0",
-  "state": "Shared Inbox server/web/CLI/MCP and native screen integrated; actual Group35 UI/client initial+restart passed, actual Group36 J05 Inbox signed backup/source deletion/three independently verified archives/new-owner MFA restore/restart passed with exact originals/history and cleanup. Corporate server/web/CLI/MCP/native and signed four-table backup codec integrated; core/UI/client checks passed, actual Group38 complete UI/CLI/MCP initial+restart passed with exact source/history/originals, unchanged journals and exact owned cleanup; previous Groups36/37 failures retained. Ownership server/web/SDK/CLI/MCP120 tools and native screen integrated; 10 filtered engine/storage/application tests (including one existing GDPR case),8UI tests,146native tests/1existingignored and native build passed. Actual Group40 complete normal two-user invitation/verification/MFA ownership browser/CLI/MCP initial+fresh-MFA restart PASS, full immutable histories/hashes/as-of boundaries/original bytes/unchanged journals preserved. Group39 captured503busy from five registry reads versus4Productpermits; bounded capacity8 fixed the diagnosed normal-page failure.. Mac unlocked; actual GPUI managed local owner creation/verification/MFA and canonical trial-balance read passed, invoice/paid-expense acceptance remains unqualified because CUA pointer/scroll targeting fails even with a fresh direct app bundle; bounded workarounds stopped and owned processes closed. Full Rust goal and epic672 remain open. Actual Group38 J05 Corporate now PASS: all three browser/CLI/MCP archives independently verified after source/private-key deletion and each independently fresh-restored with normal new-owner MFA and restart; exact Corporate+Inbox BLOBs/fullhistory/scopes/Parties/Knowledge/ledger sources preserved and ownedcleanup complete. Legacy unscoped/reduced-role sensitivity only unit-covered.",
+  "state": "Actual Group42 intercompany complete browser and six CLI/MCP operations initial+normal two-user MFA restart PASS in separate workspaces: authoritative V1 manifest, independent reviewed mappings, exact reciprocal source/amounts, wronghash/self-review/overlap/privacy/revoke and unchanged company journals. Five root domain tests,10 UI tests and server/CLI/MCP/web builds passed. Native Intercompany integratedbc46c528 with rootnavigation;154native tests/1existingignored and build passed, actual GUI remains unqualified due previously evidenced pointer/scroll tooling failure. Signed Ownership four-table codec integrated63763c87 preserving native v1/v2 source history; worker16storage/5host checks passed, root8targeted host/storage checks passed (4newcodec +4domain/GDPR), runtime rebuild in progress, actual restore helper next. Prior Corporate/Ownership web/client restart and independent three-archive Corporate backup restore proofs remain valid. Fullgoal/epic672 and named journey completion remain open.",
   "issues_closed": [],
   "next": [
-    "Integrate whole intercompany reconciliation and its six shared client operations on authoritative V1 configuration; retain separate browser/client fixtures.",
-    "Complete actual native invoices, paid expenses and originals on the unlocked Mac.",
-    "Deliver source-authoritative V1 group foundation and intercompany reconciliation, then consolidation; do not infer group configuration from ownership snapshots.",
-    "Add signed Ownership codec; remaining nonempty Ownership/Intercompany/Consolidation backup sections still refuse."
+    "Complete real consolidated profile/report and source-exact elimination lifecycle together; ready balanced reports and blocked/hidden/stale cases required.",
+    "Integrate shared consolidation SDK/CLI/MCP and native screens; maintain actual normal-owner acceptance gaps.",
+    "Qualify three-archive Ownership restore with ordinary independent source reviewer; add group-manifest/intercompany/consolidation backup inventory afterward.",
+    "Preserve all full-scope completion gates below; no final claim based on this increment."
   ],
   "preserve_unrelated_paths": [
     ".claude/settings.json",
@@ -834,53 +834,88 @@
       "evidence": [
         "/tmp/rentemester-rust-reports/native-portable-backup-corporate-integrated38.json"
       ]
+    },
+    {
+      "increment": "Groups41-43 Intercompany",
+      "result": "Group41 exact400refusal exposed fixture wrong workspaceRole owner; fixedtoactualworkspace_owner. Group42 separate real browser/client normal two-user MFA initial+restartPASS; domain5/UI10/buildPASS. Native154tests1ignored/buildPASS.",
+      "evidence": [
+        "/tmp/rentemester-rust-reports/native-intercompany-browser-integrated42.json",
+        "/tmp/rentemester-rust-reports/native-intercompany-clients-integrated42.json",
+        "/tmp/rm-platform41-runtime-artifacts.json",
+        "/tmp/rm-platform41-intercompany-core.log",
+        "/tmp/rm-platform41-intercompany-ui.log",
+        "/tmp/rm-platform43-native-tests.log",
+        "/tmp/rm-platform43-native-build.log"
+      ]
     }
   ],
   "active_work": [
     {
       "owner": "root",
-      "result": "Integrate authoritative intercompany foundation and whole app userflows; preserve verified Corporate/Ownership restart flows",
+      "result": "Integrate consolidated profiles, elimination evidence and whole read/report workflows after verified intercompany42",
       "depends_on": [
-        "isolated commits",
-        "ordinary authenticated synthetic fixtures"
+        "integrated V1 manifest/mapping backend and six client operations"
       ],
-      "acceptance": "Exact canonical readback, original evidence, current authority and restart; full goal stays open"
-    },
-    {
-      "owner": "rust_mileage",
-      "result": "Actual GPUI normal local authentication/read passed; invoice/expense acceptance awaiting working pointer/scroll tooling",
-      "depends_on": [
-        "unlocked native window and functioning CUA controls"
-      ],
-      "acceptance": "Real native UI actions and server readback; report tool limitations honestly"
-    },
-    {
-      "owner": "rust_client_cli",
-      "result": "Signed Ownership business-section codec preserving canonical source and history",
-      "depends_on": [
-        "integrated Ownership canonical control22/24 models"
-      ],
-      "acceptance": "Exact canonical hashes/full native history/as-of projection and original source refs after freshrestore, no importedauthority and atomic corrupt-section refusal"
-    },
-    {
-      "owner": "rust_accruals",
-      "result": "Authoritative V1 group foundation and whole intercompany reconciliation",
-      "depends_on": [
-        "source group manifest and mapping contracts"
-      ],
-      "acceptance": "Explicit current all-company authority, distinct mapping reviewer, exact source-derived reconciliation; no invented consolidation"
+      "acceptance": "Current all-company authority, independent approval, exact source snapshots/decimal amounts and unchanged journals after restart"
     },
     {
       "owner": "rust_budget",
-      "result": "Native Ownership delivered; source consolidation contract and actual Ownership diagnostic supplied",
+      "result": "Thin consolidation SDK/CLI/MCP six-operation parity",
       "depends_on": [
-        "authoritative V1 group foundation before consolidation"
+        "approved native profile/report route contracts from rust_mileage"
       ],
-      "acceptance": "Eight focused native tests/build passed; actual new screen not yet qualified"
+      "acceptance": "Exact confirmed bounds, original decimal-string fullJSON,132tools preserve126existing and scopedproposeframe only"
+    },
+    {
+      "owner": "rust_mileage",
+      "result": "Real consolidated report profiles and report calculation",
+      "depends_on": [
+        "authoritative V1 manifest",
+        "typed validated elimination reader from rust_accruals"
+      ],
+      "acceptance": "Source-compatible ready balanced figures and full provenance; fully redacted hidden-member and blocked/stale-proof cases"
+    },
+    {
+      "owner": "rust_accruals",
+      "result": "Source-exact elimination plan/review/apply/reverse lifecycle and typed applied reader",
+      "depends_on": [
+        "exact reciprocal source snapshots and shared native audit verifier"
+      ],
+      "acceptance": "Fresh hash-bound source, distinct authenticated reviewer, exact-date applied projection, append-only evidence and no company journal mutation"
+    },
+    {
+      "owner": "rust_client_cli",
+      "result": "Actual Ownership backup helper with ordinary independently authenticated source reviewer",
+      "depends_on": [
+        "integrated Ownership codec63763c87",
+        "existing native invitation/verification/MFA primitives"
+      ],
+      "acceptance": "All three independently verified source-free archives freshrestore/newownerMFA/restart exactOwnership originals/history/diffs/endings/asOf; legacy/reducedroles unitonly"
     }
   ],
   "integrated_pending_browser": [
-    "New GPUI business screens beyond established local authentication/read proof"
+    "Native Intercompany and other newer GPUI business screens remain actual-unqualified; confirmed CUA pointer/scroll limitation",
+    "Ownership signed backup actual restore/restart pending helper extension"
   ],
-  "pending_deliveries": []
+  "pending_deliveries": [],
+  "completion_gates": [
+    "All epic672 child acceptance remains open until scope-matched evidence; current increments are progress only.",
+    "J01/J02/J04 core owner tasks through installed native UI without JSON/CLI; current native pointer/scroll qualification remains unavailable.",
+    "J03 remote multi-user/server/native authority and access-loss journeys across all supported operations.",
+    "J05 exact complete supported business inventory recovery; unsupported nonempty sections remain explicit refusal.",
+    "J06 one-writer fenced local/server transfer, ambiguous accepted receipts, pending external effects and old-source reopening.",
+    "J07 real durable automation with local sleep/closure, DST/restart/cancel/revocation and explicit catch-up policy.",
+    "Remaining provider/document-worker/backend parity and no separately installed Bun/Node/Docker for core installed accounting.",
+    "Signed desktop/server distribution, installation/update/provenance and synthetic cutover/rollback rehearsals.",
+    "TypeScript backend retirement only after complete verified replacement; no real-data migration or deployment without separate mandate."
+  ],
+  "corrected_contracts": [
+    {
+      "id": "native-elimination-balance-v2",
+      "status": "implementation_pending",
+      "source_defect": "Legacy V1 fixed left-credit/right-debit payload cannot represent opposite receivable/payable mapping orientation safely. Duplicate active applications for same mapping/exactdate can double eliminate.",
+      "decision": "New native V2 carries actual left/right positions and explicit debitOre/creditOre, retaining company identity/sourceproof; one current apply per mapping/exactdate, reverse then replacement allowed. Preserve exact V1 canonical bytes/history; block unsafe legacy projections rather than reinterpret or erase.",
+      "acceptance": "Both orientations produce correct balanced ready report; fullchain/currentproof/sourcehash/four-eyes/privacy checks; exact payload.asOf equals report asOf."
+    }
+  ]
 }

@@ -26,6 +26,8 @@ mod payables;
 mod payables_state;
 mod mileage;
 mod mileage_state;
+mod intercompany;
+mod intercompany_state;
 mod ownership;
 mod ownership_state;
 mod corporate_records;
@@ -221,6 +223,7 @@ struct Desktop {
     budget: Option<Entity<budget::Budget>>,
     periods: Option<Entity<periods::Periods>>,
     backup: Option<Entity<backup::Backup>>,
+    intercompany: Option<Entity<intercompany::Intercompany>>,
     ownership: Option<Entity<ownership::Ownership>>,
     corporate_records: Option<Entity<corporate_records::CorporateRecords>>,
     workspace_inbox: Option<Entity<workspace_inbox::WorkspaceInbox>>,
@@ -317,6 +320,7 @@ impl Desktop {
             budget: None,
             periods: None,
             backup: None,
+            intercompany: None,
             ownership: None,
             corporate_records: None,
             workspace_inbox: None,
@@ -427,6 +431,7 @@ impl Desktop {
         self.budget = None;
         self.periods = None;
         self.backup = None;
+        self.intercompany = None;
         self.ownership = None;
         self.corporate_records = None;
         self.workspace_inbox = None;
@@ -503,6 +508,7 @@ impl Desktop {
         self.budget = None;
         self.periods = None;
         self.backup = None;
+        self.intercompany = None;
         self.ownership = None;
         self.corporate_records = None;
         self.workspace_inbox = None;
@@ -613,6 +619,7 @@ impl Desktop {
         self.budget = None;
         self.periods = None;
         self.backup = None;
+        self.intercompany = None;
         self.ownership = None;
         self.corporate_records = None;
         self.workspace_inbox = None;
@@ -647,6 +654,7 @@ impl Desktop {
         self.budget = None;
         self.periods = None;
         self.backup = None;
+        self.intercompany = None;
         self.ownership = None;
         self.corporate_records = None;
         self.workspace_inbox = None;
@@ -922,6 +930,12 @@ impl Render for Desktop {
             );
         }
         content = content.child(list);
+        if let Some(intercompany) = self.intercompany.clone() {
+            return content.child(Button::new("intercompany-close")
+                .label("Luk mellemregningsafstemning")
+                .on_click(cx.listener(|this, _, _, cx| { this.intercompany = None; cx.notify(); })))
+                .child(intercompany);
+        }
         if let Some(ownership) = self.ownership.clone() {
             return content.child(Button::new("ownership-close")
                 .label("Luk ejer- og kontrolforhold")
@@ -1132,6 +1146,20 @@ impl Render for Desktop {
                             Err(error) => { this.status = error; cx.notify(); return; }
                         };
                         this.company_setup = Some(cx.new(|cx| company_setup::CompanySetup::new(session, origin, company, local, window, cx)));
+                        cx.notify();
+                    }
+                })));
+        }
+        if self.session.is_some() && self.selected.is_some() {
+            content = content.child(Button::new("intercompany-open").label("Mellemregningsafstemning").disabled(self.busy)
+                .on_click(cx.listener(|this, _, window, cx| {
+                    if let (Some(session), Some(company)) = (this.session.clone(), this.selected.clone()) {
+                        let origin = this.connection_origin(cx);
+                        let local = match this.managed.as_ref().map(|m| m.journal_identity()).transpose() {
+                            Ok(local) => local,
+                            Err(error) => { this.status = error; cx.notify(); return; }
+                        };
+                        this.intercompany = Some(cx.new(|cx| intercompany::Intercompany::new(session, origin, company, local, window, cx)));
                         cx.notify();
                     }
                 })));

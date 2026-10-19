@@ -10,7 +10,9 @@ if(config.workspace!=="synthetic-native-invitations"||config.companySlug!=="synt
 const base=process.env.RM_INVITATION_BASE!;if(!/^http:\/\/127\.0\.0\.1:\d+$/.test(base))throw new Error("Literal loopback only");
 const spool=join(config.root,".rentemester"),privateState=join(work,"browser-state.json");
 const ownership=process.env.RM_INVITATION_OWNERSHIP==="1";
-const evidence=ownership?join(work,"invitations-evidence.json"):"/tmp/rentemester-rust-reports/native-workspace-invitations.json";
+const intercompany=process.env.RM_INVITATION_INTERCOMPANY;
+const feature=ownership||Boolean(intercompany);
+const evidence=feature?join(work,"invitations-evidence.json"):"/tmp/rentemester-rust-reports/native-workspace-invitations.json";
 const ownerEmail="owner@example.invalid",ownerPassword="synthetic-owner-password-123",email="reviewer@example.invalid",password="synthetic-invited-password-456";
 function files(prefix:string){return readdirSync(spool).filter(n=>n.startsWith(prefix)&&n.endsWith(".txt"));}
 function link(prefix:string,before:string[]){const added=files(prefix).filter(n=>!before.includes(n));if(added.length!==1)throw new Error("Expected exactly one new private delivery");return readFileSync(join(spool,added[0]),"utf8").trim();}
@@ -63,6 +65,25 @@ try{
   const {checkNativeOwnershipClients}=await import("./check-native-ownership-clients");
   await checkNativeOwnership(owner,invited,base,"synthetic-ownership-browser",restarted);
   await checkNativeOwnershipClients(owner,invited,base,"synthetic-ownership-clients",restarted);
+ }
+ if(intercompany){
+  if(!["browser","clients"].includes(intercompany))throw Error("Explicit intercompany fixture mode required");
+  const restarted=process.argv.includes("--reopen"),anchor="synthetic-intercompany-left",other="synthetic-intercompany-right";
+  if(!restarted){
+   const current=await json(invited,"/api/me");if(!current.r.ok()||!current.body.user?.id)throw Error("Current independent reviewer required");
+   const elevated=await json(owner,"/api/workspace/members/access",{userId:current.body.user.id,action:"set-role",workspaceRole:"workspace_owner"});if(!elevated.r.ok())throw Error(`Explicit workspace owner grant refused ${elevated.r.status()}`);
+   for(const slug of [anchor,other]){
+    const created=await json(owner,"/api/companies",{name:"Synthetic Intercompany Source",slug,fiscalYearStartMonth:"1",vatPeriodType:null});if(!created.r.ok())throw Error(`Intercompany company creation refused ${created.r.status()}`);
+    const granted=await json(owner,"/api/workspace/members/company",{userId:current.body.user.id,action:"grant",companySlug:slug,role:"owner"});if(!granted.r.ok())throw Error(`Intercompany company grant refused ${granted.r.status()}`);
+   }
+  }
+  if(intercompany==="browser"){
+   const {checkNativeIntercompany}=await import("./check-native-intercompany");await checkNativeIntercompany(owner,invited,base,anchor,other,restarted);
+  }else{
+   const {prepareIntercompanyClients}=await import("./intercompany-fixture");
+   const path=join(work,"intercompany-fixture.json");if(!restarted)writeFileSync(path,JSON.stringify(await prepareIntercompanyClients(owner,base,anchor,other)),{mode:0o600,flag:"wx"});
+   const {checkNativeIntercompanyClients}=await import("./check-native-intercompany-clients");await checkNativeIntercompanyClients(owner,invited,base,anchor,other,JSON.parse(readFileSync(path,"utf8")),restarted);
+  }
  }
  console.log("PASS: ordinary native invitation/verification/MFA/access journey"+(process.argv.includes("--reopen")?" after restart":""));
 }finally{await browser.close();}

@@ -35,14 +35,31 @@ inklusive de fulde hashes, historik, originaler og daterede ejerfacts. Den
 konkrete visningsfejl var fem samtidige registerlæsninger mod fire
 serverpladser; den begrænsede kapacitet er nu tilpasset til otte.
 
-Der er 120 MCP-tools efter integrationen af ejerforhold. De samlede native
-tests består med 146 beståede og én eksisterende ignoreret test; native build
+Mellemregningsafstemning bruger nu en eksplicit koncernkonfiguration og
+kontomappinger, som godkendes af en anden autentificeret ejer. Rust læser de
+oprindelige posteringer og kildebeviser fra begge selskaber og viser eksakte
+beløb og differencer. Handlingerne ændrer konfiguration og revisionsspor;
+hvert selskab beholder sine egne posteringer. Web og seks CLI/MCP-operationer
+er integreret. Faktiske første forløb og genstart består i separate workspaces
+for web og klienter med almindelig invitation, verificering og to forskellige
+MFA-brugere. Forkerte hashes, selv-godkendelse, overlappende aktive mappings
+og bortfald af adgang afvises.
+
+Der er 126 MCP-tools efter integrationen af mellemregningsafstemning. De samlede native
+tests består med 154 beståede og én eksisterende ignoreret test; native build
 består. Mac'en er nu låst op, og faktisk desktopaccept er i gang. Administreret
 lokal opstart, almindelig ejeroprettelse, verificering, MFA og læsning af
 saldobalancen er gennemført i det native vindue. Fakturering og udgifter er
 endnu ikke godkendt i desktop: værktøjets pointer- og scrollstyring fejler
 stadig trods den oplåste Mac. De afgrænsede omgåelsesforsøg er stoppet, og
 kun den private syntetiske profil er bevaret til senere accept.
+
+Native **Mellemregningsafstemning** er også integreret og består tests/build.
+Faktisk betjening i desktop er endnu ikke godkendt. Backupkoden for
+ejerforhold bevarer både tidligere og aktuelle snapshot-/review-/fact-/
+sluthistorikker; faktisk gendannelse er næste accepttrin. Ikke-tom
+koncernkonfiguration, mellemregninger og konsolidering afvises fortsat af
+backup, indtil deres fulde formater er understøttet.
 
 Den samlede omskrivning er fortsat åben. Næste funktionelle fundament er den
 eksisterende, eksplicitte koncernkonfiguration og mellemregningsafstemning.
