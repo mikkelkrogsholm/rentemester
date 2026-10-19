@@ -565,3 +565,24 @@ pub fn execute(
         .ok_or_else(|| refused("written disposition missing"))?
         .value())
 }
+
+/// Fixed admitted collector: existing canonical numeric decoder, no request-side proof.
+pub fn journal_entry(db: &Connection, id: i64) -> Result<Option<JournalEntry>, Error> {
+    use rusqlite::OptionalExtension;
+    let value=db.query_row("SELECT id,entry_no,transaction_date,entry_hash,status,reversal_of_entry_id,EXISTS(SELECT 1 FROM journal_entries r WHERE r.reversal_of_entry_id=j.id) FROM journal_entries j WHERE id=?1",[id],|r|Ok(JournalEntry{id:r.get(0)?,entry_no:r.get(1)?,transaction_date:r.get(2)?,entry_hash:r.get(3)?,status:r.get(4)?,reversal_of_entry_id:r.get(5)?,reversed:r.get(6)?,lines:vec![]})).optional().map_err(sql)?;
+    let Some(mut value) = value else {
+        return Ok(None);
+    };
+    let mut q=db.prepare("SELECT debit_amount,credit_amount FROM journal_lines WHERE journal_entry_id=?1 ORDER BY id").map_err(sql)?;
+    let mut rows = q.query([id]).map_err(sql)?;
+    while let Some(r) = rows.next().map_err(sql)? {
+        if value.lines.len() >= 10000 {
+            return Err(sql("journal line bound"));
+        }
+        value.lines.push(JournalLine {
+            debit: crate::legacy_money(r.get_ref(0).map_err(sql)?).map_err(sql)?,
+            credit: crate::legacy_money(r.get_ref(1).map_err(sql)?).map_err(sql)?,
+        });
+    }
+    Ok(Some(value))
+}
