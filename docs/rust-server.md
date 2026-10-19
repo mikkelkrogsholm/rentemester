@@ -18,21 +18,31 @@ Selskabsdokumenter har Rust-understøttelse for immutable originaler,
 metadata, typed links og begrundede erstatninger. Web, CLI, MCP og native
 skærm er integreret. Den signerede backupkode bevarer alle fire tabeller og
 originalbytes, inklusive ældre links uden efterfølgende scope-udsagn.
-Faktisk browseraccept og faktisk backupgendannelse af dette nye område
-mangler stadig; en timeout i den aktuelle visning undersøges.
+Det faktiske web- og CLI/MCP-forløb med genstart består nu, inklusive
+originaldownload og fuld historik. Alle tre arkiver fra web, CLI og MCP er
+også verificeret uafhængigt efter fjernelse af kilde og privat nøgle og hver
+gendannet med ny ejer, normal MFA og genstart. Originaler, fuld historik,
+scope og følsomhed bevares. Ældre links uden scope og læsning med reducerede
+roller er her dækket af unit-tests. De 17 storage- og host-tests består.
 
 Ejer- og kontrolforhold har nu Rust-forslag, review af en anden autentificeret
 person og særskilt apply af de præcise snapshot- og diff-hashes. Senere
 daterede observationer bevarer den oprindelige historik. Web, CLI, MCP og
-native skærm bruger serverens fælles regler. Den faktiske test med to normalt
-inviterede og MFA-autentificerede brugere afklarer fortsat reviewtrinnet.
+native skærm bruger serverens fælles regler. Det første faktiske forløb med to normalt inviterede MFA-brugere består:
+forslag, uafhængigt review, apply, dateret efterfølger og CLI/MCP-paritet.
+Hele web- og CLI/MCP-forløbet består også efter genstart med frisk MFA,
+inklusive de fulde hashes, historik, originaler og daterede ejerfacts. Den
+konkrete visningsfejl var fem samtidige registerlæsninger mod fire
+serverpladser; den begrænsede kapacitet er nu tilpasset til otte.
 
 Der er 120 MCP-tools efter integrationen af ejerforhold. De samlede native
 tests består med 146 beståede og én eksisterende ignoreret test; native build
 består. Mac'en er nu låst op, og faktisk desktopaccept er i gang. Administreret
 lokal opstart, almindelig ejeroprettelse, verificering, MFA og læsning af
 saldobalancen er gennemført i det native vindue. Fakturering og udgifter er
-næste konkrete acceptforløb.
+endnu ikke godkendt i desktop: værktøjets pointer- og scrollstyring fejler
+stadig trods den oplåste Mac. De afgrænsede omgåelsesforsøg er stoppet, og
+kun den private syntetiske profil er bevaret til senere accept.
 
 Den samlede omskrivning er fortsat åben. Næste funktionelle fundament er den
 eksisterende, eksplicitte koncernkonfiguration og mellemregningsafstemning.

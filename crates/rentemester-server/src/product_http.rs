@@ -62,7 +62,9 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
         native,
         origin: origin.into(),
         authority: origin.split_once("://").unwrap().1.into(),
-        workers: Arc::new(Semaphore::new(4)),
+        // The registry starts five independent reads; retain bounded headroom
+        // for its normal reads and the current-session check.
+        workers: Arc::new(Semaphore::new(8)),
     };
     Router::new()
         .route("/api/companies/{slug}/workspace-inbox", get(workspace_inbox::handle).post(workspace_inbox::handle))

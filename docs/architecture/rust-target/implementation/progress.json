@@ -2,15 +2,15 @@
   "goal": "Complete Rust server/web, GPUI local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
   "current_increment": "Rust shared inbox and corporate records across clients, native ownership, and signed corporate backup integration",
-  "code_revision": "adb2bd03 plus scoped root integration changes",
+  "code_revision": "538573fe plus root bounded registry read capacity fix and actual diagnostics",
   "spec_revision": "sha256:13a0386803d4f4e35af6fdf8a020cd851d759c4369c9d172a4e0f29459510cd0",
-  "state": "Shared Inbox server/web/CLI/MCP and native screen integrated; actual Group35 UI/client initial+restart passed, actual Group36 J05 Inbox signed backup/source deletion/three independently verified archives/new-owner MFA restore/restart passed with exact originals/history and cleanup. Corporate server/web/CLI/MCP/native and signed four-table backup codec integrated; core/UI/client checks passed, actual browser final detail/list step remains unqualified (Group36 missing button; Group37 canonical list request timeout). Ownership server/web/SDK/CLI/MCP120 tools and native screen integrated; 10 filtered engine/storage/application tests (including one existing GDPR case),8UI tests,146native tests/1existingignored and native build passed. Actual two-user normal invitation/MFA fixture reaches review but helper timeout masks button actionability; improved diagnostic pending rerun. Mac unlocked; actual GPUI managed local owner creation/verification/MFA and canonical trial-balance read passed, invoice/paid-expense acceptance still running. Full Rust goal and epic672 remain open.",
+  "state": "Shared Inbox server/web/CLI/MCP and native screen integrated; actual Group35 UI/client initial+restart passed, actual Group36 J05 Inbox signed backup/source deletion/three independently verified archives/new-owner MFA restore/restart passed with exact originals/history and cleanup. Corporate server/web/CLI/MCP/native and signed four-table backup codec integrated; core/UI/client checks passed, actual Group38 complete UI/CLI/MCP initial+restart passed with exact source/history/originals, unchanged journals and exact owned cleanup; previous Groups36/37 failures retained. Ownership server/web/SDK/CLI/MCP120 tools and native screen integrated; 10 filtered engine/storage/application tests (including one existing GDPR case),8UI tests,146native tests/1existingignored and native build passed. Actual Group40 complete normal two-user invitation/verification/MFA ownership browser/CLI/MCP initial+fresh-MFA restart PASS, full immutable histories/hashes/as-of boundaries/original bytes/unchanged journals preserved. Group39 captured503busy from five registry reads versus4Productpermits; bounded capacity8 fixed the diagnosed normal-page failure.. Mac unlocked; actual GPUI managed local owner creation/verification/MFA and canonical trial-balance read passed, invoice/paid-expense acceptance remains unqualified because CUA pointer/scroll targeting fails even with a fresh direct app bundle; bounded workarounds stopped and owned processes closed. Full Rust goal and epic672 remain open. Actual Group38 J05 Corporate now PASS: all three browser/CLI/MCP archives independently verified after source/private-key deletion and each independently fresh-restored with normal new-owner MFA and restart; exact Corporate+Inbox BLOBs/fullhistory/scopes/Parties/Knowledge/ledger sources preserved and ownedcleanup complete. Legacy unscoped/reduced-role sensitivity only unit-covered.",
   "issues_closed": [],
   "next": [
-    "Finish actual Corporate and independently reviewed Ownership browser/client journeys; repair concrete diagnosed issues only.",
+    "Integrate whole intercompany reconciliation and its six shared client operations on authoritative V1 configuration; retain separate browser/client fixtures.",
     "Complete actual native invoices, paid expenses and originals on the unlocked Mac.",
     "Deliver source-authoritative V1 group foundation and intercompany reconciliation, then consolidation; do not infer group configuration from ownership snapshots.",
-    "Qualify signed Corporate backup restoration; remaining nonempty Ownership/Intercompany/Consolidation backup sections still refuse."
+    "Add signed Ownership codec; remaining nonempty Ownership/Intercompany/Consolidation backup sections still refuse."
   ],
   "preserve_unrelated_paths": [
     ".claude/settings.json",
@@ -810,12 +810,36 @@
         "/tmp/rm-platform37-corporate-diagnostic.log",
         "/tmp/rm-platform37-ownership-actual.log"
       ]
+    },
+    {
+      "increment": "Group38 Corporate",
+      "result": "Complete actual Corporate browser/CLI/MCP initial+restart PASS and exact owned cleanup; 4host+13storage signed backup codec tests PASS. Actual GPUI normal local creation/verification/MFA/read PASS; invoice/expense window actions NOT qualified due tool limitation.",
+      "evidence": [
+        "/tmp/rm-platform38-corporate-qualification.json",
+        "/tmp/rm-platform38-backup-codecs.log",
+        "/tmp/rentemester-rust-reports/native-gpui-unlocked-evidence.json"
+      ]
+    },
+    {
+      "increment": "Group40 Ownership",
+      "result": "PASS ordinary invitation/verification/two distinct MFA principals, browser proposal→independent review→exactapply, datedsuccession/fullhashhistory/sourceoriginals, CLI/MCP parity, refusals/unchangedjournals, fresh-MFA restart; Product8permittednormalfive-readregistry fixes captured503busy.",
+      "evidence": [
+        "/tmp/rm-platform40-ownership-actual.log",
+        "/tmp/rentemester-rust-reports/native-ownership-integrated40.json"
+      ]
+    },
+    {
+      "increment": "Group38 J05 Corporate",
+      "result": "PASS all3archives independentlyverified aftersource/privatekeydeletion andeachfreshrestore/newownerMFA/restart; exactCorporate3originals/fullhistory/scopes/sensitivity/2supersessions andInbox3BLOBs/Parties/Knowledge/2UUID/ledger/PDF/bank/keyboundary retained; cleanupcomplete. Legacy/reducedrole casesunitonly.",
+      "evidence": [
+        "/tmp/rentemester-rust-reports/native-portable-backup-corporate-integrated38.json"
+      ]
     }
   ],
   "active_work": [
     {
       "owner": "root",
-      "result": "Integrate complete Rust app userflows and resolve concrete Corporate/Ownership actual acceptance failures",
+      "result": "Integrate authoritative intercompany foundation and whole app userflows; preserve verified Corporate/Ownership restart flows",
       "depends_on": [
         "isolated commits",
         "ordinary authenticated synthetic fixtures"
@@ -824,7 +848,7 @@
     },
     {
       "owner": "rust_mileage",
-      "result": "Actual GPUI managed local invoices/paid expenses/originals after normal owner creation and MFA",
+      "result": "Actual GPUI normal local authentication/read passed; invoice/expense acceptance awaiting working pointer/scroll tooling",
       "depends_on": [
         "unlocked native window and functioning CUA controls"
       ],
@@ -832,11 +856,11 @@
     },
     {
       "owner": "rust_client_cli",
-      "result": "Actual signed Corporate backup qualification helper",
+      "result": "Signed Ownership business-section codec preserving canonical source and history",
       "depends_on": [
-        "integrated Corporate codec adb2bd03"
+        "integrated Ownership canonical control22/24 models"
       ],
-      "acceptance": "Independent archive verification after source/private-key removal, exact history/bytes/visibility after fresh restore and restart"
+      "acceptance": "Exact canonical hashes/full native history/as-of projection and original source refs after freshrestore, no importedauthority and atomic corrupt-section refusal"
     },
     {
       "owner": "rust_accruals",
@@ -856,10 +880,7 @@
     }
   ],
   "integrated_pending_browser": [
-    "Corporate detail/list/download and full CLI/MCP/restart qualification",
-    "Ownership independent review/apply through two ordinary MFA users and CLI/MCP/restart",
-    "New GPUI business screens beyond established local authentication/read proof",
-    "Corporate signed backup actual restore/restart"
+    "New GPUI business screens beyond established local authentication/read proof"
   ],
   "pending_deliveries": []
 }
