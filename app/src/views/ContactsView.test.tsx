@@ -19,6 +19,14 @@ function renderView() {
 }
 
 describe("ContactsView — Kontakter", () => {
+  test("keeps erased master fields masked and disables editing that identity", async () => {
+    const fixture = contacts();
+    mockFetch(route({ customers: [{ ...fixture.customers[0], name: "[redigeret — GDPR]", email: null, address: null, vatOrCvr: null, gdprErased: true }] }));
+    renderView();
+    expect(await screen.findByRole("button", { name: "Redigér [redigeret — GDPR]" })).toBeDisabled();
+    expect(screen.queryByText(fixture.customers[0].name)).not.toBeInTheDocument();
+  });
+
   test("lists customers and vendors", async () => {
     mockFetch(route());
     renderView();

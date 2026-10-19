@@ -4,6 +4,7 @@
 import type { FiscalYearEntry, StatementCompany } from "./common";
 
 export type ContactCustomerRow = {
+  gdprErased?: boolean;
   id: number;
   name: string;
   vatOrCvr: string | null;
@@ -32,6 +33,7 @@ export type ContactCustomerRow = {
 };
 
 export type ContactVendorRow = {
+  gdprErased?: boolean;
   id: number;
   name: string;
   vatOrCvr: string | null;

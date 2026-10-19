@@ -116,17 +116,11 @@ fn save(
         "vendor_create"
     };
     let resolved = normalize(tx, &mut input)?;
-    // Keep the existing erasure aliases intact until their native workflow is ported.
-    let erased: bool = tx
-        .query_row("SELECT EXISTS(SELECT 1 FROM gdpr_erasures)", [], |r| {
-            r.get(0)
-        })
-        .map_err(invalid)?;
-    if erased {
-        return Err(refused(
-            "vendor maintenance with prior GDPR erasures requires the identity-alias workflow",
-        ));
+    if let Some(id)=id {
+        let previous:(String,Option<String>)=tx.query_row("SELECT name,vat_or_cvr FROM vendors WHERE id=?1",[id],|r|Ok((r.get(0)?,r.get(1)?))).map_err(invalid)?;
+        crate::gdpr::require_contact_identity(tx,"vendors",Some(id),&previous.0,previous.1.as_deref())?;
     }
+    crate::gdpr::require_contact_identity(tx,"vendors",id,&input.name,input.vat_or_cvr.as_deref())?;
     let status = if resolved {
         "resolved"
     } else {
@@ -156,7 +150,7 @@ fn save(
     } else {
         tx.query_row("INSERT INTO vendors(name,address,vat_or_cvr,country_code,identifier_kind,identity_status,email,phone,website,default_expense_account,default_vat_treatment,notes) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12) RETURNING id",&values[..12],|r|r.get(0)).map_err(|_|refused("vendor already exists or could not be stored"))?
     };
-    tx.execute("INSERT INTO audit_log(event_type,entity_type,entity_id,message,actor) VALUES(?1,'vendor',?2,?3,?4)",params![event,id.to_string(),format!("Saved vendor {}",input.name),format!("user:{actor}")]).map_err(invalid)?;
+    tx.execute("INSERT INTO audit_log(event_type,entity_type,entity_id,message,actor) VALUES(?1,'vendor',?2,?3,?4)",params![event,crate::gdpr::contact_audit_reference("vendors",id),format!("{event} {}",crate::gdpr::contact_audit_reference("vendors",id)),format!("user:{actor}")]).map_err(invalid)?;
     Ok(json!({"id":id,"ok":true}))
 }
 
@@ -279,7 +273,7 @@ mod tests {
             1
         );
         assert_eq!(tx.query_row::<i64,_,_>("SELECT count(*) FROM audit_log WHERE event_type='vendor_update' AND entity_type='vendor'",[],|r|r.get(0)).unwrap(),1);
-        tx.execute_batch("INSERT INTO gdpr_erasures(subject_key,source,source_row_id,redacted_fields,rule_id,reason) VALUES('synthetic','vendors',999,'[]','synthetic','synthetic');").unwrap();
+        tx.execute_batch("INSERT INTO gdpr_erasures(subject_key,source,source_row_id,redacted_fields,rule_id,reason) VALUES('synthetic','vendors',1,'[\"name\"]','synthetic','synthetic');").unwrap();
         assert!(
             update(
                 &tx,

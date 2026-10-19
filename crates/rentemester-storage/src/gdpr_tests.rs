@@ -251,7 +251,7 @@ fn unknown_retention_is_not_erasable_and_customer_creation_cannot_resurface_pii(
         crate::sales::create_customer(&tx, &customer, "owner")
             .unwrap_err()
             .message
-            .contains("identity-alias")
+            .contains("erased contact identity")
     );
     assert_eq!(tx.total_changes(), before);
 }

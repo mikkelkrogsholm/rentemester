@@ -411,7 +411,7 @@ fn audit(
     Ok(())
 }
 fn coverage() -> Value {
-    json!({"complete":false,"notice":"Denne rapport dækker kunders og leverandørers navn, adresse, e-mail og CVR samt matchende bilags-, bank-, journal- og audittekst. Originalfiler, øvrige kontaktfelter, sikkerhedskopier og andre produktvisninger anonymiseres ikke. Journaltekst bevares af hensyn til integritet. Vedligeholdelse af identiteter efter anonymisering er fortsat begrænset på denne server."})
+    json!({"complete":false,"notice":"Denne rapport dækker kunders og leverandørers navn, adresse, e-mail og CVR samt matchende bilags-, bank-, journal- og audittekst. Originalfiler, øvrige kontaktfelter, sikkerhedskopier og andre produktvisninger anonymiseres ikke automatisk. De understøttede masterdatafelter skjules også i kontaktoversigten. Journaltekst bevares af hensyn til integritet. Anonymiserede eller uafklarede identiteter kan ikke genindføres; andre kontakter kan vedligeholdes."})
 }
 pub fn export(
     tx: &Transaction<'_>,
@@ -534,6 +534,182 @@ pub fn erase(tx: &Transaction<'_>, i: &Input, today: &str, actor: &str) -> Resul
         json!({"ok":true,"asOf":today,"subject":{"cvr":s.cvr,"name":s.name},"appliedRules":[ERASURE,retention::RULE],"erasedCount":erased.len(),"refusedCount":refused_rows.len(),"alreadyErasedCount":already,"erased":erased,"refused":refused_rows,"errors":[],"coverage":coverage()}),
     )
 }
+
+/// Stable source-row evidence is authoritative for a mutable master row, regardless of later aliases.
+pub fn contact_fields(
+    tx: &Transaction<'_>,
+    table: &str,
+    id: i64,
+) -> Result<BTreeSet<String>, Error> {
+    if !["customers", "vendors"].contains(&table) {
+        return Err(refused("invalid contact source"));
+    }
+    let mut fields = BTreeSet::new();
+    for row in rows(
+        tx,
+        "SELECT redacted_fields FROM gdpr_erasures WHERE source=?1 AND source_row_id=?2",
+        params![table, id],
+    )? {
+        let current: Vec<String> =
+            serde_json::from_str(row["redacted_fields"].as_str().unwrap())
+                .map_err(|_| refused("existing erasure evidence cannot be interpreted"))?;
+        fields.extend(current);
+    }
+    Ok(fields)
+}
+/// Exact existing aliases only. A different structured CVR may share a name; name-only identity
+/// enrichment cannot prove that a proposed contact is unrelated to an erased subject.
+pub fn require_contact_identity(
+    tx: &Transaction<'_>,
+    table: &str,
+    id: Option<i64>,
+    name: &str,
+    cvr: Option<&str>,
+) -> Result<(), Error> {
+    if !["customers", "vendors"].contains(&table) {
+        return Err(refused("invalid contact source"));
+    }
+    let any: bool = tx
+        .query_row("SELECT EXISTS(SELECT 1 FROM gdpr_erasures)", [], |r| {
+            r.get(0)
+        })
+        .map_err(invalid)?;
+    if !any {
+        return Ok(());
+    }
+    if let Some(id) = id {
+        if !contact_fields(tx, table, id)?.is_empty() {
+            return Err(refused(
+                "erased contact identity cannot be changed or reintroduced",
+            ));
+        }
+    }
+    let name = trimmed(Some(name));
+    let cvr = trimmed(cvr);
+    let mut keys = BTreeSet::new();
+    if let Some(c) = &cvr {
+        keys.insert(hash(&format!("cvr:{c}")));
+        keys.insert(c.clone());
+    }
+    for key in keys {
+        for row in rows(
+            tx,
+            "SELECT redacted_fields FROM gdpr_erasures WHERE subject_key=?1",
+            [key],
+        )? {
+            let fields: Vec<String> =
+                serde_json::from_str(row["redacted_fields"].as_str().unwrap())
+                    .map_err(|_| refused("existing erasure evidence cannot be interpreted"))?;
+            if !fields.is_empty() {
+                return Err(refused("erased contact identity cannot be reintroduced"));
+            }
+        }
+    }
+    if let Some(cvr) = &cvr {
+        // Legacy name-only erasures may predate CVR aliases. Structured row evidence still
+        // fences that same party, even when a proposed recreation uses a different name.
+        for party in rows(tx, PARTIES, [])?.iter().filter(|p| p["cvr"] == *cvr) {
+            let party_source = party["source"].as_str().unwrap();
+            let source = if party_source.starts_with("documents:") {
+                "documents"
+            } else {
+                party_source
+            };
+            let mut evidence_keys =
+                BTreeSet::from([hash(&format!("row:{party_source}:{}", party["row_id"]))]);
+            if let Some(n) = trimmed(party["name"].as_str()) {
+                evidence_keys.insert(hash(&format!("name:{n}")));
+                evidence_keys.insert(n);
+            }
+            for event in rows(
+                tx,
+                "SELECT subject_key,redacted_fields FROM gdpr_erasures WHERE source=?1 AND source_row_id=?2",
+                params![source, party["row_id"].as_i64()],
+            )? {
+                let fields: Vec<String> =
+                    serde_json::from_str(event["redacted_fields"].as_str().unwrap())
+                        .map_err(|_| refused("existing erasure evidence cannot be interpreted"))?;
+                if !fields.is_empty()
+                    && (source != "documents"
+                        || evidence_keys.contains(event["subject_key"].as_str().unwrap()))
+                {
+                    return Err(refused("erased contact identity cannot be reintroduced"));
+                }
+            }
+        }
+    }
+    if let Some(name) = name {
+        let all = rows(tx, PARTIES, [])?;
+        let mut evidence = vec![];
+        let mut had_name_erasure = false;
+        for key in [hash(&format!("name:{name}")), name.clone()] {
+            for row in rows(
+                tx,
+                "SELECT source,source_row_id,redacted_fields FROM gdpr_erasures WHERE subject_key=?1",
+                [key],
+            )? {
+                let fields: Vec<String> =
+                    serde_json::from_str(row["redacted_fields"].as_str().unwrap())
+                        .map_err(|_| refused("existing erasure evidence cannot be interpreted"))?;
+                if fields.is_empty() {
+                    continue;
+                }
+                had_name_erasure = true;
+                evidence.extend(all.iter().filter(|p| {
+                    p["name"] == name
+                        && p["row_id"] == row["source_row_id"]
+                        && (p["source"] == row["source"]
+                            || row["source"] == "documents"
+                                && p["source"].as_str().unwrap().starts_with("documents:"))
+                }));
+            }
+        }
+        if had_name_erasure
+            && (cvr.is_none()
+                || evidence.is_empty()
+                || evidence.iter().any(|p| {
+                    trimmed(p["cvr"].as_str())
+                        .as_ref()
+                        .is_none_or(|old| Some(old) == cvr.as_ref())
+                }))
+        {
+            return Err(refused(
+                "erased or ambiguous name-only identity requires human resolution",
+            ));
+        }
+    }
+    Ok(())
+}
+pub fn overlay_contact(
+    tx: &Transaction<'_>,
+    table: &str,
+    contact: &mut Value,
+) -> Result<(), Error> {
+    let fields = contact_fields(
+        tx,
+        table,
+        contact["id"]
+            .as_i64()
+            .ok_or_else(|| invalid("contact id"))?,
+    )?;
+    if fields.contains("name") {
+        contact["name"] = json!("[redigeret — GDPR]");
+    }
+    for field in ["address", "email", "vatOrCvr"] {
+        if fields.contains(field) {
+            contact[field] = Value::Null;
+        }
+    }
+    contact["gdprErased"] = json!(!fields.is_empty());
+    Ok(())
+}
+pub fn contact_audit_reference(table: &str, id: i64) -> String {
+    hash(&format!("row:{table}:{id}"))
+}
+
+#[cfg(test)]
+#[path = "gdpr_identity_tests.rs"]
+mod identity_tests;
 #[cfg(test)]
 #[path = "gdpr_tests.rs"]
 mod tests;

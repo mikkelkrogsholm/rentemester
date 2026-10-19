@@ -15,16 +15,6 @@ pub fn delete(
     if !confirm || id <= 0 {
         return Err(refused("contact id and explicit confirmation required"));
     }
-    let erased: bool = tx
-        .query_row("SELECT EXISTS(SELECT 1 FROM gdpr_erasures)", [], |r| {
-            r.get(0)
-        })
-        .map_err(invalid)?;
-    if erased {
-        return Err(refused(
-            "contact deletion with prior GDPR erasures requires the identity-alias workflow",
-        ));
-    }
     let (table, kind) = if vendor {
         ("vendors", "vendor")
     } else {
@@ -115,17 +105,31 @@ pub fn delete(
             }
         }
     }
-    // Foreign keys retain historical relationships; never detach or rewrite them.
+    // An erased source-row identity must not be recycled by SQLite after physical deletion.
+    // Retiring that row preserves its tombstone identity without changing protected material.
+    let erased = !crate::gdpr::contact_fields(tx, table, id)?.is_empty();
+    if erased && vendor {
+        let related:bool=tx.query_row("SELECT EXISTS(SELECT 1 FROM payables WHERE vendor_id=?1) OR EXISTS(SELECT 1 FROM document_vendor_identity_links WHERE vendor_id=?1)",[id],|r|r.get(0)).map_err(invalid)?;
+        if related {
+            return Err(refused(
+                "Kontakten har historiske relationer og kan ikke slettes.",
+            ));
+        }
+    }
     let changed = tx
         .execute(
-            &format!("DELETE FROM {table} WHERE id=?1 AND archived=0"),
+            &if erased {
+                format!("UPDATE {table} SET archived=1 WHERE id=?1 AND archived=0")
+            } else {
+                format!("DELETE FROM {table} WHERE id=?1 AND archived=0")
+            },
             [id],
         )
         .map_err(|_| refused("Kontakten har historiske relationer og kan ikke slettes."))?;
     if changed != 1 {
         return Err(refused("contact not found"));
     }
-    tx.execute("INSERT INTO audit_log(event_type,entity_type,entity_id,message,actor) VALUES(?1,?2,?3,?4,?5)",params![format!("{kind}_delete"),kind,id.to_string(),format!("Deleted {kind} {name}"),format!("user:{actor}")]).map_err(invalid)?;
+    tx.execute("INSERT INTO audit_log(event_type,entity_type,entity_id,message,actor) VALUES(?1,?2,?3,?4,?5)",params![format!("{kind}_delete"),kind,crate::gdpr::contact_audit_reference(table,id),format!("Deleted {kind} {}",crate::gdpr::contact_audit_reference(table,id)),format!("user:{actor}")]).map_err(invalid)?;
     Ok(json!({"id":id,"deleted":true}))
 }
 fn sum(tx: &Transaction<'_>, sql: &str, id: i64) -> Result<Money, Error> {
@@ -170,30 +174,35 @@ mod tests {
         );
     }
     #[test]
-    fn prior_erasure_blocks_raw_identity_from_being_added_to_delete_audit() {
+    fn erased_contact_is_retired_without_reusing_identity_or_logging_raw_name() {
         let mut control = rusqlite::Connection::open_in_memory().unwrap();
         let mut db = rusqlite::Connection::open_in_memory().unwrap();
         crate::fresh::initialize_empty_pair(&mut control, &mut db, "Synthetic Contacts").unwrap();
         let tx = db.transaction().unwrap();
-        tx.execute_batch("INSERT INTO customers(id,name) VALUES(1,'Synthetic protected identity'); INSERT INTO vendors(id,name) VALUES(1,'Synthetic protected supplier'); INSERT INTO gdpr_erasures(subject_key,source,source_row_id,redacted_fields,rule_id,reason) VALUES('synthetic','customers',1,'[]','synthetic','synthetic');").unwrap();
-        for vendor in [false, true] {
-            assert!(delete(&tx, 1, vendor, true, "synthetic").is_err());
-        }
+        tx.execute_batch("INSERT INTO customers(id,name) VALUES(1,'Synthetic protected identity');INSERT INTO gdpr_erasures(subject_key,source,source_row_id,redacted_fields,rule_id,reason)VALUES('synthetic','customers',1,'[\"name\"]','synthetic','synthetic');").unwrap();
+        delete(&tx, 1, false, true, "synthetic").unwrap();
         assert_eq!(
-            tx.query_row::<i64, _, _>("SELECT count(*) FROM audit_log", [], |r| r.get(0))
-                .unwrap(),
-            0
-        );
-        assert_eq!(
-            tx.query_row::<i64, _, _>("SELECT count(*) FROM customers", [], |r| r.get(0))
+            tx.query_row("SELECT archived FROM customers WHERE id=1", [], |r| r
+                .get::<_, i64>(0))
                 .unwrap(),
             1
         );
-        assert_eq!(
-            tx.query_row::<i64, _, _>("SELECT count(*) FROM vendors", [], |r| r.get(0))
-                .unwrap(),
-            1
-        );
+        tx.execute(
+            "INSERT INTO customers(name)VALUES('Synthetic unrelated')",
+            [],
+        )
+        .unwrap();
+        assert!(tx.last_insert_rowid() > 1);
+        let message: String = tx
+            .query_row(
+                "SELECT message FROM audit_log WHERE event_type='customer_delete'",
+                [],
+                |r| r.get(0),
+            )
+            .unwrap();
+        assert!(!message.contains("Synthetic protected identity"));
+        assert!(message.contains("sha256:"));
+        assert!(delete(&tx, 1, false, true, "synthetic").is_err());
     }
     #[test]
     fn open_invoice_snapshot_blocks_even_after_contact_rename() {

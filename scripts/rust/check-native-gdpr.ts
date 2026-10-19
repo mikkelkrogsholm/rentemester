@@ -4,9 +4,9 @@ import type { GdprSubjectExport } from "../../app/src/lib/types/gdpr";
 const saved = "/tmp/rentemester-rust-reports/native-gdpr.json";
 const free = { name: "Synthetic GDPR Free Subject", cvr: "SYN-GDPR-FREE" };
 const retained = { name: "Synthetic GDPR Retained Subject", cvr: "SYN-GDPR-RETAINED" };
-type Evidence = { freeRecords: GdprSubjectExport["records"]; originalPath: string; originalBytes: string; journal: unknown[]; year: string; retainedDeadline: string; customerId: number };
+type Evidence = { freeRecords: GdprSubjectExport["records"]; originalPath: string; originalBytes: string; journal: unknown[]; year: string; retainedDeadline: string; customerId: number; maintenanceId?: number };
 // Run after supplier/customer maintenance and before dashboard/accountant baseline snapshots.
-// Existing post-erasure identity-maintenance guards remain intentionally active.
+// Scoped erased-identity fences remain active; unrelated maintenance is supported.
 export async function checkNativeGdpr(page: Page, base: string, restarted = false) {
   const url = `${base}/api/companies/synthetic`, headers = { origin: base, "content-type": "application/json" };
   async function get(path: string) { const r = await page.request.get(`${url}/${path}`); if (!r.ok()) throw new Error(`GDPR dependency ${path} unavailable`); return r.json(); }
@@ -85,11 +85,31 @@ export async function checkNativeGdpr(page: Page, base: string, restarted = fals
   if (JSON.stringify(actual) !== JSON.stringify(evidence.journal)) throw new Error("GDPR changed journal entries or amounts");
   const guarded = await page.request.patch(`${url}/customers/${evidence.customerId}`, { headers, data: { name: "Synthetic identity bypass" } });
   if (guarded.status() !== 422) throw new Error("Prior erasure identity guard was bypassed");
+  if (!restarted) {
+    const contacts = (await get("contacts")).contacts;
+    const erased = contacts.customers.find((c: { id: number }) => c.id === evidence.customerId);
+    if (!erased || erased.name !== "[redigeret — GDPR]" || erased.email !== null || erased.vatOrCvr !== null) throw new Error("Erased master fields resurfaced in native contacts");
+    const retired = await page.request.delete(`${url}/customers/${evidence.customerId}`, { headers, data: { confirm: true } });
+    if (!retired.ok()) throw new Error("Eligible erased contact could not be retired safely");
+    const created = await page.request.post(`${url}/customers`, { headers, data: { name: "Synthetic post-erasure unrelated", vatOrCvr: "SYN-GDPR-UNRELATED", email: "unrelated@example.invalid" } });
+    if (!created.ok()) throw new Error("Unrelated post-erasure contact remained globally blocked");
+    evidence.maintenanceId = (await created.json()).customer.id;
+    if (evidence.maintenanceId! <= evidence.customerId) throw new Error("Erased contact row identity was recycled");
+    const updated = await page.request.patch(`${url}/customers/${evidence.maintenanceId}`, { headers, data: { address: "Synthetic post-erasure updated address" } });
+    if (!updated.ok()) throw new Error("Unrelated post-erasure update failed");
+    const reintroduced = await page.request.post(`${url}/customers`, { headers, data: { name: "Synthetic attempted identity reintroduction", vatOrCvr: free.cvr } });
+    if (reintroduced.status() !== 422) throw new Error("Erased stable identity was reintroduced");
+    writeFileSync(saved, JSON.stringify(evidence));
+  }
+  const stillFenced = await page.request.post(`${url}/customers`, { headers, data: { name: "Synthetic alternate erased label", vatOrCvr: free.cvr } });
+  if (stillFenced.status() !== 422) throw new Error("Persistent stable erasure alias stopped fencing identity recreation");
+  const maintained = (await get("contacts")).contacts.customers;
+  if (maintained.some((c: { id: number }) => c.id === evidence.customerId) || !maintained.some((c: { id: number; address: string }) => c.id === evidence.maintenanceId && c.address === "Synthetic post-erasure updated address")) throw new Error("Post-erasure maintenance or retired identity changed after restart");
   await lookupUi(free);
   await page.getByText("[redigeret — GDPR]", { exact: true }).first().waitFor();
   await page.getByText(/Originalfiler, øvrige kontaktfelter/).waitFor();
   await page.screenshot({ path: "/tmp/rentemester-rust-gdpr.png", fullPage: true });
   await page.goto(`${base}/companies/synthetic/retention`);
   await page.getByRole("heading", { name: "Opbevaring", exact: true }).waitFor();
-  console.log(restarted ? "PASS: GDPR overlays persist after restart, retained originals and journal unchanged; identity guard remains active" : "PASS: real retention/GDPR UI → subject export/review → confirmed overlay; retained subject refused, scope/date/confirmation fenced and partial coverage disclosed");
+  console.log(restarted ? "PASS: GDPR overlays persist after restart, retained originals and journal unchanged; scoped identity fences and unrelated maintenance persist" : "PASS: real retention/GDPR UI → subject export/review → confirmed overlay; retained subject refused, scope/date/confirmation fenced and partial coverage disclosed");
 }

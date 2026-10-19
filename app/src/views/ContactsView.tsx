@@ -368,6 +368,8 @@ function CustomerTable({
                   <Button requiredPermission="company.master-data" variant="secondary"
                     type="button"
                     className="btn secondary"
+                    disabled={row.gdprErased}
+                    title={row.gdprErased ? "Anonymiserede identiteter kan ikke redigeres." : undefined}
                     onClick={() => onEdit(row)}
                     aria-label={`Redigér ${row.name}`}
                   >
@@ -437,6 +439,8 @@ function VendorTable({
                   <Button requiredPermission="company.master-data" variant="secondary"
                     type="button"
                     className="btn secondary"
+                    disabled={row.gdprErased}
+                    title={row.gdprErased ? "Anonymiserede identiteter kan ikke redigeres." : undefined}
                     onClick={() => onEdit(row)}
                     aria-label={`Redigér ${row.name}`}
                   >

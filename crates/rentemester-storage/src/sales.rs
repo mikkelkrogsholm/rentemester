@@ -32,14 +32,9 @@ pub fn create_customer(
     actor: &str,
 ) -> Result<Value, Error> {
     crate::journal_post::require_current(tx)?;
-    // Identity writers must not reintroduce erased data into raw master/audit views.
-    // Preserve the same conservative guard as edits until native alias binding is supported.
-    let erasures: bool = tx.query_row("SELECT EXISTS(SELECT 1 FROM gdpr_erasures)", [], |r| r.get(0)).map_err(invalid)?;
-    if erasures {
-        return Err(refused("customer creation with prior GDPR erasures requires the identity-alias workflow"));
-    }
     validate_customer(input)?;
     let name = input.name.trim();
+    crate::gdpr::require_contact_identity(tx,"customers",None,name,input.vat_or_cvr.as_deref())?;
     let id:i64=tx.query_row("INSERT INTO customers(name,address,vat_or_cvr,email,phone,website,payment_terms_days,default_currency,notes) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9) RETURNING id",params![name,input.address,input.vat_or_cvr,input.email,input.phone,input.website,input.payment_terms_days,input.default_currency.as_deref().unwrap_or("DKK"),input.notes],|r|r.get(0)).map_err(|_|refused("customer already exists or could not be stored"))?;
     audit(
         tx,
@@ -97,18 +92,7 @@ pub fn update_customer(
         return Err(refused("invalid customer patch"));
     }
     let mut value: Value = tx.query_row("SELECT name,address,vat_or_cvr,email,phone,website,ean_number,payment_terms_days,default_currency,notes FROM customers WHERE id=?1 AND archived=0", [id], |r| Ok(json!({"name":r.get::<_,String>(0)?,"address":r.get::<_,Option<String>>(1)?,"vatOrCvr":r.get::<_,Option<String>>(2)?,"email":r.get::<_,Option<String>>(3)?,"phone":r.get::<_,Option<String>>(4)?,"website":r.get::<_,Option<String>>(5)?,"eanNumber":r.get::<_,Option<String>>(6)?,"paymentTermsDays":r.get::<_,Option<i64>>(7)?,"defaultCurrency":r.get::<_,String>(8)?,"notes":r.get::<_,Option<String>>(9)?}))).optional().map_err(invalid)?.ok_or_else(||refused("customer not found"))?;
-    // The native erasure/identity-alias workflow is still pending. Preserve its
-    // evidence instead of allowing an edit to bypass a prior erasure's scope.
-    let erasures: bool = tx
-        .query_row("SELECT EXISTS(SELECT 1 FROM gdpr_erasures)", [], |r| {
-            r.get(0)
-        })
-        .map_err(invalid)?;
-    if erasures {
-        return Err(refused(
-            "customer editing with prior GDPR erasures requires the identity-alias workflow",
-        ));
-    }
+    crate::gdpr::require_contact_identity(tx,"customers",Some(id),value["name"].as_str().unwrap(),value["vatOrCvr"].as_str())?;
     for (key, item) in fields {
         value
             .as_object_mut()
@@ -119,6 +103,7 @@ pub fn update_customer(
         serde_json::from_value(value).map_err(|_| refused("invalid customer field"))?;
     validate_customer(&input)?;
     let name = input.name.trim();
+    crate::gdpr::require_contact_identity(tx,"customers",Some(id),name,input.vat_or_cvr.as_deref())?;
     tx.execute("UPDATE customers SET name=?1,address=?2,vat_or_cvr=?3,email=?4,phone=?5,website=?6,ean_number=?7,payment_terms_days=?8,default_currency=?9,notes=?10 WHERE id=?11 AND archived=0", params![name,input.address,input.vat_or_cvr,input.email,input.phone,input.website,input.ean_number,input.payment_terms_days,input.default_currency,input.notes,id]).map_err(|_|refused("customer already exists or could not be stored"))?;
     audit(
         tx,
@@ -142,7 +127,9 @@ fn audit(
     } else {
         "document"
     };
-    tx.execute("INSERT INTO audit_log(event_type,entity_type,entity_id,message,actor) VALUES(?1,?2,?3,?4,?5)",params![event,entity,id.to_string(),message,format!("user:{actor}")]).map_err(invalid)?;
+    let reference=if entity=="customer" { crate::gdpr::contact_audit_reference("customers",id) }else{id.to_string()};
+    let message=if entity=="customer"{format!("{event} {reference}")}else{message.to_owned()};
+    tx.execute("INSERT INTO audit_log(event_type,entity_type,entity_id,message,actor) VALUES(?1,?2,?3,?4,?5)",params![event,entity,reference,message,format!("user:{actor}")]).map_err(invalid)?;
     Ok(())
 }
 pub(crate) fn context(
@@ -205,6 +192,9 @@ pub fn contacts(tx: &Transaction<'_>, slug: &str, today: &str) -> Result<Value, 
     }
     let mut q=tx.prepare("SELECT id,name,address,vat_or_cvr,country_code,identifier_kind,identity_status,email,phone,website,default_expense_account,default_vat_treatment,notes FROM vendors WHERE archived=0 ORDER BY name,id").map_err(invalid)?;
     let vendors=q.query_map([],|r|Ok(json!({"id":r.get::<_,i64>(0)?,"name":r.get::<_,String>(1)?,"address":r.get::<_,Option<String>>(2)?,"vatOrCvr":r.get::<_,Option<String>>(3)?,"countryCode":r.get::<_,Option<String>>(4)?,"identifierKind":r.get::<_,Option<String>>(5)?,"identityStatus":r.get::<_,String>(6)?,"email":r.get::<_,Option<String>>(7)?,"phone":r.get::<_,Option<String>>(8)?,"website":r.get::<_,Option<String>>(9)?,"defaultExpenseAccount":r.get::<_,Option<String>>(10)?,"defaultVatTreatment":r.get::<_,Option<String>>(11)?,"notes":r.get::<_,Option<String>>(12)?}))).map_err(invalid)?.collect::<Result<Vec<_>,_>>().map_err(invalid)?;
+    for customer in &mut customers { crate::gdpr::overlay_contact(tx,"customers",customer)?; }
+    let mut vendors=vendors;
+    for vendor in &mut vendors { crate::gdpr::overlay_contact(tx,"vendors",vendor)?; }
     base["customers"] = json!(customers);
     base["vendors"] = json!(vendors);
     Ok(base)
@@ -254,6 +244,7 @@ pub fn prepare(
             return Err(refused("invalid customer id"));
         }
         let customer:Value=tx.query_row("SELECT name,address,vat_or_cvr,payment_terms_days FROM customers WHERE id=?1 AND archived=0",[id],|r|Ok(json!({"name":r.get::<_,String>(0)?,"address":r.get::<_,Option<String>>(1)?,"vatOrCvr":r.get::<_,Option<String>>(2)?,"terms":r.get::<_,Option<i64>>(3)?}))).optional().map_err(invalid)?.ok_or_else(||refused("active customer required"))?;
+        crate::gdpr::require_contact_identity(tx,"customers",Some(id),customer["name"].as_str().unwrap(),customer["vatOrCvr"].as_str())?;
         if let Some(days) = customer["terms"].as_i64() {
             terms = days;
         }
