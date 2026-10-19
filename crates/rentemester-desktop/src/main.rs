@@ -9,6 +9,7 @@ use gpui_kit::{
     },
     *,
 };
+mod login;
 use rentemester_client::{ApiClient, Report};
 use serde_json::Value;
 use std::{path::PathBuf, sync::Arc};
@@ -32,7 +33,7 @@ impl Options {
             "--cookie-file"=>result.cookie=args.next().ok_or("--cookie-file requires a path")?.into(),
             "--company"=>result.company=Some(args.next().ok_or("--company requires a slug")?),
             "--year"=>result.year=args.next().ok_or("--year requires a fiscal label")?,
-            "--help"=>return Err("Usage: rentemester-desktop [--server HTTPS_ORIGIN --cookie-file PATH] [--company SLUG] [--year LABEL] [--allow-loopback-http]\nThe native window can also connect using its fields. Complete MFA in the server browser UI; supply its Cookie request header in an owner-only file. Managed local runtime is not implemented: the native server currently requires its qualified Linux runtime. This desktop connects only to explicit remote server origins.".into()),
+            "--help"=>return Err("Usage: rentemester-desktop [--server HTTPS_ORIGIN --cookie-file PATH] [--company SLUG] [--year LABEL] [--allow-loopback-http]\nThe native window can also connect using its fields. Log in with e-mail/password and TOTP or backup code in the native window. Existing MFA cookie files remain supported. Managed local runtime is not implemented: the native server currently requires its qualified Linux runtime. This desktop connects only to explicit remote server origins.".into()),
             _=>return Err(format!("Unknown option {flag}; use --help")),
         }
         }
@@ -128,15 +129,28 @@ fn trial(value: Value) -> Result<Trial, String> {
 }
 fn readable(error: rentemester_client::Error) -> String {
     match error {
-        rentemester_client::Error::Refused{status:401}=>"Sessionen er udløbet eller kræver login/MFA. Log ind på serveren og opdatér cookie-filen.".into(),
-        rentemester_client::Error::Refused{status:403}=>"Serveren afviste adgang. Kontrollér din aktuelle virksomhedsrolle.".into(),
-        rentemester_client::Error::Transport=>"Serveren kunne ikke nås. Kontrollér adresse, netværk og TLS-certifikat.".into(),
-        error=>error.to_string(),
+        rentemester_client::Error::Refused { status: 401 } => {
+            "Sessionen er udløbet eller kræver login/MFA. Log ind igen.".into()
+        }
+        rentemester_client::Error::Refused { status: 403 } => {
+            "Serveren afviste adgang. Kontrollér din aktuelle virksomhedsrolle.".into()
+        }
+        rentemester_client::Error::Transport => {
+            "Serveren kunne ikke nås. Kontrollér adresse, netværk og TLS-certifikat.".into()
+        }
+        error => error.to_string(),
     }
 }
 struct Desktop {
     server: Entity<InputState>,
     cookie: Entity<InputState>,
+    email: Entity<InputState>,
+    password: Entity<InputState>,
+    code: Entity<InputState>,
+    cookie_mode: bool,
+    backup_code: bool,
+    pending: Option<login::Pending>,
+    enrollment: Option<String>,
     year: Entity<InputState>,
     allow_http: bool,
     session: Option<Arc<Session>>,
@@ -163,7 +177,37 @@ impl Desktop {
             input.set_value(options.year, window, cx);
             input
         });
-        let mut desktop=Self{server,cookie,year,allow_http:options.allow_http,session:None,companies:vec![],selected:options.company,trial:None,status:"Forbind til din Rentemester-server. Log ind med MFA i browseren og vælg en cookie-fil med din session.".into(),busy:false};
+        let email = cx.new(|cx| InputState::new(window, cx).placeholder("E-mail"));
+        let password = cx.new(|cx| {
+            InputState::new(window, cx)
+                .placeholder("Adgangskode")
+                .masked(true)
+        });
+        let code = cx.new(|cx| {
+            InputState::new(window, cx)
+                .placeholder("MFA-kode")
+                .masked(true)
+        });
+        let mut desktop = Self {
+            server,
+            cookie,
+            year,
+            email,
+            password,
+            code,
+            cookie_mode: !options.cookie.as_os_str().is_empty(),
+            backup_code: false,
+            pending: None,
+            enrollment: None,
+            allow_http: options.allow_http,
+            session: None,
+            companies: vec![],
+            selected: options.company,
+            trial: None,
+            status: "Forbind til din Rentemester-server og log ind med e-mail, adgangskode og MFA."
+                .into(),
+            busy: false,
+        };
         if !options.server.is_empty() && !options.cookie.as_os_str().is_empty() {
             desktop.connect(cx);
         }
@@ -174,6 +218,8 @@ impl Desktop {
             return;
         }
         self.busy = true;
+        self.pending = None;
+        self.enrollment = None;
         self.session = None;
         self.companies.clear();
         self.trial = None;
@@ -224,6 +270,114 @@ impl Desktop {
             });
         })
         .detach();
+        cx.notify();
+    }
+    fn password_login(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        if self.busy {
+            return;
+        }
+        self.session = None;
+        self.pending = None;
+        self.enrollment = None;
+        self.companies.clear();
+        self.trial = None;
+        self.busy = true;
+        self.status = "Kontrollerer login…".into();
+        let origin = self.server.read(cx).value().to_string();
+        let allow_http = self.allow_http;
+        let email = self.email.read(cx).value().to_string();
+        let password = self.password.read(cx).value().to_string();
+        self.password
+            .update(cx, |input, cx| input.set_value("", window, cx));
+        self.code
+            .update(cx, |input, cx| input.set_value("", window, cx));
+        let task = cx
+            .background_executor()
+            .spawn(async move { login::begin(origin, allow_http, email, password) });
+        cx.spawn(async move|view,cx|{let result=task.await;let _=view.update(cx,|this,cx|{this.busy=false;match result{Ok(login::Step::Factor(pending))=>{this.pending=Some(pending);this.status="Adgangskoden er godkendt. Indtast en TOTP-kode eller en ubrugt backupkode.".into();},Ok(login::Step::Enrollment(origin))=>{this.enrollment=Some(origin);this.status="MFA skal først opsættes på serveren. Åbn serveren i browseren, gennemfør opsætningen, og log ind igen her.".into();},Err(error)=>this.status=error}cx.notify();});}).detach();
+        cx.notify();
+    }
+    fn factor_login(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        if self.busy {
+            return;
+        }
+        let Some(pending) = self.pending.take() else {
+            return;
+        };
+        self.busy = true;
+        self.status = "Kontrollerer MFA…".into();
+        let backup = self.backup_code;
+        let code = self.code.read(cx).value().to_string();
+        self.code
+            .update(cx, |input, cx| input.set_value("", window, cx));
+        let task = cx
+            .background_executor()
+            .spawn(async move { login::complete(pending, backup, code) });
+        cx.spawn(async move |view, cx| {
+            let result = task.await;
+            let _ = view.update(cx, |this, cx| {
+                this.busy = false;
+                match result {
+                    Ok(session) => this.refresh(Arc::new(session), cx),
+                    Err(failure) => {
+                        this.pending = failure.retry;
+                        this.status = failure.message;
+                    }
+                }
+                cx.notify();
+            });
+        })
+        .detach();
+        cx.notify();
+    }
+    fn refresh(&mut self, session: Arc<Session>, cx: &mut Context<Self>) {
+        self.session = Some(session.clone());
+        self.busy = true;
+        self.status = "Login godkendt. Henter virksomheder…".into();
+        let task = cx.background_executor().spawn(async move {
+            companies(
+                session
+                    .runtime
+                    .block_on(session.client.companies())
+                    .map_err(readable)?,
+            )
+        });
+        cx.spawn(async move |view, cx| {
+            let result = task.await;
+            let _ = view.update(cx, |this, cx| {
+                this.busy = false;
+                match result {
+                    Ok(list) => {
+                        this.companies = list;
+                        this.status =
+                            "Forbundet. Vælg en virksomhed for at læse saldobalancen.".into();
+                        if let Some(slug) = this.selected.clone() {
+                            if this.companies.iter().any(|c| c.slug == slug) {
+                                this.load(slug, cx);
+                            }
+                        }
+                    }
+                    Err(error) => this.status = error,
+                }
+                cx.notify();
+            });
+        })
+        .detach();
+    }
+    fn reset_login(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        if self.busy {
+            return;
+        }
+        self.pending = None;
+        self.enrollment = None;
+        self.session = None;
+        self.companies.clear();
+        self.trial = None;
+        self.password
+            .update(cx, |input, cx| input.set_value("", window, cx));
+        self.code
+            .update(cx, |input, cx| input.set_value("", window, cx));
+        self.status = "Vælg server og log ind.".into();
         cx.notify();
     }
     fn load(&mut self, slug: String, cx: &mut Context<Self>) {
@@ -280,28 +434,124 @@ impl Render for Desktop {
             .bg(cx.theme().background)
             .text_color(cx.theme().foreground)
             .child(div().text_2xl().child("Rentemester"))
-            .child(div().child("Skrivebord · ekstern server"))
-            .child(div().child("Serveradresse (HTTPS)"))
-            .child(Input::new(&self.server).disabled(self.busy))
-            .child(div().child("Cookie-fil fra browserens MFA-session"))
-            .child(Input::new(&self.cookie).disabled(self.busy))
-            .child(
-                Checkbox::new("loopback-http")
-                    .label("Tillad HTTP til lokal testserver (kun loopback)")
-                    .checked(self.allow_http)
-                    .disabled(self.busy)
-                    .on_change(cx.listener(|this, value, _, cx| {
-                        this.allow_http = *value;
-                        cx.notify();
-                    })),
-            )
-            .child(
-                Button::new("connect")
-                    .primary()
-                    .label("Forbind / genindlæs virksomheder")
-                    .disabled(self.busy)
-                    .on_click(cx.listener(|this, _, _, cx| this.connect(cx))),
-            )
+            .child(div().child("Skrivebord · ekstern server"));
+        if self.session.is_none() {
+            let frozen = self.busy || self.pending.is_some();
+            content = content
+                .child("Serveradresse (HTTPS)")
+                .child(Input::new(&self.server).disabled(frozen))
+                .child(
+                    Checkbox::new("loopback-http")
+                        .label("Tillad HTTP til lokal testserver (kun loopback)")
+                        .checked(self.allow_http)
+                        .disabled(frozen)
+                        .on_change(cx.listener(|this, value, _, cx| {
+                            this.allow_http = *value;
+                            cx.notify();
+                        })),
+                )
+                .child(
+                    Checkbox::new("cookie-mode")
+                        .label("Brug eksisterende cookie-fil (avanceret)")
+                        .checked(self.cookie_mode)
+                        .disabled(frozen)
+                        .on_change(cx.listener(|this, value, window, cx| {
+                            this.cookie_mode = *value;
+                            this.enrollment = None;
+                            this.password
+                                .update(cx, |input, cx| input.set_value("", window, cx));
+                            this.code
+                                .update(cx, |input, cx| input.set_value("", window, cx));
+                            cx.notify();
+                        })),
+                );
+            if self.cookie_mode {
+                content = content
+                    .child("Cookie-fil fra browserens MFA-session")
+                    .child(Input::new(&self.cookie).disabled(self.busy))
+                    .child(
+                        Button::new("connect")
+                            .primary()
+                            .label("Forbind med cookie-fil")
+                            .disabled(self.busy)
+                            .on_click(cx.listener(|this, _, _, cx| this.connect(cx))),
+                    );
+            } else if let Some(pending) = &self.pending {
+                content = content
+                    .child(format!("MFA til {}", pending.origin))
+                    .child("MFA-kode")
+                    .child(Input::new(&self.code).disabled(self.busy))
+                    .child(
+                        Checkbox::new("backup-code")
+                            .label("Brug backupkode")
+                            .checked(self.backup_code)
+                            .disabled(self.busy)
+                            .on_change(cx.listener(|this, value, _, cx| {
+                                this.backup_code = *value;
+                                cx.notify();
+                            })),
+                    )
+                    .child(
+                        Button::new("mfa-login")
+                            .primary()
+                            .label("Bekræft MFA")
+                            .disabled(self.busy)
+                            .on_click(
+                                cx.listener(|this, _, window, cx| this.factor_login(window, cx)),
+                            ),
+                    )
+                    .child(
+                        Button::new("cancel-login")
+                            .label("Start login forfra")
+                            .disabled(self.busy)
+                            .on_click(
+                                cx.listener(|this, _, window, cx| this.reset_login(window, cx)),
+                            ),
+                    );
+            } else {
+                content = content
+                    .child("E-mail")
+                    .child(Input::new(&self.email).disabled(self.busy))
+                    .child("Adgangskode")
+                    .child(Input::new(&self.password).disabled(self.busy))
+                    .child(
+                        Button::new("password-login")
+                            .primary()
+                            .label("Log ind")
+                            .disabled(self.busy)
+                            .on_click(
+                                cx.listener(|this, _, window, cx| this.password_login(window, cx)),
+                            ),
+                    );
+                if let Some(origin) = self.enrollment.clone() {
+                    content = content.child(
+                        Button::new("enroll-browser")
+                            .label("Åbn serverens MFA-opsætning i browser")
+                            .on_click(move |_, _, cx| cx.open_url(&format!("{origin}/"))),
+                    );
+                }
+            }
+        } else {
+            content = content
+                .child(format!("Server: {}", self.server.read(cx).value()))
+                .child(
+                    Button::new("change-connection")
+                        .label("Skift forbindelse")
+                        .disabled(self.busy)
+                        .on_click(cx.listener(|this, _, window, cx| this.reset_login(window, cx))),
+                );
+            if let Some(session) = self.session.clone() {
+                content = content.child(
+                    Button::new("refresh-companies")
+                        .label("Genindlæs virksomheder")
+                        .disabled(self.busy)
+                        .on_click(
+                            cx.listener(move |this, _, _, cx| this.refresh(session.clone(), cx)),
+                        ),
+                );
+            }
+        }
+        content = content
             .child(div().child(self.status.clone()))
             .child(div().child("Regnskabsår (tomt = aktuelt)"))
             .child(Input::new(&self.year).disabled(self.busy));
