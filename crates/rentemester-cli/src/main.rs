@@ -10,6 +10,7 @@ mod privacy;
 mod budget;
 mod mileage;
 mod company_knowledge;
+mod parties;
 mod accruals;
 mod assets;
 mod recurring_invoices;

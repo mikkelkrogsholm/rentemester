@@ -1,5 +1,6 @@
 //! Pure accounting values and read projections. No filesystem, SQL or transport.
 pub mod company_knowledge;
+pub mod parties;
 pub mod calendar;
 pub mod currency;
 mod decimal;

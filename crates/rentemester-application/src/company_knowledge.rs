@@ -76,6 +76,34 @@ pub fn execute(
         {
             return Err(error("access_denied"));
         }
+        let source = match &action {
+            Action::Propose(i) => Some((i.source.kind.clone(), i.source.r#ref.clone())),
+            Action::Supersede(i) => Some((
+                i.replacement.source.kind.clone(),
+                i.replacement.source.r#ref.clone(),
+            )),
+            Action::Review(i) if i.decision == "approved" => {
+                let old = storage::inspect(&tx, slug, &i.assertion_id)?;
+                Some((
+                    old["source"]["kind"]
+                        .as_str()
+                        .ok_or_else(|| error("invalid_control"))?
+                        .into(),
+                    old["source"]["ref"]
+                        .as_str()
+                        .ok_or_else(|| error("invalid_control"))?
+                        .into(),
+                ))
+            }
+            _ => None,
+        };
+        if let Some((_, reference)) = source.filter(|s| s.0 == "party") {
+            let (visible, _) = crate::parties::company_sets(&tx, &current.subject, catalog)?;
+            let id = rentemester_engine::company_knowledge::trim(&reference);
+            if !rentemester_storage::parties::visible(&tx, id, &visible)? {
+                return Err(error("knowledge_source_unavailable"));
+            }
+        }
         let id = if matches!(action, Action::Propose(_) | Action::Supersede(_)) {
             format!(
                 "knowledge-{}",

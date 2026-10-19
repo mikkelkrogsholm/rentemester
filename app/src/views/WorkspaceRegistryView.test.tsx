@@ -62,17 +62,19 @@ describe("WorkspaceRegistryView", () => {
       "GET /api/companies/synthetic-company/knowledge": { context:{assertions:[],conflicts:[]} },
       "GET /api/companies/synthetic-company/ownership": { asOf:"2026-08-30",facts:[],partial:false,consolidation:{eligible:false,reason:"not supported"} },
       "GET /api/companies/synthetic-company/ownership/history": { history:[] },
-      "POST /api/companies/synthetic-company/workspace-parties": {},
+      "POST /api/companies/synthetic-company/workspace-parties": {party:{...parties.rows[0]}},
     });
     renderAt(<WorkspaceRegistryView />, { route: "/virksomheder/synthetic-company/workspace-register", path: "/virksomheder/:slug/workspace-register" });
     await screen.findByText("Visible supplier");
-    await userEvent.click(screen.getByText("Administrér parter"));
-    const create=screen.getByRole("button",{name:"Opret part"});
+    await userEvent.type(screen.getByLabelText("Party name"),"Synthetic created");
+    await userEvent.type(screen.getByLabelText("Party source"),"Synthetic source");
+    await userEvent.type(screen.getByLabelText("Party review assertion"),"Synthetic reviewed source");
+    const create=screen.getByRole("button",{name:"Registrér partændring"});
     expect(create).toBeDisabled();
-    await userEvent.click(screen.getAllByRole("checkbox")[0]!);
+    await userEvent.click(screen.getByLabelText("Party confirm"));
     expect(create).not.toBeDisabled();
     await userEvent.click(create);
-    expect(await screen.findByText("Handlingen er registreret i revisionssporet.")).toBeInTheDocument();
+    expect(await screen.findByText("Registreret. Se kilder, assertions og historik i serverens aktuelle læsning.")).toBeInTheDocument();
   });
 
   test("keeps the control visible but reports a server-side role denial", async () => {
@@ -86,9 +88,11 @@ describe("WorkspaceRegistryView", () => {
     });
     renderAt(<WorkspaceRegistryView />, { route: "/virksomheder/synthetic-company/workspace-register", path: "/virksomheder/:slug/workspace-register" });
     await screen.findByText("Visible supplier");
-    await userEvent.click(screen.getByText("Administrér parter"));
-    await userEvent.click(screen.getAllByRole("checkbox")[0]!);
-    await userEvent.click(screen.getByRole("button",{name:"Opret part"}));
+    await userEvent.type(screen.getByLabelText("Party name"),"Synthetic created");
+    await userEvent.type(screen.getByLabelText("Party source"),"Synthetic source");
+    await userEvent.type(screen.getByLabelText("Party review assertion"),"Synthetic reviewed source");
+    await userEvent.click(screen.getByLabelText("Party confirm"));
+    await userEvent.click(screen.getByRole("button",{name:"Registrér partændring"}));
     expect(await screen.findByRole("alert")).toHaveTextContent("Din rolle har ikke adgang");
   });
 });
