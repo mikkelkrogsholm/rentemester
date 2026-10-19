@@ -278,3 +278,5 @@ mod payable_correction;
 mod intercompany_dispositions;
 
 mod contact_import;
+
+mod cfo_analytics;

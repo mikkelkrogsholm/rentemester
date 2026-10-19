@@ -1307,3 +1307,5 @@ mod document_party_links;
 mod direct_bank_payable_correction;
 
 mod contact_import;
+
+mod cfo_analytics;

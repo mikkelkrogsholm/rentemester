@@ -394,3 +394,6 @@ pub use intercompany_dispositions::{DispositionAction,MAX_DISPOSITION_BODY,dispo
 
 mod contact_import;
 pub use contact_import::{MAX_CONTACT_IMPORT_BODY,contact_import_body_schema};
+
+mod cfo_analytics;
+pub use cfo_analytics::{CfoAnalyticsQuery,cfo_analytics_schema};

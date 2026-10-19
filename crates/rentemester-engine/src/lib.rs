@@ -70,3 +70,5 @@ pub mod scheduled_recurring;
 pub mod bookkeeping_batch;
 
 pub mod contact_import;
+
+pub mod cfo_analytics;

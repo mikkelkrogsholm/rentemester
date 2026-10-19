@@ -1,4 +1,5 @@
 //! Thin browser adapter over the same owner used for authentication.
+mod cfo_analytics;
 mod saft;
 mod company_knowledge;
 mod workspace_inbox;
@@ -75,6 +76,7 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
         workers: Arc::new(Semaphore::new(8)),
     };
     Router::new()
+        .route("/api/cfo-analytics",get(cfo_analytics::handle))
         .route("/api/companies/{slug}/payables/direct-bank-correction/plan", post(payable_correction::handle))
         .route("/api/companies/{slug}/payables/direct-bank-correction/apply", post(payable_correction::handle))
         .route("/api/group-eliminations", get(eliminations::overview))

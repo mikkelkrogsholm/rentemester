@@ -54,6 +54,8 @@ pub fn run(args: &[String]) -> Result<Value, Failure> {
             "exitCodes":{"0":"success","1":"server/transport/protocol failure","2":"usage/configuration failure"},
             "example":"rentemester-rust remote --server http://127.0.0.1:8080 --allow-loopback-http --cookie-file /private/session.cookie trial-balance --company example --year 2026"});
         help["service_principals"]=crate::service_principals::help();
+        help["cfoAnalytics"]=crate::cfo_analytics::help();
+        help["commands"].as_array_mut().unwrap().push(json!("cfo-analytics"));
         help["contactImport"]=crate::contact_import::help();
         help["commands"].as_array_mut().unwrap().push(json!("import-contacts"));
         help["intercompanyDispositions"]=crate::intercompany_dispositions::help();
@@ -190,6 +192,7 @@ pub fn run(args: &[String]) -> Result<Value, Failure> {
     if crate::accruals::accepts(command){return crate::accruals::run(command,&flags,allow_http,confirmed,preview_reviewed);}
     if crate::assets::accepts(command){return crate::assets::run(command,&flags,allow_http,confirmed,preview_reviewed);}
     if crate::service_principals::accepts(command){return crate::service_principals::run(command,&flags,allow_http,confirmed,preview_reviewed);}
+    if crate::cfo_analytics::accepts(command){return crate::cfo_analytics::run(command,&flags,allow_http,confirmed,preview_reviewed);}
     if crate::contact_import::accepts(command){return crate::contact_import::run(command,&flags,allow_http,confirmed,preview_reviewed);}
     if crate::intercompany_dispositions::accepts(command){return crate::intercompany_dispositions::run(command,&flags,allow_http,confirmed,preview_reviewed);}
     if crate::payable_correction::accepts(command){return crate::payable_correction::run(command,&flags,allow_http,confirmed,preview_reviewed);}
