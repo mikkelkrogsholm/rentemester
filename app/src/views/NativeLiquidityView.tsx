@@ -171,7 +171,7 @@ function Author({
           </label>
           <label>
             Leverandør{" "}
-            <Select required value={values.vendor} onChange={(e) => set("vendor", e.target.value)}>
+            <Select aria-label="Leverandør" required value={values.vendor} onChange={(e) => set("vendor", e.target.value)}>
               <option value="">Vælg eksisterende leverandør</option>
               {data.vendors.map((v) => (
                 <option key={v.id} value={v.id}>
@@ -224,7 +224,7 @@ function Author({
           </label>
           <label>
             Frekvens{" "}
-            <Select value={values.frequency} onChange={(e) => set("frequency", e.target.value)}>
+            <Select aria-label="Frekvens" value={values.frequency} onChange={(e) => set("frequency", e.target.value)}>
               <option value="weekly">Ugentlig</option>
               <option value="monthly">Månedlig</option>
               <option value="quarterly">Kvartalsvis</option>
@@ -253,6 +253,7 @@ function Author({
           <label>
             Originalt kildebilag{" "}
             <Select
+              aria-label="Originalt kildebilag"
               required
               value={values.document}
               onChange={(e) => set("document", e.target.value)}
@@ -296,7 +297,7 @@ function MatchForm({ slug, data, reload }: { slug: string; data: Data; reload: (
       >
         <label>
           Forventet betaling{" "}
-          <Select required value={selected} onChange={(e) => setSelected(e.target.value)}>
+          <Select aria-label="Forventet betaling" required value={selected} onChange={(e) => setSelected(e.target.value)}>
             <option value="">Vælg umatchet forekomst</option>
             {data.occurrences.map((o) => (
               <option key={`${o.commitmentId}:${o.date}`} value={`${o.commitmentId}:${o.date}`}>
@@ -307,7 +308,7 @@ function MatchForm({ slug, data, reload }: { slug: string; data: Data; reload: (
         </label>
         <label>
           Faktisk kilde{" "}
-          <Select required value={evidence} onChange={(e) => setEvidence(e.target.value)}>
+          <Select aria-label="Faktisk kilde" required value={evidence} onChange={(e) => setEvidence(e.target.value)}>
             <option value="">Vælg bilag, kreditor eller udgående bankpost</option>
             {data.evidenceOptions.map((o) => (
               <option key={`${o.kind}:${o.id}`} value={`${o.kind}:${o.id}`}>
