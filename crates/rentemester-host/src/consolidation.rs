@@ -12,6 +12,18 @@ impl Owner {
         anchor: Option<&str>,
         action: app::Action<'_>,
     ) -> AuthAttempt<Value> {
+        self.consolidation_bound(cookies, clock, proof, anchor, action, None)
+    }
+    /// Internal read bound checked against the actual plan, never a reusable authorization.
+    pub(crate) fn consolidation_bound(
+        &mut self,
+        cookies: &rentemester_runtime::auth::CookieVerifier,
+        clock: &dyn Clock,
+        proof: &VerifiedCookie,
+        anchor: Option<&str>,
+        action: app::Action<'_>,
+        allowed_companies: Option<&std::collections::BTreeSet<String>>,
+    ) -> AuthAttempt<Value> {
         let catalog = self.catalog()?;
         let selected = self.slug.clone();
         let mut attempt = self.control_auth(cookies.workspace(), |db| {
@@ -30,12 +42,20 @@ impl Owner {
             && plan.get("profile").is_some()
         {
             let plan = plan.clone();
+            let companies: Vec<String> = serde_json::from_value(plan["companies"].clone())
+                .map_err(|_| OwnerError::Context)?;
+            if allowed_companies
+                .is_some_and(|allowed| companies.iter().any(|company| !allowed.contains(company)))
+            {
+                attempt.outcome = Ok(
+                    serde_json::json!({"scope":"consolidated-report","period":{"from":from,"to":as_of},"status":"blocked","blockers":["approved profile exceeds requested company scope"],"rawCompanySums":[],"appliedEliminations":[],"consolidatedFigures":null,"sourceSnapshots":[]}),
+                );
+                return Ok(attempt);
+            }
             let result = (|| -> Result<Value, OwnerError> {
                 let profile: Profile = serde_json::from_value(plan["profile"].clone())
                     .map_err(|_| OwnerError::Context)?;
                 let mut blockers: Vec<String> = serde_json::from_value(plan["blockers"].clone())
-                    .map_err(|_| OwnerError::Context)?;
-                let companies: Vec<String> = serde_json::from_value(plan["companies"].clone())
                     .map_err(|_| OwnerError::Context)?;
                 let applied: Vec<Applied> = serde_json::from_value(plan["applied"].clone())
                     .map_err(|_| OwnerError::Context)?;

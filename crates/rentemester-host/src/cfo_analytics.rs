@@ -155,7 +155,7 @@ impl Owner {
         let check = self.control_auth(cookies.workspace(), |db| {
             app::current(db, cookies, clock, proof, &catalog, query)
         })?;
-        match check.outcome {
+        let allowed_companies = match check.outcome {
             Err(f) => {
                 return Ok(Attempt {
                     outcome: Err(f),
@@ -170,9 +170,9 @@ impl Owner {
                     retired: check.retired,
                 });
             }
-            Ok(_) => {}
-        }
-        let mut report = self.consolidation(
+            Ok(auth) => auth.companies.into_iter().collect(),
+        };
+        let mut report = self.consolidation_bound(
             cookies,
             clock,
             proof,
@@ -182,6 +182,7 @@ impl Owner {
                 from: &query.from,
                 as_of: &query.to,
             },
+            Some(&allowed_companies),
         )?;
         if let Ok(group) = report.outcome {
             let ready = group["status"] == "ready";

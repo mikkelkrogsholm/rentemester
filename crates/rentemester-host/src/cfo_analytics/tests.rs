@@ -230,3 +230,114 @@ fn absent_group_profile_is_truthful_unsupported_without_figures() {
     assert!(report["group"]["consolidatedFigures"].is_null());
     assert_eq!(owner.slug, "a");
 }
+
+#[test]
+fn actual_delegate_plan_cannot_escape_preflight_company_scope_or_collect_outside_source() {
+    let (_dir, mut owner, cookies, proof, _uid) = setup();
+    let manifest:rentemester_engine::intercompany::Manifest=serde_json::from_value(json!({"version":1,"groups":[{"id":"synthetic","name":"Synthetic","memberships":[{"id":"a","companySlug":"a","validFrom":"2026-01-01"},{"id":"b","companySlug":"b","validFrom":"2026-01-01"}],"ownership":[{"id":"owns-b","parentCompanySlug":"a","childCompanySlug":"b","basisPoints":10000,"evidenceRefs":["synthetic"],"validFrom":"2026-01-01"}]}]})).unwrap();
+    owner
+        .intercompany(
+            &cookies,
+            &Fixed(NOW),
+            &proof,
+            Some("a"),
+            rentemester_application::intercompany::Action::Manifest(&manifest),
+        )
+        .unwrap()
+        .outcome
+        .unwrap();
+    let profile=serde_json::from_value(json!({"version":1,"id":"synthetic-profile","groupId":"synthetic","currency":"DKK","reportingLines":[{"id":"assets","label":"Assets","section":"asset","displayOrder":1},{"id":"debt","label":"Debt","section":"liability","displayOrder":2},{"id":"equity","label":"Equity","section":"equity","displayOrder":3},{"id":"result","label":"Result","section":"equity","displayOrder":4,"role":"current-result"},{"id":"sales","label":"Sales","section":"income","displayOrder":5},{"id":"costs","label":"Costs","section":"expense","displayOrder":6}],"accountMappings":[{"id":"a-bank","companySlug":"a","accountNo":"1000","reportingLineId":"assets","validFrom":"2026-01-01"},{"id":"a-sales","companySlug":"a","accountNo":"8000","reportingLineId":"equity","validFrom":"2026-01-01"},{"id":"b-bank","companySlug":"b","accountNo":"1000","reportingLineId":"assets","validFrom":"2026-01-01"},{"id":"b-sales","companySlug":"b","accountNo":"8000","reportingLineId":"equity","validFrom":"2026-01-01"}],"evidenceRefs":["synthetic"],"validFrom":"2026-01-01"})).unwrap();
+    let proposed = owner
+        .consolidation(
+            &cookies,
+            &Fixed(NOW),
+            &proof,
+            Some("a"),
+            rentemester_application::consolidation::Action::Propose(&profile),
+        )
+        .unwrap()
+        .outcome
+        .unwrap();
+    let exact = rentemester_application::consolidation::Exact {
+        profile_id: "synthetic-profile".into(),
+        profile_hash: proposed["profileHash"].as_str().unwrap().into(),
+    };
+    assert!(
+        owner
+            .consolidation(
+                &cookies,
+                &Fixed(NOW),
+                &proof,
+                Some("a"),
+                rentemester_application::consolidation::Action::Approve(&exact)
+            )
+            .unwrap()
+            .outcome
+            .is_err()
+    );
+    let c = owner.held.0.as_mut().unwrap().control.as_mut().unwrap();
+    c.execute_batch("INSERT INTO user(id,name,email,emailVerified,twoFactorEnabled,createdAt,updatedAt)VALUES('r','Reviewer','r@example.invalid',1,1,'2026-01-01','2026-01-01');INSERT INTO twoFactor(id,secret,backupCodes,userId,verified)VALUES('rf','synthetic','[]','r',1);INSERT INTO session(id,userId,token,createdAt,updatedAt,expiresAt)VALUES('rs','r','reviewer-token','2026-01-01T00:00:00.000Z','2026-01-01T00:00:00.000Z','2026-01-01T12:00:00.000Z');INSERT INTO rm_workspace_user_access_events(user_id,event_type,workspace_role,actor)VALUES('r','activate','workspace_owner','user:u');INSERT INTO rm_company_membership_events(user_id,company_slug,event_type,company_role,actor)VALUES('r','a','grant','owner','user:u'),('r','b','grant','owner','user:u');").unwrap();
+    let cookie = cookies.issue_session("reviewer-token").unwrap();
+    let review = cookies
+        .verify(Some(cookie.set_cookie().split(';').next().unwrap()), None)
+        .unwrap();
+    let wrong = rentemester_application::consolidation::Exact {
+        profile_id: exact.profile_id.clone(),
+        profile_hash: "0".repeat(64),
+    };
+    assert!(
+        owner
+            .consolidation(
+                &cookies,
+                &Fixed(NOW),
+                &review,
+                Some("a"),
+                rentemester_application::consolidation::Action::Approve(&wrong)
+            )
+            .unwrap()
+            .outcome
+            .is_err()
+    );
+    owner
+        .consolidation(
+            &cookies,
+            &Fixed(NOW),
+            &review,
+            Some("a"),
+            rentemester_application::consolidation::Action::Approve(&exact),
+        )
+        .unwrap()
+        .outcome
+        .unwrap();
+
+    // Simulate a wider approved profile becoming current after CFO preflight.
+    // A missing outside source makes any attempted collection observable as a failure.
+    let outside = owner.root.join("b/data/ledger.sqlite");
+    let saved = owner.root.join("b/data/synthetic-saved.sqlite");
+    std::fs::rename(&outside, &saved).unwrap();
+    let allowed = std::collections::BTreeSet::from(["a".to_owned()]);
+    let result = owner
+        .consolidation_bound(
+            &cookies,
+            &Fixed(NOW),
+            &proof,
+            None,
+            rentemester_application::consolidation::Action::Plan {
+                profile_id: "synthetic-profile",
+                from: "2026-01-01",
+                as_of: "2026-12-31",
+            },
+            Some(&allowed),
+        )
+        .unwrap()
+        .outcome
+        .unwrap();
+    std::fs::rename(&saved, &outside).unwrap();
+    assert_eq!(result["status"], "blocked");
+    assert!(result["consolidatedFigures"].is_null());
+    assert_eq!(result["sourceSnapshots"], json!([]));
+    assert_eq!(result["rawCompanySums"], json!([]));
+    assert!(!result.to_string().contains("Synthetic B"));
+    assert!(!result.to_string().contains("synthetic-profile"));
+    assert_eq!(owner.slug, "a");
+}
