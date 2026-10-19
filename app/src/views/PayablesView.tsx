@@ -19,6 +19,7 @@ import { ButtonLink, Button, PageHeader } from "../components/ui";
 // `withCompanyMutation` pipeline as every other cockpit write — confirm gate,
 // backup lock and actor attribution included.
 
+import { useOptionalAuth } from "../lib/auth-context";
 import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { api } from "../lib/api";
@@ -51,6 +52,7 @@ const AGING_LABELS: Record<CompanyPayableRow["agingBucket"], string> = {
 };
 
 export function PayablesView() {
+  const native = useOptionalAuth()?.backend === "rust";
   const { slug = "" } = useParams();
   const { setYear } = useCompanyYear();
   const [filter, setFilter] = useState<PayableListStatusFilter>("open");
@@ -83,7 +85,7 @@ export function PayablesView() {
           >
             Registrér leverandørfaktura
           </Button>
-          <Button requiredPermission="company.ledger.post" variant="secondary" type="button" className="btn secondary" disabled={view.unregisteredDocuments.length===0} onClick={()=>setCorrecting(true)}>
+          <Button requiredPermission="company.ledger.post" variant="secondary" type="button" className="btn secondary" disabled={native || view.directBankCorrectionCandidates !== undefined ? !view.directBankCorrectionCandidates?.length : view.unregisteredDocuments.length === 0} onClick={()=>setCorrecting(true)}>
             Ret direkte bankkøb
           </Button>
           <ButtonLink className="btn secondary" to={`/companies/${slug}/manage`}>

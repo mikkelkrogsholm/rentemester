@@ -56,6 +56,13 @@ export type PayableVendorOption = {
   defaultVatTreatment: string | null;
 };
 
+export type DirectBankCorrectionCandidate = {
+  documentId: number; documentNo: string | null; invoiceNo: string | null;
+  invoiceDate: string; supplierName: string | null; amountIncVat: number;
+  vatAmount: number | null; currency: string; bankTransactionId: number;
+  bankDate: string; originalJournalEntryId: number; originalJournalEntryNo: string;
+};
+
 export type CompanyPayables = {
   slug: string;
   asOfDate: string;
@@ -68,6 +75,7 @@ export type CompanyPayables = {
   overdueOpenBalance: number;
   notYetDueOpenBalance: number;
   unregisteredDocuments: UnregisteredPurchaseDocumentRow[];
+  directBankCorrectionCandidates?: DirectBankCorrectionCandidate[];
   expenseAccounts: PayableExpenseAccountOption[];
   vendors: PayableVendorOption[];
 };
@@ -128,5 +136,13 @@ export type DirectBankPayableCorrectionInput = {
 
 export type DirectBankPayableCorrectionPlan = DirectBankPayableCorrectionInput & {
   schemaVersion: string; planHash: string; documentHash: string; originalJournalHash: string;
-  originalJournalEntryId: number; bankDate: string; bankAmount: number;
+  summary?: {
+    document: { id: number; documentNo: string | null; invoiceNo: string | null; invoiceDate: string; supplierName: string | null; currency: string; grossAmount: number; vatAmount: number | null };
+    bank: { id: number; date: string; text: string; currency: string; signedAmount: number; amount: number };
+    originalJournal: { id: number; entryNo: string; date: string; hash: string };
+    expenseAccount: { accountNo: string; name: string };
+    effectiveVatTreatment: "standard" | "exempt" | "non_deductible";
+  };
+  originalJournalEntryId: number; originalJournalEntryNo?: string; originalJournalDate?: string;
+  documentVatAmount?: number | null; bankDate: string; bankAmount: number;
 };
