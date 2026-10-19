@@ -246,6 +246,7 @@ function ProfileCard({
   initial: CompanySettings;
 }) {
   const [settings, setSettings] = useState(initial);
+  const [cvr, setCvr] = useState(initial.cvr ?? "");
   const [address, setAddress] = useState(initial.address ?? "");
   const [postalCode, setPostalCode] = useState(initial.postalCode ?? "");
   const [city, setCity] = useState(initial.city ?? "");
@@ -278,7 +279,7 @@ function ProfileCard({
   );
 
   const outcome = useMutationOutcome(async () => { await api.companySettings(slug); setNotice("Gemte stamdata er hentet. Indtastningerne i formularen er bevaret."); });
-  useUnsavedChanges(address.trim() !== (settings.address ?? "") || postalCode.trim() !== (settings.postalCode ?? "") || city.trim() !== (settings.city ?? "") || vatPeriodType !== (settings.vatPeriodType ?? "none") || bankName.trim() !== (settings.payment?.bankName ?? "") || registrationNo.trim() !== (settings.payment?.registrationNo ?? "") || accountNo.trim() !== (settings.payment?.accountNo ?? "") || iban.trim() !== (settings.payment?.iban ?? ""));
+  useUnsavedChanges(cvr.trim() !== (settings.cvr ?? "") || address.trim() !== (settings.address ?? "") || postalCode.trim() !== (settings.postalCode ?? "") || city.trim() !== (settings.city ?? "") || vatPeriodType !== (settings.vatPeriodType ?? "none") || bankName.trim() !== (settings.payment?.bankName ?? "") || registrationNo.trim() !== (settings.payment?.registrationNo ?? "") || accountNo.trim() !== (settings.payment?.accountNo ?? "") || iban.trim() !== (settings.payment?.iban ?? ""));
 
   async function save(e: React.FormEvent) {
     e.preventDefault();
@@ -288,6 +289,7 @@ function ProfileCard({
     setNotice(null);
     try {
       const updated = await api.updateCompanyProfile(slug, {
+        cvr: cvr.trim(),
         address: address.trim(),
         postalCode: postalCode.trim(),
         city: city.trim(),
@@ -302,6 +304,7 @@ function ProfileCard({
         },
       }).catch(outcome.reject);
       setSettings(updated);
+      setCvr(updated.cvr ?? "");
       setVatPeriodType(updated.vatPeriodType ?? "none");
       setNotice("Stamdata opdateret.");
     } catch (err) {
@@ -334,6 +337,16 @@ function ProfileCard({
       )}
 
       <form className="form" onSubmit={save} aria-label="Rediger stamdata">
+        <label>
+          CVR-nummer
+          <Input disabled={outcome.blocked}
+            name="cvr"
+            value={cvr}
+            onChange={(e) => setCvr(e.target.value)}
+            inputMode="numeric"
+            placeholder="12345678"
+          />
+        </label>
         <label>
           Adresse
           <Input disabled={outcome.blocked}

@@ -1,16 +1,14 @@
 {
-  "goal": "Complete epic #672, unchanged",
+  "goal": "Complete Rust server/web, GPUI local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "fresh-workspace-1",
-  "code_revision": "sha256:b7897d4ac0c89a5c2837fb0219dbadf636625ed5dc4800dbc98b028aee41966b",
-  "spec_revision": "sha256:7a408a717e710e4c8144c563a26b2aa783199cb5b26a71287e7ae412693d981d",
-  "state": "verified-exclusive-fresh-native-namespace-and-canonical-schema-initialization",
+  "current_increment": "parallel-product-flows-2",
+  "code_revision": "git:f9048f8f",
+  "spec_revision": "sha256:13a0386803d4f4e35af6fdf8a020cd851d759c4369c9d172a4e0f29459510cd0",
+  "state": "parallel-integrated-flows-verified; next independent tracks running",
   "issues_closed": [],
   "next": [
-    "Bind durable native completion/origin and attested reopen identity, then first-owner/auth bootstrap and successful authenticated human/service post/reversal through actual owner. Compose HTTP/CLI/MCP and multi-company ownership; qualify legacy drain/actual CLI denial, deployment crash recovery, macOS local profile and full React/GPUI/distribution/cutover.",
-    "Implement full lifetime legacy mutation admission and stable physical/logical workspace/company identity before enabling Rust writes",
-    "Port missing-column/checksumless predecessors and other late parent rebuilds; qualify archived inputs, replay/adoption and preserve authority/revocation gates",
-    "Continue all 55 issues through shared Rust server/CLI/MCP, React and GPUI local/remote, platform qualification and cutover"
+    "Lead verifies integrated recurring invoices and company overview with all prior parallel domain flows and restart; retains shared integration ownership.",
+    "Four independent workers: desktop password/MFA, explicit macOS local runtime, domain CLI/MCP coverage, accountant export."
   ],
   "preserve_unrelated_paths": [
     ".claude/settings.json",
@@ -21,31 +19,29 @@
   ],
   "all_goal_requirements_complete": false,
   "previous_verified_increment": {
-    "current_increment": "host-owner-1",
-    "code_revision": "sha256:292994dd1eac502fd5ce4e88df1c2ab4a736e3a5edb31ee861c2cf2594aecb28",
-    "spec_revision": "sha256:1e5a4e9378ad19221248ebe111bdf95ebc06a91160ea12a08b88b2dd62704e5c",
-    "state": "verified-private-physical-owner-confirmed-close-BUSY-quarantine-with-fixed-typed-dispatch"
+    "code_revision": "git:f9048f8f",
+    "state": "Five domain flows + CLI/MCP verified against actual server across restart; native GPUI password/MFA verified"
   },
   "evidence": {
-    "report": "fresh-workspace/evidence.json",
-    "parity": "fresh-workspace/parity.json",
-    "native_workspace_tests": 170,
-    "compile_fail_documentation_tests": 6,
-    "ignored_helpers_mac": 31,
-    "Linux_checks": 69,
-    "fresh_Linux_checks": 19,
-    "owner_regression_checks": 50,
-    "real_different_UID_denials": 462,
-    "GDD_structural_checks": 3,
-    "mac_workspace_clippy": "PASS",
-    "Linux_runtime_storage_host_all_target_clippy": "PASS",
-    "copied_source_files": 295,
-    "owned_Docker_cleanup": "confirmed",
-    "integration_checks_rerun": false,
-    "last_full_integration_commit": "3119f2884e04927cea98a7388c98454391545a8d",
-    "last_full_integration_checks": 12698,
-    "writer_authority": false,
-    "whole_issues_closed": false
+    "combined_browser_log": "/tmp/rm-parallel-overview-recurring-fixed.log",
+    "combined_browser_exit": 0,
+    "verified_journeys": [
+      "budget revision and actuals",
+      "accrual registration and3 recognition periods",
+      "mileage register",
+      "Rust CLI native report reads",
+      "Rust MCP native report reads and idempotent post replay",
+      "recurring customer/template/confirmed invoice and PDF/same-period replay/restart",
+      "native company overview and all shared reader parity/restart",
+      "CLI password/MFA/new private session/current owner/existing-file refusal",
+      "native GPUI password/TOTP/company/balanced trial balance"
+    ],
+    "cli_password_mfa_login": "PASS: real password/MFA/private0600 session/owner read/existing-file refusal; /tmp/rm-parallel-overview-recurring-login.log",
+    "gpui_remote_read": "PASS: actual native company/trial-balance window; /tmp/rentemester-rust-reports/native-desktop-evidence.json",
+    "integrated_ui_tests": "52 pass,129 assertions: ManageCompanyView, RecurringInvoicesView, DashboardView",
+    "integrated_clippy": "PASS: selected server/client/CLI/MCP all-targets strict clippy",
+    "gpui_password_mfa": "/tmp/rentemester-rust-reports/native-desktop-password-mfa-evidence.json",
+    "company_cvr_unit": "3 company setup tests pass including canonical identity/audit/invalid rejection"
   },
   "verified_history": [
     {
@@ -353,6 +349,90 @@
       "code_revision": "sha256:292994dd1eac502fd5ce4e88df1c2ab4a736e3a5edb31ee861c2cf2594aecb28",
       "spec_revision": "sha256:1e5a4e9378ad19221248ebe111bdf95ebc06a91160ea12a08b88b2dd62704e5c",
       "state": "verified-private-physical-owner-confirmed-close-BUSY-quarantine-with-fixed-typed-dispatch"
+    },
+    {
+      "current_increment": "fresh-workspace-1",
+      "code_revision": "sha256:b7897d4ac0c89a5c2837fb0219dbadf636625ed5dc4800dbc98b028aee41966b",
+      "spec_revision": "sha256:7a408a717e710e4c8144c563a26b2aa783199cb5b26a71287e7ae412693d981d",
+      "state": "verified-exclusive-fresh-native-namespace-and-canonical-schema-initialization",
+      "evidence": {
+        "report": "fresh-workspace/evidence.json",
+        "parity": "fresh-workspace/parity.json",
+        "native_workspace_tests": 170,
+        "compile_fail_documentation_tests": 6,
+        "ignored_helpers_mac": 31,
+        "Linux_checks": 69,
+        "fresh_Linux_checks": 19,
+        "owner_regression_checks": 50,
+        "real_different_UID_denials": 462,
+        "GDD_structural_checks": 3,
+        "mac_workspace_clippy": "PASS",
+        "Linux_runtime_storage_host_all_target_clippy": "PASS",
+        "copied_source_files": 295,
+        "owned_Docker_cleanup": "confirmed",
+        "integration_checks_rerun": false,
+        "last_full_integration_commit": "3119f2884e04927cea98a7388c98454391545a8d",
+        "last_full_integration_checks": 12698,
+        "writer_authority": false,
+        "whole_issues_closed": false
+      }
     }
-  ]
+  ],
+  "active_work": {
+    "rust-accruals": {
+      "agent": "/root/rust_accruals",
+      "worktree": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-accruals/rentemester",
+      "status": "worker running in isolated worktree",
+      "acceptance": "strict discoverable commands/tools; actual endpoint contracts; real server parity",
+      "commit": "83b8172c",
+      "next": "core domain CLI/MCP coverage",
+      "previous_delivery_status": "integrated; combined real browser and restart verified",
+      "depends_on": [
+        "shared Rust HTTP client",
+        "existing native domain routes"
+      ]
+    },
+    "rust-mileage": {
+      "agent": "/root/rust_mileage",
+      "worktree": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-mileage/rentemester",
+      "status": "worker running in isolated worktree",
+      "acceptance": "confirmed audited review, no journal write, permission/revocation refusals",
+      "commit": "02256c26",
+      "next": "native exception review",
+      "previous_delivery_status": "accountant69f8fc79 ready, unitverified, awaiting leadintegration/browser",
+      "depends_on": [
+        "native current permission fence",
+        "existing exception semantics"
+      ]
+    },
+    "rust-budget": {
+      "agent": "/root/rust_budget",
+      "worktree": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-budget/rentemester",
+      "status": "worker running in isolated worktree",
+      "acceptance": "explicit local create/open, owned child readiness/lifecycle and persistent workspace",
+      "source_commit": "1fd3b34d",
+      "commit": "78399177",
+      "next": "GPUI managed local backend",
+      "previous_delivery_status": "integrated; combined real browser and restart verified",
+      "depends_on": [
+        "explicit macOS local-user runtime",
+        "native desktop password/MFA"
+      ]
+    },
+    "rust-client-cli": {
+      "agent": "/root/rust_client_cli",
+      "worktree": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-client-cli/rentemester",
+      "status": "worker running in isolated worktree",
+      "acceptance": "owned synthetic local server start and restart without relaxing Linux guards",
+      "commit": "dd4dec6f",
+      "source_commit": "7aa6ac81",
+      "next": "macOS local-user runtime",
+      "previous_delivery_status": "integrated; combined real browser and restart verified",
+      "depends_on": [
+        "existing APFS lease",
+        "explicit platform trust profile"
+      ]
+    }
+  },
+  "integrated_pending_browser": []
 }

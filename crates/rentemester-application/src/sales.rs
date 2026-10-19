@@ -223,7 +223,7 @@ pub(crate) fn issue_payload(
     let pdf_path = guard.publish_document(&pdf).map_err(|_| evidence_error())?;
     sales::register(
         tx,
-        &payload,
+        payload,
         Artifact {
             filename: json.filename(),
             path: &json_path,

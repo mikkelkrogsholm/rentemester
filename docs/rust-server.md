@@ -623,3 +623,130 @@ Browserkontrollen registrerer også en ekstern indberetningskvittering via UI’
 kontrollerer næste aktive momsperiode og afviser ændret reference, genåbning og
 ny bogføring i den indberettede periode, også efter servergenstart. Skærmbilledet
 gemmes som `/tmp/rentemester-rust-period-report.png`.
+
+## Budgetter, periodisering og kørsel i Rust
+
+De eksisterende sider **Budget**, **Periodisering** og **Kørsel** bruger nu
+Rust-serveren direkte.
+
+- **Budget:** Gem et beløb på en konto og måned, ret beløbet ved at gemme en ny
+  revision, og sammenlign med faktisk bogføring. Seneste revision gælder;
+  historikken bevares. Sammenligningen følger kontoens indtægts-/udgiftstype.
+  Dimensionsbudgetter og dimensionsfordeling er endnu ikke porteret; siden
+  viser derfor eksplicit, at budgettet er på kontoniveau.
+- **Periodisering:** Opret en forudbetalt eller skyldig omkostning eller udskudt
+  omsætning med bilag, eksplicitte konti, datoer og antal perioder. Gennemgå
+  planen og bekræft de enkelte posteringer. En månedsplan forankret den 31. januar
+  bruger den 28. februar og den 31. marts. Sidste periode bærer afrundingsresten.
+  Der er ingen automatisk momsbehandling. Generelle tilbageførsler af planens
+  posteringer afvises, indtil et samlet korrektionsforløb er porteret.
+- **Kørsel:** Registrér tur, formål, kilometer, køretøj/fører og den valgte sats
+  med satsgrundlag. Registeret viser regnskabsårets og månedernes summer og
+  bevarer de originale ture og revisionsspor. Dette er dokumentation;
+  registreringen bogfører ikke noget i journalen.
+
+En samlet syntetisk browserkontrol kører oprettelse, ændring/postering,
+rapportkontrol og læsning efter servergenstart:
+
+```sh
+python3 scripts/rust/run-web-demo.py --check-feature parallel
+```
+
+Enkeltforløb kan køres med `--check-feature budget`, `--check-feature accruals`
+eller `--check-feature mileage`. Alle bruger nye syntetiske workspaces.
+
+## Fælles Rust-klient, CLI og MCP
+
+`rentemester-client` giver CLI og MCP én fælles HTTP-forbindelse med eksplicit
+serveradresse. HTTPS kræves, bortset fra udtrykkeligt tilladt HTTP på en literal
+loopbackadresse. Klienten følger ikke redirects, gentager ikke writes automatisk
+og skifter ikke til lokale data ved forbindelsesfejl. En ukendt write-status
+returneres som ukendt; den oprindelige idempotency-nøgle bevares.
+
+Den første forbindelsesvej bruger en eksisterende MFA-godkendt sessionscookie i
+en privat fil med filtilstand 0600. Filen indeholder Cookie-headerens værdi;
+hemmeligheden må ikke indsættes i kommandolinjen eller logs. Denne vej er et
+udviklings-/operatørinterface. CLI har også password/MFA-login som beskrevet
+nedenfor; et fuldt profilsystem er endnu ikke færdigt.
+
+```sh
+cargo build -p rentemester-cli -p rentemester-mcp
+
+target/debug/rentemester-rust remote --server https://SERVER \
+  --cookie-file /private/session.cookie trial-balance --company VIRKSOMHED
+
+target/debug/rentemester-mcp --server https://SERVER \
+  --cookie-file /private/session.cookie
+```
+
+CLI understøtter health, bruger/virksomheder, journal, saldobalance,
+resultatopgørelse og balance samt eksplicitte posteringer/tilbageførsler med
+serverens JSON-envelope på stdin. MCP tilbyder tilsvarende otte tools over
+stdio med MCP 2025-11-25. De genbruger serverens bogføring og rettighedskontrol;
+fuld CLI/MCP-funktionsparitet er stadig under omskrivning.
+
+Den samlede browserkontrol kan også kontrollere de native CLI/MCP-processer mod
+samme MFA-session og server:
+
+```sh
+RM_NATIVE_CLI_BIN="$PWD/target/debug/rentemester-rust" \
+RM_NATIVE_MCP_BIN="$PWD/target/debug/rentemester-mcp" \
+python3 scripts/rust/run-web-demo.py --check-feature parallel
+```
+
+Kontrollen sammenligner rapporterne med browserens API-svar og gentager en
+allerede bogført postering via MCP med samme nøgle uden at oprette en dublet.
+
+
+## Tilbagevendende fakturaer og Overblik
+
+**Fakturaskabeloner** kan oprettes med uge-, måneds-, kvartals- eller årsinterval.
+En bruger gennemgår og bekræfter hver udstedelse. Genereringen bruger samme
+fakturanummerering, beregning og originale JSON/PDF som almindelige fakturaer.
+Gentagen generering af samme skabelonperiode giver samme dokument. Skabeloner
+kan pensioneres; udstedelsernes kundesnapshot og originaler bevares.
+Der er endnu ingen automatisk scheduler eller afsendelse; den porterede
+udstedelsesvej understøtter DKK og dansk 25 % moms. Bogføring sker særskilt
+via fakturaforløbet. CVR-nummer kan redigeres under virksomhedens stamdata.
+
+Virksomheden åbner nu på **Overblik** med resultat, månedsdiagram, bank,
+moms, debitorer, kreditorer, bilag og seneste posteringer fra de fælles
+Rust-læsere. Debitorer viser aktuelle åbne fakturaer på tværs af levende
+regnskabsår; historiske debitorsaldi pr. dato er endnu ikke tilgængelige.
+Reviewhandlinger og revisoreksport er fortsat særskilte porteringsopgaver.
+Den samlede `--check-feature parallel` inkluderer begge sider og genstart.
+
+## CLI-login med adgangskode og MFA
+
+```sh
+target/debug/rentemester-rust remote --server https://SERVER login \
+  --email BRUGER --factor totp --session-out /private/ny-session.cookie
+```
+
+Processen læser adgangskode og derefter engangskode som to linjer fra privat
+stdin. Den afviser terminalinput med ekko; indsæt aldrig hemmeligheder som
+kommandoflag. `--factor backup` bruger en recovery code. Filen oprettes som
+0600 på Unix, og en eksisterende fil overskrives aldrig. MFA-tilmelding foregår
+fortsat i browseren. Den udstedte session bruges derefter med `--cookie-file`.
+
+## Native GPUI-desktop
+
+Craten `rentemester-desktop` bruger Longbridges `gpui-kit` 0.7.3 og det fælles
+HTTP-klientbibliotek. En faktisk macOS-app har vist serverens virksomhed og
+saldobalance i et native GPUI/Metal-vindue. Adgangskode og TOTP-MFA er også
+verificeret gennem det native vindue uden cookie-fil. Denne første desktopversion er en
+fjernklient med læsning af saldobalance; fulde skriveforløb og lokal administreret
+backend er under udvikling.
+
+Desktop kræver Rust mindst 1.95. Server/CLI/MCP kan fortsat bygges med projektets
+fastlåste 1.94.1, og desktop er udeladt fra standardmedlemmerne.
+
+```sh
+CARGO_PROFILE_DEV_DEBUG=0 CARGO_INCREMENTAL=0 \
+  cargo +stable build --locked -p rentemester-desktop -j4
+crates/rentemester-desktop/build-macos.sh
+```
+
+Den installerede stable 1.99.1 er brugt til native verifikation. En eksplicit
+serverorigin og særskilt tilladelse til HTTP på loopback kræves. Der er ingen
+automatisk overgang til lokale data ved netværksfejl.

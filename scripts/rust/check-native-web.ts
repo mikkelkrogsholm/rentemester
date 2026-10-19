@@ -1,3 +1,7 @@
+import { prepareNativeDesktopSession } from "./check-native-desktop-session";
+import { checkNativeMcp } from "./check-native-mcp";
+import { checkNativeCliLogin } from "./check-native-cli-login";
+import { checkNativeCli } from "./check-native-cli";
 import { checkNativeAssets } from "./check-native-assets";
 import { checkNativePeriodReport } from "./check-native-period-report";
 import { checkNativePeriod } from "./check-native-period";
@@ -38,6 +42,15 @@ function totp(secret: string): string {
   const offset = digest[19] & 15;
   return String((digest.readUInt32BE(offset) & 0x7fff_ffff) % 1_000_000).padStart(6, "0");
 }
+async function checkParallelFeature(page: import("@playwright/test").Page, feature: string) {
+  const restarted = feature.endsWith("-reopen");
+  const name = feature.replace(/-reopen$/, "");
+  if (name === "budget" || name === "parallel") await (await import("./check-native-budget")).checkNativeBudget(page, base!, restarted);
+  if (name === "accruals" || name === "parallel") await (await import("./check-native-accruals")).checkNativeAccruals(page, base!, restarted);
+  if (name === "mileage" || name === "parallel") await (await import("./check-native-mileage")).checkNativeMileage(page, base!, restarted);
+  if (name === "recurring" || name === "parallel") await (await import("./check-native-recurring")).checkNativeRecurring(page, base!, restarted);
+  if (name === "parallel") await (await import("./check-native-dashboard")).checkNativeDashboard(page, base!, restarted);
+}
 const browser = await chromium.launch({ headless: true });
 try {
   const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
@@ -46,6 +59,7 @@ try {
   const failures: string[] = [];
   page.on("pageerror", (error) => failures.push(error.message));
   let postedBody: string | null = null;
+  let guiTotpSecret: string | undefined;
   page.on("request", (request) => { if (request.url().endsWith("/manual-journal") && request.method() === "POST") postedBody = request.postData(); });
   const statePath = process.env.RM_NATIVE_WEB_STATE;
   if (process.env.RM_NATIVE_WEB_REOPEN) {
@@ -56,11 +70,12 @@ try {
     await page.getByLabel("Adgangskode", { exact: true }).fill("synthetic-password-123");
     await page.getByRole("button", { name: "Log ind", exact: true }).click();
     await page.getByRole("button", { name: "Brug recovery code" }).click();
-    await page.getByLabel("Recovery code", { exact: true }).fill(process.env.RM_NATIVE_WEB_EXPENSE_REOPEN === "assets-reopen" ? state.backup2 : process.env.RM_NATIVE_WEB_EXPENSE_REOPEN === "5" ? state.backup6 : process.env.RM_NATIVE_WEB_EXPENSE_REOPEN === "4" ? state.backup5 : process.env.RM_NATIVE_WEB_EXPENSE_REOPEN === "3" ? state.backup4 : process.env.RM_NATIVE_WEB_EXPENSE_REOPEN === "2" ? state.backup3 : process.env.RM_NATIVE_WEB_EXPENSE_REOPEN === "1" ? state.backup2 : state.backup);
+    await page.getByLabel("Recovery code", { exact: true }).fill(process.env.RM_NATIVE_WEB_EXPENSE_REOPEN?.endsWith("-reopen") ? state.backup2 : process.env.RM_NATIVE_WEB_EXPENSE_REOPEN === "5" ? state.backup6 : process.env.RM_NATIVE_WEB_EXPENSE_REOPEN === "4" ? state.backup5 : process.env.RM_NATIVE_WEB_EXPENSE_REOPEN === "3" ? state.backup4 : process.env.RM_NATIVE_WEB_EXPENSE_REOPEN === "2" ? state.backup3 : process.env.RM_NATIVE_WEB_EXPENSE_REOPEN === "1" ? state.backup2 : state.backup);
     await page.getByRole("button", { name: "Bekræft", exact: true }).click();
     await page.getByRole("link", { name: "Åbn bogføring" }).click();
+    await page.goto(`${base}/companies/synthetic/posteringer`);
     await page.getByText("Synthetic opening transfer", { exact: true }).waitFor();
-    if (process.env.RM_NATIVE_WEB_EXPENSE_REOPEN === "assets") { await checkNativeAssets(page,base); } else if (process.env.RM_NATIVE_WEB_EXPENSE_REOPEN === "assets-reopen") { await checkNativeAssets(page,base,true); } else if (process.env.RM_NATIVE_WEB_EXPENSE_REOPEN === "5") { await checkNativeAssets(page,base,true); } else if (process.env.RM_NATIVE_WEB_EXPENSE_REOPEN === "4") { await checkNativePeriodReport(page,base,true); await checkNativeAssets(page,base); } else if (process.env.RM_NATIVE_WEB_EXPENSE_REOPEN === "3") { await checkNativePeriod(page,base,true); await checkNativePeriodReport(page,base); } else if (process.env.RM_NATIVE_WEB_EXPENSE_REOPEN === "2") { await checkNativePayable(page,base,true); await checkNativePeriod(page,base); } else if (process.env.RM_NATIVE_WEB_EXPENSE_REOPEN === "1") { await checkNativeCompanySetup(page, base, true); await checkNativeVat(page, base, true); await checkNativeSales(page, base, true); await checkNativeSettlement(page, base, true); await checkNativeCredit(page, base, true); await checkNativeRefund(page, base, true); await checkNativeCustomerEdit(page, base, true); await checkNativePayable(page,base); } else {
+    if (/^(accruals|mileage|budget|recurring|parallel)(-reopen)?$/.test(process.env.RM_NATIVE_WEB_EXPENSE_REOPEN ?? "")) { await checkParallelFeature(page, process.env.RM_NATIVE_WEB_EXPENSE_REOPEN!); } else if (process.env.RM_NATIVE_WEB_EXPENSE_REOPEN === "assets") { await checkNativeAssets(page,base); } else if (process.env.RM_NATIVE_WEB_EXPENSE_REOPEN === "assets-reopen") { await checkNativeAssets(page,base,true); } else if (process.env.RM_NATIVE_WEB_EXPENSE_REOPEN === "5") { await checkNativeAssets(page,base,true); } else if (process.env.RM_NATIVE_WEB_EXPENSE_REOPEN === "4") { await checkNativePeriodReport(page,base,true); await checkNativeAssets(page,base); } else if (process.env.RM_NATIVE_WEB_EXPENSE_REOPEN === "3") { await checkNativePeriod(page,base,true); await checkNativePeriodReport(page,base); } else if (process.env.RM_NATIVE_WEB_EXPENSE_REOPEN === "2") { await checkNativePayable(page,base,true); await checkNativePeriod(page,base); } else if (process.env.RM_NATIVE_WEB_EXPENSE_REOPEN === "1") { await checkNativeCompanySetup(page, base, true); await checkNativeVat(page, base, true); await checkNativeSales(page, base, true); await checkNativeSettlement(page, base, true); await checkNativeCredit(page, base, true); await checkNativeRefund(page, base, true); await checkNativeCustomerEdit(page, base, true); await checkNativePayable(page,base); } else {
     // Replaying the same browser operation must not create another journal entry.
     const replay = await page.request.post(`${base}/api/companies/synthetic/manual-journal`, { headers: { origin: base, "content-type": "application/json" }, data: JSON.parse(state.postedBody) });
     if (!replay.ok()) throw new Error(`Idempotency replay refused: ${replay.status()}`);
@@ -115,9 +130,11 @@ try {
   await page.getByRole("button", { name: "Start opsætning" }).click();
   await page.getByLabel("Opsætningsnøgle").waitFor();
   const secret = await page.getByLabel("Opsætningsnøgle").inputValue();
+  guiTotpSecret = secret;
   await page.getByLabel("Engangskode", { exact: true }).fill(totp(secret));
   await page.getByRole("button", { name: "Bekræft opsætning" }).click();
   const backup = await page.getByRole("region", { name: "Recovery codes" }).locator("li").first().textContent();
+  const backupLogin = await page.getByRole("region", { name: "Recovery codes" }).locator("li").nth(9).textContent();
   const backup6 = await page.getByRole("region", { name: "Recovery codes" }).locator("li").nth(5).textContent();
   const backup5 = await page.getByRole("region", { name: "Recovery codes" }).locator("li").nth(4).textContent();
   const backup4 = await page.getByRole("region", { name: "Recovery codes" }).locator("li").nth(3).textContent();
@@ -125,7 +142,10 @@ try {
   const backup2 = await page.getByRole("region", { name: "Recovery codes" }).locator("li").nth(1).textContent();
   await page.getByRole("button", { name: "Jeg har gemt koderne" }).click();
   console.log("Browser: native MFA and session complete");
+  if (!backupLogin) throw new Error("Missing synthetic CLI login recovery code");
+  await checkNativeCliLogin(base, backupLogin);
   await page.getByRole("link", { name: "Åbn bogføring" }).click();
+    await page.goto(`${base}/companies/synthetic/posteringer`);
   console.log("Browser: company selected and journal loaded");
   await page.getByRole("button", { name: "Ny postering", exact: true }).click();
   await page.getByLabel("Posteringstekst").fill("Synthetic opening transfer");
@@ -151,4 +171,7 @@ try {
   if (statePath) writeFileSync(statePath, JSON.stringify({ backup, backup2, backup3, backup4, backup5, backup6, postedBody }), { mode: 0o600 });
   console.log("PASS: real browser → Rust: first owner, verification, MFA, company selection, manual post, correct persisted trial balance");
   }
+  await checkNativeCli(page, base);
+  await checkNativeMcp(page, base);
+  await prepareNativeDesktopSession(page, base, guiTotpSecret);
 } finally { await browser.close(); }

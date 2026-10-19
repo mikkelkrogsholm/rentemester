@@ -23,10 +23,11 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--check', action='store_true', help='Run the complete Chromium journey and clean up')
     parser.add_argument('--check-assets', action='store_true', help='Run installer, asset journey and restart persistence only')
+    parser.add_argument('--check-feature', choices=['accruals','mileage','budget','recurring','parallel','desktop'], help='Run selected new native journey and restart checks')
     parser.add_argument('--port', type=int, default=44321)
     parser.add_argument('--skip-web-build', action='store_true')
     args = parser.parse_args()
-    checking = args.check or args.check_assets
+    checking = args.check or args.check_assets or bool(args.check_feature)
     if not 1 <= args.port <= 65535:
         parser.error('--port must be 1–65535')
     if not args.skip_web_build:
@@ -91,7 +92,7 @@ def main():
             if checking:
                 environment = {**os.environ,'RM_NATIVE_WEB_URL':origin,'RM_NATIVE_WEB_SETUP':setup_link,'RM_NATIVE_WEB_CONTAINER':prefix,'RM_NATIVE_WEB_STATE':str(Path(temp)/'browser-state.json')}
                 run(['bun','run','scripts/rust/check-native-web.ts'],cwd=REPO,env=environment)
-                phases = ['assets', 'assets-reopen'] if args.check_assets else ['0', '1', '2', '3', '4', '5']
+                phases = [] if args.check_feature == 'desktop' else [args.check_feature, args.check_feature+'-reopen'] if args.check_feature else ['assets', 'assets-reopen'] if args.check_assets else ['0', '1', '2', '3', '4', '5']
                 for phase in phases:
                     run(['docker','restart','-t','2',prefix],stdout=subprocess.DEVNULL)
                     server.wait(timeout=15)

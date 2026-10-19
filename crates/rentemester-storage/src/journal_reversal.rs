@@ -113,6 +113,12 @@ pub fn reverse(
             "journal entry {id} is already a reversal entry"
         )));
     }
+    let accrual:bool=tx.query_row("SELECT EXISTS(SELECT 1 FROM accruals WHERE registration_journal_entry_id=?1) OR EXISTS(SELECT 1 FROM accrual_schedule_postings WHERE journal_entry_id=?1)",[id],|r|r.get(0)).map_err(failed)?;
+    if accrual {
+        return Ok(refusal(
+            "accrual evidence requires an atomic accrual correction workflow".into(),
+        ));
+    }
     let asset:bool=tx.query_row("SELECT EXISTS(SELECT 1 FROM asset_depreciation_entries WHERE journal_entry_id=?1) OR EXISTS(SELECT 1 FROM asset_writeoffs WHERE journal_entry_id=?1) OR EXISTS(SELECT 1 FROM assets a JOIN journal_entries j ON j.document_id=a.purchase_document_id WHERE j.id=?1)",[id],|r|r.get(0)).map_err(failed)?;
     if asset {
         return Ok(refusal(

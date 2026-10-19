@@ -36,9 +36,11 @@ export async function checkNativeRecurring(
 			await form.getByLabel("Postnummer", { exact: true }).fill("1000");
 			await form.getByLabel("By", { exact: true }).fill("Synthetic City");
 			await form.getByLabel(/^Momsperiode/).selectOption("quarter");
-			await form
-				.getByRole("button", { name: "Gem stamdata", exact: true })
-				.click();
+			const [savedProfile] = await Promise.all([
+                page.waitForResponse(r => r.url().endsWith("/company") && r.request().method() === "PATCH"),
+                form.getByRole("button", { name: "Gem stamdata", exact: true }).click(),
+            ]);
+            if (!savedProfile.ok()) throw new Error(`Profile save failed: ${await savedProfile.text()}`);
 			await page.getByText("Stamdata opdateret.", { exact: true }).waitFor();
 		}
 		await page.goto(`${base}/companies/synthetic/kontakter`);

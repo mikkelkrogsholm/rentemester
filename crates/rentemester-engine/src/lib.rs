@@ -47,5 +47,5 @@ pub mod credit_note;
 
 pub mod asset;
 
-pub mod mileage;
 pub mod accrual;
+pub mod mileage;

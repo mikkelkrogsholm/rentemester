@@ -335,6 +335,21 @@ pub fn update_profile(
     let before = profile(tx)?;
     for (key, value) in input {
         match key.as_str() {
+            "cvr" => {
+                let value = value.as_str().ok_or_else(|| fail("CVR must be a string"))?;
+                let text = value.trim().to_ascii_uppercase();
+                let digits = text.strip_prefix("DK").unwrap_or(&text);
+                if !text.is_empty()
+                    && (digits.len() != 8 || !digits.bytes().all(|c| c.is_ascii_digit()))
+                {
+                    return Err(fail(
+                        "CVR must be eight digits, optionally prefixed with DK",
+                    ));
+                }
+                let normalized = (!text.is_empty()).then(|| format!("DK{digits}"));
+                tx.execute("UPDATE companies SET cvr=?1 WHERE id=1", [normalized])
+                    .map_err(sql)?;
+            }
             "vatPeriodType" => {
                 let next = if value.is_null() {
                     None
@@ -459,6 +474,30 @@ mod tests {
                 .iter()
                 .any(|r| r["role"] == "input_vat" && r["accountNo"] == "V" && r["ok"] == true)
         );
+    }
+    #[test]
+    fn profile_cvr_is_canonical_audited_and_invalid_values_preserve_identity() {
+        let mut db = company();
+        let tx = db
+            .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
+            .unwrap();
+        let input = json!({"cvr":" dk87654321 "});
+        let updated = update_profile(&tx, input.as_object().unwrap(), "synthetic").unwrap();
+        assert_eq!(updated["cvr"], "DK87654321");
+        for invalid in [
+            json!({"cvr":"1234"}),
+            json!({"cvr":"8765432x"}),
+            json!({"cvr":87654321}),
+        ] {
+            assert!(update_profile(&tx, invalid.as_object().unwrap(), "synthetic").is_err());
+            assert_eq!(profile(&tx).unwrap()["cvr"], "DK87654321");
+        }
+        let empty = json!({"cvr":""});
+        assert!(
+            update_profile(&tx, empty.as_object().unwrap(), "synthetic").unwrap()["cvr"].is_null()
+        );
+        let events: i64 = tx.query_row("SELECT COUNT(*) FROM audit_log WHERE event_type='company_profile_update' AND actor='user:synthetic'", [], |r|r.get(0)).unwrap();
+        assert_eq!(events, 2);
     }
     #[test]
     fn vat_cadence_preserves_history_and_reopened_activity_blocks_deregistration() {

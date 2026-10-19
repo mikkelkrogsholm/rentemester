@@ -521,9 +521,9 @@ pub mod credit_note;
 
 pub mod assets;
 
+pub mod accruals;
 pub mod budget;
 pub mod mileage;
-pub mod accruals;
 
 pub mod recurring_invoices;
 

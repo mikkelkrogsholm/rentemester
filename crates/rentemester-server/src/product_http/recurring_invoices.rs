@@ -3,7 +3,7 @@ use rentemester_application::recurring_invoices::Action;
 enum Command {
     List,
     Retire(i64, rentemester_storage::recurring_invoices::Retire),
-    Create(rentemester_storage::recurring_invoices::Create),
+    Create(Box<rentemester_storage::recurring_invoices::Create>),
     Generate(i64, rentemester_storage::recurring_invoices::Generate),
 }
 pub(super) async fn handle(State(state): State<Product>, request: Request) -> Response {

@@ -113,17 +113,28 @@ fn audit(tx: &Transaction<'_>, id: i64, event: &str, actor: &str) -> Result<(), 
     tx.execute("INSERT INTO audit_log(event_type,entity_type,entity_id,message,actor) VALUES(?1,'accrual',?2,?3,?4)",params![event,id.to_string(),format!("{event} {id}"),format!("user:{actor}")]).map_err(invalid)?;
     Ok(())
 }
+struct Posting<'a> {
+    date: &'a str,
+    description: &'a str,
+    document: i64,
+    debit: &'a str,
+    credit: &'a str,
+    amount: &'a Money,
+}
 fn post(
     tx: &Transaction<'_>,
-    date: &str,
-    description: &str,
-    document: i64,
-    debit: &str,
-    credit: &str,
-    amount: &Money,
+    posting: Posting<'_>,
     actor: &str,
     latest: Date,
 ) -> Result<i64, Error> {
+    let Posting {
+        date,
+        description,
+        document,
+        debit,
+        credit,
+        amount,
+    } = posting;
     let request = ManualJournal {
         transaction_date: Date::parse(date)?,
         text: description.to_owned(),
@@ -259,12 +270,14 @@ pub fn register(
     };
     let entry = post(
         tx,
-        &i.registration_date,
-        &format!("Accrual registration: {}", i.description.trim()),
-        i.document_id,
-        debit,
-        credit,
-        &total,
+        Posting {
+            date: &i.registration_date,
+            description: &format!("Accrual registration: {}", i.description.trim()),
+            document: i.document_id,
+            debit,
+            credit,
+            amount: &total,
+        },
         actor,
         latest,
     )?;
@@ -311,15 +324,17 @@ pub fn recognize(
     };
     let entry = post(
         tx,
-        &i.transaction_date,
-        &format!(
-            "Accrual period {}/{}: {}",
-            i.period_index, a.periods, a.description
-        ),
-        a.document,
-        debit,
-        credit,
-        &amount,
+        Posting {
+            date: &i.transaction_date,
+            description: &format!(
+                "Accrual period {}/{}: {}",
+                i.period_index, a.periods, a.description
+            ),
+            document: a.document,
+            debit,
+            credit,
+            amount: &amount,
+        },
         actor,
         latest,
     )?;
@@ -431,6 +446,28 @@ mod tests {
         assert_eq!(snapshot.trial_balance["balanced"], true);
         assert_eq!(snapshot.income_statement["totalExpense"], 2000.0);
         assert_eq!(snapshot.income_statement["totalIncome"], 1000.0);
+        let mut statement = tx.prepare("SELECT registration_journal_entry_id FROM accruals UNION ALL SELECT journal_entry_id FROM accrual_schedule_postings").unwrap();
+        let protected = statement
+            .query_map([], |r| r.get::<_, i64>(0))
+            .unwrap()
+            .collect::<Result<Vec<_>, _>>()
+            .unwrap();
+        for entry in protected {
+            let request = serde_json::from_value(json!({"entryId":entry.to_string(),"transactionDate":"2026-10-19","reason":"Synthetic standalone reversal refusal"})).unwrap();
+            let result = crate::journal_reversal::reverse(
+                &tx,
+                &request,
+                &crate::journal_preview::manual_journal_rule_version().unwrap(),
+                latest,
+                crate::journal_post::Actor {
+                    subject: "user:synthetic",
+                    program: "synthetic",
+                },
+            )
+            .unwrap();
+            assert_eq!(result["ok"], false);
+            assert!(result["errors"].to_string().contains("accrual"));
+        }
         let a = load(&tx, 1).unwrap();
         assert!(intact(&tx, a.registration + 100000).is_err());
     }
