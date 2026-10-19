@@ -2,10 +2,16 @@ use super::*;
 use crate::posting_rules::{self, Input};
 use rusqlite::{Connection, TransactionBehavior};
 fn fixture() -> Connection {
+    fixture_with_bank(true)
+}
+fn fixture_with_bank(with_bank: bool) -> Connection {
     let mut db = Connection::open_in_memory().unwrap();
     let mut control = Connection::open_in_memory().unwrap();
     crate::fresh::initialize_empty_pair(&mut control, &mut db, "Synthetic purchase rules").unwrap();
-    db.execute_batch("INSERT INTO accounts(account_no,name,type,normal_balance)VALUES('6000','Synthetic purchase expense','expense','debit'),('6001','Synthetic alternate expense','expense','debit');INSERT INTO bank_transactions(id,transaction_date,text,amount,currency)VALUES(1,'2026-10-18','Synthetic supplier debit',-125,'DKK'),(2,'2026-10-18','Synthetic supplier debit',-125,'DKK')").unwrap();
+    db.execute_batch("INSERT INTO accounts(account_no,name,type,normal_balance)VALUES('6000','Synthetic purchase expense','expense','debit'),('6001','Synthetic alternate expense','expense','debit');").unwrap();
+    if with_bank {
+        db.execute_batch("INSERT INTO bank_transactions(id,transaction_date,text,amount,currency)VALUES(1,'2026-10-18','Synthetic supplier debit',-125,'DKK'),(2,'2026-10-18','Synthetic supplier debit',-125,'DKK')").unwrap();
+    }
     let tx = db
         .transaction_with_behavior(TransactionBehavior::Immediate)
         .unwrap();
@@ -192,4 +198,160 @@ fn approved_unsupported_legacy_family_blocks_fallback_to_otherwise_matching_nati
     );
     assert!(apply(&tx, 1, 1, &day, &proof, "unsupported", "user:poster").is_err());
     tx.rollback().unwrap();
+}
+
+fn replace_immutable(db: &Connection, table: &str, statement: &str) {
+    let triggers = db
+        .prepare("SELECT name,sql FROM sqlite_schema WHERE type='trigger' AND tbl_name=?1")
+        .unwrap()
+        .query_map([table], |r| {
+            Ok((r.get::<_, String>(0)?, r.get::<_, String>(1)?))
+        })
+        .unwrap()
+        .collect::<Result<Vec<_>, _>>()
+        .unwrap();
+    for (name, _) in &triggers {
+        db.execute_batch(&format!("DROP TRIGGER \"{}\"", name.replace('"', "\"\"")))
+            .unwrap();
+    }
+    db.execute_batch(statement).unwrap();
+    for (_, ddl) in &triggers {
+        db.execute_batch(ddl).unwrap();
+    }
+}
+#[test]
+fn backup_preserves_historical_disabled_rule_application_and_refuses_corrupt_proof() {
+    let mut db = fixture();
+    let tx = db
+        .transaction_with_behavior(TransactionBehavior::Immediate)
+        .unwrap();
+    approved_rule(&tx, "historical", true);
+    let day = today(&tx);
+    let proof = inspect(&tx, 1, 1, &day).unwrap();
+    apply(&tx, 1, 1, &day, &proof, "historical-proof", "user:poster").unwrap();
+    let disable: Input = serde_json::from_value(json!({"confirm":true,"ruleId":"historical","version":1,"expectedPayloadHash":proof["payloadHash"],"rationale":"Later explicit disable","provenance":"synthetic"})).unwrap();
+    posting_rules::change(&tx, "disable", &disable, "user:reviewer", &day).unwrap();
+    tx.commit().unwrap();
+    // Current account activity is not historical authority.
+    db.execute("UPDATE accounts SET active=0 WHERE account_no='6000'", [])
+        .unwrap();
+    let before = db.total_changes();
+    validate_backup(&db).unwrap();
+    assert_eq!(db.total_changes(), before);
+    let dir = tempfile::tempdir().unwrap();
+    let path = dir.path().join("rules.sqlite");
+    db.execute("VACUUM INTO ?1", [path.to_str().unwrap()])
+        .unwrap();
+    drop(db);
+    let db = Connection::open(path).unwrap();
+    validate_backup(&db).unwrap();
+    replace_immutable(
+        &db,
+        "posting_rule_applications",
+        "UPDATE posting_rule_applications SET explanation_json=json_set(explanation_json,'$.outcome.account','6001')",
+    );
+    assert!(validate_backup(&db).is_err());
+    assert_eq!(
+        crate::portable_backup::company(&db).err().unwrap().code,
+        "purchase_rule_refused"
+    );
+}
+#[test]
+fn backup_refuses_canonical_rule_and_lifecycle_corruption_even_without_applications() {
+    for (table, sql) in [
+        (
+            "posting_rule_versions",
+            "UPDATE posting_rule_versions SET outcome_json='{\"account\":\"6001\",\"vatTreatment\":\"standard\"}'",
+        ),
+        (
+            "posting_rule_lifecycle_events",
+            "UPDATE posting_rule_lifecycle_events SET actor='user:author',approver='user:author' WHERE state='approved'",
+        ),
+    ] {
+        let mut db = fixture();
+        let tx = db
+            .transaction_with_behavior(TransactionBehavior::Immediate)
+            .unwrap();
+        approved_rule(&tx, "reviewed", true);
+        tx.commit().unwrap();
+        validate_backup(&db).unwrap();
+        replace_immutable(&db, table, sql);
+        assert!(validate_backup(&db).is_err(), "{table}");
+    }
+}
+
+#[test]
+fn complete_atomic_two_purchase_inventory_passes_shared_backup_validator_after_reopen() {
+    use crate::bookkeeping_batch as batch;
+    use rentemester_engine::bookkeeping_batch::{Exact, Persist, Scope};
+    let mut db = fixture_with_bank(false);
+    let tx = db
+        .transaction_with_behavior(TransactionBehavior::Immediate)
+        .unwrap();
+    tx.execute_batch("UPDATE companies SET vat_period_type='quarter';
+        INSERT INTO accounts(account_no,name,type,normal_balance)VALUES('A','Synthetic bank','asset','debit'),('V','Synthetic VAT','vat','debit');
+        INSERT INTO account_role_mappings(role,account_no,status,version,confirmed_by)VALUES('input_vat','V','confirmed',1,'synthetic');
+        INSERT INTO bank_accounts(slug,name,ledger_account_no)VALUES('synthetic','Synthetic bank','A');").unwrap();
+    let csv = "date;text;amount\n2026-10-18;Synthetic supplier debit SYN-1;-125\n2026-10-18;Synthetic supplier debit SYN-2;-125\n";
+    crate::bank::import(
+        &tx,
+        csv,
+        &rentemester_engine::bank::parse(csv).unwrap(),
+        Some("synthetic"),
+        "synthetic",
+        "2026-10-18T12:00:00Z",
+        "synthetic-bank-original",
+    )
+    .unwrap();
+    let mut rule = proposal("backup-batch", true);
+    rule.proposal.as_mut().unwrap().conditions.attributes = None;
+    let day = today(&tx);
+    let created = posting_rules::change(&tx, "propose", &rule, "user:author", &day).unwrap();
+    let review:Input=serde_json::from_value(json!({"confirm":true,"ruleId":"backup-batch","version":1,"expectedPayloadHash":created["payloadHash"],"rationale":"Independent synthetic backup review","provenance":"synthetic"})).unwrap();
+    posting_rules::change(&tx, "approve", &review, "user:reviewer", &day).unwrap();
+    let scope:Scope=serde_json::from_value(json!({"accountingFrom":"2026-10-01","accountingTo":"2026-10-31","bankFrom":"2026-10-01","bankTo":"2026-10-31"})).unwrap();
+    let latest = Date::parse("2026-12-01").unwrap();
+    let plan = batch::plan(&tx, &scope, latest, &day).unwrap();
+    assert_eq!(
+        plan["items"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .filter(|i| i["partition"] == "ready")
+            .count(),
+        2,
+        "{plan}"
+    );
+    let persist:Persist=serde_json::from_value(json!({"accountingFrom":"2026-10-01","accountingTo":"2026-10-31","bankFrom":"2026-10-01","bankTo":"2026-10-31","runKey":"synthetic-backup-batch","expectedPlanHash":plan["planHash"],"confirm":true})).unwrap();
+    let run = batch::persist(&tx, &persist, "author", latest, &day).unwrap();
+    let exact = Exact {
+        run_id: run["runId"].as_i64().unwrap(),
+        plan_hash: plan["planHash"].as_str().unwrap().into(),
+        confirm: true,
+    };
+    batch::approve(&tx, &exact, "reviewer", latest, &day).unwrap();
+    batch::apply(&tx, &exact, "poster", latest, &day).unwrap();
+    tx.commit().unwrap();
+    let before = db.total_changes();
+    crate::portable_backup::company(&db).unwrap();
+    assert_eq!(before, db.total_changes());
+    let dir = tempfile::tempdir().unwrap();
+    let path = dir.path().join("complete-batch.sqlite");
+    db.execute("VACUUM INTO ?1", [path.to_str().unwrap()])
+        .unwrap();
+    drop(db);
+    let db = Connection::open(path).unwrap();
+    crate::portable_backup::company(&db).unwrap();
+    assert_eq!(
+        db.query_row("SELECT count(*) FROM journal_entries", [], |r| r
+            .get::<_, i64>(0))
+            .unwrap(),
+        2
+    );
+    replace_immutable(
+        &db,
+        "posting_rule_applications",
+        "UPDATE posting_rule_applications SET explanation_json=json_set(explanation_json,'$.explanation.reasons',json('[\"changed\"]')) WHERE id=1",
+    );
+    assert!(crate::portable_backup::company(&db).is_err());
 }

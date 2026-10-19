@@ -3,7 +3,7 @@ use rentemester_engine::{
     Error,
     parties::{self as policy, Identifier},
 };
-use rusqlite::{OptionalExtension, Transaction, params};
+use rusqlite::{Connection, OptionalExtension, Transaction, params};
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
 use std::collections::BTreeSet;
@@ -154,7 +154,7 @@ pub fn capture(control: &Transaction<'_>, input: &PlanInput, slug: &str) -> Resu
         json!({"partyId":party["partyId"],"kind":party["kind"],"name":party["name"],"identifiers":party["identifiers"],"roles":roles,"history":party["history"]}),
     )
 }
-fn document(tx: &Transaction<'_>, id: i64) -> Result<Value, Error> {
+fn document(tx: &Connection, id: i64) -> Result<Value, Error> {
     type DocumentColumns = (
         String,
         Option<String>,
@@ -200,7 +200,7 @@ pub fn plan(tx: &Transaction<'_>, input: &PlanInput, snapshot: &Value) -> Result
     p["planHash"] = json!(hash(&p)?);
     Ok(json!({"ok":true,"plan":p}))
 }
-fn checked_history(tx: &Transaction<'_>, document_id: i64) -> Result<Vec<Value>, Error> {
+fn checked_history(tx: &Connection, document_id: i64) -> Result<Vec<Value>, Error> {
     let mut q=tx.prepare("SELECT id,party_id,party_role,event_type,evidence_kind,evidence_json,document_sha256,document_payload_sha256,party_snapshot_json,plan_hash,reason,actor,principal,created_at,idempotency_key FROM document_party_link_events WHERE document_id=?1 ORDER BY id").map_err(sql)?;
     let mut rows = q.query([document_id]).map_err(sql)?;
     let mut out = vec![];
@@ -253,6 +253,47 @@ fn checked_history(tx: &Transaction<'_>, document_id: i64) -> Result<Vec<Value>,
         out.push(json!({"id":id,"party_id":party,"party_role":role,"event_type":event,"evidence_kind":evidence_kind,"evidence_json":evidence_raw,"document_sha256":sha,"document_payload_sha256":payload_sha,"party_snapshot_json":snapshot_raw,"plan_hash":plan_hash,"reason":reason,"actor":actor,"principal":principal,"created_at":created,"idempotency_key":key}));
     }
     Ok(out)
+}
+/// Historical validation on a signed snapshot; no current registry grants are adopted.
+pub fn validate_backup(db: &Connection) -> Result<(), Error> {
+    let ids = db
+        .prepare("SELECT DISTINCT document_id FROM document_party_link_events ORDER BY document_id")
+        .map_err(sql)?
+        .query_map([], |r| r.get::<_, i64>(0))
+        .map_err(sql)?
+        .collect::<Result<Vec<_>, _>>()
+        .map_err(sql)?;
+    for id in ids {
+        let source = document(db, id)?;
+        for event in checked_history(db, id)? {
+            if event["document_sha256"] != source["sha256"]
+                || event["document_payload_sha256"] != source["payloadHash"]
+            {
+                return Err(refused("DOCUMENT_PARTY_HISTORY_SOURCE_MISMATCH"));
+            }
+            let snapshot: Value = serde_json::from_str(
+                event["party_snapshot_json"]
+                    .as_str()
+                    .ok_or_else(|| refused("DOCUMENT_PARTY_HISTORY_REFUSED"))?,
+            )
+            .map_err(sql)?;
+            let role = event["party_role"]
+                .as_str()
+                .ok_or_else(|| refused("DOCUMENT_PARTY_HISTORY_REFUSED"))?;
+            if !snapshot["roles"]
+                .as_array()
+                .is_some_and(|roles| !roles.is_empty() && roles.iter().all(|r| r["role"] == role))
+            {
+                return Err(refused("DOCUMENT_PARTY_HISTORY_ROLE_MISMATCH"));
+            }
+            crate::cookie_session::timestamp(
+                event["created_at"]
+                    .as_str()
+                    .ok_or_else(|| refused("DOCUMENT_PARTY_HISTORY_REFUSED"))?,
+            )?;
+        }
+    }
+    Ok(())
 }
 pub fn history(tx: &Transaction<'_>, document_id: i64) -> Result<Value, Error> {
     document(tx, document_id)?;

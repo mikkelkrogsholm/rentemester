@@ -4,7 +4,7 @@ use crate::{
     posting_rules::{Conditions, Outcome},
 };
 use rentemester_engine::{Error, document, fiscal_year::Date, money::Money};
-use rusqlite::{OptionalExtension, Transaction, params};
+use rusqlite::{Connection, OptionalExtension, Transaction, params};
 use serde_json::{Value, json};
 fn refused(message: &str) -> Error {
     Error::new("purchase_rule_refused", message)
@@ -38,7 +38,7 @@ struct Rule {
     creator: String,
     payload_hash: String,
 }
-fn rules(tx: &Transaction<'_>, company: i64) -> Result<Vec<Rule>, Error> {
+fn rules(tx: &Connection, company: i64) -> Result<Vec<Rule>, Error> {
     let mut q=tx.prepare("SELECT id,rule_id,version,effective_from,effective_to,conditions_json,outcome_json,provenance,rationale,created_by,payload_hash FROM posting_rule_versions WHERE company_id=?1 ORDER BY rule_id,version,id LIMIT 1001").map_err(invalid)?;
     let rows = q
         .query_map([company], |r| {
@@ -64,7 +64,7 @@ fn rules(tx: &Transaction<'_>, company: i64) -> Result<Vec<Rule>, Error> {
     }
     Ok(rows)
 }
-fn approved(tx: &Transaction<'_>, r: &Rule, cutoff: &str) -> Result<bool, Error> {
+fn approved(tx: &Connection, r: &Rule, cutoff: &str) -> Result<bool, Error> {
     let mut q=tx.prepare("SELECT state,actor,approver,expected_payload_hash,effective_at FROM posting_rule_lifecycle_events WHERE rule_version_id=?1 AND effective_at<=?2 ORDER BY effective_at,id").map_err(invalid)?;
     let mut rows = q.query(params![r.id, cutoff]).map_err(invalid)?;
     let mut state = None;
@@ -371,6 +371,171 @@ pub fn apply(
     result["postingRuleApplicationId"] = json!(id);
     result["duplicate"] = json!(duplicate);
     Ok(result)
+}
+/// Validate persisted evidence, never today's rule/account/dimension eligibility.
+pub fn validate_backup(db: &Connection) -> Result<(), Error> {
+    let companies = db
+        .prepare("SELECT id FROM companies ORDER BY id")
+        .map_err(invalid)?
+        .query_map([], |r| r.get::<_, i64>(0))
+        .map_err(invalid)?
+        .collect::<Result<Vec<_>, _>>()
+        .map_err(invalid)?;
+    for company in companies {
+        let versions = rules(db, company)?;
+        for r in &versions {
+            let conditions: Value = serde_json::from_str(&r.conditions).map_err(invalid)?;
+            let outcome: Value = serde_json::from_str(&r.outcome).map_err(invalid)?;
+            let payload = json!({"ruleId":r.rule,"companyId":company,"effectiveFrom":r.from,"effectiveTo":r.to,"conditions":conditions,"outcome":outcome,"provenance":r.provenance,"rationale":r.rationale});
+            at(&r.from)?;
+            if let Some(to) = &r.to {
+                at(to)?;
+            }
+            if r.id <= 0
+                || r.version <= 0
+                || conditions["company"] != company
+                || r.to.as_ref().is_some_and(|to| to < &r.from)
+                || !conditions.is_object()
+                || !outcome.is_object()
+                || hash(&payload)? != r.payload_hash
+            {
+                return Err(refused("stored rule canonical payload differs"));
+            }
+            // Validate every transition, including disabled/superseded histories.
+            approved(db, r, "9999-12-31T23:59:59.999Z")?;
+            let count: i64 = db
+                .query_row(
+                    "SELECT count(*) FROM posting_rule_lifecycle_events WHERE rule_version_id=?1",
+                    [r.id],
+                    |row| row.get(0),
+                )
+                .map_err(invalid)?;
+            if count == 0 {
+                return Err(refused("stored rule has no proposal history"));
+            }
+        }
+        let mut q = db.prepare("SELECT id,document_id,rule_version_id,rule_payload_hash,decision,explanation_json,application_key,created_at FROM posting_rule_applications WHERE company_id=?1 ORDER BY id").map_err(invalid)?;
+        let mut applications = q.query([company]).map_err(invalid)?;
+        while let Some(row) = applications.next().map_err(invalid)? {
+            let id: i64 = row.get(0).map_err(invalid)?;
+            let doc: Option<i64> = row.get(1).map_err(invalid)?;
+            let version: Option<i64> = row.get(2).map_err(invalid)?;
+            let payload_hash: Option<String> = row.get(3).map_err(invalid)?;
+            let decision: String = row.get(4).map_err(invalid)?;
+            let raw: String = row.get(5).map_err(invalid)?;
+            let key: String = row.get(6).map_err(invalid)?;
+            let created: String = row.get(7).map_err(invalid)?;
+            at(&created)?;
+            let proof: Value = serde_json::from_str(&raw).map_err(invalid)?;
+            if !text(&key, 512) || proof["decision"] != decision {
+                return Err(refused("stored rule application identity differs"));
+            }
+            if let Some(doc) = doc {
+                let exists: bool = db
+                    .query_row(
+                        "SELECT EXISTS(SELECT 1 FROM documents WHERE id=?1)",
+                        [doc],
+                        |r| r.get(0),
+                    )
+                    .map_err(invalid)?;
+                if !exists {
+                    return Err(refused("stored rule application document missing"));
+                }
+            }
+            if decision == "proposed" {
+                let r = versions
+                    .iter()
+                    .find(|r| Some(r.id) == version)
+                    .ok_or_else(|| refused("stored rule application version missing"))?;
+                if payload_hash.as_deref() != Some(r.payload_hash.as_str())
+                    || proof["ruleVersionId"] != r.id
+                    || proof["payloadHash"] != r.payload_hash
+                {
+                    return Err(refused("stored rule application payload differs"));
+                }
+                let original: Value = serde_json::from_str(&r.outcome).map_err(invalid)?;
+                if proof.get("proofHash").is_some() || proof.get("source").is_some() {
+                    let mut bound = proof.clone();
+                    bound
+                        .as_object_mut()
+                        .ok_or_else(|| refused("stored purchase proof object required"))?
+                        .remove("proofHash");
+                    let (day, cutoff) = at(proof["source"]["asOf"]
+                        .as_str()
+                        .ok_or_else(|| refused("stored purchase proof date missing"))?)?;
+                    let bank = proof["source"]["bankTransactionId"]
+                        .as_i64()
+                        .filter(|n| *n > 0)
+                        .ok_or_else(|| refused("stored purchase proof bank missing"))?;
+                    let bank_exists: bool = db
+                        .query_row(
+                            "SELECT EXISTS(SELECT 1 FROM bank_transactions WHERE id=?1)",
+                            [bank],
+                            |row| row.get(0),
+                        )
+                        .map_err(invalid)?;
+                    let expected = json!({"account":original["account"],"vatTreatment":original["vatTreatment"],"dimensions":original.get("dimensions").cloned().unwrap_or_else(|| json!({}))});
+                    // The native audit sequence disambiguates same-millisecond transitions.
+                    // Later disable/supersession must not invalidate a historical application.
+                    let audits: Vec<(i64,String)> = db.prepare("SELECT id,message FROM audit_log WHERE event_type='posting_rule_applied' AND entity_type='posting_rule_application' AND entity_id=?1 ORDER BY id").map_err(invalid)?
+                        .query_map([id.to_string()], |row| Ok((row.get(0)?,row.get(1)?))).map_err(invalid)?
+                        .collect::<Result<_,_>>().map_err(invalid)?;
+                    let [(audit_id, message)] = audits.as_slice() else {
+                        return Err(refused(
+                            "stored purchase application audit missing or conflicting",
+                        ));
+                    };
+                    let message: Value = serde_json::from_str(message).map_err(invalid)?;
+                    let before: Option<String> = db.query_row("SELECT message FROM audit_log WHERE event_type='posting_rule_transition' AND entity_type='posting_rule' AND entity_id=?1 AND id<?2 ORDER BY id DESC LIMIT 1", params![r.id.to_string(),audit_id], |row| row.get(0)).optional().map_err(invalid)?;
+                    let reviewed: bool = db.query_row("SELECT EXISTS(SELECT 1 FROM posting_rule_lifecycle_events WHERE rule_version_id=?1 AND state='approved' AND effective_at<=?2 AND effective_at<=?3)", params![r.id,cutoff,created], |row| row.get(0)).map_err(invalid)?;
+                    if before.as_deref() != Some("approved")
+                        || message["applicationKey"] != key
+                        || message["proofHash"] != proof["proofHash"]
+                    {
+                        return Err(refused("stored purchase application audit proof differs"));
+                    }
+                    if hash(&bound)? != proof["proofHash"]
+                        || proof["ok"] != true
+                        || doc != proof["source"]["documentId"].as_i64()
+                        || !bank_exists
+                        || !proof["source"]["sourceHash"].as_str().is_some_and(|s| {
+                            s.len() == 64
+                                && s.bytes()
+                                    .all(|b| b.is_ascii_hexdigit() && !b.is_ascii_uppercase())
+                        })
+                        || proof["outcome"] != expected
+                        || r.from > day
+                        || r.to.as_ref().is_some_and(|to| to < &day)
+                        || !reviewed
+                    {
+                        return Err(refused("stored purchase application proof differs"));
+                    }
+                } else if proof["outcome"] != original {
+                    return Err(refused("stored legacy rule application outcome differs"));
+                }
+            } else if decision != "human_decision" || version.is_some() || payload_hash.is_some() {
+                return Err(refused("stored rule application decision unsupported"));
+            }
+            // Native batch review freezes the complete inspect proof, not just its hash columns.
+            let mut links = db.prepare("SELECT r.plan_json FROM bookkeeping_batch_applied_links l JOIN bookkeeping_batch_revisions r ON r.run_id=l.run_id WHERE l.posting_rule_application_id=?1").map_err(invalid)?;
+            let plans = links
+                .query_map([id], |row| row.get::<_, String>(0))
+                .map_err(invalid)?;
+            for plan in plans {
+                let plan: Value = serde_json::from_str(&plan.map_err(invalid)?).map_err(invalid)?;
+                if !plan["items"].as_array().is_some_and(|items| {
+                    items.iter().any(|item| {
+                        item["documentId"].as_i64() == doc && item["detail"]["rule"] == proof
+                    })
+                }) {
+                    return Err(refused(
+                        "stored rule application differs from reviewed batch",
+                    ));
+                }
+            }
+        }
+    }
+    Ok(())
 }
 #[cfg(test)]
 mod tests;

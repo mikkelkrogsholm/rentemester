@@ -270,3 +270,67 @@ fn hidden_party_wrong_role_conflicting_identifier_and_legacy_inference_refuse() 
         "NO_IDENTIFIER_EVIDENCE"
     );
 }
+
+#[test]
+fn backup_validates_linked_and_superseded_history_without_live_registry() {
+    let (mut control, mut ledger) = fixture();
+    let ct = control
+        .transaction_with_behavior(TransactionBehavior::Immediate)
+        .unwrap();
+    let tx = ledger
+        .transaction_with_behavior(TransactionBehavior::Immediate)
+        .unwrap();
+    let i = input(1);
+    let snapshot = capture(&ct, &i, "synthetic").unwrap();
+    let p = plan(&tx, &i, &snapshot).unwrap();
+    apply(
+        &tx,
+        &apply_input(&i, &p["plan"]["planHash"], "backup-link"),
+        &snapshot,
+        "user:original",
+        "user:original",
+        "2026-10-19T01:00:00.000Z",
+    )
+    .unwrap();
+    supersede_link(
+        &tx,
+        &Supersede {
+            document_id: 1,
+            role: "vendor".into(),
+            plan_hash: p["plan"]["planHash"].as_str().unwrap().into(),
+            reason: "Historical correction".into(),
+            confirm: true,
+        },
+    );
+    tx.commit().unwrap();
+    ct.rollback().unwrap();
+    drop(control); // No restored/live party registry is consulted.
+    let before = ledger.total_changes();
+    validate_backup(&ledger).unwrap();
+    assert_eq!(ledger.total_changes(), before);
+    let dir = tempfile::tempdir().unwrap();
+    let path = dir.path().join("historical.sqlite");
+    ledger
+        .execute("VACUUM INTO ?1", [path.to_str().unwrap()])
+        .unwrap();
+    drop(ledger);
+    let ledger = Connection::open(path).unwrap();
+    validate_backup(&ledger).unwrap();
+    let triggers = ledger.prepare("SELECT name,sql FROM sqlite_schema WHERE type='trigger' AND tbl_name='document_party_link_events'").unwrap().query_map([], |r| Ok((r.get::<_,String>(0)?,r.get::<_,String>(1)?))).unwrap().collect::<Result<Vec<_>,_>>().unwrap();
+    for (name, _) in &triggers {
+        ledger
+            .execute_batch(&format!("DROP TRIGGER \"{}\"", name.replace('"', "\"\"")))
+            .unwrap();
+    }
+    ledger
+        .execute(
+            "UPDATE document_party_link_events SET party_snapshot_json='{}' WHERE id=1",
+            [],
+        )
+        .unwrap();
+    for (_, ddl) in &triggers {
+        ledger.execute_batch(ddl).unwrap();
+    }
+    assert!(validate_backup(&ledger).is_err());
+    assert!(crate::portable_backup::company(&ledger).is_err());
+}
