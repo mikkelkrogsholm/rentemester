@@ -16,6 +16,7 @@ mod journal;
 mod journal_attempt;
 mod local_backend;
 mod login;
+mod reporting;
 use rentemester_client::{ApiClient, Report};
 use serde_json::Value;
 use std::{path::PathBuf, sync::Arc};
@@ -182,6 +183,7 @@ struct Desktop {
     trial: Option<Trial>,
     journal: Option<Entity<journal::Journal>>,
     invoice: Option<Entity<invoice::Invoice>>,
+    reporting: Option<Entity<reporting::Reporting>>,
     status: String,
     busy: bool,
 }
@@ -262,6 +264,7 @@ impl Desktop {
             trial: None,
             journal: None,
             invoice: None,
+            reporting: None,
             status: "Forbind til din Rentemester-server og log ind med e-mail, adgangskode og MFA."
                 .into(),
             busy: false,
@@ -356,6 +359,7 @@ impl Desktop {
         self.trial = None;
         self.journal = None;
         self.invoice = None;
+        self.reporting = None;
         self.status = "Forbinder…".into();
         let server = self.connection_origin(cx);
         let cookie = PathBuf::from(self.cookie.read(cx).value().to_string());
@@ -416,6 +420,7 @@ impl Desktop {
         self.trial = None;
         self.journal = None;
         self.invoice = None;
+        self.reporting = None;
         self.busy = true;
         self.status = "Kontrollerer login…".into();
         let origin = self.connection_origin(cx);
@@ -510,6 +515,7 @@ impl Desktop {
         self.trial = None;
         self.journal = None;
         self.invoice = None;
+        self.reporting = None;
         self.password
             .update(cx, |input, cx| input.set_value("", window, cx));
         self.code
@@ -528,6 +534,7 @@ impl Desktop {
         self.trial = None;
         self.journal = None;
         self.invoice = None;
+        self.reporting = None;
         self.selected = Some(slug.clone());
         self.status = "Henter saldobalance…".into();
         let year = self.year.read(cx).value().to_string();
@@ -796,6 +803,20 @@ impl Render for Desktop {
             );
         }
         content = content.child(list);
+        if let Some(reporting) = self.reporting.clone() {
+            return content
+                .child(
+                    Button::new("reports-close")
+                        .label("Luk rapporter og genindlæs saldobalance")
+                        .on_click(cx.listener(|this, _, _, cx| {
+                            this.reporting = None;
+                            if let Some(slug) = this.selected.clone() {
+                                this.load(slug, cx);
+                            }
+                        })),
+                )
+                .child(reporting);
+        }
         if let Some(invoice) = self.invoice.clone() {
             return content
                 .child(
@@ -888,6 +909,27 @@ impl Render for Desktop {
                             };
                             this.invoice = Some(cx.new(|cx| {
                                 invoice::Invoice::new(session, origin, company, local, window, cx)
+                            }));
+                            cx.notify();
+                        }
+                    })),
+            );
+        }
+        if self.session.is_some() && self.selected.is_some() {
+            content = content.child(
+                Button::new("reports-open")
+                    .label("Rapporter")
+                    .disabled(self.busy)
+                    .on_click(cx.listener(|this, _, window, cx| {
+                        if let (Some(session), Some(company)) =
+                            (this.session.clone(), this.selected.clone())
+                        {
+                            let origin = this.connection_origin(cx);
+                            let year = this.year.read(cx).value().to_string();
+                            this.reporting = Some(cx.new(|cx| {
+                                reporting::Reporting::new(
+                                    session, company, origin, year, window, cx,
+                                )
                             }));
                             cx.notify();
                         }
