@@ -24,6 +24,10 @@ mod login;
 mod reporting;
 mod payables;
 mod payables_state;
+mod mileage;
+mod mileage_state;
+mod company_setup;
+mod company_setup_state;
 use rentemester_client::{ApiClient, Report};
 use serde_json::Value;
 use std::{path::PathBuf, sync::Arc};
@@ -195,6 +199,8 @@ struct Desktop {
     contacts: Option<Entity<contacts::Contacts>>,
     documents: Option<Entity<documents::Documents>>,
     payables: Option<Entity<payables::Payables>>,
+    mileage: Option<Entity<mileage::Mileage>>,
+    company_setup: Option<Entity<company_setup::CompanySetup>>,
     status: String,
     busy: bool,
 }
@@ -280,6 +286,8 @@ impl Desktop {
             contacts: None,
             documents: None,
             payables: None,
+            mileage: None,
+            company_setup: None,
             status: "Forbind til din Rentemester-server og log ind med e-mail, adgangskode og MFA."
                 .into(),
             busy: false,
@@ -379,6 +387,8 @@ impl Desktop {
         self.contacts = None;
         self.documents = None;
         self.payables = None;
+        self.mileage = None;
+        self.company_setup = None;
         self.status = "Forbinder…".into();
         let server = self.connection_origin(cx);
         let cookie = PathBuf::from(self.cookie.read(cx).value().to_string());
@@ -444,6 +454,8 @@ impl Desktop {
         self.contacts = None;
         self.documents = None;
         self.payables = None;
+        self.mileage = None;
+        self.company_setup = None;
         self.busy = true;
         self.status = "Kontrollerer login…".into();
         let origin = self.connection_origin(cx);
@@ -543,6 +555,8 @@ impl Desktop {
         self.contacts = None;
         self.documents = None;
         self.payables = None;
+        self.mileage = None;
+        self.company_setup = None;
         self.password
             .update(cx, |input, cx| input.set_value("", window, cx));
         self.code
@@ -566,6 +580,8 @@ impl Desktop {
         self.contacts = None;
         self.documents = None;
         self.payables = None;
+        self.mileage = None;
+        self.company_setup = None;
         self.selected = Some(slug.clone());
         self.status = "Henter saldobalance…".into();
         let year = self.year.read(cx).value().to_string();
@@ -834,6 +850,22 @@ impl Render for Desktop {
             );
         }
         content = content.child(list);
+        if let Some(setup) = self.company_setup.clone() {
+            return content.child(Button::new("company-setup-close")
+                .label("Luk virksomhedsopsætning og genindlæs saldobalance")
+                .on_click(cx.listener(|this, _, _, cx| {
+                    this.company_setup = None;
+                    if let Some(slug) = this.selected.clone() { this.load(slug, cx); }
+                }))).child(setup);
+        }
+        if let Some(mileage) = self.mileage.clone() {
+            return content.child(Button::new("mileage-close")
+                .label("Luk kørsel og genindlæs saldobalance")
+                .on_click(cx.listener(|this, _, _, cx| {
+                    this.mileage = None;
+                    if let Some(slug) = this.selected.clone() { this.load(slug, cx); }
+                }))).child(mileage);
+        }
         if let Some(payables) = self.payables.clone() {
             return content.child(Button::new("payables-close").label("Luk leverandørgæld og genindlæs saldobalance").on_click(cx.listener(|this,_,_,cx|{this.payables=None;if let Some(slug)=this.selected.clone(){this.load(slug,cx);}}))).child(payables);
         }
@@ -959,6 +991,35 @@ impl Render for Desktop {
                         }
                     })),
             );
+        }
+        if self.session.is_some() && self.selected.is_some() {
+            content = content.child(Button::new("company-setup-open").label("Virksomhedsopsætning").disabled(self.busy)
+                .on_click(cx.listener(|this, _, window, cx| {
+                    if let (Some(session), Some(company)) = (this.session.clone(), this.selected.clone()) {
+                        let origin = this.connection_origin(cx);
+                        let local = match this.managed.as_ref().map(|m| m.journal_identity()).transpose() {
+                            Ok(identity) => identity,
+                            Err(error) => { this.status = error; cx.notify(); return; }
+                        };
+                        this.company_setup = Some(cx.new(|cx| company_setup::CompanySetup::new(session, origin, company, local, window, cx)));
+                        cx.notify();
+                    }
+                })));
+        }
+        if self.session.is_some() && self.selected.is_some() {
+            content = content.child(Button::new("mileage-open").label("Kørsel").disabled(self.busy)
+                .on_click(cx.listener(|this, _, window, cx| {
+                    if let (Some(session), Some(company)) = (this.session.clone(), this.selected.clone()) {
+                        let origin = this.connection_origin(cx);
+                        let year = this.year.read(cx).value().to_string();
+                        let local = match this.managed.as_ref().map(|m| m.journal_identity()).transpose() {
+                            Ok(identity) => identity,
+                            Err(error) => { this.status = error; cx.notify(); return; }
+                        };
+                        this.mileage = Some(cx.new(|cx| mileage::Mileage::new(session, origin, company, year, local, window, cx)));
+                        cx.notify();
+                    }
+                })));
         }
         if self.session.is_some() && self.selected.is_some() {
             content = content.child(
