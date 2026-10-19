@@ -390,3 +390,72 @@ fn child() {
         .unwrap(),
     }
 }
+#[test]
+fn restored_accepted_key_never_becomes_new_intent_under_fresh_principal() {
+    let mut source = fixture();
+    let payload = json!({"synthetic":"accepted response lost"});
+    let tx = source
+        .transaction_with_behavior(TransactionBehavior::Immediate)
+        .unwrap();
+    let (_, original) = accepted(execute(&tx, input(&payload, "lost-original"), effect).unwrap());
+    tx.commit().unwrap();
+    let uuid: String = source
+        .query_row("SELECT ledger_uuid FROM ledger_identity", [], |r| r.get(0))
+        .unwrap();
+    // Restore keeps this exact ledger/receipt data and appends the immutable imported boundary.
+    let high: i64 = source
+        .query_row(
+            "SELECT MAX(id) FROM mutation_idempotency_tombstones",
+            [],
+            |r| r.get(0),
+        )
+        .unwrap();
+    source.execute("INSERT INTO audit_log(event_type,entity_type,entity_id,message,actor)VALUES('native_restore_receipt_boundary','mutation_idempotency_tombstones',?1,'Synthetic verified archive boundary','system:portable-restore')",[high.to_string()]).unwrap();
+    let tx = source
+        .transaction_with_behavior(TransactionBehavior::Immediate)
+        .unwrap();
+    let mut restored = input(&payload, "lost-original");
+    restored.subject = "fresh-restored-owner";
+    restored.principal_kind = PrincipalKind::User;
+    let refusal = execute(&tx, restored, |_| {
+        panic!("accepted source operation must not execute again")
+    })
+    .err()
+    .unwrap();
+    assert_eq!(refusal.error.code, "RESTORED_KEY_RECONCILIATION_REQUIRED");
+    tx.rollback().unwrap();
+    let tx = source
+        .transaction_with_behavior(TransactionBehavior::Immediate)
+        .unwrap();
+    let new_payload = json!({"synthetic":"new intended operation"});
+    let mut next = input(&new_payload, "fresh-key");
+    next.subject = "fresh-restored-owner";
+    next.principal_kind = PrincipalKind::User;
+    let (_, fresh) = accepted(execute(&tx, next, effect).unwrap());
+    tx.commit().unwrap();
+    assert_ne!(fresh.receipt_id, original.receipt_id);
+    assert_eq!(
+        source
+            .query_row("SELECT ledger_uuid FROM ledger_identity", [], |r| r
+                .get::<_, String>(0))
+            .unwrap(),
+        uuid
+    );
+    assert_eq!(
+        source
+            .query_row("SELECT COUNT(*) FROM receipt_test_effects", [], |r| r
+                .get::<_, i64>(0))
+            .unwrap(),
+        2
+    );
+    assert_eq!(
+        source
+            .query_row(
+                "SELECT COUNT(*) FROM mutation_idempotency_outcomes WHERE tombstone_id=?1",
+                [original.receipt_id],
+                |r| r.get::<_, i64>(0)
+            )
+            .unwrap(),
+        1
+    );
+}

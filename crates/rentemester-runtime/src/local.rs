@@ -65,6 +65,19 @@ fn filesystem(fd: &OwnedFd) -> Result<&'static str, LeaseError> {
     }
 }
 impl WorkspaceLease {
+    /// Called only immediately after the namespace's owner-authorized no-replace
+    /// rename, retaining this exact locked directory descriptor throughout.
+    pub(crate) fn relocate_restore_root(&mut self, target: &Path) -> Result<(), LeaseError> {
+        if self.invalidated
+            || identity(&self.directory)? != self.identity
+            || identity(&open_root(target)?)? != self.identity
+        {
+            return Err(LeaseError::RootChanged);
+        }
+        self.path = target.to_owned();
+        self.ensure_current_root().map(|_| ())
+    }
+
     pub fn acquire(path: &Path) -> Result<Self, LeaseError> {
         let path = bound_path(path)?;
         let directory = open_root(&path)?;

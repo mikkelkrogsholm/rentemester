@@ -2,6 +2,20 @@
 use super::*;
 use std::io::Write;
 impl WorkspaceLayout {
+    pub fn manifest_bytes(&mut self) -> Result<Vec<u8>, LayoutError> {
+        self.ensure_current()?;
+        retained_bytes(&self.bindings[0].file)
+    }
+    pub(crate) fn relocate_restore_root(
+        &mut self,
+        target: &std::path::Path,
+    ) -> Result<(), LayoutError> {
+        self.lease
+            .relocate_restore_root(target)
+            .map_err(LayoutError::Lease)?;
+        self.ensure_current()
+    }
+
     pub fn catalog(&mut self) -> Result<Vec<(String, String, bool)>, LayoutError> {
         self.ensure_current()?;
         let bytes = retained_bytes(&self.bindings[0].file)?;

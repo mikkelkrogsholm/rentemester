@@ -22,6 +22,7 @@ mod annual_report;
 mod obligations;
 mod payables;
 mod periods;
+mod portable_backup;
 mod recurring_invoices;
 mod reviewed_bookkeeping;
 mod sales;
@@ -60,6 +61,7 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
         workers: Arc::new(Semaphore::new(4)),
     };
     Router::new()
+        .route("/api/workspace/backup", post(portable_backup::handle))
         .route("/api/workspace/invitations",get(workspace_access::handle).post(workspace_access::handle))
         .route("/api/workspace/invitations/cancel",post(workspace_access::handle))
         .route("/api/invitations/claim",post(workspace_access::handle))

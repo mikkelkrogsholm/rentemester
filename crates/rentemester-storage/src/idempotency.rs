@@ -302,6 +302,13 @@ pub fn execute(
     };
     let key = hash(input.key.as_bytes());
     let op = input.operation.name();
+    // A credential-free restore preserves old receipts but creates new live
+    // principals. Never reinterpret an imported key as a new executable intent.
+    let imported:bool=tx.query_row("SELECT EXISTS(SELECT 1 FROM mutation_idempotency_tombstones t WHERE t.client_key_hash=?1 AND t.ledger_uuid=?2 AND t.operation=?3 AND t.id<=(SELECT COALESCE(MAX(CAST(entity_id AS INTEGER)),0) FROM audit_log WHERE event_type='native_restore_receipt_boundary' AND entity_type='mutation_idempotency_tombstones'))",params![key,ledger,op],|r|r.get(0)).map_err(storage)?;
+    if imported {
+        return Err(Error::new("RESTORED_KEY_RECONCILIATION_REQUIRED","Imported request key already belongs to source history; reconcile the original accepted outcome before any new intended operation").into());
+    }
+
     let mut q=tx.prepare("SELECT t.id,t.payload_hash,t.created_at,t.expires_at,o.outcome_json,o.created_at FROM main.mutation_idempotency_tombstones t LEFT JOIN main.mutation_idempotency_outcomes o ON o.tombstone_id=t.id WHERE t.client_key_hash=?1 AND t.ledger_uuid=?2 AND t.operation=?3 AND t.principal_kind=?4 AND t.principal_subject_id=?5 LIMIT 2").map_err(storage)?;
     let mut rows = q
         .query(params![

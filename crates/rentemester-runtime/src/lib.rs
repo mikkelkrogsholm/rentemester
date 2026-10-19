@@ -168,3 +168,5 @@ pub mod bootstrap;
 pub mod document;
 
 pub mod invitation;
+
+pub mod backup_keys;

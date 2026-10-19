@@ -1,8 +1,6 @@
 //! Composition of the native owner and existing HTTP identity boundary.
 //! This development executable never proxies requests to the TypeScript backend.
-use rentemester_application::{
-    email_verification, mfa_login, verification_request,
-};
+use rentemester_application::{email_verification, mfa_login, verification_request};
 use rentemester_host::{AuthAttempt, Owner};
 use rentemester_runtime::{
     auth::{CookieProfile, CookieVerifier, SystemClock},
@@ -41,6 +39,10 @@ struct Config {
     operator_actors: Vec<String>,
     #[serde(default)]
     accounts: Vec<rentemester_storage::fresh::InitialAccount>,
+    #[serde(default)]
+    backup_signing_key_file: Option<PathBuf>,
+    #[serde(default)]
+    restore_actor: Option<String>,
 }
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -64,11 +66,18 @@ impl Drop for Config {
     }
 }
 
+pub struct RestoreRequest {
+    pub archive: PathBuf,
+    pub trusted_key: PathBuf,
+    pub confirmed_target: PathBuf,
+}
+
 pub struct Backend {
     pub(crate) owner: Mutex<Owner>,
     pub(crate) cookies: Arc<CookieVerifier>,
     pub(crate) setup: Option<crate::setup_http::Installer>,
     pub(crate) setup_pending: std::sync::atomic::AtomicBool,
+    pub(crate) backup_signer: Option<rentemester_runtime::backup_artifact::SigningKey>,
     keys: MfaKeyring,
     pub(crate) signer: EmailTokenSigner,
     pub(crate) links: RecoveryLinks,
@@ -98,6 +107,15 @@ impl Backend {
         create: bool,
         loopback_listener: bool,
     ) -> Result<Arc<Self>, Box<dyn std::error::Error>> {
+        Self::load_with_restore(path, origin, create, loopback_listener, None)
+    }
+    pub fn load_with_restore(
+        path: &Path,
+        origin: &str,
+        create: bool,
+        loopback_listener: bool,
+        restore: Option<&RestoreRequest>,
+    ) -> Result<Arc<Self>, Box<dyn std::error::Error>> {
         let text = Zeroizing::new(std::fs::read_to_string(path)?);
         let config: Config =
             serde_json::from_str(&text).map_err(|_| "invalid server configuration")?;
@@ -124,7 +142,35 @@ impl Backend {
         let keys = MfaKeyring::new(&[(1, &config.mfa_key)], None).map_err(|_| "invalid MFA key")?;
         let signer = EmailTokenSigner::new(&config.workspace, &config.cookie_key)?;
         let links = RecoveryLinks::new(origin, &[origin], CookieProfile::Development)?;
-        let mut owner = if create {
+        let backup_signer = config
+            .backup_signing_key_file
+            .as_ref()
+            .map(|p| rentemester_runtime::backup_keys::signing_key(p, &config.root))
+            .transpose()?;
+        let mut owner = if let Some(request) = restore {
+            if create || request.confirmed_target != config.root || config.first_owner.is_none() {
+                return Err("restore requires exact configured fresh target, a new firstOwner and no --create".into());
+            }
+            let operator = rentemester_runtime::bootstrap::Operator::from_policy(
+                &config.workspace,
+                config
+                    .restore_actor
+                    .as_deref()
+                    .ok_or("restoreActor required in private config")?,
+                &config.operator_actors,
+            )?;
+            let verified =
+                crate::portable_backup_cli::verified(&request.archive, &request.trusted_key)?;
+            Owner::restore_new(
+                &config.root,
+                config.broker_uid,
+                &config.workspace,
+                &config.company_slug,
+                config.runtime_profile,
+                &verified,
+                &operator,
+            )?
+        } else if create {
             Owner::create_with_chart_profile(
                 &config.root,
                 config.broker_uid,
@@ -182,9 +228,12 @@ impl Backend {
                     password: &first.password,
                 },
             )?;
-            result
+            let reservation = result
                 .outcome
                 .map_err(|f| format!("first owner bootstrap refused: {}", f.error.code))?;
+            if restore.is_some() {
+                owner.grant_restored_first_owner(&operator, &reservation)?;
+            }
             println!(
                 "First owner initialized; verification links are in the private workspace .rentemester directory."
             );
@@ -221,11 +270,14 @@ impl Backend {
             setup_pending,
             cookies,
             keys,
+            backup_signer,
             signer,
             links,
             spool,
-            invitation_key: rentemester_runtime::invitation::InvitationKey::new(&config.workspace,&config.cookie_key)?,
-
+            invitation_key: rentemester_runtime::invitation::InvitationKey::new(
+                &config.workspace,
+                &config.cookie_key,
+            )?,
         }))
     }
     pub(crate) fn install_owner(

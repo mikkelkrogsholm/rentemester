@@ -1,5 +1,6 @@
 //! Standalone Rust HTTP process serving the existing cockpit on the API origin.
 mod backend;
+mod portable_backup_cli;
 mod product_http;
 mod report_export;
 mod setup_http;
@@ -22,6 +23,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut config = None;
     let mut create = false;
     let mut public_origin: Option<String> = None;
+    let mut restore_archive = None;
+    let mut trusted_backup_key = None;
+    let mut confirmed_target = None;
+    let mut verify_archive = None;
+    let mut source_unavailable = false;
     while let Some(arg) = args.next() {
         match arg.as_str() {
             "--listen" => listen = args.next().ok_or("--listen requires an address")?.parse()?,
@@ -32,6 +38,29 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 ))
             }
             "--create" => create = true,
+            "--restore-backup" => {
+                restore_archive = Some(PathBuf::from(
+                    args.next().ok_or("--restore-backup requires archive")?,
+                ))
+            }
+            "--verify-backup" => {
+                verify_archive = Some(PathBuf::from(
+                    args.next().ok_or("--verify-backup requires archive")?,
+                ))
+            }
+            "--trusted-backup-key" => {
+                trusted_backup_key = Some(PathBuf::from(
+                    args.next()
+                        .ok_or("--trusted-backup-key requires separate trusted public key")?,
+                ))
+            }
+            "--confirm-target" => {
+                confirmed_target = Some(PathBuf::from(
+                    args.next()
+                        .ok_or("--confirm-target requires exact fresh configured root")?,
+                ))
+            }
+            "--source-unavailable" => source_unavailable = true,
             "--origin" => public_origin = Some(args.next().ok_or("--origin requires a URL")?),
             "--help" | "-h" => {
                 println!(
@@ -49,11 +78,49 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     "--create exclusively creates a new workspace. Omit it for reopen or bootstrap recovery."
                 );
                 println!("Verification delivery uses private local files, not external email.");
+                println!(
+                    "Verify independently: --verify-backup ARCHIVE --trusted-backup-key RAW_PUBLIC_KEY"
+                );
+                println!(
+                    "Fresh restore: --config NEW_PRIVATE.json --restore-backup ARCHIVE --trusted-backup-key RAW_PUBLIC_KEY --confirm-target EXACT_CONFIG_ROOT --source-unavailable (explicit declaration, no global single-use guarantee)"
+                );
                 return Ok(());
             }
             _ => return Err(format!("unknown option: {arg}").into()),
         }
     }
+    if let Some(archive) = verify_archive {
+        if restore_archive.is_some() || create || confirmed_target.is_some() || source_unavailable {
+            return Err("verification flags cannot select restore/create".into());
+        }
+        let verified = portable_backup_cli::verified(
+            &archive,
+            trusted_backup_key
+                .as_deref()
+                .ok_or("separate trusted public key required")?,
+        )?;
+        rentemester_host::Owner::validate_backup(&verified)?;
+        println!(
+            "{{\"ok\":true,\"format\":\"rentemester-native-backup/1\",\"companies\":{},\"scope\":\"signed_inventory_current_schema_integrity_journal_chain_and_originals\"}}",
+            verified.manifest().context.companies.len()
+        );
+        return Ok(());
+    }
+    let restore = if let Some(archive) = restore_archive {
+        if !source_unavailable {
+            return Err("fresh restore requires explicit --source-unavailable declaration; no global handoff guarantee".into());
+        }
+        Some(backend::RestoreRequest {
+            archive,
+            trusted_key: trusted_backup_key.ok_or("separate trusted public key required")?,
+            confirmed_target: confirmed_target.ok_or("exact --confirm-target required")?,
+        })
+    } else {
+        if trusted_backup_key.is_some() || confirmed_target.is_some() || source_unavailable {
+            return Err("restore flags require --restore-backup".into());
+        }
+        None
+    };
     if !listen.ip().is_loopback() && public_origin.is_none() {
         return Err("this development entrypoint requires a loopback listen address".into());
     }
@@ -79,8 +146,18 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let native = tokio::task::spawn_blocking(move || {
         config
             .map(|path| {
-                backend::Backend::load(&path, &setup_origin, create, listen.ip().is_loopback())
-                    .map_err(|e| e.to_string())
+                (if restore.is_some() {
+                    backend::Backend::load_with_restore(
+                        &path,
+                        &setup_origin,
+                        create,
+                        listen.ip().is_loopback(),
+                        restore.as_ref(),
+                    )
+                } else {
+                    backend::Backend::load(&path, &setup_origin, create, listen.ip().is_loopback())
+                })
+                .map_err(|e| e.to_string())
             })
             .transpose()
     })

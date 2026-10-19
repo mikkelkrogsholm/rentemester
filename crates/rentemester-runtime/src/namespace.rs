@@ -53,6 +53,29 @@ pub struct NamespaceGuard {
 }
 #[cfg(not(any(target_os = "linux", target_os = "macos")))]
 impl NamespaceGuard {
+    pub fn workspace_manifest(&mut self) -> Result<Vec<u8>, NamespaceError> {
+        Err(NamespaceError::Unsupported)
+    }
+    pub fn snapshot_originals(
+        &mut self,
+        _: bool,
+    ) -> Result<Vec<(String, Vec<u8>)>, NamespaceError> {
+        Err(NamespaceError::Unsupported)
+    }
+    pub fn create_verified_restore_stage(
+        _: &Path,
+        _: u32,
+        _: &str,
+        _: &str,
+        _: NamespaceProfile,
+        _: &crate::backup_artifact::VerifiedArtifact,
+    ) -> Result<Self, NamespaceError> {
+        Err(NamespaceError::Unsupported)
+    }
+    pub fn publish_restored_root(&mut self, _: &Path) -> Result<(), NamespaceError> {
+        Err(NamespaceError::Unsupported)
+    }
+
     pub fn catalog(&mut self)->Result<Vec<(String,String,bool)>,NamespaceError>{Err(NamespaceError::Unsupported)}
     pub fn select_company(&mut self,_:&str)->Result<(),NamespaceError>{Err(NamespaceError::Unsupported)}
     pub fn create_company_files(&mut self,_:&str)->Result<(),NamespaceError>{Err(NamespaceError::Unsupported)}

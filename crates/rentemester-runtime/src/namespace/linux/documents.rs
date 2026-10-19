@@ -10,6 +10,80 @@ use std::{
     io::{Read, Write},
 };
 impl NamespaceGuard {
+    pub fn snapshot_originals(&mut self, bank: bool) -> Result<Vec<(String, Vec<u8>)>, Error> {
+        self.ensure_current()?;
+        let (_, root) = walk(&self.root, self.uid, true)?;
+        let mut directory = File::from(
+            openat(&root, self.slug.as_str(), DIRECTORY, Mode::empty())
+                .map_err(|_| Error::Invalid)?,
+        );
+        for name in if bank {
+            ["bank", "processed"]
+        } else {
+            ["documents", "originals"]
+        } {
+            let fd = match openat(&directory, name, DIRECTORY, Mode::empty()) {
+                Ok(fd) => fd,
+                Err(rustix::io::Errno::NOENT) => return Ok(vec![]),
+                Err(_) => return Err(Error::Invalid),
+            };
+            directory = File::from(fd);
+            let st = fstat(&directory).map_err(|_| Error::Invalid)?;
+            if st.st_uid != self.uid || st.st_mode & 0o7777 != 0o700 {
+                return Err(Error::Invalid);
+            }
+        }
+        let mut names = vec![];
+        for item in rustix::fs::Dir::read_from(&directory).map_err(|_| Error::Invalid)? {
+            let item = item.map_err(|_| Error::Invalid)?;
+            let name = item.file_name().to_str().map_err(|_| Error::Invalid)?;
+            if name == "." || name == ".." {
+                continue;
+            }
+            if names.len() >= crate::backup_artifact::MAX_ENTRIES {
+                return Err(Error::Invalid);
+            }
+            names.push(name.to_owned());
+        }
+        names.sort();
+        let mut out = vec![];
+        let mut total = 0usize;
+        for name in names {
+            let (hash, ext) = name.split_once('.').ok_or(Error::Invalid)?;
+            if hash.len() != 64
+                || !hash
+                    .bytes()
+                    .all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b))
+                || if bank {
+                    ext != "txt"
+                } else {
+                    !["pdf", "png", "jpg", "jpeg", "txt", "json", "xml"].contains(&ext)
+                }
+            {
+                return Err(Error::Invalid);
+            }
+            let bytes = self.read_original(&directory, &name, hash)?;
+            total = total.checked_add(bytes.len()).ok_or(Error::Invalid)?;
+            if total > crate::backup_artifact::MAX_TOTAL_BYTES {
+                return Err(Error::Invalid);
+            }
+            out.push((
+                format!(
+                    "{}/{}",
+                    if bank {
+                        "bank/processed"
+                    } else {
+                        "documents/originals"
+                    },
+                    name
+                ),
+                bytes,
+            ));
+        }
+        self.ensure_current()?;
+        Ok(out)
+    }
+
     fn original_directory(&mut self, create: bool, bank: bool) -> Result<File, Error> {
         self.ensure_current()?;
         let (_, root) = walk(&self.root, self.uid, true)?;
