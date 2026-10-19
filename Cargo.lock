@@ -5771,6 +5771,7 @@ dependencies = [
  "libproc",
  "percent-encoding",
  "reqwest",
+ "ring",
  "rusqlite",
  "rustix",
  "scrypt",

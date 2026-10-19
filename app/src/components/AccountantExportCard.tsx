@@ -14,8 +14,8 @@ import { Button, Input } from "./ui";
 import { useState } from "react";
 import { api } from "../lib/api";
 import { todayIso } from "../lib/format";
-import { Banner } from "./Feedback";
 import { useMutationOutcome } from "../lib/useMutationOutcome";
+import { Banner } from "./Feedback";
 
 /**
  * Revisor-eksport — generates the accountant-handoff package and triggers a
@@ -40,16 +40,17 @@ export function AccountantExportCard({ slug }: { slug: string }) {
     filename: string;
     journalEntryCount: number;
     documentCount: number;
-    bankTransactionCount: number;
+    bankTransactionCount?: number;
+    profile?: string;
   } | null>(null);
 
-  async function generate() {
+  async function generate(saft = false) {
     if (busy || outcome.isBlocked()) return;
     setBusy(true);
     setError(null);
     setDone(null);
     try {
-      const res = await api.accountantExport(slug, { periodStart, periodEnd }).catch(outcome.reject);
+      const res = await (saft ? api.saftExport(slug, { periodStart, periodEnd }) : api.accountantExport(slug, { periodStart, periodEnd })).catch(outcome.reject);
       // Trigger a browser download from the blob — the response is the only
       // copy of the package that leaves the server.
       const url = URL.createObjectURL(res.blob);
@@ -64,7 +65,8 @@ export function AccountantExportCard({ slug }: { slug: string }) {
         filename: res.filename,
         journalEntryCount: res.journalEntryCount,
         documentCount: res.documentCount,
-        bankTransactionCount: res.bankTransactionCount,
+        bankTransactionCount: "bankTransactionCount" in res ? res.bankTransactionCount : undefined,
+        profile: "profile" in res ? res.profile : undefined,
       });
     } catch (err) {
       const e = err as { message?: string };
@@ -112,21 +114,25 @@ export function AccountantExportCard({ slug }: { slug: string }) {
       {done && (
         <Banner kind="success">
           Hentede {done.filename} — {done.journalEntryCount} posteringer,{" "}
-          {done.documentCount} bilag, {done.bankTransactionCount}{" "}
-          banktransaktioner.
+          {done.documentCount} {done.profile ? "bilagsreferencer" : "bilag"}{done.bankTransactionCount !== undefined ? `, ${done.bankTransactionCount} banktransaktioner` : ""}.
+          {done.profile && " Afgrænset Rentemester v3-profil; ingen officiel validering eller indberetning."}
         </Banner>
       )}
       <div className="row-actions">
         <Button
           requiredPermission="company.export"
           className="btn"
-          onClick={generate}
+          onClick={() => generate()}
           disabled={disabled}
           type="button"
         >
           {busy ? "Genererer…" : "Generér og download"}
         </Button>
+        <Button requiredPermission="company.export" className="btn" onClick={() => generate(true)} disabled={disabled} type="button">
+          SAF-T v3 — generér og download
+        </Button>
       </div>
+      <p className="muted">SAF-T v3 er Rentemesters afgrænsede profil: kontoplan, journal, fakturaer og stamdata med manifest. Originalbilag verificeres, men pakkes ikke med. Ingen officiel skemavalidering eller indberetning. Eksporten registreres i audit-loggen.</p>
     </div>
   );
 }

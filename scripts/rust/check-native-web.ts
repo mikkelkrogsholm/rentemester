@@ -78,6 +78,7 @@ async function checkParallelFeature(page: import("@playwright/test").Page, featu
     await (await import("./check-native-commitment-clients")).checkNativeCommitmentClients(page, base!, restarted);
     await (await import("./check-native-gdpr")).checkNativeGdpr(page, base!, restarted);
     await (await import("./check-native-privacy-clients")).checkNativePrivacyClients(page, base!, restarted);
+    await (await import("./check-native-saft")).checkNativeSaft(page, base!, restarted);
     await (await import("./check-native-accountant")).checkNativeAccountant(page, base!, restarted);
     await (await import("./check-native-dashboard")).checkNativeDashboard(page, base!, restarted);
     await (await import("./check-native-integrity")).checkNativeIntegrity(page, base!);

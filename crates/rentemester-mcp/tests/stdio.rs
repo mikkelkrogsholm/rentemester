@@ -151,7 +151,7 @@ fn lifecycle_negotiation_discovery_notifications_and_validation() {
     assert_eq!(values[2]["error"]["code"], -32002);
     assert_eq!(values[3]["result"], json!({}));
     let tools = values[4]["result"]["tools"].as_array().unwrap();
-    assert_eq!(tools.len(), 87);
+    assert_eq!(tools.len(), 88);
     let write = tools.iter().find(|v| v["name"] == "post_journal").unwrap();
     assert_eq!(
         write["inputSchema"]["required"],
@@ -1263,7 +1263,7 @@ fn recurring_tools_discovery_and_strict_read_write_admission() {
         ],
     ));
     let tools = v[1]["result"]["tools"].as_array().unwrap();
-    assert_eq!(tools.len(), 87);
+    assert_eq!(tools.len(), 88);
     assert_eq!(
         tools
             .iter()
@@ -1334,7 +1334,7 @@ fn asset_readonly_discovery_and_native_body_gates() {
         ],
     ));
     let tools = v[1]["result"]["tools"].as_array().unwrap();
-    assert_eq!(tools.len(), 87);
+    assert_eq!(tools.len(), 88);
     for name in ["assets", "next_asset_depreciation"] {
         assert_eq!(
             tools.iter().find(|t| t["name"] == name).unwrap()["annotations"]["readOnlyHint"],
@@ -1401,7 +1401,7 @@ fn accrual_readonly_discovery_and_native_body_gates() {
         ],
     ));
     let tools = v[1]["result"]["tools"].as_array().unwrap();
-    assert_eq!(tools.len(), 87);
+    assert_eq!(tools.len(), 88);
     for name in ["accruals", "accrual_schedule"] {
         assert_eq!(
             tools.iter().find(|t| t["name"] == name).unwrap()["annotations"]["readOnlyHint"],
@@ -1496,7 +1496,7 @@ fn budget_mileage_discovery_year_scope_and_body_limits_are_strict() {
         ],
     ));
     let tools = v[1]["result"]["tools"].as_array().unwrap();
-    assert_eq!(tools.len(), 87);
+    assert_eq!(tools.len(), 88);
     for name in [
         "budget",
         "budget_vs_actual",
@@ -1598,7 +1598,7 @@ fn privacy_discovery_audited_annotation_and_date_body_gates() {
         ],
     ));
     let tools = v[1]["result"]["tools"].as_array().unwrap();
-    assert_eq!(tools.len(), 87);
+    assert_eq!(tools.len(), 88);
     for (name, readonly) in [
         ("retention", true),
         ("gdpr_export", false),
@@ -1701,7 +1701,7 @@ fn setup_discovery_current_company_read_and_strict_outer_admission() {
         ],
     ));
     let tools = v[1]["result"]["tools"].as_array().unwrap();
-    assert_eq!(tools.len(), 87);
+    assert_eq!(tools.len(), 88);
     assert_eq!(
         tools
             .iter()
@@ -1747,4 +1747,15 @@ fn company_creation_is_workspace_scoped_exact_and_unknown_without_replay() {
     for args in [json!({"body":"{}","confirm":false}),json!({"body":"{}","confirm":true,"company":"old"}),json!({"body":"{\"name\":\"Synthetic\",\"idempotencyKey\":\"invented\"}","confirm":true})] {
         let v=parsed(&run("http://127.0.0.1:9",&[init("2025-11-25"),ready(),call(2,"create_company",args)]));assert!(v[1].get("error").is_some()||v[1]["result"]["isError"]==true);
     }
+}
+#[test]
+fn saft_export_discovery_confirmation_and_native_shape_are_explicit(){
+ let out=run("http://127.0.0.1:9",&[init("2025-11-25"),ready(),json!({"jsonrpc":"2.0","id":2,"method":"tools/list"}),call(3,"saft_export",json!({"company":"synthetic","body":"{}","confirm":false}))]);
+ let rows=parsed(&out);let tools=rows[1]["result"]["tools"].as_array().unwrap();let t=tools.iter().find(|t|t["name"]=="saft_export").unwrap();assert_eq!(t["annotations"]["readOnlyHint"],false);assert_eq!(t["inputSchema"]["properties"]["body"]["maxLength"],4096);assert!(rows[2]["result"]["isError"]==true||rows[2].get("error").is_some());
+}
+#[test]
+fn saft_export_stdio_returns_exact_tar_bytes(){
+ let binary="x".repeat(1024);let reply=format!("HTTP/1.1 200 OK\r\nContent-Type: application/x-tar\r\nContent-Length: 1024\r\nConnection: close\r\n\r\n{binary}");let(origin,request,task)=http(Box::leak(reply.into_boxed_str()));
+ let body=r#"{ "periodStart":"2026-01-01","periodEnd":"2026-12-31","confirm":true }"#;
+ let out=run(&origin,&[init("2025-11-25"),ready(),call(2,"saft_export",json!({"company":"synthetic","body":body,"confirm":true}))]);let rows=parsed(&out);assert_eq!(rows[1]["result"]["structuredContent"]["data"]["export"]["bytes"],json!(vec![120;1024]));let req=request.recv().unwrap();assert!(req.ends_with(body.as_bytes()));assert!(req.starts_with(b"POST /api/companies/synthetic/saft-export HTTP/1.1"));task.join().unwrap();
 }

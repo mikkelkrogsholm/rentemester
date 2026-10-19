@@ -28,6 +28,7 @@ pub fn run(args: &[String]) -> Result<Value, Failure> {
             "invoicePdf":"invoice-pdf --company SLUG --id POSITIVE_DOCUMENT_ID reads the immutable issued original via its current authenticated documents-read permission. No stdin body or --confirm. Output data.pdf is {contentType:application/pdf,bytes:[exact byte integers]}; creates no local files.",
             "receivables":crate::receivables::help(),
             "reviewedBookkeeping":crate::reviewed_bookkeeping::help(),
+            "saftExport":"saft-export --company SLUG --confirm with exact stdin {periodStart,periodEnd,confirm:true}, max4096 bytes. Audited bounded custom v3 XML tar download returned as JSON {export:{contentType,bytes}}, no local files/official validation/submission or automatic retries.",
             "companySetup":crate::company_setup::help(),
             "companyCreation":crate::company_creation::help(),
             "privacyLifecycle":crate::privacy::help(),
@@ -130,6 +131,7 @@ pub fn run(args: &[String]) -> Result<Value, Failure> {
         return Err(invalid("email/factor/session-out allowed only with login"));
     }
     if command=="create-company" {return crate::company_creation::run(&flags,allow_http,confirmed,preview_reviewed);}
+    if command=="saft-export"{return crate::saft::run(&flags,allow_http,confirmed,preview_reviewed);}
     if crate::company_setup::accepts(command){return crate::company_setup::run(command,&flags,allow_http,confirmed,preview_reviewed);}
     if crate::privacy::accepts(command){return crate::privacy::run(command,&flags,allow_http,confirmed,preview_reviewed);}
     if crate::budget::accepts(command){return crate::budget::run(command,&flags,allow_http,confirmed,preview_reviewed);}

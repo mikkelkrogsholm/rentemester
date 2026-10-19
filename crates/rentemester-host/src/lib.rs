@@ -817,6 +817,24 @@ impl Owner {
             rentemester_application::accountant::export(c, l, g, context, input)
         })
     }
+    pub fn saft_export(
+        &mut self,
+        cookie: &VerifiedCookie,
+        clock: &dyn Clock,
+        input: &rentemester_storage::saft::Input,
+    ) -> Result<
+        Attempt<
+            Result<
+                Committed<rentemester_storage::saft::Download>,
+                rentemester_application::control_fence::Failure,
+            >,
+        >,
+        OwnerError,
+    > {
+        self.document_action(cookie, clock, |c, l, g, context| {
+            rentemester_application::saft::export(c, l, g, context, input)
+        })
+    }
     pub fn dashboard(
         &mut self,
         cookie: &VerifiedCookie,

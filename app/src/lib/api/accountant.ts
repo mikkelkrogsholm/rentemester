@@ -1,6 +1,20 @@
-import { requestBlob, parseFilenameFromContentDisposition } from "./_shared";
+import { parseFilenameFromContentDisposition, requestBlob } from "./_shared";
 
 export const accountantApi = {
+  /** Existing bounded custom v3 profile; audited package, no official validation/submission. */
+  saftExport: async (slug: string, input: {periodStart:string;periodEnd:string}) => {
+    const res = await requestBlob(`/api/companies/${encodeURIComponent(slug)}/saft-export`, {
+      method: "POST", body: JSON.stringify({...input, confirm:true}),
+    });
+    const count = (name: string) => {
+      const value = res.headers.get(name);
+      if (value === null || !/^\d+$/.test(value)) throw new Error("Eksportens optælling mangler i serversvaret.");
+      return Number(value);
+    };
+    return {blob:res.blob, filename:parseFilenameFromContentDisposition(res.headers.get("content-disposition")) ?? `saft-eksport-${slug}-${input.periodStart}-${input.periodEnd}.tar`,
+      journalEntryCount:count("x-rentemester-journal-entries"),
+      documentCount:count("x-rentemester-documents"), profile:"bounded-saft-v3" as const};
+  },
   /**
    * Generates the accountant-handoff package and returns it as a downloadable
    * .tar blob — the cockpit's "share with revisor" action. The server packs

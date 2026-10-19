@@ -1,4 +1,5 @@
 //! Thin browser adapter over the same owner used for authentication.
+mod saft;
 mod workspace_access;
 mod company_creation;
 mod accountant;
@@ -120,6 +121,7 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
             "/api/companies/{slug}/accountant-export",
             post(accountant::export),
         )
+        .route("/api/companies/{slug}/saft-export", post(saft::export))
         .route("/api/companies/{slug}/overview", get(dashboard::read))
         .route(
             "/api/companies/{slug}/mileage",

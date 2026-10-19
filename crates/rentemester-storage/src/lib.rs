@@ -557,3 +557,4 @@ pub mod workspace_members;
 pub mod workspace_invitations;
 
 pub mod company_creation;
+pub mod saft;

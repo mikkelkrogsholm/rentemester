@@ -338,3 +338,6 @@ fn company_path(company: &str, resource: &str) -> Result<String, Error> {
     }
     Ok(format!("/api/companies/{company}/{resource}"))
 }
+
+mod saft;
+pub use saft::{saft_body_schema,MAX_SAFT_BODY,MAX_SAFT_PACKAGE};

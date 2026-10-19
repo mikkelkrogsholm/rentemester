@@ -2,6 +2,7 @@ use rentemester_engine::{Error, trial_balance::Period};
 use serde_json::json;
 use std::{collections::BTreeMap, io::Read, path::Path, process::ExitCode};
 mod company_creation;
+mod saft;
 mod company_setup;
 mod privacy;
 mod budget;
