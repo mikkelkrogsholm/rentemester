@@ -110,6 +110,13 @@ impl HttpJsonAuthSender {
             .collect::<Result<Vec<_>, _>>()?;
         Self::build(config, client_builder().tls_certs_only(roots))
     }
+    /// Explicit operator trust for a private HTTPS gateway; hostname verification remains enabled.
+    pub fn with_trusted_ca(config: GatewayConfig<'_>, pem: &[u8]) -> Result<Self, AuthError> {
+        if pem.is_empty() || pem.len() > 65536 { return Err(AuthError::InvalidConfig); }
+        let roots = reqwest::Certificate::from_pem_bundle(pem).map_err(|_| AuthError::InvalidConfig)?;
+        if roots.is_empty() { return Err(AuthError::InvalidConfig); }
+        Self::build(config, client_builder().tls_certs_only(roots))
+    }
     fn build(config: GatewayConfig<'_>, builder: ClientBuilder) -> Result<Self, AuthError> {
         if !bounded(config.endpoint, 4096)
             || config.endpoint.trim() != config.endpoint
@@ -296,6 +303,8 @@ mod tests {
     use serde_json::{Value, json};
     #[test]
     fn gateway_input_refuses_credential_and_url_ambiguity() {
+        let config=GatewayConfig {endpoint:"https://gateway.invalid/send",bearer_token:"synthetic",from:"auth@example.invalid",idempotency_secret:"synthetic"};
+        assert!(HttpJsonAuthSender::with_trusted_ca(config,b"not a CA").is_err());
         let base = |endpoint, bearer_token, from, idempotency_secret| GatewayConfig {
             endpoint,
             bearer_token,

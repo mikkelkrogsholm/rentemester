@@ -1,4 +1,5 @@
 //! Standalone Rust HTTP process serving the existing cockpit on the API origin.
+mod auth_delivery;
 mod backend;
 mod hosted_worker;
 mod portable_backup_cli;
@@ -83,7 +84,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 println!(
                     "--create exclusively creates a new workspace. Omit it for reopen or bootstrap recovery."
                 );
-                println!("Verification delivery uses private local files, not external email.");
+                println!("HTTPS origins require private config authMail gateway; local HTTP uses private verification/reset/invitation files.");
                 println!(
                     "Verify independently: --verify-backup ARCHIVE --trusted-backup-key RAW_PUBLIC_KEY"
                 );
@@ -143,11 +144,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
     let origin =
         public_origin.unwrap_or_else(|| format!("http://{}", listener.local_addr().unwrap()));
-    rentemester_runtime::recovery::RecoveryLinks::new(
-        &origin,
-        &[&origin],
-        rentemester_runtime::auth::CookieProfile::Development,
-    )?;
+    let origin = canonical_origin(&origin)?;
     // SQLite/password initialization runs outside Tokio's asynchronous worker threads.
     let setup_origin = origin.clone();
     let mut native = tokio::task::spawn_blocking(move || {
@@ -206,6 +203,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
+fn canonical_origin(origin: &str) -> Result<String, Box<dyn std::error::Error>> {
+    backend::cookie_profile(origin)?;
+    Ok(url::Url::parse(origin)?.origin().ascii_serialization())
+}
+
 fn cockpit_router(
     web: PathBuf,
     identity: Option<Router>,
@@ -251,4 +253,14 @@ fn cockpit_router(
             axum::http::header::X_CONTENT_TYPE_OPTIONS,
             HeaderValue::from_static("nosniff"),
         ))
+}
+
+#[cfg(test)]
+mod origin_tests {
+    #[test]
+    fn public_origin_is_validated_before_shared_canonicalization() {
+        assert_eq!(super::canonical_origin("HTTPS://ACCOUNTING.example.invalid:443").unwrap(),"https://accounting.example.invalid");
+        assert_eq!(super::canonical_origin("http://LOCALHOST:4319").unwrap(),"http://localhost:4319");
+        assert!(super::canonical_origin("https://example.invalid/untrusted-path").is_err());
+    }
 }

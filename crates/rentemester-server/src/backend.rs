@@ -6,12 +6,11 @@ use rentemester_runtime::{
     auth::{CookieProfile, CookieVerifier, SystemClock},
     email_token::EmailTokenSigner,
     mfa::MfaKeyring,
-    recovery::{DeliveryUnconfirmed, RecoveryLinks, VerificationMessage, VerificationSender},
+    recovery::RecoveryLinks,
 };
 use rentemester_server::auth_http::{AuthHandlers, EnrollmentHandlers, VerificationHandlers};
 use serde::Deserialize;
 use std::{
-    io::Write,
     path::{Path, PathBuf},
     sync::{Arc, Mutex},
 };
@@ -43,6 +42,8 @@ struct Config {
     backup_signing_key_file: Option<PathBuf>,
     #[serde(default)]
     restore_actor: Option<String>,
+    #[serde(default)]
+    auth_mail: Option<crate::auth_delivery::Config>,
 }
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -82,7 +83,8 @@ pub struct Backend {
     keys: MfaKeyring,
     pub(crate) signer: EmailTokenSigner,
     pub(crate) links: RecoveryLinks,
-    pub(crate) spool: PathBuf,
+    pub(crate) delivery: Mutex<crate::auth_delivery::Delivery>,
+    profile: CookieProfile,
     pub(crate) invitation_key: rentemester_runtime::invitation::InvitationKey,
 }
 fn unavailable() -> Failure {
@@ -135,14 +137,16 @@ impl Backend {
                 return Err("local-user-macos requires a loopback listener and origin".into());
             }
         }
+        let profile = cookie_profile(origin)?;
+        let mut delivery=crate::auth_delivery::Delivery::new(config.auth_mail.as_ref(), profile == CookieProfile::Development, &config.root.join(".rentemester"))?;
         let cookies = Arc::new(CookieVerifier::new(
             &config.workspace,
-            CookieProfile::Development,
+            profile,
             &config.cookie_key,
         )?);
         let keys = MfaKeyring::new(&[(1, &config.mfa_key)], None).map_err(|_| "invalid MFA key")?;
         let signer = EmailTokenSigner::new(&config.workspace, &config.cookie_key)?;
-        let links = RecoveryLinks::new(origin, &[origin], CookieProfile::Development)?;
+        let links = RecoveryLinks::new(origin, &[origin], profile)?;
         let backup_signer = config
             .backup_signing_key_file
             .as_ref()
@@ -192,7 +196,6 @@ impl Backend {
                 config.runtime_profile,
             )?
         };
-        let spool = config.root.join(".rentemester");
         if let Some(first) = &config.first_owner {
             let key = rentemester_runtime::bootstrap::ReservationKey::new(
                 &config.workspace,
@@ -222,7 +225,7 @@ impl Backend {
             let result = owner.bootstrap_first_identity(
                 &operator,
                 &runtime,
-                &mut Spool(spool.clone()),
+                &mut delivery,
                 rentemester_application::bootstrap::Input {
                     email: &first.email,
                     name: &first.name,
@@ -236,7 +239,7 @@ impl Backend {
                 owner.grant_restored_first_owner(&operator, &reservation)?;
             }
             println!(
-                "First owner initialized; verification links are in the private workspace .rentemester directory."
+                "First owner initialized; verification delivery requested."
             );
         }
         let setup = if let Some(actor) = &config.setup_actor {
@@ -275,7 +278,8 @@ impl Backend {
             scheduled_executor: None,
             signer,
             links,
-            spool,
+            delivery: Mutex::new(delivery),
+            profile,
             invitation_key: rentemester_runtime::invitation::InvitationKey::new(
                 &config.workspace,
                 &config.cookie_key,
@@ -307,7 +311,7 @@ impl Backend {
             .bootstrap_first_identity(
                 &installer.operator,
                 &runtime,
-                &mut Spool(self.spool.clone()),
+                &mut *self.delivery.lock().map_err(|_| "delivery unavailable".to_owned())?,
                 input,
             )
             .map_err(|_| "owner unavailable".to_owned())?
@@ -452,7 +456,7 @@ impl Backend {
                         .map_err(|_| fail())?
                         .request_email_verification(
                             &runtime,
-                            &mut Spool(request.spool.clone()),
+                            &mut *request.delivery.lock().map_err(|_| fail())?,
                             input.email(),
                             input.callback(),
                             input.caller(),
@@ -493,29 +497,45 @@ impl Backend {
             })),
             session_control: None,
         };
-        rentemester_server::identity_router(origin, CookieProfile::Development, handlers)
+        let reset_request = self.clone();
+        let reset_callback = self.clone();
+        let reset_complete = self.clone();
+        rentemester_server::recovery_identity_router(origin, self.profile,
+            move |input| {
+                let runtime=rentemester_application::reset_request::Runtime {cookies:&reset_request.cookies,clock:&SystemClock,links:&reset_request.links,audit_key_version:1};
+                let fail=||rentemester_application::reset_request::Failure {stage:rentemester_application::reset_request::Stage::NotCommitted,error:rentemester_engine::Error::new("connection_refused","native owner unavailable"),connection_reusable:false};
+                reset_request.owner.lock().map_err(|_|fail())?
+                    .request_password_reset(&runtime,&mut *reset_request.delivery.lock().map_err(|_|fail())?,input.email(),input.redirect())
+                    .map_err(|_|fail())?.outcome
+            },
+            move |input| {
+                let runtime=rentemester_application::reset_request::Runtime {cookies:&reset_callback.cookies,clock:&SystemClock,links:&reset_callback.links,audit_key_version:1};
+                unwrap(reset_callback.owner.lock().map_err(|_|unavailable())?
+                    .password_reset_callback(&runtime,input.token(),Some(input.redirect())))
+            },
+            move |input| {
+                let runtime=rentemester_application::password_reset::Runtime {clock:&SystemClock,audit_key_version:1};
+                unwrap(reset_complete.owner.lock().map_err(|_|unavailable())?
+                    .complete_password_reset(&runtime,input.token(),input.password()))
+            },handlers)
     }
 }
-// Explicit development delivery adapter. This is a private local outbox, not an email service.
-pub(crate) struct Spool(pub(crate) PathBuf);
-impl VerificationSender for Spool {
-    fn enabled(&self) -> bool {
-        true
-    }
-    fn send(&mut self, message: &VerificationMessage) -> Result<(), DeliveryUnconfirmed> {
-        let name = rentemester_runtime::auth::new_token().map_err(|_| DeliveryUnconfirmed)?;
-        let mut options = std::fs::OpenOptions::new();
-        options.write(true).create_new(true);
-        #[cfg(unix)]
-        {
-            use std::os::unix::fs::OpenOptionsExt;
-            options.mode(0o600);
-        }
-        let mut file = options
-            .open(self.0.join(format!("verification-{}.txt", name.as_str())))
-            .map_err(|_| DeliveryUnconfirmed)?;
-        file.write_all(message.action_url().as_bytes())
-            .map_err(|_| DeliveryUnconfirmed)?;
-        file.sync_all().map_err(|_| DeliveryUnconfirmed)
+/// Origin validation also fixes cookie naming and HTTPS-only flags for all identity routes.
+pub(crate) fn cookie_profile(origin: &str) -> Result<CookieProfile, rentemester_runtime::auth::AuthError> {
+    let url=url::Url::parse(origin).map_err(|_|rentemester_runtime::auth::AuthError::InvalidConfig)?;
+    let profile=if url.scheme()=="https" {CookieProfile::Secure} else {CookieProfile::Development};
+    RecoveryLinks::new(origin,&[origin],profile)?;
+    Ok(profile)
+}
+
+#[cfg(test)]
+mod profile_tests {
+    use super::*;
+    #[test]
+    fn canonical_https_uses_secure_cookie_profile_and_http_stays_loopback_only() {
+        assert!(matches!(cookie_profile("https://accounting.example.invalid"),Ok(CookieProfile::Secure)));
+        assert!(matches!(cookie_profile("HTTPS://accounting.example.invalid"),Ok(CookieProfile::Secure)));
+        assert!(matches!(cookie_profile("http://127.0.0.1:4319"),Ok(CookieProfile::Development)));
+        for origin in ["http://accounting.example.invalid","https://u@example.invalid","https://example.invalid/path","https://example.invalid?secret=x"] {assert!(cookie_profile(origin).is_err());}
     }
 }

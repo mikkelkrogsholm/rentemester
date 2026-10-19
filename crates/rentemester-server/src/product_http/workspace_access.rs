@@ -124,7 +124,7 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
             owner.claim_invitation(
                 &runtime,
                 &vr,
-                &mut crate::backend::Spool(native.spool.clone()),
+                &mut *native.delivery.lock().map_err(|_| ())?,
                 app::Claim {
                     token: &i.token,
                     name: &i.name,
@@ -180,22 +180,8 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
                 },
                 Command::Claim(_) => unreachable!(),
             };
-            owner.workspace_access(&runtime, &cookie, action, &mut |_, token| {
-                use std::io::Write;
-                let id = rentemester_runtime::auth::new_token().map_err(|_| ())?;
-                let mut options = std::fs::OpenOptions::new();
-                options.create_new(true).write(true);
-                #[cfg(unix)]
-                {
-                    use std::os::unix::fs::OpenOptionsExt;
-                    options.mode(0o600);
-                }
-                let mut file = options
-                    .open(native.spool.join(format!("invitation-{}.txt", id.as_str())))
-                    .map_err(|_| ())?;
-                file.write_all(format!("{}/invite#token={token}", state.origin).as_bytes())
-                    .map_err(|_| ())?;
-                file.sync_all().map_err(|_| ())
+            owner.workspace_access(&runtime, &cookie, action, &mut |recipient, token| {
+                native.delivery.lock().map_err(|_|())?.invitation(&state.origin, recipient, token)
             })
         }
         .map_err(|_| ())?;
