@@ -170,3 +170,5 @@ pub mod document;
 pub mod invitation;
 
 pub mod backup_keys;
+
+pub mod invoice_mail;
