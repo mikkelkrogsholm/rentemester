@@ -66,8 +66,19 @@ impl Archive {
         save_bytes(&self.bytes, path)
     }
 }
+/// Export only the independently supplied public trust anchor, never an archive-derived key.
+pub fn save_public_key(source: &Path, bytes: &[u8; 32], destination: &Path) -> Result<(), String> {
+    if destination == source {
+        return Err(
+            "Vælg en selvstændig ny offentlig nøglefil; profilens original må ikke overskrives"
+                .into(),
+        );
+    }
+    save_bytes(bytes, destination)
+}
 fn save_bytes(bytes: &[u8], path: &Path) -> Result<(), String> {
-    if !path.is_absolute()
+    if path.to_string_lossy().chars().any(char::is_control)
+        || !path.is_absolute()
         || path.file_name().is_none()
         || path
             .components()
@@ -128,8 +139,7 @@ fn save_bytes(bytes: &[u8], path: &Path) -> Result<(), String> {
             .any(|l| !l.trim().is_empty())
     {
         return Err(
-            "Filen kræver privat0600-adgang uden ekstra adgangslister; ingen backupbytes skrevet"
-                .into(),
+            "Filen kræver privat0600-adgang uden ekstra adgangslister; ingen bytes skrevet".into(),
         );
     }
     file.write_all(bytes)
@@ -192,6 +202,63 @@ mod tests {
         assert!(a.save(&parent.join("file")).is_err());
         assert!(a.save(Path::new("relative.json")).is_err());
         assert!(a.save(&d.join("../escape.json")).is_err());
+        fs::remove_dir_all(d).unwrap();
+    }
+    #[test]
+    fn public_anchor_export_is_raw32_private_independent_and_never_overwrites() {
+        let d = temp();
+        let source = d.join("profile-public.key");
+        let key = [23u8; 32];
+        fs::write(&source, key).unwrap();
+        let destination = d.join("independent-public.key");
+        save_public_key(&source, &key, &destination).unwrap();
+        assert_eq!(fs::read(&destination).unwrap(), key);
+        assert_eq!(fs::metadata(&destination).unwrap().mode() & 0o777, 0o600);
+        assert!(save_public_key(&source, &key, &source).is_err());
+        assert!(save_public_key(&source, &[42u8; 32], &destination).is_err());
+        assert_eq!(fs::read(&source).unwrap(), key);
+        assert_eq!(fs::read(&destination).unwrap(), key);
+        let archive = d.join("archive.native-backup.json");
+        fs::write(&archive, b"existing archive remains unchanged").unwrap();
+        assert!(save_public_key(&source, &key, &archive).is_err());
+        assert_eq!(
+            fs::read(&archive).unwrap(),
+            b"existing archive remains unchanged"
+        );
+        fs::remove_dir_all(d).unwrap();
+    }
+    #[test]
+    fn public_anchor_refuses_symlink_traversal_and_shared_destination_without_writing() {
+        use std::os::unix::fs::PermissionsExt;
+        let d = temp();
+        let source = d.join("profile-public.key");
+        let key = [23u8; 32];
+        fs::write(&source, key).unwrap();
+        let target = d.join("unchanged");
+        fs::write(&target, b"keep").unwrap();
+        let alias = d.join("alias");
+        symlink(&target, &alias).unwrap();
+        assert!(save_public_key(&source, &key, &alias).is_err());
+        assert_eq!(fs::read(&target).unwrap(), b"keep");
+        let dangling = d.join("dangling");
+        symlink(d.join("absent"), &dangling).unwrap();
+        assert!(save_public_key(&source, &key, &dangling).is_err());
+        assert!(!d.join("absent").exists());
+        let directory_alias = d.join("dir-alias");
+        symlink(&d, &directory_alias).unwrap();
+        assert!(save_public_key(&source, &key, &directory_alias.join("export")).is_err());
+        for path in [
+            std::path::PathBuf::from("relative.key"),
+            d.join("../escape.key"),
+            d.join("bad\nname.key"),
+        ] {
+            assert!(save_public_key(&source, &key, &path).is_err());
+        }
+        fs::set_permissions(&d, fs::Permissions::from_mode(0o777)).unwrap();
+        assert!(save_public_key(&source, &key, &d.join("export")).is_err());
+        assert!(!d.join("export").exists());
+        fs::set_permissions(&d, fs::Permissions::from_mode(0o700)).unwrap();
+        assert_eq!(fs::read(source).unwrap(), key);
         fs::remove_dir_all(d).unwrap();
     }
     #[test]

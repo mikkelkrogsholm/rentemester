@@ -31,6 +31,8 @@ pub struct Backup {
     confirmed: bool,
     archive: Option<Arc<Archive>>,
     destination: Entity<InputState>,
+    local_public_key: Option<(PathBuf, [u8; 32])>,
+    key_destination: Entity<InputState>,
     busy: bool,
     attempted: bool,
     status: String,
@@ -39,6 +41,7 @@ impl Backup {
     pub fn new(
         session: Arc<Session>,
         origin: String,
+        local_public_key: Option<(PathBuf, [u8; 32])>,
         window: &mut Window,
         cx: &mut Context<Self>,
     ) -> Self {
@@ -51,6 +54,11 @@ impl Backup {
             archive: None,
             destination: cx.new(|cx| {
                 InputState::new(window, cx).placeholder("Absolut ny filsti i din egen mappe")
+            }),
+            local_public_key,
+            key_destination: cx.new(|cx| {
+                InputState::new(window, cx)
+                    .placeholder("Ny absolut filsti til separat offentlig nøgle (.key)")
             }),
             busy: false,
             attempted: false,
@@ -99,6 +107,25 @@ impl Backup {
         cx.spawn(async move|view,cx|{let result=task.await;let _=view.update(cx,|this,cx|{this.busy=false;match result{Ok(archive)=>{this.archive=Some(archive);this.status="Hele transportfilen er modtaget i hukommelsen. Vælg en ny lokal filsti og gem. Signatur og gendannelse er ikke verificeret her.".into();},Err(e)=>this.status=e}cx.notify();});}).detach();
         cx.notify();
     }
+    fn save_public_key(&mut self, cx: &mut Context<Self>) {
+        if self.busy {
+            return;
+        }
+        let Some((source, bytes)) = self.local_public_key.clone() else {
+            return;
+        };
+        let destination = PathBuf::from(self.key_destination.read(cx).value().as_ref());
+        self.busy = true;
+        self.status =
+            "Gemmer kun den separate offentlige nøgle; intet backup-/netværkskald…".into();
+        let task = cx.background_executor().spawn(async move {
+            crate::backup_state::save_public_key(&source, &bytes, &destination)
+        });
+        cx.spawn(async move|view,cx|{let result=task.await;let _=view.update(cx,|this,cx|{this.busy=false;this.status=match result{
+            Ok(())=>"Den offentlige nøgles præcise 32 rå bytes er gemt privat (0600) og synkroniseret. Opbevar denne uafhængige kopi særskilt fra backupfilen. Ingen privat nøgle blev eksporteret, og ingen backup blev verificeret eller gendannet.".into(),
+            Err(error)=>format!("{error}. Ingen eksisterende fil er overskrevet. Hvis en delvis ny fil findes, vælg et andet filnavn og gem eksplicit igen. Intet backupkald blev sendt.")};cx.notify();});}).detach();
+        cx.notify();
+    }
     fn save(&mut self, cx: &mut Context<Self>) {
         if self.busy {
             return;
@@ -112,7 +139,7 @@ impl Backup {
         let task = cx
             .background_executor()
             .spawn(async move { archive.save(&path) });
-        cx.spawn(async move|view,cx|{let result=task.await;let _=view.update(cx,|this,cx|{this.busy=false;this.status=match result{Ok(())=>"De præcise modtagne backupbytes er gemt privat0600 og synkroniseret. Dette er ikke en signaturverifikation eller en gennemført gendannelse.".into(),Err(e)=>format!("{e}. De modtagne bytes er stadig i hukommelsen. En delvis fil kan være oprettet; vælg et nyt filnavn og gem manuelt igen uden ny eksport.")};cx.notify();});}).detach();
+        cx.spawn(async move|view,cx|{let result=task.await;let _=view.update(cx,|this,cx|{this.busy=false;this.status=match result{Ok(())=>"De præcise modtagne backupbytes er gemt privat (0600) og synkroniseret. Dette er ikke en signaturverifikation eller en gennemført gendannelse.".into(),Err(e)=>format!("{e}. De modtagne bytes er stadig i hukommelsen. En delvis fil kan være oprettet; vælg et nyt filnavn og gem manuelt igen uden ny eksport.")};cx.notify();});}).detach();
         cx.notify();
     }
 }
@@ -121,7 +148,16 @@ impl Render for Backup {
         let mut view=div().flex().flex_col().gap_3().p_4().child(div().text_xl().child("Eksportér hele workspace som native backup"))
    .child(format!("Server: {}",self.origin)).child(self.status.clone())
    .child("Serverens native format omfatter understøttede virksomhedsdata og businessaudit med stabile identiteter. Loginoplysninger, levende adgangsrettigheder og drifts-/signeringsnøgler er udeladt. Ikke-understøttede data kan medføre afvisning; der loves ikke fuld legacy-paritet.")
-   .child("Signeringsnøglen skal allerede være opsat særskilt på serveren, også ved administreret lokal drift. Denne visning opretter ingen nøgle, ændrer ingen backup-politik og gendanner intet. Uafhængig verifikation kræver en særskilt betroet offentlig nøgle.");
+   .child("Signeringsnøglen skal være konfigureret på serveren. Nye administrerede lokale profiler har en separat nøgle; eksisterende usignerede profiler opgraderes ikke her. Uafhængig verifikation kræver en særskilt betroet offentlig nøgle. Denne visning ændrer ingen backup-politik og gendanner intet.");
+        if let Some((source, _)) = &self.local_public_key {
+            view=view.child(div().text_lg().child("Gem separat offentlig backupnøgle · RAW Ed25519, 32 bytes"))
+                .child(format!("Betroet lokal profilnøgle: {}. Valideret mod profilens konfigurerede signer ved åbning af denne visning.",source.display()))
+                .child("Vælg selv en ny absolut filsti. Bevar kopien uafhængigt af backupfilen til senere signaturkontrol. Nøgler fra en backupfil overtages aldrig som betroede. Privat signeringsnøgle udleveres ikke.")
+                .child(Input::new(&self.key_destination).disabled(self.busy))
+                .child(Button::new("backup-save-public-key").label("Gem kun offentlig nøgle i en ny privat fil").disabled(self.busy).on_click(cx.listener(|this,_,_,cx|this.save_public_key(cx))));
+        } else {
+            view=view.child("Ingen valideret administreret lokal offentlig nøgle er tilgængelig. Ved ekstern server skal administratoren levere den betroede offentlige nøgle på 32 bytes særskilt. En eksisterende lokal profil uden signer kræver en fremtidig eksplicit nøgleopsætning; der oprettes eller overtages ingen nøgle her.");
+        }
         if let Some(archive) = &self.archive {
             return view.child(format!("Modtaget {}bytes. Ingen automatisk lagring; lukning af visningen fjerner kun kopien i hukommelsen.",archive.bytes.len()))
     .child("Ny absolut lokal filsti · ingen symbolske links eller overskrivning").child(Input::new(&self.destination).disabled(self.busy))
