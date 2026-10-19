@@ -10,7 +10,7 @@ import { Button, Dialog, Input } from "./ui";
 // importer. The modal owns the file picker, the CVR-enrich opt-in, the busy
 // state and the post-import receipt — it mirrors `BankImportModal`'s shape.
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { api, type DataImportSummary } from "../lib/api";
 import { Banner } from "./Feedback";
 import { LockBanner } from "./LockBanner";
@@ -27,7 +27,11 @@ export type ImportModalProps = {
   onClose: () => void;
 };
 
-export function ImportModal({ slug, onImported, onClose: onDismiss }: ImportModalProps) {
+export function ImportModal(props: ImportModalProps) {
+  return <CompanyImportModal key={props.slug} {...props} />;
+}
+
+function CompanyImportModal({ slug, onImported, onClose: onDismiss }: ImportModalProps) {
   const [fileName, setFileName] = useState<string | null>(null);
   const [content, setContent] = useState<string | null>(null);
   const [enrichCvr, setEnrichCvr] = useState(true);
@@ -37,8 +41,10 @@ export function ImportModal({ slug, onImported, onClose: onDismiss }: ImportModa
   const [done, setDone] = useState<DataImportSummary | null>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
 
-  // Move focus into the dialog and let Escape dismiss it — basic modal hygiene.
-
+  const alive = useRef(true);
+  const selection = useRef(0);
+  const sending = useRef(false);
+  useEffect(() => { alive.current = true; return () => { alive.current = false; selection.current++; }; }, []);
 
   const outcome = useMutationOutcome(onImported);
   const guard = useDiscardGuard(!done && Boolean(content), onDismiss);
@@ -46,6 +52,9 @@ export function ImportModal({ slug, onImported, onClose: onDismiss }: ImportModa
 
   async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
+    const version = ++selection.current;
+    setContent(null);
+    setFileName(null);
     setError(null);
     if (!file) {
       setFileName(null);
@@ -54,9 +63,11 @@ export function ImportModal({ slug, onImported, onClose: onDismiss }: ImportModa
     }
     try {
       const text = await file.text();
+      if (!alive.current || version !== selection.current) return;
       setFileName(file.name);
       setContent(text);
     } catch {
+      if (!alive.current || version !== selection.current) return;
       setError("Filen kunne ikke læses.");
       setFileName(null);
       setContent(null);
@@ -64,11 +75,12 @@ export function ImportModal({ slug, onImported, onClose: onDismiss }: ImportModa
   }
 
   async function handleImport() {
-    if (outcome.isBlocked()) return;
+    if (sending.current || outcome.isBlocked()) return;
     if (!content || !fileName) {
       setError("Vælg en fil først.");
       return;
     }
+    sending.current = true;
     setBusy(true);
     setError(null);
     setLocked(null);
@@ -78,16 +90,19 @@ export function ImportModal({ slug, onImported, onClose: onDismiss }: ImportModa
         content,
         enrichCvr,
       }).catch(outcome.reject);
+      if (!alive.current) return;
       setDone(summary);
       onImported();
     } catch (err) {
+      if (!alive.current) return;
       const e = err as MaybeApiError;
       const message = e?.message ?? "Importen kunne ikke gennemføres.";
       // A 409 conflict from the backup lock is shown kindly, not as an error.
       if (e?.code === "conflict") setLocked(message);
       else setError(message);
     } finally {
-      setBusy(false);
+      sending.current = false;
+      if (alive.current) setBusy(false);
     }
   }
 
@@ -176,13 +191,13 @@ function ImportReceipt({
 }) {
   const s = done.summary;
   const created = s.customersCreated + s.vendorsCreated;
-  // CVR enrichment degrades gracefully — a failure because the CVR register
-  // credentials are unset is a setup gap, not an import error, so it gets a
-  // calm, specific note rather than the raw per-contact failure list.
+  // One source contact can attempt enrichment for both customer and vendor.
+  // Cached success and failures can coexist in the same import.
   const cvrCredsMissing = done.errors.some((e) => e.includes("CVR_USERNAME"));
   // Errors that are NOT CVR enrichment — skipped rows, rows that could not be
   // created. The summary counts hide these, so they must be surfaced or the
   // owner sees "X oprettet" with no hint that rows were dropped.
+  const cvrErrors = done.errors.filter((e) => e.includes("CVR-berigelse"));
   const otherErrors = done.errors.filter((e) => !e.includes("CVR-berigelse"));
 
   return (
@@ -200,29 +215,31 @@ function ImportReceipt({
           {s.vendorsCreated}{" "}
           {s.vendorsCreated === 1 ? "leverandør" : "leverandører"})
           {s.skipped > 0 ? ` · ${s.skipped} fandtes allerede` : ""}
-          {s.enriched > 0 ? ` · ${s.enriched} beriget fra CVR` : ""}.
+          {s.enriched > 0 ? ` · ${s.enriched} beriget med CVR-data` : ""}.
         </p>
       </div>
 
       {cvrCredsMissing && (
         <Banner kind="warning">
-          CVR-berigelse blev ikke kørt — adgang til CVR-registeret er ikke
-          konfigureret. Sæt CVR_USERNAME og CVR_PASSWORD for at hente adresser
-          m.m. automatisk.
+          Adgang til CVR-registeret er ikke konfigureret for de mislykkede opslag.
+          Bed administratoren konfigurere CVR_USERNAME og CVR_PASSWORD.
+          Eventuel berigelse med gemte CVR-data fremgår af kvitteringen.
         </Banner>
       )}
-      {!cvrCredsMissing && s.enrichmentFailures > 0 && (
+      {s.enrichmentFailures > 0 && (
         <Banner kind="warning">
-          CVR-berigelse fejlede for {s.enrichmentFailures}{" "}
-          {s.enrichmentFailures === 1 ? "kontakt" : "kontakter"} — de er
-          oprettet med dataene fra filen.
+          CVR-berigelse mislykkedes i {s.enrichmentFailures}{" "}
+          forsøg for kunde-/leverandørroller.
+          Samme kontakt kan tælle to gange. Importen bruger filens oplysninger;
+          eventuelle fejl ved oprettelse vises særskilt.
         </Banner>
       )}
+      {cvrErrors.length > 0 && <details><summary>Bemærkninger til CVR-berigelse</summary><ul>{cvrErrors.map((message,index)=><li key={index}>{message}</li>)}</ul></details>}
       {otherErrors.length > 0 && (
         <Banner kind="warning">
           {otherErrors.length === 1
             ? otherErrors[0]
-            : `${otherErrors.length} rækker kunne ikke importeres: ` +
+            : `${otherErrors.length} importbemærkninger: ` +
               otherErrors.slice(0, 3).join("; ") +
               (otherErrors.length > 3 ? " …" : "")}
         </Banner>
