@@ -582,3 +582,7 @@ pub mod invoice_email;
 
 pub mod receipt_reconciliation;
 pub mod workspace_transfer;
+
+pub mod purchase_vat;
+
+pub mod purchase_rules;

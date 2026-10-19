@@ -382,3 +382,6 @@ pub use invoice_email::{InvoiceEmailMutation, MAX_INVOICE_EMAIL_BODY, invoice_em
 
 mod workspace_transfer;
 pub use workspace_transfer::{WorkspaceTransferMutation,MAX_WORKSPACE_TRANSFER_BODY,MAX_WORKSPACE_TRANSFER_PROOF_BODY,workspace_transfer_body_schema,restored_receipt_body_schema};
+
+mod bookkeeping_batch;
+pub use bookkeeping_batch::{BookkeepingBatchMutation,MAX_BOOKKEEPING_BATCH_BODY,bookkeeping_batch_body_schema,bookkeeping_batch_scope_schema};

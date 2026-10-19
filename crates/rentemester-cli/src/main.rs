@@ -270,3 +270,5 @@ mod hosted_recurring;
 mod invoice_email;
 
 mod workspace_transfer;
+
+mod bookkeeping_batch;

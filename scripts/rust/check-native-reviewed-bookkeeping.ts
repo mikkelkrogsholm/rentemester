@@ -44,7 +44,7 @@ export async function checkNativeReviewedBookkeeping(author: Page, reviewer: Pag
   await reviewer.getByRole("dialog").getByLabel("Begrundelse", { exact: true }).fill("Independent synthetic review");
   await reviewer.getByRole("dialog").getByRole("button", { name: "Bekræft", exact: true }).click();
   await reviewer.getByRole("dialog").waitFor({ state: "hidden" });
-  await author.goto(`${base}/companies/synthetic/batchbogfoering`);
+  await author.goto(`${base}/companies/synthetic/batchbogfoering?mode=single`);
   const bankRow = author.getByRole("row").filter({ hasText: `#${fixture.bankTransactionId} ${row.text}` });
   await bankRow.getByRole("button", { name: "Opret bankkladde", exact: true }).click();
   if (await author.getByLabel("Modkonto", { exact: true }).inputValue() !== fixture.counterAccount) throw new Error("Approved exact rule did not provide its advisory hint");

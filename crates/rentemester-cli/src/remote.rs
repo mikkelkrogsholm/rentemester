@@ -54,6 +54,8 @@ pub fn run(args: &[String]) -> Result<Value, Failure> {
             "exitCodes":{"0":"success","1":"server/transport/protocol failure","2":"usage/configuration failure"},
             "example":"rentemester-rust remote --server http://127.0.0.1:8080 --allow-loopback-http --cookie-file /private/session.cookie trial-balance --company example --year 2026"});
         help["service_principals"]=crate::service_principals::help();
+        help["bookkeepingBatch"]=crate::bookkeeping_batch::help();
+        help["commands"].as_array_mut().unwrap().extend(["bookkeeping-batch-plan","bookkeeping-batch-status","bookkeeping-batch-persist","bookkeeping-batch-approve","bookkeeping-batch-apply"].map(|s|json!(s)));
         help["workspaceTransfer"]=crate::workspace_transfer::help();
         help["invoiceEmail"]=crate::invoice_email::help();
         help["hosted_recurring"]=crate::hosted_recurring::help();
@@ -100,6 +102,11 @@ pub fn run(args: &[String]) -> Result<Value, Failure> {
                 "--draft-id",
                 "--fiscal-year-start",
                 "--fiscal-year-end",
+                "--run-key",
+                "--accounting-from",
+                "--accounting-to",
+                "--bank-from",
+                "--bank-to",
                 "--server",
                 "--cookie-file",
                 "--company",
@@ -177,6 +184,7 @@ pub fn run(args: &[String]) -> Result<Value, Failure> {
     if crate::accruals::accepts(command){return crate::accruals::run(command,&flags,allow_http,confirmed,preview_reviewed);}
     if crate::assets::accepts(command){return crate::assets::run(command,&flags,allow_http,confirmed,preview_reviewed);}
     if crate::service_principals::accepts(command){return crate::service_principals::run(command,&flags,allow_http,confirmed,preview_reviewed);}
+    if crate::bookkeeping_batch::accepts(command){return crate::bookkeeping_batch::run(command,&flags,allow_http,confirmed,preview_reviewed);}
     if crate::workspace_transfer::accepts(command){return crate::workspace_transfer::run(command,&flags,allow_http,confirmed,preview_reviewed);}
     if crate::invoice_email::accepts(command){return crate::invoice_email::run(command,&flags,allow_http,confirmed,preview_reviewed);}
     if crate::hosted_recurring::accepts(command){return crate::hosted_recurring::run(command,&flags,allow_http,confirmed,preview_reviewed);}
