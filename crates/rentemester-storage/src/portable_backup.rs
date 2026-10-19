@@ -338,12 +338,10 @@ pub struct Company {
 pub fn company(db: &Connection) -> Result<Company, Error> {
     crate::journal_preview::require_current(db)
         .map_err(|_| refused("complete current native company schema required"))?;
-    if crate::scheduled_recurring_schema::installed(db)? {
-        let count: i64 = db.query_row("SELECT COUNT(*) FROM native_scheduled_recurring_events", [], |r| r.get(0)).map_err(sql)?;
-        if count != 0 {
-            return Err(refused("scheduled recurring history requires a supported backup codec; no archive was produced"));
-        }
-    }
+    // The signed SQLite image already contains the complete scheduler extension.
+    // Admit its source history only after validating its physical schema, chain,
+    // generation references and all earlier restore boundaries.
+    crate::scheduled_recurring::validate_backup(db)?;
     crate::migration::integrity(db)?;
     let report = crate::journal_hash::verify(db)?;
     if !report.ok {
@@ -395,6 +393,7 @@ pub fn restore_boundary(db: &mut Connection, archive_hash: &str) -> Result<(), E
         .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
         .map_err(sql)?;
     crate::validate(&tx)?;
+    crate::scheduled_recurring::append_restore_boundary(&tx, archive_hash)?;
     let high: i64 = tx
         .query_row(
             "SELECT COALESCE(MAX(id),0) FROM mutation_idempotency_tombstones",
@@ -447,12 +446,44 @@ mod tests {
     fn empty_known_native_schedule_schema_is_valid_but_corruption_is_not() {
         let (_, mut db) = pair();
         assert!(company(&db).is_ok());
-        let tx = db.transaction_with_behavior(rusqlite::TransactionBehavior::Immediate).unwrap();
+        let tx = db
+            .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
+            .unwrap();
         crate::scheduled_recurring_schema::install(&tx).unwrap();
         tx.commit().unwrap();
         assert!(company(&db).is_ok());
-        db.execute_batch("DROP TRIGGER native_scheduled_events_no_update;").unwrap();
+        db.execute_batch("DROP TRIGGER native_scheduled_events_no_update;")
+            .unwrap();
         assert!(company(&db).is_err());
+    }
+
+    #[test]
+    fn scheduler_boundary_failure_leaves_receipt_boundary_and_audit_unchanged() {
+        let (_, mut db) = pair();
+        let tx = db
+            .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
+            .unwrap();
+        crate::scheduled_recurring_schema::install(&tx).unwrap();
+        tx.commit().unwrap();
+        db.execute("INSERT INTO audit_log(event_type,entity_type,entity_id,message,actor) VALUES('native_restore_scheduled_boundary','native_scheduled_recurring_events','0','{}','system:portable-restore')", []).unwrap();
+        let before: i64 = db
+            .query_row("SELECT count(*) FROM audit_log", [], |r| r.get(0))
+            .unwrap();
+        assert!(restore_boundary(&mut db, &"a".repeat(64)).is_err());
+        assert_eq!(
+            db.query_row("SELECT count(*) FROM audit_log", [], |r| r.get::<_, i64>(0))
+                .unwrap(),
+            before
+        );
+        assert_eq!(
+            db.query_row(
+                "SELECT count(*) FROM audit_log WHERE event_type='native_restore_receipt_boundary'",
+                [],
+                |r| r.get::<_, i64>(0)
+            )
+            .unwrap(),
+            0
+        );
     }
 
     #[test]

@@ -558,6 +558,8 @@ fn validate(a: &artifact::VerifiedArtifact) -> Result<(), rentemester_engine::Er
             .map_err(error)?;
         db.execute_batch("PRAGMA trusted_schema=OFF;PRAGMA foreign_keys=ON;PRAGMA query_only=ON")
             .map_err(error)?;
+        // Includes the complete scheduler chain/generation/boundary validation
+        // before restore_new creates any target stage or publishes a namespace.
         let facts = store::company(&db)?;
         store::validate_inbox_company(&control, &db, &c.slug)?;
         if facts.uuid != c.ledger_uuid {
@@ -1352,3 +1354,7 @@ mod consolidation_tests;
 #[cfg(test)]
 #[path = "portable_backup/intercompany_tests.rs"]
 mod intercompany_tests;
+
+#[cfg(test)]
+#[path = "portable_backup/scheduled_tests.rs"]
+mod scheduled_tests;
