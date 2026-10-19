@@ -388,3 +388,6 @@ pub use bookkeeping_batch::{BookkeepingBatchMutation,MAX_BOOKKEEPING_BATCH_BODY,
 
 mod payable_correction;
 pub use payable_correction::{MAX_PAYABLE_CORRECTION_BODY,payable_correction_body_schema};
+
+mod intercompany_dispositions;
+pub use intercompany_dispositions::{DispositionAction,MAX_DISPOSITION_BODY,disposition_body_schema};
