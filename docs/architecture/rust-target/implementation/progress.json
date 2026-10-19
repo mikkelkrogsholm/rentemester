@@ -1,15 +1,15 @@
 {
   "goal": "Complete Rust server/web, GPUI local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "parallel-platform-12",
-  "code_revision": "git:3acc4aaa",
+  "current_increment": "parallel-platform-15",
+  "code_revision": "git:17100d5e",
   "spec_revision": "sha256:13a0386803d4f4e35af6fdf8a020cd851d759c4369c9d172a4e0f29459510cd0",
-  "state": "Actual annual/obligation web and earlier client journeys passed initial/restart; annual agent reads and native contacts now integrated, new actual HTTP/CLI/MCP annual qualification running.",
+  "state": "59-tool bank-link client parity and native paid-receipt flow integrated. Group14 initial document/dimension-budget/bank-link journeys passed before unclassified retention navigation failure; targeted capture added. Group15 actual combined qualification starts with59tools. Native GUI pending human unlock.",
   "issues_closed": [],
   "next": [
-    "Finish actual full-response annual HTTP/CLI/MCP comparison and restart.",
-    "Integrate isolated dimension budget actuals, reviewed-bank agent workflow and native invoice receipt/credit/refund.",
-    "Complete actual native invoice/report/bank/contact window acceptance after human Mac unlock; all epic requirements remain subject to full completion audit."
+    "Qualify59-tool bank-link parity and capture any actual retention navigation failure before diagnosing it.",
+    "Integrate source-defined bank correction and agent parity while invitations enable ordinary two-user review; native paid expense GUI remains pending unlock.",
+    "Complete actual native window journeys after human Mac unlock; continue remaining epic requirements."
   ],
   "preserve_unrelated_paths": [
     ".claude/settings.json",
@@ -20,8 +20,8 @@
   ],
   "all_goal_requirements_complete": false,
   "previous_verified_increment": {
-    "code_revision": "git:b4b6ea37",
-    "state": "48 PASS checks plus obligations initial/restart; annual CVR/openyear/close/reopen/rebuild and all earlier server/web/client flows together"
+    "code_revision": "git:3acc4aaa",
+    "state": "Group12 actual50PASS plus obligations initial/restart, including full annual report HTTP/CLI/MCP equality; separate native two-MFA reviewed-client proof8418ffc4 passed"
   },
   "evidence": {
     "combined_browser_log": "/tmp/rm-platform5-combined.log",
@@ -68,7 +68,7 @@
     "bank_drafts_integrated_clippy": "/tmp/rm-bank-drafts-integrated-clippy.log (PASS)",
     "gpui_manual_journal": "/tmp/rentemester-rust-reports/native-journal-ui-evidence.json",
     "two_user_reviewed_bookkeeping": {
-      "path": "/tmp/rentemester-rust-reports/native-reviewed-bookkeeping.json",
+      "path": "/tmp/rentemester-rust-reports/native-reviewed-bookkeeping-web.json",
       "log": "/tmp/rm-main-reviewed-bookkeeping.log",
       "exit": 0,
       "scope": "Actual native macOS, two ordinary distinct password/MFA users, bank-backed draft, independent rule/draft review, exactly one journal entry and immutable receipt replay, restart and fresh MFA; code cde51350 plus recorded source changes. Does not qualify later commitments/GDPR aliases/client additions."
@@ -119,12 +119,71 @@
     "platform12_combined": {
       "log": "/tmp/rm-platform12-combined.log",
       "revision": "3acc4aaa",
-      "state": "running; readonly annual agent equality initial/restart not claimed yet"
+      "state": "PASS; owned runtime cleaned",
+      "exit": 0,
+      "passed_checks": 50,
+      "scope": "Full annual report HTTP/CLI/MCP equality initial/restart, prior48 checks and obligations initial/restart"
     },
     "gpui_contacts": {
       "commit": "66d18f0f",
       "readiness": "/tmp/rentemester-rust-reports/native-contacts-readiness.json",
       "state": "Integrated; native build and35 tests PASS/1 existing ignored. Actual native GUI acceptance pending human Mac unlock; labelled CRUD/review, fresh canonical identity/privacy and exact receipts, private minimal unknown marker without retry."
+    },
+    "native_reviewed_agent_clients": {
+      "report": "/tmp/rentemester-rust-reports/native-reviewed-bookkeeping.json",
+      "artifact_manifest": "/tmp/rentemester-rust-reports/native-reviewed-client-artifacts.json",
+      "log": "/tmp/rm-reviewed-clients-actual.log",
+      "exit": 0,
+      "revision": "8418ffc4",
+      "scope": "Two normal distinct password/MFA users; CLI draft creation, MCP submission, stale/self-review refusal, independent MCP approval and explicit CLI receipt replay; exactly1 journal after restart. Pinned build artifacts predate later budget/document/bank-link changes."
+    },
+    "platform13_combined": {
+      "log": "/tmp/rm-platform13-combined.log",
+      "exit": 1,
+      "revision": "49097fbb",
+      "failure": "New dimension-budget expense fixture omitted required original document; server correctly refused DK-BOOKKEEPING-DOCUMENT-001. Fixed878e3b84 with separate uploaded originals and string documentId; no policy weakening. Owned runtime cleaned."
+    },
+    "platform14_combined": {
+      "log": "/tmp/rm-platform14-combined.log",
+      "revision": "c47a6768",
+      "state": "Initial document/dimension-budget/bank-link journeys PASS; retention heading timed out, restart not reached",
+      "scope": "57-tool agent clients, new original intake/bytes/refusals, dimension budget actuals and manual bank link along with previous journeys. Later desktop-only integration does not qualify native GUI.",
+      "exit": 1,
+      "failure": "Retention GET had succeeded earlier; no failed response/browser error captured. Added targeted status/body/pageerror/screenshot capture without retries or policy changes. Exact owned runtime cleaned."
+    },
+    "platform14_integrated_clippy": "/tmp/rm-platform14-integrated-clippy.log (PASS selected backend/client all-target strict)",
+    "platform14_web_build": "/tmp/rm-platform14-web-build.log (PASS)",
+    "platform14_document_client_tests": "/tmp/rm-platform14-document-clients-tests.log (PASS)",
+    "gpui_documents": {
+      "commit": "bc8f8125",
+      "tests": "/tmp/rm-platform14-desktop-warm-tests.log (49PASS/1existingignored)",
+      "build": "/tmp/rm-platform14-desktop-warm-build.log (PASS)",
+      "readiness": "/tmp/rentemester-rust-reports/native-documents-readiness.json",
+      "state": "Exact source intake/review, canonical hash and original bytes, private downloads, minimal unknown marker; real native GUI pending human unlock."
+    },
+    "gpui_invoice_lifecycle": {
+      "commit": "c59b3df5",
+      "readiness": "/tmp/rentemester-rust-reports/native-invoice-lifecycle-readiness.json",
+      "state": "Receipt, partial/full credit and refund integrated;41isolated tests/build passed, included in later root49tests/build; actual native GUI pending human unlock."
+    },
+    "platform15_bank_clients": {
+      "commit": "b125556e",
+      "tests": "/tmp/rm-platform15-bank-client-tests.log (PASS root client/CLI/MCP suites;100tests,3existingignored)",
+      "scope": "59tool union, exact initial-link confirmation and candidate reads; actual native server parity pending next composed qualification"
+    },
+    "gpui_paid_expense": {
+      "source_commit": "afa70951",
+      "tests": "/tmp/rm-platform15-paid-expense-tests.log (55PASS/1existingignored)",
+      "build": "/tmp/rm-platform15-paid-expense-build-fixed.log",
+      "readiness": "/tmp/rentemester-rust-reports/native-paid-receipt-readiness.json",
+      "state": "Integrated; root55tests and fixed nativebuild PASS. Root caught/wired missing original-review checkbox. Fresh canonical choices and exact one-shot booking/readback; real native GUI pending unlock; unpaid/FX still not included.",
+      "commit": "4a0e0b7e"
+    },
+    "platform15_combined": {
+      "log": "/tmp/rm-platform15-combined.log",
+      "revision": "17100d5e",
+      "state": "starting; no new actual pass or restart claimed",
+      "scope": "59tools, initial bank link CLI/MCP helper and retention diagnostic capture; Group14 webdist preserved, desktop changes not GUI-qualified"
     }
   },
   "verified_history": [
@@ -465,74 +524,89 @@
   "active_work": [
     {
       "owner": "root",
-      "result": "Integration and actual composed acceptance",
+      "result": "Integrate ready user journeys and qualify combined product",
       "depends_on": [
-        "owned runtime evidence"
+        "worker deliveries and actual runtime results"
       ],
-      "acceptance": "Server/web/client full journeys and refusals/restart; no full-goal completion claim"
+      "acceptance": "Preserve earlier effects and unrelated local changes; integrated verification; full goal remains open"
     },
     {
       "owner": "rust_mileage",
-      "result": "Actual annual HTTP/CLI/MCP equality within composed browser/restart",
-      "ownership": "read-only main, exact owned Docker/tmp runtime",
+      "result": "Group15 combined59-tool initial and restart qualification",
+      "ownership": "read-only main; exact owned Docker/tmp",
       "depends_on": [
-        "3acc4aaa server snapshot, correct appdist and48-tool host binaries"
+        "17100d5e snapshot and rebuilt59-tool hostbinaries, unchangedGroup14appdist"
       ],
       "parallel_with": [
-        "contacts",
-        "dimension budgets",
-        "annual agent reads"
+        "bank correction",
+        "agent correction parity",
+        "native paid expense"
       ],
-      "acceptance": "Actual terminal result and exact owned cleanup; no blind reruns"
+      "acceptance": "Actual confirmed agent bank links and current canonical reads; exact retention failure diagnostic or successful initial/restart; terminal result/owned cleanup"
     },
     {
       "owner": "rust_accruals",
-      "result": "Dimension/member budget versus canonical allocated actuals",
-      "ownership": "budget modules/view/API plus dedicated browserhelper",
+      "result": "Correct a bank reconciliation through actual reversal and reviewed replacement",
+      "ownership": "bank reconciliation storage/application/HTTP/UI and own helper",
       "depends_on": [
-        "canonical current dimension allocations and existing account budgets"
+        "integrated initial link and canonical reversal child"
       ],
       "parallel_with": [
-        "contacts",
-        "annual agent reads",
-        "composed verification"
+        "agent correction parity",
+        "native paid expense",
+        "Group14 qualification"
       ],
-      "acceptance": "Exact allocation/replacement/year isolation; unallocated and missing dimension budget truthful; normal budget unchanged, restart"
+      "acceptance": "Immutable supersession/history/current proof, true caller-key durable receipt, no accounting side effect, actual browser/restart"
     },
     {
       "owner": "rust_client_cli",
-      "result": "Reviewed bank→draft→independent review→post through agent clients",
-      "ownership": "new reviewed_bookkeeping client/CLI/MCP modules and standalone two-MFA fixture opt-in",
+      "result": "Bank link and correction through shared agent clients",
+      "ownership": "client/CLI/MCP modules/tests and separate helpers",
       "depends_on": [
-        "existing native reviewed bank/draft routes and actual independent MFA fixture"
+        "source-defined initial and correction routes"
       ],
       "parallel_with": [
-        "contacts",
-        "dimension budgets",
-        "composed verification"
+        "bank correction",
+        "native paid expense",
+        "Group14 qualification"
       ],
-      "acceptance": "Exact bodies/current rights, independent reviewer, no invented hashes/keys/retries; canonical receipt reconciliation and exactly-one posting"
+      "acceptance": "Exact confirmed body/server proof, full JSON, explicit caller-key replay only for supported correction, canonical equality and no accounting effects"
     },
     {
       "owner": "rust_budget",
-      "result": "Native receipt, partial/full credit and refund from issued invoice",
-      "ownership": "invoice modules/child lifecycle and additive navigation",
+      "result": "Invite ordinary second user, verify/enroll MFA and grant/revoke access through existing web UI",
+      "ownership": "isolated rust-invitations new storage/application/HTTP/identity delivery modules and existing access/claim UI; additive shared wiring",
       "depends_on": [
-        "existing shared receivables APIs and bank reads"
+        "Existing credential hashing, verification outbox, MFA, current-cookie control fence and access events"
       ],
       "parallel_with": [
-        "annual agent reads",
-        "dimension budgets",
-        "composed verification"
+        "bank correction",
+        "agent correction parity",
+        "composed qualification"
       ],
-      "acceptance": "Labelled source-bound selection, explicit exact confirmations, canonical balances/accounts, no retry after unknown; focused native tests/build and later real window"
+      "acceptance": "Normal email-bound expiring single-use claim without session or bootstrap bypass, ordinary verify/MFA, current authority and last-owner protection, two-user flow/restart"
     }
   ],
   "integrated_pending_browser": [
     {
-      "source_commit": "268d8f71",
-      "journey": "bank→draft→independent reviewer→atomic posting",
-      "state": "integrated; dedicated real two-user MFA fixture in progress"
+      "source_commit": "9e9b3dd8",
+      "journey": "Initial bank line to existing journal",
+      "state": "Group14 initial PASS; restart not reached due retention navigation failure"
+    },
+    {
+      "source_commit": "e5a68f2d",
+      "journey": "Dimension budget allocation versus actuals",
+      "state": "Group14 initial PASS; restart not reached due retention navigation failure"
+    },
+    {
+      "source_commit": "05b8ea7f",
+      "journey": "Document CLI/MCP upload and exact originals",
+      "state": "Group14 initial PASS; restart not reached due retention navigation failure"
+    },
+    {
+      "source_commit": "b125556e",
+      "journey": "Initial bank link CLI/MCP",
+      "state": "root100tests pass; actual qualification pending"
     }
   ],
   "pending_deliveries": []

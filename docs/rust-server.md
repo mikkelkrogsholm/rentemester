@@ -930,7 +930,8 @@ CLI læser samme grundlag med `annual-report --company SLUG
 --fiscal-year-start YYYY-MM-DD --fiscal-year-end YYYY-MM-DD`; MCP bruger
 `annual_report` med `company`, `fiscalYearStart` og `fiscalYearEnd`.
 Manglende forudsætninger returneres uændret i rapporten. De nye læsninger
-består kontrakttests; samlet HTTP/CLI/MCP-kontrol er næste accepttrin.
+består kontrakttests. Den samlede kontrol på `3acc4aaa` har også verificeret
+hele HTTP/CLI/MCP-svaret mod browserens rapport, både før og efter genstart.
 
 **Forpligtelser** viser kreditbalancer på gældskonti og særskilt momsgrundlag,
 så moms ikke tælles dobbelt. Manglende oplysninger om momsbetalinger og
@@ -941,3 +942,44 @@ kopiering af beløb og eksterne indberetningssider uden at registrere betaling
 eller indsende noget. Begge sider er kontrolleret gennem den rigtige browser
 og efter servergenstart med syntetiske data, sammen med de tidligere
 bogføringsforløb.
+
+
+## Bilag gennem Rust-klienterne og desktop
+
+CLI har `ingest-document --confirm` og `document-original`; MCP har
+`ingest_document` og `document_original`. Indlæsning videresender det præcist
+gennemgåede JSON én gang. Serveren validerer original, metadata, dubletter og
+opbevaring. Originalfilen må højst være 25 MiB; JSON-upload må højst være
+35 MiB. MCP tillader kun den større inputramme ved `ingest_document`; andre
+værktøjer beholder deres grænse på 1 MiB. Original-læsningen returnerer
+filtype og præcise bytes. De 59 agentværktøjer er bygget og kontrakttestet. Indlæsning, afvisninger og
+præcise originalbytes har også bestået den første samlede browserfase;
+den seneste kørsel nåede endnu ikke genstartskontrollen.
+
+Desktop har bilagsliste, valg af original, manuelt angivne bilagsfelter,
+gennemgang og bekræftet upload. Filens SHA-256 sammenholdes med serverens
+kanoniske bilag. Download kontrollerer filtype og hash og gemmer en privat
+fil; PDF, billeder og tekst kan åbnes i en almindelig fremviser. JSON/XML
+kan gemmes. Et uafklaret uploadsvar kræver manuel afklaring før en ny upload.
+Ved integration bestod 49 native tests og build; det rigtige native
+vindue afventer fortsat oplåsning af Mac'en.
+
+Fra et gennemgået og åbnet DKK-købsbilag kan desktop nu vælge en faktisk
+udgående banklinje, omkostningskonto og udtrykkelig momsbehandling. Serveren
+validerer og bogfører de præcist bekræftede valg; appen genlæser bilag,
+bankafstemning, journal og regnskabstal. Den native levering bestod 55 tests
+og build. Ved integration blev en manglende afkrydsning til originalgennemgang
+rettet; faktisk vinduesaccept udestår. Ubetalte køb og valutakøb er endnu ikke
+omfattet af dette desktopforløb.
+
+## Knyt en banklinje til en eksisterende postering
+
+Bankvisningen kan gennemgå serverens kandidater og knytte en importeret
+linje til en allerede bogført postering med begrundelse og bekræftelse.
+Serveren kontrollerer den arkiverede CSV-kilde, beløb, postering og det
+aktuelle bevis igen. Handlingen gemmer afstemningslink og auditspor uden
+nye journalposteringer eller ændringer af leverandørgæld. Forældede beviser
+og gentagelser afvises. CLI/MCP har de samme kandidatlæsninger og bekræftede links. Den første
+browserfase har verificeret webforløbet; faktisk CLI/MCP-paritet og genstart
+afventer næste samlede kontrol. Rettelse af et tidligere link udvikles særskilt;
+den oprindelige postering og historik bevares.
