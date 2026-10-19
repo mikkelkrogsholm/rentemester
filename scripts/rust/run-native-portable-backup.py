@@ -73,6 +73,7 @@ def main():
  p.add_argument('--with-inbox',action='store_true',help='Include unassigned/approved/completed native inbox sources and target originals in all phases')
  p.add_argument('--with-corporate',action='store_true',help='Include three corporate original sensitivities and full history; independently restore/restart each supplied archive; implies parties/knowledge')
  p.add_argument('--with-ownership',action='store_true',help='Include ordinary independent invited MFA reviewer and all ownership states/endings; implies corporate/inbox/parties/knowledge')
+ p.add_argument('--with-scheduled-recurring',action='store_true',help='Include ordinary issued scheduled histories; independently restore/reconsent/reopen every web/CLI/MCP archive with a fresh normal owner')
  p.add_argument('--with-group-reporting',action='store_true',help='Include explicit V1 groups, reviewed mappings/profiles and V2 eliminations; implies ownership baseline; source-ready restart precedes separate fresh-intent durability/blocked-proof restart')
  p.add_argument('--cli-binary',type=Path);p.add_argument('--mcp-binary',type=Path)
  p.add_argument('--evidence',type=Path,help='NEW report path; never overwrite. Default is a unique private /tmp report.')
@@ -91,7 +92,7 @@ def main():
   parent=(Path.home()/'Library/Application Support').resolve();work=parent/('Rentemester-Synthetic-Portable-'+uuid.uuid4().hex)
   child=None;log=None;owned=None
   helper=REPO/'scripts/rust/check-native-portable-backup.ts';runner=Path(__file__).resolve()
-  evidence={'status':'running','profile':'local-user-macos','noOfflineIdentitySeed':True,'globalSingleUseClaim':False,'webDownload':args.with_web_download,'companyKnowledge':args.with_company_knowledge,'parties':args.with_parties,'inbox':args.with_inbox,'corporate':args.with_corporate,'ownership':args.with_ownership,'groupReporting':args.with_group_reporting,'clientAdapters':bool(args.cli_binary),'sourceRevision':subprocess.check_output(['git','rev-parse','HEAD'],cwd=REPO,text=True).strip(),'helperSha256':{'browser':sha(helper),'runner':sha(runner)},'checks':[],'phases':[]}
+  evidence={'status':'running','profile':'local-user-macos','noOfflineIdentitySeed':True,'globalSingleUseClaim':False,'webDownload':args.with_web_download,'companyKnowledge':args.with_company_knowledge,'parties':args.with_parties,'inbox':args.with_inbox,'corporate':args.with_corporate,'ownership':args.with_ownership,'groupReporting':args.with_group_reporting,'scheduledRecurring':args.with_scheduled_recurring,'clientAdapters':bool(args.cli_binary),'sourceRevision':subprocess.check_output(['git','rev-parse','HEAD'],cwd=REPO,text=True).strip(),'helperSha256':{'browser':sha(helper),'runner':sha(runner)},'checks':[],'phases':[]}
   def save():report.seek(0);report.truncate();json.dump(evidence,report,indent=2);report.flush();os.fsync(report.fileno())
   def stop():
    nonlocal child,log
@@ -102,6 +103,7 @@ def main():
     child=None
    if log:log.close();log=None
   try:
+   if args.with_scheduled_recurring:evidence['helperSha256']['scheduledRecurring']=sha(REPO/'scripts/rust/check-native-backup-scheduled-recurring.ts')
    if args.with_group_reporting:evidence['helperSha256']['groupReporting']=sha(REPO/'scripts/rust/check-native-backup-group-reporting.ts')
    save();work.mkdir(mode=0o700);st=work.lstat();owned=(st.st_dev,st.st_ino)
    binary=work/'rentemester-server';shutil.copyfile(args.server_binary.resolve(strict=True),binary);binary.chmod(0o700)
@@ -133,8 +135,9 @@ def main():
     raise RuntimeError('Owned synthetic server readiness timed out')
    def check(phase):
     if sha(helper)!=evidence['helperSha256']['browser']:raise RuntimeError('Pinned browser helper changed during qualification')
+    if args.with_scheduled_recurring and sha(REPO/'scripts/rust/check-native-backup-scheduled-recurring.ts')!=evidence['helperSha256']['scheduledRecurring']:raise RuntimeError('Pinned scheduled helper changed during qualification')
     if args.with_group_reporting and sha(REPO/'scripts/rust/check-native-backup-group-reporting.ts')!=evidence['helperSha256']['groupReporting']:raise RuntimeError('Pinned group helper changed during qualification')
-    subprocess.run(['/opt/homebrew/bin/bun','run',str(helper)],cwd=REPO,env={**os.environ,'RM_PORTABLE_BASE':origin,'RM_PORTABLE_WORK':str(work),'RM_PORTABLE_PHASE':phase,'RM_PORTABLE_WEB_DOWNLOAD':'1'if args.with_web_download else'0','RM_PORTABLE_KNOWLEDGE':'1'if args.with_company_knowledge else'0','RM_PORTABLE_PARTIES':'1'if args.with_parties else'0','RM_PORTABLE_INBOX':'1'if args.with_inbox else'0','RM_PORTABLE_CORPORATE':'1'if args.with_corporate else'0','RM_PORTABLE_OWNERSHIP':'1'if args.with_ownership else'0','RM_PORTABLE_GROUP_REPORTING':'1'if args.with_group_reporting else'0','RM_PORTABLE_CLIENTS':'1'if args.cli_binary else'0'},check=True)
+    subprocess.run(['/opt/homebrew/bin/bun','run',str(helper)],cwd=REPO,env={**os.environ,'RM_PORTABLE_BASE':origin,'RM_PORTABLE_WORK':str(work),'RM_PORTABLE_PHASE':phase,'RM_PORTABLE_WEB_DOWNLOAD':'1'if args.with_web_download else'0','RM_PORTABLE_KNOWLEDGE':'1'if args.with_company_knowledge else'0','RM_PORTABLE_PARTIES':'1'if args.with_parties else'0','RM_PORTABLE_INBOX':'1'if args.with_inbox else'0','RM_PORTABLE_CORPORATE':'1'if args.with_corporate else'0','RM_PORTABLE_OWNERSHIP':'1'if args.with_ownership else'0','RM_PORTABLE_GROUP_REPORTING':'1'if args.with_group_reporting else'0','RM_PORTABLE_SCHEDULED_RECURRING':'1'if args.with_scheduled_recurring else'0','RM_PORTABLE_CLIENTS':'1'if args.cli_binary else'0'},check=True)
     evidence['phases'].append(phase);save()
    def refuse(argv,label):
     r=subprocess.run([str(binary)]+argv,cwd=REPO,capture_output=True,text=True,timeout=30)
@@ -147,6 +150,8 @@ def main():
    names=['portable.native-backup.json']+(['cli.native-backup.json','mcp.native-backup.json']if args.cli_binary else[])
    evidence['verifiedArtifacts']={}
    source_state=(work/'private-state.json').read_bytes();source_facts=json.loads(source_state)
+   if args.with_scheduled_recurring:
+    evidence['scheduledRecurringSourceEvidence']=source_facts['scheduledRecurringEvidence'];save()
    corporate_inputs=source_facts.get('corporateInputBytes')if args.with_corporate else None
    if args.with_corporate and(not isinstance(corporate_inputs,dict)or len(corporate_inputs)!=3):raise RuntimeError('Expected three corporate original inputs')
    corporate_section=None;ownership_section=None;group_sections=None
@@ -223,7 +228,7 @@ def main():
    shutil.rmtree(work/'restored')
    evidence['restoredArtifacts']={}
    restored_identity=None
-   for index,name in enumerate(names if args.with_corporate else names[:1]):
+   for index,name in enumerate(names if args.with_corporate or args.with_scheduled_recurring else names[:1]):
     # Every artifact gets a fresh target, ordinary new-owner verification/MFA,
     # fresh cookie/MFA keys and the original source expectations. Never adopt
     # prior restored authority or carry a prior test's journal mutation forward.
@@ -240,10 +245,10 @@ def main():
     config.pop('firstOwner');write();start([]);check('reopen');stop()
     if args.with_group_reporting:start([]);check('reopen-after-intent');stop()
     restored_state=json.loads((work/'private-state.json').read_text())
-    evidence['restoredArtifacts'][name]={'normalNewOwnerMfa':True,'restart':True,'oldKeyRefusedWithoutEffect':True,'freshKeyNewIntentPosted':True,'corporate':restored_state.get('corporateEvidence'),'ownership':restored_state.get('ownershipEvidence'),'groupReporting':restored_state.get('groupReportingEvidence'),'parties':restored_state.get('partiesEvidence'),'knowledge':restored_state.get('knowledgeEvidence'),'inbox':restored_state.get('inboxEvidence'),'originalSha256':restored_state['documentHash'],'invoicePdfSha256':restored_state['pdfHash'],'companyUuids':{slug:v['uuid']for slug,v in restored_state['snapshot'].items()}}
+    evidence['restoredArtifacts'][name]={'normalNewOwnerMfa':True,'restart':True,'oldKeyRefusedWithoutEffect':True,'freshKeyNewIntentPosted':True,'corporate':restored_state.get('corporateEvidence'),'ownership':restored_state.get('ownershipEvidence'),'groupReporting':restored_state.get('groupReportingEvidence'),'scheduledRecurring':restored_state.get('scheduledRecurringEvidence'),'parties':restored_state.get('partiesEvidence'),'knowledge':restored_state.get('knowledgeEvidence'),'inbox':restored_state.get('inboxEvidence'),'originalSha256':restored_state['documentHash'],'invoicePdfSha256':restored_state['pdfHash'],'companyUuids':{slug:v['uuid']for slug,v in restored_state['snapshot'].items()}}
     save()
    evidence.pop('activeRestoreArtifact',None)
-   state=json.loads((work/'private-state.json').read_text());evidence.update({'status':'passed','normalVerificationAndMfa':True,'restart':True,'oldKeyRefusedWithoutEffect':True,'freshKeyNewIntentPosted':True,'download':state.get('download'),'knowledge':state.get('knowledgeEvidence'),'partyEvidence':state.get('partiesEvidence'),'inboxEvidence':state.get('inboxEvidence'),'corporateEvidence':state.get('corporateEvidence'),'ownershipEvidence':state.get('ownershipEvidence'),'groupReportingEvidence':state.get('groupReportingEvidence'),'clients':state.get('clientEvidence'),'companyUuids':{s:v['uuid']for s,v in state['snapshot'].items()},'originalSha256':state['documentHash'],'invoicePdfSha256':state['pdfHash']})
+   state=json.loads((work/'private-state.json').read_text());evidence.update({'status':'passed','normalVerificationAndMfa':True,'restart':True,'oldKeyRefusedWithoutEffect':True,'freshKeyNewIntentPosted':True,'download':state.get('download'),'knowledge':state.get('knowledgeEvidence'),'partyEvidence':state.get('partiesEvidence'),'inboxEvidence':state.get('inboxEvidence'),'corporateEvidence':state.get('corporateEvidence'),'ownershipEvidence':state.get('ownershipEvidence'),'groupReportingEvidence':state.get('groupReportingEvidence'),'scheduledRecurringEvidence':state.get('scheduledRecurringEvidence'),'clients':state.get('clientEvidence'),'companyUuids':{s:v['uuid']for s,v in state['snapshot'].items()},'originalSha256':state['documentHash'],'invoicePdfSha256':state['pdfHash']})
    save()
   except BaseException as error:
    evidence.update({'status':'failed','failureType':type(error).__name__});save();raise

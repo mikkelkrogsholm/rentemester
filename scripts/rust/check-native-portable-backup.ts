@@ -6,6 +6,7 @@ import { readdirSync, readFileSync, writeFileSync, statSync, realpathSync, unlin
 import { basename, join, resolve } from "node:path";
 import { chromium, type Page } from "@playwright/test";
 import {prepareBackupGroupReporting,checkBackupGroupReporting,groupReportingViews} from "./check-native-backup-group-reporting";
+import {prepareBackupScheduledRecurring,checkBackupScheduledRecurring} from "./check-native-backup-scheduled-recurring";
 const work=resolve(process.env.RM_PORTABLE_WORK??"");
 if(!basename(work).startsWith("Rentemester-Synthetic-Portable-")||(statSync(work).mode&0o077)!==0)throw Error("Owned private portable fixture required");
 const config=JSON.parse(readFileSync(join(work,"server.json"),"utf8"));
@@ -13,6 +14,7 @@ if(config.workspace!=="synthetic-native-portable"||![join(work,"source"),join(wo
 const base=process.env.RM_PORTABLE_BASE!;
 if(!/^http:\/\/127\.0\.0\.1:\d+$/.test(base))throw Error("Literal loopback only");
 const phase=process.env.RM_PORTABLE_PHASE!;
+const scheduledRecurringEnabled=process.env.RM_PORTABLE_SCHEDULED_RECURRING==="1";
 const groupReportingEnabled=process.env.RM_PORTABLE_GROUP_REPORTING==="1";
 if(!["source","restored","reopen",...(groupReportingEnabled?["reopen-after-intent"]:[])].includes(phase))throw Error("Explicit portable fixture phase required");
 const browser=await chromium.launch({headless:true});
@@ -395,6 +397,7 @@ async function exportClientArtifacts(){
 
 try{
  let saved:any=phase==="source"?{}:JSON.parse(readFileSync(statePath,"utf8"));
+ if(phase!=="source"&&Boolean(saved.scheduledRecurring)!==scheduledRecurringEnabled)throw Error("RM_PORTABLE_SCHEDULED_RECURRING must match the source fixture in every phase");
  if(phase!=="source"&&Boolean(saved.groupReporting)!==groupReportingEnabled)throw Error("RM_PORTABLE_GROUP_REPORTING must match the source fixture in every phase");
  if(phase!=="source"&&Boolean(saved.ownership)!==ownershipEnabled)throw Error("RM_PORTABLE_OWNERSHIP must match the source fixture in every phase");
  if(phase!=="source"&&Boolean(saved.corporate)!==corporateEnabled)throw Error("RM_PORTABLE_CORPORATE must match the source fixture in every phase");
@@ -469,6 +472,11 @@ try{
    // all subsequent profile/elimination actions are checked to leave them alone.
    saved.snapshot=await snapshot();saved.bank=(await get("synthetic","bank")).bank;
   }
+  if(scheduledRecurringEnabled){
+   saved.scheduledRecurring=await prepareBackupScheduledRecurring({page,base,work,company:slugs[0],clients:process.env.RM_PORTABLE_CLIENTS==="1"});
+   saved.scheduledRecurringEvidence=saved.scheduledRecurring.evidence;
+   if(!isDeepStrictEqual(await snapshot(),saved.snapshot))throw Error("Scheduler preparation changed prior accounting snapshots");
+  }
   if(process.env.RM_PORTABLE_CLIENTS==="1")saved.clientEvidence=await exportClientArtifacts();
   if(partiesEnabled&&!isDeepStrictEqual(await partiesViews(),saved.parties))throw Error("Backup client exports changed party history");
   if(knowledgeEnabled&&!isDeepStrictEqual(await knowledgeViews(),saved.knowledge))throw Error("Backup client exports changed knowledge history");
@@ -490,6 +498,10 @@ try{
    writeFileSync(join(work,"portable.native-backup.json"),await archive.body(),{mode:0o600});
   }
  }else{
+  if(scheduledRecurringEnabled){
+   saved.scheduledRecurring=await checkBackupScheduledRecurring({page,base,work,company:slugs[0],clients:process.env.RM_PORTABLE_CLIENTS==="1"},saved.scheduledRecurring,phase!=="restored");
+   saved.scheduledRecurringEvidence=saved.scheduledRecurring.evidence;
+  }
   if(groupReportingEnabled){
    const checked=await checkBackupGroupReporting(page,base,saved.groupReporting,phase==="reopen-after-intent");
    if(phase==="reopen-after-intent"){
