@@ -51,13 +51,13 @@ pub(super) fn verify(tx: &Transaction<'_>) -> Result<Vec<Value>, Error> {
         "invoice_compensation_claims",
         "invoice_interest_claims",
         "imported_receivable_headers",
-        "import_archive_years",
     ] {
         let evidence = rows(tx, &format!("SELECT id FROM {table} LIMIT 1"), &[])?;
         if !evidence.is_empty() {
             errors.push(json!({"code":"AUDIT_WORKFLOW_NOT_PORTED","source":table}));
         }
     }
+    crate::archive_import::validate_history(tx)?;
     errors.extend(crate::reminder_claims::audit_evidence(tx)?);
     errors.extend(super::bank_audit::verify(tx)?);
     for link in rows(

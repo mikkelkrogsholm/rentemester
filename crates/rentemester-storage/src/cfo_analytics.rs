@@ -22,6 +22,17 @@ pub fn collect(
     query: &Query,
     visible_companies: &BTreeSet<String>,
 ) -> Result<CompanyRows, Error> {
+    collect_with_archives(company, control, slug, query, visible_companies, &[])
+}
+/// Physical archive proofs are produced only by guarded original reads in the host/application.
+pub fn collect_with_archives(
+    company: &Transaction<'_>,
+    control: &Transaction<'_>,
+    slug: &str,
+    query: &Query,
+    visible_companies: &BTreeSet<String>,
+    verified: &[crate::archive_import::VerifiedArchive],
+) -> Result<CompanyRows, Error> {
     query.validate()?;
     if !visible_companies.contains(slug) {
         return Err(policy::refused("company is not accessible"));
@@ -84,7 +95,27 @@ pub fn collect(
         }
         rows.push(row);
     }
-    rows.extend(archive(company)?);
+    if verified.is_empty()
+        && company
+            .query_row(
+                "SELECT EXISTS(SELECT 1 FROM import_archive_years)",
+                [],
+                |r| r.get::<_, bool>(0),
+            )
+            .map_err(sql)?
+    {
+        return Err(Error::new(
+            "cfo_archive_unavailable",
+            "physical original-backed archive assurance is required",
+        ));
+    }
+    rows.extend(crate::archive_import::cfo_rows(
+        company,
+        verified,
+        slug,
+        &query.from,
+        &query.to,
+    )?);
     let posted:i64=company.query_row("SELECT COUNT(*) FROM journal_entries WHERE status='posted' AND reversal_of_entry_id IS NULL AND transaction_date BETWEEN ? AND ? AND document_id IS NULL",params![query.from,query.to],|r|r.get(0)).map_err(sql)?;
     let exceptions: i64 = company
         .query_row(
@@ -153,14 +184,4 @@ fn party(
         });
     }
     Ok(())
-}
-fn archive(tx: &Transaction<'_>) -> Result<Vec<Row>, Error> {
-    let present:bool=tx.query_row("SELECT EXISTS(SELECT 1 FROM import_archive_years) OR EXISTS(SELECT 1 FROM import_archive_postings)",[],|r|r.get(0)).map_err(sql)?;
-    if present {
-        return Err(Error::new(
-            "cfo_archive_unavailable",
-            "Retained archive posting source assurance is unavailable: native closed-history ingestion and physical source attestation are not implemented",
-        ));
-    }
-    Ok(vec![])
 }

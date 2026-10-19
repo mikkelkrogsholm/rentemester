@@ -343,6 +343,7 @@ pub fn company(db: &Connection) -> Result<Company, Error> {
     crate::purchase_rules::validate_backup(db)?;
     crate::bookkeeping_batch::validate_backup(db)?;
     crate::direct_bank_payable_correction::validate_backup(db)?;
+    crate::archive_import::validate_history(db)?;
     crate::migration::integrity(db)?;
     let report = crate::journal_hash::verify(db)?;
     if !report.ok {
@@ -355,7 +356,7 @@ pub fn company(db: &Connection) -> Result<Company, Error> {
             |r| r.get(0),
         )
         .map_err(sql)?;
-    let mut originals = vec![];
+    let mut originals = crate::archive_import::originals(db)?.into_iter().map(|source|(source.path,source.sha256)).collect::<Vec<_>>();
     let mut q = db
         .prepare("SELECT stored_path,sha256_hash FROM documents ORDER BY id")
         .map_err(sql)?;
