@@ -385,3 +385,6 @@ pub use workspace_transfer::{WorkspaceTransferMutation,MAX_WORKSPACE_TRANSFER_BO
 
 mod bookkeeping_batch;
 pub use bookkeeping_batch::{BookkeepingBatchMutation,MAX_BOOKKEEPING_BATCH_BODY,bookkeeping_batch_body_schema,bookkeeping_batch_scope_schema};
+
+mod payable_correction;
+pub use payable_correction::{MAX_PAYABLE_CORRECTION_BODY,payable_correction_body_schema};
