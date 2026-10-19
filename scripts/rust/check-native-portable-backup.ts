@@ -5,6 +5,7 @@ import { isDeepStrictEqual } from "node:util";
 import { readdirSync, readFileSync, writeFileSync, statSync, realpathSync, unlinkSync } from "node:fs";
 import { basename, join, resolve } from "node:path";
 import { chromium, type Page } from "@playwright/test";
+import {prepareBackupGroupReporting,checkBackupGroupReporting,groupReportingViews} from "./check-native-backup-group-reporting";
 const work=resolve(process.env.RM_PORTABLE_WORK??"");
 if(!basename(work).startsWith("Rentemester-Synthetic-Portable-")||(statSync(work).mode&0o077)!==0)throw Error("Owned private portable fixture required");
 const config=JSON.parse(readFileSync(join(work,"server.json"),"utf8"));
@@ -12,7 +13,8 @@ if(config.workspace!=="synthetic-native-portable"||![join(work,"source"),join(wo
 const base=process.env.RM_PORTABLE_BASE!;
 if(!/^http:\/\/127\.0\.0\.1:\d+$/.test(base))throw Error("Literal loopback only");
 const phase=process.env.RM_PORTABLE_PHASE!;
-if(!["source","restored","reopen"].includes(phase))throw Error("Explicit portable fixture phase required");
+const groupReportingEnabled=process.env.RM_PORTABLE_GROUP_REPORTING==="1";
+if(!["source","restored","reopen",...(groupReportingEnabled?["reopen-after-intent"]:[])].includes(phase))throw Error("Explicit portable fixture phase required");
 const browser=await chromium.launch({headless:true});
 const page=await browser.newPage();page.setDefaultTimeout(45000);
   function totp(secret: string) {
@@ -45,7 +47,7 @@ const page=await browser.newPage();page.setDefaultTimeout(45000);
     await page.getByRole("button", { name: "Bekræft", exact: true }).click();
     await page.getByRole("link", { name: "Åbn bogføring" }).first().waitFor();
   }
-  async function enroll(page: Page, email: string, password: string) {
+  async function enroll(page: Page, email: string, password: string, reserveRecovery?: (code:string)=>void) {
     await page.goto(base);
     await page.getByLabel("E-mail", { exact: true }).fill(email);
     await page.getByLabel("Adgangskode", { exact: true }).fill(password);
@@ -61,7 +63,8 @@ const page=await browser.newPage();page.setDefaultTimeout(45000);
       .getByRole("region", { name: "Recovery codes" })
       .locator("li")
       .allTextContents();
-    if (codes.length < 2) throw new Error("Recovery codes missing");
+    if (codes.length < (reserveRecovery?3:2)) throw new Error("Recovery codes missing");
+    if(reserveRecovery)reserveRecovery(codes[2]);
     await page.getByRole("button", { name: "Jeg har gemt koderne", exact: true }).click();
     await page.getByRole("link", { name: "Åbn bogføring" }).first().waitFor();
     await page.context().clearCookies();
@@ -392,16 +395,17 @@ async function exportClientArtifacts(){
 
 try{
  let saved:any=phase==="source"?{}:JSON.parse(readFileSync(statePath,"utf8"));
+ if(phase!=="source"&&Boolean(saved.groupReporting)!==groupReportingEnabled)throw Error("RM_PORTABLE_GROUP_REPORTING must match the source fixture in every phase");
  if(phase!=="source"&&Boolean(saved.ownership)!==ownershipEnabled)throw Error("RM_PORTABLE_OWNERSHIP must match the source fixture in every phase");
  if(phase!=="source"&&Boolean(saved.corporate)!==corporateEnabled)throw Error("RM_PORTABLE_CORPORATE must match the source fixture in every phase");
  if(phase!=="source"&&Boolean(saved.inbox)!==inboxEnabled)throw Error("RM_PORTABLE_INBOX must match the source fixture in every phase");
  if(phase!=="source"&&Boolean(saved.parties)!==partiesEnabled)throw Error("RM_PORTABLE_PARTIES must match the source fixture in every phase");
- if(phase==="reopen")await login(page,"restored-owner@example.invalid",password,saved.recovery);
+ if(phase==="reopen"||phase==="reopen-after-intent")await login(page,"restored-owner@example.invalid",password,saved.recovery);
  else{
   const spool=join(config.root,".rentemester");const deliveries=readdirSync(spool).filter(n=>n.startsWith("verification-")&&n.endsWith(".txt"));
   if(deliveries.length!==1)throw Error("Expected one ordinary first-owner verification");
   await page.goto(readFileSync(join(spool,deliveries[0]),"utf8").trim());
-  saved.recovery=await enroll(page,phase==="source"?"source-owner@example.invalid":"restored-owner@example.invalid",password);
+  saved.recovery=await enroll(page,phase==="source"?"source-owner@example.invalid":"restored-owner@example.invalid",password,groupReportingEnabled&&phase==="restored"?code=>{saved.groupReceiptRecovery=code;}:undefined);
  }
  if(phase==="source"){
   const created=await page.request.post(`${base}/api/companies`,{headers,data:{name:"Synthetic portable second",slug:slugs[1]}});if(created.status()!==201)throw Error(await created.text());
@@ -459,6 +463,12 @@ try{
    const ownership=await prepareOwnership();saved.ownership=ownership.views;saved.ownershipSnapshotFacts=ownership.proposedFacts;saved.ownershipAppliedAdditions=ownership.appliedAdditions;saved.ownershipEndings=ownership.endings;
    saved.ownershipEvidence={snapshotIds:ownershipSnapshots,states:["applied","applied","proposed","approved","rejected"],asOf:ownershipDates,sourceViewsSha256:digest(Buffer.from(JSON.stringify(saved.ownership))),authorId:ownership.authorId,reviewerId:ownership.reviewerId,invitationId:ownership.invitationId,ordinaryInvitationVerificationAndDistinctMfa:true,reviewerWorkspaceRole:"member",reviewerCompanyRoles:slugs.map(companySlug=>({companySlug,role:"owner"})),selfReviewRefused:true,canonicalEndingCount:1,accountingEffect:"none",legacyV1Coverage:"Codec unit tests only; ordinary current API creates v2",reducedRoleVisibilityCoverage:"Existing native authorization/codec unit tests; J05 compares both company anchors with all-company owners"};
   }
+  if(groupReportingEnabled){
+   saved.groupReporting=await prepareBackupGroupReporting({author:page,base,work,root:config.root,slugs,enroll});saved.groupReportingEvidence=saved.groupReporting.evidence;
+   // Four explicitly requested, source-linked journals are fixture preparation;
+   // all subsequent profile/elimination actions are checked to leave them alone.
+   saved.snapshot=await snapshot();saved.bank=(await get("synthetic","bank")).bank;
+  }
   if(process.env.RM_PORTABLE_CLIENTS==="1")saved.clientEvidence=await exportClientArtifacts();
   if(partiesEnabled&&!isDeepStrictEqual(await partiesViews(),saved.parties))throw Error("Backup client exports changed party history");
   if(knowledgeEnabled&&!isDeepStrictEqual(await knowledgeViews(),saved.knowledge))throw Error("Backup client exports changed knowledge history");
@@ -480,6 +490,13 @@ try{
    writeFileSync(join(work,"portable.native-backup.json"),await archive.body(),{mode:0o600});
   }
  }else{
+  if(groupReportingEnabled){
+   const checked=await checkBackupGroupReporting(page,base,saved.groupReporting,phase==="reopen-after-intent");
+   if(phase==="reopen-after-intent"){
+    if(!isDeepStrictEqual(checked,saved.groupIntentBlockedReport))throw Error("Changed-source blocked report/provenance or fresh intent lost after final restart");
+    saved.groupReportingEvidence.freshIntentDurableAfterFinalRestart=true;
+   }else saved.groupReportingEvidence[phase==="reopen"?"exactReadyAfterFirstRestart":"exactReadyAfterRestore"]=true;
+  }
   if(ownershipEnabled){
    if(!saved.ownership||!isDeepStrictEqual(await ownershipViews(),saved.ownership))throw Error("Restored Ownership canonical context/history/hashes/diffs/states/as-of projections differ");
    const me=await workspaceRequest(page,"/api/me"),members=await workspaceRequest(page,"/api/workspace/members");
@@ -513,13 +530,18 @@ try{
   const before=(await get("synthetic","journal")).journal.entries;
   const refused=await page.request.post(company("synthetic","manual-journal"),{headers,data:saved.original});const refusal=await refused.json();
   if(refused.status()!==400||refusal.code!=="RESTORED_KEY_RECONCILIATION_REQUIRED"||JSON.stringify((await get("synthetic","journal")).journal.entries)!==JSON.stringify(before))throw Error(`Imported key became executable: ${refused.status()} ${JSON.stringify(refusal)}`);
-  if(phase==="restored"){
+  if((phase==="restored"&&!groupReportingEnabled)||(phase==="reopen"&&groupReportingEnabled)){
    const fresh=structuredClone(saved.original);fresh.input.idempotencyKey="synthetic-portable-new-restored-intent";fresh.input.request.text="Synthetic restored fresh intended operation";await post("synthetic","manual-journal",fresh);
    const afterBank=(await get("synthetic","bank")).bank;
    if(JSON.stringify(afterBank.transactions)!==JSON.stringify(saved.bank.transactions)||afterBank.actualBalance!==saved.bank.actualBalance||Math.round(afterBank.bookedBalance*100)!==Math.round(saved.bank.bookedBalance*100)+1234)throw Error("Fresh intended post changed bank source or failed exact ledger effect");
    saved.bank=afterBank;saved.snapshot=await snapshot();
+   if(groupReportingEnabled){
+    saved.groupIntentBlockedReport=await checkBackupGroupReporting(page,base,saved.groupReporting,true);saved.groupReportingEvidence.intentBlockedReport=saved.groupIntentBlockedReport;
+    if(!saved.groupReceiptRecovery)throw Error("Final group receipt restart requires its own unused ordinary recovery code");saved.recovery=saved.groupReceiptRecovery;delete saved.groupReceiptRecovery;
+   }
   }
  }
+ if(groupReportingEnabled&&phase==="source"&&!isDeepStrictEqual(await groupReportingViews(page,base,saved.groupReporting),saved.groupReporting.views))throw Error("Backup exports changed source-ready group evidence");
  if(ownershipEnabled&&!isDeepStrictEqual(await ownershipViews(),saved.ownership))throw Error("Portable phase changed Ownership canonical source/history/as-of projections");
  if(corporateEnabled&&!isDeepStrictEqual(await corporateViews(),saved.corporate))throw Error("Portable phase changed corporate canonical source/history/originals");
  if(inboxEnabled&&!isDeepStrictEqual(await inboxViews(),saved.inbox))throw Error("Portable phase changed inbox source/history/document/original views");

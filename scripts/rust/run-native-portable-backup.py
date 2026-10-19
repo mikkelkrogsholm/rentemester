@@ -40,6 +40,31 @@ def ownership_fixture_evidence(package,source,previous):
   applied=next((h for h in expected[row['snapshot_id']]['history']if h['event_type']=='applied'),None)
   if applied is None or row['event_type']!='ended'or any(row[k]!=applied[k]for k in ['actor','principal_kind','principal_id','created_at']):raise RuntimeError('Ownership ending apply provenance differs')
  return section,{'sourceSectionSha256':hashlib.sha256(json.dumps(section,sort_keys=True,separators=(',',':')).encode()).hexdigest(),'tableRows':{name:len(section['tables'][name]['rows'])for name in tables},'exactNativeObservationsHistoryAndEndings':True}
+def group_reporting_fixture_evidence(package,source,previous):
+ """Exact business-table receipts after independent native signature/semantic verification."""
+ fixture=source['groupReporting'];sections={}
+ signed=json.loads(base64.b64decode(package['manifestBase64'],validate=True))
+ if{c['slug']:c['ledgerUuid']for c in signed['context']['companies']}!=fixture['evidence']['companyUuids']:raise RuntimeError('Signed group company UUIDs differ from source ledgers')
+ for path,format,tables in [('control/intercompany.json','rentemester-native-intercompany/1',['rm_group_manifest_events','rm_intercompany_mapping_events']),('control/consolidation.json','rentemester-native-consolidation/1',['rm_consolidation_profile_events','rm_consolidation_elimination_events'])]:
+  entries=[e for e in package['entries']if e['path']==path]
+  if len(entries)!=1:raise RuntimeError('Verified group reporting section missing')
+  section=json.loads(base64.b64decode(entries[0]['bytesBase64'],validate=True))
+  if section.get('format')!=format or set(section['tables'])!=set(tables):raise RuntimeError('Unknown group reporting codec/table inventory')
+  sections[path]=section
+ if previous is not None and sections!=previous:raise RuntimeError('Independent archives changed exact group histories/IDs/provenance')
+ def rows(path,name):
+  t=sections[path]['tables'][name]
+  return[dict(zip(t['columns'],[c.get('value')for c in row],strict=True))for row in t['rows']]
+ manifests=rows('control/intercompany.json','rm_group_manifest_events');expected=fixture['receipts']['manifests']
+ if len(manifests)!=len(expected):raise RuntimeError('Group manifest history inventory differs')
+ for row,receipt in zip(manifests,expected,strict=True):
+  if json.loads(row['canonical_manifest'])!=receipt['input']or row['manifest_hash']!=receipt['receipt']['manifestHash']or row['actor']!=receipt['actor']:raise RuntimeError('Explicit V1 manifest history/source/hash differs')
+ for path,table,kind,identity,payload_col,hash_col in [('control/intercompany.json','rm_intercompany_mapping_events','mappings','mapping','canonical_mapping','mapping_hash'),('control/consolidation.json','rm_consolidation_profile_events','profiles','profile','canonical_profile','profile_hash'),('control/consolidation.json','rm_consolidation_elimination_events','eliminations','payload','canonical_payload','payload_hash')]:
+  actual=rows(path,table);receipts=fixture['receipts'][kind]
+  if len(actual)!=len(receipts):raise RuntimeError('Group reviewed lifecycle inventory differs')
+  for row,receipt in zip(actual,receipts,strict=True):
+   if row['event_type']!=receipt['event']or row[hash_col]!=receipt['hash']or json.loads(row[payload_col])!=receipt[identity]or row['actor']!=receipt['actor']:raise RuntimeError('Group exact reviewed canonical lifecycle/provenance differs')
+ return sections,{'sectionSha256':{path:hashlib.sha256(json.dumps(section,sort_keys=True,separators=(',',':')).encode()).hexdigest()for path,section in sections.items()},'tableRows':{name:len(t['rows'])for section in sections.values()for name,t in section['tables'].items()},'exactSourceReceiptsAndUuidBindings':True}
 def main():
  p=argparse.ArgumentParser(description=__doc__)
  p.add_argument('--server-binary',type=Path,required=True);p.add_argument('--web-dir',type=Path,required=True)
@@ -48,9 +73,11 @@ def main():
  p.add_argument('--with-inbox',action='store_true',help='Include unassigned/approved/completed native inbox sources and target originals in all phases')
  p.add_argument('--with-corporate',action='store_true',help='Include three corporate original sensitivities and full history; independently restore/restart each supplied archive; implies parties/knowledge')
  p.add_argument('--with-ownership',action='store_true',help='Include ordinary independent invited MFA reviewer and all ownership states/endings; implies corporate/inbox/parties/knowledge')
+ p.add_argument('--with-group-reporting',action='store_true',help='Include explicit V1 groups, reviewed mappings/profiles and V2 eliminations; implies ownership baseline; source-ready restart precedes separate fresh-intent durability/blocked-proof restart')
  p.add_argument('--cli-binary',type=Path);p.add_argument('--mcp-binary',type=Path)
  p.add_argument('--evidence',type=Path,help='NEW report path; never overwrite. Default is a unique private /tmp report.')
  args=p.parse_args()
+ if args.with_group_reporting:args.with_ownership=True
  if args.with_ownership:args.with_corporate=True;args.with_inbox=True
  if args.with_corporate:args.with_parties=True
  if args.with_parties:args.with_company_knowledge=True
@@ -64,7 +91,7 @@ def main():
   parent=(Path.home()/'Library/Application Support').resolve();work=parent/('Rentemester-Synthetic-Portable-'+uuid.uuid4().hex)
   child=None;log=None;owned=None
   helper=REPO/'scripts/rust/check-native-portable-backup.ts';runner=Path(__file__).resolve()
-  evidence={'status':'running','profile':'local-user-macos','noOfflineIdentitySeed':True,'globalSingleUseClaim':False,'webDownload':args.with_web_download,'companyKnowledge':args.with_company_knowledge,'parties':args.with_parties,'inbox':args.with_inbox,'corporate':args.with_corporate,'ownership':args.with_ownership,'clientAdapters':bool(args.cli_binary),'sourceRevision':subprocess.check_output(['git','rev-parse','HEAD'],cwd=REPO,text=True).strip(),'helperSha256':{'browser':sha(helper),'runner':sha(runner)},'checks':[],'phases':[]}
+  evidence={'status':'running','profile':'local-user-macos','noOfflineIdentitySeed':True,'globalSingleUseClaim':False,'webDownload':args.with_web_download,'companyKnowledge':args.with_company_knowledge,'parties':args.with_parties,'inbox':args.with_inbox,'corporate':args.with_corporate,'ownership':args.with_ownership,'groupReporting':args.with_group_reporting,'clientAdapters':bool(args.cli_binary),'sourceRevision':subprocess.check_output(['git','rev-parse','HEAD'],cwd=REPO,text=True).strip(),'helperSha256':{'browser':sha(helper),'runner':sha(runner)},'checks':[],'phases':[]}
   def save():report.seek(0);report.truncate();json.dump(evidence,report,indent=2);report.flush();os.fsync(report.fileno())
   def stop():
    nonlocal child,log
@@ -75,6 +102,7 @@ def main():
     child=None
    if log:log.close();log=None
   try:
+   if args.with_group_reporting:evidence['helperSha256']['groupReporting']=sha(REPO/'scripts/rust/check-native-backup-group-reporting.ts')
    save();work.mkdir(mode=0o700);st=work.lstat();owned=(st.st_dev,st.st_ino)
    binary=work/'rentemester-server';shutil.copyfile(args.server_binary.resolve(strict=True),binary);binary.chmod(0o700)
    web=work/'web';shutil.copytree(args.web_dir.resolve(strict=True),web)
@@ -105,7 +133,8 @@ def main():
     raise RuntimeError('Owned synthetic server readiness timed out')
    def check(phase):
     if sha(helper)!=evidence['helperSha256']['browser']:raise RuntimeError('Pinned browser helper changed during qualification')
-    subprocess.run(['/opt/homebrew/bin/bun','run',str(helper)],cwd=REPO,env={**os.environ,'RM_PORTABLE_BASE':origin,'RM_PORTABLE_WORK':str(work),'RM_PORTABLE_PHASE':phase,'RM_PORTABLE_WEB_DOWNLOAD':'1'if args.with_web_download else'0','RM_PORTABLE_KNOWLEDGE':'1'if args.with_company_knowledge else'0','RM_PORTABLE_PARTIES':'1'if args.with_parties else'0','RM_PORTABLE_INBOX':'1'if args.with_inbox else'0','RM_PORTABLE_CORPORATE':'1'if args.with_corporate else'0','RM_PORTABLE_OWNERSHIP':'1'if args.with_ownership else'0','RM_PORTABLE_CLIENTS':'1'if args.cli_binary else'0'},check=True)
+    if args.with_group_reporting and sha(REPO/'scripts/rust/check-native-backup-group-reporting.ts')!=evidence['helperSha256']['groupReporting']:raise RuntimeError('Pinned group helper changed during qualification')
+    subprocess.run(['/opt/homebrew/bin/bun','run',str(helper)],cwd=REPO,env={**os.environ,'RM_PORTABLE_BASE':origin,'RM_PORTABLE_WORK':str(work),'RM_PORTABLE_PHASE':phase,'RM_PORTABLE_WEB_DOWNLOAD':'1'if args.with_web_download else'0','RM_PORTABLE_KNOWLEDGE':'1'if args.with_company_knowledge else'0','RM_PORTABLE_PARTIES':'1'if args.with_parties else'0','RM_PORTABLE_INBOX':'1'if args.with_inbox else'0','RM_PORTABLE_CORPORATE':'1'if args.with_corporate else'0','RM_PORTABLE_OWNERSHIP':'1'if args.with_ownership else'0','RM_PORTABLE_GROUP_REPORTING':'1'if args.with_group_reporting else'0','RM_PORTABLE_CLIENTS':'1'if args.cli_binary else'0'},check=True)
     evidence['phases'].append(phase);save()
    def refuse(argv,label):
     r=subprocess.run([str(binary)]+argv,cwd=REPO,capture_output=True,text=True,timeout=30)
@@ -120,7 +149,7 @@ def main():
    source_state=(work/'private-state.json').read_bytes();source_facts=json.loads(source_state)
    corporate_inputs=source_facts.get('corporateInputBytes')if args.with_corporate else None
    if args.with_corporate and(not isinstance(corporate_inputs,dict)or len(corporate_inputs)!=3):raise RuntimeError('Expected three corporate original inputs')
-   corporate_section=None;ownership_section=None
+   corporate_section=None;ownership_section=None;group_sections=None
    inbox_inputs=source_facts.get('inboxInputBytes')if args.with_inbox else None
    if args.with_inbox and(not isinstance(inbox_inputs,dict)or len(inbox_inputs)!=3):raise RuntimeError('Expected three original native inbox inputs')
    for name in names:
@@ -178,6 +207,9 @@ def main():
     if args.with_ownership:
      ownership_section,ownership_evidence=ownership_fixture_evidence(json.loads(path.read_text()),source_facts,ownership_section)
      evidence['verifiedArtifacts'][name]['ownership']=ownership_evidence
+    if args.with_group_reporting:
+     group_sections,group_evidence=group_reporting_fixture_evidence(json.loads(path.read_text()),source_facts,group_sections)
+     evidence['verifiedArtifacts'][name]['groupReporting']=group_evidence
    save()
    tamper=work/'tampered.json';wire=json.loads(archive.read_text());wire['signatureBase64']=base64.b64encode(bytes(64)).decode();tamper.write_text(json.dumps(wire))
    evidence['checks'].append(refuse(['--verify-backup',str(tamper),'--trusted-backup-key',str(trusted)],'tampered signature'))
@@ -206,11 +238,12 @@ def main():
     if(work/'source').exists()or(work/'signing.der').exists()or sha(trusted)!=evidence['trustedPublicKeySha256']or sha(work/name)!=evidence['verifiedArtifacts'][name]['sha256']:raise RuntimeError('Source unavailable or independent trust/artifact boundary changed')
     start(flags);st=(work/'restored').lstat();restored_identity=(st.st_dev,st.st_ino);check('restored');stop()
     config.pop('firstOwner');write();start([]);check('reopen');stop()
+    if args.with_group_reporting:start([]);check('reopen-after-intent');stop()
     restored_state=json.loads((work/'private-state.json').read_text())
-    evidence['restoredArtifacts'][name]={'normalNewOwnerMfa':True,'restart':True,'oldKeyRefusedWithoutEffect':True,'freshKeyNewIntentPosted':True,'corporate':restored_state.get('corporateEvidence'),'ownership':restored_state.get('ownershipEvidence'),'parties':restored_state.get('partiesEvidence'),'knowledge':restored_state.get('knowledgeEvidence'),'inbox':restored_state.get('inboxEvidence'),'originalSha256':restored_state['documentHash'],'invoicePdfSha256':restored_state['pdfHash'],'companyUuids':{slug:v['uuid']for slug,v in restored_state['snapshot'].items()}}
+    evidence['restoredArtifacts'][name]={'normalNewOwnerMfa':True,'restart':True,'oldKeyRefusedWithoutEffect':True,'freshKeyNewIntentPosted':True,'corporate':restored_state.get('corporateEvidence'),'ownership':restored_state.get('ownershipEvidence'),'groupReporting':restored_state.get('groupReportingEvidence'),'parties':restored_state.get('partiesEvidence'),'knowledge':restored_state.get('knowledgeEvidence'),'inbox':restored_state.get('inboxEvidence'),'originalSha256':restored_state['documentHash'],'invoicePdfSha256':restored_state['pdfHash'],'companyUuids':{slug:v['uuid']for slug,v in restored_state['snapshot'].items()}}
     save()
    evidence.pop('activeRestoreArtifact',None)
-   state=json.loads((work/'private-state.json').read_text());evidence.update({'status':'passed','normalVerificationAndMfa':True,'restart':True,'oldKeyRefusedWithoutEffect':True,'freshKeyNewIntentPosted':True,'download':state.get('download'),'knowledge':state.get('knowledgeEvidence'),'partyEvidence':state.get('partiesEvidence'),'inboxEvidence':state.get('inboxEvidence'),'corporateEvidence':state.get('corporateEvidence'),'ownershipEvidence':state.get('ownershipEvidence'),'clients':state.get('clientEvidence'),'companyUuids':{s:v['uuid']for s,v in state['snapshot'].items()},'originalSha256':state['documentHash'],'invoicePdfSha256':state['pdfHash']})
+   state=json.loads((work/'private-state.json').read_text());evidence.update({'status':'passed','normalVerificationAndMfa':True,'restart':True,'oldKeyRefusedWithoutEffect':True,'freshKeyNewIntentPosted':True,'download':state.get('download'),'knowledge':state.get('knowledgeEvidence'),'partyEvidence':state.get('partiesEvidence'),'inboxEvidence':state.get('inboxEvidence'),'corporateEvidence':state.get('corporateEvidence'),'ownershipEvidence':state.get('ownershipEvidence'),'groupReportingEvidence':state.get('groupReportingEvidence'),'clients':state.get('clientEvidence'),'companyUuids':{s:v['uuid']for s,v in state['snapshot'].items()},'originalSha256':state['documentHash'],'invoicePdfSha256':state['pdfHash']})
    save()
   except BaseException as error:
    evidence.update({'status':'failed','failureType':type(error).__name__});save();raise
