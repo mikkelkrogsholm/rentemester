@@ -79,6 +79,7 @@ const digest=(b:Buffer)=>createHash("sha256").update(b).digest("hex");
 const password="synthetic-portable-password-123";
 const slugs=["synthetic","synthetic-portable-second"];
 async function snapshot(){const out:any={};for(const s of slugs){const journal=(await get(s,"journal")).journal;out[s]={uuid:journal.ledgerUuid,entries:journal.entries,balance:(await get(s,`balance?year=${journal.selectedYear}`)).balance};}return out;}
+const inboxEnabled=process.env.RM_PORTABLE_INBOX==="1";
 const partiesEnabled=process.env.RM_PORTABLE_PARTIES==="1";
 const knowledgeEnabled=process.env.RM_PORTABLE_KNOWLEDGE==="1"||partiesEnabled;
 const portablePartyId="party-synthetic-portable-shared";
@@ -139,6 +140,56 @@ async function prepareKnowledge(){
  if(partyKnowledgeId&&!sourceView.current.history.some((a:any)=>a.assertionId===partyKnowledgeId&&a.source.kind==="party"&&a.source.ref===portablePartyId))throw Error("Party-backed knowledge source/history missing");
  return views;
 }
+const portableInboxSources=[
+ {id:"inbox-synthetic-portable-unassigned",stage:"unassigned"},
+ {id:"inbox-synthetic-portable-approved",stage:"approved"},
+ {id:"inbox-synthetic-portable-completed",stage:"completed"},
+] as const;
+const inboxBytes=(id:string)=>Buffer.from(`Synthetic portable inbox source ${id}\nPreserve original bytes independently of the source computer.\n`,"utf8");
+async function inboxViews(){
+ const sources:Record<string,any>={};
+ for(const {id}of portableInboxSources){
+  const response=await get(slugs[0],`workspace-inbox/${id}`);
+  if(response.source?.sha256!==digest(inboxBytes(id)))throw Error("Inbox source identity differs from known uploaded bytes");
+  sources[id]=response;
+ }
+ const lists:Record<string,unknown>={},documents:Record<string,unknown>={};
+ for(const slug of slugs){
+  lists[slug]=await get(slug,"workspace-inbox?cursor=0&limit=100");
+  documents[slug]=(await get(slug,"documents")).documents.documents.filter((d:any)=>portableInboxSources.some(s=>d.source===`workspace-inbox:${s.id}`));
+ }
+ const completed=sources[portableInboxSources[2].id].source;
+ const assignment=completed.assignments.find((a:any)=>a.companySlug===slugs[1]);
+ if(assignment?.state!=="completed"||!Number.isSafeInteger(assignment.documentId))throw Error("Completed inbox source lost target document identity");
+ const response=await page.request.get(company(slugs[1],`documents/${assignment.documentId}/file`));
+ if(!response.ok())throw Error("Completed inbox target original missing");
+ const original=Buffer.from(await response.body());
+ if(!original.equals(inboxBytes(portableInboxSources[2].id)))throw Error("Completed inbox target original differs from exact uploaded bytes");
+ return{sources,lists,documents,original:{company:slugs[1],documentId:assignment.documentId,documentNo:assignment.documentNo,contentType:response.headers()["content-type"],bytesBase64:original.toString("base64"),sha256:digest(original)}};
+}
+async function prepareInbox(){
+ const before=await snapshot();
+ for(const {id,stage}of portableInboxSources){
+  const raw=inboxBytes(id);
+  const uploaded=await post(slugs[0],"workspace-inbox",{sourceId:id,idempotencyKey:`key-${id}`,bytesBase64:raw.toString("base64"),filename:`${id}.txt`,mimeType:"text/plain",transport:"upload",receivedAt:"2001-01-01T00:00:00.000Z",metadata:{source:"Synthetic portable reviewed inbox source",documentType:"cash_register_receipt",deliveryDescription:`Synthetic ${stage} inbox evidence`},candidates:[],confirm:true});
+  if(uploaded.source?.sourceId!==id||uploaded.source.sha256!==digest(raw))throw Error("Inbox upload did not preserve source identity");
+  if(stage!=="unassigned")await post(slugs[0],`workspace-inbox/${id}/assign`,{companySlug:slugs[1],confirm:true});
+  if(stage==="completed")await post(slugs[0],`workspace-inbox/${id}/complete`,{companySlug:slugs[1],confirm:true});
+ }
+ const views=await inboxViews();
+ for(const {id,stage}of portableInboxSources){
+  const source=views.sources[id].source,assignment=source.assignments[0];
+  const expectedEvents=stage==="unassigned"?3:stage==="approved"?4:5;
+  if(source.metadata.documentType!=="cash_register_receipt"||source.history.length!==expectedEvents||source.history.some((e:any)=>!e.actor||!e.created_at||!/^[0-9a-f]{64}$/.test(e.payload_hash)))throw Error("Inbox canonical source metadata/history/provenance incomplete");
+  if(stage==="unassigned"?source.assignments.length!==0:source.assignments.length!==1||assignment.companySlug!==slugs[1]||assignment.state!==stage)throw Error("Inbox explicit legal destination/state differs");
+  if(stage==="completed"?source.handoffs.length!==1||source.handoffs[0].state!=="completed":source.handoffs.length!==0)throw Error("Inbox fixture manufactured or lost a claim state");
+ }
+ const primaryDocuments=views.documents[slugs[0]] as any[],targetDocuments=views.documents[slugs[1]] as any[];
+ if(primaryDocuments.length!==0||targetDocuments.length!==1||targetDocuments[0].source!==`workspace-inbox:${portableInboxSources[2].id}`||targetDocuments[0].journalEntryId!==null)throw Error("Inbox source leaked to anchor, duplicated target or posted accounting");
+ if((views.lists[slugs[0]] as any).count!==3||(views.lists[slugs[1]] as any).count!==0)throw Error("Inbox anchor-scoped lists differ");
+ if(!isDeepStrictEqual(await snapshot(),before))throw Error("Inbox upload/approval/handoff changed accounting or company identity");
+ return views;
+}
 async function exportClientArtifacts(){
  const maxBytes=96*1024*1024;
  const maxOutput=8*maxBytes+65536; // MCP text+structuredContent repeat the integer array.
@@ -173,6 +224,7 @@ async function exportClientArtifacts(){
 
 try{
  let saved:any=phase==="source"?{}:JSON.parse(readFileSync(statePath,"utf8"));
+ if(phase!=="source"&&Boolean(saved.inbox)!==inboxEnabled)throw Error("RM_PORTABLE_INBOX must match the source fixture in every phase");
  if(phase!=="source"&&Boolean(saved.parties)!==partiesEnabled)throw Error("RM_PORTABLE_PARTIES must match the source fixture in every phase");
  if(phase==="reopen")await login(page,"restored-owner@example.invalid",password,saved.recovery);
  else{
@@ -221,6 +273,12 @@ try{
    if(!isDeepStrictEqual(await snapshot(),saved.snapshot))throw Error("Knowledge lifecycle changed accounting");
    saved.knowledgeEvidence={asOf:knowledgeAsOf,sourceViewsSha256:digest(Buffer.from(JSON.stringify(saved.knowledge))),primaryHistoryRecords:partiesEnabled?5:4,secondHistoryRecords:1};
   }
+  if(inboxEnabled){
+   saved.inbox=await prepareInbox();
+   saved.inboxInputBytes=Object.fromEntries(portableInboxSources.map(({id})=>[id,inboxBytes(id).toString("base64")]));
+   saved.inboxEvidence={sourceIds:portableInboxSources.map(s=>s.id),sourceStates:portableInboxSources.map(s=>s.stage),sourceViewsSha256:digest(Buffer.from(JSON.stringify(saved.inbox))),originalInputSha256:Object.fromEntries(portableInboxSources.map(({id})=>[id,digest(inboxBytes(id))])),targetCompany:slugs[1],targetDocumentId:saved.inbox.original.documentId,targetOriginalSha256:saved.inbox.original.sha256,accountingEffect:"none",pendingClaimAndSplitCoverage:"Existing codec/Owner tests only; this API fixture has no claimed/split/crash injection"};
+   if(!isDeepStrictEqual(await snapshot(),saved.snapshot))throw Error("Inbox lifecycle changed prior ledger/report snapshots");
+  }
   if(process.env.RM_PORTABLE_CLIENTS==="1")saved.clientEvidence=await exportClientArtifacts();
   if(partiesEnabled&&!isDeepStrictEqual(await partiesViews(),saved.parties))throw Error("Backup client exports changed party history");
   if(knowledgeEnabled&&!isDeepStrictEqual(await knowledgeViews(),saved.knowledge))throw Error("Backup client exports changed knowledge history");
@@ -242,6 +300,10 @@ try{
    writeFileSync(join(work,"portable.native-backup.json"),await archive.body(),{mode:0o600});
   }
  }else{
+  if(inboxEnabled){
+   if(!saved.inbox||!isDeepStrictEqual(await inboxViews(),saved.inbox))throw Error("Restored inbox full sources/history/assignments/target views/original bytes differ from original API evidence");
+   saved.inboxEvidence[phase==="reopen"?"exactAfterRestart":"exactAfterRestore"]=true;
+  }
   if(partiesEnabled){
    if(!saved.parties||!isDeepStrictEqual(await partiesViews(),saved.parties))throw Error("Restored parties identifiers/aliases/assertions/roles/history differ from original native API response");
    saved.partiesEvidence[phase==="reopen"?"exactAfterRestart":"exactAfterRestore"]=true;
@@ -266,6 +328,7 @@ try{
    saved.bank=afterBank;saved.snapshot=await snapshot();
   }
  }
+ if(inboxEnabled&&!isDeepStrictEqual(await inboxViews(),saved.inbox))throw Error("Portable phase changed inbox source/history/document/original views");
  if(partiesEnabled&&!isDeepStrictEqual(await partiesViews(),saved.parties))throw Error("Portable phase changed canonical party source history");
  if(knowledgeEnabled&&!isDeepStrictEqual(await knowledgeViews(),saved.knowledge))throw Error("Portable phase changed fixed-date knowledge source history");
  writeFileSync(statePath,JSON.stringify(saved),{mode:0o600});
