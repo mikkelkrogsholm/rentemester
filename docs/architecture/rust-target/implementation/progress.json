@@ -2,7 +2,7 @@
   "goal": "Complete Rust server/web, GPUI local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
   "current_increment": "Reviewed atomic purchase batch through Rust/web/CLI/MCP, restart and signed source-free restore",
-  "code_revision": "36d1f7388f343b14dc0c64ea64bc40c7f907f656",
+  "code_revision": "f1fcbcc5fbbb7b93bc7197f48a0ac7c2ef1a31b2",
   "spec_revision": "sha256:13a0386803d4f4e35af6fdf8a020cd851d759c4369c9d172a4e0f29459510cd0",
   "state": "Group57 actual PASS: two normal distinct invited/password/MFA users, two physically verified original-linked and explicitly canonical supplier-linked DKK purchases plus retained bank CSV. Web purchase rule independently approved, complete two-ready workbench, readable source/account/VAT summary and exact plan hash. Persist binds reviewed hash/caller runKey; read-only exact-key recovery agrees with runId; stale hash and self-review refuse unchanged history. Different human approves and owner explicitly applies two atomic postings. Real audit chain, balanced375DKK trial balance, bank-375/matched2/difference0 and input VAT75/payable-75 pass; real immutable source-bound receipts retained. Exact web/CLI/MCP replay adds no financial effects; all175MCPtools tested. Restart with fresh ordinary MFA preserves complete history/books/originals. Signed nonempty snapshot independently verified; source workspace and private signer deleted; fresh owner/MFA restore preserves exact books/UUID, supplier/party links and historical approvals/receipts. Exact owned cleanup. First attempt was a test-controller incomplete stdout response; complete private SHA-bound proof files and bounded small envelopes fixed the test protocol without relaxing acceptance. Prior56/55/54/53 evidence retained. Full mission/epic672 OPEN: legacy partial-batch execution/provider tax families, remaining accounting and client parity, installed desktop whole journeys, broader transfer and distribution/TS retirement remain incomplete.",
   "issues_closed": [],
@@ -905,7 +905,34 @@
         "report": "/tmp/rentemester-rust-reports/bookkeeping-batch-integrated57.json",
         "observation": "/tmp/rm-platform57-controller-observation.json",
         "result": "Incomplete test controller stdout, targeted termination, no approval/journal effects observed, owned runtime cleaned; not qualified."
-      }
+      },
+      "contract_sha256": "0830d1f1100a0561e88e29350096add970e3ecdf6d8a0c8bb4b4544d5b1b4ebb"
+    },
+    "platform57_historical_proof_validation": {
+      "revision": "f1fcbcc5fbbb7b93bc7197f48a0ac7c2ef1a31b2",
+      "report": "/tmp/rentemester-rust-reports/bookkeeping-batch-integrated57-validated3.json",
+      "sha256": "d5c699cf32eafd1508a7c4016974665fba9a8d4d200103fc0e619b08382bdac4",
+      "log": "/tmp/rm-platform57-validated3.log",
+      "exit": 0,
+      "artifacts": {
+        "server_binary": "48b440c59de194e98603527fcfffa647f10151eac94e3d7805dccdef14e853b9",
+        "cli_binary": "54e0b29b1743c21654f3b3ced45615d0bb0f3e5419cdbd272d61740c263cff12",
+        "mcp_binary": "997fd86dab064282f35b1136ba7716ce2c8bed40a318dca90d2552e4aef6eaa7"
+      },
+      "scope": "Full prior two-human reviewed atomic purchase browser/client/replay/restart and signed source-free restore passes with integrated historical rule/application and document-party validators; independently verified archive retains exact books/history/originals and no live authority import. New58client additions in supplied binaries are separately pending58qualification.",
+      "tests": [
+        "/tmp/rm-platform57-proof-backup-tests.log",
+        "/tmp/rm-platform57-proof-batch-tests.log"
+      ],
+      "isolated_validation": "11 focused rule/link tests, public two-purchase atomic batch snapshot/reopen, corrupt history/application refusal; strict storage all-target clippy passed."
+    },
+    "platform58_thin_clients_pending_wholeflow": {
+      "revision": "d4964f87",
+      "sdk_tests": "/tmp/rm-platform58-client-tests2.log (3PASS)",
+      "cli_tests": "/tmp/rm-platform58-cli-tests.log (1PASS)",
+      "mcp_tests": "/tmp/rm-platform58-mcp-tests.log (88PASS,177tools)",
+      "strict_checks": "/tmp/rm-platform58-client-clippy2.log (PASS)",
+      "scope": "Exact reviewed native body and required caller key, readonly POST plan without confirmation, confirmed apply, no automatic retry and preserved known refusal/unknown outcome. Actual whole native correction flow pending."
     }
   },
   "verified_history": [
@@ -1346,9 +1373,20 @@
         "Canonical party with explicit company role → reviewed exact-identifier document link → truthful complete ready workbench. No automatic party resolution, SQL fixture seed or blocker bypass."
       ],
       "acceptance": "Two original-linked and explicitly party-linked DKK purchases, exact persisted plan, distinct current reviewer of unchanged sources, atomic two-posting apply with real audit/TB/range reconciliation/VAT checks; stale/self/authority/fence/rollback/replay/restart proof.",
-      "status": "Group57 whole browser/client/restart/source-free restore qualified; see platform57_atomic_purchase_batch. A bounded follow-up adds prepublication backup validation of document-party history and stored rule proof bytes; no current-eligibility reinterpretation of historical records. R20 source-backed next-journey contract preparation is read-only.",
+      "status": "COMPLETE finite Group57: actual browser/client/replay/restart and signed source-free restore passed; integrated historical party-link/rule-proof validators f1fcbcc5 requalified by platform57_historical_proof_validation. Stop after acceptance; remaining whole mission and legacy/provider families stay open.",
       "execution_policy": "New native atomic_v1 revisions require whole-operation rollback (R23). TypeScript legacy batches use tested partial/resume semantics; preserve their historical bytes and approvals for inspection, refuse native execution of unversioned revisions, and keep full backend parity open. No source TypeScript change or retirement claim.",
       "recovery": "Persist binds explicit caller runKey and reviewed expectedPlanHash. Lost runId recovers through current-authorized read-only exact runKey lookup; no automatic mutation retry."
+    },
+    {
+      "delivery": "Group58 R20 direct-bank purchase → dated payable and settlement correction",
+      "owner": "root transport/clients/integration/actual; rust_client_cli native core and narrow writer seams; rust_budget existing modal/type/candidate handling; rust_mileage owned actual helper",
+      "depends_on": [
+        "Approved /tmp/rm-platform58-direct-bank-contract.md; exact source-v1 plan,16KiB bounded body and required caller operation key.",
+        "Keep ordinary unregisteredDocuments/register/pay guards; expose additive authoritative directBankCorrectionCandidates.",
+        "Current auth/physical originals/transfer fence before any mutation or receipt replay; one company transaction for reversal, bill, settlement and canonical bank supersession."
+      ],
+      "acceptance": "Original-backed shifted-date DKK purchase → readable exact reviewed web correction → invoice-date payable and bank-date settlement, immutable original, unchanged final expense/VAT/bank, historical open/paid balances, canonical single bank relation, exact native client replay and fresh-MFA restart. Meaningful core stale/refusal/atomicity tests.",
+      "status": "Web integrated b043cc21 (21tests/types/buildPASS), actual helper cdbbe8b3 with root response-envelope correction ready. Thin clients integrated d4964f87: SDK3/CLI1/MCP88(all177tools) and strict3clientpkg checks PASS. Core/physical Owner tests progressing in isolated worktree; root strict HTTP leaf and shared registration pending core delivery. Whole Group58 actual not qualified."
     }
   ],
   "integrated_pending_browser": [
