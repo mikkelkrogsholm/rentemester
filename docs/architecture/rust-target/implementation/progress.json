@@ -1,15 +1,15 @@
 {
   "goal": "Complete Rust server/web, GPUI local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "Live-source CFO company/portfolio overview through Rust/web/CLI/MCP, restart and signed source-free restore; archived-source completion pending Group62",
-  "code_revision": "73f7400adf7283ec613c793a58493df8fabe182b",
-  "spec_revision": "sha256:13a0386803d4f4e35af6fdf8a020cd851d759c4369c9d172a4e0f29459510cd0",
-  "state": "Group61 supported LIVE SOURCE actual PASS: two ordinary verified/password/MFA humans, two separately posted legal ledgers with real identified invoice originals, canonical party links and reviewed dimension sidecar. Actual 2025-12-30 original and 2026-01-02 reversal retain earlier dated effects. Exact account/party/dimension/member/currency filters, complete pre-pagination totals and stable pages; web company/date/exact figures/source links, no implicit portfolio sum and truthful no-profile group. Current right revocation yields partial/no totals/no hidden company source disclosure; regrant restores exact data. Full HTTP/CLI/MCP187 canonical parity; fresh two-MFA restart. Independently verified signed snapshots prove no company business audit/financial mutations. Source workspace and private signer removed; separate trusted-key verification and fresh normal owner/MFA restore plus target reopen reconstruct exact original bytes/party/dimension/journals/UUID/views with no imported authority. Exact owned cleanup. First fixture source identity and second actual CLI flag-dispatch failures diagnosed and fixed; positive real CLI dispatch regression now passes. Full61/R28 remains OPEN: archived sources still need Group62 native ingestion+physical assurance and actual proof. Approved-profile CFO group and UI pagination-click actual remain unqualified, no-profile and full API/client pages proven. Full mission/epic672 remains OPEN.",
+  "current_increment": "Native historical archive import and original-backed CFO reconstruction qualified; ordinary archive financial reports and CSV/PDF in progress",
+  "code_revision": "606eb93041f515a80dd2291e99ed66945fa4a476",
+  "spec_revision": "sha256:9ca3825836d0c596ef4c5e5d168a23d14ca7fe4b10855edc5cc25411d2250d51",
+  "state": "Group62 actual PASS at606eb930: two ordinary verified/password/MFA humans; public web original CSV upload, explicit historical currency declaration, reviewed import excluding highest cutover year. Every original package byte, signed six-place raw source value and separately quantized exact Money retained. Changed source/current admin revocation refuse; accepted original-key web/CLI/MCP191 replay and changed-body conflict preserve one immutable import. Real archive/live CFO exact filters/full-universe totals/stable pages and source drilldown, unchanged live books/chart/profile. Canonical HTTP/CLI/MCP191 read/plan/original parity and fresh-MFA restart PASS. Signed snapshot independently verified after source workspace/private signer removal; fresh normal owner/MFA restore and target reopen reconstruct exact archive rows/raw source/originals/CFO/live books/UUID without historical authority. Exact cleanup and pinned3binary hashes independently matched. First2 helper failures (relative UI cell selector, missing expected ok:true binary wrapper) diagnosed and corrected without product changes; complete third run PASS. Full mission/epic672 OPEN. Group63 ordinary five archive report views, source-collision navigation, exact CSV/PDF and missing-native-prior comparisons in progress; broader group/date/statutory archive parity, installed native journeys/distribution/TS retirement remain open.",
   "issues_closed": [],
   "next": [
-    "Complete Group62 native public closed-history archive ingestion/admission and original reparse/canonical row assurance, then qualify real archive/live CFO source reconstruction and signed source-free restore to close the remaining Group61/R28 archive dependency.",
-    "Complete remaining accounting/backend parity and CLI/MCP seams; keep unsupported families and nonempty recovery inventory explicit, with TypeScript retirement gated.",
-    "Qualify installed standalone local/remote macOS financial journeys, installation/signing/update provenance; remaining broader J06 boundaries stay open."
+    "Finish Group63 ordinary historical journal, closing trial balance, income statement, balance and overview through existing web/CLI/MCP, exact source-preserving CSV/PDF, no fake missing-prior figures; qualify source collisions, rights/tamper/no-effects/restart/source-free restore.",
+    "Complete broader archived source group/date/statutory report parity and remaining accounting/provider/backend seams without unsupported substitutes; retain TypeScript until complete verified replacement.",
+    "Qualify installed standalone local/remote macOS financial journeys, full J06 transfer boundaries, installation/signing/update provenance and remaining supported automation behavior."
   ],
   "preserve_unrelated_paths": [
     ".claude/settings.json",
@@ -20,9 +20,10 @@
   ],
   "all_goal_requirements_complete": false,
   "previous_verified_increment": {
-    "current_increment": "Existing Contacts CSV import with verified TLS CVR enrichment, exact repeats, clients, restart and signed source-free restore",
-    "code_revision": "542ac9f2ca08c448c42760631bd23a7b70a0e6b2",
-    "state": "Group60 actual PASS: ordinary verified owner/password/MFA uses existing Contacts import modal with default-on CVR. Strict BOM/semicolon/quoted embedded-newline CSV creates2customers+4vendors from5contacts, retains EAN and730day terms/DK-EU-null identities/address/notes. Real synthetic verified-TLS Basic-auth CVR provider returns2successes and1known503; CSV wins, enriched2/failure1 truthful. Exact UI/CLI/MCP186 repeated imports skip6roles with no contact/cache/import-audit/provider/financial effects. New name reuses actual freshcache without network. Malformed/duplicate headers refuse and invalid activity row is skipped with explicit warning. Restart without provider credentials plus fresh MFA imports new CSV vendor with actual missing-config guidance. Final3customers+5vendors, empty unchanged journal and stable UUID. Independently trusted signed source snapshot, source+private-signer deletion, fresh-owner/MFA restore with new separately configured target signer, exact original contacts/cache/import-audit preservation, repeat unchanged and target restart PASS. Credentials excluded from all6signed snapshots; exact owned cleanup. Engine2/storage6/runtime3/app1/host3/serverbinary10/SDK3/CLI1/MCP92 and strict/build checks PASS; web14/types/build PASS. First actual helper exact-prefix warning locator timed out after successful import; corrected matching and complete second run passed unchanged pinned binaries. Stale-cache expiry/revocation/GDPR and injected unexpected storage rollback are focused tests, not claimed actual. Full mission/epic672 OPEN: next CFO read journey, archive ingestion/admission, remaining providers/native/distribution/TS retirement."
+    "current_increment": "Live-source CFO company/portfolio overview through Rust/web/CLI/MCP, restart and signed source-free restore; archived-source completion pending Group62",
+    "code_revision": "73f7400adf7283ec613c793a58493df8fabe182b",
+    "spec_revision": "sha256:13a0386803d4f4e35af6fdf8a020cd851d759c4369c9d172a4e0f29459510cd0",
+    "state": "Group61 supported LIVE SOURCE actual PASS: two ordinary verified/password/MFA humans, two separately posted legal ledgers with real identified invoice originals, canonical party links and reviewed dimension sidecar. Actual 2025-12-30 original and 2026-01-02 reversal retain earlier dated effects. Exact account/party/dimension/member/currency filters, complete pre-pagination totals and stable pages; web company/date/exact figures/source links, no implicit portfolio sum and truthful no-profile group. Current right revocation yields partial/no totals/no hidden company source disclosure; regrant restores exact data. Full HTTP/CLI/MCP187 canonical parity; fresh two-MFA restart. Independently verified signed snapshots prove no company business audit/financial mutations. Source workspace and private signer removed; separate trusted-key verification and fresh normal owner/MFA restore plus target reopen reconstruct exact original bytes/party/dimension/journals/UUID/views with no imported authority. Exact owned cleanup. First fixture source identity and second actual CLI flag-dispatch failures diagnosed and fixed; positive real CLI dispatch regression now passes. Full61/R28 remains OPEN: archived sources still need Group62 native ingestion+physical assurance and actual proof. Approved-profile CFO group and UI pagination-click actual remain unqualified, no-profile and full API/client pages proven. Full mission/epic672 remains OPEN."
   },
   "evidence": {
     "combined_browser_log": "/tmp/rm-platform5-combined.log",
@@ -1141,6 +1142,50 @@
       "ownedRuntimeCleaned": true,
       "approvedGroupActualQualified": false,
       "uiPaginationClickActualQualified": false
+    },
+    "platform62_archive_import": {
+      "status": "passed",
+      "report": "/tmp/rentemester-rust-reports/archive-import-integrated62-envelope3.json",
+      "report_sha256": "e47c7e75f5fce38de9a17d0b148d2945c249d9c0941df9b6a86b3294dbb7ee9a",
+      "actual_log": "/tmp/rm-platform62-envelope3-actual.log",
+      "source_revision": "606eb93041f515a80dd2291e99ed66945fa4a476",
+      "artifacts": {
+        "server_binary": "25aa80a603b93024df35a2927d63fd0f1a60fbf8ce8d214a9ff62eee50190a73",
+        "cli_binary": "48e3a19ceb3f1aab9e45945bf081098833072aecb56d5df6d7b9ce2893b129cf",
+        "mcp_binary": "d809e637e9416b2e360ed7865bc76e4187dddd8d820c6bfc90d9159371334504"
+      },
+      "archiveActualQualified": true,
+      "sourceFreeRestoreQualified": true,
+      "signedSnapshot": {
+        "supported": true,
+        "sha256": "39c99461a80aecc2cfebe1c2775fc87f61db1909b279850227b93e76a5b198b0",
+        "bytes": 2194441
+      },
+      "independentArchiveVerification": true,
+      "sourceWorkspaceAndPrivateSignerRemoved": true,
+      "currentRightsAndChangedSourceRefusalsQualified": true,
+      "initialAndRestartQualified": true,
+      "ownedProcessesStopped": true,
+      "ownedRuntimeCleaned": true,
+      "installedNativeQualified": false,
+      "prior_actuals": [
+        "/tmp/rentemester-rust-reports/archive-import-integrated62.json",
+        "/tmp/rentemester-rust-reports/archive-import-integrated62-ui2.json"
+      ],
+      "tests": [
+        "/tmp/rm-platform62-integrated-archive-tests.log",
+        "/tmp/rm-platform62-integrated-cfo-tests.log",
+        "/tmp/rm-platform62-integrated-host-final.log",
+        "/tmp/rm-platform62-integrated-guard-final.log",
+        "/tmp/rm-platform62-integrated-http-tests.log",
+        "/tmp/rm-platform62-client-tests2.log",
+        "/tmp/rm-platform62-integrated-cli-final.log",
+        "/tmp/rm-platform62-mcp-tests3.log",
+        "/tmp/rm-platform62-integrated-clippy-final.log",
+        "/tmp/rm-platform62-web-tests.log",
+        "/tmp/rm-platform62-web-build.log",
+        "/tmp/rm-platform62-integrated-build-final.log"
+      ]
     }
   },
   "verified_history": [
@@ -1593,6 +1638,12 @@
       "code_revision": "542ac9f2ca08c448c42760631bd23a7b70a0e6b2",
       "spec_revision": "sha256:13a0386803d4f4e35af6fdf8a020cd851d759c4369c9d172a4e0f29459510cd0",
       "state": "Group60 actual PASS: ordinary verified owner/password/MFA uses existing Contacts import modal with default-on CVR. Strict BOM/semicolon/quoted embedded-newline CSV creates2customers+4vendors from5contacts, retains EAN and730day terms/DK-EU-null identities/address/notes. Real synthetic verified-TLS Basic-auth CVR provider returns2successes and1known503; CSV wins, enriched2/failure1 truthful. Exact UI/CLI/MCP186 repeated imports skip6roles with no contact/cache/import-audit/provider/financial effects. New name reuses actual freshcache without network. Malformed/duplicate headers refuse and invalid activity row is skipped with explicit warning. Restart without provider credentials plus fresh MFA imports new CSV vendor with actual missing-config guidance. Final3customers+5vendors, empty unchanged journal and stable UUID. Independently trusted signed source snapshot, source+private-signer deletion, fresh-owner/MFA restore with new separately configured target signer, exact original contacts/cache/import-audit preservation, repeat unchanged and target restart PASS. Credentials excluded from all6signed snapshots; exact owned cleanup. Engine2/storage6/runtime3/app1/host3/serverbinary10/SDK3/CLI1/MCP92 and strict/build checks PASS; web14/types/build PASS. First actual helper exact-prefix warning locator timed out after successful import; corrected matching and complete second run passed unchanged pinned binaries. Stale-cache expiry/revocation/GDPR and injected unexpected storage rollback are focused tests, not claimed actual. Full mission/epic672 OPEN: next CFO read journey, archive ingestion/admission, remaining providers/native/distribution/TS retirement."
+    },
+    {
+      "current_increment": "Live-source CFO company/portfolio overview through Rust/web/CLI/MCP, restart and signed source-free restore; archived-source completion pending Group62",
+      "code_revision": "73f7400adf7283ec613c793a58493df8fabe182b",
+      "spec_revision": "sha256:13a0386803d4f4e35af6fdf8a020cd851d759c4369c9d172a4e0f29459510cd0",
+      "state": "Group61 supported LIVE SOURCE actual PASS: two ordinary verified/password/MFA humans, two separately posted legal ledgers with real identified invoice originals, canonical party links and reviewed dimension sidecar. Actual 2025-12-30 original and 2026-01-02 reversal retain earlier dated effects. Exact account/party/dimension/member/currency filters, complete pre-pagination totals and stable pages; web company/date/exact figures/source links, no implicit portfolio sum and truthful no-profile group. Current right revocation yields partial/no totals/no hidden company source disclosure; regrant restores exact data. Full HTTP/CLI/MCP187 canonical parity; fresh two-MFA restart. Independently verified signed snapshots prove no company business audit/financial mutations. Source workspace and private signer removed; separate trusted-key verification and fresh normal owner/MFA restore plus target reopen reconstruct exact original bytes/party/dimension/journals/UUID/views with no imported authority. Exact owned cleanup. First fixture source identity and second actual CLI flag-dispatch failures diagnosed and fixed; positive real CLI dispatch regression now passes. Full61/R28 remains OPEN: archived sources still need Group62 native ingestion+physical assurance and actual proof. Approved-profile CFO group and UI pagination-click actual remain unqualified, no-profile and full API/client pages proven. Full mission/epic672 remains OPEN."
     }
   ],
   "active_work": [
@@ -1648,7 +1699,7 @@
     {
       "delivery": "Group61 existing CFO company, portfolio and group overview",
       "owner": "root integration/clients/actual; rust_accruals engine/storage projections; rust_client_cli application/host/HTTP; rust_budget existingCFOview; rust_mileage owned live-source actualhelper",
-      "status": "Supported LIVE source whole journey qualified73f7400a by platform61_cfo_live: actual web/HTTP/CLI/MCP187/filter/page/current-revocation/fresh-MFA-restart and independently verified signed source-free fresh-owner restore/reopen PASS. Full61/R28 remains OPEN until native original-attested archive import and actual archive/live CFO proof through Group62. No repeated live perfection rounds.",
+      "status": "LIVE source qualified73f7400a; native archive ingestion/original-attestation/CFO and source-free recovery dependency now qualified606eb930 by platform62_archive_import. Full61/R28 remains OPEN for broader archived group/date source parity and supported scope-matched acceptance; no repeated supported live/archived-company perfection rounds.",
       "acceptance": "Full existing source API/UI company/portfolio/group with exact signed money/nativecurrency, dated originals+reversals, immutable source/party/dimension provenance, full-universe totals before stable pagination, current visibility/no partial totals/no mutations, client parity and restart. Retained posting archives still required; no full61 completion until public supported archive source creation/assurance and end-to-end proof.",
       "depends_on": [
         "Shared typed Query/Selection/trusted Row ABI; no caller sourceauthority or generic opener.",
@@ -1660,7 +1711,7 @@
     {
       "delivery": "Group62 native public closed-history archive ingestion and source assurance",
       "owner": "root shared thin clients/integration; rust_accruals engine/storage/parser/attestation; rust_client_cli application/host/HTTP/physical source proof; rust_budget existing archive UI; rust_mileage public actual helper",
-      "status": "Source core5cae0454 integrated5d804a67 (archive8+CFO8 focused tests/strict/AST PASS); web e8bc0167 integratedbf6b41f0 and year-capability addendum53a79452 integrated5ba4d9cb (13archive+9nav tests/types/build/AST PASS). Actual helper139e0d23 integrated074dfe56. Physical host/HTTP/fiscal-year discovery source and tests in progress; root191tool clients drafted, not yet verified. Public native import/physical recovery actual remains UNQUALIFIED.",
+      "status": "COMPLETE finite Group62 actual web/CLI/MCP191/replay/current-rights/changed-source/refusals/fresh-MFA restart and independently verified signed source-free fresh-owner restore plus target reopen PASS at606eb930, platform62_archive_import. Original attestation and exact raw/quantized amounts survive; books/profile/chart unchanged. No perfection round; ordinary archive report parity is next63.",
       "contract_sha256": "f78c5170d1d7db1f49fe699abe497cfcdc8ad17eb3836109d422b36aa20e6dc0",
       "depends_on": [
         "Approved /tmp/rm-platform62-archive-import-contract.md freezes exact raw CSV package, explicit operator currency declaration and six-decimal canonical source/row quantization.",
@@ -1668,6 +1719,18 @@
         "Native public plan/confirmed apply/read/source-original, actual web/CLI/MCP, fresh MFA restart and independently signed source-free fresh-owner restore. No SQL fixtures or out-of-band source writer."
       ],
       "acceptance": "Ordinary public import of closed historical years excluding highest cutover year, exact archive rows/raw numbers and separately quantized reporting money, unchanged live ledger/chart/profile, replay/conflict/current-right refusal, genuine archive/live CFO filtering/totals/pages, exact restart and source-free recovery."
+    },
+    {
+      "delivery": "Group63 ordinary historical financial reports and source-preserving exports",
+      "owner": "root integration/SDK/CLI/MCP/CSV/PDF; rust_accruals engine/storage/native-prior correction; rust_client_cli application/host/HTTP; rust_budget existing five webviews/source navigation/exact formatting; rust_mileage actual helper",
+      "status": "IN PROGRESS. Approved typed five-report ABI; A182397b0 integrated17a5ac74 after62actual PASS. Engine4/storage2/cockpit3/reducer1 and strict2 PASS. Host2/HTTP1/strict3 worker PASS, source commit pending. Web/actual helper/root clients and exports in progress; no actual63 qualification yet.",
+      "contract_sha256": "9ca3825836d0c596ef4c5e5d168a23d14ca7fe4b10855edc5cc25411d2250d51",
+      "acceptance": "Five existing ordinary report views; exact immutable source/raw and Money figures; live/archive same-year source selection; missing balances/chart classification truthful unavailable/null; no fake prior fiscal comparison; CSV/PDF four reports and full client parity, rights/tamper/no company audit effects/restart/source-free fresh-owner restore.",
+      "depends_on": [
+        "Group62 genuine public original-backed archive ingestion and physical assurance, qualified606eb930.",
+        "One admitted current-MFA/CompanyRead read transaction; complete VerifiedArchive set and exact native reducers, no fabricated period metadata.",
+        "Source preserved navigation/filter/export/client selectors; unsupported broader group/date/statutory parity remains an explicit next required whole flow."
+      ]
     }
   ],
   "integrated_pending_browser": [

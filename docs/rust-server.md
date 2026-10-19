@@ -59,7 +59,7 @@ adgang afvises. Alle otte særskilte CLI/MCP-handlinger består også i et
 separat workspace med begge retninger, uafhængig godkendelse, fuld paritet
 med HTTP-svarene og uændrede posteringer før og efter genstart.
 
-Der er 187 verificerede MCP-tools efter CFO-forløbet for løbende bogføring i Group61.
+Der er 191 verificerede MCP-tools efter den historiske arkivimport i Group62.
 De samlede native tests består med 191 beståede og én eksisterende ignoreret
 test; native build består. Mac’en er låst op. Administreret
 lokal opstart, almindelig ejeroprettelse, verificering, MFA og læsning af
@@ -1831,4 +1831,36 @@ Datoafgrænsning medtager originaler og tilbageførsler på deres faktiske datoe
 
 `remote cfo-analytics` og MCP `cfo_analytics` bevarer det fulde native svar uden lokale beregninger. Den faktiske verifikation omfatter to almindelige MFA-brugere, to selskaber, originale købsbilag, dateret tilbageførsel, part/dimensioner, filtre/sider, ændrede rettigheder, web og begge klienter. Genstart og gendannelse under en ny ejer uden kildeworkspace eller gammel signeringsnøgle bevarer de samme kilder og tal. Sammenlignede signerede snapshots viser uændret virksomheds-audit og bogføring.
 
-Dette beviser det løbende bogføringsgrundlag. Importerede historiske regnskabsposter afventer den native arkivimport og dens originale kildebevis; hele CFO-leverancen er derfor fortsat åben. En godkendt koncernprofil og selve webknappen til paginering er ikke kvalificeret i dette konkrete browserforløb. Der er ingen påstand om færdig desktop- eller samlet migrationsleverance.
+Det løbende bogføringsgrundlag er kvalificeret i Group61. Group62 kvalificerer nu også originale historiske arkivposter sammen med aktive poster, inklusive genstart og signeret gendannelse. Bredere historiske koncern- og datoperioderapporter afventer fortsat fuld kildeparitet; hele CFO-leverancen er derfor fortsat åben. En godkendt koncernprofil og selve webknappen til paginering er ikke kvalificeret i dette konkrete browserforløb. Der er ingen påstand om færdig desktop- eller samlet migrationsleverance.
+
+## Importér afsluttede regnskabsår
+
+Åbn virksomhedens **Arkiv**. Angiv den historiske basisvaluta og upload de
+originale Posteringer.csv-filer for mindst to år; en Saldobalance.csv er valgfri
+for hvert år. Gennemgå kildehash, antal poster og år. Det højeste år udelades
+som kontrol for overgangen. Bekræft valutaen og importen. Valutaen er din
+erklæring; CSV-filerne dokumenterer den ikke selv.
+
+Importen bevarer den nøjagtige kildepakke og hvert kildebeløb med seks
+decimaler. Rapportbeløb afrundes særskilt pr. kilderække. Der oprettes ingen
+aktive posteringer eller åbningsbalance, og kontoplan og virksomhedsprofil
+ændres ikke. Arkivlisten viser årene og giver adgang til deres poster og
+originale kildepakke. CFO-overblikket kan medtage arkivposter med sporbar kilde.
+
+Web, HTTP, CLI og alle 191 MCP-tools er kontrolleret sammen med aktuel adgang,
+oprindelig nøgles gentagelse, konflikt, genstart samt uafhængigt verificeret
+signeret backup efter fjernelse af kildedata og privat nøgle. En ny ejer med
+MFA kan gendanne og genåbne de samme arkivdata og originaler. Historisk
+import giver ingen aktuel brugerautoritet.
+
+CLI: `remote archive-import-plan` og `remote archive-import-apply --confirm`
+læser den nøjagtige native kildeanmodning fra stdin. `remote archives` har
+valgfrit `--fiscal-year YYYY`, og `remote archive-import-original --import-id ID`
+henter originalbytes. Alle kræver eksplicit server, cookie-fil og virksomhed.
+Efter et uafklaret importudfald skal arkiv og kildehash afstemmes, før et
+særskilt forsøg med samme nøgle og nøjagtigt samme anmodning.
+
+De almindelige historiske regnskabsvisninger og deres CSV/PDF-eksport er
+under udvikling i Group63. Arkivår mangler dokumenterede periodegrænser;
+der vises ikke opfundne afslutningsdatoer, sammenligningstal eller
+blanke saldi som nul. Desktop og den samlede Rust-omskrivning er fortsat åbne.
