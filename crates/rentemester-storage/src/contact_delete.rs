@@ -15,6 +15,16 @@ pub fn delete(
     if !confirm || id <= 0 {
         return Err(refused("contact id and explicit confirmation required"));
     }
+    let erased: bool = tx
+        .query_row("SELECT EXISTS(SELECT 1 FROM gdpr_erasures)", [], |r| {
+            r.get(0)
+        })
+        .map_err(invalid)?;
+    if erased {
+        return Err(refused(
+            "contact deletion with prior GDPR erasures requires the identity-alias workflow",
+        ));
+    }
     let (table, kind) = if vendor {
         ("vendors", "vendor")
     } else {
@@ -157,6 +167,32 @@ mod tests {
             tx.query_row::<i64, _, _>("SELECT count(*) FROM journal_entries", [], |r| r.get(0))
                 .unwrap(),
             0
+        );
+    }
+    #[test]
+    fn prior_erasure_blocks_raw_identity_from_being_added_to_delete_audit() {
+        let mut control = rusqlite::Connection::open_in_memory().unwrap();
+        let mut db = rusqlite::Connection::open_in_memory().unwrap();
+        crate::fresh::initialize_empty_pair(&mut control, &mut db, "Synthetic Contacts").unwrap();
+        let tx = db.transaction().unwrap();
+        tx.execute_batch("INSERT INTO customers(id,name) VALUES(1,'Synthetic protected identity'); INSERT INTO vendors(id,name) VALUES(1,'Synthetic protected supplier'); INSERT INTO gdpr_erasures(subject_key,source,source_row_id,redacted_fields,rule_id,reason) VALUES('synthetic','customers',1,'[]','synthetic','synthetic');").unwrap();
+        for vendor in [false, true] {
+            assert!(delete(&tx, 1, vendor, true, "synthetic").is_err());
+        }
+        assert_eq!(
+            tx.query_row::<i64, _, _>("SELECT count(*) FROM audit_log", [], |r| r.get(0))
+                .unwrap(),
+            0
+        );
+        assert_eq!(
+            tx.query_row::<i64, _, _>("SELECT count(*) FROM customers", [], |r| r.get(0))
+                .unwrap(),
+            1
+        );
+        assert_eq!(
+            tx.query_row::<i64, _, _>("SELECT count(*) FROM vendors", [], |r| r.get(0))
+                .unwrap(),
+            1
         );
     }
     #[test]
