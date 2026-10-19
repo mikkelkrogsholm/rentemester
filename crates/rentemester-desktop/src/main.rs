@@ -32,6 +32,8 @@ mod budget;
 mod budget_state;
 mod periods;
 mod periods_state;
+mod backup;
+mod backup_state;
 use rentemester_client::{ApiClient, Report};
 use serde_json::Value;
 use std::{path::PathBuf, sync::Arc};
@@ -206,6 +208,7 @@ struct Desktop {
     mileage: Option<Entity<mileage::Mileage>>,
     budget: Option<Entity<budget::Budget>>,
     periods: Option<Entity<periods::Periods>>,
+    backup: Option<Entity<backup::Backup>>,
     company_setup: Option<Entity<company_setup::CompanySetup>>,
     status: String,
     busy: bool,
@@ -295,6 +298,7 @@ impl Desktop {
             mileage: None,
             budget: None,
             periods: None,
+            backup: None,
             company_setup: None,
             status: "Forbind til din Rentemester-server og log ind med e-mail, adgangskode og MFA."
                 .into(),
@@ -398,6 +402,7 @@ impl Desktop {
         self.mileage = None;
         self.budget = None;
         self.periods = None;
+        self.backup = None;
         self.company_setup = None;
         self.status = "Forbinder…".into();
         let server = self.connection_origin(cx);
@@ -467,6 +472,7 @@ impl Desktop {
         self.mileage = None;
         self.budget = None;
         self.periods = None;
+        self.backup = None;
         self.company_setup = None;
         self.busy = true;
         self.status = "Kontrollerer login…".into();
@@ -570,6 +576,7 @@ impl Desktop {
         self.mileage = None;
         self.budget = None;
         self.periods = None;
+        self.backup = None;
         self.company_setup = None;
         self.password
             .update(cx, |input, cx| input.set_value("", window, cx));
@@ -597,6 +604,7 @@ impl Desktop {
         self.mileage = None;
         self.budget = None;
         self.periods = None;
+        self.backup = None;
         self.company_setup = None;
         self.selected = Some(slug.clone());
         self.status = "Henter saldobalance…".into();
@@ -874,6 +882,12 @@ impl Render for Desktop {
                     if let Some(slug) = this.selected.clone() { this.load(slug, cx); }
                 }))).child(setup);
         }
+        if let Some(backup) = self.backup.clone() {
+            return content.child(Button::new("backup-close")
+                .label("Luk workspace-backup")
+                .on_click(cx.listener(|this, _, _, cx| { this.backup = None; cx.notify(); })))
+                .child(backup);
+        }
         if let Some(periods) = self.periods.clone() {
             return content.child(Button::new("periods-close-screen")
                 .label("Luk moms og perioder og genindlæs saldobalance")
@@ -1034,6 +1048,22 @@ impl Render for Desktop {
                             Err(error) => { this.status = error; cx.notify(); return; }
                         };
                         this.company_setup = Some(cx.new(|cx| company_setup::CompanySetup::new(session, origin, company, local, window, cx)));
+                        cx.notify();
+                    }
+                })));
+        }
+        if self.session.is_some() {
+            content = content.child(Button::new("backup-open").label("Workspace-backup").disabled(self.busy)
+                .on_click(cx.listener(|this, _, window, cx| {
+                    if let Some(session) = this.session.clone() {
+                        let origin = this.connection_origin(cx);
+                        let local_public_key = this.managed.as_ref().and_then(|managed| {
+                            match managed.backup_public_key() {
+                                Ok(key) => Some(key),
+                                Err(error) => { this.status = error; None }
+                            }
+                        });
+                        this.backup = Some(cx.new(|cx| backup::Backup::new(session, origin, local_public_key, window, cx)));
                         cx.notify();
                     }
                 })));

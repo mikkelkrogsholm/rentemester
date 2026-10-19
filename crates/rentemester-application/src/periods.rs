@@ -66,6 +66,37 @@ fn evidence(tx: &Transaction<'_>, guard: &mut NamespaceGuard) -> Result<Vec<Valu
             result.push(json!({"documentId":id,"error":error.message}));
         }
     }
+    let mut banks = tx.prepare("SELECT source_bank_transaction_id FROM journal_entries WHERE source_bank_transaction_id IS NOT NULL UNION SELECT bank_transaction_id FROM bank_journal_reconciliation_links UNION SELECT bank_transaction_id FROM bank_reconciliation_correction_events UNION SELECT bank_transaction_id FROM invoice_claim_payments").map_err(|_| Error::new("period_evidence_unavailable", "bank source register unavailable"))?;
+    let ids = banks
+        .query_map([], |row| row.get::<_, i64>(0))
+        .map_err(|_| {
+            Error::new(
+                "period_evidence_unavailable",
+                "bank source register unavailable",
+            )
+        })?
+        .collect::<Result<Vec<_>, _>>()
+        .map_err(|_| {
+            Error::new(
+                "period_evidence_unavailable",
+                "bank source reference unavailable",
+            )
+        })?;
+    for id in ids {
+        let check = (|| {
+            let hash = rentemester_storage::bank_reconciliation::source_hash(tx, id)?;
+            let bytes = guard.read_bank_statement(&hash).map_err(|_| {
+                Error::new(
+                    "period_evidence_unavailable",
+                    "bank original unavailable or integrity mismatch",
+                )
+            })?;
+            rentemester_storage::bank_reconciliation::verify_source(tx, id, &bytes)
+        })();
+        if let Err(error) = check {
+            result.push(json!({"bankTransactionId":id,"error":error.message}));
+        }
+    }
     Ok(result)
 }
 pub fn execute(

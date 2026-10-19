@@ -23,7 +23,7 @@ export async function checkNativeCompanyKnowledge(page: Page, base: string, rest
   let evidence: Evidence;
   if (!restarted) {
    const before = await get("journal");
-   await page.goto(`${base}/virksomheder/${company}/workspace-register`);
+   await page.goto(`${base}/companies/${company}/workspace-register`);
    const panel = page.getByRole("region", { name: "Virksomhedsviden" });
    await panel.getByLabel("Knowledge value", { exact: true }).fill('"Synthetic native knowledge initial"');
    await panel.getByLabel("Knowledge predicate", { exact: true }).selectOption("operating_status");

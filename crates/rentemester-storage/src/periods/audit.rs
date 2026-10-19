@@ -46,11 +46,8 @@ pub(super) fn verify(tx: &Transaction<'_>) -> Result<Vec<Value>, Error> {
         }
     }
     for table in [
-        "bank_journal_reconciliation_links",
-        "bank_reconciliation_correction_events",
         "direct_bank_purchase_payable_corrections",
         "invoice_bad_debt_writeoffs",
-        "invoice_claim_payments",
         "invoice_compensation_claims",
         "invoice_interest_claims",
         "imported_receivable_headers",
@@ -61,6 +58,8 @@ pub(super) fn verify(tx: &Transaction<'_>) -> Result<Vec<Value>, Error> {
             errors.push(json!({"code":"AUDIT_WORKFLOW_NOT_PORTED","source":table}));
         }
     }
+    errors.extend(crate::reminder_claims::audit_evidence(tx)?);
+    errors.extend(super::bank_audit::verify(tx)?);
     for link in rows(
         tx,
         "SELECT r.bank_transaction_id,r.journal_entry_id,b.amount,b.amount_dkk,b.currency,a.ledger_account_no FROM bank_journal_reconciliations r JOIN bank_transactions b ON b.id=r.bank_transaction_id LEFT JOIN bank_accounts a ON a.id=b.bank_account_id",

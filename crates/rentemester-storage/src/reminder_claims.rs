@@ -364,6 +364,61 @@ pub fn required_banks(tx: &Transaction<'_>, id: i64) -> Result<Vec<i64>, Error> 
         .collect::<Result<Vec<_>, _>>()
         .map_err(invalid)
 }
+/// Recheck persisted reminder workflows for period assurance without changing them.
+pub fn audit_evidence(tx: &Transaction<'_>) -> Result<Vec<Value>, Error> {
+    let mut q = tx.prepare("SELECT invoice_document_id FROM invoice_reminders UNION SELECT invoice_document_id FROM invoice_claim_payments").map_err(invalid)?;
+    let invoices = q
+        .query_map([], |row| row.get::<_, i64>(0))
+        .map_err(invalid)?
+        .collect::<Result<Vec<_>, _>>()
+        .map_err(invalid)?;
+    let mut errors = vec![];
+    for id in invoices {
+        let check = (|| {
+            let i = invoice(tx, id)?;
+            principal(tx, id, &i)?;
+            let claims = validated_claims(tx, id)?;
+            for reminder in &claims.reminders {
+                Date::parse(
+                    reminder["reminderDate"]
+                        .as_str()
+                        .ok_or_else(|| refused("reminder date missing"))?,
+                )?;
+                require_audit(
+                    tx,
+                    "invoice_reminder_register",
+                    reminder["reminderId"].as_i64().unwrap(),
+                )?;
+                if !reminder["journalEntryId"].is_null() {
+                    require_audit(
+                        tx,
+                        "invoice_reminder_post",
+                        reminder["reminderId"].as_i64().unwrap(),
+                    )?;
+                }
+            }
+            for payment in &claims.payments {
+                require_audit(
+                    tx,
+                    "invoice_claim_payment_apply",
+                    payment["claimPaymentId"].as_i64().unwrap(),
+                )?;
+            }
+            Ok::<(), Error>(())
+        })();
+        if let Err(error) = check {
+            errors.push(json!({"code":"INVALID_REMINDER_CLAIM_EVIDENCE","invoiceDocumentId":id,"error":error.message}));
+        }
+    }
+    Ok(errors)
+}
+fn require_audit(tx: &Transaction<'_>, event: &str, id: i64) -> Result<(), Error> {
+    let (count, valid): (i64, i64) = tx.query_row("SELECT count(*),COALESCE(sum(length(trim(actor))>0),0) FROM audit_log WHERE event_type=?1 AND entity_type='invoice_reminder_claim' AND entity_id=?2", params![event,id.to_string()], |r| Ok((r.get(0)?,r.get(1)?))).map_err(invalid)?;
+    if count != 1 || valid != 1 {
+        return Err(refused("unique reminder workflow audit evidence required"));
+    }
+    Ok(())
+}
 pub fn read(tx: &Transaction<'_>, id: i64, as_of: &str) -> Result<Value, Error> {
     crate::journal_post::require_current(tx)?;
     let i = invoice(tx, id)?;
@@ -814,6 +869,34 @@ mod tests {
         assert_eq!(after["claimPayments"].as_array().unwrap().len(), 2);
         assert_eq!(after["ledgerBackedClaimBalance"], json!(0.0));
         assert_eq!(after["delivery"]["sentByThisFlow"], false);
+        let packet = crate::periods::compute(&tx, "2026-01-01", "2026-01-31", Ok(vec![])).unwrap();
+        let audit = packet["items"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|item| item["code"] == "LEDGER_AUDIT_CHAIN")
+            .unwrap();
+        assert_eq!(
+            audit["status"], "passed",
+            "validated reminder claims must allow audited period close: {audit}"
+        );
+        tx.execute_batch("SAVEPOINT corrupt_claim_audit; INSERT INTO audit_log(event_type,entity_type,entity_id,message,actor) SELECT event_type,entity_type,entity_id,message,actor FROM audit_log WHERE event_type='invoice_claim_payment_apply' LIMIT 1;").unwrap();
+        assert!(!audit_evidence(&tx).unwrap().is_empty());
+        tx.execute_batch("ROLLBACK TO corrupt_claim_audit; RELEASE corrupt_claim_audit;")
+            .unwrap();
+        tx.execute_batch("SAVEPOINT blank_claim_audit; INSERT INTO audit_log(event_type,entity_type,entity_id,message,actor) SELECT event_type,entity_type,entity_id,message,'' FROM audit_log WHERE event_type='invoice_claim_payment_apply' LIMIT 1;").unwrap();
+        assert!(!audit_evidence(&tx).unwrap().is_empty());
+        tx.execute_batch("ROLLBACK TO blank_claim_audit; RELEASE blank_claim_audit;")
+            .unwrap();
+        tx.execute_batch("SAVEPOINT missing_claim_audit; DROP TRIGGER audit_log_no_delete; DELETE FROM audit_log WHERE event_type='invoice_claim_payment_apply';").unwrap();
+        assert!(!audit_evidence(&tx).unwrap().is_empty());
+        tx.execute_batch("ROLLBACK TO missing_claim_audit; RELEASE missing_claim_audit;")
+            .unwrap();
+        tx.execute_batch("SAVEPOINT corrupt_claim_journal; DROP TRIGGER journal_entries_no_update; UPDATE journal_entries SET status='reversed' WHERE id=(SELECT journal_entry_id FROM invoice_claim_payments LIMIT 1);").unwrap();
+        assert!(!audit_evidence(&tx).unwrap().is_empty());
+        tx.execute_batch("ROLLBACK TO corrupt_claim_journal; RELEASE corrupt_claim_journal;")
+            .unwrap();
+        assert!(audit_evidence(&tx).unwrap().is_empty());
         tx.commit().unwrap();
         let dir = tempfile::tempdir().unwrap();
         let path = dir.path().join("claims.sqlite");

@@ -1185,7 +1185,7 @@ dens faktiske kvitteringsreference og periodens oprindelige lukkebevis.
 Uafklarede svar eller manglende kanonisk genlæsning bevarer en privat
 handlingsblokering. Nyt lokalt portnummer accepteres kun for samme profil,
 bruger, ledger og periode; fjernforbindelser skal fortsat stemme præcist.
-De samlede 93 desktop-tests og build består. Faktiske vinduesforløb er endnu
+De samlede 102 desktop-tests består. Faktiske vinduesforløb er endnu
 ikke verificeret på den låste Mac.
 
 ## Registrér og afstem rykkergebyrer
@@ -1198,5 +1198,34 @@ delvist eller helt. Originaler og afstemningsrelationer kontrolleres, og
 fremmede, uvaliderede fakturaposteringer blokerer fortsat afstemningen.
 
 CLI og MCP har læsning, registrering, bogføring og kravafvikling gennem den
-samme Rust-logik. Den samlede faktiske web-/klient-/genstartskontrol pågår.
+samme Rust-logik. Det faktiske første web-/klientforløb med fem posteringer,
+originaler og nødvendige afvisninger består. Det efterfølgende periodetjek
+afslørede en forældet afvisning af kravbetalinger; rettelsen kontrollerer nu
+de faktiske posteringer og entydige auditspor. Genstartskontrollen af den
+samlede levering afventer den genbyggede server.
 Mailafsendelse, renter og kompensation er fortsat selvstændige paritetskrav.
+
+## Virksomhedsoplysninger og parter
+
+Virksomhedsoplysninger kan foreslås, godkendes, afvises og erstattes med
+kilde, gyldighed og bevaret historik gennem web, CLI og MCP. Den signerede
+backup bevarer hele dette register; faktisk gendannelse og genstart med
+uafhængigt verificerede web-, CLI- og MCP-arkiver består.
+
+Workspace-parter kan registreres med identifikatorer, virksomhedsroller og
+kildebaserede aliaser og feltudsagn. Visning følger de aktuelle
+virksomhedsrettigheder. Globale ændringer kræver de nødvendige rettigheder
+til alle partens tilknyttede virksomheder. Den oprindelige identitet og
+historik bevares. Web og de seks tilsvarende klientoperationer er integreret;
+det faktiske browserforløb og backupkodningen af parter er næste kontrol.
+
+## Signeret lokal desktop-backup
+
+En ny administreret lokal profil opretter en privat signeringsnøgle uden for
+workspacet. Desktopappens **Workspace-backup** kan hente arkivet og eksportere
+den offentlige nøgles 32 bytes særskilt til en ny, eksplicit valgt fil.
+Nøglen skal bevares uafhængigt af arkivet til senere verificering.
+Eksisterende profiler får ikke automatisk udskiftet eller tilføjet nøgler;
+fjernserverens offentlige nøgle leveres af administratoren.
+Tests og build kvalificerer implementeringen; de nye faktiske vinduesforløb
+afventer adgang til den låste Mac.

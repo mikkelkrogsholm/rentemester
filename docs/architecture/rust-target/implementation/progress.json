@@ -1,15 +1,15 @@
 {
   "goal": "Complete Rust server/web, GPUI local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "parallel-platform-27",
-  "code_revision": "git:b7a12b4b plus reminder accessibility repair and composed harness wiring",
+  "current_increment": "parallel-platform-29",
+  "code_revision": "git:1190e075 plus period audit integration, desktop navigation and composed knowledge/party helper wiring",
   "spec_revision": "sha256:13a0386803d4f4e35af6fdf8a020cd851d759c4369c9d172a4e0f29459510cd0",
-  "state": "Native budget integrateda6e60027 and recovered VAT/period lifecycle completed in root with exact server review/close/reopen/external-receipt contracts;93native tests/1existingignored and build PASS, actual native windows still pending human Mac unlock. Reminder registration/separateposting/principal/claim receipts integrated46476d9d preserving SAFT92toolunion. Signed whole-workspace backup/fresh-target restore integrated121bc9df; isolated worker J05 actual browserdownload/source deletion/independenttrust/newownerMFA/originals/oldkeyrefusal/freshkey/restart PASS; root integrated J05 PASS; Linux composed92tool initial qualification found inaccessible reminder select labels after successful fee registration/refusal; fixed4explicit accessible names. Repaired93tool composed initial/restart qualification running.180client tests/3existingignored,37UItests,webbuild/nativebuild/strict9packageClippy PASS. Full Rust goal and epic672 remain open. Backup workspace SDK/CLI/MCP adapters integrateda4fc1a09 with187client tests/3existingignored and rebuilt93tools; web37tests/typecheck/build PASS.",
+  "state": "CompanyKnowledge and signed snapshot codec integrated; actual Group28 J05 browser/CLI/MCP archives independently verified after source/private-key deletion, exact knowledge history/provenance preserved after restore and restart. Composed Group28 completed full reminder fee/principal/partial/final claim flow, then exposed obsolete period-audit unsupported guard. Root regression reproduced and repair passes4claims tests including missing/duplicate/blank-actor audit and corrupt-journal refusals. Scoped Parties server/web/SDK/CLI/MCP integratedff8a7689:103tool union,201client tests/3existingignored and11selectedUI tests/webbuild PASS. Local desktop new-profile signer provisioning and independent public-key export integrated13a15371/82a939c2;102native tests/1existingignored PASS; actual new windows pending lockedMac. Full goal and epic672 remain open. Native bank link/correction audit validator integrated1190e075 and wired alongside physical bank-original checks;6period tests and strict8packageClippy PASS. Runtime rebuilt with103tools and exact artifact manifest at /tmp/rm-platform29-runtime-artifacts.json. Group29 actual composed qualification dispatched on these artifacts. Native desktop build also PASS.",
   "issues_closed": [],
   "next": [
-    "Finish repaired93tool composed reminder initial/restart qualification; integrated J05 backup alreadyPASS.",
-    "Deliver remaining complete Rust server flows, beginning company knowledge; add backup agent clients against stable endpoint.",
-    "Continue native task parity and actual windows when Mac is unlocked; preserve full epic/Rust scope."
+    "Integrate bank link/correction period-audit validation, then rebuild exact runtime artifacts and rerun composed initial/restart flows including knowledge and parties.",
+    "Preserve native Parties source history in signed portable backup and fresh-target restore.",
+    "Continue remaining server/web and desktop parity from epic672; verify native windows when Mac is available."
   ],
   "preserve_unrelated_paths": [
     ".claude/settings.json",
@@ -398,6 +398,37 @@
       "labels": "/tmp/rm-platform27-reminder-label-tests.log (2PASS)",
       "web": "/tmp/rm-platform27-web-build.log (PASS)",
       "scope": "Explicit-confirm workspacebackup exactfixedwire/MIME/boundedrawbytes SDK/CLI/MCP; no filepaths/keys/selectors/verificationclaim/retry.93toolunion preservesSAFT/reminder. Four exact accessible reminder selectnames repaired from actualfailedqualification."
+    },
+    "platform28_backup_knowledge": {
+      "report": "/tmp/rentemester-rust-reports/native-portable-backup-knowledge-integrated28.json",
+      "log": "/tmp/rm-platform28-backup-actual.log",
+      "status": "passed",
+      "scope": "Browser/CLI/MCP independently verified after source/private-key deletion,2UUIDs/exact originals and bank, knowledge full provenance/history after restore+restart, new normal owner verification/MFA, old key refusal/new intent; cleanup completed"
+    },
+    "platform28_composed": {
+      "log": "/tmp/rm-platform28-combined.log",
+      "artifacts": "/tmp/rm-platform28-qualification-artifacts.json",
+      "exit": 1,
+      "passed_checks": 21,
+      "scope": "Full reminder initial five journals/originals/refusals/agent parity passed; later period audit obsolete invoice_claim_payments guard blocked; knowledge/parties/restart not reached; owned runtime cleaned"
+    },
+    "platform29_claim_audit": {
+      "before": "/tmp/rm-platform29-claims-audit-before.log",
+      "after": "/tmp/rm-platform29-claims-audit-final.log",
+      "status": "4tests passed",
+      "scope": "Real full native reminder workflow permits ledger audit; missing/duplicate/blank-actor duplicate proof and corrupt claim journal refuse. Application physical source union compiles; actual runtime qualification pending."
+    },
+    "platform29_clients": "/tmp/rm-platform29-clients.log (201 passed,3 existing ignored;103tools)",
+    "platform29_web": "/tmp/rm-platform29-ui.log (11 passed); /tmp/rm-platform29-web-build.log (passed)",
+    "platform29_native": "/tmp/rm-platform29-native-tests.log (102 passed,1 existing ignored; actual windows pending)",
+    "platform29_periods": "/tmp/rm-platform29-periods-tests.log (6 passed: native bank audit4 and existing lifecycle/exception2)",
+    "platform29_strict_clippy": "/tmp/rm-platform29-clippy.log (8 packages, all targets, -D warnings passed)",
+    "platform29_runtime_build": "/tmp/rm-platform29-runtime-build.log (server/CLI/MCP passed); /tmp/rm-platform29-runtime-artifacts.json",
+    "platform29_native_build": "/tmp/rm-platform29-native-build.log (passed; actual newer windows pending)",
+    "platform29_composed": {
+      "status": "dispatched; terminal result not yet known",
+      "manifest": "/tmp/rm-platform29-runtime-artifacts.json",
+      "scope": "Group28 claim and bank period-audit repair plus integrated knowledge and parties; root source/artifact freeze during actual runtime"
     }
   },
   "verified_history": [
@@ -738,39 +769,49 @@
   "active_work": [
     {
       "owner": "root",
-      "result": "Integrate complete Rust flows; qualify merged reminder/accounting, backup/recovery and native budget/periods",
+      "result": "Integrate period-audit repair and desktop backup key export; rebuild and accept combined Rust flows",
       "depends_on": [
-        "committed workers and exact actual runtime artifacts"
+        "bank audit validator delivery",
+        "exact runtime artifacts"
       ],
-      "acceptance": "Current authority/accounting/privacy and canonical readback; retain fullgoal and nativeGUI gap"
-    },
-    {
-      "owner": "rust_mileage",
-      "result": "Actual repaired composed93tool reminder/accounting initial/restart",
-      "ownership": "read-only rootsource, isolated ownedDocker/volume/tmp",
-      "depends_on": [
-        "pinned93clients/server/rebuiltweb/4accessiblelabels"
-      ],
-      "acceptance": "Fullaccounting+reminderweb/agent5journal/source/refusals/restart; exactownedcleanup"
+      "acceptance": "Actual composed first/restart with current authority and preserved originals; fullgoal stays open"
     },
     {
       "owner": "rust_accruals",
-      "result": "Include source-backed CompanyKnowledge business history in signed snapshot/restore",
-      "ownership": "isolated explicit versioned controlcodec/coverage/restorevalidation, no knowledgeAPI changes",
+      "result": "Native shared inbox upload, explicit company routing and durable document handoff",
+      "ownership": "isolated new inbox modules and existing React inbox; narrow additive shared registries",
       "depends_on": [
-        "legacy controlschema21 within30 and current native signedbackup",
-        "coordinate knowledge tablecontracts with rust_client_cli"
+        "current multi-company catalog and protected document publication"
       ],
-      "acceptance": "All relatedtablecolumns/rows/IDs/provenance/reviewhistory preserved, no auth/currentgrants, unknownschemafailclosed; fullsection coverage only if complete; otherunsupportedsections still refuse"
+      "acceptance": "Exact original in one target company, no journal, current rights, durable recovery/restart and duplicate/conflict refusals; nonempty inbox backup still explicit refusal"
     },
     {
       "owner": "rust_client_cli",
-      "result": "Source-backed company knowledge propose/review/supersede/context/history through existingweb",
-      "ownership": "isolated companyknowledge engine/controlstorage/application/server, existingweb and thinclients",
+      "result": "Include canonical Parties source history in signed portable backup and restore",
+      "ownership": "isolated backup codecs and narrow shared party hash visibility",
       "depends_on": [
-        "existing controlschema30/currentcompany authority and sourceknowledge contracts"
+        "native Parties integratedff8a7689",
+        "current signed CompanyKnowledge codec"
       ],
-      "acceptance": "Exact source/provenance/effective windows/conflicts/reviewstates/currentpermissions/crosscompany refusals and restart; no accounting effects; backup unsupportedcoverage refusal preserved"
+      "acceptance": "All six tables and references preserved, corruption refuses, credentials remain excluded"
+    },
+    {
+      "owner": "rust_mileage",
+      "result": "Actual Group29 composed first/restart qualification with103tools, knowledge and parties",
+      "ownership": "read-only source; later independent owned synthetic Docker runtime",
+      "depends_on": [
+        "repaired1190e075 runtime/artifacts now ready"
+      ],
+      "acceptance": "Full initial/restart parity and exact owned cleanup"
+    },
+    {
+      "owner": "rust_budget",
+      "result": "Native GPUI CompanyKnowledge complete read/propose/review/supersede flow",
+      "ownership": "isolated new desktop knowledge screen/state; root main integration",
+      "depends_on": [
+        "stable native Knowledge SDK contract"
+      ],
+      "acceptance": "Frozen explicit review/confirm, current canonical history/provenance/readback, uncertain outcome retained; build/tests then actual GUI when accessible"
     }
   ],
   "integrated_pending_browser": [],
