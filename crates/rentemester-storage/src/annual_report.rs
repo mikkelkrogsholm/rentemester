@@ -56,6 +56,12 @@ pub fn read(tx: &Transaction<'_>, slug: &str, start: &str, end: &str) -> Result<
         tx,
         Period::new("0000-01-01", end)?,
     )?);
+    if tb.balanced && !bs.balanced {
+        errors.push(
+            "Balancen på balancedagen stemmer ikke; kontrollér også tidligere års posteringer."
+                .into(),
+        );
+    }
     let prior_tb = crate::trial_balance_owned(tx, Period::new(&prior_start, &prior_end)?)?;
     let prior_pl = statements::profit_and_loss(&prior_tb);
     let prior_bs = statements::balance_sheet(&crate::trial_balance_owned(
@@ -176,5 +182,22 @@ mod tests {
         assert_eq!(result["report"]["ok"], false);
         assert_eq!(result["report"]["errors"].as_array().unwrap().len(), 2);
         assert_eq!(result["report"]["notes"], json!([]));
+        // A balanced empty current year must not hide a broken opening balance.
+        l.execute_batch("INSERT INTO accounting_periods(period_start,period_end,kind,status,closed_at,closed_by) VALUES('2026-01-01','2026-12-31','fiscal_year','closed','2027-01-01','user:synthetic');").unwrap();
+        let result = read(
+            &l.transaction().unwrap(),
+            "synthetic",
+            "2026-01-01",
+            "2026-12-31",
+        )
+        .unwrap();
+        assert_eq!(result["report"]["ok"], false);
+        assert_eq!(result["report"]["errors"].as_array().unwrap().len(), 1);
+        assert!(
+            result["report"]["errors"][0]
+                .as_str()
+                .unwrap()
+                .contains("balancedagen")
+        );
     }
 }

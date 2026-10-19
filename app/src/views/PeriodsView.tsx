@@ -314,7 +314,7 @@ function ClosePeriodModal({
           </label>
           <label>
             Type
-            <Select disabled={outcome.blocked}
+            <Select aria-label="Type" disabled={outcome.blocked}
               value={kind}
               onChange={(e) => setKind(e.target.value as AccountingPeriodKind)}
             >
