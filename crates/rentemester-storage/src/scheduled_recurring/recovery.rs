@@ -66,7 +66,16 @@ pub(super) fn boundaries(db: &Connection, all: &[Event]) -> Result<Vec<Boundary>
                 || a.1 != "recurring_invoice_template"
                 || a.2 != e.payload.template_id.to_string()
                 || a.3 != e.payload.kind
-                || a.4 != format!("user:{}", e.payload.actor)
+                || a.4
+                    != format!(
+                        "{}:{}",
+                        if e.payload.version == 3 && e.payload.kind != "enabled" {
+                            "service_account"
+                        } else {
+                            "user"
+                        },
+                        e.payload.actor
+                    )
         })
     {
         return Err(refused());
@@ -145,6 +154,9 @@ pub(super) fn overlay(s: &mut State, b: &Boundary) {
     let required = matches!(s.state, "enabled" | "paused");
     if required {
         s.state = "paused";
+    }
+    if let Some(h) = &mut s.hosted {
+        h.active = false;
     }
     s.owner = None;
     s.queued.clear();

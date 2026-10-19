@@ -104,3 +104,14 @@ mod tests {
         assert!(reason(&"🧾".repeat(501)).is_err());
     }
 }
+/// Exact human-reviewed delegation to the server's configured executor. No credential secret.
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct HostedConsent {
+    pub template_id: i64,
+    pub service_account_id: String,
+    pub credential_id: String,
+    pub plan_hash: String,
+    pub reason: String,
+    pub confirm: bool,
+}

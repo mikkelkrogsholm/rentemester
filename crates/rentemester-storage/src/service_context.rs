@@ -56,6 +56,9 @@ pub struct Observation {
     role: String,
 }
 impl Observation {
+    pub fn credential_id(&self) -> &str {
+        &self.id
+    }
     pub fn subject(&self) -> &str {
         &self.subject
     }

@@ -62,7 +62,24 @@ fn audit(
     message: &str,
     actor: &str,
 ) -> Result<(), Error> {
-    tx.execute("INSERT INTO audit_log(event_type,entity_type,entity_id,message,actor) VALUES(?1,'recurring_invoice_template',?2,?3,?4)",params![event,id.to_string(),message,format!("user:{actor}")]).map_err(invalid)?;
+    audit_with_principal(
+        tx,
+        id,
+        event,
+        message,
+        actor,
+        crate::idempotency::PrincipalKind::User,
+    )
+}
+fn audit_with_principal(
+    tx: &Transaction<'_>,
+    id: i64,
+    event: &str,
+    message: &str,
+    actor: &str,
+    principal: crate::idempotency::PrincipalKind,
+) -> Result<(), Error> {
+    tx.execute("INSERT INTO audit_log(event_type,entity_type,entity_id,message,actor) VALUES(?1,'recurring_invoice_template',?2,?3,?4)",params![event,id.to_string(),message,format!("{}:{actor}",match principal {crate::idempotency::PrincipalKind::User=>"user",crate::idempotency::PrincipalKind::ServiceAccount=>"service_account"})]).map_err(invalid)?;
     Ok(())
 }
 fn months(interval: &str) -> Result<u32, Error> {
@@ -277,6 +294,21 @@ pub fn finish(
     issued: &Value,
     actor: &str,
 ) -> Result<Value, Error> {
+    finish_with_principal(
+        tx,
+        pending,
+        issued,
+        actor,
+        crate::idempotency::PrincipalKind::User,
+    )
+}
+pub fn finish_with_principal(
+    tx: &Transaction<'_>,
+    pending: &Pending,
+    issued: &Value,
+    actor: &str,
+    principal: crate::idempotency::PrincipalKind,
+) -> Result<Value, Error> {
     let id = issued["documentId"]
         .as_i64()
         .ok_or_else(|| refused("missing generated invoice"))?;
@@ -289,7 +321,7 @@ pub fn finish(
         params![pending.next, pending.template_id],
     )
     .map_err(invalid)?;
-    audit(
+    audit_with_principal(
         tx,
         pending.template_id,
         "recurring_invoice_generate",
@@ -298,6 +330,7 @@ pub fn finish(
             pending.period_index
         ),
         actor,
+        principal,
     )?;
     Ok(
         json!({"created":true,"templateId":pending.template_id,"periodIndex":pending.period_index,"documentId":id,"invoiceNumber":no,"issueDate":pending.payload["issueDate"],"dueDate":pending.payload["dueDate"],"deliveryPeriodStart":pending.start,"deliveryPeriodEnd":pending.end}),
@@ -348,9 +381,27 @@ pub fn list(tx: &Transaction<'_>, slug: &str) -> Result<Value, Error> {
     Ok(json!({"slug":slug,"nativeRecurring":true,"templates":rows}))
 }
 /// Frozen specification for generation scheduling; excludes mutable next date/retirement.
-pub fn scheduled_spec(tx:&Connection,id:i64)->Result<Value,Error>{let t=load(tx,id)?;if t.channel!="manual"{return Err(refused("only manual generation supported"));}Ok(json!({"id":t.id,"active":t.active,"specification":{"id":t.id,"name":t.name,"interval":t.interval,"intervalCount":t.count,"firstIssueDate":t.first,"paymentTermsDays":t.terms,"deliveryPeriodMode":t.mode,"payload":t.payload}}))}
-pub fn scheduled_date(tx:&Connection,id:i64,index:u32)->Result<String,Error>{let t=load(tx,id)?;issue_date(&t.first,&t.interval,t.count,index)}
-pub fn scheduled_latest(tx:&Connection,id:i64,as_of:&str)->Result<Option<u32>,Error>{let t=load(tx,id)?;if as_of<t.first.as_str(){Date::parse(as_of)?;return Ok(None);}period(&t,as_of).map(Some)}
+pub fn scheduled_spec(tx: &Connection, id: i64) -> Result<Value, Error> {
+    let t = load(tx, id)?;
+    if t.channel != "manual" {
+        return Err(refused("only manual generation supported"));
+    }
+    Ok(
+        json!({"id":t.id,"active":t.active,"specification":{"id":t.id,"name":t.name,"interval":t.interval,"intervalCount":t.count,"firstIssueDate":t.first,"paymentTermsDays":t.terms,"deliveryPeriodMode":t.mode,"payload":t.payload}}),
+    )
+}
+pub fn scheduled_date(tx: &Connection, id: i64, index: u32) -> Result<String, Error> {
+    let t = load(tx, id)?;
+    issue_date(&t.first, &t.interval, t.count, index)
+}
+pub fn scheduled_latest(tx: &Connection, id: i64, as_of: &str) -> Result<Option<u32>, Error> {
+    let t = load(tx, id)?;
+    if as_of < t.first.as_str() {
+        Date::parse(as_of)?;
+        return Ok(None);
+    }
+    period(&t, as_of).map(Some)
+}
 
 #[cfg(test)]
 mod tests {

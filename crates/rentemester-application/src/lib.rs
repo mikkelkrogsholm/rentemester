@@ -91,3 +91,5 @@ pub mod eliminations;
 pub mod consolidation;
 
 pub mod scheduled_recurring;
+
+pub mod hosted_recurring;

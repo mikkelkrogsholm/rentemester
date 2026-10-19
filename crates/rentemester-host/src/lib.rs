@@ -1287,3 +1287,5 @@ pub mod consolidation;
 mod scheduled_recurring;
 #[cfg(all(test,target_os="macos"))]
 mod scheduled_recurring_tests;
+
+mod hosted_recurring;

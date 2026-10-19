@@ -114,11 +114,8 @@ fn enable(owner: &mut Owner, proof: &VerifiedCookie, id: i64) {
     .unwrap();
     call(owner, proof, Action::Enable(&input)).unwrap();
     let db = owner.held.0.as_ref().unwrap().company.as_ref().unwrap();
-    let error = rentemester_storage::portable_backup::company(db)
-        .err()
-        .expect("nonempty scheduling cannot be silently omitted from backup");
-    assert_eq!(error.code, "portable_backup_refused");
-    assert!(error.message.contains("scheduled recurring history"));
+    rentemester_storage::portable_backup::company(db)
+        .expect("complete scheduler history is validated in the signed SQLite snapshot");
 }
 fn dispatch(
     owner: &mut Owner,

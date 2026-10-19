@@ -76,44 +76,70 @@ pub fn execute(
             ),
             Action::Dispatch(i) => {
                 let occurrence = storage::begin(tx, i, actor, today, now)?;
-                tx.execute_batch("SAVEPOINT scheduled_invoice_issue")
-                    .map_err(|_| engine::refused())?;
-                let result = (|| {
-                    let request = recurring::Generate {
-                        as_of_date: occurrence.issue_date.clone(),
-                        confirm: true,
-                    };
-                    match recurring::prepare(tx, i.template_id, &request, today, now)? {
-                        Prepared::Existing(v) => {
-                            crate::sales::verify_invoice(
-                                tx,
-                                guard,
-                                v["documentId"].as_i64().ok_or_else(engine::refused)?,
-                            )?;
-                            Ok(v)
-                        }
-                        Prepared::Issue(p) => {
-                            let issued = crate::sales::issue_payload(tx, guard, &p.payload, actor)?;
-                            recurring::finish(tx, &p, &issued, actor)
-                        }
-                    }
-                })();
-                let result = match result {
-                    Ok(v) => {
-                        tx.execute_batch("RELEASE scheduled_invoice_issue")
-                            .map_err(|_| engine::refused())?;
-                        Ok(v)
-                    }
-                    Err(e) => {
-                        tx.execute_batch(
-                            "ROLLBACK TO scheduled_invoice_issue; RELEASE scheduled_invoice_issue",
-                        )
-                        .map_err(|_| engine::refused())?;
-                        Err(e.code.to_owned())
-                    }
-                };
+                let result = issue(
+                    tx,
+                    guard,
+                    i.template_id,
+                    &occurrence,
+                    actor,
+                    today,
+                    now,
+                    rentemester_storage::idempotency::PrincipalKind::User,
+                )?;
                 storage::finish(tx, i.template_id, occurrence, result, actor, today, now)
             }
         },
     )
+}
+
+#[allow(clippy::too_many_arguments)]
+pub(crate) fn issue(
+    tx: &rusqlite::Transaction<'_>,
+    guard: &mut NamespaceGuard,
+    id: i64,
+    occurrence: &engine::Occurrence,
+    actor: &str,
+    today: &str,
+    now: &str,
+    principal: rentemester_storage::idempotency::PrincipalKind,
+) -> Result<Result<Value, String>, rentemester_engine::Error> {
+    tx.execute_batch("SAVEPOINT scheduled_invoice_issue")
+        .map_err(|_| engine::refused())?;
+    let result = (|| {
+        let request = recurring::Generate {
+            as_of_date: occurrence.issue_date.clone(),
+            confirm: true,
+        };
+        match recurring::prepare(tx, id, &request, today, now)? {
+            Prepared::Existing(v) => {
+                crate::sales::verify_invoice(
+                    tx,
+                    guard,
+                    v["documentId"].as_i64().ok_or_else(engine::refused)?,
+                )?;
+                Ok(v)
+            }
+            Prepared::Issue(p) => {
+                let issued = crate::sales::issue_payload_with_principal(
+                    tx, guard, &p.payload, actor, principal,
+                )?;
+                recurring::finish_with_principal(tx, &p, &issued, actor, principal)
+            }
+        }
+    })();
+    let result = match result {
+        Ok(v) => {
+            tx.execute_batch("RELEASE scheduled_invoice_issue")
+                .map_err(|_| engine::refused())?;
+            Ok(v)
+        }
+        Err(e) => {
+            tx.execute_batch(
+                "ROLLBACK TO scheduled_invoice_issue; RELEASE scheduled_invoice_issue",
+            )
+            .map_err(|_| engine::refused())?;
+            Err(e.code.to_owned())
+        }
+    };
+    Ok(result)
 }

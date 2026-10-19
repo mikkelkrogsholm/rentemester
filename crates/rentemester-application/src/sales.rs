@@ -217,6 +217,21 @@ pub(crate) fn issue_payload(
     payload: &Value,
     actor: &str,
 ) -> Result<Value, Error> {
+    issue_payload_with_principal(
+        tx,
+        guard,
+        payload,
+        actor,
+        rentemester_storage::idempotency::PrincipalKind::User,
+    )
+}
+pub(crate) fn issue_payload_with_principal(
+    tx: &rusqlite::Transaction<'_>,
+    guard: &mut NamespaceGuard,
+    payload: &Value,
+    actor: &str,
+    principal: rentemester_storage::idempotency::PrincipalKind,
+) -> Result<Value, Error> {
     let pdf = rentemester_engine::invoice_pdf::build(payload);
     let no = payload["invoiceNumber"]
         .as_str()
@@ -231,7 +246,7 @@ pub(crate) fn issue_payload(
         .publish_document(&json)
         .map_err(|_| evidence_error())?;
     let pdf_path = guard.publish_document(&pdf).map_err(|_| evidence_error())?;
-    sales::register(
+    sales::register_with_principal(
         tx,
         payload,
         Artifact {
@@ -247,5 +262,6 @@ pub(crate) fn issue_payload(
             mime: pdf.mime(),
         },
         actor,
+        principal,
     )
 }
