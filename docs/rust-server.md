@@ -1079,3 +1079,22 @@ servergenstart er bestået. Profil, kontoplan og eksplicitte roller stemmer
 fuldt mellem HTTP, CLI og MCP; journalen er uændret. Inaktive konti kan endnu
 ikke oprettes gennem den eksisterende HTTP-kontrakt og er ikke dækket af
 dette acceptkorpus.
+
+## Kørsel og virksomhedsopsætning i desktop
+
+Desktop har nu **Kørsel** med eksplicit regnskabsår, brugerens valgte tur,
+sats og satsgrundlag, særskilt gennemgang og bekræftelse. Appen viser serverens
+kvittering, advarsler og faktiske rapport; den beregner ingen kørselsgodtgørelse
+lokalt og bogfører ikke en journalpostering.
+
+**Virksomhedsopsætning** viser den aktuelle profil, kontoplan og serverens
+manglende eller tvetydige kontoroller. Profilændring, kontooprettelse og
+bekræftelse af en selvvalgt kontorolle er særskilte, gennemgåede handlinger.
+
+Uafklarede svar blokerer nye skrivninger, indtil den oprindelige handling er
+afklaret manuelt mod serveren. Den private status indeholder ingen personlige
+formularfelter og genafsender intet. Den lokale servers port må ændre sig ved
+genstart, mens den samme lokale profil, bruger og ledger fortsat skal stemme.
+
+Integrationen bestod 78 native tests og build. Faktiske native vinduesforløb
+er endnu ikke verificeret: Mac'en er fortsat låst.

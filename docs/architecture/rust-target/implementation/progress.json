@@ -1,10 +1,10 @@
 {
   "goal": "Complete Rust server/web, GPUI local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "parallel-platform-20-verified",
-  "code_revision": "git:db8054fe (verified helper16099ae5; pinned artifact revisions recorded separately)",
+  "current_increment": "parallel-platform-21",
+  "code_revision": "git:84b57e8c",
   "spec_revision": "sha256:13a0386803d4f4e35af6fdf8a020cd851d759c4369c9d172a4e0f29459510cd0",
-  "state": "Group20 composed82-tool actual initial AND restart PASS:68PASS checks plus8browser confirmations, including budget/mileage/privacy agents, bank correction/durable receipts, exact multi-year comparison, asset/accrual/recurring/document clients, retention, accountant/dashboard/integrity. Separate86-tool company setup normal verification/MFA and fresh-login restart PASS; integrated4fe0fa65,164tests/3existingignored and strictClippy PASS. Native payables integrated7b0acfa2 with62tests/1existingignored and build PASS; actual new native windows pending human unlock. Full Rust goal/epic672 remain open.",
+  "state": "Native mileage and current-company profile/chart/explicit-role setup integrated84b57e8c; combined native78tests/1existingignored and build PASS. Root fixed managed-local mileage pending reconciliation after port change, preserving profile/principal/ledger/year and remote origin fences. CUA currently confirms locked Mac; actual new windows unverified. Completed Group20 composed82-tool initial/restart and standalone86tool normal MFA/restart proofs retained. Full Rust goal/epic672 remain open.",
   "issues_closed": [],
   "next": [
     "Integrate real multi-company creation/atomic selection and qualify distinct ledgers/permissions/restart.",
@@ -291,6 +291,13 @@
     "platform20_clients_checks": {
       "tests": "/tmp/rm-platform20-client-tests.log (164PASS/3existingignored)",
       "clippy": "/tmp/rm-platform20-client-clippy.log (PASS all-targets strict)"
+    },
+    "gpui_mileage_company_setup": {
+      "revision": "84b57e8c",
+      "readiness": "/tmp/rentemester-rust-reports/native-mileage-company-setup-readiness.json",
+      "tests": "/tmp/rm-platform21-native-tests.log (78PASS/1existingignored)",
+      "build": "/tmp/rm-platform21-native-build.log (PASS)",
+      "scope": "Native navigation and scope resets, frozen reviewed mileage/request/receipt/advisory/canonical readback and exact profile/chart/explicit roles, durable payload-free unknown handling; actual native windows not verified. Current CUA reports locked Mac; no unlock bypass."
     }
   },
   "verified_history": [
@@ -639,12 +646,12 @@
     },
     {
       "owner": "rust_mileage",
-      "result": "Native current-company profile/chart and explicit role setup",
-      "ownership": "isolated rust-mileage new desktop company_setup.rs/company_setup_state.rs; root owns navigation",
+      "result": "Read-only actionable signed backup/verify/restore contract for next server-first flow",
+      "ownership": "read-only current source and legacy/R33 evidence, no runtime edits",
       "depends_on": [
-        "integrated86tool CompanySetupMutation SDK and exact native setup contract"
+        "existing signed backup/restore contract and one authoritative runtime Owner"
       ],
-      "acceptance": "Reviewed explicit profile/accounts/roles, canonical current scope/readback and manual unknown reconciliation; no inferred accounting, meaningful state tests/native build, actual GUI when unlocked",
+      "acceptance": "Exact format/key custody/permissions, real snapshot/restore primitives and necessary runtime interfaces; finite next implementation, no substitute unsigned export or fake restoration",
       "parallel_with": [
         "native VAT/periods",
         "native mileage",
@@ -681,17 +688,17 @@
     },
     {
       "owner": "rust_client_cli",
-      "result": "Native mileage report and explicit trip registration",
-      "ownership": "isolated new desktop mileage child/state; root integrates main navigation",
+      "result": "Existing bounded SAF-T customv3 export through Rust server/web and clients",
+      "ownership": "isolated new engine/storage/application/server export modules and additive existing export card/API; minimal registries coordinated",
       "depends_on": [
-        "stable shared mileage SDK and existing native session/client"
+        "existing src/core/saft-export.ts exact profile, shared accounting reducers and CompanyExport fence"
       ],
       "parallel_with": [
         "multi-company foundation",
         "invitations",
         "composed qualification"
       ],
-      "acceptance": "Caller chosen trip/rate/basis, full canonical report/advisory/receipt, no client calculation/hidden journals/retries; tests/build and actual GUI when unlocked"
+      "acceptance": "Real downloadable source-complete XML/package, canonical reconciled accounts/journal/audit, explicit custom-profile limits, initial/refusal/restart; no regulator approval or submission claim"
     }
   ],
   "integrated_pending_browser": [],
