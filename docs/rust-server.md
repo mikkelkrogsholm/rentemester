@@ -59,13 +59,14 @@ adgang afvises. Alle otte særskilte CLI/MCP-handlinger består også i et
 separat workspace med begge retninger, uafhængig godkendelse, fuld paritet
 med HTTP-svarene og uændrede posteringer før og efter genstart.
 
-Der er 150 MCP-tools efter integrationen af planlagte fakturaer.
-De samlede native tests består med 178 beståede og én eksisterende ignoreret
+Der er 158 MCP-tools efter integrationen af servicekonti og serversamtykke til planlagte fakturaer.
+De samlede native tests består med 191 beståede og én eksisterende ignoreret
 test; native build består. Mac’en er låst op. Administreret
 lokal opstart, almindelig ejeroprettelse, verificering, MFA og læsning af
 saldobalancen er gennemført i det native vindue. Fakturering og udgifter er
-endnu ikke godkendt i desktop: værktøjets pointer- og scrollstyring fejler
-stadig trods den oplåste Mac. De afgrænsede omgåelsesforsøg er stoppet, og
+endnu ikke godkendt i desktop. Efter oplåsningen er også tastaturbetjening
+og en konkret fokusrettelse prøvet; navigationen i det faktiske vindue er
+fortsat uverificeret. De afgrænsede forsøg er stoppet, og
 kun den private syntetiske profil er bevaret til senere accept.
 
 Native **Mellemregningsafstemning** er også integreret og består tests/build.
@@ -119,11 +120,19 @@ samtykke og gendannelse af uafklarede forsøg er dækket af signerede
 lagertests, ikke dette browserforløb. Native samtykkekontroller består
 tests og bygning; deres faktiske GUI-forløb er stadig uverificeret.
 
-Hostede arbejdere, eksterne leverancer og administreret flytning mellem lokal
+Serverens eksplicit aktiverede fakturaarbejder er nu integreret med servicekonti,
+versionsfast samtykke og separat audit for servicehandlinger. Det faktiske
+forløb med normal MFA, weboprettet servicekonto og CLI/MCP-kontrol består:
+lukket browser giver præcis én ubogført og usendt faktura med JSON/PDF;
+genstart gentager den ikke. Et signeret V3-arkiv er verificeret efter
+fjernelse af kilde og privat nøgle og gendannet med en ny ejer og normal MFA.
+Historik, originaler og ledger-identitet bevares; tidligere serviceadgang, kø
+og serversamtykke er inaktive, og ingen ny faktura udstedes. Eksterne
+leverancer, øvrige hostede arbejdere og administreret flytning mellem lokal
 app og server er fortsat uafsluttede dele af målet.
 
 Den samlede omskrivning er fortsat åben. De næste nødvendige dele er
-varige eksterne handlinger, hostet planlægning og administreret flytning
+varige eksterne handlinger, øvrige hostede arbejdere og administreret flytning
 mellem lokal app og server.
 Ejerobservationer bliver ikke automatisk til en koncernkonfiguration.
 
@@ -1376,3 +1385,69 @@ kildebaseret gennemgang og bekræftelse. Den oprindelige identitet overskrives
 ikke. Serveren afgør rettighederne, og appen genlæser det kanoniske resultat.
 De samlede 116 native tests og build består; faktiske nye vinduer er endnu
 ikke verificeret; den faktiske accept på den nu oplåste Mac er i gang.
+
+
+## Planlagte fakturaer på serveren
+
+En server kan udstede dagens normale forekomst uden en åben browser. Det kræver
+både en særskilt servicekonto, en udtrykkeligt startet serverarbejder og ejerens
+gennemgang af den konkrete fakturaskabelon. Udstedelse gemmer JSON-original og
+PDF; bogføring og afsendelse er fortsat særskilte handlinger.
+
+1. En workspace-ejer med frisk MFA åbner **Brugere og adgang → Servicekonti**
+   og vælger **Opret servicekonto**. Gem engangsnøglen i operatørens
+   hemmelighedshåndtering. Den kan ikke hentes igen. Aktivér servicekontoens
+   workspace-adgang som medlem og giv den eksplicit rollen **Bogholder** i
+   den relevante virksomhed under **Ændr adgang**. Oprettelse af nøglen giver
+   ingen virksomhedsadgang i sig selv.
+2. Operatøren genstarter den konfigurerede server med de to sammenhørende flag
+   nedenfor. Processtyringen skal levere præcis én servicenøgle på stdin,
+   eventuelt efterfulgt af ét linjeskift, og derefter lukke inputstrømmen.
+   Nøglen må ikke stå i argumenter eller workspace-konfigurationen. Serveren
+   beholder kun nøglens opslagshash i hukommelsen. En ny proces kræver ny
+   injektion af nøglen. Flagene kan ikke kombineres med oprettelse,
+   backupverifikation eller gendannelse.
+
+   ```sh
+   rentemester-server --config /sti/til/server.json \
+     --listen 127.0.0.1:4310 --web-dir /sti/til/web \
+     --scheduled-worker --scheduled-service-key-stdin
+   ```
+
+3. Aktivér eller pausér den ønskede planlægning, og afklar først manglende
+   forekomster, kø og fejl. Under **Planlægning på serveren** vælges
+   **Gennemgå serverplan og servicekonto**. Gennemgå sælger, kunde, linjer,
+   interval og den faktisk konfigurerede servicekonto. Angiv begrundelse,
+   bekræft og vælg **Godkend automatisk udstedelse på serveren**.
+4. Browseren kan nu lukkes. Serveren undersøger højst 32 kandidater pr. omgang
+   og venter 30 sekunder efter en afsluttet omgang. Den udsteder kun dagens
+   normale forekomst. Manglende perioder, uafklarede forsøg og fejl kræver
+   gennemgang; dvale og genstart udløser ingen automatisk indhentning.
+5. **Tilbagekald serversamtykke og sæt på pause** fungerer også, hvis serveren
+   genstartes uden servicenøglen. Almindelig pause eller annullering ophæver
+   også serversamtykket. **Genoptag** giver kun appens tilstand tilbage;
+   serverkørsel kræver et nyt gennemgået serversamtykke.
+
+Hver udstedelse kontrollerer servicekontoens aktuelle nøgle og virksomhedsadgang
+samt den samtykkende ejers aktuelle verificering, MFA og ejeradgang. Rotation,
+tilbagekaldelse og ændring af adgang kan ikke genoplive et gammelt samtykke ved
+blot at tildele adgangen igen. Servicekontoen står som aktør på udstedelsen og
+kørslen; ejerens samtykke registreres særskilt. Et registreret samtykke er ikke
+en måling af, om serverarbejderen er i drift.
+
+Appens og serverens automatik kan ikke køre samme planlægning samtidigt.
+Den administrerede lokale desktopserver starter ikke denne arbejder. Læsning,
+login, genåbning og almindelig gendannelse aktiverer ingen arbejder.
+Signerede V3-backups bevarer historik og originaler, men gendannelse suspenderer
+serversamtykket uafhængigt af det almindelige gendannelsessamtykke. En ny
+servicekonto og et nyt gennemgået serversamtykke kræves efter gendannelse.
+
+CLI tilbyder `service-principals`, `create-service-principal`,
+`rotate-service-principal`, `revoke-service-principal`,
+`recover-service-principal`, `hosted-recurring-plan`,
+`consent-hosted-recurring` og `revoke-hosted-recurring`. De tilsvarende MCP-navne
+bruger understregninger. Skrivninger bruger eksplicit bekræftet JSON på stdin;
+kommandoernes hjælpetekst indeholder de præcise skemaer. Oprettelse og rotation
+returnerer bevidst engangsnøglen, så deres output skal behandles privat.
+Efter et mistet svar skal det oprindelige operations-ID afklares med
+`recover-service-principal`; oprettelse og rotation gentages ikke automatisk.

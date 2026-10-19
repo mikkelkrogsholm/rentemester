@@ -1,15 +1,15 @@
 {
   "goal": "Complete Rust server/web, GPUI local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "Full signed scheduler backup and explicit restored-owner continuation across web/CLI/MCP",
-  "code_revision": "29b6ae709c92d48d8932fa79c62da8244ebccccc",
+  "current_increment": "Explicit service-authorized hosted recurring issuance and signed V3 suspended recovery",
+  "code_revision": "9d4538c93bb3c4f102ecd3260d4879ac7b9dfe65",
   "spec_revision": "sha256:13a0386803d4f4e35af6fdf8a020cd851d759c4369c9d172a4e0f29459510cd0",
-  "state": "Actual Group52 PASS: all3 independently signed web/CLI/MCP archives verified after source/private-key deletion, each fresh normal-new-ownerMFA restore/reopen. Exact15historical scheduler events/5templates/originalJSON+PDF/2UUIDs preserved with imported consent/queue inactive. Browser plus separate CLI/MCP reviewed reconsent performs no issuance; explicit new catch-up+dispatch issues exactly1additional unposted/unsent original/PDF and duplicate period refuses. Each reopen preserves exact21event projection and source/new originals, prior ledger/bank/receipt boundaries; owned cleanup verified. Full signed V1/V2 rebackup/secondrestore/unresolved/corruptrefs covered by focused storage/host tests; not claimed as additional browser scenarios. SDK4/CLI3/MCP77(150tools), core8/backup16, web11+13, native189PASS/1existingignored and builds/strictClippy passed. Actual new native GUI remains unqualified due confirmed CUA pointer/scroll limitation. Hosted workers/provider effects/J06/full goal/epic672/J01-J07 remain OPEN.",
+  "state": "Actual Group53 PASS: normal web owner verification/MFA, web service creation/activation/company grant, CLI rotation/revoke and MCP inventory/lost-response recovery. Explicit reviewed hosted consent then browser-closed server issuance creates exactly one unposted/unsent JSON/PDF with distinct service actor and human grantor; restart with fresh key injection and ordinary MFA preserves exact state without replay. Signed V3 archive independently verified after source/private-key deletion, restored with fresh owner/normal MFA, preserves originals/history/UUID while service inventory is empty, old key refuses and hosted consent/queue stay inactive; closed-browser observation produces no generation. Owned cleanup verified. Web19PASS/build, native191PASS/1existingignored/build; core/server/SDK/CLI/MCP focused tests and strict checks pass,158tools. Actual native financial GUI remains unqualified after bounded keyboard/focus attempt. External delivery/other hosted jobs/J06/full mission/epic672/J01-J07 remain OPEN.",
   "issues_closed": [],
   "next": [
-    "Implement the next complete hosted scheduling/durable external-effect journey with explicit current authority, restart recovery and no blind replay; keep issue/post/send distinct.",
-    "Build J06 managed local/server handoff and explicit receipt/identity reconciliation after its durable-effect prerequisites; retain all completion gates.",
-    "Finish actual new native financial journeys when a supported interaction route is available; do not repeat the exhausted pointer/scroll route without new evidence."
+    "Complete remote HTTPS owner verification, invitations and password recovery by composing existing mail transport, secure cookies and recovery routes; verify a complete ordinary two-user lifecycle.",
+    "Deliver a standalone macOS bundle with clean staging and native artifact provenance, then qualify installed local and remote journeys.",
+    "Complete durable external effects and J06 managed local/server handoff with receipt/identity reconciliation; retain full mission completion gates."
   ],
   "preserve_unrelated_paths": [
     ".claude/settings.json",
@@ -19,7 +19,7 @@
     ".gitattributes"
   ],
   "all_goal_requirements_complete": false,
-  "previous_verified_increment": "Native active-app recurring dispatch and session lifecycle integration",
+  "previous_verified_increment": "Full signed scheduler backup and explicit restored-owner continuation across web/CLI/MCP",
   "evidence": {
     "combined_browser_log": "/tmp/rm-platform5-combined.log",
     "combined_browser_exit": 0,
@@ -611,6 +611,52 @@
         "Reduced-role authorization/corrupt chain/marker/original metadata refusal"
       ],
       "actual_native_gui": "unqualified; no repeated blind CUA attempts"
+    },
+    "platform53_hosted_actual": {
+      "report": "/tmp/rentemester-rust-reports/hosted-scheduled-integrated53-keyshape6.json",
+      "sha256": "e6ae3d07869aea280d1c47508ff5d8dcd1230a03ca255e8a089f2c7c2acb2aac",
+      "exit": 0,
+      "source_revision": "9d4538c93bb3c4f102ecd3260d4879ac7b9dfe65",
+      "runtime_artifacts": "/tmp/rm-platform53-runtime-artifacts-v2.json",
+      "artifacts": {
+        "server_binary": "7c5123cfde8d544159a41da71de14356d7017625482cbe428f488e79ccb9dce4",
+        "cli_binary": "bb1a72d8361996bcca17b29ede44bdb2aa9127d4bde550e6c5ebbb54d00975ef",
+        "mcp_binary": "622b481863e2dbc4ea5c5fc3426f25897a855b21f8ed33ff942835b3bc8608c8"
+      },
+      "actual_log": "/tmp/rm-platform53-hosted-keyshape6.log",
+      "scope": "Actual Group53 PASS: normal web owner verification/MFA, web service creation/activation/company grant, CLI rotation/revoke and MCP inventory/lost-response recovery. Explicit reviewed hosted consent then browser-closed server issuance creates exactly one unposted/unsent JSON/PDF with distinct service actor and human grantor; restart with fresh key injection and ordinary MFA preserves exact state without replay. Signed V3 archive independently verified after source/private-key deletion, restored with fresh owner/normal MFA, preserves originals/history/UUID while service inventory is empty, old key refuses and hosted consent/queue stay inactive; closed-browser observation produces no generation. Owned cleanup verified. Web19PASS/build, native191PASS/1existingignored/build; core/server/SDK/CLI/MCP focused tests and strict checks pass,158tools. Actual native financial GUI remains unqualified after bounded keyboard/focus attempt. External delivery/other hosted jobs/J06/full mission/epic672/J01-J07 remain OPEN.",
+      "signed_archive": {
+        "bytes": 2203901,
+        "sha256": "4748c260f6eb2441b61b977acb9f553c8d2d81dc0bc017a95855be85cf8ad59e",
+        "sourceAndSignerUnavailable": true,
+        "trustedPublicKeySha256": "1c056fd1c920a5326c55a846ac2a80462744bff4524d5a69961ef190a53be0af",
+        "independentlyVerifiedAfterSourceRemoval": true
+      },
+      "owned_cleanup_verified": true,
+      "fixture_absent": true,
+      "limitations": [
+        "No external delivery or production deployment",
+        "No actual new native financial GUI qualification",
+        "No Linux isolation/sleep/DST/J06/global archive single-use claim"
+      ],
+      "diagnosed_repairs": [
+        "Harness selects labeled combobox by role; no product label change.",
+        "Existing lifecycle rate limit retained; harness cooldown61s and known HTTP429 UI refusal preserves definite refusal versus unknown outcome.",
+        "Plaintext scan matches exact native rms_ plus64ASCIIletters; broad base64 pattern falsely matched adjacent SQLite metadata."
+      ]
+    },
+    "platform53_integrated_checks": {
+      "web_tests": "/tmp/rm-platform53-web-refusal-tests.log",
+      "web_result": "19PASS",
+      "web_build": "/tmp/rm-platform53-web-refusal-build.log",
+      "native_tests": "/tmp/rm-platform53-native-integrated-tests.log",
+      "native_result": "191PASS/1existingignored",
+      "native_build": "/tmp/rm-platform53-native-focus-build.log",
+      "runtime_build": "/tmp/rm-platform53-runtime-build.log",
+      "mcp_tests": "/tmp/rm-hosted-mcp-tests-final.log",
+      "mcp_result": "80PASS/158tools",
+      "native_actual": "/tmp/rentemester-rust-reports/native-keyboard53-evidence.json",
+      "native_financial_gui_qualified": false
     }
   },
   "verified_history": [
@@ -1009,13 +1055,19 @@
       "code_revision": "85d53411 plus scoped main lifecycle/global coordinator wiring",
       "spec_revision": "sha256:13a0386803d4f4e35af6fdf8a020cd851d759c4369c9d172a4e0f29459510cd0",
       "state": "Native active-app recurring dispatcher integrated across screen/company switches, with explicit reviewed activation only, fresh current owner/access/ledger/template checks, one shared manual/automatic lane, persist-before-POST unknown markers and exact invoice/PDF readback. Root full native suite186PASS/1existingignored; worker16focused tests/nativebuildPASS using exact root main wiring. Actual new native invoice journey remains unqualified because confirmed CUA pointer/scroll tooling fails. Prior actual Group48 source-free three-archive recovery and Group50 web/all9clients/restart PASS retained. Nonempty scheduler backup deliberately refuses pending full codec/restored-owner reconsent; hosted/providerworkers/J06 and full goal/epic672/J01-J07 OPEN."
+    },
+    {
+      "current_increment": "Full signed scheduler backup and explicit restored-owner continuation across web/CLI/MCP",
+      "code_revision": "29b6ae709c92d48d8932fa79c62da8244ebccccc",
+      "spec_revision": "sha256:13a0386803d4f4e35af6fdf8a020cd851d759c4369c9d172a4e0f29459510cd0",
+      "state": "Actual Group52 PASS: all3 independently signed web/CLI/MCP archives verified after source/private-key deletion, each fresh normal-new-ownerMFA restore/reopen. Exact15historical scheduler events/5templates/originalJSON+PDF/2UUIDs preserved with imported consent/queue inactive. Browser plus separate CLI/MCP reviewed reconsent performs no issuance; explicit new catch-up+dispatch issues exactly1additional unposted/unsent original/PDF and duplicate period refuses. Each reopen preserves exact21event projection and source/new originals, prior ledger/bank/receipt boundaries; owned cleanup verified. Full signed V1/V2 rebackup/secondrestore/unresolved/corruptrefs covered by focused storage/host tests; not claimed as additional browser scenarios. SDK4/CLI3/MCP77(150tools), core8/backup16, web11+13, native189PASS/1existingignored and builds/strictClippy passed. Actual new native GUI remains unqualified due confirmed CUA pointer/scroll limitation. Hosted workers/provider effects/J06/full goal/epic672/J01-J07 remain OPEN."
     }
   ],
   "active_work": [],
   "integrated_pending_browser": [
-    "Actual new native financial/scheduling GUI journeys still unqualified despite tested/built adapters; confirmed CUA pointer/scroll limitation retained.",
-    "Hosted scheduling/provider effects and J06 managed handoff incomplete.",
-    "Repeated signed backup after new scheduler consent and unresolved-attempt restore have focused signed storage/host coverage; Group52 browser acceptance covers source-V1 three independent fresh restores plus new V2 consent/issuance/reopen only."
+    "Actual native financial/scheduling GUI remains unqualified after bounded keyboard and focus-repair attempt; no blind repetition.",
+    "Other hosted jobs, external provider effects and J06 managed handoff remain incomplete.",
+    "Group53 actual V3 recovery uses one signed archive and one fresh restore; second restore/reconsent/new worker, sleep/DST, Linux isolation and global single-use are not qualified."
   ],
   "pending_deliveries": [],
   "completion_gates": [
