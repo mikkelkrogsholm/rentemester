@@ -1,6 +1,8 @@
 //! Origin-bound HTTP adapter shared by interactive and agent clients. No ledger logic.
 //! Supply a browser session's Cookie request-header value, never a Set-Cookie header.
 //! Authentication/enrollment is currently performed by the server's browser UI.
+mod accruals;
+pub use accruals::{AccrualMutation, MAX_ACCRUAL_BODY, accrual_body_schema};
 mod assets;
 pub use assets::{AssetMutation, MAX_ASSET_BODY, asset_body_schema};
 mod recurring_invoices;
