@@ -11,6 +11,8 @@ use rusqlite::Connection;
 use serde_json::Value;
 pub enum Action<'a> {
     Contacts,
+    DeleteCustomer(i64, bool),
+    DeleteVendor(i64, bool),
     Customers(&'a Customer),
     Vendor(&'a rentemester_storage::vendors::Vendor),
     UpdateVendor(i64, &'a Value),
@@ -94,7 +96,9 @@ pub fn execute(
     } = request;
     let permission = match action {
         Action::Contacts | Action::List => Permission::CompanyRead,
-        Action::Customers(_)
+        Action::DeleteCustomer(_, _)
+        | Action::DeleteVendor(_, _)
+        | Action::Customers(_)
         | Action::UpdateCustomer(_, _)
         | Action::Vendor(_)
         | Action::UpdateVendor(_, _) => Permission::CompanyMasterData,
@@ -119,6 +123,12 @@ pub fn execute(
         |tx, actor| {
             Ok(match action {
                 Action::Contacts => Output::Json(sales::contacts(tx, slug, today)?),
+                Action::DeleteCustomer(id, confirm) => Output::Json(
+                    rentemester_storage::contact_delete::delete(tx, id, false, confirm, actor)?,
+                ),
+                Action::DeleteVendor(id, confirm) => Output::Json(
+                    rentemester_storage::contact_delete::delete(tx, id, true, confirm, actor)?,
+                ),
                 Action::Vendor(input) => {
                     Output::Json(rentemester_storage::vendors::create(tx, input, actor)?)
                 }

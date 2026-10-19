@@ -134,11 +134,11 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
         .route("/api/companies/{slug}/vendors", post(sales::handle))
         .route(
             "/api/companies/{slug}/vendors/{id}",
-            axum::routing::patch(sales::handle),
+            axum::routing::patch(sales::handle).delete(sales::handle),
         )
         .route(
             "/api/companies/{slug}/customers/{id}",
-            axum::routing::patch(sales::handle),
+            axum::routing::patch(sales::handle).delete(sales::handle),
         )
         .route("/api/companies/{slug}/invoices", get(sales::handle))
         .route("/api/companies/{slug}/invoices/issue", post(sales::handle))

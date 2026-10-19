@@ -4,6 +4,8 @@ use rentemester_engine::sales_invoice::Input;
 use rentemester_storage::sales::{Customer, Post};
 enum Command {
     Contacts,
+    DeleteCustomer(i64, bool),
+    DeleteVendor(i64, bool),
     Customer(Customer),
     Vendor(rentemester_storage::vendors::Vendor),
     UpdateVendor(i64, Value),
@@ -48,7 +50,7 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
         let Ok(bytes) = to_bytes(request.into_body(), 256 * 1024).await else {
             return refused(StatusCode::PAYLOAD_TOO_LARGE, "invalid_input");
         };
-        if method == axum::http::Method::PATCH {
+        if method == axum::http::Method::PATCH || method == axum::http::Method::DELETE {
             let Some(id) = path
                 .rsplit('/')
                 .next()
@@ -57,15 +59,32 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
             else {
                 return refused(StatusCode::BAD_REQUEST, "invalid_input");
             };
-            match serde_json::from_slice::<Value>(&bytes) {
-                Ok(input) if input.is_object() => {
-                    if path.contains("/vendors/") {
-                        Command::UpdateVendor(id, input)
-                    } else {
-                        Command::UpdateCustomer(id, input)
-                    }
+            if method == axum::http::Method::DELETE {
+                #[derive(serde::Deserialize)]
+                #[serde(deny_unknown_fields)]
+                struct Confirmation {
+                    confirm: bool,
                 }
-                _ => return refused(StatusCode::BAD_REQUEST, "invalid_input"),
+                let input: Confirmation = match serde_json::from_slice(&bytes) {
+                    Ok(input) => input,
+                    Err(_) => return refused(StatusCode::BAD_REQUEST, "invalid_input"),
+                };
+                if path.contains("/vendors/") {
+                    Command::DeleteVendor(id, input.confirm)
+                } else {
+                    Command::DeleteCustomer(id, input.confirm)
+                }
+            } else {
+                match serde_json::from_slice::<Value>(&bytes) {
+                    Ok(input) if input.is_object() => {
+                        if path.contains("/vendors/") {
+                            Command::UpdateVendor(id, input)
+                        } else {
+                            Command::UpdateCustomer(id, input)
+                        }
+                    }
+                    _ => return refused(StatusCode::BAD_REQUEST, "invalid_input"),
+                }
             }
         } else if path.ends_with("/vendors") {
             match serde_json::from_slice(&bytes) {
@@ -125,8 +144,10 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
     };
     let key = match command {
         Command::Contacts => "contacts",
-        Command::Vendor(_) | Command::UpdateVendor(_, _) => "vendor",
-        Command::Customer(_) | Command::UpdateCustomer(_, _) => "customer",
+        Command::Vendor(_) | Command::UpdateVendor(_, _) | Command::DeleteVendor(_, _) => "vendor",
+        Command::Customer(_) | Command::UpdateCustomer(_, _) | Command::DeleteCustomer(_, _) => {
+            "customer"
+        }
         Command::List => "invoices",
         Command::Post(_) => "posting",
         Command::Settle(_) => "settlement",
@@ -142,6 +163,8 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
         let mut owner = state.native.owner.lock().map_err(|_| ())?;
         let action = match &command {
             Command::Contacts => Action::Contacts,
+            Command::DeleteCustomer(id, confirm) => Action::DeleteCustomer(*id, *confirm),
+            Command::DeleteVendor(id, confirm) => Action::DeleteVendor(*id, *confirm),
             Command::Vendor(input) => Action::Vendor(input),
             Command::UpdateVendor(id, input) => Action::UpdateVendor(*id, input),
             Command::Customer(i) => Action::Customers(i),
