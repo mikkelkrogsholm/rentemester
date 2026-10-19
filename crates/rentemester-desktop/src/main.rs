@@ -28,6 +28,8 @@ mod mileage;
 mod mileage_state;
 mod scheduled_recurring;
 mod scheduled_recurring_state;
+mod scheduled_dispatcher;
+mod scheduled_dispatcher_state;
 mod eliminations;
 mod eliminations_state;
 mod consolidation;
@@ -230,6 +232,7 @@ struct Desktop {
     periods: Option<Entity<periods::Periods>>,
     backup: Option<Entity<backup::Backup>>,
     scheduled_recurring: Option<Entity<scheduled_recurring::ScheduledRecurring>>,
+    scheduled_dispatcher: Entity<scheduled_dispatcher::ScheduledDispatcher>,
     eliminations: Option<Entity<eliminations::Eliminations>>,
     consolidation: Option<Entity<consolidation::Consolidation>>,
     intercompany: Option<Entity<intercompany::Intercompany>>,
@@ -330,6 +333,7 @@ impl Desktop {
             periods: None,
             backup: None,
             scheduled_recurring: None,
+            scheduled_dispatcher: cx.new(scheduled_dispatcher::ScheduledDispatcher::new),
             eliminations: None,
             consolidation: None,
             intercompany: None,
@@ -426,6 +430,7 @@ impl Desktop {
         if self.busy {
             return;
         }
+        self.scheduled_dispatcher.update(cx, |dispatcher, cx| dispatcher.invalidate(cx));
         self.busy = true;
         self.pending = None;
         self.enrollment = None;
@@ -507,6 +512,7 @@ impl Desktop {
         if self.busy {
             return;
         }
+        self.scheduled_dispatcher.update(cx, |dispatcher, cx| dispatcher.invalidate(cx));
         self.session = None;
         self.pending = None;
         self.enrollment = None;
@@ -584,6 +590,7 @@ impl Desktop {
         cx.notify();
     }
     fn refresh(&mut self, session: Arc<Session>, cx: &mut Context<Self>) {
+        self.scheduled_dispatcher.update(cx, |dispatcher, cx| dispatcher.invalidate(cx));
         self.session = Some(session.clone());
         self.busy = true;
         self.status = "Login godkendt. Henter virksomheder…".into();
@@ -621,6 +628,7 @@ impl Desktop {
         if self.busy {
             return;
         }
+        self.scheduled_dispatcher.update(cx, |dispatcher, cx| dispatcher.invalidate(cx));
         self.pending = None;
         self.enrollment = None;
         self.session = None;
@@ -733,6 +741,7 @@ impl Render for Desktop {
             .bg(cx.theme().background)
             .text_color(cx.theme().foreground)
             .child(div().text_2xl().child("Rentemester"))
+            .child(self.scheduled_dispatcher.clone())
             .child(div().child(if self.local_mode {
                 "Skrivebord · lokal virksomhed"
             } else {
@@ -1201,7 +1210,12 @@ impl Render for Desktop {
                             Ok(local) => local,
                             Err(error) => { this.status = error; cx.notify(); return; }
                         };
-                        this.scheduled_recurring = Some(cx.new(|cx| scheduled_recurring::ScheduledRecurring::new(session, origin, company, local, window, cx)));
+                        let dispatcher = this.scheduled_dispatcher.clone();
+                        this.scheduled_recurring = Some(cx.new(|cx| {
+                            let mut screen = scheduled_recurring::ScheduledRecurring::new(session, origin, company, local, window, cx);
+                            screen.bind_dispatcher(dispatcher);
+                            screen
+                        }));
                         cx.notify();
                     }
                 })));

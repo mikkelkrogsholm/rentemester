@@ -94,16 +94,22 @@ Udstedelse danner fakturaoriginal og PDF, uden bogføring eller afsendelse.
 Status og genåbning starter ingen kørsler. Det faktiske web-/klientforløb med to MFA-brugere består også efter genstart:
 fire udstedte originaler og PDF’er, præcis kø og spring-over, korrekt
 adgangsafvisning og et accepteret kald med mistet svar uden gentagelse.
-Alle fire fakturaer er ubogførte og usendte; selskabsposteringerne er uændrede. Native kø-/reviewkontroller er integreret;
-native automatisk dispatcher er næste trin.
+Alle fire fakturaer er ubogførte og usendte; selskabsposteringerne er uændrede. Desktopappen har nu også automatisk kørsel i den aktive app-session efter
+gennemgået aktivering eller særskilt bekræftet start. Kørslen fortsætter ved
+skærm- og virksomhedsskift; nyt login, ændret forbindelse og Stop ophæver
+den lokale aktivering. Manuelle og automatiske handlinger deler én spærring.
+Uafklarede forsøg bevares til manuel kontrol, også efter genstart, og succes
+kræver genlæsning af den præcise faktura og dens PDF. Native tests og bygning
+består; dette nye fakturaforløb er endnu ikke verificeret i det faktiske
+desktopvindue på grund af den dokumenterede klik-/scrollbegrænsning.
 
 En ikke-tom kø afvises i backup, indtil fuld historik og nye adgangsrettigheder efter
 gendannelse er understøttet; historikken udelades aldrig. Hostede arbejdere,
 eksterne leverancer og administreret flytning mellem lokal app og server
 er fortsat uafsluttede dele af målet.
 
-Den samlede omskrivning er fortsat åben. Næste levering samler de faktiske
-rapportforløb og fuld backup af deres kilder.
+Den samlede omskrivning er fortsat åben. Næste levering er fuld backup af
+planlægningshistorikken og en ny ejers eksplicitte godkendelse efter gendannelse.
 Ejerobservationer bliver ikke automatisk til en koncernkonfiguration.
 
 ## Prøv med syntetiske data

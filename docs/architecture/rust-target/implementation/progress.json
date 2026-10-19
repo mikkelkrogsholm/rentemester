@@ -1,14 +1,14 @@
 {
   "goal": "Complete Rust server/web, GPUI local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "Durable scheduled generation, active-app automation and source-free group reporting recovery",
-  "code_revision": "412a1e48 plus scoped web/native integration and nonempty-queue backup refusal",
+  "current_increment": "Native active-app recurring dispatch and session lifecycle integration",
+  "code_revision": "85d53411 plus scoped main lifecycle/global coordinator wiring",
   "spec_revision": "sha256:13a0386803d4f4e35af6fdf8a020cd851d759c4369c9d172a4e0f29459510cd0",
-  "state": "Actual Group48 allthree independent signed archives passed source-free verify/fresh normal-MFA restore/two reopens: exact group report/history/originals, then intentional freshpost correctlyblocks staleproof. Scheduled generation integrated across Rust backend, React active-app driver,149toolclients andnative queue/review. Actual Group50 ordinarytwoMFA UI+all9CLI/MCPops/restart PASS:4issuedJSON+PDF originals,unposted/unsent,catchup/skip,consent/accessrefusal,knownfailure andoneacceptedlostresponse withoutreplay,unchangedjournals. Root6core+1backup+16view+3driver+178native tests andruntime/web/native builds PASS;1existingnativeignored. Native active-app dispatcher, scheduler signedhistory/restoredauthority,hosted/providerworkers andmanagedJ06handoff remain OPEN; nonemptyqueue backup deliberatelyrefuses pendingfullcodec. Fullgoal/epic672/J01-J07 remain open.",
+  "state": "Native active-app recurring dispatcher integrated across screen/company switches, with explicit reviewed activation only, fresh current owner/access/ledger/template checks, one shared manual/automatic lane, persist-before-POST unknown markers and exact invoice/PDF readback. Root full native suite186PASS/1existingignored; worker16focused tests/nativebuildPASS using exact root main wiring. Actual new native invoice journey remains unqualified because confirmed CUA pointer/scroll tooling fails. Prior actual Group48 source-free three-archive recovery and Group50 web/all9clients/restart PASS retained. Nonempty scheduler backup deliberately refuses pending full codec/restored-owner reconsent; hosted/providerworkers/J06 and full goal/epic672/J01-J07 OPEN.",
   "issues_closed": [],
   "next": [
-    "Implement signed scheduler-history coverage and explicit restored authority so enabling automation retains full backup/recovery.",
-    "Complete GPUI active-app recurring dispatcher; real native owner journey qualification still has the confirmed pointer/scroll tooling gap.",
+    "Implement full signed scheduler history coverage and explicit restored-owner reconsent; bounded read-only contract saved at /tmp/rm-platform51-scheduler-recovery-contract.md.",
+    "Complete actual new native financial journeys when a supported interaction route is available; preserve confirmed pointer/scroll tooling limitation and do not repeat blind attempts.",
     "Continue hosted schedulers/durable external effects and J06 managed handoff/receipt reconciliation; retain all original completion_gates."
   ],
   "preserve_unrelated_paths": [
@@ -562,6 +562,18 @@
     "platform50_graphify": {
       "ast": "/tmp/rm-platform50-graphify.log (PASS)",
       "semantic": "Focused rust-server.md and progress.json semantic refresh; prior concepts retained; unrelated dirty user docs not refreshed"
+    },
+    "native_active_recurring_dispatcher": {
+      "worker_commit": "05eb8f18",
+      "integrated_commit": "85d53411",
+      "readiness": "/tmp/rentemester-rust-reports/native-active-recurring-readiness.json",
+      "root_tests": "/tmp/rm-platform51-native-tests.log",
+      "root_result": "186 passed;0failed;1existingignored",
+      "worker_focused_tests": "/tmp/rm-native-dispatcher-tests-final.log",
+      "worker_build": "/tmp/rm-native-dispatcher-build.log",
+      "scope": "Main global Entity retained across screens/companies; invalidated at connection/password login/new session/reset/local stop. No activation on constructor/status/reopen/reconnect; explicit reviewed full source only. Shared RAII lane includes manual send/archive. Unknown outcomes persist; no autoreplay.",
+      "actual_gui": "unqualified; known CUA pointer/scroll noWindowsAvailable; prior managed-local setup/normalMFA/trialbalance proof retained",
+      "next_contract": "/tmp/rm-platform51-scheduler-recovery-contract.md"
     }
   },
   "verified_history": [
@@ -948,13 +960,19 @@
         "/tmp/rm-platform43-native-tests.log",
         "/tmp/rm-platform43-native-build.log"
       ]
+    },
+    {
+      "current_increment": "Durable scheduled generation, active-app automation and source-free group reporting recovery",
+      "code_revision": "412a1e48 plus scoped web/native integration and nonempty-queue backup refusal",
+      "spec_revision": "sha256:13a0386803d4f4e35af6fdf8a020cd851d759c4369c9d172a4e0f29459510cd0",
+      "state": "Actual Group48 allthree independent signed archives passed source-free verify/fresh normal-MFA restore/two reopens: exact group report/history/originals, then intentional freshpost correctlyblocks staleproof. Scheduled generation integrated across Rust backend, React active-app driver,149toolclients andnative queue/review. Actual Group50 ordinarytwoMFA UI+all9CLI/MCPops/restart PASS:4issuedJSON+PDF originals,unposted/unsent,catchup/skip,consent/accessrefusal,knownfailure andoneacceptedlostresponse withoutreplay,unchangedjournals. Root6core+1backup+16view+3driver+178native tests andruntime/web/native builds PASS;1existingnativeignored. Native active-app dispatcher, scheduler signedhistory/restoredauthority,hosted/providerworkers andmanagedJ06handoff remain OPEN; nonemptyqueue backup deliberatelyrefuses pendingfullcodec. Fullgoal/epic672/J01-J07 remain open."
     }
   ],
   "active_work": [],
   "integrated_pending_browser": [
-    "GPUI active-app dispatcher and new business-screen actual GUI qualification incomplete",
-    "Nonempty scheduler backup explicitly refused pending full codec/restored-authority policy",
-    "Hosted scheduling/provider effects and J06 managed handoff incomplete"
+    "Native active-app dispatcher implemented/tested/built; actual new native invoice and other business-screen GUI acceptance remains unqualified.",
+    "Nonempty scheduler backup explicitly refused pending full signed history codec/restored-authority policy.",
+    "Hosted scheduling/provider effects and J06 managed handoff incomplete."
   ],
   "pending_deliveries": [],
   "completion_gates": [
