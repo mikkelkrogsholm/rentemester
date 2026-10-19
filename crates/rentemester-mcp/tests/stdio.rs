@@ -146,7 +146,7 @@ fn lifecycle_negotiation_discovery_notifications_and_validation() {
     assert_eq!(values[2]["error"]["code"], -32002);
     assert_eq!(values[3]["result"], json!({}));
     let tools = values[4]["result"]["tools"].as_array().unwrap();
-    assert_eq!(tools.len(), 48);
+    assert_eq!(tools.len(), 55);
     let write = tools.iter().find(|v| v["name"] == "post_journal").unwrap();
     assert_eq!(
         write["inputSchema"]["required"],
@@ -810,6 +810,114 @@ fn annual_tool_rejects_bad_dates_and_extra_mutation_fields_without_http() {
         let values = parsed(&run(
             "http://127.0.0.1:9",
             &[init("2025-11-25"), ready(), call(2, "annual_report", args)],
+        ));
+        assert_eq!(values[1]["error"]["code"], -32602);
+    }
+}
+
+#[test]
+fn reviewed_submit_is_exact_and_read_tools_are_discoverable() {
+    let (origin, request, task) = http(
+        "HTTP/1.1 200 OK\r\nContent-Length: 68\r\nConnection:close\r\n\r\n{\"ok\":true,\"accountingDraft\":{\"id\":\"bank-one\",\"status\":\"submitted\"}}",
+    );
+    let body = "{ \"expectedEventHash\": \"server-hash\" }\n";
+    let values = parsed(&run(
+        &origin,
+        &[
+            init("2025-11-25"),
+            ready(),
+            call(
+                2,
+                "submit_draft",
+                json!({"company":"synthetic","draftId":"bank-one","body":body,"confirm":true}),
+            ),
+        ],
+    ));
+    assert_eq!(
+        values[1]["result"]["structuredContent"]["data"]["accountingDraft"]["status"],
+        "submitted"
+    );
+    let wire = String::from_utf8(request.recv().unwrap()).unwrap();
+    assert!(
+        wire.starts_with(
+            "POST /api/companies/synthetic/accounting-drafts/bank-one/submit HTTP/1.1"
+        )
+    );
+    assert!(wire.ends_with(body));
+    assert!(!wire.contains("idempotency"));
+    task.join().unwrap();
+    let values = parsed(&run(
+        "http://127.0.0.1:9",
+        &[
+            init("2025-11-25"),
+            ready(),
+            json!({"jsonrpc":"2.0","id":2,"method":"tools/list"}),
+        ],
+    ));
+    let tools = values[1]["result"]["tools"].as_array().unwrap();
+    for name in ["reviewed_bank", "accounting_drafts", "posting_rules"] {
+        assert_eq!(
+            tools.iter().find(|t| t["name"] == name).unwrap()["annotations"]["readOnlyHint"],
+            true
+        );
+    }
+    for name in [
+        "create_bank_draft",
+        "submit_draft",
+        "reject_draft",
+        "approve_draft",
+    ] {
+        assert_eq!(
+            tools.iter().find(|t| t["name"] == name).unwrap()["annotations"]["readOnlyHint"],
+            false
+        );
+    }
+}
+#[test]
+fn reviewed_tools_reject_attribution_path_escape_and_mixed_selectors() {
+    let values = parsed(&run(
+        "http://127.0.0.1:9",
+        &[
+            init("2025-11-25"),
+            ready(),
+            call(
+                2,
+                "create_bank_draft",
+                json!({"company":"synthetic","draftId":null,"body":"{}","confirm":true}),
+            ),
+        ],
+    ));
+    assert_eq!(values[1]["error"]["code"], -32602);
+
+    for (name, args) in [
+        (
+            "reviewed_bank",
+            json!({"company":"synthetic","confirm":true}),
+        ),
+        (
+            "posting_rules",
+            json!({"company":"synthetic","year":"2026"}),
+        ),
+        (
+            "submit_draft",
+            json!({"company":"synthetic","body":"{}","confirm":true}),
+        ),
+        (
+            "approve_draft",
+            json!({"company":"synthetic","draftId":"../bad","body":"{}","confirm":true}),
+        ),
+        (
+            "approve_draft",
+            json!({"company":"synthetic","draftId":"bank-one","body":"{}","confirm":true,"actor":"reviewer"}),
+        ),
+        (
+            "create_bank_draft",
+            json!({"company":"synthetic","draftId":"bank-one","body":"{}","confirm":true}),
+        ),
+    ] {
+        let values = parsed(&run(
+            "http://127.0.0.1:9",
+            &[init("2025-11-25"), ready(), call(2, name, args)],
         ));
         assert_eq!(values[1]["error"]["code"], -32602);
     }

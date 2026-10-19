@@ -1,6 +1,8 @@
 //! Origin-bound HTTP adapter shared by interactive and agent clients. No ledger logic.
 //! Supply a browser session's Cookie request-header value, never a Set-Cookie header.
 //! Authentication/enrollment is currently performed by the server's browser UI.
+mod reviewed_bookkeeping;
+pub use reviewed_bookkeeping::{ReviewedRead,ReviewedMutation,reviewed_body_schema,valid_draft_id};
 mod annual_reports;
 pub use annual_reports::valid_annual_bounds;
 mod auth;

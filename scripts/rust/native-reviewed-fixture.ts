@@ -6,6 +6,7 @@ import { createHmac, randomUUID } from "node:crypto";
 import { chromium, type Page } from "@playwright/test";
 import { hashPassword } from "../../node_modules/better-auth/dist/crypto/password.mjs";
 import { checkNativeReviewedBookkeeping } from "./check-native-reviewed-bookkeeping";
+import { checkNativeReviewedClients } from "./check-native-reviewed-clients";
 const ownerPassword = "synthetic-password-123", reviewerPassword = "synthetic-reviewer-password-456";
 const evidencePath = "/tmp/rentemester-rust-reports/native-reviewed-bookkeeping.json";
 if (process.argv.includes("--seed")) {
@@ -58,11 +59,13 @@ if (process.argv.includes("--seed")) {
    const replay=await reviewer.request.post(`${base}/api/companies/synthetic/accounting-drafts/${saved.draftId}/approve-and-post`,{headers:{origin:base},data:{expectedEventHash:saved.submittedHash,confirm:true}});if(!replay.ok()||(await replay.json()).accountingDraft.journalEntryId!==saved.journalEntryId)throw new Error("Restart exact receipt replay failed");
    const journalResponse=await reviewer.request.get(`${base}/api/companies/synthetic/journal`);const journal=(await journalResponse.json()).journal;
    if(journal.entries.length!==1||journal.entries[0].id!==saved.journalEntryId)throw new Error("Isolated restart did not preserve exactly one journal effect");saved.exactJournalCount=journal.entries.length;
+   if(process.env.RM_REVIEW_CLIENTS === "1") await checkNativeReviewedClients(author,reviewer,base,{bankTransactionId:1,counterAccount:"8000"},saved);
    delete saved.ownerRecovery;delete saved.reviewerRecovery;writeFileSync(evidencePath,JSON.stringify(saved,null,2),{mode:0o600});console.log("PASS: both distinct native password/MFA logins and exact posting receipt persist across owned server restart");
   }else{
    await author.goto(process.env.RM_REVIEW_VERIFY!);const ownerRecovery=await enrollAndLogin(author,"owner@example.invalid",ownerPassword);const reviewerRecovery=await enrollAndLogin(reviewer,"reviewer@example.invalid",reviewerPassword);
-   const result=await checkNativeReviewedBookkeeping(author,reviewer,base,{bankTransactionId:1,counterAccount:"8000"});if(failures.length)throw new Error("Browser page errors during synthetic journey");
-   mkdirSync("/tmp/rentemester-rust-reports",{recursive:true});await reviewer.screenshot({path:"/tmp/rentemester-rust-reports/native-reviewed-bookkeeping.png",fullPage:true});writeFileSync(evidencePath,JSON.stringify({...result,ownerRecovery,reviewerRecovery,twoDistinctNativeMfaLogins:true},null,2),{mode:0o600});
+   const journey=process.env.RM_REVIEW_CLIENTS === "1" ? checkNativeReviewedClients : checkNativeReviewedBookkeeping;
+   const result=await journey(author,reviewer,base,{bankTransactionId:1,counterAccount:"8000"});if(failures.length)throw new Error("Browser page errors during synthetic journey");
+   mkdirSync("/tmp/rentemester-rust-reports",{recursive:true});await reviewer.screenshot({path:"/tmp/rentemester-rust-reports/native-reviewed-bookkeeping.png",fullPage:true});writeFileSync(evidencePath,JSON.stringify({...result,ownerRecovery,reviewerRecovery,twoDistinctNativeMfaLogins:true,clientJourney:process.env.RM_REVIEW_CLIENTS === "1"},null,2),{mode:0o600});
   }
  }finally{await browser.close();}
 }
