@@ -97,6 +97,9 @@ fn evidence(tx: &Transaction<'_>, guard: &mut NamespaceGuard) -> Result<Vec<Valu
             result.push(json!({"bankTransactionId":id,"error":error.message}));
         }
     }
+    if let Err(error) = crate::archive_import::verify_physical(tx, guard) {
+        result.push(json!({"source":"closed-history-archive","error":error.message}));
+    }
     Ok(result)
 }
 pub fn execute(
