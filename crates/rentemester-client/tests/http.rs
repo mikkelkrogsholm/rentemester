@@ -552,3 +552,33 @@ async fn commitment_selectors_confirmation_and_canonical_evidence_are_strict() {
         Err(Error::InvalidInput(_))
     ));
 }
+
+#[tokio::test]
+async fn elimination_exact_transport_all_operations_preserves_raw_body() {
+ use rentemester_client::EliminationMutation::*;
+ for (action,suffix) in [(Propose,"propose"),(Approve,"approve"),(Reject,"reject"),(Apply,"apply"),(Reverse,"reverse")] {
+  let(origin,request,task)=server(OK);let api=ApiClient::new(&origin,true,Some("session=secret".into())).unwrap();
+  let bytes=if suffix=="propose"{format!(r#"{{ "id":"own-elimination","mappingId":"own-map","asOf":"2026-06-01","evidenceRefs":["reviewed provenance"],"expectedPayloadHash":"{}","confirm":true }}"#,"a".repeat(64))}else{format!(r#"{{ "eliminationId":"own-elimination","payloadHash":"{}","confirm":true }}"#,"a".repeat(64))};
+  api.mutate_elimination("synthetic",action,bytes.as_bytes().to_vec(),true).await.unwrap();let wire=request.recv().unwrap();assert!(wire.starts_with(format!("POST /api/companies/synthetic/eliminations/{suffix} HTTP/1.1").as_bytes()));assert!(wire.ends_with(bytes.as_bytes()));assert_eq!(task.join().unwrap(),1);
+ }
+ for(path,global)in[("/api/companies/synthetic/eliminations",false),("/api/group-eliminations?asOf=2026-06-01",true)]{let(origin,request,task)=server(OK);let api=ApiClient::new(&origin,true,None).unwrap();if global{api.group_eliminations("2026-06-01").await.unwrap();}else{api.eliminations("synthetic").await.unwrap();}assert!(request.recv().unwrap().starts_with(format!("GET {path} HTTP/1.1").as_bytes()));assert_eq!(task.join().unwrap(),1);}
+}
+#[tokio::test]
+async fn elimination_readonly_plan_has_no_confirm_and_preserves_complete_versioned_json(){
+ let source=r#"{"ok":true,"plan":{"payload":{"version":2,"amountOre":"900719925474099301","left":{"creditOre":"0","debitOre":"900719925474099301","position":"payable"},"futureEvidence":{"source":"unchanged"}},"payloadHash":"actual"}}"#;
+ let response=Box::leak(format!("HTTP/1.1 200 OK\r\nContent-Length:{}\r\nConnection:close\r\n\r\n{source}",source.len()).into_boxed_str());let(origin,request,task)=server(response);let api=ApiClient::new(&origin,true,None).unwrap();let bytes=br#"{ "id":"own","mappingId":"own-map","asOf":"2026-06-01","evidenceRefs":["explicit"] }"#;
+ assert_eq!(api.elimination_plan("synthetic",bytes.to_vec()).await.unwrap(),serde_json::from_str::<serde_json::Value>(source).unwrap());let wire=request.recv().unwrap();assert!(wire.starts_with(b"POST /api/companies/synthetic/eliminations/plan HTTP/1.1"));assert!(wire.ends_with(bytes));assert_eq!(task.join().unwrap(),1);
+}
+#[tokio::test]
+async fn elimination_plan_failure_is_readonly_but_write_outcome_unknown_no_retry(){
+ use rentemester_client::EliminationMutation;
+ for plan in [true,false]{let(origin,request,task)=server("HTTP/1.1 503 Service Unavailable\r\nContent-Length:0\r\nConnection:close\r\n\r\n");let api=ApiClient::new(&origin,true,None).unwrap();let result=if plan{api.elimination_plan("synthetic",br#"{"id":"own","mappingId":"own-map","asOf":"2026-06-01","evidenceRefs":["explicit"]}"#.to_vec()).await}else{api.mutate_elimination("synthetic",EliminationMutation::Apply,format!(r#"{{"eliminationId":"own","payloadHash":"{}","confirm":true}}"#,"a".repeat(64)).into_bytes(),true).await};assert_eq!(result,Err(if plan{Error::Refused{status:503}}else{Error::OutcomeUnknown}));request.recv().unwrap();assert_eq!(task.join().unwrap(),1);}
+}
+#[tokio::test]
+async fn elimination_confirmation_bounds_unknown_fields_and_context_fail_before_network(){
+ use rentemester_client::{EliminationMutation,MAX_ELIMINATION_BODY};let api=ApiClient::new("http://127.0.0.1:9",true,None).unwrap();
+ assert!(matches!(api.group_eliminations("").await,Err(Error::InvalidInput(_))));
+ for bytes in [b"{}".to_vec(),vec![b' ';MAX_ELIMINATION_BODY+1],br#"{"eliminationId":"own","payloadHash":"hash","confirm":true,"actor":"forged"}"#.to_vec()] {assert!(matches!(api.mutate_elimination("synthetic",EliminationMutation::Apply,bytes,true).await,Err(Error::InvalidInput(_))));}
+ assert!(matches!(api.mutate_elimination("synthetic",EliminationMutation::Apply,b"{}".to_vec(),false).await,Err(Error::InvalidInput(_))));
+ assert!(matches!(api.elimination_plan("synthetic",br#"{"id":"own","mappingId":"map","asOf":"2026-06-01","evidenceRefs":["ref"],"confirm":true}"#.to_vec()).await,Err(Error::InvalidInput(_))));
+}

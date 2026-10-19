@@ -365,3 +365,6 @@ pub use intercompany::{IntercompanyMutation,MAX_INTERCOMPANY_BODY,intercompany_b
 
 mod consolidation;
 pub use consolidation::{ConsolidationMutation,MAX_CONSOLIDATION_BODY,MAX_CONSOLIDATION_PROPOSE_BODY,consolidation_body_schema};
+
+mod elimination;
+pub use elimination::{EliminationMutation,MAX_ELIMINATION_BODY,elimination_plan_schema,elimination_body_schema};

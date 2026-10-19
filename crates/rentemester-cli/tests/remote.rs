@@ -457,3 +457,24 @@ fn commitment_commands_expose_proofs_and_reject_contextual_selector_or_confirmat
         assert!(!String::from_utf8_lossy(&output.stdout).contains("outcome_unknown"));
     }
 }
+
+#[test]
+fn elimination_help_declares_exact_proof_and_rejects_contextual_selector_confirmation(){
+ let output=Command::new(BIN).args(["remote","--help"]).output().unwrap();let help:serde_json::Value=serde_json::from_slice(&output.stdout).unwrap();
+ for command in ["eliminations","group-eliminations","plan-elimination","propose-elimination","approve-elimination","reject-elimination","apply-elimination","reverse-elimination"]{assert!(help["commands"].as_array().unwrap().contains(&serde_json::json!(command)));}
+ assert_eq!(help["eliminations"]["bodySchemas"]["propose"]["properties"]["expectedPayloadHash"]["minLength"],64);
+ assert!(help["eliminations"]["bodySchemas"]["plan"]["properties"].get("confirm").is_none());
+ for args in [vec!["plan-elimination","--company","synthetic","--confirm"],vec!["propose-elimination","--company","synthetic"],vec!["eliminations","--company","synthetic","--year","2026"],vec!["group-eliminations","--company","synthetic","--as-of","2026-06-01"],vec!["apply-elimination","--company","synthetic","--id","forged","--confirm"]]{let output=Command::new(BIN).args(["remote","--server","http://127.0.0.1:9","--allow-loopback-http"]).args(args).output().unwrap();assert_eq!(output.status.code(),Some(2));assert!(!String::from_utf8_lossy(&output.stdout).contains("outcome_unknown"));}
+}
+
+#[cfg(unix)]
+#[test]
+fn elimination_cli_exact_plan_body_no_confirmation_and_unknown_write(){
+ use std::{os::unix::fs::OpenOptionsExt,process::Stdio};
+ for plan in [true,false]{
+  let path=std::env::temp_dir().join(format!("rm-elimination-cli-{}-{plan}.cookie",std::process::id()));let mut file=std::fs::OpenOptions::new().write(true).create_new(true).mode(0o600).open(&path).unwrap();file.write_all(b"session=never-print-this").unwrap();
+  let body=if plan{r#"{ "id":"own","mappingId":"map","asOf":"2026-06-01","evidenceRefs":["ref"] }"#.to_string()}else{format!(r#"{{ "eliminationId":"own","payloadHash":"{}","confirm":true }}"#,"a".repeat(64))};
+  let listener=TcpListener::bind("127.0.0.1:0").unwrap();let origin=format!("http://{}",listener.local_addr().unwrap());let expected=body.clone();let task=thread::spawn(move||{let(mut stream,_)=listener.accept().unwrap();stream.set_read_timeout(Some(std::time::Duration::from_secs(3))).unwrap();let mut bytes=vec![];loop{let mut chunk=[0;4096];let n=stream.read(&mut chunk).unwrap();if n==0{break;}bytes.extend_from_slice(&chunk[..n]);if bytes.ends_with(expected.as_bytes()){break;}}let suffix=if plan{"plan"}else{"apply"};assert!(bytes.starts_with(format!("POST /api/companies/synthetic/eliminations/{suffix} HTTP/1.1").as_bytes()));assert!(bytes.ends_with(expected.as_bytes()));stream.write_all(b"HTTP/1.1 503 Service Unavailable\r\nContent-Length:0\r\nConnection:close\r\n\r\n").unwrap();});
+  let mut command=Command::new(BIN);command.args(["remote",if plan{"plan-elimination"}else{"apply-elimination"},"--server",&origin,"--allow-loopback-http","--cookie-file",path.to_str().unwrap(),"--company","synthetic"]);if !plan{command.arg("--confirm");}let mut child=command.stdin(Stdio::piped()).stdout(Stdio::piped()).spawn().unwrap();child.stdin.take().unwrap().write_all(body.as_bytes()).unwrap();let output=child.wait_with_output().unwrap();std::fs::remove_file(path).unwrap();assert_eq!(output.status.code(),Some(1));let value:serde_json::Value=serde_json::from_slice(&output.stdout).unwrap();assert!(value.to_string().contains(if plan{"server_refused"}else{"outcome_unknown"}));assert!(!value.to_string().contains("never-print-this"));task.join().unwrap();
+ }
+}

@@ -15,6 +15,7 @@ mod workspace_inbox;
 mod corporate_records;
 mod ownership;
 mod intercompany;
+mod elimination;
 mod consolidation;
 mod accruals;
 mod assets;

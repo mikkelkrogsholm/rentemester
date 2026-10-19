@@ -145,6 +145,7 @@ pub fn list() -> Value {
     tools.extend(crate::corporate_records::tools());
     tools.extend(crate::ownership::tools());
     tools.extend(crate::intercompany::tools());
+    tools.extend(crate::elimination::tools());
     tools.extend(crate::consolidation::tools());
     tools.extend(crate::privacy::tools());
     tools.extend(crate::company_setup::tools());
@@ -221,6 +222,7 @@ pub async fn call(api: &ApiClient, name: &str, args: Value) -> Result<Value, &'s
         name if crate::privacy::accepts(name) => crate::privacy::call(api,name,args).await?,
         name if crate::budget::accepts(name) => crate::budget::call(api,name,args).await?,
         name if crate::consolidation::accepts(name)=>crate::consolidation::call(api,name,args).await?,
+        name if crate::elimination::accepts(name)=>crate::elimination::call(api,name,args).await?,
         name if crate::intercompany::accepts(name)=>crate::intercompany::call(api,name,args).await?,
         name if crate::ownership::accepts(name)=>crate::ownership::call(api,name,args).await?,
         name if crate::corporate_records::accepts(name)=>crate::corporate_records::call(api,name,args).await?,
