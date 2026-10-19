@@ -16,6 +16,11 @@ type Intent = { action: "send"; body: InvoiceEmailSend; row?: undefined } |
   { action: "retry"; body: InvoiceEmailRetry; row: InvoiceEmailRow } |
   { action: "reconcile"; body: InvoiceEmailReconcile; row: InvoiceEmailRow };
 const labels = { accepted: "SMTP-serveren har accepteret mailen", refused: "Mailen blev afvist", unknown: "Udfaldet er uafklaret" };
+function deliveryLabel(row: InvoiceEmailRow) {
+  if (row.legacy) return "Historisk registreret afsendelse";
+  if (row.humanResolution === true) return row.state === "accepted" ? "Accepteret efter ejerens afklaring" : "Ikke accepteret ifølge ejerens afklaring";
+  return labels[row.state];
+}
 export function knownInvoiceEmailRefusal(error: unknown) {
   return error instanceof ApiError && error.status >= 400 && error.status < 500 && error.status !== 408 && error.code !== "delivery_unknown" && error.code !== "internal";
 }
@@ -83,7 +88,7 @@ function DeliveryPanel({ slug, invoices, archived, onChanged, scope }: Props & {
       <h3>Leveringshistorik</h3>
       {!state.data?.rows.length && <p>Ingen registrerede mailforsøg.</p>}
       {state.data?.rows.map(row => <article key={row.messageId} aria-label={`Mail ${row.invoiceNumber} til ${row.recipient}`}>
-        <p><strong>{row.invoiceNumber}</strong> · {row.recipient} · {row.kind === "invoice" ? "Faktura" : "Påmindelse"} · {labels[row.state]}</p>
+        <p><strong>{row.invoiceNumber}</strong> · {row.recipient} · {row.kind === "invoice" ? "Faktura" : "Påmindelse"} · {deliveryLabel(row)}</p>
         <p>{row.subject}</p>
         {row.pdfSha256 === null && <p>Historisk accepteret afsendelse uden bevaret PDF-hash. Historikken beviser ikke en bestemt PDF-version.</p>}
         <details><summary>Vis historik og dokumentation</summary><pre>{JSON.stringify(row.history, null, 2)}</pre>{row.pdfSha256 !== null && <p>PDF SHA256: {row.pdfSha256}</p>}</details>
@@ -92,7 +97,7 @@ function DeliveryPanel({ slug, invoices, archived, onChanged, scope }: Props & {
         {row.state === "refused" && maySend && <Button variant="secondary" onClick={() => chooseRow(row, "retry")}>Gennemgå nyt forsøg</Button>}
       </article>)}
       {actionRow && <div role="group" aria-label={action === "retry" ? "Nyt mailforsøg" : "Afklar mailforsøg"}>
-        <p>{actionRow.invoiceNumber} · {actionRow.recipient} · {labels[actionRow.state]}</p>
+        <p>{actionRow.invoiceNumber} · {actionRow.recipient} · {deliveryLabel(actionRow)}</p>
         <label>Begrundelse<Textarea value={reason} minLength={10} maxLength={2000} onChange={e => setReason(e.target.value)} /></label>
         {action === "reconcile" ? <>
           <label>Kontrolleret udfald<Select aria-label="Kontrolleret udfald" value={resolution} onChange={e => setResolution(e.target.value as "accepted" | "not_accepted")}><option value="not_accepted">SMTP-serveren accepterede ikke mailen</option><option value="accepted">SMTP-serveren accepterede mailen</option></Select></label>
@@ -125,7 +130,7 @@ function DeliveryReview({ scope, slug, allowed, intent, onClose, onResult, onRef
       if (row.invoiceDocumentId !== (intent.action === "send" ? intent.body.invoiceDocumentId : intent.row.invoiceDocumentId) || (intent.row && row.messageId !== intent.row.messageId) || (intent.action === "send" && (row.recipient !== intent.body.to || row.kind !== intent.body.kind))) throw new Error("Kvitteringen matcher ikke den gennemgåede handling. Udfaldet er uafklaret.");
       const expectedState = intent.action === "reconcile" && intent.body.resolution === "not_accepted" ? "refused" : "accepted";
       if (row.state !== expectedState) throw new Error("Kvitteringens udfald matcher ikke handlingen. Kontrollér leveringsstatus; gentag ikke.");
-      marker.release(); onResult(`${labels[row.state]}. Kanonisk leveringsstatus genlæses. Ingen automatisk gentagelse.`); onClose();
+      marker.release(); onResult(`${deliveryLabel(row)}. Kanonisk leveringsstatus genlæses. Ingen automatisk gentagelse.`); onClose();
     } catch (cause) {
       if (knownInvoiceEmailRefusal(cause)) {
         marker.release(); onResult(cause instanceof Error ? cause.message : "Mailhandlingen blev afvist."); onClose();
@@ -136,7 +141,7 @@ function DeliveryReview({ scope, slug, allowed, intent, onClose, onResult, onRef
   }
   return <Dialog title={intent.action === "send" ? "Bekræft mailafsendelse" : intent.action === "retry" ? "Bekræft nyt mailforsøg" : "Bekræft afklaring uden afsendelse"} busy={busy} onClose={onClose}>
     <p>Gennemgå denne ene handling. Ingen automatisk gentagelse. Udstedelse og bogføring ændres ikke.</p>
-    {intent.action === "send" ? <p>Fakturabilag {intent.body.invoiceDocumentId} · Modtager: {intent.body.to} · {intent.body.kind === "invoice" ? "Faktura" : "Påmindelse"} · Fakturaens gemte PDF vedhæftes.</p> : <><p>{intent.row.invoiceNumber} · {intent.row.recipient} · {labels[intent.row.state]}</p><p>Begrundelse: {intent.body.reason}</p>{intent.action === "reconcile" && <><p>Udfald: {intent.body.resolution === "accepted" ? "Accepteret" : "Ikke accepteret"}</p><p>SMTP-log: {intent.body.evidence}</p><p>Ingen mail sendes under afklaringen.</p></>}</>}
+    {intent.action === "send" ? <p>Fakturabilag {intent.body.invoiceDocumentId} · Modtager: {intent.body.to} · {intent.body.kind === "invoice" ? "Faktura" : "Påmindelse"} · Fakturaens gemte PDF vedhæftes.</p> : <><p>{intent.row.invoiceNumber} · {intent.row.recipient} · {deliveryLabel(intent.row)}</p><p>Begrundelse: {intent.body.reason}</p>{intent.action === "reconcile" && <><p>Udfald: {intent.body.resolution === "accepted" ? "Accepteret" : "Ikke accepteret"}</p><p>SMTP-log: {intent.body.evidence}</p><p>Ingen mail sendes under afklaringen.</p></>}</>}
     {error && <Banner kind="error">{error}</Banner>}
     {marker.blocked && <UnknownMutationNotice onRefresh={onRefresh} onRelease={() => { marker.release(); setError(""); }} persistent={marker.persistent} verifyPersistence={marker.verifyPersistence} />}
     <label><input type="checkbox" checked={confirmed} disabled={busy || marker.blocked} onChange={e => setConfirmed(e.target.checked)} />Jeg bekræfter den gennemgåede handling</label>

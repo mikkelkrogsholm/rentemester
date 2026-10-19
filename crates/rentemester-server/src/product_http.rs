@@ -32,6 +32,7 @@ mod scheduled_recurring;
 mod hosted_recurring;
 mod reviewed_bookkeeping;
 mod sales;
+mod invoice_email;
 mod supplier_commitments;
 mod vat;
 use crate::backend::Backend;
@@ -282,6 +283,10 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
             "/api/companies/{slug}/customers/{id}",
             axum::routing::patch(sales::handle).delete(sales::handle),
         )
+        .route("/api/companies/{slug}/invoices/email-deliveries", get(invoice_email::handle))
+        .route("/api/companies/{slug}/invoices/send-email", post(invoice_email::handle))
+        .route("/api/companies/{slug}/invoices/email-deliveries/reconcile", post(invoice_email::handle))
+        .route("/api/companies/{slug}/invoices/email-deliveries/retry", post(invoice_email::handle))
         .route("/api/companies/{slug}/invoices", get(sales::handle))
         .route("/api/companies/{slug}/invoices/issue", post(sales::handle))
         .route(

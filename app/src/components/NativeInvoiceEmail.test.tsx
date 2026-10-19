@@ -102,6 +102,14 @@ describe("Native invoice mail — reviewed separate effects", () => {
     expect(screen.getByText(/Historisk accepteret afsendelse uden bevaret PDF-hash/)).toBeInTheDocument();
     expect(screen.queryByRole("button",{name:"Gennemgå nyt forsøg"})).not.toBeInTheDocument();
   });
+  test("owner attestation and historical logs are not presented as a fresh SMTP receipt", async () => {
+    status={configured:true,rows:[{...row,state:"accepted",humanResolution:true}]};
+    const view=mount();await screen.findByText(/Accepteret efter ejerens afklaring/);
+    expect(screen.queryByText(/SMTP-serveren har accepteret mailen/)).not.toBeInTheDocument();
+    view.unmount();status={configured:true,rows:[{...row,state:"accepted",legacy:true,pdfSha256:null}]};
+    mount();await screen.findByText(/Historisk registreret afsendelse/);
+    expect(screen.queryByText(/SMTP-serveren har accepteret mailen/)).not.toBeInTheDocument();
+  });
   test("unknown classification and note syntax preserve bounds without treating ambiguous errors as refusal",()=>{
     for(const status of [0,200,408,500,503])expect(knownInvoiceEmailRefusal(new ApiError("internal","x",status))).toBe(false);
     expect(knownInvoiceEmailRefusal(new ApiError("delivery_unknown","x",409))).toBe(false);

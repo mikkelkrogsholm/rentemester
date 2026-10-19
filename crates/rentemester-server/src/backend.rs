@@ -44,6 +44,8 @@ struct Config {
     restore_actor: Option<String>,
     #[serde(default)]
     auth_mail: Option<crate::auth_delivery::Config>,
+    #[serde(default)]
+    invoice_mail: std::collections::BTreeMap<String, rentemester_runtime::invoice_mail::Config>,
 }
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -80,6 +82,7 @@ pub struct Backend {
     pub(crate) setup_pending: std::sync::atomic::AtomicBool,
     pub(crate) backup_signer: Option<rentemester_runtime::backup_artifact::SigningKey>,
     pub(crate) scheduled_executor: Option<Arc<rentemester_runtime::service_key::ServiceKey>>,
+    pub(crate) invoice_mail: std::collections::BTreeMap<String, Mutex<rentemester_runtime::invoice_mail::SmtpSender>>,
     keys: MfaKeyring,
     pub(crate) signer: EmailTokenSigner,
     pub(crate) links: RecoveryLinks,
@@ -139,6 +142,9 @@ impl Backend {
         }
         let profile = cookie_profile(origin)?;
         let mut delivery=crate::auth_delivery::Delivery::new(config.auth_mail.as_ref(), profile == CookieProfile::Development, &config.root.join(".rentemester"))?;
+        let invoice_mail=config.invoice_mail.iter().map(|(slug,config)| {
+            rentemester_runtime::invoice_mail::SmtpSender::new(config).map(|sender|(slug.clone(),Mutex::new(sender)))
+        }).collect::<Result<std::collections::BTreeMap<_,_>,_>>()?;
         let cookies = Arc::new(CookieVerifier::new(
             &config.workspace,
             profile,
@@ -276,6 +282,7 @@ impl Backend {
             keys,
             backup_signer,
             scheduled_executor: None,
+            invoice_mail,
             signer,
             links,
             delivery: Mutex::new(delivery),
