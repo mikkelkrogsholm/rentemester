@@ -2,7 +2,7 @@ use super::*;
 use rusqlite::{Connection, OpenFlags};
 use std::{os::unix::fs::MetadataExt, path::Path};
 
-fn fixture(root: &Path) -> (Connection, Connection) {
+pub(super) fn fixture(root: &Path) -> (Connection, Connection) {
     std::fs::create_dir(root.join(".rentemester")).unwrap();
     std::fs::create_dir_all(root.join("a/data")).unwrap();
     std::fs::write(root.join("workspace.json"), r#"{"version":1,"companies":[{"slug":"a","name":"Synthetic","createdAt":"2026-01-01","archived":false}]}"#).unwrap();

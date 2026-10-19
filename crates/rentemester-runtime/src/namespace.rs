@@ -53,6 +53,11 @@ pub struct NamespaceGuard {
 }
 #[cfg(not(any(target_os = "linux", target_os = "macos")))]
 impl NamespaceGuard {
+    pub fn catalog(&mut self)->Result<Vec<(String,String,bool)>,NamespaceError>{Err(NamespaceError::Unsupported)}
+    pub fn select_company(&mut self,_:&str)->Result<(),NamespaceError>{Err(NamespaceError::Unsupported)}
+    pub fn create_company_files(&mut self,_:&str)->Result<(),NamespaceError>{Err(NamespaceError::Unsupported)}
+    pub fn verify_pending_company(&mut self,_:&str,_:&rusqlite::Connection)->Result<(),NamespaceError>{Err(NamespaceError::Unsupported)}
+    pub fn publish_company(&mut self,_:&str,_:&str,_:i64)->Result<(),NamespaceError>{Err(NamespaceError::Unsupported)}
     pub fn acquire_with_profile(
         _: &Path,
         _: u32,

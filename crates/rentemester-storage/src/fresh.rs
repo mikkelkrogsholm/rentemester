@@ -152,3 +152,13 @@ pub fn initialize_accounts(
     }
     tx.commit().map_err(|_| refused())
 }
+
+/// Newly created company file under the existing workspace owner. No control
+/// initialization or identity bootstrap; caller proves exclusive fresh provenance.
+pub fn initialize_company(company:&mut Connection,name:&str)->Result<(),Error>{
+ if name.trim().is_empty() || name.len()>1024 || name.chars().any(char::is_control){return Err(refused());}
+ empty(company)?;
+ company.execute_batch("PRAGMA foreign_keys=ON; PRAGMA trusted_schema=OFF; PRAGMA synchronous=FULL;").map_err(|_|refused())?;
+ crate::company_baseline::initialize_empty(company,name).map_err(|_|refused())?;
+ integrity(company).map_err(|_|refused())
+}

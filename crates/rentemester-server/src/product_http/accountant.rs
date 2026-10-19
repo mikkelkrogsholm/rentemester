@@ -1,5 +1,6 @@
 use super::*;
 pub(super) async fn export(State(state): State<Product>, request: Request) -> Response {
+    let company_slug=request.uri().path().split('/').nth(3).unwrap_or("").to_owned();
     let cookie = match proof(&state, &request, true) {
         Ok(c) => c,
         Err(r) => return *r,
@@ -22,14 +23,14 @@ pub(super) async fn export(State(state): State<Product>, request: Request) -> Re
     };
     let filename = format!(
         "revisor-eksport-{}-{}-{}.tar",
-        state.native.catalog.companies[0].slug, input.period_start, input.period_end
+        company_slug, input.period_start, input.period_end
     );
     let Ok(permit) = state.workers.clone().try_acquire_owned() else {
         return refused(StatusCode::SERVICE_UNAVAILABLE, "busy");
     };
     let result = tokio::task::spawn_blocking(move || {
         let _permit = permit;
-        let mut owner = state.native.owner.lock().map_err(|_| ())?;
+        let mut owner = state.native.lock_company(&company_slug).map_err(|_| ())?;
         owner
             .accountant_export(&cookie, &SystemClock, &input)
             .map_err(|_| ())

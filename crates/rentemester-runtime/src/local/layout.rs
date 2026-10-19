@@ -11,13 +11,13 @@ use std::{
     os::unix::fs::{FileExt, MetadataExt},
 };
 const LIMIT: u64 = 1_048_576;
-#[derive(Deserialize)]
+#[derive(Deserialize, serde::Serialize)]
 #[serde(deny_unknown_fields)]
 struct Manifest {
     version: u32,
     companies: Vec<Entry>,
 }
-#[derive(Deserialize)]
+#[derive(Deserialize, serde::Serialize)]
 #[serde(deny_unknown_fields)]
 struct Entry {
     slug: String,
@@ -152,6 +152,7 @@ pub struct WorkspaceLayout {
     slug: String,
     bindings: Vec<Binding>,
     manifest_hash: Vec<u8>,
+    pending_company: Option<Vec<Binding>>,
     invalidated: bool,
     // Rust drops fields in declaration order: release namespace ownership last.
     lease: WorkspaceLease,
@@ -217,6 +218,7 @@ impl WorkspaceLayout {
             slug: slug.to_owned(),
             bindings,
             manifest_hash,
+            pending_company: None,
             invalidated: false,
         };
         result.ensure_current()?;
@@ -297,6 +299,7 @@ impl WorkspaceLayout {
                     return Err(LayoutError::Changed);
                 }
             }
+            self.ensure_pending_company()?;
             self.lease
                 .ensure_current_root()
                 .map_err(LayoutError::Lease)?;
@@ -655,3 +658,5 @@ fn probe() {
 
 #[cfg(test)]
 mod connection_tests;
+
+mod companies;

@@ -70,3 +70,5 @@ pub mod obligations;
 pub mod bank_reconciliation;
 
 pub mod workspace_access;
+
+pub mod company_creation;

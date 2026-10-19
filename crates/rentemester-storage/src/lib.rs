@@ -555,3 +555,5 @@ pub mod bank_reconciliation;
 
 pub mod workspace_members;
 pub mod workspace_invitations;
+
+pub mod company_creation;

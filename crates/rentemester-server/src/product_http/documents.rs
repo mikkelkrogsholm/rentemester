@@ -38,6 +38,7 @@ pub(super) fn outcome<T>(
     }
 }
 pub(super) async fn ingest(State(state): State<Product>, request: Request) -> Response {
+    let company_slug=request.uri().path().split('/').nth(3).unwrap_or("").to_owned();
     let cookie = match proof(&state, &request, true) {
         Ok(p) => p,
         Err(r) => return *r,
@@ -86,10 +87,7 @@ pub(super) async fn ingest(State(state): State<Product>, request: Request) -> Re
         let today = chrono::DateTime::<chrono::Utc>::from(std::time::SystemTime::now())
             .format("%Y-%m-%d")
             .to_string();
-        let mut owner = state
-            .native
-            .owner
-            .lock()
+        let mut owner = state.native.lock_company(&company_slug)
             .map_err(|_| refused(StatusCode::SERVICE_UNAVAILABLE, "owner_unavailable"))?;
         let attempt = owner
             .ingest_document(
@@ -112,6 +110,7 @@ pub(super) async fn ingest(State(state): State<Product>, request: Request) -> Re
     }
 }
 pub(super) async fn list(State(state): State<Product>, request: Request) -> Response {
+    let company_slug=request.uri().path().split('/').nth(3).unwrap_or("").to_owned();
     let cookie = match proof(&state, &request, false) {
         Ok(p) => p,
         Err(r) => return *r,
@@ -124,7 +123,7 @@ pub(super) async fn list(State(state): State<Product>, request: Request) -> Resp
     };
     let result = tokio::task::spawn_blocking(move || {
         let _permit = permit;
-        let mut owner = state.native.owner.lock().map_err(|_| ())?;
+        let mut owner = state.native.lock_company(&company_slug).map_err(|_| ())?;
         owner.documents(&cookie, &SystemClock).map_err(|_| ())
     })
     .await;
@@ -137,6 +136,7 @@ pub(super) async fn list(State(state): State<Product>, request: Request) -> Resp
     }
 }
 pub(super) async fn file(State(state): State<Product>, request: Request) -> Response {
+    let company_slug=request.uri().path().split('/').nth(3).unwrap_or("").to_owned();
     let cookie = match proof(&state, &request, false) {
         Ok(p) => p,
         Err(r) => return *r,
@@ -159,7 +159,7 @@ pub(super) async fn file(State(state): State<Product>, request: Request) -> Resp
     };
     let result = tokio::task::spawn_blocking(move || {
         let _permit = permit;
-        let mut owner = state.native.owner.lock().map_err(|_| ())?;
+        let mut owner = state.native.lock_company(&company_slug).map_err(|_| ())?;
         owner
             .document_original(&cookie, &SystemClock, id)
             .map_err(|_| ())
@@ -203,6 +203,7 @@ pub(super) async fn file(State(state): State<Product>, request: Request) -> Resp
 }
 
 pub(super) async fn expense(State(state): State<Product>, request: Request) -> Response {
+    let company_slug=request.uri().path().split('/').nth(3).unwrap_or("").to_owned();
     use rentemester_application::expense::{Action, Input};
     let posting = request.method() == axum::http::Method::POST;
     let cookie = match proof(&state, &request, posting) {
@@ -255,7 +256,7 @@ pub(super) async fn expense(State(state): State<Product>, request: Request) -> R
     };
     let result = tokio::task::spawn_blocking(move || {
         let _permit = permit;
-        let mut owner = state.native.owner.lock().map_err(|_| ())?;
+        let mut owner = state.native.lock_company(&company_slug).map_err(|_| ())?;
         let action = match input.as_ref() {
             Some(input) => Action::Post(input),
             None => Action::Options(id.unwrap()),

@@ -30,6 +30,7 @@ fn held(root: &Path, mode: &str) -> Held<WorkspaceLayout> {
     Held(Some(Slots {
         control: Some(control),
         company: Some(company),
+        pending: None,
         guard,
     }))
 }

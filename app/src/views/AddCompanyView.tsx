@@ -4,9 +4,11 @@ import { ButtonLink, PageHeader } from "../components/ui";
 
 import { useNavigate } from "react-router-dom";
 import { CompanyForm } from "../components/CompanyForm";
+import { useOptionalAuth } from "../lib/auth-context";
 
 export function AddCompanyView() {
   const navigate = useNavigate();
+  const auth = useOptionalAuth();
   return (
     <section>
       <PageHeader title="Tilføj virksomhed" actions={<><ButtonLink className="btn secondary" to="/">
@@ -21,7 +23,7 @@ export function AddCompanyView() {
         </div>
 
       </PageHeader>
-      <CompanyForm onCreated={(slug) => navigate(`/companies/${slug}`)} />
+      <CompanyForm onCreated={async (slug) => { if (auth?.backend === "rust") await auth.refresh(); navigate(`/companies/${slug}`); }} />
     </section>
   );
 }

@@ -9,6 +9,7 @@ enum Command {
     Report(rentemester_storage::periods::Report),
 }
 pub(super) async fn handle(State(state): State<Product>, request: Request) -> Response {
+    let company_slug=request.uri().path().split('/').nth(3).unwrap_or("").to_owned();
     let mutation = request.method() != axum::http::Method::GET;
     let cookie = match proof(&state, &request, mutation) {
         Ok(c) => c,
@@ -88,7 +89,7 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
         .to_string();
     let result = tokio::task::spawn_blocking(move || {
         let _permit = permit;
-        let mut owner = state.native.owner.lock().map_err(|_| ())?;
+        let mut owner = state.native.lock_company(&company_slug).map_err(|_| ())?;
         let action = match &command {
             Command::List => Action::List,
             Command::Readiness(from, to) => Action::Readiness(from, to),

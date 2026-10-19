@@ -1,5 +1,6 @@
 //! Thin browser adapter over the same owner used for authentication.
 mod workspace_access;
+mod company_creation;
 mod accountant;
 mod accruals;
 mod assets;
@@ -92,7 +93,7 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
             "/api/companies/{slug}/reviewed-bank",
             get(reviewed_bookkeeping::handle).post(reviewed_bookkeeping::handle),
         )
-        .route("/api/companies", get(companies))
+        .route("/api/companies", get(companies).post(company_creation::handle))
         .route("/api/companies/{slug}/retention", get(gdpr::handle))
         .route("/api/companies/{slug}/gdpr/export", post(gdpr::handle))
         .route("/api/companies/{slug}/gdpr/erase", post(gdpr::handle))
@@ -350,15 +351,17 @@ async fn companies(State(state): State<Product>, request: Request) -> Response {
     let result = tokio::task::spawn_blocking(move || {
         let _permit = permit;
         let mut owner = native.owner.lock().map_err(|_| ())?;
+        let catalog=owner.catalog().map_err(|_|())?;
         let result = owner
-            .workspace_context(&native.cookies, &SystemClock, &cookie, &native.catalog)
+            .workspace_context(&native.cookies, &SystemClock, &cookie, &catalog)
             .map_err(|_| ())?;
         let context = result.outcome.map_err(|_| ())?;
         let mut value: Value = serde_json::from_str(context.as_json()).map_err(|_| ())?;
-        // This server owns one selected company. Read its actual profile under
-        // the same owner rather than inventing portfolio metadata from config.
+        // Profiles are read from each admitted ledger, under current company rights.
         let companies = value["companies"].as_array_mut().ok_or(())?;
         for company in companies {
+            if company["archived"] == true { continue; }
+            owner.select_company(company["slug"].as_str().ok_or(())?).map_err(|_|())?;
             let attempt = owner
                 .company_setup(
                     &cookie,
@@ -404,10 +407,13 @@ fn query(request: &Request) -> Result<Query, Box<Response>> {
     }
     Ok(result)
 }
-fn selected(state: &Product, request: &Request) -> bool {
-    request.uri().path().split('/').nth(3) == Some(state.native.catalog.companies[0].slug.as_str())
+fn selected(state:&Product,request:&Request)->bool {
+    let slug=request.uri().path().split('/').nth(3).unwrap_or("");
+    state.native.owner.lock().ok().and_then(|mut o|o.catalog().ok()).is_some_and(|c|c.companies.iter().any(|c|c.slug==slug&&!c.archived))
 }
+
 async fn read(State(state): State<Product>, request: Request) -> Response {
+    let company_slug=request.uri().path().split('/').nth(3).unwrap_or("").to_owned();
     let cookie = match proof(&state, &request, false) {
         Ok(v) => v,
         Err(r) => return *r,
@@ -448,7 +454,7 @@ async fn read(State(state): State<Product>, request: Request) -> Response {
     let result = tokio::task::spawn_blocking(move || {
         let _permit = permit;
         let today = snapshot_today;
-        let mut owner = native.owner.lock().map_err(|_| ())?;
+        let mut owner = native.lock_company(&company_slug).map_err(|_| ())?;
         owner
             .cockpit_snapshot(
                 &cookie,
@@ -528,6 +534,7 @@ type MutationResult = Result<
     ),
 >;
 async fn write(State(state): State<Product>, request: Request) -> Response {
+    let company_slug=request.uri().path().split('/').nth(3).unwrap_or("").to_owned();
     let cookie = match proof(&state, &request, true) {
         Ok(v) => v,
         Err(r) => return *r,
@@ -574,7 +581,7 @@ async fn write(State(state): State<Product>, request: Request) -> Response {
     let native = state.native;
     let result = tokio::task::spawn_blocking(move || {
         let _permit = permit;
-        let mut owner = native.owner.lock().map_err(|_| ())?;
+        let mut owner = native.lock_company(&company_slug).map_err(|_| ())?;
         let outcome: MutationResult = match command {
             Mutation::Post(input) => owner
                 .post_human(

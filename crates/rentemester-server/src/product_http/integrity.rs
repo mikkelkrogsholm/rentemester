@@ -1,5 +1,6 @@
 use super::*;
 pub(super) async fn read(State(state): State<Product>, request: Request) -> Response {
+    let company_slug=request.uri().path().split('/').nth(3).unwrap_or("").to_owned();
     if request.method() != axum::http::Method::GET {
         return refused(StatusCode::METHOD_NOT_ALLOWED, "method_not_allowed");
     }
@@ -22,7 +23,7 @@ pub(super) async fn read(State(state): State<Product>, request: Request) -> Resp
     };
     let result = tokio::task::spawn_blocking(move || {
         let _permit = permit;
-        let mut owner = state.native.owner.lock().map_err(|_| ())?;
+        let mut owner = state.native.lock_company(&company_slug).map_err(|_| ())?;
         owner.integrity(&cookie, &SystemClock).map_err(|_| ())
     })
     .await;

@@ -37,18 +37,19 @@ impl std::error::Error for OwnerError {}
 struct Slots<G> {
     control: Option<Connection>,
     company: Option<Connection>,
+    pending: Option<Connection>,
     guard: G,
 }
 impl<G> Slots<G> {
     fn close(&mut self) -> bool {
-        for slot in [&mut self.company, &mut self.control] {
+        for slot in [&mut self.pending, &mut self.company, &mut self.control] {
             if let Some(connection) = slot.take()
                 && let Err((connection, _)) = connection.close()
             {
                 *slot = Some(connection);
             }
         }
-        self.company.is_none() && self.control.is_none()
+        self.pending.is_none() && self.company.is_none() && self.control.is_none()
     }
 }
 struct Held<G>(Option<Slots<G>>);
@@ -101,6 +102,7 @@ impl<G> Drop for Held<G> {
 pub struct Owner {
     held: Held<NamespaceGuard>,
     workspace: String,
+    root: std::path::PathBuf,
     slug: String,
     reusable: bool,
 }
@@ -263,9 +265,11 @@ impl Owner {
             held: Held(Some(Slots {
                 control: None,
                 company: None,
+                pending: None,
                 guard,
             })),
             workspace: workspace.to_owned(),
+            root: root.to_owned(),
             slug: slug.to_owned(),
             reusable: false,
         };
@@ -1221,3 +1225,5 @@ impl Owner {
 }
 #[cfg(test)]
 mod tests;
+
+mod company_catalog;

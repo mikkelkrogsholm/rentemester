@@ -103,11 +103,12 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
         let _permit = permit;
         let native = state.native;
         let mut owner = native.owner.lock().map_err(|_| ())?;
+        let catalog=owner.catalog().map_err(|_|())?;
         let runtime = app::Runtime {
             cookies: &native.cookies,
             clock: &SystemClock,
             key: &native.invitation_key,
-            catalog: &native.catalog,
+            catalog: &catalog,
         };
         let attempt = if let Command::Claim(i) = &command {
             let verification = rentemester_application::email_verification::Runtime {

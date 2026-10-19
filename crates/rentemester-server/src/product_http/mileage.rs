@@ -1,6 +1,7 @@
 use super::*;
 use rentemester_application::mileage::Action;
 pub(super) async fn handle(State(state): State<Product>, request: Request) -> Response {
+    let company_slug=request.uri().path().split('/').nth(3).unwrap_or("").to_owned();
     let mutation = request.method() != axum::http::Method::GET;
     let cookie = match proof(&state, &request, mutation) {
         Ok(c) => c,
@@ -46,7 +47,7 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
     };
     let result = tokio::task::spawn_blocking(move || {
         let _permit = permit;
-        let mut owner = state.native.owner.lock().map_err(|_| ())?;
+        let mut owner = state.native.lock_company(&company_slug).map_err(|_| ())?;
         let action = match &input {
             Some(i) => Action::Register(i),
             None => Action::List(year.as_deref()),

@@ -15,6 +15,7 @@ enum Command {
     Import(Import),
 }
 pub(super) async fn handle(State(state): State<Product>, request: Request) -> Response {
+    let company_slug=request.uri().path().split('/').nth(3).unwrap_or("").to_owned();
     let mutation = request.method() == axum::http::Method::POST;
     let cookie = match proof(&state, &request, mutation) {
         Ok(p) => p,
@@ -104,7 +105,7 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
                 now: &timestamp,
             },
         };
-        let mut owner = state.native.owner.lock().map_err(|_| ())?;
+        let mut owner = state.native.lock_company(&company_slug).map_err(|_| ())?;
         owner.bank(&cookie, &SystemClock, action).map_err(|_| ())
     })
     .await;

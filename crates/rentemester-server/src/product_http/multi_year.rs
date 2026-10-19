@@ -1,5 +1,6 @@
 use super::*;
 pub(super) async fn read(State(state): State<Product>, request: Request) -> Response {
+    let company_slug=request.uri().path().split('/').nth(3).unwrap_or("").to_owned();
     let cookie = match proof(&state, &request, false) {
         Ok(c) => c,
         Err(r) => return *r,
@@ -21,7 +22,7 @@ pub(super) async fn read(State(state): State<Product>, request: Request) -> Resp
     };
     let result = tokio::task::spawn_blocking(move || {
         let _permit = permit;
-        let mut owner = state.native.owner.lock().map_err(|_| ())?;
+        let mut owner = state.native.lock_company(&company_slug).map_err(|_| ())?;
         owner
             .multi_year(&cookie, &SystemClock, &today)
             .map_err(|_| ())

@@ -2,7 +2,6 @@
 //! This development executable never proxies requests to the TypeScript backend.
 use rentemester_application::{
     email_verification, mfa_login, verification_request,
-    workspace_context::{Catalog, RegisteredCompany},
 };
 use rentemester_host::{AuthAttempt, Owner};
 use rentemester_runtime::{
@@ -75,7 +74,6 @@ pub struct Backend {
     pub(crate) links: RecoveryLinks,
     pub(crate) spool: PathBuf,
     pub(crate) invitation_key: rentemester_runtime::invitation::InvitationKey,
-    pub(crate) catalog: Catalog,
 }
 fn unavailable() -> Failure {
     Failure {
@@ -89,6 +87,11 @@ fn unwrap<T>(result: AuthAttempt<T>) -> Result<T, Failure> {
     result.map_err(|_| unavailable())?.outcome
 }
 impl Backend {
+    pub(crate) fn lock_company(&self,slug:&str)->Result<std::sync::MutexGuard<'_,Owner>,()> {
+        let mut owner=self.owner.lock().map_err(|_|())?;
+        owner.select_company(slug).map_err(|_|())?;
+        Ok(owner)
+    }
     pub fn load(
         path: &Path,
         origin: &str,
@@ -222,14 +225,7 @@ impl Backend {
             links,
             spool,
             invitation_key: rentemester_runtime::invitation::InvitationKey::new(&config.workspace,&config.cookie_key)?,
-            catalog: Catalog {
-                workspace: config.workspace.clone(),
-                companies: vec![RegisteredCompany {
-                    slug: config.company_slug.clone(),
-                    name: config.company_name.clone(),
-                    archived: false,
-                }],
-            },
+
         }))
     }
     pub(crate) fn install_owner(
@@ -370,18 +366,9 @@ impl Backend {
                 }),
             }),
             workspace_context: Some(Box::new(move |proof| {
-                unwrap(
-                    context
-                        .owner
-                        .lock()
-                        .map_err(|_| unavailable())?
-                        .workspace_context(
-                            &context.cookies,
-                            &SystemClock,
-                            &proof,
-                            &context.catalog,
-                        ),
-                )
+                let mut owner=context.owner.lock().map_err(|_|unavailable())?;
+                let catalog=owner.catalog().map_err(|_|unavailable())?;
+                unwrap(owner.workspace_context(&context.cookies,&SystemClock,&proof,&catalog))
             })),
             verification: Some(VerificationHandlers {
                 request: Box::new(move |input| {
