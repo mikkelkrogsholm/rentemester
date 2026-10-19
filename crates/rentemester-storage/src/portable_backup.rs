@@ -1,5 +1,9 @@
 //! Explicit credential-free business codec and full current native ledger checks.
 //! No path opens, archive parsing, signing, grants or operator authority.
+mod parties;
+pub use parties::{
+    initialize as initialize_parties, validate_companies as validate_party_companies,
+};
 use rentemester_engine::Error;
 use rusqlite::{Connection, Transaction, params, types::ValueRef};
 use serde::{Deserialize, Serialize};
@@ -15,18 +19,7 @@ const AUDIT_TABLES: [&str; 3] = [
     "rm_workspace_document_access_events",
     "rm_workspace_authorization_events",
 ];
-const UNSUPPORTED: [(&str, &[&str]); 6] = [
-    (
-        "parties",
-        &[
-            "rm_party_events",
-            "rm_party_identifiers",
-            "rm_party_company_roles",
-            "rm_party_alias_assertions",
-            "rm_party_field_assertions",
-            "rm_party_legacy_links",
-        ],
-    ),
+const UNSUPPORTED: [(&str, &[&str]); 5] = [
     (
         "corporate-records",
         &[
@@ -147,6 +140,7 @@ fn columns(db: &Connection, table: &str) -> Result<Vec<String>, Error> {
 pub struct Control {
     pub bytes: Vec<u8>,
     pub knowledge_bytes: Vec<u8>,
+    pub parties_bytes: Vec<u8>,
     pub unsupported: Vec<(&'static str, u64)>,
 }
 pub fn export_control(tx: &Transaction<'_>) -> Result<Control, Error> {
@@ -173,6 +167,7 @@ pub fn export_control(tx: &Transaction<'_>) -> Result<Control, Error> {
     Ok(Control {
         bytes: export_tables(tx, &AUDIT_TABLES, "rentemester-native-business-control/1")?,
         knowledge_bytes: export_tables(tx, &KNOWLEDGE_TABLES, KNOWLEDGE_FORMAT)?,
+        parties_bytes: parties::export(tx)?,
         unsupported,
     })
 }
@@ -181,8 +176,16 @@ fn export_tables(db: &Connection, names: &[&str], format: &str) -> Result<Vec<u8
     let mut cell_bytes = 0usize;
     for table in names {
         let cols = columns(db, table)?;
+        let order = match *table {
+            "rm_party_identifiers" => "jurisdiction,identifier_kind,identifier,party_id",
+            "rm_party_company_roles" => "party_id,company_slug,role",
+            "rm_party_legacy_links" => "company_slug,legacy_kind,legacy_id",
+            _ => "id",
+        };
         let mut q = db
-            .prepare(&format!("SELECT * FROM {table} ORDER BY id LIMIT 100001"))
+            .prepare(&format!(
+                "SELECT * FROM {table} ORDER BY {order} LIMIT 100001"
+            ))
             .map_err(sql)?;
         let mut rows = q.query([]).map_err(sql)?;
         let mut out = vec![];
@@ -448,7 +451,7 @@ mod tests {
             .unwrap();
         let exported = export_control(&tx).unwrap();
         tx.rollback().unwrap();
-        assert_eq!(exported.unsupported.len(), 6);
+        assert_eq!(exported.unsupported.len(), 5);
         let mut restored = Connection::open_in_memory().unwrap();
         initialize_control(&mut restored, &exported.bytes, &"a".repeat(64)).unwrap();
         for table in [
@@ -628,7 +631,7 @@ mod tests {
             .unwrap();
         let exported = export_control(&tx).unwrap();
         tx.rollback().unwrap();
-        assert_eq!(exported.unsupported.len(), 6);
+        assert_eq!(exported.unsupported.len(), 5);
         assert!(
             !exported
                 .unsupported

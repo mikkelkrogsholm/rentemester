@@ -49,7 +49,7 @@ pub struct Alias {
 fn sql(_: impl std::fmt::Display) -> Error {
     refused("party control operation refused")
 }
-fn canonical(v: &Value) -> String {
+pub(crate) fn canonical(v: &Value) -> String {
     match v {
         Value::Object(m) => {
             let mut keys: Vec<_> = m.keys().collect();
@@ -72,7 +72,7 @@ fn canonical(v: &Value) -> String {
         _ => v.to_string(),
     }
 }
-fn hash(v: &Value) -> String {
+pub(crate) fn hash(v: &Value) -> String {
     format!("{:x}", Sha256::digest(canonical(v).as_bytes()))
 }
 pub fn exists(tx: &Transaction<'_>, id: &str) -> Result<bool, Error> {

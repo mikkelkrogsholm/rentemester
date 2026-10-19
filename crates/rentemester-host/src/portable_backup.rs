@@ -122,6 +122,14 @@ impl Owner {
                 &tx, cookies, clock, proof, &catalog,
             )?;
             let business = store::export_control(&tx)?;
+            store::validate_party_companies(
+                &tx,
+                &catalog
+                    .companies
+                    .iter()
+                    .map(|c| c.slug.clone())
+                    .collect::<Vec<_>>(),
+            )?;
             let mut entries = vec![];
             let mut companies = vec![];
             add(
@@ -150,6 +158,16 @@ impl Owner {
                     },
                     path: "control/company-knowledge.json".into(),
                     bytes: business.knowledge_bytes,
+                },
+            )?;
+            add(
+                &mut entries,
+                artifact::Snapshot {
+                    kind: artifact::EntryKind::ControlBusiness {
+                        section: artifact::BusinessSection::Parties,
+                    },
+                    path: "control/parties.json".into(),
+                    bytes: business.parties_bytes,
                 },
             )?;
             for c in &catalog.companies {
@@ -233,6 +251,7 @@ impl Owner {
                 coverage: artifact::Coverage {
                     included: vec![
                         artifact::BusinessSection::WorkspaceAudit,
+                        artifact::BusinessSection::Parties,
                         artifact::BusinessSection::CompanyKnowledge,
                     ],
                     unsupported,
@@ -373,14 +392,18 @@ impl Owner {
 fn validate(a: &artifact::VerifiedArtifact) -> Result<(), rentemester_engine::Error> {
     let ctx = &a.manifest().context;
     if ctx.control_schema_version != 30
-        || !matches!(
-            ctx.coverage.included.as_slice(),
-            [artifact::BusinessSection::WorkspaceAudit]
-                | [
-                    artifact::BusinessSection::WorkspaceAudit,
-                    artifact::BusinessSection::CompanyKnowledge
-                ]
-        )
+        || !ctx
+            .coverage
+            .included
+            .contains(&artifact::BusinessSection::WorkspaceAudit)
+        || ctx.coverage.included.iter().any(|s| {
+            !matches!(
+                s,
+                artifact::BusinessSection::WorkspaceAudit
+                    | artifact::BusinessSection::CompanyKnowledge
+                    | artifact::BusinessSection::Parties
+            )
+        })
     {
         return Err(error("unsupported control coverage"));
     }
@@ -477,6 +500,23 @@ fn restore_business(
         .context
         .coverage
         .included
+        .contains(&artifact::BusinessSection::Parties)
+    {
+        store::initialize_parties(
+            control,
+            entry(artifact::BusinessSection::Parties)?.bytes(),
+            &a.manifest()
+                .context
+                .companies
+                .iter()
+                .map(|c| c.slug.clone())
+                .collect::<Vec<_>>(),
+        )?;
+    }
+    if a.manifest()
+        .context
+        .coverage
+        .included
         .contains(&artifact::BusinessSection::CompanyKnowledge)
     {
         store::initialize_knowledge(
@@ -489,7 +529,12 @@ fn restore_business(
 #[cfg(test)]
 mod tests {
     use super::*;
-    fn signed(knowledge: bool, invalid: bool) -> artifact::VerifiedArtifact {
+    fn signed(
+        knowledge: bool,
+        parties: bool,
+        invalid: bool,
+        wrong_uuid: bool,
+    ) -> artifact::VerifiedArtifact {
         let mut control = Connection::open_in_memory().unwrap();
         let mut company = Connection::open_in_memory().unwrap();
         rentemester_storage::fresh::initialize_empty_pair(
@@ -498,6 +543,33 @@ mod tests {
             "Synthetic backup coverage",
         )
         .unwrap();
+        if parties {
+            let tx = control
+                .transaction_with_behavior(TransactionBehavior::Immediate)
+                .unwrap();
+            let i=serde_json::from_value::<rentemester_storage::parties::Create>(serde_json::json!({"partyId":"party-signed-synthetic","kind":"organization","name":"Synthetic signed party","aliases":["Synthetic signed alias"],"identifiers":[],"source":"synthetic-signed-source","observedAt":"2026-01-01","reviewAssertion":"Synthetic signed review","role":"supplier"})).unwrap();
+            rentemester_storage::parties::create(
+                &tx,
+                &i,
+                "unused",
+                "user:historical-owner",
+                "2026-01-02T00:00:00.000Z",
+            )
+            .unwrap();
+            rentemester_storage::parties::role(
+                &tx,
+                "party-signed-synthetic",
+                "synthetic",
+                &rentemester_storage::parties::Role {
+                    role: "supplier".into(),
+                    defaults: None,
+                },
+                "user:historical-owner",
+                "2026-01-02T00:00:00.000Z",
+            )
+            .unwrap();
+            tx.commit().unwrap();
+        }
         let tx = control
             .transaction_with_behavior(TransactionBehavior::Immediate)
             .unwrap();
@@ -517,6 +589,27 @@ mod tests {
                 record_count,
             })
             .collect::<Vec<_>>();
+        if parties {
+            let mut bytes = business.parties_bytes;
+            if invalid {
+                let mut v: Value = serde_json::from_slice(&bytes).unwrap();
+                v["format"] = serde_json::json!("unknown-parties-codec");
+                bytes = serde_json::to_vec(&v).unwrap();
+            }
+            entries.push(artifact::Snapshot {
+                kind: artifact::EntryKind::ControlBusiness {
+                    section: artifact::BusinessSection::Parties,
+                },
+                path: "control/parties.json".into(),
+                bytes,
+            });
+            included.push(artifact::BusinessSection::Parties);
+        } else {
+            unsupported.push(artifact::UnsupportedSection {
+                section: artifact::BusinessSection::Parties,
+                record_count: 0,
+            });
+        }
         if knowledge {
             let mut bytes = business.knowledge_bytes;
             if invalid {
@@ -544,7 +637,11 @@ mod tests {
             control_schema_version: 30,
             companies: vec![artifact::Company {
                 slug: "synthetic".into(),
-                ledger_uuid: store::company(&company).unwrap().uuid,
+                ledger_uuid: if wrong_uuid {
+                    "f".repeat(32)
+                } else {
+                    store::company(&company).unwrap().uuid
+                },
                 schema_version: 36,
             }],
             coverage: artifact::Coverage {
@@ -571,7 +668,7 @@ mod tests {
     #[test]
     fn signed_knowledge_coverage_is_semantically_validated_and_old_audit_only_remains_supported() {
         for knowledge in [false, true] {
-            let a = signed(knowledge, false);
+            let a = signed(knowledge, false, false, false);
             validate(&a).unwrap();
             let mut restored = Connection::open_in_memory().unwrap();
             restore_business(&mut restored, &a, &"a".repeat(64)).unwrap();
@@ -592,6 +689,53 @@ mod tests {
         }
         // Valid cryptographic signature is insufficient: unsupported section
         // codec must fail the pre-publication semantic validator.
-        assert!(validate(&signed(true, true)).is_err());
+        assert!(validate(&signed(true, false, true, false)).is_err());
+    }
+    #[test]
+    fn signed_party_codec_is_required_validated_and_preserves_facts_without_authority() {
+        for knowledge in [false, true] {
+            let a = signed(knowledge, true, false, false);
+            validate(&a).unwrap();
+            assert!(
+                a.manifest()
+                    .context
+                    .coverage
+                    .included
+                    .contains(&artifact::BusinessSection::Parties)
+            );
+            let mut restored = Connection::open_in_memory().unwrap();
+            restore_business(&mut restored, &a, &"a".repeat(64)).unwrap();
+            let tx = restored
+                .transaction_with_behavior(TransactionBehavior::Immediate)
+                .unwrap();
+            let p = rentemester_storage::parties::inspect(
+                &tx,
+                "party-signed-synthetic",
+                &["synthetic".into()].into_iter().collect(),
+            )
+            .unwrap();
+            assert_eq!(p["name"], "Synthetic signed party");
+            assert_eq!(p["aliases"][0]["alias"], "synthetic signed alias");
+            for name in [
+                "user",
+                "account",
+                "session",
+                "twoFactor",
+                "apikey",
+                "rm_company_membership_events",
+                "rm_workspace_user_access_events",
+            ] {
+                assert_eq!(
+                    tx.query_row(&format!("SELECT COUNT(*) FROM {name}"), [], |r| r
+                        .get::<_, i64>(0))
+                        .unwrap(),
+                    0
+                );
+            }
+            tx.rollback().unwrap();
+        }
+        // Correct artifact signatures cannot legitimize an unknown typed codec or a substituted ledger identity.
+        assert!(validate(&signed(false, true, true, false)).is_err());
+        assert!(validate(&signed(false, true, false, true)).is_err());
     }
 }
