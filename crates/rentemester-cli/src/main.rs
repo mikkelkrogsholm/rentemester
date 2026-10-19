@@ -268,3 +268,5 @@ mod service_principals;
 mod hosted_recurring;
 
 mod invoice_email;
+
+mod workspace_transfer;

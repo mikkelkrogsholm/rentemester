@@ -379,3 +379,6 @@ pub use hosted_recurring::{HostedRecurringMutation,MAX_HOSTED_RECURRING_BODY,hos
 
 mod invoice_email;
 pub use invoice_email::{InvoiceEmailMutation, MAX_INVOICE_EMAIL_BODY, invoice_email_body_schema};
+
+mod workspace_transfer;
+pub use workspace_transfer::{WorkspaceTransferMutation,MAX_WORKSPACE_TRANSFER_BODY,MAX_WORKSPACE_TRANSFER_PROOF_BODY,workspace_transfer_body_schema,restored_receipt_body_schema};

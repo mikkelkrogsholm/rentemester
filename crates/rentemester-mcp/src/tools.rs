@@ -136,6 +136,7 @@ pub fn list() -> Value {
     tools.extend(crate::bank_correction::tools());
     tools.extend(crate::recurring_invoices::tools());
     tools.extend(crate::service_principals::tools());
+    tools.extend(crate::workspace_transfer::tools());
     tools.extend(crate::invoice_email::tools());
     tools.extend(crate::hosted_recurring::tools());
     tools.extend(crate::scheduled_recurring::tools());
@@ -240,6 +241,7 @@ pub async fn call(api: &ApiClient, name: &str, args: Value) -> Result<Value, &'s
         name if crate::accruals::accepts(name) => crate::accruals::call(api,name,args).await?,
         name if crate::assets::accepts(name) => crate::assets::call(api,name,args).await?,
         name if crate::service_principals::accepts(name)=>crate::service_principals::call(api,name,args).await?,
+        name if crate::workspace_transfer::accepts(name)=>crate::workspace_transfer::call(api,name,args).await?,
         name if crate::invoice_email::accepts(name)=>crate::invoice_email::call(api,name,args).await?,
         name if crate::hosted_recurring::accepts(name)=>crate::hosted_recurring::call(api,name,args).await?,
         name if crate::scheduled_recurring::accepts(name)=>crate::scheduled_recurring::call(api,name,args).await?,
