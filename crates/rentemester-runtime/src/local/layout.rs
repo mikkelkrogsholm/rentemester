@@ -157,7 +157,7 @@ pub struct WorkspaceLayout {
     lease: WorkspaceLease,
 }
 impl WorkspaceLayout {
-    #[cfg(target_os = "linux")]
+    #[cfg(any(target_os = "linux", target_os = "macos"))]
     pub(crate) fn validate_new_manifest(
         workspace: &str,
         slug: &str,

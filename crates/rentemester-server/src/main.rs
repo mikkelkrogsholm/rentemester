@@ -40,7 +40,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 println!("Build the cockpit first: cd app && bun run build");
                 println!("Without --config, serve the cockpit and health endpoint only.");
                 println!(
-                    "--config connects a protected Linux workspace; run as its dedicated UID with no capabilities, no-new-privileges and umask 077."
+                    "--config defaults to runtimeProfile=dedicated-linux; run as its dedicated UID with no capabilities, no-new-privileges and umask077."
+                );
+                println!(
+                    "macOS local operation requires config runtimeProfile=local-user-macos, equal nonroot real/effective/saved IDs, APFS, umask077 and safe owner/root ancestry (only non-inheriting deny-delete ACLs) and strict private ACL-free workspace paths. All code under that local account is trusted; it is not the Linux dedicated broker isolation profile."
                 );
                 println!(
                     "--create exclusively creates a new workspace. Omit it for reopen or bootstrap recovery."
@@ -76,7 +79,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let native = tokio::task::spawn_blocking(move || {
         config
             .map(|path| {
-                backend::Backend::load(&path, &setup_origin, create).map_err(|e| e.to_string())
+                backend::Backend::load(&path, &setup_origin, create, listen.ip().is_loopback())
+                    .map_err(|e| e.to_string())
             })
             .transpose()
     })

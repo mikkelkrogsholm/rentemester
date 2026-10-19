@@ -1,4 +1,4 @@
-//! Private physical ownership for an offline-provisioned dedicated Linux broker.
+//! Private physical ownership under explicit Linux-broker or macOS-local profiles.
 //! This is not schema adoption, fresh initialization, or transport authorization.
 //! Never open other regular descriptors for owned database inodes in this process.
 use rentemester_application::{
@@ -7,7 +7,7 @@ use rentemester_application::{
 };
 use rentemester_runtime::{
     auth::{Clock, VerifiedCookie},
-    namespace::{NamespaceError, NamespaceGuard},
+    namespace::{NamespaceError, NamespaceGuard, NamespaceProfile},
     service_key::ServiceKey,
 };
 use rusqlite::{Connection, OpenFlags};
@@ -66,7 +66,8 @@ impl<G> Drop for Held<G> {
 }
 
 /// No Clone, connection accessor, callbacks, Deref, or raw extraction.
-/// Root/launcher and all broker-UID code are trusted. Clients run another UID.
+/// DedicatedLinux trusts the launcher and broker-UID code; clients use another UID.
+/// LocalUserMacos trusts all local-account code, including same-account HTTP clients.
 /// ```compile_fail
 /// fn escape(mut owner: rentemester_host::Owner) {
 ///     let _ = owner.held;
@@ -137,8 +138,25 @@ impl Owner {
         workspace: &str,
         slug: &str,
     ) -> Result<Self, OwnerError> {
-        let guard = NamespaceGuard::acquire(root, broker_uid, workspace, slug)
-            .map_err(OwnerError::Namespace)?;
+        Self::open_with_profile(
+            root,
+            broker_uid,
+            workspace,
+            slug,
+            NamespaceProfile::DedicatedLinux,
+        )
+    }
+    /// Explicit local-account macOS admission is distinct from the Linux broker.
+    pub fn open_with_profile(
+        root: &Path,
+        broker_uid: u32,
+        workspace: &str,
+        slug: &str,
+        profile: NamespaceProfile,
+    ) -> Result<Self, OwnerError> {
+        let guard =
+            NamespaceGuard::acquire_with_profile(root, broker_uid, workspace, slug, profile)
+                .map_err(OwnerError::Namespace)?;
         Self::open_guarded(root, workspace, slug, guard)
     }
     /// Exclusively create a fresh protected Linux namespace and complete native
@@ -152,9 +170,29 @@ impl Owner {
         name: &str,
         created_at: &str,
     ) -> Result<(Self, rentemester_storage::fresh::Initialized), OwnerError> {
-        let guard =
-            NamespaceGuard::create_fresh(root, broker_uid, workspace, slug, name, created_at)
-                .map_err(OwnerError::Namespace)?;
+        Self::create_new_with_profile(
+            root,
+            broker_uid,
+            workspace,
+            slug,
+            name,
+            created_at,
+            NamespaceProfile::DedicatedLinux,
+        )
+    }
+    pub fn create_new_with_profile(
+        root: &Path,
+        broker_uid: u32,
+        workspace: &str,
+        slug: &str,
+        name: &str,
+        created_at: &str,
+        profile: NamespaceProfile,
+    ) -> Result<(Self, rentemester_storage::fresh::Initialized), OwnerError> {
+        let guard = NamespaceGuard::create_fresh_with_profile(
+            root, broker_uid, workspace, slug, name, created_at, profile,
+        )
+        .map_err(OwnerError::Namespace)?;
         let mut owner = Self::open_guarded(root, workspace, slug, guard)?;
         owner.reusable = false;
         #[cfg(test)]
@@ -180,7 +218,31 @@ impl Owner {
         created_at: &str,
         accounts: &[rentemester_storage::fresh::InitialAccount],
     ) -> Result<Self, OwnerError> {
-        let (mut owner, _) = Self::create_new(root, broker_uid, workspace, slug, name, created_at)?;
+        Self::create_with_chart_profile(
+            root,
+            broker_uid,
+            workspace,
+            slug,
+            name,
+            created_at,
+            accounts,
+            NamespaceProfile::DedicatedLinux,
+        )
+    }
+    #[allow(clippy::too_many_arguments)]
+    pub fn create_with_chart_profile(
+        root: &Path,
+        broker_uid: u32,
+        workspace: &str,
+        slug: &str,
+        name: &str,
+        created_at: &str,
+        accounts: &[rentemester_storage::fresh::InitialAccount],
+        profile: NamespaceProfile,
+    ) -> Result<Self, OwnerError> {
+        let (mut owner, _) = Self::create_new_with_profile(
+            root, broker_uid, workspace, slug, name, created_at, profile,
+        )?;
         owner.reusable = false;
         rentemester_storage::fresh::initialize_accounts(
             owner.held.0.as_mut().unwrap().company.as_mut().unwrap(),

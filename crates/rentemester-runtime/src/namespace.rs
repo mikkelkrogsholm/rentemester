@@ -1,6 +1,18 @@
-//! Dedicated-principal namespace prerequisite, not application authorization.
-#[cfg(not(target_os = "linux"))]
+//! Explicitly profiled physical namespace admission, not application authorization.
+#[cfg(not(any(target_os = "linux", target_os = "macos")))]
 use std::path::Path;
+
+/// Explicit process trust profiles. LocalUserMacos trusts all code running under
+/// the local account; it is not Linux no-new-privileges/capability isolation.
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, serde::Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum NamespaceProfile {
+    #[default]
+    DedicatedLinux,
+    LocalUserMacos,
+}
+#[cfg(target_os = "macos")]
+mod macos;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum NamespaceError {
@@ -30,17 +42,37 @@ impl std::fmt::Display for NamespaceError {
 }
 impl std::error::Error for NamespaceError {}
 
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "macos"))]
 mod linux;
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "macos"))]
 pub use linux::NamespaceGuard;
 
-#[cfg(not(target_os = "linux"))]
+#[cfg(not(any(target_os = "linux", target_os = "macos")))]
 pub struct NamespaceGuard {
     _private: (),
 }
-#[cfg(not(target_os = "linux"))]
+#[cfg(not(any(target_os = "linux", target_os = "macos")))]
 impl NamespaceGuard {
+    pub fn acquire_with_profile(
+        _: &Path,
+        _: u32,
+        _: &str,
+        _: &str,
+        _: NamespaceProfile,
+    ) -> Result<Self, NamespaceError> {
+        Err(NamespaceError::Unsupported)
+    }
+    pub fn create_fresh_with_profile(
+        _: &Path,
+        _: u32,
+        _: &str,
+        _: &str,
+        _: &str,
+        _: &str,
+        _: NamespaceProfile,
+    ) -> Result<Self, NamespaceError> {
+        Err(NamespaceError::Unsupported)
+    }
     pub fn acquire(_: &Path, _: u32, _: &str, _: &str) -> Result<Self, NamespaceError> {
         Err(NamespaceError::Unsupported)
     }
@@ -77,7 +109,7 @@ impl NamespaceGuard {
         Err(NamespaceError::Unsupported)
     }
 }
-#[cfg(all(test, not(target_os = "linux")))]
+#[cfg(all(test, not(any(target_os = "linux", target_os = "macos"))))]
 mod tests {
     use super::*;
     #[test]

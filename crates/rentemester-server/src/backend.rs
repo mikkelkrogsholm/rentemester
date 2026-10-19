@@ -27,6 +27,8 @@ type Failure = rentemester_application::password_login::Failure;
 struct Config {
     root: PathBuf,
     broker_uid: u32,
+    #[serde(default)]
+    runtime_profile: rentemester_runtime::namespace::NamespaceProfile,
     workspace: String,
     company_slug: String,
     company_name: String,
@@ -90,10 +92,26 @@ impl Backend {
         path: &Path,
         origin: &str,
         create: bool,
+        loopback_listener: bool,
     ) -> Result<Arc<Self>, Box<dyn std::error::Error>> {
         let text = Zeroizing::new(std::fs::read_to_string(path)?);
         let config: Config =
             serde_json::from_str(&text).map_err(|_| "invalid server configuration")?;
+        if config.runtime_profile
+            == rentemester_runtime::namespace::NamespaceProfile::LocalUserMacos
+        {
+            let url = url::Url::parse(origin).map_err(|_| "invalid local server origin")?;
+            let local_origin = url.host_str().is_some_and(|host| {
+                host == "localhost"
+                    || host
+                        .trim_matches(['[', ']'])
+                        .parse::<std::net::IpAddr>()
+                        .is_ok_and(|ip| ip.is_loopback())
+            });
+            if !loopback_listener || !local_origin {
+                return Err("local-user-macos requires a loopback listener and origin".into());
+            }
+        }
         let cookies = Arc::new(CookieVerifier::new(
             &config.workspace,
             CookieProfile::Development,
@@ -103,7 +121,7 @@ impl Backend {
         let signer = EmailTokenSigner::new(&config.workspace, &config.cookie_key)?;
         let links = RecoveryLinks::new(origin, &[origin], CookieProfile::Development)?;
         let mut owner = if create {
-            Owner::create_with_chart(
+            Owner::create_with_chart_profile(
                 &config.root,
                 config.broker_uid,
                 &config.workspace,
@@ -112,13 +130,15 @@ impl Backend {
                 &chrono::DateTime::<chrono::Utc>::from(std::time::SystemTime::now())
                     .to_rfc3339_opts(chrono::SecondsFormat::Millis, true),
                 &config.accounts,
+                config.runtime_profile,
             )?
         } else {
-            Owner::open_protected(
+            Owner::open_with_profile(
                 &config.root,
                 config.broker_uid,
                 &config.workspace,
                 &config.company_slug,
+                config.runtime_profile,
             )?
         };
         let spool = config.root.join(".rentemester");

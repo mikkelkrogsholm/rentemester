@@ -1,8 +1,8 @@
-use super::NamespaceError as Error;
+#[cfg(target_os = "macos")]
+use super::macos::{acl_path, acl_walk_fd, process as process_profile};
+use super::{NamespaceError as Error, NamespaceProfile};
 use crate::{LeaseError, RootIdentity, WorkspaceLayout, WorkspaceLease};
-use rustix::fs::{
-    AtFlags, FileType, Mode, OFlags, Stat, fgetxattr, fstat, lgetxattr, open, openat, statat,
-};
+use rustix::fs::{AtFlags, FileType, Mode, OFlags, Stat, fstat, open, openat, statat};
 use std::{
     fs::File,
     io::Write,
@@ -13,8 +13,17 @@ const DIRECTORY: OFlags = OFlags::RDONLY
     .union(OFlags::DIRECTORY)
     .union(OFlags::NOFOLLOW)
     .union(OFlags::CLOEXEC);
+#[cfg(target_os = "linux")]
 const ACLS: [&str; 2] = ["system.posix_acl_access", "system.posix_acl_default"];
 
+#[cfg(target_os = "linux")]
+fn process_profile(uid: u32, profile: NamespaceProfile) -> Result<(), Error> {
+    if profile != NamespaceProfile::DedicatedLinux {
+        return Err(Error::Unsupported);
+    }
+    process(uid)
+}
+#[cfg(target_os = "linux")]
 fn process(uid: u32) -> Result<(), Error> {
     if uid == 0 {
         return Err(Error::Process);
@@ -44,26 +53,36 @@ fn process(uid: u32) -> Result<(), Error> {
     }
     Ok(())
 }
+#[cfg(target_os = "linux")]
 fn absent_acl(result: rustix::io::Result<usize>) -> Result<(), Error> {
     match result {
         Err(rustix::io::Errno::NODATA) => Ok(()),
         _ => Err(Error::Invalid),
     }
 }
+#[cfg(target_os = "linux")]
 fn acl_fd(file: &File) -> Result<(), Error> {
     for name in ACLS {
-        absent_acl(fgetxattr(file, name, &mut [0u8; 0]))?;
+        absent_acl(rustix::fs::fgetxattr(file, name, &mut [0u8; 0]))?;
     }
     Ok(())
 }
+#[cfg(target_os = "linux")]
+fn acl_walk_fd(file: &File, _: bool) -> Result<(), Error> {
+    acl_fd(file)
+}
+#[cfg(target_os = "linux")]
 fn acl_path(path: &Path) -> Result<(), Error> {
     for name in ACLS {
-        absent_acl(lgetxattr(path, name, &mut [0u8; 0]))?;
+        absent_acl(rustix::fs::lgetxattr(path, name, &mut [0u8; 0]))?;
     }
     Ok(())
 }
 fn identity(s: &Stat) -> RootIdentity {
     RootIdentity {
+        #[cfg(target_os = "macos")]
+        device: s.st_dev as u64,
+        #[cfg(target_os = "linux")]
         device: s.st_dev,
         inode: s.st_ino,
     }
@@ -102,7 +121,7 @@ fn walk(root: &Path, uid: u32, private_root: bool) -> Result<(Vec<RootIdentity>,
         {
             return Err(Error::Invalid);
         }
-        acl_fd(&file)?;
+        acl_walk_fd(&file, !(private_root && i == parts.len()))?;
         ids.push(identity(&stat));
         if let Some(part) = parts.get(i) {
             file = File::from(
@@ -156,11 +175,12 @@ fn metadata(root: &Path, directory: &File, uid: u32, slug: &str) -> Result<(), E
     }
     Ok(())
 }
-/// Requires all same-UID namespace code to be enrolled/trusted. Owns no SQLite handles.
+/// Requires all same-UID code trusted under the explicitly selected process profile. Owns no SQLite handles.
 /// Bind before opening SQLite; the host must close every handle before dropping this guard.
 pub struct NamespaceGuard {
     root: PathBuf,
     uid: u32,
+    profile: NamespaceProfile,
     slug: String,
     ancestors: Vec<RootIdentity>,
     invalidated: bool,
@@ -168,7 +188,16 @@ pub struct NamespaceGuard {
 }
 impl NamespaceGuard {
     pub fn acquire(root: &Path, uid: u32, workspace: &str, slug: &str) -> Result<Self, Error> {
-        process(uid)?;
+        Self::acquire_with_profile(root, uid, workspace, slug, NamespaceProfile::DedicatedLinux)
+    }
+    pub fn acquire_with_profile(
+        root: &Path,
+        uid: u32,
+        workspace: &str,
+        slug: &str,
+        profile: NamespaceProfile,
+    ) -> Result<Self, Error> {
+        process_profile(uid, profile)?;
         // Path safety only; canonical registration/manifest checks remain in bind.
         if slug.is_empty()
             || !slug.as_bytes()[0].is_ascii_lowercase() && !slug.as_bytes()[0].is_ascii_digit()
@@ -187,8 +216,11 @@ impl NamespaceGuard {
                 Error::Invalid
             }
         })?;
-        Self::bind(root, uid, workspace, slug, ancestors, directory, lease)
+        Self::bind(
+            root, uid, workspace, slug, ancestors, directory, lease, profile,
+        )
     }
+    #[allow(clippy::too_many_arguments)]
     fn bind(
         root: PathBuf,
         uid: u32,
@@ -197,6 +229,7 @@ impl NamespaceGuard {
         ancestors: Vec<RootIdentity>,
         directory: File,
         mut lease: WorkspaceLease,
+        profile: NamespaceProfile,
     ) -> Result<Self, Error> {
         if lease.ensure_current_root().map_err(|_| Error::Changed)?
             != identity(&fstat(&directory).map_err(|_| Error::Invalid)?)
@@ -208,6 +241,7 @@ impl NamespaceGuard {
         let mut result = Self {
             root,
             uid,
+            profile,
             slug: slug.to_owned(),
             ancestors,
             invalidated: false,
@@ -228,7 +262,26 @@ impl NamespaceGuard {
         name: &str,
         created_at: &str,
     ) -> Result<Self, Error> {
-        process(uid)?;
+        Self::create_fresh_with_profile(
+            root,
+            uid,
+            workspace,
+            slug,
+            name,
+            created_at,
+            NamespaceProfile::DedicatedLinux,
+        )
+    }
+    pub fn create_fresh_with_profile(
+        root: &Path,
+        uid: u32,
+        workspace: &str,
+        slug: &str,
+        name: &str,
+        created_at: &str,
+        profile: NamespaceProfile,
+    ) -> Result<Self, Error> {
+        process_profile(uid, profile)?;
         let manifest = serde_json::to_vec(&serde_json::json!({"version":1,"companies":[
             {"slug":slug,"name":name,"createdAt":created_at,"archived":false}
         ]}))
@@ -302,10 +355,12 @@ impl NamespaceGuard {
         }
         directory.sync_all().map_err(|_| Error::Invalid)?;
         parent_directory.sync_all().map_err(|_| Error::Invalid)?;
-        Self::bind(root, uid, workspace, slug, ancestors, directory, lease)
+        Self::bind(
+            root, uid, workspace, slug, ancestors, directory, lease, profile,
+        )
     }
     fn observe(&mut self) -> Result<(), Error> {
-        process(self.uid)?;
+        process_profile(self.uid, self.profile)?;
         let (ancestors, directory) = walk(&self.root, self.uid, true)?;
         if ancestors != self.ancestors {
             return Err(Error::Changed);
@@ -339,5 +394,5 @@ impl NamespaceGuard {
 
 mod documents;
 
-#[cfg(test)]
+#[cfg(all(test, target_os = "linux"))]
 mod tests;
