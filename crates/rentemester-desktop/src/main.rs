@@ -22,6 +22,8 @@ mod journal_attempt;
 mod local_backend;
 mod login;
 mod reporting;
+mod payables;
+mod payables_state;
 use rentemester_client::{ApiClient, Report};
 use serde_json::Value;
 use std::{path::PathBuf, sync::Arc};
@@ -192,6 +194,7 @@ struct Desktop {
     bank: Option<Entity<bank::Bank>>,
     contacts: Option<Entity<contacts::Contacts>>,
     documents: Option<Entity<documents::Documents>>,
+    payables: Option<Entity<payables::Payables>>,
     status: String,
     busy: bool,
 }
@@ -276,6 +279,7 @@ impl Desktop {
             bank: None,
             contacts: None,
             documents: None,
+            payables: None,
             status: "Forbind til din Rentemester-server og log ind med e-mail, adgangskode og MFA."
                 .into(),
             busy: false,
@@ -374,6 +378,7 @@ impl Desktop {
         self.bank = None;
         self.contacts = None;
         self.documents = None;
+        self.payables = None;
         self.status = "Forbinder…".into();
         let server = self.connection_origin(cx);
         let cookie = PathBuf::from(self.cookie.read(cx).value().to_string());
@@ -438,6 +443,7 @@ impl Desktop {
         self.bank = None;
         self.contacts = None;
         self.documents = None;
+        self.payables = None;
         self.busy = true;
         self.status = "Kontrollerer login…".into();
         let origin = self.connection_origin(cx);
@@ -536,6 +542,7 @@ impl Desktop {
         self.bank = None;
         self.contacts = None;
         self.documents = None;
+        self.payables = None;
         self.password
             .update(cx, |input, cx| input.set_value("", window, cx));
         self.code
@@ -558,6 +565,7 @@ impl Desktop {
         self.bank = None;
         self.contacts = None;
         self.documents = None;
+        self.payables = None;
         self.selected = Some(slug.clone());
         self.status = "Henter saldobalance…".into();
         let year = self.year.read(cx).value().to_string();
@@ -826,6 +834,9 @@ impl Render for Desktop {
             );
         }
         content = content.child(list);
+        if let Some(payables) = self.payables.clone() {
+            return content.child(Button::new("payables-close").label("Luk leverandørgæld og genindlæs saldobalance").on_click(cx.listener(|this,_,_,cx|{this.payables=None;if let Some(slug)=this.selected.clone(){this.load(slug,cx);}}))).child(payables);
+        }
         if let Some(documents) = self.documents.clone() {
             return content
                 .child(
@@ -1096,6 +1107,15 @@ impl Render for Desktop {
                         }
                     })),
             );
+        }
+        if self.session.is_some() && self.selected.is_some() {
+            content=content.child(Button::new("payables-open").label("Leverandørgæld").disabled(self.busy).on_click(cx.listener(|this,_,window,cx|{
+                if let(Some(session),Some(company))=(this.session.clone(),this.selected.clone()) {
+                    let origin=this.connection_origin(cx);let year=this.year.read(cx).value().to_string();
+                    let local=match this.managed.as_ref().map(|m|m.journal_identity()).transpose(){Ok(local)=>local,Err(e)=>{this.status=e;cx.notify();return;}};
+                    this.payables=Some(cx.new(|cx|payables::Payables::new(session,origin,company,year,local,window,cx)));cx.notify();
+                }
+            })));
         }
         if let Some(report) = &self.trial {
             let mut table = div()
