@@ -10,6 +10,7 @@ export type IntercompanyDisposition = {
 export type IntercompanyDispositionPlan = {
   ok: true; mode: "dry-run"; disposition: IntercompanyDisposition; payloadHash: string;
   ledgerEffects: never[]; proposedSides: string[]; warnings: string[];
+  journalCandidates?: DispositionJournalCandidates;
 };
 
 export type IntercompanyDispositionAction = "plan" | "propose" | "approve" | "link" | "settle" | "supersede" | "reopen";
@@ -23,7 +24,7 @@ export type IntercompanyDispositionState = {
     side: "left" | "right";
     company_slug: string;
     journal_entry_id: number;
-    journal_entry_no: number;
+    journal_entry_no: string;
     journal_entry_hash: string;
     ledger_head_hash: string | null;
     linked_at: string;
@@ -44,6 +45,7 @@ type IntercompanyDispositionEvent = {
 export type IntercompanyDispositionStatus = IntercompanyDispositionState & {
   ok: true;
   scope: "intercompany-disposition-status";
+  journalCandidates?: DispositionJournalCandidates;
   balanced: boolean;
   exceptions: Array<
     { kind: "stale_or_reversed_journal" | "one_sided_posting"; side?: "left" | "right"; waivable: false } |
@@ -52,3 +54,10 @@ export type IntercompanyDispositionStatus = IntercompanyDispositionState & {
 };
 export type IntercompanyDispositionActionResponse<Action extends IntercompanyDispositionAction> =
   Action extends "plan" ? IntercompanyDispositionPlan : { ok: true } & IntercompanyDispositionState;
+
+export type DispositionJournalCandidate = {
+  journalEntryId: number; journalEntryNo: string; transactionDate: string;
+  currency: string; amount: number; expectedSide: "receivable" | "payable";
+  journalEntryHash: string; ledgerHeadHash: string | null;
+};
+export type DispositionJournalCandidates = { left: DispositionJournalCandidate[]; right: DispositionJournalCandidate[] };

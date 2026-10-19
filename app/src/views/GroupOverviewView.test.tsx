@@ -10,6 +10,7 @@ const intercompanyDispositionStatus = vi.fn();
 vi.mock("../lib/api", () => ({ api: {
   groupOverview, groupReconciliation, groupEliminations,
   groupReportProfiles, groupConsolidatedReport, intercompanyDispositionStatus,
+  workspaceParties:async()=>({rows:[],count:0,nextCursor:null}),corporateRecords:async()=>({rows:[],count:0,nextCursor:null}),
 } }));
 
 import { GroupOverviewView } from "./GroupOverviewView";
@@ -59,12 +60,12 @@ describe("GroupOverviewView", () => {
   });
 
   test("shows a disposition lifecycle response and fails closed on a server denial", async () => {
-    intercompanyDispositionStatus.mockResolvedValue({ status: "partly_posted", exceptions: [{ kind: "one_sided_posting" }] });
+    intercompanyDispositionStatus.mockResolvedValue({ok:true,scope:"intercompany-disposition-status",disposition:{dispositionId:"synthetic-disposition",type:"loan",economicDate:"2026-01-01",amount:12.34,currency:"DKK",partyIds:["synthetic-party"],evidenceRecordIds:["synthetic-record"],left:{companySlug:"a",role:"lender",expectedSide:"receivable"},right:{companySlug:"b",role:"borrower",expectedSide:"payable"}},payloadHash:"a".repeat(64),events:[],lifecycleEvents:[],links:[],status:"partly_posted",balanced:false,exceptions:[{kind:"one_sided_posting",waivable:false}]});
     render(<GroupOverviewView />);
     await screen.findByRole("heading", { name: "Intercompany dispositioner" });
     fireEvent.change(screen.getByLabelText("Disposition-ID"), { target: { value: "synthetic-disposition" } });
     fireEvent.click(screen.getByRole("button", { name: "Vis status" }));
-    expect(await screen.findByText("one_sided_posting")).toBeInTheDocument();
+    expect(await screen.findByText(/Kun den ene postering er tilknyttet/)).toBeInTheDocument();
     expect(intercompanyDispositionStatus).toHaveBeenCalledWith("synthetic-disposition", expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/), expect.objectContaining({ signal: expect.anything() }));
     intercompanyDispositionStatus.mockRejectedValueOnce(new Error("unauthorized"));
     fireEvent.click(screen.getByRole("button", { name: "Vis status" }));

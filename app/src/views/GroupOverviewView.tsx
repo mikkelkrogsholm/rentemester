@@ -1,7 +1,8 @@
+import { IntercompanyDispositionsPane } from "../components/IntercompanyDispositionsPane";
 import {useOptionalAuth} from "../lib/auth-context";
 import {NativeConsolidationView} from "./NativeConsolidationView";
 import {NativeIntercompanyView} from "./NativeIntercompanyView";
-import { Button, Input, PageHeader, Select } from "../components/ui";
+import { Input, PageHeader, Select } from "../components/ui";
 import { useState } from "react";
 import { api } from "../lib/api";
 import { useAsync } from "../lib/useAsync";
@@ -16,10 +17,6 @@ function LegacyGroupOverviewView() {
   const [asOf, setAsOf] = useState(currentIsoDate);
   const [from, setFrom] = useState(() => `${currentIsoDate().slice(0, 4)}-01-01`);
   const [selectedProfileId, setSelectedProfileId] = useState("");
-  const [dispositionId, setDispositionId] = useState("");
-  const [queriedDispositionId, setQueriedDispositionId] = useState("");
-  const dispositionState = useAsync((signal) => queriedDispositionId ? api.intercompanyDispositionStatus(queriedDispositionId, asOf, { signal }) : Promise.resolve(null), [queriedDispositionId, asOf]);
-  const dispositionStatus = dispositionState.data;
   const state = useAsync((signal) => api.groupOverview(asOf, { signal }), [asOf]);
   const reconciliationState = useAsync((signal) => api.groupReconciliation(asOf, { signal }), [asOf]);
   const eliminationState = useAsync((signal) => api.groupEliminations(asOf, { signal }), [asOf]);
@@ -78,16 +75,7 @@ function LegacyGroupOverviewView() {
       <p className="muted">Kun anvendte, append-only balanceelimineringer afledt af eksakt afstemte mellemregninger. Selskabernes hovedbøger ændres ikke.</p>
       {eliminations.rows.length === 0 ? <p className="muted">Ingen anvendte eliminationer på den valgte dato.</p> : <ul>{eliminations.rows.map((row, index) => <li key={row.eliminationId ?? `blocked-${index}`}>{row.status === "blocked" || !row.payload ? <><strong>Ikke synlig</strong> · {row.blockers.join(" · ")}</> : <><strong>{row.eliminationId}</strong> · {Number(BigInt(row.payload.amountOre)) / 100} {row.payload.currency} · {row.payload.left.companySlug} ↔ {row.payload.right.companySlug}</>}</li>)}</ul>}
     </section>
-    <section className="group-dispositions" aria-label="Intercompany dispositioner">
-      <h3>Intercompany dispositioner</h3>
-      <p className="muted">To juridiske ledgers forbliver adskilte. Denne lifecycle viser og binder kun dokumenteret evidence; den bogfører og eliminerer aldrig selv.</p>
-      <form onSubmit={(event) => { event.preventDefault(); if (!dispositionId.trim()) return; setQueriedDispositionId(dispositionId.trim()); dispositionState.reload(); }}>
-        <label>Disposition-ID<Input aria-label="Disposition-ID" value={dispositionId} onChange={(event) => { setDispositionId(event.target.value); setQueriedDispositionId(""); }} required /></label><Button busy={dispositionState.loading} type="submit">Vis status</Button>
-      </form>
-      {dispositionState.error && <p className="error" role="alert">Dispositionen kan ikke vises med din aktuelle adgang.</p>}
-      {dispositionStatus && <div className="banner warning" role="status"><strong>{dispositionStatus.status}</strong>{Array.isArray(dispositionStatus.exceptions) && dispositionStatus.exceptions.length > 0 && <ul>{dispositionStatus.exceptions.map((exception,index)=><li key={index}>{exception.kind}</li>)}</ul>}</div>}
-      <p className="muted">Plan, forslag, godkendelse, link, settlement, supersession og reopen bruger den samme confirmed API/MCP-lifecycle med adgang til begge selskaber.</p>
-    </section>
+    <IntercompanyDispositionsPane defaultAsOf={asOf} />
     <section className="group-report" aria-label="Konsolideret rapport">
       <h3>Konsolideret rapport</h3>
       <p className="muted">Read-only visning. Selskabernes hovedbøger ændres ikke, og kun godkendte profiler med fuld selskabssynlighed kan vælges.</p>
@@ -114,4 +102,4 @@ function Blockers({ blockers }: { blockers: readonly string[] }) {
   return <section className="group-blockers" aria-label="Blokeringer"><h3>Blokeringer</h3><ul>{blockers.map((blocker) => <li key={blocker}>{blocker}</li>)}</ul></section>;
 }
 
-export function GroupOverviewView(){const auth=useOptionalAuth();return auth?.backend==="rust"?<><NativeIntercompanyView/><NativeConsolidationView/></>:<LegacyGroupOverviewView/>;}
+export function GroupOverviewView(){const auth=useOptionalAuth();return auth?.backend==="rust"?<><NativeIntercompanyView/><NativeConsolidationView/><IntercompanyDispositionsPane/></>:<LegacyGroupOverviewView/>;}

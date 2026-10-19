@@ -41,6 +41,6 @@ export const groupApi = {
     }),
   intercompanyDispositionStatus: (id: string, asOf?: string, options?: ReadRequestOptions) =>
     request<IntercompanyDispositionStatus>(`/api/group-dispositions/${encodeURIComponent(id)}${asOf ? `?asOf=${encodeURIComponent(asOf)}` : ""}`, options),
-  intercompanyDispositionAction: <Action extends IntercompanyDispositionAction>(company: string, action: Action, payload: Record<string, unknown>) =>
-    request<IntercompanyDispositionActionResponse<Action>>(`/api/companies/${encodeURIComponent(company)}/group-dispositions/${action}`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(payload) }),
+  intercompanyDispositionAction: <Action extends IntercompanyDispositionAction>(company: string, action: Action, payload: Record<string, unknown>, options?: ReadRequestOptions) =>
+    request<IntercompanyDispositionActionResponse<Action>>(`/api/companies/${encodeURIComponent(company)}/group-dispositions/${action}`, { method: "POST", readOnly: action === "plan", signal: options?.signal, headers: { "content-type": "application/json" }, body: JSON.stringify(payload) }),
 };
