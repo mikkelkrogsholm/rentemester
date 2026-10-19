@@ -195,6 +195,10 @@ pub(crate) fn body(bytes: &[u8], schema: &Value) -> Result<(), Error> {
     Ok(())
 }
 impl ApiClient {
+    /// Canonical seller fields for an exact reviewed invoice source snapshot.
+    pub async fn company_profile(&self, company: &str) -> Result<Value, Error> {
+        self.get(&company_path(company, "company")?, &[]).await
+    }
     pub async fn accounts(&self, company: &str) -> Result<Value, Error> {
         self.get(&company_path(company, "accounts")?, &[]).await
     }
