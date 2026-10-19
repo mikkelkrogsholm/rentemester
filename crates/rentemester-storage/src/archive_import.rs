@@ -287,3 +287,17 @@ pub fn apply(
     history::checked(tx)?;
     Ok(receipt(id, &event))
 }
+
+/// Existing generic financial reports are live-ledger-only until archive statement/carry-forward parity exists.
+/// This guard does not restrict archive installation, original-backed reads, CFO or backup assurance.
+pub fn require_live_report_only(db: &Connection) -> Result<(), Error> {
+    let present:bool=db.query_row("SELECT EXISTS(SELECT 1 FROM import_archive_years) OR EXISTS(SELECT 1 FROM import_archive_postings) OR EXISTS(SELECT 1 FROM import_archive_balances)",[],|r|r.get(0)).map_err(sql)?;
+    if present {
+        Err(Error::new(
+            "archive_report_unsupported",
+            "Historical archive financial reports are not supported; use the original-backed archive or CFO source view",
+        ))
+    } else {
+        Ok(())
+    }
+}

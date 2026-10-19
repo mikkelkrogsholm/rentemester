@@ -28,7 +28,10 @@ pub fn trial_balance(
         },
         selection,
         Permission::CompanyRead,
-        |tx| rentemester_storage::trial_balance_owned(tx, period),
+        |tx| {
+            rentemester_storage::archive_import::require_live_report_only(tx)?;
+            rentemester_storage::trial_balance_owned(tx, period)
+        },
     )
 }
 

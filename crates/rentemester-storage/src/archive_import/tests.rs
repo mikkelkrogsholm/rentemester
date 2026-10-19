@@ -256,3 +256,74 @@ fn complete_history_rejects_same_cent_numeric_corruption_and_unknown_attestation
     clean.execute_batch(&trigger).unwrap();
     assert!(validate_history(&clean).is_err());
 }
+#[test]
+fn public_trial_balance_refuses_archive_false_zero_without_blocking_verified_cfo_or_raw_live_reader()
+ {
+    let (mut control, mut db) = db();
+    let bytes = source();
+    {
+        let tx = db
+            .transaction_with_behavior(TransactionBehavior::Immediate)
+            .unwrap();
+        install(&tx, &bytes);
+        tx.commit().unwrap();
+    }
+    let target = tempfile::tempdir().unwrap();
+    std::fs::create_dir(target.path().join("data")).unwrap();
+    let path = target.path().join("data/ledger.sqlite");
+    db.execute("VACUUM INTO ?", [path.to_str().unwrap()])
+        .unwrap();
+    let period =
+        rentemester_engine::trial_balance::Period::new("2024-01-01", "2024-12-31").unwrap();
+    assert_eq!(
+        crate::trial_balance(target.path(), period.clone())
+            .unwrap_err()
+            .code,
+        "archive_report_unsupported"
+    );
+    let ct = control
+        .transaction_with_behavior(TransactionBehavior::Immediate)
+        .unwrap();
+    let tx = db
+        .transaction_with_behavior(TransactionBehavior::Immediate)
+        .unwrap();
+    assert_eq!(
+        require_live_report_only(&tx).unwrap_err().code,
+        "archive_report_unsupported"
+    );
+    assert!(crate::trial_balance_owned(&tx, period).unwrap().ok);
+    let verified = proofs(&tx, &bytes);
+    let query = rentemester_engine::cfo_analytics::Query {
+        scope: "company".into(),
+        from: "2024-01-01".into(),
+        to: "2024-12-31".into(),
+        company_slugs: vec!["synthetic".into()],
+        group_profile_id: None,
+        account: Some("6200".into()),
+        party: None,
+        dimension: None,
+        currency: None,
+        cursor: None,
+        aggregate: "none".into(),
+        limit: 200,
+    };
+    let rows = crate::cfo_analytics::collect_with_archives(
+        &tx,
+        &ct,
+        "synthetic",
+        &query,
+        &BTreeSet::from(["synthetic".into()]),
+        &verified,
+    )
+    .unwrap();
+    let result = rentemester_engine::cfo_analytics::render(
+        &query,
+        &rentemester_engine::cfo_analytics::Selection {
+            companies: vec!["synthetic".into()],
+            partial: false,
+        },
+        &[rows],
+    )
+    .unwrap();
+    assert_eq!(result["reconciliation"]["amountByCurrency"]["DKK"], "0.02");
+}

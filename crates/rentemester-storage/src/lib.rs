@@ -62,6 +62,7 @@ fn invalid(error: impl std::fmt::Display) -> Error {
 pub fn trial_balance(company: &Path, period: Period) -> Result<Report, Error> {
     let period = Period::new(&period.start, &period.end)?;
     let copy = Snapshot::capture(company)?;
+    archive_import::require_live_report_only(&copy.conn)?;
     trial_balance_connection(&copy.conn, period)
 }
 /// Read an already owned transaction without snapshotting/reopening any inode.

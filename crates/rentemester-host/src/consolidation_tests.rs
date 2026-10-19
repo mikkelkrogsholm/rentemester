@@ -343,3 +343,123 @@ fn reviewed_profile_real_ready_report_current_permissions_and_immutable_evidence
             .is_err()
     );
 }
+
+#[test]
+fn attested_archive_blocks_false_ready_consolidation_and_authorized_dated_trial_balance() {
+    let (_dir, mut owner, cookies, proof, _uid) = setup();
+    let manifest=serde_json::from_value(json!({"version":1,"groups":[{"id":"archive-group","name":"Synthetic archive group","memberships":[{"id":"a","companySlug":"a","validFrom":"2024-01-01"},{"id":"b","companySlug":"b","validFrom":"2024-01-01"}],"ownership":[{"id":"owns-b","parentCompanySlug":"a","childCompanySlug":"b","basisPoints":10000,"evidenceRefs":["synthetic"],"validFrom":"2024-01-01"}]}]})).unwrap();
+    owner
+        .intercompany(
+            &cookies,
+            &Fixed(NOW),
+            &proof,
+            Some("a"),
+            rentemester_application::intercompany::Action::Manifest(&manifest),
+        )
+        .unwrap()
+        .outcome
+        .unwrap();
+    let profile=serde_json::from_value(json!({"version":1,"id":"archive-profile","groupId":"archive-group","currency":"DKK","reportingLines":[{"id":"asset","label":"Assets","section":"asset","displayOrder":1},{"id":"equity","label":"Equity","section":"equity","displayOrder":2},{"id":"result","label":"Result","section":"equity","displayOrder":3,"role":"current-result"},{"id":"debt","label":"Debt","section":"liability","displayOrder":4},{"id":"income","label":"Income","section":"income","displayOrder":5},{"id":"expense","label":"Expense","section":"expense","displayOrder":6}],"accountMappings":[{"id":"a-asset","companySlug":"a","accountNo":"1000","reportingLineId":"asset","validFrom":"2024-01-01"},{"id":"b-asset","companySlug":"b","accountNo":"1000","reportingLineId":"asset","validFrom":"2024-01-01"}],"evidenceRefs":["synthetic"],"validFrom":"2024-01-01"})).unwrap();
+    for slug in ["a", "b"] {
+        owner.select_company(slug).unwrap();
+        owner.held.0.as_mut().unwrap().company.as_mut().unwrap().execute_batch("INSERT INTO accounts(account_no,name,type,normal_balance)VALUES('1000','Synthetic asset','asset','debit')").unwrap();
+    }
+    let proposed = owner
+        .consolidation(
+            &cookies,
+            &Fixed(NOW),
+            &proof,
+            Some("a"),
+            Action::Propose(&profile),
+        )
+        .unwrap()
+        .outcome
+        .unwrap();
+    owner.held.0.as_mut().unwrap().control.as_mut().unwrap().execute_batch("INSERT INTO user(id,name,email,emailVerified,twoFactorEnabled,createdAt,updatedAt)VALUES('r','Reviewer','r@example.invalid',1,1,'2026-01-01','2026-01-01');INSERT INTO twoFactor(id,secret,backupCodes,userId,verified)VALUES('rf','synthetic','[]','r',1);INSERT INTO session(id,userId,token,createdAt,updatedAt,expiresAt)VALUES('rs','r','reviewer-token','2026-01-01T00:00:00.000Z','2026-01-01T00:00:00.000Z','2026-01-01T12:00:00.000Z');INSERT INTO rm_workspace_user_access_events(user_id,event_type,workspace_role,actor)VALUES('r','activate','workspace_owner','user:u');INSERT INTO rm_company_membership_events(user_id,company_slug,event_type,company_role,actor)VALUES('r','a','grant','owner','user:u'),('r','b','grant','owner','user:u');").unwrap();
+    let cookie = cookies.issue_session("reviewer-token").unwrap();
+    let reviewer = cookies
+        .verify(Some(cookie.set_cookie().split(';').next().unwrap()), None)
+        .unwrap();
+    owner
+        .consolidation(
+            &cookies,
+            &Fixed(NOW),
+            &reviewer,
+            Some("a"),
+            Action::Approve(&Exact {
+                profile_id: "archive-profile".into(),
+                profile_hash: proposed["profileHash"].as_str().unwrap().into(),
+            }),
+        )
+        .unwrap()
+        .outcome
+        .unwrap();
+    let action = Action::Plan {
+        profile_id: "archive-profile",
+        from: "2024-01-01",
+        as_of: "2024-12-31",
+    };
+    assert_eq!(
+        owner
+            .consolidation(&cookies, &Fixed(NOW), &proof, Some("a"), action)
+            .unwrap()
+            .outcome
+            .unwrap()["status"],
+        "ready"
+    );
+    owner.select_company("a").unwrap();
+    let bytes=br#"{"format":"rentemester-dinero-archive-source/1","currency":"DKK","files":[{"path":"2024/Posteringer.csv","contentBase64":"S29udG87S29udG9uYXZuO0RhdG87QmlsYWc7QmlsYWdzdHlwZTtUZWtzdDtNb21zO0JlbMO4YjtTYWxkbwoxMDAwO1N5bnRoZXRpYyBhcmNoaXZlZDsyMDI0LTAxLTAxOzE7U3ludGhldGljO0hpc3RvcmljYWwgc291cmNlOzsxMiwzNDsxMiwzNAo="},{"path":"2025/Posteringer.csv","contentBase64":"S29udG87S29udG9uYXZuO0RhdG87QmlsYWc7QmlsYWdzdHlwZTtUZWtzdDtNb21zO0JlbMO4YjtTYWxkbwoxMDAwO0V4Y2x1ZGVkOzIwMjUtMDEtMDE7MDs7UHJpbW9iZWhvbGRuaW5nOzswOzAK"}]}"#.to_vec();
+    let original = rentemester_runtime::document::Prepared::new(
+        "synthetic-archive.json".into(),
+        bytes.clone(),
+    )
+    .unwrap();
+    {
+        let slots = owner.held.0.as_mut().unwrap();
+        let tx = slots
+            .company
+            .as_mut()
+            .unwrap()
+            .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
+            .unwrap();
+        let (source, parsed) = rentemester_storage::archive_import::decode_source(&bytes).unwrap();
+        let prepared = rentemester_storage::archive_import::prepare(&tx, &source, &parsed).unwrap();
+        slots.guard.publish_document(&original).unwrap();
+        rentemester_storage::archive_import::apply(
+            &tx,
+            &prepared,
+            &rentemester_storage::archive_import::Apply {
+                plan_hash: prepared.review()["planHash"].as_str().unwrap().into(),
+                idempotency_key: "synthetic-archive-guard".into(),
+                confirm: true,
+            },
+            "u",
+            NOW,
+        )
+        .unwrap();
+        tx.commit().unwrap();
+    }
+    let blocked = owner
+        .consolidation(&cookies, &Fixed(NOW), &proof, Some("a"), action)
+        .unwrap()
+        .outcome
+        .unwrap();
+    assert_eq!(blocked["status"], "blocked");
+    assert!(blocked["consolidatedFigures"].is_null());
+    assert!(
+        blocked["blockers"]
+            .to_string()
+            .contains("Historical archive financial reports are not supported")
+    );
+    let refusal = owner
+        .trial_balance(
+            &proof,
+            &Fixed(NOW),
+            rentemester_engine::trial_balance::Period::new("2024-01-01", "2024-12-31").unwrap(),
+        )
+        .unwrap()
+        .outcome
+        .err()
+        .unwrap();
+    assert_eq!(refusal.error.code, "archive_report_unsupported");
+}

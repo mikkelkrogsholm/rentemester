@@ -70,18 +70,21 @@ impl Owner {
                             let tx = db
                                 .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
                                 .map_err(|_| policy::refused())?;
-                            let result = if rentemester_application::periods::verify_sources(
-                                &tx,
-                                &mut slots.guard,
-                            )?
-                            .is_empty()
-                            {
-                                rentemester_storage::consolidation::ledger(
-                                    &tx, &company, from, as_of,
-                                )
-                            } else {
-                                Err(policy::refused())
-                            };
+                            let result = (|| {
+                                rentemester_storage::archive_import::require_live_report_only(&tx)?;
+                                if rentemester_application::periods::verify_sources(
+                                    &tx,
+                                    &mut slots.guard,
+                                )?
+                                .is_empty()
+                                {
+                                    rentemester_storage::consolidation::ledger(
+                                        &tx, &company, from, as_of,
+                                    )
+                                } else {
+                                    Err(policy::refused())
+                                }
+                            })();
                             tx.rollback().map_err(|_| policy::refused())?;
                             result
                         })();
@@ -104,6 +107,9 @@ impl Owner {
                                     blockers.push("all company functional currencies must equal profile currency".into());
                                 }
                                 ledgers.push(l)
+                            }
+                            Err(error) if error.code == "archive_report_unsupported" => {
+                                blockers.push(error.message)
                             }
                             Err(_) => blockers.push(
                                 "company ledger is unavailable or failed integrity validation"
