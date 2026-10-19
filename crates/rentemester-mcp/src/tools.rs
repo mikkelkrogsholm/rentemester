@@ -140,6 +140,7 @@ pub fn list() -> Value {
     tools.extend(crate::budget::tools());
     tools.extend(crate::mileage::tools());
     tools.extend(crate::privacy::tools());
+    tools.extend(crate::company_setup::tools());
     json!({"tools":tools})
 }
 pub(crate) fn native_body(schema: Value) -> Value {
@@ -203,6 +204,7 @@ pub async fn call(api: &ApiClient, name: &str, args: Value) -> Result<Value, &'s
     }
     let mut idempotency = None;
     let outcome = match name {
+        name if crate::company_setup::accepts(name) => crate::company_setup::call(api,name,args).await?,
         name if crate::privacy::accepts(name) => crate::privacy::call(api,name,args).await?,
         name if crate::budget::accepts(name) => crate::budget::call(api,name,args).await?,
         name if crate::mileage::accepts(name) => crate::mileage::call(api,name,args).await?,

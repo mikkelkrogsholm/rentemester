@@ -151,7 +151,7 @@ fn lifecycle_negotiation_discovery_notifications_and_validation() {
     assert_eq!(values[2]["error"]["code"], -32002);
     assert_eq!(values[3]["result"], json!({}));
     let tools = values[4]["result"]["tools"].as_array().unwrap();
-    assert_eq!(tools.len(), 82);
+    assert_eq!(tools.len(), 86);
     let write = tools.iter().find(|v| v["name"] == "post_journal").unwrap();
     assert_eq!(
         write["inputSchema"]["required"],
@@ -1263,7 +1263,7 @@ fn recurring_tools_discovery_and_strict_read_write_admission() {
         ],
     ));
     let tools = v[1]["result"]["tools"].as_array().unwrap();
-    assert_eq!(tools.len(), 82);
+    assert_eq!(tools.len(), 86);
     assert_eq!(
         tools
             .iter()
@@ -1334,7 +1334,7 @@ fn asset_readonly_discovery_and_native_body_gates() {
         ],
     ));
     let tools = v[1]["result"]["tools"].as_array().unwrap();
-    assert_eq!(tools.len(), 82);
+    assert_eq!(tools.len(), 86);
     for name in ["assets", "next_asset_depreciation"] {
         assert_eq!(
             tools.iter().find(|t| t["name"] == name).unwrap()["annotations"]["readOnlyHint"],
@@ -1401,7 +1401,7 @@ fn accrual_readonly_discovery_and_native_body_gates() {
         ],
     ));
     let tools = v[1]["result"]["tools"].as_array().unwrap();
-    assert_eq!(tools.len(), 82);
+    assert_eq!(tools.len(), 86);
     for name in ["accruals", "accrual_schedule"] {
         assert_eq!(
             tools.iter().find(|t| t["name"] == name).unwrap()["annotations"]["readOnlyHint"],
@@ -1496,7 +1496,7 @@ fn budget_mileage_discovery_year_scope_and_body_limits_are_strict() {
         ],
     ));
     let tools = v[1]["result"]["tools"].as_array().unwrap();
-    assert_eq!(tools.len(), 82);
+    assert_eq!(tools.len(), 86);
     for name in [
         "budget",
         "budget_vs_actual",
@@ -1598,7 +1598,7 @@ fn privacy_discovery_audited_annotation_and_date_body_gates() {
         ],
     ));
     let tools = v[1]["result"]["tools"].as_array().unwrap();
-    assert_eq!(tools.len(), 82);
+    assert_eq!(tools.len(), 86);
     for (name, readonly) in [
         ("retention", true),
         ("gdpr_export", false),
@@ -1620,6 +1620,106 @@ fn privacy_discovery_audited_annotation_and_date_body_gates() {
         ),
         (
             "gdpr_erase",
+            json!({"company":"synthetic","body":" ".repeat(16*1024+1),"confirm":true}),
+        ),
+    ] {
+        let v = parsed(&run(
+            "http://127.0.0.1:9",
+            &[init("2025-11-25"), ready(), call(2, name, args)],
+        ));
+        assert!(
+            v[1].get("error").is_some() || v[1]["result"]["isError"] == true,
+            "{v:?}"
+        );
+    }
+}
+
+#[test]
+fn setup_mcp_role_uses_exact_reviewed_account_and_full_resolution() {
+    let reply = r#"{"ok":true,"resolution":{"ok":true,"role":"input_vat","accountNo":"V","version":2,"confirmedBy":"user:synthetic","confirmationSource":"explicit"}}"#;
+    let response = format!(
+        "HTTP/1.1 200 OK\r\nContent-Length:{}\r\nConnection:close\r\n\r\n{reply}",
+        reply.len()
+    );
+    let (origin, request, task) = http(Box::leak(response.into_boxed_str()));
+    let body = r#"{ "role":"input_vat","accountNo":"V","confirm":true }"#;
+    let v = parsed(&run(
+        &origin,
+        &[
+            init("2025-11-25"),
+            ready(),
+            call(
+                2,
+                "confirm_account_role",
+                json!({"company":"synthetic","body":body,"confirm":true}),
+            ),
+        ],
+    ));
+    assert_eq!(
+        v[1]["result"]["structuredContent"]["data"],
+        serde_json::from_str::<Value>(reply).unwrap()
+    );
+    let wire = String::from_utf8(request.recv().unwrap()).unwrap();
+    assert!(wire.starts_with("POST /api/companies/synthetic/account-roles HTTP/1.1"));
+    assert!(wire.ends_with(body));
+    task.join().unwrap();
+}
+#[test]
+fn setup_mcp_account_creation_does_not_inject_confirm_keys_or_defaults() {
+    let (origin, request, task) =
+        http("HTTP/1.1 503 Unavailable\r\nContent-Length:0\r\nConnection:close\r\n\r\n");
+    let body = r#"{"accountNo":"V","name":"Synthetic VAT","type":"vat","normalBalance":"debit"}"#;
+    let v = parsed(&run(
+        &origin,
+        &[
+            init("2025-11-25"),
+            ready(),
+            call(
+                2,
+                "create_account",
+                json!({"company":"synthetic","body":body,"confirm":true}),
+            ),
+        ],
+    ));
+    assert_eq!(
+        v[1]["result"]["structuredContent"]["error"]["code"],
+        "outcome_unknown"
+    );
+    let wire = String::from_utf8(request.recv().unwrap()).unwrap();
+    assert!(wire.starts_with("POST /api/companies/synthetic/accounts HTTP/1.1"));
+    assert!(wire.ends_with(body));
+    task.join().unwrap();
+}
+#[test]
+fn setup_discovery_current_company_read_and_strict_outer_admission() {
+    let v = parsed(&run(
+        "http://127.0.0.1:9",
+        &[
+            init("2025-11-25"),
+            ready(),
+            json!({"jsonrpc":"2.0","id":2,"method":"tools/list"}),
+        ],
+    ));
+    let tools = v[1]["result"]["tools"].as_array().unwrap();
+    assert_eq!(tools.len(), 86);
+    assert_eq!(
+        tools
+            .iter()
+            .find(|t| t["name"] == "company_profile")
+            .unwrap()["annotations"]["readOnlyHint"],
+        true
+    );
+    for (name, args) in [
+        (
+            "company_profile",
+            json!({"company":"synthetic","year":"2026"}),
+        ),
+        (
+            "update_company_profile",
+            json!({"company":"synthetic","body":"{}","confirm":false}),
+        ),
+        (
+            "confirm_account_role",
             json!({"company":"synthetic","body":" ".repeat(16*1024+1),"confirm":true}),
         ),
     ] {
