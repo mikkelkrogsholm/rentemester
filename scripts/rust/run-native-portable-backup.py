@@ -10,9 +10,11 @@ def main():
  p.add_argument('--with-web-download',action='store_true');p.add_argument('--with-company-knowledge',action='store_true')
  p.add_argument('--with-parties',action='store_true',help='Include canonical party history and party-backed knowledge in all phases')
  p.add_argument('--with-inbox',action='store_true',help='Include unassigned/approved/completed native inbox sources and target originals in all phases')
+ p.add_argument('--with-corporate',action='store_true',help='Include three corporate original sensitivities and full history; independently restore/restart each supplied archive; implies parties/knowledge')
  p.add_argument('--cli-binary',type=Path);p.add_argument('--mcp-binary',type=Path)
  p.add_argument('--evidence',type=Path,help='NEW report path; never overwrite. Default is a unique private /tmp report.')
  args=p.parse_args()
+ if args.with_corporate:args.with_parties=True
  if args.with_parties:args.with_company_knowledge=True
  if bool(args.cli_binary)!=bool(args.mcp_binary):p.error('--cli-binary and --mcp-binary must be supplied together')
  if os.uname().sysname!='Darwin' or os.getuid()==0 or os.getuid()!=os.geteuid():raise RuntimeError('Ordinary macOS user required')
@@ -24,7 +26,7 @@ def main():
   parent=(Path.home()/'Library/Application Support').resolve();work=parent/('Rentemester-Synthetic-Portable-'+uuid.uuid4().hex)
   child=None;log=None;owned=None
   helper=REPO/'scripts/rust/check-native-portable-backup.ts';runner=Path(__file__).resolve()
-  evidence={'status':'running','profile':'local-user-macos','noOfflineIdentitySeed':True,'globalSingleUseClaim':False,'webDownload':args.with_web_download,'companyKnowledge':args.with_company_knowledge,'parties':args.with_parties,'inbox':args.with_inbox,'clientAdapters':bool(args.cli_binary),'sourceRevision':subprocess.check_output(['git','rev-parse','HEAD'],cwd=REPO,text=True).strip(),'helperSha256':{'browser':sha(helper),'runner':sha(runner)},'checks':[],'phases':[]}
+  evidence={'status':'running','profile':'local-user-macos','noOfflineIdentitySeed':True,'globalSingleUseClaim':False,'webDownload':args.with_web_download,'companyKnowledge':args.with_company_knowledge,'parties':args.with_parties,'inbox':args.with_inbox,'corporate':args.with_corporate,'clientAdapters':bool(args.cli_binary),'sourceRevision':subprocess.check_output(['git','rev-parse','HEAD'],cwd=REPO,text=True).strip(),'helperSha256':{'browser':sha(helper),'runner':sha(runner)},'checks':[],'phases':[]}
   def save():report.seek(0);report.truncate();json.dump(evidence,report,indent=2);report.flush();os.fsync(report.fileno())
   def stop():
    nonlocal child,log
@@ -65,7 +67,7 @@ def main():
     raise RuntimeError('Owned synthetic server readiness timed out')
    def check(phase):
     if sha(helper)!=evidence['helperSha256']['browser']:raise RuntimeError('Pinned browser helper changed during qualification')
-    subprocess.run(['/opt/homebrew/bin/bun','run',str(helper)],cwd=REPO,env={**os.environ,'RM_PORTABLE_BASE':origin,'RM_PORTABLE_WORK':str(work),'RM_PORTABLE_PHASE':phase,'RM_PORTABLE_WEB_DOWNLOAD':'1'if args.with_web_download else'0','RM_PORTABLE_KNOWLEDGE':'1'if args.with_company_knowledge else'0','RM_PORTABLE_PARTIES':'1'if args.with_parties else'0','RM_PORTABLE_INBOX':'1'if args.with_inbox else'0','RM_PORTABLE_CLIENTS':'1'if args.cli_binary else'0'},check=True)
+    subprocess.run(['/opt/homebrew/bin/bun','run',str(helper)],cwd=REPO,env={**os.environ,'RM_PORTABLE_BASE':origin,'RM_PORTABLE_WORK':str(work),'RM_PORTABLE_PHASE':phase,'RM_PORTABLE_WEB_DOWNLOAD':'1'if args.with_web_download else'0','RM_PORTABLE_KNOWLEDGE':'1'if args.with_company_knowledge else'0','RM_PORTABLE_PARTIES':'1'if args.with_parties else'0','RM_PORTABLE_INBOX':'1'if args.with_inbox else'0','RM_PORTABLE_CORPORATE':'1'if args.with_corporate else'0','RM_PORTABLE_CLIENTS':'1'if args.cli_binary else'0'},check=True)
     evidence['phases'].append(phase);save()
    def refuse(argv,label):
     r=subprocess.run([str(binary)]+argv,cwd=REPO,capture_output=True,text=True,timeout=30)
@@ -77,7 +79,11 @@ def main():
    # Verify each separate timestamped export, never demand two exports be identical.
    names=['portable.native-backup.json']+(['cli.native-backup.json','mcp.native-backup.json']if args.cli_binary else[])
    evidence['verifiedArtifacts']={}
-   inbox_inputs=json.loads((work/'private-state.json').read_text()).get('inboxInputBytes')if args.with_inbox else None
+   source_state=(work/'private-state.json').read_bytes();source_facts=json.loads(source_state)
+   corporate_inputs=source_facts.get('corporateInputBytes')if args.with_corporate else None
+   if args.with_corporate and(not isinstance(corporate_inputs,dict)or len(corporate_inputs)!=3):raise RuntimeError('Expected three corporate original inputs')
+   corporate_section=None
+   inbox_inputs=source_facts.get('inboxInputBytes')if args.with_inbox else None
    if args.with_inbox and(not isinstance(inbox_inputs,dict)or len(inbox_inputs)!=3):raise RuntimeError('Expected three original native inbox inputs')
    for name in names:
     path=work/name
@@ -103,6 +109,34 @@ def main():
       actual[source_id]={'bytes':len(raw),'sha256':digest,'exactInputBytes':True}
      if set(actual)!=set(inbox_inputs):raise RuntimeError('Verified inbox original inventory incomplete')
      evidence['verifiedArtifacts'][name]['inboxOriginals']=actual
+    if args.with_corporate:
+     # Parsing follows independent native signature/inventory verification. The
+     # three archives may differ in audit time, but these source facts must not.
+     package=json.loads(path.read_text());entries=[entry for entry in package['entries']if entry['path']=='control/corporate-records.json']
+     if len(entries)!=1:raise RuntimeError('Verified package missing one corporate section')
+     section=json.loads(base64.b64decode(entries[0]['bytesBase64'],validate=True))
+     if section.get('format')!='rentemester-native-corporate-records/1':raise RuntimeError('Unsupported corporate fixture codec')
+     if corporate_section is not None and section!=corporate_section:raise RuntimeError('Independent archives changed corporate source facts')
+     corporate_section=section
+     table=section['tables']['rm_corporate_record_bytes'];columns=table['columns'];actual={}
+     for row in table['rows']:
+      record_id=row[columns.index('record_id')].get('value')
+      if record_id not in corporate_inputs or record_id in actual:raise RuntimeError('Unexpected/duplicate corporate original identity')
+      cell=row[columns.index('original_bytes')]
+      if cell.get('type')!='BlobBase64':raise RuntimeError('Corporate original is not a BLOB')
+      raw=base64.b64decode(cell['value'],validate=True);expected=base64.b64decode(corporate_inputs[record_id],validate=True);digest=hashlib.sha256(raw).hexdigest()
+      if raw!=expected or row[columns.index('sha256')].get('value')!=digest:raise RuntimeError('Verified corporate original differs from actual uploaded input')
+      actual[record_id]={'bytes':len(raw),'sha256':digest,'exactInputBytes':True}
+     if set(actual)!=set(corporate_inputs):raise RuntimeError('Corporate original inventory incomplete')
+     events=section['tables']['rm_corporate_record_events'];cols=events['columns'];payloads=source_facts['corporatePayloads'];enriched=[];superseded=[]
+     for row in events['rows']:
+      if row[cols.index('record_id')].get('value')!=payloads['originalId']:continue
+      event=row[cols.index('event_type')].get('value');payload=json.loads(row[cols.index('canonical_payload')]['value'])
+      if event=='enriched':enriched.append(payload)
+      if event=='superseded':superseded.append(payload)
+     if enriched!=[{'assertion':payloads['assertion']}]or superseded!=[{'replacementRecordId':payloads['replacementRecordId'],'reason':reason}for reason in payloads['reasons']]:raise RuntimeError('Corporate enrichment/repeated supersession payloads changed')
+     evidence['verifiedArtifacts'][name]['corporateOriginals']=actual
+     evidence['verifiedArtifacts'][name]['corporateSourceSectionSha256']=hashlib.sha256(json.dumps(section,sort_keys=True,separators=(',',':')).encode()).hexdigest()
    save()
    tamper=work/'tampered.json';wire=json.loads(archive.read_text());wire['signatureBase64']=base64.b64encode(bytes(64)).decode();tamper.write_text(json.dumps(wire))
    evidence['checks'].append(refuse(['--verify-backup',str(tamper),'--trusted-backup-key',str(trusted)],'tampered signature'))
@@ -113,9 +147,29 @@ def main():
    (work/'restored').mkdir(mode=0o700);sentinel=work/'restored/sentinel';sentinel.write_text('unchanged synthetic existing target')
    evidence['checks'].append(refuse(command(flags)[1:],'existing target'))
    if sentinel.read_text()!='unchanged synthetic existing target':raise RuntimeError('Existing target changed')
-   shutil.rmtree(work/'restored');start(flags);check('restored');stop()
-   config.pop('firstOwner');write();start([]);check('reopen');stop()
-   state=json.loads((work/'private-state.json').read_text());evidence.update({'status':'passed','normalVerificationAndMfa':True,'restart':True,'oldKeyRefusedWithoutEffect':True,'freshKeyNewIntentPosted':True,'download':state.get('download'),'knowledge':state.get('knowledgeEvidence'),'partyEvidence':state.get('partiesEvidence'),'inboxEvidence':state.get('inboxEvidence'),'clients':state.get('clientEvidence'),'companyUuids':{s:v['uuid']for s,v in state['snapshot'].items()},'originalSha256':state['documentHash'],'invoicePdfSha256':state['pdfHash']})
+   shutil.rmtree(work/'restored')
+   evidence['restoredArtifacts']={}
+   restored_identity=None
+   for index,name in enumerate(names if args.with_corporate else names[:1]):
+    # Every artifact gets a fresh target, ordinary new-owner verification/MFA,
+    # fresh cookie/MFA keys and the original source expectations. Never adopt
+    # prior restored authority or carry a prior test's journal mutation forward.
+    if index:
+     target=work/'restored';st=target.lstat()
+     if target.is_symlink()or(st.st_dev,st.st_ino)!=restored_identity or target.parent!=work:raise RuntimeError('Restored fixture cleanup identity changed')
+     shutil.rmtree(target)
+    (work/'private-state.json').write_bytes(source_state)
+    config['cookieKey']=key();config['mfaKey']=key();config['firstOwner']={'actor':'system:synthetic-installer','email':'restored-owner@example.invalid','name':'Synthetic Restored Owner','password':'synthetic-portable-password-123'};write()
+    flags=['--restore-backup',str(work/name),'--trusted-backup-key',str(trusted),'--confirm-target',config['root'],'--source-unavailable']
+    evidence['activeRestoreArtifact']=name;save()
+    if(work/'source').exists()or(work/'signing.der').exists()or sha(trusted)!=evidence['trustedPublicKeySha256']or sha(work/name)!=evidence['verifiedArtifacts'][name]['sha256']:raise RuntimeError('Source unavailable or independent trust/artifact boundary changed')
+    start(flags);st=(work/'restored').lstat();restored_identity=(st.st_dev,st.st_ino);check('restored');stop()
+    config.pop('firstOwner');write();start([]);check('reopen');stop()
+    restored_state=json.loads((work/'private-state.json').read_text())
+    evidence['restoredArtifacts'][name]={'normalNewOwnerMfa':True,'restart':True,'oldKeyRefusedWithoutEffect':True,'freshKeyNewIntentPosted':True,'corporate':restored_state.get('corporateEvidence'),'parties':restored_state.get('partiesEvidence'),'knowledge':restored_state.get('knowledgeEvidence'),'inbox':restored_state.get('inboxEvidence'),'originalSha256':restored_state['documentHash'],'invoicePdfSha256':restored_state['pdfHash'],'companyUuids':{slug:v['uuid']for slug,v in restored_state['snapshot'].items()}}
+    save()
+   evidence.pop('activeRestoreArtifact',None)
+   state=json.loads((work/'private-state.json').read_text());evidence.update({'status':'passed','normalVerificationAndMfa':True,'restart':True,'oldKeyRefusedWithoutEffect':True,'freshKeyNewIntentPosted':True,'download':state.get('download'),'knowledge':state.get('knowledgeEvidence'),'partyEvidence':state.get('partiesEvidence'),'inboxEvidence':state.get('inboxEvidence'),'corporateEvidence':state.get('corporateEvidence'),'clients':state.get('clientEvidence'),'companyUuids':{s:v['uuid']for s,v in state['snapshot'].items()},'originalSha256':state['documentHash'],'invoicePdfSha256':state['pdfHash']})
    save()
   except BaseException as error:
    evidence.update({'status':'failed','failureType':type(error).__name__});save();raise

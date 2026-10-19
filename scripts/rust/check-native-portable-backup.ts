@@ -79,6 +79,7 @@ const digest=(b:Buffer)=>createHash("sha256").update(b).digest("hex");
 const password="synthetic-portable-password-123";
 const slugs=["synthetic","synthetic-portable-second"];
 async function snapshot(){const out:any={};for(const s of slugs){const journal=(await get(s,"journal")).journal;out[s]={uuid:journal.ledgerUuid,entries:journal.entries,balance:(await get(s,`balance?year=${journal.selectedYear}`)).balance};}return out;}
+const corporateEnabled=process.env.RM_PORTABLE_CORPORATE==="1";
 const inboxEnabled=process.env.RM_PORTABLE_INBOX==="1";
 const partiesEnabled=process.env.RM_PORTABLE_PARTIES==="1";
 const knowledgeEnabled=process.env.RM_PORTABLE_KNOWLEDGE==="1"||partiesEnabled;
@@ -190,6 +191,64 @@ async function prepareInbox(){
  if(!isDeepStrictEqual(await snapshot(),before))throw Error("Inbox upload/approval/handoff changed accounting or company identity");
  return views;
 }
+// Ordinary API-created source facts only. Pre-20 unscoped link rows cannot be
+// created through this API; their exact visibility remains codec-unit coverage.
+const portableCorporateRecords=[
+ {id:"record-portable-corporate-original",sensitivity:"restricted"},
+ {id:"record-portable-corporate-replacement",sensitivity:"normal"},
+ {id:"record-portable-corporate-confidential",sensitivity:"confidential"},
+] as const;
+const corporateBytes=(id:string)=>Buffer.from(`Synthetic portable corporate original ${id}\nExact immutable source bytes.\n`,"utf8");
+const corporateAssertion="Synthetic reviewed portable corporate metadata";
+const corporateReasons=["Synthetic first replacement review","Synthetic repeated replacement review"];
+async function corporateViews(){
+ const views:Record<string,any>={};
+ for(const slug of slugs){
+  const records:Record<string,unknown>={},originals:Record<string,unknown>={};
+  for(const{id}of portableCorporateRecords){
+   const detail=await get(slug,`corporate-records/${id}`),original=await get(slug,`corporate-records/${id}/download`);
+   const bytes=Buffer.from(original.bytesBase64,"base64");
+   if(!bytes.equals(corporateBytes(id))||original.sha256!==digest(bytes)||detail.record.sha256!==original.sha256)throw Error("Corporate immutable original bytes/hash differ");
+   records[id]=detail;originals[id]=original;
+  }
+  const list=await get(slug,"corporate-records?cursor=0&limit=100");
+  if(list.count!==portableCorporateRecords.length||portableCorporateRecords.some(({id})=>!list.rows.some((row:any)=>row.recordId===id)))throw Error("Corporate current company scope/list visibility differs");
+  views[slug]={list,records,originals};
+ }
+ // No session is copied into this independent context, including after restore.
+ const anonymous=await browser.newContext();
+ try{
+  for(const route of ["corporate-records?cursor=0&limit=100",`corporate-records/${portableCorporateRecords[0].id}`,`corporate-records/${portableCorporateRecords[0].id}/download`]){
+   const denied=await anonymous.request.get(company(slugs[0],route));
+   if(![401,403].includes(denied.status()))throw Error("Anonymous corporate access was not refused");
+  }
+ }finally{await anonymous.close();}
+ return views;
+}
+async function prepareCorporate(){
+ if(!partiesEnabled)throw Error("Corporate portable fixture requires its ordinary registered party");
+ const before=await snapshot();
+ for(const{id,sensitivity}of portableCorporateRecords){
+  await post(slugs[0],"corporate-records",{recordId:id,type:"articles",bytesBase64:corporateBytes(id).toString("base64"),filename:`${id}.txt`,source:"Synthetic reviewed portable governance source",receivedAt:"2001-01-01T00:00:00.000Z",recordDate:"2000-12-31",retentionUntil:"2040-01-01",uploader:"Synthetic source uploader declaration",sensitivity,links:[{type:"company",id:slugs[1]}],confirm:true});
+ }
+ const id=portableCorporateRecords[0].id;
+ for(const[type,ref]of [["party",portablePartyId],["ownership","synthetic-portable-opaque-ownership"],["disposition","synthetic-portable-opaque-disposition"],["legacy_evidence_ref","synthetic-portable-opaque-legacy"]])await post(slugs[0],`corporate-records/${id}/link`,{type,id:ref,confirm:true});
+ await post(slugs[0],`corporate-records/${id}/enrich`,{assertion:corporateAssertion,confirm:true});
+ for(const reason of corporateReasons)await post(slugs[0],`corporate-records/${id}/supersede`,{replacementRecordId:portableCorporateRecords[1].id,reason,confirm:true});
+ const views=await corporateViews();
+ const me=await(await page.request.get(`${base}/api/me`)).json();
+ for(const slug of slugs){
+  for(const{id,sensitivity}of portableCorporateRecords){
+   const record=views[slug].records[id].record;
+   if(record.sensitivity!==sensitivity||record.uploader!=="Synthetic source uploader declaration"||record.source!=="Synthetic reviewed portable governance source"||record.recordDate!=="2000-12-31T00:00:00.000Z"||record.retentionUntil!=="2040-01-01T00:00:00.000Z"||record.history.some((h:any)=>h.actor!==`user:${me.user.id}`||!h.created_at||!/^[0-9a-f]{64}$/.test(h.payload_hash)))throw Error("Corporate canonical metadata/provenance incomplete");
+   for(const companySlug of slugs)if(!record.links.some((link:any)=>link.type==="company"&&link.id===companySlug))throw Error("Corporate explicit company association missing");
+  }
+  const record=views[slug].records[id].record;
+  if(record.history.filter((h:any)=>h.event_type==="superseded").length!==2||record.history.filter((h:any)=>h.event_type==="enriched").length!==1||!["party","ownership","disposition","legacy_evidence_ref"].every(type=>record.links.some((link:any)=>link.type===type)))throw Error("Corporate repeated supersession/enrichment/typed links missing");
+ }
+ if(!isDeepStrictEqual(await snapshot(),before))throw Error("Corporate source history changed accounting");
+ return views;
+}
 async function exportClientArtifacts(){
  const maxBytes=96*1024*1024;
  const maxOutput=8*maxBytes+65536; // MCP text+structuredContent repeat the integer array.
@@ -224,6 +283,7 @@ async function exportClientArtifacts(){
 
 try{
  let saved:any=phase==="source"?{}:JSON.parse(readFileSync(statePath,"utf8"));
+ if(phase!=="source"&&Boolean(saved.corporate)!==corporateEnabled)throw Error("RM_PORTABLE_CORPORATE must match the source fixture in every phase");
  if(phase!=="source"&&Boolean(saved.inbox)!==inboxEnabled)throw Error("RM_PORTABLE_INBOX must match the source fixture in every phase");
  if(phase!=="source"&&Boolean(saved.parties)!==partiesEnabled)throw Error("RM_PORTABLE_PARTIES must match the source fixture in every phase");
  if(phase==="reopen")await login(page,"restored-owner@example.invalid",password,saved.recovery);
@@ -279,6 +339,12 @@ try{
    saved.inboxEvidence={sourceIds:portableInboxSources.map(s=>s.id),sourceStates:portableInboxSources.map(s=>s.stage),sourceViewsSha256:digest(Buffer.from(JSON.stringify(saved.inbox))),originalInputSha256:Object.fromEntries(portableInboxSources.map(({id})=>[id,digest(inboxBytes(id))])),targetCompany:slugs[1],targetDocumentId:saved.inbox.original.documentId,targetOriginalSha256:saved.inbox.original.sha256,accountingEffect:"none",pendingClaimAndSplitCoverage:"Existing codec/Owner tests only; this API fixture has no claimed/split/crash injection"};
    if(!isDeepStrictEqual(await snapshot(),saved.snapshot))throw Error("Inbox lifecycle changed prior ledger/report snapshots");
   }
+  if(corporateEnabled){
+   saved.corporate=await prepareCorporate();
+   saved.corporateInputBytes=Object.fromEntries(portableCorporateRecords.map(({id})=>[id,corporateBytes(id).toString("base64")]));
+   saved.corporatePayloads={assertion:corporateAssertion,reasons:corporateReasons,replacementRecordId:portableCorporateRecords[1].id,originalId:portableCorporateRecords[0].id};
+   saved.corporateEvidence={recordIds:portableCorporateRecords.map(r=>r.id),sensitivities:portableCorporateRecords.map(r=>r.sensitivity),sourceViewsSha256:digest(Buffer.from(JSON.stringify(saved.corporate))),associatedCompanies:slugs,partyId:portablePartyId,repeatedSupersessions:2,anonymousAccessRefused:true,accountingEffect:"none",legacyScopeCoverage:"Codec unit tests only: native API does not create pre-20 unscoped links",reducedRoleSensitivityCoverage:"Existing native authorization/codec unit tests; this J05 fixture uses an ordinary all-company owner"};
+  }
   if(process.env.RM_PORTABLE_CLIENTS==="1")saved.clientEvidence=await exportClientArtifacts();
   if(partiesEnabled&&!isDeepStrictEqual(await partiesViews(),saved.parties))throw Error("Backup client exports changed party history");
   if(knowledgeEnabled&&!isDeepStrictEqual(await knowledgeViews(),saved.knowledge))throw Error("Backup client exports changed knowledge history");
@@ -300,6 +366,10 @@ try{
    writeFileSync(join(work,"portable.native-backup.json"),await archive.body(),{mode:0o600});
   }
  }else{
+  if(corporateEnabled){
+   if(!saved.corporate||!isDeepStrictEqual(await corporateViews(),saved.corporate))throw Error("Restored corporate metadata/links/enrichment/supersession history/visibility/originals differ from original API evidence");
+   saved.corporateEvidence[phase==="reopen"?"exactAfterRestart":"exactAfterRestore"]=true;
+  }
   if(inboxEnabled){
    if(!saved.inbox||!isDeepStrictEqual(await inboxViews(),saved.inbox))throw Error("Restored inbox full sources/history/assignments/target views/original bytes differ from original API evidence");
    saved.inboxEvidence[phase==="reopen"?"exactAfterRestart":"exactAfterRestore"]=true;
@@ -328,6 +398,7 @@ try{
    saved.bank=afterBank;saved.snapshot=await snapshot();
   }
  }
+ if(corporateEnabled&&!isDeepStrictEqual(await corporateViews(),saved.corporate))throw Error("Portable phase changed corporate canonical source/history/originals");
  if(inboxEnabled&&!isDeepStrictEqual(await inboxViews(),saved.inbox))throw Error("Portable phase changed inbox source/history/document/original views");
  if(partiesEnabled&&!isDeepStrictEqual(await partiesViews(),saved.parties))throw Error("Portable phase changed canonical party source history");
  if(knowledgeEnabled&&!isDeepStrictEqual(await knowledgeViews(),saved.knowledge))throw Error("Portable phase changed fixed-date knowledge source history");
