@@ -89,6 +89,18 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
             }) {
                 return refused(StatusCode::FORBIDDEN, "access_denied");
             }
+            if let Err(f) = &attempt.outcome
+                && f.stage == FailureStage::NotCommitted
+                && matches!(
+                    f.error.code,
+                    "IDEMPOTENCY_CONFLICT" | "IDEMPOTENCY_OUTCOME_EXPIRED"
+                )
+            {
+                return response(
+                    StatusCode::CONFLICT,
+                    json!({"ok":false,"code":f.error.code,"errors":[f.error.message]}),
+                );
+            }
             match super::documents::outcome(attempt) {
                 Ok(v) => response(StatusCode::OK, v),
                 Err(r) => *r,
