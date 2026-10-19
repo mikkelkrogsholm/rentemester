@@ -1,15 +1,18 @@
 import { createHmac, createHash } from "node:crypto";
 import { createConnection } from "node:net";
-import { readdirSync, readFileSync, writeFileSync, statSync } from "node:fs";
+import { spawnSync } from "node:child_process";
+import { isDeepStrictEqual } from "node:util";
+import { readdirSync, readFileSync, writeFileSync, statSync, realpathSync, unlinkSync } from "node:fs";
 import { basename, join, resolve } from "node:path";
 import { chromium, type Page } from "@playwright/test";
 const work=resolve(process.env.RM_PORTABLE_WORK??"");
 if(!basename(work).startsWith("Rentemester-Synthetic-Portable-")||(statSync(work).mode&0o077)!==0)throw Error("Owned private portable fixture required");
 const config=JSON.parse(readFileSync(join(work,"server.json"),"utf8"));
-if(config.workspace!=="synthetic-native-portable"||!String(config.root).startsWith(work+"/"))throw Error("Synthetic fixture only");
+if(config.workspace!=="synthetic-native-portable"||![join(work,"source"),join(work,"restored")].includes(config.root))throw Error("Synthetic fixture only");
 const base=process.env.RM_PORTABLE_BASE!;
 if(!/^http:\/\/127\.0\.0\.1:\d+$/.test(base))throw Error("Literal loopback only");
 const phase=process.env.RM_PORTABLE_PHASE!;
+if(!["source","restored","reopen"].includes(phase))throw Error("Explicit portable fixture phase required");
 const browser=await chromium.launch({headless:true});
 const page=await browser.newPage();page.setDefaultTimeout(45000);
   function totp(secret: string) {
@@ -76,6 +79,67 @@ const digest=(b:Buffer)=>createHash("sha256").update(b).digest("hex");
 const password="synthetic-portable-password-123";
 const slugs=["synthetic","synthetic-portable-second"];
 async function snapshot(){const out:any={};for(const s of slugs){const journal=(await get(s,"journal")).journal;out[s]={uuid:journal.ledgerUuid,entries:journal.entries,balance:(await get(s,`balance?year=${journal.selectedYear}`)).balance};}return out;}
+const knowledgeEnabled=process.env.RM_PORTABLE_KNOWLEDGE==="1";
+const knowledgeAsOf="2026-06-01";
+async function knowledgeViews(){
+ const views:Record<string,unknown>={};
+ for(const slug of slugs)views[slug]={current:await get(slug,`knowledge?asOf=${knowledgeAsOf}&includeProposed=false`),withProposed:await get(slug,`knowledge?asOf=${knowledgeAsOf}&includeProposed=true`)};
+ return views;
+}
+async function prepareKnowledge(){
+ const source={kind:"user",ref:"synthetic-portable-knowledge-owner-brief"};
+ const propose=(predicate:string,value:unknown,ref:string,slug="synthetic")=>post(slug,"knowledge/propose",{predicate,value,source:{...source,ref},validFrom:"2000-01-01",certainty:"confirmed",confirm:true});
+ const review=(id:string,decision:"approved"|"rejected",reason:string,slug="synthetic")=>post(slug,"knowledge/review",{assertionId:id,decision,reason,confirm:true});
+ const old=(await propose("products_services",["Synthetic previous service"],"synthetic-portable-old-service")).assertion;
+ await review(old.assertionId,"approved","Synthetic original source reviewed");
+ const changed=await post("synthetic","knowledge/supersede",{assertionId:old.assertionId,replacement:{predicate:"products_services",value:["Synthetic reviewed replacement service"],source:{...source,ref:"synthetic-portable-replacement-brief"},validFrom:"2026-02-01",certainty:"confirmed"},confirm:true});
+ if(changed.superseded?.reviewState!=="superseded"||changed.replacement?.reviewState!=="proposed")throw Error("Knowledge supersession manufactured replacement approval");
+ await review(changed.replacement.assertionId,"approved","Synthetic replacement source independently reviewed");
+ const pending=(await propose("operational_systems",["Synthetic pending operating platform"],"synthetic-portable-pending-system")).assertion;
+ const rejected=(await propose("document_sources",["Synthetic rejected evidence source"],"synthetic-portable-rejected-source")).assertion;
+ await review(rejected.assertionId,"rejected","Synthetic source was not accepted");
+ const other=(await propose("products_services",["Synthetic distinct second-company service"],"synthetic-portable-second-service",slugs[1])).assertion;
+ await review(other.assertionId,"approved","Synthetic separate company source reviewed",slugs[1]);
+ const views:any=await knowledgeViews();const sourceView=views.synthetic;
+ if(sourceView.current.context.asOf!=="2026-06-01T00:00:00.000Z"||sourceView.current.history.length!==4)throw Error("Fixed knowledge date/full history missing");
+ const expected=new Map([[old.assertionId,"superseded"],[changed.replacement.assertionId,"approved"],[pending.assertionId,"proposed"],[rejected.assertionId,"rejected"]]);
+ for(const row of sourceView.current.history){if(expected.get(row.assertionId)!==row.reviewState||!row.source?.ref||!row.actor||!row.principal?.id||row.history.length===0)throw Error("Knowledge review/provenance/history fixture incomplete");}
+ const ids=(v:any)=>v.context.assertions.map((a:any)=>a.assertionId);
+ if(!isDeepStrictEqual(ids(sourceView.current),[changed.replacement.assertionId])||!ids(sourceView.withProposed).includes(pending.assertionId)||views[slugs[1]].current.history.length!==1||views[slugs[1]].current.context.assertions[0]?.assertionId!==other.assertionId)throw Error("Knowledge proposal/rejection/supersession/company isolation not reflected in actual context");
+ return views;
+}
+async function exportClientArtifacts(){
+ const maxBytes=96*1024*1024;
+ const maxOutput=8*maxBytes+65536; // MCP text+structuredContent repeat the integer array.
+ const cookie=join(work,"source-clients.cookie");
+ writeFileSync(cookie,(await page.context().cookies(base)).map(c=>`${c.name}=${c.value}`).join("; "),{mode:0o600,flag:"wx"});
+ const common=["--server",base,"--allow-loopback-http","--cookie-file",cookie];
+ const before=await snapshot();const results:Record<string,unknown>={};
+ try{
+  for(const kind of ["cli","mcp"]){
+   const executable=join(work,kind==="cli"?"rentemester-rust":"rentemester-mcp");
+   if(realpathSync(executable)!==executable||!statSync(executable).isFile())throw Error("Only pinned owned client executable allowed");
+   const messages=[{jsonrpc:"2.0",id:1,method:"initialize",params:{protocolVersion:"2025-11-25",capabilities:{},clientInfo:{name:"synthetic-portable-backup",version:"1"}}},{jsonrpc:"2.0",method:"notifications/initialized"},{jsonrpc:"2.0",id:2,method:"tools/list"},{jsonrpc:"2.0",id:3,method:"tools/call",params:{name:"workspace_backup",arguments:{confirm:true}}}];
+   const result=spawnSync(executable,kind==="cli"?["remote","workspace-backup",...common,"--confirm"]:common,{input:kind==="cli"?"":messages.map(m=>JSON.stringify(m)).join("\n")+"\n",encoding:"utf8",maxBuffer:maxOutput,timeout:120000});
+   if(result.error||result.status!==0)throw Error(`Pinned ${kind} workspace backup subprocess failed`);
+   let native:any,toolsCount:number|undefined;
+   if(kind==="cli")native=JSON.parse(result.stdout).data;
+   else{
+    const rows=result.stdout.trim().split("\n").map(row=>JSON.parse(row));const list=rows.find(row=>row.id===2)?.result?.tools;const call=rows.find(row=>row.id===3);
+    const tool=list?.find((t:any)=>t.name==="workspace_backup");
+    if(!tool||!isDeepStrictEqual(tool.inputSchema,{type:"object",required:["confirm"],properties:{confirm:{const:true}},additionalProperties:false})||call?.error||call?.result?.isError)throw Error("MCP workspace backup discovery/call contract failed");
+    toolsCount=list.length;native=call.result.structuredContent?.data;
+   }
+   const bytes=native?.backup?.bytes;
+   if(native?.ok!==true||native.backup.contentType!=="application/vnd.rentemester.native-backup+json"||!Array.isArray(bytes)||bytes.length===0||bytes.length>maxBytes||!bytes.every((b:unknown)=>typeof b==="number"&&Number.isInteger(b)&&b>=0&&b<=255))throw Error(`Invalid ${kind} raw backup byte envelope`);
+   const artifact=Buffer.from(bytes);writeFileSync(join(work,`${kind}.native-backup.json`),artifact,{mode:0o600,flag:"wx"});
+   if(!isDeepStrictEqual(await snapshot(),before))throw Error(`${kind} backup changed accounting`);
+   results[kind]={bytes:artifact.length,sha256:digest(artifact),toolsCount,noLedgerEffects:true};
+  }
+ }finally{unlinkSync(cookie);}
+ return results;
+}
+
 try{
  let saved:any=phase==="source"?{}:JSON.parse(readFileSync(statePath,"utf8"));
  if(phase==="reopen")await login(page,"restored-owner@example.invalid",password,saved.recovery);
@@ -115,6 +179,13 @@ try{
   await post("synthetic","invoices/post",{confirm:true,invoiceDocumentId:saved.invoice.documentId,revenueAccountNo:"1000"});
   const pdf=await page.request.get(company("synthetic",`invoices/${saved.invoice.documentId}/pdf`));if(!pdf.ok())throw Error("Source PDF missing");saved.pdfHash=digest(await pdf.body());
   saved.bank=(await get("synthetic","bank")).bank;saved.snapshot=await snapshot();
+  if(knowledgeEnabled){
+   saved.knowledge=await prepareKnowledge();
+   if(!isDeepStrictEqual(await snapshot(),saved.snapshot))throw Error("Knowledge lifecycle changed accounting");
+   saved.knowledgeEvidence={asOf:knowledgeAsOf,sourceViewsSha256:digest(Buffer.from(JSON.stringify(saved.knowledge))),primaryHistoryRecords:4,secondHistoryRecords:1};
+  }
+  if(process.env.RM_PORTABLE_CLIENTS==="1")saved.clientEvidence=await exportClientArtifacts();
+  if(knowledgeEnabled&&!isDeepStrictEqual(await knowledgeViews(),saved.knowledge))throw Error("Backup client exports changed knowledge history");
   if(process.env.RM_PORTABLE_WEB_DOWNLOAD==="1"){
    await page.goto(`${base}/companies/synthetic/integritet`);const card=page.locator(".native-backup");
    await card.getByLabel("Jeg vil hente en backup af hele workspacet.",{exact:true}).check();
@@ -133,6 +204,10 @@ try{
    writeFileSync(join(work,"portable.native-backup.json"),await archive.body(),{mode:0o600});
   }
  }else{
+  if(knowledgeEnabled){
+   if(!saved.knowledge||!isDeepStrictEqual(await knowledgeViews(),saved.knowledge))throw Error("Restored knowledge context/history/provenance differs from original fixed-date API response");
+   saved.knowledgeEvidence[phase==="reopen"?"exactAfterRestart":"exactAfterRestore"]=true;
+  }
   const now=await snapshot();for(const s of slugs){if(now[s].uuid!==saved.snapshot[s].uuid||JSON.stringify(now[s].entries)!==JSON.stringify(saved.snapshot[s].entries)||JSON.stringify(now[s].balance)!==JSON.stringify(saved.snapshot[s].balance))throw Error(`Restored ledger/report changed: ${s}`);}
   const me=await(await page.request.get(`${base}/api/me`)).json();if(me.companies.length!==2||me.companies.some((c:any)=>c.role!=="owner"))throw Error("Explicit restored creator grants absent");
   const oldLogin=await page.request.post(`${base}/api/auth/sign-in/email`,{headers,data:{email:"source-owner@example.invalid",password}});if(oldLogin.ok())throw Error("Source credentials inherited");
