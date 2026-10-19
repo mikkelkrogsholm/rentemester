@@ -12,8 +12,11 @@ import { api } from "../lib/api";
 import { useAsync } from "../lib/useAsync";
 import type { CompanyIntegrity } from "../lib/types";
 import { ErrorState, Loading } from "../components/Feedback";
+import { useOptionalAuth } from "../lib/auth-context";
+import { NativeBackupCard } from "../components/NativeBackupCard";
 
 export function IntegrityView() {
+  const auth = useOptionalAuth();
   const { slug = "" } = useParams();
   const state = useAsync<CompanyIntegrity>(
     (signal) => api.integrity(slug, { signal }),
@@ -54,6 +57,8 @@ export function IntegrityView() {
         </div>
 
       </PageHeader>
+
+      {auth?.backend === "rust" && <NativeBackupCard />}
 
       {chainFailed && (
         <div className="callout danger">

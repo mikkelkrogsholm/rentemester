@@ -1,10 +1,10 @@
 {
   "goal": "Complete Rust server/web, GPUI local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "parallel-platform-24",
-  "code_revision": "git:a2945c02",
+  "current_increment": "parallel-platform-25",
+  "code_revision": "git:17606c4c plus native backup web entry",
   "spec_revision": "sha256:13a0386803d4f4e35af6fdf8a020cd851d759c4369c9d172a4e0f29459510cd0",
-  "state": "Real multi-company creation/atomic dispatch integrated9a0c12c8 and actual native normal owner/reader verification/MFA, separate postings/reports/current permissions and restart PASS. New company SDK/CLI/MCP integratedee023f40,169tests/3existingignored PASS; actual87tool separate companies/calendars/UUID/catalog/profile/chart/journal parity and fresh MFA/restart PASS after precise primary-link selector repair. SAF-T customv3 web/server/shared clients integrated0808945e with88tools,11focusedRust+48MCP+3UItests, strict8packageClippy/web/nativebuild PASS; Group23 actual Linux composed qualification PASS (70 checks and 8 browser confirmations across initial/restart). Subsequent targeted regression found erased mutable contact fields reappearing in SAF-T MasterFiles; shared-overlay repair passes5storage tests and strictClippy/build; actual isolated privacy qualification PASS through web/CLI/MCP and fresh MFA restart. Signed native backup artifact integrated with12tests/strictClippy; live snapshot/restore still being built. Native windows pending locked Mac; full Rust goal/epic672 remain open.",
+  "state": "Real multi-company creation/atomic dispatch integrated9a0c12c8 and actual native normal owner/reader verification/MFA, separate postings/reports/current permissions and restart PASS. New company SDK/CLI/MCP integratedee023f40,169tests/3existingignored PASS; actual87tool separate companies/calendars/UUID/catalog/profile/chart/journal parity and fresh MFA/restart PASS after precise primary-link selector repair. SAF-T customv3 web/server/shared clients integrated0808945e with88tools,11focusedRust+48MCP+3UItests, strict8packageClippy/web/nativebuild PASS; Group23 actual Linux composed qualification PASS (70 checks and 8 browser confirmations across initial/restart). Subsequent targeted regression found erased mutable contact fields reappearing in SAF-T MasterFiles; shared-overlay repair passes5storage tests and strictClippy/build; actual isolated privacy qualification PASS through web/CLI/MCP and fresh MFA restart. Signed native backup artifact integrated with12tests/strictClippy; live snapshot/restore still being built. Native windows pending locked Mac; full Rust goal/epic672 remain open. Native backup web download entry ready with11UI/integrity tests andwebbuild PASS; actual integrated backup/server and recovery pending.",
   "issues_closed": [],
   "next": [
     "Integrate next ready complete user flow: native VAT/periods, reminders/claim receipts or live backup/recovery.",
@@ -354,6 +354,11 @@
       "scope": "Shared contact erasure projection for SAF-T customers/suppliers; raw retained records and immutable journal unchanged. Actual targeted browser/CLI/MCP and fresh MFA restart PASS; normal verification/MFA, exact synthetic cleanup; separate from nonempty Group23 accounting baseline.",
       "report": "/tmp/rentemester-rust-reports/native-saft-privacy-integrated24.json",
       "artifacts": "/tmp/rm-platform24-saft-privacy-artifacts.json"
+    },
+    "platform25_backup_web": {
+      "tests": "/tmp/rm-platform25-backup-ui-tests.log (11PASS)",
+      "build": "/tmp/rm-platform25-backup-web-build.log (PASS)",
+      "scope": "Rust-only Integrity workspace backup review/confirmation; exact server MIME/blob download, no restore-verification claim; shared unknown-outcome gate, no automatic retry. Backend snapshot/restore delivery and actual integrated download remain pending."
     }
   },
   "verified_history": [

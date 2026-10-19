@@ -1134,3 +1134,14 @@ som kontaktvisningen; rå historik og journal ændres ikke. Målrettede tests
 består. Særskilt web-/CLI-/MCP-kontrol efter sletning og genstart med nyt
 MFA-login består også; den dækker de felter, som den fælles kontaktmaskering
 faktisk understøtter.
+
+## Hent signeret workspace-backup fra web
+
+Rust-UI’ets **Integritet** har nu et kort til eksplicit bekræftet download af
+hele workspacets backup. Det bruger serverens signerede fil direkte og
+medtager ingen serverstier eller nøgler i forespørgslen. En afbrudt forespørgsel
+gentages ikke automatisk. Downloadkvitteringen beviser ikke gendannelse.
+
+Web-handlingen og de eksisterende integritetsvisninger består 11 tests og
+web-build. Selve backup-/gendannelsesserveren udvikles parallelt; samlet
+web-download og gendannelse er endnu ikke accepteret.
