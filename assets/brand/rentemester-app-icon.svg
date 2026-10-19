@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-labelledby="title desc">
+  <title id="title">Rentemester appikon</title>
+  <desc id="desc">Elfenbensfarvet R-monogram på en teglrød, afrundet flade.</desc>
+  <rect x="72" y="72" width="880" height="880" rx="198" fill="#A6332A"/>
+  <path fill="#F4F1EB" fill-rule="evenodd" transform="translate(0 -23)" d="M230 248H500C668 248 748 311 748 423C748 508 696 566 610 590L724 756C740 779 756 790 786 794V820H600L445 598H418V742C418 778 435 791 481 794V820H230V794C277 790 293 777 293 742V325C293 290 278 276 230 272ZM418 288V555H483C576 555 620 511 620 424C620 330 575 288 485 288Z"/>
+</svg>

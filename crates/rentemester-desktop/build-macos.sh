@@ -20,6 +20,7 @@ mkdir -p "$bundle/Contents/MacOS" "$bundle/Contents/Resources/web"
 cp "$root/target/debug/rentemester-desktop" "$bundle/Contents/MacOS/rentemester-desktop"
 cp "$root/target/debug/rentemester-server" "$bundle/Contents/MacOS/rentemester-server"
 cp -R "$web_source/." "$bundle/Contents/Resources/web/"
+cp "$root/assets/brand/rentemester-app-icon.icns" "$bundle/Contents/Resources/Rentemester.icns"
 cat > "$bundle/Contents/Info.plist" <<'PLIST'
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -28,6 +29,7 @@ cat > "$bundle/Contents/Info.plist" <<'PLIST'
 <key>CFBundleName</key><string>Rentemester Desktop</string>
 <key>CFBundleExecutable</key><string>rentemester-desktop</string>
 <key>CFBundlePackageType</key><string>APPL</string>
+<key>CFBundleIconFile</key><string>Rentemester.icns</string>
 <key>CFBundleVersion</key><string>0.1.0</string>
 <key>NSHighResolutionCapable</key><true/>
 </dict></plist>
