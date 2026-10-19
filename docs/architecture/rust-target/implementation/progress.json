@@ -1,15 +1,15 @@
 {
   "goal": "Complete Rust server/web, GPUI local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "Explicit service-authorized hosted recurring issuance and signed V3 suspended recovery",
-  "code_revision": "9d4538c93bb3c4f102ecd3260d4879ac7b9dfe65",
+  "current_increment": "HTTPS owner and invitation mail, password recovery through web, and clean native bundle assembly",
+  "code_revision": "fd33e4134f4cde23008fc3f80d3a72d0b2081148",
   "spec_revision": "sha256:13a0386803d4f4e35af6fdf8a020cd851d759c4369c9d172a4e0f29459510cd0",
-  "state": "Actual Group53 PASS: normal web owner verification/MFA, web service creation/activation/company grant, CLI rotation/revoke and MCP inventory/lost-response recovery. Explicit reviewed hosted consent then browser-closed server issuance creates exactly one unposted/unsent JSON/PDF with distinct service actor and human grantor; restart with fresh key injection and ordinary MFA preserves exact state without replay. Signed V3 archive independently verified after source/private-key deletion, restored with fresh owner/normal MFA, preserves originals/history/UUID while service inventory is empty, old key refuses and hosted consent/queue stay inactive; closed-browser observation produces no generation. Owned cleanup verified. Web19PASS/build, native191PASS/1existingignored/build; core/server/SDK/CLI/MCP focused tests and strict checks pass,158tools. Actual native financial GUI remains unqualified after bounded keyboard/focus attempt. External delivery/other hosted jobs/J06/full mission/epic672/J01-J07 remain OPEN.",
+  "state": "Actual Group54 PASS without debugger: canonical HTTPS reverse proxy, explicit trusted-CA HTTPS mail gateway, normal first-owner verification/MFA, web invitation and independent invited-user verification/MFA. Gateway accepts reset mail then exceeds eight-second budget; committed link remains usable through actual web reset. Old session/password and consumed token refuse, reset mints no session, new password requires existing MFA; unrelated owner session survives. Restart preserves both identities, existing MFA, accepted invitation and canonical ledger/UUID. Secure HttpOnly cookie verified; exact owned cleanup confirmed. All mail stays synthetic/local; real provider/mailbox/proxy/Linux deployment not qualified. Fixed host recovery wrappers preserve committed/unknown outcomes;2 focused host tests,6 integrated server binary tests,1 runtime gateway input test,1 local Mac restart regression and strict host/runtime/server checks pass. Native clean staging respects target/profile and adds exact SHA256 manifest; fixture/root shell check PASS, Finder/signing/notarization and actual new native financial GUI remain open. Prior Group53 hosted issuance/V3 recovery and all older proofs retained. Full mission/epic672/J01-J07 remain OPEN.",
   "issues_closed": [],
   "next": [
-    "Complete remote HTTPS owner verification, invitations and password recovery by composing existing mail transport, secure cookies and recovery routes; verify a complete ordinary two-user lifecycle.",
-    "Deliver a standalone macOS bundle with clean staging and native artifact provenance, then qualify installed local and remote journeys.",
-    "Complete durable external effects and J06 managed local/server handoff with receipt/identity reconciliation; retain full mission completion gates."
+    "Complete durable external invoice delivery with reservation before I/O, explicit current authority and accepted/refused/unknown recovery; keep issuance, posting and sending separate.",
+    "Build J06 managed local/server handoff with durable source fencing and explicit receipt/identity reconciliation after external-effect prerequisites.",
+    "Qualify a copied standalone macOS bundle and actual native financial journeys using a supported interaction route; finish signing/update provenance and full original parity gates."
   ],
   "preserve_unrelated_paths": [
     ".claude/settings.json",
@@ -19,7 +19,7 @@
     ".gitattributes"
   ],
   "all_goal_requirements_complete": false,
-  "previous_verified_increment": "Full signed scheduler backup and explicit restored-owner continuation across web/CLI/MCP",
+  "previous_verified_increment": "Explicit service-authorized hosted recurring issuance and signed V3 suspended recovery",
   "evidence": {
     "combined_browser_log": "/tmp/rm-platform5-combined.log",
     "combined_browser_exit": 0,
@@ -657,6 +657,87 @@
       "mcp_result": "80PASS/158tools",
       "native_actual": "/tmp/rentemester-rust-reports/native-keyboard53-evidence.json",
       "native_financial_gui_qualified": false
+    },
+    "platform54_https_identity_actual": {
+      "report": "/tmp/rentemester-rust-reports/hosted-auth-integrated54-navigation7.json",
+      "sha256": "bb86e31a1acf672e076556369f157774b9c593aa044503d67b70e9c9117067a2",
+      "exit": 0,
+      "source_revision": "fd33e4134f4cde23008fc3f80d3a72d0b2081148",
+      "runner_sha256": "b7aa5e944c18ad013ad8d31ea5a7568e25207349fc43fdc7bf00335004bf8c2b",
+      "browser_helper_sha256": "a6d5ddd76b1cce3aa837c2ffca67d227f570722239c9bf4405fc247dfff201f1",
+      "runtime_artifacts": "/tmp/rm-platform54-runtime-artifacts.json",
+      "server_sha256": "4a22f487b1ffab213dc6572c3bf091d43c6a5d224e029c6f7d61d5ee1c1baa3a",
+      "actual_log": "/tmp/rm-platform54-auth-navigation7.log",
+      "scope": "Actual Group54 PASS without debugger: canonical HTTPS reverse proxy, explicit trusted-CA HTTPS mail gateway, normal first-owner verification/MFA, web invitation and independent invited-user verification/MFA. Gateway accepts reset mail then exceeds eight-second budget; committed link remains usable through actual web reset. Old session/password and consumed token refuse, reset mints no session, new password requires existing MFA; unrelated owner session survives. Restart preserves both identities, existing MFA, accepted invitation and canonical ledger/UUID. Secure HttpOnly cookie verified; exact owned cleanup confirmed. All mail stays synthetic/local; real provider/mailbox/proxy/Linux deployment not qualified. Fixed host recovery wrappers preserve committed/unknown outcomes;2 focused host tests,6 integrated server binary tests,1 runtime gateway input test,1 local Mac restart regression and strict host/runtime/server checks pass. Native clean staging respects target/profile and adds exact SHA256 manifest; fixture/root shell check PASS, Finder/signing/notarization and actual new native financial GUI remain open. Prior Group53 hosted issuance/V3 recovery and all older proofs retained. Full mission/epic672/J01-J07 remain OPEN.",
+      "gateway": {
+        "https": true,
+        "trustedCaSha256": "c7fc37ace98bd67bc66b17f26ae6b20c581c48ad91b2ed68ee80d4889b42d06a",
+        "acceptedMessages": 4,
+        "requests": [
+          {
+            "kind": "verification",
+            "idempotencyHash": "69010da38026b37778d0c9910adbb10576e3e89c0a6cf0cba7cd25f4863c4f9e",
+            "timeoutAfterAcceptance": false
+          },
+          {
+            "kind": "workspace-invitation",
+            "idempotencyHash": "56eb64063a42f6ecfa42a79acce53f22745c68ddbd824ac94ec567fbd470786f",
+            "timeoutAfterAcceptance": false
+          },
+          {
+            "kind": "verification",
+            "idempotencyHash": "59ee82488e9ea3c27dabb5a71fab3349f02bedbe4e08b69b33bdd3d0ead13c6c",
+            "timeoutAfterAcceptance": false
+          },
+          {
+            "kind": "password-reset",
+            "idempotencyHash": "9a66c72d5f1567a8077edd69063025d4a55a0d26264fdd9ea17db655cca877fd",
+            "timeoutAfterAcceptance": true
+          }
+        ],
+        "timeoutAfterAcceptanceCount": 1
+      },
+      "owned_cleanup_verified": true,
+      "fixture_absent": true,
+      "debugger_used": false,
+      "external_mail_delivered": false,
+      "prior_attempts": [
+        "hosted-auth-integrated54.json",
+        "hosted-auth-integrated54-diagnostic2.json",
+        "hosted-auth-integrated54-hostfix3.json",
+        "hosted-auth-integrated54-resetdiag4.json",
+        "hosted-auth-integrated54-clientdiag5.json",
+        "hosted-auth-integrated54-final6.json"
+      ],
+      "diagnosed_harness_repairs": [
+        "Proxy forwarded duplicate Host; now exactly one canonical Host.",
+        "Wait for unique forgot-password heading before filling shared E-mail label; earlier fill raced React route transition. No reset UI product repair was needed.",
+        "Close controller stdin after finish; instrumented attempt5 passed all functional/restart assertions but controller shutdown timed out. Final7 has no debugger and terminates0.",
+        "Failure diagnostics redact callback bearer paths and record only bounded safe page/request state."
+      ],
+      "limitations": [
+        "Synthetic local macOS TLS gateway/proxy only, no real email/provider delivery",
+        "No production Linux/proxy qualification",
+        "Native package fixture does not prove installed GUI/signing/notarization"
+      ]
+    },
+    "platform54_integrated_checks": {
+      "host_tests": "/tmp/rm-recovery54-host-tests.log",
+      "host_result": "2PASS",
+      "host_clippy": "/tmp/rm-recovery54-clippy.log",
+      "server_tests": "/tmp/rm-platform54-server-tests.log",
+      "server_result": "6PASS",
+      "server_clippy": "/tmp/rm-platform54-server-clippy.log",
+      "runtime_tests": "/tmp/rm-platform54-mail-runtime.log",
+      "runtime_result": "1PASS",
+      "runtime_clippy": "/tmp/rm-platform54-runtime-clippy.log",
+      "local_regression": "/tmp/rm-platform54-local-regression.log",
+      "local_result": "1PASS",
+      "server_build": "/tmp/rm-platform54-server-build.log",
+      "native_package_commit": "7260624f",
+      "native_package_fixture": "python3 scripts/release/assemble-native-macos.py --self-test: PASS in integrated root",
+      "native_package_shell": "sh -n crates/rentemester-desktop/build-macos.sh: PASS",
+      "new_native_gui_qualified": false
     }
   },
   "verified_history": [
@@ -1061,13 +1142,20 @@
       "code_revision": "29b6ae709c92d48d8932fa79c62da8244ebccccc",
       "spec_revision": "sha256:13a0386803d4f4e35af6fdf8a020cd851d759c4369c9d172a4e0f29459510cd0",
       "state": "Actual Group52 PASS: all3 independently signed web/CLI/MCP archives verified after source/private-key deletion, each fresh normal-new-ownerMFA restore/reopen. Exact15historical scheduler events/5templates/originalJSON+PDF/2UUIDs preserved with imported consent/queue inactive. Browser plus separate CLI/MCP reviewed reconsent performs no issuance; explicit new catch-up+dispatch issues exactly1additional unposted/unsent original/PDF and duplicate period refuses. Each reopen preserves exact21event projection and source/new originals, prior ledger/bank/receipt boundaries; owned cleanup verified. Full signed V1/V2 rebackup/secondrestore/unresolved/corruptrefs covered by focused storage/host tests; not claimed as additional browser scenarios. SDK4/CLI3/MCP77(150tools), core8/backup16, web11+13, native189PASS/1existingignored and builds/strictClippy passed. Actual new native GUI remains unqualified due confirmed CUA pointer/scroll limitation. Hosted workers/provider effects/J06/full goal/epic672/J01-J07 remain OPEN."
+    },
+    {
+      "current_increment": "Explicit service-authorized hosted recurring issuance and signed V3 suspended recovery",
+      "code_revision": "9d4538c93bb3c4f102ecd3260d4879ac7b9dfe65",
+      "spec_revision": "sha256:13a0386803d4f4e35af6fdf8a020cd851d759c4369c9d172a4e0f29459510cd0",
+      "state": "Actual Group53 PASS: normal web owner verification/MFA, web service creation/activation/company grant, CLI rotation/revoke and MCP inventory/lost-response recovery. Explicit reviewed hosted consent then browser-closed server issuance creates exactly one unposted/unsent JSON/PDF with distinct service actor and human grantor; restart with fresh key injection and ordinary MFA preserves exact state without replay. Signed V3 archive independently verified after source/private-key deletion, restored with fresh owner/normal MFA, preserves originals/history/UUID while service inventory is empty, old key refuses and hosted consent/queue stay inactive; closed-browser observation produces no generation. Owned cleanup verified. Web19PASS/build, native191PASS/1existingignored/build; core/server/SDK/CLI/MCP focused tests and strict checks pass,158tools. Actual native financial GUI remains unqualified after bounded keyboard/focus attempt. External delivery/other hosted jobs/J06/full mission/epic672/J01-J07 remain OPEN."
     }
   ],
   "active_work": [],
   "integrated_pending_browser": [
     "Actual native financial/scheduling GUI remains unqualified after bounded keyboard and focus-repair attempt; no blind repetition.",
+    "Actual standalone macOS copied bundle/Finder/signing/notarization and production Linux/HTTPS/provider deployment remain unqualified.",
     "Other hosted jobs, external provider effects and J06 managed handoff remain incomplete.",
-    "Group53 actual V3 recovery uses one signed archive and one fresh restore; second restore/reconsent/new worker, sleep/DST, Linux isolation and global single-use are not qualified."
+    "Group53 actual V3 recovery uses one signed archive and one fresh restore; second restore/reconsent/new worker, sleep/DST and global single-use are not qualified."
   ],
   "pending_deliveries": [],
   "completion_gates": [

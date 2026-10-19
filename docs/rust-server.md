@@ -136,6 +136,15 @@ varige eksterne handlinger, øvrige hostede arbejdere og administreret flytning
 mellem lokal app og server.
 Ejerobservationer bliver ikke automatisk til en koncernkonfiguration.
 
+Det almindelige HTTPS-loginforløb består nu også i en isoleret kontrol med
+privat TLS-proxy og mailgateway: første ejer verificeres og opsætter MFA,
+en anden bruger inviteres gennem web og verificeres med egen MFA. Et
+reset-link virker, selv når gatewayen har modtaget mailen og svaret går tabt.
+Tidligere session, adgangskode og brugt reset-token afvises; nyt login med
+eksisterende MFA og fuld genstart består. Der sendes ingen mail til virkelige
+modtagere i denne kontrol. Produktionens gateway og TLS-proxy kræver deres
+egen driftsverifikation.
+
 ## Prøv med syntetiske data
 
 Fra repository-roden, med Docker og Bun samt projektets afhængigheder installeret:
@@ -737,8 +746,9 @@ Launcheren opretter workspacets filer lokalt. Første ejer oprettes i browseren
 via et privat installationslink, som den betroede lokale `setupActor` aktiverer
 fra serverkonfigurationen. Linket gælder en time og lukkes efter vellykket
 opsætning. Servergenstart kontrollerer den gemte status og genåbner ikke en
-afsluttet opsætning. Bekræftelseslinks leveres som private lokale filer, ikke
-som eksterne e-mails.
+afsluttet opsætning. Demoens HTTP-loopback leverer bekræftelseslinks som
+private lokale filer. HTTPS-servere bruger den konfigurerede mailgateway
+beskrevet under **Login og gendannelse på en HTTPS-server**.
 
 Standardprofilen bruger den beskyttede Linux-profil; demoen kan derfor køres
 i Docker på macOS. Native lokal drift på Mac har en særskilt profil, beskrevet
@@ -1158,7 +1168,9 @@ session, bekræfter sin e-mail og opsætter MFA før almindeligt login. Ejerens
 adgangsstyring kan ændre roller og tilbagekalde eller gentildele adgang;
 den sidste aktive ejer er beskyttet. Invitationslinks vises ikke i lister
 eller audit. Den lokale server leverer linket i sin private outbox, ligesom
-bekræftelseslinks; der er ikke sendt ekstern e-mail i kontrollen.
+bekræftelseslinks. HTTPS-serveren bruger i stedet den konfigurerede
+mailgateway til invitation og efterfølgende verificering. De lokale kontroller
+sender ingen mail til virkelige modtagere.
 
 Det integrerede forløb er verificeret på den native Mac-server med to normale
 brugere, herunder afvisning, tilbagekaldelse, gentildeling, ugyldige eller
@@ -1451,3 +1463,64 @@ kommandoernes hjælpetekst indeholder de præcise skemaer. Oprettelse og rotatio
 returnerer bevidst engangsnøglen, så deres output skal behandles privat.
 Efter et mistet svar skal det oprindelige operations-ID afklares med
 `recover-service-principal`; oprettelse og rotation gentages ikke automatisk.
+
+
+## Login og gendannelse på en HTTPS-server
+
+Start Rust-serveren bag HTTPS med en eksplicit kanonisk origin, fx
+`--listen 127.0.0.1:4319 --origin https://regnskab.example.invalid`.
+Proxyen skal bevare denne origins Host-header. Serveren bruger samme
+normaliserede origin til login, produktkald og links; klientstyrede
+forwarded-headere vælger ingen anden origin. HTTPS vælger sessionscookies
+med `Secure`, `HttpOnly` og `SameSite=Lax` samt de sikre cookienavne.
+HTTP er kun tilladt på loopback.
+
+HTTPS kræver `authMail` i den private serverkonfiguration:
+
+```json
+{
+  "authMail": {
+    "endpoint": "https://mailgateway.example.invalid/auth-mail",
+    "bearerToken": "OPERATOERENS_HEMMELIGHED",
+    "from": "adgang@example.invalid",
+    "idempotencySecret": "OPERATOERENS_SEPARATE_HEMMELIGHED"
+  }
+}
+```
+
+Gatewayen modtager JSON-formatet `rentemester-auth-email-v1` med `kind`,
+`to`, `from`, `subject`, `text` og `actionUrl`. Den skal håndtere
+`idempotency-key`, som er stabil for samme mailtype og token. `kind` er
+`verification`, `workspace-invitation` eller `password-reset`.
+Bearer-headeren autentificerer leveringen. Et 2xx-svar bekræfter overdragelse
+til gatewayen; faktisk levering til postkassen afhænger af gatewayen.
+En privat gateway kan vælge `trustedCaFile`, en absolut sti til højst
+64 KiB PEM-certifikater med dens betroede CA. Certifikat- og værtsnavnekontrol
+bevares. Uden feltet anvendes de almindelige indbyggede tillidsrødder.
+Ugyldig eller manglende gatewaykonfiguration afviser HTTPS-opstart før
+oprettelse af workspace.
+
+Første ejer og inviterede brugere modtager verificeringslinket gennem denne
+adapter og opsætter derefter MFA i den eksisterende webapp. **Glemt
+adgangskode?** sender et reset-link. Linkets åbning ændrer ingen adgangskode;
+brugeren indtaster og bekræfter den nye adgangskode. En gennemført nulstilling
+ophæver brugerens tidligere sessioner og forbruger engangstokenet. Brugeren
+logger derefter ind igen med den nye adgangskode og sin eksisterende MFA.
+
+Mailtoken og historik gemmes før gatewaykaldet. Et timeout kan derfor følge
+efter faktisk overdragelse. Serveren beholder det allerede udstedte token,
+og den offentlige reset-kvittering afslører ikke, om kontoen findes eller
+mailen er modtaget. Gatewaykald har et samlet budget på otte sekunder og
+begrænsede genforsøg med samme idempotency-nøgle.
+
+## Pak desktopappen uden gamle filer
+
+`crates/rentemester-desktop/build-macos.sh` samler appen i en ny stagingmappe
+og erstatter kun en eksisterende Rentemester-bundle. `CARGO_TARGET_DIR`,
+`CARGO_BUILD_TARGET` og `RENTEMESTER_DESKTOP_PROFILE` kan vælge buildplacering,
+platform og profil. De byggede webfiler skal være klar før kommandoen køres.
+Appen indeholder begge Rust-programmer og webfilerne; Python bruges kun til
+samlingen. Filen `Contents/Resources/native-artifact-manifest.json`
+registrerer repository-revision, dirty-status, værktøjskæder, profil og
+SHA256 for de faktiske filer. Pakken er fortsat usigneret; installation via
+Finder, signering og notarization kræver særskilt verifikation.
