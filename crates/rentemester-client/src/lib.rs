@@ -27,6 +27,7 @@ mod bank_reconciliation;
 pub use bank_reconciliation::{bank_reconciliation_body_schema,MAX_BANK_RECONCILIATION_BODY};
 mod documents;
 mod document_pdf;
+mod invoice_extraction;
 pub use documents::{document_ingest_schema,MAX_DOCUMENT_INGEST_BODY,MAX_DOCUMENT_ORIGINAL};
 mod reviewed_bookkeeping;
 pub use reviewed_bookkeeping::{ReviewedRead,ReviewedMutation,reviewed_body_schema,valid_draft_id};
