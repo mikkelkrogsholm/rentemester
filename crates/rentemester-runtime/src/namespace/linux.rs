@@ -401,3 +401,5 @@ mod tests;
 mod companies;
 
 mod portable_restore;
+
+mod legacy_adoption;

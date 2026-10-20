@@ -81,6 +81,13 @@ impl NamespaceGuard {
     ) -> Result<Self, NamespaceError> {
         Err(NamespaceError::Unsupported)
     }
+    pub fn create_adoption_stage(
+        _: &Path, _: u32, _: &str, _: &str, _: NamespaceProfile,
+        _: &crate::legacy_adoption::AdoptionImage,
+    ) -> Result<Self, NamespaceError> { Err(NamespaceError::Unsupported) }
+    pub fn publish_adopted_root(&mut self, _: &Path) -> Result<(), NamespaceError> {
+        Err(NamespaceError::Unsupported)
+    }
     pub fn publish_restored_root(&mut self, _: &Path) -> Result<(), NamespaceError> {
         Err(NamespaceError::Unsupported)
     }
