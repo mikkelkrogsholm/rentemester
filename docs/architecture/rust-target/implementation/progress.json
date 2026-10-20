@@ -1,18 +1,17 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "Group97 service invoice→exact bank original→single payment/zero debtor/restart and Group98 installed full-app accepted-response-loss recovery across remote/local origins qualified; full mission remains open",
-  "code_revision": "a36617cdcffb2d7bbc8fb9bba09fb46ed4308296",
+  "current_increment": "Group99 installed local→HTTPS managed transfer, original receipt replay, one target-only posting and full app/server restart qualified; current a36617cd native smoke also qualified; full mission remains open",
+  "code_revision": "dd14a69549c9c5cdcc46a52232ad29a59a71de9e",
   "spec_revision": "sha256:a7eb3f0d6e65412fa5ee945a7b79721b593806839f4a03e6b8d969ce3327e3fc",
-  "state": "Group97 completes the same service-issued invoice through owner-configured bank account and replacement debtor mapping, CLI exact BOM/CRLF statement import, MCP exact original deduplication and explicit invoice settlement. One187.50 receipt/payment debits configured1797 and credits historical1194 despite current1198 mapping; no new VAT/revenue, invoice/customer zero balance, statement/booked bank187.50/difference0, immutable PDF unchanged. Actual normal-MFA native-server/CLI/MCP composed journey and second real server restart pass; read-only stopped-fixture checks verify exact archived bytes, one bank row/payment, service_account operational audits and user:<subject>/service-principal journal. Reader/admin attempts refuse before quota; company/key revocation and duplicate settlement refuse. Human domain wrappers preserved. Service HTTP bank/settle and CLI allowlist/MCP guidance integrated. Group98 installed package9f3ede14: actual native owner0.44 posting accepted200 held21.499sec, entire app quits before delivery, canonical one entry; remote full reopen/normal MFA shows same receipt and blocks fresh form, independent server survives quit; stop it, reopen same profile exclusively through app-managed local backend on new origin/port, normal MFA same receipt, explicit native acknowledgement no repost. Local child stops with app, primary2/second5, original config preserved. Exact original-key reconciliation and stale browser barrier release fixed after composed regression exposed old Group91 oracle: only reserved own current-ledger journal_post keys may reach normal idempotency replay; fresh keys remain blocked.62web,5receipt-recovery,3service-domain and37bank tests plus strict Clippy/build/types pass. A later actual run caught missing service Settle HTTP allowlist; fixed then fresh complete run passed. Current unsigned a36617cd staged/installed packages exact12-file manifests; Mac locked again so current-package GUI smoke remains unqualified, earlier pinned full native98 proof retained and incremental changes verified through actual browser/client/server journey. Full J03 across other operation closure cases, J06 installed handoff, J07 local/hosted automation, remaining agent/provider parity, signed distribution/updates and TypeScript backend retirement remain OPEN; no scope reduction or unchanged extra acceptance rounds.",
+  "state": "Group99 closes the finite installed managed J06 journey on current unsigned a36617cd package: normal source MFA; genuine accepted lost12.34 reply and unknown SMTP DATA; native freeze and signed archive save matching offered wire SHA256; independent signature verification using separate source public key; fresh target staged against its final OS-trusted HTTPS origin; ordinary delivered email verification and fresh native owner MFA; native original receipt mapping without booking; source independently reviews exact target challenge and saves signed release; native target activation; exact original replay returns original result and creates zero entries. Native explicit new0.45 activity yields exactly two target entries. Full app/local source restart retains moved/permanent readonly; old replay, new posting and mail all refuse. Full HTTPS server/app restart retains active target, mapping, immutable PDF/JSON, original receipt and both entries. Exactly one unknown SMTP attempt, no successful mail or resend. Exact external owned processes stopped and both synthetic profiles cleaned after readonly terminal checks: source1/target2 journal entries, original tombstones/outcomes identical. Current package ordinary local-MFA smoke shows prior five native98 entries, closing the previous lock-only smoke gap. Fixture extensions add controlled native preparation and final-origin HTTPS staging; follow-up review led to completed-archive hash marker, external-process observation and preserving future native fixtures for explicit cleanup. Targeted partial-download/wrong-marker refusal passes; no unchanged financial rerun. Remaining full R54 hostile/older-clone/rollback/nonempty scheduler scope, J07 automation, other-operation recovery, remaining agent/provider workflows, signed distribution/updates and TypeScript retirement remain OPEN.",
   "issues_closed": [],
   "next": [
-    "J06: qualify installed GUI handoff/recovery beyond Group56 backend and Group95 native HTTPS/context/access-loss proofs; no duplicate writer/booking/delivery.",
-    "J07: installed local closure/sleep versus hosted automation, with durable cancellation/revocation and explicit catch-up; retain signed installation/updates and full TypeScript backend retirement gates.",
-    "R13/R45: finish remaining agent workflows through existing domain operations, including document/purchase intake→review→payable→bank payment as needed by the original parity contract; service journal, sales and bank receipt settlement are already qualified. Preserve current authority and per-operation unknown-result recovery.",
-    "J03/R50: remaining supported-operation closure/recovery scope and current-package GUI smoke when Mac is available. Do not repeat accepted Group98 manual-post full closure/new-origin proof or Group97 bank/payment checks unchanged.",
-    "Retain all existing completion gates. Next signed distribution/update/cutover evidence must match the actual full Rust replacement; TypeScript retirement remains gated.",
-    "Do not repeat unchanged Group88 financial/HTTPS, Group90 adoption/recovery, Group91/92 races, Group93 journal/report, Group94 sales, Group95 native context/revocation, Group96 server recovery or Group97/98 accepted journeys. Extend only for remaining required flows or diagnosed defects."
+    "J07: complete installed local closure/sleep versus hosted automation, with durable cancellation/revocation and explicit catch-up; preserve signed installation/update and TypeScript retirement gates.",
+    "R13/R45: remaining agent document/purchase intake→review→payable→bank payment through existing domain operations. Service journal, sales and bank receipt settlement already qualified; preserve current authority and operation-specific unknown-result recovery.",
+    "J03/R50 and remaining R54 scope: only still-supported operation closure/recovery, nonempty scheduler handoff, hostile/older clone and post-cutover rollback requirements. Group99 qualifies managed installed J06 flow, not every R54 acceptance item.",
+    "Signed distribution/update/cutover evidence must match actual full Rust replacement; retain all existing completion gates and TypeScript retirement gate.",
+    "Do not repeat unchanged accepted Group88–99 journeys. Current-package GUI smoke and installed managed transfer are now qualified. Extend only for required missing flows or diagnosed defects."
   ],
   "preserve_unrelated_paths": [
     ".claude/settings.json",
@@ -23,10 +22,9 @@
   ],
   "all_goal_requirements_complete": false,
   "previous_verified_increment": {
-    "current_increment": "Group96 durable current-human manual-post receipt recovery implemented and real server restart/new-origin qualified; installed full-app quit/reopen remains pending Mac unlock",
-    "code_revision": "9f3ede140a696397687545e4a8d1fd8092694d1d",
-    "spec_revision": "sha256:a7eb3f0d6e65412fa5ee945a7b79721b593806839f4a03e6b8d969ce3327e3fc",
-    "state": "Group96 closes the server persistence gap for opted-in browser manual posts: recoveryRequired creates a pending acknowledgement fact atomically with its original accepted idempotency receipt, preserving historical/CLI/MCP receipts unchanged. Current human/company inventory and ledger-post-authorized explicit acknowledgement never repeat the financial operation, edit the journal or remove reserved keys. A fresh opted-in posting is refused while recovery is pending. Shared ConfirmDialog now saves its immediate uncertainty barrier BEFORE sending, retains it for coded503/unknown results, and releases only known success or definite refusal. Web renders server receipt/hash read-back with explicit human acknowledgement, failing closed on unavailable/expired recovery and unconfirmed acknowledgement. Actual strict trusted HTTPS native-server fixture used normal invited bookkeeper password/TOTP, discarded an accepted200 reply, verified exactly one0.43 entry, rejected fresh-key duplicate intent, denied foreign-principal/company and revoked-member recovery/ack, restored ordinary grant, stopped/restarted actual server on a new origin and normal MFA read back the same exact pending receipt; explicit repeated ack preserved canonical journal. Original primary remains2 entries; second4.4storage recovery,7idempotency,7service-read regression and61targeted web tests pass; strict Clippy, server build and design/typecheck/web build pass. Both owned fixture servers stopped and original config preserved. Installed current unsigned package has exact12-file manifests, but CUA reports Mac locked; FULL installed app accepted-response-loss quit/reopen is still NOT qualified. Earlier Group95 installed multiuser/context/revocation and Group94 service invoice/PDF/accounting proofs retained. J03/R50, installed J06 handoff, J07 automation, remaining service parity, signed distribution/updates, TypeScript backend retirement and full epic672 remain OPEN."
+    "current_increment": "Group97 service invoice→exact bank original→single payment/zero debtor/restart and Group98 installed full-app accepted-response-loss recovery across remote/local origins qualified; full mission remains open",
+    "state": "Group97 completes the same service-issued invoice through owner-configured bank account and replacement debtor mapping, CLI exact BOM/CRLF statement import, MCP exact original deduplication and explicit invoice settlement. One187.50 receipt/payment debits configured1797 and credits historical1194 despite current1198 mapping; no new VAT/revenue, invoice/customer zero balance, statement/booked bank187.50/difference0, immutable PDF unchanged. Actual normal-MFA native-server/CLI/MCP composed journey and second real server restart pass; read-only stopped-fixture checks verify exact archived bytes, one bank row/payment, service_account operational audits and user:<subject>/service-principal journal. Reader/admin attempts refuse before quota; company/key revocation and duplicate settlement refuse. Human domain wrappers preserved. Service HTTP bank/settle and CLI allowlist/MCP guidance integrated. Group98 installed package9f3ede14: actual native owner0.44 posting accepted200 held21.499sec, entire app quits before delivery, canonical one entry; remote full reopen/normal MFA shows same receipt and blocks fresh form, independent server survives quit; stop it, reopen same profile exclusively through app-managed local backend on new origin/port, normal MFA same receipt, explicit native acknowledgement no repost. Local child stops with app, primary2/second5, original config preserved. Exact original-key reconciliation and stale browser barrier release fixed after composed regression exposed old Group91 oracle: only reserved own current-ledger journal_post keys may reach normal idempotency replay; fresh keys remain blocked.62web,5receipt-recovery,3service-domain and37bank tests plus strict Clippy/build/types pass. A later actual run caught missing service Settle HTTP allowlist; fixed then fresh complete run passed. Current unsigned a36617cd staged/installed packages exact12-file manifests; Mac locked again so current-package GUI smoke remains unqualified, earlier pinned full native98 proof retained and incremental changes verified through actual browser/client/server journey. Full J03 across other operation closure cases, J06 installed handoff, J07 local/hosted automation, remaining agent/provider parity, signed distribution/updates and TypeScript backend retirement remain OPEN; no scope reduction or unchanged extra acceptance rounds.",
+    "code_revision": "a36617cdcffb2d7bbc8fb9bba09fb46ed4308296"
   },
   "evidence": {
     "combined_browser_log": "/tmp/rm-platform5-combined.log",
@@ -2542,6 +2540,1333 @@
         "currentPackageGuiSmokeQualified": false,
         "currentPackageGuiSmokeBlocker": "Mac locked again after accepted native journey; current exact manifests verified, earlier native proof pinned to9f3ede14, final incremental reconciliation/service changes verified by62webtests and actual server/CLI/MCP journey"
       }
+    },
+    "installed_transfer99": {
+      "path": "/tmp/rentemester-rust-reports/installed-transfer99.json",
+      "sha256": "e65abda8c8864624fc53e36d77690c159aa9777495fa992bcd100ea07b15072a",
+      "report": {
+        "status": "passed",
+        "scope": "Group99 installed shared-web native managed local source to separately staged verified HTTPS target; genuine accepted lost response and unknown SMTP; one deliberate target-only new intent; both native and server restarts",
+        "completedAt": "2026-10-20T20:35:49.279830+00:00",
+        "productCodeRevision": "a36617cd",
+        "sourceHead": "ee6dc5cc9a1b0ce9218ab50b58ecd0df360f819e",
+        "installedPackage": {
+          "status": "package_verified",
+          "installedGuiQualified": true,
+          "guiBlocker": null,
+          "buildLog": "/tmp/rm97-http-final-build.log",
+          "packages": [
+            {
+              "path": "/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/native/Rentemester Desktop.app",
+              "manifestSha256": "6eedab17c56f5cf58a317e7af4040bdd0dc8002878bb967da331a0ec08543030",
+              "fileCount": 12,
+              "source": {
+                "dirty": true,
+                "revision": "a36617cdcffb2d7bbc8fb9bba09fb46ed4308296"
+              },
+              "signing": "unsigned"
+            },
+            {
+              "path": "/Users/mikkelfreltoftkrogsholm/Applications/Rentemester Desktop.app",
+              "manifestSha256": "6eedab17c56f5cf58a317e7af4040bdd0dc8002878bb967da331a0ec08543030",
+              "fileCount": 12,
+              "source": {
+                "dirty": true,
+                "revision": "a36617cdcffb2d7bbc8fb9bba09fb46ed4308296"
+              },
+              "signing": "unsigned"
+            }
+          ],
+          "existingFinancialGuiEvidenceRetained": "Group88; older packaged revision",
+          "guiScope": "Current a36617cd package opens owned local Rust backend at new ephemeral origin, ordinary password/TOTP, both companies visible, five preserved remote95 entries including exact native98 original; no posting attempted.",
+          "nativeSmokeAt": "2026-10-20T20:22:41.332Z",
+          "nativeSmokeAxSha256": "da7c05f5fe9c615963198afc22502842259f489264bd81f6049aed7724fd3cc9"
+        },
+        "noOfflineIdentitySeeds": true,
+        "sourceOwnerNormalMfa": true,
+        "targetFreshOwnerNormalVerificationAndNativeMfa": true,
+        "sourceFreezeExportReleaseViaInstalledUi": true,
+        "nativeArchiveSaveHashMatchesOffered": "0a9b0393fa62f792803040abdfeef1609bc86572b44c59311a132cbb93005d49",
+        "independentArchiveSignatureVerified": true,
+        "targetStagedAgainstFinalHttpsOrigin": "https://localhost:58847",
+        "nativeReceiptMappingWithoutBooking": true,
+        "nativeSignedReleaseSaveSha256": "7f1f93f677e68a326815319c2c84e4670f7cbae88cf6529cdcaa142b41e7fc58",
+        "nativeExactTargetActivation": true,
+        "sourceChildStoppedOnSwitch": true,
+        "independentServerSurvivedNativeQuit": true,
+        "sourceMovedAfterNativeFullRestart": true,
+        "sourceOldReplayNewPostingAndMailFenced": true,
+        "targetActiveOriginalMappingAndExactlyTwoEntriesAfterServerAndAppRestart": true,
+        "originalFilesPreserved": true,
+        "beforeNewTargetIntent": {
+          "transfer": {
+            "challenge": {
+              "archiveSha256": "0a9b0393fa62f792803040abdfeef1609bc86572b44c59311a132cbb93005d49",
+              "companies": [
+                {
+                  "ledgerUuid": "bf2a474a864baf2ac474b2a912ce1b5f",
+                  "slug": "synthetic"
+                }
+              ],
+              "destination": "https://localhost:58847",
+              "destinationInstanceId": "600aec482704f752e5aa3d786d5d625e",
+              "sourceInstanceId": "f83bf37e800ad128f589fd5d0ad13c4c",
+              "transferId": "119430debee88344ee07a6166f154de5",
+              "version": 1,
+              "workspaceId": "synthetic-native-transfer"
+            },
+            "destination": "https://localhost:58847",
+            "history": [
+              {
+                "actor": "user:wsUZuNT0SmYP6s2vgeN4LlrH4uS02ZELydAmaeQtj3Q",
+                "at": "2026-10-20T20:25:38.763Z",
+                "fact": {
+                  "companies": [
+                    {
+                      "ledgerUuid": "bf2a474a864baf2ac474b2a912ce1b5f",
+                      "slug": "synthetic"
+                    }
+                  ],
+                  "destination": "https://localhost:58847",
+                  "kind": "frozen",
+                  "reason": "Syntetisk installeret flyttetest: lokal kilde til kontrolleret HTTPS-server",
+                  "source_instance_id": "f83bf37e800ad128f589fd5d0ad13c4c",
+                  "transfer_id": "119430debee88344ee07a6166f154de5",
+                  "workspace_id": "synthetic-native-transfer"
+                },
+                "previousStateHash": "ed7a2d676f124d36e19707aca76d29f52d4e34e80d8751e26b89dbebb6ce5ed4",
+                "version": 1
+              },
+              {
+                "actor": "system:portable-transfer",
+                "at": "2026-10-20T20:26:21.337Z",
+                "fact": {
+                  "challenge": {
+                    "archiveSha256": "0a9b0393fa62f792803040abdfeef1609bc86572b44c59311a132cbb93005d49",
+                    "companies": [
+                      {
+                        "ledgerUuid": "bf2a474a864baf2ac474b2a912ce1b5f",
+                        "slug": "synthetic"
+                      }
+                    ],
+                    "destination": "https://localhost:58847",
+                    "destinationInstanceId": "600aec482704f752e5aa3d786d5d625e",
+                    "sourceInstanceId": "f83bf37e800ad128f589fd5d0ad13c4c",
+                    "transferId": "119430debee88344ee07a6166f154de5",
+                    "version": 1,
+                    "workspaceId": "synthetic-native-transfer"
+                  },
+                  "kind": "staged"
+                },
+                "previousStateHash": "9add4d4a54191d3fe51bd8c1877c76b03faa431545d6ddc38b669e200f9580c7",
+                "version": 1
+              },
+              {
+                "actor": "user:fdpz4CNY1aPZQ7CC0jUarwlUpVXS45miFJjGj438uRg",
+                "at": "2026-10-20T20:30:22.480Z",
+                "fact": {
+                  "kind": "activated",
+                  "reason": "Målets nye ejer har kontrolleret kildebeviset og den separat betroede offentlige nøgle",
+                  "release": "{\"format\":\"rentemester-workspace-transfer-release/1\",\"payloadBase64\":\"eyJ2ZXJzaW9uIjoxLCJjaGFsbGVuZ2UiOnsidmVyc2lvbiI6MSwidHJhbnNmZXJJZCI6IjExOTQzMGRlYmVlODgzNDRlZTA3YTYxNjZmMTU0ZGU1Iiwic291cmNlSW5zdGFuY2VJZCI6ImY4M2JmMzdlODAwYWQxMjhmNTg5ZmQ1ZDBhZDEzYzRjIiwid29ya3NwYWNlSWQiOiJzeW50aGV0aWMtbmF0aXZlLXRyYW5zZmVyIiwiYXJjaGl2ZVNoYTI1NiI6IjBhOWIwMzkzZmE2MmY3OTI4MDMwNDBhYmRmZWVmMTYwOWJjODY1NzJiNDRjNTkzMTFhMTMyY2JiOTMwMDVkNDkiLCJkZXN0aW5hdGlvbkluc3RhbmNlSWQiOiI2MDBhZWM0ODI3MDRmNzUyZTVhYTNkNzg2ZDVkNjI1ZSIsImRlc3RpbmF0aW9uIjoiaHR0cHM6Ly9sb2NhbGhvc3Q6NTg4NDciLCJjb21wYW5pZXMiOlt7InNsdWciOiJzeW50aGV0aWMiLCJsZWRnZXJVdWlkIjoiYmYyYTQ3NGE4NjRiYWYyYWM0NzRiMmE5MTJjZTFiNWYifV19LCJhY3RvciI6InVzZXI6d3NVWnVOVDBTbVlQNnMydmdlTjRMbHJINHVTMDJaRUx5ZEFtYWVRdGozUSIsImF0IjoiMjAyNi0xMC0yMFQyMDoyOToyMy43MDZaIiwicmVhc29uIjoiS2lsZGVlamVyIGhhciBzZWx2c3TDpm5kaWd0IGtvbnRyb2xsZXJldCBtw6VsZXRzIEhUVFBTLWFkcmVzc2UsIGFya2l2aGFzaCwgbGVkZ2VyIG9nIHVuaWtrZSB1ZGZvcmRyaW5nIn0=\",\"signatureBase64\":\"K8BzGgP6jj+xx0kjNi69CgbU4KyJWd7isWHMgSVNLlGJGNTDeV3UhU5bXihJiWANWe6dRP9QWjhpS2nJIiVPCw==\"}"
+                },
+                "previousStateHash": "c5b1c83b7b4b0edb67b694fcb414bf2d7068362eb8ebcda96b14415f61c21b89",
+                "version": 1
+              }
+            ],
+            "mode": "active",
+            "offeredArchiveHashes": [],
+            "pendingEffects": [
+              {
+                "companySlug": "synthetic",
+                "messageId": "<065e9cd681a063d3a109a65ab390402e@rentemester.local>",
+                "state": "unknown"
+              }
+            ],
+            "release": "{\"format\":\"rentemester-workspace-transfer-release/1\",\"payloadBase64\":\"eyJ2ZXJzaW9uIjoxLCJjaGFsbGVuZ2UiOnsidmVyc2lvbiI6MSwidHJhbnNmZXJJZCI6IjExOTQzMGRlYmVlODgzNDRlZTA3YTYxNjZmMTU0ZGU1Iiwic291cmNlSW5zdGFuY2VJZCI6ImY4M2JmMzdlODAwYWQxMjhmNTg5ZmQ1ZDBhZDEzYzRjIiwid29ya3NwYWNlSWQiOiJzeW50aGV0aWMtbmF0aXZlLXRyYW5zZmVyIiwiYXJjaGl2ZVNoYTI1NiI6IjBhOWIwMzkzZmE2MmY3OTI4MDMwNDBhYmRmZWVmMTYwOWJjODY1NzJiNDRjNTkzMTFhMTMyY2JiOTMwMDVkNDkiLCJkZXN0aW5hdGlvbkluc3RhbmNlSWQiOiI2MDBhZWM0ODI3MDRmNzUyZTVhYTNkNzg2ZDVkNjI1ZSIsImRlc3RpbmF0aW9uIjoiaHR0cHM6Ly9sb2NhbGhvc3Q6NTg4NDciLCJjb21wYW5pZXMiOlt7InNsdWciOiJzeW50aGV0aWMiLCJsZWRnZXJVdWlkIjoiYmYyYTQ3NGE4NjRiYWYyYWM0NzRiMmE5MTJjZTFiNWYifV19LCJhY3RvciI6InVzZXI6d3NVWnVOVDBTbVlQNnMydmdlTjRMbHJINHVTMDJaRUx5ZEFtYWVRdGozUSIsImF0IjoiMjAyNi0xMC0yMFQyMDoyOToyMy43MDZaIiwicmVhc29uIjoiS2lsZGVlamVyIGhhciBzZWx2c3TDpm5kaWd0IGtvbnRyb2xsZXJldCBtw6VsZXRzIEhUVFBTLWFkcmVzc2UsIGFya2l2aGFzaCwgbGVkZ2VyIG9nIHVuaWtrZSB1ZGZvcmRyaW5nIn0=\",\"signatureBase64\":\"K8BzGgP6jj+xx0kjNi69CgbU4KyJWd7isWHMgSVNLlGJGNTDeV3UhU5bXihJiWANWe6dRP9QWjhpS2nJIiVPCw==\"}",
+            "stateHash": "2661c71ed82b3c0258cc1f9dd2eed6bd1f14d147a601134dc343b2592d123257",
+            "transferId": "119430debee88344ee07a6166f154de5"
+          },
+          "mappedReceipt": {
+            "archiveSha256": "1da93e76660d567ff04c3da598adc6a2fb8f8129fe073a8e4a6f99f922a482f1",
+            "createdAt": "2026-10-20T20:24:33.246Z",
+            "expiresAt": "2026-11-19T20:24:33.246Z",
+            "keyHash": "899ca12d3c022ec9f18fff84ae6071e6566aab89775e11e6875fc0a4ebe13530",
+            "ledgerUuid": "bf2a474a864baf2ac474b2a912ce1b5f",
+            "mapping": {
+              "actor": "user:fdpz4CNY1aPZQ7CC0jUarwlUpVXS45miFJjGj438uRg",
+              "archiveSha256": "1da93e76660d567ff04c3da598adc6a2fb8f8129fe073a8e4a6f99f922a482f1",
+              "at": "2026-10-20T20:28:33.933Z",
+              "reason": "Syntetisk ejer har kontrolleret oprindelig journal_post-kvittering 1, bruger, ledger og nøglehash",
+              "restoreBoundaryId": 10,
+              "targetUserId": "fdpz4CNY1aPZQ7CC0jUarwlUpVXS45miFJjGj438uRg"
+            },
+            "operation": "journal_post",
+            "payloadHash": "fbf6234fa2cc988b91c80fe6f84de644f2a4349120f530355368c500e9e43017",
+            "receiptId": 1,
+            "restoreBoundaryId": 10,
+            "result": {
+              "appliedRules": [
+                "DK-BOOKKEEPING-BALANCED-001",
+                "DK-BOOKKEEPING-APPEND-ONLY-001",
+                "DK-BOOKKEEPING-PERIOD-LOCK-001"
+              ],
+              "entryHash": "a76310ceef50e553974bee0397519ef42102c21c1490379a15e4f71380bd41f9",
+              "entryId": 1,
+              "entryNo": "2026-00001",
+              "errors": [],
+              "ok": true
+            },
+            "resultAvailable": true,
+            "sourcePrincipal": {
+              "kind": "user",
+              "subject": "wsUZuNT0SmYP6s2vgeN4LlrH4uS02ZELydAmaeQtj3Q"
+            },
+            "stateHash": "07449fb4de728caeba9895aaccecb6629521e834e093a6984228deb2831d8a77"
+          },
+          "journal": {
+            "journal": {
+              "accountFilter": null,
+              "archived": false,
+              "archivedSource": null,
+              "company": {
+                "country": "DK",
+                "currency": "DKK",
+                "cvr": "DK87654321",
+                "fiscalYearLabelStrategy": "end-year",
+                "fiscalYearStartMonth": 1,
+                "name": "Synthetic Transfer Company"
+              },
+              "entries": [
+                {
+                  "date": "2026-10-20",
+                  "documentId": null,
+                  "documentNo": null,
+                  "entryNo": "2026-00001",
+                  "id": 1,
+                  "lines": [
+                    {
+                      "accountName": "Synthetic transfer 1759",
+                      "accountNo": "1759",
+                      "credit": 0.0,
+                      "debit": 12.34,
+                      "journalLineId": 1,
+                      "text": null
+                    },
+                    {
+                      "accountName": "Synthetic transfer 8759",
+                      "accountNo": "8759",
+                      "credit": 12.34,
+                      "debit": 0.0,
+                      "journalLineId": 2,
+                      "text": null
+                    }
+                  ],
+                  "reversalOfEntryId": null,
+                  "reversalOfEntryNo": null,
+                  "reversedByEntryId": null,
+                  "reversedByEntryNo": null,
+                  "text": "Synthetic source accepted lost response",
+                  "total": 12.34
+                }
+              ],
+              "fiscalYears": [
+                {
+                  "end": "2026-12-31",
+                  "label": "2026",
+                  "source": "live",
+                  "start": "2026-01-01"
+                }
+              ],
+              "ledgerBasis": "native_ledger_only",
+              "ledgerUuid": "bf2a474a864baf2ac474b2a912ce1b5f",
+              "liveCoverage": {
+                "cutOverDate": null,
+                "periodEnd": "2026-12-31",
+                "periodStart": "2026-01-01",
+                "reason": null,
+                "status": "complete"
+              },
+              "nativePosting": {
+                "accounts": [
+                  {
+                    "accountNo": "1759",
+                    "active": true,
+                    "allowDirectPosting": true,
+                    "name": "Synthetic transfer 1759",
+                    "normalBalance": "debit",
+                    "type": "asset"
+                  },
+                  {
+                    "accountNo": "8759",
+                    "active": true,
+                    "allowDirectPosting": true,
+                    "name": "Synthetic transfer 8759",
+                    "normalBalance": "credit",
+                    "type": "equity"
+                  }
+                ],
+                "ruleVersion": "annual-report=dk-annual-report-v0.0.1;bank=dk-bank-v0.0.2;bookkeeping=dk-bookkeeping-v0.0.8;documents=dk-documents-v0.0.3;email=dk-email-v0.0.2;gdpr=dk-gdpr-v0.0.1;invoices=dk-invoices-v0.0.11;mail-intake=dk-mail-intake-v0.0.3;mileage=dk-mileage-v0.0.2;peppol=dk-peppol-v0.0.4;tax-return=dk-tax-return-v0.0.1;vat=dk-vat-v0.0.5"
+              },
+              "openingBalanceBasis": {
+                "archiveAmountsIncluded": false,
+                "basis": "live",
+                "cutOverDate": null,
+                "openingJournalEntryId": null
+              },
+              "periodEnd": "2026-12-31",
+              "periodStart": "2026-01-01",
+              "selectedSource": "live",
+              "selectedYear": "2026",
+              "slug": "synthetic",
+              "source": "live"
+            },
+            "ok": true
+          },
+          "balance": {
+            "ok": true,
+            "trialBalance": {
+              "archived": false,
+              "archivedSource": null,
+              "balanced": true,
+              "company": {
+                "country": "DK",
+                "currency": "DKK",
+                "cvr": "DK87654321",
+                "fiscalYearLabelStrategy": "end-year",
+                "fiscalYearStartMonth": 1,
+                "name": "Synthetic Transfer Company"
+              },
+              "fiscalYears": [
+                {
+                  "end": "2026-12-31",
+                  "label": "2026",
+                  "source": "live",
+                  "start": "2026-01-01"
+                }
+              ],
+              "ledgerBasis": "native_ledger_only",
+              "ledgerUuid": "bf2a474a864baf2ac474b2a912ce1b5f",
+              "liveCoverage": {
+                "cutOverDate": null,
+                "periodEnd": "2026-12-31",
+                "periodStart": "2026-01-01",
+                "reason": null,
+                "status": "complete"
+              },
+              "openingBalanceBasis": {
+                "archiveAmountsIncluded": false,
+                "basis": "live",
+                "cutOverDate": null,
+                "openingJournalEntryId": null
+              },
+              "periodEnd": "2026-12-31",
+              "periodStart": "2026-01-01",
+              "rows": [
+                {
+                  "accountNo": "1759",
+                  "balance": 12.34,
+                  "credit": 0.0,
+                  "debit": 12.34,
+                  "name": "Synthetic transfer 1759",
+                  "type": "asset"
+                },
+                {
+                  "accountNo": "8759",
+                  "balance": -12.34,
+                  "credit": 12.34,
+                  "debit": 0.0,
+                  "name": "Synthetic transfer 8759",
+                  "type": "equity"
+                }
+              ],
+              "selectedSource": "live",
+              "selectedYear": "2026",
+              "slug": "synthetic",
+              "source": "live",
+              "totalCredit": 12.34,
+              "totalDebit": 12.34
+            }
+          },
+          "unknown": {
+            "attemptId": "D3baOZ_mZ8Rc09truscMWUKksup8-WeZQUyXmBjURL0",
+            "bodySha256": "d3257c9da2dd63415d69519fb653bb9ded8030a2912ad5d356ddc80a9603c87f",
+            "duplicate": false,
+            "history": [
+              {
+                "actor": "user:wsUZuNT0SmYP6s2vgeN4LlrH4uS02ZELydAmaeQtj3Q",
+                "at": "2026-10-20T20:24:37.096Z",
+                "attemptId": "D3baOZ_mZ8Rc09truscMWUKksup8-WeZQUyXmBjURL0",
+                "attemptIndex": 1,
+                "bodySha256": "d3257c9da2dd63415d69519fb653bb9ded8030a2912ad5d356ddc80a9603c87f",
+                "eventType": "reserved",
+                "evidence": null,
+                "jsonSha256": "3a3f558c857d3db01ff32032969fc660471454312f0a45cac63edcb04f321f7f",
+                "pdfSha256": "40ac4efccc738a49af0973fdeeffdfb3ea57ca0b3cd8b28e231acfc5d28ba9d4",
+                "reason": null,
+                "resolution": null,
+                "senderIdentity": {
+                  "fromAddress": "sales@example.invalid",
+                  "fromName": "Synthetic Seller",
+                  "host": "localhost",
+                  "port": 58603
+                },
+                "stateHash": "f1a37c63cb43e99cc8bdb652b2837cc4e91e34879da1ac1f5801d814c018db39"
+              }
+            ],
+            "humanResolution": false,
+            "invoiceDocumentId": 1,
+            "invoiceNumber": "2026-0001",
+            "kind": "invoice",
+            "messageId": "<065e9cd681a063d3a109a65ab390402e@rentemester.local>",
+            "pdfSha256": "40ac4efccc738a49af0973fdeeffdfb3ea57ca0b3cd8b28e231acfc5d28ba9d4",
+            "recipient": "unknown@example.invalid",
+            "state": "unknown",
+            "stateHash": "f1a37c63cb43e99cc8bdb652b2837cc4e91e34879da1ac1f5801d814c018db39",
+            "subject": "Faktura 2026-0001"
+          },
+          "exactReplay": {
+            "appliedRules": [
+              "DK-BOOKKEEPING-BALANCED-001",
+              "DK-BOOKKEEPING-APPEND-ONLY-001",
+              "DK-BOOKKEEPING-PERIOD-LOCK-001"
+            ],
+            "entryHash": "a76310ceef50e553974bee0397519ef42102c21c1490379a15e4f71380bd41f9",
+            "entryId": 1,
+            "entryNo": "2026-00001",
+            "errors": [],
+            "ok": true,
+            "receipt": {
+              "createdAt": "2026-10-20T20:24:33.246Z",
+              "expiresAt": "2026-11-19T20:24:33.246Z",
+              "receiptId": 1,
+              "reconciliation": {
+                "archiveSha256": "1da93e76660d567ff04c3da598adc6a2fb8f8129fe073a8e4a6f99f922a482f1",
+                "mappedUserId": "fdpz4CNY1aPZQ7CC0jUarwlUpVXS45miFJjGj438uRg",
+                "restoreBoundaryId": 10,
+                "sourcePrincipal": {
+                  "kind": "user",
+                  "subject": "wsUZuNT0SmYP6s2vgeN4LlrH4uS02ZELydAmaeQtj3Q"
+                }
+              },
+              "replayed": true
+            }
+          }
+        },
+        "afterTargetRestart": {
+          "transfer": {
+            "challenge": {
+              "archiveSha256": "0a9b0393fa62f792803040abdfeef1609bc86572b44c59311a132cbb93005d49",
+              "companies": [
+                {
+                  "ledgerUuid": "bf2a474a864baf2ac474b2a912ce1b5f",
+                  "slug": "synthetic"
+                }
+              ],
+              "destination": "https://localhost:58847",
+              "destinationInstanceId": "600aec482704f752e5aa3d786d5d625e",
+              "sourceInstanceId": "f83bf37e800ad128f589fd5d0ad13c4c",
+              "transferId": "119430debee88344ee07a6166f154de5",
+              "version": 1,
+              "workspaceId": "synthetic-native-transfer"
+            },
+            "destination": "https://localhost:58847",
+            "history": [
+              {
+                "actor": "user:wsUZuNT0SmYP6s2vgeN4LlrH4uS02ZELydAmaeQtj3Q",
+                "at": "2026-10-20T20:25:38.763Z",
+                "fact": {
+                  "companies": [
+                    {
+                      "ledgerUuid": "bf2a474a864baf2ac474b2a912ce1b5f",
+                      "slug": "synthetic"
+                    }
+                  ],
+                  "destination": "https://localhost:58847",
+                  "kind": "frozen",
+                  "reason": "Syntetisk installeret flyttetest: lokal kilde til kontrolleret HTTPS-server",
+                  "source_instance_id": "f83bf37e800ad128f589fd5d0ad13c4c",
+                  "transfer_id": "119430debee88344ee07a6166f154de5",
+                  "workspace_id": "synthetic-native-transfer"
+                },
+                "previousStateHash": "ed7a2d676f124d36e19707aca76d29f52d4e34e80d8751e26b89dbebb6ce5ed4",
+                "version": 1
+              },
+              {
+                "actor": "system:portable-transfer",
+                "at": "2026-10-20T20:26:21.337Z",
+                "fact": {
+                  "challenge": {
+                    "archiveSha256": "0a9b0393fa62f792803040abdfeef1609bc86572b44c59311a132cbb93005d49",
+                    "companies": [
+                      {
+                        "ledgerUuid": "bf2a474a864baf2ac474b2a912ce1b5f",
+                        "slug": "synthetic"
+                      }
+                    ],
+                    "destination": "https://localhost:58847",
+                    "destinationInstanceId": "600aec482704f752e5aa3d786d5d625e",
+                    "sourceInstanceId": "f83bf37e800ad128f589fd5d0ad13c4c",
+                    "transferId": "119430debee88344ee07a6166f154de5",
+                    "version": 1,
+                    "workspaceId": "synthetic-native-transfer"
+                  },
+                  "kind": "staged"
+                },
+                "previousStateHash": "9add4d4a54191d3fe51bd8c1877c76b03faa431545d6ddc38b669e200f9580c7",
+                "version": 1
+              },
+              {
+                "actor": "user:fdpz4CNY1aPZQ7CC0jUarwlUpVXS45miFJjGj438uRg",
+                "at": "2026-10-20T20:30:22.480Z",
+                "fact": {
+                  "kind": "activated",
+                  "reason": "Målets nye ejer har kontrolleret kildebeviset og den separat betroede offentlige nøgle",
+                  "release": "{\"format\":\"rentemester-workspace-transfer-release/1\",\"payloadBase64\":\"eyJ2ZXJzaW9uIjoxLCJjaGFsbGVuZ2UiOnsidmVyc2lvbiI6MSwidHJhbnNmZXJJZCI6IjExOTQzMGRlYmVlODgzNDRlZTA3YTYxNjZmMTU0ZGU1Iiwic291cmNlSW5zdGFuY2VJZCI6ImY4M2JmMzdlODAwYWQxMjhmNTg5ZmQ1ZDBhZDEzYzRjIiwid29ya3NwYWNlSWQiOiJzeW50aGV0aWMtbmF0aXZlLXRyYW5zZmVyIiwiYXJjaGl2ZVNoYTI1NiI6IjBhOWIwMzkzZmE2MmY3OTI4MDMwNDBhYmRmZWVmMTYwOWJjODY1NzJiNDRjNTkzMTFhMTMyY2JiOTMwMDVkNDkiLCJkZXN0aW5hdGlvbkluc3RhbmNlSWQiOiI2MDBhZWM0ODI3MDRmNzUyZTVhYTNkNzg2ZDVkNjI1ZSIsImRlc3RpbmF0aW9uIjoiaHR0cHM6Ly9sb2NhbGhvc3Q6NTg4NDciLCJjb21wYW5pZXMiOlt7InNsdWciOiJzeW50aGV0aWMiLCJsZWRnZXJVdWlkIjoiYmYyYTQ3NGE4NjRiYWYyYWM0NzRiMmE5MTJjZTFiNWYifV19LCJhY3RvciI6InVzZXI6d3NVWnVOVDBTbVlQNnMydmdlTjRMbHJINHVTMDJaRUx5ZEFtYWVRdGozUSIsImF0IjoiMjAyNi0xMC0yMFQyMDoyOToyMy43MDZaIiwicmVhc29uIjoiS2lsZGVlamVyIGhhciBzZWx2c3TDpm5kaWd0IGtvbnRyb2xsZXJldCBtw6VsZXRzIEhUVFBTLWFkcmVzc2UsIGFya2l2aGFzaCwgbGVkZ2VyIG9nIHVuaWtrZSB1ZGZvcmRyaW5nIn0=\",\"signatureBase64\":\"K8BzGgP6jj+xx0kjNi69CgbU4KyJWd7isWHMgSVNLlGJGNTDeV3UhU5bXihJiWANWe6dRP9QWjhpS2nJIiVPCw==\"}"
+                },
+                "previousStateHash": "c5b1c83b7b4b0edb67b694fcb414bf2d7068362eb8ebcda96b14415f61c21b89",
+                "version": 1
+              }
+            ],
+            "mode": "active",
+            "offeredArchiveHashes": [],
+            "pendingEffects": [
+              {
+                "companySlug": "synthetic",
+                "messageId": "<065e9cd681a063d3a109a65ab390402e@rentemester.local>",
+                "state": "unknown"
+              }
+            ],
+            "release": "{\"format\":\"rentemester-workspace-transfer-release/1\",\"payloadBase64\":\"eyJ2ZXJzaW9uIjoxLCJjaGFsbGVuZ2UiOnsidmVyc2lvbiI6MSwidHJhbnNmZXJJZCI6IjExOTQzMGRlYmVlODgzNDRlZTA3YTYxNjZmMTU0ZGU1Iiwic291cmNlSW5zdGFuY2VJZCI6ImY4M2JmMzdlODAwYWQxMjhmNTg5ZmQ1ZDBhZDEzYzRjIiwid29ya3NwYWNlSWQiOiJzeW50aGV0aWMtbmF0aXZlLXRyYW5zZmVyIiwiYXJjaGl2ZVNoYTI1NiI6IjBhOWIwMzkzZmE2MmY3OTI4MDMwNDBhYmRmZWVmMTYwOWJjODY1NzJiNDRjNTkzMTFhMTMyY2JiOTMwMDVkNDkiLCJkZXN0aW5hdGlvbkluc3RhbmNlSWQiOiI2MDBhZWM0ODI3MDRmNzUyZTVhYTNkNzg2ZDVkNjI1ZSIsImRlc3RpbmF0aW9uIjoiaHR0cHM6Ly9sb2NhbGhvc3Q6NTg4NDciLCJjb21wYW5pZXMiOlt7InNsdWciOiJzeW50aGV0aWMiLCJsZWRnZXJVdWlkIjoiYmYyYTQ3NGE4NjRiYWYyYWM0NzRiMmE5MTJjZTFiNWYifV19LCJhY3RvciI6InVzZXI6d3NVWnVOVDBTbVlQNnMydmdlTjRMbHJINHVTMDJaRUx5ZEFtYWVRdGozUSIsImF0IjoiMjAyNi0xMC0yMFQyMDoyOToyMy43MDZaIiwicmVhc29uIjoiS2lsZGVlamVyIGhhciBzZWx2c3TDpm5kaWd0IGtvbnRyb2xsZXJldCBtw6VsZXRzIEhUVFBTLWFkcmVzc2UsIGFya2l2aGFzaCwgbGVkZ2VyIG9nIHVuaWtrZSB1ZGZvcmRyaW5nIn0=\",\"signatureBase64\":\"K8BzGgP6jj+xx0kjNi69CgbU4KyJWd7isWHMgSVNLlGJGNTDeV3UhU5bXihJiWANWe6dRP9QWjhpS2nJIiVPCw==\"}",
+            "stateHash": "2661c71ed82b3c0258cc1f9dd2eed6bd1f14d147a601134dc343b2592d123257",
+            "transferId": "119430debee88344ee07a6166f154de5"
+          },
+          "mappedReceipt": {
+            "archiveSha256": "1da93e76660d567ff04c3da598adc6a2fb8f8129fe073a8e4a6f99f922a482f1",
+            "createdAt": "2026-10-20T20:24:33.246Z",
+            "expiresAt": "2026-11-19T20:24:33.246Z",
+            "keyHash": "899ca12d3c022ec9f18fff84ae6071e6566aab89775e11e6875fc0a4ebe13530",
+            "ledgerUuid": "bf2a474a864baf2ac474b2a912ce1b5f",
+            "mapping": {
+              "actor": "user:fdpz4CNY1aPZQ7CC0jUarwlUpVXS45miFJjGj438uRg",
+              "archiveSha256": "1da93e76660d567ff04c3da598adc6a2fb8f8129fe073a8e4a6f99f922a482f1",
+              "at": "2026-10-20T20:28:33.933Z",
+              "reason": "Syntetisk ejer har kontrolleret oprindelig journal_post-kvittering 1, bruger, ledger og nøglehash",
+              "restoreBoundaryId": 10,
+              "targetUserId": "fdpz4CNY1aPZQ7CC0jUarwlUpVXS45miFJjGj438uRg"
+            },
+            "operation": "journal_post",
+            "payloadHash": "fbf6234fa2cc988b91c80fe6f84de644f2a4349120f530355368c500e9e43017",
+            "receiptId": 1,
+            "restoreBoundaryId": 10,
+            "result": {
+              "appliedRules": [
+                "DK-BOOKKEEPING-BALANCED-001",
+                "DK-BOOKKEEPING-APPEND-ONLY-001",
+                "DK-BOOKKEEPING-PERIOD-LOCK-001"
+              ],
+              "entryHash": "a76310ceef50e553974bee0397519ef42102c21c1490379a15e4f71380bd41f9",
+              "entryId": 1,
+              "entryNo": "2026-00001",
+              "errors": [],
+              "ok": true
+            },
+            "resultAvailable": true,
+            "sourcePrincipal": {
+              "kind": "user",
+              "subject": "wsUZuNT0SmYP6s2vgeN4LlrH4uS02ZELydAmaeQtj3Q"
+            },
+            "stateHash": "07449fb4de728caeba9895aaccecb6629521e834e093a6984228deb2831d8a77"
+          },
+          "journal": {
+            "journal": {
+              "accountFilter": null,
+              "archived": false,
+              "archivedSource": null,
+              "company": {
+                "country": "DK",
+                "currency": "DKK",
+                "cvr": "DK87654321",
+                "fiscalYearLabelStrategy": "end-year",
+                "fiscalYearStartMonth": 1,
+                "name": "Synthetic Transfer Company"
+              },
+              "entries": [
+                {
+                  "date": "2026-10-20",
+                  "documentId": null,
+                  "documentNo": null,
+                  "entryNo": "2026-00002",
+                  "id": 2,
+                  "lines": [
+                    {
+                      "accountName": "Synthetic transfer 1759",
+                      "accountNo": "1759",
+                      "credit": 0.0,
+                      "debit": 0.45,
+                      "journalLineId": 3,
+                      "text": null
+                    },
+                    {
+                      "accountName": "Synthetic transfer 8759",
+                      "accountNo": "8759",
+                      "credit": 0.45,
+                      "debit": 0.0,
+                      "journalLineId": 4,
+                      "text": null
+                    }
+                  ],
+                  "reversalOfEntryId": null,
+                  "reversalOfEntryNo": null,
+                  "reversedByEntryId": null,
+                  "reversedByEntryNo": null,
+                  "text": "Synthetic native99 new destination activity",
+                  "total": 0.45
+                },
+                {
+                  "date": "2026-10-20",
+                  "documentId": null,
+                  "documentNo": null,
+                  "entryNo": "2026-00001",
+                  "id": 1,
+                  "lines": [
+                    {
+                      "accountName": "Synthetic transfer 1759",
+                      "accountNo": "1759",
+                      "credit": 0.0,
+                      "debit": 12.34,
+                      "journalLineId": 1,
+                      "text": null
+                    },
+                    {
+                      "accountName": "Synthetic transfer 8759",
+                      "accountNo": "8759",
+                      "credit": 12.34,
+                      "debit": 0.0,
+                      "journalLineId": 2,
+                      "text": null
+                    }
+                  ],
+                  "reversalOfEntryId": null,
+                  "reversalOfEntryNo": null,
+                  "reversedByEntryId": null,
+                  "reversedByEntryNo": null,
+                  "text": "Synthetic source accepted lost response",
+                  "total": 12.34
+                }
+              ],
+              "fiscalYears": [
+                {
+                  "end": "2026-12-31",
+                  "label": "2026",
+                  "source": "live",
+                  "start": "2026-01-01"
+                }
+              ],
+              "ledgerBasis": "native_ledger_only",
+              "ledgerUuid": "bf2a474a864baf2ac474b2a912ce1b5f",
+              "liveCoverage": {
+                "cutOverDate": null,
+                "periodEnd": "2026-12-31",
+                "periodStart": "2026-01-01",
+                "reason": null,
+                "status": "complete"
+              },
+              "nativePosting": {
+                "accounts": [
+                  {
+                    "accountNo": "1759",
+                    "active": true,
+                    "allowDirectPosting": true,
+                    "name": "Synthetic transfer 1759",
+                    "normalBalance": "debit",
+                    "type": "asset"
+                  },
+                  {
+                    "accountNo": "8759",
+                    "active": true,
+                    "allowDirectPosting": true,
+                    "name": "Synthetic transfer 8759",
+                    "normalBalance": "credit",
+                    "type": "equity"
+                  }
+                ],
+                "ruleVersion": "annual-report=dk-annual-report-v0.0.1;bank=dk-bank-v0.0.2;bookkeeping=dk-bookkeeping-v0.0.8;documents=dk-documents-v0.0.3;email=dk-email-v0.0.2;gdpr=dk-gdpr-v0.0.1;invoices=dk-invoices-v0.0.11;mail-intake=dk-mail-intake-v0.0.3;mileage=dk-mileage-v0.0.2;peppol=dk-peppol-v0.0.4;tax-return=dk-tax-return-v0.0.1;vat=dk-vat-v0.0.5"
+              },
+              "openingBalanceBasis": {
+                "archiveAmountsIncluded": false,
+                "basis": "live",
+                "cutOverDate": null,
+                "openingJournalEntryId": null
+              },
+              "periodEnd": "2026-12-31",
+              "periodStart": "2026-01-01",
+              "selectedSource": "live",
+              "selectedYear": "2026",
+              "slug": "synthetic",
+              "source": "live"
+            },
+            "ok": true
+          },
+          "balance": {
+            "ok": true,
+            "trialBalance": {
+              "archived": false,
+              "archivedSource": null,
+              "balanced": true,
+              "company": {
+                "country": "DK",
+                "currency": "DKK",
+                "cvr": "DK87654321",
+                "fiscalYearLabelStrategy": "end-year",
+                "fiscalYearStartMonth": 1,
+                "name": "Synthetic Transfer Company"
+              },
+              "fiscalYears": [
+                {
+                  "end": "2026-12-31",
+                  "label": "2026",
+                  "source": "live",
+                  "start": "2026-01-01"
+                }
+              ],
+              "ledgerBasis": "native_ledger_only",
+              "ledgerUuid": "bf2a474a864baf2ac474b2a912ce1b5f",
+              "liveCoverage": {
+                "cutOverDate": null,
+                "periodEnd": "2026-12-31",
+                "periodStart": "2026-01-01",
+                "reason": null,
+                "status": "complete"
+              },
+              "openingBalanceBasis": {
+                "archiveAmountsIncluded": false,
+                "basis": "live",
+                "cutOverDate": null,
+                "openingJournalEntryId": null
+              },
+              "periodEnd": "2026-12-31",
+              "periodStart": "2026-01-01",
+              "rows": [
+                {
+                  "accountNo": "1759",
+                  "balance": 12.79,
+                  "credit": 0.0,
+                  "debit": 12.79,
+                  "name": "Synthetic transfer 1759",
+                  "type": "asset"
+                },
+                {
+                  "accountNo": "8759",
+                  "balance": -12.79,
+                  "credit": 12.79,
+                  "debit": 0.0,
+                  "name": "Synthetic transfer 8759",
+                  "type": "equity"
+                }
+              ],
+              "selectedSource": "live",
+              "selectedYear": "2026",
+              "slug": "synthetic",
+              "source": "live",
+              "totalCredit": 12.79,
+              "totalDebit": 12.79
+            }
+          },
+          "unknown": {
+            "attemptId": "D3baOZ_mZ8Rc09truscMWUKksup8-WeZQUyXmBjURL0",
+            "bodySha256": "d3257c9da2dd63415d69519fb653bb9ded8030a2912ad5d356ddc80a9603c87f",
+            "duplicate": false,
+            "history": [
+              {
+                "actor": "user:wsUZuNT0SmYP6s2vgeN4LlrH4uS02ZELydAmaeQtj3Q",
+                "at": "2026-10-20T20:24:37.096Z",
+                "attemptId": "D3baOZ_mZ8Rc09truscMWUKksup8-WeZQUyXmBjURL0",
+                "attemptIndex": 1,
+                "bodySha256": "d3257c9da2dd63415d69519fb653bb9ded8030a2912ad5d356ddc80a9603c87f",
+                "eventType": "reserved",
+                "evidence": null,
+                "jsonSha256": "3a3f558c857d3db01ff32032969fc660471454312f0a45cac63edcb04f321f7f",
+                "pdfSha256": "40ac4efccc738a49af0973fdeeffdfb3ea57ca0b3cd8b28e231acfc5d28ba9d4",
+                "reason": null,
+                "resolution": null,
+                "senderIdentity": {
+                  "fromAddress": "sales@example.invalid",
+                  "fromName": "Synthetic Seller",
+                  "host": "localhost",
+                  "port": 58603
+                },
+                "stateHash": "f1a37c63cb43e99cc8bdb652b2837cc4e91e34879da1ac1f5801d814c018db39"
+              }
+            ],
+            "humanResolution": false,
+            "invoiceDocumentId": 1,
+            "invoiceNumber": "2026-0001",
+            "kind": "invoice",
+            "messageId": "<065e9cd681a063d3a109a65ab390402e@rentemester.local>",
+            "pdfSha256": "40ac4efccc738a49af0973fdeeffdfb3ea57ca0b3cd8b28e231acfc5d28ba9d4",
+            "recipient": "unknown@example.invalid",
+            "state": "unknown",
+            "stateHash": "f1a37c63cb43e99cc8bdb652b2837cc4e91e34879da1ac1f5801d814c018db39",
+            "subject": "Faktura 2026-0001"
+          },
+          "exactReplay": {
+            "appliedRules": [
+              "DK-BOOKKEEPING-BALANCED-001",
+              "DK-BOOKKEEPING-APPEND-ONLY-001",
+              "DK-BOOKKEEPING-PERIOD-LOCK-001"
+            ],
+            "entryHash": "a76310ceef50e553974bee0397519ef42102c21c1490379a15e4f71380bd41f9",
+            "entryId": 1,
+            "entryNo": "2026-00001",
+            "errors": [],
+            "ok": true,
+            "receipt": {
+              "createdAt": "2026-10-20T20:24:33.246Z",
+              "expiresAt": "2026-11-19T20:24:33.246Z",
+              "receiptId": 1,
+              "reconciliation": {
+                "archiveSha256": "1da93e76660d567ff04c3da598adc6a2fb8f8129fe073a8e4a6f99f922a482f1",
+                "mappedUserId": "fdpz4CNY1aPZQ7CC0jUarwlUpVXS45miFJjGj438uRg",
+                "restoreBoundaryId": 10,
+                "sourcePrincipal": {
+                  "kind": "user",
+                  "subject": "wsUZuNT0SmYP6s2vgeN4LlrH4uS02ZELydAmaeQtj3Q"
+                }
+              },
+              "replayed": true
+            }
+          }
+        },
+        "fixture": {
+          "status": "native-fixture-terminal-verified",
+          "sourceRevision": "ee6dc5cc9a1b0ce9218ab50b58ecd0df360f819e",
+          "runnerSha256": "44bca184817c67c787f1fbce59ebd78d8f5b8a00dd203c3cd50c90a35dad8ae6",
+          "browserHelperSha256": "2dd0d2590f56fa9d53058465a29792c71fc5c24c2e354390042a308be1e0f4c1",
+          "noOfflineIdentitySeeds": true,
+          "externalMailForwarded": false,
+          "linuxIsolationQualified": false,
+          "hostileOrPreFreezeCloneProtectionQualified": false,
+          "postCutoverRollbackQualified": false,
+          "otherKeyedFamiliesQualified": false,
+          "installedNativeGuiQualified": false,
+          "nonemptySchedulerAuthorityInThisFixture": false,
+          "serverPids": {
+            "source": [
+              33866
+            ],
+            "target": []
+          },
+          "actions": [
+            {
+              "action": "setup",
+              "status": "complete"
+            },
+            {
+              "action": "start-unknown",
+              "status": "complete"
+            },
+            {
+              "action": "killed",
+              "status": "complete"
+            },
+            {
+              "action": "finish",
+              "status": "complete"
+            }
+          ],
+          "results": {
+            "setup": {
+              "normalOwnerMfa": true,
+              "sourceOwnerId": "wsUZuNT0SmYP6s2vgeN4LlrH4uS02ZELydAmaeQtj3Q",
+              "invoice": {
+                "currency": "DKK",
+                "documentId": 1,
+                "fxRateToDkk": null,
+                "grossAmount": 125,
+                "grossAmountDkk": null,
+                "invoiceNumber": "2026-0001",
+                "invoiceType": "full",
+                "lines": [
+                  {
+                    "description": "Synthetic transfer immutable invoice",
+                    "lineTotalExVat": 100,
+                    "quantity": 1,
+                    "taxClassification": "taxable",
+                    "unitPriceExVat": 100,
+                    "vatAmount": 25,
+                    "vatBase": 100,
+                    "vatRate": 0.25
+                  }
+                ],
+                "netAmount": 100,
+                "netAmountDkk": null,
+                "reverseChargeBasis": null,
+                "reverseChargeNote": null,
+                "totals": {
+                  "grossAmount": 125,
+                  "netAmount": 100,
+                  "vatAmount": 25,
+                  "vatRate": 0.25
+                },
+                "vatAmount": 25,
+                "vatAmountDkk": null,
+                "vatRate": 0.25,
+                "vatTreatment": "standard"
+              },
+              "sourceProof": {
+                "documentId": 1,
+                "jsonSha256": "3a3f558c857d3db01ff32032969fc660471454312f0a45cac63edcb04f321f7f",
+                "pdfSha256": "40ac4efccc738a49af0973fdeeffdfb3ea57ca0b3cd8b28e231acfc5d28ba9d4",
+                "jsonBase64": "ewogICJidXllciI6IHsKICAgICJhZGRyZXNzIjogIlN5bnRoZXRpYyBCdXllciBTdHJlZXQgMiIsCiAgICAibmFtZSI6ICJTeW50aGV0aWMgVHJhbnNmZXIgQnV5ZXIiLAogICAgInB1YmxpY1JlY2lwaWVudCI6IGZhbHNlLAogICAgInZhdE9yQ3ZyIjogIkRLMTIzNDU2NzgiCiAgfSwKICAiY3VycmVuY3kiOiAiREtLIiwKICAiY3VzdG9tZXJJZCI6IDEsCiAgImR1ZURhdGUiOiAiMjAyNi0xMS0wMyIsCiAgImludm9pY2VOdW1iZXIiOiAiMjAyNi0wMDAxIiwKICAiaW52b2ljZVR5cGUiOiAiZnVsbCIsCiAgImlzc3VlRGF0ZSI6ICIyMDI2LTEwLTIwIiwKICAiaXNzdWVkQXQiOiAiMjAyNi0xMC0yMFQyMDoyNDozMS44NDIzNzYrMDA6MDAiLAogICJsaW5lcyI6IFsKICAgIHsKICAgICAgImRlc2NyaXB0aW9uIjogIlN5bnRoZXRpYyB0cmFuc2ZlciBpbW11dGFibGUgaW52b2ljZSIsCiAgICAgICJsaW5lVG90YWxFeFZhdCI6IDEwMC4wLAogICAgICAicXVhbnRpdHkiOiAxLAogICAgICAidGF4Q2xhc3NpZmljYXRpb24iOiAidGF4YWJsZSIsCiAgICAgICJ1bml0UHJpY2VFeFZhdCI6IDEwMCwKICAgICAgInZhdEFtb3VudCI6IDI1LjAsCiAgICAgICJ2YXRCYXNlIjogMTAwLjAsCiAgICAgICJ2YXRSYXRlIjogMC4yNQogICAgfQogIF0sCiAgInBheW1lbnQiOiBudWxsLAogICJzZWxsZXIiOiB7CiAgICAiYWRkcmVzcyI6ICJTeW50aGV0aWMgVHJhbnNmZXIgU2VsbGVyIFN0cmVldCAxIiwKICAgICJuYW1lIjogIlN5bnRoZXRpYyBUcmFuc2ZlciBDb21wYW55IiwKICAgICJ2YXRPckN2ciI6ICJESzg3NjU0MzIxIgogIH0sCiAgInN0YXR1cyI6ICJpc3N1ZWQiLAogICJ0b3RhbHMiOiB7CiAgICAiZ3Jvc3NBbW91bnQiOiAxMjUuMCwKICAgICJuZXRBbW91bnQiOiAxMDAuMCwKICAgICJ2YXRBbW91bnQiOiAyNS4wLAogICAgInZhdFJhdGUiOiAwLjI1CiAgfSwKICAidmF0VHJlYXRtZW50IjogInN0YW5kYXJkIgp9",
+                "pdfBase64": "JVBERi0xLjQKJeLjz9MKMSAwIG9iago8PCAvVHlwZSAvQ2F0YWxvZyAvUGFnZXMgMiAwIFIgPj4KZW5kb2JqCjIgMCBvYmoKPDwgL1R5cGUgL1BhZ2VzIC9Db3VudCAxIC9LaWRzIFszIDAgUl0gPj4KZW5kb2JqCjMgMCBvYmoKPDwgL1R5cGUgL1BhZ2UgL1BhcmVudCAyIDAgUiAvTWVkaWFCb3ggWzAgMCA1OTUgODQyXSAvUmVzb3VyY2VzIDw8IC9Gb250IDw8IC9GMSA1IDAgUiAvRjIgNiAwIFIgPj4gPj4gL0NvbnRlbnRzIDQgMCBSID4+CmVuZG9iago0IDAgb2JqCjw8IC9MZW5ndGggMTQxMCA+PgpzdHJlYW0KQlQgL0YyIDE2IFRmIDUwIDc5MiBUZCAoRmFrdHVyYSkgVGogRVQKQlQgL0YxIDEwIFRmIDUwIDc2OCBUZCAoU3ludGhldGljIFRyYW5zZmVyIENvbXBhbnkpIFRqIEVUCkJUIC9GMSAxMCBUZiA1MCA3NTQgVGQgKENWUiBESzg3NjU0MzIxKSBUaiBFVApCVCAvRjEgMTAgVGYgNTAgNzQwIFRkIChSZWduc2thYnNcMzQ1ciAyMDI2KSBUaiBFVApCVCAvRjEgMTAgVGYgNTAgNzI2IFRkIChWYWx1dGEgREtLKSBUaiBFVApCVCAvRjEgMTAgVGYgNTAgNzEyIFRkIChVZHRydWtrZXQgMjAyNi0xMC0yMCkgVGogRVQKQlQgL0YxIDEwIFRmIDUwIDY5OCBUZCAoS2lsZGU6IFJlbnRlbWVzdGVyKSBUaiBFVApCVCAvRjEgMTAgVGYgNTAgNjcwIFRkIChGYWt0dXJhbnVtbWVyOiAyMDI2LTAwMDEpIFRqIEVUCkJUIC9GMSAxMCBUZiA1MCA2NTYgVGQgKEZha3R1cmFkYXRvOiAyMDI2LTEwLTIwKSBUaiBFVApCVCAvRjEgMTAgVGYgNTAgNjQyIFRkIChGb3JmYWxkc2RhdG86IDIwMjYtMTEtMDMpIFRqIEVUCkJUIC9GMSAxMCBUZiA1MCA2MjggVGQgKFNcMzQ2bGdlcjogU3ludGhldGljIFRyYW5zZmVyIENvbXBhbnkpIFRqIEVUCkJUIC9GMSAxMCBUZiA1MCA2MTQgVGQgKEFkcmVzc2U6IFN5bnRoZXRpYyBUcmFuc2ZlciBTZWxsZXIgU3RyZWV0IDEpIFRqIEVUCkJUIC9GMSAxMCBUZiA1MCA2MDAgVGQgKENWUi9tb21zOiBESzg3NjU0MzIxKSBUaiBFVApCVCAvRjEgMTAgVGYgNTAgNTg2IFRkIChLXDM3MGJlcjogU3ludGhldGljIFRyYW5zZmVyIEJ1eWVyKSBUaiBFVApCVCAvRjEgMTAgVGYgNTAgNTcyIFRkIChBZHJlc3NlOiBTeW50aGV0aWMgQnV5ZXIgU3RyZWV0IDIpIFRqIEVUCkJUIC9GMSAxMCBUZiA1MCA1NTggVGQgKENWUi9tb21zOiBESzEyMzQ1Njc4KSBUaiBFVApCVCAvRjIgMTEgVGYgNTAgNTQ0IFRkIChMZXZlcmFuY2UpIFRqIEVUCkJUIC9GMSAxMCBUZiA1MCA1MzAgVGQgKFN5bnRoZXRpYyB0cmFuc2ZlciBpbW11dGFibGUgaW52b2ljZSkgVGogRVQKQlQgL0YxIDEwIFRmIDUwIDUxNiBUZCAoMSB4IDEwMCwwMCBES0sgZWtza2wuIG1vbXMpIFRqIEVUCkJUIC9GMSAxMCBUZiA0NDUgNTE2IFRkICgxMDAsMDApIFRqIEVUCkJUIC9GMSAxMCBUZiA1MCA1MDIgVGQgKE1vbXMgMjUlKSBUaiBFVApCVCAvRjEgMTAgVGYgNTAgNDg4IFRkIChJIGFsdCBla3NrbC4gbW9tcykgVGogRVQKQlQgL0YxIDEwIFRmIDQ0NSA0ODggVGQgKDEwMCwwMCkgVGogRVQKQlQgL0YxIDEwIFRmIDUwIDQ3NCBUZCAoTW9tcyAyNSUpIFRqIEVUCkJUIC9GMSAxMCBUZiA0NDUgNDc0IFRkICgyNSwwMCkgVGogRVQKQlQgL0YyIDEwIFRmIDUwIDQ2MCBUZCAoVGlsIGJldGFsaW5nIERLSykgVGogRVQKQlQgL0YyIDEwIFRmIDQ0NSA0NjAgVGQgKDEyNSwwMCkgVGogRVQKNTAgNDcyIG0gNTQ1IDQ3MiBsIDAuNSB3IFMKZW5kc3RyZWFtCmVuZG9iago1IDAgb2JqCjw8IC9UeXBlIC9Gb250IC9TdWJ0eXBlIC9UeXBlMSAvQmFzZUZvbnQgL0hlbHZldGljYSAvRW5jb2RpbmcgL1dpbkFuc2lFbmNvZGluZyA+PgplbmRvYmoKNiAwIG9iago8PCAvVHlwZSAvRm9udCAvU3VidHlwZSAvVHlwZTEgL0Jhc2VGb250IC9IZWx2ZXRpY2EtQm9sZCAvRW5jb2RpbmcgL1dpbkFuc2lFbmNvZGluZyA+PgplbmRvYmoKNyAwIG9iago8PCAvUHJvZHVjZXIgKFJlbnRlbWVzdGVyIGludm9pY2UgcmVuZGVyZXIpIC9UaXRsZSAoRmFrdHVyYSkgL0NyZWF0aW9uRGF0ZSAoRDoyMDI2MTAyMDAwMDAwMFopIC9Nb2REYXRlIChEOjIwMjYxMDIwMDAwMDAwWikgPj4KZW5kb2JqCnhyZWYKMCA4CjAwMDAwMDAwMDAgNjU1MzUgZiAKMDAwMDAwMDAxNSAwMDAwMCBuIAowMDAwMDAwMDY0IDAwMDAwIG4gCjAwMDAwMDAxMjEgMDAwMDAgbiAKMDAwMDAwMDI1NyAwMDAwMCBuIAowMDAwMDAxNzE4IDAwMDAwIG4gCjAwMDAwMDE4MTUgMDAwMDAgbiAKMDAwMDAwMTkxNyAwMDAwMCBuIAp0cmFpbGVyCjw8IC9TaXplIDggL1Jvb3QgMSAwIFIgL0luZm8gNyAwIFIgPj4Kc3RhcnR4cmVmCjIwNTkKJSVFT0YK"
+              },
+              "original": {
+                "confirm": true,
+                "input": {
+                  "format": "rentemester-manual-journal-post/1",
+                  "expectedRuleVersion": "annual-report=dk-annual-report-v0.0.1;bank=dk-bank-v0.0.2;bookkeeping=dk-bookkeeping-v0.0.8;documents=dk-documents-v0.0.3;email=dk-email-v0.0.2;gdpr=dk-gdpr-v0.0.1;invoices=dk-invoices-v0.0.11;mail-intake=dk-mail-intake-v0.0.3;mileage=dk-mileage-v0.0.2;peppol=dk-peppol-v0.0.4;tax-return=dk-tax-return-v0.0.1;vat=dk-vat-v0.0.5",
+                  "idempotencyKey": "synthetic-transfer-lost-source-response",
+                  "request": {
+                    "transactionDate": "2026-10-20",
+                    "text": "Synthetic source accepted lost response",
+                    "currency": "DKK",
+                    "lines": [
+                      {
+                        "accountNo": "1759",
+                        "debitAmount": "12.34",
+                        "creditAmount": "0.00"
+                      },
+                      {
+                        "accountNo": "8759",
+                        "debitAmount": "0.00",
+                        "creditAmount": "12.34"
+                      }
+                    ]
+                  }
+                }
+              },
+              "baseline": {
+                "journal": {
+                  "journal": {
+                    "accountFilter": null,
+                    "archived": false,
+                    "archivedSource": null,
+                    "company": {
+                      "country": "DK",
+                      "currency": "DKK",
+                      "cvr": "DK87654321",
+                      "fiscalYearLabelStrategy": "end-year",
+                      "fiscalYearStartMonth": 1,
+                      "name": "Synthetic Transfer Company"
+                    },
+                    "entries": [
+                      {
+                        "date": "2026-10-20",
+                        "documentId": null,
+                        "documentNo": null,
+                        "entryNo": "2026-00001",
+                        "id": 1,
+                        "lines": [
+                          {
+                            "accountName": "Synthetic transfer 1759",
+                            "accountNo": "1759",
+                            "credit": 0,
+                            "debit": 12.34,
+                            "journalLineId": 1,
+                            "text": null
+                          },
+                          {
+                            "accountName": "Synthetic transfer 8759",
+                            "accountNo": "8759",
+                            "credit": 12.34,
+                            "debit": 0,
+                            "journalLineId": 2,
+                            "text": null
+                          }
+                        ],
+                        "reversalOfEntryId": null,
+                        "reversalOfEntryNo": null,
+                        "reversedByEntryId": null,
+                        "reversedByEntryNo": null,
+                        "text": "Synthetic source accepted lost response",
+                        "total": 12.34
+                      }
+                    ],
+                    "fiscalYears": [
+                      {
+                        "end": "2026-12-31",
+                        "label": "2026",
+                        "source": "live",
+                        "start": "2026-01-01"
+                      }
+                    ],
+                    "ledgerBasis": "native_ledger_only",
+                    "ledgerUuid": "bf2a474a864baf2ac474b2a912ce1b5f",
+                    "liveCoverage": {
+                      "cutOverDate": null,
+                      "periodEnd": "2026-12-31",
+                      "periodStart": "2026-01-01",
+                      "reason": null,
+                      "status": "complete"
+                    },
+                    "nativePosting": {
+                      "accounts": [
+                        {
+                          "accountNo": "1759",
+                          "active": true,
+                          "allowDirectPosting": true,
+                          "name": "Synthetic transfer 1759",
+                          "normalBalance": "debit",
+                          "type": "asset"
+                        },
+                        {
+                          "accountNo": "8759",
+                          "active": true,
+                          "allowDirectPosting": true,
+                          "name": "Synthetic transfer 8759",
+                          "normalBalance": "credit",
+                          "type": "equity"
+                        }
+                      ],
+                      "ruleVersion": "annual-report=dk-annual-report-v0.0.1;bank=dk-bank-v0.0.2;bookkeeping=dk-bookkeeping-v0.0.8;documents=dk-documents-v0.0.3;email=dk-email-v0.0.2;gdpr=dk-gdpr-v0.0.1;invoices=dk-invoices-v0.0.11;mail-intake=dk-mail-intake-v0.0.3;mileage=dk-mileage-v0.0.2;peppol=dk-peppol-v0.0.4;tax-return=dk-tax-return-v0.0.1;vat=dk-vat-v0.0.5"
+                    },
+                    "openingBalanceBasis": {
+                      "archiveAmountsIncluded": false,
+                      "basis": "live",
+                      "cutOverDate": null,
+                      "openingJournalEntryId": null
+                    },
+                    "periodEnd": "2026-12-31",
+                    "periodStart": "2026-01-01",
+                    "selectedSource": "live",
+                    "selectedYear": "2026",
+                    "slug": "synthetic",
+                    "source": "live"
+                  },
+                  "ok": true
+                },
+                "balance": {
+                  "ok": true,
+                  "trialBalance": {
+                    "archived": false,
+                    "archivedSource": null,
+                    "balanced": true,
+                    "company": {
+                      "country": "DK",
+                      "currency": "DKK",
+                      "cvr": "DK87654321",
+                      "fiscalYearLabelStrategy": "end-year",
+                      "fiscalYearStartMonth": 1,
+                      "name": "Synthetic Transfer Company"
+                    },
+                    "fiscalYears": [
+                      {
+                        "end": "2026-12-31",
+                        "label": "2026",
+                        "source": "live",
+                        "start": "2026-01-01"
+                      }
+                    ],
+                    "ledgerBasis": "native_ledger_only",
+                    "ledgerUuid": "bf2a474a864baf2ac474b2a912ce1b5f",
+                    "liveCoverage": {
+                      "cutOverDate": null,
+                      "periodEnd": "2026-12-31",
+                      "periodStart": "2026-01-01",
+                      "reason": null,
+                      "status": "complete"
+                    },
+                    "openingBalanceBasis": {
+                      "archiveAmountsIncluded": false,
+                      "basis": "live",
+                      "cutOverDate": null,
+                      "openingJournalEntryId": null
+                    },
+                    "periodEnd": "2026-12-31",
+                    "periodStart": "2026-01-01",
+                    "rows": [
+                      {
+                        "accountNo": "1759",
+                        "balance": 12.34,
+                        "credit": 0,
+                        "debit": 12.34,
+                        "name": "Synthetic transfer 1759",
+                        "type": "asset"
+                      },
+                      {
+                        "accountNo": "8759",
+                        "balance": -12.34,
+                        "credit": 12.34,
+                        "debit": 0,
+                        "name": "Synthetic transfer 8759",
+                        "type": "equity"
+                      }
+                    ],
+                    "selectedSource": "live",
+                    "selectedYear": "2026",
+                    "slug": "synthetic",
+                    "source": "live",
+                    "totalCredit": 12.34,
+                    "totalDebit": 12.34
+                  }
+                }
+              },
+              "discardedSuccessfulResponse": true
+            },
+            "start-unknown": {
+              "requestStarted": true
+            },
+            "killed": {
+              "markerBlocked": true
+            },
+            "finish": {
+              "finished": true
+            }
+          },
+          "ownedProfiles": {
+            "source": "/Users/mikkelfreltoftkrogsholm/Library/Application Support/Rentemester-Synthetic-Transfer-6f7ffaa7c27a46ddb0fe8346fb46da30/source",
+            "target": "/Users/mikkelfreltoftkrogsholm/Library/Application Support/Rentemester-Synthetic-Transfer-6f7ffaa7c27a46ddb0fe8346fb46da30/target"
+          },
+          "artifacts": {
+            "server_binary": "3e4f2154162e97979241da3a837c7f581bc65e94e98b116708059b00961a649a",
+            "cli_binary": "b549d6b3a813a97f458b724697d9736c0959358ebecd8ba7a9273ab87af1722e",
+            "mcp_binary": "66af2487b4f67de68ce8774827fbf2d1bf52043133f262ce3678902d90d2032b"
+          },
+          "webFiles": {
+            "chunk-0b4cr625.js": "396bc06fff757cbbda1d7d8a506ed6dd79e85fc5a1ac6112bca46bf87ccd40c5",
+            "chunk-0b4cr625.js.map": "007eafbdd524fe38c01a9dc8989d3d37bcf7ff989f368ce4a94f8447f94a4b84",
+            "chunk-4ksqn1qr.css": "3e85c66ae179afd6c29c92233aca6d604975d3fea58a6c3c2abb439596d8dd10",
+            "index.html": "983a445eab90c2a8010f71453d9b7ca0587092d677f0e13d6db120f72dbd76c0",
+            "licenses/ibm-plex-mono.txt": "23b0a9d0c6d3f140a0b77e483c5cfa6bba574325ef5cb189ed9f2fec4884533f",
+            "licenses/ibm-plex-sans.txt": "d0283623ef57e722fd0eb688a8041589670c608ab780cd3612d06ba6f153d3fd",
+            "licenses/source-serif-4.txt": "18aabf190848725e2576eefb5c29ba06aac1029d02132252a7f312eac2e50cf3",
+            "stylex-fb5ae53142308d22.css": "fb5ae53142308d2204394ddfe01cff4119a6727f7132c9284606036d1c32edd7"
+          },
+          "currentAction": "browser:finish",
+          "origins": {
+            "source": "http://127.0.0.1:58604",
+            "target": "http://127.0.0.1:58605"
+          },
+          "browserControllerPid": 33886,
+          "serverExits": [
+            {
+              "name": "source",
+              "pid": 33866,
+              "code": -9,
+              "intentionalCrash": true
+            }
+          ],
+          "crashExitCode": -9,
+          "crashAfterQueueSeconds": 0.0011436670320108533,
+          "sourceReceiptsBeforeTransfer": {
+            "tombstones": [
+              [
+                1,
+                "899ca12d3c022ec9f18fff84ae6071e6566aab89775e11e6875fc0a4ebe13530",
+                "bf2a474a864baf2ac474b2a912ce1b5f",
+                "journal_post",
+                "user",
+                "wsUZuNT0SmYP6s2vgeN4LlrH4uS02ZELydAmaeQtj3Q",
+                "fbf6234fa2cc988b91c80fe6f84de644f2a4349120f530355368c500e9e43017",
+                "2026-10-20T20:24:33.246Z",
+                "2026-11-19T20:24:33.246Z"
+              ]
+            ],
+            "outcomes": [
+              [
+                1,
+                "{\"appliedRules\":[\"DK-BOOKKEEPING-BALANCED-001\",\"DK-BOOKKEEPING-APPEND-ONLY-001\",\"DK-BOOKKEEPING-PERIOD-LOCK-001\"],\"entryHash\":\"a76310ceef50e553974bee0397519ef42102c21c1490379a15e4f71380bd41f9\",\"entryId\":1,\"entryNo\":\"2026-00001\",\"errors\":[],\"ok\":true}",
+                "2026-10-20T20:24:33.246Z"
+              ]
+            ],
+            "emailSuccessCount": 0,
+            "journalCount": 1
+          },
+          "smtp": {
+            "connections": 1,
+            "rcptAttempts": {
+              "unknown@example.invalid": 1
+            },
+            "messages": [
+              {
+                "queueId": "synthetic-queue-1",
+                "recipient": "unknown@example.invalid",
+                "sender": "sales@example.invalid",
+                "messageId": "<065e9cd681a063d3a109a65ab390402e@rentemester.local>",
+                "bodySha256": "d3257c9da2dd63415d69519fb653bb9ded8030a2912ad5d356ddc80a9603c87f",
+                "pdfSha256": "40ac4efccc738a49af0973fdeeffdfb3ea57ca0b3cd8b28e231acfc5d28ba9d4",
+                "pdfCount": 1,
+                "queuedMonotonic": 391417.344189416,
+                "finalAck": false
+              }
+            ],
+            "errors": []
+          },
+          "nativeCheckpoint": "/Users/mikkelfreltoftkrogsholm/Library/Application Support/Rentemester-Synthetic-Transfer-6f7ffaa7c27a46ddb0fe8346fb46da30/native-ready.json",
+          "finalSql": {
+            "source": {
+              "tombstones": [
+                [
+                  1,
+                  "899ca12d3c022ec9f18fff84ae6071e6566aab89775e11e6875fc0a4ebe13530",
+                  "bf2a474a864baf2ac474b2a912ce1b5f",
+                  "journal_post",
+                  "user",
+                  "wsUZuNT0SmYP6s2vgeN4LlrH4uS02ZELydAmaeQtj3Q",
+                  "fbf6234fa2cc988b91c80fe6f84de644f2a4349120f530355368c500e9e43017",
+                  "2026-10-20T20:24:33.246Z",
+                  "2026-11-19T20:24:33.246Z"
+                ]
+              ],
+              "outcomes": [
+                [
+                  1,
+                  "{\"appliedRules\":[\"DK-BOOKKEEPING-BALANCED-001\",\"DK-BOOKKEEPING-APPEND-ONLY-001\",\"DK-BOOKKEEPING-PERIOD-LOCK-001\"],\"entryHash\":\"a76310ceef50e553974bee0397519ef42102c21c1490379a15e4f71380bd41f9\",\"entryId\":1,\"entryNo\":\"2026-00001\",\"errors\":[],\"ok\":true}",
+                  "2026-10-20T20:24:33.246Z"
+                ]
+              ],
+              "emailSuccessCount": 0,
+              "journalCount": 1
+            },
+            "target": {
+              "tombstones": [
+                [
+                  1,
+                  "899ca12d3c022ec9f18fff84ae6071e6566aab89775e11e6875fc0a4ebe13530",
+                  "bf2a474a864baf2ac474b2a912ce1b5f",
+                  "journal_post",
+                  "user",
+                  "wsUZuNT0SmYP6s2vgeN4LlrH4uS02ZELydAmaeQtj3Q",
+                  "fbf6234fa2cc988b91c80fe6f84de644f2a4349120f530355368c500e9e43017",
+                  "2026-10-20T20:24:33.246Z",
+                  "2026-11-19T20:24:33.246Z"
+                ],
+                [
+                  2,
+                  "2adb95413a009d3d42f575facb745266b4c07d672d26f51b7a2bce5de4f0ef7e",
+                  "bf2a474a864baf2ac474b2a912ce1b5f",
+                  "journal_post",
+                  "user",
+                  "fdpz4CNY1aPZQ7CC0jUarwlUpVXS45miFJjGj438uRg",
+                  "21c7b136b9bb80b9e2da01cc6ac18cdaf85d6dd9030c9650e3fa5d30dc13847a",
+                  "2026-10-20T20:31:43.572Z",
+                  "2026-11-19T20:31:43.572Z"
+                ]
+              ],
+              "outcomes": [
+                [
+                  1,
+                  "{\"appliedRules\":[\"DK-BOOKKEEPING-BALANCED-001\",\"DK-BOOKKEEPING-APPEND-ONLY-001\",\"DK-BOOKKEEPING-PERIOD-LOCK-001\"],\"entryHash\":\"a76310ceef50e553974bee0397519ef42102c21c1490379a15e4f71380bd41f9\",\"entryId\":1,\"entryNo\":\"2026-00001\",\"errors\":[],\"ok\":true}",
+                  "2026-10-20T20:24:33.246Z"
+                ],
+                [
+                  2,
+                  "{\"appliedRules\":[\"DK-BOOKKEEPING-BALANCED-001\",\"DK-BOOKKEEPING-APPEND-ONLY-001\",\"DK-BOOKKEEPING-PERIOD-LOCK-001\"],\"entryHash\":\"4fb9dfdeb22c12ea4875e74fceb63fd6b8751e55f0fdbfc8bdf8fbd961fe47f3\",\"entryId\":2,\"entryNo\":\"2026-00002\",\"errors\":[],\"ok\":true}",
+                  "2026-10-20T20:31:43.572Z"
+                ]
+              ],
+              "emailSuccessCount": 0,
+              "journalCount": 2
+            }
+          },
+          "unknownSmtpPreservedNoResend": true,
+          "ownedProcessesStopped": true,
+          "ownedProfilesCleaned": {
+            "source": true,
+            "target": true
+          }
+        },
+        "httpsFixtureStops": [
+          {
+            "status": "stopped",
+            "stateDir": "/Users/mikkelfreltoftkrogsholm/Library/Application Support/Rentemester-Synthetic-Transfer-6f7ffaa7c27a46ddb0fe8346fb46da30/Rentemester-Synthetic-DesktopHTTPS-p0n31b91",
+            "sourceConfigSha256": "8a51dac0dec77eb09465c611bb91426ccceb69fcbb75609ba4362a99bd17e616",
+            "sourceProfile": "/Users/mikkelfreltoftkrogsholm/Library/Application Support/Rentemester-Synthetic-Transfer-6f7ffaa7c27a46ddb0fe8346fb46da30/target",
+            "mailDir": "/Users/mikkelfreltoftkrogsholm/Library/Application Support/Rentemester-Synthetic-Transfer-6f7ffaa7c27a46ddb0fe8346fb46da30/Rentemester-Synthetic-DesktopHTTPS-p0n31b91/mail",
+            "trustVerified": true,
+            "transferStagedFromNativeArchive": true,
+            "archiveSha256": "0a9b0393fa62f792803040abdfeef1609bc86572b44c59311a132cbb93005d49",
+            "origin": "https://localhost:58847",
+            "serverPid": 34971,
+            "fixtureConfigPath": "/Users/mikkelfreltoftkrogsholm/Library/Application Support/Rentemester-Synthetic-Transfer-6f7ffaa7c27a46ddb0fe8346fb46da30/Rentemester-Synthetic-DesktopHTTPS-p0n31b91/server.json",
+            "fixtureCertificateSha256": "ba6de897a9417ae6c57cf1dc84d444a2cf86d0aa18745994ec9f6b1f226ff54c",
+            "sourceConfigPreserved": true,
+            "stoppedServerPid": 34971
+          },
+          {
+            "status": "stopped",
+            "stateDir": "/Users/mikkelfreltoftkrogsholm/Library/Application Support/Rentemester-Synthetic-Transfer-6f7ffaa7c27a46ddb0fe8346fb46da30/Rentemester-Synthetic-DesktopHTTPS-th3e8dk5",
+            "sourceConfigSha256": "cedd33281b407d19d00ca46ecb951049af4c7077ee15b92ab7ce288a36b095c7",
+            "sourceProfile": "/Users/mikkelfreltoftkrogsholm/Library/Application Support/Rentemester-Synthetic-Transfer-6f7ffaa7c27a46ddb0fe8346fb46da30/target",
+            "mailDir": "/Users/mikkelfreltoftkrogsholm/Library/Application Support/Rentemester-Synthetic-Transfer-6f7ffaa7c27a46ddb0fe8346fb46da30/Rentemester-Synthetic-DesktopHTTPS-th3e8dk5/mail",
+            "trustVerified": true,
+            "origin": "https://localhost:61765",
+            "serverPid": 36508,
+            "fixtureConfigPath": "/Users/mikkelfreltoftkrogsholm/Library/Application Support/Rentemester-Synthetic-Transfer-6f7ffaa7c27a46ddb0fe8346fb46da30/Rentemester-Synthetic-DesktopHTTPS-th3e8dk5/server.json",
+            "fixtureCertificateSha256": "b5237eb2238b71ee2d89ca451d7035d378f4f45ffcf377192fb098272eb1d6e4",
+            "sourceConfigPreserved": true,
+            "stoppedServerPid": 36508
+          }
+        ],
+        "axEvidenceSha256": {
+          "rm99-target-journal.ax.txt": "5c3aaca6120ef1e8871c8ed9667e52f7a66ee1a181fd287c0e29ca085c3c5f84",
+          "rm99-source-reopened.ax.txt": "acb7e1e4be207b5ef678a95d2e71faca91b2c1873c1238f818f489dfe8516380",
+          "rm99-target-reopened.ax.txt": "0f8634ab1f2f20bfadbc7600f39170c86017b1538800193439985cfe8ab581ca"
+        },
+        "allOwnedFixtureProcessesStopped": true,
+        "allOwnedSyntheticProfilesCleaned": true,
+        "hostileCloneProtectionQualified": false,
+        "postCutoverRollbackQualified": false,
+        "olderSoftwareWriterFenceQualified": false,
+        "nonemptySchedulerTransferQualified": false,
+        "signedDistributionQualified": false,
+        "wholeGoalComplete": false,
+        "postAcceptanceFixtureChanges": {
+          "completedArchiveHandoffRequired": true,
+          "externalProcessObservationBeforeTerminalSql": true,
+          "nativeProfilesPreservedForExplicitCleanup": true,
+          "note": "Full installed financial journey above ran with operator-verified atomic archive publication and independently verified stopped external children. Later fixture changes enforce a completion marker and preserve profiles for explicit cleanup. Targeted partial-archive/wrong-marker refusal passed; unchanged financial journey not repeated.",
+          "gateReport": "/tmp/rentemester-rust-reports/native-transfer99-stage-gate.json",
+          "gateReportSha256": "d2a5ffef1c2584302f9a90fd597fb3fffd9f7b3a9a5eb602550ec697cf9f972f"
+        },
+        "fixtureCodeRevision": "dd14a69549c9c5cdcc46a52232ad29a59a71de9e"
+      }
+    },
+    "current_package_smoke99": {
+      "path": "/tmp/rentemester-rust-reports/shared-web-desktop98-current-package.json",
+      "sha256": "41059618db145869987413ce5a75abd38f74bc08bb9ff348f3b69e1e124f8160",
+      "report": {
+        "status": "package_verified",
+        "installedGuiQualified": true,
+        "guiBlocker": null,
+        "buildLog": "/tmp/rm97-http-final-build.log",
+        "packages": [
+          {
+            "path": "/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/target/native/Rentemester Desktop.app",
+            "manifestSha256": "6eedab17c56f5cf58a317e7af4040bdd0dc8002878bb967da331a0ec08543030",
+            "fileCount": 12,
+            "source": {
+              "dirty": true,
+              "revision": "a36617cdcffb2d7bbc8fb9bba09fb46ed4308296"
+            },
+            "signing": "unsigned"
+          },
+          {
+            "path": "/Users/mikkelfreltoftkrogsholm/Applications/Rentemester Desktop.app",
+            "manifestSha256": "6eedab17c56f5cf58a317e7af4040bdd0dc8002878bb967da331a0ec08543030",
+            "fileCount": 12,
+            "source": {
+              "dirty": true,
+              "revision": "a36617cdcffb2d7bbc8fb9bba09fb46ed4308296"
+            },
+            "signing": "unsigned"
+          }
+        ],
+        "existingFinancialGuiEvidenceRetained": "Group88; older packaged revision",
+        "guiScope": "Current a36617cd package opens owned local Rust backend at new ephemeral origin, ordinary password/TOTP, both companies visible, five preserved remote95 entries including exact native98 original; no posting attempted.",
+        "nativeSmokeAt": "2026-10-20T20:22:41.332Z",
+        "nativeSmokeAxSha256": "da7c05f5fe9c615963198afc22502842259f489264bd81f6049aed7724fd3cc9"
+      }
     }
   },
   "verified_history": [
@@ -3751,8 +5076,14 @@
     {
       "delivery": "Group97 service bank receipt payment and Group98 installed manual-post closure recovery",
       "owner": "root adapters, original-key recovery, clients, integration and actual proofs; invoice_domain80 isolated bank/settlement domain worker; exception_read82 read-only design/material review",
-      "status": "QUALIFIED_SCOPED_JOURNEYS; CURRENT_PACKAGE_GUI_SMOKE_PENDING_LOCK; FULL_MISSION_OPEN",
-      "acceptance": "Same invoice to zero debtor through CLI/MCP/exact archived bytes/one payment/restart, plus actual native accepted200 fullquit/reopen normalMFA and same receipt remote→local new origin, explicit ack no new financial effect.62web+5receipt+3service+37bank tests; exact current package manifests; final current GUI smoke unqualified because Mac locked."
+      "status": "QUALIFIED_SCOPED_JOURNEYS; later Group99 closes current-package native smoke; FULL_MISSION_OPEN",
+      "acceptance": "Same invoice to zero debtor through CLI/MCP/exact archived bytes/one payment/restart, plus actual native accepted200 fullquit/reopen normalMFA and same receipt remote→local new origin, explicit ack no new financial effect.62web+5receipt+3service+37bank tests; exact current package manifests; final current GUI smoke unqualified because Mac locked. Group99 later qualifies current a36617cd ordinary local-MFA smoke with five prior entries retained."
+    },
+    {
+      "delivery": "Group99 installed local source→HTTPS target managed transfer",
+      "owner": "root installed UI, fixture adaptations, integration, auth/readback/replay and terminal custody; exception_read82 read-only bounded fixture review",
+      "status": "QUALIFIED_SCOPED_INSTALLED_MANAGED_J06; FULL_R54_AND_MISSION_OPEN",
+      "acceptance": "Native freeze/export/save→independent trust/stage finalHTTPS→fresh owner verification/MFA→original receipt map→reviewed exact challenge release→target activation→exact old replay without booking→one native new0.45→source moved refusal and target active/two entries after full native/server restart. One unknown SMTP attempt/no resend; original PDF/JSON/receipts preserved; terminal readonly SQL and owned-process cleanup verified. Future fixtures require explicit completed archive marker and retain native profiles for explicit cleanup."
     }
   ],
   "integrated_pending_browser": [

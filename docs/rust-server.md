@@ -2801,3 +2801,43 @@ Den uafhængige server blev derefter stoppet. Samme profil blev åbnet eksklusiv
 Den efterfølgende rettelse i `a36617cd` bevarer genfinding med den oprindelige nøgle, selv mens en kvittering er uafklaret. Kun en allerede reserveret nøgle for samme bruger, ledger og journaloperation kan gå videre til den normale idempotenskontrol; en ny nøgle er fortsat blokeret. Eksplicit serverbekræftelse frigiver også den tilsvarende umiddelbare blokering i en eksisterende browserfane. Fem lagertests, 62 webtests og det rigtige samlede browser-/server-/klientforløb beviser denne rettelse.
 
 De aktuelle pakker fra `a36617cd` er samlet og kontrolleret mod deres præcise 12-fil-manifester. En ny GUI-smokeprøve af netop denne pakke kunne ikke køres, fordi Mac’en igen var låst. Den tidligere revisionsbundne native prøve bevares; den må ikke beskrives som en ny GUI-prøve af den aktuelle pakke. Installeret flytning, øvrige relevante afbrydelsesforløb, lokal/hostet automation, signeret distribution/opdatering og fuld udfasning af TypeScript-backenden er fortsat åbne.
+
+
+### Installeret app: flytning fra lokal drift til HTTPS-server (Group99)
+
+Den installerede fælles-web-app er prøvet gennem det samlede administrerede
+flytteforløb: frys lokal kilde, gem signeret arkiv i den native dialog,
+kontrollér signaturen med den separat betroede offentlige nøgle, klargør et nyt
+HTTPS-mål, og opret målets nye ejer med normal mailbekræftelse og MFA. Den nye
+ejer tilknytter den bevarede bogføringskvittering; kilden gennemgår målets
+præcise udfordring og frigiver kun dette mål; målet aktiveres særskilt.
+
+Prøven bruger en reel accepteret postering med mistet svar og et reelt
+uafklaret SMTP-forsøg mod en privat testmodtager. Genkald af den oprindelige
+kommando returnerer samme kvittering uden ny bogføring. Én ny eksplicit
+postering fra desktopappen giver præcis to posteringer på målet. Efter fuld
+app- og servergenstart afviser den flyttede kilde gamle og nye skriveforsøg
+samt mailafsendelse; målet er fortsat aktivt. Original PDF/JSON, ledgeridentitet
+og oprindelige kvitteringer bevares. Mailen forbliver uafklaret og gensendes
+ikke. De midlertidige profiler og processer fra denne prøve er afsluttet og
+ryddet op. Den aktuelle a36617cd-pakkes tidligere afventende native smoke-test
+er også bestået med normal MFA og fem tidligere posteringer bevaret.
+
+Testværktøjerne tilbyder `run-workspace-transfer.py --native-fixture` til
+normal forberedelse af de reelle uafklarede effekter. Herefter udfører den
+installerede app selve flyttehandlingerne. `run-desktop-https.py` kan klargøre
+et helt nyt mål via `--stage-archive`, `--trusted-backup-key`, `--origin-file`
+og `--archive-ready-file`. Origin-filen giver den endelige HTTPS-destination
+før frysning; operatøren publicerer først en privat JSON-markør med
+`archiveSha256`, når den native download er færdig og hash/signatur er
+kontrolleret. Delvise filer udløser ingen staging. Forkert markørhash afvises
+før oprettelse af server/ledger. Arkivets signatur kontrolleres fortsat af
+Rust-serveren. Native fixtures bevarer fremover profiler til eksplicit
+operatøroprydning efter kontrol af eksternt startede processer.
+
+Dette kvalificerer det administrerede installerede J06-forløb. Det afslutter
+ikke hele R54: ældre eller fjendtlige kopier, rollback efter ny målaktivitet og
+flytning med ikke-tom planlægningshistorik har fortsat særskilte åbne krav.
+Signeret distribution, opdateringer og udfasning af TypeScript-backenden er
+også fortsat åbne. Acceptbevis: `installed-transfer99.json` med tilhørende
+fixture- og markørkontrol i den lokale rapportmappe.
