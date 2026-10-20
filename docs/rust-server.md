@@ -3042,3 +3042,36 @@ reproducerbarhed, HTTPS-proxy/principal-accept og godkendt promotion af
 præcis digest er fortsat åbne. Dette er ingen produktionsudgivelse, amd64-
 eller installeret desktopaccept. Alle tidligere brugerforløb og det fulde
 Rust-mål bevares; resterende desktopprøver venter stadig til slutaccept.
+
+
+### Rust-pakkens identitet og lokal releasekontrol (Group106)
+
+Den pakkede kandidat bruger nu fælles produkt-/web-/Rustversion 0.2.0.
+Den rå byggeidentitet binder faktisk compiler/Cargo/target, schema-policy,
+låsefiler, vendorkode, fastlåst PDFium og alle 38 runtimefiler samt separat
+entrypoint-hash. En uafhængig læsning af det faktiske image bekræfter inventar,
+filrettigheder og 225 unikke MCP-værktøjer fra registry. Native metadataflag
+kører uden workspace og afviser blandede kald.
+
+Den faktiske Linux arm64-kandidat
+`sha256:3ee8557ea9bb027c0626c2c4035f06759051da355bb1b2f1edfe68bc43581c1b`
+består normal ejer/MFA, bogføring, rapporter/PDF, originalbilag, to rene stop
+og genåbning/idempotent replay uden dublet. Egne containere og volumener er
+fjernet. Kilden er ærligt markeret dirty med base `c92ff38d`; imaget er ingen
+ren releasekandidat. Rå identitets SHA256 er
+`814151f0619f565f9c1db41d44ec888aba2ff39a7643dace221825396af96855`.
+Rapporter: `rust-container106.json` og `native-identity106.json`.
+
+Rust-manifest v2 binder den separate rå identitet og afviser dirty-kilde,
+versions-/schema-/PDF-/platformdrift og ukendte felter. Den fælles lokale
+Digisense-godkendelseskontrol kræver også identitetsfilen og bevarer kravene
+om præcis manifesthash/image/version/commit. Syntetisk positiv godkendelse og
+afvisning ved manglende eller ændret identitet, ændret manifest og forkert image
+består. Den faktiske dirty-pakke afvises som release. 19 release-tests,
+fem producenttests, fire native metadataprocess-tests, streng native Clippy,
+afgrænset TypeScript-kontrol og lint består.
+
+R53 er fortsat åben: CI/promovering, Rust-SBOM/supply-chain, dækkende native
+interfaceparitet og uafhængig reproducerbarhed mangler integration og accept.
+Ingen fuld CLI/MCP-forretningsparitet udledes af kataloget. HTTPS/platform- og
+recoveryaccept samt den afsluttende installerede desktopprøve bevares.

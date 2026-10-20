@@ -14,7 +14,7 @@ Fra checkoutet:
 ```sh
 python3 scripts/rust/cargo-guard.py status
 docker build -f Dockerfile.rust \
-  --build-arg RENTEMESTER_VERSION=0.1.0 \
+  --build-arg RENTEMESTER_VERSION=0.2.0 \
   --build-arg RENTEMESTER_GIT_COMMIT="$(git rev-parse HEAD)" \
   --build-arg SOURCE_DATE_EPOCH="$(git show -s --format=%ct HEAD)" \
   --build-arg RENTEMESTER_SOURCE_DIRTY=true \
@@ -129,3 +129,34 @@ Bun/Node/Python/Rust-toolchain i runtime og Linux-isolation. CLI/MCP køres
 her kun med `--help`; deres tidligere forretningsevidens bevares særskilt.
 Rapporten angiver faktisk arkitektur og grænser; ingen GUI- eller
 produktionsaccept udledes af denne prøve.
+
+## Pakket identitet og releasegodkendelse
+
+Bygningen gemmer `/opt/rentemester/build-identity.json` med version, kildecommit,
+dirty-markering, faktisk `rustc -vV` og Cargo-version, target, schema/API-policy,
+base-image-digests og SHA256 for Cargo.lock, bun.lock, vendorkode, PDF-pins og
+entrypoint. Inventaret binder hver pakket runtimefil med sti, størrelse,
+SHA256 og executable-bit. Selve identitetsfilen er udeladt fra sit eget inventar.
+Rust-, root- og webversion skal være ens; de er nu 0.2.0.
+
+`rentemester-server --build-info` og `rentemester-mcp --catalogue` kræver ingen
+konfiguration eller credentials. Førstnævnte bruger den kompilerede schema-
+policy; sidstnævnte bruger den faktiske MCP-registry. Blandede argumenter
+afvises. Kataloget dokumenterer interfaceidentitet, ikke fuld paritet med den
+tidligere backend.
+
+`scripts/release/create-rust-manifest.ts <build-identity.json>` producerer
+manifest v2 ud fra den rå pakkede fil og de eksisterende `RELEASE_*`-variabler.
+Dirty-kilde afvises. `RELEASE_BUILT_AT` skal være identitetens præcise UTC-tid.
+Den fælles godkendelseskontrol kaldes for Rust med tre filer:
+
+```sh
+bun scripts/release/verify-approval.ts release-manifest.json approval.json build-identity.json
+```
+
+Kontrollen kræver identitetens præcise bytes samt menneskegodkendelsens præcise
+manifesthash, image-digest, version og commit. Den eksisterende Bun v1-rute
+bevarer sin kontrakt. Denne lokale v2-understøttelse ændrer endnu ikke CI eller
+promotionsruten. Betroet workflow, SBOM, supply-chain, dækkende native
+interfacekontrol, attestation og godkendt promotion af præcis digest skal stadig
+forbindes og kvalificeres, før Rust bliver produktionsruten.
