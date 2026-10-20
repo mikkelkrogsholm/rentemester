@@ -20,6 +20,7 @@ import { useParams, useSearchParams } from "react-router-dom";
 import { BankExpenseModal } from "../components/BankExpenseModal";
 import { BankCorrectionModal } from "../components/BankCorrectionModal";
 import { BankImportModal } from "../components/BankImportModal";
+import { BankMatchSuggestionsModal } from "../components/BankMatchSuggestionsModal";
 import { BankJournalLinkModal } from "../components/BankJournalLinkModal";
 import {
   BankReconcileModal,
@@ -64,6 +65,7 @@ export function BankView() {
   // while no settle-modal is open.
   const [reconciling, setReconciling] =
     useState<BankReconcileTransaction | null>(null);
+  const [suggesting, setSuggesting] = useState<BankReconcileTransaction | null>(null);
   const [linking, setLinking] = useState<BankReconcileTransaction | null>(null);
   const [correcting, setCorrecting] = useState<{ id: number; text: string; journalEntryNo?: string | null } | null>(null);
 
@@ -229,6 +231,7 @@ export function BankView() {
           onClose={() => setReconciling(null)}
         />
       )}
+      {suggesting && <BankMatchSuggestionsModal slug={slug} transaction={suggesting} onClose={() => setSuggesting(null)} />}
       {linking && <BankJournalLinkModal slug={slug} transaction={linking} onApplied={state.reload} onClose={() => setLinking(null)} />}
       {correcting && <BankCorrectionModal slug={slug} transaction={correcting} year={b.selectedYear} onApplied={state.reload} onClose={() => setCorrecting(null)} />}
 
@@ -376,6 +379,7 @@ export function BankView() {
                         ) : (
                           <div className="row-actions">
                             <span className="flag warning">Uafstemt</span>
+                            <Button variant="secondary" type="button" onClick={() => setSuggesting({id:tx.id,date:tx.date,text:tx.text,amount:tx.amount,currency})}>Matchforslag</Button>
                             {tx.reconciliationProblem ? <><span className="muted">{tx.reconciliationProblem}</span>{b.reconciliationCorrectionAvailable && <Button requiredPermission="company.ledger.post" variant="secondary" type="button" onClick={() => setCorrecting({id:tx.id,text:tx.text,journalEntryNo:tx.journalEntryNo})}>Ret</Button>}</> : <>
                             {b.manualReconciliationAvailable && <Button requiredPermission="company.ledger.post" variant="secondary" type="button" onClick={() => setLinking({id:tx.id,date:tx.date,text:tx.text,amount:tx.amount,currency})}>Afstem eksisterende postering</Button>}
                             <Button requiredPermission="company.ledger.post" variant="secondary"

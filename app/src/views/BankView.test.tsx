@@ -1,4 +1,4 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, test, vi } from "bun:test";
 import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { bank, documents, invoices, mockFetch } from "../test/fixtures";
@@ -349,4 +349,20 @@ test("native reversed linked journal exposes correction without offering a new i
   await userEvent.click(screen.getByRole("button",{name:"Ret"}));
   expect(screen.getByRole("dialog",{name:"Ret afstemt bankpost"})).toBeInTheDocument();
   expect(screen.getByRole("link",{name:"Åbn journal og forbered tilbageførsel/erstatning"})).toHaveAttribute("href","/companies/acme-aps/posteringer?year=2026");
+});
+
+
+test("a reader opens exact unmatched row suggestions without ledger-post rights",async()=>{
+ const capabilities=await import("../lib/useCapabilities");
+ vi.spyOn(capabilities,"useCapabilities").mockReturnValue({role:"reviewer",hosted:true,archived:false,can:permission=>permission==="company.read"});
+ mockFetch({...route(),"GET /api/companies/acme-aps/bank/match-suggestions":{count:1,rows:[{bankTransactionId:2,date:"2026-04-02",text:"Gebyr",amount:-45,currency:"DKK",reference:null,suggestions:[],unsafeMatchReason:"Synthetic explicit ambiguity"}],errors:[]}});
+ renderView();await screen.findByRole("heading",{name:"Bank",level:1});
+ expect(screen.queryByRole("button",{name:"Bogfør"})).not.toBeInTheDocument();
+ await userEvent.click(screen.getByRole("button",{name:"Matchforslag"}));
+ expect(await screen.findByRole("dialog",{name:"Matchforslag til bankpost"})).toBeInTheDocument();
+ expect(await screen.findByText("Synthetic explicit ambiguity")).toBeInTheDocument();
+ const calls=(fetch as unknown as ReturnType<typeof vi.fn>).mock.calls;
+ expect(calls.some(call=>String(call[0])==="/api/companies/acme-aps/bank/match-suggestions?bankTransactionId=2")).toBe(true);
+ await userEvent.click(screen.getByRole("button",{name:"Luk"}));
+ expect(screen.queryByRole("dialog",{name:"Matchforslag til bankpost"})).not.toBeInTheDocument();
 });
