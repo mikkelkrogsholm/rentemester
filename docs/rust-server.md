@@ -2060,8 +2060,21 @@ Group70 består med faktisk TLS, cache, konflikter, providerfejl,
 adgangstilbagekaldelse under udtræk, manuel webbogføring, HTTP/CLI/MCP,
 genstart og signeret kildefri gendannelse under en ny ejer. Gendannelsen
 bevarer originaler og udtræk uden provideropsætning eller nye providerkald.
-Automatisk udtræk efter almindelig upload er integreret i Group71 og er
-under samlet afprøvning; inbox og selskabsbilag får ingen ny automatik.
+Med provider slået til fortsætter almindelig upload af en ny PDF på højst
+10 MiB automatisk til udtræk. Det kræver fortsat aktuel uploadrettighed;
+den eksplicitte udtræksoperation kræver stamdatarettighed. Bilaget er allerede
+registreret, og dets succesfulde kvittering bevares, hvis det efterfølgende
+udtræk fejler eller brugerens adgang tilbagekaldes. Providerfejl efterlader
+`needs_resolution`; et tilbagekaldt igangværende forsøg færdiggøres ikke.
+Dubletter, deaktiveret provider og andre filtyper starter intet nyt udtræk.
+Inbox og selskabsbilag får ingen ny automatik.
+
+Group71 består med almindelige brugerroller, eksisterende upload-UI,
+providerfejl, dublet, tilbagekaldelse under netværkskald, manuel bogføring,
+HTTP/CLI/MCP, genstart og signeret kildefri gendannelse. De aktuelle roller
+har ingen bruger med uploadrettighed alene; den interne adskillelse fra
+stamdatarettigheden kontrolleres derfor i en fokuseret test, ikke som en
+selvstændig brugerrolle i brugerprøven.
 
 ## Åbningsbalance og datakilde i desktopappen
 
