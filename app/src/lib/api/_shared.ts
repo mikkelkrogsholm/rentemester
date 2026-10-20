@@ -81,6 +81,8 @@ export async function request<T>(path: string, init?: ApiRequestOptions): Promis
   } catch (cause) {
     throw bodyReadError(res, cause, init);
   }
+  // A superseded auth read must not expire the newer session via its old 401.
+  init?.signal?.throwIfAborted();
   if (body && typeof body === "object" && (body as { ok?: unknown }).ok === false) throw responseError(res, body, "Ukendt serverfejl.");
   if (!res.ok) throw responseError(res, undefined, `HTTP ${res.status}`);
   return body as T;

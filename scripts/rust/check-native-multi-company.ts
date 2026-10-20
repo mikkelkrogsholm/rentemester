@@ -4,6 +4,7 @@ import { basename, join, resolve } from "node:path";
 import { chromium, type Page } from "@playwright/test";
 import { checkNativeLostPosting } from "./check-native-lost-posting";
 import { checkNativeAccessLoss } from "./check-native-access-loss";
+import { checkNativeContextSwitch } from "./check-native-context-switch";
 
 const saved = "/tmp/rentemester-rust-reports/native-multi-company.json";
 const second = "synthetic-second-ledger";
@@ -189,6 +190,7 @@ async function standalone() {
   const ownerPassword = "synthetic-owner-password-123",
     readerPassword = "synthetic-reader-password-456";
   const privateState = join(work, "browser-state.json");
+  const totpSecrets: Record<string, string> = {};
   function totp(secret: string) {
     let bits = 0,
       count = 0;
@@ -228,6 +230,7 @@ async function standalone() {
     await page.getByLabel("Adgangskode", { exact: true }).fill(password);
     await page.getByRole("button", { name: "Start opsætning", exact: true }).click();
     const secret = await page.getByLabel("Opsætningsnøgle").inputValue();
+    totpSecrets[email] = secret;
     await page.getByLabel("Engangskode", { exact: true }).fill(totp(secret));
     await page.getByRole("button", { name: "Bekræft opsætning", exact: true }).click();
     await page.getByRole("region", { name: "Recovery codes" }).locator("li").first().waitFor();
@@ -296,7 +299,7 @@ async function standalone() {
       await reader.goto(link("verification-", verifyBefore));
       const readerRecovery = await enroll(reader, "reader@example.invalid", readerPassword);
       await permissions();
-      writeFileSync(privateState, JSON.stringify({ ownerRecovery, readerRecovery }), {
+      writeFileSync(privateState, JSON.stringify({ ownerRecovery, readerRecovery, readerTotp: totpSecrets["reader@example.invalid"] }), {
         mode: 0o600,
       });
     }
@@ -306,6 +309,15 @@ async function standalone() {
     result.noOfflineIdentitySeed = true;
     if (process.argv.includes("--reopen")) result.lostPostingReply = await checkNativeLostPosting(owner, base);
     if (process.argv.includes("--reopen")) result.pendingAccessLoss = await checkNativeAccessLoss(owner, reader, base);
+    if (process.argv.includes("--reopen")) result.contextSwitch = await checkNativeContextSwitch(owner, base, async () => {
+      const { readerTotp } = JSON.parse(readFileSync(privateState, "utf8"));
+      await owner.getByLabel("E-mail", { exact: true }).fill("reader@example.invalid");
+      await owner.getByLabel("Adgangskode", { exact: true }).fill(readerPassword);
+      await owner.getByRole("button", { name: "Log ind", exact: true }).click();
+      await owner.getByLabel("Engangskode", { exact: true }).fill(totp(readerTotp));
+      await owner.getByRole("button", { name: "Bekræft", exact: true }).click();
+      await owner.getByRole("group", { name: "Konto", exact: true }).getByText("reader@example.invalid", { exact: true }).waitFor();
+    });
     writeFileSync(saved, JSON.stringify(result, null, 2), { mode: 0o600 });
     console.log(
       "PASS: ordinary second-company creation, independent ledgers/reports/current permissions" +

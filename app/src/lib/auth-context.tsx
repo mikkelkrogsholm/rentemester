@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import { authClient } from "./auth-client";
 import { ApiError, request } from "./api/_shared";
 import type { CompanyRole, WorkspaceRole } from "../../../src/core/access-permissions";
@@ -49,15 +49,25 @@ export function AuthProvider({ hosted, backend, children }: { hosted: boolean; b
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
   const [context, setContext] = useState<SessionContext | null>(null);
   const [bootstrapError, setBootstrapError] = useState<string | null>(null);
+  const generation = useRef(0);
+  const contextRead = useRef<AbortController | null>(null);
 
   const clear = useCallback(() => {
+    generation.current++;
+    contextRead.current?.abort();
+    contextRead.current = null;
     setSession(null);
     setCurrentSessionId(null);
     setContext(null);
     setBootstrapError(null);
+    setLoading(false);
   }, []);
 
   const refresh = useCallback(async () => {
+    const currentGeneration = ++generation.current;
+    contextRead.current?.abort();
+    const controller = new AbortController();
+    contextRead.current = controller;
     if (!hosted) {
       setLoading(false);
       return;
@@ -66,6 +76,7 @@ export function AuthProvider({ hosted, backend, children }: { hosted: boolean; b
     setBootstrapError(null);
     try {
       const current = await currentSession();
+      if (generation.current !== currentGeneration) return;
       const user = current?.user ?? null;
       setSession(user);
       setCurrentSessionId(current?.sessionId ?? null);
@@ -73,9 +84,12 @@ export function AuthProvider({ hosted, backend, children }: { hosted: boolean; b
         setContext(null);
         return;
       }
-      const value = await request<SessionContext & { ok: true }>("/api/me");
+      const value = await request<SessionContext & { ok: true }>("/api/me", { signal: controller.signal });
+      if (generation.current !== currentGeneration) return;
+      if (value.user.id !== user.id) throw new ApiError("auth_unavailable", "Din session og adgang stemmer ikke overens. Log ind igen.", 0);
       setContext({ user: value.user, workspaceRole: value.workspaceRole, companies: value.companies });
     } catch (error) {
+      if (generation.current !== currentGeneration) return;
       if (error instanceof ApiError && (error.status === 401 || error.code === "unauthorized")) clear();
       else {
         // Unknown authentication is not a logout or permission to show stale books.
@@ -83,11 +97,17 @@ export function AuthProvider({ hosted, backend, children }: { hosted: boolean; b
         setBootstrapError("Din session og adgang kunne ikke kontrolleres. Prøv igen.");
       }
     } finally {
-      setLoading(false);
+      if (generation.current === currentGeneration) {
+        contextRead.current = null;
+        setLoading(false);
+      }
     }
   }, [clear, hosted]);
 
-  useEffect(() => { void refresh(); }, [refresh]);
+  useEffect(() => {
+    void refresh();
+    return () => { generation.current++; contextRead.current?.abort(); contextRead.current = null; };
+  }, [refresh]);
   useEffect(() => {
     const onExpired = () => clear();
     window.addEventListener("rentemester:auth-expired", onExpired);
