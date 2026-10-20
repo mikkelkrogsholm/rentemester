@@ -206,7 +206,9 @@ function ReportPanel({ report }: { report: AnnualReport }) {
       {report.comparison && (
         <section className="card">
           <h3>Sammenligningstal {report.comparison.fiscalYearStart} — {report.comparison.fiscalYearEnd}</h3>
-          {!report.comparison.available ? <p className="muted">Ingen sammenligningstal — ingen saldi i den foregående periode.</p> : (
+          {!report.comparison.available ? <p className="muted">{report.comparison.reason === "prior_range_precedes_explicit_cutover"
+            ? "Sammenligningstal er ikke tilgængelige: den foregående periode starter før den eksplicitte overtagelsesdato. Arkivbeløb indgår ikke automatisk."
+            : "Ingen sammenligningstal — ingen saldi i den foregående periode."}</p> : (
             <div className="table-scroll"><table className="table"><tbody>
               <tr><th>Indtægter i alt</th><td className="num">{formatKroner(report.comparison.totalIncome, currency)}</td></tr>
               <tr><th>Omkostninger i alt</th><td className="num">{formatKroner(report.comparison.totalExpense, currency)}</td></tr>

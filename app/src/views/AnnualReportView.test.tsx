@@ -46,6 +46,25 @@ function renderView(body = payload()) {
 }
 
 describe("AnnualReportView (#338)", () => {
+  test("prior period before cutover stays unavailable instead of displaying zero or no balances", async () => {
+    const user = userEvent.setup();
+    const response = payload();
+    renderView(payload({ report: {
+      ...response.annualReport.report,
+      ok: true,
+      errors: [],
+      comparison: {
+        fiscalYearStart: "2024-01-01", fiscalYearEnd: "2024-12-31", available: false,
+        totalIncome: null, totalExpense: null, aretsResultat: null,
+        totalAssets: null, totalLiabilitiesAndEquity: null, equity: null,
+        reason: "prior_range_precedes_explicit_cutover",
+      },
+    } }));
+    await user.click(screen.getByRole("button", { name: /Byg årsrapport/ }));
+    expect(await screen.findByText(/den foregående periode starter før den eksplicitte overtagelsesdato/)).toBeInTheDocument();
+    expect(screen.queryByText(/ingen saldi i den foregående periode/)).not.toBeInTheDocument();
+  });
+
   test("formularen kalder API'et og viser forudsætnings-fejl", async () => {
     const user = userEvent.setup();
     renderView();

@@ -31,6 +31,9 @@ mod company_creation_attempt;
 mod archive_import;
 mod archive_import_state;
 mod archive_import_attempt;
+mod annual;
+mod backup_verify;
+mod backup_verify_state;
 mod payables;
 mod payables_state;
 mod mileage;
@@ -69,7 +72,7 @@ use rentemester_client::{ApiClient, Report};
 use serde_json::Value;
 use std::{path::PathBuf, sync::Arc};
 
-actions!(workflows, [OpenInvoices, OpenCompanySetup, OpenOpeningBalance, OpenCompanyCreation, OpenArchiveImport, BackToOverview, ScrollWorkflowDown, ScrollWorkflowUp]);
+actions!(workflows, [OpenInvoices, OpenCompanySetup, OpenOpeningBalance, OpenCompanyCreation, OpenArchiveImport, OpenAnnual, OpenBackupVerify, BackToOverview, ScrollWorkflowDown, ScrollWorkflowUp]);
 
 #[derive(Default)]
 struct Options {
@@ -273,6 +276,8 @@ struct Desktop {
     company_creation: Option<Entity<company_creation::CompanyCreation>>,
     archive_import: Option<Entity<archive_import::ArchiveImport>>,
     pending_company_selection: Option<String>,
+    annual: Option<Entity<annual::Annual>>,
+    backup_verify: Option<Entity<backup_verify::BackupVerify>>,
     status: String,
     busy: bool,
 }
@@ -386,6 +391,8 @@ impl Desktop {
             company_creation: None,
             archive_import: None,
             pending_company_selection: None,
+            annual: None,
+            backup_verify: None,
             status: "Forbind til din Rentemester-server og log ind med e-mail, adgangskode og MFA."
                 .into(),
             busy: false,
@@ -421,6 +428,8 @@ impl Desktop {
             || self.opening_balance.is_some()
             || self.company_creation.is_some()
             || self.archive_import.is_some()
+            || self.annual.is_some()
+            || self.backup_verify.is_some()
     }
     fn open_invoices(&mut self, _: &OpenInvoices, window: &mut Window, cx: &mut Context<Self>) {
         self.open_workflow(true, window, cx);
@@ -550,6 +559,35 @@ impl Desktop {
         }
         self.body_scroll.set_offset(point(px(0.),px(0.)));
         if let Some(view)=&self.archive_import {view.update(cx,|v,cx|v.focus_entry(window,cx));}
+        cx.notify();
+    }
+    fn open_annual(&mut self, _: &OpenAnnual, window:&mut Window, cx:&mut Context<Self>) {
+        match workflow_navigation(self.session.is_some() && self.selected.is_some(),self.busy,self.has_screen(),self.annual.is_some()) {
+            WorkflowNavigation::Unavailable=>{self.status="Log ind og vælg en virksomhed før årsrapporten.".into();cx.notify();return;},
+            WorkflowNavigation::KeepCurrent=>{self.status="Luk den åbne skærm før næste arbejdsgang.".into();cx.notify();return;},
+            WorkflowNavigation::Wait=>return,
+            WorkflowNavigation::Open|WorkflowNavigation::FocusExisting=>{}
+        }
+        if self.annual.is_none() {
+            let (Some(session),Some(company))=(self.session.clone(),self.selected.clone()) else {return;};
+            self.annual=Some(cx.new(|cx|annual::Annual::new(session,company,window,cx)));
+        }
+        self.body_scroll.set_offset(point(px(0.),px(0.)));
+        if let Some(view)=&self.annual {view.update(cx,|v,cx|v.focus_entry(window,cx));}
+        cx.notify();
+    }
+    fn open_backup_verify(&mut self, _: &OpenBackupVerify, window:&mut Window, cx:&mut Context<Self>) {
+        match workflow_navigation(true,self.busy,self.has_screen(),self.backup_verify.is_some()) {
+            WorkflowNavigation::KeepCurrent=>{self.status="Luk den åbne skærm før backupkontrollen.".into();cx.notify();return;},
+            WorkflowNavigation::Wait|WorkflowNavigation::Unavailable=>return,
+            WorkflowNavigation::Open|WorkflowNavigation::FocusExisting=>{}
+        }
+        if self.backup_verify.is_none() {
+            let binary=self.server_binary.clone();
+            self.backup_verify=Some(cx.new(|cx|backup_verify::BackupVerify::new(binary,window,cx)));
+        }
+        self.body_scroll.set_offset(point(px(0.),px(0.)));
+        if let Some(view)=&self.backup_verify {view.update(cx,|v,cx|v.focus_entry(window,cx));}
         cx.notify();
     }
     fn back_to_overview(
@@ -689,6 +727,8 @@ impl Desktop {
         self.company_creation = None;
         self.archive_import = None;
         self.pending_company_selection = None;
+        self.annual = None;
+        self.backup_verify = None;
         self.status = "Forbinder…".into();
         let server = self.connection_origin(cx);
         let cookie = PathBuf::from(self.cookie.read(cx).value().to_string());
@@ -774,6 +814,8 @@ impl Desktop {
         self.company_creation = None;
         self.archive_import = None;
         self.pending_company_selection = None;
+        self.annual = None;
+        self.backup_verify = None;
         self.busy = true;
         self.status = "Kontrollerer login…".into();
         let origin = self.connection_origin(cx);
@@ -898,6 +940,8 @@ impl Desktop {
         self.company_creation = None;
         self.archive_import = None;
         self.pending_company_selection = None;
+        self.annual = None;
+        self.backup_verify = None;
         self.password
             .update(cx, |input, cx| input.set_value("", window, cx));
         self.code
@@ -940,6 +984,8 @@ impl Desktop {
         self.company_creation = None;
         self.archive_import = None;
         self.pending_company_selection = None;
+        self.annual = None;
+        self.backup_verify = None;
         self.selected = Some(slug.clone());
         self.status = "Henter saldobalance…".into();
         let year = self.year.read(cx).value().to_string();
@@ -1008,6 +1054,8 @@ impl Desktop {
                         this.reset_login(window, cx);
                     })),
             );
+        content=content.child(Button::new("backup-verify-open").label("Kontrollér backup · ⌘7").disabled(self.busy)
+            .on_click(cx.listener(|this,_,window,cx|this.open_backup_verify(&OpenBackupVerify,window,cx))));
         if self.local_mode {
             if let Some(managed) = &self.managed {
                 let browser_url = managed.browser_url();
@@ -1212,6 +1260,16 @@ impl Desktop {
             content=content.child(Button::new("company-creation-open").label("Opret virksomhed · ⌘4").disabled(self.busy)
                 .on_click(cx.listener(|this,_,window,cx|this.open_company_creation(&OpenCompanyCreation,window,cx))));
         }
+        }
+        if let Some(view)=self.backup_verify.clone() {
+            return content.child(Button::new("backup-verify-close").track_focus(&self.close_focus)
+                .label("Luk backupkontrol")
+                .on_click(cx.listener(|this,_,_,cx|{this.backup_verify=None;cx.notify();}))).child(view);
+        }
+        if let Some(view)=self.annual.clone() {
+            return content.child(Button::new("annual-close").track_focus(&self.close_focus)
+                .label("Luk årsrapport")
+                .on_click(cx.listener(|this,_,_,cx|{this.annual=None;cx.notify();}))).child(view);
         }
         if let Some(creation)=self.company_creation.clone() {
             return content.child(Button::new("company-creation-close").track_focus(&self.close_focus)
@@ -1636,7 +1694,11 @@ impl Desktop {
                 })));
         }
         if self.session.is_some() && self.selected.is_some() {
-            content = content.child(Button::new("periods-open").label("Moms og perioder").disabled(self.busy)
+            content=content.child(Button::new("annual-open").label("Årsrapport og frister · ⌘6").disabled(self.busy)
+                .on_click(cx.listener(|this,_,window,cx|this.open_annual(&OpenAnnual,window,cx))));
+        }
+        if self.session.is_some() && self.selected.is_some() {
+            content = content.child(Button::new("periods-open").label("Perioder og årsafslutning").disabled(self.busy)
                 .on_click(cx.listener(|this, _, window, cx| {
                     if let (Some(session), Some(company)) = (this.session.clone(), this.selected.clone()) {
                         let origin = this.connection_origin(cx);
@@ -1907,6 +1969,8 @@ impl Render for Desktop {
                 .on_action(cx.listener(Self::open_opening_balance))
             .on_action(cx.listener(Self::open_company_creation))
             .on_action(cx.listener(Self::open_archive_import))
+            .on_action(cx.listener(Self::open_annual))
+            .on_action(cx.listener(Self::open_backup_verify))
             .on_action(cx.listener(Self::back_to_overview))
             .on_action(cx.listener(Self::scroll_workflow_down))
             .on_action(cx.listener(Self::scroll_workflow_up))
@@ -1975,6 +2039,8 @@ fn main() {
                 KeyBinding::new("cmd-3", OpenOpeningBalance, Some("RentemesterWorkflows")),
                 KeyBinding::new("cmd-4", OpenCompanyCreation, Some("RentemesterWorkflows")),
                 KeyBinding::new("cmd-5", OpenArchiveImport, Some("RentemesterWorkflows")),
+                KeyBinding::new("cmd-6", OpenAnnual, Some("RentemesterWorkflows")),
+                KeyBinding::new("cmd-7", OpenBackupVerify, Some("RentemesterWorkflows")),
                 KeyBinding::new("cmd-0", BackToOverview, Some("RentemesterWorkflows")),
             ]);
             cx.set_menus([Menu::new("Rentemester"), Menu::new("Arbejdsgange").items([
@@ -1985,6 +2051,8 @@ fn main() {
                 MenuItem::action("Åbningsbalance", OpenOpeningBalance),
                 MenuItem::action("Opret virksomhed", OpenCompanyCreation),
                 MenuItem::action("Importér regnskabshistorik", OpenArchiveImport),
+                MenuItem::action("Årsrapport og frister", OpenAnnual),
+                MenuItem::action("Kontrollér backup", OpenBackupVerify),
                 MenuItem::action("Tilbage til oversigt: fokusér Luk", BackToOverview),
             ])]);
 

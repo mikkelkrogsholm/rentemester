@@ -35,8 +35,9 @@ export type AnnualReport = {
   notes?: Array<{ id: string; title: string; body: string; placeholder: boolean }>;
   comparison?: {
     fiscalYearStart: string; fiscalYearEnd: string; available: boolean;
-    totalIncome: number; totalExpense: number; aretsResultat: number;
-    totalAssets: number; totalLiabilitiesAndEquity: number; equity: number;
+    totalIncome: number | null; totalExpense: number | null; aretsResultat: number | null;
+    totalAssets: number | null; totalLiabilitiesAndEquity: number | null; equity: number | null;
+    reason?: "prior_range_precedes_explicit_cutover";
   };
   disclaimer?: string;
   ledelsespategning?: { text: string; placeholder: boolean };

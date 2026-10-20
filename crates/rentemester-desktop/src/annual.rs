@@ -514,7 +514,7 @@ impl Render for Annual {
             .child(Button::new("annual-years").track_focus(&self.entry_focus).label("Genlæs aktive regnskabsår").disabled(self.busy).on_click(cx.listener(|this,_,window,cx|this.load(window,cx))))
             .child(Select::new(&self.year).accessibility_label("Aktivt regnskabsår til årsrapport").placeholder("Vælg regnskabsår og bekræftede datoer").disabled(self.busy||self.years.is_empty()))
             .child(Button::new("annual-prepare").label("Forbered eller opdater årsrapport og forpligtelser").disabled(self.busy||self.chosen(cx).is_none()).on_click(cx.listener(|this,_,_,cx|this.prepare(cx))))
-            .child("Luk denne side og vælg Moms og perioder for separat gennemgang, lukning eller genåbning af regnskabsåret. Vend derefter tilbage og opdater rapporten. Ekstern indberetning foretages af ejer eller revisor.");
+            .child("Luk denne side og vælg Perioder og årsafslutning for separat gennemgang, lukning eller genåbning af regnskabsåret. Vend derefter tilbage og opdater rapporten. Ekstern indberetning foretages af ejer eller revisor.");
         let Some(data) = &self.data else {
             return view;
         };
@@ -557,14 +557,22 @@ mod tests {
         };
         let company = json!({"name":"Synthetic Annual","cvr":"DK11223344","country":"DK","currency":"DKK","fiscalYearStartMonth":7,"fiscalYearLabelStrategy":"span"});
         let zero = json!({"total":"0.00","lines":[]});
-        let annual = json!({"ok":true,"annualReport":{"slug":"synthetic","fiscalYearStart":year.start,"fiscalYearEnd":year.end,"report":{"ok":ready,"fiscalYearStart":year.start,"fiscalYearEnd":year.end,"company":company,"errors":if ready{vec![]}else{vec!["Regnskabsåret er ikke lukket"]},"profitAndLoss":{"income":zero,"expense":zero,"result":"0.00"},"balanceSheet":{"assets":zero,"liabilities":zero,"equity":zero,"totalAssets":"0.00","totalLiabilitiesAndEquity":"0.00","periodResult":"0.00","balanced":true},"comparison":{"available":false,"fiscalYearStart":"2024-07-01","fiscalYearEnd":"2025-06-30","totalIncome":0,"totalExpense":0,"aretsResultat":0,"totalAssets":0,"totalLiabilitiesAndEquity":0,"equity":0},"notes":[{"title":"Regnskabspraksis","body":"Udfyldes manuelt","placeholder":true}],"ledelsespategning":{"text":"Ledelsens manuelle tekst","placeholder":true},"disclaimer":"Forberedelse, ikke indberetning"}}});
+        let mut report = json!({"ok":ready,"fiscalYearStart":year.start,"fiscalYearEnd":year.end,"company":company,"errors":if ready{vec![]}else{vec!["Regnskabsåret er ikke lukket"]}});
+        report["profitAndLoss"] = json!({"income":zero,"expense":zero,"result":"0.00"});
+        report["balanceSheet"] = json!({"assets":zero,"liabilities":zero,"equity":zero,"totalAssets":"0.00","totalLiabilitiesAndEquity":"0.00","periodResult":"0.00","balanced":true});
+        report["comparison"] = json!({"available":false,"fiscalYearStart":"2024-07-01","fiscalYearEnd":"2025-06-30","totalIncome":null,"totalExpense":null,"aretsResultat":null,"totalAssets":null,"totalLiabilitiesAndEquity":null,"equity":null,"reason":"prior_range_precedes_explicit_cutover"});
+        report["notes"] =
+            json!([{"title":"Regnskabspraksis","body":"Udfyldes manuelt","placeholder":true}]);
+        report["ledelsespategning"] = json!({"text":"Ledelsens manuelle tekst","placeholder":true});
+        report["disclaimer"] = json!("Forberedelse, ikke indberetning");
+        let annual = json!({"ok":true,"annualReport":{"slug":"synthetic","fiscalYearStart":year.start,"fiscalYearEnd":year.end,"report":report}});
         let obligations = json!({"ok":true,"obligations":{"slug":"synthetic","selectedYear":year.label,"periodStart":year.start,"periodEnd":year.end,"company":company,"asOfDate":"2026-06-30","totalOwed":"0.00","coverage":{"complete":false,"notes":["Årsrapportens frist er ikke fastlagt"]},"obligations":[{"kind":"annual-report","label":"Årsrapport","amount":0,"dueDate":null,"note":"Indberetning, ikke gæld"}]}});
         (year, annual, obligations)
     }
     fn journal(year: &Year) -> Value {
         json!({"ok":true,"journal":{"slug":"synthetic","selectedYear":year.label,"periodStart":year.start,"periodEnd":year.end,"source":"live"}})
     }
-    #[test]
+    #[::core::prelude::v1::test]
     fn selected_coverage_is_authoritative_and_missing_is_not_complete() {
         let (year, annual, owed) = fixture(true);
         let mut response = journal(&year);
@@ -585,7 +593,7 @@ mod tests {
         response["journal"]["selectedYear"] = json!("other");
         assert!(parse(year, "synthetic", &annual, &owed, &response).is_err());
     }
-    #[test]
+    #[::core::prelude::v1::test]
     fn shifted_years_are_exact_server_bounds_and_archive_is_not_a_live_choice() {
         let response = json!({"ok":true,"journal":{"slug":"synthetic","fiscalYears":[{"label":"2025/26","source":"live","start":"2025-07-01","end":"2026-06-30"},{"label":"2025/26","source":"archive","start":null,"end":null}]}});
         let result = years(&response, "synthetic").unwrap();
@@ -594,7 +602,7 @@ mod tests {
         assert_eq!(result[0].end, "2026-06-30");
         assert!(years(&response, "other").is_err());
     }
-    #[test]
+    #[::core::prelude::v1::test]
     fn money_strings_are_never_reparsed_as_floats_or_defaulted_to_zero() {
         assert_eq!(
             amount(&json!({"x":"9007199254740993000.01"}), "x", "DKK").unwrap(),
@@ -606,7 +614,7 @@ mod tests {
         );
         assert!(amount(&json!({}), "x", "DKK").is_err());
     }
-    #[test]
+    #[::core::prelude::v1::test]
     fn nested_blocker_is_valid_and_unknown_deadline_does_not_become_a_date_or_debt() {
         let (year, annual, owed) = fixture(false);
         let data = parse(year.clone(), "synthetic", &annual, &owed, &journal(&year)).unwrap();
@@ -623,7 +631,7 @@ mod tests {
         }));
         assert!(!data.panels.iter().any(|p| p.title == "Aktiver"));
     }
-    #[test]
+    #[::core::prelude::v1::test]
     fn optional_profile_details_do_not_break_scope_and_unavailable_comparisons_stay_unavailable() {
         let (year, mut annual, owed) = fixture(true);
         annual["annualReport"]["report"]["company"]["paymentTermsDays"] = json!(30);
