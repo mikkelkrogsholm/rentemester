@@ -59,9 +59,9 @@ adgang afvises. Alle otte særskilte CLI/MCP-handlinger består også i et
 separat workspace med begge retninger, uafhængig godkendelse, fuld paritet
 med HTTP-svarene og uændrede posteringer før og efter genstart.
 
-Der er 196 verificerede MCP-tools efter eksplicit åbningsbalance og gendannelse af dens kvittering i Group64.
-De samlede native tests består med 191 beståede og én eksisterende ignoreret
-test; native build består. Mac’en er låst op. Administreret
+Der er 200 MCP-tools efter PDF-forløbet i Group66.
+De samlede native tests består med 219 beståede og én eksisterende ignoreret
+test; native build består. Computerstyringen melder aktuelt Mac’en låst. Administreret
 lokal opstart, almindelig ejeroprettelse, verificering, MFA og læsning af
 saldobalancen er gennemført i det native vindue. Fakturering og udgifter er
 endnu ikke godkendt i desktop. Efter oplåsningen er også tastaturbetjening
@@ -2035,3 +2035,32 @@ en særskilt bekræftet gentagelse med præcis samme anmodning og nøgle.
 Group67 er implementeret og bygget; 202 native tests består med én
 eksisterende ignoreret test. Den faktiske gennemgang i installeret app
 mod både lokal og ekstern server samt genstart er fortsat åben.
+
+## Opret virksomhed og importér historik i desktopappen
+
+Vælg **Opret virksomhed** (⌘4), også når ingen virksomhed er valgt. Angiv
+navn, regnskabsårets start og navngivning, momsperiode eller ingen
+momsregistrering samt eventuelle bankoplysninger. Gennemgå oplysningerne
+før oprettelse. Efter kvittering og genlæsning kan du lukke skærmen; appen
+opdaterer virksomhedsvælgeren og vælger den bekræftede virksomhed, hvis du
+stadig har adgang. Den nye virksomhed har en tom kontoplan.
+
+Vælg **Importér regnskabshistorik** (⌘5) i den valgte virksomhed. Vælg
+originale CSV-filer, angiv år og filtype for hver fil samt valutaen.
+Serverens plan viser de historiske år og det seneste år, som udelades.
+Gennemgå planen og bekræft importen. Kvittering, arkivregistrering og
+originalens hash kontrolleres, før appen viser importen som gennemført.
+
+Opret derefter konti og roller under **Virksomhedsopsætning**, og brug
+**Åbningsbalance** og **Rapporter** som beskrevet ovenfor. Importen
+udleder hverken kontoplan eller åbningsbeløb.
+
+Et uafklaret oprettelsesforsøg sendes aldrig igen automatisk. En kendt
+oprettelseskvittering bevares, hvis efterfølgende læsning fejler. Ved
+uafklaret import bevares den oprindelige plan, nøgle og kildehash privat;
+genåbning kræver de samme filer og en særskilt gennemgået handling.
+
+Group68 er implementeret og bygget. Den samlede native suite består med
+219 tests og én eksisterende ignoreret test; to klienttests består også.
+Faktisk betjening med lokal og ekstern server samt genstart er fortsat
+uverificeret, fordi computerstyringen aktuelt melder Mac’en låst.

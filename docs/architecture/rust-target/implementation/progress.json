@@ -7,8 +7,8 @@
   "state": "Group66 actual PASS at21d1c245: ordinary MFA public upload of3synthetic PDFs without implicit parsing; explicit native PDFium text/612x792/real character geometry, verified status/paginated text, cached result and pending no_text/malformed retained results. Reviewer403 creates no attempt. HTTP/CLI/MCP200 parity and existing web manual10exempt expense create exactly1journal only after explicit review. Stopped physical-source tamper gives409 PDF_EVIDENCE_TAMPERED on reads and source-compatible committed200/okfalse/source_unavailable parse failure with exactly1failedattempt/NULLresult and no new result/book effects; exact original repaired. FreshMFA restart, four independently verified signed snapshots and signed source-free fresh-owner restore after source/signer/workerbundle deletion preserve exact originals,3results/pages/attempts/journal and prior audit prefix; targetreopen PASS without worker config or reparse. All3binary/fullweb/fullworkerbundle hashes independently matched atqualification, ownedcleanuptrue. Firstactual helper wrongly required4xx for committed sourcefailure; narrow assertion+exact signedfailedattempt correction then wholePASS, no product weakening. Focused tests cover legacy hashes, SQLtamper, rollback, concurrent winner/current revocation and child timeout/IO/crash/RSS; actual0childcache and actualSQLtamper not claimed. Mac RSS512MiB sampled10ms may overshoot; Linux/installed packaging/nativefinancialGUI remain open. Stop66perfection. Next67 native reviewed openingbalance through truthful source-aware reports; fullmission/epic672 OPEN.",
   "issues_closed": [],
   "next": [
-    "Current67 native openingbalance and source-aware report implementation integrated b9635c60; full native202PASS/1existingignored and appbuildPASS, readiness /tmp/rentemester-rust-reports/native-opening-readiness67.json. Actual ordinary-owner local/remote GUI+restart remains unqualified because CUA reports locked Mac; unlock requested. No repeated blind keyboard/focus route. Next source work should complete native company/archive onboarding, annual readiness and independent backup verification.",
-    "Complete native company/import onboarding, annual obligations/review and independent backup verification, then remaining transfer/automation/distribution and TypeScript retirement gates.",
+    "Group68 onboarding integrated c6c38da3; native219PASS/1existingignored, SDK2PASS, appbuildPASS. Native67/68 ordinary owner local/remote GUI+restart awaits unlocked Mac; no blind focus retries.",
+    "Complete native annual obligations/review and independent backup verification, then remaining transfer/automation/distribution and TypeScript retirement gates.",
     "Optional configured HTTPS invoice extraction is a real remaining source capability; preserve its evidence/conflict lifecycle separately without inventing a manual resolution UI or blocking ordinary manual accounting."
   ],
   "preserve_unrelated_paths": [
@@ -1421,6 +1421,28 @@
       },
       "actual_gui": false,
       "installed_bundle": false
+    },
+    "platform68_native_onboarding_readiness": {
+      "path": "/tmp/rentemester-rust-reports/native-onboarding-readiness68.json",
+      "sha256": "edf75d30fbda429b2d693b8405117b22e5c7e05388fce7d19acf614435ae8e0e",
+      "state": "implemented_and_built_native_gui_unqualified",
+      "source_revision": "c6c38da3d9395868b857a868105f2964adf991e1",
+      "native_binary_sha256": "d3bee6facd93dc5b0e2db23af14f7d555da1e7aaa9e58bffb9826841410f798d",
+      "tests": {
+        "passed": 219,
+        "ignored": 1,
+        "log": "/tmp/rm68-root-native-tests.log"
+      },
+      "client_tests": {
+        "passed": 2,
+        "log": "/tmp/rm68-root-sdk-company-tests.log"
+      },
+      "build": {
+        "exit": 0,
+        "log": "/tmp/rm68-root-native-build.log"
+      },
+      "actual_gui": false,
+      "installed_bundle": false
     }
   },
   "verified_history": [
@@ -2083,6 +2105,17 @@
         "Fresh isolated app bundle/install and broader distribution qualification remain separate"
       ],
       "readiness": "/tmp/rentemester-rust-reports/native-opening-readiness67.json"
+    },
+    {
+      "delivery": "Group68 native company creation and historical import onboarding",
+      "owner": "root SDK receipt enforcement/main/catalog/integration; rust_accruals company state/private attempt; rust_client_cli company GPUI; rust_budget archive state/private attempt; rust_mileage archive GPUI",
+      "status": "IMPLEMENTED c6c38da3; combined native219PASS/1existingignored, SDK2PASS and native appbuildPASS. Actual local/remote native GUI and restart still unqualified because current CUA inventory reports Maclocked. Full mission remains open.",
+      "acceptance": "Native owner creates company with explicit fiscal/VAT settings, verifies201 receipt and canonical catalog/profile, imports exact closed-year CSV sources after reviewed server plan, creates accounts and explicit opening, reads reports. No creation retry; archive uncertain outcomes retain original key/body/source and require read-first separate explicit recovery.",
+      "pending_root_work": [
+        "Actual local and remote native GUI acceptance with ordinary owner MFA and restart",
+        "Installed bundle and distribution qualification remain separate"
+      ],
+      "readiness": "/tmp/rentemester-rust-reports/native-onboarding-readiness68.json"
     }
   ],
   "integrated_pending_browser": [
@@ -2092,7 +2125,8 @@
     "Group53 actual V3 recovery uses one signed archive and one fresh restore; second restore/reconsent/new worker, sleep/DST and global single-use are not qualified."
   ],
   "pending_deliveries": [
-    "Group67 native GUI local/remote opening→receipt→reports+restart acceptance; code/tests/build ready, Macunlock pending"
+    "Group67 native GUI local/remote opening→receipt→reports+restart acceptance; code/tests/build ready, Macunlock pending",
+    "Group68 native GUI local/remote company→archive→accounts→opening→reports+restart acceptance; code/tests/build ready, current Macunlock pending"
   ],
   "completion_gates": [
     "All epic672 child acceptance remains open until scope-matched evidence; current increments are progress only.",
