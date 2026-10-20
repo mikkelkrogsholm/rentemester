@@ -59,7 +59,7 @@ adgang afvises. Alle otte særskilte CLI/MCP-handlinger består også i et
 separat workspace med begge retninger, uafhængig godkendelse, fuld paritet
 med HTTP-svarene og uændrede posteringer før og efter genstart.
 
-Der er 193 verificerede MCP-tools efter historiske regnskabsvisninger og eksport i Group63.
+Der er 196 verificerede MCP-tools efter eksplicit åbningsbalance og gendannelse af dens kvittering i Group64.
 De samlede native tests består med 191 beståede og én eksisterende ignoreret
 test; native build består. Mac’en er låst op. Administreret
 lokal opstart, almindelig ejeroprettelse, verificering, MFA og læsning af
@@ -1831,7 +1831,7 @@ Datoafgrænsning medtager originaler og tilbageførsler på deres faktiske datoe
 
 `remote cfo-analytics` og MCP `cfo_analytics` bevarer det fulde native svar uden lokale beregninger. Den faktiske verifikation omfatter to almindelige MFA-brugere, to selskaber, originale købsbilag, dateret tilbageførsel, part/dimensioner, filtre/sider, ændrede rettigheder, web og begge klienter. Genstart og gendannelse under en ny ejer uden kildeworkspace eller gammel signeringsnøgle bevarer de samme kilder og tal. Sammenlignede signerede snapshots viser uændret virksomheds-audit og bogføring.
 
-Det løbende bogføringsgrundlag er kvalificeret i Group61. Group62 kvalificerer nu også originale historiske arkivposter sammen med aktive poster, inklusive genstart og signeret gendannelse. Koncernrapporter bygger på den aktive journal; en eksplicit åbningsbalance og overgangsdato er næste forløb for fuldstændige rapporter efter overgangen. Der udledes ikke historiske afslutningsdatoer fra arkivets årstal. En godkendt koncernprofil og selve webknappen til paginering er ikke kvalificeret i dette konkrete browserforløb. Der er ingen påstand om færdig desktop- eller samlet migrationsleverance.
+Det løbende bogføringsgrundlag er kvalificeret i Group61. Group62 kvalificerer nu også originale historiske arkivposter sammen med aktive poster, inklusive genstart og signeret gendannelse. Koncernrapporter bygger på den aktive journal; eksplicit åbningsbalance og efterfølgende godkendt koncernrapportering er kvalificeret i Group64. Der udledes ikke historiske afslutningsdatoer fra arkivets årstal. En godkendt koncernprofil og selve webknappen til paginering er ikke kvalificeret i dette konkrete browserforløb. Der er ingen påstand om færdig desktop- eller samlet migrationsleverance.
 
 ## Importér afsluttede regnskabsår
 
@@ -1878,7 +1878,7 @@ bogføringsår giver også utilgængelige sammenligningstal frem for nul.
 Web, CLI/MCP-paritet, otte eksporter, adgangsafslag, beskadiget fysisk
 original, uændret bogføringsaudit, genstart og signeret kildefri gendannelse
 under en ny ejer med MFA består. Desktop og den samlede Rust-omskrivning
-er fortsat åbne. Næste regnskabsforløb er eksplicit åbningsbalance.
+er fortsat åbne. Eksplicit åbningsbalance er efterfølgende kvalificeret i Group64.
 
 CLI: de eksisterende `remote journal`, `trial-balance`, `income-statement`
 og `balance` samt `overview` accepterer `--year` og `--source live|archive`.
@@ -1888,3 +1888,34 @@ serverbytes; de øvrige rapportnavne er `trial-balance`, `income-statement`
 og `balance`. MCP har tilsvarende kildevalg og `report_export`.
 Udeladt kilde bruger serverens valg med aktiv bogføring først; en eksplicit
 arkivkilde falder aldrig tilbage til aktive tal.
+
+
+## Eksplicit åbningsbalance og overgang til aktiv bogføring
+
+På virksomhedens administrationsside kan ejeren gennemgå en skæringsdato og
+præcise debet-/kreditbeløb og derefter bekræfte én åbningspostering. Eventuelle
+arkivreferencer dokumenterer kilderne; arkivsaldi lægges ikke automatisk til
+beløbene. Journal, åbningsmarkør, kildebevis og kvittering gemmes atomisk.
+Kvitteringen linker til den konkrete postering og virksomhedens faktiske
+regnskabsår. Senere bogføring bevares. En ny nøgle opretter ikke endnu en
+åbningsbalance, og almindelig tilbageførsel kan ikke neutralisere den.
+
+Aktive virksomhedsrapporter og godkendt koncernbalance efter skæringsdatoen
+bygger på den aktive journal. CSV/PDF og web viser, når regnskabsåret kun er
+delvist dækket. En koncernrapport før skæringsdatoen afvises; historiske
+CFO-kildeanalyser kan stadig læse arkivets faktiske posteringsdatoer.
+
+CLI: `remote opening-balance`, `remote opening-balance-plan` og
+`remote opening-balance-apply --confirm` bruger de almindelige server- og
+virksomhedsflag. Plan læser input-JSON fra stdin; apply læser den gennemgåede
+input/planHash/idempotencyKey/confirm-konvolut. MCP har de tilsvarende tre tools.
+Beløb, nøgle og gennemgået plan sendes uændret, og et uklart resultat giver
+ingen automatisk genafsendelse.
+
+Group64 består med almindelig MFA, faktisk webbekræftelse, adgangs- og
+dubletafslag, klientparitet, genstart og signeret kildefri gendannelse. En ny
+ejer skal eksplicit gennemgå og tilknytte den importerede kvittering på
+flyttesiden, før den oprindelige nøgle kan genkalde resultatet. Tilknytning og
+y genstart giver ingen ekstra åbningspostering. Det oprindelige auditspor
+bevares; bevidste kvitteringsgenkald tilføjer kun de forventede auditlinjer.
+Installeret desktop og hele Rust-omskrivningen er fortsat åbne.
