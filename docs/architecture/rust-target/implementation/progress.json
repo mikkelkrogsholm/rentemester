@@ -1,14 +1,14 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "Group91 browser/Rust lost-posting reconciliation and pending company-access revocation qualified; installed remote J03 remains open",
-  "code_revision": "bbf30c36977a2c2176de07e676b39fb552905f38",
+  "current_increment": "Group92 stale auth refresh fencing and actual company/account-switch journal isolation qualified; installed J03 and service-client parity remain open",
+  "code_revision": "e60b0017c4f1722037a3ef556f67a09b97d7bd9c",
   "spec_revision": "sha256:a7eb3f0d6e65412fa5ee945a7b79721b593806839f4a03e6b8d969ce3327e3fc",
-  "state": "Group91 fixes the concrete manual-post unknown-outcome bypass: a new form request UUID no longer changes the persistent company-scoped mutation block, and canonical operationScope covers equivalent journal routes. Actual ordinary-MFA two-company Rust/browser fixture passed after server restart: one real accepted posting reply deliberately discarded; full reload/trailing-slash route keeps writes blocked; canonical journal contains exactly one new posting; exact original payload/key returns identical entryId/entryNo/entryHash with replayed receipt and unchanged journal; explicit human reconciliation releases the form without a write. Normally invited reader promoted to bookkeeper; owner revokes membership while a real browser read and manual-post request are held before server admission; each returns403 and canonical ledger remains unchanged. Final fixture process and private workspace cleaned. 21 focused React tests, production web build and targeted two-helper TypeScript check pass. This is HTTP loopback browser/server evidence, not installed remote HTTPS or service-identity qualification. Abrupt reload while a request is still in flight is not qualified. Group88 installed local/HTTPS and Group90 migration/accounting/recovery evidence retained. Full J03 company/account-switch stale responses, service roles, installed remote web/CLI/MCP parity, J06/J07, signed distribution/updates and full Rust mission/epic672 remain OPEN. Fresh CUA observation still reports Mac locked; no repeated permission request.",
+  "state": "Group92 fixes a reproduced AuthProvider race: logout/newer refresh/effect cleanup invalidate older getSession and me replies, errors and finalizers; per-refresh abort plus post-JSON signal check prevents an obsolete401 from expiring the newer identity; session/me IDs must agree. Six new regressions failed before;77 focused auth/App/API/useAsync tests pass after; production web design/typecheck/build and new-helper targeted TypeScript pass. Actual normal-MFA two-company Rust/browser fixture after server restart holds real authorized journal bytes after server response, switches company client-side, then repeats across actual UI logout and independent restricted-user TOTP login; old data cannot enter the new view or change destination, and the new identity retains only its granted company. Deferred unit tests establish auth-endpoint races; actual browser proof establishes journal/view races. Existing Group91 real lost accepted posting reply/exact replay/explicit release and pre-admission revoke403 proofs also pass in final run. First context oracle wrongly matched old text as a prefix of the second-company text; corrected exact source-entry and exact DOM-text checks, then fresh complete run passed. Final owned processes and private synthetic workspace cleaned. HTTP loopback browser/server scope only; installed remote HTTPS J03 remains unqualified and Mac freshly observed locked. Next concrete parity gap: existing native service post/reverse fences are not connected to HTTP or key-file SDK/CLI/MCP authentication. Existing source service permissions and R13/R45/J03 require these; do not globally relax human VerifiedCookie routes. Group88 installed local/HTTPS and Group90 migration/accounting/recovery retained. Full Rust mission/epic672, remaining J03 service/installed matrix, J06/J07, signed distribution/updates and TS retirement stay OPEN.",
   "issues_closed": [],
   "next": [
-    "J03 / R50: installed shared-web desktop connected to remote Rust server with two companies, normal owner/bookkeeper/service identities and canonical web/CLI/MCP parity",
-    "J03: installed remote held reads/writes during company/account changes and revocation; service identities; no stale disclosure, wrong-company effects or local fallback. Group91 browser lost-reply and pre-admission membership revocation proof is complete; do not repeat unchanged.",
+    "J03/R13/R45: connect existing explicit native service post/reverse fences and necessary authorized reads to service-key HTTP and private key-file SDK/CLI/MCP authentication; preserve current credential/role/usage/idempotency fencing and human-MFA administration. Existing TS service permissions require this parity; no blanket relaxation of human cookie routes.",
+    "J03/R50: installed shared-web remote HTTPS two-company owner/bookkeeper/service and canonical web/CLI/MCP acceptance. Group91 browser uncertainty/pre-admission revocation and Group92 company/account-switch journal plus auth race proofs are complete; do not repeat unchanged. Mac unlock remains pending for native GUI.",
     "J06: qualify installed GUI handoff/recovery boundaries beyond existing Group56 backend proof",
     "J07 durable automation and signed distribution/updates; remaining CLI/MCP parity and full backend retirement",
     "Do not repeat qualified unchanged Group88 financial/HTTPS or Group90 adoption/accounting/signed-sourcefree-recovery. Broaden legacy corpus only for an explicit remaining required journey or concrete defect."
@@ -22,10 +22,10 @@
   ],
   "all_goal_requirements_complete": false,
   "previous_verified_increment": {
-    "current_increment": "Actual TS two-company adoption, new native accounting and archived signed source-free restore/restart qualified",
-    "code_revision": "2197bea2621278fd6938e37de8b06a8e7e0b7cc1",
+    "current_increment": "Group91 browser/Rust lost-posting reconciliation and pending company-access revocation qualified; installed remote J03 remains open",
+    "code_revision": "bbf30c36977a2c2176de07e676b39fb552905f38",
     "spec_revision": "sha256:a7eb3f0d6e65412fa5ee945a7b79721b593806839f4a03e6b8d969ce3327e3fc",
-    "state": "Group90 qualifies actual public TS issued/posted invoices in active+archived companies → reviewed native adoption → normal owner/MFA → native journal/replay/restart → existing web signedbackup download → both sources/signingkey deleted → independent native verification → fresh physical restore preserving logicalworkspaceID → new owner/MFA → old native intent HTTP400 RESTORED_KEY_RECONCILIATION_REQUIRED without duplicate → fresh native journal/restart/replay. Exact originalJSON/PDF, ledgerUUIDs, old journals/lines, archived manifest/ledger and full adoptionaudit preserved. Final active3journals/7lines debit270=credit270; archive1journal/3lines debit50=credit50;4documents. Runtime4, signed6+correctedmixed1, auth1 and transfer2 tests, strictClippy/build and new helper lint pass. Full TSruntime typecheck retains only5untoucheddashboardhelpererrors. Fixed archived backup coverage, private snapshot visitation/ordinary-selection restoration, archivedadminauthorization and workspace transferstatus readgate. Wrong workspaceID/expectedtestcode/import were qualification-helper repairs recorded separately; finalrestore resumed retained verifiedarchive without replaying sourceeffects. All owned testprocesses stopped. Group88 installed desktop financial/HTTPS evidence retained. Next explicitgateJ03/R50 installed remote multiuser/revocation/context/uncertainreply; J06handoff/J07automation/signeddistribution and fullRustmission/epic672 remain OPEN."
+    "state": "Group91 fixes the concrete manual-post unknown-outcome bypass: a new form request UUID no longer changes the persistent company-scoped mutation block, and canonical operationScope covers equivalent journal routes. Actual ordinary-MFA two-company Rust/browser fixture passed after server restart: one real accepted posting reply deliberately discarded; full reload/trailing-slash route keeps writes blocked; canonical journal contains exactly one new posting; exact original payload/key returns identical entryId/entryNo/entryHash with replayed receipt and unchanged journal; explicit human reconciliation releases the form without a write. Normally invited reader promoted to bookkeeper; owner revokes membership while a real browser read and manual-post request are held before server admission; each returns403 and canonical ledger remains unchanged. Final fixture process and private workspace cleaned. 21 focused React tests, production web build and targeted two-helper TypeScript check pass. This is HTTP loopback browser/server evidence, not installed remote HTTPS or service-identity qualification. Abrupt reload while a request is still in flight is not qualified. Group88 installed local/HTTPS and Group90 migration/accounting/recovery evidence retained. Full J03 company/account-switch stale responses, service roles, installed remote web/CLI/MCP parity, J06/J07, signed distribution/updates and full Rust mission/epic672 remain OPEN. Fresh CUA observation still reports Mac locked; no repeated permission request."
   },
   "evidence": {
     "combined_browser_log": "/tmp/rm-platform5-combined.log",
@@ -1965,6 +1965,28 @@
         "abrupt reload during still-pending write"
       ],
       "cleanup": "owned processes stopped; synthetic private fixture removed"
+    },
+    "auth_context92": {
+      "code_revision": "e60b0017c4f1722037a3ef556f67a09b97d7bd9c",
+      "report": "/tmp/rentemester-rust-reports/native-context-switch92.json",
+      "sha256": "7ad644fac20a054eb500ca1596cf403d2301b8a03032dba8ef9a9aa8b6138484",
+      "actual_log": "/tmp/rm92-context-switch-final.log",
+      "tests_log": "/tmp/rm92-auth-regression.log",
+      "build_log": "/tmp/rm92-web-build.log",
+      "scope": "HTTP loopback browser against real Rust server; ordinary owner/member MFA and separate browser contexts",
+      "proof": [
+        "six failing-before AuthProvider deferred-race regressions;77 focused tests pass after",
+        "real authorized old-company journal reply held across client-side company switch and logout/new member MFA login; no stale text/destination/identity leak",
+        "Group91 lost accepted reply/exact replay/release and revoked pending read/write requalified"
+      ],
+      "not_qualified": [
+        "installed remote HTTPS desktop matrix",
+        "actual held auth-endpoint response (auth races use deferred unit tests)",
+        "service-account product operations through HTTP/CLI/MCP",
+        "abrupt reload during a still-pending write"
+      ],
+      "cleanup": "owned server/browser stopped and private fixture removed",
+      "qualification_repair": "First test used substring match where second marker contained primary marker; exact journal entry and DOM text matching fixed, fresh actual run passed."
     }
   },
   "verified_history": [
@@ -3158,6 +3180,12 @@
       "owner": "root implementation/actual/integration; exception_read82 bounded read-only review",
       "status": "COMPLETE finite HTTP browser/server proof; installed remote J03 stays OPEN",
       "acceptance": "One actual accepted posting survives lost browser reply and exact replay once; stable UI block survives reload/routes; explicit reconciliation without write; revoked pending read/write403 with unchanged ledger."
+    },
+    {
+      "delivery": "Group92 J03 auth refresh and company/account context isolation",
+      "owner": "root implementation/actual/integration; exception_read82 read-only review; invoice_domain80 read-only next service gap scout",
+      "status": "COMPLETE finite browser/server and auth unit scope; whole J03 still OPEN",
+      "acceptance": "Superseded auth replies cannot resurrect/logout/mix a newer identity; held real authorized journal response cannot overwrite company or independent MFA user view."
     }
   ],
   "integrated_pending_browser": [
@@ -3275,6 +3303,18 @@
       "code_revision": "df07046a1f8ebef1dc15bd0d03c5c69a48cedc1b",
       "spec_revision": "sha256:a7eb3f0d6e65412fa5ee945a7b79721b593806839f4a03e6b8d969ce3327e3fc",
       "state": "Group86 implements the explicitly approved shared React web UI in a Tauri2 Rust desktop host. Installed unsigned macOS bundle at df07046a completed normal local create-profile, first-owner creation, native private-mail verification, password login, TOTP enrollment and authorized portfolio; quit stopped the exact owned server. Reopening the same installed app/profile at a new loopback port completed password/TOTP login and preserved exactly one owner, original profile config and signing/public keys. Second quit stopped the owned runtime. All12 bundle files match the manifest; zero journal entries/lines/documents/bankrows. Desktop9tests pass with1existingignored, strictClippy and build pass. Architecture/epic/GDD source updated and both owned worktrees archived. Remote HTTPS, uploads/downloads/PDF and financial desktop workflows remain unqualified. Whole Rust mission/epic672, supported TSworkspace adoption, transfer/recovery, automation, updates/distribution and TS retirement remain OPEN."
+    },
+    {
+      "current_increment": "Actual TS two-company adoption, new native accounting and archived signed source-free restore/restart qualified",
+      "code_revision": "2197bea2621278fd6938e37de8b06a8e7e0b7cc1",
+      "spec_revision": "sha256:a7eb3f0d6e65412fa5ee945a7b79721b593806839f4a03e6b8d969ce3327e3fc",
+      "state": "Group90 qualifies actual public TS issued/posted invoices in active+archived companies → reviewed native adoption → normal owner/MFA → native journal/replay/restart → existing web signedbackup download → both sources/signingkey deleted → independent native verification → fresh physical restore preserving logicalworkspaceID → new owner/MFA → old native intent HTTP400 RESTORED_KEY_RECONCILIATION_REQUIRED without duplicate → fresh native journal/restart/replay. Exact originalJSON/PDF, ledgerUUIDs, old journals/lines, archived manifest/ledger and full adoptionaudit preserved. Final active3journals/7lines debit270=credit270; archive1journal/3lines debit50=credit50;4documents. Runtime4, signed6+correctedmixed1, auth1 and transfer2 tests, strictClippy/build and new helper lint pass. Full TSruntime typecheck retains only5untoucheddashboardhelpererrors. Fixed archived backup coverage, private snapshot visitation/ordinary-selection restoration, archivedadminauthorization and workspace transferstatus readgate. Wrong workspaceID/expectedtestcode/import were qualification-helper repairs recorded separately; finalrestore resumed retained verifiedarchive without replaying sourceeffects. All owned testprocesses stopped. Group88 installed desktop financial/HTTPS evidence retained. Next explicitgateJ03/R50 installed remote multiuser/revocation/context/uncertainreply; J06handoff/J07automation/signeddistribution and fullRustmission/epic672 remain OPEN."
+    },
+    {
+      "current_increment": "Group91 browser/Rust lost-posting reconciliation and pending company-access revocation qualified; installed remote J03 remains open",
+      "code_revision": "bbf30c36977a2c2176de07e676b39fb552905f38",
+      "spec_revision": "sha256:a7eb3f0d6e65412fa5ee945a7b79721b593806839f4a03e6b8d969ce3327e3fc",
+      "state": "Group91 fixes the concrete manual-post unknown-outcome bypass: a new form request UUID no longer changes the persistent company-scoped mutation block, and canonical operationScope covers equivalent journal routes. Actual ordinary-MFA two-company Rust/browser fixture passed after server restart: one real accepted posting reply deliberately discarded; full reload/trailing-slash route keeps writes blocked; canonical journal contains exactly one new posting; exact original payload/key returns identical entryId/entryNo/entryHash with replayed receipt and unchanged journal; explicit human reconciliation releases the form without a write. Normally invited reader promoted to bookkeeper; owner revokes membership while a real browser read and manual-post request are held before server admission; each returns403 and canonical ledger remains unchanged. Final fixture process and private workspace cleaned. 21 focused React tests, production web build and targeted two-helper TypeScript check pass. This is HTTP loopback browser/server evidence, not installed remote HTTPS or service-identity qualification. Abrupt reload while a request is still in flight is not qualified. Group88 installed local/HTTPS and Group90 migration/accounting/recovery evidence retained. Full J03 company/account-switch stale responses, service roles, installed remote web/CLI/MCP parity, J06/J07, signed distribution/updates and full Rust mission/epic672 remain OPEN. Fresh CUA observation still reports Mac locked; no repeated permission request."
     }
   ]
 }
