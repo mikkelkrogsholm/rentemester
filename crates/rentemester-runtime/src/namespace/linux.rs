@@ -393,6 +393,7 @@ impl NamespaceGuard {
 }
 
 mod documents;
+mod imap_config;
 
 #[cfg(all(test, target_os = "linux"))]
 mod tests;

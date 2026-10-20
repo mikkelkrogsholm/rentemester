@@ -53,6 +53,15 @@ pub struct NamespaceGuard {
 }
 #[cfg(not(any(target_os = "linux", target_os = "macos")))]
 impl NamespaceGuard {
+    pub fn read_imap_config(&mut self) -> Result<Option<Vec<u8>>, NamespaceError> {
+        Err(NamespaceError::Unsupported)
+    }
+    pub fn write_imap_config(&mut self, _: &[u8]) -> Result<(), NamespaceError> {
+        Err(NamespaceError::Unsupported)
+    }
+    pub fn remove_imap_config(&mut self) -> Result<(), NamespaceError> {
+        Err(NamespaceError::Unsupported)
+    }
     pub fn workspace_manifest(&mut self) -> Result<Vec<u8>, NamespaceError> {
         Err(NamespaceError::Unsupported)
     }
