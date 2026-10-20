@@ -113,7 +113,12 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
                     StatusCode::SERVICE_UNAVAILABLE
                 } else if matches!(code, "access_denied" | "invalid_credentials") {
                     StatusCode::FORBIDDEN
-                } else if matches!(code, "IDEMPOTENCY_CONFLICT" | "IDEMPOTENCY_OUTCOME_EXPIRED") {
+                } else if matches!(
+                    code,
+                    "IDEMPOTENCY_CONFLICT"
+                        | "IDEMPOTENCY_OUTCOME_EXPIRED"
+                        | "RESTORED_KEY_RECONCILIATION_REQUIRED"
+                ) {
                     StatusCode::CONFLICT
                 } else if matches!(
                     code,
