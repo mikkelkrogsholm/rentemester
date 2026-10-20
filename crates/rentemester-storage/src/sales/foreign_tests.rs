@@ -45,6 +45,12 @@ fn foreign_service_freezes_valid_vies_and_posts_only_dkk_without_rewriting_origi
         "synthetic",
     )
     .unwrap();
+    // The issue confirmation is consumed directly by the existing web dialog.
+    assert_eq!(registered["grossAmount"], 100.0);
+    assert_eq!(registered["fxRateToDkk"], 7.46);
+    assert_eq!(registered["netAmountDkk"], 746.0);
+    assert_eq!(registered["vatAmountDkk"], 0.0);
+    assert_eq!(registered["grossAmountDkk"], 746.0);
     let id = registered["documentId"].as_i64().unwrap();
     let before: String = tx
         .query_row(

@@ -552,7 +552,7 @@ pub fn register_with_principal(
         )?;
     }
     Ok(
-        json!({"documentId":id,"currency":payload["currency"],"totals":payload["totals"],"invoiceNumber":payload["invoiceNumber"],"netAmount":payload["totals"]["netAmount"],"vatRate":payload["totals"]["vatRate"],"vatTreatment":payload["vatTreatment"],"reverseChargeBasis":payload["reverseChargeBasis"],"reverseChargeNote":payload["reverseChargeNote"],"vatAmount":vat_amount,"grossAmount":payload["totals"]["grossAmount"],"lines":payload["lines"]}),
+        json!({"documentId":id,"currency":payload["currency"],"totals":payload["totals"],"invoiceNumber":payload["invoiceNumber"],"netAmount":payload["totals"]["netAmount"],"vatRate":payload["totals"]["vatRate"],"vatTreatment":payload["vatTreatment"],"reverseChargeBasis":payload["reverseChargeBasis"],"reverseChargeNote":payload["reverseChargeNote"],"vatAmount":vat_amount,"grossAmount":payload["totals"]["grossAmount"],"fxRateToDkk":payload["totals"]["fxRateToDkk"],"netAmountDkk":payload["totals"]["netAmountDkk"],"vatAmountDkk":payload["totals"]["vatAmountDkk"],"grossAmountDkk":payload["totals"]["grossAmountDkk"],"lines":payload["lines"]}),
     )
 }
 pub fn pdf_id(tx: &Transaction<'_>, id: i64) -> Result<i64, Error> {
