@@ -2,6 +2,7 @@
 mod auth_delivery;
 mod backend;
 mod document_scanner;
+mod invoice_extractor;
 mod document_pdf;
 mod hosted_worker;
 mod portable_backup_cli;

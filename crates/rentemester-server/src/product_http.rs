@@ -20,6 +20,7 @@ mod budget;
 mod company_setup;
 mod documents;
 mod document_pdf;
+mod invoice_extraction;
 mod gdpr;
 mod dimensions;
 mod exceptions;
@@ -366,6 +367,8 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
         )
         .route("/api/companies/{slug}/bank/import", post(bank::handle))
         .route("/api/companies/{slug}/documents", get(documents::list))
+        .route("/api/companies/{slug}/documents/{id}/invoice-extraction",get(invoice_extraction::handle))
+        .route("/api/companies/{slug}/documents/{id}/extract-invoice",post(invoice_extraction::handle))
         .route("/api/companies/{slug}/documents/{id}/parse",post(document_pdf::handle))
         .route("/api/companies/{slug}/documents/{id}/parse-status",get(document_pdf::handle))
         .route("/api/companies/{slug}/documents/{id}/parsed-text",get(document_pdf::handle))
