@@ -1,13 +1,13 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "Group102 qualified service invoice delivery/status/retry/reconcile through actual verified TLS SMTP, CLI/MCP, crash/unknown/restart and signed source-free restore; installed desktop acceptance deferred to the very end by user",
-  "code_revision": "ab113e476f0a7afe506fd7156208b9363bca0d41",
+  "current_increment": "Group103 authenticated native package update qualified headlessly: actual signed verification/refusals, exclusive lease, monotonic atomic publication, one actual staging SIGKILL/recovery, complete compiled bundle update and help; GUI/Apple/fullR52 open",
+  "code_revision": "2656ee09b6589da84c8927f1144bbab957fb81d0",
   "spec_revision": "sha256:a7eb3f0d6e65412fa5ee945a7b79721b593806839f4a03e6b8d969ce3327e3fc",
-  "state": "Group102 completes the scoped service sales-delivery journey: normal owner verification/MFA explicitly grants service company-owner external-send permission; reader/bookkeeper refuse before quota/provider. Real CLI sends the immutable stored invoice PDF; MCP duplicate opens no SMTP connection. Definite SMTP550 refusal requires a separately reviewed MCP retry. Ordinary credential rotation denies old delivery reads/replay. SIGKILL after durable DATA queueing before acknowledgement leaves unknown; actual restart and exact MCP replay preserve unknown without transport. Explicit CLI reconciliation records exact queue evidence without sending. Exactly four SMTP connections/recipient attempts (accepted1,retry2,unknown1), three real PDF messages, three accepted success records, zero SMTP errors and no change to zero journals or original JSON/PDF. One signed archive is independently verified with original workspace/private signer unavailable; fresh restore/ordinary new owner MFA retains exact history/originals/ledger identity, SMTP unconfigured and send refuses without transport. Service audit principal marker preserves old human hash chains. Five new domain, four human host and one storage test, strict five-package Clippy, three binary build and strict helper checks pass. Pre-handoff live revocation proof is domain evidence, not actual rotation-during-SMTP. Exact owned processes absent and fixture removed. Group101 scanned purchase→payable→bank payment and Group99 installed managed J06 evidence remain accepted. Full epic672/R13/R45/R54 scope, deferred remaining installed J07/closure/recovery acceptance, signed distribution/update/cutover and TypeScript retirement stay OPEN. User explicitly defers all remaining installed GUI tests until the very end; no screen unlock request during implementation.",
+  "state": "Group103 implements an offline Rust application updater with independent raw32 Ed25519 trust, exact signed desktop/server/updater/web inventory, no links/unlisted/tampered/missing/mode changes, exact API/control31/company36/platform admission and strict SemVer+sequence increase. Runtime/server/desktop package leases prevent updating running current binaries; staged/retired package writers refuse. Same-parent private complete staged copy is reverified then atomically exchanged; both affected directories fsynced, one previous authenticated generation retained, explicit recovery without automatic rollback or workspace access. Actual ordinary-Mac signed mini upgrade, ten refusals (including real separate-process shared flock), exact old-byte retention, one genuine SIGKILL during private prepublication staging, original target runnable/pendingRecovery then explicit staging_discarded and unchanged external sentinel all PASS. Observed filler0; no claim of partial filler or actual postexchange crash. Full assembled package with actual desktop/server/updater and current web then signed/verified/published, all three executed --help only; artifacts pinned, no GUI/production keys/network/workspace opened. Ten runtime tests plus nine desktop tests and one fresh-schema contract pass, focused password/MFA vectors pass, strict root+desktop Clippy and all3bin builds pass. Four new Rust1.99 lint incompatibilities in newly shared runtime dependency repaired mechanically; nonfatal installed stable rust-objcopy/libLLVM stripping warnings retained in logs. Exact fixture and owned process paths absent; owned worker checkout removed, sharedcache119GiB free. Group101 purchase, Group102 service delivery and Group99 installed managed transfer evidence retained. Full R52 Apple signing/notarization, qualified OS matrix, installed update/offline/uninstall/sleep and data-cutover/older-software gates, remaining full mission and TS retirement remain OPEN. User defers remaining installed GUI until the very end; no unlock requests during implementation.",
   "issues_closed": [],
   "next": [
-    "Next required headless code increment R52: authenticated versioned native package updates and recoverable staging/publication; reject invalid signatures, tampered/missing/unlisted bytes, incompatible or downgraded candidate before publication, preserve previous runnable package after interruption, never touch workspace data. Read R52 acceptance/versioning/release sources before choosing exact contract. Existing unsigned bundle assembly alone is not an updater. Synthetic keys/packages can qualify code without GUI; production signing/notarization credentials and installed update journeys remain explicit final gates.",
+    "Reconcile original GDD/epic acceptance against current source/evidence to choose the next remaining REQUIRED headless code gap. Group103 headless updater now qualified. Narrow J07 scout found recurring and mail-intake worker code present; source has explicit backups, not a backup timer to port. Do not invent a scheduled-backup feature or repeat passed journeys. Keep final installed GUI/Apple signing/fullplatform/cutover/TSretirement gates explicit.",
     "Installed desktop acceptance is explicitly deferred to the very end by the user. Preserve prepared Group100 profile; collect remaining native automation, closure, recovery and packaging checks for final installed acceptance without requesting screen unlock during development.",
     "J03/R50 and remaining R54 scope: only still-supported operation closure/recovery, nonempty scheduler handoff, hostile/older clone and post-cutover rollback requirements. Group99 qualifies managed installed J06 flow, not every R54 acceptance item.",
     "Signed distribution/update/cutover evidence must match actual full Rust replacement; retain all existing completion gates and TypeScript retirement gate.",
@@ -3931,6 +3931,23 @@
       },
       "scope": "All four service delivery operations plus real TLS SMTP, unknown crash/restart and signed source-free restore. Native UI not claimed; in-flight pre-handoff revocation is focused domain evidence.",
       "cleanup": "Managed worker checkout physically removed; exact fixture and server/controller PIDs absent. Shared cache remains above disk thresholds."
+    },
+    "native_update103": {
+      "report": "/tmp/rentemester-rust-reports/native-update103.json",
+      "sha256": "1c9c8394e9f04f506abfe9f58cd8fba2e9010b815af724de47d82246d6501e8e",
+      "source_revision": "2656ee09b6589da84c8927f1144bbab957fb81d0",
+      "runner_sha256": "620a04fb9d0d463ca39a5f3e9b6c1f1afcc77386670c0e246bb84dd028144083",
+      "compiled_binaries": {
+        "rentemester-desktop": "b973ffecc8f434672a1be050e8122ad9365dff9b6089b462b7dfaab4ac38d330",
+        "rentemester-server": "51ab7a463d0e182616575a34683d2ead75d143e7221c91db4da87c5f0cd31d6f",
+        "rentemester-update": "e958498bd24a18006feac3f2e942dfa1227574385af972f1e67d244d4b3aa6f0"
+      },
+      "toolchains": {
+        "desktop": "rustc 1.99.1 (58cf8f9c3 2026-10-13; aarch64-apple-darwin)",
+        "server": "rustc 1.94.1 (aarch64-apple-darwin)"
+      },
+      "terminal_report": "/tmp/rentemester-rust-reports/native-update103-terminal.json",
+      "scope": "Headless same-user macOS API/schema-compatible application update. ActualSIGKILL beforepublication; postexchange states are unit evidence. No Apple/GUI/allOS/rollback/older-software/global R52 claim. Synthetic package versions are test identities, not released product versions."
     }
   },
   "verified_history": [
@@ -5188,6 +5205,31 @@
         "/tmp/rm102-build.log",
         "/tmp/rm102-helper-types.log"
       ]
+    },
+    {
+      "delivery": "Group103 R52 authenticated application package staging and recovery",
+      "owner": "root publication/lease/standalone updater/server+desktop+assembler integration; invoice_domain80 isolated manifest/signer and separate actual-helper writer",
+      "status": "QUALIFIED_SCOPED_HEADLESS_MACOS_UPDATER_AND_COMPILED_PACKAGE; FULL_R52_AND_MISSION_OPEN",
+      "acceptance": "Independent raw32 Ed25519 trust; exact signed full desktop/server/updater/web inventory, platform/API/schema compatibility and strict version+sequence; same-filesystem atomic exchange while app/server stopped; interrupted staging explicit recovery preserves existing runnable package and untouched external workspace; previous package retained, retired/staged writers refuse; no automatic rollback/migration. Actual CLI synthetic SIGKILL plus signed full-artifact headless checks; Apple production signing/notarization, native update UX/platform matrix/data-cutover/older-software remain OPEN.",
+      "manifest_commit": "02a5f740",
+      "test_logs": [
+        "/tmp/rm103-update-tests-final.log",
+        "/tmp/rm103-schema-test.log",
+        "/tmp/rm103-assembly-tests.log",
+        "/tmp/rm103-desktop-tests.log",
+        "/tmp/rm103-password-tests.log",
+        "/tmp/rm103-mfa-tests.log"
+      ],
+      "review": "One material review found both affected directories need fsync after exchange/old-package retention; root repaired ordering. First test compile dependency was moved to server test; canonical /private/var fixture paths repaired rather than weakening product admission.",
+      "code_revision": "2656ee09b6589da84c8927f1144bbab957fb81d0",
+      "report": "/tmp/rentemester-rust-reports/native-update103.json",
+      "check_logs": [
+        "/tmp/rm103-clippy-final.log",
+        "/tmp/rm103-desktop-clippy-final.log",
+        "/tmp/rm103-server-build.log",
+        "/tmp/rm103-desktop-build.log"
+      ],
+      "cleanup": "Both isolated103workers physically removed; synthetic fixture removed and owned process paths absent. No separatetargetcaches."
     }
   ],
   "integrated_pending_browser": [

@@ -2948,3 +2948,29 @@ forretningsdata eller rapport. Tilbagekaldelse før SMTP er domænetest-evidens;
 den faktiske prøve roterer nøglen før det ukendte forsøg og beviser ikke
 rotation under en igangværende SMTP-handoff. Installeret desktop er fortsat
 udskudt til slutaccept, og det samlede Rust-mål er åbent.
+
+### Autentificeret pakkeopdatering uden workspace-adgang (Group103)
+
+[Native opdateringskontrakten](rust-native-updates.md) beskriver den nye
+`rentemester-update`-binær, signering med ekstern tillidsnøgle og eksplicit
+`verify/status/apply/recover`. Desktop, lokal Rust-server, updater og webfiler
+verificeres som én pakke. App og server deler installationslåsen; opdatering
+kræver begge lukket. Der er ingen automatisk migration eller rollback.
+
+Den headless Mac-prøve ved `2656ee09` består: ti afvisninger bevarer præcise
+installerede bytes; normal opgradering bevarer den gamle pakke; én faktisk
+SIGKILL under privat staging efterlader den oprindelige installation kørbar.
+Eksplicit recovery kasserer staging og bevarer den eksterne workspace-sentinel.
+Dernæst samles, signeres, verificeres og publiceres en pakke med de faktiske
+Rust-binærer og det eksisterende web-UI; alle tre binærer køres kun med `--help`.
+Rapport: `native-update103.json` og separat terminalkontrol. Testversionerne
+er syntetiske identiteter, ikke offentliggjorte produktversioner.
+
+Ti runtime-, ni desktop- og én schema-kontrakttest samt relevante crypto-vektorer,
+Clippy og binærbygninger består. Den installerede stable-toolchain afgiver en
+ikke-fatal `rust-objcopy`/`libLLVM`-advarsel ved debug-stripping; log og præcise
+udførte bytes er bevaret. Der hævdes ingen Apple-signering/notarisering eller
+GUI-accept. SIGKILL skete før publication; tilstande efter atomisk exchange er
+unit-testet, ikke bevist ved et faktisk process-nedbrud. R52's fulde platform-,
+installerede update/offline/uninstall- og data-cutover-accept samt det samlede
+Rust-mål er fortsat åbent. Resterende GUI-prøver venter til slutaccept.

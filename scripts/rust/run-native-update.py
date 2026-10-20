@@ -255,7 +255,7 @@ class Proof:
                       "--revision", self.revision, "--version", "0.2.0", "--architecture", "aarch64",
                       "--server-toolchain", toolchains["server"], "--desktop-toolchain", toolchains["desktop"],
                       "--update-signing-key", self.key, "--update-public-key", self.public,
-                      "--release-sequence", "4"])
+                      "--release-sequence", "4", *(["--source-dirty"] if subprocess.check_output(["git", "status", "--porcelain"], cwd=REPO) else [])])
         verified = self.call("verify", package)
         published = self.call("apply", package)
         for name in ("desktop", "server", "update"):
