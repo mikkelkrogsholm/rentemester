@@ -62,6 +62,9 @@ impl NamespaceGuard {
     pub fn remove_imap_config(&mut self) -> Result<(), NamespaceError> {
         Err(NamespaceError::Unsupported)
     }
+    pub fn retain_backup(&mut self, _: &[u8], _: &crate::backup_artifact::TrustedPublicKey, _: &str) -> Result<serde_json::Value, NamespaceError> {
+        Err(NamespaceError::Unsupported)
+    }
     pub fn workspace_manifest(&mut self) -> Result<Vec<u8>, NamespaceError> {
         Err(NamespaceError::Unsupported)
     }

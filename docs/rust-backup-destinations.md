@@ -49,6 +49,37 @@ ikke, at en ekstern synkronisering er gennemført. Svarene indeholder altid
 klienterne. Konfiguration og signeringsnøgle følger ikke med som aktiv
 autoritet ved gendannelse.
 
+## Lokal opbevaring af dannede snapshots
+
+Serverens almindelige signerede workspace-backup gemmes nu også som en privat
+fil i workspacets faste `native-backups/`-mappe, før et downloadsvar afleveres.
+Filnavnet er arkivets fulde SHA-256 efterfulgt af `.native-backup.json`. Mappen
+har mode `0700`, filen `0600`; eksisterende bytes overskrives ikke. Serveren
+genlæser og verificerer signatur, inventar, workspace og hash før registrering.
+Dette kræver ingen ekstra operatørdestination og er lokal opbevaring.
+
+Et efterfølgende append-only `native_backup_created`-event i workspace-auditten
+registrerer arkivets identitet, størrelse, signeringsnøglens offentlige hash,
+tidspunkt samt hver inkluderet virksomheds ledger-UUID og snapshot-hash.
+Eventets actor kommer fra den aktuelle, allerede autoriserede menneskelige
+session. En fil kan være landet uden en afsluttet auditregistrering; fejl efter
+start af opbevaringen behandles derfor som uafklarede udfald. Filer fjernes ikke
+automatisk ved mistet svar eller manglende kvittering.
+
+De lokale snapshotfiler er ikke med i det signerede arkiv og bliver ikke til
+en aktiv destinationskonfiguration ved gendannelse. Historiske auditkvitteringer
+bevares, men inventarlæsningen tæller kun snapshots registreret efter den nye
+instans' `native_portable_restore`-grænse. En kildekvittering beviser derfor ikke,
+at en fil eksisterer hos den gendannede instans.
+
+Friskhedsberegningen findes som en ren Rust-regel med den eksisterende
+syvdagesgrænse og eksplicit låsevalg. Den er endnu ikke koblet til
+integritetsvisningen eller til bogføringens transaktioner: backupstatus er
+fortsat ukendt dér, og ingen ny lås håndhæves endnu. Næste integration skal
+kontrollere det aktuelle opbevarede arkiv, anvende rettigheder og forbinde
+status, valg og afvisning gennem alle klienter og baggrundsjob. En download
+eller lokal kvittering bliver ikke i sig selv et udsagn om ekstern backup.
+
 ## Brugerforløbet
 
 En aktuelt autentificeret menneskelig bruger skal have `WorkspaceManage` og
@@ -116,3 +147,14 @@ erklæret ekstern overførsel, brugeradministration af destinationer, friskhed,
 backupstatus/-audit og eksplicit aktiveret bogføringslås er fortsat dele af den
 samlede backup-paritet. `freshnessEvaluated` og `automaticBackupLock` er derfor
 `false`. Desktopprøven er efter brugerens valg udskudt til allersidst.
+
+Group110 kvalificerer den lokale opbevaring i det faktiske normale MFA-forløb:
+to signerede snapshots med private filer, eksakte hashes og vedvarende
+inventar efter genstart. Begge arkiver er også uafhængigt verificeret med
+signatur- og SQLite-kontrol. Det oprindelige placerings-, afvisnings- og
+bogføringsforløb består stadig. Rapport:
+`/tmp/rentemester-rust-reports/native-backup-retention110b.json`, SHA-256
+`69c448aa2c7a8b878fabb905f5b0f7a73a449408083674185a37dac399b11c59`.
+Fem rene regeltests og to inventartests består; grænsen efter gendannelse er
+dækket af inventartesten, ikke af et nyt faktisk source-free restore-forløb.
+Status- og låseintegrationen er fortsat uafsluttet.

@@ -1,4 +1,5 @@
 //! Source-read-only reports/rehearsals and caller-owned transactional primitives.
+pub mod backup_inventory;
 pub mod vies;
 pub mod eu_sales;
 pub mod unmatched_bank;

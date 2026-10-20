@@ -538,6 +538,32 @@ def main():
                     if report['terminalSql']['journalActors'] != [('user:'+subject,'service-principal')]*2:
                         raise RuntimeError('Service journal attribution differs')
                 finally: db.close()
+                if args.backup_destinations:
+                    # Read only after every owned server has stopped. Never open a
+                    # second SQLite handle in the live owner process.
+                    control = sqlite3.connect((work/'workspace/.rentemester/workspace-control.sqlite').as_uri()+'?mode=ro', uri=True)
+                    try:
+                        snapshots = [json.loads(row[0]) for row in control.execute("SELECT entity_id FROM workspace_audit WHERE event_type='native_backup_created' AND entity_type='native_retained_snapshot' ORDER BY id")]
+                    finally: control.close()
+                    if len(snapshots) != 2:
+                        raise RuntimeError('Expected retained snapshots for explicit placement and duplicate placement attempt')
+                    retained_hashes = []
+                    for snapshot in snapshots:
+                        archive_digest = snapshot['archiveSha256']
+                        retained = work/'workspace/native-backups'/f'{archive_digest}.native-backup.json'
+                        meta = retained.lstat()
+                        if not stat.S_ISREG(meta.st_mode) or stat.S_IMODE(meta.st_mode) != 0o600 or meta.st_nlink != 1 or meta.st_uid != os.getuid():
+                            raise RuntimeError('Retained signed backup has unsafe identity/mode')
+                        raw = retained.read_bytes()
+                        if len(raw) != snapshot['archiveSizeBytes'] or hashlib.sha256(raw).hexdigest() != archive_digest:
+                            raise RuntimeError('Retained snapshot differs from persistent inventory')
+                        verified = subprocess.run([str(work/'rentemester-server'),'--verify-backup',str(retained),'--trusted-backup-key',str(work/'trusted.pub')], stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL,timeout=60)
+                        if verified.returncode != 0:
+                            raise RuntimeError('Independent retained artifact/SQLite verification failed')
+                        if snapshot['version'] != 1 or len(snapshot['companies']) != 1 or snapshot['companies'][0]['slug'] != 'synthetic':
+                            raise RuntimeError('Retained inventory coverage differs')
+                        retained_hashes.append(archive_digest)
+                    report['retainedBackups'] = {'count':len(snapshots),'archiveSha256':retained_hashes,'privateImmutableFiles':True,'independentSignatureAndSqliteVerification':True,'inventoryPersistedAcrossRestart':True,'notOffsiteClaim':True}
                 with gateway_lock:
                     if errors or len(provider_requests) != 2 or sorted(r['kind'] for r in provider_requests) != ['cli','held']:
                         raise RuntimeError('Service purchase scanner calls differ or private provider failed')

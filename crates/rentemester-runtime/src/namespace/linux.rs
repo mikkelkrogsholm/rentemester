@@ -368,6 +368,43 @@ impl NamespaceGuard {
         metadata(&self.root, &directory, self.uid, &self.slug)?;
         self.layout.ensure_current().map_err(|_| Error::Changed)
     }
+    /// Retain the producer's signed artifact independently of any HTTP download.
+    /// This fixed private directory is not an operator-selected offsite destination.
+    pub fn retain_backup(
+        &mut self,
+        wire: &[u8],
+        trusted: &crate::backup_artifact::TrustedPublicKey,
+        workspace: &str,
+    ) -> Result<serde_json::Value, Error> {
+        self.ensure_current()?;
+        let (_, root) = walk(&self.root, self.uid, true)?;
+        match rustix::fs::mkdirat(&root, "native-backups", Mode::from_raw_mode(0o700)) {
+            Ok(()) => root.sync_all().map_err(|_| Error::Invalid)?,
+            Err(rustix::io::Errno::EXIST) => {},
+            Err(_) => return Err(Error::Invalid),
+        }
+        let config = crate::backup_destination::Config {
+            id: "native-local-backups".into(), label: "Local retained snapshots".into(),
+            kind: "local-folder".into(), directory: self.root.join("native-backups"),
+            non_related_party: false, in_eea_or_eu: false, country: "ZZ".into(),
+            meets_recognised_standards: false, attested_by: "system:local-retention".into(),
+            attested_at: "1970-01-01T00:00:00Z".into(),
+        };
+        let operation = crate::backup_keys::digest(wire);
+        let receipt = match crate::backup_destination::place(&config, self.uid, &operation, wire, trusted, workspace) {
+            Ok(value) => value,
+            Err("backup_destination_exists_read_back") => {
+                let value = crate::backup_destination::verify(&config, self.uid, &operation, trusted, workspace).map_err(|_| Error::Invalid)?;
+                if value["archiveSha256"] != operation { return Err(Error::Invalid); }
+                value
+            },
+            Err(_) => return Err(Error::Invalid),
+        };
+        self.ensure_current()?;
+        Ok(serde_json::json!({"format":"rentemester-native-retained-backup/1",
+            "archiveSha256":receipt["archiveSha256"],"archiveSizeBytes":receipt["archiveSizeBytes"],
+            "backupCreatedAt":receipt["backupCreatedAt"],"signatureVerified":true,"remoteSyncVerified":false}))
+    }
     pub fn ensure_current(&mut self) -> Result<(), Error> {
         if self.invalidated {
             return Err(Error::Changed);
