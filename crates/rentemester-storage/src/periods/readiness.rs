@@ -179,6 +179,50 @@ fn dkk_controls(tx: &Transaction<'_>, end: &str) -> Result<Vec<Value>, Error> {
     }
     Ok(evidence)
 }
+/// A cutoff view, not today's balance: later credits/refunds must not rewrite an earlier close packet.
+fn receivable_outstanding(tx: &Transaction<'_>, end: &str) -> Result<Vec<Value>, Error> {
+    let mut q = tx.prepare("SELECT id,invoice_date,amount_inc_vat,currency FROM documents WHERE document_type='issued_invoice' AND invoice_date<=?1 ORDER BY id").map_err(invalid)?;
+    let mut rs = q.query([end]).map_err(invalid)?;
+    let mut evidence = vec![];
+    while let Some(row) = rs.next().map_err(invalid)? {
+        let id: i64 = row.get(0).map_err(invalid)?;
+        if row.get::<_, String>(3).map_err(invalid)? != "DKK" {
+            return Err(refused(
+                "foreign receivable cutoff requires its valuation flow",
+            ));
+        }
+        let gross = legacy_money(row.get_ref(2).map_err(invalid)?)?;
+        // Validate linked active evidence even when its effect falls after the cutoff.
+        crate::credit_note::credited(tx, id)?;
+        crate::invoice_settlement::refunded(tx, id)?;
+        let mut amounts = vec![];
+        for sql in [
+            "SELECT p.amount,p.currency,j.status,EXISTS(SELECT 1 FROM journal_entries r WHERE r.reversal_of_entry_id=j.id) FROM invoice_payments p JOIN journal_entries j ON j.id=p.journal_entry_id WHERE p.invoice_document_id=?1 AND p.payment_date<=?2",
+            "SELECT p.booked_gross_dkk,d.currency,j.status,EXISTS(SELECT 1 FROM journal_entries r WHERE r.reversal_of_entry_id=j.id) FROM credit_note_postings p JOIN documents d ON d.id=p.credit_note_document_id JOIN journal_entries j ON j.id=p.journal_entry_id WHERE p.original_invoice_document_id=?1 AND j.transaction_date<=?2",
+            "SELECT p.amount,p.currency,j.status,EXISTS(SELECT 1 FROM journal_entries r WHERE r.reversal_of_entry_id=j.id) FROM invoice_refunds p JOIN journal_entries j ON j.id=p.journal_entry_id WHERE p.invoice_document_id=?1 AND p.refund_date<=?2",
+        ] {
+            let mut statement = tx.prepare(sql).map_err(invalid)?;
+            let mut rows = statement.query(params![id, end]).map_err(invalid)?;
+            let mut amount = Money::default();
+            while let Some(value) = rows.next().map_err(invalid)? {
+                if value.get::<_, String>(1).map_err(invalid)? != "DKK"
+                    || value.get::<_, String>(2).map_err(invalid)? != "posted"
+                    || value.get::<_, bool>(3).map_err(invalid)?
+                {
+                    return Err(refused("receivable cutoff evidence requires resolution"));
+                }
+                amount.add(&legacy_money(value.get_ref(0).map_err(invalid)?)?);
+            }
+            amounts.push(amount);
+        }
+        let mut open = gross.subtract(&amounts[0]).subtract(&amounts[1]);
+        open.add(&amounts[2]);
+        if !open.is_negative() && open != Money::default() {
+            evidence.push(json!({"id":id,"invoice_date":row.get::<_,String>(1).map_err(invalid)?,"amount_inc_vat":wire(&gross)?,"paid_amount":wire(&amounts[0])?,"credited_amount":wire(&amounts[1])?,"refunded_amount":wire(&amounts[2])?,"open_amount":wire(&open)?}));
+        }
+    }
+    Ok(evidence)
+}
 pub fn compute(
     tx: &Transaction<'_>,
     start: &str,
@@ -249,16 +293,15 @@ pub fn compute(
             true,
             true,
         ),
-        (
-            "RECEIVABLE_OUTSTANDING",
-            "SELECT d.id,d.invoice_date,d.amount_inc_vat,COALESCE(SUM(p.amount),0) AS paid_amount FROM documents d LEFT JOIN invoice_payments p ON p.invoice_document_id=d.id AND p.payment_date<=?1 WHERE d.document_type='issued_invoice' AND d.invoice_date<=?1 GROUP BY d.id HAVING COALESCE(SUM(p.amount),0)<COALESCE(d.amount_inc_vat,0) ORDER BY d.id",
-            vec![&end as &dyn ToSql],
-            true,
-            true,
-        ),
     ] {
         items.push(item(code, rows(tx, sql, &params), warning, waivable));
     }
+    items.push(item(
+        "RECEIVABLE_OUTSTANDING",
+        receivable_outstanding(tx, end),
+        true,
+        true,
+    ));
     items.push(item(
         "DKK_CONTROL_ACCOUNTS",
         dkk_controls(tx, end),

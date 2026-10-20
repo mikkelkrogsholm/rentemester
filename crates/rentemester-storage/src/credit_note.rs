@@ -1,4 +1,5 @@
 //! Immutable credit note evidence and matching original-account journal effects.
+mod explicit;
 use crate::{invalid, legacy_money, sales::Artifact};
 use rentemester_engine::{
     Error,
@@ -67,11 +68,10 @@ pub fn prepare(tx: &Transaction<'_>, input: &Input, now: &str) -> Result<Prepare
         return Err(refused("credit note cannot precede the original invoice"));
     }
     let original: Value = serde_json::from_str(&payload).map_err(invalid)?;
-    if original["vatTreatment"] != "standard"
-        || original["totals"]["vatRate"].as_f64() != Some(0.25)
-    {
+    let projection = rentemester_engine::sales_invoice::project(&original)?;
+    if projection.gross != gross {
         return Err(refused(
-            "native credit note currently requires standard domestic VAT invoice",
+            "original snapshot gross differs from posting identity",
         ));
     }
     let prior_total = credited(tx, id)?;
@@ -85,92 +85,31 @@ pub fn prepare(tx: &Transaction<'_>, input: &Input, now: &str) -> Result<Prepare
         .map(|n| Money::parse(&n.to_string()))
         .transpose()?
         .unwrap_or(remaining);
-    let mut original_lines = BTreeMap::<(String, Option<String>), (Money, bool)>::new();
-    let mut receivable = Money::default();
-    let mut q=tx.prepare("SELECT a.account_no,a.type,jl.debit_amount,jl.credit_amount,jl.vat_code FROM journal_lines jl JOIN accounts a ON a.id=jl.account_id WHERE jl.journal_entry_id=?1 ORDER BY jl.id").map_err(invalid)?;
-    let mut rows = q.query([journal_id]).map_err(invalid)?;
-    while let Some(r) = rows.next().map_err(invalid)? {
-        let no: String = r.get(0).map_err(invalid)?;
-        let kind: String = r.get(1).map_err(invalid)?;
-        let debit = legacy_money(r.get_ref(2).map_err(invalid)?)?;
-        let credit = legacy_money(r.get_ref(3).map_err(invalid)?)?;
-        let code: Option<String> = r.get(4).map_err(invalid)?;
-        if no == debtor {
-            if credit != Money::default() {
-                return Err(refused("invalid original receivable direction"));
-            }
-            receivable.add(&debit);
-            continue;
-        }
-        if debit != Money::default()
-            || credit == Money::default()
-            || !((kind == "income" && code.as_deref() == Some("DK_SALE_25"))
-                || (kind == "vat" && code.is_none()))
-        {
-            return Err(refused(
-                "original journal cannot be credited as a standard domestic sale",
-            ));
-        }
-        let entry = original_lines
-            .entry((no, code))
-            .or_insert((Money::default(), kind == "income"));
-        entry.0.add(&credit);
-    }
-    if receivable != gross {
-        return Err(refused(
-            "original invoice receivable does not match its posting identity",
-        ));
-    }
-    let mut prior = BTreeMap::<(String, Option<String>), Money>::new();
-    let mut q=tx.prepare("SELECT a.account_no,jl.vat_code,jl.debit_amount,jl.credit_amount FROM credit_note_postings p JOIN journal_lines jl ON jl.journal_entry_id=p.journal_entry_id JOIN accounts a ON a.id=jl.account_id WHERE p.original_invoice_document_id=?1 AND jl.account_id<>?2 ORDER BY jl.id").map_err(invalid)?;
-    let mut rows = q.query(params![id, debtor_id]).map_err(invalid)?;
-    while let Some(r) = rows.next().map_err(invalid)? {
-        let key = (
-            r.get::<_, String>(0).map_err(invalid)?,
-            r.get::<_, Option<String>>(1).map_err(invalid)?,
-        );
-        if !original_lines.contains_key(&key) {
-            return Err(refused(
-                "prior credit uses accounts outside the original invoice",
-            ));
-        }
-        prior.entry(key).or_default().add(
-            &legacy_money(r.get_ref(2).map_err(invalid)?)?
-                .subtract(&legacy_money(r.get_ref(3).map_err(invalid)?)?),
-        );
-    }
-    let counters: Vec<_> = original_lines
-        .iter()
-        .map(|(key, (original, revenue))| Counter {
-            original: original.clone(),
-            prior: prior.get(key).cloned().unwrap_or_default(),
-            revenue: *revenue,
-        })
-        .collect();
-    let allocations = credit_note::allocate(&gross, &prior_total, &amount, &counters)?;
-    let mut lines = vec![JournalLine {
-        account_no: AccountNo::parse(&debtor)?,
-        debit_amount: Money::default(),
-        credit_amount: amount.clone(),
-        vat_code: None,
-        text: Some(format!("Kreditering af {original_no}")),
-    }];
-    let mut vat = Money::default();
-    for (((account, code), (_, revenue)), debit) in original_lines.iter().zip(allocations) {
-        if debit == Money::default() {
-            continue;
-        }
-        if !revenue {
-            vat.add(&debit);
-        }
-        lines.push(JournalLine {
-            account_no: AccountNo::parse(account)?,
-            debit_amount: debit,
-            credit_amount: Money::default(),
-            vat_code: code.clone(),
-            text: Some(format!("Kreditering af {original_no}")),
-        });
-    }
+    let (lines, vat, allocations) = if projection.legacy {
+        legacy_lines(
+            tx,
+            id,
+            journal_id,
+            debtor_id,
+            &debtor,
+            &original_no,
+            &gross,
+            &prior_total,
+            &amount,
+        )?
+    } else {
+        explicit::lines(
+            tx,
+            id,
+            journal_id,
+            debtor_id,
+            &debtor,
+            &original_no,
+            &projection,
+            &prior_total,
+            &amount,
+        )?
+    };
     let company = crate::company_setup::profile(tx)?;
     let year = fiscal_year::for_date(
         Date::parse(&input.issue_date)?,
@@ -214,14 +153,119 @@ pub fn prepare(tx: &Transaction<'_>, input: &Input, now: &str) -> Result<Prepare
     crate::sequences::next(tx, "credit_note", &scope, floor)?;
     let mut cumulative = prior_total.clone();
     cumulative.add(&amount);
+    let mut payload = json!({"type":"credit_note","creditNoteNumber":number,"originalInvoiceNumber":original_no,"originalInvoiceDocumentId":id,"issueDate":input.issue_date,"reason":reason,"currency":"DKK","seller":original["seller"],"buyer":original["buyer"],"grossAmount":wire(&amount)?,"vatAmount":wire(&vat)?,"netAmount":wire(&amount.subtract(&vat))?,"creditedSoFar":wire(&prior_total)?,"remainingAfterThisCredit":wire(&gross.subtract(&cumulative))?,"issuedAt":now});
+    if !projection.legacy {
+        payload["creditAllocations"] = allocations;
+    }
     Ok(Prepared {
-        payload: json!({"type":"credit_note","creditNoteNumber":number,"originalInvoiceNumber":original_no,"originalInvoiceDocumentId":id,"issueDate":input.issue_date,"reason":reason,"currency":"DKK","seller":original["seller"],"buyer":original["buyer"],"grossAmount":wire(&amount)?,"vatAmount":wire(&vat)?,"netAmount":wire(&amount.subtract(&vat))?,"creditedSoFar":wire(&prior_total)?,"remainingAfterThisCredit":wire(&gross.subtract(&cumulative))?,"issuedAt":now}),
+        payload,
         lines,
         original_id: id,
         debtor_id,
         gross: amount,
     })
 }
+#[allow(clippy::too_many_arguments)]
+fn legacy_lines(
+    tx: &Transaction<'_>,
+    id: i64,
+    journal_id: i64,
+    debtor_id: i64,
+    debtor: &str,
+    original_no: &str,
+    gross: &Money,
+    prior_total: &Money,
+    amount: &Money,
+) -> Result<(Vec<JournalLine>, Money, Value), Error> {
+    let mut original_lines = BTreeMap::<(String, Option<String>), (Money, bool)>::new();
+    let mut receivable = Money::default();
+    let mut q=tx.prepare("SELECT a.account_no,a.type,jl.debit_amount,jl.credit_amount,jl.vat_code FROM journal_lines jl JOIN accounts a ON a.id=jl.account_id WHERE jl.journal_entry_id=?1 ORDER BY jl.id").map_err(invalid)?;
+    let mut rows = q.query([journal_id]).map_err(invalid)?;
+    while let Some(r) = rows.next().map_err(invalid)? {
+        let no: String = r.get(0).map_err(invalid)?;
+        let kind: String = r.get(1).map_err(invalid)?;
+        let debit = legacy_money(r.get_ref(2).map_err(invalid)?)?;
+        let credit = legacy_money(r.get_ref(3).map_err(invalid)?)?;
+        let code: Option<String> = r.get(4).map_err(invalid)?;
+        if no == debtor {
+            if credit != Money::default() {
+                return Err(refused("invalid original receivable direction"));
+            }
+            receivable.add(&debit);
+            continue;
+        }
+        if debit != Money::default()
+            || credit == Money::default()
+            || !((kind == "income" && code.as_deref() == Some("DK_SALE_25"))
+                || (kind == "vat" && code.is_none()))
+        {
+            return Err(refused(
+                "original journal cannot be credited as a standard domestic sale",
+            ));
+        }
+        let entry = original_lines
+            .entry((no, code))
+            .or_insert((Money::default(), kind == "income"));
+        entry.0.add(&credit);
+    }
+    if &receivable != gross {
+        return Err(refused(
+            "original invoice receivable does not match its posting identity",
+        ));
+    }
+    let mut prior = BTreeMap::<(String, Option<String>), Money>::new();
+    let mut q=tx.prepare("SELECT a.account_no,jl.vat_code,jl.debit_amount,jl.credit_amount FROM credit_note_postings p JOIN journal_lines jl ON jl.journal_entry_id=p.journal_entry_id JOIN accounts a ON a.id=jl.account_id WHERE p.original_invoice_document_id=?1 AND jl.account_id<>?2 ORDER BY jl.id").map_err(invalid)?;
+    let mut rows = q.query(params![id, debtor_id]).map_err(invalid)?;
+    while let Some(r) = rows.next().map_err(invalid)? {
+        let key = (
+            r.get::<_, String>(0).map_err(invalid)?,
+            r.get::<_, Option<String>>(1).map_err(invalid)?,
+        );
+        if !original_lines.contains_key(&key) {
+            return Err(refused(
+                "prior credit uses accounts outside the original invoice",
+            ));
+        }
+        prior.entry(key).or_default().add(
+            &legacy_money(r.get_ref(2).map_err(invalid)?)?
+                .subtract(&legacy_money(r.get_ref(3).map_err(invalid)?)?),
+        );
+    }
+    let counters: Vec<_> = original_lines
+        .iter()
+        .map(|(key, (original, revenue))| Counter {
+            original: original.clone(),
+            prior: prior.get(key).cloned().unwrap_or_default(),
+            revenue: *revenue,
+        })
+        .collect();
+    let allocations = credit_note::allocate(gross, prior_total, amount, &counters)?;
+    let mut lines = vec![JournalLine {
+        account_no: AccountNo::parse(&debtor)?,
+        debit_amount: Money::default(),
+        credit_amount: amount.clone(),
+        vat_code: None,
+        text: Some(format!("Kreditering af {original_no}")),
+    }];
+    let mut vat = Money::default();
+    for (((account, code), (_, revenue)), debit) in original_lines.iter().zip(allocations) {
+        if debit == Money::default() {
+            continue;
+        }
+        if !revenue {
+            vat.add(&debit);
+        }
+        lines.push(JournalLine {
+            account_no: AccountNo::parse(account)?,
+            debit_amount: debit,
+            credit_amount: Money::default(),
+            vat_code: code.clone(),
+            text: Some(format!("Kreditering af {original_no}")),
+        });
+    }
+    Ok((lines, vat, Value::Null))
+}
+
 pub fn register_and_post(
     tx: &Transaction<'_>,
     prepared: Prepared,
@@ -288,7 +332,15 @@ pub fn register_and_post(
 #[cfg(test)]
 mod tests {
     use super::*;
-    fn fixture() -> rusqlite::Connection {
+    pub(super) fn fixture() -> rusqlite::Connection {
+        fixture_with(
+            json!({"issueDate":"2026-10-18","buyer":{"name":"Synthetic Buyer","address":"Synthetic Street 2","vatOrCvr":"DK12345678"},"lines":[{"description":"Synthetic service","quantity":1,"unitPriceExVat":1000}]}),
+            false,
+        )
+    }
+    pub(super) fn fixture_with(mut source: Value, legacy: bool) -> rusqlite::Connection {
+        source["issueDate"] = json!("2026-10-18");
+        source["buyer"] = json!({"name":"Synthetic Buyer","address":"Synthetic Street 2","vatOrCvr":"DK12345678"});
         let mut control = rusqlite::Connection::open_in_memory().unwrap();
         let mut db = rusqlite::Connection::open_in_memory().unwrap();
         crate::fresh::initialize_empty_pair(&mut control, &mut db, "Synthetic Seller").unwrap();
@@ -296,8 +348,17 @@ mod tests {
             .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
             .unwrap();
         tx.execute_batch("UPDATE companies SET address='Synthetic Street 1',cvr='87654321',vat_period_type='quarter' WHERE id=1; INSERT INTO accounts(account_no,name,type,normal_balance) VALUES('R','Synthetic receivables','asset','debit'),('S','Synthetic sales','income','credit'),('V','Synthetic VAT','vat','credit'),('B','Synthetic bank','asset','debit'),('R2','Synthetic next receivables','asset','debit');INSERT INTO account_role_mappings(role,account_no,version,confirmed_by) VALUES('debtors','R',1,'synthetic'),('output_vat','V',1,'synthetic');INSERT INTO bank_accounts(slug,name,ledger_account_no) VALUES('synthetic','Synthetic bank','B');").unwrap();
-        let input:rentemester_engine::sales_invoice::Input=serde_json::from_value(json!({"issueDate":"2026-10-18","buyer":{"name":"Synthetic Buyer","address":"Synthetic Street 2","vatOrCvr":"DK12345678"},"lines":[{"description":"Synthetic service","quantity":1,"unitPriceExVat":1000}]})).unwrap();
-        let payload = crate::sales::prepare(&tx, &input, "2026-10-18T12:00:00Z", true).unwrap();
+        let input: rentemester_engine::sales_invoice::Input =
+            serde_json::from_value(source).unwrap();
+        let mut payload = crate::sales::prepare(&tx, &input, "2026-10-18T12:00:00Z", true).unwrap();
+        if legacy {
+            for line in payload["lines"].as_array_mut().unwrap() {
+                let object = line.as_object_mut().unwrap();
+                object.remove("taxClassification");
+                object.remove("vatAmount");
+                object.remove("vatRate");
+            }
+        }
         let invoice = crate::sales::register(
             &tx,
             &payload,
@@ -526,3 +587,6 @@ mod tests {
         );
     }
 }
+
+#[cfg(test)]
+mod tests75;
