@@ -53,6 +53,8 @@ pub fn run(args: &[String]) -> Result<Value, Failure> {
             "transport":"HTTPS only unless --allow-loopback-http and literal loopback IP; --server is an origin without path/query/userinfo. No local fallback, redirects, ambient proxies or automatic retries.",
             "exitCodes":{"0":"success","1":"server/transport/protocol failure","2":"usage/configuration failure"},
             "example":"rentemester-rust remote --server http://127.0.0.1:8080 --allow-loopback-http --cookie-file /private/session.cookie trial-balance --company example --year 2026"});
+        help["documentPdf"]=json!({"usage":"parse-document --company SLUG --id ID --confirm; document-parse-status --company SLUG --id ID; document-parsed-text --company SLUG --id ID [--cursor OFFSET] [--limit 1..10]; parse-pending-documents --company SLUG --confirm [--cursor ID] [--limit 1..100]. Explicit --server/--cookie-file required. Text default10 pages, pending default100 documents, cursor default0. No stdin, local parsing, OCR, metadata/accounting inference, keys or retries. Server owns source/evidence integrity and upload/read authority; inspect status after an uncertain parse outcome."});
+        help["commands"].as_array_mut().unwrap().extend(["parse-document","document-parse-status","document-parsed-text","parse-pending-documents"].map(|s|json!(s)));
         help["service_principals"]=crate::service_principals::help();
         help["commands"].as_array_mut().unwrap().extend([json!("overview"),json!("report-export")]);
         help["reportReads"]=json!({"usage":"journal/trial-balance/income-statement/balance/overview --company SLUG [--year LABEL] [--source live|archive]; --account only journal. report-export --company SLUG --report journal|trial-balance|income-statement|balance --format csv|pdf [--year LABEL] [--source live|archive] [--account journalonly]. Read-only, explicit server/cookie. Server owns source selection and unavailable states. Preserve exact decimal strings. Exports return data {ok,contentType,bytes}, max96MiB; no files/client calculations. Omitted source uses server live-first selection; explicit archive never falls back."});
@@ -233,6 +235,9 @@ pub fn run(args: &[String]) -> Result<Value, Failure> {
         return crate::bank_reconciliation::run(command,&flags,allow_http,confirmed,preview_reviewed);
     }
     if flags.contains_key("--bank-transaction-id") {return Err(invalid("bank-transaction-id allowed only on reconciliation candidates"));}
+    if crate::document_pdf::accepts(command) {
+        return crate::document_pdf::run(command,&flags,allow_http,confirmed,preview_reviewed);
+    }
     if matches!(command,"ingest-document"|"document-original") {
         return crate::documents::run(command,&flags,allow_http,confirmed,preview_reviewed);
     }

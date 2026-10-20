@@ -134,6 +134,7 @@ pub fn list() -> Value {
     tools.extend(crate::annual_reports::tools());
     tools.extend(crate::reviewed_bookkeeping::tools());
     tools.extend(crate::documents::tools());
+    tools.extend(crate::document_pdf::tools());
     tools.extend(crate::bank_reconciliation::tools());
     tools.extend(crate::bank_correction::tools());
     tools.extend(crate::recurring_invoices::tools());
@@ -276,6 +277,7 @@ pub async fn call(api: &ApiClient, name: &str, args: Value) -> Result<Value, &'s
             crate::bank_correction::call(api,name,args).await?
         },
         "bank_reconciliation_candidates" | "bank_reconciliation_link" => crate::bank_reconciliation::call(api,name,args).await?,
+        "parse_document" | "document_parse_status" | "document_parsed_text" | "parse_pending_documents" => crate::document_pdf::call(api,name,args).await?,
         "ingest_document" | "document_original" => crate::documents::call(api,name,args).await?,
         name if crate::reviewed_bookkeeping::accepts(name) => crate::reviewed_bookkeeping::call(api,name,args).await?,
         "workspace_backup" => crate::portable_backup::call(api,args).await?,

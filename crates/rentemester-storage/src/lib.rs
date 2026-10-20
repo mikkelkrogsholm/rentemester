@@ -1,5 +1,6 @@
 //! Source-read-only reports/rehearsals and caller-owned transactional primitives.
 pub mod document_scan;
+pub mod document_pdf;
 pub mod corporate_records;
 pub mod company_knowledge;
 pub mod parties;

@@ -19,6 +19,7 @@ mod bank_reconciliation;
 mod budget;
 mod company_setup;
 mod documents;
+mod document_pdf;
 mod gdpr;
 mod dimensions;
 mod exceptions;
@@ -67,6 +68,7 @@ struct Product {
     origin: String,
     authority: String,
     workers: Arc<Semaphore>,
+    pdf_workers: Arc<Semaphore>,
 }
 pub fn router(native: Arc<Backend>, origin: &str) -> Router {
     let state = Product {
@@ -76,6 +78,7 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
         // The registry starts five independent reads; retain bounded headroom
         // for its normal reads and the current-session check.
         workers: Arc::new(Semaphore::new(8)),
+        pdf_workers: Arc::new(Semaphore::new(4)),
     };
     Router::new()
         .route("/api/companies/{slug}/opening-balance",get(opening_balance::handle))
@@ -363,6 +366,10 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
         )
         .route("/api/companies/{slug}/bank/import", post(bank::handle))
         .route("/api/companies/{slug}/documents", get(documents::list))
+        .route("/api/companies/{slug}/documents/{id}/parse",post(document_pdf::handle))
+        .route("/api/companies/{slug}/documents/{id}/parse-status",get(document_pdf::handle))
+        .route("/api/companies/{slug}/documents/{id}/parsed-text",get(document_pdf::handle))
+        .route("/api/companies/{slug}/documents/parse-pending",post(document_pdf::handle))
         .route(
             "/api/companies/{slug}/documents/ingest",
             post(documents::ingest),

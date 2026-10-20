@@ -1251,6 +1251,7 @@ impl Owner {
 mod tests;
 
 mod company_catalog;
+mod document_pdf;
 
 mod portable_backup;
 impl Owner {

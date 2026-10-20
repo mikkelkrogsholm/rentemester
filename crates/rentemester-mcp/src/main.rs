@@ -24,6 +24,7 @@ mod recurring_invoices;
 mod bank_correction;
 mod bank_reconciliation;
 mod documents;
+mod document_pdf;
 mod reviewed_bookkeeping;
 mod annual_reports;
 mod bank_payables;
