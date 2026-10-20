@@ -2,10 +2,11 @@
 use crate::{
     access::Permission,
     control_fence::{
-        self, Committed, CompanySelection, CookieAuthorization, Failure, SessionRequirement,
+        self, Committed, CompanySelection, CookieAuthorization, Failure, FailureStage,
+        SessionRequirement,
     },
 };
-use rentemester_engine::{Error, document::Metadata};
+use rentemester_engine::{Error, document::Metadata, document_scan::ScanEvidence};
 use rentemester_runtime::{
     auth::{Clock, VerifiedCookie},
     document::Prepared,
@@ -28,6 +29,175 @@ pub struct Context<'a> {
     pub cookie: &'a VerifiedCookie,
     pub clock: &'a dyn Clock,
     pub selection: CompanySelection<'a>,
+}
+/// Immutable operator policy, never decoded from upload metadata.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum ScanPolicy {
+    Off,
+    Required,
+}
+/// One authorized in-memory request. It cannot be reconstructed from HTTP or
+/// cloned to change the selected source between scan and publication.
+pub struct Admission {
+    file: Prepared,
+    metadata: Metadata,
+    workspace: String,
+    slug: String,
+    subject: String,
+    ledger: String,
+    policy: ScanPolicy,
+}
+impl Admission {
+    pub fn file(&self) -> &Prepared {
+        &self.file
+    }
+    fn validate_binding(
+        &self,
+        workspace: &str,
+        slug: &str,
+        subject: &str,
+        ledger: &str,
+    ) -> Result<(), Error> {
+        if workspace != self.workspace
+            || slug != self.slug
+            || subject != self.subject
+            || ledger != self.ledger
+        {
+            return Err(Error::new(
+                "document_admission_changed",
+                "document subject, selection or ledger changed during scanning",
+            ));
+        }
+        Ok(())
+    }
+    fn validate_scan(&self, scan: Option<&ScanEvidence>) -> Result<(), Error> {
+        match (self.policy, scan) {
+            (ScanPolicy::Off, None) => Ok(()),
+            (ScanPolicy::Required, Some(evidence)) => {
+                evidence.validate()?;
+                if evidence.sha256 != self.file.hash() {
+                    return Err(unavailable());
+                }
+                Ok(())
+            }
+            _ => Err(Error::new(
+                "document_scan_policy_mismatch",
+                "document scan evidence does not satisfy the admitted operator policy",
+            )),
+        }
+    }
+}
+fn failed(code: &'static str, reusable: bool) -> Failure {
+    Failure {
+        stage: FailureStage::NotCommitted,
+        error: Error::new(code, "document admission refused before publication"),
+        control_reusable: reusable,
+        company_reusable: reusable,
+    }
+}
+fn ledger_identity(company: &Connection) -> Result<String, Error> {
+    company
+        .query_row(
+            "SELECT ledger_uuid FROM ledger_identity WHERE id=1",
+            [],
+            |row| row.get(0),
+        )
+        .map_err(|_| unavailable())
+}
+/// Authorize before provider I/O; return with no open SQL transaction or effects.
+pub fn prepare_ingest(
+    control: &mut Connection,
+    company: &mut Connection,
+    context: Context<'_>,
+    file: Prepared,
+    metadata: Metadata,
+    policy: ScanPolicy,
+) -> Result<Committed<Admission>, Failure> {
+    let workspace = context.selection.workspace.to_owned();
+    let slug = context.selection.slug.to_owned();
+    let prepared = control_fence::execute_cookie_subject(
+        control,
+        company,
+        CookieAuthorization {
+            cookie: context.cookie,
+            clock: context.clock,
+            requirement: SessionRequirement::Current,
+        },
+        context.selection,
+        Permission::CompanyDocumentsUpload,
+        |tx, subject| {
+            metadata.validate()?;
+            let ledger = ledger_identity(tx)?;
+            Ok(Admission {
+                file,
+                metadata,
+                workspace,
+                slug,
+                subject: subject.into(),
+                ledger,
+                policy,
+            })
+        },
+    )?;
+    if !prepared.control_reusable || !control.is_autocommit() || !company.is_autocommit() {
+        return Err(failed("document_admission_unconfirmed", false));
+    }
+    Ok(prepared)
+}
+/// Consume exactly the admitted bytes after a fresh authorization and physical
+/// observation. The trusted HTTP adapter performs all scanner I/O between calls.
+pub fn finish_ingest(
+    control: &mut Connection,
+    company: &mut Connection,
+    guard: &mut NamespaceGuard,
+    context: Context<'_>,
+    admission: Admission,
+    scan: Option<ScanEvidence>,
+) -> Result<Committed<Value>, Failure> {
+    guard
+        .ensure_connections(control, company)
+        .map_err(|_| failed("document_namespace_changed", false))?;
+    let workspace = context.selection.workspace;
+    let slug = context.selection.slug;
+    control_fence::execute_cookie_subject(
+        control,
+        company,
+        CookieAuthorization {
+            cookie: context.cookie,
+            clock: context.clock,
+            requirement: SessionRequirement::Current,
+        },
+        context.selection,
+        Permission::CompanyDocumentsUpload,
+        |tx, subject| {
+            admission.validate_binding(workspace, slug, subject, &ledger_identity(tx)?)?;
+            admission.validate_scan(scan.as_ref())?;
+            admission.metadata.validate()?;
+            let today = rentemester_runtime::posting_time::latest_date(
+                context.clock.now_unix_ms().map_err(|_| {
+                    Error::new("invalid_auth_clock", "trusted document clock unavailable")
+                })?,
+                0,
+            )
+            .map_err(|error| Error::new(error.code(), "trusted document date unavailable"))?;
+            let path = guard
+                .publish_document(&admission.file)
+                .map_err(|_| unavailable())?;
+            rentemester_storage::documents::register_scanned(
+                tx,
+                rentemester_storage::documents::Original {
+                    filename: admission.file.filename(),
+                    hash: admission.file.hash(),
+                    path: &path,
+                    mime: admission.file.mime(),
+                },
+                &admission.metadata,
+                subject,
+                &today,
+                scan.as_ref(),
+            )
+        },
+    )
 }
 pub fn ingest(
     control: &mut Connection,
@@ -122,3 +292,6 @@ pub fn list(
         |tx, _| rentemester_storage::documents::list(tx, slug),
     )
 }
+
+#[cfg(test)]
+mod tests;
