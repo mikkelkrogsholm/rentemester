@@ -99,3 +99,17 @@ export type VatResponse = {
   ok: true;
   vat: CompanyVat;
 };
+
+/** Read-only OSS sales base, without country/rate calculation or submission. */
+export type OssReport = {
+  ok: boolean;
+  appliedRules: string[];
+  periodStart: string;
+  periodEnd: string;
+  ossConsumerSalesBase: number;
+  entryCount: number;
+  submission: false;
+  vatReport: Record<string, unknown>;
+  warnings: string[];
+  errors: string[];
+};

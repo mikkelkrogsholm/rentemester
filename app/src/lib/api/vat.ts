@@ -1,7 +1,10 @@
 import type { VatResponse } from "../types";
+import type { OssReport } from "../types/vat";
 import { request, type ReadRequestOptions } from "./_shared";
 
 export const vatApi = {
+  ossReport: (slug: string, from: string, to: string, options?: ReadRequestOptions) =>
+    request<OssReport>(`/api/companies/${encodeURIComponent(slug)}/oss-report?${new URLSearchParams({ from, to })}`, options),
   vat: (slug: string, year?: string, options?: ReadRequestOptions) =>
     request<VatResponse>(
       `/api/companies/${encodeURIComponent(slug)}/vat${

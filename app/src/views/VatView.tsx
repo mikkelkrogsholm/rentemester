@@ -17,9 +17,12 @@ import type { CompanyVat, CompanyVatRegistered, VatRubrikker } from "../lib/type
 import { Banner, ErrorState, Loading } from "../components/Feedback";
 import { CompanyNav, useCompanyYear } from "../components/CompanyNav";
 import { ConfirmDialog } from "../components/ConfirmDialog";
+import { useOptionalAuth } from "../lib/auth-context";
+import { OssReportPanel } from "./OssReportPanel";
 
 export function VatView() {
   const { slug = "" } = useParams();
+  const native = useOptionalAuth()?.backend === "rust";
   const { year, setYear } = useCompanyYear();
   const state = useAsync<CompanyVat>((signal) => api.vat(slug, year, { signal }), [slug, year]);
   // True while the close-period ConfirmDialog is open (#287).
@@ -142,6 +145,8 @@ export function VatView() {
         selectedYear={v.selectedYear}
         onYearChange={setYear}
       />
+
+      {native && <OssReportPanel key={slug} slug={slug} />}
 
       {closedNotice && <Banner kind="success">{closedNotice}</Banner>}
       {v.periodActionsAvailable === false && <Banner kind="warning">Momsoverblikket kan vises og hentes som PDF. Periodelukning og indberetning er endnu ikke tilgængelige.</Banner>}

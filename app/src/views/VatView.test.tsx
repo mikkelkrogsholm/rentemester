@@ -2,6 +2,7 @@ import { describe, expect, test, vi } from "bun:test";
 import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { VatView } from "./VatView";
+import { AuthProvider } from "../lib/auth-context";
 import { renderAt } from "../test/render";
 import { vat, vatNotRegistered, mockFetch } from "../test/fixtures";
 
@@ -463,4 +464,17 @@ describe("VatView — Moms", () => {
     expect(pasted).not.toMatch(/\./);
     expect(pasted).not.toMatch(/kr/i);
   });
+});
+
+
+test("OSS panel appears only on the native VAT backend", async () => {
+  mockFetch(route());
+  renderAt(<AuthProvider hosted={false} backend="rust"><VatView /></AuthProvider>, { route: "/companies/acme-aps/moms", path: "/companies/:slug/moms" });
+  expect(await screen.findByRole("region", { name: "OSS-rapport" })).toBeInTheDocument();
+  expect(screen.getByRole("button", { name: "Vis OSS-rapport" })).toBeInTheDocument();
+});
+test("legacy VAT backend has no OSS report request or controls", async () => {
+  mockFetch(route()); renderView();
+  await screen.findByRole("heading", { name: "Moms", level: 1 });
+  expect(screen.queryByRole("region", { name: "OSS-rapport" })).not.toBeInTheDocument();
 });

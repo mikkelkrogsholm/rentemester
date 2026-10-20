@@ -15,6 +15,7 @@ export function ManualJournalForm({ slug, currency, options, onSaved, onClose }:
   const [debit, setDebit] = useState("");
   const [credit, setCredit] = useState("");
   const [amount, setAmount] = useState("");
+  const [classification, setClassification] = useState("none");
   const [confirming, setConfirming] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const key = useRef(crypto.randomUUID());
@@ -29,13 +30,22 @@ export function ManualJournalForm({ slug, currency, options, onSaved, onClose }:
   };
   const review = (event: FormEvent) => {
     event.preventDefault(); setError(null);
-    try { canonicalAmount(); if (debit === credit) throw new Error("Vælg to forskellige konti."); setConfirming(true); }
+    try {
+      canonicalAmount();
+      if (debit === credit) throw new Error("Vælg to forskellige konti.");
+      if (classification === "oss") {
+        if (currency !== "DKK") throw new Error("OSS-postering understøttes her kun i DKK.");
+        if (!documentId) throw new Error("Vælg et bilag til OSS-salget.");
+        if (accounts.find((account) => account.accountNo === credit)?.type !== "income") throw new Error("Vælg en indtægtskonto i kredit til OSS-salget.");
+      }
+      setConfirming(true);
+    }
     catch (cause) { setError(cause instanceof Error ? cause.message : "Kontrollér posteringen."); }
   };
   const post = async () => {
     await request(`/api/companies/${encodeURIComponent(slug)}/manual-journal`, { method: "POST", body: JSON.stringify({ confirm: true, input: {
       format: "rentemester-manual-journal-post/1", expectedRuleVersion: options.ruleVersion, idempotencyKey: key.current,
-      request: { transactionDate: date, text, currency, ...(documentId ? { documentId } : {}), lines: [{ accountNo: debit, debitAmount: canonicalAmount() }, { accountNo: credit, creditAmount: canonicalAmount() }] },
+      request: { transactionDate: date, text, currency, ...(documentId ? { documentId } : {}), lines: [{ accountNo: debit, debitAmount: canonicalAmount() }, { accountNo: credit, creditAmount: canonicalAmount(), ...(classification === "oss" ? { vatCode: "OSS_EU_CONSUMER" } : {}) }] },
     } }) });
     onSaved(); onClose();
   };
@@ -48,9 +58,10 @@ export function ManualJournalForm({ slug, currency, options, onSaved, onClose }:
       {docs.error && <p role="alert">Bilagslisten kunne ikke hentes: {docs.error}</p>}
       <Field label="Debetkonto"><Select required value={debit} onChange={(e) => setDebit(e.target.value)}><option value="">Vælg konto</option>{accounts.map((a) => <option key={a.accountNo} value={a.accountNo}>{a.accountNo} · {a.name}</option>)}</Select></Field>
       <Field label="Kreditkonto"><Select required value={credit} onChange={(e) => setCredit(e.target.value)}><option value="">Vælg konto</option>{accounts.map((a) => <option key={a.accountNo} value={a.accountNo}>{a.accountNo} · {a.name}</option>)}</Select></Field>
+      <Field label="Momsklassifikation"><Select value={classification} onChange={(e) => setClassification(e.target.value)}><option value="none">Ingen</option><option value="oss">OSS-salg til EU-forbruger</option></Select></Field>
       <Field label={`Beløb i ${currency}`}><Input required inputMode="decimal" value={amount} onChange={(e) => setAmount(e.target.value)} /></Field>
       <Button type="submit">Gennemse postering</Button><Button variant="secondary" onClick={onClose}>Annullér</Button>
     </form>
-    {confirming && <ConfirmDialog title="Bogfør postering" body={<p>{date} · {text}<br />Debet {debit}, kredit {credit}: {canonicalAmount()} {currency}.</p>} confirmLabel="Bogfør postering" operationKey={`manual-post:${key.current}`} onConfirm={post} onClose={() => setConfirming(false)} onRefresh={onSaved} />}
+    {confirming && <ConfirmDialog title="Bogfør postering" body={<p>{date} · {text}<br />Debet {debit}, kredit {credit}: {canonicalAmount()} {currency}.<br />Momsklassifikation: {classification === "oss" ? "OSS-salg til EU-forbruger" : "Ingen"}.</p>} confirmLabel="Bogfør postering" operationKey={`manual-post:${key.current}`} onConfirm={post} onClose={() => setConfirming(false)} onRefresh={onSaved} />}
   </section>;
 }

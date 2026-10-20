@@ -38,7 +38,7 @@ export type JournalEntry = {
   documentNo: string | null;
 };
 
-export type NativePostingOptions = { ruleVersion: string; accounts: Array<{ accountNo: string; name: string; active: boolean; allowDirectPosting: boolean }> };
+export type NativePostingOptions = { ruleVersion: string; accounts: Array<{ accountNo: string; name: string; type?: string; active: boolean; allowDirectPosting: boolean }> };
 
 export type ArchiveJournalEntry = Omit<JournalEntry,"id"> & {id:null;sourceId:string};
 
