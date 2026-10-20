@@ -2012,3 +2012,26 @@ Gemte resultater kan læses efter gendannelse uden at starte parseren.
 SQL-evidenstamper og fravær af processtart ved cache dækkes af fokuserede
 tests; de er ikke rapporteret som instrumenterede målinger i brugerprøven.
 Installeret desktop og samlet distribution er fortsat åbne.
+
+
+## Åbningsbalance og datakilde i desktopappen
+
+Desktopappen har nu en særskilt **Åbningsbalance**-skærm, også tilgængelig
+med ⌘3. Vælg selv overtagelsesdato, konti, debet og kredit samt eventuelle
+kildehenvisninger. Appen viser serverens plan til gennemgang, før du kan
+bekræfte bogføringen. Kvitteringen kontrolleres mod den registrerede
+åbningsbalance og den daterede journalpostering. Luk derefter skærmen og
+vælg **Rapporter** for at se regnskabet.
+
+Rapporterne skelner mellem aktive og historiske regnskabsår, også når de
+har samme årstal. Præcise decimalstrenge bevares, og manglende perioder,
+sammenligningstal og klassifikation vises som utilgængelige. Rapportens
+dækning fra overtagelsesdatoen fremgår af serverens oplysninger.
+
+Et uafklaret bogføringsforsøg gemmes privat med den oprindelige anmodning.
+Genåbning sender intet automatisk. Genlæs udfaldet, før du eventuelt vælger
+en særskilt bekræftet gentagelse med præcis samme anmodning og nøgle.
+
+Group67 er implementeret og bygget; 202 native tests består med én
+eksisterende ignoreret test. Den faktiske gennemgang i installeret app
+mod både lokal og ekstern server samt genstart er fortsat åben.

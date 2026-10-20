@@ -7,7 +7,7 @@
   "state": "Group66 actual PASS at21d1c245: ordinary MFA public upload of3synthetic PDFs without implicit parsing; explicit native PDFium text/612x792/real character geometry, verified status/paginated text, cached result and pending no_text/malformed retained results. Reviewer403 creates no attempt. HTTP/CLI/MCP200 parity and existing web manual10exempt expense create exactly1journal only after explicit review. Stopped physical-source tamper gives409 PDF_EVIDENCE_TAMPERED on reads and source-compatible committed200/okfalse/source_unavailable parse failure with exactly1failedattempt/NULLresult and no new result/book effects; exact original repaired. FreshMFA restart, four independently verified signed snapshots and signed source-free fresh-owner restore after source/signer/workerbundle deletion preserve exact originals,3results/pages/attempts/journal and prior audit prefix; targetreopen PASS without worker config or reparse. All3binary/fullweb/fullworkerbundle hashes independently matched atqualification, ownedcleanuptrue. Firstactual helper wrongly required4xx for committed sourcefailure; narrow assertion+exact signedfailedattempt correction then wholePASS, no product weakening. Focused tests cover legacy hashes, SQLtamper, rollback, concurrent winner/current revocation and child timeout/IO/crash/RSS; actual0childcache and actualSQLtamper not claimed. Mac RSS512MiB sampled10ms may overshoot; Linux/installed packaging/nativefinancialGUI remain open. Stop66perfection. Next67 native reviewed openingbalance through truthful source-aware reports; fullmission/epic672 OPEN.",
   "issues_closed": [],
   "next": [
-    "Next67 installed desktop J02: implement explicit reviewed opening-balance form, canonical keyed receipt/recovery and truthful source-aware exact-money financial report readback. Parallel isolated state/attempt, native UI and report tracks; root integration/acceptance. Mac currently locked per CUA; human unlock requested, no blind focus retry.",
+    "Current67 native openingbalance and source-aware report implementation integrated b9635c60; full native202PASS/1existingignored and appbuildPASS, readiness /tmp/rentemester-rust-reports/native-opening-readiness67.json. Actual ordinary-owner local/remote GUI+restart remains unqualified because CUA reports locked Mac; unlock requested. No repeated blind keyboard/focus route. Next source work should complete native company/archive onboarding, annual readiness and independent backup verification.",
     "Complete native company/import onboarding, annual obligations/review and independent backup verification, then remaining transfer/automation/distribution and TypeScript retirement gates.",
     "Optional configured HTTPS invoice extraction is a real remaining source capability; preserve its evidence/conflict lifecycle separately without inventing a manual resolution UI or blocking ordinary manual accounting."
   ],
@@ -1403,6 +1403,24 @@
         "linux_qualified": false,
         "mac_memory": "512MiB RSS sampled every10ms, possible overshoot; no hard address-space cap"
       }
+    },
+    "platform67_native_opening_readiness": {
+      "path": "/tmp/rentemester-rust-reports/native-opening-readiness67.json",
+      "sha256": "cc42804da4dae564d00b858b00f8a9bf0fa23147b245ec10b13da31f6b690673",
+      "state": "implemented_and_built_native_gui_unqualified",
+      "source_revision": "b9635c60",
+      "native_binary_sha256": "6b02a575ce2c7393f3efe549a811a667c14dbf28359dfd81a835971500dc8b23",
+      "tests": {
+        "passed": 202,
+        "ignored": 1,
+        "log": "/tmp/rm67-root-native-tests.log"
+      },
+      "build": {
+        "exit": 0,
+        "log": "/tmp/rm67-root-native-build.log"
+      },
+      "actual_gui": false,
+      "installed_bundle": false
     }
   },
   "verified_history": [
@@ -2054,6 +2072,17 @@
           "diagnosis": "Helper incorrectly required4xx for source-compatible committed parse failure200/okfalse; corrected21d1c245 to require exact error and one signed failure-only attempt."
         }
       ]
+    },
+    {
+      "delivery": "Group67 native reviewed opening adoption and source-aware reports",
+      "owner": "root main/navigation/integration; rust_accruals state/privateattempt; rust_client_cli GPUI form/review/receipt/recovery; rust_budget native exact-money/source/null report rendering",
+      "status": "IMPLEMENTED b9635c60; native202testsPASS/1existingignored and appbuildPASS. Source/money/attempt/current-binding tests qualified; actual local/remote ordinary-owner GUI+restart not qualified while Maclocked. No complete/fullmission claim.",
+      "acceptance": "Ordinary native owner explicitly reviews and posts one dated opening, verifies canonical receipt/journal, reads truthful live/archive reports; original pending exact key/body persisted before I/O and never automatically replayed; local and remote restart no duplicate.",
+      "pending_root_work": [
+        "Actual local and remote native GUI acceptance with normal owner MFA and restart",
+        "Fresh isolated app bundle/install and broader distribution qualification remain separate"
+      ],
+      "readiness": "/tmp/rentemester-rust-reports/native-opening-readiness67.json"
     }
   ],
   "integrated_pending_browser": [
@@ -2062,7 +2091,9 @@
     "Other hosted jobs/provider effects and remaining J06 receipt families/rollback/old-software boundaries remain incomplete; the bounded Group56 managed handoff is verified.",
     "Group53 actual V3 recovery uses one signed archive and one fresh restore; second restore/reconsent/new worker, sleep/DST and global single-use are not qualified."
   ],
-  "pending_deliveries": [],
+  "pending_deliveries": [
+    "Group67 native GUI local/remote opening→receipt→reports+restart acceptance; code/tests/build ready, Macunlock pending"
+  ],
   "completion_gates": [
     "All epic672 child acceptance remains open until scope-matched evidence; current increments are progress only.",
     "J01/J02/J04 core owner tasks through installed native UI without JSON/CLI; current native pointer/scroll qualification remains unavailable.",
