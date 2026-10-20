@@ -1,8 +1,23 @@
 # Rentemester appikon, første version
 
-`rentemester-app-icon-v1.png` er et separat designforslag: et geometrisk,
-elfenbensfarvet R på en mørkegrøn flade med afrundede hjørner. Filen er endnu
-ikke koblet til desktop-pakken eller webmanifestet. Eksisterende ikoner er bevaret.
+`rentemester-app-icon-v1.png` er den godkendte, uændrede rastermaster: et
+geometrisk, elfenbensfarvet R på en mørkegrøn flade med afrundede hjørner.
+`rentemester-app-icon-v1.icns` er en afledt macOS-repræsentation af denne master.
+
+Genopret ICNS på macOS med `sh scripts/rust/build-app-icon.sh`. Scriptet bruger
+`sips` til 16, 32, 128, 256 og 512 px samt hver størrelses Retina-variant og
+`iconutil` til ICNS. Det ændrer ikke PNG-masteren eller de ældre filer i
+`assets/brand/`; der fremstilles intet nyt design.
+
+`scripts/release/assemble-native-macos.py` vælger denne ICNS som standard og
+kopierer den til `Contents/Resources/Rentemester.icns`. `Contents/Info.plist`
+henviser til filen med `CFBundleIconFile`. En eksplicit `--icon` kan fortsat
+vælge en anden fil. Desktop-byggescriptet bruger nu samlerens standardvalg.
+Webmanifestet er ikke ændret.
+
+ICNS-format, størrelser og pakkens fil-/hashreference kan kontrolleres uden at
+starte appen. Dette dokumenterer ikke visning i Finder/Dock, signering,
+notarisering, installation eller et gennemført native brugerforløb.
 
 Fremstillet med det indbyggede `image_gen`-værktøj, 19. oktober 2026.
 

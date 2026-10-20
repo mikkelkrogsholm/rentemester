@@ -26,7 +26,7 @@ desktop_toolchain=$(rustc +stable --version)
 architecture=$(uname -m)
 if [ -n "$target" ]; then architecture=${target%%-*}; fi
 set -- --root "$root" --target-dir "$target_dir" --profile "$profile" --target "$target" \
-  --web "$web_source" --icon "$root/assets/brand/rentemester-app-icon.icns" \
+  --web "$web_source" \
   --output "$root/target/native/Rentemester Desktop.app" --revision "$revision" --version "$version" \
   --architecture "$architecture" --server-toolchain "$server_toolchain" --desktop-toolchain "$desktop_toolchain"
 if [ -n "$(git status --porcelain -- . ':!graphify-out')" ]; then set -- "$@" --source-dirty; fi

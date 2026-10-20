@@ -13,6 +13,7 @@ import tempfile
 import unittest
 
 BUNDLE_ID = "dk.rentemester.desktop"
+APPROVED_ICON = Path("assets/branding/rentemester-app-icon-v1.icns")
 
 
 def regular(path):
@@ -63,7 +64,7 @@ def assemble(args):
     for source in web_files:
         if source.is_symlink() or not (source.is_dir() or source.is_file()):
             raise ValueError("unsupported web artifact: " + str(source))
-    icon = regular(Path(args.icon))
+    icon = regular(Path(args.icon) if args.icon else root / APPROVED_ICON)
     if not re.fullmatch(r"[0-9a-f]{40}", args.revision):
         raise ValueError("source revision must be a full Git SHA")
     if not re.fullmatch(r"[0-9]+(?:\.[0-9]+){0,2}", args.version):
@@ -164,6 +165,32 @@ class AssemblyFixture(unittest.TestCase):
             for entry in manifest["files"]:
                 self.assertEqual(entry["sha256"], digest(output / entry["path"]))
             self.assertTrue((output / "Contents/MacOS/rentemester-server").stat().st_mode & stat.S_IXUSR)
+            # The default must select the approved artwork, not a stale legacy icon.
+            approved = root / APPROVED_ICON
+            approved.parent.mkdir(parents=True)
+            approved.write_bytes((Path(__file__).resolve().parents[2] / APPROVED_ICON).read_bytes())
+            self.assertEqual((output / "Contents/Resources/Rentemester.icns").read_bytes(), icon.read_bytes())
+            args.icon = None
+            assemble(args)
+            self.assertEqual((output / "Contents/Resources/Rentemester.icns").read_bytes(), approved.read_bytes())
+            with (output / "Contents/Info.plist").open("rb") as source:
+                info = plistlib.load(source)
+            self.assertEqual(info["CFBundleIconFile"], "Rentemester.icns")
+            manifest = json.loads((output / "Contents/Resources/native-artifact-manifest.json").read_text())
+            icon_entry = next(e for e in manifest["files"] if e["path"] == "Contents/Resources/Rentemester.icns")
+            self.assertEqual(icon_entry["sha256"], digest(approved))
+            self.assertEqual(icon_entry["size"], approved.stat().st_size)
+            # A caller cannot replace an unrelated bundle merely by using its path.
+            info_path = output / "Contents/Info.plist"
+            original_info = info_path.read_bytes()
+            info["CFBundleIdentifier"] = "invalid.unrelated.fixture"
+            info_path.write_bytes(plistlib.dumps(info))
+            protected_info = info_path.read_bytes()
+            with self.assertRaisesRegex(ValueError, "unrelated existing bundle"):
+                assemble(args)
+            self.assertEqual(info_path.read_bytes(), protected_info)
+            self.assertEqual((output / "Contents/Resources/Rentemester.icns").read_bytes(), approved.read_bytes())
+            info_path.write_bytes(original_info)
             before = (output / "Contents/Resources/native-artifact-manifest.json").read_bytes()
             (web / "bad-link").symlink_to(icon)
             with self.assertRaises(ValueError):
@@ -186,7 +213,7 @@ def main():
     parser.add_argument("--profile", default="dev")
     parser.add_argument("--target", default="")
     parser.add_argument("--web")
-    parser.add_argument("--icon")
+    parser.add_argument("--icon", help="Explicit ICNS override; default: <root>/" + str(APPROVED_ICON))
     parser.add_argument("--output")
     parser.add_argument("--revision")
     parser.add_argument("--version")
@@ -198,7 +225,7 @@ def main():
     if args.self_test:
         suite = unittest.defaultTestLoader.loadTestsFromTestCase(AssemblyFixture)
         raise SystemExit(0 if unittest.TextTestRunner(verbosity=2).run(suite).wasSuccessful() else 1)
-    required = ("root", "target_dir", "web", "icon", "output", "revision", "version", "architecture", "server_toolchain", "desktop_toolchain")
+    required = ("root", "target_dir", "web", "output", "revision", "version", "architecture", "server_toolchain", "desktop_toolchain")
     if any(not getattr(args, key) for key in required):
         parser.error("assembly requires " + ", ".join("--" + key.replace("_", "-") for key in required))
     try:
