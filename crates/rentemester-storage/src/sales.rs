@@ -51,10 +51,18 @@ pub fn create_customer(
     )?;
     Ok(json!({"id":id}))
 }
-fn normalized_ean(value:Option<&str>)->Result<Option<String>,Error>{
-    let Some(value)=value.filter(|s|!s.trim().is_empty())else{return Ok(None);};
-    let digits=value.chars().filter(|c|!c.is_whitespace()).collect::<String>();
-    if digits.len()!=13||!digits.bytes().all(|b|b.is_ascii_digit()){return Err(refused("eanNumber must be 13 digits"));}Ok(Some(digits))
+fn normalized_ean(value: Option<&str>) -> Result<Option<String>, Error> {
+    let Some(value) = value.filter(|s| !s.trim().is_empty()) else {
+        return Ok(None);
+    };
+    let digits = value
+        .chars()
+        .filter(|c| !c.is_whitespace())
+        .collect::<String>();
+    if digits.len() != 13 || !digits.bytes().all(|b| b.is_ascii_digit()) {
+        return Err(refused("eanNumber must be 13 digits"));
+    }
+    Ok(Some(digits))
 }
 fn validate_customer(input: &Customer) -> Result<(), Error> {
     sales_invoice::text(&input.name, 256)?;
@@ -249,7 +257,7 @@ pub fn contacts(tx: &Transaction<'_>, slug: &str, today: &str) -> Result<Value, 
     base["vendors"] = json!(vendors);
     Ok(base)
 }
-fn party(input: Option<&Party>, default: &Value) -> Result<Value, Error> {
+fn party(input: Option<&Party>, default: &Value, seller: bool) -> Result<Value, Error> {
     let field = |value: Option<&String>, key: &str| {
         sales_invoice::text(
             value
@@ -260,16 +268,76 @@ fn party(input: Option<&Party>, default: &Value) -> Result<Value, Error> {
             1024,
         )
     };
-    let vat = field(input.and_then(|p| p.vat_or_cvr.as_ref()), "vatOrCvr")?;
-    let digits = vat.strip_prefix("DK").unwrap_or(&vat);
-    if digits.len() != 8 || !digits.bytes().all(|b| b.is_ascii_digit()) {
+    let ean = if seller {
+        None
+    } else {
+        match sales_invoice::recipient_ean(input.and_then(|p| p.ean_number.as_deref()))? {
+            Some(ean) => Some(ean),
+            None => sales_invoice::recipient_ean(default["eanNumber"].as_str())?,
+        }
+    };
+    let public = input
+        .and_then(|p| p.public_recipient)
+        .unwrap_or(ean.is_some());
+    if seller
+        && input.is_some_and(|p| {
+            p.ean_number.is_some()
+                || p.public_recipient.is_some()
+                || p.buyer_reference.is_some()
+                || p.order_reference.is_some()
+        })
+    {
+        return Err(refused("recipient routing fields belong to buyer only"));
+    }
+    if !seller && public && ean.is_none() {
         return Err(refused(
-            "native full domestic invoice requires Danish seller and buyer VAT/CVR identifiers",
+            "public-recipient invoice requires buyer.eanNumber as 13 digits",
         ));
     }
-    Ok(
-        json!({"name":field(input.and_then(|p|p.name.as_ref()),"name")?,"address":field(input.and_then(|p|p.address.as_ref()),"address")?,"vatOrCvr":vat}),
-    )
+    let vat = input
+        .and_then(|p| p.vat_or_cvr.as_deref())
+        .filter(|s| !s.trim().is_empty())
+        .or_else(|| default["vatOrCvr"].as_str())
+        .filter(|s| !s.trim().is_empty())
+        .map(|s| sales_invoice::text(s, 1024))
+        .transpose()?;
+    if let Some(vat) = &vat {
+        let digits = vat.strip_prefix("DK").unwrap_or(vat);
+        if digits.len() != 8 || !digits.bytes().all(|b| b.is_ascii_digit()) {
+            return Err(refused(
+                "native domestic invoice VAT/CVR identifiers must be Danish 8-digit values",
+            ));
+        }
+    } else if seller || ean.is_none() {
+        return Err(refused(
+            "native domestic invoice requires seller CVR and buyer CVR or public EAN",
+        ));
+    }
+    let mut result = json!({"name":field(input.and_then(|p|p.name.as_ref()),"name")?,"address":field(input.and_then(|p|p.address.as_ref()),"address")?});
+    if let Some(vat) = vat {
+        result["vatOrCvr"] = json!(vat);
+    }
+    if !seller {
+        if let Some(ean) = ean {
+            result["eanNumber"] = json!(ean);
+        }
+        result["publicRecipient"] = json!(public);
+        for (key, value) in [
+            (
+                "buyerReference",
+                input.and_then(|p| p.buyer_reference.as_deref()),
+            ),
+            (
+                "orderReference",
+                input.and_then(|p| p.order_reference.as_deref()),
+            ),
+        ] {
+            if let Some(value) = sales_invoice::recipient_reference(value)? {
+                result[key] = json!(value);
+            }
+        }
+    }
+    Ok(result)
 }
 pub fn prepare(
     tx: &Transaction<'_>,
@@ -287,13 +355,14 @@ pub fn prepare(
     let seller = party(
         input.seller.as_ref(),
         &json!({"name":company["name"],"address":company["address"],"vatOrCvr":company["cvr"]}),
+        true,
     )?;
     let mut terms = company["paymentTermsDays"].as_i64().unwrap_or(14);
     let customer = if let Some(id) = input.customer_id {
         if id <= 0 {
             return Err(refused("invalid customer id"));
         }
-        let customer:Value=tx.query_row("SELECT name,address,vat_or_cvr,payment_terms_days FROM customers WHERE id=?1 AND archived=0",[id],|r|Ok(json!({"name":r.get::<_,String>(0)?,"address":r.get::<_,Option<String>>(1)?,"vatOrCvr":r.get::<_,Option<String>>(2)?,"terms":r.get::<_,Option<i64>>(3)?}))).optional().map_err(invalid)?.ok_or_else(||refused("active customer required"))?;
+        let customer:Value=tx.query_row("SELECT name,address,vat_or_cvr,payment_terms_days,ean_number FROM customers WHERE id=?1 AND archived=0",[id],|r|Ok(json!({"name":r.get::<_,String>(0)?,"address":r.get::<_,Option<String>>(1)?,"vatOrCvr":r.get::<_,Option<String>>(2)?,"terms":r.get::<_,Option<i64>>(3)?,"eanNumber":r.get::<_,Option<String>>(4)?}))).optional().map_err(invalid)?.ok_or_else(||refused("active customer required"))?;
         crate::gdpr::require_contact_identity(
             tx,
             "customers",
@@ -308,7 +377,7 @@ pub fn prepare(
     } else {
         Value::Null
     };
-    let buyer = party(input.buyer.as_ref(), &customer)?;
+    let buyer = party(input.buyer.as_ref(), &customer, false)?;
     let issue = rentemester_engine::vat_period::date(&input.issue_date)?;
     let due = match &input.due_date {
         Some(date) => date.clone(),
@@ -634,7 +703,7 @@ pub fn list(
         if overdue > 0 && !open.is_negative() && open != Money::default() {
             overdue_count += 1;
         }
-        rows.push(json!({"documentId":id,"invoiceNo":r.get::<_,String>(1).map_err(invalid)?,"invoiceDate":r.get::<_,String>(2).map_err(invalid)?,"customerName":r.get::<_,Option<String>>(3).map_err(invalid)?,"customerEmail":null,"customerId":payload["customerId"],"buyerEanNumber":null,"buyerPublicRecipient":false,"peppolStatus":null,"lastEmailedAt":null,"lastReminderAt":null,"lastReminderSequence":0,"grossAmount":wire(&gross)?,"openBalance":wire(&open)?,"currency":r.get::<_,String>(4).map_err(invalid)?,"creditableBalance":wire(&creditable)?,"status":if open.is_negative(){"overpaid"}else if open==Money::default(){if refunds!=Money::default(){"refunded"}else if credited==gross && paid==Money::default(){"credited"}else{"paid"}}else if overdue>0{"overdue"}else{"open"},"effectiveDueDate":due,"overdueDays":overdue,"posted":r.get::<_,Option<i64>>(7).map_err(invalid)?.is_some()}));
+        rows.push(json!({"documentId":id,"invoiceNo":r.get::<_,String>(1).map_err(invalid)?,"invoiceDate":r.get::<_,String>(2).map_err(invalid)?,"customerName":r.get::<_,Option<String>>(3).map_err(invalid)?,"customerEmail":null,"customerId":payload["customerId"],"buyerEanNumber":sales_invoice::recipient_ean(payload["buyer"]["eanNumber"].as_str()).ok().flatten(),"buyerPublicRecipient":payload["buyer"]["publicRecipient"]==true || sales_invoice::recipient_ean(payload["buyer"]["eanNumber"].as_str()).ok().flatten().is_some(),"peppolStatus":null,"lastEmailedAt":null,"lastReminderAt":null,"lastReminderSequence":0,"grossAmount":wire(&gross)?,"openBalance":wire(&open)?,"currency":r.get::<_,String>(4).map_err(invalid)?,"creditableBalance":wire(&creditable)?,"status":if open.is_negative(){"overpaid"}else if open==Money::default(){if refunds!=Money::default(){"refunded"}else if credited==gross && paid==Money::default(){"credited"}else{"paid"}}else if overdue>0{"overdue"}else{"open"},"effectiveDueDate":due,"overdueDays":overdue,"posted":r.get::<_,Option<i64>>(7).map_err(invalid)?.is_some()}));
     }
     base["invoices"] = json!(rows);
     base["totalGross"] = wire(&total)?;
@@ -656,6 +725,62 @@ pub fn list(
 mod tests {
     use super::*;
     #[test]
+    fn recipient_overrides_ean_only_identity_and_invalid_fields_are_explicit() {
+        let mut control = rusqlite::Connection::open_in_memory().unwrap();
+        let mut db = rusqlite::Connection::open_in_memory().unwrap();
+        crate::fresh::initialize_empty_pair(&mut control, &mut db, "Synthetic Public Seller")
+            .unwrap();
+        let tx = db
+            .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
+            .unwrap();
+        tx.execute_batch("UPDATE companies SET address='Synthetic Street 74',cvr='87654321',vat_period_type='quarter' WHERE id=1").unwrap();
+        let customer:Customer=serde_json::from_value(json!({"name":"Synthetic Public Buyer","address":"Synthetic Public Street","eanNumber":"5790000000000"})).unwrap();
+        let c = create_customer(&tx, &customer, "synthetic").unwrap();
+        let base = json!({"issueDate":"2026-10-18","customerId":c["id"],"buyer":{"eanNumber":"5790 0000 00001","publicRecipient":false,"buyerReference":" Reviewed æ reference ","orderReference":" Reviewed order "},"lines":[{"description":"Synthetic service","quantity":1,"unitPriceExVat":100}]});
+        let input: Input = serde_json::from_value(base.clone()).unwrap();
+        let snapshot = prepare(&tx, &input, "2026-10-18T12:00:00Z", false).unwrap();
+        assert_eq!(snapshot["buyer"]["name"], "Synthetic Public Buyer");
+        assert_eq!(snapshot["buyer"]["eanNumber"], "5790000000001");
+        assert_eq!(snapshot["buyer"]["publicRecipient"], false);
+        assert_eq!(snapshot["buyer"]["buyerReference"], "Reviewed æ reference");
+        assert_eq!(snapshot["buyer"]["orderReference"], "Reviewed order");
+        assert!(snapshot["buyer"].get("vatOrCvr").is_none());
+        for (field, value) in [
+            ("eanNumber", json!("bad-route")),
+            ("buyerReference", json!(" ")),
+            ("orderReference", json!("bad\nreference")),
+            ("buyerReference", json!("x".repeat(1025))),
+        ] {
+            let mut invalid = base.clone();
+            invalid["buyer"][field] = value;
+            let input: Input = serde_json::from_value(invalid).unwrap();
+            assert!(prepare(&tx, &input, "2026-10-18T12:00:00Z", false).is_err());
+        }
+        let mut no_ean = base.clone();
+        no_ean["customerId"] = Value::Null;
+        no_ean["buyer"] = json!({"name":"Synthetic public buyer","address":"Synthetic public street","publicRecipient":true});
+        assert!(
+            prepare(
+                &tx,
+                &serde_json::from_value(no_ean).unwrap(),
+                "2026-10-18T12:00:00Z",
+                false
+            )
+            .is_err()
+        );
+        tx.execute("UPDATE companies SET cvr=NULL WHERE id=1", [])
+            .unwrap();
+        assert!(prepare(&tx, &input, "2026-10-18T12:00:00Z", false).is_err());
+        let domestic = party(
+            None,
+            &json!({"name":"Synthetic buyer","address":"Synthetic street","vatOrCvr":"12345678"}),
+            false,
+        )
+        .unwrap();
+        assert_eq!(domestic["publicRecipient"], false);
+        assert!(domestic.get("eanNumber").is_none());
+    }
+    #[test]
     fn issue_number_preview_and_explicit_post_keep_the_ledger_balanced() {
         let mut control = rusqlite::Connection::open_in_memory().unwrap();
         let mut db = rusqlite::Connection::open_in_memory().unwrap();
@@ -664,12 +789,19 @@ mod tests {
             .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
             .unwrap();
         tx.execute_batch("UPDATE companies SET address='Synthetic Street 1',cvr='87654321',vat_period_type='quarter' WHERE id=1; INSERT INTO accounts(account_no,name,type,normal_balance) VALUES('R','Synthetic receivable','asset','debit'),('S','Synthetic sale','income','credit'),('V','Synthetic output VAT','vat','credit');INSERT INTO account_role_mappings(role,account_no,version,confirmed_by) VALUES('debtors','R',1,'synthetic'),('output_vat','V',1,'synthetic');").unwrap();
-        let customer:Customer=serde_json::from_value(json!({"name":"Synthetic Buyer","address":"Synthetic Street 2","vatOrCvr":"DK12345678","paymentTermsDays":30})).unwrap();
+        let customer:Customer=serde_json::from_value(json!({"name":"Synthetic Buyer","address":"Synthetic Street 2","vatOrCvr":"DK12345678","eanNumber":"5790000000000","paymentTermsDays":30})).unwrap();
         let customer = create_customer(&tx, &customer, "synthetic").unwrap();
-        let input:Input=serde_json::from_value(json!({"issueDate":"2026-10-18","customerId":customer["id"],"lines":[{"description":"Synthetic service","quantity":2,"unitPriceExVat":500}]})).unwrap();
+        let input:Input=serde_json::from_value(json!({"issueDate":"2026-10-18","customerId":customer["id"],"buyer":{"buyerReference":"Synthetic reviewed buyer ref","orderReference":"Synthetic order 74"},"lines":[{"description":"Synthetic service","quantity":2,"unitPriceExVat":500}]})).unwrap();
         let preview = prepare(&tx, &input, "2026-10-18T12:00:00Z", false).unwrap();
         assert_eq!(preview["invoiceNumber"], "2026-0001");
         assert_eq!(preview["dueDate"], "2026-11-17");
+        assert_eq!(preview["buyer"]["eanNumber"], "5790000000000");
+        assert_eq!(preview["buyer"]["publicRecipient"], true);
+        assert_eq!(
+            preview["buyer"]["buyerReference"],
+            "Synthetic reviewed buyer ref"
+        );
+        assert_eq!(preview["buyer"]["orderReference"], "Synthetic order 74");
         let payload = prepare(&tx, &input, "2026-10-18T12:00:00Z", true).unwrap();
         assert_eq!(payload["invoiceNumber"], preview["invoiceNumber"]);
         let result = register(
@@ -701,12 +833,17 @@ mod tests {
             )
             .unwrap();
         let customer_id = customer["id"].as_i64().unwrap();
-        update_customer(&tx,customer_id,&json!({"name":"Synthetic Renamed Buyer","address":"Synthetic New Street 3","paymentTermsDays":7,"email":"synthetic@example.invalid"}),"synthetic").unwrap();
+        update_customer(&tx,customer_id,&json!({"name":"Synthetic Renamed Buyer","address":"Synthetic New Street 3","paymentTermsDays":7,"email":"synthetic@example.invalid","eanNumber":"5790000000001"}),"synthetic").unwrap();
         let next = prepare(&tx, &input, "2026-10-18T12:00:00Z", false).unwrap();
         assert_eq!(next["buyer"]["name"], "Synthetic Renamed Buyer");
         assert_eq!(next["buyer"]["address"], "Synthetic New Street 3");
         assert_eq!(next["dueDate"], "2026-10-25");
         assert_eq!(next["buyer"]["vatOrCvr"], "DK12345678");
+        assert_eq!(next["buyer"]["eanNumber"], "5790000000001");
+        let listed = list(&tx, "synthetic", "2026-10-18", Some("2026")).unwrap();
+        assert_eq!(listed["invoices"][0]["buyerEanNumber"], "5790000000000");
+        assert_eq!(listed["invoices"][0]["buyerPublicRecipient"], true);
+        assert!(listed["invoices"][0]["peppolStatus"].is_null());
         assert_eq!(
             tx.query_row::<String, _, _>(
                 "SELECT payload_json FROM documents WHERE id=?1",

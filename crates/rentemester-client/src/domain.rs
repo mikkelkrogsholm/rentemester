@@ -124,7 +124,7 @@ pub fn domain_body_schema(operation: DomainMutation) -> Value {
 }
 pub fn invoice_body_schema() -> Value {
     let party = object(
-        json!({"name":optional_text(),"address":optional_text(),"vatOrCvr":optional_text()}),
+        json!({"name":optional_text(),"address":optional_text(),"vatOrCvr":optional_text(),"eanNumber":{"type":["string","null"],"maxLength":1024},"publicRecipient":{"type":["boolean","null"]},"buyerReference":{"type":["string","null"],"minLength":1,"maxLength":1024},"orderReference":{"type":["string","null"],"minLength":1,"maxLength":1024}}),
         &[],
     );
     let mut nullable_party = party;
