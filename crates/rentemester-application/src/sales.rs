@@ -266,3 +266,88 @@ pub(crate) fn issue_payload_with_principal(
         principal,
     )
 }
+
+/// Explicit service sales slice, using the same domain/evidence logic as human sales.
+pub fn execute_service(
+    control: &mut Connection,
+    company: &mut Connection,
+    guard: &mut NamespaceGuard,
+    context: crate::service_company::Context<'_>,
+    request: Request<'_>,
+) -> Result<crate::service_company::ServiceResult<Output>, crate::service_company::ServiceFailure> {
+    use crate::service_company::{self, OperationResult};
+    use rentemester_storage::idempotency::PrincipalKind;
+    let Request {
+        action,
+        today,
+        now,
+        year,
+    } = request;
+    let (permission, mutation) = match action {
+        Action::Contacts | Action::List => (Permission::CompanyRead, false),
+        Action::Customers(_) => (Permission::CompanyMasterData, true),
+        Action::Preview(_) => (Permission::CompanyDraftWrite, false),
+        Action::Issue(_) => (Permission::CompanyDraftWrite, true),
+        Action::Post(_) => (Permission::CompanyLedgerPost, true),
+        Action::Pdf(_) => (Permission::CompanyDocumentsRead, false),
+        _ => {
+            return Err(service_company::initial(Error::new(
+                "access_denied",
+                "service sales action not supported",
+            )));
+        }
+    };
+    let slug = context.selection.slug;
+    service_company::execute_operation(
+        control,
+        company,
+        context,
+        permission,
+        mutation,
+        |tx, subject, _| {
+            let output = match action {
+                Action::Contacts => Output::Json(sales::contacts(tx, slug, today)?),
+                Action::Customers(input) => Output::Json(sales::create_customer_with_principal(
+                    tx,
+                    input,
+                    subject,
+                    PrincipalKind::ServiceAccount,
+                )?),
+                Action::List => Output::Json(sales::list(tx, slug, today, year)?),
+                Action::Preview(input) => {
+                    let payload = sales::prepare(tx, input, now, false)?;
+                    Output::Pdf(rentemester_engine::invoice_pdf::build(&payload))
+                }
+                Action::Issue(input) => {
+                    let payload = sales::prepare(tx, input, now, true)?;
+                    Output::Json(issue_payload_with_principal(
+                        tx,
+                        guard,
+                        &payload,
+                        subject,
+                        PrincipalKind::ServiceAccount,
+                    )?)
+                }
+                Action::Post(input) => {
+                    verify_invoice(tx, guard, input.invoice_document_id)?;
+                    Output::Json(sales::post_with_principal(
+                        tx,
+                        input,
+                        subject,
+                        Date::parse(today)?,
+                        PrincipalKind::ServiceAccount,
+                    )?)
+                }
+                Action::Pdf(id) => Output::Pdf(original(tx, guard, sales::pdf_id(tx, id)?)?),
+                _ => unreachable!("service action admitted above"),
+            };
+            Ok(OperationResult {
+                result: output,
+                receipt: None,
+            })
+        },
+    )
+}
+
+#[cfg(test)]
+mod tests;

@@ -33,12 +33,16 @@ pub enum BusinessStage {
     OutcomeUnknown,
     Committed,
 }
-pub struct ServiceResult {
+pub struct ServiceResult<T = Value> {
     pub usage: UsageStage,
     pub business: BusinessStage,
-    pub result: Value,
+    pub result: T,
     pub receipt: Option<Receipt>,
     pub control_reusable: bool,
+}
+pub(crate) struct OperationResult<T> {
+    pub result: T,
+    pub receipt: Option<Receipt>,
 }
 pub struct ServiceFailure {
     pub usage: UsageStage,
@@ -96,7 +100,7 @@ fn error(code: &'static str) -> Error {
         "service company attempt refused; inspect usage/business stages",
     )
 }
-fn initial(error: Error) -> ServiceFailure {
+pub(crate) fn initial(error: Error) -> ServiceFailure {
     ServiceFailure {
         usage: UsageStage::NotCommitted,
         business: BusinessStage::NotAttempted,
@@ -199,6 +203,10 @@ fn execute(
                 command,
                 rejection,
             )
+            .map(|value| OperationResult {
+                result: value.result,
+                receipt: value.receipt,
+            })
         },
     )
 }
@@ -217,31 +225,22 @@ pub(crate) fn execute_read(
         Permission::CompanyRead,
         false,
         |tx, _, _| {
-            let before = tx.total_changes();
-            let result = apply(tx)?;
-            if tx.total_changes() != before {
-                return Err(error("readonly_operation_changed_data"));
-            }
-            Ok(journal_mutation::MutationResult {
-                result,
+            Ok(OperationResult {
+                result: apply(tx)?,
                 receipt: None,
             })
         },
     )
 }
 
-fn execute_operation(
+pub(crate) fn execute_operation<T>(
     control: &mut Connection,
     company: &mut Connection,
     context: Context<'_>,
     permission: Permission,
     mutation: bool,
-    apply: impl FnOnce(
-        &Transaction<'_>,
-        &str,
-        &mut Option<Value>,
-    ) -> Result<journal_mutation::MutationResult, Error>,
-) -> Result<ServiceResult, ServiceFailure> {
+    apply: impl FnOnce(&Transaction<'_>, &str, &mut Option<Value>) -> Result<OperationResult<T>, Error>,
+) -> Result<ServiceResult<T>, ServiceFailure> {
     control_fence::connection_ready(control).map_err(initial)?;
     control_fence::connection_ready(company).map_err(initial)?;
     let Context {
@@ -351,7 +350,11 @@ fn execute_operation(
         },
         |tx, subject| {
             attempted = true;
+            let before = tx.total_changes();
             let value = apply(tx, subject, &mut rejection)?;
+            if !mutation && tx.total_changes() != before {
+                return Err(error("readonly_operation_changed_data"));
+            }
             #[cfg(test)]
             if std::env::var("RM_SERVICE_FAIL").ok().as_deref() == Some("company") {
                 tx.execute(

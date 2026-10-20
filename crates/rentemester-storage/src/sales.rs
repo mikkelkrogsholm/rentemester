@@ -31,6 +31,14 @@ pub fn create_customer(
     input: &Customer,
     actor: &str,
 ) -> Result<Value, Error> {
+    create_customer_with_principal(tx, input, actor, crate::idempotency::PrincipalKind::User)
+}
+pub fn create_customer_with_principal(
+    tx: &Transaction<'_>,
+    input: &Customer,
+    actor: &str,
+    principal: crate::idempotency::PrincipalKind,
+) -> Result<Value, Error> {
     crate::journal_post::require_current(tx)?;
     validate_customer(input)?;
     let name = input.name.trim();
@@ -42,12 +50,13 @@ pub fn create_customer(
         input.vat_or_cvr.as_deref(),
     )?;
     let id:i64=tx.query_row("INSERT INTO customers(name,address,vat_or_cvr,email,phone,website,ean_number,payment_terms_days,default_currency,notes) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10) RETURNING id",params![name,input.address,input.vat_or_cvr,input.email,input.phone,input.website,normalized_ean(input.ean_number.as_deref())?,input.payment_terms_days,input.default_currency.as_deref().unwrap_or("DKK"),input.notes],|r|r.get(0)).map_err(|e|if e.sqlite_error().is_some_and(|v|v.extended_code==rusqlite::ffi::SQLITE_CONSTRAINT_UNIQUE){refused("customer already exists")}else{Error::new("contact_storage_unavailable","contact could not be stored")})?;
-    audit(
+    audit_with_principal(
         tx,
         "customer_add",
         id,
         &format!("Created customer {name}"),
         actor,
+        principal,
     )?;
     Ok(json!({"id":id}))
 }
@@ -625,6 +634,21 @@ pub fn post(
     subject: &str,
     latest: Date,
 ) -> Result<Value, Error> {
+    post_with_principal(
+        tx,
+        input,
+        subject,
+        latest,
+        crate::idempotency::PrincipalKind::User,
+    )
+}
+pub fn post_with_principal(
+    tx: &Transaction<'_>,
+    input: &Post,
+    subject: &str,
+    latest: Date,
+    principal: crate::idempotency::PrincipalKind,
+) -> Result<Value, Error> {
     crate::journal_post::require_current(tx)?;
     if !input.confirm || input.invoice_document_id <= 0 {
         return Err(refused(
@@ -738,7 +762,10 @@ pub fn post(
         latest,
         crate::journal_post::Actor {
             subject: &format!("user:{subject}"),
-            program: "rentemester-rust",
+            program: match principal {
+                crate::idempotency::PrincipalKind::User => "rentemester-rust",
+                crate::idempotency::PrincipalKind::ServiceAccount => "service-principal",
+            },
         },
     )?;
     if result["ok"] != true {
@@ -752,12 +779,13 @@ pub fn post(
         )
         .map_err(invalid)?;
     tx.execute("INSERT INTO issued_invoice_postings(invoice_document_id,journal_entry_id,receivable_account_id,booked_gross_dkk) VALUES(?1,?2,?3,?4)",params![input.invoice_document_id,result["entryId"].as_i64(),id,gross.decimal().parse::<f64>().map_err(invalid)?]).map_err(invalid)?;
-    audit(
+    audit_with_principal(
         tx,
         "invoice_post",
         input.invoice_document_id,
         "Booked issued invoice with explicit receivable identity",
         subject,
+        principal,
     )?;
     Ok(result)
 }
