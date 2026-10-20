@@ -65,7 +65,7 @@ pub fn tools() -> Vec<Value> {
         (
             "import_bank",
             BankMutation::ImportStatement,
-            "Import UTF-8 bank rows into an existing bank account without posting a journal: omitted/null/empty profile selects generic CSV; danske-bank selects declared semicolon/day-month-year CSV. Unknown profiles and ambiguous generic dates are refused; preserve source and row identity and report known duplicates",
+            "Import bank rows without posting a journal using exactly one csvContent UTF-8 string or csvBase64 canonical raw original bytes (25MiB decoded/35MiB JSON): omitted/null/empty profile selects generic CSV; danske-bank selects declared semicolon/day-month-year CSV with UTF-8/BOM or Windows1252 fallback. Unknown profiles and ambiguous generic dates are refused; preserve source and row identity and report known duplicates",
         ),
         (
             "register_payable",
@@ -84,6 +84,9 @@ pub fn tools() -> Vec<Value> {
         ),
     ] {
         let mut schema = json!({"type":"object","required":["company","body","confirm"],"properties":{"company":company,"body":native_body(bank_body_schema(operation)),"confirm":{"const":true}},"additionalProperties":false});
+        if matches!(operation, BankMutation::ImportStatement) {
+            schema["properties"]["body"]["maxLength"] = json!(35 * 1024 * 1024);
+        }
         if matches!(operation, BankMutation::MatchExpense) {
             schema["properties"]["body"]["maxLength"] = json!(16384);
         }
@@ -188,4 +191,30 @@ pub async fn call(
                 .await
         }
     })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn import_discovery_exposes_exclusive_original_variants_without_expanding_other_writes() {
+        let discovered = tools();
+        let import = discovered
+            .iter()
+            .find(|tool| tool["name"] == "import_bank")
+            .unwrap();
+        let body = &import["inputSchema"]["properties"]["body"];
+        assert_eq!(body["maxLength"], 35 * 1024 * 1024);
+        assert_eq!(body["contentSchema"]["oneOf"].as_array().unwrap().len(), 2);
+        assert!(body["contentSchema"]["properties"]["csvBase64"].is_object());
+        assert_eq!(body["contentSchema"]["additionalProperties"], false);
+        let payable = discovered
+            .iter()
+            .find(|tool| tool["name"] == "register_payable")
+            .unwrap();
+        assert_eq!(
+            payable["inputSchema"]["properties"]["body"]["maxLength"],
+            262144
+        );
+    }
 }

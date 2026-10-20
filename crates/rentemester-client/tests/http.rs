@@ -633,3 +633,30 @@ async fn bank_profile_unknown_case_and_whitespace_fail_before_network() {
         ));
     }
 }
+
+#[tokio::test]
+async fn bank_raw_bytes_and_large_import_are_forwarded_exactly_once() {
+    use rentemester_client::BankMutation;
+    // First source has raw Windows1252 bytes; second exceeds the ordinary domain cap.
+    for source in ["5vjlIIA=".to_owned(), "YWFh".repeat(100_000)] {
+        let body = serde_json::json!({"csvBase64":source,"profile":"danske-bank","account":"synthetic","confirm":true}).to_string();
+        let (origin, request, task) = server(OK);
+        let api = ApiClient::new(&origin, true, Some("session=synthetic".into())).unwrap();
+        api.bank_mutation("demo", BankMutation::ImportStatement, body.as_bytes().to_vec(), true).await.unwrap();
+        let wire = request.recv().unwrap();
+        assert!(wire.starts_with(b"POST /api/companies/demo/bank/import HTTP/1.1"));
+        assert!(wire.ends_with(body.as_bytes()));
+        assert_eq!(task.join().unwrap(), 1);
+    }
+}
+
+#[tokio::test]
+async fn uncertain_raw_bank_import_does_not_retry() {
+    use rentemester_client::BankMutation;
+    let (origin, request, task) = server("HTTP/1.1 503 Service Unavailable\r\nContent-Length:0\r\nConnection:close\r\n\r\n");
+    let api = ApiClient::new(&origin, true, None).unwrap();
+    let body = br#"{ "csvBase64":"5vjlIIA=", "profile":"danske-bank", "confirm":true }"#;
+    assert_eq!(api.bank_mutation("demo", BankMutation::ImportStatement, body.to_vec(), true).await, Err(Error::OutcomeUnknown));
+    assert!(request.recv().unwrap().ends_with(body));
+    assert_eq!(task.join().unwrap(), 1);
+}
