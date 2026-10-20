@@ -83,6 +83,7 @@ fn real_namespace_originals_independent_review_current_revocation_and_transfer_g
             &SystemClock,
             rentemester_application::bank::Action::Import {
                 content: csv,
+                profile: None,
                 account: Some("synthetic"),
                 now: "2026-10-19T12:00:00Z",
             },

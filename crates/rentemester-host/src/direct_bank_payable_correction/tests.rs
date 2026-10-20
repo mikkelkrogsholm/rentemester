@@ -82,6 +82,7 @@ fn owned_originals_current_role_and_transfer_fence_cover_effects_and_receipt_rep
             &SystemClock,
             rentemester_application::bank::Action::Import {
                 content: csv,
+                profile: None,
                 account: Some("synthetic"),
                 now: "2026-10-19T12:00:00Z",
             },
@@ -89,6 +90,21 @@ fn owned_originals_current_role_and_transfer_fence_cover_effects_and_receipt_rep
         .unwrap()
         .outcome
         .unwrap();
+    // A valid named statement must not leave an orphan original when its
+    // explicitly selected account is missing.
+    let refused = owner.bank(&proof, &SystemClock, rentemester_application::bank::Action::Import {
+        content: "Dato;Tekst;Beløb;Valuta\n03.04.2026;Synthetic unknown account;-1,00;DKK\n",
+        account: Some("missing-synthetic-account"),
+        profile: Some("danske-bank"),
+        now: "2026-10-19T12:00:00Z",
+    }).unwrap().outcome.err().unwrap();
+    assert_eq!(refused.error.code, "bank_refused");
+    assert_eq!(
+        std::fs::read_dir(root.join("a/bank/processed"))
+            .unwrap()
+            .count(),
+        1
+    );
     let expense = rentemester_storage::expense::Input {
         document_id: 1,
         bank_transaction_id: 1,
@@ -166,6 +182,23 @@ fn owned_originals_current_role_and_transfer_fence_cover_effects_and_receipt_rep
             .code,
         "access_denied"
     );
+    let profiled_import = || rentemester_application::bank::Action::Import {
+        content: "Dato;Tekst;Beløb;Valuta\n03.04.2026;Synthetic blocked import;-1,00;DKK\n",
+        account: Some("synthetic"),
+        profile: Some("danske-bank"),
+        now: "2026-10-19T12:00:00Z",
+    };
+    assert_eq!(
+        owner
+            .bank(&proof, &SystemClock, profiled_import())
+            .unwrap()
+            .outcome
+            .err()
+            .unwrap()
+            .error
+            .code,
+        "access_denied"
+    );
     owner.held.0.as_mut().unwrap().control.as_mut().unwrap().execute_batch("INSERT INTO rm_company_membership_events(user_id,company_slug,event_type,company_role,actor)VALUES('u','a','grant','owner','user:u');").unwrap();
     let result = call(&mut owner, &proof, Action::Apply(&apply)).unwrap();
     assert_eq!(result["correction"]["idempotent"], false);
@@ -190,6 +223,36 @@ fn owned_originals_current_role_and_transfer_fence_cover_effects_and_receipt_rep
             .error
             .code,
         "workspace_transfer_fenced"
+    );
+    assert_eq!(
+        owner
+            .bank(&proof, &SystemClock, profiled_import())
+            .unwrap()
+            .outcome
+            .err()
+            .unwrap()
+            .error
+            .code,
+        "workspace_transfer_fenced"
+    );
+    assert_eq!(
+        owner
+            .held
+            .0
+            .as_ref()
+            .unwrap()
+            .company
+            .as_ref()
+            .unwrap()
+            .query_row::<i64, _, _>("SELECT count(*) FROM bank_transactions", [], |r| r.get(0))
+            .unwrap(),
+        1
+    );
+    assert_eq!(
+        std::fs::read_dir(root.join("a/bank/processed"))
+            .unwrap()
+            .count(),
+        1
     );
     assert_eq!(
         owner

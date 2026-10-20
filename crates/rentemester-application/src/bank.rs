@@ -19,6 +19,7 @@ pub enum Action<'a> {
     Import {
         content: &'a str,
         account: Option<&'a str>,
+        profile: Option<&'a str>,
         now: &'a str,
     },
 }
@@ -52,9 +53,13 @@ pub fn execute(
             Action::Import {
                 content,
                 account,
+                profile,
                 now,
             } => {
-                let rows = rentemester_engine::bank::parse(content)?;
+                let rows = rentemester_engine::bank::parse_with_profile(content, profile)?;
+                // Refuse an unknown/inactive explicit account before retaining
+                // any physical statement; import rechecks the same locked facts.
+                rentemester_storage::bank::validate_import_account(tx, account)?;
                 let archive = guard.publish_bank_statement(content).map_err(|_| {
                     Error::new(
                         "bank_original_unavailable",

@@ -15,7 +15,13 @@ enum Command {
     Import(Import),
 }
 pub(super) async fn handle(State(state): State<Product>, request: Request) -> Response {
-    let company_slug=request.uri().path().split('/').nth(3).unwrap_or("").to_owned();
+    let company_slug = request
+        .uri()
+        .path()
+        .split('/')
+        .nth(3)
+        .unwrap_or("")
+        .to_owned();
     let mutation = request.method() == axum::http::Method::POST;
     let cookie = match proof(&state, &request, mutation) {
         Ok(p) => p,
@@ -55,12 +61,6 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
             };
             if !input.confirm {
                 return refused(StatusCode::BAD_REQUEST, "confirmation_required");
-            }
-            if input.profile.as_ref().is_some_and(|p| !p.trim().is_empty()) {
-                return response(
-                    StatusCode::UNPROCESSABLE_ENTITY,
-                    json!({"ok":false,"code":"native_profile_unavailable","errors":["Named bank profiles are not ported yet; use generic UTF-8 CSV with ISO dates"]}),
-                );
             }
             Command::Import(input)
         } else {
@@ -102,6 +102,7 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
             Command::Import(input) => Action::Import {
                 content: &input.csv_content,
                 account: input.account.as_deref(),
+                profile: input.profile.as_deref(),
                 now: &timestamp,
             },
         };
@@ -115,5 +116,47 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
             Err(r) => *r,
         },
         _ => refused(StatusCode::SERVICE_UNAVAILABLE, "outcome_unconfirmed"),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn named_profile_is_preserved_exactly_and_not_a_transport_authority() {
+        let input: Import=serde_json::from_value(json!({"confirm":true,"csvContent":"Dato;Tekst;Beløb\n03.04.2026;Synthetic;-1,00\n","account":"synthetic","profile":" DANSKE-BANK "})).unwrap();
+        assert!(input.confirm);
+        assert_eq!(input.account.as_deref(), Some("synthetic"));
+        assert_eq!(input.profile.as_deref(), Some(" DANSKE-BANK "));
+        // Engine owns named-profile admission. Unknown nonempty values must
+        // reach it unchanged rather than silently becoming generic imports.
+        let unknown: Import = serde_json::from_value(
+            json!({"confirm":true,"csvContent":"source","profile":"unknown-bank"}),
+        )
+        .unwrap();
+        assert_eq!(unknown.profile.as_deref(), Some("unknown-bank"));
+        for body in [
+            r#"{"confirm":true,"csvContent":"source","profile":"danske-bank","profile":"other"}"#,
+            r#"{"confirm":true,"csvContent":"source","actor":"user:forged"}"#,
+            r#"{"confirm":true,"csvContent":"source","profile":true}"#,
+        ] {
+            assert!(serde_json::from_str::<Import>(body).is_err());
+        }
+    }
+    #[test]
+    fn generic_none_empty_and_null_profiles_keep_existing_body_contract() {
+        for body in [
+            json!({"confirm":true,"csvContent":"source"}),
+            json!({"confirm":true,"csvContent":"source","profile":null}),
+            json!({"confirm":true,"csvContent":"source","profile":""}),
+        ] {
+            let input: Import = serde_json::from_value(body).unwrap();
+            assert!(input.profile.as_deref().is_none_or(str::is_empty));
+        }
+        let input: Import = serde_json::from_value(
+            json!({"confirm":false,"csvContent":"source","profile":"danske-bank"}),
+        )
+        .unwrap();
+        assert!(!input.confirm);
     }
 }
