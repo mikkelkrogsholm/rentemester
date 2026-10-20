@@ -6,6 +6,8 @@ use rentemester_runtime::document::Prepared;
 enum Command {
     List(usize, usize),
     Inspect(String),
+    Original(String),
+    Review(String, app::ReviewInput),
     Ingest(app::Ingest),
     Assign(String, app::Destination),
     Complete(String, app::Destination),
@@ -50,6 +52,10 @@ pub(super) async fn handle(
                 Ok(i) => Command::Ingest(i),
                 Err(_) => return refused(StatusCode::BAD_REQUEST, "invalid_input"),
             },
+            (7, Some("review")) => match serde_json::from_value(body) {
+                Ok(r) => Command::Review(source.clone(), r),
+                Err(_) => return refused(StatusCode::BAD_REQUEST, "invalid_input"),
+            },
             (7, Some(action @ ("assign" | "complete"))) => {
                 let Ok(d) = serde_json::from_value(body) else {
                     return refused(StatusCode::BAD_REQUEST, "invalid_input");
@@ -63,7 +69,12 @@ pub(super) async fn handle(
             _ => return refused(StatusCode::NOT_FOUND, "not_found"),
         }
     } else {
-        if parts.len() == 6 {
+        if parts.len() == 7 && parts.last() == Some(&"original") {
+            if request.uri().query().is_some() {
+                return refused(StatusCode::BAD_REQUEST, "invalid_input");
+            }
+            Command::Original(source)
+        } else if parts.len() == 6 {
             if request.uri().query().is_some() {
                 return refused(StatusCode::BAD_REQUEST, "invalid_input");
             }
@@ -99,12 +110,31 @@ pub(super) async fn handle(
             Some(Prepared::new(i.filename.clone(), bytes).map_err(|message|
                 Box::new(response(StatusCode::UNPROCESSABLE_ENTITY,json!({"ok":false,"code":"invalid_document_file","errors":[message]}))))?)
         } else { None };
-        let selected = if let Command::Complete(_, d) = &command { d.company_slug.as_str() } else { anchor.as_str() };
+        let selected = match &command {Command::Complete(_,d)=>d.company_slug.as_str(),Command::Review(_,r)=>r.company_slug.as_str(),_=>anchor.as_str()};
         let mut owner = state.native.lock_company(selected)
             .map_err(|_| Box::new(refused(StatusCode::SERVICE_UNAVAILABLE,"owner_unavailable")))?;
+        if let Command::Original(id)=&command {
+            let attempt=owner.workspace_inbox_original(&state.native.cookies,&cookie,&SystemClock,&anchor,id).map_err(|_|Box::new(refused(StatusCode::SERVICE_UNAVAILABLE,"internal")))?;
+            return match attempt.outcome {
+                Ok(value)=>{
+                    let original=value.value;
+                    let mut r=Response::new(axum::body::Body::from(original.bytes));
+                    let h=r.headers_mut();
+                    h.insert("cache-control",axum::http::HeaderValue::from_static("no-store"));
+                    h.insert("x-content-type-options",axum::http::HeaderValue::from_static("nosniff"));
+                    h.insert("content-type",axum::http::HeaderValue::from_str(&original.mime_type).map_err(|_|Box::new(refused(StatusCode::SERVICE_UNAVAILABLE,"internal")))?);
+                    let name=original.filename.chars().map(|c|if c.is_ascii_alphanumeric()||"._-".contains(c){c}else{'_'}).collect::<String>();
+                    h.insert("content-disposition",axum::http::HeaderValue::from_str(&format!("attachment; filename=\"{name}\"")).map_err(|_|Box::new(refused(StatusCode::SERVICE_UNAVAILABLE,"internal")))?);
+                    h.insert("x-content-sha256",axum::http::HeaderValue::from_str(&original.sha256).map_err(|_|Box::new(refused(StatusCode::SERVICE_UNAVAILABLE,"internal")))?);
+                    Ok(r)
+                },Err(f)=>Err(Box::new(response(if matches!(f.error.code,"access_denied"|"invalid_credentials"){StatusCode::FORBIDDEN}else if f.error.code=="workspace_inbox_not_found"{StatusCode::NOT_FOUND}else{StatusCode::UNPROCESSABLE_ENTITY},json!({"ok":false,"code":f.error.code,"errors":[f.error.message]}))))
+            };
+        }
         let action = match &command {
             Command::List(c,l) => Action::List { cursor:*c, limit:*l },
             Command::Inspect(id) => Action::Inspect(id),
+            Command::Review(id,r) => Action::Review(id,r),
+            Command::Original(_) => unreachable!(),
             Command::Ingest(i) => Action::Ingest(i,prepared.as_ref().unwrap()),
             Command::Assign(id,d) => Action::Assign(id,d),
             Command::Complete(id,d) => Action::Complete(id,d),

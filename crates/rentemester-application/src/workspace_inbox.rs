@@ -6,16 +6,24 @@ use crate::{
 };
 use rentemester_engine::{Error, document::Metadata};
 use rentemester_runtime::{auth::CookieVerifier, document::Prepared, namespace::NamespaceGuard};
+pub use rentemester_storage::mail_intake::ReviewInput;
 use rentemester_storage::{workspace_context::Catalog, workspace_inbox as storage};
 use rusqlite::{Connection, Transaction, TransactionBehavior};
 use serde_json::{Value, json};
 use std::collections::BTreeSet;
 pub use storage::{Destination, Ingest};
+pub struct Original {
+    pub filename: String,
+    pub mime_type: String,
+    pub sha256: String,
+    pub bytes: Vec<u8>,
+}
 pub enum Action<'a> {
     List { cursor: usize, limit: usize },
     Inspect(&'a str),
     Ingest(&'a Ingest, &'a Prepared),
     Assign(&'a str, &'a Destination),
+    Review(&'a str, &'a ReviewInput),
     Complete(&'a str, &'a Destination),
 }
 pub struct Runtime<'a> {
@@ -168,10 +176,10 @@ pub fn execute(
                 &runtime,
                 &context,
                 !matches!(action, Action::List { .. } | Action::Inspect(_)),
-                if let Action::Assign(_, d) = &action {
-                    Some(d.company_slug.as_str())
-                } else {
-                    None
+                match &action {
+                    Action::Assign(_, d) => Some(d.company_slug.as_str()),
+                    Action::Review(_, r) => Some(r.company_slug.as_str()),
+                    _ => None,
                 },
             )?;
             let actor = format!("user:{subject}");
@@ -218,6 +226,46 @@ pub fn execute(
                     &now,
                 )
                 .map(|s| json!({"source":s})),
+                Action::Review(id, input) => {
+                    if context.selection.slug != input.company_slug {
+                        return Err(error("company_selection_mismatch"));
+                    }
+                    let mut value = input.metadata.clone();
+                    if !value.is_object() {
+                        return Err(storage::refused("explicit metadata object required"));
+                    }
+                    value["source"] = json!(format!("workspace-inbox:{id}"));
+                    let metadata: Metadata = serde_json::from_value(value).map_err(|_| {
+                        storage::refused("explicit supported document metadata required")
+                    })?;
+                    metadata.validate()?;
+                    let input = ReviewInput {
+                        company_slug: input.company_slug.clone(),
+                        source_hash: input.source_hash.clone(),
+                        metadata: serde_json::to_value(metadata)
+                            .map_err(|_| error("invalid_control"))?,
+                    };
+                    let target_ledger: String = company
+                        .query_row(
+                            "SELECT ledger_uuid FROM ledger_identity WHERE id=1",
+                            [],
+                            |r| r.get(0),
+                        )
+                        .map_err(|_| error("invalid_company"))?;
+                    rentemester_storage::mail_intake::review(
+                        tx,
+                        runtime.anchor,
+                        id,
+                        &input,
+                        &target_ledger,
+                        &visible,
+                        storage::Provenance {
+                            actor: &actor,
+                            now: &now,
+                        },
+                    )
+                    .map(|source| json!({"source":source}))
+                }
                 Action::Complete(..) => unreachable!(),
             }
         })?;
@@ -231,7 +279,7 @@ pub fn execute(
     }
     // Commit the claim before any company mutation. No method exposes owned handles;
     // the host mutex remains held across all three database transactions.
-    let (source, file, metadata, claim, completed) = transact(control, |tx| {
+    let (source, file, metadata, claim, completed, approved) = transact(control, |tx| {
         let (_, visible, now) = authorize(
             tx,
             &runtime,
@@ -252,7 +300,23 @@ pub fn execute(
         if source["mimeType"] != file.mime() {
             return Err(storage::refused("stored MIME differs from original"));
         }
-        let mut metadata = source["metadata"].clone();
+        let target_ledger: String = company
+            .query_row(
+                "SELECT ledger_uuid FROM ledger_identity WHERE id=1",
+                [],
+                |r| r.get(0),
+            )
+            .map_err(|_| error("invalid_company"))?;
+        let approved = rentemester_storage::mail_intake::approved_attachment(
+            tx,
+            id,
+            &destination.company_slug,
+            &target_ledger,
+        )?;
+        let mut metadata = approved
+            .as_ref()
+            .map(|a| a.metadata().clone())
+            .unwrap_or_else(|| source["metadata"].clone());
         if !metadata.is_object() {
             return Err(storage::refused("metadata object required"));
         }
@@ -289,7 +353,7 @@ pub fn execute(
             )?;
             storage::claim(tx, id, &destination.company_slug, &claim, &now, &expires)?;
         }
-        Ok((source, file, metadata, claim, completed))
+        Ok((source, file, metadata, claim, completed, approved))
     })?;
     let today = rentemester_runtime::posting_time::latest_date(
         context
@@ -328,6 +392,25 @@ pub fn execute(
                 if bytes != file.bytes() {
                     return Err(storage::refused("recovered original differs"));
                 }
+                if let Some(approved) = &approved {
+                    rentemester_storage::mail_intake::record_document(
+                        tx,
+                        approved,
+                        id,
+                        document["documentNo"]
+                            .as_str()
+                            .ok_or_else(|| error("invalid_company"))?,
+                        storage::Provenance {
+                            actor: &format!("user:{subject}"),
+                            now: &rentemester_engine::company_knowledge::timestamp(
+                                context
+                                    .clock
+                                    .now_unix_ms()
+                                    .map_err(|_| error("invalid_auth_clock"))?,
+                            )?,
+                        },
+                    )?;
+                }
                 return Ok(document);
             }
             if completed {
@@ -350,7 +433,29 @@ pub fn execute(
                 subject,
                 &today,
             )?;
-            Ok(registered["document"].clone())
+            let document = registered["document"].clone();
+            if let Some(approved) = &approved {
+                rentemester_storage::mail_intake::record_document(
+                    tx,
+                    approved,
+                    document["id"]
+                        .as_i64()
+                        .ok_or_else(|| error("invalid_company"))?,
+                    document["documentNo"]
+                        .as_str()
+                        .ok_or_else(|| error("invalid_company"))?,
+                    storage::Provenance {
+                        actor: &format!("user:{subject}"),
+                        now: &rentemester_engine::company_knowledge::timestamp(
+                            context
+                                .clock
+                                .now_unix_ms()
+                                .map_err(|_| error("invalid_auth_clock"))?,
+                        )?,
+                    },
+                )?;
+            }
+            Ok(document)
         },
     )?;
     if completed {
@@ -413,4 +518,37 @@ pub fn execute(
             Err(f)
         }
     }
+}
+
+/// Binary evidence is returned only after current read authorization and source visibility.
+pub fn original(
+    control: &mut Connection,
+    context: Context<'_>,
+    runtime: Runtime<'_>,
+    id: &str,
+) -> Result<Committed<Original>, Failure> {
+    let value = transact(control, |tx| {
+        let (_, visible, _) = authorize(tx, &runtime, &context, false, None)?;
+        let source = storage::inspect(tx, runtime.anchor, id, &visible)?;
+        let bytes = storage::original(tx, id)?;
+        Ok(Original {
+            filename: source["filename"]
+                .as_str()
+                .ok_or_else(|| error("invalid_control"))?
+                .into(),
+            mime_type: source["mimeType"]
+                .as_str()
+                .ok_or_else(|| error("invalid_control"))?
+                .into(),
+            sha256: source["sha256"]
+                .as_str()
+                .ok_or_else(|| error("invalid_control"))?
+                .into(),
+            bytes,
+        })
+    })?;
+    Ok(Committed {
+        value,
+        control_reusable: true,
+    })
 }
