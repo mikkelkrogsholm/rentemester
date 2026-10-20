@@ -160,6 +160,21 @@ pub fn execute(
                 let year = label.parse::<u16>().map_err(|_| invalid())?;
                 store::read(tx, &verified, slug, year, request.account, request.resource)?
             } else {
+                let start = selected["start"].as_str().ok_or_else(unavailable)?;
+                let end = selected["end"].as_str().ok_or_else(unavailable)?;
+                let as_of = if matches!(request.resource, Resource::Overview) {
+                    request.as_of.unwrap_or(today)
+                } else {
+                    end
+                };
+                let basis = if rentemester_storage::opening_balance::validate_history(tx)?.is_some()
+                {
+                    rentemester_storage::opening_balance::require_report_as_of(tx, as_of)?
+                } else {
+                    json!({"basis":"live","cutOverDate":null,"openingJournalEntryId":null,"archiveAmountsIncluded":false})
+                };
+                let cutover = basis["cutOverDate"].as_str();
+                let partial = cutover.is_some_and(|date| start < date);
                 let mut body = match request.resource {
                     Resource::Overview => rentemester_storage::dashboard::read(
                         tx,
@@ -188,6 +203,10 @@ pub fn execute(
                 body["source"] = json!("live");
                 body["selectedSource"] = json!("live");
                 body["ledgerBasis"] = json!("native_ledger_only");
+                body["openingBalanceBasis"] = basis.clone();
+                body["liveCoverage"] = json!({"status":if partial{"partial"}else{"complete"},
+                    "reason":if partial{Some("native_history_begins_at_explicit_cutover")}else{None},
+                    "periodStart":start,"periodEnd":end,"cutOverDate":basis["cutOverDate"]});
                 if years
                     .as_array()
                     .ok_or_else(unavailable)?

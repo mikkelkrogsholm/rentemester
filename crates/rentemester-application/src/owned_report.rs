@@ -13,23 +13,33 @@ use rusqlite::Connection;
 pub fn trial_balance(
     control: &mut Connection,
     company: &mut Connection,
-    cookie: &VerifiedCookie,
-    clock: &dyn Clock,
-    selection: CompanySelection<'_>,
+    guard: &mut rentemester_runtime::namespace::NamespaceGuard,
+    context: crate::documents::Context<'_>,
     period: Period,
 ) -> Result<Committed<Report>, Failure> {
-    control_fence::execute_cookie(
+    control_fence::execute_cookie_subject_mode(
         control,
         company,
         CookieAuthorization {
-            cookie,
-            clock,
+            cookie: context.cookie,
+            clock: context.clock,
             requirement: SessionRequirement::Current,
         },
-        selection,
+        context.selection,
         Permission::CompanyRead,
-        |tx| {
-            rentemester_storage::archive_import::require_live_report_only(tx)?;
+        true,
+        |tx, _| {
+            if !crate::periods::verify_sources(tx, guard)?.is_empty() {
+                return Err(rentemester_engine::Error::new(
+                    "report_source_unavailable",
+                    "Dated report source assurance differs",
+                ));
+            }
+            rentemester_storage::opening_balance::require_report_range(
+                tx,
+                &period.start,
+                &period.end,
+            )?;
             rentemester_storage::trial_balance_owned(tx, period)
         },
     )

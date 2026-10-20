@@ -77,6 +77,8 @@ pub(crate) fn apply(
     business: &mut Option<Value>,
 ) -> Result<MutationResult, Error> {
     rentemester_storage::journal_post::require_current(tx)?;
+    // Historical opening proof precedes receipt replay; current planning is not historical proof.
+    rentemester_storage::opening_balance::validate_history(tx)?;
     let now = clock.now_unix_ms().map_err(|e| {
         Error::new(
             e.code(),

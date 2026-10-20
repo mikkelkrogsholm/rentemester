@@ -1088,13 +1088,16 @@ impl Owner {
         let outcome = rentemester_application::owned_report::trial_balance(
             slots.control.as_mut().unwrap(),
             slots.company.as_mut().unwrap(),
-            cookie,
-            clock,
-            CompanySelection {
-                workspace: &self.workspace,
-                slug: &self.slug,
-                registered: true,
-                archived: false,
+            &mut slots.guard,
+            rentemester_application::documents::Context {
+                cookie,
+                clock,
+                selection: CompanySelection {
+                    workspace: &self.workspace,
+                    slug: &self.slug,
+                    registered: true,
+                    archived: false,
+                },
             },
             period,
         );

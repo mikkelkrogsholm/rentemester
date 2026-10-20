@@ -60,6 +60,7 @@ impl Owner {
                 let applied: Vec<Applied> = serde_json::from_value(plan["applied"].clone())
                     .map_err(|_| OwnerError::Context)?;
                 let mut ledgers: Vec<Ledger> = vec![];
+                let mut opening_bases = std::collections::BTreeMap::new();
                 if blockers.is_empty() {
                     for company in companies {
                         self.select_company(&company)?;
@@ -71,7 +72,10 @@ impl Owner {
                                 .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
                                 .map_err(|_| policy::refused())?;
                             let result = (|| {
-                                rentemester_storage::archive_import::require_live_report_only(&tx)?;
+                                let opening_basis =
+                                    rentemester_storage::opening_balance::require_report_as_of(
+                                        &tx, as_of,
+                                    )?;
                                 if rentemester_application::periods::verify_sources(
                                     &tx,
                                     &mut slots.guard,
@@ -81,6 +85,7 @@ impl Owner {
                                     rentemester_storage::consolidation::ledger(
                                         &tx, &company, from, as_of,
                                     )
+                                    .map(|ledger| (ledger, opening_basis))
                                 } else {
                                     Err(policy::refused())
                                 }
@@ -102,7 +107,8 @@ impl Owner {
                             return Err(OwnerError::Database);
                         }
                         match result {
-                            Ok(l) => {
+                            Ok((l, basis)) => {
+                                opening_bases.insert(company.clone(), basis);
                                 if l.currency != profile.currency {
                                     blockers.push("all company functional currencies must equal profile currency".into());
                                 }
@@ -138,7 +144,7 @@ impl Owner {
                         return Err(OwnerError::Context);
                     }
                 }
-                policy::calculate(
+                let mut report = policy::calculate(
                     &profile,
                     plan["profileHash"].as_str().ok_or(OwnerError::Context)?,
                     from,
@@ -149,7 +155,9 @@ impl Owner {
                     blockers,
                     rentemester_storage::intercompany::sha,
                 )
-                .map_err(|_| OwnerError::Context)
+                .map_err(|_| OwnerError::Context)?;
+                report["openingBalanceBases"] = serde_json::json!(opening_bases);
+                Ok(report)
             })();
             self.select_company(&selected)?;
             let check = self.control_auth(cookies.workspace(), |db| {
