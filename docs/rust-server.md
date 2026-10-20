@@ -2394,3 +2394,56 @@ stemmer overens. Fire uafhængigt verificerede signerede arkiver bevarer tabelle
 originalbilag og audit ved kildefri gendannelse med ny ejer og genåbning.
 Installerede native finansforløb er fortsat åbne. Evidens og resterende arbejde
 fremgår af `docs/architecture/rust-target/implementation/progress.json`.
+
+## Fakturér privatkunder og udsted forenklede fakturaer
+
+En fuld faktura kræver køberens navn og adresse. En almindelig privatkunde behøver
+ikke et CVR-nummer. Sælgerens identitet er fortsat obligatorisk, og offentlig
+routing samt omvendt betalingspligt beholder deres særskilte krav.
+
+I webformularen vælger **Fakturatype** mellem **Fuld faktura** og
+**Forenklet faktura**. Den forenklede formular bruger en beskrivelse og et beløb
+inklusive moms. Køber kan udelades helt. Serveren beregner og gemmer nettopris og
+indeholdt moms; den fremstiller hverken køberidentitet, antal eller enhedspris.
+PDF'en viser typen **Forenklet faktura** og de faktiske beløb.
+
+Det reducerede API-input er fx:
+
+```json
+{
+  "invoiceType": "simplified",
+  "issueDate": "2026-10-20",
+  "currency": "DKK",
+  "lines": [{"description": "En beskrevet leverance"}],
+  "totals": {
+    "grossAmount": 100.07,
+    "vatRate": 0.25,
+    "vatComputationBasis": "VAT_20_OF_GROSS"
+  }
+}
+```
+
+For dette input bliver netto 80,06 kr. og moms 20,01 kr. Momsrapporten anvender de
+verificerede originalbeløb og krediteringernes oprindelige fordelinger. Almindelige
+posteringers momskontrol er uændret. Denne kildevalidering kontrollerer også
+bogføringsretning, konti, oprindelige journalrelationer og eventuelle valutakurser.
+
+Grænsen er 3.000,00 DKK inklusive moms. Udenlandsk valuta kræver en eksplicit
+`fxRateToDkk`; grænsen anvendes på den fastlåste DKK-værdi. Forkerte eller
+ufuldstændige beløb afvises før nummerreservation. Offentlige modtagere og omvendt
+betalingspligt bruger fulde fakturaer. Det reducerede forløb beregner indeholdt
+25-procents moms; det er ikke en OSS-fakturatype.
+
+CLI og MCP bruger de eksisterende preview-/issue-kommandoer med dette input.
+Preview reserverer intet nummer. Samme input skal være gennemgået før bekræftet
+udstedelse. Ukendte udfald kræver opslag i fakturaer, journal og bilag.
+
+Group78 er accepteret med 19 trin gennem normal MFA på syntetiske data: fuld
+privatfaktura på 250,00 kr. og forenklet faktura på 100,07 kr., tre betalinger,
+tre kreditnotaer og tre refunderinger. Moms er 70,01 kr., derefter 12,01 kr. og
+slutteligt nul; alle konti ender i nul. HTTP, CLI og MCP læser samme data og
+returnerer samme PDF ved forhåndsvisning af de nye input. Fire signerede arkiver,
+genstart og kildefri gendannelse med ny ejer bevarer originaler og historik.
+Den samlede prøve dækker DKK. Udenlandsk forenklet fakturas DKK-grænse er dækket af
+kernens tests; det er ikke en selvstændig accept af hele dens valutaforløb.
+Installerede native finansforløb og øvrige nævnte migreringspunkter er fortsat åbne.
