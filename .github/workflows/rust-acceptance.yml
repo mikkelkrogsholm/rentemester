@@ -1,0 +1,98 @@
+name: Rust server acceptance
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'crates/**'
+      - 'app/**'
+      - 'vendor/**'
+      - 'Cargo.*'
+      - '.cargo/**'
+      - 'rust-toolchain.toml'
+      - 'Dockerfile.rust'
+      - '.dockerignore'
+      - 'bun.lock'
+      - 'package.json'
+      - 'scripts/rust/**'
+      - 'scripts/release/**'
+      - 'tests/fixtures/**'
+      - 'tests/unit/rust-release-manifest.test.ts'
+      - 'tests/unit/release-scripts.test.ts'
+      - '.github/workflows/rust-acceptance.yml'
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: rust-acceptance-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  server-web:
+    name: packaged Rust server and web journeys
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - name: Checkout tested source
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - name: Setup Bun for web build and headless tests
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+        with:
+          bun-version: 1.4.0
+      - name: Check shared build cache and disk budget
+        run: python3 scripts/rust/cargo-guard.py status
+      - name: Install frozen workspace dependencies
+        run: bun install --frozen-lockfile
+      - name: Install headless browser
+        working-directory: app
+        run: bunx --no-install playwright install --with-deps chromium
+      - name: Test package and release controls
+        run: |
+          set -euo pipefail
+          python3 -m unittest discover -s scripts/release -p 'test_*rust*.py'
+          bun test tests/unit/rust-release-manifest.test.ts tests/unit/release-scripts.test.ts
+      - name: Resolve source identity
+        id: source
+        run: |
+          set -euo pipefail
+          test -z "$(git status --porcelain --untracked-files=no)"
+          echo "commit=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          echo "epoch=$(git show -s --format=%ct HEAD)" >> "$GITHUB_OUTPUT"
+          echo "version=$(bun scripts/release/check-version.ts)" >> "$GITHUB_OUTPUT"
+          mkdir -m 0700 acceptance
+      - name: Build dedicated Rust runtime
+        env:
+          COMMIT: ${{ steps.source.outputs.commit }}
+          EPOCH: ${{ steps.source.outputs.epoch }}
+          VERSION: ${{ steps.source.outputs.version }}
+        run: |
+          set -euo pipefail
+          docker build --file Dockerfile.rust --tag rentemester-rust:acceptance \
+            --build-arg "RENTEMESTER_GIT_COMMIT=$COMMIT" \
+            --build-arg "RENTEMESTER_VERSION=$VERSION" \
+            --build-arg "SOURCE_DATE_EPOCH=$EPOCH" \
+            --build-arg RENTEMESTER_SOURCE_DIRTY=false .
+      - name: Verify actual packaged bytes and live metadata
+        env:
+          COMMIT: ${{ steps.source.outputs.commit }}
+          VERSION: ${{ steps.source.outputs.version }}
+        run: |
+          python3 scripts/release/verify-rust-package.py \
+            --image rentemester-rust:acceptance --commit "$COMMIT" --version "$VERSION" --require-clean \
+            --identity acceptance/build-identity.json --evidence acceptance/package.json
+      - name: Qualify normal owner MFA accounting and persisted restart
+        run: |
+          python3 scripts/rust/run-rust-container.py \
+            --image rentemester-rust:acceptance --evidence acceptance/server-web.json
+      - name: Retain scoped acceptance evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: rust-server-acceptance-${{ github.run_attempt }}
+          path: acceptance/
+          if-no-files-found: warn
+          retention-days: 30
