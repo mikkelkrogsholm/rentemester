@@ -294,6 +294,10 @@ fn physical_source_change_blocks_completion_and_status_without_cleanup_mutation(
     )
     .unwrap();
     assert!(finish(&mut owner, &proof, admission, Some(Ok(output()))).is_err());
+    {
+        let slots = owner.held.0.as_mut().unwrap();
+        assert!(validate_live_sources(slots.company.as_ref().unwrap(), &mut slots.guard).is_err());
+    }
     assert!(
         owner
             .invoice_extraction(&proof, &Fixed(NOW), id)

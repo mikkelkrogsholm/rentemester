@@ -34,6 +34,7 @@ pub mod owned_report;
 
 pub mod documents;
 pub mod document_pdf;
+pub mod invoice_extraction;
 
 pub mod bank;
 

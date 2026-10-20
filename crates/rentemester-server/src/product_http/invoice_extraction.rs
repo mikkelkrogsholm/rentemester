@@ -182,7 +182,6 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
 #[cfg(test)]
 mod tests {
     use super::*;
-    use axum::http::Method;
     #[test]
     fn confirmation_is_exact_and_repeated_fields_are_not_admitted() {
         assert!(

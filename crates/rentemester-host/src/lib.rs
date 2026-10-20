@@ -1252,6 +1252,7 @@ mod tests;
 
 mod company_catalog;
 mod document_pdf;
+mod invoice_extraction;
 
 mod portable_backup;
 impl Owner {

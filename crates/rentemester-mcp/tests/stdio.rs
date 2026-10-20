@@ -1980,4 +1980,5 @@ mod report_reads;
 #[path="stdio/opening_balance.rs"]
 mod opening_balance;
 
+#[path="stdio/invoice_extraction.rs"]
 mod invoice_extraction;
