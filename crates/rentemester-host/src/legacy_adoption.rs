@@ -661,15 +661,20 @@ fn recheck_image_source(
     Ok(())
 }
 
+fn has_current_adoption(db: &Connection) -> Result<bool, OwnerError> {
+    db.query_row(
+        "SELECT EXISTS(SELECT 1 FROM workspace_audit a WHERE a.event_type='legacy_adoption_receipt' AND NOT EXISTS(SELECT 1 FROM workspace_audit r WHERE r.event_type='native_portable_restore' AND r.entity_type='backup' AND r.id>a.id))",
+        [], |r| r.get(0),
+    ).map_err(|_| OwnerError::Database)
+}
 impl Owner {
-    /// Detect audited adoption lineage on ordinary startup, including after a
-    /// native backup restore. Any receipt event selects strict grant validation;
-    /// malformed rows and SQL failures must never be swallowed as "not adopted".
+    /// Only a current installation's adoption selects strict grant validation.
+    /// Native restore retains the historical receipt but creates its own fresh
+    /// owner boundary. Malformed current receipts still reach the strict grant;
+    /// SQL errors must never be swallowed as "not adopted".
     pub fn has_legacy_adoption(&mut self) -> Result<bool, OwnerError> {
         self.admit()?;
-        let result=self.held.0.as_mut().unwrap().control.as_ref().unwrap().query_row(
-            "SELECT EXISTS(SELECT 1 FROM workspace_audit WHERE event_type='legacy_adoption_receipt')",
-            [],|r|r.get(0)).map_err(|_|OwnerError::Database);
+        let result = has_current_adoption(self.held.0.as_ref().unwrap().control.as_ref().unwrap());
         let retired = self.finish(result.is_ok());
         if retired && result.is_ok() {
             return Err(OwnerError::Retired);
@@ -839,7 +844,7 @@ mod tests {
         let hash = digest(bytes);
         let original = format!("a/documents/originals/{hash}.txt");
         std::fs::write(source.join(&original), bytes).unwrap();
-        db.execute("INSERT INTO documents(document_no,source,stored_path,mime_type,sha256_hash,document_type,status)VALUES('SYNTHETIC-ORIGINAL','synthetic',?1,'text/plain',?2,'internal_voucher','ingested')",rusqlite::params![format!("documents/originals/{hash}.txt"),hash]).unwrap();
+        db.execute("INSERT INTO documents(document_no,source,stored_path,mime_type,sha256_hash,document_type,status,retain_until)VALUES('SYNTHETIC-ORIGINAL','synthetic',?1,'text/plain',?2,'internal_voucher','ingested','2031-12-31')",rusqlite::params![format!("documents/originals/{hash}.txt"),hash]).unwrap();
         db.close().unwrap();
         control.close().unwrap();
         let mut extra_control = Connection::open_in_memory().unwrap();
@@ -1028,6 +1033,40 @@ mod tests {
         assert_eq!(
             std::fs::read(f.target.join("preserve")).unwrap(),
             b"untouched"
+        );
+    }
+}
+
+#[cfg(test)]
+mod lineage_tests {
+    use super::*;
+    #[test]
+    fn native_restore_boundary_preserves_history_and_selects_only_current_adoption() {
+        let db = Connection::open_in_memory().unwrap();
+        db.execute_batch("CREATE TABLE workspace_audit(id INTEGER PRIMARY KEY,event_type TEXT,entity_type TEXT,entity_id TEXT)").unwrap();
+        assert!(!has_current_adoption(&db).unwrap());
+        db.execute_batch("INSERT INTO workspace_audit(event_type,entity_type,entity_id)VALUES('native_portable_restore','backup','older-native-boundary');INSERT INTO workspace_audit(event_type,entity_type,entity_id)VALUES('legacy_adoption_receipt','legacy_adoption','malformed-current-receipt')").unwrap();
+        // A malformed current receipt must select strict validation, not bypass it.
+        assert!(has_current_adoption(&db).unwrap());
+        db.execute_batch("INSERT INTO workspace_audit(event_type,entity_type,entity_id)VALUES('native_portable_restore','unrelated','not-a-restore-boundary')").unwrap();
+        assert!(has_current_adoption(&db).unwrap());
+        db.execute_batch("INSERT INTO workspace_audit(event_type,entity_type,entity_id)VALUES('native_portable_restore','backup','new-native-boundary')").unwrap();
+        assert!(!has_current_adoption(&db).unwrap());
+        assert_eq!(
+            db.query_row::<String, _, _>(
+                "SELECT entity_id FROM workspace_audit WHERE event_type='legacy_adoption_receipt'",
+                [],
+                |r| r.get(0)
+            )
+            .unwrap(),
+            "malformed-current-receipt"
+        );
+        db.execute_batch("INSERT INTO workspace_audit(event_type,entity_type,entity_id)VALUES('legacy_adoption_receipt','wrong-entity','another-malformed-current-receipt')").unwrap();
+        assert!(has_current_adoption(&db).unwrap());
+        let unavailable = Connection::open_in_memory().unwrap();
+        assert_eq!(
+            has_current_adoption(&unavailable).unwrap_err(),
+            OwnerError::Database
         );
     }
 }
