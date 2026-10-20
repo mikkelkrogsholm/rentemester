@@ -283,6 +283,7 @@ pub(super) fn canonicalize(
             "physical conversion result differs from admitted overlays",
         ));
     }
+    integrity(db)?;
     let tables = canonical
         .iter()
         .filter(|o| o.kind == "table")
@@ -291,10 +292,15 @@ pub(super) fn canonicalize(
     let columns = projection(db, &tables)?;
     let before = project_digest(db, &columns)?;
     let rebuilt = Connection::open_in_memory().map_err(invalid)?;
-    // Foreign keys are checked after the entire graph has been copied. No
-    // mutation trigger is installed until its historical rows are in place.
+    // The bundled SQLite defaults to foreign_keys=ON. This new, disposable
+    // connection copies tables in catalogue order, so temporarily disable FK
+    // enforcement while copying the complete graph. The source was checked
+    // above; enforcement and the full FK check are restored before admission.
+    // No mutation trigger is installed until historical rows are in place.
     rebuilt
-        .execute_batch("PRAGMA trusted_schema=OFF; PRAGMA synchronous=FULL;")
+        .execute_batch(
+            "PRAGMA foreign_keys=OFF; PRAGMA trusted_schema=OFF; PRAGMA synchronous=FULL;",
+        )
         .map_err(failed)?;
     for object in canonical.iter().filter(|o| o.kind == "table") {
         rebuilt.execute_batch(&object.sql).map_err(failed)?;
@@ -394,6 +400,12 @@ mod tests {
             std::fs::write(&converted_path, converted.bytes()).unwrap();
             let result = Connection::open(&converted_path).unwrap();
             crate::portable_backup::company(&result).unwrap();
+            assert_eq!(
+                result
+                    .query_row("PRAGMA foreign_keys", [], |r| r.get::<_, i64>(0))
+                    .unwrap(),
+                1
+            );
             let mut expected = company_baseline::load_images().unwrap().current;
             expected.sort_by(|a, b| a.name.cmp(&b.name));
             assert_eq!(schema(&result).unwrap(), expected);
