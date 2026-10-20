@@ -19,7 +19,9 @@ export type AccountRole =
   | "input_vat"
   | "reverse_charge_vat"
   | "vat_settlement"
-  | "operational_default";
+  | "operational_default"
+  | "fx_gain"
+  | "fx_loss";
 
 /** The server's read-only, fail-closed role lookup (a dry run, not a write). */
 export type AccountRoleResolution =

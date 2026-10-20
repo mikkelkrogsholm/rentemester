@@ -10,6 +10,7 @@ const roles: Record<AccountRole, [string, string, string]> = {
   bank: ["Bankkonto", "asset", "debit"], debtors: ["Debitorer", "asset", "debit"],
   creditors: ["Kreditorer", "liability", "credit"], output_vat: ["Salgsmoms", "vat", "credit"],
   input_vat: ["Købsmoms", "vat", "debit"], reverse_charge_vat: ["Omvendt betalingspligt-moms", "vat", "credit"],
+  fx_gain: ["Realiseret valutagevinst", "income", "credit"], fx_loss: ["Realiseret valutatab", "expense", "debit"],
   vat_settlement: ["Momsafregning", "liability", "credit"], operational_default: ["Standard driftskonto", "expense", "debit"],
 };
 

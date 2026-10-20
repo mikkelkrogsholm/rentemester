@@ -19,3 +19,10 @@ test("invoice preview and issue preserve explicit native tax facts without rewri
   expect(result).not.toHaveProperty("vatRate");
   expect(result).not.toHaveProperty("vatAmount");
 });
+
+
+test("EU invoice wire retains explicit FX without a caller VIES claim",async()=>{
+ const calls:unknown[]=[];stubGlobal("fetch",async(input:RequestInfo|URL,init?:RequestInit)=>{calls.push(JSON.parse(String(init?.body)));return String(input).endsWith("/preview")?new Response("%PDF",{headers:{"content-type":"application/pdf"}}):new Response(JSON.stringify({ok:true,invoice:{documentId:1,invoiceNumber:"S-1",lines:[],netAmount:100,vatAmount:0,grossAmount:100,fxRateToDkk:7.45,grossAmountDkk:745}}));});
+ const input:InvoiceIssueInput={issueDate:"2025-10-12",currency:"EUR",fxRateToDkk:7.45,vatTreatment:"foreign_reverse_charge",reverseChargeBasis:"EU_B2B_SERVICES",reverseChargeNote:"Reverse charge",buyer:{vatOrCvr:"DE123456789"},lines:[{description:"Synthetic EU service",quantity:1,unitPriceExVat:100,taxClassification:"reverse_charge",vatRate:0,reverseChargeBasis:"EU_B2B_SERVICES"}]};
+ await invoicesApi.previewInvoice("synthetic",input);const issued=await invoicesApi.issueInvoice("synthetic",input);expect(calls).toEqual([input,input]);expect(issued.grossAmount).toBe(100);expect(issued.grossAmountDkk).toBe(745);
+});

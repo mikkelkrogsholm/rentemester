@@ -29,6 +29,7 @@ const COMPANY_PAGE_ROUTES = [
   { id: "posting-rules", segment: "posteringsregler", label: "Posteringsregler", area: "bookkeeping" },
   { id: "batch-bookkeeping", segment: "batchbogfoering", label: "Bogføringskø", area: "bookkeeping" },
   { id: "bank", segment: "bank", label: "Bank", area: "bookkeeping" },
+  { id: "eu-sales", segment: "eu-salg", label: "EU-salg uden moms", area: "vat-periods" },
   { id: "vat", segment: "moms", label: "Moms", area: "vat-periods" },
   { id: "documents", segment: "bilag", label: "Bilag", area: "bookkeeping" },
   { id: "payables", segment: "leverandoerfaktura", label: "Leverandørfaktura", area: "bookkeeping" },
@@ -71,7 +72,7 @@ export const COMPANY_ROUTE_DEFINITIONS = [
 
 export type CompanyYearScope = "year" | "company" | "multi-year" | "vat-period";
 export function companyYearScope(id: CompanyRouteId): CompanyYearScope {
-  if (["documents", "document-detail", "workspace-register", "workspace-inbox", "contacts", "invoice-templates", "manage", "accounts", "dimensions", "bank-accounts", "gdpr", "retention", "integrity", "receipt-email", "posting-rules", "drafts", "batch-bookkeeping", "suggestions", "exceptions"].includes(id)) return "company";
+  if (["eu-sales", "documents", "document-detail", "workspace-register", "workspace-inbox", "contacts", "invoice-templates", "manage", "accounts", "dimensions", "bank-accounts", "gdpr", "retention", "integrity", "receipt-email", "posting-rules", "drafts", "batch-bookkeeping", "suggestions", "exceptions"].includes(id)) return "company";
   if (id === "multi-year") return "multi-year";
   if (id === "vat") return "vat-period";
   return "year";

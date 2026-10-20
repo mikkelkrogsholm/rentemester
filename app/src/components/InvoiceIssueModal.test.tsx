@@ -836,3 +836,21 @@ test("native reverse line refuses missing basis before provider-free preview",as
   await userEvent.click(screen.getByRole("button",{name:"Forhåndsvis"}));
   expect(preview.mock.calls[0]![1].lines[0]).toMatchObject({taxClassification:"reverse_charge",vatRate:0,reverseChargeBasis:"DK_MOMSLOVEN_§46_STK_1_NR_7"});
 });
+
+test("native EU service keeps EUR and fixed DKK rate identical in preview and issue, VIES only on request",async()=>{
+  const {preview,issue}=await nativeTaxForm({currency:"EUR",vatTreatment:"foreign_reverse_charge",netAmount:2000,vatAmount:0,grossAmount:2000,fxRateToDkk:7.45,netAmountDkk:14900,vatAmountDkk:0,grossAmountDkk:14900});
+  const {api}=await import("../lib/api");const vies=vi.spyOn(api,"viesValidate").mockResolvedValue({ok:true,validation:{normalized:"DE123456789",countryCode:"DE",vatNumber:"123456789",valid:true,name:"Synthetic EU customer",address:null,validatedAt:"2026-05-16T10:00:00Z",expiresAt:"2026-08-14T10:00:00Z"}});
+  await userEvent.selectOptions(screen.getByLabelText("Momsbehandling"),"foreign_reverse_charge");
+  await userEvent.clear(screen.getByLabelText("Valuta"));await userEvent.type(screen.getByLabelText("Valuta"),"EUR");
+  await userEvent.click(screen.getByRole("button",{name:"Forhåndsvis"}));expect(preview).not.toHaveBeenCalled();expect(vies).not.toHaveBeenCalled();
+  await userEvent.type(screen.getByLabelText("Valutakurs i DKK"),"7,45");
+  await userEvent.type(screen.getByLabelText("Kunde CVR/moms"),"DE123456789");
+  await userEvent.type(screen.getByLabelText("Note om omvendt betalingspligt"),"Reverse charge — EU B2B services");
+  await userEvent.click(screen.getByRole("button",{name:"Verificér EU-momsnummer"}));
+  expect(await screen.findByText(/Gyldigt EU-momsnummer/)).toBeInTheDocument();expect(vies).toHaveBeenCalledTimes(1);
+  await userEvent.click(screen.getByRole("button",{name:"Forhåndsvis"}));await userEvent.click(screen.getByRole("button",{name:"Udsted faktura"}));
+  const payload=issue.mock.calls[0]![1];expect(payload).toEqual(preview.mock.calls[0]![1]);
+  expect(payload).toMatchObject({currency:"EUR",fxRateToDkk:7.45,vatTreatment:"foreign_reverse_charge",reverseChargeBasis:"EU_B2B_SERVICES",lines:[{taxClassification:"reverse_charge",vatRate:0,reverseChargeBasis:"EU_B2B_SERVICES"}]});
+  expect(payload).not.toHaveProperty("viesValidation");expect(payload).not.toHaveProperty("vatRatePercent");
+  expect(screen.getByText(/Bogføring i DKK/)).toBeInTheDocument();
+});

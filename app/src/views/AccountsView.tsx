@@ -34,6 +34,8 @@ const ACCOUNT_ROLE_LABELS: Record<AccountRole, string> = {
   reverse_charge_vat: "Omvendt betalingspligt-moms",
   vat_settlement: "Momsafregning",
   operational_default: "Standard driftskonto",
+  fx_gain: "Realiseret valutagevinst",
+  fx_loss: "Realiseret valutatab",
 };
 
 const ACCOUNT_ROLE_STATUS_LABELS = {

@@ -22,6 +22,7 @@ function invoiceRequestPayload(input: InvoiceIssueInput) {
     ...(input.invoiceNumber ? { invoiceNumber: input.invoiceNumber } : {}),
     ...(input.dueDate ? { dueDate: input.dueDate } : {}),
     ...(input.currency ? { currency: input.currency } : {}),
+    ...(input.fxRateToDkk !== undefined ? {fxRateToDkk: input.fxRateToDkk} : {}),
     ...(input.seller ? { seller: input.seller } : {}),
     ...(input.buyer ? { buyer: input.buyer } : {}),
   };
@@ -305,7 +306,7 @@ export type InvoiceLineInput = {
   unitPriceExVat: number;
   taxClassification?: InvoiceTaxClassification;
   vatRate?: number;
-  reverseChargeBasis?: DomesticReverseChargeBasis;
+  reverseChargeBasis?: InvoiceReverseChargeBasis;
 };
 
 /** An invoice party (seller / buyer) — all fields optional. */
@@ -320,6 +321,7 @@ export type InvoicePartyInput = {
 };
 
 export type InvoiceTaxClassification = "taxable" | "exempt" | "reverse_charge";
+export type InvoiceReverseChargeBasis = DomesticReverseChargeBasis | "EU_B2B_SERVICES";
 export type DomesticReverseChargeBasis = "DK_MOMSLOVEN_§46_STK_1_NR_6" | "DK_MOMSLOVEN_§46_STK_1_NR_7";
 
 /** Input for `api.issueInvoice`. */
@@ -327,26 +329,32 @@ export type InvoiceIssueInput = {
   issueDate: string;
   lines: InvoiceLineInput[];
   vatRatePercent?: number;
-  vatTreatment?: "standard" | "domestic_reverse_charge";
-  reverseChargeBasis?: DomesticReverseChargeBasis;
+  vatTreatment?: "standard" | "domestic_reverse_charge" | "foreign_reverse_charge";
+  reverseChargeBasis?: InvoiceReverseChargeBasis;
   reverseChargeNote?: string;
   customerId?: number;
   invoiceNumber?: string;
   dueDate?: string;
   currency?: string;
+  fxRateToDkk?: number;
   seller?: InvoicePartyInput;
   buyer?: InvoicePartyInput;
 };
 
 /** The issue result the server echoes back — every amount Rentemester computed. */
 export type InvoiceIssueSummary = {
+  currency?: string;
+  fxRateToDkk?: number;
+  netAmountDkk?: number;
+  vatAmountDkk?: number;
+  grossAmountDkk?: number;
   documentId: number | null;
   invoiceNumber: string | null;
   netAmount: number;
   vatRate?: number | null;
   vatAmount?: number | null;
-  vatTreatment?: "standard" | "domestic_reverse_charge";
-  reverseChargeBasis?: DomesticReverseChargeBasis | null;
+  vatTreatment?: "standard" | "domestic_reverse_charge" | "foreign_reverse_charge";
+  reverseChargeBasis?: InvoiceReverseChargeBasis | null;
   reverseChargeNote?: string | null;
   grossAmount: number;
   lines: Array<InvoiceLineInput & { lineTotalExVat: number; vatBase?: number; vatAmount?: number }>;

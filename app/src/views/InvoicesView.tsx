@@ -133,7 +133,7 @@ export function InvoicesView({ detail = false }: { detail?: boolean } = {}) {
         (!from || Boolean(row.invoiceDate && row.invoiceDate >= from)) &&
         (!to || Boolean(row.invoiceDate && row.invoiceDate <= to));
     });
-    if (sort === "date" || sort === "amount" || sort === "due") rows.sort((a, b) => dir * (sort === "amount" ? a.grossAmount - b.grossAmount : (sort === "date" ? a.invoiceDate ?? "" : a.effectiveDueDate ?? "").localeCompare(sort === "date" ? b.invoiceDate ?? "" : b.effectiveDueDate ?? "")));
+    if (sort === "date" || sort === "amount" || sort === "due") rows.sort((a, b) => dir * (sort === "amount" ? (a.grossAmountDkk ?? a.grossAmount) - (b.grossAmountDkk ?? b.grossAmount) : (sort === "date" ? a.invoiceDate ?? "" : a.effectiveDueDate ?? "").localeCompare(sort === "date" ? b.invoiceDate ?? "" : b.effectiveDueDate ?? "")));
     return rows;
   }, [state.data?.invoices, detail, documentId, q, status, from, to, sort, dir]);
   const pagination = listPagination(params, filtered.length);
@@ -163,8 +163,8 @@ export function InvoicesView({ detail = false }: { detail?: boolean } = {}) {
   const inv = state.data!;
   const currency = inv.company.currency || "DKK";
   const invoiceCurrencies = new Set(inv.invoices.map((row) => (row.currency || currency).trim().toUpperCase()));
-  const multipleCurrencies = invoiceCurrencies.size > 1;
-  const totalsCurrency = invoiceCurrencies.size === 1 ? [...invoiceCurrencies][0]! : currency;
+  const multipleCurrencies = !inv.totalsCurrency && invoiceCurrencies.size > 1;
+  const totalsCurrency = inv.totalsCurrency || (invoiceCurrencies.size === 1 ? [...invoiceCurrencies][0]! : currency);
 
   return (
     <section className="statement">
@@ -207,6 +207,7 @@ export function InvoicesView({ detail = false }: { detail?: boolean } = {}) {
               Afstem faktura <strong>{settling.invoiceNo}</strong> mod en
               indgående bankbetaling med samme reference. Afstemningen lægger en
               postering og kan ikke fortrydes.
+              {settling.currency!=="DKK"&&<> Bankposten skal være i {settling.currency} med dokumenteret DKK-værdi. En kursforskel bogføres på bekræftede konti for valutagevinst eller valutatab.</>}
             </p>
           }
           confirmLabel="Afstem faktura"
@@ -233,7 +234,7 @@ export function InvoicesView({ detail = false }: { detail?: boolean } = {}) {
 
       {refunding && inCurrentScope && <ConfirmDialog operationKey={`refund:${refunding.documentId}`}
         title="Afstem tilbagebetaling" confirmLabel="Afstem tilbagebetaling" confirmKind="danger"
-        body={<p>Registrér den allerede gennemførte tilbagebetaling til kunden på faktura <strong>{refunding.invoiceNo}</strong>. Kunden har {formatKroner(-refunding.openBalance, refunding.currency)} til gode. Den valgte bankpost bogføres mellem bank og fakturaens debitorkonto.</p>}
+        body={<p>Registrér den allerede gennemførte tilbagebetaling til kunden på faktura <strong>{refunding.invoiceNo}</strong>. Kunden har {formatKroner(-refunding.openBalance, refunding.currency)} til gode. Den valgte bankpost bogføres mellem bank og fakturaens debitorkonto.{refunding.currency!=="DKK"&&<> Bankposten skal være i {refunding.currency} med dokumenteret DKK-værdi. Kursforskelle bogføres særskilt.</>}</p>}
         noteLabel="Bankreference" notePlaceholder="Referencen på bankens udbetaling"
         onConfirm={async reference => { if (!reference.trim()) throw new Error("Angiv bankreferencen på tilbagebetalingen."); await api.refundInvoice(slug, refunding.documentId, reference.trim()); state.reload(); }}
         onRefresh={state.reload} onClose={() => setRefunding(null)} />}
@@ -637,9 +638,11 @@ export function InvoicesView({ detail = false }: { detail?: boolean } = {}) {
                       </td>
                       <td role="cell" data-label="Beløb inkl. moms" className="num">
                         <Amount value={row.grossAmount} currency={row.currency || currency} />
+                        {row.currency!=="DKK"&&typeof row.grossAmountDkk==="number"&&<div className="muted">{formatKroner(row.grossAmountDkk,"DKK")} · kurs {row.fxRateToDkk}</div>}
                       </td>
                       <td role="cell" data-label="Udestående" className="num">
                         <Amount value={row.openBalance} currency={row.currency || currency} />
+                        {row.currency!=="DKK"&&typeof row.openBalanceDkk==="number"&&<div className="muted">Bogført: {formatKroner(row.openBalanceDkk,"DKK")}</div>}
                       </td>
                       <td role="cell" data-label="Status">
                         <span className={`flag ${meta.tone}`}>

@@ -15,7 +15,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { api, type InvoiceIssueSummary, type InvoiceLineInput } from "../lib/api";
-import type {InvoiceTaxClassification,DomesticReverseChargeBasis} from "../lib/api/invoices";
+import type {InvoiceTaxClassification,DomesticReverseChargeBasis,InvoiceReverseChargeBasis} from "../lib/api/invoices";
 import { formatKroner, parseDanishAmount } from "../lib/format";
 import type { ContactCustomerRow, CompanyInvoices } from "../lib/types";
 import { Banner } from "./Feedback";
@@ -67,11 +67,16 @@ export function InvoiceIssueForm({
   const [issueDate, setIssueDate] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [vatRatePercent, setVatRatePercent] = useState("25");
-  const [vatTreatment,setVatTreatment]=useState<"standard"|"domestic_reverse_charge">("standard");
+  const [vatTreatment,setVatTreatment]=useState<"standard"|"domestic_reverse_charge"|"foreign_reverse_charge">("standard");
   const [lineTaxes,setLineTaxes]=useState(false);
   const [reverseChargeBasis,setReverseChargeBasis]=useState<DomesticReverseChargeBasis|"">("");
   const [reverseChargeNote,setReverseChargeNote]=useState("");
-  const explicitTaxes=native&&(lineTaxes||vatTreatment==="domestic_reverse_charge");
+  const foreign=native&&vatTreatment==="foreign_reverse_charge";
+  const explicitTaxes=native&&(lineTaxes||vatTreatment!=="standard");
+  const [fxRate,setFxRate]=useState("");
+  const [vies,setVies]=useState<{vat:string;valid:boolean;validatedAt:string;expiresAt:string;name:string|null}|null>(null);
+  const [checkingVat,setCheckingVat]=useState(false);
+  const [viesError,setViesError]=useState<string|null>(null);
   const [currency, setCurrency] = useState("DKK");
   const [sellerName, setSellerName] = useState("");
   const [sellerAddress, setSellerAddress] = useState("");
@@ -97,7 +102,7 @@ export function InvoiceIssueForm({
   // (e.g. "Udsteder…" while only the preview is running). `busy` is derived
   // from this so all the existing disable/guard logic stays untouched.
   const [pending, setPending] = useState<"preview" | "issue" | null>(null);
-  const busy = pending !== null;
+  const busy = pending !== null || checkingVat;
   const [error, setError] = useState<string | null>(null);
   const [locked, setLocked] = useState<string | null>(null);
   const [done, setDone] = useState<InvoiceIssueSummary | null>(null);
@@ -244,6 +249,8 @@ export function InvoiceIssueForm({
       setError("Vælg dansk lovgrundlag og angiv en note om omvendt betalingspligt.");
       return null;
     }
+    if(native&&(currency.trim().toUpperCase()||"DKK")!=="DKK"&&!(Number.isFinite(parseDanishAmount(fxRate))&&Number(parseDanishAmount(fxRate))>0)){setError("Angiv en positiv valutakurs i DKK pr. valutaenhed.");return null;}
+    if(foreign&&(!reverseChargeNote.trim()||!buyerVat.trim())){setError("Angiv købers EU-momsnummer og en note om omvendt betalingspligt.");return null;}
     const parsedLines:InvoiceLineInput[] = [];
     for (const [i, line] of lines.entries()) {
       if (!line.description.trim()) {
@@ -263,8 +270,8 @@ export function InvoiceIssueForm({
         formRef.current?.querySelector<HTMLInputElement>(`[aria-label="Linje ${i + 1} enhedspris"]`)?.focus();
         return null;
       }
-      const classification=vatTreatment==="domestic_reverse_charge"?"reverse_charge":line.taxClassification;
-      const basis=vatTreatment==="domestic_reverse_charge"?reverseChargeBasis:line.reverseChargeBasis;
+      const classification=vatTreatment!=="standard"?"reverse_charge":line.taxClassification;
+      const basis:InvoiceReverseChargeBasis|""=foreign?"EU_B2B_SERVICES":vatTreatment==="domestic_reverse_charge"?reverseChargeBasis:line.reverseChargeBasis;
       if(explicitTaxes&&classification==="reverse_charge"&&!basis){setError(`Linje ${i+1}: vælg dansk lovgrundlag for omvendt betalingspligt.`);return null;}
       parsedLines.push({
         description: line.description.trim(),
@@ -285,9 +292,10 @@ export function InvoiceIssueForm({
    */
   function buildPartyAndExtras() {
     return {
-      ...(explicitTaxes?{vatTreatment,...(vatTreatment==="domestic_reverse_charge"&&reverseChargeBasis?{reverseChargeBasis,reverseChargeNote:reverseChargeNote.trim()}:{})}:{}),
+      ...(explicitTaxes?{vatTreatment,...(foreign?{reverseChargeBasis:"EU_B2B_SERVICES" as const,reverseChargeNote:reverseChargeNote.trim()}:vatTreatment==="domestic_reverse_charge"&&reverseChargeBasis?{reverseChargeBasis,reverseChargeNote:reverseChargeNote.trim()}:{})}:{}),
+      ...(native&&(currency.trim().toUpperCase()||"DKK")!=="DKK"?{fxRateToDkk:parseDanishAmount(fxRate)!}:{}),
       customerId: selectedCustomerId ? Number(selectedCustomerId) : undefined,
-      currency: currency.trim() || "DKK",
+      currency: currency.trim().toUpperCase() || "DKK",
       dueDate: dueDate.trim() || undefined,
       seller:
         sellerName.trim() || sellerAddress.trim() || sellerVat.trim()
@@ -411,22 +419,23 @@ export function InvoiceIssueForm({
                   </td>
                 </tr>
                 <tr>
-                  <td>{done.vatTreatment==="domestic_reverse_charge"?"Omvendt betalingspligt":typeof done.vatRate==="number"?`Moms (${Math.round(done.vatRate*100)}%)`:"Moms (pr. linje)"}</td>
+                  <td>{done.vatTreatment!==undefined&&done.vatTreatment!=="standard"?"Omvendt betalingspligt":typeof done.vatRate==="number"?`Moms (${Math.round(done.vatRate*100)}%)`:"Moms (pr. linje)"}</td>
                   <td className="num">
-                    {done.vatTreatment==="domestic_reverse_charge"?"Køber afregner moms":typeof done.vatAmount==="number"?formatKroner(done.vatAmount,currency):"Ikke oplyst af serveren"}
+                    {done.vatTreatment!==undefined&&done.vatTreatment!=="standard"?"Køber afregner moms":typeof done.vatAmount==="number"?formatKroner(done.vatAmount,currency):"Ikke oplyst af serveren"}
                   </td>
                 </tr>
                 <tr>
-                  <td>{done.vatTreatment==="domestic_reverse_charge"?"I alt — uden opkrævet moms":"I alt inkl. moms"}</td>
+                  <td>{done.vatTreatment!==undefined&&done.vatTreatment!=="standard"?"I alt — uden opkrævet moms":"I alt inkl. moms"}</td>
                   <td className="num">
                     <strong>{formatKroner(done.grossAmount, currency)}</strong>
                   </td>
                 </tr>
               </tbody>
             </table>
+            {native&&typeof done.grossAmountDkk==="number"&&<p>Bogføring i DKK: netto {typeof done.netAmountDkk==="number"?formatKroner(done.netAmountDkk,"DKK"):"Ikke oplyst"} · moms {typeof done.vatAmountDkk==="number"?formatKroner(done.vatAmountDkk,"DKK"):"Ikke oplyst"} · i alt {formatKroner(done.grossAmountDkk,"DKK")} · kurs {done.fxRateToDkk}</p>}
             {native&&done.lines.some(line=>line.taxClassification)&&<table className="data" aria-label="Udstedte linjers moms">
               <thead><tr><th>Linje</th><th>Momstype</th><th>Moms</th></tr></thead>
-              <tbody>{done.lines.map((line,index)=><tr key={index}><td>{line.description}</td><td>{line.taxClassification==="taxable"?"Momspligtig — 25 %":line.taxClassification==="exempt"?"Momsfritaget":line.taxClassification==="reverse_charge"?"Dansk omvendt betalingspligt":"Ikke oplyst"}{line.reverseChargeBasis&&<div>{line.reverseChargeBasis}</div>}</td><td>{typeof line.vatAmount==="number"?formatKroner(line.vatAmount,currency):"Ikke oplyst af serveren"}</td></tr>)}</tbody>
+              <tbody>{done.lines.map((line,index)=><tr key={index}><td>{line.description}</td><td>{line.taxClassification==="taxable"?"Momspligtig — 25 %":line.taxClassification==="exempt"?"Momsfritaget":line.taxClassification==="reverse_charge"?(done.vatTreatment==="foreign_reverse_charge"?"EU B2B-ydelser":"Dansk omvendt betalingspligt"):"Ikke oplyst"}{line.reverseChargeBasis&&<div>{line.reverseChargeBasis}</div>}</td><td>{typeof line.vatAmount==="number"?formatKroner(line.vatAmount,currency):"Ikke oplyst af serveren"}</td></tr>)}</tbody>
             </table>}
             {done.reverseChargeNote&&<p>{done.reverseChargeNote}</p>}
             {done.reverseChargeBasis&&<p>Lovgrundlag: {done.reverseChargeBasis}</p>}
@@ -513,17 +522,19 @@ export function InvoiceIssueForm({
                 <Select aria-label="Momsbehandling" value={vatTreatment} onChange={e=>setVatTreatment(e.target.value as typeof vatTreatment)}>
                   <option value="standard">Almindelig dansk faktura</option>
                   <option value="domestic_reverse_charge">Dansk omvendt betalingspligt</option>
+                  <option value="foreign_reverse_charge">EU B2B-ydelser — omvendt betalingspligt</option>
                 </Select>
               </label>
               {vatTreatment==="standard"?<label><input type="checkbox" checked={lineTaxes} onChange={e=>setLineTaxes(e.target.checked)}/> Specificér moms pr. linje</label>:<>
-                <label className="modal-field">Dansk lovgrundlag<Select aria-label="Dansk lovgrundlag" value={reverseChargeBasis} onChange={e=>setReverseChargeBasis(e.target.value as typeof reverseChargeBasis)}>
+                {!foreign&&<label className="modal-field">Dansk lovgrundlag<Select aria-label="Dansk lovgrundlag" value={reverseChargeBasis} onChange={e=>setReverseChargeBasis(e.target.value as typeof reverseChargeBasis)}>
                   <option value="">Vælg lovgrundlag</option>
                   <option value="DK_MOMSLOVEN_§46_STK_1_NR_6">Momsloven § 46, stk. 1, nr. 6</option>
                   <option value="DK_MOMSLOVEN_§46_STK_1_NR_7">Momsloven § 46, stk. 1, nr. 7</option>
-                </Select></label>
+                </Select></label>}
+                {foreign&&<p>Grundlag: EU B2B-ydelser. Køber afregner moms. Verificér købers momsnummer nedenfor.</p>}
                 <label className="modal-field">Note om omvendt betalingspligt<Input value={reverseChargeNote} onChange={e=>setReverseChargeNote(e.target.value)}/></label>
               </>}
-              <p className="muted">Vælg kun fritagelse eller omvendt betalingspligt, når grundlaget er afklaret. Serveren kontrollerer valg og beregner beløbene; udenlandsk moms håndteres ikke her.</p>
+              <p className="muted">Vælg kun fritagelse eller omvendt betalingspligt, når grundlaget er afklaret. Serveren kontrollerer valg og beregner beløbene; EU B2B-ydelser kræver en gyldig, aktuel VIES-kontrol, som serveren knytter til fakturaen.</p>
             </fieldset>}
             <div className="modal-field-grid">
               {!explicitTaxes&&<label className="modal-field">
@@ -548,6 +559,7 @@ export function InvoiceIssueForm({
               </label>
             </div>
 
+            {native&&(currency.trim().toUpperCase()||"DKK")!=="DKK"&&<label className="modal-field">Valutakurs — DKK pr. {currency.trim().toUpperCase()}<Input aria-label="Valutakurs i DKK" inputMode="decimal" value={fxRate} onChange={e=>setFxRate(e.target.value)} disabled={busy||uncertain}/><span className="muted">Angiv den dokumenterede kurs på fakturadatoen. Linjebeløb er i {currency.trim().toUpperCase()}; bogføringen er i DKK.</span></label>}
             <div className="modal-field-grid">
               <label className="modal-field">
                 Sælger
@@ -620,6 +632,7 @@ export function InvoiceIssueForm({
                 />
               </label>
             </div>
+            {foreign&&<div className="modal-body"><Button type="button" className="btn secondary" disabled={busy||uncertain||checkingVat||!buyerVat.trim()} onClick={async()=>{const vat=buyerVat.trim();setCheckingVat(true);setViesError(null);try{const result=await api.viesValidate(slug,vat);setVies({vat, ...result.validation});}catch(e){setVies(null);setViesError((e as Error).message);}finally{setCheckingVat(false);}}}>{checkingVat?"Kontrollerer…":"Verificér EU-momsnummer"}</Button>{vies&&vies.vat===buyerVat.trim()&&<p role="status">{vies.valid?"Gyldigt EU-momsnummer":"Momsnummeret er ikke gyldigt"} · Kontrolleret {vies.validatedAt} · Udløber {vies.expiresAt}{vies.name?` · ${vies.name}`:""}</p>}{viesError&&<p role="alert">{viesError}</p>}</div>}
             <label className="modal-field">
               Kundeadresse
               <Input

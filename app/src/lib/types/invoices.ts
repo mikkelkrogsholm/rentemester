@@ -1,6 +1,6 @@
 // Invoices / Fakturaer + recurring-invoice wire types.
 //
-// All money fields below are kroner (DKK with decimals) — use `formatKroner`.
+// Invoice row amounts use their currency; explicit *Dkk and summary totalsCurrency identify DKK valuations.
 
 import type { FiscalYearEntry, StatementCompany } from "./common";
 
@@ -34,6 +34,10 @@ export type InvoicePeppolStatus = {
 };
 
 export type CompanyInvoiceRow = {
+  grossAmountDkk?: number;
+  openBalanceDkk?: number;
+  creditableBalanceDkk?: number;
+  fxRateToDkk?: number;
   posted?: boolean;
   creditableBalance?: number;
   documentId: number;
@@ -76,9 +80,9 @@ export type CompanyInvoiceRow = {
    * action once this reaches the statutory cap of 3 (rentel. § 9b).
    */
   lastReminderSequence: number;
-  /** Gross amount inc. VAT, kroner. */
+  /** Gross amount including VAT in invoice currency. */
   grossAmount: number;
-  /** Still-outstanding balance on the invoice, kroner. */
+  /** Outstanding original-currency balance. DKK carrying value is openBalanceDkk. */
   openBalance: number;
   currency: string;
   status: InvoiceStatus;
@@ -96,6 +100,9 @@ export type CompanyInvoices = {
   periodStart: string;
   periodEnd: string;
   invoices: CompanyInvoiceRow[];
+  totalsCurrency?: string;
+  totalGrossDkk?: number;
+  totalOpenDkk?: number;
   totalGross: number;
   totalOpen: number;
   overdueCount: number;

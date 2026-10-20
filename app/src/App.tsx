@@ -53,6 +53,7 @@ import { LiquidityView } from "./views/LiquidityView";
 import { BudgetView } from "./views/BudgetView";
 import { JournalView } from "./views/JournalView";
 import { BankView } from "./views/BankView";
+import {EuSalesView} from "./views/EuSalesView";
 import { VatView } from "./views/VatView";
 import { DocumentsView, DocumentDetailView } from "./views/DocumentsView";
 import { ArchiveView } from "./views/ArchiveView";
@@ -115,6 +116,7 @@ const COMPANY_ROUTE_ELEMENTS: Record<CompanyRouteId, ReactElement> = {
   "batch-bookkeeping": <BookkeepingBatchView />,
   bank: <BankView />,
   vat: <VatView />,
+  "eu-sales": <EuSalesView />,
   documents: <DocumentsView />,
   payables: <PayablesView />,
   invoices: <InvoicesView />,

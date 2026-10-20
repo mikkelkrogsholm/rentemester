@@ -968,3 +968,11 @@ describe("InvoicesView — native public delivery",()=>{
 test("public setup API sends only confirmed registration and reads no credentials",async()=>{
   const {api}=await import("../lib/api");mockFetch({"GET /api/companies/acme-aps/invoices/public-config":{publicEInvoice:{configured:true,environment:"test",registered:false,outbound:false}},"POST /api/companies/acme-aps/invoices/public-register":{registration:{registered:true,outbound:true,environment:"test"}}});expect((await api.publicEInvoiceConfig("acme-aps")).registered).toBe(false);expect((await api.registerPublicEInvoice("acme-aps")).registered).toBe(true);const calls=(globalThis.fetch as unknown as ReturnType<typeof vi.fn>).mock.calls;const write=calls.find(c=>String(c[0]).endsWith("/invoices/public-register"))!;expect(JSON.parse(String((write[1] as RequestInit).body))).toEqual({confirm:true});
 });
+
+
+test("native EUR-only invoices keep original rows and explicitly DKK summary totals",async()=>{
+ const base=invoices();const row={...base.invoices[0]!,currency:"EUR",grossAmount:100,openBalance:100,grossAmountDkk:745,openBalanceDkk:745,fxRateToDkk:7.45};
+ mockFetch(route({invoices:[row],totalGross:745,totalOpen:745,totalsCurrency:"DKK",totalGrossDkk:745,totalOpenDkk:745}));renderView();await screen.findByRole("heading",{name:"Fakturaer"});
+ const gross=screen.getByRole("heading",{name:"Faktureret i alt"}).closest(".card")!;expect(gross.textContent).toContain("745,00");expect(gross.textContent).not.toContain("EUR");
+ expect(screen.getByText(/Bogført: 745,00/)).toBeInTheDocument();expect(screen.getByText(/745,00 kr. · kurs 7.45/)).toBeInTheDocument();
+});

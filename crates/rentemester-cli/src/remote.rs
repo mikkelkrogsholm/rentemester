@@ -68,6 +68,8 @@ pub fn run(args: &[String]) -> Result<Value, Failure> {
         help["commands"].as_array_mut().unwrap().extend(crate::opening_balance::COMMANDS.map(|s|json!(s)));
         help["archiveImport"]=crate::archive_import::help();
         help["commands"].as_array_mut().unwrap().extend(crate::archive_import::COMMANDS.map(|s|json!(s)));
+        help["euSales"]=crate::eu_sales::help();
+        help["commands"].as_array_mut().unwrap().extend([json!("eu-sales"),json!("vies-validate")]);
         help["portfolioCashflow"]=crate::portfolio_cashflow::help();
         help["commands"].as_array_mut().unwrap().extend([json!("portfolio"),json!("cashflow")]);
         help["cfoAnalytics"]=crate::cfo_analytics::help();
@@ -119,6 +121,7 @@ pub fn run(args: &[String]) -> Result<Value, Failure> {
         }
         if arg.starts_with("--") {
             if ![
+                "--vat-or-cvr",
                 "--document-id",
                 "--source",
                 "--report",
@@ -206,6 +209,7 @@ pub fn run(args: &[String]) -> Result<Value, Failure> {
         return Err(invalid("email/factor/session-out allowed only with login"));
     }
     if crate::report_reads::accepts(command){return crate::report_reads::run(command,&flags,allow_http,confirmed,preview_reviewed);}
+    if crate::eu_sales::accepts(command){return crate::eu_sales::run(command,&flags,allow_http,confirmed,preview_reviewed);}
     if crate::portfolio_cashflow::accepts(command){return crate::portfolio_cashflow::run(command,&flags,allow_http,confirmed,preview_reviewed);}
     if crate::cfo_analytics::accepts(command){return crate::cfo_analytics::run(command,&flags,allow_http,confirmed,preview_reviewed);}
     if flags.keys().any(|k|["--scope","--company-slugs-json","--group-profile-id","--party","--currency","--aggregate"].contains(k)){return Err(invalid("CFO selectors allowed only on cfo-analytics"));}
