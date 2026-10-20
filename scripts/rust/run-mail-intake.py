@@ -42,7 +42,7 @@ BROWSER = r'''
 import {createHmac,createHash} from 'node:crypto';
 import {spawnSync} from 'node:child_process';
 import {createInterface} from 'node:readline';
-import {readFileSync,readdirSync,writeFileSync,unlinkSync} from 'node:fs';
+import {readFileSync,readdirSync,writeFileSync,unlinkSync,lstatSync,realpathSync} from 'node:fs';
 import {join} from 'node:path';
 import {isDeepStrictEqual} from 'node:util';
 const {chromium}=await import(process.env.RM_MAIL_INTAKE_PLAYWRIGHT);
@@ -99,7 +99,45 @@ async function freeze(){step='stable-source-snapshot';stable=await snapshot();aw
 async function archive(name){step='signed-mail-'+name;const r=await ownerPage.request.post(base+'/api/workspace/backup',{headers:{origin:base},data:{confirm:true}});const ct=r.headers()['content-type'];let failure;if(r.status()!==200||ct!=='application/vnd.rentemester.native-backup+json'){try{failure=await r.json();}catch{}detail={status:r.status(),contentType:ct,code:failure?.code,errors:failure?.errors};throw Error('signed mail backup refused');}const bytes=await r.body();need(bytes.length&&bytes.length<=96*1024*1024,'bounded signedartifact');writeFileSync(join(work,`mail-intake-${name}.native-backup.json`),bytes,{mode:0o600,flag:'wx'});need(isDeepStrictEqual(await snapshot(),stable),'backup does not mutate retained businessfacts');return{sha256:hash(bytes),bytes:bytes.length};}
 async function restored(){step='fresh-owner-normal-mfa-source-free';ownerPage=await newPage();freshOwner={email:'restored@example.invalid',password:'synthetic-restored-password-789',codes:[]};await ownerPage.goto((await mail('verification',freshOwner.email)).actionUrl);need((await enroll(ownerPage,freshOwner)).user.id!==ownerId,'no historical user authority adoption');need(isDeepStrictEqual(await snapshot(),stable),'full sources/history/review/dedup/document/books survive freshrestore');const status=await read(prefix+'bilagsmail');need(status.bilagsmail.imapConfigured===false&&!status.bilagsmail.polling.enabled,'no restored credentials or background authority');await originals();return{sourceFreeRestoreQualified:true,credentialsAbsent:true};}
 async function restoredReopen(){step='fresh-mfa-target-reopen';await ownerPage.context().clearCookies();await login(ownerPage,freshOwner);need(isDeepStrictEqual(await snapshot(),stable),'restored reopen exact source/businesshistory');await originals();return{restoredTargetReopenQualified:true};}
-for await(const line of createInterface({input:process.stdin,crlfDelay:Infinity})){try{const a=JSON.parse(line);let value;if(a==='authenticate')value=await authenticate();else if(a==='setup')value=await setup();else if(a==='initial')value=await initial();else if(a==='review')value=await review();else if(a==='repeat')value=await repeat();else if(a==='dedup')value=await dedup();else if(a==='hold-delete')value=await holdBegin('delete');else if(a==='hold-revoke')value=await holdBegin('revoke');else if(a==='delete-config')value=await deleteConfig();else if(a==='revoke')value=await revoke();else if(a==='hold-finish')value=await holdFinish();else if(a==='configure')value=await configure();else if(a==='prime')value=await pollUi();else if(a==='service')value=await createService();else if(a==='background')value=await background();else if(a==='freeze')value=await freeze();else if(a==='reopen')value=await reopen();else if(a.startsWith('archive-'))value=await archive(a.slice(8));else if(a==='restored')value=await restored();else if(a==='restored-reopen')value=await restoredReopen();else if(a==='finish'){await browser?.close();emit({ok:true,value:{finished:true}});break;}else throw Error('unknown phase');emit({ok:true,value});}catch(error){emit({ok:false,step,detail,errorType:error?.name});await browser?.close().catch(()=>{});process.exitCode=1;break;}}
+let clientPhase=0;
+async function clientReads(){
+ step='current-mfa-http-cli-mcp-read-parity';const before=await snapshot(),canonicalStatus=await read(prefix+'bilagsmail');
+ const cookiePath=join(realpathSync(work),`mail-client-${++clientPhase}.cookie`),outputs=[];
+ const cookies=await ownerPage.context().cookies(base);need(cookies.some(c=>c.httpOnly),'current normal MFA HttpOnly cookie for adapters');
+ writeFileSync(cookiePath,cookies.map(c=>`${c.name}=${c.value}`).join('; '),{mode:0o600,flag:'wx'});
+ const common=['--server',base,'--cookie-file',cookiePath,'--allow-loopback-http'];
+ function cli(command,selectors=[]){const r=spawnSync(join(work,'rentemester-rust'),['remote',command,...common,'--company','synthetic',...selectors],{encoding:'utf8',timeout:45000,maxBuffer:32*1024*1024});need(!r.error&&r.status===0,`readonly CLI ${command} terminal`);const envelope=JSON.parse(r.stdout);need(envelope.ok===true&&envelope.data?.ok===true,'canonical CLI wrapper');return envelope.data;}
+ function mcp(name,arguments_={}){const input=[{jsonrpc:'2.0',id:1,method:'initialize',params:{protocolVersion:'2025-11-25',capabilities:{},clientInfo:{name:'synthetic-mail-intake-read-proof',version:'1'}}},{jsonrpc:'2.0',method:'notifications/initialized'},{jsonrpc:'2.0',id:2,method:'tools/call',params:{name,arguments:{company:'synthetic',...arguments_}}}].map(v=>JSON.stringify(v)).join('\n')+'\n';const r=spawnSync(join(work,'rentemester-mcp'),common,{input,encoding:'utf8',timeout:45000,maxBuffer:32*1024*1024});need(!r.error&&r.status===0,`readonly MCP ${name} terminal`);const call=r.stdout.trim().split('\n').map(s=>JSON.parse(s)).find(v=>v.id===2);need(!call?.error&&!call?.result?.isError&&call?.result?.structuredContent?.ok===true&&call.result.structuredContent.data?.ok===true,'canonical MCP wrapper');return call.result.structuredContent.data;}
+ try {
+  need(isDeepStrictEqual(cli('bilagsmail'),canonicalStatus),'full canonical HTTP/CLI Bilagsmail equality');
+  need(isDeepStrictEqual(mcp('bilagsmail'),canonicalStatus),'full canonical HTTP/MCP Bilagsmail equality');
+  const checked=[];
+  for(const [index,source] of before.sources.entries()){
+   const id=source.sourceId,path=prefix+'workspace-inbox/'+encodeURIComponent(id),canonical=await read(path);
+   need(isDeepStrictEqual(cli('workspace-inbox-source',['--source-id',id]),canonical),'full canonical HTTP/CLI source equality');
+   need(isDeepStrictEqual(mcp('workspace_inbox_source',{sourceId:id}),canonical),'full canonical HTTP/MCP source equality');
+   const r=await ownerPage.request.get(base+path+'/original');need(r.status()===200,'current HTTP original authority');
+   const bytes=await r.body(),contentType=r.headers()['content-type'],sha=r.headers()['x-content-sha256'];need(sha===source.sha256&&hash(bytes)===sha,'actual HTTP original MIME/hash basis');
+   const output=join(realpathSync(work),`mail-original-${clientPhase}-${index}.bin`);outputs.push(output);
+   const receipt=cli('workspace-inbox-original',['--source-id',id,'--output',output]);
+   need(isDeepStrictEqual(receipt,{ok:true,original:{contentType,sha256:sha,size:bytes.length,path:output}}),'exact CLI original receipt metadata');
+   const info=lstatSync(output);need(info.isFile()&&!info.isSymbolicLink()&&info.uid===process.getuid()&&info.nlink===1&&(info.mode&0o7777)===0o600,'explicit original output is new private regular0600');
+   need(readFileSync(output).equals(bytes),'CLI output contains exact authorized original bytes');
+   // One explicit negative call against the existing output, never an automatic
+   // retry after an uncertain request. The caller-owned file must survive exact.
+   const refused=spawnSync(join(work,'rentemester-rust'),['remote','workspace-inbox-original',...common,'--company','synthetic','--source-id',id,'--output',output],{encoding:'utf8',timeout:45000,maxBuffer:1024*1024});
+   need(!refused.error&&refused.status===2&&JSON.parse(refused.stdout).ok===false&&readFileSync(output).equals(bytes),'CLI refuses overwrite and preserves existing private bytes');
+   const original=mcp('workspace_inbox_original',{sourceId:id});
+   need(original.original?.contentType===contentType&&original.original.sha256===sha&&Array.isArray(original.original.bytes)&&original.original.bytes.length===bytes.length&&original.original.bytes.every(n=>Number.isInteger(n)&&n>=0&&n<=255)&&Buffer.from(original.original.bytes).equals(bytes),'exact MCP integer-byte original MIME/SHA/body equality');
+   checked.push({sourceId:id,role:source.mail.role,contentType,sha256:sha,bytes:bytes.length,cliPrivateCreateNew:true,cliOverwriteRefused:true});
+  }
+  for(const role of ['eml','attachment','refusal'])need(checked.some(s=>s.role===role),'all retained mail original roles checked');
+  need(isDeepStrictEqual(await snapshot(),before),'all adapter reads preserve complete canonical business state');
+  return{fullCanonicalBilagsmailParity:true,fullCanonicalSourceParity:true,originals:checked,currentMfaCookie:true,readOnly:true};
+ } finally {for(const path of outputs){try{unlinkSync(path);}catch{}}unlinkSync(cookiePath);}
+}
+
+for await(const line of createInterface({input:process.stdin,crlfDelay:Infinity})){try{const a=JSON.parse(line);let value;if(a==='authenticate')value=await authenticate();else if(a==='setup')value=await setup();else if(a==='initial')value=await initial();else if(a==='review')value=await review();else if(a==='repeat')value=await repeat();else if(a==='dedup')value=await dedup();else if(a==='hold-delete')value=await holdBegin('delete');else if(a==='hold-revoke')value=await holdBegin('revoke');else if(a==='delete-config')value=await deleteConfig();else if(a==='revoke')value=await revoke();else if(a==='hold-finish')value=await holdFinish();else if(a==='configure')value=await configure();else if(a==='prime')value=await pollUi();else if(a==='service')value=await createService();else if(a==='background')value=await background();else if(a==='freeze')value=await freeze();else if(a.startsWith('client-reads-'))value=await clientReads();else if(a==='reopen')value=await reopen();else if(a.startsWith('archive-'))value=await archive(a.slice(8));else if(a==='restored')value=await restored();else if(a==='restored-reopen')value=await restoredReopen();else if(a==='finish'){await browser?.close();emit({ok:true,value:{finished:true}});break;}else throw Error('unknown phase');emit({ok:true,value});}catch(error){emit({ok:false,step,detail,errorType:error?.name});await browser?.close().catch(()=>{});process.exitCode=1;break;}}
 
 '''
 
@@ -618,6 +656,10 @@ def main():
             # current service proof is historical, never forged by this helper.
             start()
             phase('freeze')
+            calls = mailbox.count()
+            phase('client-reads-source')
+            if mailbox.count() != calls:
+                raise RuntimeError('HTTP/CLI/MCP reads unexpectedly contacted IMAP')
             phase('archive-source')
             original = inspect_snapshot('source', work/'trusted.pub')
             stop()
@@ -642,6 +684,7 @@ def main():
             calls = mailbox.count()
             start(restore=True)
             phase('restored')
+            phase('client-reads-restored')
             if mailbox.count() != calls:
                 raise RuntimeError('Fresh restore imported polling credentials/authority')
             report['sourceFreeRestoreQualified'] = True
@@ -650,6 +693,7 @@ def main():
             stop()
             config.pop('firstOwner');config.pop('restoreActor');write_config();start()
             phase('restored-reopen')
+            phase('client-reads-reopened')
             if mailbox.count() != calls:
                 raise RuntimeError('Restored target reopen performed unconsented IMAP I/O')
             phase('archive-reopened')
@@ -677,7 +721,7 @@ def main():
                 if errors:
                     raise RuntimeError('Private auth gateway protocol error')
                 report['gateway']={'verifiedHttps':True,'acceptedMessages':len(gateway_rows),'requests':list(gateway_requests)}
-            report.update({'status':'passed','currentAction':'complete','mailIntakeActualQualified':True,'manualAndServicePollingQualified':True,'snapshotCoverage':'four-independently-verified-mail-source-history-review-dedup-document-archives-fresh-owner-restore-and-reopen'})
+            report.update({'status':'passed','currentAction':'complete','mailIntakeActualQualified':True,'manualAndServicePollingQualified':True,'httpCliMcpMailReadParityQualified':True,'snapshotCoverage':'four-independently-verified-mail-source-history-review-dedup-document-archives-fresh-owner-restore-and-reopen'})
             save()
             print('PASS: normal MFA Bilagsmail config, realTLS manual/service receive, explicit metadata/handoff, refusals/dedup and signed source-free recovery; '+str(args.evidence))
         except BaseException as error:
