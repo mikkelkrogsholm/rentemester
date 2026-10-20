@@ -7,6 +7,8 @@ Only ordinary ingestion is scanned; existing inbox completion remains scanner-of
 No SQL/auth/business seeds, real mail/provider or automatic retries. The default
 scanner proof makes no financial writes; --service-purchase explicitly qualifies
 one synthetic payable recognition and its bank-linked accounting payment.
+--backup-lock instead proves an enforced overdue-backup financial gate, actual
+UI backup, current-file integrity, one accepted posting and normal MFA restart.
 """
 import argparse
 import base64
@@ -100,7 +102,7 @@ async function restored(){step='source-free-fresh-owner-normal-verification-mfa-
 async function restoredReopen(){step='restored-owner-fresh-mfa-reopen-exact-proof';await ownerPage.context().clearCookies();await login(ownerPage,freshOwner);await assertStable();return{restoredTargetReopenQualified:true};}
 let servicePurchase;
 async function servicePhase(action){
- if(!servicePurchase){const module=await import(process.env.RM_SERVICE_PURCHASE_HELPER);servicePurchase=await module.createServicePurchaseProof(ownerPage,base,work);}
+ if(!servicePurchase){const module=await import(process.env.RM_SERVICE_PURCHASE_HELPER);const factory=module[process.env.RM_SCANNER_PROOF_FACTORY||'createServicePurchaseProof'];need(typeof factory==='function','configured proof factory required');servicePurchase=await factory(ownerPage,base,work);}
  if(action==='service-reopen'){await ownerPage.context().clearCookies();await login(ownerPage,owner);return servicePurchase.reopen();}
  return servicePurchase[{'service-run':'run','service-hold-begin':'holdBegin','service-revoke':'revoke','service-hold-finish':'holdFinish'}[action]]();
 }
@@ -125,7 +127,10 @@ def main():
         parser.add_argument('--' + option, required=True, type=Path)
     parser.add_argument('--backup-destinations', action='store_true', help='Add normal web placement and CLI/MCP readback of a signed backup to the service-purchase proof')
     parser.add_argument('--service-purchase', action='store_true', help='Focused service scanned-original→payable→bank payment/revocation/restart proof')
+    parser.add_argument('--backup-lock', action='store_true', help='Normal MFA financial backup lock → qualified artifact → unlock/single posting/restart proof')
     args = parser.parse_args()
+    if args.backup_lock and (args.service_purchase or args.backup_destinations):
+        parser.error('--backup-lock is mutually exclusive with --service-purchase/--backup-destinations')
     if args.backup_destinations and not args.service_purchase:
         parser.error('--backup-destinations requires --service-purchase')
     if args.evidence.exists() or args.evidence.with_suffix('.png').exists():
@@ -487,15 +492,41 @@ def main():
             if args.backup_destinations:
                 (work / 'offsite').mkdir(mode=0o700)
                 config['backupDestinations']=[{'id':'synthetic-destination','label':'Synthetic folder','kind':'local-folder','directory':str(work/'offsite'),'nonRelatedParty':False,'inEeaOrEu':False,'country':'DK','meetsRecognisedStandards':False,'attestedBy':'Synthetic operator','attestedAt':'2026-01-01T00:00:00Z'}]
-            if not args.service_purchase:
+            if not args.service_purchase and not args.backup_lock:
                 invalid_config_checks()
             write_config()
             start(create=True)
             script = work / 'browser.mjs'
             script.write_text(BROWSER)
-            controller = subprocess.Popen(['/opt/homebrew/bin/bun', str(script)], cwd=REPO, env={**os.environ, 'RM_NATIVE_BACKUP_DESTINATION_PROOF':'1' if args.backup_destinations else '0', 'RM_SERVICE_PURCHASE_HELPER': str(REPO / 'scripts/rust/check-native-service-purchase.ts'), 'RM_SCANNER_BASE': origin, 'RM_SCANNER_WORK': str(work), 'RM_SCANNER_SCREENSHOT': str(args.evidence.with_suffix('.png')), 'RM_SCANNER_PLAYWRIGHT': str((REPO / 'node_modules/@playwright/test/index.mjs').resolve(strict=True))}, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True, bufsize=1, start_new_session=True)
+            controller = subprocess.Popen(['/opt/homebrew/bin/bun', str(script)], cwd=REPO, env={**os.environ, 'RM_NATIVE_BACKUP_DESTINATION_PROOF':'1' if args.backup_destinations else '0', 'RM_SERVICE_PURCHASE_HELPER': str(REPO / ('scripts/rust/check-native-backup-lock.ts' if args.backup_lock else 'scripts/rust/check-native-service-purchase.ts')), 'RM_SCANNER_PROOF_FACTORY': 'createBackupLockProof' if args.backup_lock else 'createServicePurchaseProof', 'RM_SCANNER_BASE': origin, 'RM_SCANNER_WORK': str(work), 'RM_SCANNER_SCREENSHOT': str(args.evidence.with_suffix('.png')), 'RM_SCANNER_PLAYWRIGHT': str((REPO / 'node_modules/@playwright/test/index.mjs').resolve(strict=True))}, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True, bufsize=1, start_new_session=True)
             report['browserControllerPid'] = controller.pid
             phase('authenticate')
+            if args.backup_lock:
+                report['workflow'] = 'financial_backup_lock_qualified_artifact_unlock'
+                report['backupLockHelperSha256'] = digest(REPO / 'scripts/rust/check-native-backup-lock.ts')
+                phase('service-run')
+                stop(); config.pop('firstOwner')
+                write_config(); start()
+                phase('service-reopen')
+                phase('finish', 20)
+                controller.stdin.close(); controller.wait(timeout=10)
+                if controller.returncode != 0:
+                    raise RuntimeError('Backup lock controller nonzero terminal')
+                controller = None; stop()
+                db = sqlite3.connect((work/'workspace/synthetic/data/ledger.sqlite').as_uri()+'?mode=ro', uri=True)
+                try:
+                    counts = {table: db.execute('SELECT count(*) FROM '+table).fetchone()[0] for table in ['documents','bank_transactions','journal_entries']}
+                    if counts != {'documents':0,'bank_transactions':1,'journal_entries':1}:
+                        raise RuntimeError('Backup lock terminal financial effects differ')
+                    report['terminalSql'] = {'counts':counts,'journalActors':db.execute('SELECT created_by,created_by_program FROM journal_entries ORDER BY id').fetchall()}
+                finally: db.close()
+                with gateway_lock:
+                    if errors or provider_requests:
+                        raise RuntimeError('Backup lock proof must not call scanner/provider')
+                report.update(status='passed',currentAction='complete',financialBackupLockQualified=True,normalMfaRestartQualified=True,currentFileMissingAndTamperQualified=True,directControlMetadataGateQualified=False,smtpDispatchGateQualified=False,keyRotationQualified=False)
+                save()
+                print('PASS: normal MFA financial backup lock, human/service HTTP/CLI/MCP refusal, UI verified artifact, missing/tamper lock, single posting and restart; '+str(args.evidence))
+                return
             if args.service_purchase:
                 report['workflow'] = 'service_scanned_document_payable_bank_payment'
                 stop(); config.pop('firstOwner')
