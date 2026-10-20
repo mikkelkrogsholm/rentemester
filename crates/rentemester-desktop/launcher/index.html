@@ -1,0 +1,8 @@
+<!doctype html>
+<html lang="da"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Rentemester</title><link rel="stylesheet" href="style.css"><script src="launcher.js" defer></script></head>
+<body><main><img class="logo" src="icon.png" alt="Rentemester"><h1>Rentemester</h1><p>Åbn dit regnskab på denne Mac, eller forbind til din server.</p>
+<form id="connect"><fieldset><legend>Hvor vil du arbejde?</legend><label><input type="radio" name="mode" value="local" checked> Åbn lokalt regnskab</label><label><input type="radio" name="mode" value="create"> Opret lokalt regnskab</label><label><input type="radio" name="mode" value="remote"> Forbind til server</label></fieldset>
+<label id="profile-field">Lokal datamappe<input id="profile" type="text" placeholder="Standardmappe i Library/Application Support/Rentemester"></label>
+<label id="name-field" hidden>Navn på lokalt workspace<input id="name" type="text" value="Mit regnskab" maxlength="256"></label>
+<label id="server-field" hidden>Serveradresse<input id="server" type="url" placeholder="https://regnskab.example.dk" autocomplete="url"></label>
+<p id="error" role="alert"></p><button type="submit">Åbn Rentemester</button><p class="hint">Login og tofaktorbekræftelse foregår i det samme Rentemester-interface som på web.</p></form></main></body></html>

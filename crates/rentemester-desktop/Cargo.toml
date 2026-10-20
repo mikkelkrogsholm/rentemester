@@ -4,15 +4,36 @@ version.workspace = true
 edition.workspace = true
 rust-version = "1.95"
 publish.workspace = true
+default-run = "rentemester-desktop"
+autobins = false
+
+[[bin]]
+name = "rentemester-desktop"
+path = "src/shell.rs"
+
+[[bin]]
+name = "rentemester-desktop-gpui"
+path = "src/main.rs"
+required-features = ["legacy-gpui"]
+
+[features]
+default = ["custom-protocol"]
+custom-protocol = ["tauri/custom-protocol"]
+legacy-gpui = ["dep:gpui-kit"]
 
 [dependencies]
 base64 = "0.22.1"
 sha2 = "0.10"
-gpui-kit = "=0.7.3"
+gpui-kit = { version = "=0.7.3", optional = true }
+tauri = "=2.12.4"
+serde.workspace = true
 rentemester-client = { path = "../rentemester-client" }
 ring = "=0.17.14"
 serde_json.workspace = true
 tokio = { version = "1", features = ["rt-multi-thread"] }
+
+[build-dependencies]
+tauri-build = "2"
 
 [lints]
 workspace = true

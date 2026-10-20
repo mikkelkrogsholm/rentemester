@@ -1,0 +1,7 @@
+{
+  "identifier": "launcher",
+  "description": "Only the bundled launch window may choose a local profile or HTTPS server. Server content has no native capability.",
+  "local": true,
+  "windows": ["launcher"],
+  "permissions": ["allow-launch"]
+}
