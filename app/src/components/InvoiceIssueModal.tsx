@@ -510,13 +510,13 @@ export function InvoiceIssueForm({
             {native&&<fieldset disabled={busy||uncertain} className="modal-body">
               <legend>Moms på fakturaen</legend>
               <label className="modal-field">Momsbehandling
-                <Select value={vatTreatment} onChange={e=>setVatTreatment(e.target.value as typeof vatTreatment)}>
+                <Select aria-label="Momsbehandling" value={vatTreatment} onChange={e=>setVatTreatment(e.target.value as typeof vatTreatment)}>
                   <option value="standard">Almindelig dansk faktura</option>
                   <option value="domestic_reverse_charge">Dansk omvendt betalingspligt</option>
                 </Select>
               </label>
               {vatTreatment==="standard"?<label><input type="checkbox" checked={lineTaxes} onChange={e=>setLineTaxes(e.target.checked)}/> Specificér moms pr. linje</label>:<>
-                <label className="modal-field">Dansk lovgrundlag<Select value={reverseChargeBasis} onChange={e=>setReverseChargeBasis(e.target.value as typeof reverseChargeBasis)}>
+                <label className="modal-field">Dansk lovgrundlag<Select aria-label="Dansk lovgrundlag" value={reverseChargeBasis} onChange={e=>setReverseChargeBasis(e.target.value as typeof reverseChargeBasis)}>
                   <option value="">Vælg lovgrundlag</option>
                   <option value="DK_MOMSLOVEN_§46_STK_1_NR_6">Momsloven § 46, stk. 1, nr. 6</option>
                   <option value="DK_MOMSLOVEN_§46_STK_1_NR_7">Momsloven § 46, stk. 1, nr. 7</option>
