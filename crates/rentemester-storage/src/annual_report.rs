@@ -19,6 +19,9 @@ pub fn read(tx: &Transaction<'_>, slug: &str, start: &str, end: &str) -> Result<
     if Date::parse(start)? > Date::parse(end)? {
         return Err(invalid("fiscalYearStart must not exceed fiscalYearEnd"));
     }
+    // This validates the immutable opening proof as well as current live coverage.
+    // An archive without explicit adoption cannot supply a live annual report.
+    let basis = crate::opening_balance::require_report_range(tx, start, end)?;
     let prior_start = annual_report::prior_date(start)?;
     let prior_end = annual_report::prior_date(end)?;
     let company = crate::company_setup::profile(tx)?;
@@ -62,23 +65,34 @@ pub fn read(tx: &Transaction<'_>, slug: &str, start: &str, end: &str) -> Result<
                 .into(),
         );
     }
-    let prior_tb = crate::trial_balance_owned(tx, Period::new(&prior_start, &prior_end)?)?;
-    let prior_pl = statements::profit_and_loss(&prior_tb);
-    let prior_bs = statements::balance_sheet(&crate::trial_balance_owned(
-        tx,
-        Period::new("0000-01-01", &prior_end)?,
-    )?);
-    // Match live report equity: the shared reducer already includes unclosed cumulative results.
-    let available = prior_pl.income.total != Default::default()
-        || prior_pl.expense.total != Default::default()
-        || prior_bs.assets.total != Default::default()
-        || prior_bs.total_liabilities_and_equity != Default::default();
+    let prior_covered = match basis["cutOverDate"].as_str() {
+        Some(cutover) => Date::parse(&prior_start)? >= Date::parse(cutover)?,
+        None => true,
+    };
+    let comparison = if prior_covered {
+        let prior_tb = crate::trial_balance_owned(tx, Period::new(&prior_start, &prior_end)?)?;
+        let prior_pl = statements::profit_and_loss(&prior_tb);
+        let prior_bs = statements::balance_sheet(&crate::trial_balance_owned(
+            tx,
+            Period::new("0000-01-01", &prior_end)?,
+        )?);
+        // Match live report equity: the shared reducer already includes unclosed cumulative results.
+        let available = prior_pl.income.total != Default::default()
+            || prior_pl.expense.total != Default::default()
+            || prior_bs.assets.total != Default::default()
+            || prior_bs.total_liabilities_and_equity != Default::default();
+        json!({"fiscalYearStart":prior_start,"fiscalYearEnd":prior_end,"available":available,"totalIncome":number(&prior_pl.income.total)?,"totalExpense":number(&prior_pl.expense.total)?,"aretsResultat":number(&prior_pl.result)?,"totalAssets":number(&prior_bs.assets.total)?,"totalLiabilitiesAndEquity":number(&prior_bs.total_liabilities_and_equity)?,"equity":number(&prior_bs.equity.total)?})
+    } else {
+        // The historical range is not fully represented by the adopted live ledger.
+        // Do not reduce a partial prior year or manufacture zero comparison figures.
+        json!({"fiscalYearStart":prior_start,"fiscalYearEnd":prior_end,"available":false,"reason":"prior_range_precedes_explicit_cutover","totalIncome":null,"totalExpense":null,"aretsResultat":null,"totalAssets":null,"totalLiabilitiesAndEquity":null,"equity":null})
+    };
     let ok = errors.is_empty();
     let placeholders = annual_report::placeholders(end);
     let report = json!({"ok":ok,"appliedRules":["DK-ANNUAL-REPORT-CLASS-B-001"],"regnskabsklasse":"B","fiscalYearStart":start,"fiscalYearEnd":end,"company":company,
         "profitAndLoss":{"ok":true,"income":section(&pl.income)?,"expense":section(&pl.expense)?,"totalIncome":number(&pl.income.total)?,"totalExpense":number(&pl.expense.total)?,"result":number(&pl.result)?,"errors":[]},
         "balanceSheet":{"ok":true,"assets":section(&bs.assets)?,"liabilities":section(&bs.liabilities)?,"equity":section(&bs.equity)?,"periodResult":number(&bs.period_result)?,"totalAssets":number(&bs.assets.total)?,"totalLiabilitiesAndEquity":number(&bs.total_liabilities_and_equity)?,"balanced":bs.balanced,"errors":[]},
-        "aretsResultat":number(&pl.result)?,"comparison":{"fiscalYearStart":prior_start,"fiscalYearEnd":prior_end,"available":available,"totalIncome":number(&prior_pl.income.total)?,"totalExpense":number(&prior_pl.expense.total)?,"aretsResultat":number(&prior_pl.result)?,"totalAssets":number(&prior_bs.assets.total)?,"totalLiabilitiesAndEquity":number(&prior_bs.total_liabilities_and_equity)?,"equity":number(&prior_bs.equity.total)?},
+        "aretsResultat":number(&pl.result)?,"comparison":comparison,
         "notes":if ok {placeholders["notes"].clone()} else {json!([])},"ledelsespategning":if ok {placeholders["ledelsespategning"].clone()} else {json!({"text":"","placeholder":true})},
         "preparedBy":"Rentemester","disclaimer":"Rentemester forbereder denne årsrapport ud fra det lukkede regnskabsår. Ejer eller revisor gennemgår og er ansvarlig for indberetning til Erhvervsstyrelsen.","errors":errors});
     Ok(
