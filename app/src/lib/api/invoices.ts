@@ -328,7 +328,8 @@ export type InvoicePartyInput = {
 };
 
 export type InvoiceTaxClassification = "taxable" | "exempt" | "reverse_charge";
-export type InvoiceReverseChargeBasis = DomesticReverseChargeBasis | "EU_B2B_SERVICES";
+export type ForeignReverseChargeBasis = "EU_B2B_SERVICES" | "DK_MOMSLOVEN_§46_STK_1_NR_3" | "EU_MOMSDIREKTIV_ART_196" | "EU_MOMSDIREKTIV_ART_199";
+export type InvoiceReverseChargeBasis = DomesticReverseChargeBasis | ForeignReverseChargeBasis;
 export type DomesticReverseChargeBasis = "DK_MOMSLOVEN_§46_STK_1_NR_6" | "DK_MOMSLOVEN_§46_STK_1_NR_7";
 
 /** Input for `api.issueInvoice`. */

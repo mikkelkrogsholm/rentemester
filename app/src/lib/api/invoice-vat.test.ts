@@ -48,3 +48,16 @@ test("invoice metadata is serialized identically for preview and issue",async()=
  await invoicesApi.previewInvoice("synthetic",input);await invoicesApi.issueInvoice("synthetic",input);
  expect(calls).toEqual([input,input]);
 });
+
+for (const basis of ["DK_MOMSLOVEN_§46_STK_1_NR_3", "EU_MOMSDIREKTIV_ART_196", "EU_MOMSDIREKTIV_ART_199"] as const) {
+ test(`foreign basis ${basis} is retained identically on both invoice routes`,async()=>{
+  const calls:unknown[]=[];
+  stubGlobal("fetch",async(input:RequestInfo|URL,init?:RequestInit)=>{
+   calls.push(JSON.parse(String(init?.body)));
+   return String(input).endsWith("/preview")?new Response("%PDF",{headers:{"content-type":"application/pdf"}}):new Response(JSON.stringify({ok:true,invoice:{documentId:81,invoiceNumber:"S-81",netAmount:100,vatAmount:0,grossAmount:100,lines:[],reverseChargeBasis:basis}}));
+  });
+  const input:InvoiceIssueInput={issueDate:"2026-10-20",vatTreatment:"foreign_reverse_charge",reverseChargeBasis:basis,reverseChargeNote:"Synthetic reviewed basis",lines:[{description:"Synthetic service",quantity:1,unitPriceExVat:100,taxClassification:"reverse_charge",vatRate:0,reverseChargeBasis:basis}]};
+  await invoicesApi.previewInvoice("synthetic",input);const issued=await invoicesApi.issueInvoice("synthetic",input);
+  expect(calls).toEqual([input,input]);expect(issued.reverseChargeBasis).toBe(basis);
+ });
+}

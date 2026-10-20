@@ -15,7 +15,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { api, type InvoiceIssueInput, type InvoiceIssueSummary, type InvoiceLineInput } from "../lib/api";
-import type {InvoiceTaxClassification,DomesticReverseChargeBasis,InvoiceReverseChargeBasis} from "../lib/api/invoices";
+import type {InvoiceTaxClassification,DomesticReverseChargeBasis,ForeignReverseChargeBasis,InvoiceReverseChargeBasis} from "../lib/api/invoices";
 import { formatKroner, parseDanishAmount } from "../lib/format";
 import type { ContactCustomerRow, CompanyInvoices } from "../lib/types";
 import { Banner } from "./Feedback";
@@ -81,6 +81,7 @@ export function InvoiceIssueForm({
   const [vatTreatment,setVatTreatment]=useState<"standard"|"domestic_reverse_charge"|"foreign_reverse_charge">("standard");
   const [lineTaxes,setLineTaxes]=useState(false);
   const [reverseChargeBasis,setReverseChargeBasis]=useState<DomesticReverseChargeBasis|"">("");
+  const [foreignBasis,setForeignBasis]=useState<ForeignReverseChargeBasis>("EU_B2B_SERVICES");
   const [reverseChargeNote,setReverseChargeNote]=useState("");
   const foreign=native&&!simplified&&vatTreatment==="foreign_reverse_charge";
   const explicitTaxes=native&&!simplified&&(lineTaxes||vatTreatment!=="standard");
@@ -241,7 +242,7 @@ export function InvoiceIssueForm({
   function changeInvoiceType(value: "full" | "simplified") {
     setInvoiceType(value);
     setVatTreatment("standard"); setVatRatePercent("25"); setLineTaxes(false);
-    setReverseChargeBasis(""); setReverseChargeNote(""); setVies(null); setViesError(null);
+    setReverseChargeBasis(""); setForeignBasis("EU_B2B_SERVICES"); setReverseChargeNote(""); setVies(null); setViesError(null);
     setBuyerEan(""); setPublicRecipient(false); setBuyerReference(""); setOrderReference("");
     setSelectedCustomerId(""); setLines([{...EMPTY_LINE}]);
     setSimplifiedDescription(""); setGrossAmount("");
@@ -301,7 +302,7 @@ export function InvoiceIssueForm({
         return null;
       }
       const classification=vatTreatment!=="standard"?"reverse_charge":line.taxClassification;
-      const basis:InvoiceReverseChargeBasis|""=foreign?"EU_B2B_SERVICES":vatTreatment==="domestic_reverse_charge"?reverseChargeBasis:line.reverseChargeBasis;
+      const basis:InvoiceReverseChargeBasis|""=foreign?foreignBasis:vatTreatment==="domestic_reverse_charge"?reverseChargeBasis:line.reverseChargeBasis;
       if(explicitTaxes&&classification==="reverse_charge"&&!basis){setError(`Linje ${i+1}: vælg dansk lovgrundlag for omvendt betalingspligt.`);return null;}
       parsedLines.push({
         description: line.description.trim(),
@@ -326,7 +327,7 @@ export function InvoiceIssueForm({
       ...(deliveryMode === "date" ? {deliveryDate} : {}),
       ...(deliveryMode === "period" ? {deliveryPeriodStart, deliveryPeriodEnd} : {}),
       ...(unitCode.trim() ? {unitCode: unitCode.trim()} : {}),
-      ...(explicitTaxes?{vatTreatment,...(foreign?{reverseChargeBasis:"EU_B2B_SERVICES" as const,reverseChargeNote:reverseChargeNote.trim()}:vatTreatment==="domestic_reverse_charge"&&reverseChargeBasis?{reverseChargeBasis,reverseChargeNote:reverseChargeNote.trim()}:{})}:{}),
+      ...(explicitTaxes?{vatTreatment,...(foreign?{reverseChargeBasis:foreignBasis,reverseChargeNote:reverseChargeNote.trim()}:vatTreatment==="domestic_reverse_charge"&&reverseChargeBasis?{reverseChargeBasis,reverseChargeNote:reverseChargeNote.trim()}:{})}:{}),
       ...(native&&(currency.trim().toUpperCase()||"DKK")!=="DKK"?{fxRateToDkk:parseDanishAmount(fxRate)!}:{}),
       customerId: !simplified && selectedCustomerId ? Number(selectedCustomerId) : undefined,
       currency: currency.trim().toUpperCase() || "DKK",
@@ -457,7 +458,7 @@ export function InvoiceIssueForm({
             {native&&typeof done.grossAmountDkk==="number"&&<p>Bogføring i DKK: netto {typeof done.netAmountDkk==="number"?formatKroner(done.netAmountDkk,"DKK"):"Ikke oplyst"} · moms {typeof done.vatAmountDkk==="number"?formatKroner(done.vatAmountDkk,"DKK"):"Ikke oplyst"} · i alt {formatKroner(done.grossAmountDkk,"DKK")} · kurs {done.fxRateToDkk}</p>}
             {native&&done.lines.some(line=>line.taxClassification)&&<table className="data" aria-label="Udstedte linjers moms">
               <thead><tr><th>Linje</th><th>Momstype</th><th>Moms</th></tr></thead>
-              <tbody>{done.lines.map((line,index)=><tr key={index}><td>{line.description}</td><td>{line.taxClassification==="taxable"?"Momspligtig — 25 %":line.taxClassification==="exempt"?"Momsfritaget":line.taxClassification==="reverse_charge"?(done.vatTreatment==="foreign_reverse_charge"?"EU B2B-ydelser":"Dansk omvendt betalingspligt"):"Ikke oplyst"}{line.reverseChargeBasis&&<div>{line.reverseChargeBasis}</div>}</td><td>{typeof line.vatAmount==="number"?formatKroner(line.vatAmount,currency):"Ikke oplyst af serveren"}</td></tr>)}</tbody>
+              <tbody>{done.lines.map((line,index)=><tr key={index}><td>{line.description}</td><td>{line.taxClassification==="taxable"?"Momspligtig — 25 %":line.taxClassification==="exempt"?"Momsfritaget":line.taxClassification==="reverse_charge"?(done.vatTreatment==="foreign_reverse_charge"?"Udenlandsk omvendt betalingspligt":"Dansk omvendt betalingspligt"):"Ikke oplyst"}{line.reverseChargeBasis&&<div>{line.reverseChargeBasis}</div>}</td><td>{typeof line.vatAmount==="number"?formatKroner(line.vatAmount,currency):"Ikke oplyst af serveren"}</td></tr>)}</tbody>
             </table>}
             {done.reverseChargeNote&&<p>{done.reverseChargeNote}</p>}
             {done.reverseChargeBasis&&<p>Lovgrundlag: {done.reverseChargeBasis}</p>}
@@ -574,7 +575,15 @@ export function InvoiceIssueForm({
                   <option value="DK_MOMSLOVEN_§46_STK_1_NR_6">Momsloven § 46, stk. 1, nr. 6</option>
                   <option value="DK_MOMSLOVEN_§46_STK_1_NR_7">Momsloven § 46, stk. 1, nr. 7</option>
                 </Select></label>}
-                {foreign&&<p>Grundlag: EU B2B-ydelser. Køber afregner moms. Verificér købers momsnummer nedenfor.</p>}
+                {foreign&&<>
+                  <label className="modal-field">Udenlandsk lovgrundlag<Select aria-label="Udenlandsk lovgrundlag" value={foreignBasis} onChange={e=>setForeignBasis(e.target.value as ForeignReverseChargeBasis)}>
+                    <option value="EU_B2B_SERVICES">EU B2B-ydelser</option>
+                    <option value="DK_MOMSLOVEN_§46_STK_1_NR_3">Momsloven § 46, stk. 1, nr. 3</option>
+                    <option value="EU_MOMSDIREKTIV_ART_196">EU-momsdirektivet artikel 196</option>
+                    <option value="EU_MOMSDIREKTIV_ART_199">EU-momsdirektivet artikel 199</option>
+                  </Select></label>
+                  <p>Køber afregner moms. Vælg det afklarede lovgrundlag, og verificér købers momsnummer nedenfor.</p>
+                </>}
                 <label className="modal-field">Note om omvendt betalingspligt<Input value={reverseChargeNote} onChange={e=>setReverseChargeNote(e.target.value)}/></label>
               </>}
               <p className="muted">Vælg kun fritagelse eller omvendt betalingspligt, når grundlaget er afklaret. Serveren kontrollerer valg og beregner beløbene; EU B2B-ydelser kræver en gyldig, aktuel VIES-kontrol, som serveren knytter til fakturaen.</p>

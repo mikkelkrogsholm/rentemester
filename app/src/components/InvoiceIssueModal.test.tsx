@@ -972,3 +972,29 @@ test("simplified validates selected delivery and keeps reduced lines with only e
   expect(input.lines[0]).not.toHaveProperty("quantity");
   expect(input).not.toHaveProperty("deliveryPeriodStart");
 });
+
+for (const basis of ["DK_MOMSLOVEN_§46_STK_1_NR_3", "EU_MOMSDIREKTIV_ART_196", "EU_MOMSDIREKTIV_ART_199"] as const) {
+  test(`reviewed foreign basis ${basis} follows document and lines without changing tax, FX or VIES`, async () => {
+    const {preview,issue} = await nativeTaxForm();
+    await userEvent.selectOptions(screen.getByLabelText("Momsbehandling"), "foreign_reverse_charge");
+    expect(screen.getByLabelText("Udenlandsk lovgrundlag")).toHaveValue("EU_B2B_SERVICES");
+    await userEvent.clear(screen.getByLabelText("Valuta"));
+    await userEvent.type(screen.getByLabelText("Valuta"), "EUR");
+    await userEvent.type(screen.getByLabelText("Valutakurs i DKK"), "7,4");
+    await userEvent.type(screen.getByLabelText("Kunde CVR/moms"), "DE123456789");
+    await userEvent.type(screen.getByLabelText("Note om omvendt betalingspligt"), "Synthetic reviewed reverse charge");
+    await userEvent.click(screen.getByRole("button", {name:"Forhåndsvis"}));
+    await screen.findByRole("link", {name:"Åbn forhåndsvisning"});
+    await userEvent.selectOptions(screen.getByLabelText("Udenlandsk lovgrundlag"), basis);
+    expect(screen.queryByRole("link", {name:"Åbn forhåndsvisning"})).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Dansk lovgrundlag")).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", {name:"Forhåndsvis"}));
+    await screen.findByRole("link", {name:"Åbn forhåndsvisning"});
+    await userEvent.click(screen.getByRole("button", {name:"Udsted faktura"}));
+    const input = issue.mock.calls[0]![1];
+    expect(input).toEqual(preview.mock.calls[1]![1]);
+    expect(input).toMatchObject({currency:"EUR", fxRateToDkk:7.4, vatTreatment:"foreign_reverse_charge", reverseChargeBasis:basis, reverseChargeNote:"Synthetic reviewed reverse charge", lines:[{taxClassification:"reverse_charge", vatRate:0, reverseChargeBasis:basis}]});
+    expect(input).not.toHaveProperty("viesValidation");
+    expect(input).not.toHaveProperty("vatRatePercent");
+  });
+}
