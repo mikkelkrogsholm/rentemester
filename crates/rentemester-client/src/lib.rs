@@ -395,3 +395,6 @@ pub use cfo_analytics::{CfoAnalyticsQuery,cfo_analytics_schema};
 
 mod archive_import;
 pub use archive_import::{MAX_ARCHIVE_IMPORT_BODY,MAX_ARCHIVE_ORIGINAL,archive_import_body_schema};
+
+mod opening_balance;
+pub use opening_balance::{MAX_OPENING_BALANCE_BODY,opening_balance_body_schema};

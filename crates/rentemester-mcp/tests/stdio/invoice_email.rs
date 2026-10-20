@@ -10,7 +10,7 @@ fn invoice_email_discovery_162_exact_scope_body_and_no_unknown_argument_echo() {
         ],
     ));
     let tools = rows[1]["result"]["tools"].as_array().unwrap();
-    assert_eq!(tools.len(), 193);
+    assert_eq!(tools.len(), 196);
     for name in [
         "invoice_email_status",
         "invoice_email_send",
