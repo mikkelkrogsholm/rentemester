@@ -2734,3 +2734,12 @@ CVR-snapshots, den manuelt rettede kontakt, fire synkroniseringsaudits og
 beskyttede regnskabsindstillinger bevares. Ældre cache og rettighedsændringer
 under providerkald er dækket af målrettede lagrings- og applikationstests;
 prøven foregiver ikke faktisk tidsaldring eller installeret desktopaccept.
+
+## Overtag eksisterende TypeScript-data
+
+`--adopt-legacy` giver et eksplicit forløb med fastholdt review, varig pensionering
+og publicering i et nyt workspace. Gruppe 89 har verificeret en faktisk TS-udstedt
+og bogført faktura gennem overtagelse, ny ejer/MFA og genstart med uændrede
+journalhashes og original PDF. Se [operatørforløb og præcis acceptgrænse](rust-legacy-adoption.md).
+Fortsat native bogføring og signeret gendannelse af migrerede data mangler samlet
+accept; den fulde Rust-omskrivning er stadig åben.

@@ -1,16 +1,17 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "Installed shared-web desktop invoice/payment/files and independent trusted HTTPS journey qualified",
-  "code_revision": "3ad326c49f132c2fa095301f9e4f5076da8b57b6",
+  "current_increment": "First actual TS posted-invoice adoption with normal fresh native owner/MFA and restart qualified; full migration acceptance remains open",
+  "code_revision": "ed1f986b31ae6bfd1945dd57d59c711b64364cc7",
   "spec_revision": "sha256:a7eb3f0d6e65412fa5ee945a7b79721b593806839f4a03e6b8d969ce3327e3fc",
-  "state": "Group88 installed shared-web Rust desktop completes the preserved domestic invoice1/2026-0001 through sale200/VAT50/gross250, originalPDF SaveAs exacthash, native rawCSV import/payment to open0, receipt upload/nativeview, normal managed shutdown, and independent OS-trusted HTTPS normalMFA/CSVdedup/originalPDF/current-authorized API/reopen. Exactly2journals/5lines/1bankrow/3documents; debtors0,bank250,revenuecredit200,outputVATcredit50. Native Downloads/TCC hang isolated by process sample; RFD SaveAs b5346302 fixes destination with origin fence/auth retained; forced recovery distinguished from later accepted normal shutdown. Web3ad326c4 removes wrong expense posting action from issuedinvoicePDF;20UItests/51assertions and9desktoptests(1ignored),strictClippy/native/webbuild PASS. Final installed unsigned package3ad326c4 exact12manifestfiles verified; all testprocesses stopped, original config/signingkeys preserved. Stricttrusted samehost HTTPS proves connection boundary, not productionLinux/release or fullrights matrix. Full Rust mission/epic672 remains OPEN; next required end-to-end boundary is supported TS workspace adoption with durable source retirement, verified conversion/originals, fresh owner/MFA and protected no-replace publication.",
+  "state": "Group89 first actual public TypeScript createCompany/issueInvoice/postIssuedInvoiceToLedger corpus passes reviewed capture, two exact operator confirmations, destination-bound durable source retirement, no-replace native publication, fresh normal owner verification/MFA and fresh password/MFA after restart. Preserves1journal/3lines/2documents, exact originalJSON/PDF and journalhash. Old TS company/control opens and manifest writes refuse. Host4, companypath5, control3, retirement4, service2, runtime7(1ignored), serverconfirmation1 and TS48 tests pass; strictClippy/build pass. Empty zero-byte WAL sidecar cleanup caused a pre-retirement refusal; fixed by excluding transaction-free empty sidecars while retaining logical source checks under each write lock. Actual continued native posting, migrated signed source-free restore, broader source corpus and archived backup remain OPEN. No full TS retirement, productionLinux or signed release/update claim. Prior Group88 installed local financial/shared-web/HTTPS acceptance retained; fullmission/epic672 OPEN.",
   "issues_closed": [],
   "next": [
-    "Supported TS workspace capture/review/adopt with durable source writer fence, fresh native owner and original/history preservation",
-    "Broader remote access-loss/multiuser, transfer/recovery and durable automation acceptance",
-    "Signed distribution/updates and complete backend/CLI/MCP parity before TS retirement",
-    "Do not repeat qualified unchanged Group86/88 local onboarding/invoice/payment/files or normal HTTPS/reopen. Next adoption work reuses exact converters, but rehearsal writer_authority:false cannot authorize adoption. No real-data migration or TS retirement yet."
+    "Finish actual migrated-workspace journey with new native accounting, signed source-free backup/restore and restart; fix observed archived manifest backup refusal",
+    "Broaden supported TS source corpus only for required whole workflows; preserve fail-closed unsupported histories and offline producer drain",
+    "Broader remote rights-loss/multiuser, transfer/recovery and durable automation acceptance",
+    "Signed distribution/updates and remaining backend/CLI/MCP parity before full TS retirement",
+    "Do not repeat qualified unchanged Group86/88 desktop onboarding/invoice/payment/files/HTTPS or Group89 invoice read/auth/restart. Rehearsals remain writer_authority:false. No real-data migration performed."
   ],
   "preserve_unrelated_paths": [
     ".claude/settings.json",
@@ -21,10 +22,10 @@
   ],
   "all_goal_requirements_complete": false,
   "previous_verified_increment": {
-    "current_increment": "Installed shared-web Rust desktop local owner/MFA onboarding and managed reopen qualified",
-    "code_revision": "df07046a1f8ebef1dc15bd0d03c5c69a48cedc1b",
+    "current_increment": "Installed shared-web desktop invoice/payment/files and independent trusted HTTPS journey qualified",
+    "code_revision": "3ad326c49f132c2fa095301f9e4f5076da8b57b6",
     "spec_revision": "sha256:a7eb3f0d6e65412fa5ee945a7b79721b593806839f4a03e6b8d969ce3327e3fc",
-    "state": "Group86 implements the explicitly approved shared React web UI in a Tauri2 Rust desktop host. Installed unsigned macOS bundle at df07046a completed normal local create-profile, first-owner creation, native private-mail verification, password login, TOTP enrollment and authorized portfolio; quit stopped the exact owned server. Reopening the same installed app/profile at a new loopback port completed password/TOTP login and preserved exactly one owner, original profile config and signing/public keys. Second quit stopped the owned runtime. All12 bundle files match the manifest; zero journal entries/lines/documents/bankrows. Desktop9tests pass with1existingignored, strictClippy and build pass. Architecture/epic/GDD source updated and both owned worktrees archived. Remote HTTPS, uploads/downloads/PDF and financial desktop workflows remain unqualified. Whole Rust mission/epic672, supported TSworkspace adoption, transfer/recovery, automation, updates/distribution and TS retirement remain OPEN."
+    "state": "Group88 installed shared-web Rust desktop completes the preserved domestic invoice1/2026-0001 through sale200/VAT50/gross250, originalPDF SaveAs exacthash, native rawCSV import/payment to open0, receipt upload/nativeview, normal managed shutdown, and independent OS-trusted HTTPS normalMFA/CSVdedup/originalPDF/current-authorized API/reopen. Exactly2journals/5lines/1bankrow/3documents; debtors0,bank250,revenuecredit200,outputVATcredit50. Native Downloads/TCC hang isolated by process sample; RFD SaveAs b5346302 fixes destination with origin fence/auth retained; forced recovery distinguished from later accepted normal shutdown. Web3ad326c4 removes wrong expense posting action from issuedinvoicePDF;20UItests/51assertions and9desktoptests(1ignored),strictClippy/native/webbuild PASS. Final installed unsigned package3ad326c4 exact12manifestfiles verified; all testprocesses stopped, original config/signingkeys preserved. Stricttrusted samehost HTTPS proves connection boundary, not productionLinux/release or fullrights matrix. Full Rust mission/epic672 remains OPEN; next required end-to-end boundary is supported TS workspace adoption with durable source retirement, verified conversion/originals, fresh owner/MFA and protected no-replace publication."
   },
   "evidence": {
     "combined_browser_log": "/tmp/rm-platform5-combined.log",
@@ -1922,6 +1923,14 @@
         "AST": "/tmp/rm88-source-ast.log; /tmp/rm88-ui-ast.log",
         "priorWebRegression": "79PASS276assertions Group87 reused for unchanged invoice UI"
       }
+    },
+    "legacy_adoption89": {
+      "path": "/tmp/rentemester-rust-reports/legacy-adoption89-first-actual.json",
+      "sha256": "3966b28dbb4ce691288344d1310cdb12dc4128ca4318243b11194dc398036736",
+      "wholeMigrationQualified": false,
+      "actualSource": "public TS invoice issue and ledger posting",
+      "continuedNativePostingQualified": false,
+      "signedSourceFreeRestoreQualified": false
     }
   },
   "verified_history": [
@@ -3097,6 +3106,12 @@
       "acceptance": "Installed preview/issue/post/import/settle/original save/upload/PDF/reopen; stricttrusted independentHTTPS/MFA/currentrights; exact effects, no replay.",
       "status": "COMPLETE finite Group87/88 installed invoice/payment/files and independent trusted HTTPS scope, evidence shared_web_desktop88. Full mission remains OPEN.",
       "cleanup": "No owned worktrees created in88; all owned app/server/HTTPS processes stopped; private synthetic evidence retained."
+    },
+    {
+      "delivery": "Group89 TS workspace adoption and durable source retirement",
+      "owner": "root integration/operator/actual; isolated storage company/control, runtime stage, host orchestration workers",
+      "acceptance": "Existing TS business data and originals → exact review → source retirement → native adoption → fresh owner/MFA → new accounting → source-free backup/restore/restart without duplicate accounting/delivery",
+      "status": "Group89 first actual public TypeScript createCompany/issueInvoice/postIssuedInvoiceToLedger corpus passes reviewed capture, two exact operator confirmations, destination-bound durable source retirement, no-replace native publication, fresh normal owner verification/MFA and fresh password/MFA after restart. Preserves1journal/3lines/2documents, exact originalJSON/PDF and journalhash. Old TS company/control opens and manifest writes refuse. Host4, companypath5, control3, retirement4, service2, runtime7(1ignored), serverconfirmation1 and TS48 tests pass; strictClippy/build pass. Empty zero-byte WAL sidecar cleanup caused a pre-retirement refusal; fixed by excluding transaction-free empty sidecars while retaining logical source checks under each write lock. Actual continued native posting, migrated signed source-free restore, broader source corpus and archived backup remain OPEN. No full TS retirement, productionLinux or signed release/update claim. Prior Group88 installed local financial/shared-web/HTTPS acceptance retained; fullmission/epic672 OPEN."
     }
   ],
   "integrated_pending_browser": [
