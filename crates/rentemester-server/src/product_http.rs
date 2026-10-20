@@ -1,5 +1,6 @@
 //! Thin browser adapter over the same owner used for authentication.
 mod archive_import;
+mod opening_balance;
 mod archive_reports;
 mod cfo_analytics;
 mod saft;
@@ -77,6 +78,9 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
         workers: Arc::new(Semaphore::new(8)),
     };
     Router::new()
+        .route("/api/companies/{slug}/opening-balance",get(opening_balance::handle))
+        .route("/api/companies/{slug}/opening-balance/plan",post(opening_balance::handle))
+        .route("/api/companies/{slug}/opening-balance/apply",post(opening_balance::handle))
         .route("/api/companies/{slug}/archive-import/plan",post(archive_import::handle))
         .route("/api/companies/{slug}/archive-import/apply",post(archive_import::handle))
         .route("/api/companies/{slug}/archives",get(archive_import::handle))

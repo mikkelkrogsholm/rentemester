@@ -41,6 +41,22 @@ fn source(value: &Value) -> String {
         "Rentemester · live".into()
     }
 }
+fn opening_headers(value: &Value) -> Vec<(String, String)> {
+    let Some(date) = value["openingBalanceBasis"]["cutOverDate"].as_str() else {
+        return vec![];
+    };
+    let mut headers = vec![(
+        "Grundlag".into(),
+        format!("Aktiv bogføring fra {date}; arkivbeløb er ikke medregnet"),
+    )];
+    if value["liveCoverage"]["status"] == "partial" {
+        headers.push((
+            "Dækning".into(),
+            format!("Del af regnskabsåret; historik før {date} er ikke dokumenteret"),
+        ));
+    }
+    headers
+}
 fn cell(value: &str) -> String {
     if value.contains([';', '"', '\r', '\n']) {
         format!("\"{}\"", value.replace('"', "\"\""))
@@ -191,7 +207,9 @@ fn rows(report: &str, value: &Value) -> Vec<Row> {
                                     total: false,
                                     label: format!(
                                         "{} · {} {} · {label}",
-                                        line["date"].as_str().unwrap_or(entry["date"].as_str().unwrap_or("")),
+                                        line["date"]
+                                            .as_str()
+                                            .unwrap_or(entry["date"].as_str().unwrap_or("")),
                                         text(&line["accountNo"]),
                                         text(&line["accountName"])
                                     ),
@@ -294,6 +312,9 @@ fn csv(report: &str, title: &str, value: &Value, today: &str) -> Vec<u8> {
             continue;
         }
         result += &csv_row(&[name.into(), item]);
+    }
+    for (name, value) in opening_headers(value) {
+        result += &csv_row(&[name, value]);
     }
     result += "\r\n";
     if report == "journal" && value["accountFilter"].is_object() {
@@ -554,6 +575,11 @@ fn pdf(title: &str, value: &Value, today: &str, rows: &[Row]) -> Vec<u8> {
             ));
             headers.push("Afslutningsdato og sammenligningsperiode: ikke dokumenteret".into());
         }
+        headers.extend(
+            opening_headers(value)
+                .into_iter()
+                .map(|(name, value)| format!("{name}: {value}")),
+        );
         for header in headers {
             content += &draw(50, y, &header, 10, false);
             y -= 14;
@@ -654,6 +680,24 @@ pub fn build(report: &str, format: &str, value: &Value, today: &str) -> Option<E
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn opening_cutover_partial_year_is_disclosed_in_both_export_formats() {
+        let value = serde_json::json!({"slug":"synthetic","source":"live","selectedYear":"2027","company":{"name":"Synthetic","currency":"DKK"},"openingBalanceBasis":{"basis":"live","cutOverDate":"2026-10-01","archiveAmountsIncluded":false},"liveCoverage":{"status":"partial","periodStart":"2026-07-01","periodEnd":"2027-06-30"},"income":[],"expense":[{"accountNo":"4000","name":"Expense","amount":"10.00","priorAmount":null}],"totalIncome":"0.00","totalExpense":"10.00","result":"-10.00"});
+        let csv = String::from_utf8(
+            build("income-statement", "csv", &value, "2026-10-20")
+                .unwrap()
+                .bytes,
+        )
+        .unwrap();
+        assert!(csv.contains("Grundlag;\"Aktiv bogføring fra 2026-10-01"));
+        assert!(csv.contains("Dækning;\"Del af regnskabsåret;"));
+        assert!(csv.contains("historik før 2026-10-01 er ikke dokumenteret"));
+        assert!(csv.contains("-10,00"));
+        let pdf = build("income-statement", "pdf", &value, "2026-10-20").unwrap();
+        let text = String::from_utf8_lossy(&pdf.bytes);
+        assert!(text.contains("2026-10-01") && text.contains("ikke dokumenteret"));
+        assert!(text.contains("-10,00"));
+    }
     #[test]
     fn archive_exports_keep_exact_money_currency_source_and_unknown_comparison() {
         let mut value = serde_json::json!({"slug":"synthetic","source":"archive","selectedYear":"2024","company":{"name":"Synthetic","currency":"EUR"},"declaredCurrency":"DKK","evidence":{"sourceHash":"exact-original","importId":7},"completeness":{"status":"ready"},"income":[{"accountNo":"8000","name":"Income","amount":"9007199254740993.01","priorAmount":null}],"expense":[],"totalIncome":"9007199254740993.01","totalExpense":"0.00","result":"9007199254740993.01","priorYearLabel":null});
