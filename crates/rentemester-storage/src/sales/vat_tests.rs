@@ -1,5 +1,54 @@
 use super::*;
 const NOW: &str = "2026-10-20T10:00:00Z";
+
+#[test]
+fn shifted_span_invoice_and_credit_numbers_use_stable_filename_safe_identifiers() {
+    let mut db = fixture(true);
+    let tx = db
+        .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
+        .unwrap();
+    tx.execute("UPDATE companies SET fiscal_year_start_month=7,fiscal_year_label_strategy='span' WHERE id=1", []).unwrap();
+    let (payload, id) = issue(
+        &tx,
+        input(
+            json!([{"description":"Synthetic shifted service","quantity":1,"unitPriceExVat":100}]),
+        ),
+    );
+    assert_eq!(payload["invoiceNumber"], "2026-27-0001");
+    post_invoice(&tx, id).unwrap();
+    let request: crate::credit_note::Input = serde_json::from_value(json!({"invoiceDocumentId":id,"issueDate":"2026-10-20","reason":"Synthetic shifted correction","confirm":true})).unwrap();
+    let credit = crate::credit_note::prepare(&tx, &request, NOW).unwrap();
+    assert_eq!(credit.payload["creditNoteNumber"], "CN-2026-27-0001");
+    let raw = serde_json::to_string_pretty(&credit.payload).unwrap();
+    let hash = crate::invoice_email::sha(raw.as_bytes());
+    crate::credit_note::register_and_post(
+        &tx,
+        credit,
+        Artifact {
+            filename: "synthetic-shifted-credit.json",
+            path: "synthetic-shifted-credit.json",
+            hash: &hash,
+            mime: "application/json",
+        },
+        "synthetic",
+        Date::parse("2026-10-20").unwrap(),
+    )
+    .unwrap();
+    let original: String = tx
+        .query_row(
+            "SELECT payload_json FROM documents WHERE id=?1",
+            [id],
+            |row| row.get(0),
+        )
+        .unwrap();
+    assert_eq!(original, serde_json::to_string_pretty(&payload).unwrap());
+    let (next, _) = issue(
+        &tx,
+        input(json!([{"description":"Synthetic next service","quantity":1,"unitPriceExVat":1}])),
+    );
+    assert_eq!(next["invoiceNumber"], "2026-27-0002");
+}
+
 fn fixture(output: bool) -> rusqlite::Connection {
     let mut control = rusqlite::Connection::open_in_memory().unwrap();
     let mut db = rusqlite::Connection::open_in_memory().unwrap();

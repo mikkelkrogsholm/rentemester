@@ -116,7 +116,7 @@ pub fn prepare(tx: &Transaction<'_>, input: &Input, now: &str) -> Result<Prepare
         StartMonth::new(company["fiscalYearStartMonth"].as_i64().unwrap() as i32)?,
         LabelStrategy::try_from(company["fiscalYearLabelStrategy"].as_str().unwrap())?,
     )?
-    .display_label;
+    .identifier_label;
     let prefix = format!("CN-{year}-");
     let mut floor = 0;
     let mut q = tx
