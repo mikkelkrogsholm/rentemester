@@ -349,7 +349,7 @@ pub fn prepare(
     let company = crate::company_setup::profile(tx)?;
     if company["currency"] != "DKK" || company["vatPeriodType"].is_null() {
         return Err(refused(
-            "standard domestic invoice requires a DKK company registered for VAT",
+            "domestic invoice requires a DKK company registered for VAT",
         ));
     }
     let seller = party(
@@ -431,13 +431,19 @@ pub fn prepare(
             ));
         }
     }
+    let mut payload = json!({"invoiceType":"full","vatTreatment":computed["vatTreatment"],"issueDate":input.issue_date,"dueDate":due,"invoiceNumber":format!("{year}-{next:04}"),"status":"issued","issuedAt":now,"currency":"DKK","seller":seller,"buyer":buyer,"customerId":input.customer_id,"lines":computed["lines"],"totals":computed["totals"],"payment":company["payment"]});
+    for key in ["reverseChargeBasis", "reverseChargeNote"] {
+        if let Some(value) = computed.get(key).filter(|v| !v.is_null()) {
+            payload[key] = value.clone();
+        }
+    }
+    // Validate the frozen allocation before reserving a consecutive number.
+    sales_invoice::project(&payload)?;
     if allocate {
         crate::journal_post::require_current(tx)?;
         crate::sequences::next(tx, "issued_invoice", &scope, floor)?;
     }
-    Ok(
-        json!({"invoiceType":"full","vatTreatment":"standard","issueDate":input.issue_date,"dueDate":due,"invoiceNumber":format!("{year}-{next:04}"),"status":"issued","issuedAt":now,"currency":"DKK","seller":seller,"buyer":buyer,"customerId":input.customer_id,"lines":computed["lines"],"totals":computed["totals"],"payment":company["payment"]}),
-    )
+    Ok(payload)
 }
 pub struct Artifact<'a> {
     pub filename: &'a str,
@@ -470,6 +476,8 @@ pub fn register_with_principal(
     principal: crate::idempotency::PrincipalKind,
 ) -> Result<Value, Error> {
     crate::journal_post::require_current(tx)?;
+    let projection = sales_invoice::project(payload)?;
+    let vat_amount = wire(&projection.vat)?;
     let serialized = serde_json::to_string_pretty(payload).map_err(invalid)?;
     let month: i32 = tx
         .query_row(
@@ -492,7 +500,7 @@ pub fn register_with_principal(
         } else {
             format!("{}-PDF", payload["invoiceNumber"].as_str().unwrap())
         };
-        let inserted:i64=tx.query_row("INSERT INTO documents(document_no,source,original_filename,stored_path,mime_type,sha256_hash,supplier_name,invoice_no,invoice_date,amount_inc_vat,currency,status,document_type,delivery_description,sender_name,sender_address,sender_vat_cvr,recipient_name,recipient_address,recipient_vat_cvr,vat_amount,payload_json,retain_until) VALUES(?1,'rentemester',?2,?3,?4,?5,?6,?7,?8,?9,'DKK','issued',?10,?11,?6,?12,?13,?14,?15,?16,?17,?18,?19) RETURNING id",params![no,file.filename,file.path,file.mime,file.hash,payload["seller"]["name"].as_str(),payload["invoiceNumber"].as_str(),payload["issueDate"].as_str(),payload["totals"]["grossAmount"].as_f64(),kind,payload["lines"].to_string(),payload["seller"]["address"].as_str(),payload["seller"]["vatOrCvr"].as_str(),payload["buyer"]["name"].as_str(),payload["buyer"]["address"].as_str(),payload["buyer"]["vatOrCvr"].as_str(),payload["totals"]["vatAmount"].as_f64(),serialized,retention],|r|r.get(0)).map_err(invalid)?;
+        let inserted:i64=tx.query_row("INSERT INTO documents(document_no,source,original_filename,stored_path,mime_type,sha256_hash,supplier_name,invoice_no,invoice_date,amount_inc_vat,currency,status,document_type,delivery_description,sender_name,sender_address,sender_vat_cvr,recipient_name,recipient_address,recipient_vat_cvr,vat_amount,payload_json,retain_until) VALUES(?1,'rentemester',?2,?3,?4,?5,?6,?7,?8,?9,'DKK','issued',?10,?11,?6,?12,?13,?14,?15,?16,?17,?18,?19) RETURNING id",params![no,file.filename,file.path,file.mime,file.hash,payload["seller"]["name"].as_str(),payload["invoiceNumber"].as_str(),payload["issueDate"].as_str(),payload["totals"]["grossAmount"].as_f64(),kind,payload["lines"].to_string(),payload["seller"]["address"].as_str(),payload["seller"]["vatOrCvr"].as_str(),payload["buyer"]["name"].as_str(),payload["buyer"]["address"].as_str(),payload["buyer"]["vatOrCvr"].as_str(),vat_amount.as_f64(),serialized,retention],|r|r.get(0)).map_err(invalid)?;
         if kind == "issued_invoice" {
             id = inserted;
         }
@@ -510,7 +518,7 @@ pub fn register_with_principal(
         )?;
     }
     Ok(
-        json!({"documentId":id,"invoiceNumber":payload["invoiceNumber"],"netAmount":payload["totals"]["netAmount"],"vatRate":payload["totals"]["vatRate"],"vatAmount":payload["totals"]["vatAmount"],"grossAmount":payload["totals"]["grossAmount"],"lines":payload["lines"]}),
+        json!({"documentId":id,"invoiceNumber":payload["invoiceNumber"],"netAmount":payload["totals"]["netAmount"],"vatRate":payload["totals"]["vatRate"],"vatTreatment":payload["vatTreatment"],"reverseChargeBasis":payload["reverseChargeBasis"],"reverseChargeNote":payload["reverseChargeNote"],"vatAmount":vat_amount,"grossAmount":payload["totals"]["grossAmount"],"lines":payload["lines"]}),
     )
 }
 pub fn pdf_id(tx: &Transaction<'_>, id: i64) -> Result<i64, Error> {
@@ -548,14 +556,7 @@ pub fn post(
         .map_err(invalid)?
         .ok_or_else(|| refused("issued invoice required"))?;
     let payload: Value = serde_json::from_str(&payload).map_err(invalid)?;
-    if payload["currency"] != "DKK"
-        || payload["vatTreatment"] != "standard"
-        || payload["totals"]["vatRate"].as_f64() != Some(0.25)
-    {
-        return Err(refused(
-            "native invoice posting requires standard domestic DKK invoice",
-        ));
-    }
+    let projection = sales_invoice::project(&payload)?;
     let existing: bool = tx
         .query_row(
             "SELECT EXISTS(SELECT 1 FROM journal_entries WHERE document_id=?1)",
@@ -576,16 +577,7 @@ pub fn post(
         ));
     }
     let debtors = role(tx, "debtors", "asset", "debit")?;
-    let output = role(tx, "output_vat", "vat", "credit")?;
-    let money = |key: &str| Money::parse(&payload["totals"][key].to_string());
-    let net = money("netAmount")?;
-    let vat = money("vatAmount")?;
-    let gross = money("grossAmount")?;
-    let mut total = net.clone();
-    total.add(&vat);
-    if total != gross || net.percent("25")? != vat {
-        return Err(refused("invoice amounts do not reconcile"));
-    }
+    let gross = projection.gross.clone();
     let line = |account: &str,
                 debit: Money,
                 credit: Money,
@@ -602,6 +594,28 @@ pub fn post(
             )),
         })
     };
+    let mut lines = vec![line(&debtors, gross.clone(), Money::default(), None)?];
+    // Retain each source base separately: rounding evidence and VAT category
+    // must survive even when all lines use the same selected revenue account.
+    for source_line in &projection.lines {
+        if source_line.net != Money::default() {
+            lines.push(line(
+                revenue,
+                Money::default(),
+                source_line.net.clone(),
+                Some(source_line.vat_code),
+            )?);
+        }
+    }
+    if projection.vat != Money::default() {
+        let output = role(tx, "output_vat", "vat", "credit")?;
+        lines.push(line(
+            &output,
+            Money::default(),
+            projection.vat.clone(),
+            None,
+        )?);
+    }
     let request = ManualJournal {
         transaction_date: Date::parse(
             payload["issueDate"]
@@ -616,11 +630,7 @@ pub fn post(
         amount_dkk: None,
         fx_rate_to_dkk: None,
         created_by_program: None,
-        lines: vec![
-            line(&debtors, gross.clone(), Money::default(), None)?,
-            line(revenue, Money::default(), net, Some("DK_SALE_25"))?,
-            line(&output, Money::default(), vat, None)?,
-        ],
+        lines,
     };
     let result = crate::journal_post::post(
         tx,
@@ -1000,3 +1010,7 @@ mod tests {
         );
     }
 }
+
+#[cfg(test)]
+#[path = "sales/vat_tests.rs"]
+mod vat_tests;
