@@ -316,19 +316,19 @@ fn prepare(input: &Start) -> Result<(PathBuf, bool), String> {
     ))
 }
 fn observe(line: &str, out: &mut Observation) {
-    if let Some(origin) = line.strip_prefix("Rentemester Rust: ") {
-        if let Some(address) = origin
+    if let Some(origin) = line.strip_prefix("Rentemester Rust: ")
+        && let Some(address) = origin
             .strip_prefix("http://")
             .and_then(|v| v.parse::<SocketAddr>().ok())
             .filter(|a| a.ip() == std::net::Ipv4Addr::LOCALHOST && a.port() > 0)
-        {
-            out.origin = Some(format!("http://{address}"));
-        }
+    {
+        out.origin = Some(format!("http://{address}"));
     }
-    if let Some(url) = line.strip_prefix("Workspace setup: ") {
-        if url.len() <= 8192 && !url.chars().any(char::is_control) {
-            out.setup = Some(url.to_owned());
-        }
+    if let Some(url) = line.strip_prefix("Workspace setup: ")
+        && url.len() <= 8192
+        && !url.chars().any(char::is_control)
+    {
+        out.setup = Some(url.to_owned());
     }
     for code in [
         "unsupported_broker_profile",
@@ -354,10 +354,10 @@ fn drain(mut pipe: impl Read + Send + 'static, observation: Arc<Mutex<Observatio
             }
             for byte in &chunk[..size] {
                 if *byte == b'\n' {
-                    if let Ok(line) = std::str::from_utf8(&line) {
-                        if let Ok(mut out) = observation.lock() {
-                            observe(line.trim_end_matches('\r'), &mut out);
-                        }
+                    if let Ok(line) = std::str::from_utf8(&line)
+                        && let Ok(mut out) = observation.lock()
+                    {
+                        observe(line.trim_end_matches('\r'), &mut out);
                     }
                     line.clear();
                 } else if line.len() < 8192 {

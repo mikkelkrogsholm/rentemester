@@ -3,17 +3,24 @@
   "productName": "Rentemester",
   "version": "0.1.0",
   "identifier": "dk.rentemester.desktop",
-  "build": { "frontendDist": "launcher" },
+  "build": {
+    "frontendDist": "launcher"
+  },
   "app": {
     "withGlobalTauri": true,
     "windows": [],
     "security": {
-      "capabilities": ["launcher"],
+      "capabilities": [
+        "launcher"
+      ],
       "csp": "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src ipc: http://ipc.localhost"
     }
   },
   "bundle": {
     "active": false,
-    "icon": ["../../assets/branding/rentemester-app-icon-v1.png", "../../assets/branding/rentemester-app-icon-v1.icns"]
+    "icon": [
+      "launcher/icon.png",
+      "../../assets/branding/rentemester-app-icon-v1.icns"
+    ]
   }
 }
