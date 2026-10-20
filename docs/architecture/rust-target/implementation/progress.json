@@ -1,15 +1,16 @@
 {
   "goal": "Complete Rust server/web, GPUI local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "Native local PDF inspection through web bookkeeping, clients and source-free recovery qualified",
-  "code_revision": "21d1c245d0e7762d519c355e7c9108781666db8d",
-  "spec_revision": "sha256:bb7903e1bc87266026100ba2c16fb4c9eedc56de5bb28930ad3e19a27fb64c4c",
-  "state": "Group66 actual PASS at21d1c245: ordinary MFA public upload of3synthetic PDFs without implicit parsing; explicit native PDFium text/612x792/real character geometry, verified status/paginated text, cached result and pending no_text/malformed retained results. Reviewer403 creates no attempt. HTTP/CLI/MCP200 parity and existing web manual10exempt expense create exactly1journal only after explicit review. Stopped physical-source tamper gives409 PDF_EVIDENCE_TAMPERED on reads and source-compatible committed200/okfalse/source_unavailable parse failure with exactly1failedattempt/NULLresult and no new result/book effects; exact original repaired. FreshMFA restart, four independently verified signed snapshots and signed source-free fresh-owner restore after source/signer/workerbundle deletion preserve exact originals,3results/pages/attempts/journal and prior audit prefix; targetreopen PASS without worker config or reparse. All3binary/fullweb/fullworkerbundle hashes independently matched atqualification, ownedcleanuptrue. Firstactual helper wrongly required4xx for committed sourcefailure; narrow assertion+exact signedfailedattempt correction then wholePASS, no product weakening. Focused tests cover legacy hashes, SQLtamper, rollback, concurrent winner/current revocation and child timeout/IO/crash/RSS; actual0childcache and actualSQLtamper not claimed. Mac RSS512MiB sampled10ms may overshoot; Linux/installed packaging/nativefinancialGUI remain open. Finite66 actual qualification retained. Native67/68/69 opening, company/archive onboarding, fiscal lifecycle, annual preparation and offline backup verification implemented/tested/built; combined233nativePASS and diagnosed annual cutover guard/storage8/web3/SDK3PASS. Actual installed local/remote financial GUI and restart remain unqualified while Maclocked. Fullmission/epic672 OPEN.",
+  "current_increment": "Explicit invoice extraction through manual web bookkeeping, clients and signed source-free recovery qualified",
+  "code_revision": "997e39ee5ee5999aa59bf10fffa0447da6ffe04e",
+  "spec_revision": "sha256:c04bd2ff6239c55d16e7c073c93bc76502a81c2b39eef17f8a2c636191c66d29",
+  "state": "Group70 actual PASS at997e39ee: ordinary verified-MFA users, five synthetic registered PDFs, explicit configured verified-TLS extraction, fifteen cited fields and exact cache, conflict and malformed/unavailable evidence, concurrent current-role revocation leaves only started history, explicit manual web10exempt expense exactly1journal/2lines. Canonical HTTP/CLI/MCP parity, fresh-MFA restart, four independently verified signed snapshots and source-free fresh-owner restore/reopen preserve five extraction tables, BLOBs, exact physical originals, journal and audit with no provider credentials or rerun. All3binaries/fullweb/helper hashes independently matched;23actions,ownedcleanuptrue. Two helper-only corrections canonicalDKbuyer/actor user:subject; product unchanged. Native67/68/69 implemented/tested/built; installed local/remote GUI remains unqualified. Group71 configured automatic ordinary-upload extraction now integrated b471c9bb and undergoing checks; fullmission/epic672 OPEN.",
   "issues_closed": [],
   "next": [
-    "Native67/68/69 implementation integrated 15ac4f7a; combined native233PASS/1existingignored, SDK3/storage8/web3PASS, native/server/web buildsPASS. Actual installed local/remote native owner workflows+restart await unlocked Mac; no blind focus retries.",
-    "Current70 explicit invoice extraction: rootSDK4PASS/runtime4realTLSPASS; isolateddomain5PASS/strictPASS. All domain/runtime/app/host/HTTP/actualhelper source integrated; parent/config/backupBLOB-original checks/CLI/MCP and host checks/wholeactual remain. Configured automatic-on-ingest source parity remains required follow-on integration.",
-    "Then remaining complete recovery/transfer/automation/provider/distribution and TypeScript retirement gates. Full goal remains open."
+    "Finish integrated automatic ordinary upload→invoice extraction→manual web bookkeeping/restart/recovery (Group71); keep known registration receipt on subsequent failure.",
+    "Next real server/web gap: Danske Bank named CSV profile through existing import UI/CLI/MCP. Source registry supports only danske-bank; preserve generic parser ambiguity refusal.",
+    "Remaining concrete server/web gaps include bilagsmail/IMAP, public e-invoice send/status, sales VAT/currency variants, portfolio/cashflow pages and interactive CVR lookup/sync.",
+    "Complete installed local/remote desktop financial journeys, full recovery/transfer/automation/distribution and TypeScript retirement gates. Full goal remains open."
   ],
   "preserve_unrelated_paths": [
     ".claude/settings.json",
@@ -20,10 +21,10 @@
   ],
   "all_goal_requirements_complete": false,
   "previous_verified_increment": {
-    "current_increment": "Required ordinary document scanning, concurrent revocation and source-free evidence recovery qualified",
-    "code_revision": "900baad2d8d597390dfc388f225ee2a518605a92",
-    "spec_revision": "sha256:599f55d8cb295825e24c7b898d60d9e74db7fb909fec9bc1904e603cb2e2b479",
-    "state": "Group65 actual PASS at900baad2: ordinary normal-MFA owner and invited member, actual historical scanner-off upload then configured required verified-private-TLS upload in existing webmodal; exact immutable original bytes/SHA/MIME and normalized clean evidence. Rejected, timeout, missing ID, invalid normalized field, malformed JSON and duplicate refuse without extra physical original/document/evidence; current reviewer denial makes zero provider calls. Real owner publicly revokes a bookkeeper while provider held; revocation completes before release and final403 leaves no publication, proving global Owner mutex/SQLite are released and rights rechecked. Existing HTTP/CLI/MCP196 ingress/originals, freshMFA restart, independently verified signed source-free fresh-owner restore and targetreopen PASS with4exact originals/3clean evidence/0journals, unchanged source/restarted business audit4rows and expected portable-restore boundary on target. Credentials excluded and no rescanning during recovery. All3binary/currentweb hashes independently matched atqualification; ownedcleanuptrue. First actual only failed before startup on copying artifacts ENOSPC; superseded generated project test/static-library variants removed, retry wholePASS with no product weakening. Scope remains existing ordinary ingestion; inbox completion remains source scanner-off. Stop65perfection; fullmission/epic672 OPEN. Remaining native PDF worker/optional provider parity, installed desktop financial journeys, broader transfer/automation/distribution and TSretirement remain open."
+    "current_increment": "Native local PDF inspection through web bookkeeping, clients and source-free recovery qualified",
+    "code_revision": "21d1c245d0e7762d519c355e7c9108781666db8d",
+    "spec_revision": "sha256:bb7903e1bc87266026100ba2c16fb4c9eedc56de5bb28930ad3e19a27fb64c4c",
+    "state": "Group66 actual PASS at21d1c245: ordinary MFA public upload of3synthetic PDFs without implicit parsing; explicit native PDFium text/612x792/real character geometry, verified status/paginated text, cached result and pending no_text/malformed retained results. Reviewer403 creates no attempt. HTTP/CLI/MCP200 parity and existing web manual10exempt expense create exactly1journal only after explicit review. Stopped physical-source tamper gives409 PDF_EVIDENCE_TAMPERED on reads and source-compatible committed200/okfalse/source_unavailable parse failure with exactly1failedattempt/NULLresult and no new result/book effects; exact original repaired. FreshMFA restart, four independently verified signed snapshots and signed source-free fresh-owner restore after source/signer/workerbundle deletion preserve exact originals,3results/pages/attempts/journal and prior audit prefix; targetreopen PASS without worker config or reparse. All3binary/fullweb/fullworkerbundle hashes independently matched atqualification, ownedcleanuptrue. Firstactual helper wrongly required4xx for committed sourcefailure; narrow assertion+exact signedfailedattempt correction then wholePASS, no product weakening. Focused tests cover legacy hashes, SQLtamper, rollback, concurrent winner/current revocation and child timeout/IO/crash/RSS; actual0childcache and actualSQLtamper not claimed. Mac RSS512MiB sampled10ms may overshoot; Linux/installed packaging/nativefinancialGUI remain open. Finite66 actual qualification retained. Native67/68/69 opening, company/archive onboarding, fiscal lifecycle, annual preparation and offline backup verification implemented/tested/built; combined233nativePASS and diagnosed annual cutover guard/storage8/web3/SDK3PASS. Actual installed local/remote financial GUI and restart remain unqualified while Maclocked. Fullmission/epic672 OPEN."
   },
   "evidence": {
     "combined_browser_log": "/tmp/rm-platform5-combined.log",
@@ -2179,11 +2180,32 @@
     {
       "delivery": "Group70 explicit optional invoice-extraction evidence lifecycle",
       "owner": "root contract/config/SDK/CLI/MCP/integration/actual; rust_accruals engine/storage/legacy/nativecodec/backup/purchaseguards; rust_client_cli admitted app/host/HTTP; rust_budget hardened runtimeHTTPS; rust_mileage actual TLS/MFA/restart/sourcefree helper",
-      "status": "IN_PROGRESS. Frozen shared typed/wire contracts. Root SDK4fixturetestsPASS and runtime4realTLS testsPASS and strict runtime all-targetClippyPASS. Isolated domain1engine+4storagePASS and strict engine/storage all-targetClippyPASS; core ca867cf8 and runtime ab8a738b integrated with engine/storage/runtime module exports. App/host/HTTP 7ed89254 and actual helper534405d6 source integrated, tests/runtime unrun. Root still owes config/app-host-HTTP parent/backup physical hooks/CLI/MCP integration and full actual qualification. No full provider/client/GUI qualification claim.",
+      "status": "COMPLETE finite Group70. Group70 actual PASS at997e39ee: ordinary verified-MFA users, five synthetic registered PDFs, explicit configured verified-TLS extraction, fifteen cited fields and exact cache, conflict and malformed/unavailable evidence, concurrent current-role revocation leaves only started history, explicit manual web10exempt expense exactly1journal/2lines. Canonical HTTP/CLI/MCP parity, fresh-MFA restart, four independently verified signed snapshots and source-free fresh-owner restore/reopen preserve five extraction tables, BLOBs, exact physical originals, journal and audit with no provider credentials or rerun. All3binaries/fullweb/helper hashes independently matched;23actions,ownedcleanuptrue. Two helper-only corrections canonicalDKbuyer/actor user:subject; product unchanged.",
       "acceptance": "Ordinary MFA registered synthetic PDF→explicit confirmed configured HTTPS extraction→cited completed/conflict/failure evidence and exact cache→manual existing web purchase; revoked authority during provider leaves started history/no result, no Owner/SQL lock across network. Canonical HTTP/CLI/MCP, restart and independently verified signed source-free fresh-owner recovery preserve five-table evidence/BLOB/original history without provider credentials/rerun. No extracted accounting/metadata inference.",
       "contract": "/tmp/rm-platform70-invoice-extraction-contract.md",
       "abi": "/tmp/rm-platform70-invoice-extraction-abi.md",
-      "remaining_source_parity": "Configured source ingestion also automatically extracts after registration; this source-backed integration remains explicitly required after the finite explicit70 lifecycle. No full provider parity/TypeScript retirement claim."
+      "remaining_source_parity": "Configured automatic ordinary HTTP-upload extraction is Group71, integrated b471c9bb; tests/actual pending. No automatic inbox/corporate extraction and no full TypeScript-retirement claim.",
+      "actual_run": {
+        "path": "/tmp/rentemester-rust-reports/invoice-extraction-integrated70-actor3.json",
+        "log": "/tmp/rm70-root-actual-actor3.log",
+        "session_id": 13407,
+        "state": "passed",
+        "product_revision": "4a9cfb80",
+        "source_revision": "997e39ee5ee5999aa59bf10fffa0447da6ffe04e",
+        "sha256": "beacbd772832e1eaadc907083bc6fa7ea84efa4a29dead2a4280f3c8aff60d7c"
+      }
+    },
+    {
+      "delivery": "Group71 ordinary upload automatic invoice extraction",
+      "owner": "root integration/actual; rust_accruals bound app/host/HTTP continuation; rust_mileage actual helper",
+      "status": "IMPLEMENTED b471c9bb, actual helper2d3702bc. Focused application6/host15 testsPASS, integrated app/host/server all-target strictClippyPASS; serverbuild and actual pending. Explicit Group70 qualified with pinned prior artifacts.",
+      "acceptance": "Ordinary configured PDF upload automatically retains cited extraction; disabled/nonPDF skip; failed provider retains registration+needs_resolution; duplicates no second call; current revocation blocks finalization without losing known upload receipt; manual web bookkeeping, clients, restart and source-free restore no unintended I/O. Public roles unchanged; no public Upload-only actor exists, fixed Upload/MasterData separation has focused code coverage only.",
+      "checks": {
+        "app": "/tmp/rm71-root-app-tests.log",
+        "extraction": "/tmp/rm71-root-extraction-tests.log",
+        "ingest": "/tmp/rm71-root-ingest-tests.log",
+        "strict": "/tmp/rm71-root-strict.log"
+      }
     }
   ],
   "integrated_pending_browser": [

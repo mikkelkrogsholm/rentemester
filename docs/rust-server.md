@@ -59,7 +59,7 @@ adgang afvises. Alle otte særskilte CLI/MCP-handlinger består også i et
 separat workspace med begge retninger, uafhængig godkendelse, fuld paritet
 med HTTP-svarene og uændrede posteringer før og efter genstart.
 
-Der er 200 MCP-tools efter PDF-forløbet i Group66.
+Der er 202 MCP-tools efter fakturaudtrækket i Group70.
 De samlede native tests består med 233 beståede og én eksisterende ignoreret
 test; native build består. Computerstyringen melder aktuelt Mac’en låst. Administreret
 lokal opstart, almindelig ejeroprettelse, verificering, MFA og læsning af
@@ -2013,6 +2013,55 @@ SQL-evidenstamper og fravær af processtart ved cache dækkes af fokuserede
 tests; de er ikke rapporteret som instrumenterede målinger i brugerprøven.
 Installeret desktop og samlet distribution er fortsat åbne.
 
+
+## Udtræk fakturafelter fra et PDF-bilag
+
+Operatøren kan konfigurere en HTTPS-tjeneste til fakturaudtræk i den private
+serverkonfiguration:
+
+```json
+{
+  "invoiceExtractor": {
+    "provider": "http-json-v1",
+    "url": "https://extractor.example.invalid/extract",
+    "bearerToken": "PRIVATE_OPERATOR_TOKEN",
+    "timeoutMs": 15000
+  }
+}
+```
+
+Udelad indstillingen eller brug `{"provider":"disabled"}` for at slå tjenesten
+fra. `timeoutMs` er 100–120000 ms. Valgfri `trustedCaFile` er en absolut sti
+til en privat CA; TLS-værtsnavnet kontrolleres stadig. Tjenesten modtager
+JSON med `sha256` og `pdfBytesBase64` og returnerer `{"fields":[...]}` med
+feltværdi, konfidens og kildehenvisning. Input er højst 10 MiB PDF og svaret
+højst 1 MiB. Der er ingen automatisk netværksgentagelse.
+
+Bekræftet `POST /api/companies/:slug/documents/:id/extract-invoice` med
+`{"confirm":true}` kræver aktuel stamdatarettighed. Læs resultatet med
+`GET /api/companies/:slug/documents/:id/invoice-extraction` og almindelig
+bilagslæserettighed. Begge svar har `{"ok":true,"extraction":...}`;
+et bilag uden udtræk har `extraction:null`. Uden provider afvises eksplicit
+udtræk med 503/`EXTRACTION_PROVIDER_UNAVAILABLE`, uden forsøg.
+
+CLI tilbyder `documents extract-invoice` med `--document-id` og `--confirm`,
+samt `documents invoice-extraction` til læsning. Brug de sædvanlige
+`--server`, `--cookie-file` og `--company`. MCP hedder
+`documents_extract_invoice` og `documents_invoice_extraction`; skrivekaldet
+kræver `confirm:true`. Den indloggede bruger er aktør.
+
+Gemte resultater indeholder kildehenvisninger og bevarer konflikt- og
+fejlhistorik. Et identisk færdigt udtræk genbruges kun med samme kilde,
+provider og virksomhedskontekst. Providerfejl gemmes som
+`needs_resolution`; adgang kontrolleres igen efter netværkskaldet.
+Bogfør særskilt gennem webformularen med eksplicit konto, beløb og momsvalg.
+
+Group70 består med faktisk TLS, cache, konflikter, providerfejl,
+adgangstilbagekaldelse under udtræk, manuel webbogføring, HTTP/CLI/MCP,
+genstart og signeret kildefri gendannelse under en ny ejer. Gendannelsen
+bevarer originaler og udtræk uden provideropsætning eller nye providerkald.
+Automatisk udtræk efter almindelig upload er integreret i Group71 og er
+under samlet afprøvning; inbox og selskabsbilag får ingen ny automatik.
 
 ## Åbningsbalance og datakilde i desktopappen
 
