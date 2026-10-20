@@ -11,6 +11,8 @@ use gpui_kit::{
     *,
 };
 mod bank;
+mod appearance;
+mod design_tokens;
 mod bank_state;
 mod contacts;
 mod document_state;
@@ -1027,6 +1029,9 @@ impl Desktop {
             .flex()
             .flex_col()
             .gap_3()
+            .items_start()
+            .w_full()
+            .max_w(px(1040.))
             .p_6()
             .flex_none()
             .bg(cx.theme().background)
@@ -1483,6 +1488,17 @@ impl Desktop {
                     .child(journal);
                 return content;
             }
+        }
+        if self.session.is_none() {
+            return content;
+        }
+        let overview_context = content;
+        let mut content = div().id("workflow-navigation").flex().flex_col().items_start().gap_2()
+            .w(px(248.)).flex_none().p_4()
+            .bg(rgb(design_tokens::PAPER_RAISED))
+            .border_1().border_color(cx.theme().border).rounded(px(4.))
+            .child(div().font_family(design_tokens::HEADLINE_FONT).text_lg().child("Arbejdsgange"));
+        if self.session.is_some() && self.selected.is_some() {
             content = content.child(
                 Button::new("journal-open")
                     .label("Ny postering")
@@ -1521,7 +1537,7 @@ impl Desktop {
             );
         }
         if self.session.is_some() && self.selected.is_some() {
-            content = content.child(Button::new("company-setup-open").label("Virksomhedsopsætning · ⌘2").disabled(self.busy)
+            content = content.child(Button::new("company-setup-open").label("Virksomhed · ⌘2").disabled(self.busy)
                 .on_click(cx.listener(|this,_,window,cx|this.open_company_setup(&OpenCompanySetup,window,cx))));
         }
         if self.session.is_some() && self.selected.is_some() {
@@ -1529,7 +1545,7 @@ impl Desktop {
                 .on_click(cx.listener(|this, _, window, cx| this.open_opening_balance(&OpenOpeningBalance, window, cx))));
         }
         if self.session.is_some() && self.selected.is_some() {
-            content=content.child(Button::new("archive-import-open").label("Importér regnskabshistorik · ⌘5").disabled(self.busy)
+            content=content.child(Button::new("archive-import-open").label("Importér historik · ⌘5").disabled(self.busy)
                 .on_click(cx.listener(|this,_,window,cx|this.open_archive_import(&OpenArchiveImport,window,cx))));
         }
         if self.session.is_some() && self.selected.is_some() {
@@ -1872,6 +1888,8 @@ impl Desktop {
                 }
             })));
         }
+        let navigation = content;
+        let mut content = div().flex().flex_col().flex_1().min_w_0().gap_4();
         if let Some(report) = &self.trial {
             let mut table = div()
                 .id("trial-balance")
@@ -1880,6 +1898,7 @@ impl Desktop {
                 .flex_1()
                 .min_h_0()
                 .overflow_y_scroll()
+                .overflow_x_scroll()
                 .gap_1()
                 .child(
                     div()
@@ -1905,7 +1924,8 @@ impl Desktop {
                 });
             content = content.child(table);
         }
-        content
+        overview_context.child(div().flex().w_full().gap_6().items_start()
+            .child(navigation).child(content))
     }
 }
 impl Render for Desktop {
@@ -1915,19 +1935,26 @@ impl Render for Desktop {
             .flex_none()
             .flex()
             .flex_col()
-            .gap_2()
-            .p_3()
-            .child(div().text_2xl().child("Rentemester"))
-            .child(self.scheduled_dispatcher.clone());
+            .gap_3()
+            .px_6().py_4()
+            .border_b_1().border_color(cx.theme().border)
+            .child(div().flex().items_center().gap_3()
+                .child(img(appearance::logo(cx)).size(px(40.)).flex_none())
+                .child(div().font_family(design_tokens::HEADLINE_FONT).text_2xl().child("Rentemester"))
+                .child(div().flex_1())
+                .child(div().text_sm().text_color(cx.theme().muted_foreground)
+                    .child(if self.local_mode { "På denne Mac" } else { "Ekstern server" })));
         if authenticated {
             header = header
                 .child(
                     div()
                         .flex()
+                        .items_center().flex_wrap()
                         .gap_2()
                         .child(format!(
-                            "Virksomhed: {}",
-                            self.selected.as_deref().unwrap_or("")
+                            "{}",
+                            self.companies.iter().find(|c| Some(&c.slug) == self.selected.as_ref())
+                                .map(|c| c.name.as_str()).unwrap_or(self.selected.as_deref().unwrap_or(""))
                         ))
                         .child(
                             Button::new("workflow-invoices")
@@ -1939,7 +1966,7 @@ impl Render for Desktop {
                         )
                         .child(
                             Button::new("workflow-company-setup")
-                                .label("Virksomhedsopsætning · ⌘2")
+                                .label("Virksomhed · ⌘2")
                                 .disabled(self.busy)
                                 .on_click(cx.listener(|this, _, window, cx| {
                                     this.open_company_setup(&OpenCompanySetup, window, cx)
@@ -1954,14 +1981,17 @@ impl Render for Desktop {
                                 })),
                         ),
                 )
-                .child(self.status.clone());
+                .child(div().text_sm().text_color(cx.theme().muted_foreground).child(self.status.clone()));
         }
+        header = header.child(self.scheduled_dispatcher.clone());
         div()
             .size_full()
             .flex()
             .flex_col()
             .bg(cx.theme().background)
             .text_color(cx.theme().foreground)
+            .font_family(design_tokens::BODY_FONT)
+            .text_base()
             .key_context("RentemesterWorkflows")
             .track_focus(&self.workflow_focus)
             .on_action(cx.listener(Self::open_invoices))
@@ -1976,7 +2006,8 @@ impl Render for Desktop {
             .on_action(cx.listener(Self::scroll_workflow_up))
             .child(header)
             .child(div().id("desktop-scroll").flex_1().min_h_0().overflow_y_scroll()
-                .track_scroll(&self.body_scroll).child(self.render_body(window, cx)))
+                .track_scroll(&self.body_scroll)
+                .child(div().flex().justify_center().child(self.render_body(window, cx))))
     }
 }
 #[derive(Debug, PartialEq, Eq)]
@@ -2031,6 +2062,7 @@ fn main() {
         .with_assets(gpui_kit::assets::Assets)
         .run(move |cx| {
             gpui_kit::init(cx);
+            appearance::init(cx);
             cx.bind_keys([
                 KeyBinding::new("pagedown", ScrollWorkflowDown, Some("RentemesterWorkflows")),
                 KeyBinding::new("pageup", ScrollWorkflowUp, Some("RentemesterWorkflows")),

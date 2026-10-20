@@ -44,10 +44,15 @@ for (const key of ['xs', 'sm', 'md', 'lg', 'xl', '2xl']) declarations.push(`  --
 
 declarations.push(`  --text-size-body: ${typography.bodySize};`, `  --text-line-height: ${typography.bodyLineHeight};`, `  --layout-max-width: ${(all.layout as Record<string, string>).maxWidth};`);
 const css = `/* Generated from DESIGN.md. */\n:root {\n${declarations.join('\n')}\n}\n`;
+const rustName = (name: string) => name.replace(/[A-Z]/g, (c) => '_' + c).toUpperCase();
+const native = header + '#![allow(dead_code)]\n' + Object.entries(colors).map(([name, value]) =>
+  `pub const ${rustName(name)}: u32 = 0x${value.slice(1)};\n`).join('') +
+  ['headline', 'body', 'mono'].map((name) => `pub const ${name.toUpperCase()}_FONT: &str = ${JSON.stringify(typography[name + 'Family'])};\n`).join('');
 const outputs = new Map([
   ['src/design/tokens.ts', raw],
   ['app/src/design/tokens.stylex.ts', stylex],
   ['app/src/design/tokens.css', css],
+  ['crates/rentemester-desktop/src/design_tokens.rs', native],
 ]);
 for (const [path, output] of outputs) {
   const absolute = resolve(root, path);

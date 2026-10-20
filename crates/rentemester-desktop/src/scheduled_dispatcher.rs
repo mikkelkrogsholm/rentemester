@@ -22,6 +22,7 @@ struct Job {
     proof: Option<Value>,
 }
 pub struct ScheduledDispatcher {
+    show_details: bool,
     jobs: Vec<Job>,
     lane: Lane,
     timer_armed: bool,
@@ -29,7 +30,7 @@ pub struct ScheduledDispatcher {
 }
 impl ScheduledDispatcher {
     pub fn new(_: &mut Context<Self>) -> Self {
-        Self{jobs:vec![],lane:Lane::new(),timer_armed:false,message:"Automatik er ikke aktiveret i denne app-session. Åbning/genstart/genforbindelse starter intet.".into()}
+        Self{show_details:false,jobs:vec![],lane:Lane::new(),timer_armed:false,message:"Automatik er ikke aktiveret i denne app-session. Åbning/genstart/genforbindelse starter intet.".into()}
     }
     pub fn is_busy(&self) -> bool {
         self.lane.busy()
@@ -187,9 +188,21 @@ impl Drop for ScheduledDispatcher {
 impl Render for ScheduledDispatcher {
     fn render(&mut self, _: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
         let active = self.jobs.iter().filter(|j| j.gate.active()).count();
-        let mut view=div().flex().flex_col().gap_2().child(div().text_lg().child(format!("Aktiv-app fakturaautomatik · {active} eksplicit aktiverede skabeloner"))).child(self.message.clone())
-   .child("Ingen unattended service. Lukning/søvn/logout/ændret forbindelse stopper eller udskyder appens arbejde; genåbning aktiverer ikke automatisk. Serverens faktisk missed/kø/fejl kræver manuel review. En allerede optaget request kan færdiggøres; uafklaret markør bevares.")
-   .child(Button::new("scheduled-dispatcher-stop-all").label("Stop automatik i denne app").disabled(active==0).on_click(cx.listener(|this,_,_,cx|this.stop_all(cx))));
+        let summary = div().flex().items_center().gap_3()
+            .child(if active == 0 { "Fakturaautomatik: fra".to_string() }
+                else { format!("Fakturaautomatik: {active} aktive skabeloner") })
+            .child(Button::new("scheduled-dispatcher-details")
+                .label(if self.show_details { "Skjul detaljer" } else { "Vis detaljer" })
+                .on_click(cx.listener(|this, _, _, cx| { this.show_details = !this.show_details; cx.notify(); })));
+        let mut view = div().flex().flex_col().items_start().gap_2().text_sm().child(summary);
+        if active > 0 {
+            view = view.child(Button::new("scheduled-dispatcher-stop-all").label("Stop automatik i denne app")
+                .on_click(cx.listener(|this, _, _, cx| this.stop_all(cx))));
+        }
+        if self.show_details {
+            view = view.child(self.message.clone())
+                .child("Automatik kører kun, mens appen er åben og din adgang er gyldig. Lukning, dvale eller ændret forbindelse stopper nye handlinger. Genåbning starter ikke automatisk. Allerede startede handlinger kan færdiggøres; uafklarede resultater kræver manuel kontrol.");
+        }
         if self.lane.busy() {
             view=view.child("Én planlagt handling er optaget i den fælles manuelle/automatiske lane. Ingen anden dispatch optages samtidig.");
         }

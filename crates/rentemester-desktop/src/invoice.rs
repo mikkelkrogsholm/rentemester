@@ -648,8 +648,11 @@ impl Render for Invoice {
         let mut view = div()
             .flex()
             .flex_col()
+            .items_start()
+            .w_full()
+            .max_w(px(760.))
             .gap_3()
-            .child(div().text_xl().child("Fakturaer"))
+            .child(div().font_family(crate::design_tokens::HEADLINE_FONT).text_2xl().child("Fakturaer"))
             .child(format!("{} · {}", self.company, self.origin))
             .child(self.status.clone())
             .child(
@@ -853,7 +856,29 @@ impl Render for Invoice {
                         })),
                 );
         }
-        view.child(format!("Regnskabsår: {} – {}. Dansk B2B, DKK,25% moms. Sælger og kunde hentes fra kanoniske stamdata; totalsummer fremgår af PDF.",data.start,data.end)).child("Kunde").child(Select::new(&self.customer).accessibility_label("Fakturakunde").placeholder("Vælg kunde").disabled(self.busy)).child("Fakturadato").child(Input::new(&self.date).disabled(self.busy)).child("Forfaldsdato").child(Input::new(&self.due).disabled(self.busy)).child("Fakturalinje").child(Input::new(&self.description).disabled(self.busy)).child("Antal").child(Input::new(&self.quantity).disabled(self.busy)).child("Enhedspris ekskl. moms i DKK").child(Input::new(&self.price).disabled(self.busy)).child(Button::new("invoice-preview").label("Hent PDF-forhåndsvisning").disabled(self.busy).on_click(cx.listener(|this,_,_,cx|this.preview(cx))))
+        let field = |label: &'static str, state: &Entity<InputState>| {
+            div().flex().flex_col().flex_1().min_w(px(180.)).gap_1()
+                .child(div().text_sm().child(label))
+                .child(Input::new(state).disabled(self.busy))
+        };
+        view.child(div().text_sm().child(format!("Regnskabsår: {} – {} · DKK · 25% moms", data.start, data.end)))
+            .child(div().w_full().flex().flex_col().gap_4().p_6()
+                .bg(rgb(crate::design_tokens::PAPER_RAISED))
+                .border_1().border_color(rgb(crate::design_tokens::BORDER)).rounded(px(4.))
+                .child(div().font_family(crate::design_tokens::HEADLINE_FONT).text_xl().child("Ny faktura"))
+                .child(div().flex().flex_col().gap_1()
+                    .child(div().text_sm().child("Kunde"))
+                    .child(Select::new(&self.customer).accessibility_label("Fakturakunde").placeholder("Vælg kunde").disabled(self.busy)))
+                .child(div().flex().flex_wrap().gap_4()
+                    .child(field("Fakturadato", &self.date))
+                    .child(field("Forfaldsdato", &self.due)))
+                .child(field("Fakturalinje", &self.description))
+                .child(div().flex().flex_wrap().gap_4()
+                    .child(field("Antal", &self.quantity))
+                    .child(field("Enhedspris ekskl. moms i DKK", &self.price)))
+                .child(div().text_sm().child("Sælger og kunde hentes fra virksomhedens stamdata. Serveren beregner moms og total i PDF-forhåndsvisningen."))
+                .child(div().flex().child(Button::new("invoice-preview").primary().label("Forhåndsvis faktura")
+                    .disabled(self.busy).on_click(cx.listener(|this,_,_,cx|this.preview(cx))))))
     }
 }
 #[cfg(test)]
