@@ -769,3 +769,70 @@ test("contact EAN and reviewed references use identical preview and issue input"
   const preview=vi.spyOn(api,"previewInvoice").mockResolvedValue(new Blob(["%PDF-synthetic"],{type:"application/pdf"}));const issue=vi.spyOn(api,"issueInvoice").mockResolvedValue({documentId:74,invoiceNumber:"2026-00074",netAmount:2000,vatRate:0.25,vatAmount:500,grossAmount:2500,lines:[]});vi.spyOn(URL,"createObjectURL").mockReturnValue("blob:synthetic-74");vi.spyOn(window,"open").mockReturnValue(null);
   render(<InvoiceIssueModal slug="acme-aps" onIssued={noop} onClose={noop}/>);await fillMinimal();await screen.findByRole("option",{name:new RegExp(customer.name)});await userEvent.selectOptions(screen.getByLabelText("Vælg kunde"),String(customer.id));expect(screen.getByLabelText("EAN-nummer")).toHaveValue("5790000000074");expect(screen.getByLabelText("Offentlig modtager")).toBeChecked();await userEvent.type(screen.getByLabelText("Købers reference"),"Synthetic buyer 74");await userEvent.type(screen.getByLabelText("Ordrenummer"),"Synthetic order 74");await userEvent.click(screen.getByRole("button",{name:"Forhåndsvis"}));await screen.findByRole("button",{name:"Udsted faktura"});await userEvent.click(screen.getByRole("button",{name:"Udsted faktura"}));expect(issue).toHaveBeenCalledTimes(1);expect(preview).toHaveBeenCalledTimes(1);expect(issue.mock.calls[0]![1]).toEqual(preview.mock.calls[0]![1]);expect(issue.mock.calls[0]![1].buyer).toMatchObject({eanNumber:"5790000000074",publicRecipient:true,buyerReference:"Synthetic buyer 74",orderReference:"Synthetic order 74"});
 });
+
+async function nativeTaxForm(summary: Record<string, unknown> = {}) {
+  const auth = await import("../lib/auth-context");
+  vi.spyOn(auth, "useOptionalAuth").mockReturnValue({backend:"rust",loading:false,hosted:false,session:null,currentSessionId:null,context:null,refresh:async()=>{},clear:()=>{}});
+  const {api} = await import("../lib/api");
+  mockFetch({...companyRoute(),...contactsRoute()});
+  const preview=vi.spyOn(api,"previewInvoice").mockResolvedValue(new Blob(["%PDF-synthetic"],{type:"application/pdf"}));
+  const issue=vi.spyOn(api,"issueInvoice").mockResolvedValue({documentId:75,invoiceNumber:"2026-00075",netAmount:2000,vatAmount:250,grossAmount:2250,lines:[],...summary});
+  vi.spyOn(URL,"createObjectURL").mockReturnValue("blob:synthetic-vat-75");
+  vi.spyOn(window,"open").mockReturnValue(null);
+  render(<InvoiceIssueModal slug="acme-aps" onIssued={noop} onClose={noop}/>);
+  await fillMinimal();
+  return {preview,issue};
+}
+
+test("native mixed VAT sends reviewed fractional line choices identically to preview and issue",async()=>{
+  const {preview,issue}=await nativeTaxForm({vatRate:null,vatTreatment:"standard"});
+  await userEvent.click(screen.getByLabelText("Specificér moms pr. linje"));
+  await userEvent.click(screen.getByRole("button",{name:"Tilføj linje"}));
+  await userEvent.type(screen.getByLabelText("Linje 2 beskrivelse"),"Synthetic exempt service");
+  await userEvent.type(screen.getByLabelText("Linje 2 antal"),"1");
+  await userEvent.type(screen.getByLabelText("Linje 2 enhedspris"),"1000");
+  await userEvent.selectOptions(screen.getByLabelText("Linje 2 momstype"),"exempt");
+  await userEvent.click(screen.getByRole("button",{name:"Forhåndsvis"}));
+  await userEvent.click(screen.getByRole("button",{name:"Udsted faktura"}));
+  expect(issue.mock.calls[0]![1]).toEqual(preview.mock.calls[0]![1]);
+  const input=issue.mock.calls[0]![1];
+  expect(input).not.toHaveProperty("vatRatePercent");
+  expect(input.lines).toEqual([
+    {description:"Bogføring maj",quantity:2,unitPriceExVat:1000,taxClassification:"taxable",vatRate:0.25},
+    {description:"Synthetic exempt service",quantity:1,unitPriceExVat:1000,taxClassification:"exempt",vatRate:0},
+  ]);
+  expect(screen.getByText("Moms (pr. linje)")).toBeInTheDocument();
+  expect(screen.queryByText(/NaN/)).not.toBeInTheDocument();
+});
+
+test("native domestic reverse requires explicit basis/note and receipt never invents omitted VAT",async()=>{
+  const basis="DK_MOMSLOVEN_§46_STK_1_NR_6";
+  const {preview,issue}=await nativeTaxForm({vatTreatment:"domestic_reverse_charge",vatRate:undefined,vatAmount:undefined,grossAmount:2000,reverseChargeBasis:basis,reverseChargeNote:"Synthetic eligibility reviewed"});
+  await userEvent.selectOptions(screen.getByLabelText("Momsbehandling"),"domestic_reverse_charge");
+  await userEvent.click(screen.getByRole("button",{name:"Forhåndsvis"}));
+  expect(preview).not.toHaveBeenCalled();
+  expect(screen.getByText(/Vælg dansk lovgrundlag og angiv en note/)).toBeInTheDocument();
+  await userEvent.selectOptions(screen.getByLabelText("Dansk lovgrundlag"),basis);
+  await userEvent.type(screen.getByLabelText("Note om omvendt betalingspligt"),"Synthetic eligibility reviewed");
+  await userEvent.click(screen.getByRole("button",{name:"Forhåndsvis"}));
+  await userEvent.click(screen.getByRole("button",{name:"Udsted faktura"}));
+  const input=issue.mock.calls[0]![1];
+  expect(input).toEqual(preview.mock.calls[0]![1]);
+  expect(input).toMatchObject({vatTreatment:"domestic_reverse_charge",reverseChargeBasis:basis,reverseChargeNote:"Synthetic eligibility reviewed",lines:[{taxClassification:"reverse_charge",vatRate:0,reverseChargeBasis:basis}]});
+  expect(input).not.toHaveProperty("vatRatePercent");
+  expect(screen.getByText("Køber afregner moms")).toBeInTheDocument();
+  expect(screen.getByText("I alt — uden opkrævet moms")).toBeInTheDocument();
+  expect(screen.queryByText(/NaN/)).not.toBeInTheDocument();
+});
+
+test("native reverse line refuses missing basis before provider-free preview",async()=>{
+  const {preview}=await nativeTaxForm();
+  await userEvent.click(screen.getByLabelText("Specificér moms pr. linje"));
+  await userEvent.selectOptions(screen.getByLabelText("Linje 1 momstype"),"reverse_charge");
+  await userEvent.click(screen.getByRole("button",{name:"Forhåndsvis"}));
+  expect(preview).not.toHaveBeenCalled();
+  expect(screen.getByText(/Linje 1: vælg dansk lovgrundlag/)).toBeInTheDocument();
+  await userEvent.selectOptions(screen.getByLabelText("Linje 1 lovgrundlag"),"DK_MOMSLOVEN_§46_STK_1_NR_7");
+  await userEvent.click(screen.getByRole("button",{name:"Forhåndsvis"}));
+  expect(preview.mock.calls[0]![1].lines[0]).toMatchObject({taxClassification:"reverse_charge",vatRate:0,reverseChargeBasis:"DK_MOMSLOVEN_§46_STK_1_NR_7"});
+});

@@ -14,7 +14,8 @@
 // backup-lock rejection.
 
 import { useEffect, useRef, useState } from "react";
-import { api, type InvoiceIssueSummary } from "../lib/api";
+import { api, type InvoiceIssueSummary, type InvoiceLineInput } from "../lib/api";
+import type {InvoiceTaxClassification,DomesticReverseChargeBasis} from "../lib/api/invoices";
 import { formatKroner, parseDanishAmount } from "../lib/format";
 import type { ContactCustomerRow, CompanyInvoices } from "../lib/types";
 import { Banner } from "./Feedback";
@@ -43,12 +44,16 @@ type LineDraft = {
   description: string;
   quantity: string;
   unitPriceExVat: string;
+  taxClassification: InvoiceTaxClassification;
+  reverseChargeBasis: DomesticReverseChargeBasis | "";
 };
 
 const EMPTY_LINE: LineDraft = {
   description: "",
   quantity: "",
   unitPriceExVat: "",
+  taxClassification: "taxable",
+  reverseChargeBasis: "",
 };
 
 export function InvoiceIssueForm({
@@ -62,6 +67,11 @@ export function InvoiceIssueForm({
   const [issueDate, setIssueDate] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [vatRatePercent, setVatRatePercent] = useState("25");
+  const [vatTreatment,setVatTreatment]=useState<"standard"|"domestic_reverse_charge">("standard");
+  const [lineTaxes,setLineTaxes]=useState(false);
+  const [reverseChargeBasis,setReverseChargeBasis]=useState<DomesticReverseChargeBasis|"">("");
+  const [reverseChargeNote,setReverseChargeNote]=useState("");
+  const explicitTaxes=native&&(lineTaxes||vatTreatment==="domestic_reverse_charge");
   const [currency, setCurrency] = useState("DKK");
   const [sellerName, setSellerName] = useState("");
   const [sellerAddress, setSellerAddress] = useState("");
@@ -216,11 +226,7 @@ export function InvoiceIssueForm({
     | {
         issueDate: string;
         vatNum: number;
-        parsedLines: Array<{
-          description: string;
-          quantity: number;
-          unitPriceExVat: number;
-        }>;
+        parsedLines: InvoiceLineInput[];
       }
     | null {
     if (!issueDate.trim()) {
@@ -229,12 +235,16 @@ export function InvoiceIssueForm({
       return null;
     }
     const vatNum = Number(vatRatePercent);
-    if (!Number.isFinite(vatNum) || vatNum < 0) {
+    if (!explicitTaxes&&(!Number.isFinite(vatNum) || vatNum < 0)) {
       setError("Momssats skal være et tal (procent, fx 25).");
       vatRef.current?.focus();
       return null;
     }
-    const parsedLines = [];
+    if(native&&vatTreatment==="domestic_reverse_charge"&&(!reverseChargeBasis||!reverseChargeNote.trim())){
+      setError("Vælg dansk lovgrundlag og angiv en note om omvendt betalingspligt.");
+      return null;
+    }
+    const parsedLines:InvoiceLineInput[] = [];
     for (const [i, line] of lines.entries()) {
       if (!line.description.trim()) {
         setError(`Linje ${i + 1}: angiv en beskrivelse.`);
@@ -253,10 +263,14 @@ export function InvoiceIssueForm({
         formRef.current?.querySelector<HTMLInputElement>(`[aria-label="Linje ${i + 1} enhedspris"]`)?.focus();
         return null;
       }
+      const classification=vatTreatment==="domestic_reverse_charge"?"reverse_charge":line.taxClassification;
+      const basis=vatTreatment==="domestic_reverse_charge"?reverseChargeBasis:line.reverseChargeBasis;
+      if(explicitTaxes&&classification==="reverse_charge"&&!basis){setError(`Linje ${i+1}: vælg dansk lovgrundlag for omvendt betalingspligt.`);return null;}
       parsedLines.push({
         description: line.description.trim(),
         quantity,
         unitPriceExVat: unitPrice,
+        ...(explicitTaxes?{taxClassification:classification,vatRate:classification==="taxable"?0.25:0,...(classification==="reverse_charge"&&basis?{reverseChargeBasis:basis}:{})}:{}),
       });
     }
     return { issueDate: issueDate.trim(), vatNum, parsedLines };
@@ -271,6 +285,7 @@ export function InvoiceIssueForm({
    */
   function buildPartyAndExtras() {
     return {
+      ...(explicitTaxes?{vatTreatment,...(vatTreatment==="domestic_reverse_charge"&&reverseChargeBasis?{reverseChargeBasis,reverseChargeNote:reverseChargeNote.trim()}:{})}:{}),
       customerId: selectedCustomerId ? Number(selectedCustomerId) : undefined,
       currency: currency.trim() || "DKK",
       dueDate: dueDate.trim() || undefined,
@@ -320,7 +335,7 @@ export function InvoiceIssueForm({
       const blob = await api.previewInvoice(slug, {
         issueDate: parsed.issueDate,
         lines: parsed.parsedLines,
-        vatRatePercent: parsed.vatNum,
+        ...(!explicitTaxes?{vatRatePercent:parsed.vatNum}:{}),
         ...extras,
       });
       const url = URL.createObjectURL(blob);
@@ -354,7 +369,7 @@ export function InvoiceIssueForm({
       const summary = await api.issueInvoice(slug, {
         issueDate: parsed.issueDate,
         lines: parsed.parsedLines,
-        vatRatePercent: parsed.vatNum,
+        ...(!explicitTaxes?{vatRatePercent:parsed.vatNum}:{}),
         ...extras,
       }).catch(outcome.reject);
       setDone(summary);
@@ -396,19 +411,25 @@ export function InvoiceIssueForm({
                   </td>
                 </tr>
                 <tr>
-                  <td>Moms ({Math.round(done.vatRate * 100)}%)</td>
+                  <td>{done.vatTreatment==="domestic_reverse_charge"?"Omvendt betalingspligt":typeof done.vatRate==="number"?`Moms (${Math.round(done.vatRate*100)}%)`:"Moms (pr. linje)"}</td>
                   <td className="num">
-                    {formatKroner(done.vatAmount, currency)}
+                    {done.vatTreatment==="domestic_reverse_charge"?"Køber afregner moms":typeof done.vatAmount==="number"?formatKroner(done.vatAmount,currency):"Ikke oplyst af serveren"}
                   </td>
                 </tr>
                 <tr>
-                  <td>I alt inkl. moms</td>
+                  <td>{done.vatTreatment==="domestic_reverse_charge"?"I alt — uden opkrævet moms":"I alt inkl. moms"}</td>
                   <td className="num">
                     <strong>{formatKroner(done.grossAmount, currency)}</strong>
                   </td>
                 </tr>
               </tbody>
             </table>
+            {native&&done.lines.some(line=>line.taxClassification)&&<table className="data" aria-label="Udstedte linjers moms">
+              <thead><tr><th>Linje</th><th>Momstype</th><th>Moms</th></tr></thead>
+              <tbody>{done.lines.map((line,index)=><tr key={index}><td>{line.description}</td><td>{line.taxClassification==="taxable"?"Momspligtig — 25 %":line.taxClassification==="exempt"?"Momsfritaget":line.taxClassification==="reverse_charge"?"Dansk omvendt betalingspligt":"Ikke oplyst"}{line.reverseChargeBasis&&<div>{line.reverseChargeBasis}</div>}</td><td>{typeof line.vatAmount==="number"?formatKroner(line.vatAmount,currency):"Ikke oplyst af serveren"}</td></tr>)}</tbody>
+            </table>}
+            {done.reverseChargeNote&&<p>{done.reverseChargeNote}</p>}
+            {done.reverseChargeBasis&&<p>Lovgrundlag: {done.reverseChargeBasis}</p>}
             <div className="modal-actions">
               {/* #378: the owner just registered the invoice — the next thing
                   she needs is the file to send to the customer. Surfaced
@@ -486,8 +507,26 @@ export function InvoiceIssueForm({
               </label>
             </div>
 
+            {native&&<fieldset disabled={busy||uncertain} className="modal-body">
+              <legend>Moms på fakturaen</legend>
+              <label className="modal-field">Momsbehandling
+                <Select value={vatTreatment} onChange={e=>setVatTreatment(e.target.value as typeof vatTreatment)}>
+                  <option value="standard">Almindelig dansk faktura</option>
+                  <option value="domestic_reverse_charge">Dansk omvendt betalingspligt</option>
+                </Select>
+              </label>
+              {vatTreatment==="standard"?<label><input type="checkbox" checked={lineTaxes} onChange={e=>setLineTaxes(e.target.checked)}/> Specificér moms pr. linje</label>:<>
+                <label className="modal-field">Dansk lovgrundlag<Select value={reverseChargeBasis} onChange={e=>setReverseChargeBasis(e.target.value as typeof reverseChargeBasis)}>
+                  <option value="">Vælg lovgrundlag</option>
+                  <option value="DK_MOMSLOVEN_§46_STK_1_NR_6">Momsloven § 46, stk. 1, nr. 6</option>
+                  <option value="DK_MOMSLOVEN_§46_STK_1_NR_7">Momsloven § 46, stk. 1, nr. 7</option>
+                </Select></label>
+                <label className="modal-field">Note om omvendt betalingspligt<Input value={reverseChargeNote} onChange={e=>setReverseChargeNote(e.target.value)}/></label>
+              </>}
+              <p className="muted">Vælg kun fritagelse eller omvendt betalingspligt, når grundlaget er afklaret. Serveren kontrollerer valg og beregner beløbene; udenlandsk moms håndteres ikke her.</p>
+            </fieldset>}
             <div className="modal-field-grid">
-              <label className="modal-field">
+              {!explicitTaxes&&<label className="modal-field">
                 Momssats (%)
                 <Input
                   type="text"
@@ -497,7 +536,7 @@ export function InvoiceIssueForm({
                   onChange={(e) => setVatRatePercent(e.target.value)}
                   disabled={busy || uncertain}
                 />
-              </label>
+              </label>}
               <label className="modal-field">
                 Valuta
                 <Input
@@ -645,6 +684,14 @@ export function InvoiceIssueForm({
                       disabled={busy || uncertain}
                     />
                   </label>
+                  {explicitTaxes&&vatTreatment==="standard"&&<>
+                    <label className="modal-field">Momstype<Select aria-label={`Linje ${index+1} momstype`} value={line.taxClassification} disabled={busy||uncertain} onChange={e=>updateLine(index,{taxClassification:e.target.value as InvoiceTaxClassification})}>
+                      <option value="taxable">Momspligtig — 25 %</option><option value="exempt">Momsfritaget</option><option value="reverse_charge">Dansk omvendt betalingspligt</option>
+                    </Select></label>
+                    {line.taxClassification==="reverse_charge"&&<label className="modal-field">Lovgrundlag<Select aria-label={`Linje ${index+1} lovgrundlag`} value={line.reverseChargeBasis} disabled={busy||uncertain} onChange={e=>updateLine(index,{reverseChargeBasis:e.target.value as DomesticReverseChargeBasis})}>
+                      <option value="">Vælg lovgrundlag</option><option value="DK_MOMSLOVEN_§46_STK_1_NR_6">Momsloven § 46, stk. 1, nr. 6</option><option value="DK_MOMSLOVEN_§46_STK_1_NR_7">Momsloven § 46, stk. 1, nr. 7</option>
+                    </Select></label>}
+                  </>}
                   {lines.length > 1 && (
                     <Button
                       type="button"

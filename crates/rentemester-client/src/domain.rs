@@ -101,7 +101,8 @@ pub fn domain_body_schema(operation: DomainMutation) -> Value {
         }
     } else {
         fields["eanNumber"] = optional_text();
-        fields["paymentTermsDays"] = json!({"type":["integer","null"],"minimum":1,"maximum":9007199254740991u64});
+        fields["paymentTermsDays"] =
+            json!({"type":["integer","null"],"minimum":1,"maximum":9007199254740991u64});
         fields["defaultCurrency"] = if matches!(operation, DomainMutation::UpdateCustomer(_)) {
             json!({"type":"string","minLength":3,"maxLength":3,"description":"Uppercase ISO currency; null cannot clear a customer default"})
         } else {
@@ -130,11 +131,11 @@ pub fn invoice_body_schema() -> Value {
     let mut nullable_party = party;
     nullable_party["type"] = json!(["object", "null"]);
     let line = object(
-        json!({"description":{"type":"string","minLength":1,"maxLength":1000},"quantity":{"type":"number","exclusiveMinimum":0},"unitPriceExVat":{"type":"number","minimum":0}}),
+        json!({"description":{"type":"string","minLength":1,"maxLength":1000},"quantity":{"type":"number","exclusiveMinimum":0},"unitPriceExVat":{"type":"number","minimum":0},"taxClassification":{"type":["string","null"],"enum":["taxable","exempt","reverse_charge",null]},"vatRate":{"type":["number","null"]},"reverseChargeBasis":optional_text()}),
         &["description", "quantity", "unitPriceExVat"],
     );
     object(
-        json!({"issueDate":{"type":"string","pattern":"^[0-9]{4}-[0-9]{2}-[0-9]{2}$"},"lines":{"type":"array","minItems":1,"maxItems":200,"items":line},"vatRatePercent":{"type":["number","null"],"description":"Native issuance supports25% only"},"customerId":{"type":["integer","null"],"minimum":1},"invoiceNumber":optional_text(),"dueDate":optional_text(),"currency":optional_text(),"seller":nullable_party,"buyer":nullable_party}),
+        json!({"issueDate":{"type":"string","pattern":"^[0-9]{4}-[0-9]{2}-[0-9]{2}$"},"lines":{"type":"array","minItems":1,"maxItems":200,"items":line},"vatRatePercent":{"type":["number","null"],"description":"Document percent; explicit line vatRate is fractional. Server validates supported domestic treatment."},"vatTreatment":optional_text(),"reverseChargeBasis":optional_text(),"reverseChargeNote":optional_text(),"customerId":{"type":["integer","null"],"minimum":1},"invoiceNumber":optional_text(),"dueDate":optional_text(),"currency":optional_text(),"seller":nullable_party,"buyer":nullable_party}),
         &["issueDate", "lines"],
     )
 }
@@ -327,4 +328,25 @@ async fn read_pdf(mut response: reqwest::Response) -> Result<Vec<u8>, Error> {
         return Err(Error::Protocol);
     }
     Ok(pdf)
+}
+
+#[cfg(test)]
+mod invoice_vat_schema_tests {
+    use super::*;
+    #[test]
+    fn exact_domestic_tax_fields_are_bounded_shapes_not_client_arithmetic() {
+        let schema = invoice_body_schema();
+        let input = json!({"issueDate":"2026-10-20","vatTreatment":"domestic_reverse_charge","reverseChargeBasis":"DK_MOMSLOVEN_§46_STK_1_NR_6","reverseChargeNote":"Synthetic reviewed basis","lines":[{"description":"Synthetic supply","quantity":1,"unitPriceExVat":100,"taxClassification":"reverse_charge","vatRate":0,"reverseChargeBasis":"DK_MOMSLOVEN_§46_STK_1_NR_6"}]});
+        assert!(body(&serde_json::to_vec(&input).unwrap(), &schema).is_ok());
+        let mut mixed = input.clone();
+        mixed["vatTreatment"] = json!("standard");
+        mixed["lines"][0]["taxClassification"] = json!("taxable");
+        mixed["lines"][0]["vatRate"] = json!(0.25);
+        assert!(body(&serde_json::to_vec(&mixed).unwrap(), &schema).is_ok());
+        mixed["lines"][0]["taxClassification"] = json!("invented");
+        assert!(body(&serde_json::to_vec(&mixed).unwrap(), &schema).is_err());
+        let mut actor = input;
+        actor["actor"] = json!("invented");
+        assert!(body(&serde_json::to_vec(&actor).unwrap(), &schema).is_err());
+    }
 }

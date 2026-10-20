@@ -12,6 +12,9 @@ function invoiceRequestPayload(input: InvoiceIssueInput) {
   return {
     issueDate: input.issueDate,
     lines: input.lines,
+    ...(input.vatTreatment !== undefined ? {vatTreatment:input.vatTreatment} : {}),
+    ...(input.reverseChargeBasis !== undefined ? {reverseChargeBasis:input.reverseChargeBasis} : {}),
+    ...(input.reverseChargeNote !== undefined ? {reverseChargeNote:input.reverseChargeNote} : {}),
     ...(input.vatRatePercent !== undefined
       ? { vatRatePercent: input.vatRatePercent }
       : {}),
@@ -300,6 +303,9 @@ export type InvoiceLineInput = {
   description: string;
   quantity: number;
   unitPriceExVat: number;
+  taxClassification?: InvoiceTaxClassification;
+  vatRate?: number;
+  reverseChargeBasis?: DomesticReverseChargeBasis;
 };
 
 /** An invoice party (seller / buyer) — all fields optional. */
@@ -313,11 +319,17 @@ export type InvoicePartyInput = {
   orderReference?: string;
 };
 
+export type InvoiceTaxClassification = "taxable" | "exempt" | "reverse_charge";
+export type DomesticReverseChargeBasis = "DK_MOMSLOVEN_§46_STK_1_NR_6" | "DK_MOMSLOVEN_§46_STK_1_NR_7";
+
 /** Input for `api.issueInvoice`. */
 export type InvoiceIssueInput = {
   issueDate: string;
   lines: InvoiceLineInput[];
   vatRatePercent?: number;
+  vatTreatment?: "standard" | "domestic_reverse_charge";
+  reverseChargeBasis?: DomesticReverseChargeBasis;
+  reverseChargeNote?: string;
   customerId?: number;
   invoiceNumber?: string;
   dueDate?: string;
@@ -331,10 +343,13 @@ export type InvoiceIssueSummary = {
   documentId: number | null;
   invoiceNumber: string | null;
   netAmount: number;
-  vatRate: number;
-  vatAmount: number;
+  vatRate?: number | null;
+  vatAmount?: number | null;
+  vatTreatment?: "standard" | "domestic_reverse_charge";
+  reverseChargeBasis?: DomesticReverseChargeBasis | null;
+  reverseChargeNote?: string | null;
   grossAmount: number;
-  lines: Array<InvoiceLineInput & { lineTotalExVat: number }>;
+  lines: Array<InvoiceLineInput & { lineTotalExVat: number; vatBase?: number; vatAmount?: number }>;
 };
 
 /** Input for `api.settleInvoice`. */
