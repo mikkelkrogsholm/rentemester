@@ -67,6 +67,13 @@ pub struct Context<'a> {
     pub selection: CompanySelection<'a>,
     pub max_future_days: u32,
 }
+/// Pure transport preflight; rejects malformed envelopes before opening a company attempt.
+pub fn validate_post_input(input: &journal_post::Input) -> Result<(), Error> {
+    Command::Post(input).validate()
+}
+pub fn validate_reversal_input(input: &journal_reversal::Input) -> Result<(), Error> {
+    Command::Reverse(input).validate()
+}
 pub fn execute_post(
     control: &mut Connection,
     company: &mut Connection,
@@ -106,6 +113,7 @@ fn authorize(
     tx: &Transaction<'_>,
     observed: &Observation,
     selection: &CompanySelection<'_>,
+    permission: Permission,
 ) -> Result<(), Error> {
     let role = rentemester_storage::control_access::observe_company_role(
         tx,
@@ -156,7 +164,7 @@ fn authorize(
         Request {
             workspace: selection.workspace,
             company: Some(selection.slug),
-            permission: Permission::CompanyLedgerPost,
+            permission,
         },
         &facts,
     )
@@ -173,13 +181,74 @@ fn execute(
     command: Command<'_>,
 ) -> Result<ServiceResult, ServiceFailure> {
     command.validate().map_err(initial)?;
+    let clock = context.clock;
+    let max_future_days = context.max_future_days;
+    execute_operation(
+        control,
+        company,
+        context,
+        Permission::CompanyLedgerPost,
+        true,
+        |tx, subject, rejection| {
+            journal_mutation::apply(
+                tx,
+                subject,
+                PrincipalKind::ServiceAccount,
+                clock,
+                max_future_days,
+                command,
+                rejection,
+            )
+        },
+    )
+}
+
+/// Service reads use the same current credential and company fence as posting.
+pub(crate) fn execute_read(
+    control: &mut Connection,
+    company: &mut Connection,
+    context: Context<'_>,
+    apply: impl FnOnce(&Transaction<'_>) -> Result<Value, Error>,
+) -> Result<ServiceResult, ServiceFailure> {
+    execute_operation(
+        control,
+        company,
+        context,
+        Permission::CompanyRead,
+        false,
+        |tx, _, _| {
+            let before = tx.total_changes();
+            let result = apply(tx)?;
+            if tx.total_changes() != before {
+                return Err(error("readonly_operation_changed_data"));
+            }
+            Ok(journal_mutation::MutationResult {
+                result,
+                receipt: None,
+            })
+        },
+    )
+}
+
+fn execute_operation(
+    control: &mut Connection,
+    company: &mut Connection,
+    context: Context<'_>,
+    permission: Permission,
+    mutation: bool,
+    apply: impl FnOnce(
+        &Transaction<'_>,
+        &str,
+        &mut Option<Value>,
+    ) -> Result<journal_mutation::MutationResult, Error>,
+) -> Result<ServiceResult, ServiceFailure> {
     control_fence::connection_ready(control).map_err(initial)?;
     control_fence::connection_ready(company).map_err(initial)?;
     let Context {
         key,
         clock,
         selection,
-        max_future_days,
+        ..
     } = context;
     if key.workspace() != selection.workspace {
         return Err(initial(error("invalid_credentials")));
@@ -200,15 +269,24 @@ fn execute(
     let tx = control
         .transaction_with_behavior(TransactionBehavior::Immediate)
         .map_err(|_| initial(error("control_busy_or_unavailable")))?;
+    let mut charge_usage = false;
     let charged = (|| {
- rentemester_storage::workspace_transfer::require_business_write(&tx)?;
+        charge_usage = rentemester_storage::workspace_transfer::current(&tx)?.mode == "active";
+        if mutation {
+            rentemester_storage::workspace_transfer::require_business_write(&tx)?;
+        }
         let time = now(clock)?;
         let observed = service_context::observe(&tx, key.lookup_hash(), time, &catalog)?;
-        authorize(&tx, &observed, &selection)?;
-        let charged = service_context::charge(&tx, key.lookup_hash(), time, &catalog)?;
-        if !charged.same_credential(&observed) {
-            return Err(error("invalid_credentials"));
-        }
+        authorize(&tx, &observed, &selection, permission)?;
+        let charged = if charge_usage {
+            let charged = service_context::charge(&tx, key.lookup_hash(), time, &catalog)?;
+            if !charged.same_credential(&observed) {
+                return Err(error("invalid_credentials"));
+            }
+            charged
+        } else {
+            observed
+        };
         #[cfg(test)]
         if std::env::var("RM_SERVICE_FAIL").ok().as_deref() == Some("usage") {
             tx.execute(
@@ -244,6 +322,11 @@ fn execute(
             ..initial(error("usage_commit_outcome_unknown"))
         });
     }
+    let usage = if charge_usage {
+        UsageStage::Committed
+    } else {
+        UsageStage::NotCommitted
+    };
     #[cfg(test)]
     checkpoint("usage-committed");
     let mut rejection = None;
@@ -251,25 +334,24 @@ fn execute(
     let done = control_fence::execute_authorized(
         control,
         company,
-        |tx| {rentemester_storage::workspace_transfer::require_business_write(tx)?;
+        |tx| {
+            if mutation {
+                rentemester_storage::workspace_transfer::require_business_write(tx)?;
+            } else if (rentemester_storage::workspace_transfer::current(tx)?.mode == "active")
+                != charge_usage
+            {
+                return Err(error("service_admission_changed"));
+            }
             let current = service_context::observe(tx, key.lookup_hash(), now(clock)?, &catalog)?;
             if !current.same_credential(&charged) {
                 return Err(error("invalid_credentials"));
             }
-            authorize(tx, &current, &selection)?;
+            authorize(tx, &current, &selection, permission)?;
             Ok(current.subject().to_owned())
         },
         |tx, subject| {
             attempted = true;
-            let value = journal_mutation::apply(
-                tx,
-                subject,
-                PrincipalKind::ServiceAccount,
-                clock,
-                max_future_days,
-                command,
-                &mut rejection,
-            )?;
+            let value = apply(tx, subject, &mut rejection)?;
             #[cfg(test)]
             if std::env::var("RM_SERVICE_FAIL").ok().as_deref() == Some("company") {
                 tx.execute(
@@ -283,14 +365,14 @@ fn execute(
     );
     match done {
         Ok(done) => Ok(ServiceResult {
-            usage: UsageStage::Committed,
+            usage,
             business: BusinessStage::Committed,
             result: done.value.result,
             receipt: done.value.receipt,
             control_reusable: done.control_reusable,
         }),
         Err(f) => Err(ServiceFailure {
-            usage: UsageStage::Committed,
+            usage,
             business: if f.stage == FailureStage::OutcomeUnknown {
                 BusinessStage::OutcomeUnknown
             } else if attempted {

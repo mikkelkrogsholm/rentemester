@@ -131,96 +131,112 @@ pub fn execute(
         context.selection,
         Permission::CompanyRead,
         true,
-        |tx, _| {
-            if !crate::periods::verify_sources(tx, guard)?.is_empty() {
-                return Err(unavailable());
+        |tx, _| read_authorized(tx, guard, slug, action),
+    )
+}
+
+pub fn execute_service(
+    control: &mut Connection,
+    company: &mut Connection,
+    guard: &mut NamespaceGuard,
+    context: crate::service_company::Context<'_>,
+    action: Action<'_>,
+) -> Result<crate::service_company::ServiceResult, crate::service_company::ServiceFailure> {
+    let slug = context.selection.slug;
+    crate::service_company::execute_read(control, company, context, |tx| {
+        read_authorized(tx, guard, slug, action)
+    })
+}
+
+/// Projection shared only by adapters that already hold current company authority.
+pub(crate) fn read_authorized(
+    tx: &Transaction<'_>,
+    guard: &mut NamespaceGuard,
+    slug: &str,
+    action: Action<'_>,
+) -> Result<Value, Error> {
+    if !crate::periods::verify_sources(tx, guard)?.is_empty() {
+        return Err(unavailable());
+    }
+    let verified = crate::archive_import::verify_physical(tx, guard)?;
+    let today = match &action {
+        Action::Read(request) => request.today,
+        Action::FiscalYears { today } => today,
+    };
+    let years = inventory(tx, &verified, today)?;
+    let Action::Read(request) = action else {
+        return Ok(json!({"slug":slug,"years":years}));
+    };
+    let selected = select(&years, &request)?;
+    let label = selected["label"].as_str().ok_or_else(unavailable)?;
+    let archived = selected["source"] == "archive";
+    let mut body = if archived {
+        if request.as_of.is_some() {
+            return Err(Error::new(
+                "archive_date_report_unsupported",
+                "Archive closing dates are unknown; arbitrary-date reports require separate source assurance",
+            ));
+        }
+        if label.len() != 4 || !label.bytes().all(|b| b.is_ascii_digit()) {
+            return Err(invalid());
+        }
+        let year = label.parse::<u16>().map_err(|_| invalid())?;
+        store::read(tx, &verified, slug, year, request.account, request.resource)?
+    } else {
+        let start = selected["start"].as_str().ok_or_else(unavailable)?;
+        let end = selected["end"].as_str().ok_or_else(unavailable)?;
+        let as_of = if matches!(request.resource, Resource::Overview) {
+            request.as_of.unwrap_or(today)
+        } else {
+            end
+        };
+        let basis = if rentemester_storage::opening_balance::validate_history(tx)?.is_some() {
+            rentemester_storage::opening_balance::require_report_as_of(tx, as_of)?
+        } else {
+            json!({"basis":"live","cutOverDate":null,"openingJournalEntryId":null,"archiveAmountsIncluded":false})
+        };
+        let cutover = basis["cutOverDate"].as_str();
+        let partial = cutover.is_some_and(|date| start < date);
+        let mut body = match request.resource {
+            Resource::Overview => {
+                rentemester_storage::dashboard::read(tx, slug, today, Some(label), request.as_of)?
             }
-            let verified = crate::archive_import::verify_physical(tx, guard)?;
-            let today = match &action {
-                Action::Read(request) => request.today,
-                Action::FiscalYears { today } => today,
-            };
-            let years = inventory(tx, &verified, today)?;
-            let Action::Read(request) = action else {
-                return Ok(json!({"slug":slug,"years":years}));
-            };
-            let selected = select(&years, &request)?;
-            let label = selected["label"].as_str().ok_or_else(unavailable)?;
-            let archived = selected["source"] == "archive";
-            let mut body = if archived {
-                if request.as_of.is_some() {
-                    return Err(Error::new(
-                        "archive_date_report_unsupported",
-                        "Archive closing dates are unknown; arbitrary-date reports require separate source assurance",
-                    ));
+            resource => {
+                let snapshot = rentemester_storage::cockpit::read(
+                    tx,
+                    slug,
+                    today,
+                    Some(label),
+                    request.account,
+                )?;
+                match resource {
+                    Resource::Journal => snapshot.journal,
+                    Resource::TrialBalance => snapshot.trial_balance,
+                    Resource::IncomeStatement => snapshot.income_statement,
+                    Resource::Balance => snapshot.balance,
+                    Resource::Overview => unreachable!(),
                 }
-                if label.len() != 4 || !label.bytes().all(|b| b.is_ascii_digit()) {
-                    return Err(invalid());
-                }
-                let year = label.parse::<u16>().map_err(|_| invalid())?;
-                store::read(tx, &verified, slug, year, request.account, request.resource)?
-            } else {
-                let start = selected["start"].as_str().ok_or_else(unavailable)?;
-                let end = selected["end"].as_str().ok_or_else(unavailable)?;
-                let as_of = if matches!(request.resource, Resource::Overview) {
-                    request.as_of.unwrap_or(today)
-                } else {
-                    end
-                };
-                let basis = if rentemester_storage::opening_balance::validate_history(tx)?.is_some()
-                {
-                    rentemester_storage::opening_balance::require_report_as_of(tx, as_of)?
-                } else {
-                    json!({"basis":"live","cutOverDate":null,"openingJournalEntryId":null,"archiveAmountsIncluded":false})
-                };
-                let cutover = basis["cutOverDate"].as_str();
-                let partial = cutover.is_some_and(|date| start < date);
-                let mut body = match request.resource {
-                    Resource::Overview => rentemester_storage::dashboard::read(
-                        tx,
-                        slug,
-                        today,
-                        Some(label),
-                        request.as_of,
-                    )?,
-                    resource => {
-                        let snapshot = rentemester_storage::cockpit::read(
-                            tx,
-                            slug,
-                            today,
-                            Some(label),
-                            request.account,
-                        )?;
-                        match resource {
-                            Resource::Journal => snapshot.journal,
-                            Resource::TrialBalance => snapshot.trial_balance,
-                            Resource::IncomeStatement => snapshot.income_statement,
-                            Resource::Balance => snapshot.balance,
-                            Resource::Overview => unreachable!(),
-                        }
-                    }
-                };
-                body["source"] = json!("live");
-                body["selectedSource"] = json!("live");
-                body["ledgerBasis"] = json!("native_ledger_only");
-                body["openingBalanceBasis"] = basis.clone();
-                body["liveCoverage"] = json!({"status":if partial{"partial"}else{"complete"},
+            }
+        };
+        body["source"] = json!("live");
+        body["selectedSource"] = json!("live");
+        body["ledgerBasis"] = json!("native_ledger_only");
+        body["openingBalanceBasis"] = basis.clone();
+        body["liveCoverage"] = json!({"status":if partial{"partial"}else{"complete"},
                     "reason":if partial{Some("native_history_begins_at_explicit_cutover")}else{None},
                     "periodStart":start,"periodEnd":end,"cutOverDate":basis["cutOverDate"]});
-                if years
-                    .as_array()
-                    .ok_or_else(unavailable)?
-                    .iter()
-                    .any(|y| y["source"] == "archive")
-                {
-                    body["limitations"] = json!([
-                        "Native ledger only; archived closing balances are not opening balances or carry-forward entries."
-                    ]);
-                }
-                body
-            };
-            body["fiscalYears"] = years;
-            Ok(body)
-        },
-    )
+        if years
+            .as_array()
+            .ok_or_else(unavailable)?
+            .iter()
+            .any(|y| y["source"] == "archive")
+        {
+            body["limitations"] = json!([
+                "Native ledger only; archived closing balances are not opening balances or carry-forward entries."
+            ]);
+        }
+        body
+    };
+    body["fiscalYears"] = years;
+    Ok(body)
 }

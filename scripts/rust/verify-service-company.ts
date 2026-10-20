@@ -11,7 +11,7 @@ import {
 	readFileSync,
 	rmSync,
 } from "node:fs";
-import { homedir, tmpdir } from "node:os";
+import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { createBetterAuthRuntime } from "../../src/server/better-auth";
 import {
@@ -33,7 +33,6 @@ import {
 } from "../../src/core/workspace-control";
 
 const root = resolve(import.meta.dir, "../.."),
-	cargo = Bun.which("cargo") ?? join(homedir(), ".cargo/bin/cargo"),
 	temp = mkdtempSync(join(tmpdir(), "rm-service-company-"));
 const version = currentRuleBundleVersion();
 const oldToday = process.env.RENTEMESTER_TODAY;
@@ -72,7 +71,9 @@ const base: Journal = {
 function build(packageName: string) {
 	const p = Bun.spawnSync(
 		[
-			cargo,
+			"python3",
+			join(root, "scripts/rust/cargo-guard.py"),
+			"cargo",
 			"test",
 			"--locked",
 			"-p",
@@ -170,6 +171,12 @@ function fixture(mode = "wal", sql = "") {
 	const cd = open(c);
 	cd.exec(`PRAGMA journal_mode=${mode}`);
 	cd.close(true);
+	// Source emits control v30; qualify the existing explicit native v31 extension
+	// before observing baselines. Protected operations never upgrade a fixture.
+	const prepared = Bun.spawnSync([application, "--ignored", "--exact", "service_company::tests::upgrade_legacy_service_fixture_control"], {
+		cwd: root, env: { ...process.env, RM_SERVICE_CONTROL: c }, stdout: "pipe", stderr: "pipe",
+	});
+	assert.equal(prepared.exitCode, 0, "native current-control fixture preparation failed");
 	return { path, c };
 }
 

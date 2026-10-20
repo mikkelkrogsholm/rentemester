@@ -4,6 +4,7 @@ import { basename, join, resolve } from "node:path";
 import { chromium, type Page } from "@playwright/test";
 import { checkNativeLostPosting } from "./check-native-lost-posting";
 import { checkNativeAccessLoss } from "./check-native-access-loss";
+import { checkNativeServiceCompany } from "./check-native-service-company";
 import { checkNativeContextSwitch } from "./check-native-context-switch";
 
 const saved = "/tmp/rentemester-rust-reports/native-multi-company.json";
@@ -309,6 +310,7 @@ async function standalone() {
     result.noOfflineIdentitySeed = true;
     if (process.argv.includes("--reopen")) result.lostPostingReply = await checkNativeLostPosting(owner, base);
     if (process.argv.includes("--reopen")) result.pendingAccessLoss = await checkNativeAccessLoss(owner, reader, base);
+    if (process.argv.includes("--reopen") && process.env.RM_MULTI_CLI && process.env.RM_MULTI_MCP) result.serviceCompany = await checkNativeServiceCompany(owner, base, work, process.env.RM_MULTI_CLI, process.env.RM_MULTI_MCP);
     if (process.argv.includes("--reopen")) result.contextSwitch = await checkNativeContextSwitch(owner, base, async () => {
       const { readerTotp } = JSON.parse(readFileSync(privateState, "utf8"));
       await owner.getByLabel("E-mail", { exact: true }).fill("reader@example.invalid");

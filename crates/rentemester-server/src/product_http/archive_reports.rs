@@ -3,13 +3,13 @@ use super::*;
 use rentemester_application::archive_reports::Request as ReportRequest;
 use rentemester_storage::archive_reports::Resource;
 #[derive(Default)]
-struct Query {
-    year: Option<String>,
-    source: Option<String>,
-    account: Option<String>,
-    as_of: Option<String>,
+pub(super) struct Query {
+    pub(super) year: Option<String>,
+    pub(super) source: Option<String>,
+    pub(super) account: Option<String>,
+    pub(super) as_of: Option<String>,
 }
-fn parse(raw: &str, resource: Option<Resource>) -> Result<Query, ()> {
+pub(super) fn parse(raw: &str, resource: Option<Resource>) -> Result<Query, ()> {
     if raw.len() > 16 * 1024 {
         return Err(());
     }
@@ -71,7 +71,7 @@ fn parse(raw: &str, resource: Option<Resource>) -> Result<Query, ()> {
     }
     Ok(result)
 }
-fn resource(path: &str) -> Option<(Option<Resource>, &'static str)> {
+pub(super) fn resource(path: &str) -> Option<(Option<Resource>, &'static str)> {
     match path.rsplit('/').next()? {
         "journal" => Some((Some(Resource::Journal), "journal")),
         "trial-balance" => Some((Some(Resource::TrialBalance), "trialBalance")),
@@ -83,6 +83,7 @@ fn resource(path: &str) -> Option<(Option<Resource>, &'static str)> {
     }
 }
 pub(super) async fn read(State(state): State<Product>, request: Request) -> Response {
+    if service_company::requested(&request) { return service_company::read(state, request).await; }
     let cookie = match proof(&state, &request, false) {
         Ok(p) => p,
         Err(r) => return *r,

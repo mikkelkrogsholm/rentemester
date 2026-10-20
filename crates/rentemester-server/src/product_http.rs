@@ -1,4 +1,5 @@
 //! Thin browser adapter over the same owner used for authentication.
+mod service_company;
 mod eu_sales;
 mod oss_report;
 mod public_einvoice;
@@ -452,11 +453,7 @@ fn one<'a>(headers: &'a HeaderMap, key: &str) -> Option<&'a str> {
         Some(value)
     }
 }
-fn proof(
-    state: &Product,
-    request: &Request,
-    mutation: bool,
-) -> Result<VerifiedCookie, Box<Response>> {
+fn origin_proof(state: &Product, request: &Request, mutation: bool) -> Result<(), Box<Response>> {
     let headers = request.headers();
     if one(headers, "host") != Some(&state.authority)
         || (mutation || headers.contains_key("origin"))
@@ -469,6 +466,15 @@ fn proof(
     {
         return Err(Box::new(refused(StatusCode::FORBIDDEN, "origin_refused")));
     }
+    Ok(())
+}
+fn proof(
+    state: &Product,
+    request: &Request,
+    mutation: bool,
+) -> Result<VerifiedCookie, Box<Response>> {
+    origin_proof(state, request, mutation)?;
+    let headers = request.headers();
     if headers.contains_key("authorization") || headers.contains_key("x-rentemester-service-key") {
         return Err(Box::new(refused(StatusCode::UNAUTHORIZED, "unauthorized")));
     }
@@ -479,6 +485,7 @@ fn proof(
         .map_err(|_| Box::new(refused(StatusCode::UNAUTHORIZED, "unauthorized")))
 }
 async fn companies(State(state): State<Product>, request: Request) -> Response {
+    if service_company::requested(&request) { return service_company::companies(state, request).await; }
     let cookie = match proof(&state, &request, false) {
         Ok(v) => v,
         Err(r) => return *r,
@@ -689,6 +696,7 @@ type MutationResult = Result<
     ),
 >;
 async fn write(State(state): State<Product>, request: Request) -> Response {
+    if service_company::requested(&request) { return service_company::write(state, request).await; }
     let company_slug=request.uri().path().split('/').nth(3).unwrap_or("").to_owned();
     let cookie = match proof(&state, &request, true) {
         Ok(v) => v,
