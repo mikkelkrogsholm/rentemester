@@ -1,4 +1,5 @@
 //! Fixed DigiSense REST transport. No SQL, retries, implicit validation, registration, or posting.
+mod recovery;
 use reqwest::{
     blocking::Client as HttpClient,
     header::{ACCEPT, AUTHORIZATION, CONTENT_ENCODING, CONTENT_TYPE, HeaderValue},

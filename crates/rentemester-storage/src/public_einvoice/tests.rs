@@ -1,6 +1,9 @@
 use super::*;
 const NOW: &str = "2026-10-20T10:00:00.000Z";
 fn fixture() -> (Connection, i64) {
+    fixture_registration(true)
+}
+fn fixture_registration(with_registration: bool) -> (Connection, i64) {
     let mut c = Connection::open_in_memory().unwrap();
     let mut db = Connection::open_in_memory().unwrap();
     crate::fresh::initialize_empty_pair(&mut c, &mut db, "Synthetic Seller").unwrap();
@@ -37,18 +40,20 @@ fn fixture() -> (Connection, i64) {
     .unwrap();
     let id = registered["documentId"].as_i64().unwrap();
     let i = identity(&tx).unwrap();
-    save_key(&tx, &i, "test", "synthetic-key", "user:synthetic", NOW).unwrap();
-    save_outbound(
-        &tx,
-        &i,
-        "test",
-        "synthetic-key",
-        true,
-        false,
-        "user:synthetic",
-        NOW,
-    )
-    .unwrap();
+    if with_registration {
+        save_key(&tx, &i, "test", "synthetic-key", "user:synthetic", NOW).unwrap();
+        save_outbound(
+            &tx,
+            &i,
+            "test",
+            "synthetic-key",
+            true,
+            false,
+            "user:synthetic",
+            NOW,
+        )
+        .unwrap();
+    }
     tx.commit().unwrap();
     (db, id)
 }
@@ -349,4 +354,76 @@ fn legacy_unknown_blocks_new_native_submission_without_reinterpretation() {
         0
     );
     validate_backup(&tx).unwrap();
+}
+
+#[test]
+fn verified_legacy_registration_is_attested_without_rewriting_old_rows() {
+    let (mut db, _) = fixture_registration(false);
+    let i = identity(&db).unwrap();
+    db.execute("INSERT INTO digisense_companies(company_key,company_type,participant_id,company_name,registered_at)VALUES('synthetic-key','DK:CVR','DK12345678','Synthetic Seller','2020-01-01 12:00:00')",[]).unwrap();
+    db.execute("INSERT INTO digisense_participants(company_key,network,direction,participant_type,participant_id,webhook_url,registered_on_network,webhook_registered,registered_at)VALUES('synthetic-key','nemhandel','outbound','DK:CVR','DK12345678',NULL,1,0,'2020-01-02 12:00:00')",[]).unwrap();
+    assert!(
+        matches!(registration::registration(&db,"test").unwrap(),registration::Registration::Unverified{company_key} if company_key=="synthetic-key")
+    );
+    assert!(load_bound(&db, "test").is_err());
+    let original = |db: &Connection| {
+        let mut q=db.prepare("SELECT company_key,company_type,participant_id,company_name,registered_at FROM digisense_companies").unwrap();
+        q.query_map([], |r| {
+            Ok((
+                r.get::<_, String>(0)?,
+                r.get::<_, String>(1)?,
+                r.get::<_, String>(2)?,
+                r.get::<_, String>(3)?,
+                r.get::<_, String>(4)?,
+            ))
+        })
+        .unwrap()
+        .collect::<Result<Vec<_>, _>>()
+        .unwrap()
+    };
+    let before = original(&db);
+    let tx = db
+        .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
+        .unwrap();
+    save_key(&tx, &i, "test", "synthetic-key", "user:verified-owner", NOW).unwrap();
+    save_outbound(
+        &tx,
+        &i,
+        "test",
+        "synthetic-key",
+        true,
+        false,
+        "user:verified-owner",
+        NOW,
+    )
+    .unwrap();
+    tx.commit().unwrap();
+    assert_eq!(before, original(&db));
+    assert_eq!(
+        db.query_row(
+            "SELECT registered_at FROM digisense_participants",
+            [],
+            |r| r.get::<_, String>(0)
+        )
+        .unwrap(),
+        "2020-01-02 12:00:00"
+    );
+    validate_backup(&db).unwrap();
+    assert!(outbound_registered(&db, "test", "synthetic-key").unwrap());
+    assert_eq!(db.query_row("SELECT count(*) FROM audit_log WHERE entity_type='native_public_einvoice_registration_v1' AND message LIKE '%\"version\":2%'",[],|r|r.get::<_,i64>(0)).unwrap(),2);
+}
+#[test]
+fn unverified_conflict_and_corrupt_native_proof_never_become_missing() {
+    let (mut db, _) = fixture_registration(false);
+    let i = identity(&db).unwrap();
+    db.execute("INSERT INTO digisense_companies(company_key,company_type,participant_id,company_name)VALUES('old-key','DK:CVR','DK12345678','Synthetic Seller')",[]).unwrap();
+    let tx = db
+        .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
+        .unwrap();
+    assert!(save_key(&tx, &i, "test", "different-key", "user:owner", NOW).is_err());
+    save_key(&tx, &i, "test", "old-key", "user:owner", NOW).unwrap();
+    tx.commit().unwrap();
+    db.execute("INSERT INTO audit_log(event_type,entity_type,entity_id,message,actor)VALUES('native_public_einvoice_company','native_public_einvoice_registration_v1','registration','{}','user:corrupt')",[]).unwrap();
+    assert!(registration::registration(&db, "test").is_err());
+    assert!(load_bound(&db, "test").is_err());
 }
