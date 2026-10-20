@@ -32,6 +32,11 @@ function TaskLinks({ onNavigate }: { onNavigate?: () => void }) {
   const slug = location.pathname.match(/^\/companies\/([^/]+)/)?.[1];
   const [params] = useSearchParams();
   const year = params.get('year');
+  const source = params.get('source');
+  const shared = new URLSearchParams();
+  if (year) shared.set('year', year);
+  if (source === 'live' || source === 'archive') shared.set('source', source);
+  const suffix = shared.size ? `?${shared.toString()}` : '';
   const { can } = useCapabilities(slug);
   if (!slug) return null;
   const priority = ['documents', 'bank', 'batch-bookkeeping', 'drafts'];
@@ -43,7 +48,6 @@ function TaskLinks({ onNavigate }: { onNavigate?: () => void }) {
     if (pages.length === 0) return null;
     return <details key={area.id} {...stylex.props(styles.group)} open={area.id === route?.area}><summary {...stylex.props(styles.groupTitle)}>{area.label}</summary>{pages.map((entry) => {
       const active = entry.id === (route?.parentId ?? route?.id);
-      const suffix = year ? `?year=${encodeURIComponent(year)}` : '';
       return <NavLink key={entry.id} to={`/companies/${slug}${entry.segment ? '/' + entry.segment : ''}${suffix}`} end onClick={onNavigate} aria-current={active ? 'page' : undefined} {...stylex.props(styles.navLink, active && styles.active)}>{entry.label}</NavLink>;
     })}</details>;
   })}</nav>;
