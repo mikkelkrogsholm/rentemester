@@ -16,9 +16,9 @@ fi
 profile=${RENTEMESTER_DESKTOP_PROFILE:-dev}
 target_dir=${CARGO_TARGET_DIR:-"$root/target"}
 target=${CARGO_BUILD_TARGET:-}
-# Build separately: server/storage JSON features must not force another GPUI build.
+# Build the server and shared-web desktop host serially in the guarded cache.
 CARGO_PROFILE_DEV_DEBUG=0 CARGO_INCREMENTAL=0 python3 scripts/rust/cargo-guard.py cargo build --locked --profile "$profile" -p rentemester-server -j 1
-CARGO_PROFILE_DEV_DEBUG=0 CARGO_INCREMENTAL=0 python3 scripts/rust/cargo-guard.py cargo +stable build --locked --profile "$profile" -p rentemester-desktop -j 1
+CARGO_PROFILE_DEV_DEBUG=0 CARGO_INCREMENTAL=0 python3 scripts/rust/cargo-guard.py cargo +stable build --locked --profile "$profile" -p rentemester-desktop --bin rentemester-desktop -j 1
 revision=$(git rev-parse HEAD)
 version=$(sed -n '/^\[workspace.package\]/,/^\[/s/^version = "\([^"]*\)"/\1/p' Cargo.toml)
 server_toolchain=$(rustc --version)
