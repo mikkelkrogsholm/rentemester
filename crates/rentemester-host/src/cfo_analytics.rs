@@ -11,7 +11,7 @@ use serde_json::{Value, json};
 fn unavailable(_: impl std::fmt::Display) -> Error {
     Error::new("cfo_source_unavailable", "Admitted CFO source unavailable")
 }
-fn switch(
+pub(super) fn switch(
     company: &mut Option<Connection>,
     guard: &mut NamespaceGuard,
     root: &Path,

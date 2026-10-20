@@ -111,6 +111,19 @@ function PortfolioOverview() {
   );
 }
 
+function availabilityMessage(reason:string){
+ const messages:Record<string,string>={
+  native_history_begins_at_explicit_cutover:"Tallene dækker kun perioden fra den dokumenterede overgang til Rentemester.",
+  archive_or_cutover_basis_unavailable:"Det historiske regnskabsgrundlag er ikke tilgængeligt for denne dato.",
+  unvalued_or_adjusted_receivable:"Tilgodehavenderne kræver afklaring af værdiansættelse eller korrektioner.",
+  vat_reconciliation_errors:"Momsgrundlaget skal afstemmes, før beløbet kan anvendes til angivelse.",
+  none:"Der mangler et kontoudtog med dokumenteret saldo.",
+  "no-balance-column":"Kontoudtoget indeholder ingen saldi.",
+  unavailable:"Oplysningerne er ikke tilgængelige på et entydigt grundlag.",
+ };
+ return messages[reason]??(reason.includes("_")?"Oplysningerne kræver yderligere dokumentation.":reason);
+}
+
 function NativePortfolioOverview(){
  const [asOf,setAsOf]=useState("");
  const state=useAsync(signal=>api.nativePortfolio(asOf||undefined,{signal}),[asOf]);
@@ -123,12 +136,13 @@ function NativePortfolioOverview(){
   <div className="row-actions"><label>Pr. dato<Input type="date" value={asOf||data.asOf} onChange={e=>setAsOf(e.target.value)}/></label><Button variant="secondary" onClick={state.reload}>Hent portefølje igen</Button></div>
   <p>{data.companyCount} virksomheder · pr. {data.asOf}</p><p className="muted">Opgaver viser aktuel åben status for kilder til og med den valgte dato.</p><p className="muted">Overblik over virksomheder, du aktuelt har adgang til. Beløbene er ikke et konsolideret koncernregnskab.</p>
   <div className="rollup-strip" role="group" aria-label="Tværgående overblik">
-   {[['Samlet resultat',amount(data.rollup.resultat)],['Samlet likviditet',amount(data.rollup.liquidity)],['Momsposition',amount(data.rollup.vatPayable)],['Åbne opgaver',count(data.rollup.openTaskCount)]].map(([label,value])=><div className="rollup-cell" key={label}><span className="rollup-label">{label}</span><span className="rollup-value">{value}</span></div>)}
+   {[['Samlet resultat',amount(data.rollup.resultat)],['Samlet likviditet',amount(data.rollup.liquidity)],['Moms i aktuelle perioder',amount(data.rollup.vatPayable)],['Åbne opgaver',count(data.rollup.openTaskCount)]].map(([label,value])=><div className="rollup-cell" key={label}><span className="rollup-label">{label}</span><span className="rollup-value">{value}</span></div>)}
   </div>
   {!data.rollup.bankBalanceComplete&&<p role="status">Samlet banksaldo er ikke tilgængelig: {data.rollup.unknownBankCompanyCount} synlige virksomheder mangler et fuldt kendt kontoudtogsgrundlag.</p>}
   {data.companies.length===0?<Onboarding onCreated={()=>state.reload()}/>:<div className="company-grid">{data.companies.map(company=><article className="card" key={company.slug} aria-label={company.name}><h2>{company.name}</h2><p>{company.fiscalYear??"Regnskabsår ikke tilgængeligt"} · {company.periodStart??"Ukendt start"} – {company.periodEnd??"Ukendt slut"}</p>
-   <dl>{[['Omsætning',amount(company.omsaetning)],['Resultat',amount(company.resultat)],['Banksaldo',amount(company.actualBankBalance)],['Momsposition',amount(company.vat?.payable??null)],['Åbne fakturaer',count(company.openInvoiceCount)],['Åbne opgaver',count(company.openTaskCount)]].map(([label,value])=><div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl>
-   {Object.entries(company.availability).filter(([key,value])=>key!=="tasks"&&value.reason).map(([key,value])=><p key={key}>{value.reason}</p>)}
+   <dl>{[['Omsætning',amount(company.omsaetning)],['Resultat',amount(company.resultat)],['Banksaldo',amount(company.actualBankBalance)],['Moms i perioden',amount(company.vat?.payable??null)],['Åbne fakturaer',count(company.openInvoiceCount)],['Åbne opgaver',count(company.openTaskCount)]].map(([label,value])=><div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl>
+   {company.vat?.periodStart&&company.vat.periodEnd&&<p className="muted">Momsperiode {company.vat.periodStart} – {company.vat.periodEnd}, opgjort til {company.vat.cutoff??data.asOf}.</p>}
+   {Object.entries(company.availability).filter(([key,value])=>key!=="tasks"&&value.reason).map(([key,value])=><p key={key}>{availabilityMessage(value.reason??"unavailable")}</p>)}
    {company.taskGroups.length>0&&<ul>{company.taskGroups.map(group=><li key={group.type}>{group.link?<ButtonLink to={group.link}>{group.label} · {group.count}</ButtonLink>:<>{group.label} · {group.count}</>}</li>)}</ul>}
    {company.limitations.map(message=><p className="muted" key={message}>{message}</p>)}<p>Ledgerkontrol: {company.audit.status==="verified"?"Kontrolleret journalhashkæde":"Ikke tilgængelig"}</p>
    <div className="row-actions"><ButtonLink to={`/companies/${company.slug}/posteringer`}>Åbn bogføring</ButtonLink><ButtonLink to={`/companies/${company.slug}/likviditet`}>Se pengestrøm</ButtonLink></div>

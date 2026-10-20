@@ -117,3 +117,5 @@ pub mod cfo_analytics;
 pub mod archive_import;
 pub mod opening_balance;
 pub mod archive_reports;
+
+pub mod portfolio_cashflow;

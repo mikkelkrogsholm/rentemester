@@ -405,3 +405,5 @@ pub use opening_balance::{MAX_OPENING_BALANCE_BODY,opening_balance_body_schema};
 
 mod public_einvoice;
 pub use public_einvoice::{PublicInvoiceMutation,MAX_PUBLIC_INVOICE_BODY,public_invoice_body_schema};
+
+pub mod portfolio_cashflow;

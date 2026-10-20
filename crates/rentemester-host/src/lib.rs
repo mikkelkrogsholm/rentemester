@@ -1331,3 +1331,5 @@ mod opening_balance;
 mod archive_reports;
 
 mod document_ingest;
+
+mod portfolio_cashflow;

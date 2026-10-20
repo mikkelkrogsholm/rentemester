@@ -35,7 +35,7 @@ fn status(tx: &Transaction<'_>, start: &str, end: &str) -> Result<String, Error>
     }
     Ok(state)
 }
-fn lines(tx: &Transaction<'_>) -> Result<Vec<(String, Line)>, Error> {
+pub(crate) fn lines(tx: &Transaction<'_>) -> Result<Vec<(String, Line)>, Error> {
     let mut roles = BTreeMap::new();
     let mut query = tx
         .prepare("SELECT role,account_no FROM account_role_mappings WHERE status='confirmed'")
