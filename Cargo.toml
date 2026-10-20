@@ -1,6 +1,6 @@
 [workspace]
 default-members = ["crates/rentemester-host", "crates/rentemester-application", "crates/rentemester-engine", "crates/rentemester-storage", "crates/rentemester-cli", "crates/rentemester-client", "crates/rentemester-mcp", "crates/rentemester-runtime", "crates/rentemester-server"]
-members = ["crates/rentemester-desktop", "crates/rentemester-host", "crates/rentemester-application", "crates/rentemester-engine", "crates/rentemester-storage", "crates/rentemester-cli", "crates/rentemester-client", "crates/rentemester-mcp", "crates/rentemester-runtime", "crates/rentemester-server"]
+members = ["crates/rentemester-pdf-worker", "crates/rentemester-desktop", "crates/rentemester-host", "crates/rentemester-application", "crates/rentemester-engine", "crates/rentemester-storage", "crates/rentemester-cli", "crates/rentemester-client", "crates/rentemester-mcp", "crates/rentemester-runtime", "crates/rentemester-server"]
 exclude = ["vendor/rusqlite-0.40.2", "vendor/libsqlite3-sys-0.38.2"]
 resolver = "3"
 

@@ -1,0 +1,46 @@
+{
+  "format": "rentemester-pdfium-artifacts/1",
+  "engine": "pdfium",
+  "release": "chromium/7881",
+  "version": "151.0.7881.0",
+  "releaseUrl": "https://github.com/bblanchon/pdfium-binaries/releases/tag/chromium/7881",
+  "binding": {
+    "crate": "pdfium-render",
+    "version": "0.9.4",
+    "features": [
+      "pdfium_7881"
+    ],
+    "defaultFeatures": false
+  },
+  "artifacts": [
+    {
+      "archive": "pdfium-mac-arm64.tgz",
+      "url": "https://github.com/bblanchon/pdfium-binaries/releases/download/chromium/7881/pdfium-mac-arm64.tgz",
+      "sha256": "52e94ca5aa8847934330daf3f8150c190682c5ca93831468794f8b90d4392e40",
+      "library": "lib/libpdfium.dylib",
+      "librarySha256": "1bc45b15466b34cef96641ce25c77a876e70010c6b114f909dda2f5325fc5bd7"
+    },
+    {
+      "archive": "pdfium-mac-x64.tgz",
+      "url": "https://github.com/bblanchon/pdfium-binaries/releases/download/chromium/7881/pdfium-mac-x64.tgz",
+      "sha256": "6dedf83990e0e3d6b7c93c9e7589c5a126b0ae14b7464d76120cff7a26afb18b",
+      "library": "lib/libpdfium.dylib",
+      "librarySha256": "4eaad6c3e8d786cf6f66a45d7d014edf5c65f372f98c3070e66595ebb50e43d9"
+    },
+    {
+      "archive": "pdfium-linux-x64.tgz",
+      "url": "https://github.com/bblanchon/pdfium-binaries/releases/download/chromium/7881/pdfium-linux-x64.tgz",
+      "sha256": "1470e21b8b4a3b4ad7f85684e2da11d94f3b69a86d81dee11b9b6709d927ac1d",
+      "library": "lib/libpdfium.so",
+      "librarySha256": "f728930966f503652b92acc89b9374a2eeca00ce42e26dccd3e4b5c5161b2d64"
+    },
+    {
+      "archive": "pdfium-linux-arm64.tgz",
+      "url": "https://github.com/bblanchon/pdfium-binaries/releases/download/chromium/7881/pdfium-linux-arm64.tgz",
+      "sha256": "ee7f7b7d5468958336a818c1cd580bdd20972846b7377b13f9a923d92d1d4674",
+      "library": "lib/libpdfium.so",
+      "librarySha256": "6252fce3da45e7f0dc5b27f4d4e1a1456ca3f7734cdb04f927967df772127478"
+    }
+  ],
+  "licenses": "Preserve archive LICENSE and complete licenses/ directory alongside library; bindings MIT OR Apache-2.0."
+}
