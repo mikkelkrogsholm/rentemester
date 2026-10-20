@@ -88,3 +88,5 @@ pub mod cashflow;
 pub mod portfolio;
 
 pub mod agent_discovery;
+
+pub mod backup_policy;
