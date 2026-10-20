@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { bank, invoices, mockFetch } from "../test/fixtures";
+import { bank, documents, invoices, mockFetch } from "../test/fixtures";
 import { renderAt } from "../test/render";
 import { BankView } from "./BankView";
 
@@ -123,20 +123,21 @@ describe("BankView — Bank", () => {
     ).toBe(1);
   });
 
-  test("clicking Bogfør opens the bank-reconcile modal seeded with the row", async () => {
-    mockFetch({
-      ...route(),
-      "GET /api/companies/acme-aps/invoices": { invoices: invoices() },
-    });
+  test("outgoing Bogfør opens reviewed purchase selection", async () => {
+    mockFetch({ ...route(), "GET /api/companies/acme-aps/documents": { documents: documents() } });
     renderView();
-    await userEvent.click(
-      await screen.findByRole("button", { name: "Bogfør" }),
-    );
-    expect(
-      screen.getByRole("dialog", { name: "Bogfør banktransaktion" }),
-    ).toBeInTheDocument();
-    // The bank-row's description is rendered in the modal as context.
+    await userEvent.click(await screen.findByRole("button", { name: "Bogfør" }));
+    expect(await screen.findByRole("dialog", { name: "Vælg bilag til bankpost" })).toBeInTheDocument();
     expect(screen.getAllByText(/Gebyr/).length).toBeGreaterThan(0);
+    expect(screen.getByRole("button", { name: "Gennemgå bilag" })).toBeDisabled();
+  });
+
+  test("incoming Bogfør still opens sales invoice settlement", async () => {
+    const incoming = { ...bank().transactions[1]!, amount: 125, text: "Incoming payment" };
+    mockFetch({ ...route({ transactions: [incoming] }), "GET /api/companies/acme-aps/invoices": { invoices: invoices() } });
+    renderView();
+    await userEvent.click(await screen.findByRole("button", { name: "Bogfør" }));
+    expect(await screen.findByRole("dialog", { name: "Bogfør banktransaktion" })).toBeInTheDocument();
   });
 
   test("a matched row exposes the reviewed bank-correction flow", async () => {

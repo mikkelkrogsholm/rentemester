@@ -136,6 +136,7 @@ async fn invalid_selectors_bodies_and_missing_confirmation_refuse_before_transpo
         (1, b"{}".to_vec(), false),
         (0, b"{}".to_vec(), true),
         (-1, b"{}".to_vec(), true),
+        (9_007_199_254_740_992, b"{}".to_vec(), true),
         (1, b"{\"confirm\":true}".to_vec(), true),
         (1, b"{\"actor\":\"agent:caller\"}".to_vec(), true),
         (1, b"{\"note\":1}".to_vec(), true),

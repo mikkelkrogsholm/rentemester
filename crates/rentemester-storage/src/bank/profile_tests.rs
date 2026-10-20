@@ -44,7 +44,7 @@ fn named_profile_retains_all_evidence_reconstructs_balances_and_preserves_repeat
     assert_eq!(result["imported"], 3);
     assert_eq!(result["profile"], "danske-bank");
     assert_eq!(result["balanceWarnings"], json!([]));
-    assert_eq!(result["exceptionsCreated"], 0);
+    assert_eq!(result["exceptionsCreated"], 3);
     assert_eq!(result["firstBalance"], json!(1100.0));
     assert_eq!(result["lastBalance"], json!(1130.0));
     let view = read(&tx, "synthetic", "2026-04-04", Some("2026")).unwrap();
@@ -112,7 +112,7 @@ fn only_fresh_batch_adjacency_creates_a_gap_exception_and_repeat_creates_none() 
     let result = imported(&tx, gap, "2026-10-20T12:01:00Z");
     assert_eq!(result["imported"], 2);
     assert_eq!(result["balanceWarnings"].as_array().unwrap().len(), 1);
-    assert_eq!(result["exceptionsCreated"], 1);
+    assert_eq!(result["exceptionsCreated"], 3);
     let evidence: String = tx
         .query_row(
             "SELECT source_evidence FROM exceptions WHERE type='BANK_BALANCE_GAP'",
@@ -134,7 +134,7 @@ fn only_fresh_batch_adjacency_creates_a_gap_exception_and_repeat_creates_none() 
         "Dato;Tekst;Beløb;Saldo\n08.04.2026;Synthetic isolated statement;-10;1\n",
         "2026-10-20T12:03:00Z",
     );
-    assert_eq!(single["exceptionsCreated"], 0);
+    assert_eq!(single["exceptionsCreated"], 1);
     assert_eq!(
         tx.query_row(
             "SELECT count(*) FROM exceptions WHERE type='BANK_BALANCE_GAP'",

@@ -48,7 +48,7 @@ pub fn run(
         flags
             .get("--id")
             .and_then(|s| s.parse::<i64>().ok())
-            .filter(|id| *id > 0)
+            .filter(|id| *id > 0 && *id <= 9_007_199_254_740_991)
             .ok_or_else(|| invalid("positive --id required"))?
     };
     let company = flags

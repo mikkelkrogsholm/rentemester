@@ -36,6 +36,7 @@ export type DocumentBookExpenseModalProps = {
   slug: string;
   /** The bilag id the action targets. */
   documentId: number;
+  initialBankTransactionId?: number;
   /** Re-runs the Bilag view load after a successful booking. */
   onBooked: () => void;
   /** Closes the modal without acting. */
@@ -55,6 +56,7 @@ const VAT_TREATMENT_LABELS: Record<ExpenseVatTreatment, string> = {
 export function DocumentBookExpenseForm({
   slug,
   documentId,
+  initialBankTransactionId,
   onBooked,
   onClose,
   presentation = "dialog",
@@ -63,7 +65,7 @@ export function DocumentBookExpenseForm({
   const options = optionsState.data;
   const loadError = optionsState.error;
   const [expenseAccountNo, setExpenseAccountNo] = useState<string>("");
-  const [bankTransactionId, setBankTransactionId] = useState<number | "">("");
+  const [bankTransactionId, setBankTransactionId] = useState<number | "">(initialBankTransactionId ?? "");
   const [vatTreatment, setVatTreatment] = useState<ExpenseVatTreatment | "">(
     "",
   );

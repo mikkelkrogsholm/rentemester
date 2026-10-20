@@ -1,4 +1,4 @@
-//! Review-only bank tasks, refreshed exclusively inside admitted bank imports.
+//! Review-only bank tasks, refreshed inside admitted bank imports and document uploads.
 use crate::{invalid, legacy_money};
 use rentemester_engine::{Error, money::Money};
 use rusqlite::{Transaction, params};
@@ -127,7 +127,7 @@ pub fn sync(tx: &Transaction<'_>) -> Result<usize, Error> {
             date: row.get(1).map_err(invalid)?,
             booking_date: row.get(2).map_err(invalid)?,
             text: row.get(3).map_err(invalid)?,
-            amount: legacy_money(row.get_ref(4).map_err(invalid)?)?,
+            amount: crate::bank::signed_money(row.get_ref(4).map_err(invalid)?)?,
             currency: row.get(5).map_err(invalid)?,
             reference: row.get(6).map_err(invalid)?,
             batch: row.get(7).map_err(invalid)?,

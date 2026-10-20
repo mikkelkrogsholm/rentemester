@@ -11,6 +11,7 @@ mod portable_backup;
 mod company_setup;
 mod privacy;
 mod budget;
+mod exceptions;
 mod mileage;
 mod company_knowledge;
 mod parties;

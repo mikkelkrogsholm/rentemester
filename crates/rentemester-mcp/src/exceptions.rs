@@ -16,7 +16,7 @@ pub fn tools() -> Vec<Value> {
         tool(
             "exception_resolve",
             "CompanyReview: explicitly review one task with optional note, current actor from authentication. Resolves the task only; does not book or clear an underlying bank condition. No caller keys/actor, inner confirm or automatic retries. If the outcome is unknown, read canonical queue/audit before further action.",
-            json!({"type":"object","required":["company","id","confirm"],"properties":{"company":company_schema(),"id":{"type":"integer","minimum":1},"note":{"type":["string","null"],"maxLength":4096},"confirm":{"const":true}},"additionalProperties":false}),
+            json!({"type":"object","required":["company","id","confirm"],"properties":{"company":company_schema(),"id":{"type":"integer","minimum":1,"maximum":9_007_199_254_740_991_i64},"note":{"type":["string","null"],"maxLength":4096},"confirm":{"const":true}},"additionalProperties":false}),
             false,
         ),
     ]

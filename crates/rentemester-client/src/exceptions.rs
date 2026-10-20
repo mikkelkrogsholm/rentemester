@@ -50,8 +50,8 @@ impl ApiClient {
                 "explicit exception resolution confirmation required",
             ));
         }
-        if id <= 0 {
-            return Err(Error::InvalidInput("positive exception id required"));
+        if id <= 0 || id > 9_007_199_254_740_991 {
+            return Err(Error::InvalidInput("positive safe exception id required"));
         }
         if bytes.len() > MAX_EXCEPTION_BODY {
             return Err(Error::InvalidInput(

@@ -82,6 +82,8 @@ pub fn run(args: &[String]) -> Result<Value, Failure> {
         help["commands"].as_array_mut().unwrap().extend(["group-disposition-status","plan-group-disposition","propose-group-disposition","approve-group-disposition","link-group-disposition","settle-group-disposition","supersede-group-disposition","reopen-group-disposition"].map(|s|json!(s)));
         help["directBankPayableCorrection"]=crate::payable_correction::help();
         help["commands"].as_array_mut().unwrap().extend(["direct-bank-payable-correction-plan","direct-bank-payable-correction"].map(|s|json!(s)));
+        help["exceptions"]=crate::exceptions::help();
+        help["commands"].as_array_mut().unwrap().extend(["list-exceptions","resolve-exception"].map(|s|json!(s)));
         help["bookkeepingBatch"]=crate::bookkeeping_batch::help();
         help["commands"].as_array_mut().unwrap().extend(["bookkeeping-batch-plan","bookkeeping-batch-status","bookkeeping-batch-persist","bookkeeping-batch-approve","bookkeeping-batch-apply"].map(|s|json!(s)));
         help["workspaceTransfer"]=crate::workspace_transfer::help();
@@ -154,6 +156,7 @@ pub fn run(args: &[String]) -> Result<Value, Failure> {
                 "--status",
                 "--as-of",
                 "--include-proposed",
+                "--include-archived",
                 "--party-id",
                 "--source-id",
                 "--output",
@@ -238,6 +241,7 @@ pub fn run(args: &[String]) -> Result<Value, Failure> {
     if crate::workspace_inbox::accepts(command){return crate::workspace_inbox::run(command,&flags,allow_http,confirmed,preview_reviewed);}
     if crate::parties::accepts(command){return crate::parties::run(command,&flags,allow_http,confirmed,preview_reviewed);}
     if crate::company_knowledge::accepts(command){return crate::company_knowledge::run(command,&flags,allow_http,confirmed,preview_reviewed);}
+    if crate::exceptions::accepts(command){return crate::exceptions::run(command,&flags,allow_http,confirmed,preview_reviewed);}
     if crate::mileage::accepts(command){return crate::mileage::run(command,&flags,allow_http,confirmed,preview_reviewed);}
     if crate::accruals::accepts(command){return crate::accruals::run(command,&flags,allow_http,confirmed,preview_reviewed);}
     if crate::assets::accepts(command){return crate::assets::run(command,&flags,allow_http,confirmed,preview_reviewed);}

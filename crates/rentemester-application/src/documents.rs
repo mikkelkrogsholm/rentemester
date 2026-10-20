@@ -266,6 +266,7 @@ pub fn finish_ingest_registered(
                 &today,
                 scan.as_ref(),
             )?;
+            rentemester_storage::unmatched_bank::sync(tx)?;
             let document_id = receipt["document"]["id"]
                 .as_i64()
                 .filter(|id| *id > 0)
@@ -309,7 +310,7 @@ pub fn ingest(
             let path = guard
                 .publish_document(input.file)
                 .map_err(|_| unavailable())?;
-            rentemester_storage::documents::register(
+            let receipt = rentemester_storage::documents::register(
                 tx,
                 rentemester_storage::documents::Original {
                     filename: input.file.filename(),
@@ -320,7 +321,9 @@ pub fn ingest(
                 input.metadata,
                 subject,
                 input.today,
-            )
+            )?;
+            rentemester_storage::unmatched_bank::sync(tx)?;
+            Ok(receipt)
         },
     )
 }

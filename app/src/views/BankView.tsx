@@ -15,8 +15,9 @@ import { Button, ButtonLink, FilterBar, Input, PageHeader, Pagination, Select } 
 // Status-linjen under filter-baren viser hvor mange transaktioner der matcher
 // — og hvor mange af dem der er afstemt vs. uafstemte.
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ComponentProps } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
+import { BankExpenseModal } from "../components/BankExpenseModal";
 import { BankCorrectionModal } from "../components/BankCorrectionModal";
 import { BankImportModal } from "../components/BankImportModal";
 import { BankJournalLinkModal } from "../components/BankJournalLinkModal";
@@ -30,6 +31,8 @@ import { api } from "../lib/api";
 import { formatDateDa, formatKroner } from "../lib/format";
 import type { BankTransactionRow, CompanyBank } from "../lib/types";
 import { useAsync } from "../lib/useAsync";
+
+const BankBookingModal = (props: ComponentProps<typeof BankReconcileModal>) => props.transaction.amount < 0 ? <BankExpenseModal {...props} /> : <BankReconcileModal {...props} />;
 
 // #451 — the URL keys we own; listed once so "Ryd filtre" can clear them all
 // without touching other params (e.g. `?year=`).
@@ -219,7 +222,7 @@ export function BankView() {
       )}
 
       {reconciling && (
-        <BankReconcileModal
+        <BankBookingModal
           slug={slug}
           transaction={reconciling}
           onReconciled={state.reload}
