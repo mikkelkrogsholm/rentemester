@@ -14,6 +14,7 @@ import type { CompanyIntegrity } from "../lib/types";
 import { ErrorState, Loading } from "../components/Feedback";
 import { useOptionalAuth } from "../lib/auth-context";
 import { NativeBackupCard } from "../components/NativeBackupCard";
+import { NativeBackupStatus } from "../components/NativeBackupStatus";
 
 export function IntegrityView() {
   const auth = useOptionalAuth();
@@ -58,7 +59,7 @@ export function IntegrityView() {
 
       </PageHeader>
 
-      {auth?.backend === "rust" && <NativeBackupCard />}
+      {auth?.backend === "rust" && <><NativeBackupCard /><NativeBackupStatus key={slug} slug={slug} /></>}
 
       {chainFailed && (
         <div className="callout danger">

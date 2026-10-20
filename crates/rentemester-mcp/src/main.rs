@@ -10,6 +10,7 @@ mod reminder_claims;
 mod company_creation;
 mod saft;
 mod portable_backup;
+mod backup_status;
 mod company_setup;
 mod privacy;
 mod budget;

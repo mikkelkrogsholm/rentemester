@@ -3,6 +3,8 @@
 //! Authentication/enrollment is currently performed by the server's browser UI.
 mod agent_discovery;
 mod backup_destinations;
+mod backup_status;
+pub use backup_status::{backup_lock_body_schema,MAX_BACKUP_LOCK_BODY};
 mod bank_matches;
 mod cvr;
 mod eu_sales;

@@ -181,6 +181,7 @@ pub fn list() -> Value {
     tools.extend(crate::company_creation::tools());
     tools.extend(crate::saft::tools());
     tools.extend(crate::portable_backup::tools());
+    tools.extend(crate::backup_status::tools());
     json!({"tools":tools})
 }
 pub(crate) fn native_body(schema: Value) -> Value {
@@ -321,6 +322,7 @@ pub async fn call(api: &ApiClient, name: &str, args: Value) -> Result<Value, &'s
         name if crate::reviewed_bookkeeping::accepts(name) => crate::reviewed_bookkeeping::call(api,name,args).await?,
         name @ ("backup_destinations"|"place_backup"|"verify_backup_placement") => crate::portable_backup::destination_call(api,name,args).await?,
         "workspace_backup" => crate::portable_backup::call(api,args).await?,
+        name @ ("backup_status"|"backup_lock") => crate::backup_status::call(api,name,args).await?,
         "saft_export" => crate::saft::call(api,args).await?,
         "annual_report" => crate::annual_reports::call(api, args).await?,
         name if crate::receivables::accepts(name) => {
