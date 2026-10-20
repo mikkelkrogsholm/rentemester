@@ -241,7 +241,7 @@ fn legacy_lines(
         .collect();
     let allocations = credit_note::allocate(gross, prior_total, amount, &counters)?;
     let mut lines = vec![JournalLine {
-        account_no: AccountNo::parse(&debtor)?,
+        account_no: AccountNo::parse(debtor)?,
         debit_amount: Money::default(),
         credit_amount: amount.clone(),
         vat_code: None,

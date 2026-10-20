@@ -126,7 +126,7 @@ fn basis(value: &str) -> Result<&str, Error> {
         )),
     }
 }
-fn classification<'a>(value: Option<&'a str>, domestic: bool) -> Result<&'a str, Error> {
+fn classification(value: Option<&str>, domestic: bool) -> Result<&str, Error> {
     let value = value.unwrap_or(if domestic {
         "reverse_charge"
     } else {

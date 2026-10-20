@@ -54,19 +54,56 @@ pub fn allocate(
                 &gross.0,
             )?)
         };
+        // A later rounded proportion must never retract an already credited
+        // source counter. Keep each target inside its remaining original range.
+        let target = Money(target.0.max(c.prior.0.clone()).min(c.original.0.clone()));
         total.add(&target);
         targets.push(target);
     }
     let residual = cumulative.subtract(&total);
     if residual != Money::default() {
-        let index = counters
-            .iter()
-            .enumerate()
-            .filter(|(_, c)| c.revenue)
-            .max_by(|(a, _), (b, _)| targets[*a].0.cmp(&targets[*b].0))
-            .map(|(i, _)| i)
-            .ok_or_else(|| refused("revenue base required for rounding allocation"))?;
-        targets[index].add(&residual);
+        if !counters.iter().any(|counter| counter.revenue) {
+            return Err(refused("revenue base required for rounding allocation"));
+        }
+        let decreasing = residual.is_negative();
+        let mut remaining = if decreasing {
+            Money(-residual.0)
+        } else {
+            residual
+        };
+        let mut order: Vec<_> = (0..counters.len()).collect();
+        // Preserve the existing preference for the largest revenue counter,
+        // but use another counter when that preference would retract prior
+        // credit or exceed the original. This is bounded by the line count.
+        order.sort_by(|a, b| {
+            counters[*b]
+                .revenue
+                .cmp(&counters[*a].revenue)
+                .then_with(|| targets[*b].0.cmp(&targets[*a].0))
+                .then_with(|| b.cmp(a))
+        });
+        for index in order {
+            let capacity = if decreasing {
+                targets[index].subtract(&counters[index].prior)
+            } else {
+                counters[index].original.subtract(&targets[index])
+            };
+            let change = Money(capacity.0.min(remaining.0.clone()));
+            if decreasing {
+                targets[index] = targets[index].subtract(&change);
+            } else {
+                targets[index].add(&change);
+            }
+            remaining = remaining.subtract(&change);
+            if remaining == Money::default() {
+                break;
+            }
+        }
+        if remaining != Money::default() {
+            return Err(refused(
+                "credit rounding exceeds remaining original counters",
+            ));
+        }
     }
     let mut result = Vec::new();
     let mut sum = Money::default();
@@ -117,5 +154,78 @@ mod tests {
         assert_eq!(counters[0].prior, m("0.04"));
         assert_eq!(counters[1].prior, m("0.01"));
         assert!(allocate(&m("0.05"), &credited, &m("0.01"), &counters).is_err());
+    }
+    #[test]
+    fn repeated_one_cent_credits_never_retract_a_prior_line_allocation() {
+        let mut counters = vec![
+            Counter {
+                original: m("0.02"),
+                prior: m("0"),
+                revenue: true,
+            },
+            Counter {
+                original: m("0.02"),
+                prior: m("0"),
+                revenue: true,
+            },
+            Counter {
+                original: m("0.02"),
+                prior: m("0"),
+                revenue: false,
+            },
+        ];
+        let mut credited = m("0");
+        for _ in 0..6 {
+            let allocations = allocate(&m("0.06"), &credited, &m("0.01"), &counters).unwrap();
+            for (counter, allocation) in counters.iter_mut().zip(allocations) {
+                assert!(!allocation.is_negative());
+                counter.prior.add(&allocation);
+                assert!(!counter.original.subtract(&counter.prior).is_negative());
+            }
+            credited.add(&m("0.01"));
+        }
+        assert!(
+            counters
+                .iter()
+                .all(|counter| counter.prior == counter.original)
+        );
+    }
+    #[test]
+    fn small_counter_partitions_conserve_all_cents_through_repeated_credits() {
+        for first in 1..=6 {
+            for second in 1..=6 {
+                for vat in 0..=5 {
+                    let gross = Money((first + second + vat).into());
+                    let mut counters: Vec<_> = [first, second, vat]
+                        .into_iter()
+                        .enumerate()
+                        .map(|(index, cents)| Counter {
+                            original: Money(cents.into()),
+                            prior: m("0"),
+                            revenue: index < 2,
+                        })
+                        .collect();
+                    let mut credited = m("0");
+                    for _ in 0..first + second + vat {
+                        let allocations =
+                            allocate(&gross, &credited, &m("0.01"), &counters).unwrap();
+                        let mut sum = m("0");
+                        for (counter, allocation) in counters.iter_mut().zip(allocations) {
+                            assert!(!allocation.is_negative());
+                            sum.add(&allocation);
+                            counter.prior.add(&allocation);
+                            assert!(!counter.original.subtract(&counter.prior).is_negative());
+                        }
+                        assert_eq!(sum, m("0.01"));
+                        credited.add(&sum);
+                    }
+                    assert!(
+                        counters
+                            .iter()
+                            .all(|counter| counter.original == counter.prior)
+                    );
+                }
+            }
+        }
     }
 }
