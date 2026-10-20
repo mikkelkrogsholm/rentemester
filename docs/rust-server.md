@@ -2350,3 +2350,47 @@ De kanoniske læseflader er `GET /api/portfolio?asOf=YYYY-MM-DD` og `GET /api/co
 Faktura- og kreditnummerering bruger det kanoniske regnskabsårs-id, eksempelvis **2025-26-0001**, mens regnskabsårsvælgeren viser **2025/26**. Eksisterende originaler ændres ikke; filnavnets sikkerhedskontrol bevares.
 
 Group76 er accepteret med 19 trin gennem normal MFA og eksisterende web-UI på syntetiske data: to virksomheder, tre posteringer, fem bankrækker, datovalg, forskudt regnskabsår, begrænset og tilbagekaldt adgang samt nøjagtig HTTP/CLI/MCP-lighed. Fire uafhængigt verificerede signerede workspace-arkiver og en kildefri gendannelse med ny ejer efterfulgt af genåbning bevarer tabeller, originalbilag og audit-historik. Prøven kvalificerer ikke installerede native finansforløb. Aktuel evidens og resterende arbejde fremgår af `docs/architecture/rust-target/implementation/progress.json`.
+
+## EU B2B-servicefaktura i EUR
+
+Rust-serveren understøtter en faktura i EUR med eksplicit `fxRateToDkk`,
+`vatTreatment: "foreign_reverse_charge"` og
+`reverseChargeBasis: "EU_B2B_SERVICES"`. Kunden skal have et gyldigt udenlandsk
+EU-momsnummer. Fakturalinjerne skal være serviceydelser med nul moms og samme
+reverse-charge-grundlag. Den oprindelige valuta og kurs bevares i det uforanderlige
+fakturabilag; bogføring og momsgrundlag beregnes i DKK. Webformularens forhåndsvisning,
+faktura-PDF og udstedelsesbekræftelse viser originalbeløb og DKK-værdi.
+
+Brugeren starter momsnummerkontrollen med **Verificér EU-momsnummer**.
+`POST /api/companies/{slug}/vies/validate` tager `{ "vatOrCvr": "..." }`.
+Serverens operatørkonfiguration kan angive VIES-endpoint, betroet CA og timeout;
+standardklienten bruger det officielle HTTPS-endpoint. En observation kan bruges i
+90 dage med nøjagtigt match på momsnummer og tidspunkt. Udstedelsen fryser den
+anvendte observation. Et utilgængeligt svar eller forkert identitet er ikke det
+samme som et ugyldigt momsnummer. Aktuelle rettigheder kontrolleres både før opslag
+og før lagring; netværkskald holder ingen ledger-transaktion åben.
+
+Delbetalinger og refunderinger bruger bankimportens oprindelige valuta, faktiske
+DKK-beløb og kurs. Fakturaens oprindelige DKK-hovedstol fordeles kumulativt, mens
+realiserede kursgevinster og -tab bogføres særskilt. Virksomheden vælger eksplicit
+rollerne `fx_gain` og `fx_loss`; de er valgfrie for almindelig DKK-drift og gemmes
+som en additiv udvidelse med bevaret historik. Krediteringer bevarer den oprindelige
+markedskurs og fordeler de oprindelige DKK-beløb uden at miste øre. Deres separate
+`journalFxRateToDkk` er en afledt bogføringskurs for det fordelte beløb.
+
+`GET /api/companies/{slug}/eu-sales?from=YYYY-MM-DD&to=YYYY-MM-DD` viser dateret
+EU-salg pr. momsnummer med faktura- og kreditnotekilder. Rapporten og momsens rubrik B
+bruger DKK-grundlaget; senere krediteringer ændrer ikke en tidligere periodes
+rapport. Rapporten foretager ingen indberetning. CLI tilbyder `vies-validate` og
+`eu-sales`; MCP tilbyder `vies_validate` med eksplicit bekræftelse og read-only
+`eu_sales`. De eksisterende webforløb håndterer faktura, betaling og refundering;
+kreditering med særskilt dato bruger i den aktuelle acceptprøve API'et.
+
+Group77 er accepteret med 19 trin gennem normal MFA på syntetiske data: EUR 100
+ved kurs 7,40, DKK 740 i oprindeligt salgsgrundlag, del- og slutbetalinger ved andre
+kurser samt del- og slutkreditering med refundering. EU-grundlaget er dateret 740,
+592 og 0; slutresultatet er DKK 3 i realiseret kursgevinst. Web, HTTP, CLI og MCP
+stemmer overens. Fire uafhængigt verificerede signerede arkiver bevarer tabeller,
+originalbilag og audit ved kildefri gendannelse med ny ejer og genåbning.
+Installerede native finansforløb er fortsat åbne. Evidens og resterende arbejde
+fremgår af `docs/architecture/rust-target/implementation/progress.json`.

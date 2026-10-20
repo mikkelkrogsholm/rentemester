@@ -1,13 +1,13 @@
 {
   "goal": "Complete Rust server/web, GPUI local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "Dated portfolio, historical cashflow and existing forecast with source-free recovery qualified",
-  "code_revision": "dcbbed03848e41d47e62316b21df43eb5f4d59ce",
-  "spec_revision": "sha256:95aefe4e2e3fd788921815cc615351ba42431b0c3407435b13047a81dc70b3e5",
-  "state": "Group76 qualified atdcbbed03:19 ordinary-MFA actions across two companies, actual dated portfolio and historical cashflow plus existing13-week forecast. True asOf income300 then600, unknown bank distinct from genuine zero, later bank120; exact July fiscal span2025/26 and12 chronological months. Restricted current visibility and revoked/hidden/unknown403 hold without hidden totals. HTTP/CLI/MCP whole-response equality in four phases. Four independently verified signed full-workspace archives preserve exact company tables and original bytes; source-free fresh-owner restore plus reopen retain only documented restore-boundary audit append. Root independent audit and owned cleanup PASS. Shifted fiscal numbering and actual web-shell year selection repaired with failing-before/passing-after regressions. Full mission and epic672 remain OPEN; installed native financial acceptance is not claimed.",
+  "current_increment": "EU B2B EUR invoice, trusted VIES, realized FX and signed source-free recovery qualified",
+  "code_revision": "7c8a81f46a143da3054c429ef40a02bd36f11135",
+  "spec_revision": "sha256:897c934a39125b9d76f548bddc10c4bcfec94fea5ffb24a09d231ffd1d30fec7",
+  "state": "Group77 qualified at7c8a81f4:19 ordinary-MFA actions through existing web EUR service preview/issue/post, explicit trusted TLS VIES, partial/final receipts, credits and refunds, dated EU-sales/VAT and four-phase HTTP/CLI/MCP equality. EUR100 at7.40 freezes DKK740; original principal is conserved and actual bank rates yield final DKK3 FX gain. Dated EU basis740 then592 then0, seven journals and four bank rows; denied/duplicate/provider-mismatch/revoked-held operations preserve evidence. Four independently verified signed full-workspace archives retain exact tables, originals and historical audit, with only documented restore-boundary append; source-free fresh-owner restore and reopen PASS. Root independent audit and owned cleanup PASS. Shared Cargo cache and30GiB/15GiB disk gates implemented and qualified. Full mission/epic672 and installed native financial acceptance remain OPEN.",
   "issues_closed": [],
   "next": [
-    "Next server/web whole journey: remaining foreign-currency/reverse-charge/simplified/OSS sales variants. Qualified75/76 must not be repeated without changed code or new failure evidence.",
+    "Complete remaining source-supported sales variants (simplified/OSS and other foreign treatment); do not repeat qualified75/76/77 without source changes or new failure evidence.",
     "Preserve remaining unmatched bank candidate/description/refresh synchronization and raw-file Windows1252 CLI compatibility.",
     "Interactive CVR lookup/sync remains open.",
     "Complete installed local/remote desktop financial journeys, safe transfer/recovery/automation/distribution, full CLI/MCP parity and TypeScript retirement. Full goal remains open."
@@ -21,10 +21,10 @@
   ],
   "all_goal_requirements_complete": false,
   "previous_verified_increment": {
-    "current_increment": "Full DKK mixed/exempt/domestic-reverse invoice lifecycle and signed source-free recovery qualified",
-    "code_revision": "948e4406bd37e69741c5fb55055009fee9295aa0",
-    "spec_revision": "sha256:874bef089ec3046967d7da689a7d951c622d7c984cff3d48a854c36299c277df",
-    "state": "Group75 actual PASS at948e4406:19 ordinary-MFA actions through existing web mixed-tax preview/issue/post/partial-final credit plus exempt/domestic-reverse/per-line rounding API variants;4 issued invoices,8 original-linked credit notes,1 receipt,2 refunds and exactly15 journals. Explicit original net/VAT counters conserved, actual signed credit journal accounts/codes/debits match immutable allocations. Output VAT25.03 and exempt/reverse bases250 before credits; zero VAT and all accounts after full credits/cash. Earlier cutoff preserves4 original gross receivables; reviewed current custom close succeeds. HTTP/CLI/MCP canonical equality and duplicate refusals across source/restart/fresh-owner restore/reopen. Four independently verified signed archives retain exact original bytes/domain tables/audit prefix; only restore-boundary audit append. Source and target/signers removed before final independent verification. Root independently matched binaries/web/helper hashes and extracted truthful PDF amounts/classifications. Owned cleanup true. Full mission/epic672 OPEN: foreign/currency/simplified invoice variants, bank provenance followups, remaining reports and installed desktop/transfer/distribution/TS retirement remain."
+    "current_increment": "Dated portfolio, historical cashflow and existing forecast with source-free recovery qualified",
+    "code_revision": "dcbbed03848e41d47e62316b21df43eb5f4d59ce",
+    "spec_revision": "sha256:95aefe4e2e3fd788921815cc615351ba42431b0c3407435b13047a81dc70b3e5",
+    "state": "Group76 qualified atdcbbed03:19 ordinary-MFA actions across two companies, actual dated portfolio and historical cashflow plus existing13-week forecast. True asOf income300 then600, unknown bank distinct from genuine zero, later bank120; exact July fiscal span2025/26 and12 chronological months. Restricted current visibility and revoked/hidden/unknown403 hold without hidden totals. HTTP/CLI/MCP whole-response equality in four phases. Four independently verified signed full-workspace archives preserve exact company tables and original bytes; source-free fresh-owner restore plus reopen retain only documented restore-boundary audit append. Root independent audit and owned cleanup PASS. Shifted fiscal numbering and actual web-shell year selection repaired with failing-before/passing-after regressions. Full mission and epic672 remain OPEN; installed native financial acceptance is not claimed."
   },
   "evidence": {
     "combined_browser_log": "/tmp/rm-platform5-combined.log",
@@ -1556,6 +1556,33 @@
         "No consolidation or currency mixing; missing bank valuation remains unavailable.",
         "Installed native local/remote financial GUI, remaining foreign/simplified/OSS variants and full migration remain open."
       ]
+    },
+    "platform77_eu_sales": {
+      "source_revision": "7c8a81f46a143da3054c429ef40a02bd36f11135",
+      "actual_report": "/tmp/rentemester-rust-reports/eu-sales-integrated77-run4.json",
+      "actual_report_sha256": "e97b428e1cf0947d1b66f5be83d30f076d10202a8d102a1d805785eb1c29c30e",
+      "root_independent_audit": "/tmp/rm77-root-independent-qualification.json",
+      "actual_log": "/tmp/rm77-root-actual4.log",
+      "engine_sales_tests": "/tmp/rm77-engine-sales-tests.log (8PASS)",
+      "foreign_sales_confirmation_tests": "/tmp/rm77-confirmation-test.log (2PASS)",
+      "credit_tests": "/tmp/rm77-credit-final-complete.log (14PASS)",
+      "fx_schema_tests": "/tmp/rm77-native-fx-role-tests-final.log (5PASS)",
+      "eu_report_tests": "/tmp/rm77-eu-report-tests4.log (6PASS)",
+      "focused_tests": "/tmp/rm77-focused-verification.json (storage15+1+1,setup4,runtime2,host3,HTTP1,SDK2,CLI1,MCP114 PASS; first strict style warning repaired)",
+      "web_tests": "/tmp/rm77-d-web-tests-final.log (83PASS,246assertions)",
+      "web_build": "/tmp/rm77-root-web-build.log (PASS)",
+      "strict": "/tmp/rm77-confirmation-strict.log (all-target PASS)",
+      "build": "/tmp/rm77-confirmation-build.log (server/CLI/MCP PASS)",
+      "failed_attempts": [
+        "/tmp/rentemester-rust-reports/eu-sales-integrated77.json: real issue response omitted flattened frozen DKK totals consumed by web; corrected with storage regression.",
+        "/tmp/rentemester-rust-reports/eu-sales-integrated77-run2.json: helper omitted existing Moms og perioder task-area selection; corrected without product change.",
+        "/tmp/rentemester-rust-reports/eu-sales-integrated77-run3.json: helper targeted legacy task-area button instead of current sidebar summary; corrected after checking actual AppChrome source and screenshot."
+      ],
+      "limitations": [
+        "Explicit dated credit creation uses API because existing web credit dialog has no date selector.",
+        "No real external VIES or tax submission, no installed-native financial acceptance.",
+        "Only EU_B2B_SERVICES with original FX valuation qualified here; simplified/OSS/other foreign treatments remain open."
+      ]
     }
   },
   "verified_history": [
@@ -2447,6 +2474,51 @@
           "Installed native local/remote financial GUI, remaining foreign/simplified/OSS variants and full migration remain open."
         ]
       }
+    },
+    {
+      "delivery": "Group77 complete EU B2B EUR service invoice lifecycle",
+      "owner": "root contract/integration/actual; isolated issuance, cash-credit, trusted VIES-report and web-client writers",
+      "status": "Group77 qualified at7c8a81f4:19 ordinary-MFA actions through existing web EUR service preview/issue/post, explicit trusted TLS VIES, partial/final receipts, credits and refunds, dated EU-sales/VAT and four-phase HTTP/CLI/MCP equality. EUR100 at7.40 freezes DKK740; original principal is conserved and actual bank rates yield final DKK3 FX gain. Dated EU basis740 then592 then0, seven journals and four bank rows; denied/duplicate/provider-mismatch/revoked-held operations preserve evidence. Four independently verified signed full-workspace archives retain exact tables, originals and historical audit, with only documented restore-boundary append; source-free fresh-owner restore and reopen PASS. Root independent audit and owned cleanup PASS. Shared Cargo cache and30GiB/15GiB disk gates implemented and qualified. Full mission/epic672 and installed native financial acceptance remain OPEN.",
+      "contract": "/tmp/rm-platform77-eu-sales-contract.md",
+      "acceptance": "Existing web explicit EUR/service/VIES preview and issue → classified DKK posting → partial/final actual-FX bank receipts → original-carrying partial/final credits and refunds → dated EU-sales/VAT → canonical clients and signed source-free fresh-owner recovery.",
+      "evidence": {
+        "source_revision": "7c8a81f46a143da3054c429ef40a02bd36f11135",
+        "actual_report": "/tmp/rentemester-rust-reports/eu-sales-integrated77-run4.json",
+        "actual_report_sha256": "e97b428e1cf0947d1b66f5be83d30f076d10202a8d102a1d805785eb1c29c30e",
+        "root_independent_audit": "/tmp/rm77-root-independent-qualification.json",
+        "actual_log": "/tmp/rm77-root-actual4.log",
+        "engine_sales_tests": "/tmp/rm77-engine-sales-tests.log (8PASS)",
+        "foreign_sales_confirmation_tests": "/tmp/rm77-confirmation-test.log (2PASS)",
+        "credit_tests": "/tmp/rm77-credit-final-complete.log (14PASS)",
+        "fx_schema_tests": "/tmp/rm77-native-fx-role-tests-final.log (5PASS)",
+        "eu_report_tests": "/tmp/rm77-eu-report-tests4.log (6PASS)",
+        "focused_tests": "/tmp/rm77-focused-verification.json (storage15+1+1,setup4,runtime2,host3,HTTP1,SDK2,CLI1,MCP114 PASS; first strict style warning repaired)",
+        "web_tests": "/tmp/rm77-d-web-tests-final.log (83PASS,246assertions)",
+        "web_build": "/tmp/rm77-root-web-build.log (PASS)",
+        "strict": "/tmp/rm77-confirmation-strict.log (all-target PASS)",
+        "build": "/tmp/rm77-confirmation-build.log (server/CLI/MCP PASS)",
+        "failed_attempts": [
+          "/tmp/rentemester-rust-reports/eu-sales-integrated77.json: real issue response omitted flattened frozen DKK totals consumed by web; corrected with storage regression.",
+          "/tmp/rentemester-rust-reports/eu-sales-integrated77-run2.json: helper omitted existing Moms og perioder task-area selection; corrected without product change.",
+          "/tmp/rentemester-rust-reports/eu-sales-integrated77-run3.json: helper targeted legacy task-area button instead of current sidebar summary; corrected after checking actual AppChrome source and screenshot."
+        ],
+        "limitations": [
+          "Explicit dated credit creation uses API because existing web credit dialog has no date selector.",
+          "No real external VIES or tax submission, no installed-native financial acceptance.",
+          "Only EU_B2B_SERVICES with original FX valuation qualified here; simplified/OSS/other foreign treatments remain open."
+        ]
+      }
+    },
+    {
+      "delivery": "Shared Rust build cache and enforced free-space preflight",
+      "owner": "root",
+      "status": "COMPLETE: AGENTS resource rules, Cargo wrapper and Python-free container launcher qualified at70d098ff/dd8741c2. One main-checkout cache, linked target symlinks, separate output refused, one job/no incremental, compilation refuses below30GiB and critical below15GiB. No automatic data deletion. Integrated77 agent worktrees archived/removed with recoverable snapshots.",
+      "evidence": {
+        "local_tests": "/tmp/rm-build-guard-shell-tests.log (6PASS)",
+        "container_checks": "/tmp/rm-build-guard-container-check.json (4PASS)",
+        "guard_semantics": "/tmp/rm-build-guard-shell-semantic.log",
+        "recovery": "/Users/mikkelfreltoftkrogsholm/Projekter/rentemester-cleanup-recovery-2026-10-20/"
+      }
     }
   ],
   "integrated_pending_browser": [
@@ -2498,6 +2570,12 @@
       "code_revision": "4a38f4220b655fe99d3ee8f29f53137f48a0eb76",
       "spec_revision": "sha256:bad4aa888ce04e071293db95385ac2eed5a720c722ced3b0bc760fb39859bfad",
       "state": "Group72 actual PASS at4a38f422: ordinary verified-MFA users, existing bank import UI explicitaccount/danske-bank, real UTF8BOM fixture decoded to exact postedUnicode CSV, declaredDMY/quoted/NFD-header/raw/senderfallback/references/same-day newest-first balances;3initial rows1100→1130 and2new gaprows1120→900 with1gap exception/drift-210. Repeat skips3/2 without new rows/originals/exceptions/journals; legitimate import audit retained. Unknownprofile/date/unvaluedFX/freshunknownaccount/genericambiguity422 and Reviewer403 preserve business/physical state. Canonical HTTP/CLI/MCP reads, fresh-MFA restart, four independently verified signed snapshots and source-free fresh-owner restore/reopen preserve2exactpostedUTF8originals/5rawrows/2nativeprofileproofs/1gap/0journals/audit. Independent3binary/fullweb/helper hashes matched;23actions,ownedcleanuptrue. Historical raw generic rows remain valid, profile-aware reconciliation original verification focusedtestsPASS; no file-BOM/Windows1252 preservation claim for browser text decoding. Explicit70+automatic71 qualification retained. Full unmatched bank candidate/description/refresh sync remains open, not abbreviated. Nextmajorserverwebflow real Bilagsmail→explicit existing inbox review; read-only sourceprep identified missing metadatareview/IMAP/MIME seams. Native67/68/69 implemented/tested/built; installed local/remote GUI and fullmission/epic672 OPEN."
+    },
+    {
+      "current_increment": "Full DKK mixed/exempt/domestic-reverse invoice lifecycle and signed source-free recovery qualified",
+      "code_revision": "948e4406bd37e69741c5fb55055009fee9295aa0",
+      "spec_revision": "sha256:874bef089ec3046967d7da689a7d951c622d7c984cff3d48a854c36299c277df",
+      "state": "Group75 actual PASS at948e4406:19 ordinary-MFA actions through existing web mixed-tax preview/issue/post/partial-final credit plus exempt/domestic-reverse/per-line rounding API variants;4 issued invoices,8 original-linked credit notes,1 receipt,2 refunds and exactly15 journals. Explicit original net/VAT counters conserved, actual signed credit journal accounts/codes/debits match immutable allocations. Output VAT25.03 and exempt/reverse bases250 before credits; zero VAT and all accounts after full credits/cash. Earlier cutoff preserves4 original gross receivables; reviewed current custom close succeeds. HTTP/CLI/MCP canonical equality and duplicate refusals across source/restart/fresh-owner restore/reopen. Four independently verified signed archives retain exact original bytes/domain tables/audit prefix; only restore-boundary audit append. Source and target/signers removed before final independent verification. Root independently matched binaries/web/helper hashes and extracted truthful PDF amounts/classifications. Owned cleanup true. Full mission/epic672 OPEN: foreign/currency/simplified invoice variants, bank provenance followups, remaining reports and installed desktop/transfer/distribution/TS retirement remain."
     }
   ]
 }
