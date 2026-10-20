@@ -2,6 +2,8 @@ import { createHmac } from "node:crypto";
 import { mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { basename, join, resolve } from "node:path";
 import { chromium, type Page } from "@playwright/test";
+import { checkNativeLostPosting } from "./check-native-lost-posting";
+import { checkNativeAccessLoss } from "./check-native-access-loss";
 
 const saved = "/tmp/rentemester-rust-reports/native-multi-company.json";
 const second = "synthetic-second-ledger";
@@ -302,6 +304,8 @@ async function standalone() {
     result.normalVerificationAndMfa = true;
     result.currentPerCompanyPermissions = true;
     result.noOfflineIdentitySeed = true;
+    if (process.argv.includes("--reopen")) result.lostPostingReply = await checkNativeLostPosting(owner, base);
+    if (process.argv.includes("--reopen")) result.pendingAccessLoss = await checkNativeAccessLoss(owner, reader, base);
     writeFileSync(saved, JSON.stringify(result, null, 2), { mode: 0o600 });
     console.log(
       "PASS: ordinary second-company creation, independent ledgers/reports/current permissions" +

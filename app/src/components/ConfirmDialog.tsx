@@ -56,6 +56,8 @@ export type ConfirmDialogProps = {
   onRefresh?: () => unknown | Promise<unknown>;
   /** Stable identity within the route, e.g. invoice document id. */
   operationKey?: string;
+  /** Canonical resource scope for operations reachable through equivalent routes. */
+  operationScope?: string;
   closeOnConfirm?: boolean;
 };
 
@@ -75,13 +77,14 @@ export function ConfirmDialog({
   onClose,
   onRefresh,
   operationKey = "",
+  operationScope,
   closeOnConfirm = true,
 }: ConfirmDialogProps) {
   const [note, setNote] = useState(noteInitialValue ?? "");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const location = useContext(UNSAFE_LocationContext)?.location;
-  const key = `${location?.pathname ?? ""}:${title}:${operationKey}`;
+  const key = `${operationScope ?? location?.pathname ?? ""}:${title}:${operationKey}`;
   const outcome = useMutationBlock(key);
   const uncertain = outcome.blocked;
   const attempted = useRef(false);

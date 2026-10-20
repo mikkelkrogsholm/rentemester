@@ -2,6 +2,8 @@ import { expect, test } from "bun:test";
 import { render, screen, fireEvent, within, act } from "@testing-library/react";
 import { ManualJournalForm } from "./ManualJournalForm";
 import { stubGlobal } from "../test/globals";
+import { MemoryRouter } from "react-router-dom";
+import { MutationMemoryProvider } from "../lib/mutation-memory";
 const accounts = [
   { accountNo: "a", name: "Indtægt", type: "income", active: true, allowDirectPosting: true },
   { accountNo: "b", name: "Bank", type: "asset", active: true, allowDirectPosting: true },
@@ -40,4 +42,32 @@ test.each(["b", "c"])("OSS refuses non-income or unknown account metadata %s", a
 });
 test("OSS refuses foreign currency before confirmation", async () => {
  setup("EUR"); await fill(); oss(); review(); expect(await screen.findByRole("alert")).toHaveTextContent("kun i DKK"); expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+});
+
+test("a lost posting reply stays blocked after reopening the form and reloading its memory", async () => {
+  sessionStorage.clear();
+  let writes = 0;
+  let refreshes = 0;
+  stubGlobal("fetch", async (_input: RequestInfo | URL, init?: RequestInit) => {
+    if (init?.method === "POST") { writes++; throw new TypeError("Lost accepted reply"); }
+    return new Response(JSON.stringify({ ok: true, documents: { documents: [{ id: 1, documentNo: "D1", filename: "Bilag" }] } }));
+  });
+  const form = (path: string) => <MemoryRouter initialEntries={[path]}><MutationMemoryProvider><ManualJournalForm slug="synthetic" currency="DKK" options={{ ruleVersion: "rules", accounts }} onSaved={() => { refreshes++; }} onClose={() => {}} /></MutationMemoryProvider></MemoryRouter>;
+  try {
+    const first = render(form("/companies/synthetic/posteringer"));
+    await fill(); review(); await confirm();
+    expect(screen.getByRole("button", { name: "Bogfør postering" })).toBeDisabled();
+    first.unmount();
+    render(form("/companies/synthetic/posteringer/"));
+    await fill(); review();
+    expect(screen.getByRole("button", { name: "Bogfør postering" })).toBeDisabled();
+    await act(async () => { fireEvent.click(screen.getByRole("button", { name: "Kontrollér status" })); });
+    expect(refreshes).toBe(1);
+    expect(screen.getByRole("button", { name: "Bogfør postering" })).toBeDisabled();
+    expect(writes).toBe(1);
+    fireEvent.click(screen.getByRole("button", { name: "Resultatet er afklaret" }));
+    fireEvent.click(screen.getByRole("button", { name: "Jeg har kontrolleret resultatet" }));
+    expect(screen.getByRole("button", { name: "Bogfør postering" })).toBeEnabled();
+    expect(writes).toBe(1);
+  } finally { sessionStorage.clear(); }
 });

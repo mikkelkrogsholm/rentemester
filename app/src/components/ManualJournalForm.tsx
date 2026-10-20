@@ -18,6 +18,8 @@ export function ManualJournalForm({ slug, currency, options, onSaved, onClose }:
   const [classification, setClassification] = useState("none");
   const [confirming, setConfirming] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // The request UUID changes on remount; the unknown-outcome block must not.
+  const operationKey = `manual-post:${slug}`;
   const key = useRef(crypto.randomUUID());
   const accounts = options.accounts.filter((a) => a.active && a.allowDirectPosting);
   const canonicalAmount = () => {
@@ -62,6 +64,6 @@ export function ManualJournalForm({ slug, currency, options, onSaved, onClose }:
       <Field label={`Beløb i ${currency}`}><Input required inputMode="decimal" value={amount} onChange={(e) => setAmount(e.target.value)} /></Field>
       <Button type="submit">Gennemse postering</Button><Button variant="secondary" onClick={onClose}>Annullér</Button>
     </form>
-    {confirming && <ConfirmDialog title="Bogfør postering" body={<p>{date} · {text}<br />Debet {debit}, kredit {credit}: {canonicalAmount()} {currency}.<br />Momsklassifikation: {classification === "oss" ? "OSS-salg til EU-forbruger" : "Ingen"}.</p>} confirmLabel="Bogfør postering" operationKey={`manual-post:${key.current}`} onConfirm={post} onClose={() => setConfirming(false)} onRefresh={onSaved} />}
+    {confirming && <ConfirmDialog title="Bogfør postering" body={<p>{date} · {text}<br />Debet {debit}, kredit {credit}: {canonicalAmount()} {currency}.<br />Momsklassifikation: {classification === "oss" ? "OSS-salg til EU-forbruger" : "Ingen"}.</p>} confirmLabel="Bogfør postering" operationKey={operationKey} operationScope={`company:${slug}`} onConfirm={post} onClose={() => setConfirming(false)} onRefresh={onSaved} />}
   </section>;
 }
