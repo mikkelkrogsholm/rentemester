@@ -5,7 +5,8 @@ use rusqlite::OptionalExtension;
 use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
 use std::collections::BTreeSet;
-const FORMAT: &str = "rentemester-native-workspace-inbox/1";
+const FORMAT: &str = "rentemester-native-workspace-inbox/2";
+const LEGACY_FORMAT: &str = "rentemester-native-workspace-inbox/1";
 const MAX: usize = 32 * 1024 * 1024;
 const TABLES: [&str; 5] = [
     "rm_workspace_inbox_sources",
@@ -182,8 +183,20 @@ pub fn initialize(db: &mut Connection, bytes: &[u8], companies: &[String]) -> Re
         return Err(refused("inbox signed section byte bound"));
     }
     let codec: Inbox = serde_json::from_slice(bytes).map_err(sql)?;
-    if codec.format != FORMAT || codec.tables.len() != TABLES.len() {
+    if ![FORMAT, LEGACY_FORMAT].contains(&codec.format.as_str())
+        || codec.tables.len() != TABLES.len()
+    {
         return Err(refused("unsupported inbox codec"));
+    }
+    if codec.format == LEGACY_FORMAT {
+        if let Some(table) = codec.tables.get(TABLES[1]) {
+            for row in &table.rows {
+                if matches!(row.get(2),Some(InboxCell::Text(k)) if ["mail_observed","metadata_reviewed","mail_refused"].contains(&k.as_str()))
+                {
+                    return Err(refused("mail v2 events cannot use legacy inbox codec"));
+                }
+            }
+        }
     }
     let tx = db
         .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
@@ -312,6 +325,7 @@ type ClaimFacts = (
 );
 fn facts(tx: &Transaction<'_>) -> Result<(), Error> {
     shape(tx)?;
+    super::mail_intake::validate_control(tx)?;
     let mut q=tx.prepare("SELECT source_id,visibility_anchor_slug,idempotency_key,original_bytes,sha256,filename,mime_type,transport,transport_identity,received_at,metadata_json,created_by,created_at FROM rm_workspace_inbox_sources ORDER BY source_id").map_err(sql)?;
     let mut rows = q.query([]).map_err(sql)?;
     let mut known = BTreeSet::new();
@@ -476,6 +490,15 @@ fn facts(tx: &Transaction<'_>) -> Result<(), Error> {
                         "invalid denied routing proof",
                     )?;
                 }
+                "mail_observed" | "metadata_reviewed" | "mail_refused" => {
+                    ensure(
+                        transport == "mail"
+                            && metadata["nativeMail"]["version"]
+                                == "rentemester-native-mail-source/1",
+                        "mail event requires native mail provenance",
+                    )?;
+                    // Full versioned source/history validation is performed above.
+                }
                 _ => return Err(refused("unsupported inbox event kind")),
             }
         }
@@ -495,7 +518,47 @@ fn facts(tx: &Transaction<'_>) -> Result<(), Error> {
             .map(|c| c["companySlug"].as_str().unwrap())
             .collect::<BTreeSet<_>>();
         let exception = &source["exception"];
-        if candidate_companies.len() == 1 {
+        if transport == "mail" && !exception.is_null() {
+            let code = exception["code"]
+                .as_str()
+                .ok_or_else(|| refused("mail exception code missing"))?;
+            ensure(
+                [
+                    "MAIL_INTAKE_MISSING_MESSAGE_ID",
+                    "MAIL_INTAKE_NO_ATTACHMENT",
+                    "MAIL_INTAKE_OVERSIZED",
+                    "MAIL_INTAKE_INVALID_MESSAGE",
+                    "MAIL_INTAKE_AMBIGUOUS_METADATA",
+                ]
+                .contains(&code)
+                    && exceptions.len() == 1
+                    && exceptions[0]["payload"]
+                        == json!({"code":code,"candidates":candidate_list,"requiredAction":"review_mail"})
+                    && exception["requiredAction"] == "review_mail"
+                    && exception["openedAt"] == at,
+                "mail exception proof differs",
+            )?;
+            same_time(exceptions[0], &at, &actor)?;
+            let native = &metadata["nativeMail"];
+            ensure(
+                match code {
+                    "MAIL_INTAKE_MISSING_MESSAGE_ID" => {
+                        native["role"] == "eml" && native["messageId"].is_null()
+                    }
+                    "MAIL_INTAKE_NO_ATTACHMENT" => {
+                        native["role"] == "eml"
+                            && rentemester_engine::mail_intake::parse(&bytes)
+                                .is_ok_and(|p| p.message_id.is_some() && p.attachments.is_empty())
+                    }
+                    "MAIL_INTAKE_OVERSIZED" => native["role"] == "refusal",
+                    "MAIL_INTAKE_INVALID_MESSAGE" => {
+                        native["role"] == "eml" && native["parseError"] == code
+                    }
+                    _ => false,
+                },
+                "mail exception source facts differ",
+            )?;
+        } else if candidate_companies.len() == 1 {
             ensure(
                 exceptions.is_empty() && exception.is_null(),
                 "unexpected inbox exception",
@@ -684,6 +747,14 @@ pub fn validate_company(
     slug: &str,
 ) -> Result<(), Error> {
     crate::validate(company)?;
+    super::mail_intake::validate_company(control, company, slug)?;
+    let ledger_uuid: String = company
+        .query_row(
+            "SELECT ledger_uuid FROM ledger_identity WHERE id=1",
+            [],
+            |r| r.get(0),
+        )
+        .map_err(sql)?;
     let mut q=company.prepare("SELECT id,document_no,source,sha256_hash,payload_json,stored_path,original_filename,mime_type FROM documents WHERE substr(source,1,16)='workspace-inbox:' ORDER BY id").map_err(sql)?;
     let mut found = BTreeMap::new();
     for row in q
@@ -727,7 +798,13 @@ pub fn validate_company(
                 && mime == original_mime,
             "inbox target original differs",
         )?;
-        let mut metadata: Value = serde_json::from_str(&metadata).map_err(sql)?;
+        let mut metadata: Value = if let Some(approved) =
+            crate::mail_intake::approved_attachment(control, source, slug, &ledger_uuid)?
+        {
+            approved.metadata().clone()
+        } else {
+            serde_json::from_str(&metadata).map_err(sql)?
+        };
         metadata["source"] = json!(marker);
         let expected: rentemester_engine::document::Metadata =
             serde_json::from_value(metadata).map_err(sql)?;

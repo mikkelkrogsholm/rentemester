@@ -84,7 +84,7 @@ pub(crate) fn canonical(v: &Value) -> Result<String, Error> {
     }
     value(v, 0)
 }
-fn event(
+pub(crate) fn event(
     tx: &Transaction<'_>,
     id: &str,
     kind: &str,
@@ -328,6 +328,16 @@ pub fn inspect(
             .collect::<Vec<_>>()
     );
     v["history"] = json!(history);
+    let (mail, review) = crate::mail_intake::projection(tx, &id)?;
+    v["mail"] = mail;
+    v["metadataReview"] = if review["companySlug"]
+        .as_str()
+        .is_some_and(|s| visible.contains(s))
+    {
+        review
+    } else {
+        Value::Null
+    };
     Ok(v)
 }
 pub fn list(
@@ -378,6 +388,12 @@ pub fn assign(
     now: &str,
 ) -> Result<Value, Error> {
     let source = inspect(tx, anchor, id, visible)?;
+    let (mail, _) = crate::mail_intake::projection(tx, id)?;
+    if !mail.is_null() && mail["role"] != "attachment" {
+        return Err(refused(
+            "mail containers and refusal receipts cannot be assigned for handoff",
+        ));
+    }
     if !visible.contains(target) {
         return Err(missing());
     }
@@ -415,6 +431,13 @@ pub fn claim(
     let approved:bool=tx.query_row("SELECT EXISTS(SELECT 1 FROM rm_workspace_inbox_assignments WHERE source_id=? AND company_slug=? AND state='approved')",[id,target],|r|r.get(0)).map_err(sql)?;
     if !approved {
         return Err(refused("source assignment is not approved"));
+    }
+    let (mail, review) = crate::mail_intake::projection(tx, id)?;
+    if !mail.is_null() {
+        let ledger = review["ledgerUuid"].as_str().ok_or_else(|| {
+            refused("mail attachment requires explicit metadata review before claim")
+        })?;
+        crate::mail_intake::approved_attachment(tx, id, target, ledger)?;
     }
     let bytes = original(tx, id)?;
     let hash = format!("{:x}", Sha256::digest(&bytes));

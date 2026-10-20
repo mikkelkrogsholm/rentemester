@@ -334,3 +334,133 @@ fn inbox_completed_and_split_document_references_must_be_same_company_marker_has
         tx.rollback().unwrap();
     }
 }
+
+#[test]
+fn native_mail_v2_roundtrip_preserves_pending_review_and_legacy_v1_remains_valid() {
+    let mut c = Connection::open_in_memory().unwrap();
+    let mut company = Connection::open_in_memory().unwrap();
+    crate::fresh::initialize_empty_pair(&mut c, &mut company, "Synthetic mail backup").unwrap();
+    let raw=b"Message-ID: <backup73@example.invalid>\r\nContent-Type: multipart/mixed; boundary=p\r\n\r\n--p\r\nContent-Type: application/pdf\r\nContent-Disposition: attachment; filename=invoice.pdf\r\n\r\n%PDF-1.4\r\nSynthetic\r\n--p--\r\n";
+    let parsed = rentemester_engine::mail_intake::parse(raw).unwrap();
+    assert_eq!(parsed.attachments.len(), 1);
+    let tx = c.transaction().unwrap();
+    let retained = crate::mail_intake::retain(
+        &tx,
+        "a",
+        raw,
+        &parsed,
+        &crate::mail_intake::MailObservation {
+            company_slug: "a".into(),
+            config_epoch: "epoch".into(),
+            mailbox: "INBOX".into(),
+            uid_validity: 1,
+            uid: 4,
+        },
+        Provenance {
+            actor: ACTOR,
+            now: AT,
+        },
+    )
+    .unwrap();
+    let id = retained
+        .source_ids
+        .iter()
+        .find(|id| crate::mail_intake::projection(&tx, id).unwrap().0["role"] == "attachment")
+        .unwrap();
+    let uuid: String = company
+        .query_row(
+            "SELECT ledger_uuid FROM ledger_identity WHERE id=1",
+            [],
+            |r| r.get(0),
+        )
+        .unwrap();
+    let metadata:rentemester_engine::document::Metadata=serde_json::from_value(json!({"source":format!("workspace-inbox:{id}"),"documentType":"cash_register_receipt","deliveryDescription":"Explicit synthetic receipt"})).unwrap();
+    crate::mail_intake::review(
+        &tx,
+        "a",
+        id,
+        &crate::mail_intake::ReviewInput {
+            company_slug: "a".into(),
+            source_hash: parsed.attachments[0].sha256.clone(),
+            metadata: serde_json::to_value(metadata).unwrap(),
+        },
+        &uuid,
+        &BTreeSet::from(["a".into()]),
+        Provenance {
+            actor: ACTOR,
+            now: ASSIGNED,
+        },
+    )
+    .unwrap();
+    let before =
+        crate::workspace_inbox::inspect(&tx, "a", id, &BTreeSet::from(["a".into()])).unwrap();
+    let bytes = export(&tx).unwrap();
+    assert_eq!(
+        serde_json::from_slice::<Value>(&bytes).unwrap()["format"],
+        FORMAT
+    );
+    tx.commit().unwrap();
+    let mut restored = Connection::open_in_memory().unwrap();
+    let mut unused = Connection::open_in_memory().unwrap();
+    crate::fresh::initialize_empty_pair(&mut restored, &mut unused, "Fresh identity").unwrap();
+    initialize(&mut restored, &bytes, &["a".into()]).unwrap();
+    let tx = restored.transaction().unwrap();
+    assert_eq!(
+        crate::workspace_inbox::inspect(&tx, "a", id, &BTreeSet::from(["a".into()])).unwrap(),
+        before
+    );
+    assert_eq!(
+        crate::mail_intake::cursor(&tx, "a", "epoch", "INBOX").unwrap(),
+        Some((1, 4))
+    );
+    drop(tx);
+    let mut mislabeled: Value = serde_json::from_slice(&bytes).unwrap();
+    mislabeled["format"] = json!(LEGACY_FORMAT);
+    let mut fresh = Connection::open_in_memory().unwrap();
+    let mut unused = Connection::open_in_memory().unwrap();
+    crate::fresh::initialize_empty_pair(&mut fresh, &mut unused, "Fresh").unwrap();
+    assert!(
+        initialize(
+            &mut fresh,
+            &serde_json::to_vec(&mislabeled).unwrap(),
+            &["a".into()]
+        )
+        .is_err()
+    );
+    // Existing upload-only section remains admissible under the original v1 codec.
+    let (_dir, mut old, _, _) = fixture();
+    let tx = old.transaction().unwrap();
+    let bytes = export(&tx).unwrap();
+    let mut v: Value = serde_json::from_slice(&bytes).unwrap();
+    v["format"] = json!(LEGACY_FORMAT);
+    // Retained historical mail used the same v1 source shape, without nativeMail.
+    for row in v["tables"][TABLES[0]]["rows"].as_array_mut().unwrap() {
+        if row[0]["value"] == "inbox-unassigned" {
+            row[7]["value"] = json!("mail");
+        }
+    }
+    for row in v["tables"][TABLES[1]]["rows"].as_array_mut().unwrap() {
+        if row[1]["value"] == "inbox-unassigned" && row[2]["value"] == "ingested" {
+            let mut p: Value = serde_json::from_str(row[4]["value"].as_str().unwrap()).unwrap();
+            p["transport"] = json!("mail");
+            let raw = crate::workspace_inbox::canonical(&p).unwrap();
+            row[3]["value"] = json!(format!("{:x}", Sha256::digest(raw.as_bytes())));
+            row[4]["value"] = json!(raw);
+        }
+    }
+    let mut target = Connection::open_in_memory().unwrap();
+    let mut unused = Connection::open_in_memory().unwrap();
+    crate::fresh::initialize_empty_pair(&mut target, &mut unused, "Legacy").unwrap();
+    initialize(
+        &mut target,
+        &serde_json::to_vec(&v).unwrap(),
+        &["a".into(), "b".into()],
+    )
+    .unwrap();
+    assert!(
+        crate::mail_intake::projection(&target, "inbox-unassigned")
+            .unwrap()
+            .0
+            .is_null()
+    );
+}
