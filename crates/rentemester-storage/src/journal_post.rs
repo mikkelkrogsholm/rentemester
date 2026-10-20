@@ -150,6 +150,7 @@ pub(super) fn execute(
     reversal: Option<&Reversal>,
 ) -> Result<Value, Error> {
     require_current(tx)?;
+    crate::opening_balance::require_posting_date(tx, request.transaction_date)?;
     let rules = journal_preview::compiled_rules()?;
     let facts = journal_preview::collect_facts(tx, request, latest)?;
     let mut validation = match reversal {

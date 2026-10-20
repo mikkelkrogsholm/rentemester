@@ -344,6 +344,7 @@ pub fn company(db: &Connection) -> Result<Company, Error> {
     crate::bookkeeping_batch::validate_backup(db)?;
     crate::direct_bank_payable_correction::validate_backup(db)?;
     crate::archive_import::validate_history(db)?;
+    crate::opening_balance::validate_history(db)?;
     crate::migration::integrity(db)?;
     let report = crate::journal_hash::verify(db)?;
     if !report.ok {

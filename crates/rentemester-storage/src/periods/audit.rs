@@ -58,6 +58,7 @@ pub(super) fn verify(tx: &Transaction<'_>) -> Result<Vec<Value>, Error> {
         }
     }
     crate::archive_import::validate_history(tx)?;
+    crate::opening_balance::validate_history(tx)?;
     errors.extend(crate::reminder_claims::audit_evidence(tx)?);
     errors.extend(super::bank_audit::verify(tx)?);
     for link in rows(

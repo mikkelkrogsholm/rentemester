@@ -113,6 +113,13 @@ pub fn reverse(
             "journal entry {id} is already a reversal entry"
         )));
     }
+    if crate::opening_balance::validate_history(tx)?
+        .is_some_and(|v| v.record().journal_entry_id == id)
+    {
+        return Ok(refusal(
+            "opening evidence requires an explicit atomic opening correction workflow".into(),
+        ));
+    }
     let accrual:bool=tx.query_row("SELECT EXISTS(SELECT 1 FROM accruals WHERE registration_journal_entry_id=?1) OR EXISTS(SELECT 1 FROM accrual_schedule_postings WHERE journal_entry_id=?1)",[id],|r|r.get(0)).map_err(failed)?;
     if accrual {
         return Ok(refusal(
