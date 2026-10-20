@@ -1,6 +1,7 @@
 //! Supplier bill recognition and later bank settlement on the admitted company transaction.
 use crate::{
     expense::{self, line},
+    idempotency::PrincipalKind,
     invalid, legacy_money,
 };
 use rentemester_engine::{
@@ -39,8 +40,14 @@ pub struct Payment {
     pub note: Option<String>,
     pub confirm: bool,
 }
-fn audit(tx: &Transaction<'_>, event: &str, id: i64, actor: &str) -> Result<(), Error> {
-    tx.execute("INSERT INTO audit_log(event_type,entity_type,entity_id,message,actor) VALUES(?1,'payable',?2,?3,?4)",params![event,id.to_string(),format!("{event} {id}"),format!("user:{actor}")]).map_err(invalid)?;
+fn audit(
+    tx: &Transaction<'_>,
+    event: &str,
+    id: i64,
+    actor: &str,
+    principal: PrincipalKind,
+) -> Result<(), Error> {
+    tx.execute("INSERT INTO audit_log(event_type,entity_type,entity_id,message,actor) VALUES(?1,'payable',?2,?3,?4)",params![event,id.to_string(),format!("{event} {id}"),format!("{}:{actor}",match principal {PrincipalKind::User=>"user",PrincipalKind::ServiceAccount=>"service_account"})]).map_err(invalid)?;
     Ok(())
 }
 fn post(
@@ -48,6 +55,7 @@ fn post(
     request: &ManualJournal,
     actor: &str,
     latest: Date,
+    principal: PrincipalKind,
 ) -> Result<Value, Error> {
     let result = crate::journal_post::post(
         tx,
@@ -56,7 +64,10 @@ fn post(
         latest,
         crate::journal_post::Actor {
             subject: &format!("user:{actor}"),
-            program: "rentemester-rust",
+            program: match principal {
+                PrincipalKind::User => "rentemester-rust",
+                PrincipalKind::ServiceAccount => "service-principal",
+            },
         },
     )?;
     if result["ok"] != true {
@@ -234,7 +245,16 @@ pub fn register(
     actor: &str,
     latest: Date,
 ) -> Result<Value, Error> {
-    register_inner(tx, input, actor, latest, None)
+    register_with_principal(tx, input, actor, latest, PrincipalKind::User)
+}
+pub fn register_with_principal(
+    tx: &Transaction<'_>,
+    input: &Register,
+    actor: &str,
+    latest: Date,
+    principal: PrincipalKind,
+) -> Result<Value, Error> {
+    register_inner(tx, input, actor, latest, None, principal)
 }
 pub(crate) fn register_corrected(
     tx: &Transaction<'_>,
@@ -244,7 +264,7 @@ pub(crate) fn register_corrected(
     proof: &crate::direct_bank_payable_correction::PurchaseProof,
 ) -> Result<Value, Error> {
     proof.require_reversed(tx)?;
-    register_inner(tx, input, actor, latest, Some(proof))
+    register_inner(tx, input, actor, latest, Some(proof), PrincipalKind::User)
 }
 fn register_inner(
     tx: &Transaction<'_>,
@@ -252,6 +272,7 @@ fn register_inner(
     actor: &str,
     latest: Date,
     proof: Option<&crate::direct_bank_payable_correction::PurchaseProof>,
+    principal: PrincipalKind,
 ) -> Result<Value, Error> {
     crate::journal_post::require_current(tx)?;
     let PreparedBill {
@@ -262,9 +283,9 @@ fn register_inner(
         supplier,
         invoice,
     } = prepare_bill(tx, input, proof)?;
-    let result = post(tx, &journal, actor, latest)?;
+    let result = post(tx, &journal, actor, latest, principal)?;
     let id:i64=tx.query_row("INSERT INTO payables(document_id,vendor_id,supplier_name,bill_no,bill_date,due_date,gross_amount,net_amount,vat_amount,currency,journal_entry_id,note) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,'DKK',?10,?11) RETURNING id",params![input.document_id,input.vendor_id,supplier,invoice,input.bill_date,input.due_date,wire(&gross)?.as_f64(),wire(&gross.subtract(&vat))?.as_f64(),wire(&vat)?.as_f64(),result["entryId"].as_i64(),input.note],|r|r.get(0)).map_err(invalid)?;
-    audit(tx, "payable_register", id, actor)?;
+    audit(tx, "payable_register", id, actor, principal)?;
     Ok(
         json!({"payableId":id,"documentId":input.document_id,"supplierName":supplier,"billNo":invoice,"grossAmount":wire(&gross)?,"netAmount":wire(&gross.subtract(&vat))?,"vatAmount":wire(&vat)?,"dueDate":input.due_date,"entryId":result["entryId"],"entryNo":result["entryNo"]}),
     )
@@ -320,7 +341,17 @@ pub fn pay(
     actor: &str,
     latest: Date,
 ) -> Result<Value, Error> {
-    pay_inner(tx, id, input, actor, latest, None)
+    pay_with_principal(tx, id, input, actor, latest, PrincipalKind::User)
+}
+pub fn pay_with_principal(
+    tx: &Transaction<'_>,
+    id: i64,
+    input: &Payment,
+    actor: &str,
+    latest: Date,
+    principal: PrincipalKind,
+) -> Result<Value, Error> {
+    pay_inner(tx, id, input, actor, latest, None, principal)
 }
 pub(crate) fn pay_corrected(
     tx: &Transaction<'_>,
@@ -331,7 +362,15 @@ pub(crate) fn pay_corrected(
     proof: &crate::direct_bank_payable_correction::PurchaseProof,
 ) -> Result<Value, Error> {
     proof.require_reversed(tx)?;
-    pay_inner(tx, id, input, actor, latest, Some(proof))
+    pay_inner(
+        tx,
+        id,
+        input,
+        actor,
+        latest,
+        Some(proof),
+        PrincipalKind::User,
+    )
 }
 fn pay_inner(
     tx: &Transaction<'_>,
@@ -340,6 +379,7 @@ fn pay_inner(
     actor: &str,
     latest: Date,
     proof: Option<&crate::direct_bank_payable_correction::PurchaseProof>,
+    principal: PrincipalKind,
 ) -> Result<Value, Error> {
     crate::journal_post::require_current(tx)?;
     if !input.confirm || id <= 0 || input.bank_transaction_id <= 0 {
@@ -447,9 +487,9 @@ fn pay_inner(
             "Bankbetaling".into(),
         )?,
     ];
-    let result = post(tx, &journal, actor, latest)?;
+    let result = post(tx, &journal, actor, latest, principal)?;
     let payment:i64=tx.query_row("INSERT INTO payable_payments(payable_id,bank_transaction_id,journal_entry_id,payment_date,amount,currency,note) VALUES(?1,?2,?3,?4,?5,'DKK',?6) RETURNING id",params![id,input.bank_transaction_id,result["entryId"].as_i64(),date,wire(&amount)?.as_f64(),input.note],|r|r.get(0)).map_err(invalid)?;
-    audit(tx, "payable_payment_apply", id, actor)?;
+    audit(tx, "payable_payment_apply", id, actor, principal)?;
     Ok(
         json!({"paymentId":payment,"journalEntryId":result["entryId"],"payableId":id,"openBalance":wire(&open.subtract(&amount))?}),
     )
@@ -529,6 +569,29 @@ mod tests {
     use super::*;
     #[test]
     fn recognize_then_partially_and_fully_settle_without_repeated_expense_or_vat() {
+        recognition_flow(PrincipalKind::User);
+    }
+    #[test]
+    fn service_payable_partial_full_payment_preserves_original_creditor_expense_vat_and_attribution()
+     {
+        recognition_flow(PrincipalKind::ServiceAccount);
+    }
+    fn recognition_flow(principal: PrincipalKind) {
+        let register =
+            |tx: &Transaction<'_>, input: &Register, actor: &str, latest: Date| match principal {
+                PrincipalKind::User => super::register(tx, input, actor, latest),
+                PrincipalKind::ServiceAccount => {
+                    register_with_principal(tx, input, actor, latest, principal)
+                }
+            };
+        let pay = |tx: &Transaction<'_>, id: i64, input: &Payment, actor: &str, latest: Date| {
+            match principal {
+                PrincipalKind::User => super::pay(tx, id, input, actor, latest),
+                PrincipalKind::ServiceAccount => {
+                    pay_with_principal(tx, id, input, actor, latest, principal)
+                }
+            }
+        };
         let mut control = rusqlite::Connection::open_in_memory().unwrap();
         let mut db = rusqlite::Connection::open_in_memory().unwrap();
         crate::fresh::initialize_empty_pair(&mut control, &mut db, "Synthetic Company").unwrap();
@@ -659,6 +722,16 @@ mod tests {
             .unwrap(),
             2
         );
+        let program = match principal {
+            PrincipalKind::User => "rentemester-rust",
+            PrincipalKind::ServiceAccount => "service-principal",
+        };
+        assert_eq!(tx.query_row::<i64,_,_>("SELECT count(*) FROM journal_entries WHERE created_by='user:synthetic' AND created_by_program=?1",[program],|r|r.get(0)).unwrap(),3);
+        let actor = match principal {
+            PrincipalKind::User => "user:synthetic",
+            PrincipalKind::ServiceAccount => "service_account:synthetic",
+        };
+        assert_eq!(tx.query_row::<i64,_,_>("SELECT count(*) FROM audit_log WHERE event_type IN ('payable_register','payable_payment_apply') AND actor=?1",[actor],|r|r.get(0)).unwrap(),3);
         for entry in [
             result["entryId"].as_i64().unwrap(),
             first["journalEntryId"].as_i64().unwrap(),

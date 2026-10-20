@@ -96,3 +96,92 @@ pub fn execute(
         },
     )
 }
+
+/// Explicit service bill recognition/payment; direct expense posting remains a separate flow.
+pub fn execute_service(
+    control: &mut Connection,
+    company: &mut Connection,
+    guard: &mut NamespaceGuard,
+    context: crate::service_company::Context<'_>,
+    action: Action<'_>,
+) -> Result<crate::service_company::ServiceResult<Value>, crate::service_company::ServiceFailure> {
+    use crate::service_company::{self, OperationResult};
+    use rentemester_storage::{documents, idempotency::PrincipalKind, payables};
+    let (permission, mutation) = match action {
+        Action::Options(_) => (Permission::CompanyDocumentsRead, false),
+        Action::Payables { .. } => (Permission::CompanyRead, false),
+        Action::Register(_) | Action::Pay(_, _) => (Permission::CompanyLedgerPost, true),
+        _ => {
+            let mut failure = service_company::initial(Error::new(
+                "access_denied",
+                "service expense action not supported",
+            ));
+            failure.control_reusable = true;
+            failure.company_reusable = true;
+            return Err(failure);
+        }
+    };
+    let slug = context.selection.slug;
+    let clock = context.clock;
+    service_company::execute_operation(
+        control,
+        company,
+        context,
+        permission,
+        mutation,
+        |tx, subject, _| {
+            let result = match action {
+                Action::Options(id) => rentemester_storage::expense::options(tx, slug, id)?,
+                Action::Payables { as_of, status } => payables::list(tx, slug, as_of, status)?,
+                Action::Register(_) | Action::Pay(_, _) => {
+                    let id = match action {
+                        Action::Register(input) => input.document_id,
+                        Action::Pay(id, _) => payables::document_id(tx, id)?,
+                        _ => unreachable!(),
+                    };
+                    let original = documents::evidence(tx, id)?;
+                    guard
+                        .read_document(&original.path, &original.hash)
+                        .map_err(|_| {
+                            Error::new(
+                                "document_evidence_unavailable",
+                                "payable original unavailable or integrity mismatch",
+                            )
+                        })?;
+                    let now = clock
+                        .now_unix_ms()
+                        .map_err(|e| Error::new(e.code(), "posting clock unavailable"))?;
+                    let latest = rentemester_runtime::posting_time::latest_date(now, 45)
+                        .map_err(|e| Error::new(e.code(), "posting horizon unavailable"))?;
+                    let latest = Date::parse(&latest)?;
+                    match action {
+                        Action::Register(input) => payables::register_with_principal(
+                            tx,
+                            input,
+                            subject,
+                            latest,
+                            PrincipalKind::ServiceAccount,
+                        )?,
+                        Action::Pay(id, input) => payables::pay_with_principal(
+                            tx,
+                            id,
+                            input,
+                            subject,
+                            latest,
+                            PrincipalKind::ServiceAccount,
+                        )?,
+                        _ => unreachable!(),
+                    }
+                }
+                _ => unreachable!("service action admitted above"),
+            };
+            Ok(OperationResult {
+                result,
+                receipt: None,
+            })
+        },
+    )
+}
+
+#[cfg(test)]
+mod service_tests;
