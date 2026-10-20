@@ -107,6 +107,8 @@ pub fn freeze(payload: &mut Value, input: Option<&Number>) -> Result<(), Error> 
     if currency == "DKK" {
         return Ok(());
     }
+    payload["totals"]["fxRateToDkk"] =
+        serde_json::from_str(&rate.decimal()).map_err(|_| refused("invalid rate wire"))?;
     let source = sales_invoice::project(payload)?;
     let dkk = converted(&source, &rate)?;
     payload["fxValuationVersion"] = json!(1);

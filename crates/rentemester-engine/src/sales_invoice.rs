@@ -17,8 +17,8 @@ pub struct Party {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct Line {
     pub description: String,
-    pub quantity: Number,
-    pub unit_price_ex_vat: Number,
+    pub quantity: Option<Number>,
+    pub unit_price_ex_vat: Option<Number>,
     pub tax_classification: Option<String>,
     pub vat_rate: Option<Number>,
     pub reverse_charge_basis: Option<String>,
@@ -26,6 +26,8 @@ pub struct Line {
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct Input {
+    pub invoice_type: Option<String>,
+    pub totals: Option<SimplifiedTotals>,
     pub issue_date: String,
     pub lines: Vec<Line>,
     pub vat_rate_percent: Option<Number>,
@@ -39,6 +41,127 @@ pub struct Input {
     pub fx_rate_to_dkk: Option<Number>,
     pub seller: Option<Party>,
     pub buyer: Option<Party>,
+}
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct SimplifiedTotals {
+    pub gross_amount: Number,
+    pub vat_rate: Number,
+    pub vat_computation_basis: Option<String>,
+    pub vat_amount: Option<Number>,
+    pub net_amount: Option<Number>,
+}
+pub fn invoice_type(value: Option<&str>) -> Result<&str, Error> {
+    match value.unwrap_or("full") {
+        kind @ ("full" | "simplified") => Ok(kind),
+        _ => Err(refused("invoiceType must be full or simplified")),
+    }
+}
+fn simplified_limit(payload: &Value, gross: &Money) -> Result<(), Error> {
+    let rate = crate::sales_fx::rate(
+        payload["currency"].as_str().unwrap_or("DKK"),
+        payload["totals"]["fxRateToDkk"].as_number(),
+    )?;
+    if Money::parse("3000")?
+        .subtract(&rate.apply(gross))
+        .is_negative()
+    {
+        return Err(refused("simplified invoice gross exceeds DKK 3000"));
+    }
+    Ok(())
+}
+fn reduced_project(payload: &Value, canonical: bool) -> Result<TaxProjection, Error> {
+    if payload["vatTreatment"].as_str().unwrap_or("standard") != "standard"
+        || payload.get("reverseChargeBasis").is_some()
+        || payload.get("reverseChargeNote").is_some()
+        || payload["buyer"]["publicRecipient"] == true
+        || recipient_ean(payload["buyer"]["eanNumber"].as_str())?.is_some()
+    {
+        return Err(refused(
+            "simplified invoices require standard VAT and a non-public buyer",
+        ));
+    }
+    let source = payload["lines"]
+        .as_array()
+        .filter(|v| !v.is_empty() && v.len() <= 200)
+        .ok_or_else(|| refused("invoice requires 1–200 lines"))?;
+    for line in source {
+        text(line["description"].as_str().unwrap_or(""), 1000)?;
+        if [
+            "quantity",
+            "unitPriceExVat",
+            "lineTotalExVat",
+            "taxClassification",
+            "vatRate",
+            "vatBase",
+            "vatAmount",
+            "reverseChargeBasis",
+        ]
+        .iter()
+        .any(|key| line.get(key).is_some())
+        {
+            return Err(refused(
+                "reduced simplified lines must contain descriptions without quantitative or tax fields",
+            ));
+        }
+    }
+    let totals = &payload["totals"];
+    taxable_rate(&totals["vatRate"])?;
+    let gross = money(&totals["grossAmount"])?;
+    if gross.is_negative() || gross == Money::default() {
+        return Err(refused("simplified gross must be positive"));
+    }
+    simplified_limit(payload, &gross)?;
+    let expected = gross.percent("20")?;
+    let basis = totals.get("vatComputationBasis");
+    if basis.is_some_and(|v| v != "VAT_20_OF_GROSS") {
+        return Err(refused("unsupported simplified VAT computation basis"));
+    }
+    let vat = match totals.get("vatAmount") {
+        Some(value) => money(value)?,
+        None if basis.is_some() => expected.clone(),
+        _ => {
+            return Err(refused(
+                "simplified invoice requires contained VAT amount or VAT_20_OF_GROSS",
+            ));
+        }
+    };
+    let diff = if vat.subtract(&expected).is_negative() {
+        expected.subtract(&vat)
+    } else {
+        vat.subtract(&expected)
+    };
+    if vat.is_negative()
+        || vat == Money::default()
+        || gross == vat
+        || gross.subtract(&vat).is_negative()
+        || (canonical && vat != expected)
+        || Money::parse("0.01")?.subtract(&diff).is_negative()
+    {
+        return Err(refused(
+            "simplified VAT must reconcile to contained 25% VAT",
+        ));
+    }
+    let net = gross.subtract(&vat);
+    if let Some(value) = totals.get("netAmount")
+        && money(value)? != net
+    {
+        return Err(refused(
+            "simplified net must equal gross minus contained VAT",
+        ));
+    }
+    Ok(TaxProjection {
+        legacy: false,
+        lines: vec![TaxLine {
+            index: 0,
+            net: net.clone(),
+            vat: vat.clone(),
+            vat_code: "DK_SALE_25",
+        }],
+        net,
+        vat,
+        gross,
+    })
 }
 pub fn refused(message: impl Into<String>) -> Error {
     Error::new("invoice_refused", message)
@@ -203,7 +326,77 @@ pub fn compute(input: &Input) -> Result<Value, Error> {
     if input.lines.is_empty() || input.lines.len() > 200 {
         return Err(refused("invoice requires 1–200 lines"));
     }
+    let kind = invoice_type(input.invoice_type.as_deref())?;
     let treatment = treatment(input.vat_treatment.as_deref())?;
+    if kind == "simplified"
+        && (treatment != "standard"
+            || input.reverse_charge_basis.is_some()
+            || input.reverse_charge_note.is_some()
+            || input.buyer.as_ref().is_some_and(|p| {
+                p.public_recipient == Some(true)
+                    || p.ean_number
+                        .as_deref()
+                        .is_some_and(|v| !v.trim().is_empty())
+            }))
+    {
+        return Err(refused(
+            "simplified invoices require standard VAT and a non-public buyer",
+        ));
+    }
+    let reduced = input
+        .lines
+        .iter()
+        .all(|line| line.quantity.is_none() && line.unit_price_ex_vat.is_none());
+    if reduced {
+        if kind != "simplified" {
+            return Err(refused("full invoices require quantity and unitPriceExVat"));
+        }
+        let totals = input
+            .totals
+            .as_ref()
+            .ok_or_else(|| refused("reduced simplified invoice requires totals"))?;
+        let mut result = json!({"invoiceType":kind,"vatTreatment":treatment,"currency":input.currency.as_deref().unwrap_or("DKK"),"lines":input.lines.iter().map(|line| {
+            let mut v = json!({"description":line.description});
+            if let Some(value) = &line.tax_classification { v["taxClassification"] = json!(value); }
+            if let Some(value) = &line.vat_rate { v["vatRate"] = json!(value); }
+            if let Some(value) = &line.reverse_charge_basis { v["reverseChargeBasis"] = json!(value); }
+            v
+        }).collect::<Vec<_>>(),"totals":{"grossAmount":totals.gross_amount,"vatRate":totals.vat_rate}});
+        for (key, value) in [
+            ("vatAmount", &totals.vat_amount),
+            ("netAmount", &totals.net_amount),
+        ] {
+            if let Some(value) = value {
+                result["totals"][key] = json!(value);
+            }
+        }
+        if let Some(value) = &totals.vat_computation_basis {
+            result["totals"]["vatComputationBasis"] = json!(value);
+        }
+        if let Some(value) = &input.fx_rate_to_dkk {
+            result["totals"]["fxRateToDkk"] = json!(value);
+        }
+        let projected = reduced_project(&result, true)?;
+        result["totals"]["netAmount"] = wire(&projected.net)?;
+        result["totals"]["vatAmount"] = wire(&projected.vat)?;
+        result["totals"]["vatComputationBasis"] = json!("VAT_20_OF_GROSS");
+        crate::sales_fx::freeze(&mut result, input.fx_rate_to_dkk.as_ref())?;
+        return Ok(result);
+    }
+    if input.totals.is_some() {
+        return Err(refused(
+            "totals input belongs to reduced simplified invoices only",
+        ));
+    }
+    if input
+        .lines
+        .iter()
+        .any(|line| line.quantity.is_none() || line.unit_price_ex_vat.is_none())
+    {
+        return Err(refused(
+            "invoice lines cannot mix complete and reduced amounts",
+        ));
+    }
     let foreign = treatment == "foreign_reverse_charge";
     let domestic = treatment == "domestic_reverse_charge";
     let reverse = domestic || foreign;
@@ -295,7 +488,8 @@ pub fn compute(input: &Input) -> Result<Value, Error> {
             totals["vatRate"] = json!(0.25);
         }
     }
-    let mut result = json!({"vatTreatment":treatment,"lines":lines,"totals":totals});
+    let mut result =
+        json!({"invoiceType":kind,"vatTreatment":treatment,"lines":lines,"totals":totals});
     if let Some(value) = doc_basis {
         result["reverseChargeBasis"] = json!(value);
     }
@@ -304,6 +498,9 @@ pub fn compute(input: &Input) -> Result<Value, Error> {
     }
     result["currency"] = json!(input.currency.as_deref().unwrap_or("DKK"));
     crate::sales_fx::freeze(&mut result, input.fx_rate_to_dkk.as_ref())?;
+    if kind == "simplified" {
+        simplified_limit(&result, &gross)?;
+    }
     project(&result)?;
     Ok(result)
 }
@@ -311,6 +508,30 @@ pub fn compute(input: &Input) -> Result<Value, Error> {
 /// Missing classifications identify the historical aggregate-25 contract only.
 pub fn project(payload: &Value) -> Result<TaxProjection, Error> {
     crate::currency::Currency::parse(payload["currency"].as_str().unwrap_or("DKK"))?;
+    let kind = invoice_type(
+        payload
+            .get("invoiceType")
+            .map(|v| v.as_str().ok_or_else(|| refused("invalid invoiceType")))
+            .transpose()?,
+    )?;
+    if kind == "simplified" {
+        if payload["vatTreatment"].as_str().unwrap_or("standard") != "standard"
+            || payload.get("reverseChargeBasis").is_some()
+            || payload.get("reverseChargeNote").is_some()
+            || payload["buyer"]["publicRecipient"] == true
+            || recipient_ean(payload["buyer"]["eanNumber"].as_str())?.is_some()
+        {
+            return Err(refused(
+                "simplified invoices require standard VAT and a non-public buyer",
+            ));
+        }
+        if payload["lines"].as_array().is_some_and(|v| {
+            v.iter()
+                .any(|l| l.get("quantity").is_none() || l.get("unitPriceExVat").is_none())
+        }) {
+            return reduced_project(payload, false);
+        }
+    }
     let treatment = treatment(
         payload
             .get("vatTreatment")
@@ -453,6 +674,14 @@ pub fn project(payload: &Value) -> Result<TaxProjection, Error> {
             "invoice VAT differs from immutable line tax projection",
         ));
     }
+    if kind == "simplified" {
+        simplified_limit(payload, &gross)?;
+        if lines.iter().any(|line| line.vat_code != "DK_SALE_25") {
+            return Err(refused(
+                "simplified invoice requires standard 25% taxable lines",
+            ));
+        }
+    }
     Ok(TaxProjection {
         legacy,
         lines,
@@ -492,9 +721,9 @@ mod tests {
         assert_eq!(result["totals"]["netAmount"].as_f64(), Some(1.01));
         assert_eq!(result["totals"]["vatAmount"].as_f64(), Some(0.25));
         assert_eq!(result["totals"]["grossAmount"].as_f64(), Some(1.26));
-        input.lines[0].quantity = 0.into();
+        input.lines[0].quantity = Some(0.into());
         assert!(compute(&input).is_err());
-        input.lines[0].quantity = 1.into();
+        input.lines[0].quantity = Some(1.into());
         input.lines[0].description = "".into();
         assert!(compute(&input).is_err());
         input.lines[0].description = "Synthetic".into();
@@ -610,5 +839,141 @@ mod tests {
         );
         assert_eq!(project(&exempt).unwrap().vat.decimal(), "0.00");
         assert_eq!(exempt["totals"]["vatAmount"], 0.0);
+    }
+}
+
+#[cfg(test)]
+mod private_tests {
+    use super::*;
+    fn input(gross: Value) -> Value {
+        json!({"issueDate":"2026-10-20","invoiceType":"simplified","lines":[{"description":"Synthetic reduced sale"}],"totals":{"grossAmount":gross,"vatRate":0.25,"vatComputationBasis":"VAT_20_OF_GROSS"}})
+    }
+    fn compute_value(value: Value) -> Result<Value, Error> {
+        compute(&serde_json::from_value(value).unwrap())
+    }
+    #[test]
+    fn gross_based_native_cents_are_canonical_without_invented_line_amounts() {
+        let payload = compute_value(input(json!(100.07))).unwrap();
+        assert_eq!(
+            payload["lines"],
+            json!([{"description":"Synthetic reduced sale"}])
+        );
+        assert_eq!(
+            payload["totals"],
+            json!({"grossAmount":100.07,"vatRate":0.25,"vatComputationBasis":"VAT_20_OF_GROSS","netAmount":80.06,"vatAmount":20.01})
+        );
+        let projection = project(&payload).unwrap();
+        assert!(!projection.legacy);
+        assert_eq!(projection.lines.len(), 1);
+        assert_eq!(projection.lines[0].net.decimal(), "80.06");
+        assert_eq!(projection.lines[0].vat.decimal(), "20.01");
+        for gross in [json!(0.03), json!(0.04), json!(3000)] {
+            assert!(compute_value(input(gross)).is_ok());
+        }
+        for gross in [
+            json!(0),
+            json!(-1),
+            json!(0.01),
+            json!(3000.01),
+            json!(100.071),
+        ] {
+            assert!(compute_value(input(gross)).is_err());
+        }
+    }
+    #[test]
+    fn native_totals_are_derived_and_malformed_mixed_reverse_and_public_inputs_refuse() {
+        let base = input(json!(100.07));
+        let mut cases = vec![];
+        for (key, value) in [
+            ("vatAmount", json!(20.02)),
+            ("netAmount", json!(80.05)),
+            ("vatRate", json!(0.20)),
+            ("vatComputationBasis", json!("OTHER")),
+        ] {
+            let mut bad = base.clone();
+            bad["totals"][key] = value;
+            cases.push(bad);
+        }
+        for (key, value) in [
+            ("quantity", json!(1)),
+            ("unitPriceExVat", json!(100)),
+            ("taxClassification", json!("exempt")),
+            ("vatRate", json!(0.25)),
+            ("reverseChargeBasis", json!("DK_MOMSLOVEN_§46_STK_1_NR_6")),
+        ] {
+            let mut bad = base.clone();
+            bad["lines"][0][key] = value;
+            cases.push(bad);
+        }
+        for (key, value) in [
+            ("invoiceType", json!("other")),
+            ("invoiceType", json!("full")),
+            ("vatTreatment", json!("domestic_reverse_charge")),
+            ("vatTreatment", json!("foreign_reverse_charge")),
+            ("reverseChargeNote", json!("note")),
+            ("buyer", json!({"publicRecipient":true})),
+            (
+                "buyer",
+                json!({"eanNumber":"5790000000000","publicRecipient":false}),
+            ),
+        ] {
+            let mut bad = base.clone();
+            bad[key] = value;
+            cases.push(bad);
+        }
+        for bad in cases {
+            assert!(compute_value(bad.clone()).is_err(), "{bad}");
+        }
+        let mut exact = base;
+        exact["totals"]["vatAmount"] = json!(20.01);
+        exact["totals"]["netAmount"] = json!(80.06);
+        assert!(compute_value(exact).is_ok());
+        let full = json!({"issueDate":"2026-10-20","lines":[{"description":"Synthetic full","quantity":1,"unitPriceExVat":100}]});
+        assert!(compute_value(full).is_ok());
+    }
+    #[test]
+    fn historical_reduced_source_preserves_valid_contained_vat_with_one_cent_tolerance() {
+        let mut payload = input(json!(100.07));
+        payload["totals"]
+            .as_object_mut()
+            .unwrap()
+            .remove("vatComputationBasis");
+        payload["totals"]["vatAmount"] = json!(20.02);
+        let unchanged = payload.clone();
+        let projected = project(&payload).unwrap();
+        assert_eq!(projected.vat.decimal(), "20.02");
+        assert_eq!(projected.net.decimal(), "80.05");
+        assert_eq!(payload, unchanged);
+        payload["totals"]["vatAmount"] = json!(20.03);
+        assert!(project(&payload).is_err());
+        payload["totals"]
+            .as_object_mut()
+            .unwrap()
+            .remove("vatAmount");
+        assert!(project(&payload).is_err());
+        payload["totals"]["vatComputationBasis"] = json!("VAT_20_OF_GROSS");
+        assert_eq!(project(&payload).unwrap().vat.decimal(), "20.01");
+    }
+    #[test]
+    fn simplified_foreign_limit_uses_frozen_dkk_gross_not_original_numeric_value() {
+        let mut payload = input(json!(400));
+        payload["currency"] = json!("EUR");
+        payload["fxRateToDkk"] = json!(7.5);
+        let result = compute_value(payload.clone()).unwrap();
+        assert_eq!(
+            crate::sales_fx::project(&result).unwrap().gross.decimal(),
+            "3000.00"
+        );
+        payload["totals"]["grossAmount"] = json!(400.01);
+        assert!(compute_value(payload).is_err());
+        let mut payload = input(json!(3000.01));
+        payload["currency"] = json!("EUR");
+        payload["fxRateToDkk"] = json!(0.5);
+        assert!(compute_value(payload).is_ok());
+        let complete = json!({"invoiceType":"simplified","issueDate":"2026-10-20","currency":"EUR","fxRateToDkk":7.5,"lines":[{"description":"Synthetic full quantitative","quantity":1,"unitPriceExVat":320}]});
+        assert!(compute_value(complete.clone()).is_ok());
+        let mut too_large = complete;
+        too_large["lines"][0]["unitPriceExVat"] = json!(320.01);
+        assert!(compute_value(too_large).is_err());
     }
 }

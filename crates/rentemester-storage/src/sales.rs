@@ -252,13 +252,15 @@ pub fn contacts(tx: &Transaction<'_>, slug: &str, today: &str) -> Result<Value, 
     Ok(base)
 }
 fn party(input: Option<&Party>, default: &Value, seller: bool) -> Result<Value, Error> {
-    party_kind(input, default, seller, false)
+    party_kind(input, default, seller, false, false, false)
 }
 fn party_kind(
     input: Option<&Party>,
     default: &Value,
     seller: bool,
     foreign: bool,
+    require_buyer_vat: bool,
+    simplified: bool,
 ) -> Result<Value, Error> {
     let field = |value: Option<&String>, key: &str| {
         sales_invoice::text(
@@ -312,12 +314,25 @@ fn party_kind(
                 ));
             }
         }
-    } else if seller || ean.is_none() || foreign {
+    } else if seller || foreign || (require_buyer_vat && ean.is_none()) {
         return Err(refused(
             "native domestic invoice requires seller CVR and buyer CVR or public EAN",
         ));
     }
-    let mut result = json!({"name":field(input.and_then(|p|p.name.as_ref()),"name")?,"address":field(input.and_then(|p|p.address.as_ref()),"address")?});
+    if simplified && (public || ean.is_some()) {
+        return Err(refused(
+            "simplified invoice cannot address a public recipient or EAN",
+        ));
+    }
+    let mut result = json!({});
+    for (key, value) in [
+        ("name", input.and_then(|p| p.name.as_ref())),
+        ("address", input.and_then(|p| p.address.as_ref())),
+    ] {
+        if !simplified || seller || value.is_some() || default[key].as_str().is_some() {
+            result[key] = json!(field(value, key)?);
+        }
+    }
     if let Some(vat) = vat {
         result["vatOrCvr"] = json!(vat);
     }
@@ -382,7 +397,24 @@ pub fn prepare(
         Value::Null
     };
     let foreign = computed["vatTreatment"] == "foreign_reverse_charge";
-    let buyer = party_kind(input.buyer.as_ref(), &customer, false, foreign)?;
+    let simplified = computed["invoiceType"] == "simplified";
+    let buyer = party_kind(
+        input.buyer.as_ref(),
+        &customer,
+        false,
+        foreign,
+        computed["vatTreatment"] == "domestic_reverse_charge",
+        simplified,
+    )?;
+    if let Some(name) = buyer["name"].as_str() {
+        crate::gdpr::require_contact_identity(
+            tx,
+            "customers",
+            input.customer_id,
+            name,
+            buyer["vatOrCvr"].as_str(),
+        )?;
+    }
     let validation = if foreign {
         let record = crate::vies::require(tx, buyer["vatOrCvr"].as_str().unwrap_or(""), now)?;
         if record["countryCode"] == "DK" {
@@ -447,7 +479,10 @@ pub fn prepare(
             ));
         }
     }
-    let mut payload = json!({"invoiceType":"full","vatTreatment":computed["vatTreatment"],"issueDate":input.issue_date,"dueDate":due,"invoiceNumber":format!("{year}-{next:04}"),"status":"issued","issuedAt":now,"currency":computed["currency"],"seller":seller,"buyer":buyer,"customerId":input.customer_id,"lines":computed["lines"],"totals":computed["totals"],"payment":company["payment"]});
+    let mut payload = json!({"invoiceType":computed["invoiceType"],"vatTreatment":computed["vatTreatment"],"issueDate":input.issue_date,"dueDate":due,"invoiceNumber":format!("{year}-{next:04}"),"status":"issued","issuedAt":now,"currency":computed["currency"],"seller":seller,"buyer":buyer,"customerId":input.customer_id,"lines":computed["lines"],"totals":computed["totals"],"payment":company["payment"]});
+    if simplified && input.buyer.is_none() && input.customer_id.is_none() {
+        payload.as_object_mut().unwrap().remove("buyer");
+    }
     for key in ["reverseChargeBasis", "reverseChargeNote"] {
         if let Some(value) = computed.get(key).filter(|v| !v.is_null()) {
             payload[key] = value.clone();
@@ -552,7 +587,7 @@ pub fn register_with_principal(
         )?;
     }
     Ok(
-        json!({"documentId":id,"currency":payload["currency"],"totals":payload["totals"],"invoiceNumber":payload["invoiceNumber"],"netAmount":payload["totals"]["netAmount"],"vatRate":payload["totals"]["vatRate"],"vatTreatment":payload["vatTreatment"],"reverseChargeBasis":payload["reverseChargeBasis"],"reverseChargeNote":payload["reverseChargeNote"],"vatAmount":vat_amount,"grossAmount":payload["totals"]["grossAmount"],"fxRateToDkk":payload["totals"]["fxRateToDkk"],"netAmountDkk":payload["totals"]["netAmountDkk"],"vatAmountDkk":payload["totals"]["vatAmountDkk"],"grossAmountDkk":payload["totals"]["grossAmountDkk"],"lines":payload["lines"]}),
+        json!({"documentId":id,"invoiceType":payload["invoiceType"],"currency":payload["currency"],"totals":payload["totals"],"invoiceNumber":payload["invoiceNumber"],"netAmount":payload["totals"]["netAmount"],"vatRate":payload["totals"]["vatRate"],"vatTreatment":payload["vatTreatment"],"reverseChargeBasis":payload["reverseChargeBasis"],"reverseChargeNote":payload["reverseChargeNote"],"vatAmount":vat_amount,"grossAmount":payload["totals"]["grossAmount"],"fxRateToDkk":payload["totals"]["fxRateToDkk"],"netAmountDkk":payload["totals"]["netAmountDkk"],"vatAmountDkk":payload["totals"]["vatAmountDkk"],"grossAmountDkk":payload["totals"]["grossAmountDkk"],"lines":payload["lines"]}),
     )
 }
 pub fn pdf_id(tx: &Transaction<'_>, id: i64) -> Result<i64, Error> {
@@ -794,7 +829,7 @@ pub fn list(
         if overdue > 0 && !open.is_negative() && open != Money::default() {
             overdue_count += 1;
         }
-        rows.push(json!({"documentId":id,"invoiceNo":r.get::<_,String>(1).map_err(invalid)?,"invoiceDate":r.get::<_,String>(2).map_err(invalid)?,"customerName":r.get::<_,Option<String>>(3).map_err(invalid)?,"customerEmail":null,"customerId":payload["customerId"],"buyerEanNumber":sales_invoice::recipient_ean(payload["buyer"]["eanNumber"].as_str()).ok().flatten(),"buyerPublicRecipient":payload["buyer"]["publicRecipient"]==true || sales_invoice::recipient_ean(payload["buyer"]["eanNumber"].as_str()).ok().flatten().is_some(),"peppolStatus":crate::public_einvoice::get(tx,id)?,"lastEmailedAt":null,"lastReminderAt":null,"lastReminderSequence":0,"grossAmount":wire(&gross)?,"openBalance":wire(&open)?,"grossAmountDkk":wire(&valuation.gross)?,"openBalanceDkk":wire(&open_dkk)?,"creditableBalanceDkk":wire(&creditable_dkk)?,"fxRateToDkk":payload["totals"]["fxRateToDkk"],"currency":r.get::<_,String>(4).map_err(invalid)?,"creditableBalance":wire(&creditable)?,"status":if open.is_negative(){"overpaid"}else if open==Money::default(){if refunds!=Money::default(){"refunded"}else if credited==gross && paid==Money::default(){"credited"}else{"paid"}}else if overdue>0{"overdue"}else{"open"},"effectiveDueDate":due,"overdueDays":overdue,"posted":r.get::<_,Option<i64>>(7).map_err(invalid)?.is_some()}));
+        rows.push(json!({"documentId":id,"invoiceType":payload["invoiceType"],"invoiceNo":r.get::<_,String>(1).map_err(invalid)?,"invoiceDate":r.get::<_,String>(2).map_err(invalid)?,"customerName":r.get::<_,Option<String>>(3).map_err(invalid)?,"customerEmail":null,"customerId":payload["customerId"],"buyerEanNumber":sales_invoice::recipient_ean(payload["buyer"]["eanNumber"].as_str()).ok().flatten(),"buyerPublicRecipient":payload["buyer"]["publicRecipient"]==true || sales_invoice::recipient_ean(payload["buyer"]["eanNumber"].as_str()).ok().flatten().is_some(),"peppolStatus":crate::public_einvoice::get(tx,id)?,"lastEmailedAt":null,"lastReminderAt":null,"lastReminderSequence":0,"grossAmount":wire(&gross)?,"openBalance":wire(&open)?,"grossAmountDkk":wire(&valuation.gross)?,"openBalanceDkk":wire(&open_dkk)?,"creditableBalanceDkk":wire(&creditable_dkk)?,"fxRateToDkk":payload["totals"]["fxRateToDkk"],"currency":r.get::<_,String>(4).map_err(invalid)?,"creditableBalance":wire(&creditable)?,"status":if open.is_negative(){"overpaid"}else if open==Money::default(){if refunds!=Money::default(){"refunded"}else if credited==gross && paid==Money::default(){"credited"}else{"paid"}}else if overdue>0{"overdue"}else{"open"},"effectiveDueDate":due,"overdueDays":overdue,"posted":r.get::<_,Option<i64>>(7).map_err(invalid)?.is_some()}));
     }
     base["invoices"] = json!(rows);
     base["totalGross"] = wire(&total)?;
@@ -1102,3 +1137,7 @@ mod vat_tests;
 #[cfg(test)]
 #[path = "sales/foreign_tests.rs"]
 mod foreign_tests;
+
+#[cfg(test)]
+#[path = "sales/private_tests.rs"]
+mod private_tests;

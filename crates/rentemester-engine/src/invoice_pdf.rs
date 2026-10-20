@@ -42,6 +42,9 @@ pub fn build(payload: &Value) -> Vec<u8> {
         ("Adresse", text(&payload["buyer"]["address"])),
         ("CVR/moms", text(&payload["buyer"]["vatOrCvr"])),
     ] {
+        if value.is_empty() {
+            continue;
+        }
         let chars: Vec<_> = format!("{label}: {value}").chars().collect();
         for chunk in chars.chunks(80) {
             rows.push(Row {
@@ -69,17 +72,19 @@ pub fn build(payload: &Value) -> Vec<u8> {
                 amount: String::new(),
             });
         }
-        rows.push(Row {
-            section: false,
-            total: false,
-            label: format!(
-                "{} x {} {} ekskl. moms",
-                line["quantity"],
-                unit_price(&line["unitPriceExVat"]),
-                currency
-            ),
-            amount: amount(&line["lineTotalExVat"]),
-        });
+        if line.get("quantity").is_some() && line.get("unitPriceExVat").is_some() {
+            rows.push(Row {
+                section: false,
+                total: false,
+                label: format!(
+                    "{} x {} {} ekskl. moms",
+                    line["quantity"],
+                    unit_price(&line["unitPriceExVat"]),
+                    currency
+                ),
+                amount: amount(&line["lineTotalExVat"]),
+            });
+        }
         if let Some(class) = line["taxClassification"].as_str() {
             let label = match class {
                 "taxable" => "Moms 25%".to_owned(),
@@ -201,7 +206,11 @@ pub fn build(payload: &Value) -> Vec<u8> {
     }
     let value = json!({"company":{"name":payload["seller"]["name"],"cvr":payload["seller"]["vatOrCvr"],"currency":currency},"selectedYear":payload["issueDate"].as_str().unwrap_or("").get(..4).unwrap_or("")});
     render(
-        "Faktura",
+        if payload["invoiceType"] == "simplified" {
+            "Forenklet faktura"
+        } else {
+            "Faktura"
+        },
         &value,
         payload["issueDate"].as_str().unwrap_or(""),
         &rows,
@@ -377,5 +386,26 @@ mod foreign_tests {
         assert!(text.contains("746,00"));
         assert!(!text.contains("Til betaling DKK"));
         assert_eq!(bytes, build(&value));
+    }
+}
+
+#[cfg(test)]
+mod simplified_tests {
+    use super::*;
+    #[test]
+    fn reduced_pdf_has_truthful_title_and_no_null_quantity_or_invented_buyer() {
+        let input=serde_json::from_value(json!({"invoiceType":"simplified","issueDate":"2026-10-20","lines":[{"description":"Synthetic reduced service"}],"totals":{"grossAmount":100.07,"vatRate":0.25,"vatComputationBasis":"VAT_20_OF_GROSS"}})).unwrap();
+        let payload = crate::sales_invoice::compute(&input).unwrap();
+        let bytes = build(&payload);
+        let text = String::from_utf8_lossy(&bytes);
+        assert!(text.contains("Forenklet faktura"));
+        assert!(text.contains("Synthetic reduced service"));
+        assert!(text.contains("80,06"));
+        assert!(text.contains("20,01"));
+        assert!(text.contains("100,07"));
+        assert!(!text.contains("null"));
+        assert!(!text.contains(" x "));
+        assert!(!text.contains("Køber:"));
+        assert_eq!(bytes, build(&payload));
     }
 }
