@@ -22,6 +22,9 @@ mod journal_attempt;
 mod local_backend;
 mod login;
 mod reporting;
+mod opening_balance;
+mod opening_balance_state;
+mod opening_balance_attempt;
 mod payables;
 mod payables_state;
 mod mileage;
@@ -60,7 +63,7 @@ use rentemester_client::{ApiClient, Report};
 use serde_json::Value;
 use std::{path::PathBuf, sync::Arc};
 
-actions!(workflows, [OpenInvoices, OpenCompanySetup, BackToOverview, ScrollWorkflowDown, ScrollWorkflowUp]);
+actions!(workflows, [OpenInvoices, OpenCompanySetup, OpenOpeningBalance, BackToOverview, ScrollWorkflowDown, ScrollWorkflowUp]);
 
 #[derive(Default)]
 struct Options {
@@ -248,6 +251,7 @@ struct Desktop {
     parties: Option<Entity<parties::WorkspaceParties>>,
     company_knowledge: Option<Entity<company_knowledge::CompanyKnowledge>>,
     company_setup: Option<Entity<company_setup::CompanySetup>>,
+    opening_balance: Option<Entity<opening_balance::OpeningBalance>>,
     status: String,
     busy: bool,
 }
@@ -357,6 +361,7 @@ impl Desktop {
             parties: None,
             company_knowledge: None,
             company_setup: None,
+            opening_balance: None,
             status: "Forbind til din Rentemester-server og log ind med e-mail, adgangskode og MFA."
                 .into(),
             busy: false,
@@ -389,6 +394,7 @@ impl Desktop {
             || self.parties.is_some()
             || self.company_knowledge.is_some()
             || self.company_setup.is_some()
+            || self.opening_balance.is_some()
     }
     fn open_invoices(&mut self, _: &OpenInvoices, window: &mut Window, cx: &mut Context<Self>) {
         self.open_workflow(true, window, cx);
@@ -464,6 +470,26 @@ impl Desktop {
         } else if let Some(view) = &self.company_setup {
             view.update(cx, |v, cx| v.focus_entry(window, cx));
         }
+        cx.notify();
+    }
+    fn open_opening_balance(&mut self, _: &OpenOpeningBalance, window: &mut Window, cx: &mut Context<Self>) {
+        match workflow_navigation(self.session.is_some() && self.selected.is_some(), self.busy, self.has_screen(), self.opening_balance.is_some()) {
+            WorkflowNavigation::Unavailable => { self.status = "Log ind og vælg en virksomhed før navigation.".into(); cx.notify(); return; }
+            WorkflowNavigation::KeepCurrent => { self.status = "Den åbne skærm og dens gennemgang bevares. Luk den eksplicit, før du åbner åbningsbalancen.".into(); cx.notify(); return; }
+            WorkflowNavigation::Wait => return,
+            WorkflowNavigation::Open | WorkflowNavigation::FocusExisting => {}
+        }
+        if self.opening_balance.is_none() {
+            let (Some(session), Some(company)) = (self.session.clone(), self.selected.clone()) else { return; };
+            let origin = self.connection_origin(cx);
+            let local = match self.managed.as_ref().map(|m| m.journal_identity()).transpose() {
+                Ok(local) => local,
+                Err(error) => { self.status = error; cx.notify(); return; }
+            };
+            self.opening_balance = Some(cx.new(|cx| opening_balance::OpeningBalance::new(session, origin, company, local, window, cx)));
+        }
+        self.body_scroll.set_offset(point(px(0.), px(0.)));
+        if let Some(view) = &self.opening_balance { view.update(cx, |v, cx| v.focus_entry(window, cx)); }
         cx.notify();
     }
     fn back_to_overview(
@@ -599,6 +625,7 @@ impl Desktop {
         self.parties = None;
         self.company_knowledge = None;
         self.company_setup = None;
+        self.opening_balance = None;
         self.status = "Forbinder…".into();
         let server = self.connection_origin(cx);
         let cookie = PathBuf::from(self.cookie.read(cx).value().to_string());
@@ -680,6 +707,7 @@ impl Desktop {
         self.parties = None;
         self.company_knowledge = None;
         self.company_setup = None;
+        self.opening_balance = None;
         self.busy = true;
         self.status = "Kontrollerer login…".into();
         let origin = self.connection_origin(cx);
@@ -796,6 +824,7 @@ impl Desktop {
         self.parties = None;
         self.company_knowledge = None;
         self.company_setup = None;
+        self.opening_balance = None;
         self.password
             .update(cx, |input, cx| input.set_value("", window, cx));
         self.code
@@ -834,6 +863,7 @@ impl Desktop {
         self.parties = None;
         self.company_knowledge = None;
         self.company_setup = None;
+        self.opening_balance = None;
         self.selected = Some(slug.clone());
         self.status = "Henter saldobalance…".into();
         let year = self.year.read(cx).value().to_string();
@@ -1171,6 +1201,14 @@ impl Desktop {
                     if let Some(slug) = this.selected.clone() { this.load(slug, cx); }
                 }))).child(setup);
         }
+        if let Some(opening) = self.opening_balance.clone() {
+            return content.child(Button::new("opening-balance-close").track_focus(&self.close_focus)
+                .label("Luk åbningsbalance og genindlæs saldobalance")
+                .on_click(cx.listener(|this, _, _, cx| {
+                    this.opening_balance = None;
+                    if let Some(slug) = this.selected.clone() { this.load(slug, cx); }
+                }))).child(opening);
+        }
         if let Some(backup) = self.backup.clone() {
             return content.child(Button::new("backup-close").track_focus(&self.close_focus)
                 .label("Luk workspace-backup")
@@ -1330,6 +1368,10 @@ impl Desktop {
         if self.session.is_some() && self.selected.is_some() {
             content = content.child(Button::new("company-setup-open").label("Virksomhedsopsætning · ⌘2").disabled(self.busy)
                 .on_click(cx.listener(|this,_,window,cx|this.open_company_setup(&OpenCompanySetup,window,cx))));
+        }
+        if self.session.is_some() && self.selected.is_some() {
+            content = content.child(Button::new("opening-balance-open").label("Åbningsbalance · ⌘3").disabled(self.busy)
+                .on_click(cx.listener(|this, _, window, cx| this.open_opening_balance(&OpenOpeningBalance, window, cx))));
         }
         if self.session.is_some() && self.selected.is_some() {
             content = content.child(Button::new("scheduled-recurring-open").label("Planlagte fakturaer").disabled(self.busy)
@@ -1761,6 +1803,7 @@ impl Render for Desktop {
             .track_focus(&self.workflow_focus)
             .on_action(cx.listener(Self::open_invoices))
             .on_action(cx.listener(Self::open_company_setup))
+                .on_action(cx.listener(Self::open_opening_balance))
             .on_action(cx.listener(Self::back_to_overview))
             .on_action(cx.listener(Self::scroll_workflow_down))
             .on_action(cx.listener(Self::scroll_workflow_up))
@@ -1826,6 +1869,7 @@ fn main() {
                 KeyBinding::new("pageup", ScrollWorkflowUp, Some("RentemesterWorkflows")),
                 KeyBinding::new("cmd-1", OpenInvoices, Some("RentemesterWorkflows")),
                 KeyBinding::new("cmd-2", OpenCompanySetup, Some("RentemesterWorkflows")),
+                KeyBinding::new("cmd-3", OpenOpeningBalance, Some("RentemesterWorkflows")),
                 KeyBinding::new("cmd-0", BackToOverview, Some("RentemesterWorkflows")),
             ]);
             cx.set_menus([Menu::new("Rentemester"), Menu::new("Arbejdsgange").items([
@@ -1833,6 +1877,7 @@ fn main() {
                 MenuItem::action("Rul arbejdsgang op", ScrollWorkflowUp),
                 MenuItem::action("Fakturaer", OpenInvoices),
                 MenuItem::action("Virksomhedsopsætning", OpenCompanySetup),
+                MenuItem::action("Åbningsbalance", OpenOpeningBalance),
                 MenuItem::action("Tilbage til oversigt: fokusér Luk", BackToOverview),
             ])]);
 
