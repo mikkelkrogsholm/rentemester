@@ -4,7 +4,7 @@ import { execFileSync } from "node:child_process";
 
 /** Navigate existing report views and exercise their real download links. */
 export async function checkNativeReports(page: Page, base: string) {
-  const directory = "/tmp/rentemester-rust-reports";
+  const directory = process.env.RM_NATIVE_REPORT_DIR ?? "/tmp/rentemester-rust-reports";
   mkdirSync(directory, { recursive: true });
   const cases = [
     { route: "resultatopgorelse", api: "income-statement", title: "Resultatopgørelse" },
@@ -16,7 +16,7 @@ export async function checkNativeReports(page: Page, base: string) {
     await page.getByRole("heading", { name: report.title, exact: true }).waitFor();
     const payload = await (await page.request.get(`${base}/api/companies/synthetic/${report.api}`)).json();
     const value = payload[report.api === "income-statement" ? "incomeStatement" : report.api === "balance" ? "balance" : "trialBalance"];
-    if (report.api === "income-statement" && (value.result !== 0 || value.priorResult !== 0)) throw new Error("Opening equity incorrectly affected profit");
+    if (report.api === "income-statement" && (value.result !== 0 || value.priorResult !== null || value.comparison?.reason !== "prior_native_year_not_present")) throw new Error("Opening equity affected profit or absent prior-year evidence was fabricated");
     if (report.api === "balance" && (value.totalAssets !== 125.5 || value.equity.total !== 125.5 || value.balanced !== true || value.assets.priorTotal !== null)) throw new Error("Balance or missing prior comparison is incorrect");
     const section = page.locator("section.statement");
     for (const format of ["csv", "pdf"]) {

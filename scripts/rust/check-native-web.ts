@@ -134,6 +134,7 @@ try {
     await page.screenshot({ path: process.env.RM_NATIVE_WEB_SCREENSHOT ?? "/tmp/rentemester-rust-first-journey.png", fullPage: true });
     console.log("PASS: Rust server restart → browser login → persisted posting and balance; idempotent replay creates no duplicate");
     await checkNativeDocuments(page, base, true);
+    if (process.env.RM_NATIVE_WEB_PACKAGING !== "1") {
     await checkNativeReversal(page, base);
     await checkNativeExpense(page, base);
     await checkNativeFxExpense(page, base);
@@ -144,6 +145,7 @@ try {
     await checkNativeCredit(page, base);
     await checkNativeRefund(page, base);
     await checkNativeCustomerEdit(page, base);
+    }
     }
   } else {
   if (setup) {
@@ -158,7 +160,9 @@ try {
     await page.getByRole("heading", { name: "Første ejer er oprettet" }).waitFor();
     const container = process.env.RM_NATIVE_WEB_CONTAINER;
     if (!container || !/^rm-native-web-[a-f0-9]+$/.test(container)) throw new Error("Missing synthetic outbox container");
-    verification = execFileSync("docker", ["exec", container, "sh", "-c", 'for f in /qualified/parent/workspace/.rentemester/verification-*.txt; do cat "$f"; break; done'], { encoding: "utf8" });
+    const workspaceRoot = process.env.RM_NATIVE_WEB_WORKSPACE_ROOT ?? "/qualified/parent/workspace";
+    if (!["/qualified/parent/workspace", "/state/workspace"].includes(workspaceRoot)) throw new Error("Unexpected synthetic workspace root");
+    verification = execFileSync("docker", ["exec", container, "sh", "-c", 'for f in "$1"/.rentemester/verification-*.txt; do cat "$f"; break; done', "verification", workspaceRoot], { encoding: "utf8" });
     await page.getByRole("button", { name: "Til login", exact: true }).click();
     const consumed = await page.request.post(`${base}/api/setup/first-owner`, { headers: { origin: base, "content-type": "application/json", "x-rentemester-install-token": new URLSearchParams(new URL(setup).hash.slice(1)).get("setup")! }, data: { name: "Synthetic Intruder", email: "intruder@example.invalid", password: "synthetic-password-456" } });
     if (consumed.status() !== 403) throw new Error("Consumed installer capability was reused");

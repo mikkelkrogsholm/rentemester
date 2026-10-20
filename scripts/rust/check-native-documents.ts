@@ -43,6 +43,6 @@ export async function checkNativeDocuments(page: Page, base: string, reopened = 
       if (denied.status() !== 401) throw new Error("Original accessible without authentication");
     } finally { await anonymous.close(); }
   }
-  await page.screenshot({ path: "/tmp/rentemester-rust-documents.png", fullPage: true });
+  await page.screenshot({ path: process.env.RM_NATIVE_DOCUMENT_SCREENSHOT ?? "/tmp/rentemester-rust-documents.png", fullPage: true });
   console.log(reopened ? "PASS: receipt metadata and exact original persist after Rust server restart" : "PASS: real browser → Rust receipt upload, list, exact original; duplicate, MIME mismatch and anonymous read refused");
 }

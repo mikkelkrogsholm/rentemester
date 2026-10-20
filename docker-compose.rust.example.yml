@@ -1,0 +1,25 @@
+services:
+  rentemester:
+    # Separate Rust candidate; pin an exact digest after qualification.
+    image: ${RENTEMESTER_RUST_IMAGE:?set an exact Rust candidate image digest}
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:4319:4319"
+    environment:
+      RENTEMESTER_ORIGIN: ${RENTEMESTER_ORIGIN:-http://127.0.0.1:4319}
+    volumes:
+      # Mount parent. Config root /state/workspace must be absent before create.
+      - rentemester-rust-state:/state
+      - ${RENTEMESTER_CONFIG_DIR:?set a private config directory}:/config:ro
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=64m
+    user: "10001:10001"
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    stop_grace_period: 5m
+    mem_limit: 1g
+    pids_limit: 128
+
+volumes:
+  rentemester-rust-state:
