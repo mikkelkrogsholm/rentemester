@@ -1,4 +1,5 @@
 //! Pure accounting values and read projections. No filesystem, SQL or transport.
+pub mod public_einvoice;
 pub mod mail_intake;
 pub mod document_scan;
 pub mod document_pdf;
