@@ -814,9 +814,7 @@ workspaces og en betroet lokal konfiguration; `--create` opretter et nyt workspa
 og uden flaget genåbnes det eksisterende. `--origin` angiver browserens lokale
 origin, når serveren kører bag Docker-portmapping.
 
-Rust-cockpittets startside viser foreløbig virksomhedsvælgeren. Resten af
-porteføljeoverblikket, øvrige bogførings-, rapport- og eksportforløb, desktop og produktionsdrift
-er fortsat under omskrivning. Denne demo er ikke den færdige Rust-migration.
+Rust-cockpittets startside viser nu porteføljen med datovalg og aktuelle adgangsrettigheder. Likviditet viser historiske bankbevægelser og den eksisterende 13-ugers prognose. Resterende fakturavarianter, installerede desktopforløb og produktionsmigration er fortsat under omskrivning.
 
 Browserkontrollen registrerer også en ekstern indberetningskvittering via UI’et,
 kontrollerer næste aktive momsperiode og afviser ændret reference, genåbning og
@@ -2339,3 +2337,16 @@ HTTP, CLI og MCP samt genstart og fire signerede backupprøver med gendannelse
 uden den oprindelige datamappe bevarer originaler og historik uden genafsendelse.
 Private leverandørnøgler følger ikke med. Der er ikke foretaget en virkelig
 ekstern afsendelse; den installerede desktops samlede forløb er fortsat åbent.
+
+
+## Portefølje og historisk pengestrøm
+
+Porteføljens **Pr. dato** afgrænser de regnskabsmæssige beløb til den valgte dato og hver virksomheds faktiske regnskabsår. Kun aktuelt tilgængelige, aktive virksomheder indgår; skjulte virksomheder bidrager hverken navne, antal eller summer. En ukendt banksaldo bliver ikke nul: den samlede bankværdi er utilgængelig, hvis en synlig virksomhed mangler en dokumenteret saldo. Visningen er ikke en koncernkonsolidering. Opgaver beskriver den aktuelle åbne tilstand for daterede kilder, ikke en rekonstrueret historisk opgavestatus. Moms vises for den aktuelle momsperiode, som indeholder skæringsdatoen, med periode og cutoff synligt.
+
+Likviditet viser faktiske importerede bankbevægelser i tolv kronologiske regnskabsmåneder og bevarer den eksisterende 13-ugers prognose. Regnskabsår vælges med det præcise label, også **2025/26**. Valutaer blandes ikke; udenlandske bevægelser kræver bevaret kompatibelt DKK-beløb og kurs. Manglende vurdering giver utilgængelige beløb, modstridende dokumentation afvises. En arkivkilde uden bankhistorik får ikke opdigtede nulværdier eller saldogrænser.
+
+De kanoniske læseflader er `GET /api/portfolio?asOf=YYYY-MM-DD` og `GET /api/companies/{slug}/cashflow?year=LABEL`, CLI `remote portfolio --as-of DATE` og `remote cashflow --company SLUG --year LABEL`, samt MCP `portfolio` med valgfri `asOf` og `cashflow` med `company` og valgfri `year`. `portfolio` er en ny kontrakt og ikke et alias for TypeScript-værktøjet `portfolio_overview`. Adgang kontrolleres før virksomhedens ledger åbnes og igen før svaret afleveres. Skjulte og ukendte virksomheder giver samme afvisning.
+
+Faktura- og kreditnummerering bruger det kanoniske regnskabsårs-id, eksempelvis **2025-26-0001**, mens regnskabsårsvælgeren viser **2025/26**. Eksisterende originaler ændres ikke; filnavnets sikkerhedskontrol bevares.
+
+Group76 er accepteret med 19 trin gennem normal MFA og eksisterende web-UI på syntetiske data: to virksomheder, tre posteringer, fem bankrækker, datovalg, forskudt regnskabsår, begrænset og tilbagekaldt adgang samt nøjagtig HTTP/CLI/MCP-lighed. Fire uafhængigt verificerede signerede workspace-arkiver og en kildefri gendannelse med ny ejer efterfulgt af genåbning bevarer tabeller, originalbilag og audit-historik. Prøven kvalificerer ikke installerede native finansforløb. Aktuel evidens og resterende arbejde fremgår af `docs/architecture/rust-target/implementation/progress.json`.

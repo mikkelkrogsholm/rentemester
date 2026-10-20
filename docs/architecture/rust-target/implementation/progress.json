@@ -1,16 +1,16 @@
 {
   "goal": "Complete Rust server/web, GPUI local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "Full DKK mixed/exempt/domestic-reverse invoice lifecycle and signed source-free recovery qualified",
-  "code_revision": "948e4406bd37e69741c5fb55055009fee9295aa0",
-  "spec_revision": "sha256:874bef089ec3046967d7da689a7d951c622d7c984cff3d48a854c36299c277df",
-  "state": "Group75 actual PASS at948e4406:19 ordinary-MFA actions through existing web mixed-tax preview/issue/post/partial-final credit plus exempt/domestic-reverse/per-line rounding API variants;4 issued invoices,8 original-linked credit notes,1 receipt,2 refunds and exactly15 journals. Explicit original net/VAT counters conserved, actual signed credit journal accounts/codes/debits match immutable allocations. Output VAT25.03 and exempt/reverse bases250 before credits; zero VAT and all accounts after full credits/cash. Earlier cutoff preserves4 original gross receivables; reviewed current custom close succeeds. HTTP/CLI/MCP canonical equality and duplicate refusals across source/restart/fresh-owner restore/reopen. Four independently verified signed archives retain exact original bytes/domain tables/audit prefix; only restore-boundary audit append. Source and target/signers removed before final independent verification. Root independently matched binaries/web/helper hashes and extracted truthful PDF amounts/classifications. Owned cleanup true. Full mission/epic672 OPEN: foreign/currency/simplified invoice variants, bank provenance followups, remaining reports and installed desktop/transfer/distribution/TS retirement remain.",
+  "current_increment": "Dated portfolio, historical cashflow and existing forecast with source-free recovery qualified",
+  "code_revision": "dcbbed03848e41d47e62316b21df43eb5f4d59ce",
+  "spec_revision": "sha256:95aefe4e2e3fd788921815cc615351ba42431b0c3407435b13047a81dc70b3e5",
+  "state": "Group76 qualified atdcbbed03:19 ordinary-MFA actions across two companies, actual dated portfolio and historical cashflow plus existing13-week forecast. True asOf income300 then600, unknown bank distinct from genuine zero, later bank120; exact July fiscal span2025/26 and12 chronological months. Restricted current visibility and revoked/hidden/unknown403 hold without hidden totals. HTTP/CLI/MCP whole-response equality in four phases. Four independently verified signed full-workspace archives preserve exact company tables and original bytes; source-free fresh-owner restore plus reopen retain only documented restore-boundary audit append. Root independent audit and owned cleanup PASS. Shifted fiscal numbering and actual web-shell year selection repaired with failing-before/passing-after regressions. Full mission and epic672 remain OPEN; installed native financial acceptance is not claimed.",
   "issues_closed": [],
   "next": [
-    "Next server/web boundary: remaining sales currency/foreign-reverse/OSS/simplified invoice variants or missing portfolio/cashflow journeys; select a whole workflow with shared contracts before isolated implementation. Group75 is qualified; do not repeat it without changed code or new failure evidence.",
-    "Keep remaining full unmatched bank candidate/description/refresh synchronization explicit, plus raw-file Windows1252 CLI compatibility; no all-importer-parity claim.",
-    "Other concrete server/web gaps remain: sales simplified/currency/foreign reverse-charge and OSS variants, portfolio/cashflow pages, interactive CVR lookup/sync. Preserve explicit bank followups.",
-    "Complete installed local/remote desktop financial journeys, full recovery/transfer/automation/distribution and TypeScript retirement gates. Full goal remains open."
+    "Next server/web whole journey: remaining foreign-currency/reverse-charge/simplified/OSS sales variants. Qualified75/76 must not be repeated without changed code or new failure evidence.",
+    "Preserve remaining unmatched bank candidate/description/refresh synchronization and raw-file Windows1252 CLI compatibility.",
+    "Interactive CVR lookup/sync remains open.",
+    "Complete installed local/remote desktop financial journeys, safe transfer/recovery/automation/distribution, full CLI/MCP parity and TypeScript retirement. Full goal remains open."
   ],
   "preserve_unrelated_paths": [
     ".claude/settings.json",
@@ -21,10 +21,10 @@
   ],
   "all_goal_requirements_complete": false,
   "previous_verified_increment": {
-    "current_increment": "Public e-invoice explicit registration, immutable source delivery/status and signed source-free recovery qualified",
-    "code_revision": "de2a3397ec558fff8e12b7e81142d55b52de9c21",
-    "spec_revision": "sha256:9a7bc5653b14cf898d1040e766f7fae945771be89b83b07ee50f62ffc1234753",
-    "state": "Group74 actual PASS atde2a3397 with exact independently matched server/CLI/MCP/web/helper hashes: 25 ordinary-MFA actions through existing web PDF preview/issuance and explicit legal-company/outbound registration, verified-TLS synthetic provider validation/delivery/status, frozen EAN despite contact edit, accepted terminal and ambiguous outcomes permanently blocking redelivery. Exactly3 delivery POSTs,5 validations,1 status GET; current revocation during held validation yields403 without reservation/delivery. Exact HTTP/CLI/MCP retained outcome/read parity, fresh-MFA restart and four independently verified signed source-free fresh-owner restore/reopens preserve10 originals/3 submissions/6 events/registration and audit prefix, credentials absent and no replay. Root independently audited exact domain tables, originals, provider XML hashes and only restore-boundary audit append. Owned cleanup true. No real external transmission or installed-native qualification. Full mission/epic672 OPEN; next75 mixed/exempt/domestic-reverse invoice lifecycle."
+    "current_increment": "Full DKK mixed/exempt/domestic-reverse invoice lifecycle and signed source-free recovery qualified",
+    "code_revision": "948e4406bd37e69741c5fb55055009fee9295aa0",
+    "spec_revision": "sha256:874bef089ec3046967d7da689a7d951c622d7c984cff3d48a854c36299c277df",
+    "state": "Group75 actual PASS at948e4406:19 ordinary-MFA actions through existing web mixed-tax preview/issue/post/partial-final credit plus exempt/domestic-reverse/per-line rounding API variants;4 issued invoices,8 original-linked credit notes,1 receipt,2 refunds and exactly15 journals. Explicit original net/VAT counters conserved, actual signed credit journal accounts/codes/debits match immutable allocations. Output VAT25.03 and exempt/reverse bases250 before credits; zero VAT and all accounts after full credits/cash. Earlier cutoff preserves4 original gross receivables; reviewed current custom close succeeds. HTTP/CLI/MCP canonical equality and duplicate refusals across source/restart/fresh-owner restore/reopen. Four independently verified signed archives retain exact original bytes/domain tables/audit prefix; only restore-boundary audit append. Source and target/signers removed before final independent verification. Root independently matched binaries/web/helper hashes and extracted truthful PDF amounts/classifications. Owned cleanup true. Full mission/epic672 OPEN: foreign/currency/simplified invoice variants, bank provenance followups, remaining reports and installed desktop/transfer/distribution/TS retirement remain."
   },
   "evidence": {
     "combined_browser_log": "/tmp/rm-platform5-combined.log",
@@ -1526,6 +1526,36 @@
         "Same-day closed bank cycles require explicit order provenance; current actual journey uses dated receipt/refunds without weakening close controls.",
         "No foreign currency/foreign reverse/simplified/OSS or installed-native qualification."
       ]
+    },
+    "group76": {
+      "source_revision": "dcbbed03848e41d47e62316b21df43eb5f4d59ce",
+      "actual_report": "/tmp/rentemester-rust-reports/portfolio-cashflow-integrated76-run4.json",
+      "actual_report_sha256": "460960f66d693d05e8c1ee089110baf502d5a5df546265ab5f1394158bcc0e60",
+      "root_independent_audit": "/tmp/rm76-root-independent-qualification.json",
+      "actual_log": "/tmp/rm76-root-actual-run4.log",
+      "engine_tests": "/tmp/rm76-engine-{cashflow,portfolio}-tests.log (3 and5 PASS)",
+      "storage_tests": "/tmp/rm76-storage-{cashflow,portfolio}-tests.log (4 each PASS)",
+      "application_authority": "/tmp/rm76-application-read-fence-tests.log (1 PASS)",
+      "sdk": "/tmp/rm76-client-report-integration-tests.log (2 PASS)",
+      "http": "/tmp/rm76-http-current-authority-tests.log (1 PASS)",
+      "cli": "/tmp/rm76-cli-report-tests.log (1 PASS)",
+      "mcp": "/tmp/rm76-mcp-report-tests.log (1 PASS)",
+      "web": "/tmp/rm76-shell-after-and-reports.log (18 PASS)",
+      "web_build": "/tmp/rm76-root-shell-build-final.log (PASS)",
+      "numbering": "/tmp/rm76-shifted-number-after.log (1 PASS); /tmp/rm76-credit-number-tests.log (9 PASS)",
+      "strict": "/tmp/rm76-strict-number-final.log (all-target PASS)",
+      "build": "/tmp/rm76-build-number-final.log (server/CLI/MCP PASS)",
+      "failed_attempts": [
+        "Initial actual: shifted-year invoice filename used display slash; fixed canonical identifier in invoice and credit preparation.",
+        "Run2: asynchronous selector read; helper wait added.",
+        "Run3: actual native liquidity shell suppressed fiscal selector; shell scope fixed with FAILbefore/PASSafter regression."
+      ],
+      "limitations": [
+        "Portfolio tasks describe current open state of dated sources, not reconstructed historical exception states.",
+        "VAT cards show cadence window containing cutoff, not accumulated unpaid prior periods.",
+        "No consolidation or currency mixing; missing bank valuation remains unavailable.",
+        "Installed native local/remote financial GUI, remaining foreign/simplified/OSS variants and full migration remain open."
+      ]
     }
   },
   "verified_history": [
@@ -2008,6 +2038,12 @@
       "code_revision": "62c085a4099e7611696e36ca625bb29462096967",
       "spec_revision": "sha256:008be046798e32b6c57d8040225225bbf6e40beace842b5b04863044a9e8a71a",
       "state": "Group73 actual PASS at62c085a4: 28 actions with ordinary verified-MFA users, existing Bilagsmail configuration and real synthetic verified-TLS IMAP manual/service-account polling, exact original EML/PDF retention, explicit existing inbox classification/currency review and exactly one unposted document. Repeated UIDs and identical EML under a new UID deduplicate; invalid/missing-ID/oversized messages retain truthful evidence. Configuration deletion and current grantor revocation during held fetch promptly deny without retained effects. Canonical HTTP/CLI/MCP status/source/original byte parity, fresh-MFA restart and four independently verified signed source-free fresh-owner restore/reopens preserve originals, review, dedup, document and audit with credentials/polling disabled and zero journals. Root independently matched three binaries, full web inventory, helper hashes, full InboxV2 and company table snapshots, originals and audit prefixes. Owned runtime/process cleanup true. Installed native GUI, real external mail and full mission remain OPEN; next74 real public e-invoice."
+    },
+    {
+      "current_increment": "Public e-invoice explicit registration, immutable source delivery/status and signed source-free recovery qualified",
+      "code_revision": "de2a3397ec558fff8e12b7e81142d55b52de9c21",
+      "spec_revision": "sha256:9a7bc5653b14cf898d1040e766f7fae945771be89b83b07ee50f62ffc1234753",
+      "state": "Group74 actual PASS atde2a3397 with exact independently matched server/CLI/MCP/web/helper hashes: 25 ordinary-MFA actions through existing web PDF preview/issuance and explicit legal-company/outbound registration, verified-TLS synthetic provider validation/delivery/status, frozen EAN despite contact edit, accepted terminal and ambiguous outcomes permanently blocking redelivery. Exactly3 delivery POSTs,5 validations,1 status GET; current revocation during held validation yields403 without reservation/delivery. Exact HTTP/CLI/MCP retained outcome/read parity, fresh-MFA restart and four independently verified signed source-free fresh-owner restore/reopens preserve10 originals/3 submissions/6 events/registration and audit prefix, credentials absent and no replay. Root independently audited exact domain tables, originals, provider XML hashes and only restore-boundary audit append. Owned cleanup true. No real external transmission or installed-native qualification. Full mission/epic672 OPEN; next75 mixed/exempt/domestic-reverse invoice lifecycle."
     }
   ],
   "active_work": [
@@ -2372,8 +2408,45 @@
     {
       "delivery": "Native desktop web styling and approved app logo",
       "owner": "root",
-      "status": "Implemented atde2a3397. Shared generated DESIGN.md colors, embedded licensed web fonts, approved PNG inside window and approved ICNS in owned preview bundle; compact dispatcher details, invoice form and side-by-side overview. Build and233testsPASS/1ignored; palette/fonts/inline logo visually observed. CUA noWindowsAvailable blocks new invoice GUI interaction despite window screenshots. Full installed local/remote financial GUI remains unqualified.",
+      "status": "Implemented atde2a3397. Shared generated DESIGN.md colors, embedded licensed web fonts, approved PNG inside window and approved ICNS in owned preview bundle; compact dispatcher details, invoice form and side-by-side overview. Build and233testsPASS/1ignored; palette/fonts/inline logo visually observed. CUA noWindowsAvailable blocks new invoice GUI interaction despite window screenshots. Full installed local/remote financial GUI remains unqualified. Current CUA inspection on2026-10-20 now succeeds: actual window visibly shows approved green R logo, shared paper palette and serif/sans fonts; bundled ICNS SHA256 exactly matches approved asset. Financial GUI remains unqualified.",
       "evidence": "/tmp/rm-native-style-evidence.json"
+    },
+    {
+      "delivery": "Group76 dated portfolio and historical cashflow",
+      "owner": "root integration/authority/actual; isolated cashflow, portfolio, clients and runner writers",
+      "status": "Group76 qualified atdcbbed03:19 ordinary-MFA actions across two companies, actual dated portfolio and historical cashflow plus existing13-week forecast. True asOf income300 then600, unknown bank distinct from genuine zero, later bank120; exact July fiscal span2025/26 and12 chronological months. Restricted current visibility and revoked/hidden/unknown403 hold without hidden totals. HTTP/CLI/MCP whole-response equality in four phases. Four independently verified signed full-workspace archives preserve exact company tables and original bytes; source-free fresh-owner restore plus reopen retain only documented restore-boundary audit append. Root independent audit and owned cleanup PASS. Shifted fiscal numbering and actual web-shell year selection repaired with failing-before/passing-after regressions. Full mission and epic672 remain OPEN; installed native financial acceptance is not claimed.",
+      "contract": "/tmp/rm-platform76-portfolio-cashflow-contract.md",
+      "acceptance": "Ordinary MFA existing web portfolio asOf and real imported-bank history with exact fiscal span and existing forecast; current visibility before ledger reads, unknown distinct from zero, canonical HTTP/CLI/MCP; restart, signed source-free fresh-owner restore and reopen preserve all original/domain history.",
+      "evidence": {
+        "source_revision": "dcbbed03848e41d47e62316b21df43eb5f4d59ce",
+        "actual_report": "/tmp/rentemester-rust-reports/portfolio-cashflow-integrated76-run4.json",
+        "actual_report_sha256": "460960f66d693d05e8c1ee089110baf502d5a5df546265ab5f1394158bcc0e60",
+        "root_independent_audit": "/tmp/rm76-root-independent-qualification.json",
+        "actual_log": "/tmp/rm76-root-actual-run4.log",
+        "engine_tests": "/tmp/rm76-engine-{cashflow,portfolio}-tests.log (3 and5 PASS)",
+        "storage_tests": "/tmp/rm76-storage-{cashflow,portfolio}-tests.log (4 each PASS)",
+        "application_authority": "/tmp/rm76-application-read-fence-tests.log (1 PASS)",
+        "sdk": "/tmp/rm76-client-report-integration-tests.log (2 PASS)",
+        "http": "/tmp/rm76-http-current-authority-tests.log (1 PASS)",
+        "cli": "/tmp/rm76-cli-report-tests.log (1 PASS)",
+        "mcp": "/tmp/rm76-mcp-report-tests.log (1 PASS)",
+        "web": "/tmp/rm76-shell-after-and-reports.log (18 PASS)",
+        "web_build": "/tmp/rm76-root-shell-build-final.log (PASS)",
+        "numbering": "/tmp/rm76-shifted-number-after.log (1 PASS); /tmp/rm76-credit-number-tests.log (9 PASS)",
+        "strict": "/tmp/rm76-strict-number-final.log (all-target PASS)",
+        "build": "/tmp/rm76-build-number-final.log (server/CLI/MCP PASS)",
+        "failed_attempts": [
+          "Initial actual: shifted-year invoice filename used display slash; fixed canonical identifier in invoice and credit preparation.",
+          "Run2: asynchronous selector read; helper wait added.",
+          "Run3: actual native liquidity shell suppressed fiscal selector; shell scope fixed with FAILbefore/PASSafter regression."
+        ],
+        "limitations": [
+          "Portfolio tasks describe current open state of dated sources, not reconstructed historical exception states.",
+          "VAT cards show cadence window containing cutoff, not accumulated unpaid prior periods.",
+          "No consolidation or currency mixing; missing bank valuation remains unavailable.",
+          "Installed native local/remote financial GUI, remaining foreign/simplified/OSS variants and full migration remain open."
+        ]
+      }
     }
   ],
   "integrated_pending_browser": [
