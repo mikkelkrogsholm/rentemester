@@ -62,7 +62,7 @@ export type ConfirmDialogProps = {
 };
 
 /** Shape of the API error the cockpit's `api.ts` throws. */
-type MaybeApiError = { code?: string; message?: string };
+type MaybeApiError = { code?: string; message?: string; status?: number };
 
 export function ConfirmDialog({
   title,
@@ -108,12 +108,15 @@ export function ConfirmDialog({
     setError(null);
     setLocked(null);
     try {
+      // Persist before sending: closing the process may prevent a catch handler.
+      if (!outcome.block()) { setError("Handlingen blev ikke sendt, fordi beskyttelsen mod gentagelse ikke kunne gemmes."); setBusy(false); return; }
       await onConfirm(note.trim());
+      outcome.release();
       setCompleted(true); markSaved();
       if (closeOnConfirm) onClose();
     } catch (err) {
       const e = err as MaybeApiError;
-      if (e?.code === "network" || e?.code === "internal") outcome.block();
+      if (e?.status && e.status >= 400 && e.status < 500 && e.status !== 408 && e.code !== "internal") outcome.release();
       const message = e?.message ?? "Handlingen kunne ikke gennemføres.";
       // A 409 conflict from the backup lock is shown kindly, not as an error.
       if (e?.code === "conflict") setLocked(message);
@@ -129,7 +132,7 @@ export function ConfirmDialog({
 
         {locked && <LockBanner message={locked} />}
         {error && <Banner kind="error">{error}</Banner>}
-        {uncertain && <UnknownMutationNotice onRefresh={onRefresh} onRelease={() => { outcome.release(); setError(null); }} persistent={outcome.persistent} verifyPersistence={outcome.verifyPersistence} />}
+        {uncertain && !busy && <UnknownMutationNotice onRefresh={onRefresh} onRelease={() => { outcome.release(); setError(null); }} persistent={outcome.persistent} verifyPersistence={outcome.verifyPersistence} />}
 
         {noteLabel && (
           <label className="modal-field">

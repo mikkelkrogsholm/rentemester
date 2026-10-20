@@ -20,6 +20,8 @@ pub struct Input {
     pub expected_rule_version: String,
     pub idempotency_key: Option<String>,
     pub request: ManualJournal,
+    #[serde(default)]
+    pub recovery_required: bool,
 }
 pub struct Policy {
     pub max_future_days: u32,
@@ -70,6 +72,9 @@ pub fn execute(
     policy: &Policy,
     input: Input,
 ) -> Result<Committed<PostResult>, PostFailure> {
+    if input.recovery_required && input.idempotency_key.is_none() {
+        return Err(invalid());
+    }
     if crate::journal_mutation::Command::Post(&input)
         .validate()
         .is_err()
@@ -88,7 +93,10 @@ pub fn execute(
         selection,
         Permission::CompanyLedgerPost,
         |tx, subject| {
-            crate::journal_mutation::apply(
+            if input.recovery_required {
+                rentemester_storage::manual_post_recovery::require_clear(tx, subject)?;
+            }
+            let value = crate::journal_mutation::apply(
                 tx,
                 subject,
                 PrincipalKind::User,
@@ -96,8 +104,14 @@ pub fn execute(
                 policy.max_future_days,
                 crate::journal_mutation::Command::Post(&input),
                 &mut business,
-            )
-            .map(|value| PostResult {
+            )?;
+            if input.recovery_required
+                && let Some(receipt) = value.receipt.as_ref()
+                && !receipt.replayed
+            {
+                rentemester_storage::manual_post_recovery::mark(tx, subject, receipt.receipt_id)?;
+            }
+            Ok(PostResult {
                 result: value.result,
                 receipt: value.receipt,
             })

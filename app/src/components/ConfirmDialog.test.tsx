@@ -225,3 +225,29 @@ describe("ConfirmDialog", () => {
     expect(await screen.findByText("Ugyldig handling.")).toBeInTheDocument();
   });
 });
+
+test("stores the uncertainty barrier before an unresolved write and preserves it without a catch handler", async () => {
+  sessionStorage.clear();
+  let resolve!:()=>void;
+  const first = render(<MutationMemoryProvider><ConfirmDialog title="Pending financial action" body="x" confirmLabel="Start" operationKey="pending" onConfirm={()=>new Promise<void>(done=>{resolve=done;})} onClose={()=>{}}/></MutationMemoryProvider>);
+  await userEvent.click(screen.getByRole("button",{name:"Start"}));
+  expect(JSON.parse(sessionStorage.getItem("rentemester:uncertain-operations:v1")!)).toHaveLength(1);
+  first.unmount();
+  const write=vi.fn(async()=>{});
+  render(<MutationMemoryProvider><ConfirmDialog title="Pending financial action" body="x" confirmLabel="Start" operationKey="pending" onConfirm={write} onClose={()=>{}}/></MutationMemoryProvider>);
+  expect(screen.getByRole("button",{name:"Start"})).toBeDisabled();
+  expect(write).not.toHaveBeenCalled();
+  // The unmounted pending attempt intentionally remains unresolved; no failure
+  // callback was needed to store its protection.
+  void resolve;
+  sessionStorage.clear();
+});
+test("coded unknown-outcome responses never release the pre-send barrier",async()=>{
+  sessionStorage.clear();
+  render(<MutationMemoryProvider><ConfirmDialog title="Unknown commit" body="x" confirmLabel="Post" onConfirm={async()=>{throw new ApiError("outcome_unknown","Commit not confirmed",503);}} onClose={()=>{}}/></MutationMemoryProvider>);
+  await userEvent.click(screen.getByRole("button",{name:"Post"}));
+  await screen.findByText("Commit not confirmed");
+  expect(screen.getByRole("button",{name:"Post"})).toBeDisabled();
+  expect(JSON.parse(sessionStorage.getItem("rentemester:uncertain-operations:v1")!)).toHaveLength(1);
+  sessionStorage.clear();
+});

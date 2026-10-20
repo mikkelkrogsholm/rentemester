@@ -625,3 +625,5 @@ pub mod archive_reports;
 
 pub mod cashflow;
 pub mod portfolio;
+
+pub mod manual_post_recovery;

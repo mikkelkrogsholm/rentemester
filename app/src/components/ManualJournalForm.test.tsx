@@ -12,7 +12,8 @@ const accounts = [
 function setup(currency = "DKK") {
   const bodies: Array<{ input: { request: { lines: unknown[] } } }> = [];
   stubGlobal("fetch", async (_input: RequestInfo | URL, init?: RequestInit) => {
-    if (init?.method === "POST") { bodies.push(JSON.parse(String(init.body))); return new Response(JSON.stringify({ ok: true })); }
+    if (String(_input).endsWith("/recovery")) return new Response(JSON.stringify({ok:true,receipts:[],acknowledgedReceiptId:1}));
+    if (init?.method === "POST") { bodies.push(JSON.parse(String(init.body))); return new Response(JSON.stringify({ ok: true, receipt: {receiptId: 1} })); }
     return new Response(JSON.stringify({ ok: true, documents: { documents: [{ id: 1, documentNo: "D1", filename: "Bilag" }] } }));
   });
   render(<ManualJournalForm slug="synthetic" currency={currency} options={{ ruleVersion: "rules", accounts }} onSaved={() => {}} onClose={() => {}} />);
@@ -49,6 +50,7 @@ test("a lost posting reply stays blocked after reopening the form and reloading 
   let writes = 0;
   let refreshes = 0;
   stubGlobal("fetch", async (_input: RequestInfo | URL, init?: RequestInit) => {
+    if (String(_input).endsWith("/recovery")) return new Response(JSON.stringify({ok:true,receipts:[],acknowledgedReceiptId:1}));
     if (init?.method === "POST") { writes++; throw new TypeError("Lost accepted reply"); }
     return new Response(JSON.stringify({ ok: true, documents: { documents: [{ id: 1, documentNo: "D1", filename: "Bilag" }] } }));
   });
@@ -70,4 +72,36 @@ test("a lost posting reply stays blocked after reopening the form and reloading 
     expect(screen.getByRole("button", { name: "Bogfør postering" })).toBeEnabled();
     expect(writes).toBe(1);
   } finally { sessionStorage.clear(); }
+});
+
+test("server receipt blocks a fresh form after all tab memory is gone, and explicit acknowledgement sends no posting",async()=>{
+  sessionStorage.clear();let acknowledged=false;const posts:string[]=[];
+  stubGlobal("fetch",async(input:RequestInfo|URL,init?:RequestInit)=>{
+    const path=String(input);
+    if(init?.method==="POST"){posts.push(path);expect(JSON.parse(String(init.body))).toEqual({confirm:true,receiptId:17});acknowledged=true;return new Response(JSON.stringify({ok:true,acknowledgedReceiptId:17}));}
+    if(path.endsWith("/recovery"))return new Response(JSON.stringify({ok:true,receipts:acknowledged?[]:[{receiptId:17,createdAt:"2026-10-20T10:00:00Z",resultAvailable:true,result:{entryId:9,entryNo:"S9",entryHash:"synthetic-hash"}}]}));
+    return new Response(JSON.stringify({ok:true,documents:{documents:[]}}));
+  });
+  render(<ManualJournalForm slug="synthetic" currency="DKK" options={{ruleVersion:"rules",accounts}} onSaved={()=>{}} onClose={()=>{}}/>);
+  await screen.findByText(/Postering S9/);
+  expect(screen.queryByLabelText("Posteringstekst")).toBeNull();
+  const ack=screen.getByRole("button",{name:"Bekræft kvittering"});expect(ack).toBeDisabled();
+  fireEvent.click(screen.getByRole("checkbox"));
+  await act(async()=>{fireEvent.click(ack);});
+  await screen.findByLabelText("Posteringstekst");
+  expect(posts).toEqual(["/api/companies/synthetic/manual-journal/recovery"]);
+});
+test("unavailable receipt read and lost acknowledgement keep new posting unavailable",async()=>{
+  sessionStorage.clear();let available=false;let writes=0;
+  stubGlobal("fetch",async(_input:RequestInfo|URL,init?:RequestInit)=>{
+    if(init?.method==="POST"){writes++;throw new TypeError("ack reply lost");}
+    if(!available)throw new TypeError("offline");
+    return new Response(JSON.stringify({ok:true,receipts:[{receiptId:18,createdAt:"2026-10-20T10:00:00Z",resultAvailable:false,result:null}]}));
+  });
+  render(<ManualJournalForm slug="synthetic" currency="DKK" options={{ruleVersion:"rules",accounts}} onSaved={()=>{}} onClose={()=>{}}/>);
+  await screen.findByText(/Tidligere bogføringskvitteringer kunne ikke kontrolleres/);expect(screen.queryByLabelText("Posteringstekst")).toBeNull();available=true;
+  await act(async()=>{fireEvent.click(screen.getByRole("button",{name:"Kontrollér status"}));});
+  await screen.findByText(/Den detaljerede kvittering er udløbet/);fireEvent.click(screen.getByRole("checkbox"));
+  await act(async()=>{fireEvent.click(screen.getByRole("button",{name:"Bekræft kvittering"}));});
+  await screen.findByText(/Kvitteringen kunne ikke bekræftes/);expect(writes).toBe(1);expect(screen.queryByLabelText("Posteringstekst")).toBeNull();
 });

@@ -1,4 +1,5 @@
 //! Thin browser adapter over the same owner used for authentication.
+mod manual_post_recovery;
 mod service_company;
 mod eu_sales;
 mod oss_report;
@@ -427,6 +428,7 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
         .route("/api/companies/{slug}/{report}/export", get(read))
         .route("/api/companies/{slug}/fiscal-years", get(archive_reports::read))
         .route("/api/companies/{slug}/manual-journal", post(write))
+        .route("/api/companies/{slug}/manual-journal/recovery", get(manual_post_recovery::handle).post(manual_post_recovery::handle))
         .route("/api/companies/{slug}/manual-journal-reversal", post(write))
         .with_state(state)
 }

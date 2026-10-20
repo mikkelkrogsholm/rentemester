@@ -123,3 +123,5 @@ pub mod opening_balance;
 pub mod archive_reports;
 
 pub mod portfolio_cashflow;
+
+pub mod manual_post_recovery;
