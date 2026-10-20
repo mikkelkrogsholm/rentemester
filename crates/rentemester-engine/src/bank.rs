@@ -5,6 +5,22 @@ mod bytes;
 pub use bytes::decode_bytes;
 mod profiles;
 pub use profiles::profiles;
+/// The source advisory matcher uses Unicode Letter/Number categories and '-'.
+pub fn match_token_character(value: char) -> bool {
+    use unicode_properties::{GeneralCategory, UnicodeGeneralCategory};
+    value == '-'
+        || matches!(
+            value.general_category(),
+            GeneralCategory::UppercaseLetter
+                | GeneralCategory::LowercaseLetter
+                | GeneralCategory::TitlecaseLetter
+                | GeneralCategory::ModifierLetter
+                | GeneralCategory::OtherLetter
+                | GeneralCategory::DecimalNumber
+                | GeneralCategory::LetterNumber
+                | GeneralCategory::OtherNumber
+        )
+}
 pub struct Row {
     pub date: String,
     pub booking_date: Option<String>,
@@ -354,6 +370,15 @@ pub fn parse_with_profile(content: &str, profile: Option<&str>) -> Result<Vec<Ro
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn advisory_token_categories_match_source_letters_numbers_and_hyphen_only() {
+        for value in ['Æ', 'ø', '漢', '²', 'Ⅳ', '٣', '-'] {
+            assert!(match_token_character(value));
+        }
+        for value in ['\u{0345}', '\u{0301}', '_', '/', '—', ' ', '€'] {
+            assert!(!match_token_character(value));
+        }
+    }
     #[test]
     fn optional_localized_statement_balance_is_preserved_not_inferred() {
         let rows =

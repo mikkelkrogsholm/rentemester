@@ -71,18 +71,15 @@ fn journal_counters(
     }
     Ok(result)
 }
-#[allow(clippy::too_many_arguments)]
-pub(super) fn lines(
+fn verified_counters(
     tx: &Transaction<'_>,
     id: i64,
     journal: i64,
     debtor_id: i64,
     debtor: &str,
-    number: &str,
     projection: &rentemester_engine::sales_invoice::TaxProjection,
     prior_total: &Money,
-    amount: &Money,
-) -> Result<(Vec<JournalLine>, Money, Value), Error> {
+) -> Result<(Vec<OriginalCounter>, Vec<Money>), Error> {
     let original = journal_counters(tx, journal, debtor, &projection.gross, false)?;
     let expected: Vec<_> = projection
         .lines
@@ -176,6 +173,33 @@ pub(super) fn lines(
             "prior allocation totals differ from linked credits",
         ));
     }
+    Ok((original, prior))
+}
+pub(super) fn verify_existing(
+    tx: &Transaction<'_>,
+    id: i64,
+    journal: i64,
+    debtor_id: i64,
+    debtor: &str,
+    projection: &rentemester_engine::sales_invoice::TaxProjection,
+    prior_total: &Money,
+) -> Result<(), Error> {
+    verified_counters(tx, id, journal, debtor_id, debtor, projection, prior_total).map(|_| ())
+}
+#[allow(clippy::too_many_arguments)]
+pub(super) fn lines(
+    tx: &Transaction<'_>,
+    id: i64,
+    journal: i64,
+    debtor_id: i64,
+    debtor: &str,
+    number: &str,
+    projection: &rentemester_engine::sales_invoice::TaxProjection,
+    prior_total: &Money,
+    amount: &Money,
+) -> Result<(Vec<JournalLine>, Money, Value), Error> {
+    let (original, prior) =
+        verified_counters(tx, id, journal, debtor_id, debtor, projection, prior_total)?;
     let counters: Vec<_> = original
         .iter()
         .zip(&prior)

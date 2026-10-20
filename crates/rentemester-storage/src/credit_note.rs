@@ -62,6 +62,77 @@ pub fn credited(tx: &Transaction<'_>, id: i64) -> Result<Money, Error> {
     }
     Ok(total)
 }
+/// Read-only reuse of the credit writer's immutable original and prior-counter proof.
+pub(crate) fn verify_existing(tx: &Transaction<'_>, id: i64) -> Result<(), Error> {
+    let (journal,debtor_id,debtor,gross,payload):(i64,i64,String,Money,String)=tx.query_row("SELECT p.journal_entry_id,p.receivable_account_id,a.account_no,p.booked_gross_dkk,d.payload_json FROM documents d JOIN issued_invoice_postings p ON p.invoice_document_id=d.id JOIN journal_entries j ON j.id=p.journal_entry_id JOIN accounts a ON a.id=p.receivable_account_id WHERE d.id=?1 AND d.document_type='issued_invoice' AND j.status='posted' AND j.document_id=d.id AND j.source_bank_transaction_id IS NULL AND j.reversal_of_entry_id IS NULL AND NOT EXISTS(SELECT 1 FROM journal_entries r WHERE r.reversal_of_entry_id=j.id)",[id],|r|Ok((r.get(0)?,r.get(1)?,r.get(2)?,legacy_money(r.get_ref(3)?).map_err(|_|rusqlite::Error::InvalidQuery)?,r.get(4)?))).map_err(invalid)?;
+    let payload: Value = serde_json::from_str(&payload).map_err(invalid)?;
+    let projection = crate::invoice_fx::projection(&payload)?;
+    if projection.gross != gross {
+        return Err(refused(
+            "original snapshot gross differs from posting identity",
+        ));
+    }
+    let prior = crate::invoice_fx::credited_dkk(tx, id)?;
+    // The new advisory reader must identify each original credit document;
+    // this does not change the writer's allocation or mutation gates.
+    let mut query=tx.prepare("SELECT c.invoice_no,c.payment_details,c.invoice_date,c.currency,c.payload_json,c.sha256_hash FROM credit_note_postings p JOIN documents c ON c.id=p.credit_note_document_id WHERE p.original_invoice_document_id=?1").map_err(invalid)?;
+    let mut rows = query.query([id]).map_err(invalid)?;
+    while let Some(row) = rows.next().map_err(invalid)? {
+        let (number, original_no, date, currency, raw, hash): (
+            String,
+            String,
+            String,
+            String,
+            String,
+            String,
+        ) = (
+            row.get(0).map_err(invalid)?,
+            row.get(1).map_err(invalid)?,
+            row.get(2).map_err(invalid)?,
+            row.get(3).map_err(invalid)?,
+            row.get(4).map_err(invalid)?,
+            row.get(5).map_err(invalid)?,
+        );
+        let credit: Value = serde_json::from_str(&raw).map_err(invalid)?;
+        if credit["type"] != "credit_note"
+            || credit["creditNoteNumber"] != number
+            || credit["originalInvoiceDocumentId"] != id
+            || credit["originalInvoiceNumber"] != payload["invoiceNumber"]
+            || json!(original_no) != payload["invoiceNumber"]
+            || credit["issueDate"] != date
+            || credit["currency"] != currency
+            || payload["currency"].as_str().unwrap_or("DKK") != currency
+            || crate::invoice_email::sha(raw.as_bytes()) != hash
+        {
+            return Err(refused(
+                "immutable prior credit identity differs from its original invoice",
+            ));
+        }
+    }
+    if projection.legacy {
+        let (_, counters) = legacy_counters(tx, id, journal, debtor_id, &debtor, &gross)?;
+        let mut original_sum = Money::default();
+        let mut prior_sum = Money::default();
+        for counter in counters {
+            if counter.original.is_negative()
+                || counter.prior.is_negative()
+                || counter.original.subtract(&counter.prior).is_negative()
+            {
+                return Err(refused("invalid original or prior credit allocation"));
+            }
+            original_sum.add(&counter.original);
+            prior_sum.add(&counter.prior);
+        }
+        if original_sum != gross || prior_sum != prior {
+            return Err(refused(
+                "credit allocations do not reconcile to their document totals",
+            ));
+        }
+        Ok(())
+    } else {
+        explicit::verify_existing(tx, id, journal, debtor_id, &debtor, &projection, &prior)
+    }
+}
 pub fn prepare(tx: &Transaction<'_>, input: &Input, now: &str) -> Result<Prepared, Error> {
     crate::journal_post::require_current(tx)?;
     Date::parse(&input.issue_date)?;
@@ -207,17 +278,15 @@ pub fn prepare(tx: &Transaction<'_>, input: &Input, now: &str) -> Result<Prepare
     })
 }
 #[allow(clippy::too_many_arguments)]
-fn legacy_lines(
+type LegacyCounters = BTreeMap<(String, Option<String>), (Money, bool)>;
+fn legacy_counters(
     tx: &Transaction<'_>,
     id: i64,
     journal_id: i64,
     debtor_id: i64,
     debtor: &str,
-    original_no: &str,
     gross: &Money,
-    prior_total: &Money,
-    amount: &Money,
-) -> Result<(Vec<JournalLine>, Money, Value), Error> {
+) -> Result<(LegacyCounters, Vec<Counter>), Error> {
     let mut original_lines = BTreeMap::<(String, Option<String>), (Money, bool)>::new();
     let mut receivable = Money::default();
     let mut q=tx.prepare("SELECT a.account_no,a.type,jl.debit_amount,jl.credit_amount,jl.vat_code FROM journal_lines jl JOIN accounts a ON a.id=jl.account_id WHERE jl.journal_entry_id=?1 ORDER BY jl.id").map_err(invalid)?;
@@ -280,6 +349,20 @@ fn legacy_lines(
             revenue: *revenue,
         })
         .collect();
+    Ok((original_lines, counters))
+}
+fn legacy_lines(
+    tx: &Transaction<'_>,
+    id: i64,
+    journal_id: i64,
+    debtor_id: i64,
+    debtor: &str,
+    original_no: &str,
+    gross: &Money,
+    prior_total: &Money,
+    amount: &Money,
+) -> Result<(Vec<JournalLine>, Money, Value), Error> {
+    let (original_lines, counters) = legacy_counters(tx, id, journal_id, debtor_id, debtor, gross)?;
     let allocations = credit_note::allocate(gross, prior_total, amount, &counters)?;
     let mut lines = vec![JournalLine {
         account_no: AccountNo::parse(debtor)?,
