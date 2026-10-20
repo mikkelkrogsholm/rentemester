@@ -981,19 +981,45 @@ består med 9 beståede og én eksisterende ignoreret test; kodekontrol og
 bygning består. Evidens:
 `/tmp/rentemester-rust-reports/shared-web-desktop86-local-onboarding.json`.
 
-Et yderligere installeret forløb har vist forhåndsvisning uden allokering,
-særskilt udstedelse af faktura `2026-0001` på 200 kr. netto og 50 kr. moms,
-samt visning af dens originale PDF i appen. Den er fortsat ubogført: præcis
-én faktura, to dokumentrækker og nul journal- eller bankposter. Kildekoden
-har nu separate **Åbn PDF**- og **Hent PDF**-handlinger samt download af den
-allerede hentede forhåndsvisning. Native downloads bruger WebKits aktuelle
-session og tillader kun det valgte serverorigin eller dets egne blob-URL’er.
-79 berørte webtests og desktopkontrollen består; den nye pakke er bygget
-og klargjort til installation. Praktisk gemmeaccept af den nye pakke afventer
-et tilgængeligt desktopvindue; den allerede udstedte faktura må ikke gentages.
+Det installerede fakturaforløb er nu gennemført: forhåndsvisning uden
+allokering, særskilt udstedelse af faktura `2026-0001` på 200 kr. netto og
+50 kr. moms, bogføring, bank-CSV-import og afstemning til nul åbent beløb.
+Præcis to journalposter, fem linjer, én banktransaktion og tre dokumenter
+er bevaret. Debitor er nul, bogført bank 250 kr., omsætning 200 kr. og
+udgående moms 50 kr. Kontoudtogets faktiske saldo er fortsat ukendt, fordi
+testfilen ikke indeholder saldi. En separat testkvittering er uploadet via
+den native filvælger og vist som PDF uden at bogføre den.
 
-Finansiel bogføring/betaling, ekstern HTTPS-server, filupload og download
-samt signeret distribution kræver fortsat installeret accept. GPUI-tests,
+**Åbn PDF** viser originalen; **Hent PDF** åbner på macOS en native
+**Gem som**-dialog. Den gemte fil matcher originalens hash præcist.
+Den eksplicitte dialog erstatter en implicit Downloads-skrivning, som i
+testen blokerede WebKits hovedtråd under macOS-mappeadgang. Annullering
+afbryder download; eksisterende filer bevares. WebKit bruger fortsat sin
+aktuelle session, og downloads er begrænset til det valgte serverorigin
+eller dets egne blob-URL’er. Fakturaens PDF-kopi tilbyder ikke længere
+den misvisende udgiftsbogføring; selve Rust-kontrollen afviste allerede dette.
+
+Samme installerede host er afprøvet mod en uafhængig HTTPS-server med
+OS-betroet certifikat, normal adgangskode/TOTP, fakturaoriginal og genimport:
+nul nye bankposter og én dublet sprunget over. Appens afslutning lod den
+uafhængige server fortsætte; genåbning og ny normal MFA viste samme regnskab.
+Separat autentificeret API-kontrol med Secure-cookies bekræftede beløb og
+begge PDF-hashes. Den administrerede lokale server stoppede ved normal
+afslutning. Alle testprocesser er nu lukket, og profilens konfiguration og
+private/offentlige backupnøgler er uændrede.
+
+Desktoptests: 9 beståede og én eksisterende ignoreret; 20 berørte bilags-UI-tests,
+streng Clippy og web-/native-bygning består. Den endelige installerede,
+usignerede udviklingspakke indeholder det fælles web-UI og det godkendte ikon;
+alle 12 manifestfiler er verificeret. Evidens:
+`/tmp/rentemester-rust-reports/shared-web-desktop88-local-financial-https.json`.
+HTTPS-prøven er på samme Mac og kvalificerer forbindelsesgrænsen; den beviser
+ikke produktionsdrift på Linux, hele rettigheds-/adgangstabs-matricen, en ny
+signeret backup/restore-prøve eller signeret distribution og opdateringer.
+Eksisterende TypeScript-workspaces kræver fortsat en egentlig, verificeret
+adoptionsvej med kilde-writer-fence før TypeScript-backenden kan udfases.
+
+GPUI-tests,
 skærmbilleder, tidligere låst-skærm-observationer og desktopparagraffer
 nedenfor beskriver den historiske GPUI-implementation og beviser ikke den
 nye hosts login, filupload, download eller PDF-funktion. Den historiske
