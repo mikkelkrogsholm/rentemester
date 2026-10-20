@@ -89,6 +89,28 @@ fn import(
     actor: &str,
     now: &str,
 ) -> Result<Value, Error> {
+    import_with_principal(
+        tx,
+        guard,
+        bytes,
+        account,
+        profile,
+        actor,
+        now,
+        rentemester_storage::idempotency::PrincipalKind::User,
+    )
+}
+#[allow(clippy::too_many_arguments)]
+fn import_with_principal(
+    tx: &rusqlite::Transaction<'_>,
+    guard: &mut NamespaceGuard,
+    bytes: &[u8],
+    account: Option<&str>,
+    profile: Option<&str>,
+    actor: &str,
+    now: &str,
+    principal: rentemester_storage::idempotency::PrincipalKind,
+) -> Result<Value, Error> {
     let content = rentemester_engine::bank::decode_bytes(bytes, profile)?;
     let rows = rentemester_engine::bank::parse_with_profile(&content, profile)?;
     rentemester_storage::bank::validate_import_account(tx, account)?;
@@ -98,5 +120,64 @@ fn import(
             "bank statement original could not be preserved",
         )
     })?;
-    rentemester_storage::bank::import_bytes(tx, bytes, &rows, account, actor, now, &archive)
+    rentemester_storage::bank::import_bytes_with_principal(
+        tx, bytes, &rows, account, actor, now, &archive, principal,
+    )
+}
+
+/// Deliberate service banking slice; account administration and text import stay human-only.
+pub fn execute_service(
+    control: &mut Connection,
+    company: &mut Connection,
+    guard: &mut NamespaceGuard,
+    context: crate::service_company::Context<'_>,
+    action: Action<'_>,
+) -> Result<crate::service_company::ServiceResult<Value>, crate::service_company::ServiceFailure> {
+    use crate::service_company::{self, OperationResult};
+    let (permission, mutation) = match action {
+        Action::Accounts | Action::Read { .. } => (Permission::CompanyRead, false),
+        Action::ImportBytes { .. } => (Permission::CompanyLedgerPost, true),
+        _ => {
+            return Err(service_company::initial(Error::new(
+                "access_denied",
+                "service bank action not supported",
+            )));
+        }
+    };
+    let slug = context.selection.slug;
+    service_company::execute_operation(
+        control,
+        company,
+        context,
+        permission,
+        mutation,
+        |tx, subject, _| {
+            let result = match action {
+                Action::Accounts => rentemester_storage::bank::accounts(tx, slug)?,
+                Action::Read { today, year } => {
+                    rentemester_storage::bank::read(tx, slug, today, year)?
+                }
+                Action::ImportBytes {
+                    content,
+                    account,
+                    profile,
+                    now,
+                } => import_with_principal(
+                    tx,
+                    guard,
+                    content,
+                    account,
+                    profile,
+                    subject,
+                    now,
+                    rentemester_storage::idempotency::PrincipalKind::ServiceAccount,
+                )?,
+                _ => unreachable!("service action admitted above"),
+            };
+            Ok(OperationResult {
+                result,
+                receipt: None,
+            })
+        },
+    )
 }

@@ -18,7 +18,24 @@ fn audit(
     message: &str,
     actor: &str,
 ) -> Result<(), Error> {
-    tx.execute("INSERT INTO audit_log(event_type,entity_type,entity_id,message,actor) VALUES(?1,'bank',?2,?3,?4)",params![event,id,message,format!("user:{actor}")]).map_err(sql)?;
+    audit_with_principal(
+        tx,
+        event,
+        id,
+        message,
+        actor,
+        crate::idempotency::PrincipalKind::User,
+    )
+}
+fn audit_with_principal(
+    tx: &Transaction<'_>,
+    event: &str,
+    id: &str,
+    message: &str,
+    actor: &str,
+    principal: crate::idempotency::PrincipalKind,
+) -> Result<(), Error> {
+    tx.execute("INSERT INTO audit_log(event_type,entity_type,entity_id,message,actor) VALUES(?1,'bank',?2,?3,?4)",params![event,id,message,format!("{}:{actor}", match principal {crate::idempotency::PrincipalKind::User=>"user",crate::idempotency::PrincipalKind::ServiceAccount=>"service_account"})]).map_err(sql)?;
     Ok(())
 }
 #[derive(Deserialize)]
@@ -287,6 +304,28 @@ pub fn import_bytes(
     now: &str,
     archive: &str,
 ) -> Result<Value, Error> {
+    import_bytes_with_principal(
+        tx,
+        content,
+        rows,
+        account,
+        actor,
+        now,
+        archive,
+        crate::idempotency::PrincipalKind::User,
+    )
+}
+#[allow(clippy::too_many_arguments)]
+pub fn import_bytes_with_principal(
+    tx: &Transaction<'_>,
+    content: &[u8],
+    rows: &[Row],
+    account: Option<&str>,
+    actor: &str,
+    now: &str,
+    archive: &str,
+    principal: crate::idempotency::PrincipalKind,
+) -> Result<Value, Error> {
     crate::journal_post::require_current(tx)?;
     let resolved = resolve_import_account(tx, account)?;
     let account_id = resolved.as_ref().map(|r| r.0);
@@ -373,17 +412,18 @@ pub fn import_bytes(
             skipped.len()
         )
     };
-    audit(tx, "bank_import", &batch, &message, actor)?;
+    audit_with_principal(tx, "bank_import", &batch, &message, actor, principal)?;
     if imported > 0
         && let Some(profile) = profile
     {
         let proof = json!({"version":"rentemester-native-bank-profile/1","importBatchId":batch,"sourceFileHash":source_hash,"bankAccountId":account_id,"profile":profile});
-        audit(
+        audit_with_principal(
             tx,
             "bank_import_profile",
             &batch,
             &crate::intercompany_dispositions::canonical(&proof),
             actor,
+            principal,
         )?;
     }
     let continuity = verify_balance_continuity(tx, &fresh)?;

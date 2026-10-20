@@ -288,7 +288,7 @@ pub fn execute_service(
         Action::Customers(_) => (Permission::CompanyMasterData, true),
         Action::Preview(_) => (Permission::CompanyDraftWrite, false),
         Action::Issue(_) => (Permission::CompanyDraftWrite, true),
-        Action::Post(_) => (Permission::CompanyLedgerPost, true),
+        Action::Post(_) | Action::Settle(_) => (Permission::CompanyLedgerPost, true),
         Action::Pdf(_) => (Permission::CompanyDocumentsRead, false),
         _ => {
             return Err(service_company::initial(Error::new(
@@ -337,6 +337,18 @@ pub fn execute_service(
                         Date::parse(today)?,
                         PrincipalKind::ServiceAccount,
                     )?)
+                }
+                Action::Settle(input) => {
+                    verify_invoice(tx, guard, input.invoice_document_id)?;
+                    Output::Json(
+                        rentemester_storage::invoice_settlement::settle_with_principal(
+                            tx,
+                            input,
+                            subject,
+                            Date::parse(today)?,
+                            PrincipalKind::ServiceAccount,
+                        )?,
+                    )
                 }
                 Action::Pdf(id) => Output::Pdf(original(tx, guard, sales::pdf_id(tx, id)?)?),
                 _ => unreachable!("service action admitted above"),
