@@ -3075,3 +3075,32 @@ R53 er fortsat åben: CI/promovering, Rust-SBOM/supply-chain, dækkende native
 interfaceparitet og uafhængig reproducerbarhed mangler integration og accept.
 Ingen fuld CLI/MCP-forretningsparitet udledes af kataloget. HTTPS/platform- og
 recoveryaccept samt den afsluttende installerede desktopprøve bevares.
+
+
+### Automatisk Rust-pakkeaccept og konkrete paritetsblokeringer (Group107)
+
+Den nye særskilte Rust CI-prøve bygger fra det testede checkout og udfører
+samme normale server-/webforløb som den lokale containeraccept. Den genbrugelige
+pakkekontrol læser faktiske image-bytes uden udpakning og sammenholder hele
+inventaret, modes, entrypoint og levende binærmetadata. Den består lokalt på
+den uændrede arm64-kandidat fra Group106: 38 filer og 225 værktøjer. Den rå
+identitet er byte-identisk med Group106. Clean-kravet afviser denne ærligt
+dirty-mærkede kandidat uden at skrive bestået rapport. Syv producent-/tar-tests
+består, herunder filændring, skrivbare modes, links, traversal og dubletter.
+Workflow-YAML er parset. Fjernkørsel på Ubuntu/amd64 er endnu ikke kvalificeret;
+workflowet er lokal kode og er ikke publiceret eller kørt herfra.
+
+Evidens: `package107.json`, `packaged-identity107.json`, `rm107-unit.log` og
+`rm107-clean-refusal.log`. Den uændrede regnskabsprøve106 bevares; den gentages
+ikke alene for at tilføje CI-konfiguration.
+
+En afgrænset kildegennemgang fandt konkrete discovery-/paritetsmangler:
+`meta_about`, `agent_capability_search`, `agent_workflow_describe` samt HTTP
+`/api/agent-capabilities` og `/api/agent-workflows/:id` mangler. Tidligere
+backup-health-audit kræver operationer for health/audit/status/destinations-
+placering/fjernverifikation/restore, som det native katalog endnu ikke dækker.
+Native workspace-backup og offline restore er særskilte kontrakter og erstatter
+ikke disse interfaces ved navneoptælling. Næste paritetsarbejde skal lukke de
+konkrete agentbrugerforløb og bevare deres sikkerheds-/retrykontrakter; release-
+dækningsgaten må ikke springes over. Fuld R53, øvrige restkrav og den afsluttende
+desktopaccept forbliver åbne.

@@ -160,3 +160,27 @@ bevarer sin kontrakt. Denne lokale v2-understøttelse ændrer endnu ikke CI elle
 promotionsruten. Betroet workflow, SBOM, supply-chain, dækkende native
 interfacekontrol, attestation og godkendt promotion af præcis digest skal stadig
 forbindes og kvalificeres, før Rust bliver produktionsruten.
+
+## Automatisk headless accept
+
+`.github/workflows/rust-acceptance.yml` bygger Rust-pakken på Ubuntu amd64 ved
+relevante PR-ændringer, push til main eller manuel start. Jobbet installerer
+kun testbrowseren på værten, bygger `Dockerfile.rust` fra checkoutets præcise
+commit/tid/version og kræver rent tracked kildeindhold. Det genbruger den
+håndhævede Cargo-cache og pladsgrænse; det omgår ikke utilstrækkelig diskplads.
+
+`scripts/release/verify-rust-package.py` kontrollerer det faktisk byggede image:
+hele filinventaret og modes, entrypoint-hash, labels/arkitektur samt genkørt
+server-/MCP-metadata. Tar-indhold læses uden udpakning, og links, dubletter,
+traversal og uventede filrettigheder afvises. `--require-clean` afviser dirty-
+kandidater, før der skrives bestået evidens. Identitets- og rapportfiler skal
+være nye. Derefter gennemfører den eksisterende containerprøve normal
+ejeropsætning/MFA, bogføring, rapporter, bilag, stop og genåbning. Scoped
+rapporter og browserartefakter gemmes særskilt.
+
+Dette CI-job publicerer ikke et image og ændrer ikke produktionspromotionen.
+Den første fjernkørsel på Ubuntu/amd64 er endnu ikke verificeret; lokale arm64-
+pakkekontroller beviser ikke dette. Fuld native discovery mangler bl.a.
+capability-/workflowopslag og de tidligere interfaces for backupdestination,
+placering og verifikation. Katalogets værktøjsantal må ikke bruges som grønt
+paritetsbevis eller som erstatning for releasegatens dækningskrav.
