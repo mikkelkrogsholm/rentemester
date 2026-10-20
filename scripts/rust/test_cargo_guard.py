@@ -77,6 +77,7 @@ class CargoGuardTests(unittest.TestCase):
             (root / "scripts/rust").mkdir(parents=True)
             (root / ".cargo").mkdir()
             shutil.copy2(guard.__file__, root / "scripts/rust/cargo-guard.py")
+            shutil.copy2(guard.ROOT / "scripts/rust/cargo-guard.sh", root / "scripts/rust/cargo-guard.sh")
             shutil.copy2(guard.ROOT / ".cargo/config.toml", root / ".cargo/config.toml")
             (root / "Cargo.toml").write_text('[package]\nname="synthetic-cache-guard"\nversion="0.0.0"\nedition="2024"\n')
             (root / "src/lib.rs").write_text("pub fn synthetic() -> u8 { 7 }\n")

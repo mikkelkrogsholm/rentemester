@@ -65,8 +65,9 @@ Rules:
   commits og ufærdige ændringer i verificerede, gendannelige Git-snapshots før
   fjernelse. Brug Codex' worktree-arkivering, hvor den er tilgængelig.
 - Alle lokale Rust-bygninger deler hovedcheckoutets `target/`. Projektets
-  `.cargo/config.toml` aktiverer `scripts/rust/cargo-guard.py`, som forbinder
-  worktrees med denne cache og afviser separate compiler-outputmapper. Opret
+  `.cargo/config.toml` aktiverer `scripts/rust/cargo-guard.sh`, som bruger
+  Python-kontrollen til at forbinde worktrees med cachen og afvise separate
+  compiler-outputmapper. Opret
   aldrig selvstændige `target`-mapper for agenter, tests eller featuregrene.
 - Kør `scripts/rust/cargo-guard.py status` før større bygninger og nye parallelle
   arbejdsrunder. Cargo-kontrollen afviser kompilering under **30 GiB ledigt**;
@@ -85,3 +86,8 @@ Rules:
   runnerens operatørkonfiguration må sætte `RENTEMESTER_CARGO_CACHE`;
   `CARGO_TARGET_DIR` skal pege på samme mappe. Lokale agenter må ikke bruge
   dette til at omgå den fælles cache.
+
+Den fastlåste Linux-byggecontainer har ikke Python. Her håndhæver shell-launcheren
+samme cache- og pladsgrænser på både byggevolumen og den delte kildemappe.
+Lokale værtsmaskiner bruger Python 3; en manglende kontrol må aldrig betyde,
+at kompilering fortsætter uden pladsgrænser.
