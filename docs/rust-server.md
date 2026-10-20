@@ -1963,5 +1963,52 @@ Group65 består med faktisk webupload, betroet lokal TLS-udbyder, afslag og
 timeout uden lagrede bilag, offentlig tilbagekaldelse af adgang under en
 igangværende scanning, CLI/MCP, genstart og signeret kildefri gendannelse med
 ny ejer og MFA. Originaler og kontrolspor bevares uden nye scanninger eller
-importerede leverandørnøgler. Lokal PDF-tekstbehandling og den samlede
-Rust-omskrivning er fortsat åbne.
+importerede leverandørnøgler. Den samlede Rust-omskrivning er fortsat åben.
+
+
+## Læs tekst fra et registreret PDF-bilag
+
+Rust-serveren kan udtrække tekst og sidelayout fra et registreret PDF-bilag
+gennem en separat native proces. Upload starter ingen parsing. Operatøren
+vælger en pakket worker med den fastlåste PDFium-version og tilhørende
+licenser; serveren downloader intet og bruger ingen systeminstalleret læser:
+
+```json
+{
+  "documentPdfWorker": { "bundleDir": "/absolute/private/pdf-worker-bundle" }
+}
+```
+
+Mappen indeholder `rentemester-pdf-worker` og dens `pdfium/`-mappe. Versions-
+og SHA-256-pins findes i `scripts/rust/pdf-worker/artifacts.json`;
+`fetch.py` er kun et byggeværktøj. Ugyldig konfiguration afvises ved opstart.
+Uden indstillingen kan gemte resultater stadig læses og gendannes.
+
+En bruger med uploadrettighed kan bekræfte
+`POST documents/:id/parse` med `{"confirm":true}` eller behandle højst 100
+ventende bilag med `POST documents/parse-pending`. Læserettighed giver adgang
+til `GET documents/:id/parse-status` og `GET documents/:id/parsed-text`,
+hvor `offset` og `limit` vælger højst 10 sider. Stierne ligger under
+`/api/companies/:slug/`. CLI og MCP tilbyder de samme operationer;
+`rentemester-rust remote --help` beskriver flagene.
+
+Resultatet indeholder tekst, sidemål og kontrolsummer, men hverken OCR,
+fakturafortolkning eller bogføring. Et dokument uden tekstlag får status
+`no_text_layer`. En ødelagt PDF får sin egen fejlstatus. Parserens faktiske
+identitet gemmes, og eksisterende pdf.js-resultater bevarer deres oprindelige
+kontrolsummer. Bogfør bilaget særskilt gennem den eksisterende webformular.
+
+Workerprocessen har begrænset input, output, CPU og køretid. På den afprøvede
+Mac overvåger serveren hukommelsen hvert 10 ms og stopper processen over 512 MiB;
+der kan være overskridelse mellem målinger. Linux-grænsen er implementeret,
+men denne kvalifikation omfatter Mac arm64. Rettigheder og den præcise
+original kontrolleres igen, før et resultat gemmes. Der holdes ingen
+databasetransaktion eller global ejerlås under parsingen.
+
+Group66 består med faktisk upload, tekst og cache, CLI/MCP, manuel
+webbogføring, ændret original, genstart og signeret kildefri gendannelse
+med ny ejer efter sletning af kilde, signeringsnøgle og workerbundle.
+Gemte resultater kan læses efter gendannelse uden at starte parseren.
+SQL-evidenstamper og fravær af processtart ved cache dækkes af fokuserede
+tests; de er ikke rapporteret som instrumenterede målinger i brugerprøven.
+Installeret desktop og samlet distribution er fortsat åbne.
