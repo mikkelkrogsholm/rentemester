@@ -22,6 +22,7 @@ import { LockBanner } from "./LockBanner";
 import { Button, Input, Select, Dialog } from "./ui";
 import { useDiscardGuard } from "../lib/useDiscardGuard";
 import { useMutationOutcome } from "../lib/useMutationOutcome";
+import { useOptionalAuth } from "../lib/auth-context";
 
 /** Shape of the API error the cockpit's `api.ts` throws. */
 type MaybeApiError = { code?: string; message?: string };
@@ -57,6 +58,7 @@ export function InvoiceIssueForm({
   onClose,
   presentation = "dialog",
 }: InvoiceIssueModalProps & { presentation?: "dialog" | "page" }) {
+  const native=useOptionalAuth()?.backend==="rust";
   const [issueDate, setIssueDate] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [vatRatePercent, setVatRatePercent] = useState("25");
@@ -67,6 +69,10 @@ export function InvoiceIssueForm({
   const [buyerName, setBuyerName] = useState("");
   const [buyerAddress, setBuyerAddress] = useState("");
   const [buyerVat, setBuyerVat] = useState("");
+  const [buyerEan,setBuyerEan]=useState("");
+  const [publicRecipient,setPublicRecipient]=useState(false);
+  const [buyerReference,setBuyerReference]=useState("");
+  const [orderReference,setOrderReference]=useState("");
   const [lines, setLines] = useState<LineDraft[]>([{ ...EMPTY_LINE }]);
 
   // #380: surfacing the company's contact list inside the invoice modal so the
@@ -174,6 +180,8 @@ export function InvoiceIssueForm({
     setBuyerName(row.name);
     setBuyerAddress(row.address ?? "");
     setBuyerVat(row.vatOrCvr ?? "");
+    setBuyerEan(row.eanNumber ?? "");
+    setPublicRecipient(Boolean(row.eanNumber));
   }
 
   function updateLine(index: number, patch: Partial<LineDraft>) {
@@ -275,11 +283,15 @@ export function InvoiceIssueForm({
             }
           : undefined,
       buyer:
-        buyerName.trim() || buyerAddress.trim() || buyerVat.trim()
+        buyerName.trim() || buyerAddress.trim() || buyerVat.trim() || buyerEan.trim() || publicRecipient || buyerReference.trim() || orderReference.trim()
           ? {
               name: buyerName.trim() || undefined,
               address: buyerAddress.trim() || undefined,
               vatOrCvr: buyerVat.trim() || undefined,
+              ...(native&&buyerEan.trim()?{eanNumber:buyerEan.trim()}:{}),
+              ...(native&&(publicRecipient||buyerEan.trim())?{publicRecipient}:{}),
+              ...(native&&buyerReference.trim()?{buyerReference:buyerReference.trim()}:{}),
+              ...(native&&orderReference.trim()?{orderReference:orderReference.trim()}:{}),
             }
           : undefined,
     };
@@ -578,6 +590,18 @@ export function InvoiceIssueForm({
                 disabled={busy || uncertain}
               />
             </label>
+
+            {native&&<fieldset className="modal-field">
+              <legend>E-faktura til offentlig modtager</legend>
+              <label className="modal-field">EAN-nummer<Input aria-label="EAN-nummer" value={buyerEan} maxLength={64} onChange={e=>{setBuyerEan(e.target.value);setPublicRecipient(Boolean(e.target.value.trim()));}} disabled={busy||uncertain}/></label>
+              <label><input type="checkbox" checked={publicRecipient} onChange={e=>setPublicRecipient(e.target.checked)} disabled={busy||uncertain}/> Offentlig modtager</label>
+              <div className="modal-field-grid">
+                <label className="modal-field">Købers reference<Input aria-label="Købers reference" value={buyerReference} maxLength={1024} onChange={e=>setBuyerReference(e.target.value)} disabled={busy||uncertain}/></label>
+                <label className="modal-field">Ordrenummer<Input aria-label="Ordrenummer" value={orderReference} maxLength={1024} onChange={e=>setOrderReference(e.target.value)} disabled={busy||uncertain}/></label>
+              </div>
+              <p className="muted">Et gyldigt EAN behandles som offentlig modtager. EAN og referencer gemmes på fakturaen. Udstedelse sender ikke fakturaen.</p>
+              {selectedCustomerId&&customers.find(c=>String(c.id)===selectedCustomerId)?.eanNumber&&<p className="muted">EAN fra den valgte kunde bruges, hvis feltet er tomt.</p>}
+            </fieldset>}
 
             <fieldset className="modal-field invoice-lines">
               <legend>Fakturalinjer</legend>

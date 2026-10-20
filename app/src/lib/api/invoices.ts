@@ -25,6 +25,8 @@ function invoiceRequestPayload(input: InvoiceIssueInput) {
 }
 
 export const invoicesApi = {
+  publicEInvoiceConfig: (slug:string,options?:ReadRequestOptions) => request<{ok:true;publicEInvoice:PublicEInvoiceConfig}>(`/api/companies/${encodeURIComponent(slug)}/invoices/public-config`,options).then(r=>r.publicEInvoice),
+  registerPublicEInvoice: (slug:string) => request<{ok:true;registration:{registered:true;outbound:true;environment:"test"|"production"}}>(`/api/companies/${encodeURIComponent(slug)}/invoices/public-register`,{method:"POST",body:JSON.stringify({confirm:true})}).then(r=>r.registration),
   invoiceReminderClaims: (slug:string,id:number) => request<{ok:true;reminderClaims:NativeReminderClaimStatus}>(`/api/companies/${encodeURIComponent(slug)}/invoices/${id}/reminder-claims`).then(r=>r.reminderClaims),
   registerNativeReminder: (slug:string,body:{invoiceDocumentId:number;reminderDate:string;feeAmount:number;note?:string;confirm:true}) => request(`/api/companies/${encodeURIComponent(slug)}/invoices/reminders/register`,{method:"POST",body:JSON.stringify(body)}),
   postNativeReminder: (slug:string,body:{invoiceDocumentId:number;reminderId:number;transactionDate?:string;receivableAccountNo:string;reminderIncomeAccountNo:string;confirm:true}) => request(`/api/companies/${encodeURIComponent(slug)}/invoices/reminders/post`,{method:"POST",body:JSON.stringify(body)}),
@@ -305,6 +307,10 @@ export type InvoicePartyInput = {
   name?: string;
   address?: string;
   vatOrCvr?: string;
+  eanNumber?: string;
+  publicRecipient?: boolean;
+  buyerReference?: string;
+  orderReference?: string;
 };
 
 /** Input for `api.issueInvoice`. */
@@ -369,7 +375,10 @@ export type InvoiceSendEInvoiceInput = {
 export type InvoiceSendEInvoiceSummary = {
   invoiceNumber: string | null;
   submissionReference: string | null;
-  status: "prepared" | "acknowledged" | null;
+  status: "prepared" | "queued" | "acknowledged" | "failed" | "uncertain" | "legacy" | null;
+  redeliveryBlocked?: boolean;
+  legacy?: boolean;
+  providerStatus?: string | null;
   duplicate: boolean;
   transmissionId?: string | null;
   envelopeSha256: string | null;
@@ -436,3 +445,6 @@ export type InvoiceCreditNoteSummary = {
 };
 
 export type NativeReminderClaimStatus={invoiceDocumentId:number;invoiceNumber:string;asOfDate:string;dueDate:string;principalOpenBalance:number;claimOpenBalance:number;totalReminderFees:number;totalClaimPayments:number;ledgerBackedClaimBalance:number;pendingUnpostedReminders:boolean;settlementAvailable:boolean;reminders:Array<{reminderId:number;reminderDate:string;feeAmount:number;journalEntryId:number|null}>;claimPayments:Array<{claimPaymentId:number;paymentDate:string;amount:number;bankTransactionId:number;journalEntryId:number}>;accounts:Array<{accountNo:string;name:string;type:string;normalBalance:string}>;incomingBankTransactions:Array<{id:number;date:string;text:string;amount:number;reference:string|null;bankAccountNo:string|null;sourceHash:string|null;transactionHash:string|null}>;rules:{ruleId:string;maximumFeeAmount:number;maximumReminders:number;minimumDaysBetweenReminders:number};delivery:{available:false;sentByThisFlow:false;priorDeliveryStatus:"unavailable";note:string}};
+
+/** Safe operator configuration; no credentials or provider company key. */
+export type PublicEInvoiceConfig={configured:boolean;environment:"test"|"production"|null;registered:boolean;outbound:boolean};

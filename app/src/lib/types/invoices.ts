@@ -24,7 +24,10 @@ export type InvoiceStatus =
  * another sender; `acknowledged` is delivered.
  */
 export type InvoicePeppolStatus = {
-  status: "queued" | "failed" | "uncertain" | "retryable" | "in_progress" | "acknowledged";
+  status: "prepared" | "queued" | "failed" | "uncertain" | "retryable" | "in_progress" | "acknowledged" | "legacy";
+  redeliveryBlocked?: boolean;
+  legacy?: boolean;
+  providerStatus?: string | null;
   submissionReference: string;
   transmissionId: string | null;
   acknowledgedAt: string | null;

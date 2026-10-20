@@ -30,7 +30,7 @@ import { CompanyNav, useCompanyYear } from "../components/CompanyNav";
 import { ConfirmDialog } from "../components/ConfirmDialog";
 import { Banner, ErrorState, Loading } from "../components/Feedback";
 import { Amount, Button, ButtonLink, FilterBar, Input, PageHeader, Pagination, Select } from "../components/ui";
-import { api } from "../lib/api";
+import { api, ApiError } from "../lib/api";
 import { formatDateDa, formatKroner, parseDanishAmount, todayIso } from "../lib/format";
 import type {
   CompanyInvoiceRow,
@@ -60,6 +60,18 @@ const STATUS_META: Record<
   overdue: { label: "Forfalden", tone: "critical" },
 };
 
+/** Never offer delivery for retained acceptance, ambiguity or legacy evidence. */
+export function canSendPublicInvoice(row:CompanyInvoiceRow):boolean {
+  const status=row.peppolStatus;
+  return Boolean(row.buyerEanNumber)&&row.buyerPublicRecipient&&
+    !status?.redeliveryBlocked&&!status?.transmissionId&&!status?.legacy&&
+    (status===null||status.status==="retryable");
+}
+export function canObservePublicInvoice(row:CompanyInvoiceRow):boolean {
+  return Boolean(row.peppolStatus?.transmissionId)&&!row.peppolStatus?.legacy&&
+    (row.peppolStatus?.status==="queued"||row.peppolStatus?.status==="prepared");
+}
+
 export function InvoicesView({ detail = false }: { detail?: boolean } = {}) {
   const { slug = "", documentId } = useParams();
   const { can } = useCapabilities(slug);
@@ -70,6 +82,16 @@ export function InvoicesView({ detail = false }: { detail?: boolean } = {}) {
     (signal) => api.invoices(slug, year, { signal }),
     [slug, year],
   );
+  const native=Boolean(state.data?.nativeSales);
+  const publicConfig=useAsync(signal=>native?api.publicEInvoiceConfig(slug,{signal}):Promise.resolve(null),[slug,native]);
+  const [registeringPublic,setRegisteringPublic]=useState(false);
+  const [publicNotice,setPublicNotice]=useState<string|null>(null);
+  async function refreshPublic() {
+    // This read never submits or releases the confirmation dialog's durable lock.
+    await api.invoices(slug,year);
+    if(native) await api.publicEInvoiceConfig(slug);
+    state.reload();publicConfig.reload();
+  }
   // The invoice row whose "Afstem" ConfirmDialog is open, if any.
   const [reminderClaimsId,setReminderClaimsId]=useState<number|null>(null);
   const [settling, setSettling] = useState<CompanyInvoiceRow | null>(null);
@@ -92,6 +114,7 @@ export function InvoicesView({ detail = false }: { detail?: boolean } = {}) {
   const inCurrentScope = interactionScope === currentScope;
   useEffect(() => {
     setInteractionScope(currentScope);
+    setRegisteringPublic(false);setPublicNotice(null);
     setReminderClaimsId(null); setSettling(null); setCrediting(null); setSendingPublic(null); setCheckingPublicStatus(null); setSendingEmail(null); setSendingReminder(null); setReminderBookFee(true);
   }, [currentScope]);
 
@@ -149,6 +172,22 @@ export function InvoicesView({ detail = false }: { detail?: boolean } = {}) {
       <PageHeader title={detail ? `Faktura ${filtered[0]?.invoiceNo ?? documentId ?? ""}` : "Fakturaer"}
         description={`${inv.company.name} · ${currency} · Regnskabsår ${inv.selectedYear}`}
         actions={detail ? <ButtonLink className="btn secondary" to={listReturnTo(slug, "fakturaer", params.get("returnTo"), inv.selectedYear)}>Tilbage til fakturaer</ButtonLink> : !inv.archived && can("company.draft.write") ? <ButtonLink className="btn" to={workflowTo(slug, "fakturaer", "ny", params, inv.selectedYear)}>Udsted faktura</ButtonLink> : undefined} />
+
+      {publicNotice&&<Banner kind="warning">{publicNotice}</Banner>}
+      {inv.nativeSales&&!inv.archived&&can("company.external-send")&&<div className="card">
+        <h2>E-faktura</h2>
+        {publicConfig.loading&&<p>Henter opsætning…</p>}
+        {publicConfig.error&&<p>Opsætningen kunne ikke hentes. <Button variant="secondary" onClick={publicConfig.reload}>Hent opsætning igen</Button></p>}
+        {!publicConfig.loading&&!publicConfig.error&&publicConfig.data&&(!publicConfig.data.configured?
+          <p>E-faktura er ikke konfigureret. Kontakt den ansvarlige for opsætningen.</p>:
+          publicConfig.data.registered&&publicConfig.data.outbound?<p>E-faktura er klar{publicConfig.data.environment==="test"?" i testmiljø":""}. Hver faktura sendes kun efter din bekræftelse.</p>:
+          !inv.company.cvr?<p>Udfyld virksomhedens navn og CVR i virksomhedsopsætningen før tilmelding.</p>:
+          <><p>Tilmeld {inv.company.name}{inv.company.cvr?` · CVR ${inv.company.cvr}`:""} til afsendelse af e-faktura{publicConfig.data.environment==="test"?" i testmiljø":""}.</p><Button variant="secondary" onClick={()=>{setInteractionScope(currentScope);setRegisteringPublic(true);}}>Aktivér e-faktura</Button></>)}
+      </div>}
+      {registeringPublic&&inCurrentScope&&<ConfirmDialog title="Aktivér e-faktura" operationKey="public-registration" confirmLabel="Bekræft tilmelding" confirmKind="danger"
+        body={<p>Tilmeld <strong>{inv.company.name}</strong>{inv.company.cvr?` (CVR ${inv.company.cvr})`:""} til afsendelse via DigiSense{publicConfig.data?.environment==="test"?" i testmiljø":""}. Ingen faktura sendes ved tilmeldingen.</p>}
+        onConfirm={async()=>{const company=(await api.invoices(slug,year)).company;if(company.name!==inv.company.name||company.cvr!==inv.company.cvr)throw new ApiError("conflict","Virksomhedens oplysninger er ændret. Hent oversigten igen før tilmelding.",409);const fresh=await api.publicEInvoiceConfig(slug);if(!fresh.configured)throw new ApiError("bad_request","E-faktura er ikke konfigureret.",400);if(!fresh.registered||!fresh.outbound)await api.registerPublicEInvoice(slug);publicConfig.reload();}}
+        onRefresh={refreshPublic} onClose={()=>setRegisteringPublic(false)}/>}
 
       {inv.nativeSales && <NativeInvoiceEmail key={currentScope} slug={slug} invoices={inv.invoices} archived={inv.archived} onChanged={state.reload} />}
 
@@ -287,12 +326,22 @@ export function InvoicesView({ detail = false }: { detail?: boolean } = {}) {
           confirmLabel="Send e-faktura"
           confirmKind="danger"
           onConfirm={async () => {
-            await api.sendInvoiceAsEInvoice(slug, {
-              invoiceDocumentId: sendingPublic.documentId,
-            });
-            state.reload();
+            // A previously opened dialog never authorizes a second delivery.
+            // Also require canonical readback after any local unknown outcome.
+            const fresh=await api.invoices(slug,year);
+            const row=fresh.invoices.find(row=>row.documentId===sendingPublic.documentId);
+            if(fresh.archived||!row||row.invoiceNo!==sendingPublic.invoiceNo||row.buyerEanNumber!==sendingPublic.buyerEanNumber||!canSendPublicInvoice(row))
+              throw new ApiError("conflict","Fakturaens leveringsstatus er ændret. Kontrollér oversigten; send ikke igen.",409);
+            try {
+              const result=await api.sendInvoiceAsEInvoice(slug,{invoiceDocumentId:row.documentId});
+              if(!result||!["prepared","queued","acknowledged","failed"].includes(result.status??"")||(inv.nativeSales&&!result.transmissionId)) {
+                setPublicNotice("E-fakturaens leveringsresultat er uafklaret. Kontrollér status og afklar med modtagerens tjeneste; send ikke igen.");
+                throw new ApiError("internal","Leveringsresultatet er uafklaret. Send ikke igen.",200);
+              }
+              if(result.status==="failed")setPublicNotice("E-fakturaen er afvist efter modtagelse. Send ikke igen.");
+            } finally {state.reload();}
           }}
-          onRefresh={state.reload}
+          onRefresh={refreshPublic}
           onClose={() => setSendingPublic(null)}
         />
       )}
@@ -304,10 +353,13 @@ export function InvoicesView({ detail = false }: { detail?: boolean } = {}) {
           confirmLabel="Kontrollér status"
           confirmKind="danger"
           onConfirm={async () => {
-            await api.refreshEInvoiceStatus(slug, { invoiceDocumentId: checkingPublicStatus.documentId });
+            const fresh=await api.invoices(slug,year);
+            const row=fresh.invoices.find(row=>row.documentId===checkingPublicStatus.documentId);
+            if(fresh.archived||!row||!canObservePublicInvoice(row))throw new ApiError("conflict","Leveringsstatus er ændret. Kontrollér oversigten.",409);
+            await api.refreshEInvoiceStatus(slug, { invoiceDocumentId: row.documentId });
             state.reload();
           }}
-          onRefresh={state.reload}
+          onRefresh={refreshPublic}
           onClose={() => setCheckingPublicStatus(null)}
         />
       )}
@@ -556,11 +608,9 @@ export function InvoicesView({ detail = false }: { detail?: boolean } = {}) {
                   // A pre-acceptance transport failure is retryable. Once the
                   // access point has returned a queued document id, only the
                   // status action is allowed — never a second delivery.
-                  const canSendPublic = !inv.nativeSales &&
-                    Boolean(row.buyerEanNumber) &&
-                    row.buyerPublicRecipient &&
-                    (row.peppolStatus === null || row.peppolStatus.status === "retryable");
-                  const canCheckPublicStatus = !inv.nativeSales && row.peppolStatus?.status === "queued";
+                  const nativeReady=!inv.nativeSales||Boolean(publicConfig.data?.configured&&publicConfig.data.registered&&publicConfig.data.outbound&&!publicConfig.loading&&!publicConfig.error);
+                  const canSendPublic=nativeReady&&canSendPublicInvoice(row);
+                  const canCheckPublicStatus=nativeReady&&canObservePublicInvoice(row);
                   // #429: "Send på mail" appears only when the customer
                   // has an e-mail on the kontaktkort — without it the
                   // dialog has no recipient to prefill, and the issue
@@ -649,9 +699,13 @@ export function InvoicesView({ detail = false }: { detail?: boolean } = {}) {
                                 : `Reference ${row.peppolStatus.submissionReference}`
                             }
                           >
-                            {row.peppolStatus.status === "acknowledged"
+                            {row.peppolStatus.legacy||row.peppolStatus.status === "legacy"
+                              ? "Tidligere e-faktura — afklar manuelt"
+                              : row.peppolStatus.redeliveryBlocked&&row.peppolStatus.status === "retryable"
+                              ? "E-faktura kræver afklaring — send ikke igen"
+                              : row.peppolStatus.status === "acknowledged"
                               ? "E-faktura leveret"
-                              : row.peppolStatus.status === "queued"
+                              : (row.peppolStatus.status === "queued" || row.peppolStatus.status === "prepared")
                                 ? "E-faktura køsat — afventer status"
                                 : row.peppolStatus.status === "failed"
                                   ? "E-faktura afvist — send ikke igen"

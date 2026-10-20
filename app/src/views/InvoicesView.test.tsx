@@ -938,3 +938,33 @@ describe("InvoicesView — uncertain delivery recovery", () => {
     expect(fetchSpy.mock.calls.filter((call) => String(call[0]).endsWith("/invoices/send-email"))).toHaveLength(1);
   });
 });
+
+describe("InvoicesView — native public delivery",()=>{
+  function nativeData(status: import("../lib/types").InvoicePeppolStatus|null=null) {
+    return invoices({nativeSales:{revenueAccounts:[]},invoices:[{...invoices().invoices[0]!,documentId:74,buyerEanNumber:"5790000000074",buyerPublicRecipient:true,peppolStatus:status}]});
+  }
+  async function setup(status:import("../lib/types").InvoicePeppolStatus|null=null){
+    const {api}=await import("../lib/api");mockFetch(route());vi.spyOn(api,"invoices").mockResolvedValue(nativeData(status));vi.spyOn(api,"nativeInvoiceEmailStatus").mockResolvedValue({configured:false,rows:[]});vi.spyOn(api,"publicEInvoiceConfig").mockResolvedValue({configured:true,environment:"test",registered:true,outbound:true});return api;
+  }
+  test("confirms the legal company before registration and then enables Send",async()=>{
+    const api=await setup();let configured={configured:true,environment:"test" as const,registered:false,outbound:false};vi.spyOn(api,"publicEInvoiceConfig").mockImplementation(async()=>configured);
+    const register=vi.spyOn(api,"registerPublicEInvoice").mockImplementation(async()=>{configured={...configured,registered:true,outbound:true};return{registered:true,outbound:true,environment:"test"};});
+    renderView();await userEvent.click(await screen.findByRole("button",{name:"Aktivér e-faktura"}));const dialog=screen.getByRole("dialog",{name:"Aktivér e-faktura"});expect(dialog.textContent).toContain(nativeData().company.name);expect(dialog.textContent).toContain("Ingen faktura sendes");expect(register).not.toHaveBeenCalled();
+    await userEvent.click(within(dialog).getByRole("button",{name:"Bekræft tilmelding"}));await waitFor(()=>expect(register).toHaveBeenCalledTimes(1));expect(register.mock.calls[0]).toEqual(["acme-aps"]);expect(await screen.findByRole("button",{name:"Send e-faktura"})).toBeInTheDocument();
+  });
+  test("missing operator configuration never offers registration or send",async()=>{
+    const api=await setup();vi.spyOn(api,"publicEInvoiceConfig").mockResolvedValue({configured:false,environment:null,registered:false,outbound:false});renderView();await screen.findByText(/E-faktura er ikke konfigureret/);expect(screen.queryByRole("button",{name:"Send e-faktura"})).not.toBeInTheDocument();expect(screen.queryByRole("button",{name:"Aktivér e-faktura"})).not.toBeInTheDocument();
+  });
+  test("prepared accepted rows permit status only and never redeliver",async()=>{
+    const api=await setup({status:"prepared",submissionReference:"public-74",transmissionId:"accepted-74",acknowledgedAt:null,redeliveryBlocked:true});const send=vi.spyOn(api,"sendInvoiceAsEInvoice");const observe=vi.spyOn(api,"refreshEInvoiceStatus").mockResolvedValue({invoiceNumber:"2026-00074",submissionReference:"public-74",status:"acknowledged",duplicate:true,transmissionId:"accepted-74",envelopeSha256:null,oioublSha256:null});renderView();await userEvent.click(await screen.findByRole("button",{name:"Opdatér leveringsstatus"}));expect(screen.queryByRole("button",{name:"Send e-faktura"})).not.toBeInTheDocument();await userEvent.click(within(screen.getByRole("dialog",{name:"Opdatér leveringsstatus"})).getByRole("button",{name:"Kontrollér status"}));await waitFor(()=>expect(observe).toHaveBeenCalledTimes(1));expect(send).not.toHaveBeenCalled();
+  });
+  test("unknown delivery stays blocked and fresh canonical uncertainty cannot be resent",async()=>{
+    const api=await setup();const {ApiError}=await import("../lib/api");let current=nativeData();vi.spyOn(api,"invoices").mockImplementation(async()=>current);const send=vi.spyOn(api,"sendInvoiceAsEInvoice").mockImplementation(async()=>{current=nativeData({status:"uncertain",submissionReference:"public-74",transmissionId:null,acknowledgedAt:null,redeliveryBlocked:true});throw new ApiError("network","Synthetic lost delivery response",0);});
+    renderView();await userEvent.click(await screen.findByRole("button",{name:"Send e-faktura"}));let dialog=screen.getByRole("dialog",{name:"Send e-faktura"});await userEvent.click(within(dialog).getByRole("button",{name:"Send e-faktura"}));await screen.findByText(/Serverens resultat kunne ikke bekræftes/);expect(within(dialog).getByRole("button",{name:"Send e-faktura"})).toBeDisabled();await userEvent.click(within(dialog).getByRole("button",{name:"Kontrollér status"}));expect(send).toHaveBeenCalledTimes(1);
+    await userEvent.click(within(dialog).getByRole("button",{name:"Resultatet er afklaret"}));await userEvent.click(screen.getByRole("button",{name:"Jeg har kontrolleret resultatet"}));dialog=screen.getByRole("dialog",{name:"Send e-faktura"});await userEvent.click(within(dialog).getByRole("button",{name:"Send e-faktura"}));await screen.findByText(/Fakturaens leveringsstatus er ændret/);expect(send).toHaveBeenCalledTimes(1);
+  });
+});
+
+test("public setup API sends only confirmed registration and reads no credentials",async()=>{
+  const {api}=await import("../lib/api");mockFetch({"GET /api/companies/acme-aps/invoices/public-config":{publicEInvoice:{configured:true,environment:"test",registered:false,outbound:false}},"POST /api/companies/acme-aps/invoices/public-register":{registration:{registered:true,outbound:true,environment:"test"}}});expect((await api.publicEInvoiceConfig("acme-aps")).registered).toBe(false);expect((await api.registerPublicEInvoice("acme-aps")).registered).toBe(true);const calls=(globalThis.fetch as unknown as ReturnType<typeof vi.fn>).mock.calls;const write=calls.find(c=>String(c[0]).endsWith("/invoices/public-register"))!;expect(JSON.parse(String((write[1] as RequestInit).body))).toEqual({confirm:true});
+});
