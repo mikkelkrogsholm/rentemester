@@ -1,4 +1,4 @@
-//! Native VAT and reviewed period lifecycle. No filing, deadline arithmetic or force path.
+//! Native VAT, fiscal-year and reviewed period lifecycle. No filing, deadline arithmetic or force path.
 use crate::{Session, periods_state as state, readable};
 use gpui_kit::{
     component::{
@@ -27,6 +27,8 @@ impl Bounds {
 }
 #[derive(Clone)]
 struct Data {
+    kind: state::PeriodKind,
+    fiscal_years: Vec<state::FiscalYear>,
     vat: Value,
     periods: Value,
     profile: Value,
@@ -96,6 +98,7 @@ fn read(
     company: &str,
     year: &str,
     target: Option<Bounds>,
+    kind: state::PeriodKind,
 ) -> Result<Data, String> {
     let vat = session
         .runtime
@@ -119,12 +122,11 @@ fn read(
         .map_err(readable)?;
     let journal = session
         .runtime
-        .block_on(session.client.report(
-            company,
-            Report::Journal,
-            (!year.is_empty()).then_some(year),
-            None,
-        ))
+        .block_on(
+            session
+                .client
+                .report_source(company, Report::Journal, None, None, Some("live")),
+        )
         .map_err(readable)?;
     if [&vat, &periods, &profile, &me, &journal]
         .iter()
@@ -157,7 +159,11 @@ fn read(
         array(&vat, "vatReportWarnings")?;
     }
     array(&periods["periods"], "periods")?;
+    let fiscal_years = state::live_fiscal_years(&journal["journal"])?;
     let target = target.or_else(|| {
+        if kind == state::PeriodKind::FiscalYear {
+            return None;
+        }
         (vat["vatRegistered"] == true)
             .then(|| Bounds::from(&vat).ok())
             .flatten()
@@ -184,6 +190,8 @@ fn read(
         None
     };
     Ok(Data {
+        kind,
+        fiscal_years,
         vat,
         periods: periods["periods"].clone(),
         profile: profile["company"].clone(),
@@ -204,7 +212,7 @@ fn matching_rows(data: &Data) -> Vec<&Value> {
         .filter(|r| {
             r["periodStart"] == target.start
                 && r["periodEnd"] == target.end
-                && matches!(r["kind"].as_str(), Some("vat_period" | "vat_quarter"))
+                && data.kind.matches(&r["kind"])
         })
         .collect()
 }
@@ -215,7 +223,7 @@ fn row(data: &Data) -> Option<&Value> {
 fn state_of(data: &Data) -> Result<&str, String> {
     if matching_rows(data).len() > 1 {
         return Err(
-            "Flere momsperioder har samme datoer. Afklar perioderne før en handling.".into(),
+            "Flere perioder af samme type har samme datoer. Afklar dem før en handling.".into(),
         );
     }
     if let Some(row) = row(data) {
@@ -223,22 +231,37 @@ fn state_of(data: &Data) -> Result<&str, String> {
             Some(s @ ("open" | "closed" | "reported")) => Ok(s),
             _ => Err("Periodens effektive status mangler".into()),
         }
+    } else if same_fiscal_window(data) {
+        Ok("open")
     } else if same_vat_window(data) {
         text(&data.vat, "periodStatus")?;
         Ok(data.vat["periodStatus"].as_str().unwrap())
     } else {
-        Err("Vælg en faktisk VAT-periode eller den servervalgte momsperiode".into())
+        Err("Vælg en kanonisk periode eller serverens præcise live-regnskabsår/momsperiode".into())
     }
 }
 fn same_vat_window(data: &Data) -> bool {
-    data.vat["vatRegistered"] == true
+    data.kind == state::PeriodKind::Vat
+        && data.vat["vatRegistered"] == true
         && data
             .target
             .as_ref()
             .is_some_and(|b| Bounds::from(&data.vat).ok().as_ref() == Some(b))
 }
+fn same_fiscal_window(data: &Data) -> bool {
+    data.kind == state::PeriodKind::FiscalYear
+        && data.target.as_ref().is_some_and(|b| {
+            data.fiscal_years
+                .iter()
+                .any(|year| year.start == b.start && year.end == b.end)
+        })
+}
+fn same_review_window(data: &Data) -> bool {
+    same_vat_window(data) || same_fiscal_window(data)
+}
 #[derive(Clone)]
 struct Proof {
+    kind: state::PeriodKind,
     id: i64,
     packet: Value,
     vat: Value,
@@ -247,7 +270,8 @@ struct Proof {
     ledger: String,
 }
 fn valid_proof(proof: &Proof, data: &Data) -> bool {
-    same_vat_window(data)
+    same_review_window(data)
+        && data.kind == proof.kind
         && data.principal == proof.principal
         && data.ledger == proof.ledger
         && data.profile == proof.profile
@@ -299,8 +323,8 @@ fn request(
     let mut body = json!({"periodStart":bounds.start,"periodEnd":bounds.end,"confirm":true});
     match action {
         Action::Review => {
-            if !same_vat_window(data) || state_of(data)? != "open" {
-                return Err("Review kræver den åbne momsperiode, hvis præcise tal serveren viser. Vælg korrekt år/serverperiode.".into());
+            if !same_review_window(data) || state_of(data)? != "open" {
+                return Err("Review kræver en åben periode med præcis de live-årsgrænser eller momsgrænser, serveren viser.".into());
             }
             let p = data.packet.as_ref().ok_or("Kontrolpakken mangler")?;
             packet(p, bounds)?;
@@ -311,7 +335,7 @@ fn request(
             if !valid_proof(proof, data) || proof.packet["blockers"] != 0 {
                 return Err("Review er ændret eller kontroller blokerer. Løs årsagerne, genlæs og gennemgå et nyt review. Tvangslukning tilbydes ikke.".into());
             }
-            body["kind"] = json!("vat_period");
+            body["kind"] = json!(data.kind.wire());
             body["packetHash"] = proof.packet["hash"].clone();
             body["reviewId"] = json!(proof.id);
         }
@@ -325,7 +349,7 @@ fn request(
             {
                 return Err("Skriv en konkret begrundelse (højst4096 tegn)").map_err(str::to_owned);
             }
-            body["kind"] = json!("vat_period");
+            body["kind"] = json!(data.kind.wire());
             body["reason"] = json!(detail.trim());
         }
         Action::Report => {
@@ -341,7 +365,7 @@ fn request(
             if !digest(original) {
                 return Err("Periodens oprindelige lukkebevis mangler. En ny kontrolpakke kan ikke erstatte det.".into());
             }
-            body["kind"] = json!("vat_period");
+            body["kind"] = json!(data.kind.wire());
             body["packetHash"] = original.clone();
             body["reference"] = json!(detail.trim());
         }
@@ -360,6 +384,8 @@ fn current(review: &Review, data: &Data) -> bool {
         || data.ledger != original.ledger
         || data.profile != original.profile
         || data.target != original.target
+        || data.kind != original.kind
+        || data.fiscal_years != original.fiscal_years
     {
         return false;
     }
@@ -385,10 +411,11 @@ fn current(review: &Review, data: &Data) -> bool {
 fn marker(review: &Review, origin: &str, company: &str, local: Option<&str>) -> Value {
     let d = &review.data;
     let b = d.target.as_ref().unwrap();
-    json!({"format":"rentemester-desktop-periods/1","origin":origin,"company":company,"principal":d.principal,"ledger":d.ledger,"localIdentity":local,"operation":review.action.name(),"periodStart":b.start,"periodEnd":b.end,"periodId":row(d).map(|r|r["id"].clone()),"packetHash":if review.action==Action::Report{row(d).map(|r|r["closePacketHash"].clone())}else{d.packet.as_ref().map(|p|p["hash"].clone())},"reviewId":review.proof.as_ref().map(|p|p.id)})
+    json!({"format":"rentemester-desktop-periods/2","kind":d.kind.wire(),"origin":origin,"company":company,"principal":d.principal,"ledger":d.ledger,"localIdentity":local,"operation":review.action.name(),"periodStart":b.start,"periodEnd":b.end,"periodId":row(d).map(|r|r["id"].clone()),"packetHash":if review.action==Action::Report{row(d).map(|r|r["closePacketHash"].clone())}else{d.packet.as_ref().map(|p|p["hash"].clone())},"reviewId":review.proof.as_ref().map(|p|p.id)})
 }
 fn scope(record: &Value, origin: &str, company: &str, data: &Data, local: Option<&str>) -> bool {
-    record["company"] == company
+    state::record_kind(record) == Some(data.kind)
+        && record["company"] == company
         && record["principal"] == data.principal
         && record["ledger"] == data.ledger
         && record["localIdentity"].as_str() == local
@@ -420,6 +447,7 @@ fn receipt(value: &Value, review: &Review) -> Option<Receipt> {
         }
         let proof = if review.data.packet.as_ref() == Some(p) {
             Some(Proof {
+                kind: review.data.kind,
                 id,
                 packet: p.clone(),
                 vat: review.data.vat.clone(),
@@ -445,9 +473,7 @@ fn receipt(value: &Value, review: &Review) -> Option<Receipt> {
         })
     } else {
         let p = &value["period"];
-        if Bounds::from(p).ok().as_ref() != Some(bounds)
-            || !matches!(p["kind"].as_str(), Some("vat_period" | "vat_quarter"))
-        {
+        if Bounds::from(p).ok().as_ref() != Some(bounds) || !review.data.kind.matches(&p["kind"]) {
             return None;
         }
         let state = if review.action == Action::Reopen {
@@ -483,7 +509,7 @@ fn receipt(value: &Value, review: &Review) -> Option<Receipt> {
                 if review.action == Action::Report {
                     "Kun brugerens eksterne kvittering er registreret. Ingen indberetning blev sendt."
                 } else {
-                    "Genlæs den kanoniske periode og momstal."
+                    "Genlæs den kanoniske periode og aktuelle serverkontroller."
                 }
             ),
         })
@@ -493,6 +519,7 @@ fn readback(receipt: &Receipt, review: &Review, data: &Data) -> bool {
     if data.principal != review.data.principal
         || data.ledger != review.data.ledger
         || data.target != review.data.target
+        || data.kind != review.data.kind
     {
         return false;
     }
@@ -564,6 +591,7 @@ pub struct Periods {
     origin: String,
     company: String,
     year: String,
+    kind: state::PeriodKind,
     local: Option<String>,
     data: Option<Data>,
     proof: Option<Proof>,
@@ -593,6 +621,7 @@ impl Periods {
             origin,
             company,
             year,
+            kind: state::PeriodKind::Vat,
             local,
             data: None,
             proof: None,
@@ -636,8 +665,12 @@ impl Periods {
         let session = self.session.clone();
         let company = self.company.clone();
         let year = self.year.clone();
+        let kind = self.kind;
         let task = cx.background_executor().spawn(async move {
-            Ok::<_, String>((read(&session, &company, &year, target)?, state::load()?))
+            Ok::<_, String>((
+                read(&session, &company, &year, target, kind)?,
+                state::load()?,
+            ))
         });
         cx.spawn_in(window,async move|view,cx|{let result=task.await;let _=view.update_in(cx,|this,_,cx|{
             this.busy=false;match result{Ok((data,pending))=>{this.data=Some(data);this.pending=pending;
@@ -653,7 +686,7 @@ impl Periods {
         };
         if matches!(action, Action::Review | Action::Close) && !self.controls_checked {
             self.status =
-                "Gennemgå alle viste momstal, blokeringer, advarsler og evidens før review/lukning"
+                "Gennemgå den valgte periode og alle viste blokeringer, advarsler og evidens før review/lukning"
                     .into();
             cx.notify();
             return;
@@ -696,7 +729,7 @@ impl Periods {
         let origin = self.origin.clone();
         let local = self.local.clone();
         let task=cx.background_executor().spawn(async move {
-            let target=review.data.target.clone();let fresh=read(&session,&company,&year,target.clone())?;
+            let target=review.data.target.clone();let fresh=read(&session,&company,&year,target.clone(),review.data.kind)?;
             if !current(&review,&fresh){return Err("Bruger, ledger, moms, periode eller kontrolbevis ændrede sig. Intet sendt; genlæs og gennemgå igen.".into());}
             let record=marker(&review,&origin,&company,local.as_deref());state::begin(&record)?;
             let result=session.runtime.block_on(session.client.period_mutation(&company,review.action.sdk(),review.body.clone(),true));
@@ -706,7 +739,7 @@ impl Periods {
                 Err(Error::InvalidInput(_))=>{state::finish(&record,false)?;("Felter blev afvist før netværkskald. Genlæs og gennemgå igen.".into(),None)},
                 _=>("Udfaldet er uafklaret. Genlæs perioder og moms og afklar den præcise handling manuelt. Ingen genafsendelse eller automatisk overtagelse af review/kvittering.".into(),None)
             };
-            let next=read(&session,&company,&year,target);let mut proof=None;
+            let next=read(&session,&company,&year,target,review.data.kind);let mut proof=None;
             let message=if let(Some(receipt),Ok(data))=(&confirmed,&next){if readback(receipt,&review,data){state::finish(&record,false)?;proof=receipt.proof.clone();format!("{message} Kanonisk periodestatus og aktuelle servermomstal er læst tilbage.")}else{format!("{message} Genlæsning bekræftede ikke hele forventningen; gennemgå perioder. Intet nyt lukkebevis overtages.")}}else{message};
             Ok::<_,String>((message,proof,next,state::load()?))
         });
@@ -745,7 +778,7 @@ impl Render for Periods {
             .child(
                 div()
                     .text_xl()
-                    .child("Moms og perioder · review, lukning og genåbning"),
+                    .child("Perioder og årsafslutning · review, lukning og genåbning"),
             )
             .child(format!("{} · {}", self.company, self.origin))
             .child(self.status.clone())
@@ -762,11 +795,37 @@ impl Render for Periods {
                 Button::new("periods-current-vat")
                     .label("Vælg serverens aktuelle momsperiode for det valgte år")
                     .disabled(self.busy || self.review.is_some())
-                    .on_click(cx.listener(|this, _, window, cx| this.load(None, window, cx))),
+                    .on_click(cx.listener(|this, _, window, cx| {
+                        this.kind = state::PeriodKind::Vat;
+                        this.load(None, window, cx);
+                    })),
             );
         let Some(data) = self.data.clone() else {
             return view;
         };
+        view = view.child(
+            div()
+                .text_lg()
+                .child("Vælg eksplicit periodetype og serverens live-regnskabsår"),
+        );
+        for year in &data.fiscal_years {
+            let bounds = Bounds {
+                start: year.start.clone(),
+                end: year.end.clone(),
+            };
+            view = view.child(
+                Button::new(SharedString::from(format!("periods-fiscal-{}", year.label)))
+                    .label(format!(
+                        "Vælg regnskabsår {} · {} til {}",
+                        year.label, year.start, year.end
+                    ))
+                    .disabled(self.busy || self.review.is_some())
+                    .on_click(cx.listener(move |this, _, window, cx| {
+                        this.kind = state::PeriodKind::FiscalYear;
+                        this.load(Some(bounds.clone()), window, cx);
+                    })),
+            );
+        }
         view = view.child(format!(
             "CVR: {} · momskadence: {} · bruger {}",
             data.profile["cvr"].as_str().unwrap_or("ikke oplyst"),
@@ -803,10 +862,10 @@ impl Render for Periods {
                 }
             }
             if !same_vat_window(&data) {
-                view=view.child("Momstallene ovenfor tilhører serverens momsperiode, ikke den særskilt valgte historiske periode. Vælg korrekt år/serverperiode for nyt review og lukning.");
+                view=view.child("Momstallene ovenfor tilhører kun serverens momsperiode. De er ikke en opgørelse for det valgte regnskabsår eller en anden historisk periode; dens særskilte kontrolpakke vises nedenfor.");
             }
         } else {
-            view=view.child("Virksomheden er ikke momsregistreret ifølge serveren. Intet momsreview eller lukning tilbydes.");
+            view=view.child("Virksomheden er ikke momsregistreret ifølge serveren. Intet momsreview tilbydes; live-regnskabsår kan stadig gennemgås og lukkes med aktuelle kontroller.");
         }
         view = view.child(
             div()
@@ -817,17 +876,28 @@ impl Render for Periods {
             for line in leaves(p, "periode") {
                 view = view.child(line);
             }
-            if matches!(p["kind"].as_str(), Some("vat_period" | "vat_quarter")) {
+            if matches!(
+                p["kind"].as_str(),
+                Some("vat_period" | "vat_quarter" | "fiscal_year")
+            ) {
                 if let Ok(bounds) = Bounds::from(p) {
                     let id = p["id"].to_string();
+                    let kind = if p["kind"] == "fiscal_year" {
+                        state::PeriodKind::FiscalYear
+                    } else {
+                        state::PeriodKind::Vat
+                    };
                     view = view.child(
                         Button::new(SharedString::from(format!("periods-select-{id}")))
                             .label(format!(
-                                "Vælg periode{id} · {} til {}",
-                                bounds.start, bounds.end
+                                "Vælg {} periode{id} · {} til {}",
+                                kind.label(),
+                                bounds.start,
+                                bounds.end
                             ))
                             .disabled(self.busy || self.review.is_some())
                             .on_click(cx.listener(move |this, _, window, cx| {
+                                this.kind = kind;
                                 this.load(Some(bounds.clone()), window, cx)
                             })),
                     );
@@ -842,19 +912,23 @@ impl Render for Periods {
                         .child("Uafklaret handling · ingen genafsendelse"),
                 )
                 .child(format!(
-                    "{} · {} · {} til {} · oprindeligt endpoint {}",
+                    "{} · {} · {} · {} til {} · oprindeligt endpoint {}",
                     record["company"],
+                    state::record_kind(&record)
+                        .map(|kind| kind.label())
+                        .unwrap_or("Ukendt periodetype"),
                     record["operation"],
                     record["periodStart"],
                     record["periodEnd"],
                     record["origin"]
                 ));
-            if let Ok(bounds) = Bounds::from(&record) {
+            if let (Ok(bounds), Some(kind)) = (Bounds::from(&record), state::record_kind(&record)) {
                 view = view.child(
                     Button::new("periods-pending-select")
                         .label("Genlæs den uafklarede periodes aktuelle status og evidens")
                         .disabled(self.busy)
                         .on_click(cx.listener(move |this, _, window, cx| {
+                            this.kind = kind;
                             this.load(Some(bounds.clone()), window, cx)
                         })),
                 );
@@ -880,7 +954,8 @@ impl Render for Periods {
         }
         if let Some(bounds) = &data.target {
             view = view.child(div().text_lg().child(format!(
-                "Valgt periode {} til {} · {}",
+                "Valgt {} {} til {} · {}",
+                data.kind.label(),
                 bounds.start,
                 bounds.end,
                 state_of(&data).unwrap_or("ukendt")
@@ -913,14 +988,16 @@ impl Render for Periods {
                 .child(Button::new("periods-cancel").label("Annullér før afsendelse").disabled(self.busy).on_click(cx.listener(|this,_,_,cx|{this.review=None;this.reviewed=false;cx.notify();})));
         }
         if data.packet.is_none() {
-            return view.child("Kontrolpakken er ikke tilgængelig med denne adgang eller uden en momsperiode. Momstal og perioder vises som læsning; handlinger kræver aktuelle kontroller.");
+            return view.child("Kontrolpakken er ikke tilgængelig med denne adgang eller uden en valgt periode. Momstal og regnskabsår vises som læsning; handlinger kræver aktuelle kontroller.");
         }
         match state_of(&data) {
-            Ok("open") if same_vat_window(&data) => {
+            Ok("open") if same_review_window(&data) => {
                 view = view
                     .child(
                         Checkbox::new("periods-controls-reviewed")
-                            .label("Jeg har gennemgået momsopgørelsen og hele kontrolpakken")
+                            .label(
+                                "Jeg har gennemgået den valgte periode og hele serverkontrolpakken",
+                            )
                             .checked(self.controls_checked)
                             .disabled(self.busy)
                             .on_click(cx.listener(|this, checked, _, cx| {
@@ -996,6 +1073,8 @@ mod tests {
             end: "2026-03-31".into(),
         };
         Data {
+            kind: state::PeriodKind::Vat,
+            fiscal_years: vec![],
             vat: json!({"vatRegistered":true,"periodStart":bounds.start,"periodEnd":bounds.end,"periodStatus":status,"payable":12.34}),
             periods: json!({"periods":if status=="open" {json!([])} else {json!([{"id":7,"kind":"vat_period","periodStart":bounds.start,"periodEnd":bounds.end,"effectiveStatus":status,"closePacketHash":"b".repeat(64),"reference":if status=="reported" {"synthetic-filing-receipt"} else {""}}])}}),
             profile: json!({"cvr":"12345678","vatPeriodType":"quarter"}),
@@ -1009,6 +1088,7 @@ mod tests {
     }
     fn proof(data: &Data) -> Proof {
         Proof {
+            kind: data.kind,
             id: 11,
             packet: data.packet.clone().unwrap(),
             vat: data.vat.clone(),
@@ -1122,5 +1202,127 @@ mod tests {
         assert!(state_of(&d).is_err());
         assert!(request(Action::Reopen, &d, None, "synthetic reason", false).is_err());
         assert!(request(Action::Report, &d, None, "synthetic external receipt", true).is_err());
+    }
+    fn fiscal(status: &str) -> Data {
+        let mut d = data(status);
+        d.kind = state::PeriodKind::FiscalYear;
+        d.vat = json!({"vatRegistered":false});
+        let bounds = Bounds {
+            start: "2024-07-01".into(),
+            end: "2025-06-30".into(),
+        };
+        d.fiscal_years = vec![state::FiscalYear {
+            label: "server-shifted-year".into(),
+            start: bounds.start.clone(),
+            end: bounds.end.clone(),
+        }];
+        d.packet.as_mut().unwrap()["periodStart"] = json!(bounds.start);
+        d.packet.as_mut().unwrap()["periodEnd"] = json!(bounds.end);
+        if status != "open" {
+            d.periods["periods"][0]["kind"] = json!("fiscal_year");
+            d.periods["periods"][0]["periodStart"] = json!(bounds.start);
+            d.periods["periods"][0]["periodEnd"] = json!(bounds.end);
+        }
+        d.target = Some(bounds);
+        d
+    }
+    #[::core::prelude::v1::test]
+    fn fiscal_review_is_kindless_close_is_exact_and_does_not_require_vat_registration() {
+        let d = fiscal("open");
+        assert_eq!(state_of(&d).unwrap(), "open");
+        let review = request(Action::Review, &d, None, "", false).unwrap();
+        let body: Value = serde_json::from_slice(&review.body).unwrap();
+        assert!(body.get("kind").is_none());
+        assert_eq!(body["periodStart"], "2024-07-01");
+        let p = proof(&d);
+        let close = request(Action::Close, &d, Some(&p), "", false).unwrap();
+        let body: Value = serde_json::from_slice(&close.body).unwrap();
+        assert_eq!(body["kind"], "fiscal_year");
+        assert_eq!(body["packetHash"], p.packet["hash"]);
+        assert_eq!(body["reviewId"], p.id);
+        let mut changed = d.clone();
+        changed.kind = state::PeriodKind::Vat;
+        assert!(!valid_proof(&p, &changed));
+        assert!(!current(&close, &changed));
+        let mut changed = d.clone();
+        changed.packet.as_mut().unwrap()["hash"] = json!("e".repeat(64));
+        assert!(!current(&close, &changed));
+        let mut changed = d;
+        changed.fiscal_years.clear();
+        assert!(request(Action::Review, &changed, None, "", false).is_err());
+    }
+    #[::core::prelude::v1::test]
+    fn fiscal_reopen_report_and_readback_preserve_kind_and_original_close_packet() {
+        let d = fiscal("closed");
+        let reopen = request(
+            Action::Reopen,
+            &d,
+            None,
+            "Synthetic justified reopening",
+            false,
+        )
+        .unwrap();
+        assert_eq!(
+            serde_json::from_slice::<Value>(&reopen.body).unwrap()["kind"],
+            "fiscal_year"
+        );
+        assert!(
+            request(
+                Action::Report,
+                &d,
+                None,
+                "Synthetic external receipt",
+                false
+            )
+            .is_err()
+        );
+        let report = request(Action::Report, &d, None, "Synthetic external receipt", true).unwrap();
+        let body: Value = serde_json::from_slice(&report.body).unwrap();
+        assert_eq!(body["kind"], "fiscal_year");
+        assert_eq!(body["packetHash"], "b".repeat(64));
+        let value = json!({"ok":true,"period":{"id":7,"kind":"fiscal_year","periodStart":"2024-07-01","periodEnd":"2025-06-30","status":"reported","reference":"Synthetic external receipt"}});
+        let r = receipt(&value, &report).unwrap();
+        let mut canonical = fiscal("reported");
+        canonical.periods["periods"][0]["reference"] = json!("Synthetic external receipt");
+        assert!(readback(&r, &report, &canonical));
+        canonical.kind = state::PeriodKind::Vat;
+        assert!(!readback(&r, &report, &canonical));
+        let mut wrong = value;
+        wrong["period"]["kind"] = json!("vat_period");
+        assert!(receipt(&wrong, &report).is_none());
+        assert!(
+            request(
+                Action::Reopen,
+                &fiscal("reported"),
+                None,
+                "No reopening reported years",
+                false
+            )
+            .is_err()
+        );
+    }
+    #[::core::prelude::v1::test]
+    fn fiscal_pending_marker_cannot_be_resolved_under_vat_selection() {
+        let d = fiscal("open");
+        let review = request(Action::Review, &d, None, "", false).unwrap();
+        let record = marker(&review, "https://synthetic.invalid", "synthetic", None);
+        assert_eq!(record["format"], "rentemester-desktop-periods/2");
+        assert_eq!(record["kind"], "fiscal_year");
+        assert!(scope(
+            &record,
+            "https://synthetic.invalid",
+            "synthetic",
+            &d,
+            None
+        ));
+        let mut other = d;
+        other.kind = state::PeriodKind::Vat;
+        assert!(!scope(
+            &record,
+            "https://synthetic.invalid",
+            "synthetic",
+            &other,
+            None
+        ));
     }
 }

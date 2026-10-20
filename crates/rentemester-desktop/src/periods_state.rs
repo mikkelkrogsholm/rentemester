@@ -1,4 +1,4 @@
-//! One private unresolved payable attempt; no payload persistence or replay.
+//! Explicit server period selection and one private unresolved marker; no replay.
 use serde_json::Value;
 use std::{
     fs::{self, OpenOptions},
@@ -6,6 +6,98 @@ use std::{
     os::unix::fs::{DirBuilderExt, MetadataExt, OpenOptionsExt},
     path::{Path, PathBuf},
 };
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum PeriodKind {
+    Vat,
+    FiscalYear,
+}
+impl PeriodKind {
+    pub fn wire(self) -> &'static str {
+        match self {
+            Self::Vat => "vat_period",
+            Self::FiscalYear => "fiscal_year",
+        }
+    }
+    pub fn label(self) -> &'static str {
+        match self {
+            Self::Vat => "Momsperiode",
+            Self::FiscalYear => "Regnskabsår",
+        }
+    }
+    pub fn matches(self, value: &Value) -> bool {
+        match self {
+            Self::Vat => matches!(value.as_str(), Some("vat_period" | "vat_quarter")),
+            Self::FiscalYear => value == "fiscal_year",
+        }
+    }
+}
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct FiscalYear {
+    pub label: String,
+    pub start: String,
+    pub end: String,
+}
+/// Consume only explicit live descriptors; archived years never become closable periods.
+pub fn live_fiscal_years(journal: &Value) -> Result<Vec<FiscalYear>, String> {
+    if journal["archived"] == true {
+        return Err("Årsafslutning kræver en aktuel live-ledger".into());
+    }
+    let rows = journal["fiscalYears"]
+        .as_array()
+        .ok_or("Serverens live-regnskabsår mangler")?;
+    let mut labels = std::collections::BTreeSet::new();
+    let mut bounds = std::collections::BTreeSet::new();
+    let mut out = Vec::new();
+    for row in rows.iter().filter(|r| r["source"] == "live") {
+        let text = |key| {
+            row[key]
+                .as_str()
+                .filter(|s| !s.is_empty())
+                .map(str::to_owned)
+                .ok_or("Serverens regnskabsår mangler label/datoer")
+        };
+        let year = FiscalYear {
+            label: text("label")?,
+            start: text("start")?,
+            end: text("end")?,
+        };
+        let date = |s: &str| {
+            s.len() == 10
+                && s.bytes().enumerate().all(|(i, b)| {
+                    if i == 4 || i == 7 {
+                        b == b'-'
+                    } else {
+                        b.is_ascii_digit()
+                    }
+                })
+        };
+        if !date(&year.start)
+            || !date(&year.end)
+            || year.start > year.end
+            || !labels.insert(year.label.clone())
+            || !bounds.insert((year.start.clone(), year.end.clone()))
+        {
+            return Err("Serverens live-regnskabsår er ugyldige eller tvetydige".into());
+        }
+        out.push(year);
+    }
+    Ok(out)
+}
+pub fn record_kind(value: &Value) -> Option<PeriodKind> {
+    match value["format"].as_str() {
+        Some("rentemester-desktop-periods/1") if value.get("kind").is_none() => {
+            Some(PeriodKind::Vat)
+        }
+        Some("rentemester-desktop-periods/2") => match value["kind"].as_str() {
+            Some("vat_period") => Some(PeriodKind::Vat),
+            Some("fiscal_year") => Some(PeriodKind::FiscalYear),
+            _ => None,
+        },
+        _ => None,
+    }
+}
+
 fn directory() -> PathBuf {
     crate::journal_attempt::directory()
 }
@@ -94,9 +186,14 @@ fn load_at(dir: &Path) -> Result<Option<Value>, String> {
 }
 
 fn valid_record(value: &Value) -> bool {
-    value["format"] == "rentemester-desktop-periods/1"
+    record_kind(value).is_some()
         && value.as_object().is_some_and(|object| {
-            object.len() == 12
+            object.len()
+                == if value["format"] == "rentemester-desktop-periods/2" {
+                    13
+                } else {
+                    12
+                }
                 && object.keys().all(|key| {
                     [
                         "format",
@@ -111,6 +208,7 @@ fn valid_record(value: &Value) -> bool {
                         "periodId",
                         "packetHash",
                         "reviewId",
+                        "kind",
                     ]
                     .contains(&key.as_str())
                 })
@@ -233,5 +331,38 @@ mod tests {
                 .starts_with("periods-manually-resolved-")
         }));
         fs::remove_dir_all(dir).unwrap();
+    }
+    #[test]
+    fn live_year_descriptors_exclude_archive_and_preserve_shifted_bounds() {
+        let rows = json!({"archived":false,"fiscalYears":[{"source":"archive","label":"2024","start":"2024-01-01","end":"2024-12-31"},{"source":"live","label":"shifted-live-year","start":"2024-07-01","end":"2025-06-30"}]});
+        let years = live_fiscal_years(&rows).unwrap();
+        assert_eq!(years.len(), 1);
+        assert_eq!(years[0].label, "shifted-live-year");
+        assert_eq!(years[0].start, "2024-07-01");
+        assert_eq!(years[0].end, "2025-06-30");
+        let mut wrong = rows.clone();
+        wrong["archived"] = json!(true);
+        assert!(live_fiscal_years(&wrong).is_err());
+        let mut duplicate = rows;
+        let repeated = duplicate["fiscalYears"][1].clone();
+        duplicate["fiscalYears"]
+            .as_array_mut()
+            .unwrap()
+            .push(repeated);
+        assert!(live_fiscal_years(&duplicate).is_err());
+    }
+    #[test]
+    fn old_vat_marker_remains_readable_and_new_fiscal_marker_is_explicit() {
+        let old = json!({"format":"rentemester-desktop-periods/1","origin":"https://synthetic.invalid","company":"synthetic","principal":"owner","ledger":"immutable","localIdentity":null,"operation":"close","periodStart":"2024-07-01","periodEnd":"2025-06-30","periodId":null,"packetHash":"a".repeat(64),"reviewId":2});
+        assert!(valid_record(&old));
+        assert_eq!(record_kind(&old), Some(PeriodKind::Vat));
+        let mut fiscal = old.clone();
+        fiscal["format"] = json!("rentemester-desktop-periods/2");
+        fiscal["kind"] = json!("fiscal_year");
+        assert!(valid_record(&fiscal));
+        assert_eq!(record_kind(&fiscal), Some(PeriodKind::FiscalYear));
+        fiscal["kind"] = json!("custom");
+        assert!(!valid_record(&fiscal));
+        assert!(old.get("kind").is_none());
     }
 }
