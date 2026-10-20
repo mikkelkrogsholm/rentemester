@@ -22,6 +22,9 @@ import { ErrorState, Loading } from "../components/Feedback";
 
 export function BilagsmailView() {
   const { slug = "" } = useParams();
+  return <CompanyMail key={slug} slug={slug} />;
+}
+function CompanyMail({slug}:{slug:string}) {
   const [error, setError] = useState<string | null>(null);
   const state = useAsync<CompanyBilagsmail>(
     (signal) => api.bilagsmail(slug, { signal }),
@@ -74,6 +77,7 @@ export function BilagsmailView() {
         onError={setError}
       />
 
+      <PollingPanel slug={slug} data={data} onDone={doneRefresh} />
       <InboxPanel inbox={data.inbox} currency={currency} />
     </section>
   );
@@ -114,7 +118,7 @@ function AliasPanel({
       <p className="muted">
         Virksomhedens unikke localpart i bilagsmail-adressen
         (<code>&lt;alias&gt;@bilag.din-host.tld</code>). 3-64 tegn, små bogstaver,
-        cifre, punkt, underscore, bindestreg. Tom = ryd alias'et.
+        cifre, punkt, underscore, bindestreg. Tom = ryd alias'et. Et alias opretter ikke et domæne eller en videresendelse; din mailudbyder skal være sat op til at levere til den konfigurerede postkasse.
       </p>
       <form onSubmit={save} className="filter-bar">
         <label>
@@ -179,6 +183,7 @@ function ImapConfigPanel({
     } catch (err) {
       onError(err instanceof ApiError ? err.message : "Kunne ikke gemme IMAP-config.");
     } finally {
+      setPassword("");
       setSaving(false);
     }
   };
@@ -201,10 +206,7 @@ function ImapConfigPanel({
     {outcome.feedback}
       <h3>IMAP-konfiguration</h3>
       <p className="muted">
-        Gemmes på disk i <code>config/imap.json</code> (mode 0600) — ALDRIG i
-        bogføringsdatabasen. Passwordet vises aldrig efter du har gemt; lad
-        det stå tomt for at beholde det eksisterende, men du skal indtaste
-        det igen for at ændre noget.
+        Adgangen gemmes privat på serveren og medtages ikke i backup. Passwordet kan ikke hentes igen; indtast det ved hver ændring. Efter gendannelse skal en ny ejer konfigurere modtagelsen igen.
       </p>
       <p className="muted">
         Status:{" "}
@@ -243,7 +245,7 @@ function ImapConfigPanel({
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            placeholder={configured ? "(behold eksisterende)" : ""}
+            placeholder={configured ? "Indtast igen for at ændre konfigurationen" : ""}
           />
         </label>
         <label>
@@ -300,6 +302,27 @@ function ImapConfigPanel({
   );
 }
 
+function PollingPanel({slug,data,onDone}:{slug:string;data:CompanyBilagsmail;onDone:()=>void}) {
+  const [confirm,setConfirm]=useState(false);
+  const [busy,setBusy]=useState(false);
+  const [message,setMessage]=useState<string>();
+  const outcome=useMutationOutcome(onDone);
+  return <section className="card" aria-label="Mailmodtagelse">
+    {outcome.feedback}<h3>Mailmodtagelse</h3>
+    {data.polling ? <p>Serverstatus: {data.polling.state} · {data.polling.enabled ? "Aktiveret" : "Ikke aktiv"}</p> : <p>Automatisk modtagelsesstatus er ikke oplyst.</p>}
+    {data.polling?.lastError && <p role="alert">Seneste modtagelsesfejl: {data.polling.lastError}</p>}
+    {data.pendingReviewCount != null && <p>{data.pendingReviewCount} kilder afventer gennemgang.</p>}
+    <p>En mailgennemgang henter én omgang fra den konfigurerede postkasse. Den opretter ingen posteringer. Vedhæftninger skal gennemgås i den fælles indbakke før overdragelse til virksomheden. Automatisk modtagelse kræver, at serverens mailmodtagelse kører.</p>
+    <div className="row-actions"><Button requiredPermission="company.admin" disabled={!data.imapConfigured || busy || outcome.blocked} onClick={()=>setConfirm(true)}>Gennemgå postkasse nu</Button><ButtonLink to={`/companies/${slug}/workspace-inbox`}>Åbn fælles dokumentindbakke</ButtonLink></div>
+    {message && <p role="status">{message}</p>}
+    {confirm && <ConfirmDialog title="Bekræft mailgennemgang" body={<p>Hent én omgang mail for {data.company.name} fra den konfigurerede postkasse. Originaler bevares i den fælles indbakke; ingen bilag bogføres. Statuslæsning starter aldrig modtagelse.</p>} confirmLabel="Hent mail én gang" onClose={()=>setConfirm(false)} onRefresh={onDone} onConfirm={async()=>{
+      if(outcome.isBlocked() || busy) return;
+      setBusy(true);
+      try { await api.pollBilagsmail(slug).catch(outcome.reject);setMessage("Mailgennemgangen er afsluttet. Kontrollér status og den fælles indbakke.");onDone(); } finally {setBusy(false);}
+    }} />}
+  </section>;
+}
+
 function InboxPanel({
   inbox,
   currency,
@@ -311,9 +334,7 @@ function InboxPanel({
     <section className="card">
       <h3>Inbox ({inbox.length})</h3>
       <p className="muted">
-        Senest indlæste mail-drop-dokumenter. Når IMAP-polling kører via
-        serve-daemonen (<code>--imap-poll-interval-sec</code>), dukker
-        nye bilag op her.
+        Senest overdragne mail-drop-bilag. Nye mailkilder og vedhæftninger gennemgås i den fælles dokumentindbakke.
       </p>
       {inbox.length === 0 ? (
         <p className="muted">Ingen mail-drop-bilag indlæst endnu.</p>

@@ -290,3 +290,23 @@ test("explicit alternate inbox intake receives user classification and exact ori
   expect(mime).toBe("text/plain");
   expect((globalThis.fetch as unknown as ReturnType<typeof vi.fn>).mock.calls.some(c => String(c[0]).includes("/documents/ingest"))).toBe(false);
 });
+
+test("retained attachment review has no upload or inferred classification/currency and sends metadata once", async () => {
+  const saved=vi.fn(async (_metadata:unknown)=>{});
+  mockFetch({"GET /api/companies/target/contacts":{contacts:{vendors:[],customers:[]}}});
+  render(<DocumentIngestModal slug="target" onClose={noop} onIngested={noop} title="Gennemgå mailbilag" allowInternalVoucher={false} metadataReview={{filename:"invoice.pdf → Target",source:"workspace-inbox:mail-id",sourceHash:"a".repeat(64),originalUrl:"/original",save:saved}} />);
+  expect(screen.queryByLabelText("Bilagsfil")).toBeNull();
+  expect(screen.getByLabelText("Bilagstype")).toHaveValue("");
+  expect(screen.getByLabelText("Valuta")).toHaveValue("");
+  expect(screen.getByLabelText("Kilde")).toHaveAttribute("readonly");
+  expect(screen.getByRole("button",{name:"Gem gennemgåede kildeoplysninger"})).toBeDisabled();
+  await pickReceiptType();
+  await userEvent.type(screen.getByLabelText("Valuta"),"DKK");
+  await userEvent.type(screen.getByLabelText("Beløb inkl. moms (valgfri)"),"125,00");
+  await userEvent.click(screen.getByLabelText("Jeg har gennemgået originalen, målvirksomheden og de indtastede kildeoplysninger."));
+  await userEvent.click(screen.getByRole("button",{name:"Gem gennemgåede kildeoplysninger"}));
+  await waitFor(()=>expect(saved).toHaveBeenCalledTimes(1));
+  expect(saved.mock.calls[0][0]).toEqual({source:"workspace-inbox:mail-id",documentType:"cash_register_receipt",currency:"DKK",amountIncVat:125});
+  const calls=(globalThis.fetch as unknown as {mock:{calls:Array<[unknown,RequestInit]>}}).mock.calls;
+  expect(calls.some(c=>String(c[0]).includes("/documents/ingest"))).toBe(false);
+});

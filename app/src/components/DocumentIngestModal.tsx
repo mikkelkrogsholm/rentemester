@@ -26,7 +26,7 @@ import { LockBanner } from "./LockBanner";
 type MaybeApiError = { code?: string; message?: string };
 
 type EditablePurchaseVatLine = {
-  classification: "dk_purchase_25" | "exempt";
+  classification: "" | "dk_purchase_25" | "exempt";
   netAmount: string;
   vatAmount: string;
 };
@@ -43,6 +43,12 @@ export type DocumentIngestModalProps = {
   title?: string;
   successText?: string;
   allowInternalVoucher?: boolean;
+  /** Review a retained attachment; no file selection, bytes or ingestion request. */
+  metadataReview?: {
+    filename: string; source: string; sourceHash: string; originalUrl: string;
+    metadata?: Partial<DocumentIngestMetadata>;
+    save: (metadata: DocumentIngestMetadata) => Promise<void>;
+  };
 };
 
 /** Reads a (possibly binary) file as a base64 string, chunked to stay safe. */
@@ -61,32 +67,38 @@ export function DocumentIngestModal({
   slug,
   onIngested,
   onClose: onDismiss,
-  submit, title = "Indlæs bilag", successText, allowInternalVoucher = true,
+  submit, title = "Indlæs bilag", successText, allowInternalVoucher = true, metadataReview,
 }: DocumentIngestModalProps) {
+  const initial = metadataReview?.metadata;
+  const initialCurrency = metadataReview ? initial?.currency ?? "" : "DKK";
+  const initialType = metadataReview ? initial?.documentType ?? "" : "purchase_sale";
+  const initialSource = metadataReview?.source ?? "cockpit-upload";
+  const moneyText = (value: number | undefined) => value == null ? "" : String(value).replace(".", ",");
+  const [metadataConfirmed, setMetadataConfirmed] = useState(false);
   const contacts = useAsync((signal) => api.contacts(slug, { signal }), [slug]);
   const [selectedVendor, setSelectedVendor] = useState("");
   const [mimeType, setMimeType] = useState("application/octet-stream");
   const [fileName, setFileName] = useState<string | null>(null);
   const [fileBase64, setFileBase64] = useState<string | null>(null);
   const [documentType, setDocumentType] =
-    useState<DocumentIngestMetadata["documentType"]>("purchase_sale");
-  const [source, setSource] = useState("cockpit-upload");
-  const [issueDate, setIssueDate] = useState("");
-  const [invoiceNo, setInvoiceNo] = useState("");
-  const [deliveryDescription, setDeliveryDescription] = useState("");
-  const [amountIncVat, setAmountIncVat] = useState("");
-  const [vatAmount, setVatAmount] = useState("");
-  const [currency, setCurrency] = useState("DKK");
-  const [senderName, setSenderName] = useState("");
-  const [senderAddress, setSenderAddress] = useState("");
-  const [senderVat, setSenderVat] = useState("");
-  const [senderCountryCode, setSenderCountryCode] = useState("");
-  const [senderIdentifierKind, setSenderIdentifierKind] = useState<"" | "dk_cvr" | "eu_vat" | "non_eu">("");
-  const [recipientName, setRecipientName] = useState("");
-  const [recipientAddress, setRecipientAddress] = useState("");
-  const [recipientVat, setRecipientVat] = useState("");
-  const [reverseChargeWordingConfirmed, setReverseChargeWordingConfirmed] = useState(false);
-  const [purchaseVatLines, setPurchaseVatLines] = useState<EditablePurchaseVatLine[]>([]);
+    useState<DocumentIngestMetadata["documentType"] | "">(initialType);
+  const [source, setSource] = useState(initialSource);
+  const [issueDate, setIssueDate] = useState(initial?.issueDate ?? "");
+  const [invoiceNo, setInvoiceNo] = useState(initial?.invoiceNo ?? "");
+  const [deliveryDescription, setDeliveryDescription] = useState(initial?.deliveryDescription ?? "");
+  const [amountIncVat, setAmountIncVat] = useState(moneyText(initial?.amountIncVat));
+  const [vatAmount, setVatAmount] = useState(moneyText(initial?.vatAmount));
+  const [currency, setCurrency] = useState(initialCurrency);
+  const [senderName, setSenderName] = useState(initial?.sender?.name ?? "");
+  const [senderAddress, setSenderAddress] = useState(initial?.sender?.address ?? "");
+  const [senderVat, setSenderVat] = useState(initial?.sender?.vatOrCvr ?? "");
+  const [senderCountryCode, setSenderCountryCode] = useState(initial?.sender?.countryCode ?? "");
+  const [senderIdentifierKind, setSenderIdentifierKind] = useState<"" | "dk_cvr" | "eu_vat" | "non_eu">(initial?.sender?.identifierKind ?? "");
+  const [recipientName, setRecipientName] = useState(initial?.recipient?.name ?? "");
+  const [recipientAddress, setRecipientAddress] = useState(initial?.recipient?.address ?? "");
+  const [recipientVat, setRecipientVat] = useState(initial?.recipient?.vatOrCvr ?? "");
+  const [reverseChargeWordingConfirmed, setReverseChargeWordingConfirmed] = useState(initial?.reverseChargeWordingConfirmed ?? false);
+  const [purchaseVatLines, setPurchaseVatLines] = useState<EditablePurchaseVatLine[]>(initial?.purchaseVatLines?.map(line => ({classification:line.classification,netAmount:moneyText(line.netAmount),vatAmount:moneyText(line.vatAmount)})) ?? []);
   const [sourceBankTransactionId, setSourceBankTransactionId] = useState("");
   const [accountingRationale, setAccountingRationale] = useState("");
 
@@ -100,7 +112,7 @@ export function DocumentIngestModal({
 
 
   const outcome = useMutationOutcome(onIngested);
-  const guard = useDiscardGuard(!done && (Boolean(fileBase64 || invoiceNo || issueDate || amountIncVat || vatAmount || senderName || senderAddress || senderVat || senderCountryCode || senderIdentifierKind || recipientName || recipientAddress || recipientVat || deliveryDescription || accountingRationale || sourceBankTransactionId || reverseChargeWordingConfirmed || purchaseVatLines.length) || currency !== "DKK" || documentType !== "purchase_sale" || source !== "cockpit-upload"), onDismiss);
+  const guard = useDiscardGuard(!done && (Boolean(fileBase64 || invoiceNo || issueDate || amountIncVat || vatAmount || senderName || senderAddress || senderVat || senderCountryCode || senderIdentifierKind || recipientName || recipientAddress || recipientVat || deliveryDescription || accountingRationale || sourceBankTransactionId || reverseChargeWordingConfirmed || purchaseVatLines.length) || currency !== initialCurrency || documentType !== initialType || source !== initialSource), onDismiss);
   const { onClose } = guard;
 
   async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
@@ -129,8 +141,12 @@ export function DocumentIngestModal({
 
   async function handleIngest() {
     if (outcome.isBlocked()) return;
-    if (!fileBase64 || !fileName) {
+    if (!metadataReview && (!fileBase64 || !fileName)) {
       setError("Vælg en bilagsfil først.");
+      return;
+    }
+    if (metadataReview && (!documentType || !currency.trim() || !metadataConfirmed)) {
+      setError("Vælg faktisk bilagstype og valuta, og bekræft gennemgangen af originalen.");
       return;
     }
     if (!source.trim()) {
@@ -171,6 +187,8 @@ export function DocumentIngestModal({
     let parsedPurchaseVatLines: NonNullable<DocumentIngestMetadata["purchaseVatLines"]> = [];
     try {
       parsedPurchaseVatLines = isPurchaseSale ? purchaseVatLines.map((line, index) => {
+        if (!line.classification) throw new Error(`Vælg momsart på linje ${index + 1}.`);
+        if (metadataReview && !line.vatAmount.trim()) throw new Error(`Angiv momsbeløb på linje ${index + 1}, også når det er 0.`);
         const netAmount = parseDanishAmount(line.netAmount);
         const lineVatAmount = line.vatAmount.trim() === "" ? 0 : parseDanishAmount(line.vatAmount);
         if (!line.netAmount.trim() || netAmount === null || netAmount < 0) {
@@ -192,7 +210,7 @@ export function DocumentIngestModal({
 
     const metadata: DocumentIngestMetadata = {
       source: source.trim(),
-      documentType,
+      documentType: documentType || "purchase_sale",
       currency: currency.trim() || "DKK",
     };
     if (issueDate.trim()) metadata.issueDate = issueDate.trim();
@@ -238,11 +256,13 @@ export function DocumentIngestModal({
     setLocked(null);
     try {
       const input: DocumentIngestInput = {
-        fileName,
-        fileBase64,
+        fileName: fileName!,
+        fileBase64: fileBase64!,
         metadata,
       };
-      const result = await (submit ? submit(input, mimeType) : api.ingestDocument(slug, input)).catch(outcome.reject);
+      const result = metadataReview
+        ? await metadataReview.save(metadata).then(() => ({ documentNo: null })).catch(outcome.reject)
+        : await (submit ? submit(input, mimeType) : api.ingestDocument(slug, input)).catch(outcome.reject);
       setDone({ documentNo: result.documentNo });
       onIngested();
     } catch (err) {
@@ -284,15 +304,14 @@ export function DocumentIngestModal({
           <>
             <div className="modal-body">
               <p>
-                Vælg en bilagsfil (PDF, billede eller tekst) og udfyld
-                oplysningerne. {allowInternalVoucher ? "Interne bilag skal bindes til den importerede bankpost, der udgør det primære bevis." : "Vælg den faktiske bilagstype. Interne bilag oprettes direkte i virksomheden med dens bankbevis; kontrakter og andre dokumenttyper understøttes endnu ikke i denne indbakke."}
+                {metadataReview ? "Gennemgå den bevarede original og indtast kun de kildeoplysninger, du har kontrolleret. Filen indlæses ikke igen." : "Vælg en bilagsfil (PDF, billede eller tekst) og udfyld oplysningerne."} {allowInternalVoucher ? "Interne bilag skal bindes til den importerede bankpost, der udgør det primære bevis." : "Vælg den faktiske bilagstype. Interne bilag oprettes direkte i virksomheden med dens bankbevis; kontrakter og andre dokumenttyper understøttes endnu ikke i denne indbakke."}
               </p>
             </div>
 
             {locked && <LockBanner message={locked} />}
             {error && <Banner kind="error">{error}</Banner>}
 
-            <label className="modal-field">
+            {metadataReview ? <section aria-label="Bevaret original"><p>{metadataReview.filename}</p><p>SHA-256: {metadataReview.sourceHash}</p><a href={metadataReview.originalUrl} download>Hent original til gennemgang</a></section> : <label className="modal-field">
               Bilagsfil
               <Input
                 type="file"
@@ -300,7 +319,7 @@ export function DocumentIngestModal({
                 onChange={handleFile}
                 disabled={outcome.blocked || (busy)}
               />
-            </label>
+            </label>}
             {fileName && (
               <p className={["muted", stylex.props(viewStyles.site0).className].filter(Boolean).join(" ")} >
                 Valgt: {fileName}
@@ -320,6 +339,7 @@ export function DocumentIngestModal({
                   }
                   disabled={outcome.blocked || (busy)}
                 >
+                  {metadataReview && <option value="">Vælg faktisk bilagstype</option>}
                   <option value="purchase_sale">Køb/salg</option>
                   <option value="cash_register_receipt">Kassebon</option>
                   {allowInternalVoucher && <option value="internal_voucher">Internt bilag</option>}
@@ -330,6 +350,7 @@ export function DocumentIngestModal({
                 <Input
                   type="text"
                   value={source}
+                  readOnly={Boolean(metadataReview)}
                   onChange={(e) => setSource(e.target.value)}
                   disabled={outcome.blocked || (busy)}
                 />
@@ -444,6 +465,7 @@ export function DocumentIngestModal({
                         onChange={(e) => setPurchaseVatLines((current) => current.map((item, itemIndex) => itemIndex === index ? { ...item, classification: e.target.value as EditablePurchaseVatLine["classification"] } : item))}
                         disabled={outcome.blocked || (busy)}
                       >
+                        {metadataReview && <option value="">Vælg momsart</option>}
                         <option value="dk_purchase_25">Dansk køb, 25 %</option>
                         <option value="exempt">Momsfrit/udlæg</option>
                       </Select>
@@ -480,7 +502,7 @@ export function DocumentIngestModal({
                 <Button variant="secondary"
                   type="button"
                   className="btn secondary"
-                  onClick={() => setPurchaseVatLines((current) => [...current, { classification: "dk_purchase_25", netAmount: "", vatAmount: "" }])}
+                  onClick={() => setPurchaseVatLines((current) => [...current, { classification: metadataReview ? "" : "dk_purchase_25", netAmount: "", vatAmount: "" }])}
                   disabled={busy}
                 >
                   Tilføj momslinje
@@ -586,6 +608,7 @@ export function DocumentIngestModal({
               </>
             )}
 
+            {metadataReview && <label className="modal-field checkbox-field"><Input type="checkbox" checked={metadataConfirmed} onChange={e => setMetadataConfirmed(e.target.checked)} disabled={outcome.blocked || busy} />Jeg har gennemgået originalen, målvirksomheden og de indtastede kildeoplysninger.</label>}
             <div className="modal-actions">
               <Button variant="secondary"
                 type="button"
@@ -599,9 +622,9 @@ export function DocumentIngestModal({
                 type="button"
                 className="btn"
                 onClick={handleIngest}
-                disabled={outcome.blocked || (busy || !fileBase64)}
+                disabled={outcome.blocked || busy || (metadataReview ? !metadataConfirmed || !documentType || !currency.trim() : !fileBase64)}
               >
-                {busy ? "Indlæser…" : "Indlæs bilag"}
+                {busy ? "Gemmer…" : metadataReview ? "Gem gennemgåede kildeoplysninger" : "Indlæs bilag"}
               </Button>
             </div>
           </>

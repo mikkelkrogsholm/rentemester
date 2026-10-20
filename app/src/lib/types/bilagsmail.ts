@@ -20,6 +20,8 @@ export type CompanyBilagsmail = {
     currency: string;
   };
   imapConfigured: boolean;
+  polling?: {enabled:boolean;state:string;lastError?:string|null};
+  pendingReviewCount?:number;
   imapStatus: {
     host: string;
     port: number;

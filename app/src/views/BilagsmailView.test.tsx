@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { screen } from "@testing-library/react";
+import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { BilagsmailView } from "./BilagsmailView";
 import { renderAt } from "../test/render";
 import { mockFetch } from "../test/fixtures";
@@ -94,4 +94,38 @@ describe("BilagsmailView (#348/#350/#351)", () => {
     expect(screen.getByText("Energinet")).toBeInTheDocument();
     expect(screen.getByText("mail")).toBeInTheDocument();
   });
+});
+
+
+test("mail GET never polls; one confirmed pass sends exact body and reloads status", async () => {
+  const data=payload({imapConfigured:true});
+  mockFetch({"GET /api/companies/acme-aps/bilagsmail":{...data,bilagsmail:{...data.bilagsmail,polling:{enabled:false,state:"configured"},pendingReviewCount:2}},"POST /api/companies/acme-aps/bilagsmail/poll":{}});
+  renderAt(<BilagsmailView />,{route:"/companies/acme-aps/bilagsmail",path:"/companies/:slug/bilagsmail"});
+  await screen.findByRole("button",{name:"Gennemgå postkasse nu"});
+  const calls=()=> (globalThis.fetch as unknown as {mock:{calls:Array<[unknown,RequestInit]>}}).mock.calls.filter(c=>String(c[0]).endsWith("/poll"));
+  expect(calls()).toHaveLength(0);
+  expect(screen.getByRole("link",{name:"Åbn fælles dokumentindbakke"})).toHaveAttribute("href","/companies/acme-aps/workspace-inbox");
+  fireEvent.click(screen.getByRole("button",{name:"Gennemgå postkasse nu"}));
+  const dialog=await screen.findByRole("dialog",{name:"Bekræft mailgennemgang"});
+  expect(calls()).toHaveLength(0);
+  fireEvent.click(within(dialog).getByRole("button",{name:"Hent mail én gang"}));
+  await waitFor(()=>expect(calls()).toHaveLength(1));
+  expect(JSON.parse(String(calls()[0][1].body))).toEqual({confirm:true});
+  await screen.findByText("Mailgennemgangen er afsluttet. Kontrollér status og den fælles indbakke.");
+  expect(calls()).toHaveLength(1);
+});
+
+test("an uncertain poll stays blocked after a status read and never repeats automatically", async () => {
+  mockFetch({"GET /api/companies/acme-aps/bilagsmail":payload({imapConfigured:true}),"POST /api/companies/acme-aps/bilagsmail/poll":{__error:{code:"internal",message:"Modtagelsens udfald er uafklaret"}}});
+  renderAt(<BilagsmailView />,{route:"/companies/acme-aps/bilagsmail",path:"/companies/:slug/bilagsmail"});
+  fireEvent.click(await screen.findByRole("button",{name:"Gennemgå postkasse nu"}));
+  const dialog=await screen.findByRole("dialog",{name:"Bekræft mailgennemgang"});
+  fireEvent.click(within(dialog).getByRole("button",{name:"Hent mail én gang"}));
+  await within(dialog).findByText(/Serverens resultat kunne ikke bekræftes/);
+  expect(within(dialog).getByRole("button",{name:"Hent mail én gang"})).toBeDisabled();
+  fireEvent.click(within(dialog).getByRole("button",{name:"Kontrollér status"}));
+  await waitFor(()=>expect(within(dialog).getByRole("button",{name:"Kontrollér status"})).not.toBeDisabled());
+  const calls=(globalThis.fetch as unknown as {mock:{calls:Array<[unknown,RequestInit]>}}).mock.calls.filter(c=>String(c[0]).endsWith("/poll"));
+  expect(calls).toHaveLength(1);
+  expect(within(dialog).getByRole("button",{name:"Hent mail én gang"})).toBeDisabled();
 });

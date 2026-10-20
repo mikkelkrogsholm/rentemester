@@ -2,6 +2,8 @@ import type { BilagsmailResponse } from "../types";
 import { request, type ReadRequestOptions } from "./_shared";
 
 export const bilagsmailApi = {
+  /** One explicit human pass; reads never fetch mail or schedule a retry. */
+  pollBilagsmail:(slug:string)=>request<{ok:true}>(`/api/companies/${encodeURIComponent(slug)}/bilagsmail/poll`,{method:"POST",body:JSON.stringify({confirm:true})}),
   /**
    * #348/#350/#351 — Bilagsmail read state (config, alias, inbox).
    */
