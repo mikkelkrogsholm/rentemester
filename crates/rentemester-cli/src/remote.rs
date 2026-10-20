@@ -53,6 +53,8 @@ pub fn run(args: &[String]) -> Result<Value, Failure> {
             "transport":"HTTPS only unless --allow-loopback-http and literal loopback IP; --server is an origin without path/query/userinfo. No local fallback, redirects, ambient proxies or automatic retries.",
             "exitCodes":{"0":"success","1":"server/transport/protocol failure","2":"usage/configuration failure"},
             "example":"rentemester-rust remote --server http://127.0.0.1:8080 --allow-loopback-http --cookie-file /private/session.cookie trial-balance --company example --year 2026"});
+        help["invoiceExtraction"]=crate::invoice_extraction::help();
+        help["commands"].as_array_mut().unwrap().extend(crate::invoice_extraction::COMMANDS.map(|s|json!(s)));
         help["documentPdf"]=json!({"usage":"parse-document --company SLUG --id ID --confirm; document-parse-status --company SLUG --id ID; document-parsed-text --company SLUG --id ID [--cursor OFFSET] [--limit 1..10]; parse-pending-documents --company SLUG --confirm [--cursor ID] [--limit 1..100]. Explicit --server/--cookie-file required. Text default10 pages, pending default100 documents, cursor default0. No stdin, local parsing, OCR, metadata/accounting inference, keys or retries. Server owns source/evidence integrity and upload/read authority; inspect status after an uncertain parse outcome."});
         help["commands"].as_array_mut().unwrap().extend(["parse-document","document-parse-status","document-parsed-text","parse-pending-documents"].map(|s|json!(s)));
         help["service_principals"]=crate::service_principals::help();
@@ -111,6 +113,7 @@ pub fn run(args: &[String]) -> Result<Value, Failure> {
         }
         if arg.starts_with("--") {
             if ![
+                "--document-id",
                 "--source",
                 "--report",
                 "--format",
@@ -178,6 +181,10 @@ pub fn run(args: &[String]) -> Result<Value, Failure> {
         }
     }
     let command = command.ok_or_else(|| invalid("expected remote command; see remote --help"))?;
+    if crate::invoice_extraction::accepts(command) {
+        return crate::invoice_extraction::run(command,&flags,allow_http,confirmed,preview_reviewed);
+    }
+    if flags.contains_key("--document-id") {return Err(invalid("document-id allowed only for invoice extraction commands"));}
     if !crate::report_reads::accepts(command) && flags.keys().any(|k|["--source","--report","--format"].contains(k)){return Err(invalid("source/report/format allowed only on report reads/exports"));}
     if command == "login" {
         if confirmed || preview_reviewed {

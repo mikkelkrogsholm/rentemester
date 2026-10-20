@@ -25,18 +25,32 @@ mod bank_correction;
 mod bank_reconciliation;
 mod documents;
 mod document_pdf;
+mod invoice_extraction;
 mod reviewed_bookkeeping;
 mod annual_reports;
 mod commitments;
 mod receivables;
 mod remote;
 fn run(args: Vec<String>) -> Result<serde_json::Value, (u8, Error)> {
+    if args.first().map(String::as_str) == Some("documents") {
+        if args.len() == 1 || args == ["documents", "--help"] {
+            return Ok(invoice_extraction::help());
+        }
+        if args.get(1).is_some_and(|s| invoice_extraction::accepts(s)) {
+            if args.get(2).map(String::as_str) == Some("--help") && args.len() == 3 {
+                return Ok(invoice_extraction::help());
+            }
+            return remote::run(&args[1..]);
+        }
+        return Err((2,Error::new("invalid_input","expected documents extract-invoice|invoice-extraction; see documents --help")));
+    }
     if args.first().map(String::as_str) == Some("remote") {
         return remote::run(&args[1..]);
     }
     if args == ["--help"] {
         return Ok(json!({"ok":true,"commands":[
             {"name":"remote","usage":"remote --help","scope":"explicit authenticated Rust HTTP server; no local fallback"},
+            {"name":"documents","usage":"documents --help","scope":"registered-PDF invoice extraction or retained evidence; explicit remote server/session"},
             {"name":"validate-journal","usage":"validate-journal --company PATH < request.json","scope":"experimental source-backed advisory manual validation; no writer authority"},
             {"name":"trial-balance","usage":"trial-balance --company PATH --from YYYY-MM-DD --to YYYY-MM-DD","scope":"experimental local read-only report"},
             {"name":"rehearse-company-baseline","usage":"rehearse-company-baseline --company PATH","scope":"experimental explicit known unversioned physical baseline copy; no adoption authority"},
