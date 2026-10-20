@@ -178,6 +178,7 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
                 | Command::Preview(_)
                 | Command::Issue(_)
                 | Command::Post(_)
+                | Command::Settle(_)
                 | Command::Pdf(_)
         )
     {

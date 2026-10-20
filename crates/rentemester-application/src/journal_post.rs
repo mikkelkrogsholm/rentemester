@@ -94,7 +94,13 @@ pub fn execute(
         Permission::CompanyLedgerPost,
         |tx, subject| {
             if input.recovery_required {
-                rentemester_storage::manual_post_recovery::require_clear(tx, subject)?;
+                rentemester_storage::manual_post_recovery::require_clear_for_key(
+                    tx,
+                    subject,
+                    input.idempotency_key.as_deref().ok_or_else(|| {
+                        Error::new("invalid_input", "Recovery requires original key")
+                    })?,
+                )?;
             }
             let value = crate::journal_mutation::apply(
                 tx,

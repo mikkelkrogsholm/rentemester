@@ -1348,3 +1348,5 @@ mod document_ingest;
 mod portfolio_cashflow;
 
 mod manual_post_recovery;
+
+mod service_bank;

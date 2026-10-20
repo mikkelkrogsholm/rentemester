@@ -115,14 +115,18 @@ export async function checkNativeServiceCompany(owner: Page, base: string, work:
       need(JSON.stringify(human[envelope]) === JSON.stringify(service[envelope]), `Human/service ${resource} parity`);
       for (const kind of ["cli", "mcp"] as const) need(JSON.stringify(client(kind, command)[envelope]) === JSON.stringify(service[envelope]), `${kind} service ${resource} parity`);
     }
-    const sales = await checkNativeServiceSales(owner, http, base, client);
+    const sales = await checkNativeServiceSales(owner, http, base, client, grant);
     after = await canonical();
     await admin("members/company", { userId: issued.serviceAccountId, companySlug: "synthetic", action: "revoke" });
     need((await http.get(prefix + "journal")).status() === 403 && (await http.post(prefix + "manual-journal", { data: original })).status() === 403, "Revoked membership blocks reads and existing receipt replay");
+    const settlement={invoiceDocumentId:sales.documentId,bankTransactionId:sales.payment.bankTransactionId,confirm:true};
+    need((await http.get(prefix+"bank")).status()===403 && (await http.get(prefix+"bank-accounts")).status()===403 && (await http.post(prefix+"invoices/settle",{data:settlement})).status()===403,"Revoked service company denies bank and original settlement");
     await grant("reader");
     await admin("service-principals/revoke", { serviceAccountId: issued.serviceAccountId, credentialId: rotated.credentialId, operationId: crypto.randomUUID(), confirm: true });
     client("cli", "me", undefined, false); client("mcp", "journal", undefined, false);
+    client("cli", "bank", undefined, false); client("mcp", "bank_accounts", undefined, false);
+    need((await http.post(prefix+"invoices/settle",{data:settlement})).status()===401,"Revoked key denies previously settled operation before domain read-back");
     need(JSON.stringify(await canonical()) === JSON.stringify(after), "Revocation must not change accounting");
-    return { sales, normalOwnerIssuedAndExplicitlyGranted: true, companyIsolation: true, readerWriteRefusedBeforeCharge: true, acceptedLostReply: true, cliMcpExactReplay: true, stableReceiptAcrossRotation: true, reversalExactlyOnce: true, canonicalFiveReportParity: true, membershipAndCredentialRevocation: true, servicePostingEntryHash: replay.entryHash, finalEntries: after.entries.length };
+    return { serviceSubjectId:issued.serviceAccountId, sales, normalOwnerIssuedAndExplicitlyGranted: true, companyIsolation: true, readerWriteRefusedBeforeCharge: true, acceptedLostReply: true, cliMcpExactReplay: true, stableReceiptAcrossRotation: true, reversalExactlyOnce: true, canonicalFiveReportParity: true, membershipAndCredentialRevocation: true, servicePostingEntryHash: replay.entryHash, finalEntries: after.entries.length };
   } finally { await http.dispose(); try { unlinkSync(keyFile); } catch {} }
 }

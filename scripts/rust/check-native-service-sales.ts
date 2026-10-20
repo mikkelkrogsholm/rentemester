@@ -1,10 +1,11 @@
+import { checkNativeServicePayment } from "./check-native-service-payment";
 import type { APIRequestContext, Page } from "@playwright/test";
 import { createHash } from "node:crypto";
 import { isDeepStrictEqual } from "node:util";
 import { readFileSync, writeFileSync } from "node:fs";
 type Client = (kind: "cli" | "mcp", command: string, body?: unknown, success?: boolean, id?: number) => any;
 /** Explicit service customer→preview→issue→post→exact original, through real native clients. */
-export async function checkNativeServiceSales(owner: Page, http: APIRequestContext, base: string, client: Client) {
+export async function checkNativeServiceSales(owner: Page, http: APIRequestContext, base: string, client: Client, grant: (role: string) => Promise<unknown>) {
   const prefix = "/api/companies/synthetic/";
   const need = (value: unknown, label: string) => { if (!value) throw Error(label); };
   async function human(resource: string, body?: unknown) {
@@ -49,7 +50,11 @@ export async function checkNativeServiceSales(owner: Page, http: APIRequestConte
   const contacts = (await human("contacts")).contacts;
   const current = contacts.customers.find((v: { id: number }) => v.id === customer.id);
   need(current?.openBalance === 187.5 && current.openInvoiceCount === 1, "Customer service receivable reconciles");
-  return { customerViaCli: true, previewNonmutating: true, issueViaMcp: true, postedOnceViaCli: true, duplicateMcpPostRefused: true, exactOriginalHttpCliMcp: true, canonicalAccountingParity: true, documentId: issued.documentId, invoiceNumber: issued.invoiceNumber, pdfSha256: createHash("sha256").update(bytes).digest("hex"), journalSha256: createHash("sha256").update(JSON.stringify(after.entries)).digest("hex"), finalJournalEntries: after.entries.length };
+  const payment = await checkNativeServicePayment(owner,http,base,client,issued.documentId,customer.id,grant);
+  const finalJournal = (await human("journal")).journal;
+  const unchangedPdf = await owner.request.get(base + prefix + `invoices/${issued.documentId}/pdf`);
+  need(unchangedPdf.ok() && Buffer.from(await unchangedPdf.body()).equals(bytes), "Invoice PDF unchanged after payment");
+  return { payment, customerViaCli: true, previewNonmutating: true, issueViaMcp: true, postedOnceViaCli: true, duplicateMcpPostRefused: true, exactOriginalHttpCliMcp: true, canonicalAccountingParity: true, documentId: issued.documentId, invoiceNumber: issued.invoiceNumber, pdfSha256: createHash("sha256").update(bytes).digest("hex"), journalSha256: createHash("sha256").update(JSON.stringify(finalJournal.entries)).digest("hex"), finalJournalEntries: finalJournal.entries.length };
 }
 
 /** Read-back only after an actual second server restart and independent normal MFA. */
@@ -63,6 +68,14 @@ export async function verifyNativeServiceSalesRestart(owner: Page, base: string)
   if (!invoices.ok() || !journal.ok() || !pdf.ok()) throw Error("Service invoice restart read refused");
   const row = (await invoices.json()).invoices.invoices.find((v: { documentId: number }) => v.documentId === expected.documentId);
   const journalSha256 = createHash("sha256").update(JSON.stringify((await journal.json()).journal.entries)).digest("hex");
-  if (!row?.posted || row.openBalance !== 187.5 || row.invoiceNo !== expected.invoiceNumber || journalSha256 !== expected.journalSha256 || createHash("sha256").update(await pdf.body()).digest("hex") !== expected.pdfSha256) throw Error("Service customer/invoice/accounting/original changed after restart");
+  if (!row?.posted || row.openBalance !== (expected.payment ? 0 : 187.5) || row.invoiceNo !== expected.invoiceNumber || journalSha256 !== expected.journalSha256 || createHash("sha256").update(await pdf.body()).digest("hex") !== expected.pdfSha256) throw Error("Service customer/invoice/accounting/original changed after restart");
+  if (expected.payment) {
+    const bank = await owner.request.get(prefix + "bank"); const contacts = await owner.request.get(prefix + "contacts");
+    if (!bank.ok() || !contacts.ok()) throw Error("Settled bank/customer restart reads refused");
+    const bankRow=(await bank.json()).bank.transactions.find((v:{id:number})=>v.id===expected.payment.bankTransactionId);
+    const customer=(await contacts.json()).contacts.customers.find((v:{id:number})=>v.id===expected.payment.customerId);
+    if (bankRow?.reconciliationStatus!=="matched" || bankRow.sourceFileHash!==expected.payment.sourceSha256 || bankRow.journalEntryNo!==expected.payment.entryNo || customer?.openBalance!==0 || customer.openInvoiceCount!==0) throw Error("Payment/bank/customer changed after real restart");
+    expected.payment.restartReadback=true;
+  }
   expected.restartReadback = true; writeFileSync(path, JSON.stringify(report, null, 2), { mode: 0o600 });
 }

@@ -222,11 +222,12 @@ pub fn run(args: &[String]) -> Result<Value, Failure> {
             "reverse-journal",
             "contacts", "create-customer", "preview-invoice", "issue-invoice",
             "post-invoice", "invoices", "invoice-pdf",
+            "bank-accounts", "bank", "import-bank", "settle-invoice",
         ]
         .contains(&command)
     {
         return Err(invalid(
-            "service authentication supports context, reports, manual journals and customer/invoice issue flows",
+            "service authentication supports context, reports, manual journals, customer/invoice flows, bank reads/import and explicit invoice settlement",
         ));
     }
     if crate::invoice_extraction::accepts(command) {

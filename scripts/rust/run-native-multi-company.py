@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Disposable ordinary native multi-company journey, without offline identity or access fixtures."""
-import argparse,base64,hashlib,json,os,secrets,shutil,signal,socket,subprocess,time,urllib.request,uuid
+import argparse,base64,hashlib,json,os,secrets,shutil,signal,socket,sqlite3,subprocess,time,urllib.request,uuid
 from pathlib import Path
 REPO=Path(__file__).resolve().parents[2]
 def main():
@@ -45,7 +45,26 @@ def main():
   if clients:
    stop();start()
    subprocess.run(['/opt/homebrew/bin/bun','run','scripts/rust/check-native-multi-company.ts','--service-sales-restart'],cwd=REPO,env=env,check=True)
-  evidence=Path('/tmp/rentemester-rust-reports/native-multi-company.json');data=json.loads(evidence.read_text());data.update({'binarySha256':hashlib.sha256(binary.read_bytes()).hexdigest(),'webIndexSha256':hashlib.sha256((web/'index.html').read_bytes()).hexdigest(),'noOfflineIdentityFixture':True,'profile':'local-user-macos'});data['clientSha256']={kind:hashlib.sha256(Path(path).read_bytes()).hexdigest() for kind,path in clients.items()};evidence.write_text(json.dumps(data,indent=2));evidence.chmod(0o600)
+  stop()
+  evidence=Path('/tmp/rentemester-rust-reports/native-multi-company.json');data=json.loads(evidence.read_text());
+  if clients:
+   sales=data['serviceCompany']['sales'];payment=sales['payment'];subject=data['serviceCompany']['serviceSubjectId']
+   db=sqlite3.connect((root/'synthetic/data/ledger.sqlite').as_uri()+'?mode=ro',uri=True)
+   try:
+    assert db.execute('SELECT count(*) FROM invoice_payments WHERE invoice_document_id=?',(sales['documentId'],)).fetchone()[0]==1
+    paid=db.execute('SELECT bank_transaction_id,journal_entry_id,amount FROM invoice_payments WHERE id=?',(payment['paymentId'],)).fetchone()
+    assert paid==(payment['bankTransactionId'],payment['entryId'],187.5)
+    assert db.execute('SELECT count(*) FROM bank_transactions WHERE reference=?',('synthetic-service-payment-97',)).fetchone()[0]==1
+    assert db.execute('SELECT source_file_hash,bank_account_id FROM bank_transactions WHERE id=?',(payment['bankTransactionId'],)).fetchone()==(payment['sourceSha256'],payment['bankAccountId'])
+    assert db.execute('SELECT created_by,created_by_program FROM journal_entries WHERE id=?',(payment['entryId'],)).fetchone()==('user:'+subject,'service-principal')
+    audits=db.execute("SELECT actor FROM audit_log WHERE event_type='bank_import' AND message LIKE ?",('%'+payment['sourceSha256']+'%',)).fetchall()
+    assert len(audits)==2 and all(a[0]=='service_account:'+subject for a in audits)
+    assert db.execute("SELECT actor FROM audit_log WHERE event_type='invoice_payment_apply' AND entity_id=?",(str(payment['paymentId']),)).fetchall()==[('service_account:'+subject,)]
+    original=(root/'synthetic/bank/processed'/(payment['sourceSha256']+'.txt')).read_bytes()
+    assert original==base64.b64decode(payment['sourceBase64'],validate=True) and hashlib.sha256(original).hexdigest()==payment['sourceSha256']
+    payment.update(exactArchivedOriginalAfterStop=True,onePaymentAndBankRowAfterStop=True,serviceAuditAndJournalAttribution=True)
+   finally:db.close()
+  data.update({'binarySha256':hashlib.sha256(binary.read_bytes()).hexdigest(),'webIndexSha256':hashlib.sha256((web/'index.html').read_bytes()).hexdigest(),'noOfflineIdentityFixture':True,'profile':'local-user-macos'});data['clientSha256']={kind:hashlib.sha256(Path(path).read_bytes()).hexdigest() for kind,path in clients.items()};evidence.write_text(json.dumps(data,indent=2));evidence.chmod(0o600)
   print('PASS: separate native company ledgers, normal verification/MFA, permission isolation and restart; '+str(evidence))
  finally:
   stop()

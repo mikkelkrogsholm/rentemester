@@ -425,6 +425,8 @@ fn service_bank_admin_reader_malformed_and_revoked_requests_fail_closed() {
     let account: crate::bank::AccountInput =
         serde_json::from_value(json!({"name":"Unapproved Synthetic"})).unwrap();
     let failure = f.bank(crate::bank::Action::Create(&account)).err().unwrap();
+    assert_eq!(failure.error.code, "access_denied");
+    assert!(failure.control_reusable && failure.company_reusable);
     assert_eq!(failure.usage, UsageStage::NotCommitted);
     assert_eq!(f.remaining(), 30);
     assert_eq!(f.count("bank_accounts"), 1);

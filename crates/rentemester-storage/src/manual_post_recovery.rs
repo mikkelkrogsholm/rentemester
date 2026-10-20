@@ -97,6 +97,22 @@ pub fn require_clear(db: &Connection, subject: &str) -> Result<(), Error> {
         ))
     }
 }
+/// Existing current-principal keys can only replay/refuse in idempotency::execute;
+/// they cannot create a new financial effect. Preserve exact-envelope recovery.
+pub fn require_clear_for_key(db: &Connection, subject: &str, key: &str) -> Result<(), Error> {
+    match require_clear(db, subject) {
+        Ok(()) => Ok(()),
+        Err(e) if e.code == "manual_recovery_required" => {
+            use sha2::{Digest, Sha256};
+            crate::idempotency::validate_key(key)?;
+            let hash = format!("{:x}", Sha256::digest(key.as_bytes()));
+            let exists:bool=db.query_row("SELECT EXISTS(SELECT 1 FROM mutation_idempotency_tombstones t JOIN ledger_identity l ON l.id=1 AND l.ledger_uuid=t.ledger_uuid WHERE t.client_key_hash=?1 AND t.operation='journal_post' AND t.principal_kind='user' AND t.principal_subject_id=?2)",params![hash,subject],|r|r.get(0)).map_err(failure)?;
+            if exists { Ok(()) } else { Err(e) }
+        }
+        Err(e) => Err(e),
+    }
+}
+
 /// Acknowledgement is idempotent and changes no receipt, journal or reserved key.
 pub fn acknowledge(tx: &Transaction<'_>, subject: &str, id: i64) -> Result<Value, Error> {
     own(tx, subject, id)?;

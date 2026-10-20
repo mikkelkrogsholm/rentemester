@@ -147,3 +147,43 @@ fn an_orphan_or_noncanonical_pending_fact_cannot_make_recovery_clear() {
         assert!(require_clear(&db, "owner").is_err());
     }
 }
+#[test]
+fn pending_recovery_allows_only_reserved_original_key_replay_not_a_new_intent() {
+    let mut db = fixture();
+    let tx = db
+        .transaction_with_behavior(TransactionBehavior::Immediate)
+        .unwrap();
+    let id = receipt(&tx, "owner", "original");
+    mark(&tx, "owner", id).unwrap();
+    tx.commit().unwrap();
+    assert!(require_clear_for_key(&db, "owner", "original").is_ok());
+    assert!(require_clear_for_key(&db, "owner", "fresh").is_err());
+    assert!(require_clear_for_key(&db, "owner", " original").is_err());
+    let tx = db
+        .transaction_with_behavior(TransactionBehavior::Immediate)
+        .unwrap();
+    let replay = idempotency::execute(
+        &tx,
+        Input {
+            key: "original",
+            operation: Operation::JournalPost,
+            principal_kind: PrincipalKind::User,
+            subject: "owner",
+            payload: &json!({"synthetic":true}),
+            created_by: "owner",
+            created_by_program: "synthetic",
+            now_ms: 1_767_225_600_000,
+        },
+        |_| panic!("existing key cannot apply another effect"),
+    )
+    .unwrap();
+    match replay {
+        Outcome::Accepted { receipt, .. } => {
+            assert!(receipt.replayed);
+            assert_eq!(receipt.receipt_id, id)
+        }
+        _ => panic!(),
+    };
+    tx.commit().unwrap();
+    assert!(require_clear(&db, "owner").is_err());
+}

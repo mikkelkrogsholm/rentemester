@@ -42,6 +42,10 @@ fn original(input: Import) -> Result<OriginalImport, ()> {
         profile: input.profile,
     })
 }
+enum Credential {
+    Human(rentemester_runtime::auth::VerifiedCookie),
+    Service(rentemester_runtime::service_key::ServiceKey),
+}
 enum Command {
     Accounts,
     Read(Option<String>),
@@ -57,10 +61,26 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
         .unwrap_or("")
         .to_owned();
     let mutation = request.method() == axum::http::Method::POST;
-    let cookie = match proof(&state, &request, mutation) {
-        Ok(p) => p,
-        Err(r) => return *r,
+    let credential = if super::service_company::requested(&request) {
+        match super::service_company::proof(&state, &request, mutation) {
+            Ok(key) => Credential::Service(key),
+            Err(r) => return *r,
+        }
+    } else {
+        match proof(&state, &request, mutation) {
+            Ok(cookie) => Credential::Human(cookie),
+            Err(r) => return *r,
+        }
     };
+    if matches!(credential, Credential::Service(_))
+        && !mutation
+        && (request.headers().contains_key("content-encoding")
+            || request.headers().contains_key("transfer-encoding")
+            || request.headers().contains_key("idempotency-key")
+            || one(request.headers(), "content-length").is_some_and(|v| v != "0"))
+    {
+        return refused(StatusCode::BAD_REQUEST, "invalid_input");
+    }
     if !selected(&state, &request) {
         return refused(StatusCode::NOT_FOUND, "company_not_found");
     }
@@ -144,14 +164,33 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
             },
         };
         let mut owner = state.native.lock_company(&company_slug).map_err(|_| ())?;
-        owner.bank(&cookie, &SystemClock, action).map_err(|_| ())
+        match credential {
+            Credential::Human(cookie) => {
+                let attempt = owner.bank(&cookie, &SystemClock, action).map_err(|_| ())?;
+                Ok::<_, ()>(super::documents::outcome(attempt).map(|value| (value, None)))
+            }
+            Credential::Service(key) => {
+                let attempt = owner
+                    .bank_service(&key, &SystemClock, action)
+                    .map_err(|_| ())?;
+                Ok::<_, ()>(match attempt.outcome {
+                    Ok(value) => Ok((value.result, Some((value.usage, value.business)))),
+                    Err(f) => Err(Box::new(super::service_company::failure(f))),
+                })
+            }
+        }
     })
     .await;
     match result {
-        Ok(Ok(attempt)) => match super::documents::outcome(attempt) {
-            Ok(value) => response(StatusCode::OK, json!({"ok":true,key:value})),
-            Err(r) => *r,
-        },
+        Ok(Ok(Ok((value, stages)))) => {
+            let mut body = json!({"ok":true,key:value});
+            if let Some((usage, business)) = stages {
+                body["usage"] = json!(usage);
+                body["business"] = json!(business);
+            }
+            response(StatusCode::OK, body)
+        }
+        Ok(Ok(Err(response))) => *response,
         _ => refused(StatusCode::SERVICE_UNAVAILABLE, "outcome_unconfirmed"),
     }
 }

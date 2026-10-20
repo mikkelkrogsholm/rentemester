@@ -138,10 +138,15 @@ pub fn execute_service(
         Action::Accounts | Action::Read { .. } => (Permission::CompanyRead, false),
         Action::ImportBytes { .. } => (Permission::CompanyLedgerPost, true),
         _ => {
-            return Err(service_company::initial(Error::new(
+            // This branch has not observed or touched either connection. Do not
+            // retire the owner or imply an unknown outcome for an unsupported action.
+            let mut failure = service_company::initial(Error::new(
                 "access_denied",
                 "service bank action not supported",
-            )));
+            ));
+            failure.control_reusable = true;
+            failure.company_reusable = true;
+            return Err(failure);
         }
     };
     let slug = context.selection.slug;

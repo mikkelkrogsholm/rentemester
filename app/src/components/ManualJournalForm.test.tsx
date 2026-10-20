@@ -105,3 +105,18 @@ test("unavailable receipt read and lost acknowledgement keep new posting unavail
   await act(async()=>{fireEvent.click(screen.getByRole("button",{name:"Bekræft kvittering"}));});
   await screen.findByText(/Kvitteringen kunne ikke bekræftes/);expect(writes).toBe(1);expect(screen.queryByLabelText("Posteringstekst")).toBeNull();
 });
+
+test("explicit server receipt acknowledgement also clears the original pending tab barrier without posting",async()=>{
+  const {ConfirmDialog}=await import("./ConfirmDialog");const {ApiError}=await import("../lib/api");sessionStorage.clear();
+  const first=render(<MemoryRouter><MutationMemoryProvider><ConfirmDialog title="Bogfør postering" body="original intent" operationScope="company:synthetic" operationKey="manual-post:synthetic" confirmLabel="Start original" onConfirm={async()=>{throw new ApiError("network","Lost reply",0)}} onClose={()=>{}}/></MutationMemoryProvider></MemoryRouter>);
+  await act(async()=>{fireEvent.click(screen.getByRole("button",{name:"Start original"}));});await screen.findByText("Lost reply");first.unmount();
+  let acked=false;const writes:string[]=[];
+  stubGlobal("fetch",async(input:RequestInfo|URL,init?:RequestInit)=>{
+    const path=String(input);if(init?.method==="POST"){writes.push(path);acked=true;return new Response(JSON.stringify({ok:true,acknowledgedReceiptId:27}));}
+    if(path.endsWith("/recovery"))return new Response(JSON.stringify({ok:true,receipts:acked?[]:[{receiptId:27,createdAt:"2026-10-20T10:00:00Z",resultAvailable:true,result:{entryNo:"S27"}}]}));
+    return new Response(JSON.stringify({ok:true,documents:{documents:[{id:1,documentNo:"D1",filename:"Bilag"}]}}));
+  });
+  render(<MemoryRouter><MutationMemoryProvider><ManualJournalForm slug="synthetic" currency="DKK" options={{ruleVersion:"rules",accounts}} onSaved={()=>{}} onClose={()=>{}}/></MutationMemoryProvider></MemoryRouter>);
+  await screen.findByText(/Postering S27/);fireEvent.click(screen.getByRole("checkbox"));await act(async()=>{fireEvent.click(screen.getByRole("button",{name:"Bekræft kvittering"}));});
+  await fill();review();expect(within(await screen.findByRole("dialog")).getByRole("button",{name:"Bogfør postering"})).toBeEnabled();expect(writes).toEqual(["/api/companies/synthetic/manual-journal/recovery"]);sessionStorage.clear();
+});
