@@ -1,6 +1,6 @@
 //! Workspace-scoped fresh company creation. All defaults and authorization belong to the server.
 use crate::{
-    ApiClient, Error,
+    ApiClient, Error, MAX_RESPONSE,
     domain::{body, object},
 };
 use reqwest::Method;
@@ -38,7 +38,41 @@ impl ApiClient {
             return Err(Error::InvalidInput("company creation exceeds native16KiB"));
         }
         body(&bytes, &company_creation_body_schema())?;
-        self.request(Method::POST, "/api/companies", &[], Some(bytes))
-            .await
+        let mut response = self
+            .send(
+                Method::POST,
+                "/api/companies",
+                &[],
+                Some(bytes),
+                self.cookie.as_ref().map(|c| c.as_str()),
+            )
+            .await?;
+        let status = response.status();
+        if status.is_server_error()
+            || status.as_u16() == 408
+            || status.is_success() && status.as_u16() != 201
+        {
+            return Err(Error::OutcomeUnknown);
+        }
+        if !status.is_success() {
+            return Err(Error::Refused {
+                status: status.as_u16(),
+            });
+        }
+        let mut bytes = Vec::new();
+        while let Some(chunk) = response.chunk().await.map_err(|_| Error::OutcomeUnknown)? {
+            if bytes.len().saturating_add(chunk.len()) > MAX_RESPONSE {
+                return Err(Error::OutcomeUnknown);
+            }
+            bytes.extend_from_slice(&chunk);
+        }
+        let value: Value = serde_json::from_slice(&bytes).map_err(|_| Error::OutcomeUnknown)?;
+        if value["ok"] != true
+            || value["company"]["slug"].as_str().is_none_or(str::is_empty)
+            || value["company"]["name"].as_str().is_none_or(str::is_empty)
+        {
+            return Err(Error::OutcomeUnknown);
+        }
+        Ok(value)
     }
 }

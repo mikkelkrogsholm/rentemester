@@ -10,6 +10,7 @@ async fn new_company_is_workspace_scoped_exact_and_never_retried() {
     let body = "{ \"name\":\" Synthetic Company \",\"slug\":\"chosen-company\",\"fiscalYearStartMonth\":\"7\",\"fiscalYearLabelStrategy\":\"span\",\"vatPeriodType\":null,\"payment\":null }\n";
     for (status, expected) in [
         ("201 Created", None),
+        ("200 OK", Some(Error::OutcomeUnknown)),
         ("409 Conflict", Some(Error::Refused { status: 409 })),
         ("503 Unavailable", Some(Error::OutcomeUnknown)),
     ] {

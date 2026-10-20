@@ -25,6 +25,12 @@ mod reporting;
 mod opening_balance;
 mod opening_balance_state;
 mod opening_balance_attempt;
+mod company_creation;
+mod company_creation_state;
+mod company_creation_attempt;
+mod archive_import;
+mod archive_import_state;
+mod archive_import_attempt;
 mod payables;
 mod payables_state;
 mod mileage;
@@ -63,7 +69,7 @@ use rentemester_client::{ApiClient, Report};
 use serde_json::Value;
 use std::{path::PathBuf, sync::Arc};
 
-actions!(workflows, [OpenInvoices, OpenCompanySetup, OpenOpeningBalance, BackToOverview, ScrollWorkflowDown, ScrollWorkflowUp]);
+actions!(workflows, [OpenInvoices, OpenCompanySetup, OpenOpeningBalance, OpenCompanyCreation, OpenArchiveImport, BackToOverview, ScrollWorkflowDown, ScrollWorkflowUp]);
 
 #[derive(Default)]
 struct Options {
@@ -115,7 +121,7 @@ struct Trial {
     period: String,
     rows: Vec<[String; 6]>,
     totals: String,
-    balanced: bool,
+    balanced: Option<bool>,
 }
 fn field(value: &Value, key: &str) -> Result<String, String> {
     value[key]
@@ -126,6 +132,10 @@ fn field(value: &Value, key: &str) -> Result<String, String> {
 fn amount(value: &Value, key: &str) -> Result<String, String> {
     match &value[key] {
         Value::Number(n) => Ok(n.to_string()),
+        Value::String(s) if {
+            let decimal=s.strip_prefix('-').unwrap_or(s);
+            decimal.split_once('.').is_some_and(|(whole,fraction)| !whole.is_empty() && whole.bytes().all(|b|b.is_ascii_digit()) && fraction.len()==2 && fraction.bytes().all(|b|b.is_ascii_digit()))
+        } => Ok(s.clone()),
         _ => Err(format!("Server response missing amount {key}")),
     }
 }
@@ -150,6 +160,11 @@ fn trial(value: Value) -> Result<Trial, String> {
         return Err("Server did not confirm trial balance".into());
     }
     let report = &value["trialBalance"];
+    let source=report.get("source").or_else(||report.get("selectedSource"));
+    if source.is_some_and(|s| !matches!(s.as_str(),Some("live"|"archive"))) { return Err("Ukendt rapportkilde".into()); }
+    let archive=source==Some(&Value::String("archive".into()));
+    let shown_amount=|v:&Value,key:&str| if archive && v.get(key)==Some(&Value::Null) {Ok("Ikke tilgængeligt".into())} else {amount(v,key)};
+    let period=|key:&str| if archive && report.get(key)==Some(&Value::Null) {Ok("Ikke oplyst".into())} else {field(report,key)};
     let rows = report["rows"]
         .as_array()
         .ok_or("Server response missing trial balance rows")?
@@ -158,34 +173,37 @@ fn trial(value: Value) -> Result<Trial, String> {
             Ok([
                 field(v, "accountNo")?,
                 field(v, "name")?,
-                field(v, "type")?,
-                amount(v, "debit")?,
-                amount(v, "credit")?,
-                amount(v, "balance")?,
+                if archive && v.get("type")==Some(&Value::Null) {"Uklassificeret".into()} else {field(v, "type")?},
+                shown_amount(v, "debit")?,
+                shown_amount(v, "credit")?,
+                shown_amount(v, "balance")?,
             ])
         })
         .collect::<Result<Vec<_>, String>>()?;
     Ok(Trial {
         title: format!(
-            "{} · {}",
+            "{} · {} · {}",
             field(&report["company"], "name")?,
-            field(report, "selectedYear")?
+            field(report, "selectedYear")?,
+            if archive {"Arkiv"} else {"Aktivt regnskab"},
         ),
         period: format!(
             "{} — {} · {}",
-            field(report, "periodStart")?,
-            field(report, "periodEnd")?,
+            period("periodStart")?,
+            period("periodEnd")?,
             field(&report["company"], "currency")?
         ),
         rows,
         totals: format!(
             "Debet i alt {} · Kredit i alt {}",
-            amount(report, "totalDebit")?,
-            amount(report, "totalCredit")?
+            shown_amount(report, "totalDebit")?,
+            shown_amount(report, "totalCredit")?
         ),
-        balanced: report["balanced"]
-            .as_bool()
-            .ok_or("Server response missing balance check")?,
+        balanced: match report.get("balanced") {
+            Some(Value::Bool(value))=>Some(*value),
+            Some(Value::Null) if archive=>None,
+            _=>return Err("Server response missing balance check".into()),
+        },
     })
 }
 fn readable(error: rentemester_client::Error) -> String {
@@ -252,6 +270,9 @@ struct Desktop {
     company_knowledge: Option<Entity<company_knowledge::CompanyKnowledge>>,
     company_setup: Option<Entity<company_setup::CompanySetup>>,
     opening_balance: Option<Entity<opening_balance::OpeningBalance>>,
+    company_creation: Option<Entity<company_creation::CompanyCreation>>,
+    archive_import: Option<Entity<archive_import::ArchiveImport>>,
+    pending_company_selection: Option<String>,
     status: String,
     busy: bool,
 }
@@ -362,6 +383,9 @@ impl Desktop {
             company_knowledge: None,
             company_setup: None,
             opening_balance: None,
+            company_creation: None,
+            archive_import: None,
+            pending_company_selection: None,
             status: "Forbind til din Rentemester-server og log ind med e-mail, adgangskode og MFA."
                 .into(),
             busy: false,
@@ -395,6 +419,8 @@ impl Desktop {
             || self.company_knowledge.is_some()
             || self.company_setup.is_some()
             || self.opening_balance.is_some()
+            || self.company_creation.is_some()
+            || self.archive_import.is_some()
     }
     fn open_invoices(&mut self, _: &OpenInvoices, window: &mut Window, cx: &mut Context<Self>) {
         self.open_workflow(true, window, cx);
@@ -490,6 +516,40 @@ impl Desktop {
         }
         self.body_scroll.set_offset(point(px(0.), px(0.)));
         if let Some(view) = &self.opening_balance { view.update(cx, |v, cx| v.focus_entry(window, cx)); }
+        cx.notify();
+    }
+    fn open_company_creation(&mut self, _: &OpenCompanyCreation, window:&mut Window, cx:&mut Context<Self>) {
+        match workflow_navigation(self.session.is_some(),self.busy,self.has_screen(),self.company_creation.is_some()) {
+            WorkflowNavigation::Unavailable=>{self.status="Log ind og vælg den nødvendige virksomhed før navigation.".into();cx.notify();return;},
+            WorkflowNavigation::KeepCurrent=>{self.status="Den åbne skærm og dens gennemgang bevares. Luk den eksplicit før næste arbejdsgang.".into();cx.notify();return;},
+            WorkflowNavigation::Wait=>return,
+            WorkflowNavigation::Open|WorkflowNavigation::FocusExisting=>{}
+        }
+        if self.company_creation.is_none() {
+            let Some(session)=self.session.clone() else {return;};
+            let origin=self.connection_origin(cx);
+            let local=match self.managed.as_ref().map(|m|m.journal_identity()).transpose() {Ok(local)=>local,Err(error)=>{self.status=error;cx.notify();return;}};
+            self.company_creation=Some(cx.new(|cx|company_creation::CompanyCreation::new(session,origin,local,window,cx)));
+        }
+        self.body_scroll.set_offset(point(px(0.),px(0.)));
+        if let Some(view)=&self.company_creation {view.update(cx,|v,cx|v.focus_entry(window,cx));}
+        cx.notify();
+    }
+    fn open_archive_import(&mut self, _: &OpenArchiveImport, window:&mut Window, cx:&mut Context<Self>) {
+        match workflow_navigation(self.session.is_some() && self.selected.is_some(),self.busy,self.has_screen(),self.archive_import.is_some()) {
+            WorkflowNavigation::Unavailable=>{self.status="Log ind og vælg den nødvendige virksomhed før navigation.".into();cx.notify();return;},
+            WorkflowNavigation::KeepCurrent=>{self.status="Den åbne skærm og dens gennemgang bevares. Luk den eksplicit før næste arbejdsgang.".into();cx.notify();return;},
+            WorkflowNavigation::Wait=>return,
+            WorkflowNavigation::Open|WorkflowNavigation::FocusExisting=>{}
+        }
+        if self.archive_import.is_none() {
+            let (Some(session),Some(company))=(self.session.clone(),self.selected.clone()) else {return;};
+            let origin=self.connection_origin(cx);
+            let local=match self.managed.as_ref().map(|m|m.journal_identity()).transpose() {Ok(local)=>local,Err(error)=>{self.status=error;cx.notify();return;}};
+            self.archive_import=Some(cx.new(|cx|archive_import::ArchiveImport::new(session,origin,company,local,window,cx)));
+        }
+        self.body_scroll.set_offset(point(px(0.),px(0.)));
+        if let Some(view)=&self.archive_import {view.update(cx,|v,cx|v.focus_entry(window,cx));}
         cx.notify();
     }
     fn back_to_overview(
@@ -626,6 +686,9 @@ impl Desktop {
         self.company_knowledge = None;
         self.company_setup = None;
         self.opening_balance = None;
+        self.company_creation = None;
+        self.archive_import = None;
+        self.pending_company_selection = None;
         self.status = "Forbinder…".into();
         let server = self.connection_origin(cx);
         let cookie = PathBuf::from(self.cookie.read(cx).value().to_string());
@@ -708,6 +771,9 @@ impl Desktop {
         self.company_knowledge = None;
         self.company_setup = None;
         self.opening_balance = None;
+        self.company_creation = None;
+        self.archive_import = None;
+        self.pending_company_selection = None;
         self.busy = true;
         self.status = "Kontrollerer login…".into();
         let origin = self.connection_origin(cx);
@@ -761,7 +827,7 @@ impl Desktop {
         self.scheduled_dispatcher.update(cx, |dispatcher, cx| dispatcher.invalidate(cx));
         self.session = Some(session.clone());
         self.busy = true;
-        self.status = "Login godkendt. Henter virksomheder…".into();
+        self.status = "Henter de aktuelt tilgængelige virksomheder…".into();
         let task = cx.background_executor().spawn(async move {
             companies(
                 session
@@ -779,9 +845,13 @@ impl Desktop {
                         this.companies = list;
                         this.status =
                             "Forbundet. Vælg en virksomhed for at læse saldobalancen.".into();
-                        if let Some(slug) = this.selected.clone() {
+                        if let Some(slug) = this.pending_company_selection.take().or_else(||this.selected.clone()) {
                             if this.companies.iter().any(|c| c.slug == slug) {
                                 this.load(slug, cx);
+                            } else {
+                                this.selected=None;
+                                this.trial=None;
+                                this.status="Virksomheden findes ikke i din aktuelle adgang. Vælg en tilgængelig virksomhed.".into();
                             }
                         }
                     }
@@ -825,6 +895,9 @@ impl Desktop {
         self.company_knowledge = None;
         self.company_setup = None;
         self.opening_balance = None;
+        self.company_creation = None;
+        self.archive_import = None;
+        self.pending_company_selection = None;
         self.password
             .update(cx, |input, cx| input.set_value("", window, cx));
         self.code
@@ -864,6 +937,9 @@ impl Desktop {
         self.company_knowledge = None;
         self.company_setup = None;
         self.opening_balance = None;
+        self.company_creation = None;
+        self.archive_import = None;
+        self.pending_company_selection = None;
         self.selected = Some(slug.clone());
         self.status = "Henter saldobalance…".into();
         let year = self.year.read(cx).value().to_string();
@@ -1132,6 +1208,27 @@ impl Desktop {
             );
         }
         content = content.child(list);
+        if self.session.is_some() {
+            content=content.child(Button::new("company-creation-open").label("Opret virksomhed · ⌘4").disabled(self.busy)
+                .on_click(cx.listener(|this,_,window,cx|this.open_company_creation(&OpenCompanyCreation,window,cx))));
+        }
+        }
+        if let Some(creation)=self.company_creation.clone() {
+            return content.child(Button::new("company-creation-close").track_focus(&self.close_focus)
+                .label("Luk og genindlæs virksomheder")
+                .on_click(cx.listener(|this,_,_,cx|{
+                    this.pending_company_selection=this.company_creation.as_ref().and_then(|view|view.read(cx).created_slug());
+                    this.company_creation=None;
+                    if let Some(session)=this.session.clone(){this.refresh(session,cx);}
+                }))).child(creation);
+        }
+        if let Some(import)=self.archive_import.clone() {
+            return content.child(Button::new("archive-import-close").track_focus(&self.close_focus)
+                .label("Luk historikimport og genindlæs saldobalance")
+                .on_click(cx.listener(|this,_,_,cx|{
+                    this.archive_import=None;
+                    if let Some(slug)=this.selected.clone(){this.load(slug,cx);}
+                }))).child(import);
         }
         if let Some(scheduled_recurring) = self.scheduled_recurring.clone() {
             return content.child(Button::new("scheduled-recurring-close").track_focus(&self.close_focus)
@@ -1372,6 +1469,10 @@ impl Desktop {
         if self.session.is_some() && self.selected.is_some() {
             content = content.child(Button::new("opening-balance-open").label("Åbningsbalance · ⌘3").disabled(self.busy)
                 .on_click(cx.listener(|this, _, window, cx| this.open_opening_balance(&OpenOpeningBalance, window, cx))));
+        }
+        if self.session.is_some() && self.selected.is_some() {
+            content=content.child(Button::new("archive-import-open").label("Importér regnskabshistorik · ⌘5").disabled(self.busy)
+                .on_click(cx.listener(|this,_,window,cx|this.open_archive_import(&OpenArchiveImport,window,cx))));
         }
         if self.session.is_some() && self.selected.is_some() {
             content = content.child(Button::new("scheduled-recurring-open").label("Planlagte fakturaer").disabled(self.busy)
@@ -1735,10 +1836,10 @@ impl Desktop {
             }
             table = table
                 .child(report.totals.clone())
-                .child(if report.balanced {
-                    "Debet og kredit stemmer."
-                } else {
-                    "Debet og kredit stemmer ikke — gennemgå serverens ledger."
+                .child(match report.balanced {
+                    Some(true)=>"Debet og kredit stemmer.",
+                    Some(false)=>"Debet og kredit stemmer ikke — gennemgå serverens ledger.",
+                    None=>"Balancekontrol er ikke tilgængelig for dette arkivgrundlag.",
                 });
             content = content.child(table);
         }
@@ -1804,6 +1905,8 @@ impl Render for Desktop {
             .on_action(cx.listener(Self::open_invoices))
             .on_action(cx.listener(Self::open_company_setup))
                 .on_action(cx.listener(Self::open_opening_balance))
+            .on_action(cx.listener(Self::open_company_creation))
+            .on_action(cx.listener(Self::open_archive_import))
             .on_action(cx.listener(Self::back_to_overview))
             .on_action(cx.listener(Self::scroll_workflow_down))
             .on_action(cx.listener(Self::scroll_workflow_up))
@@ -1870,6 +1973,8 @@ fn main() {
                 KeyBinding::new("cmd-1", OpenInvoices, Some("RentemesterWorkflows")),
                 KeyBinding::new("cmd-2", OpenCompanySetup, Some("RentemesterWorkflows")),
                 KeyBinding::new("cmd-3", OpenOpeningBalance, Some("RentemesterWorkflows")),
+                KeyBinding::new("cmd-4", OpenCompanyCreation, Some("RentemesterWorkflows")),
+                KeyBinding::new("cmd-5", OpenArchiveImport, Some("RentemesterWorkflows")),
                 KeyBinding::new("cmd-0", BackToOverview, Some("RentemesterWorkflows")),
             ]);
             cx.set_menus([Menu::new("Rentemester"), Menu::new("Arbejdsgange").items([
@@ -1878,6 +1983,8 @@ fn main() {
                 MenuItem::action("Fakturaer", OpenInvoices),
                 MenuItem::action("Virksomhedsopsætning", OpenCompanySetup),
                 MenuItem::action("Åbningsbalance", OpenOpeningBalance),
+                MenuItem::action("Opret virksomhed", OpenCompanyCreation),
+                MenuItem::action("Importér regnskabshistorik", OpenArchiveImport),
                 MenuItem::action("Tilbage til oversigt: fokusér Luk", BackToOverview),
             ])]);
 
@@ -1936,7 +2043,7 @@ mod tests {
         let source = json!({"ok":true,"trialBalance":{"company":{"name":"Synthetic Company","currency":"DKK"},"selectedYear":"2026","periodStart":"2026-01-01","periodEnd":"2026-12-31","rows":[{"accountNo":"X","name":"Synthetic expense","type":"expense","debit":12.34,"credit":0,"balance":12.34}],"totalDebit":12.34,"totalCredit":12.34,"balanced":true}});
         let report = trial(source.clone()).unwrap();
         assert_eq!(report.rows[0][3], "12.34");
-        assert!(report.balanced);
+        assert_eq!(report.balanced,Some(true));
         let mut incomplete = source;
         incomplete["trialBalance"]["rows"][0]["balance"] = serde_json::Value::Null;
         assert!(trial(incomplete).is_err());
@@ -1947,5 +2054,21 @@ mod tests {
         )
         .unwrap();
         assert_eq!(list[0].slug, "synthetic");
+    }
+    #[test]
+    fn imported_company_overview_preserves_exact_money_and_unavailable_evidence() {
+        let mut source=json!({"ok":true,"trialBalance":{"company":{"name":"Synthetic archive","currency":"EUR"},"selectedYear":"2024","source":"archive","periodStart":null,"periodEnd":null,"rows":[{"accountNo":"UNKNOWN","name":"Retained source account","type":null,"debit":"100000000000000.01","credit":"0.00","balance":"100000000000000.01"}],"totalDebit":"100000000000000.01","totalCredit":"100000000000000.01","balanced":true}});
+        let report=trial(source.clone()).unwrap();
+        assert_eq!(report.rows[0][3],"100000000000000.01");
+        assert_eq!(report.rows[0][2],"Uklassificeret");
+        assert!(report.title.contains("Arkiv"));
+        assert!(report.period.contains("Ikke oplyst"));
+        source["trialBalance"]["rows"][0]["balance"]=serde_json::Value::Null;
+        source["trialBalance"]["balanced"]=serde_json::Value::Null;
+        let report=trial(source.clone()).unwrap();
+        assert_eq!(report.balanced,None);
+        assert_eq!(report.rows[0][5],"Ikke tilgængeligt");
+        source["trialBalance"]["source"]=json!("other");
+        assert!(trial(source).is_err());
     }
 }
