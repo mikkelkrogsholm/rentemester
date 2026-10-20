@@ -2974,3 +2974,33 @@ GUI-accept. SIGKILL skete før publication; tilstande efter atomisk exchange er
 unit-testet, ikke bevist ved et faktisk process-nedbrud. R52's fulde platform-,
 installerede update/offline/uninstall- og data-cutover-accept samt det samlede
 Rust-mål er fortsat åbent. Resterende GUI-prøver venter til slutaccept.
+
+### Kontrolleret servernedlukning (Group104)
+
+Rust-serveren håndterer nu SIGTERM og SIGINT. Den stopper HTTP-admission,
+lader igangværende svar afsluttes og signalerer stop til begge eksplicit
+aktiverede workers. Workers starter ingen ny runde efter observeret stop;
+en allerede optaget runde afsluttes og afventes, før processen lukker.
+En runde kan indeholde flere operationer. Der indføres ingen automatisk
+genafsendelse eller hård timeout, som afbryder en ekstern handling.
+Containerens stopfrist skal derfor tillade afslutning af de konfigurerede
+netværksbudgetter og en optaget worker-runde. SIGKILL eller overskredet
+stopfrist er fortsat et crash og bruger de eksisterende regler om ukendt udfald.
+
+Faktiske macOS-processer beviser, at SIGTERM afslutter en igangværende
+16 MiB-download og derefter giver exit 0. En separat privat workspace-prøve
+beviser SIGTERM, genåbning og SIGINT med exit 0; den eksisterende kontrol af
+konkurrerende ejer og filrettigheder består. To tests af den fælles
+worker-driver beviser stop før første runde og afventning af en igangværende
+blocking-runde uden næste runde. Alle 40 servertests og streng Clippy består.
+Evidens: `server-shutdown104.json` med kilde-, binær- og log-hashes.
+Der hævdes ikke en faktisk provideroperation under SIGTERM eller Linux-accept.
+
+R53 er fortsat åben: den eksisterende `Dockerfile` og release-workflow
+starter stadig Bun/TypeScript. Næste leverance er en særskilt Rust-kandidat
+med bygget web-UI, PDF-worker/PDFium og Linux-biblioteker, dedikeret UID,
+fjernede capabilities, no-new-privileges og privat workspace-parent.
+Almindelig start skal genåbne; oprettelse, restore og migration skal være
+eksplicitte operatørhandlinger. Den nuværende produktionsrute skiftes først
+efter de aftalte accept- og releasegates. Resterende desktopprøver er fortsat
+samlet til slutaccept efter brugerens ønske.
