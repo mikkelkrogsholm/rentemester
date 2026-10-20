@@ -1,13 +1,13 @@
 {
   "goal": "Complete Rust server/web, GPUI local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "Three foreign reverse-charge bases and verified historical FX prerequisites qualified",
-  "code_revision": "e56c74f71af233413109854318fbf055d092e589",
-  "spec_revision": "sha256:8f13a3a6da7833d0dd219aec4ccc121f03da93932bea83da13352210ab930e74",
-  "state": "Group81 qualified at e56c74f7: 19 ordinary-MFA actions through existing web issue/post all three source foreign legal bases with explicit trusted VIES. Main ART196 EUR100 at7.4 retains partial/final receipt-credit-refund lifecycle and finalFX3; NR3/ART199 sideEUR10 invoices each post/fullcredit tozero. Exactly11journals/4bankrows/3posted invoices/4credits; datedEU740 then592 then0 with invoice/credit counts3/2,3/3,3/4. Full four-phase HTTP/CLI/MCP accounting and all-three exact preview-input/PDF equality; current rights/provider mismatch/outage/held revoked result refusal retained. Four independently verified signed full archives and source-free fresh-owner restore/reopen preserve originals, frozen VIES and exact accounting/audit. Focused fixtures verify old omitted-zero-VAT/aggregate-FX, original raw-byte hashes, >6digit original quote normalization and unchanged nativev1. These tests do not qualify actual TSworkspace adoption: supported operator route is still missing. Full mission/epic672 and installed native financial acceptance remain OPEN.",
+  "current_increment": "Unmatched bank tasks and reviewed purchase booking qualified",
+  "code_revision": "6bcb0dfacbde87494d04a786fe0c8a1d0188718c",
+  "spec_revision": "sha256:c16d09043a7205afbb96c55a3d60e8814f154ca408bd2f10cd601f701a04a428",
+  "state": "Group82 qualified at 6bcb0dfa: 19 ordinary-MFA actions complete bank import → wrong-currency/unique/ambiguous late purchase originals → explicit outgoing Bank web selection and reviewed expense posting → CLI review and MCP already-resolved no-op → reimport recreates only still-unbooked incoming task. Exactly2bankrows/3purchase originals/1journal/1bank reconciliation; inputVAT25 and truthful booked-minus-statement difference-200. Immutable task history5 with4resolved/1open. Current reviewer upload/import/post denied and revoked read403; all statuses/archive selectors and financial HTTP/CLI/MCP equal through source/restart/restored/reopen. Four independently verified signed full archives and source-free fresh-owner recovery preserve exact original bytes, tables and historical audit. Raw Windows1252 bank file transport, scored suggestions and CVR remain server gaps. Whole Rust mission/epic672 and installed desktop financial acceptance remain OPEN.",
   "issues_closed": [],
   "next": [
-    "Complete unmatched-bank exception creation, sign/currency-aware context and immutable refresh through existing bank import/document/expense booking journey. Source scope retained /tmp/rm82-bank-source-scope.md.",
+    "Finish raw-byte bank import across server/web/CLI/MCP with original-byte SHA and shared source decoder for later reconciliation; independent Group83 prerequisites in three isolated worktrees, not yet integrated or runtime qualified.",
     "Complete scored bank suggestions separately (issued invoice/purchase/customer refund/supplier refund), raw Windows1252 file/byte import preserving original hash, and interactive CVR lookup/sync. Do not infer full suggestions parity from exception amount-only candidates.",
     "Complete installed local/remote desktop financial journeys, remaining safe transfer/recovery/automation/distribution, full CLI/MCP parity and TypeScript retirement. Operator TSworkspace adoption is still required; current rehearsal commands discard copies and grant no writer authority.",
     "Retain explicit native tax/FX contracts and verify source rate differences against posting controls before broader support claims. Qualified75/76/77/78/79/80/81 must not be repeated without changed code or new failure evidence."
@@ -21,10 +21,10 @@
   ],
   "all_goal_requirements_complete": false,
   "previous_verified_increment": {
-    "current_increment": "Ordinary foreign buyer and invoice delivery/unit metadata lifecycle qualified",
-    "code_revision": "059b05a92c7a8f2e586d81ba813508852da06fe8",
-    "spec_revision": "sha256:d3dd594f9e3ea2cb99c98931143ec314a2af305f939a719a5f84caae71413de9",
-    "state": "Group80 qualified at 059b05a9: 19 ordinary-MFA actions through existing web full standard invoice with foreign buyer identifier, explicit delivery period and document/per-line unit codes; reduced simplified invoice with delivery date and no fabricated buyer or quantities. Exact preview/issue input, immutable original and PDF metadata retained; no inferred VIES validity or tax treatment. Existing partial/final receipt, original credit and refund flow retains VAT70.01 then12.01 then0, exactly11journals/6bankrows and final zero accounts. Four-phase HTTP/CLI/MCP canonical reads and exact metadata-input preview/PDF equality; restart and four independently verified signed full archives with source-free fresh-owner restore/reopen retain exact evidence. Full mission/epic672, historical foreign reverse-charge/FX compatibility and installed native financial acceptance remain OPEN."
+    "current_increment": "Three foreign reverse-charge bases and verified historical FX prerequisites qualified",
+    "code_revision": "e56c74f71af233413109854318fbf055d092e589",
+    "spec_revision": "sha256:8f13a3a6da7833d0dd219aec4ccc121f03da93932bea83da13352210ab930e74",
+    "state": "Group81 qualified at e56c74f7: 19 ordinary-MFA actions through existing web issue/post all three source foreign legal bases with explicit trusted VIES. Main ART196 EUR100 at7.4 retains partial/final receipt-credit-refund lifecycle and finalFX3; NR3/ART199 sideEUR10 invoices each post/fullcredit tozero. Exactly11journals/4bankrows/3posted invoices/4credits; datedEU740 then592 then0 with invoice/credit counts3/2,3/3,3/4. Full four-phase HTTP/CLI/MCP accounting and all-three exact preview-input/PDF equality; current rights/provider mismatch/outage/held revoked result refusal retained. Four independently verified signed full archives and source-free fresh-owner restore/reopen preserve originals, frozen VIES and exact accounting/audit. Focused fixtures verify old omitted-zero-VAT/aggregate-FX, original raw-byte hashes, >6digit original quote normalization and unchanged nativev1. These tests do not qualify actual TSworkspace adoption: supported operator route is still missing. Full mission/epic672 and installed native financial acceptance remain OPEN."
   },
   "evidence": {
     "combined_browser_log": "/tmp/rm-platform5-combined.log",
@@ -1684,6 +1684,31 @@
         "Initial storage test run found obsolete ordinary-buyer format assertion from pre80; invalid case now tests forbidden control character, preserving source bounded-text identity contract.",
         "New fixture attempted to change issued SHA in real fresh schema; append-only trigger correctly refused. Test now asserts refusal and preserved report. Minimal corruption fixture separately verifies raw hash mismatch refusal."
       ]
+    },
+    "group82_unmatched_bank": {
+      "source_revision": "6bcb0dfacbde87494d04a786fe0c8a1d0188718c",
+      "actual_report": "/tmp/rentemester-rust-reports/unmatched-bank-integrated82-run3.json",
+      "actual_report_sha256": "20e0e2e685dedffe1e98e1b12187648e4707466b42184a930259c1496e34237a",
+      "actual_log": "/tmp/rm82-actual3.log",
+      "storage": "/tmp/rm82-unmatched2.log (3PASS), /tmp/rm82-profile.log (4PASS), /tmp/rm82-bank.log (5PASS)",
+      "exceptions": "/tmp/rm82-exception-storage.log (4PASS), /tmp/rm82-exception-app.log (1PASS), /tmp/rm82-exception-http.log (1PASS)",
+      "clients": "/tmp/rm82-client.log (5PASS), /tmp/rm82-cli.log (1PASS), /tmp/rm82-mcp2.log (116stdioPASS plus2unitPASS)",
+      "documents": "/tmp/rm82-documents.log (5PASS)",
+      "web": "/tmp/rm82-web-tests2.log (30PASS/84assertions)",
+      "web_build": "/tmp/rm82-web-final-build.log",
+      "strict": "/tmp/rm82-strict.log",
+      "build": "/tmp/rm82-build.log",
+      "cleanup": "/Users/mikkelfreltoftkrogsholm/Projekter/rentemester-cleanup-recovery-2026-10-20/integrated82.json",
+      "limitations": [
+        "Task candidates only compare amount/currency and require explicit review; this does not qualify scored purchase/invoice/refund bank suggestions.",
+        "Native archive and normal current UTF8 CSV only; raw file bytes/Windows1252 contract is next.",
+        "No actual TSworkspace adoption, installed desktop financial acceptance or full TSretirement claim."
+      ],
+      "failed_attempts": [
+        "First actual stopped before import: exact label included hint text; helper now uses source-verified anchored label.",
+        "Second actual stopped before document upload: nested select label included option text; source-verified select label anchors fix helper only.",
+        "Initial bank tasks test rejected signed bank amount through unsigned ledger-money reader; use existing bank::signed_money without weakening ledger gates."
+      ]
     }
   },
   "verified_history": [
@@ -2749,6 +2774,45 @@
           "New fixture attempted to change issued SHA in real fresh schema; append-only trigger correctly refused. Test now asserts refusal and preserved report. Minimal corruption fixture separately verifies raw hash mismatch refusal."
         ]
       }
+    },
+    {
+      "delivery": "Group82 unmatched bank tasks and reviewed purchase booking",
+      "owner": "root integration/UI/ingest and actual; isolated storage, task clients, archived reads and actual helper writers",
+      "status": "Group82 qualified at 6bcb0dfa: 19 ordinary-MFA actions complete bank import → wrong-currency/unique/ambiguous late purchase originals → explicit outgoing Bank web selection and reviewed expense posting → CLI review and MCP already-resolved no-op → reimport recreates only still-unbooked incoming task. Exactly2bankrows/3purchase originals/1journal/1bank reconciliation; inputVAT25 and truthful booked-minus-statement difference-200. Immutable task history5 with4resolved/1open. Current reviewer upload/import/post denied and revoked read403; all statuses/archive selectors and financial HTTP/CLI/MCP equal through source/restart/restored/reopen. Four independently verified signed full archives and source-free fresh-owner recovery preserve exact original bytes, tables and historical audit. Raw Windows1252 bank file transport, scored suggestions and CVR remain server gaps. Whole Rust mission/epic672 and installed desktop financial acceptance remain OPEN.",
+      "contract": "/tmp/rm-platform82-bank-flow-contract.md",
+      "acceptance": "Import → late original evidence without invented matches → reviewed outgoing purchase posting → review-only clients → canonical current rights/restart/signed source-free recovery.",
+      "evidence": {
+        "source_revision": "6bcb0dfacbde87494d04a786fe0c8a1d0188718c",
+        "actual_report": "/tmp/rentemester-rust-reports/unmatched-bank-integrated82-run3.json",
+        "actual_report_sha256": "20e0e2e685dedffe1e98e1b12187648e4707466b42184a930259c1496e34237a",
+        "actual_log": "/tmp/rm82-actual3.log",
+        "storage": "/tmp/rm82-unmatched2.log (3PASS), /tmp/rm82-profile.log (4PASS), /tmp/rm82-bank.log (5PASS)",
+        "exceptions": "/tmp/rm82-exception-storage.log (4PASS), /tmp/rm82-exception-app.log (1PASS), /tmp/rm82-exception-http.log (1PASS)",
+        "clients": "/tmp/rm82-client.log (5PASS), /tmp/rm82-cli.log (1PASS), /tmp/rm82-mcp2.log (116stdioPASS plus2unitPASS)",
+        "documents": "/tmp/rm82-documents.log (5PASS)",
+        "web": "/tmp/rm82-web-tests2.log (30PASS/84assertions)",
+        "web_build": "/tmp/rm82-web-final-build.log",
+        "strict": "/tmp/rm82-strict.log",
+        "build": "/tmp/rm82-build.log",
+        "cleanup": "/Users/mikkelfreltoftkrogsholm/Projekter/rentemester-cleanup-recovery-2026-10-20/integrated82.json",
+        "limitations": [
+          "Task candidates only compare amount/currency and require explicit review; this does not qualify scored purchase/invoice/refund bank suggestions.",
+          "Native archive and normal current UTF8 CSV only; raw file bytes/Windows1252 contract is next.",
+          "No actual TSworkspace adoption, installed desktop financial acceptance or full TSretirement claim."
+        ],
+        "failed_attempts": [
+          "First actual stopped before import: exact label included hint text; helper now uses source-verified anchored label.",
+          "Second actual stopped before document upload: nested select label included option text; source-verified select label anchors fix helper only.",
+          "Initial bank tasks test rejected signed bank amount through unsigned ledger-money reader; use existing bank::signed_money without weakening ledger gates."
+        ]
+      }
+    },
+    {
+      "delivery": "Group83 original bank bytes",
+      "owner": "root runtime/application/HTTP/integration; isolated engine-storage, web and clients writers",
+      "status": "Prerequisites in progress on base6bcb0dfa, not integrated or qualified. Keep Group82 accepted flow intact.",
+      "contract": "/tmp/rm-platform83-bank-bytes-contract.md",
+      "acceptance": "Original UTF8/BOM and named Windows1252 bank bytes → stable duplicate row identity → actual booking verifies exact archived bytes → canonical clients/restart/signed source-free recovery."
     }
   ],
   "integrated_pending_browser": [
@@ -2830,6 +2894,12 @@
       "code_revision": "b9faa564dcb0ccf14d5562dbab1d4aa8656809fe",
       "spec_revision": "sha256:b9113ecdc9bad5f999d18360b9326be7438e1793dbf9e304e1e9d6a7312d3225",
       "state": "Group79 qualified at b9faa564: ordinary MFA existing web explicit OSS income classification and reviewed ordinary reversal. Exactly3journals/2originals preserve domestic base100/VAT25 and final receivable125, incomecredit100, bank0, VATcredit25. Dated OSS1000/count1, current0/count2 and reversal-only-1000/count1; original historical report retained. Current reviewer read/write denial, revocation, duplicate keys and malformed selectors preserve evidence. Full HTTP/CLI/MCP accounting and three dated OSS windows agree across source/restart/source-free fresh-owner restore/reopen. Four independently verified signed full archives preserve exact tables, original bytes and historical audit with only documented restore-boundary append. Base only, no foreign VAT computation or tax submission. Full mission/epic672 and installed native financial acceptance remain OPEN."
+    },
+    {
+      "current_increment": "Ordinary foreign buyer and invoice delivery/unit metadata lifecycle qualified",
+      "code_revision": "059b05a92c7a8f2e586d81ba813508852da06fe8",
+      "spec_revision": "sha256:d3dd594f9e3ea2cb99c98931143ec314a2af305f939a719a5f84caae71413de9",
+      "state": "Group80 qualified at 059b05a9: 19 ordinary-MFA actions through existing web full standard invoice with foreign buyer identifier, explicit delivery period and document/per-line unit codes; reduced simplified invoice with delivery date and no fabricated buyer or quantities. Exact preview/issue input, immutable original and PDF metadata retained; no inferred VIES validity or tax treatment. Existing partial/final receipt, original credit and refund flow retains VAT70.01 then12.01 then0, exactly11journals/6bankrows and final zero accounts. Four-phase HTTP/CLI/MCP canonical reads and exact metadata-input preview/PDF equality; restart and four independently verified signed full archives with source-free fresh-owner restore/reopen retain exact evidence. Full mission/epic672, historical foreign reverse-charge/FX compatibility and installed native financial acceptance remain OPEN."
     }
   ]
 }

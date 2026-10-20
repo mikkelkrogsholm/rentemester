@@ -2524,3 +2524,39 @@ gendannelse består. Historiske formater er kontrolleret i målrettede kerne- og
 lagringstests. Det er **ikke** en accept af faktisk TypeScript-migrering:
 der mangler stadig en understøttet operatørvej til at overtage et eksisterende
 workspace. Prøvekonverteringer og native backup-gendannelse erstatter ikke den vej.
+
+## Uafstemte bankposter og bilagsgennemgang
+
+Bankimport opretter gennemgangsopgaver for bankposter uden en bogført afstemning.
+Et senere almindeligt bilagsupload kan opdatere vejledningen i samme autoriserede
+transaktion. Den tidligere opgave afsluttes med et revisionsspor, og en ny opgave
+bevarer den nye sammenhæng. Læsning af opgaver ændrer ingen data.
+
+Et ubogført købsbilag er kun et muligt forslag til en udbetaling, når det er det
+eneste bilag med samme beløb og valuta. Beløbet beviser ikke sammenhængen. Flere
+mulige bilag, anden valuta og indbetalinger giver ikke et automatisk købsmatch.
+I webvisningens Bank åbner **Bogfør** på en udbetaling et eksplicit bilagsvalg og
+derefter den eksisterende bilagsgennemgang med bankposten valgt. Konti, moms og
+bilag skal gennemgås før bogføring. En rigtig bogføring afslutter den tilknyttede
+bankopgave; der bogføres aldrig alene på baggrund af opgavevejledningen.
+
+`GET /api/companies/{slug}/exceptions` kræver aktuel læseadgang. Queryfelterne er
+`status=open|resolved|all` (standard `open`) og `includeArchived=true|false`
+(standard `false`). Gentagne eller ukendte felter afvises. Eksplicit medtagne
+arkivopgaver har `archived:true`; oversigter beholder deres normale filtrering.
+
+`POST /api/companies/{slug}/exceptions/{id}/resolve` kræver aktuel
+`CompanyReview`-adgang og et JSON-objekt med valgfri `note` på højst 4096 bytes.
+Den native body indeholder ingen `confirm` eller caller-valgt actor. Bodygrænsen
+er 16 KiB. En allerede afsluttet opgave giver `resolved:false` uden et nyt
+beslutningsaudit. Afslutning er kun en gennemgangsbeslutning: den bogfører ikke og
+reparerer ikke bankafstemningen. En ny import kan derfor genoprette en opgave for
+en stadig ubogført bankpost.
+
+CLI: `remote list-exceptions --company SLUG --status all --include-archived true`
+og `remote resolve-exception --company SLUG --id ID --confirm < note.json`, med
+eksplicit server og privat cookie-fil som ved andre remote-kommandoer. MCP:
+`exceptions_list` med `company`, valgfri `status` og `includeArchived`;
+`exception_resolve` med `company`, `id`, valgfri `note` og `confirm:true`.
+Klienterne gentager ikke beslutningen automatisk efter et ukendt resultat;
+læs opgaven og revisionssporet før en ny handling.
