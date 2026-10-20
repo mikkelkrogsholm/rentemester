@@ -306,7 +306,7 @@ fn party_kind(
         .map(|s| sales_invoice::text(s, 1024))
         .transpose()?;
     if let Some(vat) = &vat {
-        if !foreign {
+        if seller || (!foreign && (require_buyer_vat || public || ean.is_some())) {
             let digits = vat.strip_prefix("DK").unwrap_or(vat);
             if digits.len() != 8 || !digits.bytes().all(|b| b.is_ascii_digit()) {
                 return Err(refused(
@@ -483,7 +483,14 @@ pub fn prepare(
     if simplified && input.buyer.is_none() && input.customer_id.is_none() {
         payload.as_object_mut().unwrap().remove("buyer");
     }
-    for key in ["reverseChargeBasis", "reverseChargeNote"] {
+    for key in [
+        "reverseChargeBasis",
+        "reverseChargeNote",
+        "deliveryDate",
+        "deliveryPeriodStart",
+        "deliveryPeriodEnd",
+        "unitCode",
+    ] {
         if let Some(value) = computed.get(key).filter(|v| !v.is_null()) {
             payload[key] = value.clone();
         }
@@ -586,9 +593,18 @@ pub fn register_with_principal(
             principal,
         )?;
     }
-    Ok(
-        json!({"documentId":id,"invoiceType":payload["invoiceType"],"currency":payload["currency"],"totals":payload["totals"],"invoiceNumber":payload["invoiceNumber"],"netAmount":payload["totals"]["netAmount"],"vatRate":payload["totals"]["vatRate"],"vatTreatment":payload["vatTreatment"],"reverseChargeBasis":payload["reverseChargeBasis"],"reverseChargeNote":payload["reverseChargeNote"],"vatAmount":vat_amount,"grossAmount":payload["totals"]["grossAmount"],"fxRateToDkk":payload["totals"]["fxRateToDkk"],"netAmountDkk":payload["totals"]["netAmountDkk"],"vatAmountDkk":payload["totals"]["vatAmountDkk"],"grossAmountDkk":payload["totals"]["grossAmountDkk"],"lines":payload["lines"]}),
-    )
+    let mut result = json!({"documentId":id,"invoiceType":payload["invoiceType"],"currency":payload["currency"],"totals":payload["totals"],"invoiceNumber":payload["invoiceNumber"],"netAmount":payload["totals"]["netAmount"],"vatRate":payload["totals"]["vatRate"],"vatTreatment":payload["vatTreatment"],"reverseChargeBasis":payload["reverseChargeBasis"],"reverseChargeNote":payload["reverseChargeNote"],"vatAmount":vat_amount,"grossAmount":payload["totals"]["grossAmount"],"fxRateToDkk":payload["totals"]["fxRateToDkk"],"netAmountDkk":payload["totals"]["netAmountDkk"],"vatAmountDkk":payload["totals"]["vatAmountDkk"],"grossAmountDkk":payload["totals"]["grossAmountDkk"],"lines":payload["lines"]});
+    for key in [
+        "deliveryDate",
+        "deliveryPeriodStart",
+        "deliveryPeriodEnd",
+        "unitCode",
+    ] {
+        if let Some(value) = payload.get(key) {
+            result[key] = value.clone();
+        }
+    }
+    Ok(result)
 }
 pub fn pdf_id(tx: &Transaction<'_>, id: i64) -> Result<i64, Error> {
     tx.query_row("SELECT pdf.id FROM documents d JOIN documents pdf ON pdf.document_type='issued_invoice_pdf' AND pdf.invoice_no=d.invoice_no AND pdf.payload_json=d.payload_json WHERE d.id=?1 AND d.document_type='issued_invoice'",[id],|r|r.get(0)).optional().map_err(invalid)?.ok_or_else(||refused("immutable invoice PDF unavailable"))
@@ -853,6 +869,80 @@ pub fn list(
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn ordinary_foreign_buyer_and_metadata_are_immutable_without_tax_reclassification() {
+        let mut control = rusqlite::Connection::open_in_memory().unwrap();
+        let mut db = rusqlite::Connection::open_in_memory().unwrap();
+        crate::fresh::initialize_empty_pair(&mut control, &mut db, "Synthetic Seller").unwrap();
+        let tx = db
+            .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
+            .unwrap();
+        tx.execute_batch("UPDATE companies SET address='Synthetic Street 1',cvr='87654321',vat_period_type='quarter' WHERE id=1").unwrap();
+        let source = json!({"issueDate":"2026-10-20","buyer":{"name":"Synthetic Foreign Buyer","address":"Synthetic Street 2","vatOrCvr":"DE123456789"},"deliveryPeriodStart":"2026-10-01","deliveryPeriodEnd":"2026-10-31","unitCode":"HUR","lines":[{"description":"Synthetic service","quantity":2,"unitPriceExVat":100,"unitCode":"H87"}]});
+        let input: Input = serde_json::from_value(source.clone()).unwrap();
+        let payload = prepare(&tx, &input, "2026-10-20T12:00:00Z", true).unwrap();
+        assert_eq!(payload["buyer"]["vatOrCvr"], "DE123456789");
+        assert_eq!(payload["vatTreatment"], "standard");
+        assert_eq!(payload["totals"]["grossAmount"], 250.0);
+        assert!(payload.get("viesValidation").is_none());
+        let result = register(
+            &tx,
+            &payload,
+            Artifact {
+                filename: "synthetic.json",
+                path: "synthetic.json",
+                hash: &"a".repeat(64),
+                mime: "application/json",
+            },
+            Artifact {
+                filename: "synthetic.pdf",
+                path: "synthetic.pdf",
+                hash: &"b".repeat(64),
+                mime: "application/pdf",
+            },
+            "synthetic",
+        )
+        .unwrap();
+        let original: String = tx
+            .query_row(
+                "SELECT payload_json FROM documents WHERE id=?1",
+                [result["documentId"].as_i64().unwrap()],
+                |r| r.get(0),
+            )
+            .unwrap();
+        let saved: Value = serde_json::from_str(&original).unwrap();
+        assert_eq!(saved, payload);
+        for key in ["deliveryPeriodStart", "deliveryPeriodEnd", "unitCode"] {
+            assert_eq!(result[key], saved[key]);
+        }
+        for key in ["deliveryPeriodStart", "deliveryPeriodEnd", "unitCode"] {
+            assert_eq!(saved[key], source[key]);
+        }
+        assert_eq!(saved["lines"][0]["unitCode"], "H87");
+        assert!(pdf_id(&tx, result["documentId"].as_i64().unwrap()).is_ok());
+        for overrides in [
+            json!({"seller":{"name":"Synthetic Seller","address":"Synthetic 1","vatOrCvr":"DE123456789"}}),
+            json!({"vatTreatment":"domestic_reverse_charge","reverseChargeBasis":"DK_MOMSLOVEN_§46_STK_1_NR_6","reverseChargeNote":"Synthetic reverse charge"}),
+            json!({"buyer":{"name":"Synthetic Public Buyer","address":"Synthetic 2","vatOrCvr":"DE123456789","eanNumber":"5790000000000"}}),
+            json!({"vatTreatment":"foreign_reverse_charge","reverseChargeBasis":"EU_B2B_SERVICES","reverseChargeNote":"Synthetic reverse charge"}),
+        ] {
+            let mut invalid = source.clone();
+            invalid
+                .as_object_mut()
+                .unwrap()
+                .extend(overrides.as_object().unwrap().clone());
+            assert!(
+                prepare(
+                    &tx,
+                    &serde_json::from_value(invalid).unwrap(),
+                    "2026-10-20T12:00:00Z",
+                    false
+                )
+                .is_err(),
+                "{overrides}"
+            );
+        }
+    }
     #[test]
     fn recipient_overrides_ean_only_identity_and_invalid_fields_are_explicit() {
         let mut control = rusqlite::Connection::open_in_memory().unwrap();

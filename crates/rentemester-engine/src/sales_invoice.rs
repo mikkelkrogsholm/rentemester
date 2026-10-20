@@ -17,6 +17,7 @@ pub struct Party {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct Line {
     pub description: String,
+    pub unit_code: Option<String>,
     pub quantity: Option<Number>,
     pub unit_price_ex_vat: Option<Number>,
     pub tax_classification: Option<String>,
@@ -29,6 +30,10 @@ pub struct Input {
     pub invoice_type: Option<String>,
     pub totals: Option<SimplifiedTotals>,
     pub issue_date: String,
+    pub delivery_date: Option<String>,
+    pub delivery_period_start: Option<String>,
+    pub delivery_period_end: Option<String>,
+    pub unit_code: Option<String>,
     pub lines: Vec<Line>,
     pub vat_rate_percent: Option<Number>,
     pub vat_treatment: Option<String>,
@@ -308,6 +313,66 @@ fn line_base(quantity: &Value, price: &Value) -> Result<Money, Error> {
     }
     Money::multiply_decimal(&quantity, &price)
 }
+/// Optional delivery evidence has no effect on monetary or tax decisions.
+fn validate_metadata(payload: &Value) -> Result<(), Error> {
+    let date = |key: &str| -> Result<Option<&str>, Error> {
+        payload
+            .get(key)
+            .map(|value| {
+                let value = value
+                    .as_str()
+                    .ok_or_else(|| refused("delivery dates must be ISO dates"))?;
+                crate::fiscal_year::Date::parse(value)?;
+                Ok(value)
+            })
+            .transpose()
+    };
+    let single = date("deliveryDate")?;
+    let start = date("deliveryPeriodStart")?;
+    let end = date("deliveryPeriodEnd")?;
+    if start.is_some() != end.is_some() || (single.is_some() && start.is_some()) {
+        return Err(refused("use a delivery date or a complete delivery period"));
+    }
+    if start.zip(end).is_some_and(|(start, end)| start > end) {
+        return Err(refused("delivery period end must not precede its start"));
+    }
+    for value in std::iter::once(payload).chain(payload["lines"].as_array().into_iter().flatten()) {
+        if let Some(unit) = value.get("unitCode") {
+            text(
+                unit.as_str()
+                    .ok_or_else(|| refused("unitCode must be text"))?,
+                32,
+            )?;
+        }
+    }
+    Ok(())
+}
+fn retain_metadata(input: &Input, payload: &mut Value) -> Result<(), Error> {
+    for (key, value) in [
+        ("deliveryDate", &input.delivery_date),
+        ("deliveryPeriodStart", &input.delivery_period_start),
+        ("deliveryPeriodEnd", &input.delivery_period_end),
+        ("unitCode", &input.unit_code),
+    ] {
+        if let Some(value) = value {
+            payload[key] = json!(if key == "unitCode" {
+                text(value, 32)?
+            } else {
+                value.clone()
+            });
+        }
+    }
+    for (source, line) in input
+        .lines
+        .iter()
+        .zip(payload["lines"].as_array_mut().unwrap())
+    {
+        if let Some(value) = &source.unit_code {
+            line["unitCode"] = json!(text(value, 32)?);
+        }
+    }
+    validate_metadata(payload)
+}
 /// New issuance always freezes the effective line tax decision. It never
 /// changes an already-issued payload or rerenders an already-saved PDF.
 pub fn compute(input: &Input) -> Result<Value, Error> {
@@ -376,6 +441,7 @@ pub fn compute(input: &Input) -> Result<Value, Error> {
         if let Some(value) = &input.fx_rate_to_dkk {
             result["totals"]["fxRateToDkk"] = json!(value);
         }
+        retain_metadata(input, &mut result)?;
         let projected = reduced_project(&result, true)?;
         result["totals"]["netAmount"] = wire(&projected.net)?;
         result["totals"]["vatAmount"] = wire(&projected.vat)?;
@@ -501,12 +567,14 @@ pub fn compute(input: &Input) -> Result<Value, Error> {
     if kind == "simplified" {
         simplified_limit(&result, &gross)?;
     }
+    retain_metadata(input, &mut result)?;
     project(&result)?;
     Ok(result)
 }
 /// Verify saved source amounts before posting, crediting or accounting reads.
 /// Missing classifications identify the historical aggregate-25 contract only.
 pub fn project(payload: &Value) -> Result<TaxProjection, Error> {
+    validate_metadata(payload)?;
     crate::currency::Currency::parse(payload["currency"].as_str().unwrap_or("DKK"))?;
     let kind = invoice_type(
         payload
@@ -694,6 +762,82 @@ pub fn project(payload: &Value) -> Result<TaxProjection, Error> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn delivery_and_units_preserve_money_and_are_absent_by_default() {
+        let source = json!({"issueDate":"2026-10-20","lines":[{"description":"Synthetic service","quantity":2,"unitPriceExVat":100} ]});
+        let ordinary = computed(source.clone());
+        for key in [
+            "deliveryDate",
+            "deliveryPeriodStart",
+            "deliveryPeriodEnd",
+            "unitCode",
+        ] {
+            assert!(ordinary.get(key).is_none());
+        }
+        assert!(ordinary["lines"][0].get("unitCode").is_none());
+        let mut source = source;
+        source["deliveryPeriodStart"] = json!("2026-10-01");
+        source["deliveryPeriodEnd"] = json!("2026-10-31");
+        source["unitCode"] = json!(" HUR ");
+        source["lines"][0]["unitCode"] = json!("H87");
+        let retained = computed(source);
+        assert_eq!(retained["totals"], ordinary["totals"]);
+        assert_eq!(retained["deliveryPeriodStart"], "2026-10-01");
+        assert_eq!(retained["deliveryPeriodEnd"], "2026-10-31");
+        assert_eq!(retained["unitCode"], "HUR");
+        assert_eq!(retained["lines"][0]["unitCode"], "H87");
+        assert_eq!(
+            project(&retained).unwrap().gross,
+            project(&ordinary).unwrap().gross
+        );
+        let reduced = computed(
+            json!({"invoiceType":"simplified","issueDate":"2026-10-20","deliveryDate":"2026-10-19","unitCode":"HUR","lines":[{"description":"Synthetic service","unitCode":"H87"}],"totals":{"grossAmount":100.07,"vatRate":0.25,"vatComputationBasis":"VAT_20_OF_GROSS"}}),
+        );
+        assert_eq!(reduced["deliveryDate"], "2026-10-19");
+        assert_eq!(reduced["lines"][0]["unitCode"], "H87");
+        assert!(reduced["lines"][0].get("quantity").is_none());
+        assert!(reduced["lines"][0].get("unitPriceExVat").is_none());
+        assert_eq!(project(&reduced).unwrap().gross.decimal(), "100.07");
+    }
+    #[test]
+    fn malformed_delivery_evidence_and_units_fail_closed_on_input_and_saved_source() {
+        let base = json!({"issueDate":"2026-10-20","lines":[{"description":"Synthetic service","quantity":1,"unitPriceExVat":100}]});
+        for extra in [
+            json!({"deliveryDate":"2026-02-29"}),
+            json!({"deliveryPeriodStart":"2026-10-01"}),
+            json!({"deliveryPeriodEnd":"2026-10-31"}),
+            json!({"deliveryPeriodStart":"2026-10-31","deliveryPeriodEnd":"2026-10-01"}),
+            json!({"deliveryDate":"2026-10-20","deliveryPeriodStart":"2026-10-01","deliveryPeriodEnd":"2026-10-31"}),
+            json!({"unitCode":" "}),
+            json!({"unitCode":"x".repeat(33)}),
+            json!({"unitCode":"H\nUR"}),
+            json!({"unitCode":"📦"}),
+        ] {
+            let mut input = base.clone();
+            input
+                .as_object_mut()
+                .unwrap()
+                .extend(extra.as_object().unwrap().clone());
+            assert!(
+                compute(&serde_json::from_value(input).unwrap()).is_err(),
+                "{extra}"
+            );
+            let mut saved = computed(base.clone());
+            saved
+                .as_object_mut()
+                .unwrap()
+                .extend(extra.as_object().unwrap().clone());
+            assert!(project(&saved).is_err(), "{extra}");
+        }
+        let mut input = base;
+        input["lines"][0]["unitCode"] = json!("x".repeat(33));
+        assert!(compute(&serde_json::from_value(input).unwrap()).is_err());
+        let mut saved = computed(
+            json!({"issueDate":"2026-10-20","lines":[{"description":"Synthetic","quantity":1,"unitPriceExVat":100}]}),
+        );
+        saved["lines"][0]["unitCode"] = json!(42);
+        assert!(project(&saved).is_err());
+    }
     #[test]
     fn recipient_routing_and_reference_bounds_preserve_explicit_evidence() {
         assert_eq!(

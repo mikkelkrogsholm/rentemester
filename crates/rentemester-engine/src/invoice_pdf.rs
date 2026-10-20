@@ -35,6 +35,22 @@ pub fn build(payload: &Value) -> Vec<u8> {
         ("Fakturanummer", text(&payload["invoiceNumber"])),
         ("Fakturadato", text(&payload["issueDate"])),
         ("Forfaldsdato", text(&payload["dueDate"])),
+        ("Leveringsdato", text(&payload["deliveryDate"])),
+        (
+            "Leveringsperiode",
+            if payload["deliveryPeriodStart"].is_string()
+                && payload["deliveryPeriodEnd"].is_string()
+            {
+                format!(
+                    "{} - {}",
+                    text(&payload["deliveryPeriodStart"]),
+                    text(&payload["deliveryPeriodEnd"])
+                )
+            } else {
+                String::new()
+            },
+        ),
+        ("Enhedskode", text(&payload["unitCode"])),
         ("Sælger", text(&payload["seller"]["name"])),
         ("Adresse", text(&payload["seller"]["address"])),
         ("CVR/moms", text(&payload["seller"]["vatOrCvr"])),
@@ -69,6 +85,14 @@ pub fn build(payload: &Value) -> Vec<u8> {
                 section: false,
                 total: false,
                 label: chunk.iter().collect(),
+                amount: String::new(),
+            });
+        }
+        if let Some(unit) = line["unitCode"].as_str() {
+            rows.push(Row {
+                section: false,
+                total: false,
+                label: format!("Enhedskode: {unit}"),
                 amount: String::new(),
             });
         }
@@ -319,6 +343,24 @@ fn render(title: &str, value: &Value, today: &str, rows: &[Row]) -> Vec<u8> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn delivery_and_explicit_units_are_printed_without_inventing_reduced_quantities() {
+        let mut source = json!({"invoiceType":"simplified","issueDate":"2026-10-20","deliveryDate":"2026-10-19","unitCode":"HUR","lines":[{"description":"Synthetic reduced service","unitCode":"H87"}],"totals":{"netAmount":80.06,"vatAmount":20.01,"grossAmount":100.07}});
+        let bytes = build(&source);
+        let printed = String::from_utf8_lossy(&bytes);
+        assert!(printed.contains("Leveringsdato: 2026-10-19"));
+        assert!(printed.contains("Enhedskode: HUR"));
+        assert!(printed.contains("Enhedskode: H87"));
+        assert!(!printed.contains(" x "));
+        assert!(!printed.contains("null"));
+        source.as_object_mut().unwrap().remove("deliveryDate");
+        source["deliveryPeriodStart"] = json!("2026-10-01");
+        source["deliveryPeriodEnd"] = json!("2026-10-31");
+        let bytes = build(&source);
+        let printed = String::from_utf8_lossy(&bytes);
+        assert!(printed.contains("Leveringsperiode: 2026-10-01 - 2026-10-31"));
+        assert!(!printed.contains("Leveringsdato"));
+    }
     #[test]
     fn printed_unit_price_keeps_the_precision_used_by_the_invoice_calculation() {
         let value = json!({"invoiceNumber":"SYN-1","issueDate":"2026-10-18","dueDate":"2026-11-01","seller":{"name":"Synthetic Seller","address":"Synthetic 1","vatOrCvr":"DK87654321"},"buyer":{"name":"Synthetic Buyer","address":"Synthetic 2","vatOrCvr":"DK12345678"},"lines":[{"description":"Synthetic","quantity":3,"unitPriceExVat":0.335,"lineTotalExVat":1.01}],"totals":{"netAmount":1.01,"vatAmount":0.25,"grossAmount":1.26}});
