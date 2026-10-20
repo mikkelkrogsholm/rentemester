@@ -479,7 +479,10 @@ pub fn suggest(tx: &Transaction<'_>, input: &Input) -> Result<Value, Error> {
             .query_row(
                 "SELECT amount FROM bank_transactions WHERE id=?1",
                 [id],
-                |r| legacy_money(r.get_ref(0)?).map_err(|_| rusqlite::Error::InvalidQuery),
+                |r| {
+                    crate::bank::signed_money(r.get_ref(0)?)
+                        .map_err(|_| rusqlite::Error::InvalidQuery)
+                },
             )
             .map_err(invalid)?;
         let combined = [

@@ -721,6 +721,14 @@ impl Owner {
             rentemester_application::company_setup::execute(c, l, context, action)
         })
     }
+    pub fn bank_matches(
+        &mut self, cookie: &VerifiedCookie, clock: &dyn Clock,
+        input: &rentemester_application::bank_matches::Input,
+    ) -> Result<Attempt<Result<Committed<serde_json::Value>, rentemester_application::control_fence::Failure>>, OwnerError> {
+        self.document_action(cookie, clock, |c,l,_,context| {
+            rentemester_application::bank_matches::execute(c,l,context,input)
+        })
+    }
     pub fn bank(
         &mut self,
         cookie: &VerifiedCookie,

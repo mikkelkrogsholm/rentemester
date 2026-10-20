@@ -10,7 +10,7 @@ fn contact_import_discovery_and_confirmed_large_frame_keep_ordinary_limits() {
         ],
     ));
     let tools = rows[1]["result"]["tools"].as_array().unwrap();
-    assert_eq!(tools.len(), 221);
+    assert_eq!(tools.len(), 222);
     let t = tools
         .iter()
         .find(|t| t["name"] == "import_contacts")

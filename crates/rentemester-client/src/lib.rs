@@ -1,6 +1,7 @@
 //! Origin-bound HTTP adapter shared by interactive and agent clients. No ledger logic.
 //! Supply a browser session's Cookie request-header value, never a Set-Cookie header.
 //! Authentication/enrollment is currently performed by the server's browser UI.
+mod bank_matches;
 mod eu_sales;
 mod oss_report;
 mod parties;

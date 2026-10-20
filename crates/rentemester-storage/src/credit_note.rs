@@ -277,7 +277,6 @@ pub fn prepare(tx: &Transaction<'_>, input: &Input, now: &str) -> Result<Prepare
         gross: amount_dkk,
     })
 }
-#[allow(clippy::too_many_arguments)]
 type LegacyCounters = BTreeMap<(String, Option<String>), (Money, bool)>;
 fn legacy_counters(
     tx: &Transaction<'_>,
@@ -351,6 +350,7 @@ fn legacy_counters(
         .collect();
     Ok((original_lines, counters))
 }
+#[allow(clippy::too_many_arguments)]
 fn legacy_lines(
     tx: &Transaction<'_>,
     id: i64,

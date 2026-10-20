@@ -64,6 +64,7 @@ import { budgetApi } from "./api/budget";
 import { companiesApi } from "./api/companies";
 import { contactsApi } from "./api/contacts";
 import { dashboardApi } from "./api/dashboard";
+import { bankMatchesApi } from "./api/bank-matches";
 import { documentsApi } from "./api/documents";
 import { gdprApi } from "./api/gdpr";
 import { groupApi } from "./api/group";
@@ -104,6 +105,7 @@ export const api = {
   ...dashboardApi,
   ...statementsApi,
   ...vatApi,
+  ...bankMatchesApi,
   ...documentsApi,
   ...invoicesApi,
   ...invoiceEmailApi,
