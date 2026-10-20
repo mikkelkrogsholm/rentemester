@@ -51,7 +51,7 @@ const get=p=>json(p),post=(p,data,status=200)=>json(p,data,status),transfer=asyn
 function totp(secret){let bits=0,count=0,bytes=[];for(const c of secret){const v='ABCDEFGHIJKLMNOPQRSTUVWXYZ234567'.indexOf(c);need(v>=0,'normal MFA setup key');bits=(bits<<5)|v;count+=5;if(count>=8){count-=8;bytes.push((bits>>>count)&255);}}const counter=Buffer.alloc(8);counter.writeBigUInt64BE(BigInt(Math.floor(Date.now()/30000)));const d=createHmac('sha1',Buffer.from(bytes)).update(counter).digest(),o=d[19]&15;return String((d.readUInt32BE(o)&0x7fffffff)%1000000).padStart(6,'0');}
 async function cooldown(){const wait=11000-(Date.now()-lastLogin);if(wait>0)await new Promise(r=>setTimeout(r,wait));lastLogin=Date.now();}
 async function login(){step=scope.name+'-normal-password';await cooldown();await page.goto(base);await page.getByLabel('E-mail',{exact:true}).fill(email);await page.getByLabel('Adgangskode',{exact:true}).fill(password);await page.getByRole('button',{name:'Log ind',exact:true}).click();step=scope.name+'-existing-mfa';await page.getByRole('button',{name:'Brug recovery code',exact:true}).click();need(codes.length,'unused ordinary MFA recovery code');await page.getByLabel('Recovery code',{exact:true}).fill(codes.shift());await page.getByRole('button',{name:'Bekræft',exact:true}).click();await page.locator('a[href="/companies/synthetic/posteringer"]').waitFor();const me=await get('/api/me');need(me.user?.email===email&&me.user.twoFactorEnabled,'normal verified distinct human MFA');return me;}
-async function enroll(){step=scope.name+'-ordinary-owner-verification';const spool=join(work,scope.name,'workspace','.rentemester'),files=readdirSync(spool).filter(n=>n.startsWith('verification-')&&n.endsWith('.txt'));need(files.length===1,'one ordinary private verification delivery');await page.goto(readFileSync(join(spool,files[0]),'utf8').trim());await cooldown();await page.goto(base);step=scope.name+'-enroll-password';await page.getByLabel('E-mail',{exact:true}).fill(email);await page.getByLabel('Adgangskode',{exact:true}).fill(password);await page.getByRole('button',{name:'Log ind',exact:true}).click();step=scope.name+'-enroll-heading';await page.getByRole('heading',{name:'Opsæt totrinsbekræftelse',exact:true}).waitFor();await page.getByLabel('Adgangskode',{exact:true}).fill(password);await page.getByRole('button',{name:'Start opsætning',exact:true}).click();step=scope.name+'-enroll-confirm';const key=await page.getByLabel('Opsætningsnøgle',{exact:true}).inputValue();await page.getByLabel('Engangskode',{exact:true}).fill(totp(key));await page.getByRole('button',{name:'Bekræft opsætning',exact:true}).click();const items=page.getByRole('region',{name:'Recovery codes'}).locator('li');await items.first().waitFor();codes=await items.allTextContents();need(codes.length>=4,'normal recovery inventory');await page.getByRole('button',{name:'Jeg har gemt koderne',exact:true}).click();await page.locator('a[href="/companies/synthetic/posteringer"]').waitFor();await page.context().clearCookies();return login();}
+async function enroll(){step=scope.name+'-ordinary-owner-verification';const spool=join(work,scope.name,'workspace','.rentemester'),files=readdirSync(spool).filter(n=>n.startsWith('verification-')&&n.endsWith('.txt'));need(files.length===1,'one ordinary private verification delivery');await page.goto(readFileSync(join(spool,files[0]),'utf8').trim());await cooldown();await page.goto(base);step=scope.name+'-enroll-password';await page.getByLabel('E-mail',{exact:true}).fill(email);await page.getByLabel('Adgangskode',{exact:true}).fill(password);await page.getByRole('button',{name:'Log ind',exact:true}).click();step=scope.name+'-enroll-heading';await page.getByRole('heading',{name:'Opsæt totrinsbekræftelse',exact:true}).waitFor();await page.getByLabel('Adgangskode',{exact:true}).fill(password);await page.getByRole('button',{name:'Start opsætning',exact:true}).click();step=scope.name+'-enroll-confirm';const key=await page.getByLabel('Opsætningsnøgle',{exact:true}).inputValue();await page.getByLabel('Engangskode',{exact:true}).fill(totp(key));await page.getByRole('button',{name:'Bekræft opsætning',exact:true}).click();const items=page.getByRole('region',{name:'Recovery codes'}).locator('li');await items.first().waitFor();codes=await items.allTextContents();need(codes.length>=4,'normal recovery inventory');if(process.env.RM_TRANSFER_NATIVE==='1')writeFileSync(join(work,scope.name+'-native-owner.json'),JSON.stringify({email,password,totpSecret:key,codes}),{mode:0o600,flag:'wx'});await page.getByRole('button',{name:'Jeg har gemt koderne',exact:true}).click();await page.locator('a[href="/companies/synthetic/posteringer"]').waitFor();await page.context().clearCookies();return login();}
 async function originals(){const a=await http.get(base+prefix+`documents/${invoice.documentId}/file`),b=await http.get(base+prefix+`invoices/${invoice.documentId}/pdf`);need(a.ok()&&b.ok(),'authorized retained originals readable');const j=await a.body(),pdf=await b.body();need(pdf.subarray(0,5).equals(Buffer.from('%PDF-')),'real stored PDF');return{documentId:invoice.documentId,jsonSha256:hash(j),pdfSha256:hash(pdf),jsonBase64:j.toString('base64'),pdfBase64:pdf.toString('base64')};}
 async function invariant(journal=baseline.journal,balance=baseline.balance){need(isDeepStrictEqual(await originals(),sourceProof),'transfer changed immutable originals');need(isDeepStrictEqual(await get(prefix+'journal'),journal),'unexpected canonical journal/UUID change');need(isDeepStrictEqual(await get(prefix+'trial-balance'),balance),'unexpected canonical balance change');const r=(await get(prefix+'invoices')).invoices.invoices.find(i=>i.documentId===invoice.documentId);need(r?.posted===false,'issued invoice must stay unposted');}
 async function mail(){const value=await get(prefix+'invoices/email-deliveries');need(value.invoiceEmail.rows.length===1,'one exact pending mail row');const row=value.invoiceEmail.rows[0];need(row.recipient==='unknown@example.invalid'&&row.state==='unknown'&&row.pdfSha256===sourceProof.pdfSha256&&row.humanResolution!==true,'pending unknown not silently resolved');return row;}
@@ -92,6 +92,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     for flag in ['server-binary', 'web-dir', 'cli-binary', 'mcp-binary', 'evidence']:
         parser.add_argument('--' + flag, required=True, type=Path)
+    parser.add_argument('--native-fixture', action='store_true', help='Prepare genuine pending source, then wait for installed-app acceptance; no automatic handoff')
     args = parser.parse_args()
     if os.uname().sysname != 'Darwin' or os.getuid() == 0 or os.getuid() != os.geteuid():
         parser.error('Ordinary macOS fixture owner required')
@@ -359,13 +360,13 @@ def main():
             bases = {name: f'http://127.0.0.1:{number}' for name, number in ports.items()}
             report['origins'] = bases
             key = lambda: base64.urlsafe_b64encode(secrets.token_bytes(32)).decode().rstrip('=')
-            subprocess.run(['/opt/homebrew/bin/bun', '-e', "const c=require('node:crypto'),f=require('node:fs'),k=c.generateKeyPairSync('ed25519'),s=k.privateKey.export({format:'der',type:'pkcs8'}).subarray(-32),p=k.publicKey.export({format:'der',type:'spki'}).subarray(-32);f.writeFileSync(process.argv[1],Buffer.concat([Buffer.from('3051020101300506032b657004220420','hex'),s,Buffer.from('812100','hex'),p]),{mode:0o600});f.writeFileSync(process.argv[2],p,{mode:0o600});", str(work / 'source-signing.der'), str(work / 'source-trusted.pub')], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            subprocess.run(['/opt/homebrew/bin/bun', '-e', "const c=require('node:crypto'),f=require('node:fs'),k=c.generateKeyPairSync('ed25519'),s=k.privateKey.export({format:'der',type:'pkcs8'}).subarray(-32),p=k.publicKey.export({format:'der',type:'spki'}).subarray(-32);f.writeFileSync(process.argv[1],Buffer.concat([Buffer.from('3051020101300506032b657004220420','hex'),s,Buffer.from('812100','hex'),p]),{mode:0o600});f.writeFileSync(process.argv[2],p,{mode:0o600});", str(work / 'source' / 'backup-signing.pk8'), str(work / 'source' / 'backup-public.key')], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             configs = {}
             for name in children:
                 configs[name] = {'runtimeProfile': 'local-user-macos', 'root': str(work / name / 'workspace'), 'brokerUid': os.getuid(), 'workspace': 'synthetic-native-transfer', 'companySlug': 'synthetic', 'companyName': 'Synthetic Transfer Company', 'cookieKey': key(), 'mfaKey': key(), 'operatorActors': ['system:synthetic-installer'], 'firstOwner': {'actor': 'system:synthetic-installer', 'email': 'owner@example.invalid' if name == 'source' else 'target-owner@example.invalid', 'name': 'Synthetic ' + name + ' owner', 'password': 'synthetic-transfer-owner-password-123'}, 'accounts': []}
-            configs['source']['backupSigningKeyFile'] = str(work / 'source-signing.der')
+            configs['source']['backupSigningKeyFile'] = str(work / 'source' / 'backup-signing.pk8')
             configs['source']['invoiceMail'] = {'synthetic': {'host': 'localhost', 'port': smtp.server_address[1], 'fromAddress': 'sales@example.invalid', 'fromName': 'Synthetic Seller', 'username': 'fixture-smtp-user', 'password': smtp_secret, 'tls': 'implicit', 'trustedCaFile': str(ca)}}
-            configs['target'].update({'restoreActor': 'system:synthetic-installer', 'transferTrustedKeyFile': str(work / 'source-trusted.pub')})
+            configs['target'].update({'restoreActor': 'system:synthetic-installer', 'transferTrustedKeyFile': str(work / 'source' / 'backup-public.key')})
 
             def write(name):
                 if not profile_owned(name):
@@ -382,7 +383,7 @@ def main():
                 if stage:
                     if os.path.lexists(work / name / 'workspace'):
                         raise RuntimeError('Fresh staged target required; refuse overwrite')
-                    argv += ['--restore-backup', str(work / 'transfer.native-backup.json'), '--trusted-backup-key', str(work / 'source-trusted.pub'), '--confirm-target', configs[name]['root'], '--restore-transfer']
+                    argv += ['--restore-backup', str(work / 'transfer.native-backup.json'), '--trusted-backup-key', str(work / 'source' / 'backup-public.key'), '--confirm-target', configs[name]['root'], '--restore-transfer']
                 logs[name] = (work / name / 'server.log').open('ab')
                 children[name] = subprocess.Popen(argv, cwd=REPO, stdin=subprocess.DEVNULL, stdout=logs[name], stderr=logs[name])
                 report['serverPids'][name].append(children[name].pid)
@@ -404,7 +405,7 @@ def main():
             start('source', create=True)
             script = work / 'browser.mjs'
             script.write_text(BROWSER)
-            controller = subprocess.Popen(['/opt/homebrew/bin/bun', str(script)], cwd=REPO, env={**os.environ, 'RM_TRANSFER_SOURCE': bases['source'], 'RM_TRANSFER_TARGET': bases['target'], 'RM_TRANSFER_WORK': str(work), 'RM_TRANSFER_PLAYWRIGHT': str((REPO / 'node_modules/@playwright/test/index.mjs').resolve(strict=True))}, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True, bufsize=1, start_new_session=True)
+            controller = subprocess.Popen(['/opt/homebrew/bin/bun', str(script)], cwd=REPO, env={**os.environ, 'RM_TRANSFER_NATIVE': '1' if args.native_fixture else '0', 'RM_TRANSFER_SOURCE': bases['source'], 'RM_TRANSFER_TARGET': bases['target'], 'RM_TRANSFER_WORK': str(work), 'RM_TRANSFER_PLAYWRIGHT': str((REPO / 'node_modules/@playwright/test/index.mjs').resolve(strict=True))}, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True, bufsize=1, start_new_session=True)
             report['browserControllerPid'] = controller.pid
             setup = command('setup')
             if snapshot()['connections'] != 0:
@@ -426,6 +427,58 @@ def main():
             report['sourceReceiptsBeforeTransfer'] = before
             configs['source'].pop('firstOwner')
             write('source')
+            if args.native_fixture:
+                # The browser only prepares genuine effects using ordinary auth.
+                # Native UI owns freeze/export/release/activation from this point.
+                command('finish', timeout=20)
+                controller.stdin.close()
+                controller.wait(timeout=10)
+                if controller.returncode != 0:
+                    raise RuntimeError('Preparatory browser did not stop cleanly')
+                controller = None
+                smtp_baseline = snapshot()
+                if smtp_baseline['errors'] or smtp_baseline['connections'] != 1 or len(smtp_baseline['messages']) != 1:
+                    raise RuntimeError('Exactly one pending SMTP DATA required')
+                report.update(status='native-fixture-ready', smtp=smtp_baseline,
+                              nativeCheckpoint=str(work / 'native-ready.json'))
+                checkpoint = {'work': str(work), 'sourceProfile': str(work / 'source'),
+                              'targetProfile': str(work / 'target'),
+                              'sourceCredentials': str(work / 'source-native-owner.json'),
+                              'sourceSetup': setup, 'sourceSqlBefore': before,
+                              'finishFile': str(work / 'native-finish.json')}
+                (work / 'native-ready.json').write_text(json.dumps(checkpoint))
+                save()
+                print(json.dumps({'nativeReadyFile': str(work / 'native-ready.json')}), flush=True)
+                deadline = time.monotonic() + 7200
+                while not (work / 'native-finish.json').exists():
+                    unchanged_smtp(smtp_baseline)
+                    if time.monotonic() >= deadline:
+                        raise RuntimeError('Bounded installed native transfer session ended')
+                    time.sleep(.5)
+                # Operator publishes finish only after both native and independent
+                # target children have stopped. No transfer mutations occur here.
+                finish = json.loads((work / 'native-finish.json').read_text())
+                if finish != {'ownedChildrenStopped': True}:
+                    raise RuntimeError('Explicit stopped-child terminal checkpoint required')
+                # Native and HTTPS children were launched externally. Do not let
+                # a boolean checkpoint substitute for observable process state.
+                process_rows = subprocess.check_output(['ps', '-axo', 'command='], text=True).splitlines()
+                if any(str(work) in row and 'rentemester-server' in row for row in process_rows):
+                    raise RuntimeError('External fixture server still uses the owned profiles')
+                unchanged_smtp(smtp_baseline)
+                final_source, final_target = sql_snapshot('source'), sql_snapshot('target')
+                if final_source != before:
+                    raise RuntimeError('Native moved source changed original business effects')
+                if (final_target['journalCount'] != 2 or final_target['emailSuccessCount'] != 0
+                        or final_target['tombstones'][:1] != before['tombstones']
+                        or final_target['outcomes'][:1] != before['outcomes']
+                        or len(final_target['tombstones']) != 2):
+                    raise RuntimeError('Native destination duplicated or replaced original effects')
+                report.update(status='native-fixture-terminal-verified',
+                              finalSql={'source': final_source, 'target': final_target},
+                              unknownSmtpPreservedNoResend=True)
+                save()
+                return
             start('source')
             freeze = command('freeze')
             smtp_baseline = snapshot()
@@ -440,10 +493,10 @@ def main():
             path = work / 'transfer.native-backup.json'
             if sha(path) != archive['sha256']:
                 raise RuntimeError('Downloaded wire archive changed')
-            verified = subprocess.run([str(pinned['server_binary']), '--verify-backup', str(path), '--trusted-backup-key', str(work / 'source-trusted.pub')], cwd=REPO, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=60)
+            verified = subprocess.run([str(pinned['server_binary']), '--verify-backup', str(path), '--trusted-backup-key', str(work / 'source' / 'backup-public.key')], cwd=REPO, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=60)
             if verified.returncode != 0:
                 raise RuntimeError('Independent transfer signature/inventory verification refused')
-            report['trustedSourcePublicKeySha256'] = sha(work / 'source-trusted.pub')
+            report['trustedSourcePublicKeySha256'] = sha(work / 'source' / 'backup-public.key')
             report['independentArchiveVerification'] = True
             save()
             start('target', stage=True)
@@ -522,11 +575,14 @@ def main():
                 smtp.shutdown()
                 smtp.server_close()
             report['ownedProcessesStopped'] = all(child is None for child in children.values())
-            if owned() and all(profile_owned(name) for name in children):
+            report['ownedProcessesScope'] = 'preparatory children; external native/HTTPS lifecycle verified separately' if args.native_fixture else 'runner children'
+            if not args.native_fixture and owned() and all(profile_owned(name) for name in children):
                 shutil.rmtree(work)
                 report['ownedProfilesCleaned'] = {'source': True, 'target': True}
             else:
                 report['ownedProfilesCleaned'] = {name: False for name in children}
+                if args.native_fixture:
+                    report['nativeProfilesPreservedForExplicitOperatorCleanup'] = True
             save()
 
 

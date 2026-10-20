@@ -182,6 +182,10 @@ def main():
     for name in ('server-binary', 'web-dir', 'profile', 'ca-cert', 'ca-key'):
         parser.add_argument('--' + name, type=Path, required=True)
     parser.add_argument('--ready-file', type=Path)
+    parser.add_argument('--stage-archive', type=Path, help='Synthetic fresh-target transfer archive; operator publishes completion marker after native save')
+    parser.add_argument('--archive-ready-file', type=Path, help='New private JSON completion marker containing the independently verified archiveSha256')
+    parser.add_argument('--trusted-backup-key', type=Path)
+    parser.add_argument('--origin-file', type=Path, help='New private public-origin handoff file, written before waiting for the archive')
     parser.add_argument('--gate-dir', type=Path, help='Existing private canonical 0700 one-shot gate directory; release deadline 45 seconds')
     args = parser.parse_args()
     if os.uname().sysname != 'Darwin' or os.getuid() == 0 or os.getuid() != os.geteuid():
@@ -200,7 +204,22 @@ def main():
             or config.get('root') != str(profile / 'workspace')
             or not config.get('workspace')):
         raise Refused('Existing owned same-user profile required')
-    private(profile / 'workspace', True)
+    staging = args.stage_archive is not None
+    if any(staging != (value is not None) for value in (args.trusted_backup_key, args.origin_file, args.archive_ready_file)):
+        raise Refused('Transfer stage requires archive, completion marker, separate trust key and origin file together')
+    if staging:
+        if os.path.lexists(profile / 'workspace'):
+            raise Refused('Transfer stage requires a fresh absent target workspace')
+        private(args.trusted_backup_key.absolute())
+        if not config.get('transferTrustedKeyFile'):
+            raise Refused('Independent transfer release trust configuration required')
+        private(args.stage_archive.absolute().parent, True)
+        private(args.origin_file.absolute().parent, True)
+        private(args.archive_ready_file.absolute().parent, True)
+        if os.path.lexists(args.archive_ready_file):
+            raise Refused('Archive completion marker must be new before fixture startup')
+    else:
+        private(profile / 'workspace', True)
     server = args.server_binary.resolve(strict=True)
     web = args.web_dir.resolve(strict=True)
     if not server.is_file() or not os.access(server, os.X_OK) or not (web / 'index.html').is_file():
@@ -367,9 +386,28 @@ def main():
         runtime_config = state / 'server.json'
         write_new(runtime_config, config)
         server_log = (state / 'server.log').open('xb')
-        # Reopen only. Native namespace admission owns the lock and refuses busy ledgers.
-        child = subprocess.Popen([str(server), '--config', str(runtime_config), '--web-dir', str(web),
-                                  '--listen', f'127.0.0.1:{backend_port}', '--origin', origin],
+        argv = [str(server), '--config', str(runtime_config), '--web-dir', str(web),
+                '--listen', f'127.0.0.1:{backend_port}', '--origin', origin]
+        if staging:
+            write_new(args.origin_file.absolute(), {'origin': origin, 'status': 'awaiting-native-archive', 'trustVerified': True})
+            deadline = time.monotonic() + 1800
+            while not args.archive_ready_file.exists():
+                if stop.wait(.25) or time.monotonic() >= deadline:
+                    raise Refused('Native archive wait ended; no target started')
+            private(args.stage_archive.absolute())
+            private(args.archive_ready_file.absolute())
+            completed = json.loads(args.archive_ready_file.read_text())
+            if completed != {'archiveSha256': fingerprint(args.stage_archive.absolute())}:
+                raise Refused('Completed native archive hash mismatch; no target started')
+            if os.path.lexists(profile / 'workspace'):
+                raise Refused('Fresh target changed before transfer staging')
+            argv += ['--restore-backup', str(args.stage_archive.absolute()),
+                     '--trusted-backup-key', str(args.trusted_backup_key.absolute()),
+                     '--confirm-target', config['root'], '--restore-transfer']
+            report['transferStagedFromNativeArchive'] = True
+            report['archiveSha256'] = fingerprint(args.stage_archive.absolute())
+        # Namespace admission owns the lock and refuses busy ledgers.
+        child = subprocess.Popen(argv,
                                  stdin=subprocess.DEVNULL, stdout=server_log, stderr=server_log, umask=0o077)
         deadline = time.monotonic() + 30
         while True:
