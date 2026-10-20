@@ -26,9 +26,25 @@ use tower_http::{
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let arguments: Vec<String> = std::env::args().skip(1).collect();
+    if arguments.iter().any(|arg| arg == "--build-info") {
+        if arguments != ["--build-info"] {
+            return Err("--build-info must be the only argument".into());
+        }
+        let policy = rentemester_runtime::package_update::current_policy();
+        println!("{}", serde_json::json!({
+            "format": "rentemester-native-server/1",
+            "version": env!("CARGO_PKG_VERSION"),
+            "platform": policy.platform,
+            "apiEpoch": policy.api_epoch,
+            "controlSchema": policy.control_schema,
+            "companySchema": policy.company_schema,
+        }));
+        return Ok(());
+    }
     #[cfg(any(target_os = "macos", target_os = "linux"))]
     let _package_lease = rentemester_runtime::package_update::current_executable_lease()?;
-    let mut args = std::env::args().skip(1);
+    let mut args = arguments.into_iter();
     let mut listen: SocketAddr = "127.0.0.1:4319".parse()?;
     let mut web = PathBuf::from("app/dist");
     let mut config = None;
@@ -93,6 +109,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 println!(
                     "rentemester-server [--listen 127.0.0.1:4319] [--web-dir app/dist] [--config PRIVATE.json] [--create] [--origin http://localhost:4319]"
                 );
+                println!("Build identity: --build-info (alone; no workspace, credentials or network)");
                 println!("Hosted generation: --scheduled-worker --scheduled-service-key-stdin --config PRIVATE.json (ordinary reopen only; transient stdin service key, no saved cookie/key; 32 candidates every 30 seconds; normal Copenhagen today only, no catch-up)");
                 println!("Schema upgrade: --upgrade-mail-schema --config PRIVATE.json (exclusive stopped server; admits only exact v30→v31 or current, preserves business data; ordinary startup never upgrades)");
                 println!("Mailbox intake: --mail-worker --mail-service-key-stdin --config PRIVATE.json (ordinary reopen only; current service key from stdin, explicitly granted mailbox configuration; credentials excluded from backups). When both workers are enabled, one stdin key is shared in memory.");
