@@ -201,7 +201,14 @@ describe("InvoicesView — write actions", () => {
       expect(link.getAttribute("href")).toMatch(
         /^\/api\/companies\/acme-aps\/invoices\/\d+\/pdf$/,
       );
-      expect(link.getAttribute("target")).toBe("_blank");
+      expect(link.getAttribute("download")).toMatch(/\.pdf$/);
+      expect(link.getAttribute("target")).toBeNull();
+    }
+    const viewers = screen.getAllByRole("link", { name: "Åbn PDF" });
+    expect(viewers.length).toBe(links.length);
+    for (const viewer of viewers) {
+      expect(viewer.getAttribute("target")).toBe("_blank");
+      expect(links.some((link) => link.getAttribute("href") === viewer.getAttribute("href"))).toBe(true);
     }
   });
 
