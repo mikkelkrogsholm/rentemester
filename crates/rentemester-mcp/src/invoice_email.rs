@@ -27,7 +27,7 @@ pub fn tools() -> Vec<Value> {
     ] {
         let mut body = native_body(invoice_email_body_schema(action));
         body["maxLength"] = json!(MAX_INVOICE_EMAIL_BODY);
-        result.push(tool(name,"Current verified human MFA and CompanyExternalSend. Exact native16KiB JSON, inner+outer confirm, explicit recipient or exact stateHash/messageId/reason; reconciliation additionally external evidence and resolution. Immutable stored PDF only; issue/post/send separate. Known delivery_unknown409/delivery_refused422 retain canonical delivery with ok:false. Reconciliation never sends; retry only after definite nonacceptance. No credentials, invented hashes/defaults/keys, automatic retry or blind resend; unknown requires status/external reconciliation.",json!({"type":"object","required":["company","body","confirm"],"properties":{"company":company_schema(),"body":body,"confirm":{"const":true}},"additionalProperties":false}),false));
+        result.push(tool(name,"Current verified human MFA or explicitly authorized service and CompanyExternalSend. Exact native16KiB JSON, inner+outer confirm, explicit recipient or exact stateHash/messageId/reason; reconciliation additionally external evidence and resolution. Immutable stored PDF only; issue/post/send separate. Known delivery_unknown409/delivery_refused422 retain canonical delivery with ok:false. Reconciliation never sends; retry only after definite nonacceptance. No credentials, invented hashes/defaults/keys, automatic retry or blind resend; unknown requires status/external reconciliation.",json!({"type":"object","required":["company","body","confirm"],"properties":{"company":company_schema(),"body":body,"confirm":{"const":true}},"additionalProperties":false}),false));
     }
     result
 }

@@ -45,6 +45,17 @@ pub(crate) fn finish<T>(
     permit: Permit,
     apply: impl FnOnce(&Transaction<'_>, &str) -> Result<T, Error>,
 ) -> Result<ServiceResult<T>, ServiceFailure> {
+    continue_operation(control, company, context, &permit, apply)
+}
+/// Continue one synchronous admitted operation without charging again. The caller
+/// retains the opaque permit until its final stage; live authority is checked each time.
+pub(crate) fn continue_operation<T>(
+    control: &mut Connection,
+    company: &mut Connection,
+    context: Context<'_>,
+    permit: &Permit,
+    apply: impl FnOnce(&Transaction<'_>, &str) -> Result<T, Error>,
+) -> Result<ServiceResult<T>, ServiceFailure> {
     let failure = |error: Error, reusable| ServiceFailure {
         usage: UsageStage::Committed,
         business: BusinessStage::NotAttempted,

@@ -59,6 +59,62 @@ impl Owner {
             app::retry(c, l, g, context, input, transport)
         })
     }
+    pub fn invoice_email_status_service(
+        &mut self,
+        key: &ServiceKey,
+        clock: &dyn Clock,
+    ) -> Result<
+        Attempt<Result<service_company::ServiceResult<Value>, service_company::ServiceFailure>>,
+        OwnerError,
+    > {
+        self.service_document_action(key, clock, |control, company, guard, context| {
+            app::status_service(control, company, guard, context)
+        })
+    }
+
+    pub fn send_invoice_email_service(
+        &mut self,
+        key: &ServiceKey,
+        clock: &dyn Clock,
+        input: &Send,
+        transport: &mut dyn Transport,
+    ) -> Result<
+        Attempt<Result<service_company::ServiceResult<Value>, service_company::ServiceFailure>>,
+        OwnerError,
+    > {
+        self.service_document_action(key, clock, |control, company, guard, context| {
+            app::send_service(control, company, guard, context, input, transport)
+        })
+    }
+
+    pub fn reconcile_invoice_email_service(
+        &mut self,
+        key: &ServiceKey,
+        clock: &dyn Clock,
+        input: &Reconcile,
+    ) -> Result<
+        Attempt<Result<service_company::ServiceResult<Value>, service_company::ServiceFailure>>,
+        OwnerError,
+    > {
+        self.service_document_action(key, clock, |control, company, guard, context| {
+            app::reconcile_service(control, company, guard, context, input)
+        })
+    }
+
+    pub fn retry_invoice_email_service(
+        &mut self,
+        key: &ServiceKey,
+        clock: &dyn Clock,
+        input: &Retry,
+        transport: &mut dyn Transport,
+    ) -> Result<
+        Attempt<Result<service_company::ServiceResult<Value>, service_company::ServiceFailure>>,
+        OwnerError,
+    > {
+        self.service_document_action(key, clock, |control, company, guard, context| {
+            app::retry_service(control, company, guard, context, input, transport)
+        })
+    }
 }
 pub(super) fn validate_live_sources(
     db: &Connection,

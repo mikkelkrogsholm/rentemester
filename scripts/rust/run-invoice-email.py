@@ -39,6 +39,7 @@ const {chromium}=await import(process.env.RM_MAIL_PLAYWRIGHT);
 const base=process.env.RM_MAIL_BASE,work=process.env.RM_MAIL_WORK,prefix='/api/companies/synthetic/';
 if(!/^http:\/\/127\.0\.0\.1:\d+$/.test(base))throw Error('literal owned loopback required');
 const password='synthetic-invoice-mail-password-123',headers={origin:base,'content-type':'application/json'};
+let serviceMail;
 let email='owner@example.invalid',codes=[],lastLogin=0,step='boot',detail=null,browser,page,http,invoice,baseline,sourceProof,ownerId,finalRows,pending=null,trace=[];
 const hash=b=>createHash('sha256').update(b).digest('hex');
 function need(v,label){if(!v){detail=label;throw Error(label);}}
@@ -68,7 +69,7 @@ async function killed(){step='killed-response-unknown-marker';await pending;cons
 async function reopened(command){await page.context().clearCookies();const me=await login();need(me.user.id===ownerId,'same ordinary owner after real crash');step='restart-folded-unknown-no-send';const before=await selected('unknown@example.invalid');need(before.state==='unknown','durable reservation folds unknown');await invariant();step='mcp-unknown-duplicate-no-send';const duplicate=await client('mcp','invoice_email_send',{invoiceDocumentId:invoice.documentId,to:'unknown@example.invalid',kind:'invoice',confirm:true},false);need(duplicate.code==='delivery_unknown'&&duplicate.delivery.state==='unknown'&&duplicate.delivery.messageId===before.messageId,'canonical unknown duplicate preserved');const panel=await navigate(),article=panel.getByRole('article',{name:`Mail ${invoice.invoiceNumber} til unknown@example.invalid`,exact:true});step='human-review-unknown-queue-evidence';await article.getByRole('button',{name:'Gennemgå afklaring',exact:true}).click();const group=panel.getByRole('group',{name:'Afklar mailforsøg',exact:true});const reason='Synthetic queue accepted DATA before lost final acknowledgment';await group.getByLabel('Begrundelse',{exact:true}).fill(reason);await group.getByLabel('Kontrolleret udfald',{exact:true}).selectOption('accepted');await group.getByLabel('Dokumentation fra SMTP-log',{exact:true}).fill(command.evidence);await group.getByRole('button',{name:'Gennemgå afklaringen',exact:true}).click();const dialog=page.getByRole('dialog',{name:'Bekræft afklaring uden afsendelse',exact:true});await dialog.waitFor();need(await dialog.getByRole('button',{name:'Registrér afklaring',exact:true}).isDisabled(),'reconcile separate confirmation');await dialog.getByLabel('Jeg bekræfter den gennemgåede handling',{exact:true}).check();step='confirmed-human-reconcile-without-send';const response=page.waitForResponse(r=>new URL(r.url()).pathname===prefix+'invoices/email-deliveries/reconcile'&&r.request().method()==='POST');response.catch(()=>{});await dialog.getByRole('button',{name:'Registrér afklaring',exact:true}).click();const r=await response;need(r.status()===200,'human accepted reconciliation receipt');need(isDeepStrictEqual(r.request().postDataJSON(),{messageId:before.messageId,expectedStateHash:before.stateHash,reason,resolution:'accepted',evidence:command.evidence,confirm:true}),'exact human attestation evidence/state');await dialog.waitFor({state:'hidden'});const row=await selected('unknown@example.invalid');need(row.state==='accepted'&&row.humanResolution===true&&row.history.some(h=>h.resolution==='accepted'&&h.evidence===command.evidence&&h.reason===reason),'history distinguishes human accepted attestation');const rendered=await navigate();await rendered.getByRole('article',{name:`Mail ${invoice.invoiceNumber} til unknown@example.invalid`,exact:true}).getByText('Accepteret efter ejerens afklaring',{exact:false}).waitFor();await invariant();const canonical=await parity();need(canonical.invoiceEmail.rows.length===3&&canonical.invoiceEmail.rows.every(r=>r.state==='accepted'),'exact three accepted canonical recipient deliveries');finalRows=canonical.invoiceEmail.rows;return{before,row,canonical,unchangedBooksAndOriginals:true};}
 async function exportArchive(){step='explicit-signed-workspace-export';const r=await http.post(base+'/api/workspace/backup',{headers,data:{confirm:true}});need(r.ok()&&r.headers()['content-type']==='application/vnd.rentemester.native-backup+json','actual native signed archive');const bytes=await r.body();need(bytes.length>0&&bytes.length<=96*1024*1024,'bounded signed artifact');writeFileSync(join(work,'invoice-mail.native-backup.json'),bytes,{mode:0o600,flag:'wx'});return{sha256:hash(bytes),bytes:bytes.length};}
 async function restored(){await browser.close();await open();email='restored-owner@example.invalid';codes=[];const who=await enroll('restored');need(who.user.id!==ownerId,'fresh restored human identity');step='restored-history-no-operator-smtp-config';const value=await parity();need(value.invoiceEmail.configured===false&&isDeepStrictEqual(value.invoiceEmail.rows,finalRows),'exact delivery history without SMTP config');await invariant();const failed=await http.post(base+prefix+'invoices/send-email',{headers,data:{invoiceDocumentId:invoice.documentId,to:'no-config@example.invalid',kind:'invoice',confirm:true}});need(failed.status()===422,'no-config restored send refuses');need(isDeepStrictEqual((await current()).invoiceEmail.rows,finalRows),'no-config refusal adds no delivery attempt');await navigate();await page.getByText('Mailafsendelse er ikke konfigureret for virksomheden.',{exact:false}).waitFor();return{newOwnerId:who.user.id,exactHistory:true,originalsAndUuid:true,configured:false,noConfigSendRefused:true};}
-for await(const line of createInterface({input:process.stdin,crlfDelay:Infinity})){try{const c=JSON.parse(line);let data;if(c.action==='setup')data=await setup();else if(c.action==='accepted')data=await accepted();else if(c.action==='accepted-duplicate')data=await acceptedDuplicate();else if(c.action==='refused-retry')data=await refusalRetry();else if(c.action==='start-unknown')data=await startUnknown();else if(c.action==='killed')data=await killed();else if(c.action==='reopened')data=await reopened(c);else if(c.action==='export')data=await exportArchive();else if(c.action==='restored')data=await restored();else if(c.action==='finish'){await browser?.close();console.log(JSON.stringify({ok:true,data:{finished:true}}));break;}else throw Error('unknown controller action');console.log(JSON.stringify({ok:true,data}));}catch(error){let ui=null;try{ui=await page?.evaluate(()=>({pathname:location.pathname,headings:[...document.querySelectorAll('h1,h2')].map(e=>e.textContent.slice(0,100)),buttons:[...document.querySelectorAll('button')].map(e=>e.textContent.slice(0,100)),alerts:document.querySelectorAll('[role=alert]').length}));}catch{}console.log(JSON.stringify({ok:false,step,detail,errorType:error?.name,trace,ui}));await browser?.close().catch(()=>{});process.exitCode=1;break;}}
+for await(const line of createInterface({input:process.stdin,crlfDelay:Infinity})){try{const c=JSON.parse(line);let data;if(c.action==='setup'){data=await setup();if(process.env.RM_MAIL_SERVICE==='1'){const factory=await import(process.env.RM_MAIL_SERVICE_HELPER);serviceMail=await factory.createServiceMailProof(page,base,work,invoice.documentId);data.service=await serviceMail.setup();}}else if(c.action==='accepted'){data=serviceMail?await serviceMail.accepted():await accepted();if(serviceMail&&c.action!=='start-unknown'&&c.action!=='killed')await invariant();}else if(c.action==='accepted-duplicate'){data=serviceMail?await serviceMail.acceptedDuplicate():await acceptedDuplicate();if(serviceMail&&c.action!=='start-unknown'&&c.action!=='killed')await invariant();}else if(c.action==='refused-retry'){data=serviceMail?await serviceMail.refusalRetry():await refusalRetry();if(serviceMail&&c.action!=='start-unknown'&&c.action!=='killed')await invariant();}else if(c.action==='start-unknown'){data=serviceMail?await serviceMail.startUnknown():await startUnknown();if(serviceMail&&c.action!=='start-unknown'&&c.action!=='killed')await invariant();}else if(c.action==='killed'){data=serviceMail?await serviceMail.killed():await killed();if(serviceMail&&c.action!=='start-unknown'&&c.action!=='killed')await invariant();}else if(c.action==='service-rotate')data=await serviceMail.rotate();else if(c.action==='reopened'){if(serviceMail){await page.context().clearCookies();await login();data=await serviceMail.reopened(c.evidence);finalRows=data.canonical.invoiceEmail.rows;await invariant();}else data=await reopened(c);}else if(c.action==='export')data=await exportArchive();else if(c.action==='restored')data=await restored();else if(c.action==='finish'){await serviceMail?.dispose();await browser?.close();console.log(JSON.stringify({ok:true,data:{finished:true}}));break;}else throw Error('unknown controller action');console.log(JSON.stringify({ok:true,data}));}catch(error){let ui=null;try{ui=await page?.evaluate(()=>({pathname:location.pathname,headings:[...document.querySelectorAll('h1,h2')].map(e=>e.textContent.slice(0,100)),buttons:[...document.querySelectorAll('button')].map(e=>e.textContent.slice(0,100)),alerts:document.querySelectorAll('[role=alert]').length}));}catch{}console.log(JSON.stringify({ok:false,step,detail:error?.name==='ServiceMailAssertion'?error.message:detail,errorType:error?.name,trace,ui}));await browser?.close().catch(()=>{});process.exitCode=1;break;}}
 '''
 
 
@@ -86,6 +87,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     for flag in ['server-binary', 'web-dir', 'cli-binary', 'mcp-binary', 'evidence']:
         parser.add_argument('--' + flag, required=True, type=Path)
+    parser.add_argument('--service-delivery', action='store_true', help='Qualify explicit service status/send/retry/reconcile over the existing real TLS SMTP fixture')
     parser.add_argument('--with-backup', action='store_true', help='One signed source-free verify/fresh-owner restore without SMTP configuration')
     args = parser.parse_args()
     if os.uname().sysname != 'Darwin' or os.getuid() == 0 or os.getuid() != os.geteuid():
@@ -103,6 +105,10 @@ def main():
     smtp_secret = secrets.token_urlsafe(32)
     stats = {'connections': 0, 'rcptAttempts': {}, 'messages': [], 'errors': []}
     report = {'status': 'running', 'sourceRevision': subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=REPO, text=True).strip(), 'runnerSha256': sha(Path(__file__)), 'browserHelperSha256': hashlib.sha256(BROWSER.encode()).hexdigest(), 'noOfflineIdentitySeeds': True, 'externalMailForwarded': False, 'linuxIsolationQualified': False, 'globalArchiveSingleUseClaim': False, 'signedRestoreQualified': False, 'serverPids': [], 'phases': []}
+    if args.service_delivery:
+        report['serviceHelperSha256'] = sha(REPO / 'scripts/rust/check-native-service-mail.ts')
+        report['installedNativeQualified'] = False
+        report['preHandoffRevocationEvidence'] = 'Focused domain test; actual service fixture rotates before the unknown SMTP attempt, not during it'
     args.evidence.parent.mkdir(parents=True, exist_ok=True)
     with args.evidence.open('x') as output:
         def save():
@@ -359,7 +365,7 @@ def main():
             start(True)
             script = work / 'browser.mjs'
             script.write_text(BROWSER)
-            controller = subprocess.Popen(['/opt/homebrew/bin/bun', str(script)], cwd=REPO, env={**os.environ, 'RM_MAIL_BASE': base, 'RM_MAIL_WORK': str(work), 'RM_MAIL_PLAYWRIGHT': str((REPO / 'node_modules/@playwright/test/index.mjs').resolve(strict=True))}, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True, bufsize=1, start_new_session=True)
+            controller = subprocess.Popen(['/opt/homebrew/bin/bun', str(script)], cwd=REPO, env={**os.environ, 'RM_MAIL_BASE': base, 'RM_MAIL_WORK': str(work), 'RM_MAIL_SERVICE': '1' if args.service_delivery else '0', 'RM_MAIL_SERVICE_HELPER': str(REPO / 'scripts/rust/check-native-service-mail.ts'), 'RM_MAIL_PLAYWRIGHT': str((REPO / 'node_modules/@playwright/test/index.mjs').resolve(strict=True))}, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True, bufsize=1, start_new_session=True)
             report['browserControllerPid'] = controller.pid
             report['setup'] = command('setup')
             if snapshot()['connections'] != 0:
@@ -370,10 +376,15 @@ def main():
             report['acceptedDuplicate'] = command('accepted-duplicate')
             if snapshot() != first:
                 raise RuntimeError('Accepted duplicate/status opened SMTP or changed queue')
-            report['phases'].append('web-accepted-cli-duplicate-no-transport')
+            report['phases'].append('service-cli-accepted-mcp-duplicate-no-transport' if args.service_delivery else 'web-accepted-cli-duplicate-no-transport')
             report['refusedRetry'] = command('refused-retry')
             check_queue(2, original, {'accepted@example.invalid': 1, 'retry@example.invalid': 2})
-            report['phases'].append('550-definite-refusal-reviewed-web-retry')
+            report['phases'].append('service-cli-refusal-explicit-mcp-retry' if args.service_delivery else '550-definite-refusal-reviewed-web-retry')
+            if args.service_delivery:
+                stable_smtp = snapshot()
+                report['serviceRotation'] = command('service-rotate')
+                if snapshot() != stable_smtp:
+                    raise RuntimeError('Service rotation or revoked credential opened SMTP')
             report['inflight'] = command('start-unknown')
             if not queued.wait(7):
                 raise RuntimeError('No real queued DATA before native deadline; refusing fake crash proof')
@@ -402,7 +413,7 @@ def main():
                 row = next(r for r in rows if r['recipient'] == message['recipient'])
                 if row['messageId'] != message['messageId'] or row['bodySha256'] != message['bodySha256']:
                     raise RuntimeError('Canonical identity/MIME hash differs from actual SMTP DATA')
-            report['phases'].append('crash-unknown-restart-mcp-no-resend-human-accepted-attestation')
+            report['phases'].append('crash-unknown-restart-mcp-no-resend-service-cli-external-evidence' if args.service_delivery else 'crash-unknown-restart-mcp-no-resend-human-accepted-attestation')
             if args.with_backup:
                 report['signedArchive'] = command('export')
             stop()
@@ -459,6 +470,7 @@ def main():
             report['smtp'] = snapshot()
             if smtp_secret in json.dumps(report):
                 raise RuntimeError('Operator credential entered evidence')
+            report['serviceDeliveryQualified'] = args.service_delivery
             report['status'] = 'passed'
             save()
             print('PASS: real verified TLS SMTP, reviewed web sends, crash/restart unknown and client parity; ' + str(args.evidence))

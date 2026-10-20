@@ -54,7 +54,7 @@ pub fn run(args: &[String]) -> Result<Value, Failure> {
             "transport":"HTTPS only unless --allow-loopback-http and literal loopback IP; --server is an origin without path/query/userinfo. No local fallback, redirects, ambient proxies or automatic retries.",
             "exitCodes":{"0":"success","1":"server/transport/protocol failure","2":"usage/configuration failure"},
             "example":"rentemester-rust remote --server http://127.0.0.1:8080 --allow-loopback-http --cookie-file /private/session.cookie trial-balance --company example --year 2026"});
-        help["serviceAuthentication"] = json!("Private --service-key-file replaces --cookie-file for me/companies, journal/report reads, post-journal/reverse-journal and contacts/create-customer plus preview/issue/post/list/PDF invoices. Current server permissions apply; no lifecycle/admin access, Bearer/raw-secret flags, fallback or retry.");
+        help["serviceAuthentication"] = json!("Private --service-key-file replaces --cookie-file for me/companies, journal/report reads, post-journal/reverse-journal and contacts/create-customer plus preview/issue/post/list/PDF invoices, documents/payables/bank settlement and invoice-email status/send/reconcile/retry. Current server permissions apply; no lifecycle/admin access, Bearer/raw-secret flags, fallback or retry.");
         help["publicEInvoice"]=crate::public_einvoice::help();
         help["commands"].as_array_mut().unwrap().extend(crate::public_einvoice::COMMANDS.map(|s|json!(s)));
         help["bilagsmail"] = crate::bilagsmail::help();
@@ -211,6 +211,10 @@ pub fn run(args: &[String]) -> Result<Value, Failure> {
     if flags.contains_key("--service-key-file")
         && ![
             "health",
+            "invoice-email-status",
+            "invoice-email-send",
+            "invoice-email-reconcile",
+            "invoice-email-retry",
             "me",
             "companies",
             "journal",
@@ -228,7 +232,7 @@ pub fn run(args: &[String]) -> Result<Value, Failure> {
         .contains(&command)
     {
         return Err(invalid(
-            "service authentication supports context, reports, manual journals, customer/invoice flows, bank reads/import, document ingestion/originals and explicit invoice/payable settlement",
+            "service authentication supports context, reports, manual journals, customer/invoice flows, bank reads/import, document ingestion/originals, explicit invoice/payable settlement and invoice email delivery",
         ));
     }
     if crate::invoice_extraction::accepts(command) {

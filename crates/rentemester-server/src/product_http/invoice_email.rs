@@ -1,4 +1,5 @@
 //! Explicit external SMTP side effect over the admitted owner's durable reservation.
+use super::documents::{Credential, credential, service_envelope};
 use super::*;
 use rentemester_storage::invoice_email::{Reconcile, Retry, Send};
 enum Command {
@@ -11,7 +12,7 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
     let path = request.uri().path().to_owned();
     let slug = path.split('/').nth(3).unwrap_or("").to_owned();
     let write = request.method() == axum::http::Method::POST;
-    let cookie = match proof(&state, &request, write) {
+    let credential = match credential(&state, &request, write) {
         Ok(v) => v,
         Err(r) => return *r,
     };
@@ -60,42 +61,84 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
     let result = tokio::task::spawn_blocking(move || {
         let _permit = permit;
         let mut owner = state.native.lock_company(&slug).map_err(|_| ())?;
-        let attempt = match &command {
-            Command::Status => owner.invoice_email_status(&cookie, &SystemClock),
-            Command::Reconcile(input) => {
-                owner.reconcile_invoice_email(&cookie, &SystemClock, input)
+        let value = match &credential {
+            Credential::Human(cookie) => {
+                let attempt = match &command {
+                    Command::Status => owner.invoice_email_status(cookie, &SystemClock),
+                    Command::Reconcile(input) => {
+                        owner.reconcile_invoice_email(cookie, &SystemClock, input)
+                    }
+                    Command::Send(_) | Command::Retry(_) => {
+                        let mut sender = state
+                            .native
+                            .invoice_mail
+                            .get(&slug)
+                            .ok_or(())?
+                            .lock()
+                            .map_err(|_| ())?;
+                        match &command {
+                            Command::Send(input) => {
+                                owner.send_invoice_email(cookie, &SystemClock, input, &mut *sender)
+                            }
+                            Command::Retry(input) => {
+                                owner.retry_invoice_email(cookie, &SystemClock, input, &mut *sender)
+                            }
+                            _ => unreachable!(),
+                        }
+                    }
+                }
+                .map_err(|_| ())?;
+                super::documents::outcome(attempt)
             }
-            Command::Send(input) => {
-                let mut sender = state
-                    .native
-                    .invoice_mail
-                    .get(&slug)
-                    .ok_or(())?
-                    .lock()
-                    .map_err(|_| ())?;
-                owner.send_invoice_email(&cookie, &SystemClock, input, &mut *sender)
+            Credential::Service(key) => {
+                let attempt = match &command {
+                    Command::Status => owner.invoice_email_status_service(key, &SystemClock),
+                    Command::Reconcile(input) => {
+                        owner.reconcile_invoice_email_service(key, &SystemClock, input)
+                    }
+                    Command::Send(_) | Command::Retry(_) => {
+                        let mut sender = state
+                            .native
+                            .invoice_mail
+                            .get(&slug)
+                            .ok_or(())?
+                            .lock()
+                            .map_err(|_| ())?;
+                        match &command {
+                            Command::Send(input) => owner.send_invoice_email_service(
+                                key,
+                                &SystemClock,
+                                input,
+                                &mut *sender,
+                            ),
+                            Command::Retry(input) => owner.retry_invoice_email_service(
+                                key,
+                                &SystemClock,
+                                input,
+                                &mut *sender,
+                            ),
+                            _ => unreachable!(),
+                        }
+                    }
+                }
+                .map_err(|_| ())?;
+                service_envelope(attempt, None)
             }
-            Command::Retry(input) => {
-                let mut sender = state
-                    .native
-                    .invoice_mail
-                    .get(&slug)
-                    .ok_or(())?
-                    .lock()
-                    .map_err(|_| ())?;
-                owner.retry_invoice_email(&cookie, &SystemClock, input, &mut *sender)
-            }
-        }
-        .map_err(|_| ())?;
-        Ok::<_, ()>(attempt)
+        };
+        Ok::<_, ()>(value)
     })
     .await;
     match result {
-        Ok(Ok(attempt)) => match super::documents::outcome(attempt) {
-            Ok(value) if status => response(
-                StatusCode::OK,
-                json!({"ok":true,"invoiceEmail":{"configured":configured,"rows":value["rows"]}}),
-            ),
+        Ok(Ok(value)) => match value {
+            Ok(value) if status => {
+                let mut body = json!({"ok":true,"invoiceEmail":{"configured":configured,"rows":value["rows"]}});
+                for field in ["usage", "business"] {
+                    if let Some(stage) = value.get(field) {
+                        body[field] = stage.clone();
+                    }
+                }
+                response(StatusCode::OK, body)
+            }
             Ok(mut value) => {
                 let delivery_state = value["delivery"]["state"].as_str().unwrap_or("unknown");
                 let (http, code) = if reconciliation || delivery_state == "accepted" {

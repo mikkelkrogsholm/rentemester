@@ -63,7 +63,7 @@ impl Owner {
 mod tests;
 
 impl Owner {
-    fn service_document_action<T>(
+    pub(super) fn service_document_action<T>(
         &mut self,
         key: &ServiceKey,
         clock: &dyn Clock,
