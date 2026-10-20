@@ -1,13 +1,13 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "Group92 stale auth refresh fencing and actual company/account-switch journal isolation qualified; installed J03 and service-client parity remain open",
-  "code_revision": "e60b0017c4f1722037a3ef556f67a09b97d7bd9c",
+  "current_increment": "Group93 service-key Rust HTTP/SDK/CLI/MCP manual accounting and canonical report journey qualified; installed J03 and remaining service operations stay open",
+  "code_revision": "53bb421fc41aea51fa3c3abf8a306c41b0cbcb5c",
   "spec_revision": "sha256:a7eb3f0d6e65412fa5ee945a7b79721b593806839f4a03e6b8d969ce3327e3fc",
-  "state": "Group92 fixes a reproduced AuthProvider race: logout/newer refresh/effect cleanup invalidate older getSession and me replies, errors and finalizers; per-refresh abort plus post-JSON signal check prevents an obsolete401 from expiring the newer identity; session/me IDs must agree. Six new regressions failed before;77 focused auth/App/API/useAsync tests pass after; production web design/typecheck/build and new-helper targeted TypeScript pass. Actual normal-MFA two-company Rust/browser fixture after server restart holds real authorized journal bytes after server response, switches company client-side, then repeats across actual UI logout and independent restricted-user TOTP login; old data cannot enter the new view or change destination, and the new identity retains only its granted company. Deferred unit tests establish auth-endpoint races; actual browser proof establishes journal/view races. Existing Group91 real lost accepted posting reply/exact replay/explicit release and pre-admission revoke403 proofs also pass in final run. First context oracle wrongly matched old text as a prefix of the second-company text; corrected exact source-entry and exact DOM-text checks, then fresh complete run passed. Final owned processes and private synthetic workspace cleaned. HTTP loopback browser/server scope only; installed remote HTTPS J03 remains unqualified and Mac freshly observed locked. Next concrete parity gap: existing native service post/reverse fences are not connected to HTTP or key-file SDK/CLI/MCP authentication. Existing source service permissions and R13/R45/J03 require these; do not globally relax human VerifiedCookie routes. Group88 installed local/HTTPS and Group90 migration/accounting/recovery retained. Full Rust mission/epic672, remaining J03 service/installed matrix, J06/J07, signed distribution/updates and TS retirement stay OPEN.",
+  "state": "Group93 connects native service-principal manual post/reversal and authorized accounting reports to explicit product HTTP routes and private key-file Rust SDK/CLI/MCP authentication. Current workspace/company permissions are checked before quota and again under the control writer; stable service subject owns receipts across key rotation. No blanket relaxation of human routes or automatic retry. Malformed envelopes are rejected before Owner admission. Actual normal-owner verification/MFA and separately granted two-company Rust fixture after restart passes: reader posting refused before charge, other company hidden/denied, mixed credential and service-admin refused, accepted posting response discarded, CLI/MCP exact original receipt recovery without duplicate, rotated old key refused/new key recovers same receipt, one reversal across clients, five canonical human/service/CLI/MCP reports, revoked membership and credential prevent read/replay with unchanged accounting. Six service-read and six client tests,35 SDK HTTP tests,92 existing service scenarios, strict integrated Clippy and server/CLI/MCP build pass. The existing TypeScript-issued service fixture used control v30 while native requires31; its synthetic setup now invokes the existing exact-prefix mail schema upgrade before snapshots/corruption. Product admission remains unchanged. Initial actual harness passed an unsupported additional CLI --confirm flag for journal envelopes; corrected the harness to preserve existing embedded confirmation, then fresh whole run passed. Existing Group91 lost-reply/access revocation and Group92 company/account-switch proofs pass in the same run. Owned processes and private synthetic workspace cleaned. HTTP loopback browser/server/real-client evidence only; no installed HTTPS claim. Group88 installed shared web and Group90 migration/accounting/sourcefree recovery retained. Full Rust mission/epic672, installed J03 remote matrix, other service-operation parity, J06/J07, signed distribution/updates and TS backend retirement remain OPEN.",
   "issues_closed": [],
   "next": [
-    "J03/R13/R45: connect existing explicit native service post/reverse fences and necessary authorized reads to service-key HTTP and private key-file SDK/CLI/MCP authentication; preserve current credential/role/usage/idempotency fencing and human-MFA administration. Existing TS service permissions require this parity; no blanket relaxation of human cookie routes.",
+    "J03/R13/R45: remaining required service-operation parity beyond accepted manual post/reverse and accounting report scope; keep explicit current authority and native operation semantics. Do not repeat unchanged Group93 acceptance.",
     "J03/R50: installed shared-web remote HTTPS two-company owner/bookkeeper/service and canonical web/CLI/MCP acceptance. Group91 browser uncertainty/pre-admission revocation and Group92 company/account-switch journal plus auth race proofs are complete; do not repeat unchanged. Mac unlock remains pending for native GUI.",
     "J06: qualify installed GUI handoff/recovery boundaries beyond existing Group56 backend proof",
     "J07 durable automation and signed distribution/updates; remaining CLI/MCP parity and full backend retirement",
@@ -22,10 +22,10 @@
   ],
   "all_goal_requirements_complete": false,
   "previous_verified_increment": {
-    "current_increment": "Group91 browser/Rust lost-posting reconciliation and pending company-access revocation qualified; installed remote J03 remains open",
-    "code_revision": "bbf30c36977a2c2176de07e676b39fb552905f38",
+    "current_increment": "Group92 stale auth refresh fencing and actual company/account-switch journal isolation qualified; installed J03 and service-client parity remain open",
+    "code_revision": "e60b0017c4f1722037a3ef556f67a09b97d7bd9c",
     "spec_revision": "sha256:a7eb3f0d6e65412fa5ee945a7b79721b593806839f4a03e6b8d969ce3327e3fc",
-    "state": "Group91 fixes the concrete manual-post unknown-outcome bypass: a new form request UUID no longer changes the persistent company-scoped mutation block, and canonical operationScope covers equivalent journal routes. Actual ordinary-MFA two-company Rust/browser fixture passed after server restart: one real accepted posting reply deliberately discarded; full reload/trailing-slash route keeps writes blocked; canonical journal contains exactly one new posting; exact original payload/key returns identical entryId/entryNo/entryHash with replayed receipt and unchanged journal; explicit human reconciliation releases the form without a write. Normally invited reader promoted to bookkeeper; owner revokes membership while a real browser read and manual-post request are held before server admission; each returns403 and canonical ledger remains unchanged. Final fixture process and private workspace cleaned. 21 focused React tests, production web build and targeted two-helper TypeScript check pass. This is HTTP loopback browser/server evidence, not installed remote HTTPS or service-identity qualification. Abrupt reload while a request is still in flight is not qualified. Group88 installed local/HTTPS and Group90 migration/accounting/recovery evidence retained. Full J03 company/account-switch stale responses, service roles, installed remote web/CLI/MCP parity, J06/J07, signed distribution/updates and full Rust mission/epic672 remain OPEN. Fresh CUA observation still reports Mac locked; no repeated permission request."
+    "state": "Group92 fixes a reproduced AuthProvider race: logout/newer refresh/effect cleanup invalidate older getSession and me replies, errors and finalizers; per-refresh abort plus post-JSON signal check prevents an obsolete401 from expiring the newer identity; session/me IDs must agree. Six new regressions failed before;77 focused auth/App/API/useAsync tests pass after; production web design/typecheck/build and new-helper targeted TypeScript pass. Actual normal-MFA two-company Rust/browser fixture after server restart holds real authorized journal bytes after server response, switches company client-side, then repeats across actual UI logout and independent restricted-user TOTP login; old data cannot enter the new view or change destination, and the new identity retains only its granted company. Deferred unit tests establish auth-endpoint races; actual browser proof establishes journal/view races. Existing Group91 real lost accepted posting reply/exact replay/explicit release and pre-admission revoke403 proofs also pass in final run. First context oracle wrongly matched old text as a prefix of the second-company text; corrected exact source-entry and exact DOM-text checks, then fresh complete run passed. Final owned processes and private synthetic workspace cleaned. HTTP loopback browser/server scope only; installed remote HTTPS J03 remains unqualified and Mac freshly observed locked. Next concrete parity gap: existing native service post/reverse fences are not connected to HTTP or key-file SDK/CLI/MCP authentication. Existing source service permissions and R13/R45/J03 require these; do not globally relax human VerifiedCookie routes. Group88 installed local/HTTPS and Group90 migration/accounting/recovery retained. Full Rust mission/epic672, remaining J03 service/installed matrix, J06/J07, signed distribution/updates and TS retirement stay OPEN."
   },
   "evidence": {
     "combined_browser_log": "/tmp/rm-platform5-combined.log",
@@ -1987,6 +1987,51 @@
       ],
       "cleanup": "owned server/browser stopped and private fixture removed",
       "qualification_repair": "First test used substring match where second marker contained primary marker; exact journal entry and DOM text matching fixed, fresh actual run passed."
+    },
+    "service_company93": {
+      "report": "/tmp/rentemester-rust-reports/native-service-company93.json",
+      "sha256": "f342a2f1688c724212fc76a943edfd90d01ff07c0b4332633be4530a848c23aa",
+      "scope": "Normal MFA owner and explicit service company grants; actual macOS local-user Rust server, web, CLI and MCP over literal-loopback HTTP after restart; not installed remote HTTPS or full service operation parity",
+      "result": {
+        "normalOwnerIssuedAndExplicitlyGranted": true,
+        "companyIsolation": true,
+        "readerWriteRefusedBeforeCharge": true,
+        "acceptedLostReply": true,
+        "cliMcpExactReplay": true,
+        "stableReceiptAcrossRotation": true,
+        "reversalExactlyOnce": true,
+        "canonicalFiveReportParity": true,
+        "membershipAndCredentialRevocation": true,
+        "servicePostingEntryHash": "cf53857236dadd5d9f6919a6219e61ca38e0da3b943ea1838fa3915ffd353f2d",
+        "finalEntries": 4
+      },
+      "binarySha256": "ac5bbeab1eccf4e0d8f9cbb2fde2a4c01ebf900183c1528086c394381362e932",
+      "webIndexSha256": "106194bbed8af5d9f7286dda53a48db5bbb0bd2d8b7caa38d8c2983efa061b16",
+      "clientSha256": {
+        "RM_MULTI_CLI": "e9dfd374925404b08496a935d43c0f4a093a87a98f8620360dd9e345a69b28d8",
+        "RM_MULTI_MCP": "35decf56284822e7c7d63b2f3875b1f2779dc3a73a6e208a2eaa4581cd55d508"
+      },
+      "checks": {
+        "service_reads": 6,
+        "new_clients": 6,
+        "sdk_http": 35,
+        "existing_service_scenarios": 92,
+        "strict_clippy": "pass",
+        "build": "pass"
+      },
+      "qualification_repairs": [
+        "synthetic control30 fixture upgraded by existing exact-prefix native31 extension before baseline snapshots",
+        "CLI harness journal envelopes use embedded confirm:true without extra --confirm flag"
+      ],
+      "logs": [
+        "/tmp/rm93-service-accounting-journey.log",
+        "/tmp/rm93-service-core-qualified.log",
+        "/tmp/rm93-service-read-tests.log",
+        "/tmp/rm93-client-tests-final.log",
+        "/tmp/rm93-sdk-http.log",
+        "/tmp/rm93-clippy.log",
+        "/tmp/rm93-build.log"
+      ]
     }
   },
   "verified_history": [
