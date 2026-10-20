@@ -10,7 +10,7 @@ fn transfer_discovery_170_and_strict_scope_proof_bounds() {
         ],
     ));
     let tools = rows[1]["result"]["tools"].as_array().unwrap();
-    assert_eq!(tools.len(), 222);
+    assert_eq!(tools.len(), 225);
     for (name, read, company, max) in [
         ("workspace_transfer_status", true, false, 0),
         ("restored_receipts", true, true, 0),

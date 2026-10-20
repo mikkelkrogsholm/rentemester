@@ -3,6 +3,7 @@ pub mod vies;
 pub mod eu_sales;
 pub mod unmatched_bank;
 pub mod bank_matches;
+pub mod cvr;
 pub mod oss_report;
 pub(crate) mod invoice_fx;
 pub(crate) mod native_fx_roles;

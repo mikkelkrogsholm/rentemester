@@ -158,6 +158,7 @@ pub fn list() -> Value {
     tools.extend(crate::accruals::tools());
     tools.extend(crate::budget::tools());
     tools.extend(crate::bank_matches::tools());
+    tools.extend(crate::cvr::tools());
     tools.extend(crate::exceptions::tools());
     tools.extend(crate::mileage::tools());
     tools.extend(crate::company_knowledge::tools());
@@ -262,6 +263,7 @@ pub async fn call(api: &ApiClient, name: &str, args: Value) -> Result<Value, &'s
         name if crate::parties::accepts(name) => crate::parties::call(api,name,args).await?,
         name if crate::company_knowledge::accepts(name) => crate::company_knowledge::call(api,name,args).await?,
         name if crate::bank_matches::accepts(name) => crate::bank_matches::call(api,name,args).await?,
+        name if crate::cvr::accepts(name) => crate::cvr::call(api,name,args).await?,
         name if crate::exceptions::accepts(name) => crate::exceptions::call(api,name,args).await?,
         name if crate::mileage::accepts(name) => crate::mileage::call(api,name,args).await?,
         name if crate::accruals::accepts(name) => crate::accruals::call(api,name,args).await?,

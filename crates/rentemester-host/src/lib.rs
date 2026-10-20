@@ -1333,6 +1333,7 @@ mod document_party_links;
 mod direct_bank_payable_correction;
 
 mod contact_import;
+mod cvr;
 
 mod cfo_analytics;
 

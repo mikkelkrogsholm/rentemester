@@ -10,7 +10,7 @@ fn public_invoice_tools_publish_five_strict_source_operations() {
         ],
     ));
     let tools = rows[1]["result"]["tools"].as_array().unwrap();
-    assert_eq!(tools.len(), 222);
+    assert_eq!(tools.len(), 225);
     for (name, read) in [
         ("public_invoice_config", true),
         ("public_invoice_submissions", true),

@@ -82,6 +82,8 @@ pub fn run(args: &[String]) -> Result<Value, Failure> {
         help["commands"].as_array_mut().unwrap().extend(["group-disposition-status","plan-group-disposition","propose-group-disposition","approve-group-disposition","link-group-disposition","settle-group-disposition","supersede-group-disposition","reopen-group-disposition"].map(|s|json!(s)));
         help["directBankPayableCorrection"]=crate::payable_correction::help();
         help["commands"].as_array_mut().unwrap().extend(["direct-bank-payable-correction-plan","direct-bank-payable-correction"].map(|s|json!(s)));
+        help["cvr"]=crate::cvr::help();
+        help["commands"].as_array_mut().unwrap().extend(["cvr-status","cvr-lookup","sync-company-cvr"].map(|s|json!(s)));
         help["bankMatches"]=crate::bank_matches::help();
         help["commands"].as_array_mut().unwrap().push(json!("bank-suggest-matches"));
         help["bankImport"]=json!("import-bank --company SLUG --confirm: pipe one native JSON object with confirm:true and exactly one csvContent (UTF-8 text) or csvBase64 (canonical base64 original bytes). Optional account/profile; 35MiB envelope,25MiB original. Generic UTF-8/BOM; danske-bank also Windows1252. No client decoding, keys, actor or automatic retries.");
@@ -146,6 +148,7 @@ pub fn run(args: &[String]) -> Result<Value, Failure> {
                 "--replacement-journal-entry-id",
                 "--bank-transaction-id",
                 "--max",
+                "--cvr",
                 "--draft-id",
                 "--fiscal-year-start",
                 "--fiscal-year-end",
@@ -245,6 +248,8 @@ pub fn run(args: &[String]) -> Result<Value, Failure> {
     if crate::workspace_inbox::accepts(command){return crate::workspace_inbox::run(command,&flags,allow_http,confirmed,preview_reviewed);}
     if crate::parties::accepts(command){return crate::parties::run(command,&flags,allow_http,confirmed,preview_reviewed);}
     if crate::company_knowledge::accepts(command){return crate::company_knowledge::run(command,&flags,allow_http,confirmed,preview_reviewed);}
+    if crate::cvr::accepts(command){return crate::cvr::run(command,&flags,allow_http,confirmed,preview_reviewed);}
+    if flags.contains_key("--cvr"){return Err(invalid("--cvr is only supported by cvr-lookup"));}
     if crate::bank_matches::accepts(command){return crate::bank_matches::run(command,&flags,allow_http,confirmed,preview_reviewed);}
     if flags.contains_key("--max"){return Err(invalid("--max is only supported by bank-suggest-matches"));}
     if crate::exceptions::accepts(command){return crate::exceptions::run(command,&flags,allow_http,confirmed,preview_reviewed);}

@@ -21,6 +21,7 @@ mod accruals;
 mod assets;
 mod bank;
 mod bank_matches;
+mod cvr;
 mod bank_reconciliation;
 mod budget;
 mod company_setup;
@@ -112,6 +113,9 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
         .route("/api/companies/{slug}/consolidation", get(consolidation::handle))
         .route("/api/companies/{slug}/consolidation/{action}", post(consolidation::handle))
         .route("/api/companies/{slug}/import", post(contact_import::handle))
+        .route("/api/system/cvr-status", get(cvr::status))
+        .route("/api/companies/{slug}/cvr-lookup", get(cvr::handle))
+        .route("/api/companies/{slug}/sync-cvr", post(cvr::handle))
         .route("/api/group-dispositions/{id}", get(intercompany_dispositions::status))
         .route("/api/companies/{slug}/group-dispositions/{action}", post(intercompany_dispositions::handle))
         .route("/api/group-reconciliation", get(intercompany::reconciliation))

@@ -10,7 +10,7 @@ fn correction_plan_is_readonly_and_apply_requires_exact_confirmed_body() {
         ],
     ));
     let tools = rows[1]["result"]["tools"].as_array().unwrap();
-    assert_eq!(tools.len(), 222);
+    assert_eq!(tools.len(), 225);
     for (name, read) in [
         ("direct_bank_payable_correction_plan", true),
         ("direct_bank_payable_correction", false),
