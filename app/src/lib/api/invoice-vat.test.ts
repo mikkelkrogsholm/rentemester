@@ -26,3 +26,14 @@ test("EU invoice wire retains explicit FX without a caller VIES claim",async()=>
  const input:InvoiceIssueInput={issueDate:"2025-10-12",currency:"EUR",fxRateToDkk:7.45,vatTreatment:"foreign_reverse_charge",reverseChargeBasis:"EU_B2B_SERVICES",reverseChargeNote:"Reverse charge",buyer:{vatOrCvr:"DE123456789"},lines:[{description:"Synthetic EU service",quantity:1,unitPriceExVat:100,taxClassification:"reverse_charge",vatRate:0,reverseChargeBasis:"EU_B2B_SERVICES"}]};
  await invoicesApi.previewInvoice("synthetic",input);const issued=await invoicesApi.issueInvoice("synthetic",input);expect(calls).toEqual([input,input]);expect(issued.grossAmount).toBe(100);expect(issued.grossAmountDkk).toBe(745);
 });
+
+test("simplified preview and issue preserve reduced original-currency wire and server VAT",async()=>{
+ const calls:unknown[]=[];
+ stubGlobal("fetch",async(input:RequestInfo|URL,init?:RequestInit)=>{
+   calls.push(JSON.parse(String(init?.body)));
+   return String(input).endsWith("/preview")?new Response("%PDF-simplified",{headers:{"content-type":"application/pdf"}}):new Response(JSON.stringify({ok:true,invoice:{invoiceType:"simplified",documentId:78,invoiceNumber:"S-78",currency:"EUR",netAmount:80.06,vatAmount:20.01,grossAmount:100.07,lines:[{description:"Synthetic service"}]}}));
+ });
+ const input:InvoiceIssueInput={invoiceType:"simplified",issueDate:"2026-10-20",currency:"EUR",fxRateToDkk:7.45,vatTreatment:"standard",seller:{name:"Synthetic seller",address:"Synthetic street 1",vatOrCvr:"DK12345678"},lines:[{description:"Synthetic service"}],totals:{grossAmount:100.07,vatRate:0.25,vatComputationBasis:"VAT_20_OF_GROSS"}};
+ await invoicesApi.previewInvoice("synthetic",input);const result=await invoicesApi.issueInvoice("synthetic",input);
+ expect(calls).toEqual([input,input]);expect(result.invoiceType).toBe("simplified");expect(result.vatAmount).toBe(20.01);expect(result.lines).toEqual([{description:"Synthetic service"}]);
+});

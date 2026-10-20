@@ -854,3 +854,55 @@ test("native EU service keeps EUR and fixed DKK rate identical in preview and is
   expect(payload).not.toHaveProperty("viesValidation");expect(payload).not.toHaveProperty("vatRatePercent");
   expect(screen.getByText(/Bogføring i DKK/)).toBeInTheDocument();
 });
+
+test("native full private buyer needs no invented CVR and keeps full form wire",async()=>{
+ const {issue}=await nativeTaxForm();
+ await userEvent.type(screen.getByLabelText("Kunde"),"Synthetic private buyer");
+ await userEvent.type(screen.getByLabelText("Kundeadresse"),"Synthetic street 78");
+ await userEvent.click(screen.getByRole("button",{name:"Udsted faktura"}));
+ expect(issue).toHaveBeenCalledTimes(1);
+ expect(issue.mock.calls[0]![1].buyer).toEqual({name:"Synthetic private buyer",address:"Synthetic street 78",vatOrCvr:undefined});
+ expect(issue.mock.calls[0]![1]).not.toHaveProperty("totals");
+});
+
+test("native simplified sends only gross and description, shows server-derived cents and retains optional buyer",async()=>{
+ const {preview,issue}=await nativeTaxForm({invoiceType:"simplified",currency:"EUR",netAmount:80.06,vatRate:0.25,vatAmount:20.01,grossAmount:100.07,lines:[{description:"Synthetic gross service"}]});
+ await userEvent.selectOptions(screen.getByLabelText("Fakturatype"),"simplified");
+ expect(screen.queryByLabelText("Linje 1 antal")).not.toBeInTheDocument();
+ expect(screen.queryByLabelText("Momssats (%)")).not.toBeInTheDocument();
+ expect(screen.queryByLabelText("EAN-nummer")).not.toBeInTheDocument();
+ expect(screen.getByText(/Maks. 3.000,00 kr./)).toBeInTheDocument();
+ await userEvent.type(screen.getByLabelText("Beskrivelse"),"Synthetic gross service");
+ await userEvent.type(screen.getByLabelText("Beløb inkl. moms"),"100,07");
+ await userEvent.clear(screen.getByLabelText("Valuta"));await userEvent.type(screen.getByLabelText("Valuta"),"EUR");
+ await userEvent.type(screen.getByLabelText("Valutakurs i DKK"),"7,45");
+ await userEvent.type(screen.getByLabelText("Kunde (valgfrit)"),"Synthetic private buyer");
+ await userEvent.click(screen.getByRole("button",{name:"Forhåndsvis"}));
+ await screen.findByText(/Forhåndsvisningen er klar/);
+ await userEvent.click(screen.getByRole("button",{name:"Udsted faktura"}));
+ const input=issue.mock.calls[0]![1];expect(input).toEqual(preview.mock.calls[0]![1]);
+ expect(input).toMatchObject({invoiceType:"simplified",vatTreatment:"standard",currency:"EUR",fxRateToDkk:7.45,lines:[{description:"Synthetic gross service"}],totals:{grossAmount:100.07,vatRate:0.25,vatComputationBasis:"VAT_20_OF_GROSS"},buyer:{name:"Synthetic private buyer"}});
+ expect(input).not.toHaveProperty("vatRatePercent");expect(input).not.toHaveProperty("reverseChargeBasis");
+ expect(screen.getByText(/80,06\s+EUR/)).toBeInTheDocument();expect(screen.getByText(/20,01\s+EUR/)).toBeInTheDocument();
+ expect(screen.getByRole("link",{name:"Hent PDF"})).toBeInTheDocument();
+});
+
+test("switching to simplified clears incompatible preview, contact routing, and reverse-charge decisions",async()=>{
+ const {preview,issue}=await nativeTaxForm();
+ await userEvent.type(screen.getByLabelText("EAN-nummer"),"5790000000074");
+ await userEvent.type(screen.getByLabelText("Købers reference"),"Synthetic reference");
+ await userEvent.selectOptions(screen.getByLabelText("Momsbehandling"),"domestic_reverse_charge");
+ await userEvent.selectOptions(screen.getByLabelText("Dansk lovgrundlag"),"DK_MOMSLOVEN_§46_STK_1_NR_7");
+ await userEvent.type(screen.getByLabelText("Note om omvendt betalingspligt"),"Synthetic note");
+ await userEvent.click(screen.getByRole("button",{name:"Forhåndsvis"}));await screen.findByText(/Forhåndsvisningen er klar/);
+ await userEvent.selectOptions(screen.getByLabelText("Fakturatype"),"simplified");
+ expect(screen.queryByText(/Forhåndsvisningen er klar/)).not.toBeInTheDocument();
+ await userEvent.type(screen.getByLabelText("Beskrivelse"),"Synthetic reduced sale");await userEvent.type(screen.getByLabelText("Beløb inkl. moms"),"3000");
+ await userEvent.click(screen.getByRole("button",{name:"Udsted faktura"}));
+ expect(issue).toHaveBeenCalledTimes(1);const input=issue.mock.calls[0]![1];expect(input.buyer).toBeUndefined();expect(input.customerId).toBeUndefined();expect(input).not.toHaveProperty("reverseChargeNote");expect(input.vatTreatment).toBe("standard");expect(input.lines).toEqual([{description:"Synthetic reduced sale"}]);expect(preview).toHaveBeenCalledTimes(1);
+});
+
+test("legacy backend never offers the native simplified type",async()=>{
+ mockFetch(companyRoute());render(<InvoiceIssueModal slug="acme-aps" onIssued={noop} onClose={noop}/>);
+ await screen.findByDisplayValue("DK12345678");expect(screen.queryByLabelText("Fakturatype")).not.toBeInTheDocument();expect(screen.getByLabelText("Linje 1 antal")).toBeInTheDocument();
+});

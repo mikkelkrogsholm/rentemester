@@ -14,7 +14,7 @@
 // backup-lock rejection.
 
 import { useEffect, useRef, useState } from "react";
-import { api, type InvoiceIssueSummary, type InvoiceLineInput } from "../lib/api";
+import { api, type InvoiceIssueInput, type InvoiceIssueSummary, type InvoiceLineInput } from "../lib/api";
 import type {InvoiceTaxClassification,DomesticReverseChargeBasis,InvoiceReverseChargeBasis} from "../lib/api/invoices";
 import { formatKroner, parseDanishAmount } from "../lib/format";
 import type { ContactCustomerRow, CompanyInvoices } from "../lib/types";
@@ -64,6 +64,10 @@ export function InvoiceIssueForm({
   presentation = "dialog",
 }: InvoiceIssueModalProps & { presentation?: "dialog" | "page" }) {
   const native=useOptionalAuth()?.backend==="rust";
+  const [invoiceType, setInvoiceType] = useState<"full" | "simplified">("full");
+  const simplified = native && invoiceType === "simplified";
+  const [simplifiedDescription, setSimplifiedDescription] = useState("");
+  const [grossAmount, setGrossAmount] = useState("");
   const [issueDate, setIssueDate] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [vatRatePercent, setVatRatePercent] = useState("25");
@@ -71,8 +75,8 @@ export function InvoiceIssueForm({
   const [lineTaxes,setLineTaxes]=useState(false);
   const [reverseChargeBasis,setReverseChargeBasis]=useState<DomesticReverseChargeBasis|"">("");
   const [reverseChargeNote,setReverseChargeNote]=useState("");
-  const foreign=native&&vatTreatment==="foreign_reverse_charge";
-  const explicitTaxes=native&&(lineTaxes||vatTreatment!=="standard");
+  const foreign=native&&!simplified&&vatTreatment==="foreign_reverse_charge";
+  const explicitTaxes=native&&!simplified&&(lineTaxes||vatTreatment!=="standard");
   const [fxRate,setFxRate]=useState("");
   const [vies,setVies]=useState<{vat:string;valid:boolean;validatedAt:string;expiresAt:string;name:string|null}|null>(null);
   const [checkingVat,setCheckingVat]=useState(false);
@@ -195,8 +199,8 @@ export function InvoiceIssueForm({
     setBuyerName(row.name);
     setBuyerAddress(row.address ?? "");
     setBuyerVat(row.vatOrCvr ?? "");
-    setBuyerEan(row.eanNumber ?? "");
-    setPublicRecipient(Boolean(row.eanNumber));
+    setBuyerEan(simplified ? "" : row.eanNumber ?? "");
+    setPublicRecipient(!simplified && Boolean(row.eanNumber));
   }
 
   function updateLine(index: number, patch: Partial<LineDraft>) {
@@ -227,17 +231,32 @@ export function InvoiceIssueForm({
    * Returns `null` and sets `error` if validation fails, mirroring the
    * inline behaviour the original `handleIssue` had.
    */
-  function buildPayload():
-    | {
-        issueDate: string;
-        vatNum: number;
-        parsedLines: InvoiceLineInput[];
-      }
-    | null {
+  function changeInvoiceType(value: "full" | "simplified") {
+    setInvoiceType(value);
+    setVatTreatment("standard"); setVatRatePercent("25"); setLineTaxes(false);
+    setReverseChargeBasis(""); setReverseChargeNote(""); setVies(null); setViesError(null);
+    setBuyerEan(""); setPublicRecipient(false); setBuyerReference(""); setOrderReference("");
+    setSelectedCustomerId(""); setLines([{...EMPTY_LINE}]);
+    setSimplifiedDescription(""); setGrossAmount("");
+    setPreviewUrl(null); setError(null); setLocked(null); setDirty(true);
+  }
+
+  function buildPayload(): InvoiceIssueInput | null {
     if (!issueDate.trim()) {
       setError("Angiv en fakturadato.");
       dateRef.current?.focus();
       return null;
+    }
+    if (simplified) {
+      const gross = parseDanishAmount(grossAmount);
+      if (!simplifiedDescription.trim()) { setError("Angiv en beskrivelse."); return null; }
+      if (gross === null || !Number.isFinite(gross) || gross <= 0) { setError("Angiv et positivt beløb inkl. moms."); return null; }
+      const rate = (currency.trim().toUpperCase() || "DKK") === "DKK" ? 1 : parseDanishAmount(fxRate);
+      if (rate === null || !Number.isFinite(rate) || rate <= 0) { setError("Angiv en positiv valutakurs i DKK pr. valutaenhed."); return null; }
+      // The server applies the exact converted limit and computes VAT cents.
+      return { ...buildPartyAndExtras(), issueDate: issueDate.trim(), invoiceType: "simplified", vatTreatment: "standard",
+        lines: [{description: simplifiedDescription.trim()}],
+        totals: {grossAmount: gross, vatRate: 0.25, vatComputationBasis: "VAT_20_OF_GROSS"} };
     }
     const vatNum = Number(vatRatePercent);
     if (!explicitTaxes&&(!Number.isFinite(vatNum) || vatNum < 0)) {
@@ -280,7 +299,7 @@ export function InvoiceIssueForm({
         ...(explicitTaxes?{taxClassification:classification,vatRate:classification==="taxable"?0.25:0,...(classification==="reverse_charge"&&basis?{reverseChargeBasis:basis}:{})}:{}),
       });
     }
-    return { issueDate: issueDate.trim(), vatNum, parsedLines };
+    return { ...buildPartyAndExtras(), issueDate: issueDate.trim(), lines: parsedLines, ...(!explicitTaxes ? {vatRatePercent: vatNum} : {}) };
   }
 
   /**
@@ -294,7 +313,7 @@ export function InvoiceIssueForm({
     return {
       ...(explicitTaxes?{vatTreatment,...(foreign?{reverseChargeBasis:"EU_B2B_SERVICES" as const,reverseChargeNote:reverseChargeNote.trim()}:vatTreatment==="domestic_reverse_charge"&&reverseChargeBasis?{reverseChargeBasis,reverseChargeNote:reverseChargeNote.trim()}:{})}:{}),
       ...(native&&(currency.trim().toUpperCase()||"DKK")!=="DKK"?{fxRateToDkk:parseDanishAmount(fxRate)!}:{}),
-      customerId: selectedCustomerId ? Number(selectedCustomerId) : undefined,
+      customerId: !simplified && selectedCustomerId ? Number(selectedCustomerId) : undefined,
       currency: currency.trim().toUpperCase() || "DKK",
       dueDate: dueDate.trim() || undefined,
       seller:
@@ -311,10 +330,10 @@ export function InvoiceIssueForm({
               name: buyerName.trim() || undefined,
               address: buyerAddress.trim() || undefined,
               vatOrCvr: buyerVat.trim() || undefined,
-              ...(native&&buyerEan.trim()?{eanNumber:buyerEan.trim()}:{}),
-              ...(native&&(publicRecipient||buyerEan.trim())?{publicRecipient}:{}),
-              ...(native&&buyerReference.trim()?{buyerReference:buyerReference.trim()}:{}),
-              ...(native&&orderReference.trim()?{orderReference:orderReference.trim()}:{}),
+              ...(native&&!simplified&&buyerEan.trim()?{eanNumber:buyerEan.trim()}:{}),
+              ...(native&&!simplified&&(publicRecipient||buyerEan.trim())?{publicRecipient}:{}),
+              ...(native&&!simplified&&buyerReference.trim()?{buyerReference:buyerReference.trim()}:{}),
+              ...(native&&!simplified&&orderReference.trim()?{orderReference:orderReference.trim()}:{}),
             }
           : undefined,
     };
@@ -335,17 +354,11 @@ export function InvoiceIssueForm({
 
     const parsed = buildPayload();
     if (!parsed) return;
-    const extras = buildPartyAndExtras();
 
     submitRef.current = true;
     setPending("preview");
     try {
-      const blob = await api.previewInvoice(slug, {
-        issueDate: parsed.issueDate,
-        lines: parsed.parsedLines,
-        ...(!explicitTaxes?{vatRatePercent:parsed.vatNum}:{}),
-        ...extras,
-      });
+      const blob = await api.previewInvoice(slug, parsed);
       const url = URL.createObjectURL(blob);
       // Keep a fallback link for browsers that block the asynchronous popup.
       // The blob is released on replacement or unmount.
@@ -373,13 +386,7 @@ export function InvoiceIssueForm({
     submitRef.current = true;
     setPending("issue");
     try {
-      const extras = buildPartyAndExtras();
-      const summary = await api.issueInvoice(slug, {
-        issueDate: parsed.issueDate,
-        lines: parsed.parsedLines,
-        ...(!explicitTaxes?{vatRatePercent:parsed.vatNum}:{}),
-        ...extras,
-      }).catch(outcome.reject);
+      const summary = await api.issueInvoice(slug, parsed).catch(outcome.reject);
       setDone(summary);
       setDirty(false);
       onIssued();
@@ -405,7 +412,7 @@ export function InvoiceIssueForm({
           <>
             <div className="modal-body">
               <p>
-                Faktura{" "}
+                {done.invoiceType === "simplified" ? "Forenklet faktura" : "Faktura"}{" "}
                 {done.invoiceNumber ? <strong>{done.invoiceNumber}</strong> : ""}{" "}
                 udstedt.
               </p>
@@ -493,6 +500,12 @@ export function InvoiceIssueForm({
               </Banner>
             )}
 
+            {native && <label className="modal-field">Fakturatype
+              <Select aria-label="Fakturatype" value={invoiceType} onChange={e => changeInvoiceType(e.target.value as typeof invoiceType)} disabled={busy || uncertain}>
+                <option value="full">Fuld faktura</option><option value="simplified">Forenklet faktura</option>
+              </Select>
+            </label>}
+            {simplified && <p className="muted">Maks. 3.000,00 kr. inkl. moms, omregnet til DKK. Rentemester beregner den indeholdte moms på 25 %. Køberoplysninger er valgfrie.</p>}
             <div className="modal-field-grid">
               <label className="modal-field">
                 Fakturadato
@@ -516,7 +529,7 @@ export function InvoiceIssueForm({
               </label>
             </div>
 
-            {native&&<fieldset disabled={busy||uncertain} className="modal-body">
+            {native&&!simplified&&<fieldset disabled={busy||uncertain} className="modal-body">
               <legend>Moms på fakturaen</legend>
               <label className="modal-field">Momsbehandling
                 <Select aria-label="Momsbehandling" value={vatTreatment} onChange={e=>setVatTreatment(e.target.value as typeof vatTreatment)}>
@@ -537,7 +550,7 @@ export function InvoiceIssueForm({
               <p className="muted">Vælg kun fritagelse eller omvendt betalingspligt, når grundlaget er afklaret. Serveren kontrollerer valg og beregner beløbene; EU B2B-ydelser kræver en gyldig, aktuel VIES-kontrol, som serveren knytter til fakturaen.</p>
             </fieldset>}
             <div className="modal-field-grid">
-              {!explicitTaxes&&<label className="modal-field">
+              {!explicitTaxes&&!simplified&&<label className="modal-field">
                 Momssats (%)
                 <Input
                   type="text"
@@ -613,7 +626,7 @@ export function InvoiceIssueForm({
 
             <div className="modal-field-grid">
               <label className="modal-field">
-                Kunde
+                {simplified ? "Kunde (valgfrit)" : "Kunde"}
                 <Input
                   type="text"
                   value={buyerName}
@@ -623,7 +636,7 @@ export function InvoiceIssueForm({
                 />
               </label>
               <label className="modal-field">
-                Kunde CVR/moms
+                {native && vatTreatment === "standard" ? "Kunde CVR/moms (valgfrit)" : "Kunde CVR/moms"}
                 <Input
                   type="text"
                   value={buyerVat}
@@ -634,7 +647,7 @@ export function InvoiceIssueForm({
             </div>
             {foreign&&<div className="modal-body"><Button type="button" className="btn secondary" disabled={busy||uncertain||checkingVat||!buyerVat.trim()} onClick={async()=>{const vat=buyerVat.trim();setCheckingVat(true);setViesError(null);try{const result=await api.viesValidate(slug,vat);setVies({vat, ...result.validation});}catch(e){setVies(null);setViesError((e as Error).message);}finally{setCheckingVat(false);}}}>{checkingVat?"Kontrollerer…":"Verificér EU-momsnummer"}</Button>{vies&&vies.vat===buyerVat.trim()&&<p role="status">{vies.valid?"Gyldigt EU-momsnummer":"Momsnummeret er ikke gyldigt"} · Kontrolleret {vies.validatedAt} · Udløber {vies.expiresAt}{vies.name?` · ${vies.name}`:""}</p>}{viesError&&<p role="alert">{viesError}</p>}</div>}
             <label className="modal-field">
-              Kundeadresse
+              {simplified ? "Kundeadresse (valgfri)" : "Kundeadresse"}
               <Input
                 type="text"
                 value={buyerAddress}
@@ -643,7 +656,7 @@ export function InvoiceIssueForm({
               />
             </label>
 
-            {native&&<fieldset className="modal-field">
+            {native&&!simplified&&<fieldset className="modal-field">
               <legend>E-faktura til offentlig modtager</legend>
               <label className="modal-field">EAN-nummer<Input aria-label="EAN-nummer" value={buyerEan} maxLength={64} onChange={e=>{setBuyerEan(e.target.value);setPublicRecipient(Boolean(e.target.value.trim()));}} disabled={busy||uncertain}/></label>
               <label><input type="checkbox" checked={publicRecipient} onChange={e=>setPublicRecipient(e.target.checked)} disabled={busy||uncertain}/> Offentlig modtager</label>
@@ -655,7 +668,11 @@ export function InvoiceIssueForm({
               {selectedCustomerId&&customers.find(c=>String(c.id)===selectedCustomerId)?.eanNumber&&<p className="muted">EAN fra den valgte kunde bruges, hvis feltet er tomt.</p>}
             </fieldset>}
 
-            <fieldset className="modal-field invoice-lines">
+            {simplified ? <fieldset className="modal-field invoice-lines">
+              <legend>Forenklet faktura</legend>
+              <label className="modal-field">Beskrivelse<Input aria-label="Beskrivelse" value={simplifiedDescription} onChange={e => setSimplifiedDescription(e.target.value)} disabled={busy || uncertain}/></label>
+              <label className="modal-field">Beløb inkl. moms<Input aria-label="Beløb inkl. moms" inputMode="decimal" value={grossAmount} onChange={e => setGrossAmount(e.target.value)} disabled={busy || uncertain}/></label>
+            </fieldset> : <fieldset className="modal-field invoice-lines">
               <legend>Fakturalinjer</legend>
               {lines.map((line, index) => (
                 <div key={index} className="invoice-line-row">
@@ -726,7 +743,7 @@ export function InvoiceIssueForm({
               >
                 Tilføj linje
               </Button>
-            </fieldset>
+            </fieldset>}
 
             <div className="modal-actions">
               <Button
