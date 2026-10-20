@@ -127,6 +127,35 @@ mod tests {
         Money::parse(s).unwrap()
     }
     #[test]
+    fn historical_projection_uses_frozen_principal_for_exact_cumulative_credit_carrying() {
+        let mut source = rentemester_engine::sales_invoice::compute(&serde_json::from_value(serde_json::json!({"issueDate":"2025-08-01","currency":"EUR","fxRateToDkk":7.46,"vatTreatment":"foreign_reverse_charge","reverseChargeBasis":"EU_B2B_SERVICES","reverseChargeNote":"Synthetic reverse charge","lines":[{"description":"Synthetic service","quantity":1,"unitPriceExVat":0.03}]})).unwrap()).unwrap();
+        source.as_object_mut().unwrap().remove("fxValuationVersion");
+        source["lines"][0]
+            .as_object_mut()
+            .unwrap()
+            .remove("vatBaseDkk");
+        source["lines"][0]
+            .as_object_mut()
+            .unwrap()
+            .remove("vatAmountDkk");
+        source["totals"]
+            .as_object_mut()
+            .unwrap()
+            .remove("vatAmountDkk");
+        let original = serde_json::to_vec(&source).unwrap();
+        let projected = projection(&source).unwrap();
+        let mut before = m("0");
+        let mut total = m("0");
+        for _ in 0..3 {
+            total.add(&portion(&m("0.03"), &projected.gross, &before, &m("0.01")).unwrap());
+            before.add(&m("0.01"));
+        }
+        assert_eq!(total, m("0.22"));
+        assert_eq!(serde_json::to_vec(&source).unwrap(), original);
+        source["totals"]["grossAmountDkk"] = serde_json::json!(0.23);
+        assert!(projection(&source).is_err());
+    }
+    #[test]
     fn cumulative_foreign_cent_allocation_preserves_final_original_dkk() {
         let mut before = m("0");
         let mut total = m("0");
