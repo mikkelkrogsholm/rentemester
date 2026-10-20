@@ -2,6 +2,7 @@
 //! This is not schema adoption, fresh initialization, or transport authorization.
 //! Never open other regular descriptors for owned database inodes in this process.
 mod eu_sales;
+mod oss_report;
 mod public_einvoice;
 use rentemester_application::{
     control_fence::{Committed, CompanySelection},

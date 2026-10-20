@@ -3,6 +3,7 @@
 //! https://modelcontextprotocol.io/specification/2025-11-25/basic/lifecycle
 //! https://modelcontextprotocol.io/specification/2025-11-25/server/tools
 mod eu_sales;
+mod oss_report;
 mod reminder_claims;
 mod company_creation;
 mod saft;

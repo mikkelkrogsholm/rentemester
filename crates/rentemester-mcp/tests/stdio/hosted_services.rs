@@ -10,7 +10,7 @@ fn discovery_158_and_exact_read_write_scope_and_bounds() {
         ],
     ));
     let tools = rows[1]["result"]["tools"].as_array().unwrap();
-    assert_eq!(tools.len(), 218);
+    assert_eq!(tools.len(), 219);
     for (name, readonly, max) in [
         ("service_principals", true, 0),
         ("create_service_principal", false, 8192),

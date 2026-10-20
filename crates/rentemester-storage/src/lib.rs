@@ -1,6 +1,7 @@
 //! Source-read-only reports/rehearsals and caller-owned transactional primitives.
 pub mod vies;
 pub mod eu_sales;
+pub mod oss_report;
 pub(crate) mod invoice_fx;
 pub(crate) mod native_fx_roles;
 pub mod mail_intake;
