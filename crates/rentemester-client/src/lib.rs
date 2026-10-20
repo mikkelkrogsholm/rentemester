@@ -57,7 +57,7 @@ pub use domain::{
 };
 pub use receivables::{ReceivablesMutation, receivables_body_schema};
 mod credentials;
-pub use credentials::read_cookie_file;
+pub use credentials::{read_cookie_file, read_service_key_file};
 
 use reqwest::{
     Client, Method, Url,
@@ -97,12 +97,13 @@ impl fmt::Display for Error {
 }
 impl std::error::Error for Error {}
 
-/// Intentionally does not implement Debug: request Cookie is a secret.
+/// Intentionally does not implement Debug: request Cookie/service key are secrets.
 pub struct ApiClient {
     http: Client,
     base: Url,
     origin: String,
     cookie: Option<Zeroizing<String>>,
+    service_key: Option<Zeroizing<String>>,
 }
 #[derive(Clone, Copy, Debug)]
 pub enum Report {
@@ -182,7 +183,28 @@ impl ApiClient {
             base,
             origin,
             cookie: cookie.map(Zeroizing::new),
+            service_key: None,
         })
+    }
+    /// Explicit service credential; never combined with a browser Cookie or Bearer header.
+    /// Current server permissions determine which operations this identity may execute.
+    pub fn with_service_key(
+        server: &str,
+        allow_loopback_http: bool,
+        key: String,
+    ) -> Result<Self, Error> {
+        let key = Zeroizing::new(key);
+        if key.is_empty()
+            || key.len() > 4096
+            || key.trim() != key.as_str()
+            || key.chars().any(char::is_control)
+            || HeaderValue::from_str(&key).is_err()
+        {
+            return Err(Error::InvalidInput("invalid service key"));
+        }
+        let mut client = Self::new(server, allow_loopback_http, None)?;
+        client.service_key = Some(key);
+        Ok(client)
     }
     pub async fn health(&self) -> Result<Value, Error> {
         self.get("/api/health", &[]).await
@@ -314,6 +336,17 @@ impl ApiClient {
             .request(method, url)
             .header("origin", &self.origin)
             .header("accept", "application/json");
+        if let Some(key) = &self.service_key {
+            if cookie.is_some() {
+                return Err(Error::InvalidInput(
+                    "service key and Cookie cannot be combined",
+                ));
+            }
+            let mut header = HeaderValue::from_str(key)
+                .map_err(|_| Error::InvalidInput("invalid service key"))?;
+            header.set_sensitive(true);
+            request = request.header("x-rentemester-service-key", header);
+        }
         if let Some(cookie) = cookie {
             let mut header =
                 HeaderValue::from_str(cookie).map_err(|_| Error::InvalidInput("invalid cookie"))?;

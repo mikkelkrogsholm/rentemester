@@ -16,7 +16,7 @@ pub fn run(args: &[String]) -> Result<Value, Failure> {
         let mut commands=vec!["workspace-transfer-status","workspace-transfer-freeze","workspace-transfer-cancel","workspace-transfer-export","workspace-transfer-release","workspace-transfer-activate","restored-receipts","reconcile-restored-receipt","invoice-email-status","invoice-email-send","invoice-email-reconcile","invoice-email-retry","hosted-recurring-plan","consent-hosted-recurring","revoke-hosted-recurring","service-principals","create-service-principal","rotate-service-principal","revoke-service-principal","recover-service-principal","scheduled-recurring","scheduled-recurring-plan","enable-scheduled-recurring","pause-scheduled-recurring","resume-scheduled-recurring","cancel-scheduled-recurring","catch-up-scheduled-recurring","skip-scheduled-recurring","dispatch-scheduled-recurring","reconsent-scheduled-recurring","eliminations","group-eliminations","plan-elimination","propose-elimination","approve-elimination","reject-elimination","apply-elimination","reverse-elimination","consolidation","group-report-profiles","group-consolidated-report","propose-consolidation-profile","approve-consolidation-profile","revoke-consolidation-profile","intercompany","group-reconciliation","apply-group-manifest","propose-intercompany-mapping","approve-intercompany-mapping","revoke-intercompany-mapping","ownership","ownership-history","propose-ownership","review-ownership","apply-ownership","corporate-records","corporate-record","corporate-record-original","ingest-corporate-record","link-corporate-record","enrich-corporate-record","supersede-corporate-record","workspace-inbox","workspace-inbox-source","ingest-workspace-inbox","assign-workspace-inbox","complete-workspace-inbox","workspace-parties","workspace-party","create-workspace-party","link-workspace-party-role","assert-workspace-party-field","assert-workspace-party-alias","workspace-backup","company-knowledge","propose-company-knowledge","review-company-knowledge","supersede-company-knowledge","create-company","company-profile","update-company-profile","create-account","confirm-account-role","retention","gdpr-export","gdpr-erase","budget","budget-vs-actual","budget-dimension-actuals","set-budget","mileage","register-mileage","accruals","accrual-schedule","register-accrual","recognize-accrual","assets","next-asset-depreciation","register-asset","depreciate-asset","recurring-invoices","create-recurring-invoice","generate-recurring-invoice","retire-recurring-invoice","bank-reconciliation-correction-plan","bank-reconciliation-correction","bank-reconciliation-candidates","bank-reconciliation-link","ingest-document","document-original","reviewed-bank","accounting-drafts","posting-rules","create-bank-draft","submit-draft","reject-draft","approve-draft","annual-report","health","me","companies","journal","trial-balance","income-statement","balance","post-journal","reverse-journal","login","accounts","contacts","documents","invoices","invoice-pdf","preview-invoice","create-customer","update-customer","delete-customer","create-vendor","update-vendor","delete-vendor","issue-invoice","post-invoice","settle-invoice","credit-invoice","refund-invoice","bank","bank-accounts","payables","expense-booking-options","create-bank-account","import-bank","register-payable","pay-payable","match-bank-expense","vat","periods","period-close-readiness","review-period","close-period","reopen-period","report-period","supplier-commitments","supplier-commitment-matches","plan-supplier-commitment","approve-supplier-commitment","change-supplier-commitment","match-supplier-commitment"];
         commands.extend(["bilagsmail", "configure-bilagsmail", "delete-bilagsmail-config", "set-bilagsmail-alias", "poll-bilagsmail", "review-workspace-inbox", "workspace-inbox-original"]);
         let mut help = json!({"ok":true,
-            "usage":"remote --server ORIGIN [--allow-loopback-http] [--cookie-file PATH] COMMAND [--company SLUG] [--year YEAR] [--account CODE]",
+            "usage":"remote --server ORIGIN [--allow-loopback-http] [--cookie-file PATH | --service-key-file PATH] COMMAND [--company SLUG] [--year YEAR] [--account CODE]",
             "commands":commands,
             "authentication":"Supply a valid MFA-derived browser session as one Cookie request-header value in an owner-only regular file (0600). No Set-Cookie attributes. All commands except health/login require --cookie-file. Login uses --email EMAIL --factor totp|backup --session-out NEW_PATH, reads password then factor code as two newline-terminated stdin lines; stdin must be piped/private. Output file is created0600 and never overwritten. MFA enrollment remains in browser.",
             "writes":"post-journal/reverse-journal read exact bounded server JSON envelope from stdin; requires confirm:true and input.idempotencyKey. Authenticated server session determines actor. No retry; outcome_unknown requires reconciliation using original key.",
@@ -51,6 +51,7 @@ pub fn run(args: &[String]) -> Result<Value, Failure> {
             "bankReconciliation":{"usage":"bank-reconciliation-candidates --company SLUG --bank-transaction-id ID reads actual server plans; bank-reconciliation-link --company SLUG --confirm < exact-native.json. Explicit server/cookie required. Native body16KiB {bankTransactionId,journalEntryId,planHash,note,confirm:true}; review exact current source/account/movement/journal/document evidence before selecting server planHash. Server controls archived source/current facts and CompanyRead/CompanyLedgerPost authority. Link only, no new journal/payable/payment, no correction flow. No invented proof/actor/keys/retry; duplicates/stale refused. On outcome_unknown inspect canonical bank reconciliationId/proof and candidates before any further action; repeating link is not a safe retry.","bodySchema":rentemester_client::bank_reconciliation_body_schema()},
             "documentEvidence":{"usage":"ingest-document --company SLUG --confirm < exact-native-upload.json; document-original --company SLUG --id POSITIVE_ID. Explicit server/cookie flags required. No document file access. Ingest max35MiB JSON; original max25MiB bytes in data.original {contentType,bytes}. Server enforces base64/MIME/hash/retention/metadata/current upload/read authority. No forced/vendor-linked uploads, keys or retries; outcome_unknown requires documents/original reads and original request preservation; duplicate content is a definite refusal, not permission to retry.","bodySchema":rentemester_client::document_ingest_schema()},
             "annualReport":"annual-report --company SLUG --fiscal-year-start YYYY-MM-DD --fiscal-year-end YYYY-MM-DD. Read-only class-B preparation; server report.ok:false preserves prerequisite errors. No stdin body, confirmation or files; no filing/export.",
+            "serviceAuthentication":"Private --service-key-file replaces --cookie-file for me/companies, journal/report reads, post-journal/reverse-journal only. Current server permissions apply; no lifecycle/admin access, Bearer/raw-secret flags, fallback or retry.",
             "transport":"HTTPS only unless --allow-loopback-http and literal loopback IP; --server is an origin without path/query/userinfo. No local fallback, redirects, ambient proxies or automatic retries.",
             "exitCodes":{"0":"success","1":"server/transport/protocol failure","2":"usage/configuration failure"},
             "example":"rentemester-rust remote --server http://127.0.0.1:8080 --allow-loopback-http --cookie-file /private/session.cookie trial-balance --company example --year 2026"});
@@ -159,6 +160,7 @@ pub fn run(args: &[String]) -> Result<Value, Failure> {
                 "--bank-to",
                 "--server",
                 "--cookie-file",
+                "--service-key-file",
                 "--company",
                 "--status",
                 "--as-of",
@@ -203,6 +205,28 @@ pub fn run(args: &[String]) -> Result<Value, Failure> {
         }
     }
     let command = command.ok_or_else(|| invalid("expected remote command; see remote --help"))?;
+    if flags.contains_key("--cookie-file") && flags.contains_key("--service-key-file") {
+        return Err(invalid("choose one of --cookie-file or --service-key-file"));
+    }
+    if flags.contains_key("--service-key-file")
+        && ![
+            "health",
+            "me",
+            "companies",
+            "journal",
+            "trial-balance",
+            "income-statement",
+            "balance",
+            "overview",
+            "post-journal",
+            "reverse-journal",
+        ]
+        .contains(&command)
+    {
+        return Err(invalid(
+            "service authentication is supported only for context, company reports and manual journal post/reversal",
+        ));
+    }
     if crate::invoice_extraction::accepts(command) {
         return crate::invoice_extraction::run(command,&flags,allow_http,confirmed,preview_reviewed);
     }
@@ -468,19 +492,7 @@ pub fn run(args: &[String]) -> Result<Value, Failure> {
     let server = flags
         .get("--server")
         .ok_or_else(|| invalid("explicit --server origin required"))?;
-    let cookie = match flags.get("--cookie-file") {
-        Some(path) => Some(
-            rentemester_client::read_cookie_file(std::path::Path::new(path))
-                .map_err(client_error)?,
-        ),
-        None if command == "health" => None,
-        None => {
-            return Err(invalid(
-                "authenticated remote commands require --cookie-file",
-            ));
-        }
-    };
-    let client = ApiClient::new(server, allow_http, cookie).map_err(client_error)?;
+    let client = credential_client(server, allow_http, &flags, command == "health")?;
     let body = if mutation
         || receivables_operation.is_some()
         || domain.is_some()
@@ -709,4 +721,29 @@ fn login(flags: &BTreeMap<&str, &str>, allow_http: bool) -> Result<Value, Failur
         .write_cookie_file_new(output)
         .map_err(client_error)?;
     Ok(json!({"ok":true,"data":{"status":"authenticated"}}))
+}
+
+pub(crate) fn credential_client(
+    server: &str,
+    allow_http: bool,
+    flags: &BTreeMap<&str, &str>,
+    anonymous: bool,
+) -> Result<ApiClient, (u8, Error)> {
+    match (flags.get("--cookie-file"), flags.get("--service-key-file")) {
+        (Some(_), Some(_)) => Err(invalid("choose one of --cookie-file or --service-key-file")),
+        (Some(path), None) => {
+            let cookie = rentemester_client::read_cookie_file(std::path::Path::new(path))
+                .map_err(client_error)?;
+            ApiClient::new(server, allow_http, Some(cookie)).map_err(client_error)
+        }
+        (None, Some(path)) => {
+            let key = rentemester_client::read_service_key_file(std::path::Path::new(path))
+                .map_err(client_error)?;
+            ApiClient::with_service_key(server, allow_http, key).map_err(client_error)
+        }
+        (None, None) if anonymous => ApiClient::new(server, allow_http, None).map_err(client_error),
+        _ => Err(invalid(
+            "authenticated remote commands require --cookie-file or --service-key-file",
+        )),
+    }
 }

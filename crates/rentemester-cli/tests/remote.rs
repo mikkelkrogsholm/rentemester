@@ -509,3 +509,98 @@ fn raw_bank_import_keeps_large_original_envelope_unchanged() {
     assert!(output.status.success(),"{}",String::from_utf8_lossy(&output.stdout));
     task.join().unwrap();
 }
+
+#[cfg(unix)]
+#[test]
+fn service_file_remote_context_and_mutually_exclusive_flags() {
+    use std::os::unix::fs::OpenOptionsExt;
+    let path = std::env::temp_dir().join(format!("rm-cli-service-{}", std::process::id()));
+    std::fs::OpenOptions::new()
+        .write(true)
+        .create_new(true)
+        .mode(0o600)
+        .open(&path)
+        .unwrap()
+        .write_all(b"synthetic-private-service\n")
+        .unwrap();
+    let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+    let origin = format!("http://{}", listener.local_addr().unwrap());
+    let task = thread::spawn(move || {
+        let (mut stream, _) = listener.accept().unwrap();
+        stream
+            .set_read_timeout(Some(std::time::Duration::from_secs(5)))
+            .unwrap();
+        let mut bytes = [0; 8192];
+        let count = stream.read(&mut bytes).unwrap();
+        let wire = String::from_utf8_lossy(&bytes[..count]).to_ascii_lowercase();
+        assert!(wire.starts_with("get /api/me "));
+        assert!(wire.contains("x-rentemester-service-key: synthetic-private-service\r\n"));
+        assert!(!wire.contains("\r\ncookie:") && !wire.contains("\r\nauthorization:"));
+        stream
+            .write_all(
+                b"HTTP/1.1 200 OK\r\nContent-Length: 11\r\nConnection: close\r\n\r\n{\"ok\":true}",
+            )
+            .unwrap();
+    });
+    let output = Command::new(BIN)
+        .args([
+            "remote",
+            "me",
+            "--server",
+            &origin,
+            "--allow-loopback-http",
+            "--service-key-file",
+            path.to_str().unwrap(),
+        ])
+        .output()
+        .unwrap();
+    assert!(
+        output.status.success(),
+        "{}",
+        String::from_utf8_lossy(&output.stdout)
+    );
+    task.join().unwrap();
+    for flags in [
+        vec![
+            "--cookie-file",
+            path.to_str().unwrap(),
+            "--service-key-file",
+            path.to_str().unwrap(),
+        ],
+        vec![
+            "--service-key-file",
+            path.to_str().unwrap(),
+            "--service-key-file",
+            path.to_str().unwrap(),
+        ],
+        vec!["--service-key", "synthetic-private-service"],
+    ] {
+        let output = Command::new(BIN)
+            .args([
+                "remote",
+                "me",
+                "--server",
+                "http://127.0.0.1:9",
+                "--allow-loopback-http",
+            ])
+            .args(flags)
+            .output()
+            .unwrap();
+        assert_eq!(output.status.code(), Some(2));
+        assert!(!String::from_utf8_lossy(&output.stdout).contains("synthetic-private-service"));
+    }
+    let output = Command::new(BIN)
+        .args([
+            "remote",
+            "service-principals",
+            "--server",
+            "http://127.0.0.1:9",
+            "--allow-loopback-http",
+            "--service-key-file",
+            path.to_str().unwrap(),
+        ])
+        .output()
+        .unwrap();
+    assert_eq!(output.status.code(), Some(2));
+    std::fs::remove_file(path).unwrap();
+}

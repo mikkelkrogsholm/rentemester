@@ -2129,3 +2129,71 @@ fn cvr_tools_preserve_inner_business_failures_and_explicit_provider_actions() {
         server.join().unwrap();
     }
 }
+
+#[test]
+fn service_file_mcp_context_and_mutually_exclusive_flags() {
+    let key = Cookie::new();
+    std::fs::write(&key.0, b"synthetic-private-service\n").unwrap();
+    let (origin, request, task) =
+        http("HTTP/1.1 200 OK\r\nContent-Length: 11\r\nConnection: close\r\n\r\n{\"ok\":true}");
+    let messages = [init("2025-11-25"), ready(), call(2, "me", json!({}))];
+    let mut child = Command::new(BIN)
+        .args([
+            "--server",
+            &origin,
+            "--allow-loopback-http",
+            "--service-key-file",
+            key.0.to_str().unwrap(),
+        ])
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+        .unwrap();
+    child
+        .stdin
+        .take()
+        .unwrap()
+        .write_all(
+            messages
+                .iter()
+                .map(|v| format!("{v}\n"))
+                .collect::<String>()
+                .as_bytes(),
+        )
+        .unwrap();
+    let output = child.wait_with_output().unwrap();
+    let rows = parsed(&output);
+    assert_eq!(rows[1]["result"]["structuredContent"]["data"]["ok"], true);
+    let wire = String::from_utf8(request.recv().unwrap())
+        .unwrap()
+        .to_ascii_lowercase();
+    assert!(wire.starts_with("get /api/me "));
+    assert!(wire.contains("x-rentemester-service-key: synthetic-private-service\r\n"));
+    assert!(!wire.contains("\r\ncookie:") && !wire.contains("\r\nauthorization:"));
+    task.join().unwrap();
+    assert!(!String::from_utf8_lossy(&output.stdout).contains("synthetic-private-service"));
+    for flags in [
+        vec![
+            "--cookie-file",
+            key.0.to_str().unwrap(),
+            "--service-key-file",
+            key.0.to_str().unwrap(),
+        ],
+        vec![
+            "--service-key-file",
+            key.0.to_str().unwrap(),
+            "--service-key-file",
+            key.0.to_str().unwrap(),
+        ],
+        vec!["--service-key", "synthetic-private-service"],
+    ] {
+        let output = Command::new(BIN)
+            .args(["--server", "http://127.0.0.1:9", "--allow-loopback-http"])
+            .args(flags)
+            .output()
+            .unwrap();
+        assert!(!output.status.success());
+        assert!(!String::from_utf8_lossy(&output.stderr).contains("synthetic-private-service"));
+    }
+}

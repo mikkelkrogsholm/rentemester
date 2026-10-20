@@ -660,3 +660,90 @@ async fn uncertain_raw_bank_import_does_not_retry() {
     assert!(request.recv().unwrap().ends_with(body));
     assert_eq!(task.join().unwrap(), 1);
 }
+
+#[tokio::test]
+async fn service_key_transport_preserves_body_and_refusal_without_cookie_or_retry() {
+    let (origin, request, task) =
+        server("HTTP/1.1 401 Unauthorized\r\nContent-Length: 0\r\nConnection: close\r\n\r\n");
+    let api =
+        ApiClient::with_service_key(&origin, true, "synthetic-private-service".into()).unwrap();
+    assert_eq!(
+        api.manual_journal("demo", JournalMutation::Post, BODY.to_vec())
+            .await,
+        Err(Error::Refused { status: 401 })
+    );
+    let wire = request.recv().unwrap();
+    let headers = String::from_utf8_lossy(&wire).to_ascii_lowercase();
+    assert!(headers.contains("x-rentemester-service-key: synthetic-private-service\r\n"));
+    assert!(!headers.contains("\r\ncookie:") && !headers.contains("\r\nauthorization:"));
+    assert!(wire.ends_with(BODY));
+    assert_eq!(task.join().unwrap(), 1);
+}
+
+#[test]
+fn service_key_constructor_keeps_origin_and_exact_secret_bounds() {
+    for key in [
+        "",
+        " secret",
+        "secret ",
+        "secret\n",
+        "secret\r\nCookie: injected",
+    ] {
+        assert!(ApiClient::with_service_key("https://example.invalid", false, key.into()).is_err());
+    }
+    for origin in [
+        "http://example.invalid",
+        "https://example.invalid/path",
+        "https://user:password@example.invalid",
+        "http://localhost:8080",
+    ] {
+        assert!(ApiClient::with_service_key(origin, true, "synthetic-service".into()).is_err());
+    }
+    assert!(
+        ApiClient::with_service_key("https://example.invalid", false, "synthetic-service".into())
+            .is_ok()
+    );
+}
+
+#[tokio::test]
+async fn service_report_query_and_journal_stage_metadata_are_forwarded_exactly() {
+    let (origin, request, task) =
+        server("HTTP/1.1 200 OK\r\nContent-Length: 11\r\nConnection: close\r\n\r\n{\"ok\":true}");
+    let api = ApiClient::with_service_key(&origin, true, "synthetic-service".into()).unwrap();
+    assert_eq!(
+        api.report_source(
+            "demo",
+            Report::Journal,
+            Some("2026"),
+            Some("1000"),
+            Some("live")
+        )
+        .await
+        .unwrap()["ok"],
+        true
+    );
+    let wire = String::from_utf8(request.recv().unwrap()).unwrap();
+    assert!(
+        wire.starts_with("GET /api/companies/demo/journal?year=2026&account=1000&source=live ")
+    );
+    assert!(wire.contains("x-rentemester-service-key: synthetic-service\r\n"));
+    assert_eq!(task.join().unwrap(), 1);
+    const RESPONSE: &str =
+        "{\"ok\":true,\"entry\":{\"id\":7},\"usage\":\"committed\",\"business\":\"committed\"}";
+    // Fixed response length avoids deriving or changing any domain values in the adapter.
+    let (origin, request, task) = server(
+        "HTTP/1.1 200 OK\r\nContent-Length: 71\r\nConnection: close\r\n\r\n{\"ok\":true,\"entry\":{\"id\":7},\"usage\":\"committed\",\"business\":\"committed\"}",
+    );
+    assert_eq!(RESPONSE.len(), 71);
+    let api = ApiClient::with_service_key(&origin, true, "synthetic-service".into()).unwrap();
+    let result = api
+        .manual_journal("demo", JournalMutation::Reverse, BODY.to_vec())
+        .await
+        .unwrap();
+    assert_eq!(
+        result,
+        serde_json::from_str::<serde_json::Value>(RESPONSE).unwrap()
+    );
+    assert!(request.recv().unwrap().ends_with(BODY));
+    assert_eq!(task.join().unwrap(), 1);
+}

@@ -1,5 +1,5 @@
 //! Read the requested source without client-side report reconstruction.
-use rentemester_client::{ApiClient, Report};
+use rentemester_client::Report;
 use rentemester_engine::Error;
 use serde_json::{Value, json};
 use std::collections::BTreeMap;
@@ -25,6 +25,7 @@ pub fn run(
             !([
                 "--server",
                 "--cookie-file",
+                "--service-key-file",
                 "--company",
                 "--year",
                 "--account",
@@ -56,11 +57,7 @@ pub fn run(
     if flags.contains_key("--account") && !matches!(report, Report::Journal) {
         return Err(invalid("account allowed only on journal"));
     }
-    let cookie =
-        rentemester_client::read_cookie_file(std::path::Path::new(required("--cookie-file")?))
-            .map_err(crate::remote::client_error)?;
-    let api = ApiClient::new(required("--server")?, http, Some(cookie))
-        .map_err(crate::remote::client_error)?;
+    let api = crate::remote::credential_client(required("--server")?, http, flags, false)?;
     let company = required("--company")?;
     let runtime = tokio::runtime::Runtime::new()
         .map_err(|_| (1, Error::new("transport", "could not start HTTP runtime")))?;
