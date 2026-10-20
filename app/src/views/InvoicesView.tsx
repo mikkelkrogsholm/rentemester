@@ -724,16 +724,23 @@ export function InvoicesView({ detail = false }: { detail?: boolean } = {}) {
                         <div className="row-actions">
                           {/* #378: the PDF link is the primary action — the
                               whole point of issuing an invoice is to send it
-                              to the customer. `target="_blank"` so the browser
-                              opens it inline without losing the table view. */}
+                              to the customer. Download the exact original or
+                              open it separately without losing the table view. */}
                           {inv.nativeSales && row.posted === false && can("company.ledger.post") && <NativeInvoicePost slug={slug} id={row.documentId} number={row.invoiceNo} accounts={inv.nativeSales.revenueAccounts} onPosted={state.reload} />}
+                          <a
+                            className="btn secondary"
+                            href={api.invoicePdfUrl(slug, row.documentId)}
+                            download={`faktura-${row.documentId}.pdf`}
+                          >
+                            Hent PDF
+                          </a>
                           <a
                             className="btn secondary"
                             href={api.invoicePdfUrl(slug, row.documentId)}
                             target="_blank"
                             rel="noopener"
                           >
-                            Hent PDF
+                            Åbn PDF
                           </a>
                           {!inv.archived && inv.nativeSales?.refundAvailable && row.posted === true && row.openBalance < 0 && can("company.ledger.post") && <Button type="button" variant="secondary" onClick={() => { setInteractionScope(currentScope); setRefunding(row); }}>Afstem tilbagebetaling</Button>}
                           {inv.nativeSales && !inv.archived && row.posted && <Button type="button" variant="secondary" onClick={()=>{setInteractionScope(currentScope);setReminderClaimsId(row.documentId);}}>Rykkergebyrer og krav</Button>}

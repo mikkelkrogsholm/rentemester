@@ -196,12 +196,25 @@ async fn connect_inner(
     };
     let origin = url.clone();
     let popup_origin = origin.clone();
+    let download_origin = origin.clone();
     let built = WebviewWindowBuilder::new(app, "workspace", WebviewUrl::External(url))
         .title("Rentemester")
         .inner_size(1280.0, 850.0)
         .min_inner_size(800.0, 600.0)
         .disable_drag_drop_handler()
         .on_navigation(move |url| workspace_navigation(url, &origin))
+        .on_download(move |_, event| match event {
+            // WK download actions bypass ordinary navigation admission. Keep the
+            // same selected-origin boundary while retaining OS destinations and
+            // collision handling; the authenticated response bytes stay native.
+            tauri::webview::DownloadEvent::Requested { url, .. } => {
+                workspace_navigation(&url, &download_origin)
+            }
+            // macOS does not provide the completed path. Never log source URLs
+            // or claim a filename from an unavailable completion path.
+            tauri::webview::DownloadEvent::Finished { .. } => true,
+            _ => false,
+        })
         .on_new_window(move |url, _| {
             if workspace_navigation(&url, &popup_origin) {
                 tauri::webview::NewWindowResponse::Allow

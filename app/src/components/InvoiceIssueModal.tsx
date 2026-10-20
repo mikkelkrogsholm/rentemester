@@ -469,14 +469,23 @@ export function InvoiceIssueForm({
                   table first. Hidden if the issue summary lacks a document id
                   (defensive: the summary always carries one for a real issue). */}
               {done.documentId !== null && (
-                <a
-                  className="btn secondary"
-                  href={api.invoicePdfUrl(slug, done.documentId)}
-                  target="_blank"
-                  rel="noopener"
-                >
-                  Hent PDF
-                </a>
+                <>
+                  <a
+                    className="btn secondary"
+                    href={api.invoicePdfUrl(slug, done.documentId)}
+                    download={`faktura-${done.documentId}.pdf`}
+                  >
+                    Hent PDF
+                  </a>
+                  <a
+                    className="btn secondary"
+                    href={api.invoicePdfUrl(slug, done.documentId)}
+                    target="_blank"
+                    rel="noopener"
+                  >
+                    Åbn PDF
+                  </a>
+                </>
               )}
               <Button
                 type="button"
@@ -507,7 +516,7 @@ export function InvoiceIssueForm({
               <ul>{[...readBack.invoices].sort((a, b) => b.documentId - a.documentId).slice(0, 5).map(invoice => <li key={invoice.documentId}>{invoice.invoiceNo} · {invoice.invoiceDate ?? "Dato ukendt"} · {invoice.customerName ?? "Kunde ukendt"} · {formatKroner(invoice.grossAmount, invoice.currency)}</li>)}</ul>
               <p>Ved tvivl: gennemgå den fulde fakturaoversigt og revisionssporet. Udstedelse er fortsat blokeret.</p>
             </section>}
-            {previewUrl && <p className="muted">Forhåndsvisningen er klar. <a href={previewUrl} target="_blank" rel="noopener">Åbn forhåndsvisning</a>, hvis browseren ikke åbnede PDF’en.</p>}
+            {previewUrl && <p className="muted">Forhåndsvisningen er klar. <a href={previewUrl} target="_blank" rel="noopener">Åbn forhåndsvisning</a> eller <a href={previewUrl} download="faktura-forhaandsvisning.pdf">Gem forhåndsvisning</a>.</p>}
             {missingPayment && (
               <Banner kind="warning">
                 Virksomheden har ingen bankkonto registreret — fakturaen
