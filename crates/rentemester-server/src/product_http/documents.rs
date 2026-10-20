@@ -1,9 +1,9 @@
 use super::*;
 use base64::{Engine, engine::general_purpose::STANDARD};
 use rentemester_application::documents::ScanPolicy;
-use rentemester_runtime::document_scanner::{ScanFailure, Scanner};
 use rentemester_engine::document::Metadata;
 use rentemester_runtime::document::Prepared;
+use rentemester_runtime::document_scanner::{ScanFailure, Scanner};
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields, rename_all = "camelCase")]
 struct Upload {
@@ -42,7 +42,13 @@ pub(super) fn outcome<T>(
     }
 }
 pub(super) async fn ingest(State(state): State<Product>, request: Request) -> Response {
-    let company_slug=request.uri().path().split('/').nth(3).unwrap_or("").to_owned();
+    let company_slug = request
+        .uri()
+        .path()
+        .split('/')
+        .nth(3)
+        .unwrap_or("")
+        .to_owned();
     let cookie = match proof(&state, &request, true) {
         Ok(p) => p,
         Err(r) => return *r,
@@ -77,8 +83,16 @@ pub(super) async fn ingest(State(state): State<Product>, request: Request) -> Re
             json!({"ok":false,"code":"native_document_review_required","errors":["Forced ingestion and vendor links are not available in this Rust upload yet"]}),
         );
     }
+    // Keep the request bounded across both effects, but retain the known upload
+    // receipt outside the later provider task (even if that task panics).
+    let cookie = Arc::new(cookie);
+    let upload_state = state.clone();
+    let upload_cookie = cookie.clone();
+    let upload_slug = company_slug.clone();
     let result = tokio::task::spawn_blocking(move || {
-        let _permit = permit;
+        let state = upload_state;
+        let cookie = upload_cookie;
+        let company_slug = upload_slug;
         let bytes = STANDARD
             .decode(input.file_base64)
             .map_err(|_| refused(StatusCode::BAD_REQUEST, "invalid_base64"))?;
@@ -89,40 +103,103 @@ pub(super) async fn ingest(State(state): State<Product>, request: Request) -> Re
             )
         })?;
         let admission = {
-            let mut owner = state.native.lock_company(&company_slug)
+            let mut owner = state
+                .native
+                .lock_company(&company_slug)
                 .map_err(|_| refused(StatusCode::SERVICE_UNAVAILABLE, "owner_unavailable"))?;
-            let policy = if state.native.document_scanner.is_some() { ScanPolicy::Required } else { ScanPolicy::Off };
-            let attempt = owner.prepare_document_ingest(&cookie, &SystemClock, file, input.metadata, policy)
+            let policy = if state.native.document_scanner.is_some() {
+                ScanPolicy::Required
+            } else {
+                ScanPolicy::Off
+            };
+            let attempt = owner
+                .prepare_document_ingest(&cookie, &SystemClock, file, input.metadata, policy)
                 .map_err(|_| refused(StatusCode::SERVICE_UNAVAILABLE, "owner_unavailable"))?;
             if attempt.retired {
-                return Err(Box::new(refused(StatusCode::SERVICE_UNAVAILABLE, "owner_unavailable")));
+                return Err(Box::new(refused(
+                    StatusCode::SERVICE_UNAVAILABLE,
+                    "owner_unavailable",
+                )));
             }
             outcome(attempt)?
         }; // Release the global Owner mutex and all SQL transactions before provider I/O.
         let scan = match &state.native.document_scanner {
             Some(scanner) => Some(scanner.scan(admission.file()).map_err(|failure| {
                 Box::new(match failure {
-                    ScanFailure::Rejected => refused(StatusCode::UNPROCESSABLE_ENTITY, "document_scanner_rejected"),
-                    ScanFailure::Unavailable => refused(StatusCode::SERVICE_UNAVAILABLE, "document_scanner_unavailable"),
+                    ScanFailure::Rejected => refused(
+                        StatusCode::UNPROCESSABLE_ENTITY,
+                        "document_scanner_rejected",
+                    ),
+                    ScanFailure::Unavailable => refused(
+                        StatusCode::SERVICE_UNAVAILABLE,
+                        "document_scanner_unavailable",
+                    ),
                 })
             })?),
             None => None,
         };
-        let mut owner = state.native.lock_company(&company_slug)
+        let mut owner = state
+            .native
+            .lock_company(&company_slug)
             .map_err(|_| refused(StatusCode::SERVICE_UNAVAILABLE, "owner_unavailable"))?;
-        let attempt = owner.finish_document_ingest(&cookie, &SystemClock, admission, scan)
+        let attempt = owner
+            .finish_document_ingest_registered(&cookie, &SystemClock, admission, scan)
             .map_err(|_| refused(StatusCode::SERVICE_UNAVAILABLE, "owner_unavailable"))?;
-        outcome(attempt)
+        let retired = attempt.retired;
+        outcome(attempt).map(|registered| (registered, retired, permit))
     })
     .await;
-    match result {
-        Ok(Ok(value)) => response(StatusCode::OK, value),
-        Ok(Err(r)) => *r,
-        _ => refused(StatusCode::SERVICE_UNAVAILABLE, "outcome_unconfirmed"),
+    let (registered, retired, permit) = match result {
+        Ok(Ok(value)) => value,
+        Ok(Err(reply)) => return *reply,
+        _ => return refused(StatusCode::SERVICE_UNAVAILABLE, "outcome_unconfirmed"),
+    };
+    let rentemester_application::documents::RegisteredIngest { receipt, upload } = registered;
+    if !retired && upload.eligible_for_extraction() && state.native.invoice_extractor.is_some() {
+        // Registration is already known committed. Extraction failure, revocation,
+        // unsupported context, or task failure must never replace that receipt.
+        let _ = tokio::task::spawn_blocking(move || -> Result<(), ()> {
+            let _permit = permit;
+            use rentemester_application::invoice_extraction::Completion;
+            let provider = state.native.invoice_extractor.as_ref().ok_or(())?;
+            let admission = {
+                let mut owner = state.native.lock_company(&company_slug).map_err(|_| ())?;
+                let attempt = owner
+                    .prepare_uploaded_invoice_extraction(
+                        &cookie,
+                        &SystemClock,
+                        upload,
+                        Some(provider.identity().clone()),
+                    )
+                    .map_err(|_| ())?;
+                if attempt.retired {
+                    return Err(());
+                }
+                outcome(attempt).map_err(|_| ())?
+            }; // No Owner mutex or SQL writer survives provider I/O.
+            let completion = admission.provider_input().map(|input| Completion {
+                identity: provider.identity().clone(),
+                outcome: provider.extract(input),
+            });
+            let mut owner = state.native.lock_company(&company_slug).map_err(|_| ())?;
+            let attempt = owner
+                .finish_invoice_extraction(&cookie, &SystemClock, admission, completion)
+                .map_err(|_| ())?;
+            outcome(attempt).map_err(|_| ())?;
+            Ok(())
+        })
+        .await;
     }
+    response(StatusCode::OK, receipt)
 }
 pub(super) async fn list(State(state): State<Product>, request: Request) -> Response {
-    let company_slug=request.uri().path().split('/').nth(3).unwrap_or("").to_owned();
+    let company_slug = request
+        .uri()
+        .path()
+        .split('/')
+        .nth(3)
+        .unwrap_or("")
+        .to_owned();
     let cookie = match proof(&state, &request, false) {
         Ok(p) => p,
         Err(r) => return *r,
@@ -148,7 +225,13 @@ pub(super) async fn list(State(state): State<Product>, request: Request) -> Resp
     }
 }
 pub(super) async fn file(State(state): State<Product>, request: Request) -> Response {
-    let company_slug=request.uri().path().split('/').nth(3).unwrap_or("").to_owned();
+    let company_slug = request
+        .uri()
+        .path()
+        .split('/')
+        .nth(3)
+        .unwrap_or("")
+        .to_owned();
     let cookie = match proof(&state, &request, false) {
         Ok(p) => p,
         Err(r) => return *r,
@@ -215,7 +298,13 @@ pub(super) async fn file(State(state): State<Product>, request: Request) -> Resp
 }
 
 pub(super) async fn expense(State(state): State<Product>, request: Request) -> Response {
-    let company_slug=request.uri().path().split('/').nth(3).unwrap_or("").to_owned();
+    let company_slug = request
+        .uri()
+        .path()
+        .split('/')
+        .nth(3)
+        .unwrap_or("")
+        .to_owned();
     use rentemester_application::expense::{Action, Input};
     let posting = request.method() == axum::http::Method::POST;
     let cookie = match proof(&state, &request, posting) {

@@ -158,3 +158,50 @@ fn opaque_admission_binds_subject_ledger_selection_and_exact_required_evidence()
     assert!(off.validate_scan(None).is_ok());
     assert!(off.validate_scan(Some(&wrong)).is_err());
 }
+
+#[test]
+fn upload_capability_binds_all_identity_and_original_coordinates() {
+    let capability = RegisteredUpload {
+        workspace: "workspace".into(),
+        slug: "company".into(),
+        subject: "principal".into(),
+        ledger: "ledger".into(),
+        document_id: 71,
+        hash: "source".into(),
+        eligible: true,
+    };
+    assert!(capability.eligible_for_extraction());
+    assert!(
+        capability
+            .validate_binding("workspace", "company", "principal", "ledger", "source")
+            .is_ok()
+    );
+    for binding in [
+        ("other", "company", "principal", "ledger", "source"),
+        ("workspace", "other", "principal", "ledger", "source"),
+        ("workspace", "company", "other", "ledger", "source"),
+        ("workspace", "company", "principal", "other", "source"),
+        ("workspace", "company", "principal", "ledger", "other"),
+    ] {
+        assert!(
+            capability
+                .validate_binding(binding.0, binding.1, binding.2, binding.3, binding.4)
+                .is_err()
+        );
+    }
+    assert_eq!(capability.document_id(), 71);
+}
+
+#[test]
+fn upload_extraction_is_only_pdf_within_its_own_bound() {
+    assert!(!extraction_eligible(&file()));
+    let mut bytes = b"%PDF-1.4\n".to_vec();
+    bytes.resize(10 * 1024 * 1024, b' ');
+    assert!(extraction_eligible(
+        &Prepared::new("limit.pdf".into(), bytes.clone()).unwrap()
+    ));
+    bytes.push(b' ');
+    assert!(!extraction_eligible(
+        &Prepared::new("larger.pdf".into(), bytes).unwrap()
+    ));
+}

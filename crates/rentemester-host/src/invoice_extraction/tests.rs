@@ -356,3 +356,174 @@ fn ordinary_image_status_is_null_but_extraction_refuses_without_attempt() {
     assert_eq!(refusal.error.code, "EXTRACTION_SNAPSHOT_INVALID");
     assert_eq!(count(&owner, "invoice_extraction_attempts"), 0);
 }
+
+fn uploaded(
+    owner: &mut Owner,
+    proof: &VerifiedCookie,
+    filename: &str,
+    label: &str,
+) -> rentemester_application::documents::RegisteredIngest {
+    use rentemester_application::documents::ScanPolicy;
+    let content = if filename.ends_with(".pdf") {
+        format!("%PDF-1.4\nSynthetic registered upload {label}\n")
+    } else {
+        format!("Synthetic registered upload {label}\n")
+    };
+    let file = rentemester_runtime::document::Prepared::new(filename.into(), content.into_bytes())
+        .unwrap();
+    let metadata = serde_json::from_value(
+        json!({"source":"synthetic-upload-extraction","documentType":"cash_register_receipt"}),
+    )
+    .unwrap();
+    let admission = owner
+        .prepare_document_ingest(proof, &Fixed(NOW), file, metadata, ScanPolicy::Off)
+        .unwrap()
+        .outcome
+        .unwrap()
+        .value;
+    owner
+        .finish_document_ingest_registered(proof, &Fixed(NOW), admission, None)
+        .unwrap()
+        .outcome
+        .unwrap()
+        .value
+}
+#[test]
+fn automatic_upload_extraction_keeps_registration_through_provider_failure_and_no_ledger_effects() {
+    let (_dir, mut owner, _cookies, proof, _uid) = setup();
+    let registered = uploaded(&mut owner, &proof, "uploaded.pdf", "provider-failure");
+    let receipt = registered.receipt;
+    assert_eq!(count(&owner, "documents"), 1);
+    assert_eq!(count(&owner, "invoice_extraction_attempts"), 0);
+    assert!(registered.upload.eligible_for_extraction());
+    let admission = owner
+        .prepare_uploaded_invoice_extraction(
+            &proof,
+            &Fixed(NOW),
+            registered.upload,
+            Some(identity()),
+        )
+        .unwrap()
+        .outcome
+        .unwrap()
+        .value;
+    let failed = finish(
+        &mut owner,
+        &proof,
+        admission,
+        Some(Err(ProviderFailure::Unavailable)),
+    )
+    .unwrap();
+    assert_eq!(failed["extraction"]["status"], "needs_resolution");
+    assert!(receipt["document"]["id"].as_i64().is_some());
+    assert_eq!(count(&owner, "documents"), 1);
+    assert_eq!(count(&owner, "journal_entries"), 0);
+    // The same ordinary upload still refuses its duplicate before any capability or provider execution.
+    let file = rentemester_runtime::document::Prepared::new(
+        "uploaded.pdf".into(),
+        b"%PDF-1.4\nSynthetic registered upload provider-failure\n".to_vec(),
+    )
+    .unwrap();
+    let metadata = serde_json::from_value(
+        json!({"source":"synthetic-upload-extraction","documentType":"cash_register_receipt"}),
+    )
+    .unwrap();
+    let admission = owner
+        .prepare_document_ingest(
+            &proof,
+            &Fixed(NOW),
+            file,
+            metadata,
+            rentemester_application::documents::ScanPolicy::Off,
+        )
+        .unwrap()
+        .outcome
+        .unwrap()
+        .value;
+    assert!(
+        owner
+            .finish_document_ingest_registered(&proof, &Fixed(NOW), admission, None)
+            .unwrap()
+            .outcome
+            .is_err()
+    );
+    assert_eq!(count(&owner, "invoice_extraction_attempts"), 1);
+}
+#[test]
+fn upload_capability_requires_current_authority_and_same_company_before_started_attempt() {
+    for switch in [false, true] {
+        let (_dir, mut owner, _cookies, proof, _uid) = setup();
+        let registered = uploaded(&mut owner, &proof, "uploaded.pdf", "binding");
+        if switch {
+            owner.select_company("b").unwrap();
+        } else {
+            owner.held.0.as_ref().unwrap().control.as_ref().unwrap().execute_batch("INSERT INTO rm_company_membership_events(user_id,company_slug,event_type,company_role,actor)VALUES('u','a','revoke',NULL,'user:revoker')").unwrap();
+        }
+        assert!(
+            owner
+                .prepare_uploaded_invoice_extraction(
+                    &proof,
+                    &Fixed(NOW),
+                    registered.upload,
+                    Some(identity())
+                )
+                .unwrap()
+                .outcome
+                .is_err()
+        );
+        owner.select_company("a").unwrap();
+        assert_eq!(count(&owner, "documents"), 1);
+        assert_eq!(count(&owner, "invoice_extraction_attempts"), 0);
+    }
+}
+#[test]
+fn upload_extraction_releases_owner_then_refuses_revoked_finish_without_losing_upload() {
+    let (_dir, mut owner, _cookies, proof, _uid) = setup();
+    let registered = uploaded(&mut owner, &proof, "uploaded.pdf", "held-revoke");
+    let receipt = registered.receipt;
+    let shared = std::sync::Mutex::new(owner);
+    let admission = {
+        let mut owner = shared.lock().unwrap();
+        owner
+            .prepare_uploaded_invoice_extraction(
+                &proof,
+                &Fixed(NOW),
+                registered.upload,
+                Some(identity()),
+            )
+            .unwrap()
+            .outcome
+            .unwrap()
+            .value
+    };
+    {
+        let owner = shared.try_lock().unwrap();
+        let slots = owner.held.0.as_ref().unwrap();
+        assert!(slots.control.as_ref().unwrap().is_autocommit());
+        assert!(slots.company.as_ref().unwrap().is_autocommit());
+        slots.control.as_ref().unwrap().execute_batch("INSERT INTO rm_company_membership_events(user_id,company_slug,event_type,company_role,actor)VALUES('u','a','revoke',NULL,'user:revoker')").unwrap();
+    }
+    let mut owner = shared.lock().unwrap();
+    assert!(finish(&mut owner, &proof, admission, Some(Ok(output()))).is_err());
+    assert_eq!(receipt["ok"], true);
+    assert_eq!(count(&owner, "documents"), 1);
+    assert_eq!(count(&owner, "invoice_extraction_attempts"), 1);
+    assert_eq!(count(&owner, "invoice_extraction_results"), 0);
+    assert_eq!(count(&owner, "journal_entries"), 0);
+}
+#[test]
+fn nonpdf_and_disabled_upload_paths_do_not_start_extraction() {
+    let (_dir, mut owner, _cookies, proof, _uid) = setup();
+    let nonpdf = uploaded(&mut owner, &proof, "uploaded.txt", "unsupported");
+    assert!(!nonpdf.upload.eligible_for_extraction());
+    let disabled = uploaded(&mut owner, &proof, "uploaded.pdf", "disabled");
+    assert!(
+        owner
+            .prepare_uploaded_invoice_extraction(&proof, &Fixed(NOW), disabled.upload, None)
+            .unwrap()
+            .outcome
+            .is_err()
+    );
+    assert_eq!(count(&owner, "documents"), 2);
+    assert_eq!(count(&owner, "invoice_extraction_attempts"), 0);
+}

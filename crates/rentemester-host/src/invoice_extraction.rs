@@ -4,6 +4,20 @@ use super::*;
 use rentemester_application::invoice_extraction::{self as app, Admission, Completion};
 use rentemester_engine::invoice_extraction::ProviderIdentity;
 impl Owner {
+    pub fn prepare_uploaded_invoice_extraction(
+        &mut self,
+        cookie: &VerifiedCookie,
+        clock: &dyn Clock,
+        upload: rentemester_application::documents::RegisteredUpload,
+        identity: Option<ProviderIdentity>,
+    ) -> Result<
+        Attempt<Result<Committed<Admission>, rentemester_application::control_fence::Failure>>,
+        OwnerError,
+    > {
+        self.document_action(cookie, clock, |control, company, guard, context| {
+            app::prepare_registered_upload(control, company, guard, context, upload, identity)
+        })
+    }
     pub fn prepare_invoice_extraction(
         &mut self,
         cookie: &VerifiedCookie,

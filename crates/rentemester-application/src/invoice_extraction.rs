@@ -5,7 +5,7 @@ use crate::{
     control_fence::{
         self, Committed, CookieAuthorization, Failure, FailureStage, SessionRequirement,
     },
-    documents::Context,
+    documents::{Context, RegisteredUpload},
 };
 use rentemester_engine::{
     Error,
@@ -29,7 +29,21 @@ struct Source {
 }
 /// An owned observation of the authenticated company/source/context. It cannot
 /// be decoded from caller JSON or reconstructed for a different principal.
+#[derive(Clone, Copy)]
+enum Origin {
+    Explicit,
+    RegisteredUpload,
+}
+impl Origin {
+    fn permission(self) -> Permission {
+        match self {
+            Self::Explicit => Permission::CompanyMasterData,
+            Self::RegisteredUpload => Permission::CompanyDocumentsUpload,
+        }
+    }
+}
 pub struct Admission {
+    origin: Origin,
     workspace: String,
     slug: String,
     subject: String,
@@ -158,6 +172,50 @@ pub fn prepare(
     document_id: i64,
     identity: Option<ProviderIdentity>,
 ) -> Result<Committed<Admission>, Failure> {
+    prepare_inner(
+        control,
+        company,
+        guard,
+        context,
+        document_id,
+        identity,
+        None,
+    )
+}
+/// Internal upload continuation, never an alternate HTTP privilege selector.
+pub fn prepare_registered_upload(
+    control: &mut Connection,
+    company: &mut Connection,
+    guard: &mut NamespaceGuard,
+    context: Context<'_>,
+    upload: RegisteredUpload,
+    identity: Option<ProviderIdentity>,
+) -> Result<Committed<Admission>, Failure> {
+    let document_id = upload.document_id();
+    prepare_inner(
+        control,
+        company,
+        guard,
+        context,
+        document_id,
+        identity,
+        Some(upload),
+    )
+}
+fn prepare_inner(
+    control: &mut Connection,
+    company: &mut Connection,
+    guard: &mut NamespaceGuard,
+    context: Context<'_>,
+    document_id: i64,
+    identity: Option<ProviderIdentity>,
+    upload: Option<RegisteredUpload>,
+) -> Result<Committed<Admission>, Failure> {
+    let origin = if upload.is_some() {
+        Origin::RegisteredUpload
+    } else {
+        Origin::Explicit
+    };
     let workspace = context.selection.workspace.to_owned();
     let slug = context.selection.slug.to_owned();
     let stamp = at(&context).map_err(|e| failed(e, true))?;
@@ -170,7 +228,7 @@ pub fn prepare(
             requirement: SessionRequirement::Current,
         },
         context.selection,
-        Permission::CompanyMasterData,
+        origin.permission(),
         |tx, subject| {
             let identity = identity.ok_or_else(|| {
                 Error::new(
@@ -181,9 +239,13 @@ pub fn prepare(
             let source = source(tx, document_id, true)?;
             let bytes = physical(guard, &source, true)?;
             let ledger = ledger(tx)?;
+            if let Some(upload) = upload {
+                upload.validate_binding(&workspace, &slug, subject, &ledger, &source.hash)?;
+            }
             let prepared =
                 store::prepare(tx, document_id, &bytes, &identity, &actor(subject), &stamp)?;
             Ok(Admission {
+                origin,
                 workspace,
                 slug,
                 subject: subject.into(),
@@ -222,7 +284,7 @@ pub fn finish(
             requirement: SessionRequirement::Current,
         },
         context.selection,
-        Permission::CompanyMasterData,
+        admission.origin.permission(),
         |tx, subject| {
             if workspace != admission.workspace
                 || slug != admission.slug
@@ -292,4 +354,17 @@ pub fn read(
             Ok(json!({"ok":true,"extraction":extraction}))
         },
     )
+}
+
+#[cfg(test)]
+mod upload_origin_tests {
+    use super::*;
+    #[test]
+    fn extraction_origin_has_fixed_permissions_not_a_caller_selector() {
+        assert_eq!(Origin::Explicit.permission(), Permission::CompanyMasterData);
+        assert_eq!(
+            Origin::RegisteredUpload.permission(),
+            Permission::CompanyDocumentsUpload
+        );
+    }
 }

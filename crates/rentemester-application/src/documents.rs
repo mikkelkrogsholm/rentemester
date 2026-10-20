@@ -87,6 +87,59 @@ impl Admission {
         }
     }
 }
+/// Proof of one newly registered upload. Only the known committed registration
+/// path can return it; HTTP callers cannot construct or clone this capability.
+pub struct RegisteredUpload {
+    workspace: String,
+    slug: String,
+    subject: String,
+    ledger: String,
+    document_id: i64,
+    hash: String,
+    eligible: bool,
+}
+impl RegisteredUpload {
+    pub fn eligible_for_extraction(&self) -> bool {
+        self.eligible
+    }
+    pub(crate) fn document_id(&self) -> i64 {
+        self.document_id
+    }
+    pub(crate) fn validate_binding(
+        &self,
+        workspace: &str,
+        slug: &str,
+        subject: &str,
+        ledger: &str,
+        hash: &str,
+    ) -> Result<(), Error> {
+        if workspace != self.workspace
+            || slug != self.slug
+            || subject != self.subject
+            || ledger != self.ledger
+            || hash != self.hash
+        {
+            return Err(Error::new(
+                "EXTRACTION_ADMISSION_CHANGED",
+                "Registered upload binding changed",
+            ));
+        }
+        if !self.eligible {
+            return Err(Error::new(
+                "EXTRACTION_SNAPSHOT_INVALID",
+                "Registered upload is not a supported invoice PDF",
+            ));
+        }
+        Ok(())
+    }
+}
+fn extraction_eligible(file: &Prepared) -> bool {
+    file.mime() == "application/pdf" && file.bytes().len() <= 10 * 1024 * 1024
+}
+pub struct RegisteredIngest {
+    pub receipt: Value,
+    pub upload: RegisteredUpload,
+}
 fn failed(code: &'static str, reusable: bool) -> Failure {
     Failure {
         stage: FailureStage::NotCommitted,
@@ -154,6 +207,23 @@ pub fn finish_ingest(
     admission: Admission,
     scan: Option<ScanEvidence>,
 ) -> Result<Committed<Value>, Failure> {
+    finish_ingest_registered(control, company, guard, context, admission, scan).map(|committed| {
+        Committed {
+            value: committed.value.receipt,
+            control_reusable: committed.control_reusable,
+        }
+    })
+}
+/// Alternate trusted adapter entry: retain the exact upload receipt and a
+/// single-use capability only when registration has a known committed result.
+pub fn finish_ingest_registered(
+    control: &mut Connection,
+    company: &mut Connection,
+    guard: &mut NamespaceGuard,
+    context: Context<'_>,
+    admission: Admission,
+    scan: Option<ScanEvidence>,
+) -> Result<Committed<RegisteredIngest>, Failure> {
     guard
         .ensure_connections(control, company)
         .map_err(|_| failed("document_namespace_changed", false))?;
@@ -183,7 +253,7 @@ pub fn finish_ingest(
             let path = guard
                 .publish_document(&admission.file)
                 .map_err(|_| unavailable())?;
-            rentemester_storage::documents::register_scanned(
+            let receipt = rentemester_storage::documents::register_scanned(
                 tx,
                 rentemester_storage::documents::Original {
                     filename: admission.file.filename(),
@@ -195,7 +265,23 @@ pub fn finish_ingest(
                 subject,
                 &today,
                 scan.as_ref(),
-            )
+            )?;
+            let document_id = receipt["document"]["id"]
+                .as_i64()
+                .filter(|id| *id > 0)
+                .ok_or_else(unavailable)?;
+            Ok(RegisteredIngest {
+                receipt,
+                upload: RegisteredUpload {
+                    workspace: workspace.into(),
+                    slug: slug.into(),
+                    subject: subject.into(),
+                    ledger: ledger_identity(tx)?,
+                    document_id,
+                    hash: admission.file.hash().into(),
+                    eligible: extraction_eligible(&admission.file),
+                },
+            })
         },
     )
 }
