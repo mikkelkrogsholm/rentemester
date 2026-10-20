@@ -69,6 +69,7 @@ function data(): SupplierCommitmentsResponse["supplierCommitments"] {
 }
 function renderView(d = data(), extra = {}) {
   mockFetch({
+    "GET /api/companies/acme-aps/cashflow":{cashflow:nativeHistory()},
     "GET /api/companies/acme-aps/supplier-commitments": { supplierCommitments: d },
     ...extra,
   });
@@ -99,7 +100,7 @@ describe("LiquidityView native planning", () => {
     renderView();
     await screen.findByRole("heading", { name: "Likviditet" });
     expect(screen.getByText(/Bogført bank pr\..*Ikke tilgængelig/)).toBeInTheDocument();
-    expect(screen.getByRole("status")).toHaveTextContent("Ufuldstændig dækning");
+    expect(screen.getByText(/Ufuldstændig dækning/)).toBeInTheDocument();
     fireEvent.click(screen.getByText("Kilder, antagelser og udeladelser"));
     expect(screen.getByText("Independent cash evidence unavailable")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /faktiske bankposter/ })).toHaveAttribute(
@@ -195,4 +196,19 @@ test("legacy backend retains annual cashflow chart and year selection", async ()
   expect(await screen.findByTestId("legacy-cashflow-chart")).toBeInTheDocument();
   expect(screen.getByText("Primo-saldo")).toBeInTheDocument();
   expect(screen.getByRole("combobox", { name: "Vælg regnskabsår" })).toBeInTheDocument();
+});
+
+function nativeHistory(){return{...cashflow(),currency:"DKK",status:"partial",periodStart:"2025-07-01",periodEnd:"2026-06-30",selectedYear:"2025/26",fiscalYears:[{label:"2025/26",start:"2025-07-01",end:"2026-06-30",source:"live",selectable:true}],openingBalance:null,closingBalance:0,totalIn:null,totalOut:null,months:[{year:2025,month:7,label:"2025-07",periodStart:"2025-07-01",periodEnd:"2025-07-31",indbetalinger:null,udbetalinger:null,netto:null,status:"unavailable"}],balanceSeries:[],balanceStatus:{opening:"none",closing:"known",series:"unavailable"},balanceReason:{opening:null,closing:null,series:"Synthetic statement source unavailable"},limitations:["Synthetic valuation is incomplete"],coverage:{transactionCount:2,valuedTransactionCount:1,unvaluedTransactionCount:1}};}
+test("native history retains shifted labels, unknown valuation and explicit zero beside unchanged forecast",async()=>{
+ renderView(data(),{"GET /api/companies/acme-aps/cashflow":{cashflow:nativeHistory()}});
+ const section=await screen.findByRole("region",{name:"Historisk pengestrøm"});
+ expect(within(section).getByText(/2025-07-01.*2026-06-30/)).toBeInTheDocument();
+ expect(within(section).getByRole("rowheader",{name:"2025-07"})).toBeInTheDocument();
+ expect(within(section).getByText("Synthetic valuation is incomplete")).toBeInTheDocument();
+ expect(within(section).getAllByText("Ikke tilgængelig").length).toBeGreaterThan(1);
+ expect(within(section).getByText("0,00 kr.",{exact:true})).toBeInTheDocument();
+ expect(within(section).queryByTestId("legacy-cashflow-chart")).not.toBeInTheDocument();
+ expect(await screen.findByRole("heading",{name:"13 ugers likviditetsprognose"})).toBeInTheDocument();
+ expect(screen.getAllByLabelText("Vælg regnskabsår")).toHaveLength(1);
+ expect(screen.getByLabelText("Vælg regnskabsår")).toHaveValue("2025/26");
 });

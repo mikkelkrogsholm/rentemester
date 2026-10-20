@@ -302,3 +302,5 @@ mod cfo_analytics;
 mod archive_import;
 
 mod opening_balance;
+
+mod portfolio_cashflow;

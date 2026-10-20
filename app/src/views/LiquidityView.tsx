@@ -1,3 +1,4 @@
+import type {NativeCashflow} from "../lib/types/native-reports";
 import { Button, ButtonLink, Input, PageHeader, Select } from "../components/ui";
 import { useOptionalAuth } from "../lib/auth-context";
 import { useMutationOutcome } from "../lib/useMutationOutcome";
@@ -262,4 +263,23 @@ function ArchivedNotice({ year }: { year: string }) {
   );
 }
 
-export function LiquidityView(){const auth=useOptionalAuth();return auth&&auth.backend!=="rust"?<LegacyLiquidityView/>:<NativeLiquidityView/>;}
+function NativeHistoricalCashflow(){
+ const {slug=""}=useParams();const {year,setYear}=useCompanyYear();
+ const state=useAsync(signal=>api.nativeCashflow(slug,year,{signal}),[slug,year]);
+ if(state.loading&&!state.data)return <Loading label="Henter historisk pengestrøm…"/>;
+ if(state.error)return <ErrorState message={state.error} onRetry={state.reload}/>;
+ const count=(value:number|null)=>value===null?"ukendt":String(value);
+ const cf:NativeCashflow=state.data!;const amount=(value:number|null)=>value===null?"Ikke tilgængelig":formatKroner(value,cf.currency);
+ const chartReady=cf.months.length>0&&cf.months.every(month=>month.indbetalinger!==null&&month.udbetalinger!==null&&month.netto!==null);
+ return <section className="statement" aria-label="Historisk pengestrøm"><PageHeader title="Historisk pengestrøm"/><p>Faktiske importerede bankposteringer · {cf.periodStart??"Periode ukendt"} – {cf.periodEnd??"Periode ukendt"}. Dette er historik, ikke en prognose.</p>
+  <CompanyNav slug={slug} years={cf.fiscalYears} selectedYear={cf.selectedYear} onYearChange={setYear}/>
+  {cf.status!=="complete"&&<p role="status">Grundlaget er {cf.status==="partial"?"delvist":"ikke tilgængeligt"}. Ukendte beløb vises ikke som nul.</p>}
+  {cf.limitations.map(message=><p key={message}>{message}</p>)}
+  <div className="rollup-strip">{[['Primo',amount(cf.openingBalance)],['Indbetalinger',amount(cf.totalIn)],['Udbetalinger',amount(cf.totalOut)],['Ultimo',amount(cf.closingBalance)]].map(([label,value])=><div className="rollup-cell" key={label}><span className="rollup-label">{label}</span><span className="rollup-value">{value}</span></div>)}</div>
+  <p>{count(cf.coverage.valuedTransactionCount)} værdiansatte af {count(cf.coverage.transactionCount)} bankposteringer · {count(cf.coverage.unvaluedTransactionCount)} uden kendt DKK-værdi.</p>
+  {chartReady&&<CashflowChart months={cf.months.map(month=>({...month,indbetalinger:month.indbetalinger!,udbetalinger:month.udbetalinger!,netto:month.netto!}))} balanceByMonth={[]} currency={cf.currency} dataTableId="native-cashflow-months"/>}
+  <table className="data" id="native-cashflow-months"><caption>Faktiske månedlige bankbevægelser</caption><thead><tr><th>Måned</th><th>Indbetalinger</th><th>Udbetalinger</th><th>Netto</th></tr></thead><tbody>{cf.months.map(month=><tr key={month.label}><th scope="row">{month.label}</th><td>{amount(month.indbetalinger)}</td><td>{amount(month.udbetalinger)}</td><td>{amount(month.netto)}</td></tr>)}</tbody></table>
+  <h3>Uafhængige kontoudtogssaldi</h3>{cf.balanceReason.series&&<p>{cf.balanceReason.series}</p>}{cf.balanceSeries.length?<table className="data"><thead><tr><th>Dato</th><th>Saldo</th></tr></thead><tbody>{cf.balanceSeries.map(point=><tr key={point.date}><td>{point.date}</td><td>{amount(point.balance)}</td></tr>)}</tbody></table>:<p>Ingen kendt samlet saldoserie fra kontoudtog.</p>}
+ </section>;
+}
+export function LiquidityView(){const auth=useOptionalAuth();return auth&&auth.backend!=="rust"?<LegacyLiquidityView/>:<><NativeHistoricalCashflow/><NativeLiquidityView showCompanyNavigation={false}/></>;}

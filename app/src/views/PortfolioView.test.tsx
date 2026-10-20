@@ -1,5 +1,5 @@
-import { describe, expect, test } from "bun:test";
-import { screen } from "@testing-library/react";
+import { describe, expect, test, vi } from "bun:test";
+import { screen, within } from "@testing-library/react";
 import { PortfolioView } from "./PortfolioView";
 import { renderAt } from "../test/render";
 import { mockFetch, summary } from "../test/fixtures";
@@ -100,4 +100,17 @@ test("negative VAT is described as receivable in the portfolio and company card"
   renderAt(<PortfolioView />);
   expect(await screen.findAllByText("Moms til gode")).toHaveLength(2);
   expect(screen.queryByText("Moms at betale")).not.toBeInTheDocument();
+});
+
+test("native portfolio displays canonical cards and unknown aggregate without client sums",async()=>{
+ const auth=await import("../lib/auth-context");vi.spyOn(auth,"useOptionalAuth").mockReturnValue({backend:"rust",loading:false,hosted:false,session:null,currentSessionId:null,context:null,refresh:async()=>{},clear:()=>{}});
+ const card={...summary(),name:"Synthetic Native Company",periodStart:"2025-07-01",periodEnd:"2025-10-01",currency:"DKK",resultat:10,omsaetning:null,actualBankBalance:0,vat:null,availability:{financials:{status:"unavailable",reason:"Synthetic source unavailable"},bank:{status:"complete",reason:null}},audit:{status:"verified",scope:"journal_hash_chain",entriesChecked:1},limitations:[]};
+ mockFetch({"GET /api/portfolio":{portfolio:{workspace:"synthetic",asOf:"2025-10-01",companyCount:1,companies:[card],rollup:{resultat:999,liquidity:null,vatPayable:null,openTaskCount:null,bankBalanceComplete:false,knownBankCompanyCount:0,unknownBankCompanyCount:1},totals:{}}}});
+ renderAt(<PortfolioView/>);
+ const company=await screen.findByRole("article",{name:"Synthetic Native Company"});
+ expect(within(company).getByText("Synthetic source unavailable")).toBeInTheDocument();
+ expect(within(company).getByText("0,00 kr.",{exact:true})).toBeInTheDocument();
+ expect(screen.getByText(/999,00/)).toBeInTheDocument();
+ expect(screen.getByText(/Samlet banksaldo er ikke tilgængelig/)).toBeInTheDocument();
+ expect(screen.getByText(/ikke et konsolideret koncernregnskab/)).toBeInTheDocument();
 });

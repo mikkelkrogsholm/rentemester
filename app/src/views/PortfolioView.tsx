@@ -1,4 +1,5 @@
-import { ButtonLink, PageHeader } from "../components/ui";
+import {useState} from "react";
+import { Button, ButtonLink, Input, PageHeader } from "../components/ui";
 // Portfolio overview — the workspace-level landing page.
 //
 // A cross-company roll-up strip answers "how is the whole portfolio doing",
@@ -16,7 +17,7 @@ import { Onboarding } from "./Onboarding";
 
 export function PortfolioView() {
   const auth = useOptionalAuth();
-  if (auth?.backend === "rust") return <section><PageHeader title="Virksomheder" /><div className="company-grid">{auth.context?.companies.map((company) => <article className="card" key={company.slug}><h2>{company.name}</h2><ButtonLink to={`/companies/${company.slug}/posteringer`}>Åbn bogføring</ButtonLink></article>)}</div></section>;
+  if (auth?.backend === "rust") return <NativePortfolioOverview/>;
   return <PortfolioOverview />;
 }
 
@@ -108,4 +109,29 @@ function PortfolioOverview() {
       </div>
     </section>
   );
+}
+
+function NativePortfolioOverview(){
+ const [asOf,setAsOf]=useState("");
+ const state=useAsync(signal=>api.nativePortfolio(asOf||undefined,{signal}),[asOf]);
+ if(state.loading&&!state.data)return <Loading label="Henter portefølje…"/>;
+ if(state.error)return <ErrorState message={state.error} onRetry={state.reload}/>;
+ const data=state.data!;
+ const amount=(value:number|null)=>value===null?"Ikke tilgængelig":formatKroner(value,"DKK");
+ const count=(value:number|null)=>value===null?"Ikke tilgængelig":String(value);
+ return <section><PageHeader title="Portefølje" actions={<ButtonLink className="btn" to="/companies/new">Tilføj virksomhed</ButtonLink>}/>
+  <div className="row-actions"><label>Pr. dato<Input type="date" value={asOf||data.asOf} onChange={e=>setAsOf(e.target.value)}/></label><Button variant="secondary" onClick={state.reload}>Hent portefølje igen</Button></div>
+  <p>{data.companyCount} virksomheder · pr. {data.asOf}</p><p className="muted">Opgaver viser aktuel åben status for kilder til og med den valgte dato.</p><p className="muted">Overblik over virksomheder, du aktuelt har adgang til. Beløbene er ikke et konsolideret koncernregnskab.</p>
+  <div className="rollup-strip" role="group" aria-label="Tværgående overblik">
+   {[['Samlet resultat',amount(data.rollup.resultat)],['Samlet likviditet',amount(data.rollup.liquidity)],['Momsposition',amount(data.rollup.vatPayable)],['Åbne opgaver',count(data.rollup.openTaskCount)]].map(([label,value])=><div className="rollup-cell" key={label}><span className="rollup-label">{label}</span><span className="rollup-value">{value}</span></div>)}
+  </div>
+  {!data.rollup.bankBalanceComplete&&<p role="status">Samlet banksaldo er ikke tilgængelig: {data.rollup.unknownBankCompanyCount} synlige virksomheder mangler et fuldt kendt kontoudtogsgrundlag.</p>}
+  {data.companies.length===0?<Onboarding onCreated={()=>state.reload()}/>:<div className="company-grid">{data.companies.map(company=><article className="card" key={company.slug} aria-label={company.name}><h2>{company.name}</h2><p>{company.fiscalYear??"Regnskabsår ikke tilgængeligt"} · {company.periodStart??"Ukendt start"} – {company.periodEnd??"Ukendt slut"}</p>
+   <dl>{[['Omsætning',amount(company.omsaetning)],['Resultat',amount(company.resultat)],['Banksaldo',amount(company.actualBankBalance)],['Momsposition',amount(company.vat?.payable??null)],['Åbne fakturaer',count(company.openInvoiceCount)],['Åbne opgaver',count(company.openTaskCount)]].map(([label,value])=><div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl>
+   {Object.entries(company.availability).filter(([key,value])=>key!=="tasks"&&value.reason).map(([key,value])=><p key={key}>{value.reason}</p>)}
+   {company.taskGroups.length>0&&<ul>{company.taskGroups.map(group=><li key={group.type}>{group.link?<ButtonLink to={group.link}>{group.label} · {group.count}</ButtonLink>:<>{group.label} · {group.count}</>}</li>)}</ul>}
+   {company.limitations.map(message=><p className="muted" key={message}>{message}</p>)}<p>Ledgerkontrol: {company.audit.status==="verified"?"Kontrolleret journalhashkæde":"Ikke tilgængelig"}</p>
+   <div className="row-actions"><ButtonLink to={`/companies/${company.slug}/posteringer`}>Åbn bogføring</ButtonLink><ButtonLink to={`/companies/${company.slug}/likviditet`}>Se pengestrøm</ButtonLink></div>
+  </article>)}</div>}
+ </section>;
 }

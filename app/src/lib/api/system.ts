@@ -1,3 +1,4 @@
+import type {NativePortfolio} from "../types/native-reports";
 import type {
   CvrSystemStatusResponse,
   HealthResponse,
@@ -7,6 +8,7 @@ import type {
 import { request, type ReadRequestOptions } from "./_shared";
 
 export const systemApi = {
+  nativePortfolio:(asOf?:string,options?:ReadRequestOptions)=>request<{ok:true;portfolio:NativePortfolio}>(`/api/portfolio${asOf?`?asOf=${encodeURIComponent(asOf)}`:""}`,options).then(r=>r.portfolio),
   health: (options?: ReadRequestOptions) => request<HealthResponse>("/api/health", options),
 
   portfolio: (asOf?: string, options?: ReadRequestOptions) =>

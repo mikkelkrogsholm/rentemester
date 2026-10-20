@@ -1,3 +1,4 @@
+import type {NativeCashflow} from "../types/native-reports";
 import type {
   ArchiveResponse,
   CashflowResponse,
@@ -62,6 +63,7 @@ export const dashboardApi = {
       options,
     ).then((r) => r.obligations),
 
+  nativeCashflow:(slug:string,year?:string,options?:ReadRequestOptions)=>request<{ok:true;cashflow:NativeCashflow}>(`/api/companies/${encodeURIComponent(slug)}/cashflow${year?`?year=${encodeURIComponent(year)}`:""}`,options).then(r=>r.cashflow),
   cashflow: (slug: string, year?: string, options?: ReadRequestOptions) =>
     request<CashflowResponse>(
       `/api/companies/${encodeURIComponent(slug)}/cashflow${

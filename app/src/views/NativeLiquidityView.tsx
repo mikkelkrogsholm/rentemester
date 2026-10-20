@@ -359,7 +359,7 @@ function MatchForm({ slug, data, reload }: { slug: string; data: Data; reload: (
     </>
   );
 }
-export function NativeLiquidityView() {
+export function NativeLiquidityView({showCompanyNavigation=true}:{showCompanyNavigation?:boolean}={}) {
   const { slug = "" } = useParams(),
     { setYear } = useCompanyYear();
   const [asOf, setAsOf] = useState(dateToday),
@@ -390,12 +390,12 @@ export function NativeLiquidityView() {
           {data.company.name} · {currency}
         </p>
       </PageHeader>
-      <CompanyNav
+      {showCompanyNavigation&&<CompanyNav
         slug={slug}
         years={data.fiscalYears}
         selectedYear={data.selectedYear}
         onYearChange={setYear}
-      />
+      />}
       <p>
         <ButtonLink to={`/companies/${slug}/bank`}>Se faktiske bankposter og afstemning</ButtonLink>
       </p>

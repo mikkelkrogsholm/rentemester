@@ -170,7 +170,7 @@ fn lifecycle_negotiation_discovery_notifications_and_validation() {
     assert_eq!(values[2]["error"]["code"], -32002);
     assert_eq!(values[3]["result"], json!({}));
     let tools = values[4]["result"]["tools"].as_array().unwrap();
-    assert_eq!(tools.len(), 214);
+    assert_eq!(tools.len(), 216);
     let write = tools.iter().find(|v| v["name"] == "post_journal").unwrap();
     assert_eq!(
         write["inputSchema"]["required"],
@@ -1991,3 +1991,11 @@ mod bilagsmail;
 
 #[path="stdio/public_einvoice.rs"]
 mod public_einvoice;
+
+#[test]
+fn portfolio_cashflow_tools_are_readonly_and_exactly_scoped() {
+ let output=run("http://127.0.0.1:9",&[init("2025-11-25"),ready(),json!({"jsonrpc":"2.0","id":2,"method":"tools/list"}),call(3,"portfolio",json!({"company":"hidden"})),call(4,"cashflow",json!({"company":"demo","confirm":true}))]);
+ let values=parsed(&output);let tools=values.iter().find(|v|v["id"]==2).unwrap()["result"]["tools"].as_array().unwrap();
+ for name in ["portfolio","cashflow"]{let tool=tools.iter().find(|v|v["name"]==name).unwrap();assert_eq!(tool["annotations"]["readOnlyHint"],true);assert_eq!(tool["inputSchema"]["additionalProperties"],false);}
+ for id in [3,4]{assert_eq!(values.iter().find(|v|v["id"]==id).unwrap()["error"]["code"],-32602);}
+}
