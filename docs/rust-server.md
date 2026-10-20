@@ -2779,4 +2779,25 @@ Webformularen henter kvitteringer, før en ny postering åbnes, viser den oprind
 
 Group96 er verificeret mod en rigtig Rust-server med normal adgangskode/TOTP: accepteret 200-svar afbrudt, præcis én postering, ny nøgle afvist, rettighedstab og andre brugere/virksomheder afvist, server stoppet/genstartet på ny adresse og samme kvittering genfundet efter normal MFA. Eksplicit gentaget kvitteringsbekræftelse ændrede ikke journalen.Fire lagertests, syv idempotensregressioner, syv service-regressioner og 61 webtests består sammen med streng Clippy samt server-/webbuild. Rapport: `/tmp/rentemester-rust-reports/manual-post-recovery96.json`.
 
-**Afgrænsning:** Den opdaterede usignerede desktoppakke er samlet og manifestkontrolleret, men computerstyringen meldte Mac’en låst. Det fulde installerede forløb med accepteret svar → helt lukket app → genåbning er derfor stadig uverificeret. Group95’s tidligere installerede flerbrugerprøver bevares; fuld J03/R50 er fortsat åben.
+**Historisk afgrænsning for Group96:** Den installerede prøve afventede dengang en ulåst Mac. Group98 har siden verificeret det fulde manuelle forløb med accepteret svar → helt lukket app → genåbning, også gennem den lokale server på en anden origin. Det er beskrevet nedenfor; fuld J03/R50 på tværs af øvrige operationer er fortsat åben.
+
+
+### Servicekonto: fra faktura til importeret bankbetaling
+
+Servicekontoen understøtter nu `bank_accounts`, `bank` og eksplicit `import_bank` samt `settle_invoice` gennem eksisterende HTTP-, CLI- og MCP-kontrakter. Ejeren opretter fortsat bankkontoen og dens bogføringskonto. Serviceimport kræver aktuel bogføringsret; banklæsning kræver læseret. Bankadministration afvises før kvoteforbrug, og et sådant afslag pensionerer ikke den fælles owner. Indlæsning, kvote og den efterfølgende bogføring bruger den eksisterende kontrol af aktuelle legitimationsoplysninger og virksomhedsrettigheder.
+
+Originale kontoudtogsbytes arkiveres og hashes uændret. Genimport af samme rækker deduplikeres under den valgte bankkonto. En eksplicit fakturaudligning bruger den bogførte fakturas oprindelige debitorkonto, også når ejeren siden har ændret den aktuelle kontomapping. Betalingsjournalen beholder `user:<subject>` og programmet `service-principal`; operationernes revisionsspor bruger `service_account:<subject>`. Eksisterende menneskelige import-, betalings- og refunderingsforløb er bevaret.
+
+Group97 gennemfører den samme serviceudstedte faktura til nul restsaldo: CLI importerede det præcise BOM/CRLF-kontoudtog, MCP genimporterede uden en ny bankpost og udlignede derefter fakturaen én gang. Faktura og kunde har nul restsaldo, bankens dokumenterede og bogførte saldo stemmer, og den oprindelige PDF er uændret. Forkert rolle, bankadministration, tilbagekaldt adgang/nøgle og gentagen udligning afvises. En rigtig servergenstart med normal MFA-login bevarer resultatet. Kontrol efter stop beviser én betaling, én bankpost, de nøjagtige arkiverede bytes og korrekt attribution. Rapport: `/tmp/rentemester-rust-reports/native-service-payment97.json`.
+
+Import og fakturaudligning har fortsat ingen generisk idempotensnøgle eller automatisk gentagelse. Efter et ukendt resultat kontrolleres bank, faktura, journal og oprindelige kilder før en ny tilsigtet handling.
+
+### Installeret app: accepteret bogføring efter fuld lukning
+
+Group98 er udført med den installerede usignerede pakke fra `9f3ede14`. Den normale ejer gennemgik og bekræftede en syntetisk postering. En privat engangsport holdt det rigtige accepterede HTTP200-svar tilbage; hele desktopprocessen blev afsluttet, før svaret blev frigivet. Journalen indeholdt præcis én ny postering. Efter fuld genåbning og normal adgangskode/TOTP viste fjernforbindelsen den samme uafklarede kvittering og blokerede en ny formular.
+
+Den uafhængige server blev derefter stoppet. Samme profil blev åbnet eksklusivt gennem appens lokale Rust-backend på en anden adresse og port. Normal MFA-login genfandt samme kvittering og journalidentitet. Brugeren afklarede kvitteringen eksplicit i appen; det sendte ingen ny bogføring. Appens lokale server lukkede med appen, og den oprindelige profilkonfiguration blev bevaret. Rapport: `/tmp/rentemester-rust-reports/installed-closure-recovery98.json`.
+
+Den efterfølgende rettelse i `a36617cd` bevarer genfinding med den oprindelige nøgle, selv mens en kvittering er uafklaret. Kun en allerede reserveret nøgle for samme bruger, ledger og journaloperation kan gå videre til den normale idempotenskontrol; en ny nøgle er fortsat blokeret. Eksplicit serverbekræftelse frigiver også den tilsvarende umiddelbare blokering i en eksisterende browserfane. Fem lagertests, 62 webtests og det rigtige samlede browser-/server-/klientforløb beviser denne rettelse.
+
+De aktuelle pakker fra `a36617cd` er samlet og kontrolleret mod deres præcise 12-fil-manifester. En ny GUI-smokeprøve af netop denne pakke kunne ikke køres, fordi Mac’en igen var låst. Den tidligere revisionsbundne native prøve bevares; den må ikke beskrives som en ny GUI-prøve af den aktuelle pakke. Installeret flytning, øvrige relevante afbrydelsesforløb, lokal/hostet automation, signeret distribution/opdatering og fuld udfasning af TypeScript-backenden er fortsat åbne.
