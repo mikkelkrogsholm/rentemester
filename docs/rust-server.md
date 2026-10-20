@@ -1586,9 +1586,11 @@ begrænsede genforsøg med samme idempotency-nøgle.
 ## Pak desktopappen uden gamle filer
 
 `crates/rentemester-desktop/build-macos.sh` samler appen i en ny stagingmappe
-og erstatter kun en eksisterende Rentemester-bundle. `CARGO_TARGET_DIR`,
-`CARGO_BUILD_TARGET` og `RENTEMESTER_DESKTOP_PROFILE` kan vælge buildplacering,
-platform og profil. De byggede webfiler skal være klar før kommandoen køres.
+og erstatter kun en eksisterende Rentemester-bundle. Begge Rust-builds bruger
+`cargo-guard.py` og én compilerproces. Targetmappen skal være repositoryets fælles
+cache; et separat `CARGO_TARGET_DIR` afvises. `CARGO_BUILD_TARGET` og
+`RENTEMESTER_DESKTOP_PROFILE` vælger platform og profil. De byggede webfiler
+skal være klar før kommandoen køres.
 Appen indeholder begge Rust-programmer og webfilerne; Python bruges kun til
 samlingen. Filen `Contents/Resources/native-artifact-manifest.json`
 registrerer repository-revision, dirty-status, værktøjskæder, profil og
@@ -2608,3 +2610,45 @@ fire afstemninger, seks forretningsoriginaler og to faktura-PDF’er bevares gen
 genstart og fire signerede arkiver med kildefri gendannelse og genåbning.
 Leverandørrefusionen forbliver rådgivning. Installerede desktopforløb og faktisk
 TypeScript-overtagelse er fortsat åbne; se implementeringsstatus for evidens.
+
+## Interaktivt CVR-opslag og virksomhedens stamdata
+
+**Kontakter → Tilføj kunde/leverandør → Slå CVR op** bruger nu Rust-serverens
+CVR-provider og den samme virksomhedsspecifikke cache som kontaktimporten.
+Opslaget udfylder tomme felter og bevarer manuelt udfyldte værdier. Kontakten
+bliver først gemt ved en særskilt bekræftelse i formularen.
+
+**Administrér → Hent fra CVR** opdaterer navn, adresse, postnummer, by,
+virksomhedsform, branche, status og revisionsfravalg. Svaret viser de ændrede
+felter og en eventuel forskel mellem CVR-regnskabsåret og det valgte regnskabsår.
+Regnskabsår, betalingsopsætning, bank, kontoroller og bogføring ændres ikke.
+Hver vellykket eksplicit synkronisering bevarer et auditspor, også uden feltændringer.
+
+`GET /api/system/cvr-status` kræver en aktuel workspace-session og viser kun
+`cvrStatus.configured`. Operatørens CVR-login bliver aldrig sendt til klienten.
+`GET /api/companies/{slug}/cvr-lookup?cvr=TEXT` kræver aktuel adgang til eksterne
+opslag og returnerer resultatet under `cvr`. Det kan kalde provider og gemme en
+cache; det er derfor ikke et skrivefrit læsekald. `POST
+/api/companies/{slug}/sync-cvr` bruger virksomhedens eget aktuelle CVR-nummer og
+accepterer kun tom body eller `{}`. Ingen af kaldene accepterer caller-valgt
+actor, providerendpoint eller legitimationsoplysninger.
+
+Friske snapshots genbruges i 30 dage. Ved manglende login eller providerfejl kan
+et ældre snapshot genbruges med det oprindelige `fetchedAt`; cachealderen bliver
+ikke nulstillet. Et svar for et andet CVR-nummer afvises uden at gemme det.
+Aktuel identitet og adgang kontrolleres igen efter providerkaldet, før data gemmes.
+
+CLI: `remote cvr-status`, `remote cvr-lookup --company SLUG --cvr DK12345678
+--confirm` og `remote sync-company-cvr --company SLUG --confirm`, med eksplicit
+server og privat cookie-fil. MCP: `cvr_status {}`, `cvr_lookup
+{company,cvr,confirm:true}` og `company_sync_cvr {company,confirm:true}`. Klienterne
+bevarer det indre resultat, fejl og tidsstempler. Et forretningsresultat med
+`ok:false` giver CLI-exitkode 1. Ukendte udfald gentages ikke automatisk.
+
+Group85 består 20 trin på syntetiske data gennem normal MFA, kontaktformular,
+virksomhedsopdatering, bekræftede CLI/MCP-handlinger, manglende CVR-login efter
+genstart og fire signerede arkiver med kildefri gendannelse og genåbning. To rå
+CVR-snapshots, den manuelt rettede kontakt, fire synkroniseringsaudits og
+beskyttede regnskabsindstillinger bevares. Ældre cache og rettighedsændringer
+under providerkald er dækket af målrettede lagrings- og applikationstests;
+prøven foregiver ikke faktisk tidsaldring eller installeret desktopaccept.

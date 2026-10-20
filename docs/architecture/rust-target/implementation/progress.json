@@ -1,13 +1,13 @@
 {
   "goal": "Complete Rust server/web, GPUI local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "Four-family scored bank advice and reviewed financial journeys qualified",
-  "code_revision": "b3c66b2b7114f48c5ccf4b046a7a7254c5460ff6",
-  "spec_revision": "sha256:cbb7bdc0daaee7858e255d89db1e5d68fb9df5393f2fb24483162fad612939ea",
-  "state": "Group84 qualified at b3c66b2b: 20 ordinary-MFA actions show all four scored bank match families in existing web Bank and exact canonical HTTP/CLI/MCP advice; max per bankrow, selected IDs, business refusals, current reviewer access/revocation and read-only effects verified. Explicit reviewed purchase125/VAT25, customer receipt200 and customer credit refund100 produce exactly7journals/6bankrows/4reconciliations; outputVAT70/input25/payable45, bank225 vs independent statement300/difference-75, zero customer balances. Eight stored documents are6business originals+2issued PDFs;4continuous raw bank segments retain profile name/message evidence and a separately referenced refund. Immutable task history9 with7resolved/2truly unmatched open. Four independently verified signed full snapshots and source-free fresh-owner restore/reopen preserve tables, originals and historical audit. Interactive CVR lookup/sync remains the next server gap. Whole Rust mission/epic672, installed desktop financial acceptance, actual TSworkspace adoption and distribution remain OPEN.",
+  "current_increment": "Interactive CVR lookup and protected company sync qualified",
+  "code_revision": "764a8a6537c79d2a6cde2078722badb1288d7993",
+  "spec_revision": "sha256:88d7ae1a667bd5c35dd317a44a96a61bdd63b1672e1c4b519644f6fe11acfb4e",
+  "state": "Group85 qualified at764a8a65:20 ordinary-MFA actions complete existingweb contact lookup→blank prefill→cached lookup preserving manualname/email→separate explicit save; owncompanyCVRsync nineidentityfields→fiscal7vsconfigured1 warning→repeatcachedUI/CLI/MCPsync. Exactly2rawCVRcache snapshots,1savedcustomer,4currentowner syncaudits and0financial effects;protectedfiscalyear/payment21/VATquarter/accounts/roles/bank unchanged. ProviderHTTPSlocalmock receives exactly4requests(contact,own,503,mismatchedCVR); currentreviewer/revoked refusals occurbeforeprovider/cache. Restart withoutcredentials reportsconfiguredfalse/disablesownsync, retainedfreshcache works anduncachedlookup truthfullyfails. FourphaseHTTPCLI/MCPinner equality andfour independent signedfull snapshots/sourcefreefreshownerrestore/reopen preserve rawentities/originalfetchedtimestamps/30dayexpiry/alltables/audit. Stale-cache fallback andmidflightauthority/expiry/CVR races are targetedunit evidence only, notactualclockaging claims. User now explicitly approves Rustdesktop embedding existingwebUI; revise previousGPUIpresentation direction while retaining engine/API/managedlocalserver/remote/integrity/distribution/fullmission. Actualinstalledshared desktop, operatorTSworkspaceadoption andremainingfullmission/epic672 remain OPEN.",
   "issues_closed": [],
   "next": [
-    "Complete interactive CVR lookup/sync through normal UI/current authority and retained provider source; no fabricated company identity. Then proceed to installed local/remote desktop acceptance and remaining full-mission gates.",
+    "Implement user-approved shared web UI in a Rust desktop host: update GDD/epic presentation choice, retain one Rust engine/API and managed local or remote backend, install and exercise whole local/remote financial journeys. User expressly approved replacing separate GPUI UI on2026-10-20; preserve approved branding/styling and historical evidence. No full desktop/distribution claim from web tests.",
     "Complete installed local/remote desktop financial journeys, remaining safe transfer/recovery/automation/distribution, full CLI/MCP parity and TypeScript retirement. Operator TSworkspace adoption is still required; current rehearsal commands discard copies and grant no writer authority.",
     "Retain explicit native tax/FX contracts and verify source rate differences against posting controls before broader support claims. Qualified75/76/77/78/79/80/81 must not be repeated without changed code or new failure evidence."
   ],
@@ -20,10 +20,10 @@
   ],
   "all_goal_requirements_complete": false,
   "previous_verified_increment": {
-    "current_increment": "Original bank bytes and cross-encoding duplicate/source proof qualified",
-    "code_revision": "5bdc17ebcedc3aa6889d2a96e8b1a8fb58f56e7f",
-    "spec_revision": "sha256:802c904b38ae5dbaca8c71bdfa473fff7b38095308df55175623f4ada9f0bff7",
-    "state": "Group83 qualified at 5bdc17eb: 20 ordinary-MFA actions import exact UTF8/BOM/CRLF bank original through web, equivalent Windows1252 through CLI with zero new rows, and Windows1252 third identical fee occurrence through MCP. Original raw SHA differs while transaction occurrence identity remains stable. Exactly5bankrows/3rawbank originals/1purchase original/1reviewed expense journal/reconciliation; VATinput25, expense100, bank-125 and truthful statement-75/difference-50. Six retained tasks with2resolved/4open. All three raw originals, including duplicate-only CLI import, survive four signed complete snapshots and source-free fresh-owner recovery/reopen. Exact fee ordinals0/1/2/profile/source-hash lineage and actual source-verified posting qualified; current rights and malformed raw envelope refusals preserve state; four-phase financial/task HTTP/CLI/MCP equality. Scored bank invoice/purchase/refund suggestions and interactive CVR lookup/sync remain server gaps. Installed desktop financial/bytefile flow, actual TSworkspace adoption and full mission/epic672 remain OPEN."
+    "current_increment": "Four-family scored bank advice and reviewed financial journeys qualified",
+    "code_revision": "b3c66b2b7114f48c5ccf4b046a7a7254c5460ff6",
+    "spec_revision": "sha256:cbb7bdc0daaee7858e255d89db1e5d68fb9df5393f2fb24483162fad612939ea",
+    "state": "Group84 qualified at b3c66b2b: 20 ordinary-MFA actions show all four scored bank match families in existing web Bank and exact canonical HTTP/CLI/MCP advice; max per bankrow, selected IDs, business refusals, current reviewer access/revocation and read-only effects verified. Explicit reviewed purchase125/VAT25, customer receipt200 and customer credit refund100 produce exactly7journals/6bankrows/4reconciliations; outputVAT70/input25/payable45, bank225 vs independent statement300/difference-75, zero customer balances. Eight stored documents are6business originals+2issued PDFs;4continuous raw bank segments retain profile name/message evidence and a separately referenced refund. Immutable task history9 with7resolved/2truly unmatched open. Four independently verified signed full snapshots and source-free fresh-owner restore/reopen preserve tables, originals and historical audit. Interactive CVR lookup/sync remains the next server gap. Whole Rust mission/epic672, installed desktop financial acceptance, actual TSworkspace adoption and distribution remain OPEN."
   },
   "evidence": {
     "combined_browser_log": "/tmp/rm-platform5-combined.log",
@@ -1770,6 +1770,48 @@
       "targetedTests": "Engine3/storage5/credit-note14/application1/HTTP1/SDK3/CLI2/MCP118stdio+2unit; web32tests99assertions/tsc/fullbuild passed",
       "sourceNarrowImprovement": "Amount-only purchase guidance requires outgoing movement in matching currency; does not copy source unsafe incoming/cross-currency near-miss. Supplier refund remains advice only.",
       "fixtureCorrections": "Named CSV uses declared Kundereference/Afsender/Besked. Existing referenced refund uses generic CSV between before/after named segments; all segment balances independently continuous. Physical invoice PDFs counted separately; no product guards relaxed."
+    },
+    "interactive_cvr85": {
+      "status": "passed",
+      "evidence": "/tmp/rentemester-rust-reports/cvr-sync-integrated85-run3.json",
+      "sha256": "23f6369036d795ed23eb42ad62cba27ed77ff7dd0937651f10927ed364d88f2e",
+      "sourceRevision": "764a8a6537c79d2a6cde2078722badb1288d7993",
+      "actions": 20,
+      "signedSnapshots": 4,
+      "cacheRows": 2,
+      "providerRequests": [
+        "12345678",
+        "87654321",
+        "55555555",
+        "44444444"
+      ],
+      "savedCustomers": 1,
+      "companySyncAuditEvents": 4,
+      "financialEffects": 0,
+      "originalFetchedTimestampsAndRawEntitiesPreserved": true,
+      "configuredFiscalYearStartMonth": 1,
+      "CVRFiscalYearStartMonth": 7,
+      "actualFreshOfflineCache": true,
+      "actualStaleFallback": false,
+      "actualMidflightRevocation": false,
+      "staleAndMidflightUnitCoverage": true,
+      "installedNativeQualified": false,
+      "goalComplete": false,
+      "rootQualification": "/tmp/rm85-root-independent-qualification.json",
+      "strictAllTargets": "PASS /tmp/rm85-clippy.log",
+      "build": "PASS /tmp/rm85-build.log",
+      "targetedTests": "Storage3/contact-import6/application3/HTTP2/SDK5/CLI2/MCP119stdio+2unit; existingweb33tests/63assertions pass",
+      "actualLimitations": "Fresh offline cache actual verified. Stale fallback/midflight revoke/session expiry/CVRchange are file-backed unit tests, not actualtime injection. Installednative remainsfalse."
+    },
+    "desktop_build_guard86": {
+      "revision": "764a8a65",
+      "status": "Guarded shared-cache jobs1 replaces rawcargo jobs4 inmacOShelper; sh-n andguardstatusPASS; actualdesktopbuild notyetperformed."
+    },
+    "desktop_presentation_decision86": {
+      "approvedBy": "direct user reply in this chat on2026-10-20",
+      "decision": "Reuse existing web UI inside Rust desktop application; local Rust server or external server. Replaces documented separateGPUIUI choice, preserves restof architecture/scope.",
+      "previousGate": "epic/EPIC.md:19 and epic/issues/R06.md:29",
+      "status": "Authorized; architecture revision and implementation pending."
     }
   },
   "verified_history": [
@@ -2912,6 +2954,17 @@
       "acceptance": "All four advisory families, exact normal reviewed purchase/receipt/refund effects, current authority and no read effects, HTTP/CLI/MCP equality, restart/four signed source-free snapshots/reopen.",
       "status": "COMPLETE finite Group84: Group84 qualified at b3c66b2b: 20 ordinary-MFA actions show all four scored bank match families in existing web Bank and exact canonical HTTP/CLI/MCP advice; max per bankrow, selected IDs, business refusals, current reviewer access/revocation and read-only effects verified. Explicit reviewed purchase125/VAT25, customer receipt200 and customer credit refund100 produce exactly7journals/6bankrows/4reconciliations; outputVAT70/input25/payable45, bank225 vs independent statement300/difference-75, zero customer balances. Eight stored documents are6business originals+2issued PDFs;4continuous raw bank segments retain profile name/message evidence and a separately referenced refund. Immutable task history9 with7resolved/2truly unmatched open. Four independently verified signed full snapshots and source-free fresh-owner restore/reopen preserve tables, originals and historical audit. Interactive CVR lookup/sync remains the next server gap. Whole Rust mission/epic672, installed desktop financial acceptance, actual TSworkspace adoption and distribution remain OPEN.",
       "cleanup": "All4owned worktrees removed; recovery refs retained in rentemester-cleanup-recovery-2026-10-20/integrated84-final.json. No remaining Group84 writer checkout."
+    },
+    {
+      "delivery": "Group85 interactive CVR lookup and protected company sync",
+      "owner": "root host/HTTP/integration/actual; isolated native core/cache/fence, SDK/CLI/MCP and actual-helper writers",
+      "depends_on": [
+        "Existing shared CVR cache/fullmapper and lazy HTTPSoperatoradapter; currentrolefences before/after provider.",
+        "Existing webContactForm/CvrCard; explicit save andsync remainseparate actions."
+      ],
+      "acceptance": "20actualsteps;2rawcache rows/1manualcustomer/4syncaudits/noaccountingchanges;exact4localTLSproviderrequests;missingcredentialrestart/cache/status;four signedsourcefree snapshots/reopen andclientinnerparity.",
+      "status": "COMPLETE finite Group85. Group85 qualified at764a8a65:20 ordinary-MFA actions complete existingweb contact lookup→blank prefill→cached lookup preserving manualname/email→separate explicit save; owncompanyCVRsync nineidentityfields→fiscal7vsconfigured1 warning→repeatcachedUI/CLI/MCPsync. Exactly2rawCVRcache snapshots,1savedcustomer,4currentowner syncaudits and0financial effects;protectedfiscalyear/payment21/VATquarter/accounts/roles/bank unchanged. ProviderHTTPSlocalmock receives exactly4requests(contact,own,503,mismatchedCVR); currentreviewer/revoked refusals occurbeforeprovider/cache. Restart withoutcredentials reportsconfiguredfalse/disablesownsync, retainedfreshcache works anduncachedlookup truthfullyfails. FourphaseHTTPCLI/MCPinner equality andfour independent signedfull snapshots/sourcefreefreshownerrestore/reopen preserve rawentities/originalfetchedtimestamps/30dayexpiry/alltables/audit. Stale-cache fallback andmidflightauthority/expiry/CVR races are targetedunit evidence only, notactualclockaging claims. User now explicitly approves Rustdesktop embedding existingwebUI; revise previousGPUIpresentation direction while retaining engine/API/managedlocalserver/remote/integrity/distribution/fullmission. Actualinstalledshared desktop, operatorTSworkspaceadoption andremainingfullmission/epic672 remain OPEN.",
+      "cleanup": "All3ownedworktrees removed; originalcommits/patchIDs/recoveryrefs recorded in rentemester-cleanup-recovery-2026-10-20/integrated85-final.json."
     }
   ],
   "integrated_pending_browser": [
@@ -3011,6 +3064,12 @@
       "code_revision": "5bdc17ebcedc3aa6889d2a96e8b1a8fb58f56e7f",
       "spec_revision": "sha256:802c904b38ae5dbaca8c71bdfa473fff7b38095308df55175623f4ada9f0bff7",
       "state": "Group83 qualified at 5bdc17eb: 20 ordinary-MFA actions import exact UTF8/BOM/CRLF bank original through web, equivalent Windows1252 through CLI with zero new rows, and Windows1252 third identical fee occurrence through MCP. Original raw SHA differs while transaction occurrence identity remains stable. Exactly5bankrows/3rawbank originals/1purchase original/1reviewed expense journal/reconciliation; VATinput25, expense100, bank-125 and truthful statement-75/difference-50. Six retained tasks with2resolved/4open. All three raw originals, including duplicate-only CLI import, survive four signed complete snapshots and source-free fresh-owner recovery/reopen. Exact fee ordinals0/1/2/profile/source-hash lineage and actual source-verified posting qualified; current rights and malformed raw envelope refusals preserve state; four-phase financial/task HTTP/CLI/MCP equality. Scored bank invoice/purchase/refund suggestions and interactive CVR lookup/sync remain server gaps. Installed desktop financial/bytefile flow, actual TSworkspace adoption and full mission/epic672 remain OPEN."
+    },
+    {
+      "current_increment": "Four-family scored bank advice and reviewed financial journeys qualified",
+      "code_revision": "b3c66b2b7114f48c5ccf4b046a7a7254c5460ff6",
+      "spec_revision": "sha256:cbb7bdc0daaee7858e255d89db1e5d68fb9df5393f2fb24483162fad612939ea",
+      "state": "Group84 qualified at b3c66b2b: 20 ordinary-MFA actions show all four scored bank match families in existing web Bank and exact canonical HTTP/CLI/MCP advice; max per bankrow, selected IDs, business refusals, current reviewer access/revocation and read-only effects verified. Explicit reviewed purchase125/VAT25, customer receipt200 and customer credit refund100 produce exactly7journals/6bankrows/4reconciliations; outputVAT70/input25/payable45, bank225 vs independent statement300/difference-75, zero customer balances. Eight stored documents are6business originals+2issued PDFs;4continuous raw bank segments retain profile name/message evidence and a separately referenced refund. Immutable task history9 with7resolved/2truly unmatched open. Four independently verified signed full snapshots and source-free fresh-owner restore/reopen preserve tables, originals and historical audit. Interactive CVR lookup/sync remains the next server gap. Whole Rust mission/epic672, installed desktop financial acceptance, actual TSworkspace adoption and distribution remain OPEN."
     }
   ]
 }
