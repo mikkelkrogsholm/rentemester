@@ -1,13 +1,13 @@
 {
   "goal": "Complete Rust server/web, GPUI local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "Danske Bank profile through existing web import, clients and signed source-free recovery qualified",
-  "code_revision": "4a38f4220b655fe99d3ee8f29f53137f48a0eb76",
+  "current_increment": "Bilagsmail manual/service intake, explicit inbox review and signed source-free recovery qualified",
+  "code_revision": "62c085a4099e7611696e36ca625bb29462096967",
   "spec_revision": "sha256:bad4aa888ce04e071293db95385ac2eed5a720c722ced3b0bc760fb39859bfad",
-  "state": "Group72 actual PASS at4a38f422: ordinary verified-MFA users, existing bank import UI explicitaccount/danske-bank, real UTF8BOM fixture decoded to exact postedUnicode CSV, declaredDMY/quoted/NFD-header/raw/senderfallback/references/same-day newest-first balances;3initial rows1100→1130 and2new gaprows1120→900 with1gap exception/drift-210. Repeat skips3/2 without new rows/originals/exceptions/journals; legitimate import audit retained. Unknownprofile/date/unvaluedFX/freshunknownaccount/genericambiguity422 and Reviewer403 preserve business/physical state. Canonical HTTP/CLI/MCP reads, fresh-MFA restart, four independently verified signed snapshots and source-free fresh-owner restore/reopen preserve2exactpostedUTF8originals/5rawrows/2nativeprofileproofs/1gap/0journals/audit. Independent3binary/fullweb/helper hashes matched;23actions,ownedcleanuptrue. Historical raw generic rows remain valid, profile-aware reconciliation original verification focusedtestsPASS; no file-BOM/Windows1252 preservation claim for browser text decoding. Explicit70+automatic71 qualification retained. Full unmatched bank candidate/description/refresh sync remains open, not abbreviated. Nextmajorserverwebflow real Bilagsmail→explicit existing inbox review; read-only sourceprep identified missing metadatareview/IMAP/MIME seams. Native67/68/69 implemented/tested/built; installed local/remote GUI and fullmission/epic672 OPEN.",
+  "state": "Group73 actual PASS at62c085a4: 28 actions with ordinary verified-MFA users, existing Bilagsmail configuration and real synthetic verified-TLS IMAP manual/service-account polling, exact original EML/PDF retention, explicit existing inbox classification/currency review and exactly one unposted document. Repeated UIDs and identical EML under a new UID deduplicate; invalid/missing-ID/oversized messages retain truthful evidence. Configuration deletion and current grantor revocation during held fetch promptly deny without retained effects. Canonical HTTP/CLI/MCP status/source/original byte parity, fresh-MFA restart and four independently verified signed source-free fresh-owner restore/reopens preserve originals, review, dedup, document and audit with credentials/polling disabled and zero journals. Root independently matched three binaries, full web inventory, helper hashes, full InboxV2 and company table snapshots, originals and audit prefixes. Owned runtime/process cleanup true. Installed native GUI, real external mail and full mission remain OPEN; next74 real public e-invoice.",
   "issues_closed": [],
   "next": [
-    "Qualify integrated Group73 configured real Bilagsmail → explicit existing inbox review → exactly-once unposted document, actual realTLS IMAP/web/service/CLI/MCP/restart/four signed source-free recoveries; no whole-flow PASS yet.",
+    "Group74: complete public e-invoice through existing web UI, immutable recipient snapshot, deterministic OIOUBL, private DigiSense company binding, real bounded transport/status, clients and signed recovery without resend; actual synthetic TLS provider only.",
     "Keep remaining full unmatched bank candidate/description/refresh synchronization explicit, plus raw-file Windows1252 CLI compatibility; no all-importer-parity claim.",
     "Other concrete server/web gaps: public e-invoice send/status, sales VAT/currency variants, portfolio/cashflow pages, interactive CVR lookup/sync.",
     "Complete installed local/remote desktop financial journeys, full recovery/transfer/automation/distribution and TypeScript retirement gates. Full goal remains open."
@@ -1491,6 +1491,16 @@
       },
       "actual_gui": false,
       "installed_bundle": false
+    },
+    "platform73_mail_intake": {
+      "report": "/tmp/rentemester-rust-reports/mail-intake-integrated73.json",
+      "sha256": "b0a483395e2d11a87bf9e50e658155f8de812dc9f0a50b5e35cfc721213f0d49",
+      "source_revision": "62c085a4099e7611696e36ca625bb29462096967",
+      "status": "PASS",
+      "actions": 28,
+      "root_independent_checks": "three binary/full web/runner hashes; four signed archive snapshot table and full InboxV2 equality; exact original SHA256 and complete source audit prefix; owned cleanup verified",
+      "actual_qualified": true,
+      "limits": "No installed-native qualification or real external mail claim; synthetic TLS provider."
     }
   },
   "verified_history": [
@@ -2250,14 +2260,19 @@
     {
       "delivery": "Group73 real Bilagsmail intake and explicit inbox metadata review",
       "owner": "root contracts/integration/actual acceptance; four isolated workers delivered runtime/core/application/web plus clients/helper",
-      "status": "IMPLEMENTED and integrated, actual qualification PENDING. Engine4/runtime8/storage5/application2/physicalOwner4/inboxcodec4/SDK5/CLI3/server2/web29 tests PASS; MCP109 stdio PASS; all9package/alltarget strict Clippy and all3binarybuild PASS. Explicit native30→31 schema upgrade, retained invalid raw EML, oldv1 declared-format comparison/legacy exception validation and64KiB escaped-metadata bound repaired without weakening guards. Whole configured realIMAP/web/service/restart/sourcefree acceptance runner source ready, not run.",
+      "status": "COMPLETE finite Group73. Group73 actual PASS at62c085a4: 28 actions with ordinary verified-MFA users, existing Bilagsmail configuration and real synthetic verified-TLS IMAP manual/service-account polling, exact original EML/PDF retention, explicit existing inbox classification/currency review and exactly one unposted document. Repeated UIDs and identical EML under a new UID deduplicate; invalid/missing-ID/oversized messages retain truthful evidence. Configuration deletion and current grantor revocation during held fetch promptly deny without retained effects. Canonical HTTP/CLI/MCP status/source/original byte parity, fresh-MFA restart and four independently verified signed source-free fresh-owner restore/reopens preserve originals, review, dedup, document and audit with credentials/polling disabled and zero journals. Root independently matched three binaries, full web inventory, helper hashes, full InboxV2 and company table snapshots, originals and audit prefixes. Owned runtime/process cleanup true. Installed native GUI, real external mail and full mission remain OPEN; next74 real public e-invoice.",
       "acceptance": "Normal MFA mailbox configuration and real synthetic IMAP fetch → exact EML/attachment retention/provenance/dedup → original download and explicit target-bound metadata review in existing inbox → exactly-once unposted document; current revocation/configdelete/transfer/noGETI/O, restart and signed source-free recovery preserve evidence with credentials/polling inactive. No implicit ordinary-upload extraction71 or inferred accounting.",
       "source_prep": "/tmp/rm-platform73-mail-prep.md",
       "contract": "/tmp/rm-platform73-mail-contract.md",
       "evidence": {
-        "root_logs": "/tmp/rm73-root-*",
-        "actual_runner": "scripts/rust/run-mail-intake.py",
-        "actual_qualified": false
+        "report": "/tmp/rentemester-rust-reports/mail-intake-integrated73.json",
+        "sha256": "b0a483395e2d11a87bf9e50e658155f8de812dc9f0a50b5e35cfc721213f0d49",
+        "source_revision": "62c085a4099e7611696e36ca625bb29462096967",
+        "status": "PASS",
+        "actions": 28,
+        "root_independent_checks": "three binary/full web/runner hashes; four signed archive snapshot table and full InboxV2 equality; exact original SHA256 and complete source audit prefix; owned cleanup verified",
+        "actual_qualified": true,
+        "limits": "No installed-native qualification or real external mail claim; synthetic TLS provider."
       }
     }
   ],
@@ -2302,6 +2317,14 @@
         "src/core/opening-balance.ts:153",
         "docs/architecture/rust-target/epic/issues/R26.md:13"
       ]
+    }
+  ],
+  "verified_increment_history": [
+    {
+      "current_increment": "Danske Bank profile through existing web import, clients and signed source-free recovery qualified",
+      "code_revision": "4a38f4220b655fe99d3ee8f29f53137f48a0eb76",
+      "spec_revision": "sha256:bad4aa888ce04e071293db95385ac2eed5a720c722ced3b0bc760fb39859bfad",
+      "state": "Group72 actual PASS at4a38f422: ordinary verified-MFA users, existing bank import UI explicitaccount/danske-bank, real UTF8BOM fixture decoded to exact postedUnicode CSV, declaredDMY/quoted/NFD-header/raw/senderfallback/references/same-day newest-first balances;3initial rows1100→1130 and2new gaprows1120→900 with1gap exception/drift-210. Repeat skips3/2 without new rows/originals/exceptions/journals; legitimate import audit retained. Unknownprofile/date/unvaluedFX/freshunknownaccount/genericambiguity422 and Reviewer403 preserve business/physical state. Canonical HTTP/CLI/MCP reads, fresh-MFA restart, four independently verified signed snapshots and source-free fresh-owner restore/reopen preserve2exactpostedUTF8originals/5rawrows/2nativeprofileproofs/1gap/0journals/audit. Independent3binary/fullweb/helper hashes matched;23actions,ownedcleanuptrue. Historical raw generic rows remain valid, profile-aware reconciliation original verification focusedtestsPASS; no file-BOM/Windows1252 preservation claim for browser text decoding. Explicit70+automatic71 qualification retained. Full unmatched bank candidate/description/refresh sync remains open, not abbreviated. Nextmajorserverwebflow real Bilagsmail→explicit existing inbox review; read-only sourceprep identified missing metadatareview/IMAP/MIME seams. Native67/68/69 implemented/tested/built; installed local/remote GUI and fullmission/epic672 OPEN."
     }
   ]
 }

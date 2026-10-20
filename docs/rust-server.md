@@ -2243,6 +2243,11 @@ bytes; klienterne kontrollerer originalens SHA-256. Backup bevarer originaler,
 gennemgang og deduplikering. Postkasseadgangskode og aktiv modtagelsesadgang
 følger ikke med ved gendannelse.
 
-Group73 er implementeret med fokuserede motor-, runtime-, storage-, Owner-,
-klient- og webtests. Den samlede praktiske IMAP/browser-/genstarts- og
-kildeuafhængige gendannelsesprøve er endnu ikke kvalificeret.
+Group73 er kvalificeret gennem 28 praktiske trin med en syntetisk TLS-postkasse:
+manuelt og via servicekonto, gennemgang i browseren, dubletkontrol, tilbagekaldt
+adgang under hentning, HTTP/CLI/MCP, genstart og fire signerede gendannelser
+efter fjernelse af kilder og private signeringsnøgler. Originaler, gennemgang,
+deduplikering og ét ubogført bilag blev bevaret; der blev oprettet nul
+bogføringsposter. Postkasseadgang og automatisk hentning var deaktiveret efter
+gendannelse. Prøven omfatter ikke en virkelig ekstern postkasse eller den
+installerede desktopapp.
