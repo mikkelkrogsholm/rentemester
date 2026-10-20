@@ -1825,7 +1825,7 @@
     {
       "delivery": "Group64 explicit opening-balance adoption and post-cutover company/group reports",
       "owner": "root contract/registrations/receipts/clients/integration; rust_accruals core/sharedposting/history/backup proof; rust_client_cli admitted app/host/HTTP/report basis; rust_budget existing Manage page panel/shared basis notice; rust_mileage actual helper",
-      "status": "Integrated at efaf5d3d: explicit opening parent/routes/operation and truthful CSV/PDF coverage. Root host2/export4/HTTP1/strict6/web design+types+build/three binaries PASS; Graphify AST PASS. Whole actual1 reached reviewed web apply, accepted-discarded-reply recovery, later expenses, reconciled company/group figures and signed before snapshot; stopped on helper expecting422 instead canonical400/opening_balance_refused for pre-cutover journal guard. Helper-only correction bbecc708; first runtime cleaned. Whole actual2 running, no final qualification yet.",
+      "status": "Integrated efaf5d3d; root host2/export4/HTTP1/strict6/web design+types+build/three binaries and Graphify AST PASS. Whole actual1 passed reviewed web opening/later expenses/group but helper expected422 instead canonical400/opening_balance_refused; corrected bbecc708. Actual2 passed refusal/UI/clients/source restart but helper incorrectly prohibited eight existing idempotency_replay diagnostics; corrected62240044 now proves exact eight diagnostic rows, unchanged immutable audit prefix and journal/marker. Actual3 proves those invariants, independently signed source-free fresh-owner restore and reconstructed reports/originals, but stopped at old-key refusal HTTP422 instead expected409. Product HTTP mapping fixed e69acb8c to existing RESTORED_KEY_RECONCILIATION_REQUIRED conflict contract; strictserver Clippy/build/AST PASS. Whole actual4 running; explicit fresh-owner receipt mapping and targetreopen still unqualified. All first3 owned runtimes cleaned; full mission open.",
       "contract_sha256": "893fa8780b97c01242f05b1924151ef0a9877c79da570ebf816e7aabc2674225",
       "acceptance": "Ordinary MFA owner explicitly reviews and posts exactly one balanced dated opening entry, singleton/typed audit/receipt atomic and source citations explicit. Later native company figures and approved-group closing reconcile without adding raw archives; truthful fiscal coverage, current rights/stale/duplicate/replay/pre-cutover/opening-reversal refusals, restart and signed source-free fresh-owner restore preserve exact proof and current authority.",
       "depends_on": [
@@ -1839,11 +1839,15 @@
         "Generic other-journal replay retains existing physical source contract plus structural opening/cutover guard; do not claim additional cited-package verification there."
       ],
       "actual_run": {
-        "path": "/tmp/rentemester-rust-reports/opening-balance-integrated64-refusal2.json",
-        "log": "/tmp/rm-platform64-refusal2-actual.log",
-        "session_id": 24408,
-        "state": "running"
-      }
+        "path": "/tmp/rentemester-rust-reports/opening-balance-integrated64-restore4.json",
+        "log": "/tmp/rm-platform64-restore4-actual.log",
+        "session_id": 14732,
+        "state": "running",
+        "product_revision": "e69acb8c",
+        "note": "Runner started before commit; runner SHA and pinned binary/web hashes bind exact tested artifacts."
+      },
+      "next_scope_note": "/tmp/rm-platform65-document-scanner-scope.md",
+      "desktop_current_blocker": "Current CUA getState reports Mac locked again; user unlock requested asynchronously. Do not confuse with earlier user unlock or repeat old failed company-selection route. Supported --company explicit selection is next bounded native approach."
     }
   ],
   "integrated_pending_browser": [
