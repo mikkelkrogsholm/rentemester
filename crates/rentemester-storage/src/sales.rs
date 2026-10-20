@@ -205,28 +205,22 @@ pub fn contacts(tx: &Transaction<'_>, slug: &str, today: &str) -> Result<Value, 
     let mut q=tx.prepare("SELECT id,name,address,vat_or_cvr,email,phone,website,ean_number,payment_terms_days,default_currency,notes FROM customers WHERE archived=0 ORDER BY name,id").map_err(invalid)?;
     let mut rows = q.query([]).map_err(invalid)?;
     let mut customers = Vec::new();
-    let mut invoice_query = tx.prepare("SELECT d.amount_inc_vat,d.payload_json,COALESCE((SELECT SUM(p.amount) FROM invoice_payments p WHERE p.invoice_document_id=d.id),0),d.id FROM documents d WHERE d.document_type='issued_invoice'").map_err(invalid)?;
+    let mut invoice_query = tx.prepare("SELECT d.amount_inc_vat,d.payload_json,d.currency,d.id FROM documents d WHERE d.document_type='issued_invoice'").map_err(invalid)?;
     let mut invoice_rows = invoice_query.query([]).map_err(invalid)?;
     let mut invoices = Vec::new();
     while let Some(row) = invoice_rows.next().map_err(invalid)? {
         let payload: String = row.get(1).map_err(invalid)?;
         let payload: Value = serde_json::from_str(&payload).map_err(invalid)?;
-        if payload["currency"] != "DKK" {
-            return Err(refused(
-                "foreign invoice receivable reports are not ported yet",
-            ));
-        }
-        let open = legacy_money(row.get_ref(0).map_err(invalid)?)?
-            .subtract(&legacy_money(row.get_ref(2).map_err(invalid)?)?)
-            .subtract(&crate::credit_note::credited(
-                tx,
-                row.get(3).map_err(invalid)?,
-            )?);
-        let mut open = open;
-        open.add(&crate::invoice_settlement::refunded(
-            tx,
-            row.get(3).map_err(invalid)?,
-        )?);
+        validate_foreign_buyer(&payload)?;
+        let id: i64 = row.get(3).map_err(invalid)?;
+        let currency = payload["currency"].as_str().unwrap_or("DKK");
+        let gross = legacy_money(row.get_ref(0).map_err(invalid)?)?;
+        let paid = crate::invoice_fx::movements(tx, id, currency, false)?;
+        let credited = crate::credit_note::credited(tx, id)?;
+        let refunds = crate::invoice_settlement::refunded(tx, id)?;
+        let mut open = gross.subtract(&paid).subtract(&credited);
+        open.add(&refunds);
+        let open = receivable_dkk(tx, id, &payload, &open)?;
         let overdue = payload["dueDate"].as_str().is_some_and(|due| due < today);
         invoices.push((payload["customerId"].as_i64(), open, overdue));
     }
@@ -242,7 +236,7 @@ pub fn contacts(tx: &Transaction<'_>, slug: &str, today: &str) -> Result<Value, 
                 overdue += usize::from(*is_overdue);
             }
         }
-        customers.push(json!({"id":id,"name":r.get::<_,String>(1).map_err(invalid)?,"address":r.get::<_,Option<String>>(2).map_err(invalid)?,"vatOrCvr":r.get::<_,Option<String>>(3).map_err(invalid)?,"email":r.get::<_,Option<String>>(4).map_err(invalid)?,"phone":r.get::<_,Option<String>>(5).map_err(invalid)?,"website":r.get::<_,Option<String>>(6).map_err(invalid)?,"eanNumber":r.get::<_,Option<String>>(7).map_err(invalid)?,"paymentTermsDays":r.get::<_,Option<i64>>(8).map_err(invalid)?.unwrap_or(14),"defaultCurrency":r.get::<_,String>(9).map_err(invalid)?,"notes":r.get::<_,Option<String>>(10).map_err(invalid)?,"openBalance":wire(&balance)?,"openInvoiceCount":count,"overdueCount":overdue}));
+        customers.push(json!({"id":id,"name":r.get::<_,String>(1).map_err(invalid)?,"address":r.get::<_,Option<String>>(2).map_err(invalid)?,"vatOrCvr":r.get::<_,Option<String>>(3).map_err(invalid)?,"email":r.get::<_,Option<String>>(4).map_err(invalid)?,"phone":r.get::<_,Option<String>>(5).map_err(invalid)?,"website":r.get::<_,Option<String>>(6).map_err(invalid)?,"eanNumber":r.get::<_,Option<String>>(7).map_err(invalid)?,"paymentTermsDays":r.get::<_,Option<i64>>(8).map_err(invalid)?.unwrap_or(14),"defaultCurrency":r.get::<_,String>(9).map_err(invalid)?,"notes":r.get::<_,Option<String>>(10).map_err(invalid)?,"openBalance":wire(&balance)?,"openBalanceCurrency":"DKK","openInvoiceCount":count,"overdueCount":overdue}));
     }
     let mut q=tx.prepare("SELECT id,name,address,vat_or_cvr,country_code,identifier_kind,identity_status,email,phone,website,default_expense_account,default_vat_treatment,notes FROM vendors WHERE archived=0 ORDER BY name,id").map_err(invalid)?;
     let vendors=q.query_map([],|r|Ok(json!({"id":r.get::<_,i64>(0)?,"name":r.get::<_,String>(1)?,"address":r.get::<_,Option<String>>(2)?,"vatOrCvr":r.get::<_,Option<String>>(3)?,"countryCode":r.get::<_,Option<String>>(4)?,"identifierKind":r.get::<_,Option<String>>(5)?,"identityStatus":r.get::<_,String>(6)?,"email":r.get::<_,Option<String>>(7)?,"phone":r.get::<_,Option<String>>(8)?,"website":r.get::<_,Option<String>>(9)?,"defaultExpenseAccount":r.get::<_,Option<String>>(10)?,"defaultVatTreatment":r.get::<_,Option<String>>(11)?,"notes":r.get::<_,Option<String>>(12)?}))).map_err(invalid)?.collect::<Result<Vec<_>,_>>().map_err(invalid)?;
@@ -258,6 +252,14 @@ pub fn contacts(tx: &Transaction<'_>, slug: &str, today: &str) -> Result<Value, 
     Ok(base)
 }
 fn party(input: Option<&Party>, default: &Value, seller: bool) -> Result<Value, Error> {
+    party_kind(input, default, seller, false)
+}
+fn party_kind(
+    input: Option<&Party>,
+    default: &Value,
+    seller: bool,
+    foreign: bool,
+) -> Result<Value, Error> {
     let field = |value: Option<&String>, key: &str| {
         sales_invoice::text(
             value
@@ -302,13 +304,15 @@ fn party(input: Option<&Party>, default: &Value, seller: bool) -> Result<Value, 
         .map(|s| sales_invoice::text(s, 1024))
         .transpose()?;
     if let Some(vat) = &vat {
-        let digits = vat.strip_prefix("DK").unwrap_or(vat);
-        if digits.len() != 8 || !digits.bytes().all(|b| b.is_ascii_digit()) {
-            return Err(refused(
-                "native domestic invoice VAT/CVR identifiers must be Danish 8-digit values",
-            ));
+        if !foreign {
+            let digits = vat.strip_prefix("DK").unwrap_or(vat);
+            if digits.len() != 8 || !digits.bytes().all(|b| b.is_ascii_digit()) {
+                return Err(refused(
+                    "native domestic invoice VAT/CVR identifiers must be Danish 8-digit values",
+                ));
+            }
         }
-    } else if seller || ean.is_none() {
+    } else if seller || ean.is_none() || foreign {
         return Err(refused(
             "native domestic invoice requires seller CVR and buyer CVR or public EAN",
         ));
@@ -377,7 +381,19 @@ pub fn prepare(
     } else {
         Value::Null
     };
-    let buyer = party(input.buyer.as_ref(), &customer, false)?;
+    let foreign = computed["vatTreatment"] == "foreign_reverse_charge";
+    let buyer = party_kind(input.buyer.as_ref(), &customer, false, foreign)?;
+    let validation = if foreign {
+        let record = crate::vies::require(tx, buyer["vatOrCvr"].as_str().unwrap_or(""), now)?;
+        if record["countryCode"] == "DK" {
+            return Err(refused(
+                "EU services buyer must be a foreign EU VAT registrant",
+            ));
+        }
+        Some(record)
+    } else {
+        None
+    };
     let issue = rentemester_engine::vat_period::date(&input.issue_date)?;
     let due = match &input.due_date {
         Some(date) => date.clone(),
@@ -431,19 +447,35 @@ pub fn prepare(
             ));
         }
     }
-    let mut payload = json!({"invoiceType":"full","vatTreatment":computed["vatTreatment"],"issueDate":input.issue_date,"dueDate":due,"invoiceNumber":format!("{year}-{next:04}"),"status":"issued","issuedAt":now,"currency":"DKK","seller":seller,"buyer":buyer,"customerId":input.customer_id,"lines":computed["lines"],"totals":computed["totals"],"payment":company["payment"]});
+    let mut payload = json!({"invoiceType":"full","vatTreatment":computed["vatTreatment"],"issueDate":input.issue_date,"dueDate":due,"invoiceNumber":format!("{year}-{next:04}"),"status":"issued","issuedAt":now,"currency":computed["currency"],"seller":seller,"buyer":buyer,"customerId":input.customer_id,"lines":computed["lines"],"totals":computed["totals"],"payment":company["payment"]});
     for key in ["reverseChargeBasis", "reverseChargeNote"] {
         if let Some(value) = computed.get(key).filter(|v| !v.is_null()) {
             payload[key] = value.clone();
         }
     }
+    if let Some(record) = validation {
+        payload["viesValidation"] = record;
+    }
+    if let Some(version) = computed.get("fxValuationVersion") {
+        payload["fxValuationVersion"] = version.clone();
+    }
     // Validate the frozen allocation before reserving a consecutive number.
-    sales_invoice::project(&payload)?;
+    rentemester_engine::sales_fx::project(&payload)?;
     if allocate {
         crate::journal_post::require_current(tx)?;
         crate::sequences::next(tx, "issued_invoice", &scope, floor)?;
     }
     Ok(payload)
+}
+fn validate_foreign_buyer(payload: &Value) -> Result<(), Error> {
+    if payload["vatTreatment"] == "foreign_reverse_charge" {
+        rentemester_engine::vies::require_record(
+            &payload["viesValidation"],
+            payload["buyer"]["vatOrCvr"].as_str().unwrap_or(""),
+            payload["issuedAt"].as_str().unwrap_or(""),
+        )?;
+    }
+    Ok(())
 }
 pub struct Artifact<'a> {
     pub filename: &'a str,
@@ -477,6 +509,8 @@ pub fn register_with_principal(
 ) -> Result<Value, Error> {
     crate::journal_post::require_current(tx)?;
     let projection = sales_invoice::project(payload)?;
+    rentemester_engine::sales_fx::project(payload)?;
+    validate_foreign_buyer(payload)?;
     let vat_amount = wire(&projection.vat)?;
     let serialized = serde_json::to_string_pretty(payload).map_err(invalid)?;
     let month: i32 = tx
@@ -500,7 +534,7 @@ pub fn register_with_principal(
         } else {
             format!("{}-PDF", payload["invoiceNumber"].as_str().unwrap())
         };
-        let inserted:i64=tx.query_row("INSERT INTO documents(document_no,source,original_filename,stored_path,mime_type,sha256_hash,supplier_name,invoice_no,invoice_date,amount_inc_vat,currency,status,document_type,delivery_description,sender_name,sender_address,sender_vat_cvr,recipient_name,recipient_address,recipient_vat_cvr,vat_amount,payload_json,retain_until) VALUES(?1,'rentemester',?2,?3,?4,?5,?6,?7,?8,?9,'DKK','issued',?10,?11,?6,?12,?13,?14,?15,?16,?17,?18,?19) RETURNING id",params![no,file.filename,file.path,file.mime,file.hash,payload["seller"]["name"].as_str(),payload["invoiceNumber"].as_str(),payload["issueDate"].as_str(),payload["totals"]["grossAmount"].as_f64(),kind,payload["lines"].to_string(),payload["seller"]["address"].as_str(),payload["seller"]["vatOrCvr"].as_str(),payload["buyer"]["name"].as_str(),payload["buyer"]["address"].as_str(),payload["buyer"]["vatOrCvr"].as_str(),vat_amount.as_f64(),serialized,retention],|r|r.get(0)).map_err(invalid)?;
+        let inserted:i64=tx.query_row("INSERT INTO documents(document_no,source,original_filename,stored_path,mime_type,sha256_hash,supplier_name,invoice_no,invoice_date,amount_inc_vat,currency,status,document_type,delivery_description,sender_name,sender_address,sender_vat_cvr,recipient_name,recipient_address,recipient_vat_cvr,vat_amount,payload_json,retain_until) VALUES(?1,'rentemester',?2,?3,?4,?5,?6,?7,?8,?9,?20,'issued',?10,?11,?6,?12,?13,?14,?15,?16,?17,?18,?19) RETURNING id",params![no,file.filename,file.path,file.mime,file.hash,payload["seller"]["name"].as_str(),payload["invoiceNumber"].as_str(),payload["issueDate"].as_str(),payload["totals"]["grossAmount"].as_f64(),kind,payload["lines"].to_string(),payload["seller"]["address"].as_str(),payload["seller"]["vatOrCvr"].as_str(),payload["buyer"]["name"].as_str(),payload["buyer"]["address"].as_str(),payload["buyer"]["vatOrCvr"].as_str(),vat_amount.as_f64(),serialized,retention,payload["currency"].as_str().unwrap_or("DKK")],|r|r.get(0)).map_err(invalid)?;
         if kind == "issued_invoice" {
             id = inserted;
         }
@@ -518,7 +552,7 @@ pub fn register_with_principal(
         )?;
     }
     Ok(
-        json!({"documentId":id,"invoiceNumber":payload["invoiceNumber"],"netAmount":payload["totals"]["netAmount"],"vatRate":payload["totals"]["vatRate"],"vatTreatment":payload["vatTreatment"],"reverseChargeBasis":payload["reverseChargeBasis"],"reverseChargeNote":payload["reverseChargeNote"],"vatAmount":vat_amount,"grossAmount":payload["totals"]["grossAmount"],"lines":payload["lines"]}),
+        json!({"documentId":id,"currency":payload["currency"],"totals":payload["totals"],"invoiceNumber":payload["invoiceNumber"],"netAmount":payload["totals"]["netAmount"],"vatRate":payload["totals"]["vatRate"],"vatTreatment":payload["vatTreatment"],"reverseChargeBasis":payload["reverseChargeBasis"],"reverseChargeNote":payload["reverseChargeNote"],"vatAmount":vat_amount,"grossAmount":payload["totals"]["grossAmount"],"lines":payload["lines"]}),
     )
 }
 pub fn pdf_id(tx: &Transaction<'_>, id: i64) -> Result<i64, Error> {
@@ -556,7 +590,10 @@ pub fn post(
         .map_err(invalid)?
         .ok_or_else(|| refused("issued invoice required"))?;
     let payload: Value = serde_json::from_str(&payload).map_err(invalid)?;
-    let projection = sales_invoice::project(&payload)?;
+    validate_foreign_buyer(&payload)?;
+    let original_projection = sales_invoice::project(&payload)?;
+    let projection = rentemester_engine::sales_fx::project(&payload)?;
+    let foreign = payload["currency"] != "DKK";
     let existing: bool = tx
         .query_row(
             "SELECT EXISTS(SELECT 1 FROM journal_entries WHERE document_id=?1)",
@@ -623,12 +660,19 @@ pub fn post(
                 .ok_or_else(|| refused("missing invoice date"))?,
         )?,
         text: format!("Salg {}", payload["invoiceNumber"].as_str().unwrap_or("")),
-        currency: Currency::parse("DKK")?,
+        currency: Currency::parse(payload["currency"].as_str().unwrap_or("DKK"))?,
         document_id: Some(DocumentId::from_sqlite(input.invoice_document_id)),
         source_bank_transaction_id: None,
-        amount_foreign: None,
-        amount_dkk: None,
-        fx_rate_to_dkk: None,
+        amount_foreign: foreign.then_some(original_projection.gross),
+        amount_dkk: foreign.then_some(gross.clone()),
+        fx_rate_to_dkk: if foreign {
+            Some(rentemester_engine::sales_fx::rate(
+                payload["currency"].as_str().unwrap(),
+                payload["totals"]["fxRateToDkk"].as_number(),
+            )?)
+        } else {
+            None
+        },
         created_by_program: None,
         lines,
     };
@@ -662,6 +706,39 @@ pub fn post(
     )?;
     Ok(result)
 }
+/// Original-currency amounts never enter company DKK aggregates.
+fn receivable_dkk(
+    tx: &Transaction<'_>,
+    id: i64,
+    payload: &Value,
+    open: &Money,
+) -> Result<Money, Error> {
+    if payload["currency"] == "DKK" {
+        return Ok(open.clone());
+    }
+    let valuation = rentemester_engine::sales_fx::project(payload)?;
+    let debtor:Option<i64>=tx.query_row("SELECT p.receivable_account_id FROM issued_invoice_postings p JOIN journal_entries j ON j.id=p.journal_entry_id WHERE p.invoice_document_id=?1 AND j.status='posted' AND NOT EXISTS(SELECT 1 FROM journal_entries r WHERE r.reversal_of_entry_id=j.id)",[id],|r|r.get(0)).optional().map_err(invalid)?;
+    if let Some(debtor) = debtor {
+        crate::invoice_settlement::principal_carrying(tx, id, debtor)
+    } else {
+        let linked: bool = tx
+            .query_row(
+                "SELECT EXISTS(SELECT 1 FROM issued_invoice_postings WHERE invoice_document_id=?1)",
+                [id],
+                |r| r.get(0),
+            )
+            .map_err(invalid)?;
+        if linked {
+            return Err(refused("foreign invoice posting is no longer active"));
+        }
+        if open != &sales_invoice::project(payload)?.gross {
+            return Err(refused(
+                "unposted foreign invoice has unexplained movements",
+            ));
+        }
+        Ok(valuation.gross)
+    }
+}
 pub fn list(
     tx: &Transaction<'_>,
     slug: &str,
@@ -684,21 +761,25 @@ pub fn list(
         let id: i64 = r.get(0).map_err(invalid)?;
         let payload: String = r.get(6).map_err(invalid)?;
         let payload: Value = serde_json::from_str(&payload).map_err(invalid)?;
+        validate_foreign_buyer(&payload)?;
         let gross = legacy_money(r.get_ref(5).map_err(invalid)?)?;
-        let paid = tx
-            .query_row(
-                "SELECT COALESCE(SUM(amount),0) FROM invoice_payments WHERE invoice_document_id=?1",
-                [id],
-                |r| legacy_money(r.get_ref(0)?).map_err(|_| rusqlite::Error::InvalidQuery),
-            )
-            .map_err(invalid)?;
+        let currency = payload["currency"].as_str().unwrap_or("DKK");
+        let paid = crate::invoice_fx::movements(tx, id, currency, false)?;
         let credited = crate::credit_note::credited(tx, id)?;
         let creditable = gross.subtract(&credited);
         let refunds = crate::invoice_settlement::refunded(tx, id)?;
         let mut open = creditable.subtract(&paid);
         open.add(&refunds);
-        total.add(&gross);
-        open_total.add(&open);
+        let valuation = rentemester_engine::sales_fx::project(&payload)?;
+        let open_dkk = receivable_dkk(tx, id, &payload, &open)?;
+        let credited_dkk = if currency == "DKK" {
+            credited.clone()
+        } else {
+            crate::invoice_fx::credited_dkk(tx, id)?
+        };
+        let creditable_dkk = valuation.gross.subtract(&credited_dkk);
+        total.add(&valuation.gross);
+        open_total.add(&open_dkk);
         let due = payload["dueDate"].as_str();
         let overdue = due
             .map(|d| {
@@ -713,11 +794,14 @@ pub fn list(
         if overdue > 0 && !open.is_negative() && open != Money::default() {
             overdue_count += 1;
         }
-        rows.push(json!({"documentId":id,"invoiceNo":r.get::<_,String>(1).map_err(invalid)?,"invoiceDate":r.get::<_,String>(2).map_err(invalid)?,"customerName":r.get::<_,Option<String>>(3).map_err(invalid)?,"customerEmail":null,"customerId":payload["customerId"],"buyerEanNumber":sales_invoice::recipient_ean(payload["buyer"]["eanNumber"].as_str()).ok().flatten(),"buyerPublicRecipient":payload["buyer"]["publicRecipient"]==true || sales_invoice::recipient_ean(payload["buyer"]["eanNumber"].as_str()).ok().flatten().is_some(),"peppolStatus":crate::public_einvoice::get(tx,id)?,"lastEmailedAt":null,"lastReminderAt":null,"lastReminderSequence":0,"grossAmount":wire(&gross)?,"openBalance":wire(&open)?,"currency":r.get::<_,String>(4).map_err(invalid)?,"creditableBalance":wire(&creditable)?,"status":if open.is_negative(){"overpaid"}else if open==Money::default(){if refunds!=Money::default(){"refunded"}else if credited==gross && paid==Money::default(){"credited"}else{"paid"}}else if overdue>0{"overdue"}else{"open"},"effectiveDueDate":due,"overdueDays":overdue,"posted":r.get::<_,Option<i64>>(7).map_err(invalid)?.is_some()}));
+        rows.push(json!({"documentId":id,"invoiceNo":r.get::<_,String>(1).map_err(invalid)?,"invoiceDate":r.get::<_,String>(2).map_err(invalid)?,"customerName":r.get::<_,Option<String>>(3).map_err(invalid)?,"customerEmail":null,"customerId":payload["customerId"],"buyerEanNumber":sales_invoice::recipient_ean(payload["buyer"]["eanNumber"].as_str()).ok().flatten(),"buyerPublicRecipient":payload["buyer"]["publicRecipient"]==true || sales_invoice::recipient_ean(payload["buyer"]["eanNumber"].as_str()).ok().flatten().is_some(),"peppolStatus":crate::public_einvoice::get(tx,id)?,"lastEmailedAt":null,"lastReminderAt":null,"lastReminderSequence":0,"grossAmount":wire(&gross)?,"openBalance":wire(&open)?,"grossAmountDkk":wire(&valuation.gross)?,"openBalanceDkk":wire(&open_dkk)?,"creditableBalanceDkk":wire(&creditable_dkk)?,"fxRateToDkk":payload["totals"]["fxRateToDkk"],"currency":r.get::<_,String>(4).map_err(invalid)?,"creditableBalance":wire(&creditable)?,"status":if open.is_negative(){"overpaid"}else if open==Money::default(){if refunds!=Money::default(){"refunded"}else if credited==gross && paid==Money::default(){"credited"}else{"paid"}}else if overdue>0{"overdue"}else{"open"},"effectiveDueDate":due,"overdueDays":overdue,"posted":r.get::<_,Option<i64>>(7).map_err(invalid)?.is_some()}));
     }
     base["invoices"] = json!(rows);
     base["totalGross"] = wire(&total)?;
     base["totalOpen"] = wire(&open_total)?;
+    base["totalGrossDkk"] = wire(&total)?;
+    base["totalOpenDkk"] = wire(&open_total)?;
+    base["totalsCurrency"] = json!("DKK");
     base["overdueCount"] = json!(overdue_count);
     let mut q=tx.prepare("SELECT account_no,name FROM accounts WHERE active=1 AND type='income' AND normal_balance='credit' ORDER BY account_no").map_err(invalid)?;
     let accounts = q
@@ -1014,3 +1098,7 @@ mod tests {
 #[cfg(test)]
 #[path = "sales/vat_tests.rs"]
 mod vat_tests;
+
+#[cfg(test)]
+#[path = "sales/foreign_tests.rs"]
+mod foreign_tests;

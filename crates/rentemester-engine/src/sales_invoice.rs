@@ -36,6 +36,7 @@ pub struct Input {
     pub invoice_number: Option<String>,
     pub due_date: Option<String>,
     pub currency: Option<String>,
+    pub fx_rate_to_dkk: Option<Number>,
     pub seller: Option<Party>,
     pub buyer: Option<Party>,
 }
@@ -112,19 +113,29 @@ pub struct TaxLine {
 }
 fn treatment(value: Option<&str>) -> Result<&str, Error> {
     match value.unwrap_or("standard") {
-        value @ ("standard" | "domestic_reverse_charge") => Ok(value),
-        _ => Err(refused(
-            "native invoices currently support standard or domestic_reverse_charge VAT",
-        )),
+        value @ ("standard" | "domestic_reverse_charge" | "foreign_reverse_charge") => Ok(value),
+        _ => Err(refused("unsupported invoice VAT treatment")),
     }
 }
 fn basis(value: &str) -> Result<&str, Error> {
     match value {
-        "DK_MOMSLOVEN_§46_STK_1_NR_6" | "DK_MOMSLOVEN_§46_STK_1_NR_7" => Ok(value),
+        "DK_MOMSLOVEN_§46_STK_1_NR_6" | "DK_MOMSLOVEN_§46_STK_1_NR_7" | "EU_B2B_SERVICES" => {
+            Ok(value)
+        }
         _ => Err(refused(
             "a supported explicit domestic reverseChargeBasis is required",
         )),
     }
+}
+fn check_basis(foreign: bool, _domestic: bool, value: Option<&str>) -> Result<(), Error> {
+    if (foreign && value != Some("EU_B2B_SERVICES"))
+        || (!foreign && value == Some("EU_B2B_SERVICES"))
+    {
+        return Err(refused(
+            "reverse-charge basis must match the explicit invoice treatment",
+        ));
+    }
+    Ok(())
 }
 fn classification(value: Option<&str>, domestic: bool) -> Result<&str, Error> {
     let value = value.unwrap_or(if domestic {
@@ -177,9 +188,10 @@ fn line_base(quantity: &Value, price: &Value) -> Result<Money, Error> {
 /// New issuance always freezes the effective line tax decision. It never
 /// changes an already-issued payload or rerenders an already-saved PDF.
 pub fn compute(input: &Input) -> Result<Value, Error> {
-    if input.currency.as_deref().is_some_and(|s| s != "DKK") {
-        return Err(refused("native invoice issuance currently supports DKK"));
-    }
+    crate::sales_fx::rate(
+        input.currency.as_deref().unwrap_or("DKK"),
+        input.fx_rate_to_dkk.as_ref(),
+    )?;
     if input
         .vat_rate_percent
         .as_ref()
@@ -192,11 +204,11 @@ pub fn compute(input: &Input) -> Result<Value, Error> {
         return Err(refused("invoice requires 1–200 lines"));
     }
     let treatment = treatment(input.vat_treatment.as_deref())?;
+    let foreign = treatment == "foreign_reverse_charge";
     let domestic = treatment == "domestic_reverse_charge";
-    if domestic && input.vat_rate_percent.is_some() {
-        return Err(refused(
-            "domestic reverse-charge input must omit vatRatePercent",
-        ));
+    let reverse = domestic || foreign;
+    if reverse && input.vat_rate_percent.is_some() {
+        return Err(refused("reverse-charge input must omit vatRatePercent"));
     }
     let doc_basis = input
         .reverse_charge_basis
@@ -208,18 +220,19 @@ pub fn compute(input: &Input) -> Result<Value, Error> {
         .as_deref()
         .map(|s| text(s, 2000))
         .transpose()?;
-    if domestic && (doc_basis.is_none() || note.is_none()) {
+    if reverse && (doc_basis.is_none() || note.is_none()) {
         return Err(refused(
-            "domestic reverse-charge invoices require reverseChargeBasis and reverseChargeNote",
+            "reverse-charge invoices require reverseChargeBasis and reverseChargeNote",
         ));
     }
     let mut net = Money::default();
     let mut vat = Money::default();
     let mut lines = Vec::new();
+    check_basis(foreign, domestic, doc_basis)?;
     let mut uniform = true;
     for line in &input.lines {
         let total = line_base(&json!(line.quantity), &json!(line.unit_price_ex_vat))?;
-        let class = classification(line.tax_classification.as_deref(), domestic)?;
+        let class = classification(line.tax_classification.as_deref(), reverse)?;
         let line_basis = line
             .reverse_charge_basis
             .as_deref()
@@ -239,12 +252,25 @@ pub fn compute(input: &Input) -> Result<Value, Error> {
         } else {
             None
         };
+        if foreign && class != "reverse_charge" {
+            return Err(refused(
+                "EU services invoice requires reverse-charge service lines",
+            ));
+        }
+        check_basis(foreign, domestic, effective_basis)?;
         let line_vat = if class == "taxable" {
             taxable_rate(&line.vat_rate.as_ref().map_or(json!(0.25), |n| json!(n)))?;
             total.percent("25")?
         } else {
             Money::default()
         };
+        if class != "taxable"
+            && line.vat_rate.as_ref().is_some_and(|v| {
+                crate::decimal::compare(&v.to_string(), "0").ok() != Some(std::cmp::Ordering::Equal)
+            })
+        {
+            return Err(refused("non-taxable lines require zero VAT rate"));
+        }
         uniform &= class == "taxable";
         net.add(&total);
         vat.add(&line_vat);
@@ -276,30 +302,30 @@ pub fn compute(input: &Input) -> Result<Value, Error> {
     if let Some(value) = note {
         result["reverseChargeNote"] = json!(value);
     }
+    result["currency"] = json!(input.currency.as_deref().unwrap_or("DKK"));
+    crate::sales_fx::freeze(&mut result, input.fx_rate_to_dkk.as_ref())?;
     project(&result)?;
     Ok(result)
 }
 /// Verify saved source amounts before posting, crediting or accounting reads.
 /// Missing classifications identify the historical aggregate-25 contract only.
 pub fn project(payload: &Value) -> Result<TaxProjection, Error> {
-    if payload
-        .get("currency")
-        .is_some_and(|v| v.as_str() != Some("DKK"))
-    {
-        return Err(refused("native tax projection currently supports DKK"));
-    }
+    crate::currency::Currency::parse(payload["currency"].as_str().unwrap_or("DKK"))?;
     let treatment = treatment(
         payload
             .get("vatTreatment")
             .map(|v| v.as_str().ok_or_else(|| refused("invalid vatTreatment")))
             .transpose()?,
     )?;
+    let foreign = treatment == "foreign_reverse_charge";
     let domestic = treatment == "domestic_reverse_charge";
+    let reverse = domestic || foreign;
     let doc_basis = payload
         .get("reverseChargeBasis")
         .map(|v| basis(v.as_str().unwrap_or("")))
         .transpose()?;
-    if domestic {
+    check_basis(foreign, domestic, doc_basis)?;
+    if reverse {
         if doc_basis.is_none() {
             return Err(refused("domestic reverse-charge basis missing"));
         }
@@ -309,7 +335,7 @@ pub fn project(payload: &Value) -> Result<TaxProjection, Error> {
         .as_array()
         .filter(|v| !v.is_empty() && v.len() <= 200)
         .ok_or_else(|| refused("invoice requires 1–200 lines"))?;
-    let legacy = !domestic
+    let legacy = !reverse
         && source
             .iter()
             .all(|line| line.get("taxClassification").is_none());
@@ -331,8 +357,13 @@ pub fn project(payload: &Value) -> Result<TaxProjection, Error> {
                         .ok_or_else(|| refused("invalid taxClassification"))
                 })
                 .transpose()?,
-            domestic,
+            reverse,
         )?;
+        if foreign && class != "reverse_charge" {
+            return Err(refused(
+                "EU services invoice requires reverse-charge service lines",
+            ));
+        }
         let (line_vat, code) = match class {
             "taxable" => {
                 taxable_rate(line.get("vatRate").unwrap_or(&payload["totals"]["vatRate"]))?;
@@ -346,9 +377,27 @@ pub fn project(payload: &Value) -> Result<TaxProjection, Error> {
                     .or(if explicit.is_none() { doc_basis } else { None })
                     .ok_or_else(|| refused("reverse-charge line basis missing"))?;
                 basis(value)?;
-                (Money::default(), "DOMESTIC_REVERSE_CHARGE_EXEMPT")
+                check_basis(foreign, domestic, Some(value))?;
+                (
+                    Money::default(),
+                    if foreign {
+                        "REVERSE_CHARGE_EXEMPT"
+                    } else {
+                        "DOMESTIC_REVERSE_CHARGE_EXEMPT"
+                    },
+                )
             }
         };
+        if class != "taxable"
+            && line.get("vatRate").is_some_and(|v| {
+                number(v)
+                    .and_then(|n| crate::decimal::compare(&n, "0"))
+                    .ok()
+                    != Some(std::cmp::Ordering::Equal)
+            })
+        {
+            return Err(refused("non-taxable source line requires zero VAT rate"));
+        }
         if let Some(value) = line.get("vatBase")
             && money(value)? != base
         {

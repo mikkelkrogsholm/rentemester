@@ -30,6 +30,7 @@ fn unit_price(value: &Value) -> String {
 }
 pub fn build(payload: &Value) -> Vec<u8> {
     let mut rows = Vec::new();
+    let currency = payload["currency"].as_str().unwrap_or("DKK");
     for (label, value) in [
         ("Fakturanummer", text(&payload["invoiceNumber"])),
         ("Fakturadato", text(&payload["issueDate"])),
@@ -72,9 +73,10 @@ pub fn build(payload: &Value) -> Vec<u8> {
             section: false,
             total: false,
             label: format!(
-                "{} x {} DKK ekskl. moms",
+                "{} x {} {} ekskl. moms",
                 line["quantity"],
-                unit_price(&line["unitPriceExVat"])
+                unit_price(&line["unitPriceExVat"]),
+                currency
             ),
             amount: amount(&line["lineTotalExVat"]),
         });
@@ -130,9 +132,36 @@ pub fn build(payload: &Value) -> Vec<u8> {
         rows.push(Row {
             section: false,
             total: key == "grossAmount",
-            label: label.into(),
+            label: if key == "grossAmount" {
+                format!("Til betaling {currency}")
+            } else {
+                label.into()
+            },
             amount: amount(&payload["totals"][key]),
         });
+    }
+    if currency != "DKK" {
+        rows.push(Row {
+            section: false,
+            total: false,
+            label: format!(
+                "Kurs DKK pr. {currency}: {}",
+                payload["totals"]["fxRateToDkk"]
+            ),
+            amount: String::new(),
+        });
+        for (key, label) in [
+            ("netAmountDkk", "Grundlag DKK"),
+            ("vatAmountDkk", "Moms DKK"),
+            ("grossAmountDkk", "Bogføringsbeløb DKK"),
+        ] {
+            rows.push(Row {
+                section: false,
+                total: false,
+                label: label.into(),
+                amount: amount(&payload["totals"][key]),
+            });
+        }
     }
     for key in ["reverseChargeBasis", "reverseChargeNote"] {
         if let Some(value) = payload[key].as_str() {
@@ -170,7 +199,7 @@ pub fn build(payload: &Value) -> Vec<u8> {
             }
         }
     }
-    let value = json!({"company":{"name":payload["seller"]["name"],"cvr":payload["seller"]["vatOrCvr"],"currency":"DKK"},"selectedYear":payload["issueDate"].as_str().unwrap_or("").get(..4).unwrap_or("")});
+    let value = json!({"company":{"name":payload["seller"]["name"],"cvr":payload["seller"]["vatOrCvr"],"currency":currency},"selectedYear":payload["issueDate"].as_str().unwrap_or("").get(..4).unwrap_or("")});
     render(
         "Faktura",
         &value,
@@ -330,5 +359,23 @@ mod tests {
             }
             assert_eq!(bytes, build(&computed));
         }
+    }
+}
+
+#[cfg(test)]
+mod foreign_tests {
+    use super::*;
+    #[test]
+    fn foreign_pdf_labels_original_amount_and_separate_dkk_valuation() {
+        let input=serde_json::from_value(json!({"issueDate":"2025-08-01","currency":"EUR","fxRateToDkk":7.46,"vatTreatment":"foreign_reverse_charge","reverseChargeBasis":"EU_B2B_SERVICES","reverseChargeNote":"Reverse charge","lines":[{"description":"Synthetic service","quantity":1,"unitPriceExVat":100}]})).unwrap();
+        let value = crate::sales_invoice::compute(&input).unwrap();
+        let bytes = build(&value);
+        let text = String::from_utf8_lossy(&bytes);
+        assert!(text.contains("100,00 EUR ekskl. moms"));
+        assert!(text.contains("Til betaling EUR"));
+        assert!(text.contains("Kurs DKK pr. EUR: 7.46"));
+        assert!(text.contains("746,00"));
+        assert!(!text.contains("Til betaling DKK"));
+        assert_eq!(bytes, build(&value));
     }
 }
