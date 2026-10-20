@@ -19,6 +19,7 @@ fn invoice(tx: &Transaction<'_>, net: i32, legacy: bool) -> i64 {
     }
     let bytes = serde_json::to_string_pretty(&payload).unwrap();
     let hash = crate::invoice_email::sha(bytes.as_bytes());
+    let pdf_hash = crate::invoice_email::sha(&rentemester_engine::invoice_pdf::build(&payload));
     let value = crate::sales::register(
         tx,
         &payload,
@@ -31,7 +32,7 @@ fn invoice(tx: &Transaction<'_>, net: i32, legacy: bool) -> i64 {
         Artifact {
             filename: "synthetic.pdf",
             path: "synthetic.pdf",
-            hash: &"b".repeat(64),
+            hash: &pdf_hash,
             mime: "application/pdf",
         },
         "synthetic",
@@ -339,11 +340,17 @@ fn corrupt_prior_allocation_and_orphan_credit_never_produce_customer_refund_advi
     .unwrap();
     payload["creditAllocations"][0]["originalAmount"] = json!("999.00");
     let changed = serde_json::to_string_pretty(&payload).unwrap();
+    // Manufacture one corrupt stored fixture, then restore the exact guard
+    // before exercising product admission and immutable-evidence checks.
+    let guard:String=tx.query_row("SELECT sql FROM sqlite_schema WHERE type='trigger' AND name='documents_no_update_issued_invoice'",[],|r|r.get(0)).unwrap();
+    tx.execute_batch("DROP TRIGGER documents_no_update_issued_invoice")
+        .unwrap();
     tx.execute(
         "UPDATE documents SET payload_json=?1,sha256_hash=?2 WHERE id=?3",
         params![changed, crate::invoice_email::sha(changed.as_bytes()), c],
     )
     .unwrap();
+    tx.execute_batch(&guard).unwrap();
     assert!(crate::credit_note::verify_existing(&tx, id).is_err());
     bank(
         &tx,
