@@ -1,18 +1,18 @@
 # Rentemester Rust target architecture
 
-Status: proposed target design, 2026-10-17. Planning deliverable only. The GDD model is gdd.json; graph.html is derived from that model. This document explains its decisions, not an implemented Rust product.
+Status: original proposed target design, 2026-10-17; desktop presentation superseded by the user-approved 2026-10-20 [decision](DESKTOP-UI-DECISION.md). The model remains a planning artifact, not runtime evidence. The GDD model is gdd.json; graph.html is derived from that model. This document explains its decisions, not an implemented Rust product.
 
 ## Product outcome
 
 One accounting product supports a browser connected to a server, a native desktop connected to that server, and a native desktop operating entirely on the user's computer. Local use needs no separately installed Bun, Docker or database server. External services still require connectivity when explicitly invoked; core local accounting does not.
 
-The proposed destination is Rust for the backend, CLI, MCP and native desktop; React/TypeScript remains the browser UI. GPUI Kit is the proposed native UI toolkit, subject to platform, accessibility and distribution qualification. The proposal retains a modular application, one deployment per customer organization, and separate ledgers per legal entity.
+The destination is Rust for the backend, CLI, MCP and native desktop host; the existing React/TypeScript UI is shared by the browser and embedded desktop presentation. The user-approved host direction replaces separate GPUI screens. Tauri 2 is the selected Rust host framework; embedding remains subject to platform, accessibility, security and distribution qualification. The proposal retains a modular application, one deployment per customer organization, and separate ledgers per legal entity.
 
 ## One execution path
 
 Web React UI -> HTTP API -> application services -> accounting domain + storage/integration adapters.
 
-Desktop GPUI -> shared Rust API client -> either managed local HTTP runtime or remote HTTPS API -> the same application services.
+Desktop Rust host -> embedded existing React UI -> either managed local HTTP runtime or remote HTTPS API -> the same application services.
 
 CLI and MCP -> the same application services locally, or the API client for an explicitly selected remote connection. Neither interface owns separate accounting rules.
 
@@ -30,8 +30,8 @@ These are module boundaries. They need not all become separate crates; create a 
 | component.integrations | External provider protocols, import formats and durable effect delivery | Independent ledger mutation or invented accounting decisions |
 | component.runtime | HTTP API, authentication translation, version/capability discovery, server lifecycle and task execution | Duplicated accounting rules |
 | component.agent | CLI/MCP contracts, discovery, structured results and explicit local/remote selection | Independent write policy or hidden company selection |
-| component.desktop | GPUI screens, connection profiles, API client and managed local runtime | SQL, accounting authority and automatic offline replay |
-| component.web | React browser screens using the API | Direct ledger access and privileged desktop lifecycle |
+| component.desktop | Rust host, embedded shared React UI, connection profiles and managed local runtime | SQL, accounting authority and automatic offline replay |
+| component.web | Shared React browser/embedded-desktop screens using the API | Direct ledger access and privileged desktop lifecycle |
 
 An initial Cargo workspace can contain rentemester-engine (domain/application/adapters as modules), rentemester-server, rentemester-client, rentemester-cli, rentemester-mcp and rentemester-desktop. Exact crate layout and third-party libraries remain implementation decisions. Reusable provider adapters stay small and are extracted only when needed.
 
@@ -55,11 +55,11 @@ In local desktop mode the data lives in an explicit user-selected directory. The
 
 In remote mode data stays on the server. Desktop credentials are held by the OS credential store and scoped to a server/account. Local mode is never an automatic fallback after remote network failure. Connection/company identity stays visible; switching connection cancels pending reads and invalidates caches scoped to the old identity. Remote logout/revocation must invalidate access consistently in web, desktop and agents.
 
-The web UI is served under the API origin as today. Native clients need a reviewed native authentication flow; cookie-based browser authentication must not be copied into an ad hoc password/token scheme. TLS/proxy, session revocation, MFA, membership, last-owner protections, CSRF, rate limiting and audit are parity obligations.
+The shared web UI is served under the authorized API origin. Its embedded desktop session must retain browser authentication guarantees; the host owns connection/origin isolation and must not invent a separate password/token scheme or expose privileged host operations to remote content. TLS/proxy, session revocation, MFA, membership, last-owner protections, CSRF, rate limiting and audit are parity obligations.
 
 ## Migration and release boundary
 
-Keep the current product operating while introducing bounded Rust slices. First establish behavior inventory and read-only report parity on synthetic workspaces. Then port posting and refusal paths, then remaining accounting flows and integrations, then server/auth and client coverage. A small GPUI read-only spike can qualify UI behavior early without enabling writes.
+Keep the current product operating while introducing bounded Rust slices. First establish behavior inventory and read-only report parity on synthetic workspaces. Then port posting and refusal paths, then remaining accounting flows and integrations, then server/auth and client coverage. A small installed-host read-only slice can qualify embedding, navigation isolation, session handling and file/PDF integration before enabling financial writes. Historical GPUI qualification is not evidence for the new host.
 
 There is one authoritative writer per workspace during transition. Never dual-write TypeScript and Rust into a live ledger. Compare copies/synthetic fixtures and use a capability-routing boundary with explicit ownership for each enabled path. Any coexistence arrangement must preserve single runtime ownership; otherwise it is not allowed.
 
@@ -76,7 +76,7 @@ No offline editing of a server-owned ledger followed by synchronization, multi-m
 - Native and browser identity provider strategy: retain Better Auth temporarily behind an explicit auth boundary or replace it with a supported service/library. A temporary TypeScript auth service means the runtime is not yet entirely Rust; it must remain visible in completion criteria.
 - Exact schema range, monetary bounds/scales and audit/signature compatibility matrix.
 - Revocation serialization across workspace-control and company-ledger databases.
-- GPUI/platform and accessibility qualification, signed packages and update lifecycle. Target macOS, Windows and Linux; claim support only after platform checks.
+- Tauri 2 host and embedded UI platform/accessibility/security qualification, signed packages and update lifecycle. Target macOS, Windows and Linux; claim support only after platform checks.
 - API version policy and support window for older desktop clients.
 
 These questions block their dependent implementation slices, not delivery of this proposed architecture.

@@ -1,0 +1,13 @@
+# Desktop presentation decision — 2026-10-20
+
+Status: user-approved product direction; implementation and installed acceptance remain unqualified.
+
+The user explicitly approved replacing the separately implemented GPUI interface with a Rust desktop host embedding the existing React web UI. This supersedes the earlier GPUI presentation choice in the target architecture and epic #672. It preserves the full Rust rewrite, GDD boundaries, all existing journeys and already verified work. The main agent subsequently selected Tauri 2 as the implementation framework within this approved direction; this is a technical choice, not a separate user requirement. Exact dependency versions and platform/release qualification remain implementation work.
+
+The installed Rust host manages local workspace selection, the bundled Rust server's startup/readiness/shutdown, and explicit remote connection selection. The same existing React interface runs inside the desktop host against either its managed local Rust HTTP server or the chosen remote HTTPS server. It retains the web design and approved app logo. Ordinary desktop accounting must work without separately installed Bun, Node or Docker; bundled built React assets do not constitute a TypeScript backend.
+
+One runtime owns each writable workspace. Accounting, identity authority, permissions, audit, evidence, uncertainty/replay protections, transfer fences and provider effects stay on the Rust server. The embedded UI uses the authorized same-origin API/session boundary; host integration must explicitly qualify navigation/origin isolation, file dialogs/downloads/PDF, local credentials, remote MFA/revocation, and connection-scoped state. Remote failure never creates a local fallback. Embedding must not grant remote content privileged host access.
+
+Retain all epic acceptance: complete installed local and remote owner journeys, evidence inspection, keyboard/accessibility, VAT/non-VAT and shifted years, backup/recovery, fenced transfer, durable automation status, installation/update/provenance and cross-interface parity. Reuse shared presentation rather than duplicate business screens. A desktop workflow may not be waived into JSON/CLI or an external-browser workaround; the host must supply the necessary installed-app integration.
+
+Historical GPUI source, tests, visual checks and readiness evidence remain history and potentially reusable host/domain knowledge. They do not qualify the new host. Existing verified Rust-server/web/CLI/MCP results remain valid within their original scope; installed local/remote embedding, supported platforms and release distribution require new evidence. Nothing in this decision authorizes real-data migration, live deployment or external financial actions.

@@ -2,11 +2,11 @@
   "format": "gdd/0.3",
   "project": {
     "id": "rentemester.rust-target",
-    "title": "Rentemester — proposed Rust target architecture",
+    "title": "Rentemester — Rust target architecture with shared desktop presentation",
     "goal": "One accounting engine for server/web, remote native desktop and fully local native desktop.",
-    "scope": "Target architecture and staged migration proposal; no rewrite or live data mutation.",
+    "scope": "Target architecture and staged Rust migration with user-approved shared desktop presentation; graph sketches are not runtime evidence or live-cutover authority.",
     "assumptions": [
-      "Rust backend/CLI/MCP and GPUI desktop are proposed; retain React web.",
+      "Rust backend/CLI/MCP and a Rust desktop host embedding the existing React UI; user-approved presentation direction, Tauri 2 selected as implementation framework.",
       "One deployment per customer organization; separate legal-entity ledgers.",
       "SQLite retained subject to explicit compatibility verification.",
       "A managed local HTTP runtime shares the server API.",
@@ -152,17 +152,21 @@
     "component.desktop": {
       "kind": "component",
       "label": "Desktop",
-      "description": "GPUI views, connection profiles and a managed local backend.",
+      "description": "Rust host embedding the shared React UI, connection profiles and a managed local backend.",
       "maturity": "sketch",
       "source_refs": [
         {
           "source": "source.brief",
           "purpose": "provenance"
+        },
+        {
+          "source": "source.desktop-ui-decision",
+          "purpose": "provenance"
         }
       ],
       "boundary": {
-        "responsibility": "GPUI views, connection profiles and a managed local backend.",
-        "rationale": "A native experience must support local and remote operation.",
+        "responsibility": "Rust host embedding the shared React UI, connection profiles and a managed local backend.",
+        "rationale": "Reuse qualified web workflows while preserving explicit local/remote lifecycle, origin isolation and server authority.",
         "excludes": [
           "SQL access, ledger rules and offline replay"
         ]
@@ -174,16 +178,20 @@
     "component.web": {
       "kind": "component",
       "label": "Web",
-      "description": "React browser views and same-origin API interaction.",
+      "description": "Shared React browser and embedded-desktop views with authorized same-origin API interaction.",
       "maturity": "sketch",
       "source_refs": [
         {
           "source": "source.brief",
           "purpose": "provenance"
+        },
+        {
+          "source": "source.desktop-ui-decision",
+          "purpose": "provenance"
         }
       ],
       "boundary": {
-        "responsibility": "React browser views and same-origin API interaction.",
+        "responsibility": "Shared React browser and embedded-desktop views with authorized same-origin API interaction.",
         "rationale": "Retain existing browser investment and separate rendering from accounting.",
         "excludes": [
           "SQL access and local process management"
@@ -1445,7 +1453,7 @@
       "format": "markdown",
       "normative": false,
       "revision": {
-        "sha256": "cc4ddb3c8999794a7ab8729249c761d25996138ce04f7c773c4a6428b6756c90"
+        "sha256": "1637f9fa1bb7e415931cb0130dcb13bdf3397407ffb41db5e0121a5a6c5e7ceb"
       }
     },
     "source.knowledge": {
@@ -1455,7 +1463,7 @@
       "format": "markdown",
       "normative": false,
       "revision": {
-        "sha256": "7c68202fdf26724dbd4a4730139caa633163709b6e6af64bde34e85ed1de2243"
+        "sha256": "24f6183e7b1bbf754e42d27483d245f1d8c2b438401963bd465c7562b323851a"
       }
     },
     "source.inventory": {
@@ -1466,6 +1474,16 @@
       "normative": false,
       "revision": {
         "sha256": "f0140daf6d1a18e2e2ef0d1ff3b50418114b2ae276652e430a78d34af9ad05be"
+      }
+    },
+    "source.desktop-ui-decision": {
+      "role": "input",
+      "title": "DESKTOP-UI-DECISION.md",
+      "uri": "DESKTOP-UI-DECISION.md",
+      "format": "markdown",
+      "normative": false,
+      "revision": {
+        "sha256": "a7eb3f0d6e65412fa5ee945a7b79721b593806839f4a03e6b8d969ce3327e3fc"
       }
     }
   },
@@ -1507,7 +1525,7 @@
       "status": "open"
     },
     "question.platforms": {
-      "statement": "Which GPUI Kit release and signed distribution/update approach pass macOS, Windows, Linux and accessibility qualification?",
+      "statement": "Which pinned Tauri 2 version and embedded UI integration pass platform, accessibility, origin/session isolation, signed distribution and update qualification? Historical GPUI checks do not qualify the new host.",
       "targets": [
         "component.desktop"
       ],

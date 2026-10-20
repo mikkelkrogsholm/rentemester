@@ -1,22 +1,26 @@
-# EPIC: Rust-platform for Rentemester — server, web og lokal/remote GPUI-desktop
+# EPIC: Rust-platform for Rentemester — server, web og lokal/remote Rust-desktop med fælles web-UI
 
 <!-- rentemester-rust-plan:RM-RUST -->
 
 ## Product outcome
 
-One shared Rust accounting platform supports a server with React web UI, a GPUI desktop connected to that server, and the same desktop with an automatically managed local Rust backend. The final backend, CLI/MCP, identity path and packaged document workers require no Bun/Node runtime. React build tooling can remain.
+One shared Rust accounting platform supports a server with React web UI, a Rust desktop host embedding the existing React UI and connected to that server, and the same desktop with an automatically managed local Rust backend. The final backend, CLI/MCP, identity path and packaged document workers require no Bun/Node runtime. React build tooling can remain.
 
 The installed desktop uses the same API in local and remote mode. Each legal entity keeps its own ledger and evidence; one runtime owns a writable workspace. Data transfer is an explicit verified migration, not offline synchronization.
 
+## Approved desktop presentation update — 2026-10-20
+
+The user explicitly approved replacing separate GPUI screens with a Rust host embedding the existing React UI. See [the decision](../DESKTOP-UI-DECISION.md). Tauri 2 is the selected host framework; installed local/remote qualification remains open. Historical GPUI work is retained as evidence of its original scope, not completion of the new host. All child IDs, accounting/security gates and J01–J07 scope remain intact.
+
 ## Agreed direction and limits
 
-The user requested a comprehensive epic, local planning first, review/fix loops, then GitHub issues. Implementation and live cutover are separate future work. Rust/GPUI/server/local/remote are the target direction; exact identity/toolkit/numeric choices are resolved by the early decision issues.
+The original user request was a comprehensive epic, local planning first, review/fix loops, then GitHub issues. Implementation was subsequently authorized by the active Rust goal; live cutover remains separately gated. Rust/shared React presentation/server/local/remote are the approved target direction; exact identity/toolkit/numeric choices are resolved by the early decision issues.
 
 ## Completion criteria
 
 - [ ] One shared Rust accounting engine with a versioned API for web, local desktop and remote desktop.
 
-- [ ] Retain React; use qualified GPUI for native UI; core local accounting needs no separately installed Bun/Node/Docker.
+- [ ] Retain React; use the qualified Rust host with the existing React UI for desktop presentation; core local accounting needs no separately installed Bun/Node/Docker.
 
 - [ ] One runtime owns each writable workspace; legal entities keep separate ledgers and evidence.
 
@@ -38,7 +42,7 @@ The user requested a comprehensive epic, local planning first, review/fix loops,
 
 ## Architecture and design decisions
 
-Modules: pure domain; application use cases and authority; storage; provider integrations; HTTP runtime; CLI/MCP; GPUI; React. Start with the smallest useful Cargo boundaries. No microservices or speculative framework.
+Modules: pure domain; application use cases and authority; storage; provider integrations; HTTP runtime; CLI/MCP; Rust desktop host; shared React presentation. Start with the smallest useful Cargo boundaries. No microservices or speculative framework.
 
 Early binding decisions: schema/money/audit compatibility (R03), identity and revocation ordering (R04), versioned wire protocol and old-client support (R05), native accessibility/platform feasibility (R06). These are named deliverables, not permission to guess.
 
@@ -46,7 +50,7 @@ Early binding decisions: schema/money/audit compatibility (R03), identity and re
 
 Use R01 to freeze and continuously reconcile the actual baseline. R02 refines each slice into a complete GDD contract before coding. Planned acceptance is not executed evidence. Known bugs are corrected explicitly rather than preserved blindly. No feature/domain write is enabled until its full authorization, evidence and validation dependencies are ready.
 
-Keep the current product working. Develop against synthetic/copy fixtures. No concurrent legacy/Rust writes to a live workspace and no partially enabled hybrid writer. Enable production Rust only after the complete acceptance/cutover gates; a read-only GPUI spike can run early.
+Keep the current product working. Develop against synthetic/copy fixtures. No concurrent legacy/Rust writes to a live workspace and no partially enabled hybrid writer. Enable production Rust only after the complete acceptance/cutover gates; a read-only installed-host embedding slice can run early.
 
 ## Child issues and sequencing
 
@@ -62,7 +66,7 @@ Keep the current product working. Develop against synthetic/copy fixtures. No co
 
 - [ ] #677 — R05: Specify versioned API, typed failures and capability negotiation
 
-- [ ] #678 — R06: Qualify GPUI Kit, accessibility and target-platform feasibility
+- [ ] #678 — R06: Qualify Rust desktop host, embedded UI and target-platform feasibility
 
 ### P1 — Rust foundation and first read-only vertical slice
 
@@ -154,11 +158,11 @@ Keep the current product working. Develop against synthetic/copy fixtures. No co
 
 - [ ] #718 — R46: Retain React cockpit parity against the Rust server
 
-- [ ] #719 — R47: Build the GPUI local shell and managed backend lifecycle
+- [ ] #719 — R47: Build the Rust desktop host and managed backend lifecycle
 
-- [ ] #720 — R48: Build GPUI read workflows, reports and evidence inspection
+- [ ] #720 — R48: Deliver shared desktop read workflows, reports and evidence inspection
 
-- [ ] #721 — R49: Build GPUI bookkeeping, review and administration workflows
+- [ ] #721 — R49: Deliver shared desktop bookkeeping, review and administration workflows
 
 - [ ] #722 — R50: Complete remote desktop login, profiles and reconnection
 
@@ -176,7 +180,7 @@ Keep the current product working. Develop against synthetic/copy fixtures. No co
 
 ## Parallelism and critical path
 
-After inventory/contracts, GPUI qualification and pure Rust foundation/parity can proceed independently. After atomic storage/authority, domain ports can proceed against fixed interfaces. Providers, agents and clients integrate only after their actual contracts exist. Dependencies in child issues are concrete prerequisites, not permission to use stale implementations. Cross-domain files and shared schema/contracts require serialized ownership or isolated integration.
+After inventory/contracts, Rust desktop-host qualification and pure Rust foundation/parity can proceed independently. After atomic storage/authority, domain ports can proceed against fixed interfaces. Providers, agents and clients integrate only after their actual contracts exist. Dependencies in child issues are concrete prerequisites, not permission to use stale implementations. Cross-domain files and shared schema/contracts require serialized ownership or isolated integration.
 
 First demonstrable accounting milestone: R01 → R03/R07/R08/R09/R10 → R11 (read-only trial balance). Durable writes: R12/R13/R15 → R14. Final convergence: R51 verification + R52 desktop packaging + R53 server packaging → R54 rehearsed cutover → R55 retirement. R02 readiness applies before each implementation slice.
 
