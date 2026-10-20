@@ -313,7 +313,9 @@ pub fn export(invoice_number: &str, payload: &Value) -> Result<Export, Error> {
         return Err(refused("Only a full issued invoice snapshot is supported"));
     }
     if payload.get("vatTreatment").is_some_and(|v| v != "standard")
-        || required(&payload["currency"])?.trim().to_ascii_uppercase() != "DKK"
+        || !required(&payload["currency"])?
+            .trim()
+            .eq_ignore_ascii_case("DKK")
     {
         return Err(refused("Only standard DKK invoices supported"));
     }
@@ -388,10 +390,10 @@ pub fn export(invoice_number: &str, payload: &Value) -> Result<Export, Error> {
         let line_vat = base
             .percent("25")
             .map_err(|_| refused("Line VAT invalid"))?;
-        if let Some(value) = source.get("vatAmount").filter(|v| !v.is_null()) {
-            if money(value)? != line_vat {
-                return Err(refused("Recorded line VAT differs"));
-            }
+        if let Some(value) = source.get("vatAmount").filter(|v| !v.is_null())
+            && money(value)? != line_vat
+        {
+            return Err(refused("Recorded line VAT differs"));
         }
         let unit = optional(&source["unitCode"])?
             .or(default_unit)

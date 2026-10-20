@@ -344,6 +344,7 @@ pub fn company(db: &Connection) -> Result<Company, Error> {
     crate::document_scan::validate_backup(db)?;
     crate::scheduled_recurring::validate_backup(db)?;
     crate::invoice_email::validate_backup(db)?;
+    crate::public_einvoice::validate_backup(db)?;
     crate::document_party_links::validate_backup(db)?;
     crate::purchase_rules::validate_backup(db)?;
     crate::bookkeeping_batch::validate_backup(db)?;

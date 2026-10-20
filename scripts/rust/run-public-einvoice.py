@@ -151,23 +151,23 @@ class Provider:
                 raise ValueError('readonly exact registered-company inventory required')
             companies=[]
             if self.count('register-company'):
-                companies=[{'companyType':{'type':'DK:CVR','id':'87654321'},'companyName':'Synthetic Public Invoice Company','createdAt':'2026-10-20T10:00:00Z','companyKey':'synthetic-company-key-74'}]
+                companies=[{'companyType':{'type':'DK:CVR','id':'DK87654321'},'companyName':'Synthetic Public Invoice Company','createdAt':'2026-10-20T10:00:00Z','companyKey':'synthetic-company-key-74'}]
             return handler.reply(200,{'apiLicenseKey':self.key,'companyKeyConstraint':None,'companies':companies})
         if operation=='list-participants-for-company':
             if handler.command!='GET' or query!={'companyKey':['synthetic-company-key-74']} or raw:
                 raise ValueError('readonly exact participant inventory required')
             participants=[]
             if self.count('v2/register-participant/nemhandel'):
-                participants=[{'networkType':'nemhandel','companyKey':'synthetic-company-key-74','direction':'outbound','participantType':'DK:CVR','participantId':'87654321','webhookUrl':None,'documentProfiles':'default-nemhandel','createdAt':'2026-10-20T10:00:00Z'}]
-            return handler.reply(200,{'apiLicenseKey':self.key,'companyKey':'synthetic-company-key-74','company':{'companyType':{'type':'DK:CVR','id':'87654321'},'companyName':'Synthetic Public Invoice Company','createdAt':'2026-10-20T10:00:00Z'},'participants':participants})
+                participants=[{'networkType':'nemhandel','companyKey':'synthetic-company-key-74','direction':'outbound','participantType':'DK:CVR','participantId':'DK87654321','webhookUrl':None,'documentProfiles':'default-nemhandel','createdAt':'2026-10-20T10:00:00Z'}]
+            return handler.reply(200,{'apiLicenseKey':self.key,'companyKey':'synthetic-company-key-74','company':{'companyType':{'type':'DK:CVR','id':'DK87654321'},'companyName':'Synthetic Public Invoice Company','createdAt':'2026-10-20T10:00:00Z'},'participants':participants})
         if operation=='register-company':
             body=json.loads(raw)
-            if handler.command!='POST' or body.get('companyType')!={'type':'DK:CVR','id':'87654321'} or not body.get('companyName'):
+            if handler.command!='POST' or body.get('companyType')!={'type':'DK:CVR','id':'DK87654321'} or not body.get('companyName'):
                 raise ValueError('explicit legal identity registration required')
             return handler.reply(200,{'companyKey':'synthetic-company-key-74','message':None})
         if operation=='v2/register-participant/nemhandel':
             body=json.loads(raw)
-            if handler.command!='POST' or body.get('direction')!='outbound' or body.get('companyKey')!='synthetic-company-key-74' or body.get('participantType')!='DK:CVR' or body.get('participantId')!='87654321' or body.get('webhookUrl') is not None or body.get('documentProfiles')!='default-nemhandel':
+            if handler.command!='POST' or body.get('direction')!='outbound' or body.get('companyKey')!='synthetic-company-key-74' or body.get('participantType')!='DK:CVR' or body.get('participantId')!='DK87654321' or body.get('webhookUrl') is not None or body.get('documentProfiles')!='default-nemhandel':
                 raise ValueError('explicit outbound participant required')
             return handler.reply(200,{'registeredOnNetwork':True,'webhookRegistered':False,'message':None})
         if operation=='validate-document':
@@ -699,9 +699,9 @@ def self_test():
             return ('<Invoice xmlns="urn:oasis:names:specification:ubl:schema:xsd:Invoice-2" xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2"><cbc:ID>SYNTH-'+kind+'</cbc:ID><cbc:EndpointID>5790000000074</cbc:EndpointID></Invoice>').encode()
         try:
             code,raw=request('list-registered-companies',method='GET');assert code==200 and json.loads(raw)['companies']==[]
-            code,_=request('register-company',{'companyType':{'type':'DK:CVR','id':'87654321'},'companyName':'Synthetic Public Invoice Company'});assert code==200
+            code,_=request('register-company',{'companyType':{'type':'DK:CVR','id':'DK87654321'},'companyName':'Synthetic Public Invoice Company'});assert code==200
             code,raw=request('list-participants-for-company?companyKey=synthetic-company-key-74',method='GET');assert code==200 and json.loads(raw)['participants']==[]
-            code,_=request('v2/register-participant/nemhandel',{'direction':'outbound','participantType':'DK:CVR','participantId':'87654321','companyKey':'synthetic-company-key-74','webhookUrl':None,'documentProfiles':'default-nemhandel'});assert code==200
+            code,_=request('v2/register-participant/nemhandel',{'direction':'outbound','participantType':'DK:CVR','participantId':'DK87654321','companyKey':'synthetic-company-key-74','webhookUrl':None,'documentProfiles':'default-nemhandel'});assert code==200
             for kind in ['queued','terminal','unknown']:
                 code,raw=request('validate-document',xml(kind));assert code==200 and json.loads(raw)['success'] is True
                 code,raw=request('deliver-document?companyKey=synthetic-company-key-74',xml(kind))

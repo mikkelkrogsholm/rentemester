@@ -6,7 +6,8 @@ use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
 mod registration;
 pub use registration::{
-    Identity, identity, load_bound, outbound_registered, save_key, save_outbound,
+    Identity, Registration, identity, load_bound, outbound_registered, registration, save_key,
+    save_outbound,
 };
 const PREFIX: &str = "<NativePeppolSubmission xmlns=\"urn:rentemester-native-peppol:1\"><Evidence>";
 const SUFFIX: &str = "</Evidence></NativePeppolSubmission>";

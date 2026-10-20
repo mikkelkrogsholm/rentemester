@@ -77,10 +77,10 @@ fn company(
     if !license(&v.api_license_key) || v.companies.len() > 4096 {
         return Err(Error::Protocol);
     }
-    if let Some(key) = &v.company_key_constraint {
-        if !company_key(key) || v.companies.len() != 1 || v.companies[0].company_key != *key {
-            return Err(Error::Protocol);
-        }
+    if let Some(key) = &v.company_key_constraint
+        && (!company_key(key) || v.companies.len() != 1 || v.companies[0].company_key != *key)
+    {
+        return Err(Error::Protocol);
     }
     let mut keys = BTreeSet::new();
     let mut identities = BTreeSet::new();
@@ -189,18 +189,17 @@ fn outbound(
         {
             return Err(Error::Protocol);
         }
-        if let Some(url) = &p.webhook_url {
-            if !text(url, 4096)
+        if let Some(url) = &p.webhook_url
+            && (!text(url, 4096)
                 || url.contains(secret)
                 || !Url::parse(url).is_ok_and(|u| {
                     u.scheme() == "https"
                         && u.has_host()
                         && u.username().is_empty()
                         && u.password().is_none()
-                })
-            {
-                return Err(Error::Protocol);
-            }
+                }))
+        {
+            return Err(Error::Protocol);
         }
         match p.network_type.as_str() {
             "nemhandel" | "peppol" => {

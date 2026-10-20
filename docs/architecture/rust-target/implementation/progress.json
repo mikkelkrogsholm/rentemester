@@ -3,7 +3,7 @@
   "branch": "codex/rust-platform",
   "current_increment": "Bilagsmail manual/service intake, explicit inbox review and signed source-free recovery qualified",
   "code_revision": "62c085a4099e7611696e36ca625bb29462096967",
-  "spec_revision": "sha256:bad4aa888ce04e071293db95385ac2eed5a720c722ced3b0bc760fb39859bfad",
+  "spec_revision": "sha256:008be046798e32b6c57d8040225225bbf6e40beace842b5b04863044a9e8a71a",
   "state": "Group73 actual PASS at62c085a4: 28 actions with ordinary verified-MFA users, existing Bilagsmail configuration and real synthetic verified-TLS IMAP manual/service-account polling, exact original EML/PDF retention, explicit existing inbox classification/currency review and exactly one unposted document. Repeated UIDs and identical EML under a new UID deduplicate; invalid/missing-ID/oversized messages retain truthful evidence. Configuration deletion and current grantor revocation during held fetch promptly deny without retained effects. Canonical HTTP/CLI/MCP status/source/original byte parity, fresh-MFA restart and four independently verified signed source-free fresh-owner restore/reopens preserve originals, review, dedup, document and audit with credentials/polling disabled and zero journals. Root independently matched three binaries, full web inventory, helper hashes, full InboxV2 and company table snapshots, originals and audit prefixes. Owned runtime/process cleanup true. Installed native GUI, real external mail and full mission remain OPEN; next74 real public e-invoice.",
   "issues_closed": [],
   "next": [
@@ -2273,6 +2273,28 @@
         "root_independent_checks": "three binary/full web/runner hashes; four signed archive snapshot table and full InboxV2 equality; exact original SHA256 and complete source audit prefix; owned cleanup verified",
         "actual_qualified": true,
         "limits": "No installed-native qualification or real external mail claim; synthetic TLS provider."
+      }
+    },
+    {
+      "delivery": "Group74 public invoice registration, immutable recipient and actual DigiSense delivery/status",
+      "owner": "root phases/private server configuration/HTTP/integration/actual; isolated snapshot+web, deterministic XML+clients, runtime+actual helper, storage+registration recovery workers",
+      "status": "IMPLEMENTED and integrated, actual qualification PENDING. Immutable recipient/OIOUBL/runtime/submission evidence/existing web/five client operations plus provider-authoritative registration recovery integrated. Root all9package/alltarget strict Clippy PASS; later added separate current-authorized discovery/register phases and physicalOwner2 revocation tests PASS. Focused engine/storage/runtime/client/web tests, server DK-CVR adapter, root web build and full112 MCP stdio PASS. Final3binarybuild and later host/server alltarget strict PASS. Actual ordinary-MFA browser/provider/restart/four signed source-free recovery pending. No full74 PASS; full mission/epic672 OPEN.",
+      "contract": "/tmp/rm-platform74-public-einvoice-contract.md",
+      "acceptance": "Ordinary current-MFA user verifies/registers exact legal company and outbound participant, freezes EAN in issued invoice, explicitly sends exact immutable OIOUBL once, observes accepted-ID status only, retains ambiguous outcomes without resend, and preserves exact source/submission/audit history through HTTP/CLI/MCP, restart and signed source-free restore without credentials or replay. Synthetic verifiedTLS provider only; no real financial transmission authorized.",
+      "evidence": {
+        "actual_qualified": false,
+        "focused_core": "snapshot4, exporter7, runtime5 and storage7 PASS",
+        "focused_clients": "SDK4/CLI2/MCP3 PASS",
+        "web": "64 focused tests and tsc PASS; root production build PASS",
+        "root_mcp": "/tmp/rm74-root-mcp-full-stdio.log 112 PASS",
+        "root_check": "/tmp/rm74-root-integrated-check.log PASS before later registration-recovery API integration",
+        "root_adapter_test": "/tmp/rm74-root-provider-identity-test.log 1 PASS",
+        "recovery": "runtime4/storage9 PASS /tmp/rm74-recovery-{runtime-tests,storage-tests}.log",
+        "root_strict": "/tmp/rm74-root-integrated-strict-final.log all9package/alltargets PASS",
+        "root_physical_phases": "/tmp/rm74-root-physical-phase-tests.log physical Owner2 PASS",
+        "actual_runner": "scripts/rust/run-public-einvoice.py",
+        "root_final_build": "/tmp/rm74-root-build-final.log server/CLI/MCP PASS",
+        "root_phase_strict": "/tmp/rm74-root-phase-strict.log PASS"
       }
     }
   ],

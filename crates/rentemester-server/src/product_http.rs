@@ -1,4 +1,5 @@
 //! Thin browser adapter over the same owner used for authentication.
+mod public_einvoice;
 mod archive_import;
 mod opening_balance;
 mod archive_reports;
@@ -330,6 +331,11 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
             "/api/companies/{slug}/customers/{id}",
             axum::routing::patch(sales::handle).delete(sales::handle),
         )
+        .route("/api/companies/{slug}/invoices/public-submissions", get(public_einvoice::handle))
+        .route("/api/companies/{slug}/invoices/public-config", get(public_einvoice::handle))
+        .route("/api/companies/{slug}/invoices/public-register", post(public_einvoice::handle))
+        .route("/api/companies/{slug}/invoices/send-public", post(public_einvoice::handle))
+        .route("/api/companies/{slug}/invoices/send-public/status", post(public_einvoice::handle))
         .route("/api/companies/{slug}/invoices/email-deliveries", get(invoice_email::handle))
         .route("/api/companies/{slug}/invoices/send-email", post(invoice_email::handle))
         .route("/api/companies/{slug}/invoices/email-deliveries/reconcile", post(invoice_email::handle))

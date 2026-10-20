@@ -2251,3 +2251,61 @@ deduplikering og ét ubogført bilag blev bevaret; der blev oprettet nul
 bogføringsposter. Postkasseadgang og automatisk hentning var deaktiveret efter
 gendannelse. Prøven omfatter ikke en virkelig ekstern postkasse eller den
 installerede desktopapp.
+
+## Send e-faktura til offentlige modtagere
+
+Rust-serverens eksisterende fakturaforløb kan fastholde modtagerens EAN,
+markering som offentlig modtager samt køber- og ordrereferencer ved udstedelsen.
+Senere ændringer af kunden ændrer ikke den udstedte faktura eller dens rute.
+Denne native afsendelsesvariant understøtter DKK og almindelig 25 % moms;
+øvrige moms- og valutavarianter er fortsat en åben del af omskrivningen.
+
+Operatøren angiver licensen privat i serverens konfiguration, pr. virksomhed:
+
+```json
+{
+  "publicEInvoice": {
+    "virksomhedens-slug": {
+      "apiLicenseKey": "<privat licensnøgle>",
+      "environment": "test"
+    }
+  }
+}
+```
+
+Miljøet er `test` eller `production`. De normale DigiSense-adresser bruges som
+standard. Operatørfelterne `baseUrl`, `trustedCaPem` og `timeoutMs` kan angive
+et eksplicit HTTPS-endepunkt, ekstra certifikattillid og en frist på 100–30000 ms.
+TLS-værtsnavnet kontrolleres stadig; der følges ingen redirects eller automatiske
+netværksforsøg. Licensnøglen vises ikke i web-UI, ledger eller backup.
+
+I **Fakturaer** kan en bruger med aktuel afsendelsesadgang bekræfte tilmelding
+af virksomhedens eget CVR og navn. Serveren kontrollerer først licensens
+registrerede virksomheder og deltagere. En eksisterende registrering genbruges
+kun efter bekræftet juridisk identitet; tvetydige eller modstridende oplysninger
+afvises. Et nyt companyKey gemmes før den særskilte udgående
+NemHandel-registrering. Historiske lokale registreringer kan attesteres efter
+samme leverandørkontrol uden at omskrive deres oprindelige rækker.
+
+**Send e-faktura** bruger den uforanderlige faktura og danner deterministisk
+OIOUBL, som leverandøren validerer inden leveringen. Registrerede beløb skal
+stemme med linjerne; serveren retter ikke historiske beløb for at få en eksport
+til at passe. Den beholder præcisionen i antal og enhedspris.
+
+En varig reservation gemmes før leveringskaldet. En allerede reserveret eller
+afsendt faktura sendes ikke igen, heller ikke efter ændret opsætning eller et
+uklart netværkssvar. Et accepteret leverandør-id bruges kun til
+**Opdatér leveringsstatus**. Også en accepteret, senere afvist levering blokerer
+genafsendelse. Netværkskald holder ingen Owner-lås eller SQL-transaktion åben;
+aktuel adgang og præcis kilde kontrolleres ved faseskiftene.
+
+CLI og MCP har konfigurationsstatus, historik, bekræftet tilmelding, afsendelse
+og statusopdatering. CLI-navnene er `public-invoice-config`,
+`public-invoice-submissions`, `register-public-invoice`, `send-public-invoice`
+og `refresh-public-invoice-status`. Se `remote --help` for kaldets kontrakt.
+Den signerede backup bevarer kilder, registreringsbevis og afsendelseshistorik;
+private leverandørindstillinger følger ikke med, og gendannelse sender intet.
+
+Group74 er integreret med fokuserede prøver. Den samlede praktiske prøve med
+browser, syntetisk TLS-leverandør, genstart og kildeuafhængig gendannelse er
+endnu ikke kvalificeret. Der er ikke foretaget en virkelig ekstern afsendelse.

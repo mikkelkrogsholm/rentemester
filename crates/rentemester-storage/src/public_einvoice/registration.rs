@@ -103,6 +103,7 @@ fn uuid(db: &Connection) -> Result<String, Error> {
     )
     .map_err(sql)
 }
+#[allow(clippy::too_many_arguments)]
 fn record(
     tx: &Transaction<'_>,
     i: &Identity,
