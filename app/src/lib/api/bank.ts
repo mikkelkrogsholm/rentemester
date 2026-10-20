@@ -56,8 +56,8 @@ export const bankApi = {
 
   /**
    * Imports a bank-statement CSV (#213, slice 2). The browser reads the file
-   * and passes its text as `csvContent`; the server writes it to a temp file
-   * and calls the same core import the CLI/MCP use. Destructive, so the body
+   * and passes its original bytes as `csvBase64`; existing text callers may
+   * pass `csvContent`. The server decodes the selected format. The body
    * carries `confirm: true`.
    */
   importBank: (slug: string, input: BankImportInput) =>
@@ -66,7 +66,7 @@ export const bankApi = {
       {
         method: "POST",
         body: JSON.stringify({
-          csvContent: input.csvContent,
+          ...("csvBase64" in input ? {csvBase64: input.csvBase64} : {csvContent: input.csvContent}),
           ...(input.account ? { account: input.account } : {}),
           ...(input.profile ? { profile: input.profile } : {}),
           confirm: true,
@@ -75,12 +75,11 @@ export const bankApi = {
     ).then((r) => r.import),
 };
 
-/** Input for `api.importBank` — the CSV text plus optional account/profile. */
-export type BankImportInput = {
-  csvContent: string;
-  account?: string;
-  profile?: string;
-};
+/** Exactly one raw-byte or compatible text source; no client encoding inference. */
+export type BankImportInput = { account?: string; profile?: string } & (
+  | { csvBase64: string; csvContent?: never }
+  | { csvContent: string; csvBase64?: never }
+);
 
 /** The bank-import result the server echoes back. */
 export type BankImportSummary = {

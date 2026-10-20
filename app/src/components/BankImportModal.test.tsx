@@ -1,5 +1,5 @@
 import { describe, expect, test, vi } from "bun:test";
-import { render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { BankImportModal } from "./BankImportModal";
 import { mockFetch } from "../test/fixtures";
@@ -56,7 +56,7 @@ describe("BankImportModal", () => {
     );
   });
 
-  test("importing POSTs the CSV content and reloads the view", async () => {
+  test("importing POSTs the original CSV bytes and reloads the view", async () => {
     mockFetch(importRoute());
     const onImported = vi.fn();
     render(
@@ -69,7 +69,7 @@ describe("BankImportModal", () => {
     await userEvent.upload(screen.getByLabelText("CSV-fil"), csvFile());
     await userEvent.click(screen.getByRole("button", { name: "Importér" }));
 
-    // The import endpoint was called with the CSV text and confirm:true.
+    // Original bytes reach the server without text decoding.
     await waitFor(() => {
       const calls = (globalThis.fetch as unknown as ReturnType<typeof vi.fn>).mock.calls;
       const importCall = calls.find((c) =>
@@ -79,7 +79,8 @@ describe("BankImportModal", () => {
       const init = importCall![1] as RequestInit;
       expect(init.method).toBe("POST");
       const sent = JSON.parse(String(init.body));
-      expect(sent.csvContent).toContain("Card payment");
+      expect(sent.csvBase64).toBe(btoa(CSV));
+      expect(sent).not.toHaveProperty("csvContent");
       expect(sent.confirm).toBe(true);
       expect(sent.profile).toBeUndefined();
     });
@@ -150,7 +151,7 @@ describe("BankImportModal", () => {
       const calls = (globalThis.fetch as unknown as ReturnType<typeof vi.fn>).mock.calls;
       const call = calls.find(c => String(c[0]).includes("/bank/import"));
       expect(call).toBeDefined();
-      expect(JSON.parse(String((call![1] as RequestInit).body))).toEqual({ csvContent: csv, account: "synthetic-account", profile: "danske-bank", confirm: true });
+      expect(JSON.parse(String((call![1] as RequestInit).body))).toEqual({ csvBase64: btoa(String.fromCharCode(...new TextEncoder().encode(csv))), account: "synthetic-account", profile: "danske-bank", confirm: true });
     });
   });
 
@@ -201,4 +202,67 @@ describe("BankImportModal", () => {
     await userEvent.click(screen.getByRole("button", { name: "Annullér" }));
     expect(onClose).toHaveBeenCalled();
   });
+});
+
+test("Windows-1252 bytes reach import unchanged without text decoding", async () => {
+  mockFetch(importRoute());
+  render(<BankImportModal slug="acme-aps" onImported={noop} onClose={noop}/>);
+  const bytes = new Uint8Array([0x44,0x61,0x74,0x6f,0x3b,0xe6,0xf8,0xe5,0x80,0x0d,0x0a]);
+  const file = new File([bytes], "original-1252.csv", {type:"text/csv"});
+  const text = vi.spyOn(file, "text").mockRejectedValue(new Error("must not decode"));
+  await userEvent.upload(screen.getByLabelText("CSV-fil"), file);
+  await screen.findByText("Valgt: original-1252.csv");
+  await userEvent.type(screen.getByLabelText(/^Bankformat \(valgfri\)/), "danske-bank");
+  await userEvent.click(screen.getByRole("button", {name:"Importér"}));
+  await screen.findByText(/1 transaktion importeret/);
+  const call = (globalThis.fetch as unknown as ReturnType<typeof vi.fn>).mock.calls.find(c=>String(c[0]).includes("/bank/import"));
+  expect(JSON.parse(String((call![1] as RequestInit).body))).toEqual({csvBase64:btoa(String.fromCharCode(...bytes)),profile:"danske-bank",confirm:true});
+  expect(text).not.toHaveBeenCalled();
+});
+
+test("cancel selection prevents an old pending read from becoming importable", async () => {
+  render(<BankImportModal slug="acme-aps" onImported={noop} onClose={noop}/>);
+  const file = csvFile("pending.csv");
+  let complete!: (value:ArrayBuffer) => void;
+  vi.spyOn(file,"arrayBuffer").mockImplementation(()=>new Promise(resolve=>{complete=resolve;}));
+  const picker = screen.getByLabelText("CSV-fil");
+  fireEvent.change(picker,{target:{files:[file]}});
+  expect(screen.getByRole("button",{name:"Importér"})).toBeDisabled();
+  fireEvent.change(picker,{target:{files:[]}});
+  complete(new TextEncoder().encode(CSV).buffer);
+  await new Promise(resolve=>setTimeout(resolve,0));
+  expect(screen.queryByText("Valgt: pending.csv")).not.toBeInTheDocument();
+  expect(screen.getByRole("button",{name:"Importér"})).toBeDisabled();
+});
+
+test("failed replacement clears selected file and ignores an older pending read", async () => {
+  render(<BankImportModal slug="acme-aps" onImported={noop} onClose={noop}/>);
+  const picker = screen.getByLabelText("CSV-fil");
+  await userEvent.upload(picker,csvFile("first.csv"));
+  await screen.findByText("Valgt: first.csv");
+  const pending=csvFile("old-pending.csv");
+  let complete!: (value:ArrayBuffer) => void;
+  vi.spyOn(pending,"arrayBuffer").mockImplementation(()=>new Promise(resolve=>{complete=resolve;}));
+  fireEvent.change(picker,{target:{files:[pending]}});
+  const failed=csvFile("failed.csv");
+  vi.spyOn(failed,"arrayBuffer").mockRejectedValue(new Error("Filen kunne ikke læses."));
+  fireEvent.change(picker,{target:{files:[failed]}});
+  await screen.findByText("Filen kunne ikke læses.");
+  complete(new TextEncoder().encode(CSV).buffer);
+  await new Promise(resolve=>setTimeout(resolve,0));
+  expect(screen.queryByText(/Valgt:/)).not.toBeInTheDocument();
+  expect(screen.getByRole("button",{name:"Importér"})).toBeDisabled();
+});
+
+test("oversized files refuse before reading and empty files cannot import", async () => {
+  render(<BankImportModal slug="acme-aps" onImported={noop} onClose={noop}/>);
+  const oversized=csvFile();
+  Object.defineProperty(oversized,"size",{value:25*1024*1024+1});
+  const read=vi.spyOn(oversized,"arrayBuffer");
+  fireEvent.change(screen.getByLabelText("CSV-fil"),{target:{files:[oversized]}});
+  await screen.findByText("CSV-filen må højst fylde 25 MiB.");
+  expect(read).not.toHaveBeenCalled();
+  fireEvent.change(screen.getByLabelText("CSV-fil"),{target:{files:[new File([],"empty.csv",{type:"text/csv"})]}});
+  await screen.findByText("CSV-filen er tom.");
+  expect(screen.getByRole("button",{name:"Importér"})).toBeDisabled();
 });

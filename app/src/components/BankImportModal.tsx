@@ -6,7 +6,7 @@ import { Button, Dialog, Input } from "./ui";
 //
 // A person opens this from the Bank view, picks a bank-statement CSV file, and
 // (optionally) names a bank account or import profile. The browser reads the
-// file text and POSTs it; the server writes it to a temp file and runs the
+// original file bytes as base64 and POSTs them; the server runs the
 // same `importBankCsv` core function the CLI and MCP use.
 //
 // The modal owns the file picker, the busy state and inline error/lock
@@ -33,8 +33,10 @@ type MaybeApiError = { code?: string; message?: string };
  * Keep this in sync with `listBankProfileNames()` in the core. When a new
  * profile is added, append it here so the cockpit explains what is supported.
  */
+const MAX_BANK_FILE_BYTES = 25 * 1024 * 1024;
+
 const SUPPORTED_BANK_PROFILES: ReadonlyArray<{ name: string; label: string }> = [
-  { name: "danske-bank", label: "Danske Bank (semikolon-CSV, UTF-8)" },
+  { name: "danske-bank", label: "Danske Bank (semikolon-CSV, UTF-8 eller Windows-1252)" },
 ];
 
 export type BankImportModalProps = {
@@ -48,7 +50,7 @@ export type BankImportModalProps = {
 
 export function BankImportModal({ slug, onImported, onClose: onDismiss }: BankImportModalProps) {
   const [fileName, setFileName] = useState<string | null>(null);
-  const [csvContent, setCsvContent] = useState<string | null>(null);
+  const [csvBase64, setCsvBase64] = useState<string | null>(null);
   const [account, setAccount] = useState("");
   const [profile, setProfile] = useState("");
   const [busy, setBusy] = useState(false);
@@ -56,36 +58,47 @@ export function BankImportModal({ slug, onImported, onClose: onDismiss }: BankIm
   const [locked, setLocked] = useState<string | null>(null);
   const [done, setDone] = useState<BankImportSummary | null>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
+  const fileRead = useRef(0);
+  const [reading, setReading] = useState(false);
 
   // Move focus into the dialog and let Escape dismiss it — basic modal hygiene.
 
 
   const outcome = useMutationOutcome(onImported);
-  const guard = useDiscardGuard(!done && Boolean(csvContent || account || profile), onDismiss);
+  const guard = useDiscardGuard(!done && Boolean(csvBase64 || account || profile), onDismiss);
   const { onClose } = guard;
 
   async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
+    const read = ++fileRead.current;
     setError(null);
-    if (!file) {
-      setFileName(null);
-      setCsvContent(null);
-      return;
-    }
+    setFileName(null);
+    setCsvBase64(null);
+    setReading(Boolean(file));
+    if (!file) return;
     try {
-      const text = await file.text();
+      if (file.size > MAX_BANK_FILE_BYTES) throw new Error("CSV-filen må højst fylde 25 MiB.");
+      const bytes = new Uint8Array(await file.arrayBuffer());
+      if (read !== fileRead.current) return;
+      if (bytes.length > MAX_BANK_FILE_BYTES) throw new Error("CSV-filen må højst fylde 25 MiB.");
+      if (!bytes.length) throw new Error("CSV-filen er tom.");
+      let binary = "";
+      const chunk = 0x8000;
+      for (let i = 0; i < bytes.length; i += chunk) {
+        binary += String.fromCharCode(...bytes.subarray(i, i + chunk));
+      }
       setFileName(file.name);
-      setCsvContent(text);
-    } catch {
-      setError("Filen kunne ikke læses.");
-      setFileName(null);
-      setCsvContent(null);
+      setCsvBase64(btoa(binary));
+    } catch (err) {
+      if (read === fileRead.current) setError(err instanceof Error ? err.message : "Filen kunne ikke læses.");
+    } finally {
+      if (read === fileRead.current) setReading(false);
     }
   }
 
   async function handleImport() {
     if (outcome.isBlocked()) return;
-    if (!csvContent) {
+    if (reading || !csvBase64) {
       setError("Vælg en CSV-fil først.");
       return;
     }
@@ -94,7 +107,7 @@ export function BankImportModal({ slug, onImported, onClose: onDismiss }: BankIm
     setLocked(null);
     try {
       const summary = await api.importBank(slug, {
-        csvContent,
+        csvBase64,
         account: account.trim() || undefined,
         profile: profile.trim() || undefined,
       }).catch(outcome.reject);
@@ -163,8 +176,8 @@ export function BankImportModal({ slug, onImported, onClose: onDismiss }: BankIm
                 importen bogfører ikke. Kendte dubletter springes over.
               </p>
               <p className={["muted", stylex.props(viewStyles.site0).className].filter(Boolean).join(" ")} >
-                Vælg UTF-8 CSV. Browseren læser filen som tekst. Standard-CSV
-                understøtter komma, semikolon og tabulator.{" "}
+                Filens originale bytes bevares. Maks. 25 MiB. Standard-CSV bruger
+                UTF-8 og understøtter komma, semikolon og tabulator.{" "}
                 <a
                   href="https://rentemester.dk/docs/bank-import"
                   target="_blank"
@@ -232,7 +245,7 @@ export function BankImportModal({ slug, onImported, onClose: onDismiss }: BankIm
               <span className="field-hint">
                 Uden profil bruges standard-CSV; tvetydige datoer afvises.
                 Angiv danske-bank for Danske Banks semikolon-CSV med
-                dag-måned-år.
+                dag-måned-år i UTF-8 eller Windows-1252.
               </span>
             </label>
 
@@ -249,7 +262,7 @@ export function BankImportModal({ slug, onImported, onClose: onDismiss }: BankIm
                 type="button"
                 className="btn"
                 onClick={handleImport}
-                disabled={outcome.blocked || (busy || !csvContent)}
+                disabled={outcome.blocked || (busy || reading || !csvBase64)}
               >
                 {busy ? "Importerer…" : "Importér"}
               </Button>
