@@ -165,9 +165,11 @@ impl NamespaceGuard {
         self.publish_original(input, false)
     }
     pub fn publish_bank_statement(&mut self, content: &str) -> Result<String, Error> {
-        let input =
-            crate::document::Prepared::new("bank-import.txt".into(), content.as_bytes().to_vec())
-                .map_err(|_| Error::Invalid)?;
+        self.publish_bank_statement_bytes(content.as_bytes())
+    }
+    pub fn publish_bank_statement_bytes(&mut self, bytes: &[u8]) -> Result<String, Error> {
+        let input = crate::document::Prepared::new("bank-import.txt".into(), bytes.to_vec())
+            .map_err(|_| Error::Invalid)?;
         self.publish_original(&input, true)
     }
     fn publish_original(

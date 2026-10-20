@@ -16,6 +16,12 @@ pub enum Action<'a> {
         year: Option<&'a str>,
     },
     Create(&'a AccountInput),
+    ImportBytes {
+        content: &'a [u8],
+        account: Option<&'a str>,
+        profile: Option<&'a str>,
+        now: &'a str,
+    },
     Import {
         content: &'a str,
         account: Option<&'a str>,
@@ -33,7 +39,7 @@ pub fn execute(
     let permission = match action {
         Action::Accounts | Action::Read { .. } => Permission::CompanyRead,
         Action::Create(_) => Permission::CompanyAdmin,
-        Action::Import { .. } => Permission::CompanyLedgerPost,
+        Action::Import { .. } | Action::ImportBytes { .. } => Permission::CompanyLedgerPost,
     };
     let slug = context.selection.slug;
     control_fence::execute_cookie_subject(
@@ -55,21 +61,42 @@ pub fn execute(
                 account,
                 profile,
                 now,
-            } => {
-                let rows = rentemester_engine::bank::parse_with_profile(content, profile)?;
-                // Refuse an unknown/inactive explicit account before retaining
-                // any physical statement; import rechecks the same locked facts.
-                rentemester_storage::bank::validate_import_account(tx, account)?;
-                let archive = guard.publish_bank_statement(content).map_err(|_| {
-                    Error::new(
-                        "bank_original_unavailable",
-                        "bank statement original could not be preserved",
-                    )
-                })?;
-                rentemester_storage::bank::import(
-                    tx, content, &rows, account, subject, now, &archive,
-                )
-            }
+            } => import(
+                tx,
+                guard,
+                content.as_bytes(),
+                account,
+                profile,
+                subject,
+                now,
+            ),
+            Action::ImportBytes {
+                content,
+                account,
+                profile,
+                now,
+            } => import(tx, guard, content, account, profile, subject, now),
         },
     )
+}
+
+fn import(
+    tx: &rusqlite::Transaction<'_>,
+    guard: &mut NamespaceGuard,
+    bytes: &[u8],
+    account: Option<&str>,
+    profile: Option<&str>,
+    actor: &str,
+    now: &str,
+) -> Result<Value, Error> {
+    let content = rentemester_engine::bank::decode_bytes(bytes, profile)?;
+    let rows = rentemester_engine::bank::parse_with_profile(&content, profile)?;
+    rentemester_storage::bank::validate_import_account(tx, account)?;
+    let archive = guard.publish_bank_statement_bytes(bytes).map_err(|_| {
+        Error::new(
+            "bank_original_unavailable",
+            "bank statement original could not be preserved",
+        )
+    })?;
+    rentemester_storage::bank::import_bytes(tx, bytes, &rows, account, actor, now, &archive)
 }

@@ -480,3 +480,32 @@ fn elimination_cli_exact_plan_body_no_confirmation_and_unknown_write(){
   let mut command=Command::new(BIN);command.args(["remote",if plan{"plan-elimination"}else{"apply-elimination"},"--server",&origin,"--allow-loopback-http","--cookie-file",path.to_str().unwrap(),"--company","synthetic"]);if !plan{command.arg("--confirm");}let mut child=command.stdin(Stdio::piped()).stdout(Stdio::piped()).spawn().unwrap();child.stdin.take().unwrap().write_all(body.as_bytes()).unwrap();let output=child.wait_with_output().unwrap();std::fs::remove_file(path).unwrap();assert_eq!(output.status.code(),Some(1));let value:serde_json::Value=serde_json::from_slice(&output.stdout).unwrap();assert!(value.to_string().contains(if plan{"server_refused"}else{"outcome_unknown"}));assert!(!value.to_string().contains("never-print-this"));task.join().unwrap();
  }
 }
+
+#[cfg(unix)]
+#[test]
+fn raw_bank_import_keeps_large_original_envelope_unchanged() {
+    use std::os::unix::fs::OpenOptionsExt;
+    use std::process::Stdio;
+    let listener=TcpListener::bind("127.0.0.1:0").unwrap();
+    let origin=format!("http://{}",listener.local_addr().unwrap());
+    let body=serde_json::to_vec(&serde_json::json!({"confirm":true,"csvBase64":"AAAA".repeat(100_000),"profile":"danske-bank"})).unwrap();
+    let expected=body.clone();
+    let task=thread::spawn(move || {
+        let(mut stream,_)=listener.accept().unwrap();
+        stream.set_read_timeout(Some(std::time::Duration::from_secs(5))).unwrap();
+        let mut wire=Vec::new();
+        loop { let mut bytes=[0;8192];let n=stream.read(&mut bytes).unwrap();assert!(n>0);wire.extend_from_slice(&bytes[..n]);
+            if let Some(end)=wire.windows(4).position(|w|w==b"\r\n\r\n") && wire.len()>=end+4+expected.len(){assert_eq!(&wire[end+4..],&expected);break;}
+        }
+        assert!(wire.starts_with(b"POST /api/companies/synthetic/bank/import HTTP/1.1"));
+        stream.write_all(b"HTTP/1.1 200 OK\r\nContent-Length:11\r\nConnection:close\r\n\r\n{\"ok\":true}").unwrap();
+    });
+    let cookie=std::env::temp_dir().join(format!("rm-raw-bank83-{}.cookie",std::process::id()));
+    std::fs::OpenOptions::new().create_new(true).write(true).mode(0o600).open(&cookie).unwrap().write_all(b"session=synthetic\n").unwrap();
+    let mut child=Command::new(BIN).args(["remote","import-bank","--server",&origin,"--allow-loopback-http","--cookie-file",cookie.to_str().unwrap(),"--company","synthetic","--confirm"]).stdin(Stdio::piped()).stdout(Stdio::piped()).spawn().unwrap();
+    child.stdin.take().unwrap().write_all(&body).unwrap();
+    let output=child.wait_with_output().unwrap();
+    std::fs::remove_file(cookie).unwrap();
+    assert!(output.status.success(),"{}",String::from_utf8_lossy(&output.stdout));
+    task.join().unwrap();
+}

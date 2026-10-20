@@ -132,6 +132,9 @@ impl NamespaceGuard {
     pub fn publish_bank_statement(&mut self, _: &str) -> Result<String, NamespaceError> {
         Err(NamespaceError::Unsupported)
     }
+    pub fn publish_bank_statement_bytes(&mut self, _: &[u8]) -> Result<String, NamespaceError> {
+        Err(NamespaceError::Unsupported)
+    }
     pub fn read_bank_statement(&mut self, _: &str) -> Result<Vec<u8>, NamespaceError> {
         Err(NamespaceError::Unsupported)
     }

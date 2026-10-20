@@ -436,8 +436,12 @@ fn bank_payables_tools_publish_strict_actual_schemas_and_require_confirmation() 
     let import = tools.iter().find(|t| t["name"] == "import_bank").unwrap();
     assert_eq!(
         import["inputSchema"]["properties"]["body"]["contentSchema"]["required"],
-        json!(["csvContent", "confirm"])
+        json!(["confirm"])
     );
+    assert_eq!(import["inputSchema"]["properties"]["body"]["contentSchema"]["oneOf"], json!([
+        {"required":["csvContent"],"not":{"required":["csvBase64"]}},
+        {"required":["csvBase64"],"not":{"required":["csvContent"]}}
+    ]));
     let pay = tools.iter().find(|t| t["name"] == "pay_payable").unwrap();
     assert_eq!(pay["inputSchema"]["properties"]["id"]["minimum"], 1);
     assert_eq!(pay["annotations"]["idempotentHint"], false);
@@ -2043,4 +2047,21 @@ fn exception_tools_discover_source_contract_and_reject_unadmitted_writes() {
         assert_eq!(tool["inputSchema"]["additionalProperties"],false);
     }
     for row in &rows[2..] { assert!(row.get("error").is_some() || row["result"]["isError"]==true); }
+}
+
+#[test]
+fn raw_bank_import_named_frame_forwards_large_body_without_relaxing_other_tools() {
+    let (origin, request, task) = http("HTTP/1.1 200 OK\r\nContent-Length:11\r\nConnection:close\r\n\r\n{\"ok\":true}");
+    let body=serde_json::to_string(&json!({"confirm":true,"csvBase64":"AAAA".repeat(280_000),"profile":"danske-bank"})).unwrap();
+    let rows=parsed(&run(&origin,&[init("2025-11-25"),ready(),call(2,"import_bank",json!({"company":"synthetic","body":body,"confirm":true}))]));
+    assert_eq!(rows[1]["result"]["structuredContent"]["ok"],true);
+    let wire=request.recv().unwrap();
+    let end=wire.windows(4).position(|w|w==b"\r\n\r\n").unwrap()+4;
+    assert!(wire.starts_with(b"POST /api/companies/synthetic/bank/import HTTP/1.1"));
+    assert_eq!(&wire[end..],body.as_bytes());
+    task.join().unwrap();
+    let output=run("http://127.0.0.1:9",&[call(2,"create_bank_account",json!({"company":"synthetic","body":" ".repeat(1_100_000),"confirm":true}))]);
+    assert!(!output.status.success());
+    let value:Value=serde_json::from_slice(&output.stdout).unwrap();
+    assert_eq!(value["error"]["code"],-32700);
 }

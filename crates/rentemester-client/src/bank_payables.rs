@@ -75,7 +75,7 @@ fn base64_value(byte: u8) -> Option<u8> {
 // Canonical spelling and decoded bound without allocating or interpreting source bytes.
 fn bounded_base64(value: &str) -> bool {
     let bytes = value.as_bytes();
-    if bytes.is_empty() || bytes.len() > MAX_BANK_ORIGINAL.div_ceil(3) * 4 || bytes.len() % 4 != 0 {
+    if bytes.is_empty() || bytes.len() > MAX_BANK_ORIGINAL.div_ceil(3) * 4 || !bytes.len().is_multiple_of(4) {
         return false;
     }
     let padding = if bytes.ends_with(b"==") {

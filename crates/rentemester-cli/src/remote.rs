@@ -82,6 +82,7 @@ pub fn run(args: &[String]) -> Result<Value, Failure> {
         help["commands"].as_array_mut().unwrap().extend(["group-disposition-status","plan-group-disposition","propose-group-disposition","approve-group-disposition","link-group-disposition","settle-group-disposition","supersede-group-disposition","reopen-group-disposition"].map(|s|json!(s)));
         help["directBankPayableCorrection"]=crate::payable_correction::help();
         help["commands"].as_array_mut().unwrap().extend(["direct-bank-payable-correction-plan","direct-bank-payable-correction"].map(|s|json!(s)));
+        help["bankImport"]=json!("import-bank --company SLUG --confirm: pipe one native JSON object with confirm:true and exactly one csvContent (UTF-8 text) or csvBase64 (canonical base64 original bytes). Optional account/profile; 35MiB envelope,25MiB original. Generic UTF-8/BOM; danske-bank also Windows1252. No client decoding, keys, actor or automatic retries.");
         help["exceptions"]=crate::exceptions::help();
         help["commands"].as_array_mut().unwrap().extend(["list-exceptions","resolve-exception"].map(|s|json!(s)));
         help["bookkeepingBatch"]=crate::bookkeeping_batch::help();
@@ -480,7 +481,7 @@ pub fn run(args: &[String]) -> Result<Value, Failure> {
         let mut body = Vec::new();
         std::io::stdin()
             .lock()
-            .take(262_145)
+            .take(if command == "import-bank" { 35 * 1024 * 1024 + 1 } else { 262_145 })
             .read_to_end(&mut body)
             .map_err(|_| invalid("could not read request from stdin"))?;
         Some(body)
