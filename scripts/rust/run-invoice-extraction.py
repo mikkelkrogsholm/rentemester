@@ -425,7 +425,7 @@ def main():
                 results = [row for row in result['invoice_extraction_results'] if row['attempt_id'] == attempt['id']]
                 resolutions = [row for row in result['invoice_extraction_resolutions'] if row['attempt_id'] == attempt['id']]
                 if kind == 'held':
-                    if attempt['initiated_by'] != report['results']['authenticate']['memberId'] or results or resolutions or surface['status'] != 'started':
+                    if attempt['initiated_by'] != 'user:' + report['results']['authenticate']['memberId'] or results or resolutions or surface['status'] != 'started':
                         raise RuntimeError('Revoked current authority must retain only its historical started attempt')
                 elif kind in ('good', 'conflict'):
                     if len(results) != 1:
