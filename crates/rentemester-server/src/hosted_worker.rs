@@ -42,24 +42,20 @@ pub struct Worker {
 }
 impl Worker {
     pub fn start(backend: Arc<Backend>) -> Self {
-        let (stop, mut stopped) = tokio::sync::oneshot::channel();
+        let (stop, stopped) = tokio::sync::oneshot::channel();
         let task = tokio::spawn(async move {
-            let mut cursor = 0usize;
-            loop {
-                // Exactly one pass is outstanding; no interval backlog after sleep.
+            crate::shutdown::run_worker(stopped, INTERVAL, move |cursor| {
                 let native = backend.clone();
-                match tokio::task::spawn_blocking(move || pass(&native, cursor)).await {
-                    Ok(Ok(next)) => cursor = next,
-                    // A poisoned/retired owner or uncertain outcome is never retried by this worker.
-                    _ => break,
-                }
-                tokio::select! {_ = &mut stopped=>break,_=tokio::time::sleep(INTERVAL)=>{}}
-            }
+                tokio::task::spawn_blocking(move || pass(&native, cursor))
+            }).await;
         });
         Self {
             task,
             stop: Some(stop),
         }
+    }
+    pub fn take_stop_signal(&mut self) -> Option<tokio::sync::oneshot::Sender<()>> {
+        self.stop.take()
     }
     pub async fn stop(mut self) {
         if let Some(stop) = self.stop.take() {

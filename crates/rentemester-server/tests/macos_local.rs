@@ -61,6 +61,19 @@ async fn healthy(server: &mut Server, origin: &str) {
     }
     panic!("local server failed to become healthy");
 }
+async fn stop_cleanly(server: &mut Server, signal: &str) {
+    assert!(Command::new("/bin/kill")
+        .args([signal, &server.0.id().to_string()])
+        .status().unwrap().success());
+    for _ in 0..200 {
+        if let Some(status) = server.0.try_wait().unwrap() {
+            assert!(status.success(), "shutdown must drain and exit successfully: {status}");
+            return;
+        }
+        tokio::time::sleep(Duration::from_millis(25)).await;
+    }
+    panic!("server failed to drain after {signal}");
+}
 #[tokio::test]
 async fn explicit_native_profile_creates_owned_workspace_excludes_second_owner_and_restarts() {
     let token = rentemester_runtime::auth::new_token().unwrap();
@@ -109,8 +122,10 @@ async fn explicit_native_profile_creates_owned_workspace_excludes_second_owner_a
     let (mut contender, _) = spawn(&config, &web, false, "077");
     assert!(!contender.0.wait().unwrap().success());
     drop(contender);
+    stop_cleanly(&mut first, "-TERM").await;
     drop(first);
     let (mut reopened, origin) = spawn(&config, &web, false, "077");
     healthy(&mut reopened, &origin).await;
+    stop_cleanly(&mut reopened, "-INT").await;
     drop(reopened);
 }

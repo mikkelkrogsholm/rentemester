@@ -16,17 +16,17 @@ pub struct Worker {
 }
 impl Worker {
     pub fn start(backend: Arc<Backend>) -> Self {
-        let (stop, mut stopped) = tokio::sync::oneshot::channel();
+        let (stop, stopped) = tokio::sync::oneshot::channel();
         let task = tokio::spawn(async move {
-            let mut cursor = 0;
-            loop {
+            crate::shutdown::run_worker(stopped, Duration::from_secs(30), move |cursor| {
                 let native = backend.clone();
-                let pass = tokio::task::spawn_blocking(move || pass(&native, cursor));
-                match pass.await { Ok(Ok(next)) => cursor = next, _ => break }
-                tokio::select! { _ = &mut stopped => break, _ = tokio::time::sleep(Duration::from_secs(30)) => {} }
-            }
+                tokio::task::spawn_blocking(move || pass(&native, cursor))
+            }).await;
         });
         Self { task, stop: Some(stop) }
+    }
+    pub fn take_stop_signal(&mut self) -> Option<tokio::sync::oneshot::Sender<()>> {
+        self.stop.take()
     }
     pub async fn stop(mut self) {
         if let Some(stop) = self.stop.take() { let _ = stop.send(()); }

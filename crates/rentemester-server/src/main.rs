@@ -12,6 +12,7 @@ mod portable_backup_cli;
 mod product_http;
 mod report_export;
 mod setup_http;
+mod shutdown;
 use axum::{
     Router,
     http::{HeaderValue, StatusCode},
@@ -245,19 +246,32 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         "Cockpit served directly by Rust. Native workspace connected: {}",
         native.is_some()
     );
-    let worker = if scheduled_worker {
+    // Register handlers before starting workers or accepting requests. Failure must
+    // not leave an apparently healthy process without its shutdown contract.
+    let mut shutdown = shutdown::Shutdown::new()?;
+    let mut worker = if scheduled_worker {
         Some(hosted_worker::Worker::start(native.as_ref().ok_or("scheduled worker requires workspace")?.clone()))
     } else { None };
-    let mail = if mail_worker {
+    let mut mail = if mail_worker {
         Some(mail_worker::Worker::start(native.as_ref().ok_or("mail worker requires workspace")?.clone()))
     } else { None };
+    let mail_stop = mail.as_mut().and_then(|worker| worker.take_stop_signal());
+    let scheduled_stop = worker.as_mut().and_then(|worker| worker.take_stop_signal());
     let served = axum::serve(
         listener,
         app.into_make_service_with_connect_info::<SocketAddr>(),
     )
+    .with_graceful_shutdown(async move {
+        shutdown.wait().await;
+        // Stop admitting worker passes immediately while HTTP requests drain.
+        // In-flight external operations finish with their existing durable
+        // outcome rules; shutdown never retries or aborts a blocking operation.
+        if let Some(stop) = mail_stop { let _ = stop.send(()); }
+        if let Some(stop) = scheduled_stop { let _ = stop.send(()); }
+    })
     .await;
-    if let Some(mail)=mail { mail.stop().await; }
-    if let Some(worker)=worker { worker.stop().await; }
+    tokio::join!(async { if let Some(mail)=mail { mail.stop().await; } },
+                 async { if let Some(worker)=worker { worker.stop().await; } });
     served?;
     Ok(())
 }
