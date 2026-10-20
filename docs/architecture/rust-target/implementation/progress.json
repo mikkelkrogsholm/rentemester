@@ -1,13 +1,13 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "Installed shared-web Rust desktop local owner/MFA onboarding and managed reopen qualified",
-  "code_revision": "df07046a1f8ebef1dc15bd0d03c5c69a48cedc1b",
+  "current_increment": "Shared desktop invoice/original PDF display, native save fix and HTTPS fixture; financial qualification in progress",
+  "code_revision": "6f7793d3",
   "spec_revision": "sha256:a7eb3f0d6e65412fa5ee945a7b79721b593806839f4a03e6b8d969ce3327e3fc",
-  "state": "Group86 implements the explicitly approved shared React web UI in a Tauri2 Rust desktop host. Installed unsigned macOS bundle at df07046a completed normal local create-profile, first-owner creation, native private-mail verification, password login, TOTP enrollment and authorized portfolio; quit stopped the exact owned server. Reopening the same installed app/profile at a new loopback port completed password/TOTP login and preserved exactly one owner, original profile config and signing/public keys. Second quit stopped the owned runtime. All12 bundle files match the manifest; zero journal entries/lines/documents/bankrows. Desktop9tests pass with1existingignored, strictClippy and build pass. Architecture/epic/GDD source updated and both owned worktrees archived. Remote HTTPS, uploads/downloads/PDF and financial desktop workflows remain unqualified. Whole Rust mission/epic672, supported TSworkspace adoption, transfer/recovery, automation, updates/distribution and TS retirement remain OPEN.",
+  "state": "Group87 actual installed shared-web desktop (old installeddf07046a) completed one explicit full domestic invoice:2026-0001 net200/VAT50/gross250 after native PDF preview proved0allocation. Issued originalPDF displays natively and canonicalPDF SHA256e2d81ce2c7241479fee8e1213e1aa642175b70feeed1a6d5a5f13ff7aa804a91 retained. Exactly1unpostedinvoice,2original/PDFdocuments,0journals/lines/bankrows. CurrentnativePDFviewer has no directsave: sourcebaa5aeaf separates ÅbnPDF from same-origin HentPDF download, supports existingpreviewblob download, and fences native downloads to selectedorigin/ownblob without IPC. Rootregression6f7793d3 passes79UItests/276assertions and9desktoptests(1existingignored); strictClippy, web/native builds pass. Rebuilt unsigned bundle staged, notyetinstalled or actualsavequalified. Independent HTTPS sameprofile fixture743e10d4 implemented/reviewed/syntaxchecked; no signing or native remoteactual yet. Cua reportsnoWindowsAvailable aftertransientAXtimeouts; exactapp97155/server97170 remainalive, uservisibilityquestionpending; no mutation replay or restart solelyfromtimeout. Continue sameinvoice1 to post/import/settle/upload/save/reopen, then independentHTTPS normalMFA. Entire Rust mission/epic672 remains OPEN.",
   "issues_closed": [],
   "next": [
-    "Complete shared-desktop financial journey with uploads/downloads/PDF and same data after reopen, then actual external HTTPS backend journey with normal MFA/current authorization. Reuse existing web screens and approved branding. Retain all full-mission acceptance; do not repeat accepted local owner/MFA onboarding without changed code or new failure.",
+    "Resume preserved actual invoice1/2026-0001, alreadyissued once, after UI visibility returns and rebuilt native-save bundle is installed. Execute post, rawCSV bankimport, settle, receipt upload/original/PDF save; verify exact effects and reopen. Then close managedwriter and run independentlyowned stricttrusted HTTPS fixture againstsameprofile for remoteMFA/currentrights. Do not repeat prerequisite creation or invoiceissue.",
     "Complete installed local/remote desktop financial journeys, remaining safe transfer/recovery/automation/distribution, full CLI/MCP parity and TypeScript retirement. Operator TSworkspace adoption is still required; current rehearsal commands discard copies and grant no writer authority.",
     "Retain explicit native tax/FX contracts and verify source rate differences against posting controls before broader support claims. Qualified75/76/77/78/79/80/81 must not be repeated without changed code or new failure evidence."
   ],
@@ -20,10 +20,10 @@
   ],
   "all_goal_requirements_complete": false,
   "previous_verified_increment": {
-    "current_increment": "Interactive CVR lookup and protected company sync qualified",
-    "code_revision": "764a8a6537c79d2a6cde2078722badb1288d7993",
-    "spec_revision": "sha256:88d7ae1a667bd5c35dd317a44a96a61bdd63b1672e1c4b519644f6fe11acfb4e",
-    "state": "Group85 qualified at764a8a65:20 ordinary-MFA actions complete existingweb contact lookup→blank prefill→cached lookup preserving manualname/email→separate explicit save; owncompanyCVRsync nineidentityfields→fiscal7vsconfigured1 warning→repeatcachedUI/CLI/MCPsync. Exactly2rawCVRcache snapshots,1savedcustomer,4currentowner syncaudits and0financial effects;protectedfiscalyear/payment21/VATquarter/accounts/roles/bank unchanged. ProviderHTTPSlocalmock receives exactly4requests(contact,own,503,mismatchedCVR); currentreviewer/revoked refusals occurbeforeprovider/cache. Restart withoutcredentials reportsconfiguredfalse/disablesownsync, retainedfreshcache works anduncachedlookup truthfullyfails. FourphaseHTTPCLI/MCPinner equality andfour independent signedfull snapshots/sourcefreefreshownerrestore/reopen preserve rawentities/originalfetchedtimestamps/30dayexpiry/alltables/audit. Stale-cache fallback andmidflightauthority/expiry/CVR races are targetedunit evidence only, notactualclockaging claims. User now explicitly approves Rustdesktop embedding existingwebUI; revise previousGPUIpresentation direction while retaining engine/API/managedlocalserver/remote/integrity/distribution/fullmission. Actualinstalledshared desktop, operatorTSworkspaceadoption andremainingfullmission/epic672 remain OPEN."
+    "current_increment": "Installed shared-web Rust desktop local owner/MFA onboarding and managed reopen qualified",
+    "code_revision": "df07046a1f8ebef1dc15bd0d03c5c69a48cedc1b",
+    "spec_revision": "sha256:a7eb3f0d6e65412fa5ee945a7b79721b593806839f4a03e6b8d969ce3327e3fc",
+    "state": "Group86 implements the explicitly approved shared React web UI in a Tauri2 Rust desktop host. Installed unsigned macOS bundle at df07046a completed normal local create-profile, first-owner creation, native private-mail verification, password login, TOTP enrollment and authorized portfolio; quit stopped the exact owned server. Reopening the same installed app/profile at a new loopback port completed password/TOTP login and preserved exactly one owner, original profile config and signing/public keys. Second quit stopped the owned runtime. All12 bundle files match the manifest; zero journal entries/lines/documents/bankrows. Desktop9tests pass with1existingignored, strictClippy and build pass. Architecture/epic/GDD source updated and both owned worktrees archived. Remote HTTPS, uploads/downloads/PDF and financial desktop workflows remain unqualified. Whole Rust mission/epic672, supported TSworkspace adoption, transfer/recovery, automation, updates/distribution and TS retirement remain OPEN."
   },
   "evidence": {
     "combined_browser_log": "/tmp/rm-platform5-combined.log",
@@ -1841,6 +1841,44 @@
       ],
       "cleanup": "Both Group86 isolated worktrees archived; installed app remains, private synthetic fixture retained for next bounded financial acceptance; owned app/server stopped.",
       "fullMissionComplete": false
+    },
+    "shared_web_desktop87": {
+      "status": "IN_PROGRESS: actual invoiceissue/originalview qualified; full financial/files/remote acceptance incomplete",
+      "sourceRevision": "6f7793d3",
+      "actualPartial": "/tmp/rentemester-rust-reports/shared-web-desktop87-partial.json",
+      "actualPartialSha256": "f4c2a80f396f02d836752dfa92ada2a499a8de8e59fb35fe1165ac992ff26c06",
+      "actualInvoiceId": 1,
+      "actualInvoiceNo": "2026-0001",
+      "actualAmounts": {
+        "net": "200.00",
+        "vat": "50.00",
+        "gross": "250.00"
+      },
+      "actualInvoicePosted": false,
+      "actualCounts": {
+        "documents": 2,
+        "journal_entries": 0,
+        "journal_lines": 0,
+        "bank_transactions": 0
+      },
+      "previewNoEffects": true,
+      "originalPdfDisplayed": true,
+      "directSaveQualified": false,
+      "financialDesktopQualified": false,
+      "remoteHttpsQualified": false,
+      "normalFixturePrerequisites": "ordinary password/TOTP HTTPmasterdata; no SQLseed",
+      "webTests": "79PASS276assertions /tmp/rm87-download-ui-tests-final.log",
+      "desktopTests": "9PASS1existingignored /tmp/rm87-desktop-tests.log",
+      "strictClippy": "PASS /tmp/rm87-desktop-clippy.log; existing nonfatal missingLLVM stripping warning",
+      "webBuild": "PASS /tmp/rm87-web-build.log",
+      "nativeBuild": "PASS /tmp/rm87-desktop-build.log",
+      "stageBundle": "target/native/Rentemester Desktop.app",
+      "stageRevision": "baa5aeaf",
+      "stillInstalledRevision": "df07046a",
+      "httpsFixture": "scripts/rust/run-desktop-https.py;743e10d4; syntax/source reviewed, --help verified; notexecuted againstledger",
+      "uiLimitation": "Cua noWindowsAvailable; async human visibilityquestionpending. App/serverauthoritativelyalive. No doubleissuance or financial action after failedobservation.",
+      "cleanup": "BothisolatedGroup87worktreesarchived; installedtestapp/server and privatefixturepreserved for resumption.",
+      "fullMissionComplete": false
     }
   },
   "verified_history": [
@@ -3005,6 +3043,17 @@
       "acceptance": "Installed local normal owner/verification/password/TOTP/portfolio, quit/reopen same profile/keys and exact owned shutdown; bounded scope only.",
       "status": "COMPLETE finite local onboarding boundary. Group86 implements the explicitly approved shared React web UI in a Tauri2 Rust desktop host. Installed unsigned macOS bundle at df07046a completed normal local create-profile, first-owner creation, native private-mail verification, password login, TOTP enrollment and authorized portfolio; quit stopped the exact owned server. Reopening the same installed app/profile at a new loopback port completed password/TOTP login and preserved exactly one owner, original profile config and signing/public keys. Second quit stopped the owned runtime. All12 bundle files match the manifest; zero journal entries/lines/documents/bankrows. Desktop9tests pass with1existingignored, strictClippy and build pass. Architecture/epic/GDD source updated and both owned worktrees archived. Remote HTTPS, uploads/downloads/PDF and financial desktop workflows remain unqualified. Whole Rust mission/epic672, supported TSworkspace adoption, transfer/recovery, automation, updates/distribution and TS retirement remain OPEN.",
       "cleanup": "Both2ownedworktrees archived; runtime stopped; installed unsigned bundle and private synthetic fixture retained."
+    },
+    {
+      "delivery": "Group87 installed invoice, file saves and independent HTTPS mode",
+      "owner": "Root actualUI/integration/qualification; isolated download and HTTPShelper writers",
+      "depends_on": [
+        "AcceptedGroup86 managed local normal owner/MFA/reopen",
+        "Existing qualified Rust/web financial source workflows"
+      ],
+      "acceptance": "Installed preview/issue/post/import/settle/original save/upload/PDF/reopen; stricttrusted independentHTTPS/MFA/currentrights; exact effects, no replay.",
+      "status": "IN_PROGRESS. Group87 actual installed shared-web desktop (old installeddf07046a) completed one explicit full domestic invoice:2026-0001 net200/VAT50/gross250 after native PDF preview proved0allocation. Issued originalPDF displays natively and canonicalPDF SHA256e2d81ce2c7241479fee8e1213e1aa642175b70feeed1a6d5a5f13ff7aa804a91 retained. Exactly1unpostedinvoice,2original/PDFdocuments,0journals/lines/bankrows. CurrentnativePDFviewer has no directsave: sourcebaa5aeaf separates ÅbnPDF from same-origin HentPDF download, supports existingpreviewblob download, and fences native downloads to selectedorigin/ownblob without IPC. Rootregression6f7793d3 passes79UItests/276assertions and9desktoptests(1existingignored); strictClippy, web/native builds pass. Rebuilt unsigned bundle staged, notyetinstalled or actualsavequalified. Independent HTTPS sameprofile fixture743e10d4 implemented/reviewed/syntaxchecked; no signing or native remoteactual yet. Cua reportsnoWindowsAvailable aftertransientAXtimeouts; exactapp97155/server97170 remainalive, uservisibilityquestionpending; no mutation replay or restart solelyfromtimeout. Continue sameinvoice1 to post/import/settle/upload/save/reopen, then independentHTTPS normalMFA. Entire Rust mission/epic672 remains OPEN.",
+      "cleanup": "Bothownedsourceworktreesarchived; existingprivateactual runtime preserved; no unwitnessed mutation replay."
     }
   ],
   "integrated_pending_browser": [
@@ -3116,6 +3165,12 @@
       "code_revision": "764a8a6537c79d2a6cde2078722badb1288d7993",
       "spec_revision": "sha256:88d7ae1a667bd5c35dd317a44a96a61bdd63b1672e1c4b519644f6fe11acfb4e",
       "state": "Group85 qualified at764a8a65:20 ordinary-MFA actions complete existingweb contact lookup→blank prefill→cached lookup preserving manualname/email→separate explicit save; owncompanyCVRsync nineidentityfields→fiscal7vsconfigured1 warning→repeatcachedUI/CLI/MCPsync. Exactly2rawCVRcache snapshots,1savedcustomer,4currentowner syncaudits and0financial effects;protectedfiscalyear/payment21/VATquarter/accounts/roles/bank unchanged. ProviderHTTPSlocalmock receives exactly4requests(contact,own,503,mismatchedCVR); currentreviewer/revoked refusals occurbeforeprovider/cache. Restart withoutcredentials reportsconfiguredfalse/disablesownsync, retainedfreshcache works anduncachedlookup truthfullyfails. FourphaseHTTPCLI/MCPinner equality andfour independent signedfull snapshots/sourcefreefreshownerrestore/reopen preserve rawentities/originalfetchedtimestamps/30dayexpiry/alltables/audit. Stale-cache fallback andmidflightauthority/expiry/CVR races are targetedunit evidence only, notactualclockaging claims. User now explicitly approves Rustdesktop embedding existingwebUI; revise previousGPUIpresentation direction while retaining engine/API/managedlocalserver/remote/integrity/distribution/fullmission. Actualinstalledshared desktop, operatorTSworkspaceadoption andremainingfullmission/epic672 remain OPEN."
+    },
+    {
+      "current_increment": "Installed shared-web Rust desktop local owner/MFA onboarding and managed reopen qualified",
+      "code_revision": "df07046a1f8ebef1dc15bd0d03c5c69a48cedc1b",
+      "spec_revision": "sha256:a7eb3f0d6e65412fa5ee945a7b79721b593806839f4a03e6b8d969ce3327e3fc",
+      "state": "Group86 implements the explicitly approved shared React web UI in a Tauri2 Rust desktop host. Installed unsigned macOS bundle at df07046a completed normal local create-profile, first-owner creation, native private-mail verification, password login, TOTP enrollment and authorized portfolio; quit stopped the exact owned server. Reopening the same installed app/profile at a new loopback port completed password/TOTP login and preserved exactly one owner, original profile config and signing/public keys. Second quit stopped the owned runtime. All12 bundle files match the manifest; zero journal entries/lines/documents/bankrows. Desktop9tests pass with1existingignored, strictClippy and build pass. Architecture/epic/GDD source updated and both owned worktrees archived. Remote HTTPS, uploads/downloads/PDF and financial desktop workflows remain unqualified. Whole Rust mission/epic672, supported TSworkspace adoption, transfer/recovery, automation, updates/distribution and TS retirement remain OPEN."
     }
   ]
 }

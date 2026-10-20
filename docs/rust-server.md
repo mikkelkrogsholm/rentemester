@@ -981,8 +981,19 @@ består med 9 beståede og én eksisterende ignoreret test; kodekontrol og
 bygning består. Evidens:
 `/tmp/rentemester-rust-reports/shared-web-desktop86-local-onboarding.json`.
 
-Finansielle desktopforløb, ekstern HTTPS-server, filupload, download, PDF
-og signeret distribution kræver fortsat installeret accept. GPUI-tests,
+Et yderligere installeret forløb har vist forhåndsvisning uden allokering,
+særskilt udstedelse af faktura `2026-0001` på 200 kr. netto og 50 kr. moms,
+samt visning af dens originale PDF i appen. Den er fortsat ubogført: præcis
+én faktura, to dokumentrækker og nul journal- eller bankposter. Kildekoden
+har nu separate **Åbn PDF**- og **Hent PDF**-handlinger samt download af den
+allerede hentede forhåndsvisning. Native downloads bruger WebKits aktuelle
+session og tillader kun det valgte serverorigin eller dets egne blob-URL’er.
+79 berørte webtests og desktopkontrollen består; den nye pakke er bygget
+og klargjort til installation. Praktisk gemmeaccept af den nye pakke afventer
+et tilgængeligt desktopvindue; den allerede udstedte faktura må ikke gentages.
+
+Finansiel bogføring/betaling, ekstern HTTPS-server, filupload og download
+samt signeret distribution kræver fortsat installeret accept. GPUI-tests,
 skærmbilleder, tidligere låst-skærm-observationer og desktopparagraffer
 nedenfor beskriver den historiske GPUI-implementation og beviser ikke den
 nye hosts login, filupload, download eller PDF-funktion. Den historiske
