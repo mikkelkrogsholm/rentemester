@@ -1,5 +1,6 @@
 //! Source-read-only reports/rehearsals and caller-owned transactional primitives.
 pub mod mail_intake;
+pub mod public_einvoice;
 pub mod document_scan;
 pub mod document_pdf;
 pub mod invoice_extraction;
