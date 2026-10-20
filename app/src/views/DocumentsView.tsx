@@ -42,6 +42,8 @@ const DOC_TYPE_LABELS: Record<string, string> = {
   purchase_sale: "Køb/salg",
   cash_register_receipt: "Kassebon",
   internal_voucher: "Internt bilag",
+  issued_invoice: "Udstedt faktura",
+  issued_invoice_pdf: "PDF af udstedt faktura",
 };
 
 // #433 — the keys we own in the URL. Listed once so "Ryd filtre" can clear
@@ -624,9 +626,9 @@ export function DocumentsView({ detail = false }: { detail?: boolean } = {}) {
                         {association.journalEntryText && <span className="doc-posting-text muted">{association.journalEntryText}</span>}
                         {detail && <Amount value={association.journalEntryTotal} currency="DKK" />}
                       </div>
-                    )) : <div className="doc-posting"><span className="flag warning">Ikke bogført</span>
+                    )) : ["purchase_sale", "cash_register_receipt", "internal_voucher"].includes(doc.documentType) ? <div className="doc-posting"><span className="flag warning">Ikke bogført</span>
                       {!selectedYearArchived && can("company.ledger.post") && <ButtonLink className="btn small" to={workflowTo(slug, "bilag", `${doc.id}/bogfoer`, params, selectedYear)}>Bogfør bilag</ButtonLink>}
-                    </div>}
+                    </div> : <span className="muted">{doc.documentType === "issued_invoice_pdf" ? "PDF af udstedt faktura" : doc.documentType === "issued_invoice" ? "Bogføres fra Fakturaer" : "—"}</span>}
 
                   </td>
                   <td>

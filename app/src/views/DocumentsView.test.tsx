@@ -370,6 +370,18 @@ describe("DocumentsView — unique documents and full-page links", () => {
     await userEvent.type(screen.getByPlaceholderText(/Søg på leverandør/), "anden tilknyttet");
     expect(screen.getByText("DOC-2026-000001")).toBeInTheDocument();
   });
+  test("issued invoice originals never offer expense posting", async () => {
+    const first = documents().documents[0]!;
+    mockFetch(route({ documents: [
+      { ...first, documentType: "issued_invoice_pdf", journalEntryNo: null, journalEntryId: null },
+      { ...first, id: 2, documentNo: "INV-2026-0001", documentType: "issued_invoice", journalEntryNo: null, journalEntryId: null },
+    ] }));
+    renderView();
+    await screen.findByText("INV-2026-0001");
+    expect(screen.queryByRole("link", { name: "Bogfør bilag" })).not.toBeInTheDocument();
+    expect(screen.queryByText("Ikke bogført")).not.toBeInTheDocument();
+    expect(screen.getByText("Bogføres fra Fakturaer")).toBeInTheDocument();
+  });
   test("unbooked action links to its full-page flow with exact list context", async () => {
     const first = documents().documents[0]!;
     mockFetch(route({ documents: [{ ...first, journalEntryNo: null, journalEntryId: null, journalEntryTotal: null }], linkedCount: 0, unlinkedCount: 1 }));
