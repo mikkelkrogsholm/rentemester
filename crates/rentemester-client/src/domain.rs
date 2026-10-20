@@ -124,6 +124,7 @@ pub fn domain_body_schema(operation: DomainMutation) -> Value {
     schema
 }
 pub fn invoice_body_schema() -> Value {
+    let unit_code = json!({"type":["string","null"],"minLength":1,"maxLength":32});
     let party = object(
         json!({"name":optional_text(),"address":optional_text(),"vatOrCvr":optional_text(),"eanNumber":{"type":["string","null"],"maxLength":1024},"publicRecipient":{"type":["boolean","null"]},"buyerReference":{"type":["string","null"],"minLength":1,"maxLength":1024},"orderReference":{"type":["string","null"],"minLength":1,"maxLength":1024}}),
         &[],
@@ -131,7 +132,7 @@ pub fn invoice_body_schema() -> Value {
     let mut nullable_party = party;
     nullable_party["type"] = json!(["object", "null"]);
     let line = object(
-        json!({"description":{"type":"string","minLength":1,"maxLength":1000},"quantity":{"type":"number","exclusiveMinimum":0},"unitPriceExVat":{"type":"number","minimum":0},"taxClassification":{"type":["string","null"],"enum":["taxable","exempt","reverse_charge",null]},"vatRate":{"type":["number","null"]},"reverseChargeBasis":optional_text()}),
+        json!({"description":{"type":"string","minLength":1,"maxLength":1000},"quantity":{"type":"number","exclusiveMinimum":0},"unitPriceExVat":{"type":"number","minimum":0},"unitCode":unit_code.clone(),"taxClassification":{"type":["string","null"],"enum":["taxable","exempt","reverse_charge",null]},"vatRate":{"type":["number","null"]},"reverseChargeBasis":optional_text()}),
         &["description"],
     );
     let mut totals = object(
@@ -140,7 +141,7 @@ pub fn invoice_body_schema() -> Value {
     );
     totals["type"] = json!(["object", "null"]);
     object(
-        json!({"invoiceType":{"type":["string","null"],"enum":["full","simplified",null]},"totals":totals,"fxRateToDkk":{"type":["number","null"],"description":"Explicit DKK per original currency unit; server validates exact six-decimal valuation and simplified DKK threshold."},"issueDate":{"type":"string","pattern":"^[0-9]{4}-[0-9]{2}-[0-9]{2}$"},"lines":{"type":"array","minItems":1,"maxItems":200,"items":line},"vatRatePercent":{"type":["number","null"],"description":"Document percent; explicit line vatRate is fractional. Server validates supported domestic treatment."},"vatTreatment":optional_text(),"reverseChargeBasis":optional_text(),"reverseChargeNote":optional_text(),"customerId":{"type":["integer","null"],"minimum":1},"invoiceNumber":optional_text(),"dueDate":optional_text(),"currency":optional_text(),"seller":nullable_party,"buyer":nullable_party}),
+        json!({"invoiceType":{"type":["string","null"],"enum":["full","simplified",null]},"totals":totals,"fxRateToDkk":{"type":["number","null"],"description":"Explicit DKK per original currency unit; server validates exact six-decimal valuation and simplified DKK threshold."},"issueDate":{"type":"string","pattern":"^[0-9]{4}-[0-9]{2}-[0-9]{2}$"},"lines":{"type":"array","minItems":1,"maxItems":200,"items":line},"vatRatePercent":{"type":["number","null"],"description":"Document percent; explicit line vatRate is fractional. Server validates supported domestic treatment."},"vatTreatment":optional_text(),"reverseChargeBasis":optional_text(),"reverseChargeNote":optional_text(),"customerId":{"type":["integer","null"],"minimum":1},"invoiceNumber":optional_text(),"dueDate":optional_text(),"deliveryDate":optional_text(),"deliveryPeriodStart":optional_text(),"deliveryPeriodEnd":optional_text(),"unitCode":unit_code.clone(),"currency":optional_text(),"seller":nullable_party,"buyer":nullable_party}),
         &["issueDate", "lines"],
     )
 }
@@ -351,6 +352,27 @@ mod invoice_vat_schema_tests {
         assert!(body(&serde_json::to_vec(&bad).unwrap(), &schema).is_err());
         let mut bad = input;
         bad["lines"][0]["unexpected"] = json!(1);
+        assert!(body(&serde_json::to_vec(&bad).unwrap(), &schema).is_err());
+    }
+    #[test]
+    fn invoice_metadata_and_foreign_buyer_preserve_native_wire_without_inferred_treatment() {
+        let schema = invoice_body_schema();
+        let input = json!({"issueDate":"2026-10-20","deliveryPeriodStart":"2026-10-01","deliveryPeriodEnd":"2026-10-19","unitCode":"HUR","buyer":{"name":"Synthetic Foreign Buyer","address":"Synthetic Street","vatOrCvr":"DE123456789"},"lines":[{"description":"Synthetic service","quantity":1,"unitPriceExVat":100,"unitCode":"H87"}]});
+        let wire = serde_json::to_vec(&input).unwrap();
+        assert!(body(&wire, &schema).is_ok());
+        assert!(input.get("vatTreatment").is_none());
+        let mut date = input.clone();
+        date.as_object_mut().unwrap().remove("deliveryPeriodStart");
+        date.as_object_mut().unwrap().remove("deliveryPeriodEnd");
+        date["deliveryDate"] = json!("2026-10-19");
+        assert!(body(&serde_json::to_vec(&date).unwrap(), &schema).is_ok());
+        date["lines"][0]["unitCode"] = json!(5);
+        assert!(body(&serde_json::to_vec(&date).unwrap(), &schema).is_err());
+        let mut bad = input.clone();
+        bad["unitCode"] = json!("x".repeat(33));
+        assert!(body(&serde_json::to_vec(&bad).unwrap(), &schema).is_err());
+        let mut bad = input;
+        bad["deliveryDate"] = json!({"actor":"invented"});
         assert!(body(&serde_json::to_vec(&bad).unwrap(), &schema).is_err());
     }
     #[test]
