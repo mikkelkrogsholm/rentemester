@@ -203,12 +203,44 @@ async fn connect_inner(
         .min_inner_size(800.0, 600.0)
         .disable_drag_drop_handler()
         .on_navigation(move |url| workspace_navigation(url, &origin))
-        .on_download(move |_, event| match event {
+        .on_download(move |window, event| match event {
             // WK download actions bypass ordinary navigation admission. Keep the
-            // same selected-origin boundary while retaining OS destinations and
-            // collision handling; the authenticated response bytes stay native.
-            tauri::webview::DownloadEvent::Requested { url, .. } => {
-                workspace_navigation(&url, &download_origin)
+            // selected-origin boundary; the authenticated bytes stay in WebKit.
+            tauri::webview::DownloadEvent::Requested { url, destination } => {
+                if !workspace_navigation(&url, &download_origin) {
+                    return false;
+                }
+                #[cfg(target_os = "macos")]
+                {
+                    // A native save panel grants access to the user's chosen
+                    // location. An implicit Downloads write can otherwise block
+                    // WebKit's main thread on macOS folder-privacy admission.
+                    // RFD runs the panel directly when already on the main thread.
+                    let name = destination.file_name().unwrap_or_default().to_string_lossy();
+                    let Some(selected) = rfd::FileDialog::new()
+                        .set_parent(&window.window())
+                        .set_title("Gem fil")
+                        .set_file_name(name)
+                        .save_file()
+                    else {
+                        return false;
+                    };
+                    // WKDownload requires a destination that does not exist.
+                    // Preserve existing exports rather than removing them before
+                    // a download that may still fail or be cancelled.
+                    if selected.exists() {
+                        show_info(
+                            window.app_handle(),
+                            "Filen findes allerede",
+                            "Vælg et nyt filnavn, når du henter filen igen.".into(),
+                        );
+                        return false;
+                    }
+                    *destination = selected;
+                }
+                #[cfg(not(target_os = "macos"))]
+                let _ = (window, destination);
+                true
             }
             // macOS does not provide the completed path. Never log source URLs
             // or claim a filename from an unavailable completion path.

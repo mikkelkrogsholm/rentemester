@@ -32,6 +32,9 @@ ring = "=0.17.14"
 serde_json.workspace = true
 tokio = { version = "1", features = ["rt-multi-thread"] }
 
+[target.'cfg(target_os = "macos")'.dependencies]
+rfd = { version = "=0.17.2", default-features = false }
+
 [build-dependencies]
 tauri-build = "2"
 
