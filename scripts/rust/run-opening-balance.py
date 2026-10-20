@@ -416,8 +416,27 @@ def main():
             archive = phase('archive')
             report['signedSnapshot'] = archive
             after_audit = inspect_snapshot('after')
-            if before_audit != after_audit:
-                raise RuntimeError('Read/refusal/replay sequence changed company audit, opening marker or journal rows')
+            replay_proof = {}
+            for slug, before in before_audit.items():
+                after = after_audit[slug]
+                if any(before[table] != after[table] for table in ['opening_balances', 'journal_entries', 'journal_lines']):
+                    raise RuntimeError('Read/refusal/replay sequence changed opening marker or journal rows')
+                prefix = before['audit_log']
+                if after['audit_log'][:len(prefix)] != prefix:
+                    raise RuntimeError('Existing immutable company audit prefix changed')
+                appended = after['audit_log'][len(prefix):]
+                # clients() makes exactly four explicit accepted-key replay calls;
+                # reopen() repeats those four. Existing receipt protocol audits each.
+                expected_count = 8 if slug.endswith('-right') else 0
+                originals = [row for row in prefix if row['event_type'] == 'idempotency_original' and row['message'] == 'Recorded idempotent opening_balance_post outcome']
+                if len(originals) != 1 or len(appended) != expected_count:
+                    raise RuntimeError('Unexpected original receipt or replay diagnostic count')
+                original = originals[0]
+                for index, row in enumerate(appended, start=1):
+                    if row['id'] != prefix[-1]['id'] + index or row['event_type'] != 'idempotency_replay' or row['entity_type'] != 'idempotency_receipt' or row['entity_id'] != original['entity_id'] or row['actor'] != original['actor'] or row['message'] != 'Replayed durable idempotency outcome for opening_balance_post':
+                        raise RuntimeError('Unexpected business audit effect during explicit receipt replay')
+                replay_proof[slug] = {'immutableAuditPrefixUnchanged': True, 'openingAndJournalRowsUnchanged': True, 'exactOpeningReceiptReplayDiagnostics': len(appended)}
+            report['receiptReplayAuditProof'] = replay_proof
             report['companyReadRefusalReplayAtomicityQualified'] = True
             progress('operator:independent-signed-snapshot-verification')
             path = work / 'opening-balance-after.native-backup.json'
