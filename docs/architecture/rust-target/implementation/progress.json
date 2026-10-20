@@ -1,13 +1,13 @@
 {
   "goal": "Complete Rust server/web, GPUI local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "Public e-invoice explicit registration, immutable source delivery/status and signed source-free recovery qualified",
-  "code_revision": "de2a3397ec558fff8e12b7e81142d55b52de9c21",
-  "spec_revision": "sha256:9a7bc5653b14cf898d1040e766f7fae945771be89b83b07ee50f62ffc1234753",
-  "state": "Group74 actual PASS atde2a3397 with exact independently matched server/CLI/MCP/web/helper hashes: 25 ordinary-MFA actions through existing web PDF preview/issuance and explicit legal-company/outbound registration, verified-TLS synthetic provider validation/delivery/status, frozen EAN despite contact edit, accepted terminal and ambiguous outcomes permanently blocking redelivery. Exactly3 delivery POSTs,5 validations,1 status GET; current revocation during held validation yields403 without reservation/delivery. Exact HTTP/CLI/MCP retained outcome/read parity, fresh-MFA restart and four independently verified signed source-free fresh-owner restore/reopens preserve10 originals/3 submissions/6 events/registration and audit prefix, credentials absent and no replay. Root independently audited exact domain tables, originals, provider XML hashes and only restore-boundary audit append. Owned cleanup true. No real external transmission or installed-native qualification. Full mission/epic672 OPEN; next75 mixed/exempt/domestic-reverse invoice lifecycle.",
+  "current_increment": "Full DKK mixed/exempt/domestic-reverse invoice lifecycle and signed source-free recovery qualified",
+  "code_revision": "948e4406bd37e69741c5fb55055009fee9295aa0",
+  "spec_revision": "sha256:874bef089ec3046967d7da689a7d951c622d7c984cff3d48a854c36299c277df",
+  "state": "Group75 actual PASS at948e4406:19 ordinary-MFA actions through existing web mixed-tax preview/issue/post/partial-final credit plus exempt/domestic-reverse/per-line rounding API variants;4 issued invoices,8 original-linked credit notes,1 receipt,2 refunds and exactly15 journals. Explicit original net/VAT counters conserved, actual signed credit journal accounts/codes/debits match immutable allocations. Output VAT25.03 and exempt/reverse bases250 before credits; zero VAT and all accounts after full credits/cash. Earlier cutoff preserves4 original gross receivables; reviewed current custom close succeeds. HTTP/CLI/MCP canonical equality and duplicate refusals across source/restart/fresh-owner restore/reopen. Four independently verified signed archives retain exact original bytes/domain tables/audit prefix; only restore-boundary audit append. Source and target/signers removed before final independent verification. Root independently matched binaries/web/helper hashes and extracted truthful PDF amounts/classifications. Owned cleanup true. Full mission/epic672 OPEN: foreign/currency/simplified invoice variants, bank provenance followups, remaining reports and installed desktop/transfer/distribution/TS retirement remain.",
   "issues_closed": [],
   "next": [
-    "Group75: finish full DKK invoices with mixed taxable/exempt and domestic reverse-charge lines through preview/issue, immutable originals, posting, partial/final credit, payment/refund, VAT/dated close, clients and signed recovery. Four isolated implementation owners active; not yet qualified.",
+    "Next server/web boundary: remaining sales currency/foreign-reverse/OSS/simplified invoice variants or missing portfolio/cashflow journeys; select a whole workflow with shared contracts before isolated implementation. Group75 is qualified; do not repeat it without changed code or new failure evidence.",
     "Keep remaining full unmatched bank candidate/description/refresh synchronization explicit, plus raw-file Windows1252 CLI compatibility; no all-importer-parity claim.",
     "Other concrete server/web gaps remain: sales simplified/currency/foreign reverse-charge and OSS variants, portfolio/cashflow pages, interactive CVR lookup/sync. Preserve explicit bank followups.",
     "Complete installed local/remote desktop financial journeys, full recovery/transfer/automation/distribution and TypeScript retirement gates. Full goal remains open."
@@ -21,10 +21,10 @@
   ],
   "all_goal_requirements_complete": false,
   "previous_verified_increment": {
-    "current_increment": "Bilagsmail manual/service intake, explicit inbox review and signed source-free recovery qualified",
-    "code_revision": "62c085a4099e7611696e36ca625bb29462096967",
-    "spec_revision": "sha256:008be046798e32b6c57d8040225225bbf6e40beace842b5b04863044a9e8a71a",
-    "state": "Group73 actual PASS at62c085a4: 28 actions with ordinary verified-MFA users, existing Bilagsmail configuration and real synthetic verified-TLS IMAP manual/service-account polling, exact original EML/PDF retention, explicit existing inbox classification/currency review and exactly one unposted document. Repeated UIDs and identical EML under a new UID deduplicate; invalid/missing-ID/oversized messages retain truthful evidence. Configuration deletion and current grantor revocation during held fetch promptly deny without retained effects. Canonical HTTP/CLI/MCP status/source/original byte parity, fresh-MFA restart and four independently verified signed source-free fresh-owner restore/reopens preserve originals, review, dedup, document and audit with credentials/polling disabled and zero journals. Root independently matched three binaries, full web inventory, helper hashes, full InboxV2 and company table snapshots, originals and audit prefixes. Owned runtime/process cleanup true. Installed native GUI, real external mail and full mission remain OPEN; next74 real public e-invoice."
+    "current_increment": "Public e-invoice explicit registration, immutable source delivery/status and signed source-free recovery qualified",
+    "code_revision": "de2a3397ec558fff8e12b7e81142d55b52de9c21",
+    "spec_revision": "sha256:9a7bc5653b14cf898d1040e766f7fae945771be89b83b07ee50f62ffc1234753",
+    "state": "Group74 actual PASS atde2a3397 with exact independently matched server/CLI/MCP/web/helper hashes: 25 ordinary-MFA actions through existing web PDF preview/issuance and explicit legal-company/outbound registration, verified-TLS synthetic provider validation/delivery/status, frozen EAN despite contact edit, accepted terminal and ambiguous outcomes permanently blocking redelivery. Exactly3 delivery POSTs,5 validations,1 status GET; current revocation during held validation yields403 without reservation/delivery. Exact HTTP/CLI/MCP retained outcome/read parity, fresh-MFA restart and four independently verified signed source-free fresh-owner restore/reopens preserve10 originals/3 submissions/6 events/registration and audit prefix, credentials absent and no replay. Root independently audited exact domain tables, originals, provider XML hashes and only restore-boundary audit append. Owned cleanup true. No real external transmission or installed-native qualification. Full mission/epic672 OPEN; next75 mixed/exempt/domestic-reverse invoice lifecycle."
   },
   "evidence": {
     "combined_browser_log": "/tmp/rm-platform5-combined.log",
@@ -1501,6 +1501,31 @@
       "root_independent_checks": "three binary/full web/runner hashes; four signed archive snapshot table and full InboxV2 equality; exact original SHA256 and complete source audit prefix; owned cleanup verified",
       "actual_qualified": true,
       "limits": "No installed-native qualification or real external mail claim; synthetic TLS provider."
+    },
+    "group75_domestic_vat": {
+      "source_revision": "948e4406",
+      "actual_report": "/tmp/rentemester-rust-reports/domestic-vat-integrated75-run4.json",
+      "actual_report_sha256": "ea0cbf24c15b8a2d935001ada8c97ea2fe40442eb4f814c521bbab4a8e7e6c1c",
+      "root_independent_audit": "/tmp/rm75-root-independent-qualification.json",
+      "actual_log": "/tmp/rm75-root-actual-run4.log",
+      "engine_tests": "/tmp/rm75-engine-all-tests-final.log (88PASS)",
+      "credit_tests": "/tmp/rm75-credit-tests-integrated-final.log (9PASS)",
+      "sales_tests": "/tmp/rm75-storage-sales-tests.log (6PASS)",
+      "sdk_tests": "/tmp/rm75-sdk-vat-tests.log (1PASS)",
+      "web_tests": "/tmp/rm75-root-accessibility-tests.log (31PASS)",
+      "web_build": "/tmp/rm75-root-accessibility-build.log (PASS)",
+      "strict": "/tmp/rm75-strict-complete.log (all-targets PASS)",
+      "build": "/tmp/rm75-build-complete.log (server/CLI/MCP PASS)",
+      "failed_attempts": [
+        "/tmp/rentemester-rust-reports/domestic-vat-integrated75.json (accessible control name; fixed)",
+        "/tmp/rentemester-rust-reports/domestic-vat-integrated75-run2.json (same-day closed bank cycle cannot establish independent closing balance)",
+        "/tmp/rentemester-rust-reports/domestic-vat-integrated75-run3.json (same refusal; incomplete diagnostic detail fixed)"
+      ],
+      "limitations": [
+        "Existing pure VAT-only credit amount refusal remains; optional schema/policy extension stopped and not integrated.",
+        "Same-day closed bank cycles require explicit order provenance; current actual journey uses dated receipt/refunds without weakening close controls.",
+        "No foreign currency/foreign reverse/simplified/OSS or installed-native qualification."
+      ]
     }
   },
   "verified_history": [
@@ -2315,9 +2340,34 @@
     {
       "delivery": "Group75 full DKK mixed/exempt/domestic-reverse invoice lifecycle",
       "owner": "root contract/integration/actual; four isolated engine, posting, credit-close and web-client writers",
-      "status": "IMPLEMENTATION ACTIVE; no integrated or actual75 qualification. Historical issued snapshots must not be recomputed. Full mission remains OPEN.",
+      "status": "QUALIFIED:19 actual ordinary-MFA actions at948e4406; exact classified postings/credits/cash/VAT/dated close, HTTP/CLI/MCP, fresh-MFA restart, four independently verified signed archives and one source-free fresh-owner restore plus reopen. Independent root audit PASS. Full mission OPEN.",
       "contract": "/tmp/rm-platform75-domestic-vat-contract.md",
-      "acceptance": "Existing web explicit classification/basis and truthful PDF → immutable issue → one current-authorized classified posting → cumulative partial/final credits preserving every original net/VAT cent → ordinary receipt/refund and dated VAT/close → HTTP/CLI/MCP and signed source-free original/history recovery. Other invoice variants remain explicit full-goal followups."
+      "acceptance": "Existing web explicit classification/basis and truthful PDF → immutable issue → one current-authorized classified posting → cumulative partial/final credits preserving every original net/VAT cent → ordinary receipt/refund and dated VAT/close → HTTP/CLI/MCP and signed source-free original/history recovery. Other invoice variants remain explicit full-goal followups.",
+      "evidence": {
+        "source_revision": "948e4406",
+        "actual_report": "/tmp/rentemester-rust-reports/domestic-vat-integrated75-run4.json",
+        "actual_report_sha256": "ea0cbf24c15b8a2d935001ada8c97ea2fe40442eb4f814c521bbab4a8e7e6c1c",
+        "root_independent_audit": "/tmp/rm75-root-independent-qualification.json",
+        "actual_log": "/tmp/rm75-root-actual-run4.log",
+        "engine_tests": "/tmp/rm75-engine-all-tests-final.log (88PASS)",
+        "credit_tests": "/tmp/rm75-credit-tests-integrated-final.log (9PASS)",
+        "sales_tests": "/tmp/rm75-storage-sales-tests.log (6PASS)",
+        "sdk_tests": "/tmp/rm75-sdk-vat-tests.log (1PASS)",
+        "web_tests": "/tmp/rm75-root-accessibility-tests.log (31PASS)",
+        "web_build": "/tmp/rm75-root-accessibility-build.log (PASS)",
+        "strict": "/tmp/rm75-strict-complete.log (all-targets PASS)",
+        "build": "/tmp/rm75-build-complete.log (server/CLI/MCP PASS)",
+        "failed_attempts": [
+          "/tmp/rentemester-rust-reports/domestic-vat-integrated75.json (accessible control name; fixed)",
+          "/tmp/rentemester-rust-reports/domestic-vat-integrated75-run2.json (same-day closed bank cycle cannot establish independent closing balance)",
+          "/tmp/rentemester-rust-reports/domestic-vat-integrated75-run3.json (same refusal; incomplete diagnostic detail fixed)"
+        ],
+        "limitations": [
+          "Existing pure VAT-only credit amount refusal remains; optional schema/policy extension stopped and not integrated.",
+          "Same-day closed bank cycles require explicit order provenance; current actual journey uses dated receipt/refunds without weakening close controls.",
+          "No foreign currency/foreign reverse/simplified/OSS or installed-native qualification."
+        ]
+      }
     },
     {
       "delivery": "Native desktop web styling and approved app logo",

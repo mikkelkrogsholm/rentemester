@@ -492,13 +492,37 @@ workspace og kontrollerer samme anlægsforløb igen efter genstart.
    kundekortet viser disse beløb. **Hent PDF** læser altid de gemte bytes;
    ændrede stamdata eller servergenstart omskriver ikke den udstedte faktura.
 
-Dette forløb understøtter foreløbig fulde danske DKK-fakturaer med standard
-25% moms og danske CVR/momsidentiteter. Ugyldige beløb og datoer, nummergenbrug
-og dobbelt bogføring afvises. PDF understøtter det nuværende latinske tegnsæt,
-herunder danske bogstaver; tekst uden for tegnsættet afvises ved input.
-Fremmed valuta, andre momstyper, offentlig e-faktura,
-og ekstern maillevering mangler stadig i Rust.
-Der sendes ingen fakturaer eksternt i dette forløb.
+Forløbet understøtter fulde danske DKK-fakturaer med danske CVR/momsidentiteter:
+standard 25% moms, blandede momspligtige og fritagne linjer samt dansk omvendt
+betalingspligt. Under **Moms på fakturaen** vælges **Momsbehandling**.
+**Specificér moms pr. linje** åbner linjernes momstype. Ved omvendt betalingspligt
+angives det afklarede danske lovgrundlag og en note; serveren kontrollerer
+klassifikationen. PDF og uforanderlige originaler viser den valgte behandling.
+Køber afregner momsen ved dansk omvendt betalingspligt; sælger opkræver ingen moms.
+
+Hver klassificeret linje afrundes og bogføres med sit eget grundlag. Eksempel:
+100 kr. med 25% moms og 50 kr. fritaget giver 150 kr. netto, 25 kr. moms og
+175 kr. til betaling. Kreditnotaer følger originalens konkrete nettobeløb og
+momsposter. Delkreditering og slutkreditering bevarer alle oprindelige øre og
+konti; historiske fakturaer genberegnes ikke efter de nye linjeregler.
+En kredit, der alene består af moms uden et positivt omsætningsgrundlag, afvises
+fortsat sikkert og kræver et særskilt korrektionsforløb.
+
+Ugyldige beløb og datoer, nummergenbrug og dobbelt bogføring afvises. PDF
+understøtter det nuværende latinske tegnsæt, herunder danske bogstaver; tekst
+uden for tegnsættet afvises ved input. Fremmed valuta, udenlandsk omvendt
+betalingspligt, OSS og forenklede salgsfakturaer er fortsat restarbejde.
+Udstedelse sender ingen faktura eksternt; eksplicit SMTP-afsendelse og offentlig
+e-faktura er beskrevet i deres egne afsnit nedenfor.
+
+Det samlede momsforløb er afprøvet på syntetiske data med almindeligt ejer- og
+reviewerlogin/MFA: forhåndsvisning, udstedelse, bogføring, delvise og fulde
+krediteringer, bankbetaling og to tilbagebetalinger, momsrapport og gennemgået
+periodelukning. De 15 journalposter, originale PDF/JSON-filer og klassificerede
+kreditfordelinger er verificeret gennem HTTP, CLI og MCP samt genstart og én
+kildeuafhængig gendannelse med ny ejer efterfulgt af genstart. Fire signerede
+backupøjebliksbilleder er kontrolleret uafhængigt. Installeret desktop og de
+resterende fakturavarianter er ikke kvalificeret af denne prøve.
 
 ## Ret kundens oplysninger
 
