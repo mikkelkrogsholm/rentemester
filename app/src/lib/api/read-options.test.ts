@@ -60,7 +60,7 @@ describe("API read cancellation options", () => {
     controller.abort();
     const fetchMock = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) => response({}));
     stubGlobal("fetch", fetchMock);
-    await api.health({ signal: controller.signal });
+    await expect(api.health({ signal: controller.signal })).rejects.toBe(controller.signal.reason);
     const scope = { companyId: 1, accountingFrom: "2026-01-01", accountingTo: "2026-12-31", bankFrom: "2026-01-01", bankTo: "2026-12-31", runKey: "synthetic-run" };
     await api.bookkeepingBatchPersist("synthetic", scope);
     const mutationInit = fetchMock.mock.calls[1]?.[1] as RequestInit;

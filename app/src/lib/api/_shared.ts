@@ -63,7 +63,10 @@ function responseError(res: Response, body: unknown, fallback: string): ApiError
   const errors = Array.isArray(env?.errors) ? env.errors.map(String) : [];
   const code = res.status === 401 ? "unauthorized" : typeof env?.code === "string" ? env.code : "internal";
   if (code === "unauthorized") signalAuthExpired();
-  return new ApiError(code, errors[0] ?? (res.status === 401 ? "Din session er udløbet. Log ind igen." : fallback), res.status);
+  const message = res.status === 403 && ["access_denied", "forbidden", "internal"].includes(code)
+    ? "Du har ikke adgang til denne handling. Bed workspace-ejeren kontrollere dine rettigheder."
+    : errors[0] ?? (res.status === 401 ? "Din session er udløbet. Log ind igen." : fallback);
+  return new ApiError(code, message, res.status);
 }
 
 function bodyReadError(res: Response, cause: unknown, init?: ApiRequestOptions): unknown {
