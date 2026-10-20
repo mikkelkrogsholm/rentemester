@@ -54,6 +54,8 @@ pub fn run(args: &[String]) -> Result<Value, Failure> {
             "transport":"HTTPS only unless --allow-loopback-http and literal loopback IP; --server is an origin without path/query/userinfo. No local fallback, redirects, ambient proxies or automatic retries.",
             "exitCodes":{"0":"success","1":"server/transport/protocol failure","2":"usage/configuration failure"},
             "example":"rentemester-rust remote --server http://127.0.0.1:8080 --allow-loopback-http --cookie-file /private/session.cookie trial-balance --company example --year 2026"});
+        help["publicEInvoice"]=crate::public_einvoice::help();
+        help["commands"].as_array_mut().unwrap().extend(crate::public_einvoice::COMMANDS.map(|s|json!(s)));
         help["bilagsmail"] = crate::bilagsmail::help();
         help["invoiceExtraction"]=crate::invoice_extraction::help();
         help["commands"].as_array_mut().unwrap().extend(crate::invoice_extraction::COMMANDS.map(|s|json!(s)));
@@ -221,6 +223,7 @@ pub fn run(args: &[String]) -> Result<Value, Failure> {
     if crate::intercompany::accepts(command){return crate::intercompany::run(command,&flags,allow_http,confirmed,preview_reviewed);}
     if crate::ownership::accepts(command){return crate::ownership::run(command,&flags,allow_http,confirmed,preview_reviewed);}
     if crate::corporate_records::accepts(command){return crate::corporate_records::run(command,&flags,allow_http,confirmed,preview_reviewed);}
+    if crate::public_einvoice::accepts(command){return crate::public_einvoice::run(command,&flags,allow_http,confirmed,preview_reviewed);}
     if crate::bilagsmail::accepts(command){return crate::bilagsmail::run(command,&flags,allow_http,confirmed,preview_reviewed);}
     if crate::workspace_inbox::accepts(command){return crate::workspace_inbox::run(command,&flags,allow_http,confirmed,preview_reviewed);}
     if crate::parties::accepts(command){return crate::parties::run(command,&flags,allow_http,confirmed,preview_reviewed);}
