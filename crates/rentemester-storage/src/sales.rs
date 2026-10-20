@@ -717,9 +717,13 @@ pub fn post(
         amount_foreign: foreign.then_some(original_projection.gross),
         amount_dkk: foreign.then_some(gross.clone()),
         fx_rate_to_dkk: if foreign {
-            Some(rentemester_engine::sales_fx::rate(
-                payload["currency"].as_str().unwrap(),
-                payload["totals"]["fxRateToDkk"].as_number(),
+            // Both native v1 and historical aggregates were verified above.
+            // Historical originals retain a raw quote that TS rounded to six decimals.
+            Some(rentemester_engine::fx::FxRate::parse(
+                &payload["totals"]["fxRateToDkk"]
+                    .as_number()
+                    .ok_or_else(|| refused("verified frozen invoice quote missing"))?
+                    .to_string(),
             )?)
         } else {
             None

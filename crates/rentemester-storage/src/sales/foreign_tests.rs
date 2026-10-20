@@ -151,3 +151,92 @@ fn future_expired_domestic_and_mismatched_vat_never_allocate_invoice_number() {
         "2025-0001"
     );
 }
+
+#[test]
+fn verified_legacy_raw_quote_posts_normalized_rate_without_rewriting_source() {
+    let mut control = rusqlite::Connection::open_in_memory().unwrap();
+    let mut db = rusqlite::Connection::open_in_memory().unwrap();
+    crate::fresh::initialize_empty_pair(&mut control, &mut db, "Synthetic Legacy Seller").unwrap();
+    let tx = db
+        .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
+        .unwrap();
+    tx.execute_batch("UPDATE companies SET address='Synthetic Street',cvr='87654321',vat_period_type='quarter' WHERE id=1; INSERT INTO accounts(account_no,name,type,normal_balance) VALUES('R','Synthetic receivable','asset','debit'),('S','Synthetic sale','income','credit'); INSERT INTO account_role_mappings(role,account_no,version,confirmed_by) VALUES('debtors','R',1,'synthetic');").unwrap();
+    let now = "2025-08-01T12:00:00Z";
+    crate::vies::store(&tx, &validation(true, now), "synthetic").unwrap();
+    let mut payload = prepare(&tx, &input(), now, true).unwrap();
+    payload["reverseChargeBasis"] = json!("EU_MOMSDIREKTIV_ART_196");
+    payload["totals"]["fxRateToDkk"] = json!(7.4600001);
+    payload
+        .as_object_mut()
+        .unwrap()
+        .remove("fxValuationVersion");
+    for key in ["vatRate", "vatAmount", "vatAmountDkk"] {
+        payload["totals"].as_object_mut().unwrap().remove(key);
+    }
+    for line in payload["lines"].as_array_mut().unwrap() {
+        for key in [
+            "vatBaseDkk",
+            "vatAmountDkk",
+            "taxClassification",
+            "vatRate",
+            "vatBase",
+            "vatAmount",
+            "reverseChargeBasis",
+        ] {
+            line.as_object_mut().unwrap().remove(key);
+        }
+    }
+    let source = serde_json::to_string_pretty(&payload).unwrap();
+    let hash = crate::invoice_email::sha(source.as_bytes());
+    let registered = register(
+        &tx,
+        &payload,
+        Artifact {
+            filename: "legacy.json",
+            path: "legacy.json",
+            hash: &hash,
+            mime: "application/json",
+        },
+        Artifact {
+            filename: "legacy.pdf",
+            path: "legacy.pdf",
+            hash: &"b".repeat(64),
+            mime: "application/pdf",
+        },
+        "synthetic",
+    )
+    .unwrap();
+    let id = registered["documentId"].as_i64().unwrap();
+    let result = post(
+        &tx,
+        &Post {
+            invoice_document_id: id,
+            revenue_account_no: "S".into(),
+            confirm: true,
+        },
+        "synthetic",
+        Date::parse("2025-08-01").unwrap(),
+    )
+    .unwrap();
+    assert_eq!(result["ok"], true);
+    let rate: f64 = tx
+        .query_row(
+            "SELECT fx_rate_to_dkk FROM journal_entries WHERE document_id=?1",
+            [id],
+            |r| r.get(0),
+        )
+        .unwrap();
+    assert_eq!(rate, 7.46);
+    let retained: String = tx
+        .query_row(
+            "SELECT payload_json FROM documents WHERE id=?1",
+            [id],
+            |r| r.get(0),
+        )
+        .unwrap();
+    assert_eq!(retained, source);
+    assert_eq!(
+        list(&tx, "synthetic", "2025-08-01", Some("2025")).unwrap()["invoices"][0]["openBalanceDkk"],
+        746.0
+    );
+}

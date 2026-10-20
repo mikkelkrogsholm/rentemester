@@ -197,7 +197,6 @@ fn legacy_project(
         || net.is_negative()
         || net == Money::default()
         || vat.is_negative()
-        || (!reverse && vat == Money::default())
     {
         return Err(refused(
             "legacy frozen DKK totals differ from source FX aggregates",
@@ -403,6 +402,21 @@ mod tests {
             .unwrap()
             .remove("vatAmountDkk");
         assert!(project(&old).is_err());
+    }
+    #[test]
+    fn historical_ordinary_exempt_source_keeps_zero_vat_and_exact_aggregate() {
+        let native = sales_invoice::compute(&serde_json::from_value(json!({"issueDate":"2025-08-01","currency":"EUR","fxRateToDkk":7.46,"lines":[{"description":"Synthetic exempt sale","quantity":1,"unitPriceExVat":100,"taxClassification":"exempt"}]})).unwrap()).unwrap();
+        let old = without_native_allocation(native);
+        let original = serde_json::to_vec(&old).unwrap();
+        let projected = project(&old).unwrap();
+        assert_eq!(projected.net.decimal(), "746.00");
+        assert_eq!(projected.gross, projected.net);
+        assert_eq!(projected.vat, Money::default());
+        assert_eq!(projected.lines[0].vat_code, "DK_SALE_EXEMPT");
+        assert_eq!(serde_json::to_vec(&old).unwrap(), original);
+        let mut bad = old;
+        bad["totals"]["vatAmountDkk"] = json!(1);
+        assert!(project(&bad).is_err());
     }
     #[test]
     fn foreign_service_allocation_is_exact_and_tampering_refuses() {

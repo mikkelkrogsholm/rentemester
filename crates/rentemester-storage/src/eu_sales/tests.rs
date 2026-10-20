@@ -292,12 +292,12 @@ fn source_foreign_bases_omitted_vat_and_aggregate_fx_support_post_credit_and_rep
                 )
                 .unwrap();
             assert_eq!(saved, (bytes, hash));
-            tx.execute(
+            // The real schema prevents replacing an issued original's hash.
+            assert!(tx.execute(
                 "UPDATE documents SET sha256_hash=?1 WHERE id=?2",
                 params!["0".repeat(64), id],
-            )
-            .unwrap();
-            assert!(report(&tx, "2026-01-01", "2026-12-31").is_err());
+            ).is_err());
+            assert_eq!(report(&tx, "2026-01-01", "2026-12-31").unwrap()["totalValue"], expected * 0.8);
         }
     }
 }

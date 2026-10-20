@@ -10,7 +10,7 @@ pub fn tools() -> Vec<Value> {
     vec![
         tool(
             "eu_sales",
-            "Read dated posted EU B2B service sales and signed credits in DKK using frozen invoice valuations. Current company read authority; explicit inclusive from/to dates. Preparation only, no tax submission or local aggregation.",
+            "Read dated posted foreign EU reverse-charge sales and signed credits in DKK using verified frozen invoice valuations and supported explicit legal bases. Current company read authority; explicit inclusive from/to dates. Preparation only, no tax submission or local aggregation.",
             json!({"type":"object","required":["company","from","to"],"properties":{"company":{"type":"string"},"from":{"type":"string"},"to":{"type":"string"}},"additionalProperties":false}),
             true,
         ),

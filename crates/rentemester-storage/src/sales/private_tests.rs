@@ -46,7 +46,7 @@ fn full_private_buyer_needs_name_address_but_no_cvr_and_keeps_seller_gate() {
     for buyer in [
         Value::Null,
         json!({"name":"Synthetic Private Buyer"}),
-        json!({"name":"Synthetic Buyer","address":"Synthetic street","vatOrCvr":"invalid"}),
+        json!({"name":"Synthetic Buyer","address":"Synthetic street","vatOrCvr":"invalid\nid"}),
     ] {
         let mut bad = source.clone();
         bad["buyer"] = buyer;
