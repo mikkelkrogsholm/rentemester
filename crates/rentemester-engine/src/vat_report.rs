@@ -38,6 +38,8 @@ pub struct Report {
     pub output_vat_adjustment: Money,
     pub input_vat: Money,
     pub payable: Money,
+    pub oss_consumer_sales_base: Money,
+    pub oss_consumer_sales_entry_count: usize,
     pub rubrikker: Rubrics,
     pub errors: Vec<String>,
     pub warnings: Vec<String>,
@@ -106,6 +108,7 @@ pub fn build(lines: &[Line]) -> Result<Report, Error> {
     let mut output = Money::default();
     let mut input = Money::default();
     let mut bases = BTreeMap::new();
+    let mut oss_entries = BTreeSet::new();
     let mut exact_sales_base = Money::default();
     let mut exact_sales_vat = Money::default();
     let mut allocated_reverse = Money::default();
@@ -174,6 +177,9 @@ pub fn build(lines: &[Line]) -> Result<Report, Error> {
             } else {
                 net
             };
+            if code == "OSS_EU_CONSUMER" {
+                oss_entries.insert(id);
+            }
             if reverse_codes.contains(&code) {
                 expected_reverse.add(&amount.percent("25")?);
             }
@@ -291,6 +297,8 @@ pub fn build(lines: &[Line]) -> Result<Report, Error> {
         output_vat_adjustment: Money::default().subtract(&relief),
         input_vat: input.clone(),
         payable: payable.clone(),
+        oss_consumer_sales_base: sum(&bases, &["OSS_EU_CONSUMER"]),
+        oss_consumer_sales_entry_count: oss_entries.len(),
         rubrikker: Rubrics {
             salgsmoms: ordinary,
             moms_af_ydelseskob_udland: allocated_reverse.subtract(&goods_vat),
@@ -337,6 +345,40 @@ mod tests {
             historical: false,
             exact_sales_vat: None,
         }
+    }
+    #[test]
+    fn oss_counts_distinct_classified_entries_and_keeps_danish_vat_separate() {
+        let lines = vec![
+            line(1, "income", Some("OSS_EU_CONSUMER"), "0", "400.01", None),
+            line(1, "income", Some("OSS_EU_CONSUMER"), "0", "599.99", None),
+            line(1, "asset", Some("OSS_EU_CONSUMER"), "1000", "0", None),
+            line(2, "income", Some("DK_SALE_25"), "0", "100", None),
+            line(2, "vat", None, "0", "25", Some("output")),
+        ];
+        let report = build(&lines).unwrap();
+        assert!(report.errors.is_empty(), "{:?}", report.errors);
+        assert_eq!(report.oss_consumer_sales_base.decimal(), "1000.00");
+        assert_eq!(report.oss_consumer_sales_entry_count, 1);
+        assert_eq!(report.output_vat.decimal(), "25.00");
+        assert_eq!(report.rubrikker.rubrik_b, Money::default());
+        assert_eq!(report.rubrikker.rubrik_c, Money::default());
+    }
+    #[test]
+    fn oss_reversal_is_signed_and_expense_base_lines_are_counted() {
+        let original = line(1, "income", Some("OSS_EU_CONSUMER"), "0", "1000", None);
+        let reversal = line(2, "income", Some("OSS_EU_CONSUMER"), "1000", "0", None);
+        let report = build(&[reversal]).unwrap();
+        assert_eq!(report.oss_consumer_sales_base.decimal(), "-1000.00");
+        assert_eq!(report.oss_consumer_sales_entry_count, 1);
+        let report = build(&[
+            original,
+            line(2, "income", Some("OSS_EU_CONSUMER"), "1000", "0", None),
+            line(3, "expense", Some("OSS_EU_CONSUMER"), "20.01", "0", None),
+        ])
+        .unwrap();
+        assert!(report.errors.is_empty());
+        assert_eq!(report.oss_consumer_sales_base.decimal(), "-20.01");
+        assert_eq!(report.oss_consumer_sales_entry_count, 3);
     }
     #[test]
     fn verified_contained_sales_vat_is_exact_without_relaxing_ordinary_sales() {
