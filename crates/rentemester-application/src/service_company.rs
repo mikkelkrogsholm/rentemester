@@ -1,4 +1,5 @@
 //! Charged admission attempt followed by a fresh current service company fence.
+pub(crate) mod precharged;
 use crate::{
     access::{
         self, AccessFacts, CompanyFacts, IdentityFacts, IdentityKind, MembershipFacts, Permission,

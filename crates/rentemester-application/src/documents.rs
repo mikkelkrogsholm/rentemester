@@ -46,6 +46,7 @@ pub struct Admission {
     subject: String,
     ledger: String,
     policy: ScanPolicy,
+    service_permit: Option<crate::service_company::precharged::Permit>,
 }
 impl Admission {
     pub fn file(&self) -> &Prepared {
@@ -189,6 +190,7 @@ pub fn prepare_ingest(
                 subject: subject.into(),
                 ledger,
                 policy,
+                service_permit: None,
             })
         },
     )?;
@@ -224,6 +226,9 @@ pub fn finish_ingest_registered(
     admission: Admission,
     scan: Option<ScanEvidence>,
 ) -> Result<Committed<RegisteredIngest>, Failure> {
+    if admission.service_permit.is_some() {
+        return Err(failed("document_admission_changed", true));
+    }
     guard
         .ensure_connections(control, company)
         .map_err(|_| failed("document_namespace_changed", false))?;
@@ -381,6 +386,9 @@ pub fn list(
         |tx, _| rentemester_storage::documents::list(tx, slug),
     )
 }
+
+mod service;
+pub use service::{finish_service, list_service, prepare_service, read_service};
 
 #[cfg(test)]
 mod tests;

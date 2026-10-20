@@ -4,6 +4,64 @@ use rentemester_application::documents::ScanPolicy;
 use rentemester_engine::document::Metadata;
 use rentemester_runtime::document::Prepared;
 use rentemester_runtime::document_scanner::{ScanFailure, Scanner};
+pub(super) enum Credential {
+    Human(VerifiedCookie),
+    Service(rentemester_runtime::service_key::ServiceKey),
+}
+pub(super) fn credential(
+    state: &Product,
+    request: &Request,
+    mutation: bool,
+) -> Result<Credential, Box<Response>> {
+    if super::service_company::requested(request) {
+        if !mutation
+            && (request.headers().contains_key("content-encoding")
+                || request.headers().contains_key("transfer-encoding")
+                || request.headers().contains_key("idempotency-key")
+                || one(request.headers(), "content-length").is_some_and(|v| v != "0"))
+        {
+            return Err(Box::new(refused(StatusCode::BAD_REQUEST, "invalid_input")));
+        }
+        super::service_company::proof(state, request, mutation).map(Credential::Service)
+    } else {
+        proof(state, request, mutation).map(Credential::Human)
+    }
+}
+pub(super) fn service_outcome<T>(
+    attempt: rentemester_host::Attempt<
+        Result<
+            rentemester_application::service_company::ServiceResult<T>,
+            rentemester_application::service_company::ServiceFailure,
+        >,
+    >,
+) -> Result<T, Box<Response>> {
+    attempt
+        .outcome
+        .map(|v| v.result)
+        .map_err(|f| Box::new(super::service_company::failure(f)))
+}
+pub(super) fn service_envelope(
+    attempt: rentemester_host::Attempt<
+        Result<
+            rentemester_application::service_company::ServiceResult<Value>,
+            rentemester_application::service_company::ServiceFailure,
+        >,
+    >,
+    envelope: Option<&str>,
+) -> Result<Value, Box<Response>> {
+    match attempt.outcome {
+        Ok(value) => {
+            let mut body = match envelope {
+                Some(key) => json!({"ok":true,key:value.result}),
+                None => value.result,
+            };
+            body["usage"] = json!(value.usage);
+            body["business"] = json!(value.business);
+            Ok(body)
+        }
+        Err(f) => Err(Box::new(super::service_company::failure(f))),
+    }
+}
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields, rename_all = "camelCase")]
 struct Upload {
@@ -49,7 +107,7 @@ pub(super) async fn ingest(State(state): State<Product>, request: Request) -> Re
         .nth(3)
         .unwrap_or("")
         .to_owned();
-    let cookie = match proof(&state, &request, true) {
+    let cookie = match credential(&state, &request, true) {
         Ok(p) => p,
         Err(r) => return *r,
     };
@@ -112,16 +170,42 @@ pub(super) async fn ingest(State(state): State<Product>, request: Request) -> Re
             } else {
                 ScanPolicy::Off
             };
-            let attempt = owner
-                .prepare_document_ingest(&cookie, &SystemClock, file, input.metadata, policy)
-                .map_err(|_| refused(StatusCode::SERVICE_UNAVAILABLE, "owner_unavailable"))?;
-            if attempt.retired {
-                return Err(Box::new(refused(
-                    StatusCode::SERVICE_UNAVAILABLE,
-                    "owner_unavailable",
-                )));
+            match cookie.as_ref() {
+                Credential::Human(cookie) => {
+                    let attempt = owner
+                        .prepare_document_ingest(cookie, &SystemClock, file, input.metadata, policy)
+                        .map_err(|_| {
+                            refused(StatusCode::SERVICE_UNAVAILABLE, "owner_unavailable")
+                        })?;
+                    if attempt.retired {
+                        return Err(Box::new(refused(
+                            StatusCode::SERVICE_UNAVAILABLE,
+                            "owner_unavailable",
+                        )));
+                    }
+                    outcome(attempt)?
+                }
+                Credential::Service(key) => {
+                    let attempt = owner
+                        .prepare_document_ingest_service(
+                            key,
+                            &SystemClock,
+                            file,
+                            input.metadata,
+                            policy,
+                        )
+                        .map_err(|_| {
+                            refused(StatusCode::SERVICE_UNAVAILABLE, "owner_unavailable")
+                        })?;
+                    if attempt.retired {
+                        return Err(Box::new(refused(
+                            StatusCode::SERVICE_UNAVAILABLE,
+                            "owner_unavailable",
+                        )));
+                    }
+                    service_outcome(attempt)?
+                }
             }
-            outcome(attempt)?
         }; // Release the global Owner mutex and all SQL transactions before provider I/O.
         let scan = match &state.native.document_scanner {
             Some(scanner) => Some(scanner.scan(admission.file()).map_err(|failure| {
@@ -142,31 +226,48 @@ pub(super) async fn ingest(State(state): State<Product>, request: Request) -> Re
             .native
             .lock_company(&company_slug)
             .map_err(|_| refused(StatusCode::SERVICE_UNAVAILABLE, "owner_unavailable"))?;
-        let attempt = owner
-            .finish_document_ingest_registered(&cookie, &SystemClock, admission, scan)
-            .map_err(|_| refused(StatusCode::SERVICE_UNAVAILABLE, "owner_unavailable"))?;
-        let retired = attempt.retired;
-        outcome(attempt).map(|registered| (registered, retired, permit))
+        match cookie.as_ref() {
+            Credential::Human(cookie) => {
+                let attempt = owner
+                    .finish_document_ingest_registered(cookie, &SystemClock, admission, scan)
+                    .map_err(|_| refused(StatusCode::SERVICE_UNAVAILABLE, "owner_unavailable"))?;
+                let retired = attempt.retired;
+                let registered = outcome(attempt)?;
+                Ok((registered.receipt, Some(registered.upload), retired, permit))
+            }
+            Credential::Service(key) => {
+                let attempt = owner
+                    .finish_document_ingest_service(key, &SystemClock, admission, scan)
+                    .map_err(|_| refused(StatusCode::SERVICE_UNAVAILABLE, "owner_unavailable"))?;
+                let retired = attempt.retired;
+                // Factual service ingestion does not grant human-only automatic extraction authority.
+                Ok((service_envelope(attempt, None)?, None, retired, permit))
+            }
+        }
     })
     .await;
-    let (registered, retired, permit) = match result {
+    let (receipt, upload, retired, permit) = match result {
         Ok(Ok(value)) => value,
         Ok(Err(reply)) => return *reply,
         _ => return refused(StatusCode::SERVICE_UNAVAILABLE, "outcome_unconfirmed"),
     };
-    let rentemester_application::documents::RegisteredIngest { receipt, upload } = registered;
-    if !retired && upload.eligible_for_extraction() && state.native.invoice_extractor.is_some() {
+    if let Some(upload) = upload.filter(|upload| {
+        !retired && upload.eligible_for_extraction() && state.native.invoice_extractor.is_some()
+    }) {
         // Registration is already known committed. Extraction failure, revocation,
         // unsupported context, or task failure must never replace that receipt.
         let _ = tokio::task::spawn_blocking(move || -> Result<(), ()> {
             let _permit = permit;
+            let Credential::Human(cookie) = cookie.as_ref() else {
+                return Err(());
+            };
             use rentemester_application::invoice_extraction::Completion;
             let provider = state.native.invoice_extractor.as_ref().ok_or(())?;
             let admission = {
                 let mut owner = state.native.lock_company(&company_slug).map_err(|_| ())?;
                 let attempt = owner
                     .prepare_uploaded_invoice_extraction(
-                        &cookie,
+                        cookie,
                         &SystemClock,
                         upload,
                         Some(provider.identity().clone()),
@@ -183,7 +284,7 @@ pub(super) async fn ingest(State(state): State<Product>, request: Request) -> Re
             });
             let mut owner = state.native.lock_company(&company_slug).map_err(|_| ())?;
             let attempt = owner
-                .finish_invoice_extraction(&cookie, &SystemClock, admission, completion)
+                .finish_invoice_extraction(cookie, &SystemClock, admission, completion)
                 .map_err(|_| ())?;
             outcome(attempt).map_err(|_| ())?;
             Ok(())
@@ -200,7 +301,7 @@ pub(super) async fn list(State(state): State<Product>, request: Request) -> Resp
         .nth(3)
         .unwrap_or("")
         .to_owned();
-    let cookie = match proof(&state, &request, false) {
+    let cookie = match credential(&state, &request, false) {
         Ok(p) => p,
         Err(r) => return *r,
     };
@@ -213,12 +314,23 @@ pub(super) async fn list(State(state): State<Product>, request: Request) -> Resp
     let result = tokio::task::spawn_blocking(move || {
         let _permit = permit;
         let mut owner = state.native.lock_company(&company_slug).map_err(|_| ())?;
-        owner.documents(&cookie, &SystemClock).map_err(|_| ())
+        Ok::<_, ()>(match cookie {
+            Credential::Human(cookie) => {
+                outcome(owner.documents(&cookie, &SystemClock).map_err(|_| ())?)
+                    .map(|value| json!({"ok":true,"documents":value}))
+            }
+            Credential::Service(key) => service_envelope(
+                owner
+                    .documents_service(&key, &SystemClock)
+                    .map_err(|_| ())?,
+                Some("documents"),
+            ),
+        })
     })
     .await;
     match result {
-        Ok(Ok(attempt)) => match outcome(attempt) {
-            Ok(value) => response(StatusCode::OK, json!({"ok":true,"documents":value})),
+        Ok(Ok(value)) => match value {
+            Ok(value) => response(StatusCode::OK, value),
             Err(r) => *r,
         },
         _ => refused(StatusCode::SERVICE_UNAVAILABLE, "read_unconfirmed"),
@@ -232,7 +344,7 @@ pub(super) async fn file(State(state): State<Product>, request: Request) -> Resp
         .nth(3)
         .unwrap_or("")
         .to_owned();
-    let cookie = match proof(&state, &request, false) {
+    let cookie = match credential(&state, &request, false) {
         Ok(p) => p,
         Err(r) => return *r,
     };
@@ -255,13 +367,22 @@ pub(super) async fn file(State(state): State<Product>, request: Request) -> Resp
     let result = tokio::task::spawn_blocking(move || {
         let _permit = permit;
         let mut owner = state.native.lock_company(&company_slug).map_err(|_| ())?;
-        owner
-            .document_original(&cookie, &SystemClock, id)
-            .map_err(|_| ())
+        Ok::<_, ()>(match cookie {
+            Credential::Human(cookie) => outcome(
+                owner
+                    .document_original(&cookie, &SystemClock, id)
+                    .map_err(|_| ())?,
+            ),
+            Credential::Service(key) => service_outcome(
+                owner
+                    .document_original_service(&key, &SystemClock, id)
+                    .map_err(|_| ())?,
+            ),
+        })
     })
     .await;
     match result {
-        Ok(Ok(attempt)) => match outcome(attempt) {
+        Ok(Ok(value)) => match value {
             Ok(original) => {
                 let Ok(mime) = axum::http::HeaderValue::from_str(&original.mime) else {
                     return refused(StatusCode::SERVICE_UNAVAILABLE, "evidence_unavailable");
@@ -307,7 +428,7 @@ pub(super) async fn expense(State(state): State<Product>, request: Request) -> R
         .to_owned();
     use rentemester_application::expense::{Action, Input};
     let posting = request.method() == axum::http::Method::POST;
-    let cookie = match proof(&state, &request, posting) {
+    let cookie = match credential(&state, &request, posting) {
         Ok(c) => c,
         Err(r) => return *r,
     };
@@ -362,11 +483,22 @@ pub(super) async fn expense(State(state): State<Product>, request: Request) -> R
             Some(input) => Action::Post(input),
             None => Action::Options(id.unwrap()),
         };
-        owner.expense(&cookie, &SystemClock, action).map_err(|_| ())
+        Ok::<_, ()>(match cookie {
+            Credential::Human(cookie) => outcome(
+                owner
+                    .expense(&cookie, &SystemClock, action)
+                    .map_err(|_| ())?,
+            ),
+            Credential::Service(key) => service_outcome(
+                owner
+                    .expense_service(&key, &SystemClock, action)
+                    .map_err(|_| ())?,
+            ),
+        })
     })
     .await;
     match result {
-        Ok(Ok(attempt)) => match outcome(attempt) {
+        Ok(Ok(value)) => match value {
             Ok(value) => response(
                 StatusCode::OK,
                 json!({"ok":true,(if posting{"booking"}else{"options"}):value}),

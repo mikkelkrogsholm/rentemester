@@ -4,7 +4,9 @@
 Verified private TLS, exact original hashes, current revocation during held scan,
 existing web/CLI/MCP upload, signed source-free recovery without scanner credentials.
 Only ordinary ingestion is scanned; existing inbox completion remains scanner-off.
-No SQL/auth/business seeds, real mail/provider, automatic retries or financial writes.
+No SQL/auth/business seeds, real mail/provider or automatic retries. The default
+scanner proof makes no financial writes; --service-purchase explicitly qualifies
+one synthetic payable recognition and its bank-linked accounting payment.
 """
 import argparse
 import base64
@@ -96,7 +98,13 @@ async function reopen(){step='fresh-mfa-source-restart-no-rescan';await ownerPag
 async function archive(name){step='explicit-signed-originals-and-scan-evidence-'+name;const r=await ownerPage.request.post(base+'/api/workspace/backup',{headers:{origin:base},data:{confirm:true}});need(r.status()===200&&r.headers()['content-type']==='application/vnd.rentemester.native-backup+json','real scanner evidence signed coverage');const bytes=await r.body();need(bytes.length>0&&bytes.length<=96*1024*1024,'bounded full signed snapshot');writeFileSync(join(work,'scanner-'+name+'.native-backup.json'),bytes,{mode:0o600,flag:'wx'});await assertStable();return{sha256:hash(bytes),bytes:bytes.length,documents};}
 async function restored(){step='source-free-fresh-owner-normal-verification-mfa-no-scanner-config';ownerPage=await newPage();freshOwner={email:'restored@example.invalid',password:'synthetic-restored-password-789',codes:[]};await ownerPage.goto((await mail('verification',freshOwner.email)).actionUrl);need((await enroll(ownerPage,freshOwner)).user.id!==ownerId,'restored history is not imported current identity');await assertStable();return{sourceFreeRestoreQualified:true,historicalEvidenceWithoutCredentialsOrRescan:true};}
 async function restoredReopen(){step='restored-owner-fresh-mfa-reopen-exact-proof';await ownerPage.context().clearCookies();await login(ownerPage,freshOwner);await assertStable();return{restoredTargetReopenQualified:true};}
-for await(const line of createInterface({input:process.stdin,crlfDelay:Infinity})){try{const action=JSON.parse(line);let value;if(action==='authenticate')value=await authenticate();else if(action==='historical')value=await historical();else if(action==='clean')value=await clean();else if(action==='negatives')value=await negatives();else if(action==='unauthorized')value=await unauthorized();else if(action==='hold-begin')value=await holdBegin();else if(action==='revoke')value=await revoke();else if(action==='hold-finish')value=await holdFinish();else if(action==='clients')value=await clients();else if(action==='reopen')value=await reopen();else if(['archive-source','archive-restarted','archive-restored'].includes(action))value=await archive(action.slice(8));else if(action==='restored')value=await restored();else if(action==='restored-reopen')value=await restoredReopen();else if(action==='finish'){await browser?.close();emit({ok:true,value:{finished:true}});break;}else throw Error('unknown phase');emit({ok:true,value});}catch(error){let pageState=null;try{pageState=await Promise.race([diagnosticPage?.evaluate(()=>({pathname:location.pathname,headings:[...document.querySelectorAll('h1,h2,h3,h4')].map(e=>e.textContent.slice(0,100)),buttons:[...document.querySelectorAll('button')].map(e=>e.textContent.slice(0,100)),alerts:[...document.querySelectorAll('[role=alert]')].map(e=>e.textContent.slice(0,300))})),new Promise(resolve=>setTimeout(()=>resolve(null),2000))]);}catch{}emit({ok:false,step,detail,errorType:error?.name,trace,pageState});await Promise.race([browser?.close().catch(()=>{}),new Promise(resolve=>setTimeout(resolve,2000))]);process.exitCode=1;break;}}
+let servicePurchase;
+async function servicePhase(action){
+ if(!servicePurchase){const module=await import(process.env.RM_SERVICE_PURCHASE_HELPER);servicePurchase=await module.createServicePurchaseProof(ownerPage,base,work);}
+ if(action==='service-reopen'){await ownerPage.context().clearCookies();await login(ownerPage,owner);return servicePurchase.reopen();}
+ return servicePurchase[{'service-run':'run','service-hold-begin':'holdBegin','service-revoke':'revoke','service-hold-finish':'holdFinish'}[action]]();
+}
+for await(const line of createInterface({input:process.stdin,crlfDelay:Infinity})){try{const action=JSON.parse(line);let value;if(action.startsWith('service-'))value=await servicePhase(action);else if(action==='authenticate')value=await authenticate();else if(action==='historical')value=await historical();else if(action==='clean')value=await clean();else if(action==='negatives')value=await negatives();else if(action==='unauthorized')value=await unauthorized();else if(action==='hold-begin')value=await holdBegin();else if(action==='revoke')value=await revoke();else if(action==='hold-finish')value=await holdFinish();else if(action==='clients')value=await clients();else if(action==='reopen')value=await reopen();else if(['archive-source','archive-restarted','archive-restored'].includes(action))value=await archive(action.slice(8));else if(action==='restored')value=await restored();else if(action==='restored-reopen')value=await restoredReopen();else if(action==='finish'){await browser?.close();emit({ok:true,value:{finished:true}});break;}else throw Error('unknown phase');emit({ok:true,value});}catch(error){let pageState=null;try{pageState=await Promise.race([diagnosticPage?.evaluate(()=>({pathname:location.pathname,headings:[...document.querySelectorAll('h1,h2,h3,h4')].map(e=>e.textContent.slice(0,100)),buttons:[...document.querySelectorAll('button')].map(e=>e.textContent.slice(0,100)),alerts:[...document.querySelectorAll('[role=alert]')].map(e=>e.textContent.slice(0,300))})),new Promise(resolve=>setTimeout(()=>resolve(null),2000))]);}catch{}emit({ok:false,step,detail,errorType:error?.name,trace,pageState});await Promise.race([browser?.close().catch(()=>{}),new Promise(resolve=>setTimeout(resolve,2000))]);process.exitCode=1;break;}}
 
 '''
 
@@ -115,6 +123,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     for option in ['server-binary', 'web-dir', 'cli-binary', 'mcp-binary', 'evidence']:
         parser.add_argument('--' + option, required=True, type=Path)
+    parser.add_argument('--service-purchase', action='store_true', help='Focused service scanned-original→payable→bank payment/revocation/restart proof')
     args = parser.parse_args()
     if args.evidence.exists() or args.evidence.with_suffix('.png').exists():
         parser.error('New evidence and screenshot paths required')
@@ -470,14 +479,65 @@ def main():
             subprocess.run(['/opt/homebrew/bin/bun', '-e', "const c=require('node:crypto'),f=require('node:fs'),k=c.generateKeyPairSync('ed25519'),s=k.privateKey.export({format:'der',type:'pkcs8'}).subarray(-32),p=k.publicKey.export({format:'der',type:'spki'}).subarray(-32);f.writeFileSync(process.argv[1],Buffer.concat([Buffer.from('3051020101300506032b657004220420','hex'),s,Buffer.from('812100','hex'),p]),{mode:0o600});f.writeFileSync(process.argv[2],p,{mode:0o600});", str(work / 'signing.der'), str(work / 'trusted.pub')], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             key = lambda: base64.urlsafe_b64encode(secrets.token_bytes(32)).decode().rstrip('=')
             config = {'runtimeProfile': 'local-user-macos', 'root': str(work / 'workspace'), 'brokerUid': os.getuid(), 'workspace': 'synthetic-native-document-scanner', 'companySlug': 'synthetic', 'companyName': 'Synthetic Document Scanner Company', 'cookieKey': key(), 'mfaKey': key(), 'operatorActors': ['system:synthetic-installer'], 'accounts': [], 'firstOwner': {'actor': 'system:synthetic-installer', 'email': 'owner@example.invalid', 'name': 'Synthetic Owner', 'password': 'synthetic-owner-password-123'}, 'backupSigningKeyFile': str(work / 'signing.der'), 'authMail': {'endpoint': f'https://127.0.0.1:{mail_port}/mail', 'bearerToken': bearer, 'from': 'auth@example.invalid', 'idempotencySecret': secrets.token_urlsafe(32), 'trustedCaFile': str(ca)}}
-            invalid_config_checks()
+            if not args.service_purchase:
+                invalid_config_checks()
             write_config()
             start(create=True)
             script = work / 'browser.mjs'
             script.write_text(BROWSER)
-            controller = subprocess.Popen(['/opt/homebrew/bin/bun', str(script)], cwd=REPO, env={**os.environ, 'RM_SCANNER_BASE': origin, 'RM_SCANNER_WORK': str(work), 'RM_SCANNER_SCREENSHOT': str(args.evidence.with_suffix('.png')), 'RM_SCANNER_PLAYWRIGHT': str((REPO / 'node_modules/@playwright/test/index.mjs').resolve(strict=True))}, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True, bufsize=1, start_new_session=True)
+            controller = subprocess.Popen(['/opt/homebrew/bin/bun', str(script)], cwd=REPO, env={**os.environ, 'RM_SERVICE_PURCHASE_HELPER': str(REPO / 'scripts/rust/check-native-service-purchase.ts'), 'RM_SCANNER_BASE': origin, 'RM_SCANNER_WORK': str(work), 'RM_SCANNER_SCREENSHOT': str(args.evidence.with_suffix('.png')), 'RM_SCANNER_PLAYWRIGHT': str((REPO / 'node_modules/@playwright/test/index.mjs').resolve(strict=True))}, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True, bufsize=1, start_new_session=True)
             report['browserControllerPid'] = controller.pid
             phase('authenticate')
+            if args.service_purchase:
+                report['workflow'] = 'service_scanned_document_payable_bank_payment'
+                stop(); config.pop('firstOwner')
+                config['documentScanner'] = {'policy': 'required', 'provider': 'http-json-v1', 'url': f'https://127.0.0.1:{mail_port}/scan', 'bearerToken': scanner_token, 'timeoutMs': 10000, 'trustedCaFile': str(ca)}
+                write_config(); start()
+                phase('service-run')
+                originals_before = original_inventory()
+                if len(originals_before) != 1:
+                    raise RuntimeError('Exactly one service purchase original required')
+                phase('service-hold-begin')
+                if not held_received.wait(5):
+                    raise RuntimeError('Service upload did not reach held verified TLS scanner')
+                try:
+                    phase('service-revoke', 4)
+                finally:
+                    held_release.set()
+                phase('service-hold-finish')
+                if original_inventory() != originals_before:
+                    raise RuntimeError('Revoked service publication changed original inventory')
+                requests_before_restart = provider_count()
+                stop(); write_config(); start()
+                phase('service-reopen')
+                if provider_count() != requests_before_restart:
+                    raise RuntimeError('Service restart/read rescanned original')
+                phase('finish', 20)
+                controller.stdin.close(); controller.wait(timeout=10)
+                if controller.returncode != 0:
+                    raise RuntimeError('Service purchase controller nonzero terminal')
+                controller = None; stop()
+                db = sqlite3.connect((work/'workspace/synthetic/data/ledger.sqlite').as_uri()+'?mode=ro', uri=True)
+                try:
+                    counts = {table: db.execute('SELECT count(*) FROM '+table).fetchone()[0] for table in ['documents','document_scan_evidence','payables','payable_payments','bank_transactions','journal_entries']}
+                    if counts != {'documents':1,'document_scan_evidence':1,'payables':1,'payable_payments':1,'bank_transactions':1,'journal_entries':2}:
+                        raise RuntimeError('Service purchase terminal ledger effect counts differ')
+                    report['terminalSql'] = {'counts':counts,'operationalActors':db.execute("SELECT event_type,actor FROM audit_log WHERE event_type IN ('document_ingest','payable_register','payable_payment_apply') ORDER BY id").fetchall(), 'journalActors':db.execute('SELECT created_by,created_by_program FROM journal_entries ORDER BY id').fetchall()}
+                    actors = report['terminalSql']['operationalActors']
+                    if len(actors) != 3 or not actors[0][1].startswith('service_account:') or any(actor != actors[0][1] for _, actor in actors):
+                        raise RuntimeError('Service operational attribution differs')
+                    subject = actors[0][1].removeprefix('service_account:')
+                    if report['terminalSql']['journalActors'] != [('user:'+subject,'service-principal')]*2:
+                        raise RuntimeError('Service journal attribution differs')
+                finally: db.close()
+                with gateway_lock:
+                    if errors or len(provider_requests) != 2 or sorted(r['kind'] for r in provider_requests) != ['cli','held']:
+                        raise RuntimeError('Service purchase scanner calls differ or private provider failed')
+                    report['provider'] = {'verifiedTls':True,'requests':list(provider_requests),'restartNoRescan':True}
+                report.update(status='passed',currentAction='complete',servicePurchaseQualified=True,currentRevocationDuringScanQualified=True)
+                save()
+                print('PASS: service scanned original→payable→bank payment, revoked in-flight upload, exact restart/terminal counts; '+str(args.evidence))
+                return
             phase('historical')
             if provider_count() != 0:
                 raise RuntimeError('Scanner-off historical upload called provider')

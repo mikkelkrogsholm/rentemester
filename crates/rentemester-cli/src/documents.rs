@@ -1,5 +1,5 @@
 //! Exact stdin ingestion and authorized original bytes on stdout; never reads or writes document paths.
-use rentemester_client::{ApiClient, MAX_DOCUMENT_INGEST_BODY};
+use rentemester_client::MAX_DOCUMENT_INGEST_BODY;
 use rentemester_engine::Error;
 use serde_json::{Value, json};
 use std::{collections::BTreeMap, io::Read};
@@ -18,7 +18,14 @@ pub fn run(
     if confirmed != ingest
         || preview
         || flags.keys().any(|k| {
-            !(["--server", "--cookie-file", "--company"].contains(k) || !ingest && *k == "--id")
+            !([
+                "--server",
+                "--cookie-file",
+                "--service-key-file",
+                "--company",
+            ]
+            .contains(k)
+                || !ingest && *k == "--id")
         })
     {
         return Err(invalid(
@@ -40,13 +47,7 @@ pub fn run(
     let server = flags
         .get("--server")
         .ok_or_else(|| invalid("explicit --server required"))?;
-    let cookie = flags
-        .get("--cookie-file")
-        .ok_or_else(|| invalid("document operations require --cookie-file"))?;
-    let cookie = rentemester_client::read_cookie_file(std::path::Path::new(cookie))
-        .map_err(crate::remote::client_error)?;
-    let api =
-        ApiClient::new(server, allow_http, Some(cookie)).map_err(crate::remote::client_error)?;
+    let api = crate::remote::credential_client(server, allow_http, flags, false)?;
     let bytes = if ingest {
         let mut b = vec![];
         std::io::stdin()

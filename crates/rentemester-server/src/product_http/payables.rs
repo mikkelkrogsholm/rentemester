@@ -6,9 +6,15 @@ enum Command {
     Pay(i64, rentemester_storage::payables::Payment),
 }
 pub(super) async fn handle(State(state): State<Product>, request: Request) -> Response {
-    let company_slug=request.uri().path().split('/').nth(3).unwrap_or("").to_owned();
+    let company_slug = request
+        .uri()
+        .path()
+        .split('/')
+        .nth(3)
+        .unwrap_or("")
+        .to_owned();
     let mutation = request.method() != axum::http::Method::GET;
-    let cookie = match proof(&state, &request, mutation) {
+    let cookie = match super::documents::credential(&state, &request, mutation) {
         Ok(c) => c,
         Err(r) => return *r,
     };
@@ -86,12 +92,25 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
             Command::Register(input) => Action::Register(input),
             Command::Pay(id, input) => Action::Pay(*id, input),
         };
-        owner.expense(&cookie, &SystemClock, action).map_err(|_| ())
+        Ok::<_, ()>(match cookie {
+            super::documents::Credential::Human(cookie) => super::documents::outcome(
+                owner
+                    .expense(&cookie, &SystemClock, action)
+                    .map_err(|_| ())?,
+            )
+            .map(|value| json!({"ok":true,key:value})),
+            super::documents::Credential::Service(principal) => super::documents::service_envelope(
+                owner
+                    .expense_service(&principal, &SystemClock, action)
+                    .map_err(|_| ())?,
+                Some(key),
+            ),
+        })
     })
     .await;
     match result {
-        Ok(Ok(attempt)) => match super::documents::outcome(attempt) {
-            Ok(value) => response(StatusCode::OK, json!({"ok":true,key:value})),
+        Ok(Ok(value)) => match value {
+            Ok(value) => response(StatusCode::OK, value),
             Err(r) => *r,
         },
         _ => refused(StatusCode::SERVICE_UNAVAILABLE, "outcome_unconfirmed"),

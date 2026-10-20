@@ -35,6 +35,25 @@ pub fn register_scanned(
     today: &str,
     scan: Option<&rentemester_engine::document_scan::ScanEvidence>,
 ) -> Result<Value, Error> {
+    register_scanned_with_principal(
+        tx,
+        original,
+        metadata,
+        actor,
+        today,
+        scan,
+        crate::idempotency::PrincipalKind::User,
+    )
+}
+pub fn register_scanned_with_principal(
+    tx: &Transaction<'_>,
+    original: Original<'_>,
+    metadata: &Metadata,
+    actor: &str,
+    today: &str,
+    scan: Option<&rentemester_engine::document_scan::ScanEvidence>,
+    principal: crate::idempotency::PrincipalKind,
+) -> Result<Value, Error> {
     if let Some(scan) = scan {
         scan.validate()?;
         if scan.sha256 != original.hash {
@@ -138,7 +157,7 @@ pub fn register_scanned(
     if metadata.kind() == "internal_voucher" {
         tx.execute("INSERT INTO internal_voucher_evidence(document_id,bank_transaction_id,accounting_rationale,prepared_by,prepared_by_program) VALUES(?1,?2,?3,?4,'rentemester')",params![id,metadata.source_bank_transaction_id,metadata.accounting_rationale,actor]).map_err(sql)?;
     }
-    tx.execute("INSERT INTO audit_log(event_type,entity_type,entity_id,message,actor) VALUES('document_ingest','document',?1,?2,?3)",params![id.to_string(),format!("Ingested {number} ({})",original.hash),format!("user:{actor}")]).map_err(sql)?;
+    tx.execute("INSERT INTO audit_log(event_type,entity_type,entity_id,message,actor) VALUES('document_ingest','document',?1,?2,?3)",params![id.to_string(),format!("Ingested {number} ({})",original.hash),format!("{}:{actor}", match principal { crate::idempotency::PrincipalKind::User => "user", crate::idempotency::PrincipalKind::ServiceAccount => "service_account" })]).map_err(sql)?;
     Ok(json!({"ok":true,"document":{"id":id,"documentNo":number}}))
 }
 pub struct Evidence {

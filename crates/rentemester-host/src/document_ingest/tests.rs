@@ -284,3 +284,160 @@ fn registration_failure_rolls_back_document_scan_audit_and_number_together() {
     // Publication may leave an unregistered private content blob after rollback;
     // it is never deleted as though an uncertain competing commit were absent.
 }
+
+fn service(
+    owner: &mut Owner,
+    cookies: &CookieVerifier,
+    proof: &VerifiedCookie,
+    role: &str,
+) -> (ServiceKey, String, String) {
+    let control = owner.held.0.as_mut().unwrap().control.as_mut().unwrap();
+    let issued = rentemester_application::service_lifecycle::execute(
+        control,
+        cookies,
+        &Fixed(NOW),
+        proof,
+        &rentemester_application::service_lifecycle::Operation::Create {
+            display_name: "Synthetic upload service".into(),
+            operation_id: None,
+            expires_in_seconds: None,
+        },
+    )
+    .unwrap();
+    let value: serde_json::Value = serde_json::from_str(issued.as_json()).unwrap();
+    let subject = value["serviceAccountId"].as_str().unwrap().to_owned();
+    let credential = value["credentialId"].as_str().unwrap().to_owned();
+    let key = ServiceKey::new("w", value["secret"].as_str().unwrap()).unwrap();
+    control.execute("INSERT INTO rm_workspace_user_access_events(user_id,event_type,workspace_role,actor)VALUES(?1,'activate','member','user:u')",[&subject]).unwrap();
+    control.execute("INSERT INTO rm_company_membership_events(user_id,company_slug,event_type,company_role,actor)VALUES(?1,'a','grant',?2,'user:u')",[&subject, role]).unwrap();
+    control
+        .execute("UPDATE apikey SET remaining=20 WHERE id=?1", [&credential])
+        .unwrap();
+    (key, subject, credential)
+}
+fn remaining(owner: &Owner, credential: &str) -> i64 {
+    owner
+        .held
+        .0
+        .as_ref()
+        .unwrap()
+        .control
+        .as_ref()
+        .unwrap()
+        .query_row(
+            "SELECT remaining FROM apikey WHERE id=?1",
+            [credential],
+            |r| r.get(0),
+        )
+        .unwrap()
+}
+#[test]
+fn service_scan_split_charges_once_preserves_original_and_service_audit() {
+    let (_dir, mut owner, cookies, proof, _uid) = setup();
+    let (key, subject, credential) = service(&mut owner, &cookies, &proof, "bookkeeper");
+    let admission = owner
+        .prepare_document_ingest_service(
+            &key,
+            &Fixed(NOW),
+            file("service clean"),
+            metadata(),
+            ScanPolicy::Required,
+        )
+        .unwrap()
+        .outcome
+        .unwrap()
+        .result;
+    assert_eq!(remaining(&owner, &credential), 19);
+    assert_eq!(originals(&owner), 0);
+    let slots = owner.held.0.as_ref().unwrap();
+    assert!(
+        slots.control.as_ref().unwrap().is_autocommit()
+            && slots.company.as_ref().unwrap().is_autocommit()
+    );
+    let evidence = clean(&admission);
+    let receipt = owner
+        .finish_document_ingest_service(&key, &Fixed(NOW), admission, Some(evidence))
+        .unwrap()
+        .outcome
+        .unwrap();
+    assert_eq!(remaining(&owner, &credential), 19);
+    assert_eq!(count(&owner, "documents"), 1);
+    assert_eq!(count(&owner, "document_scan_evidence"), 1);
+    let id = receipt.result["document"]["id"].as_i64().unwrap();
+    let original = owner
+        .document_original_service(&key, &Fixed(NOW), id)
+        .unwrap()
+        .outcome
+        .unwrap()
+        .result;
+    assert_eq!(original.bytes, file("service clean").bytes());
+    let actor: String = owner
+        .held
+        .0
+        .as_ref()
+        .unwrap()
+        .company
+        .as_ref()
+        .unwrap()
+        .query_row(
+            "SELECT actor FROM audit_log WHERE event_type='document_ingest'",
+            [],
+            |r| r.get(0),
+        )
+        .unwrap();
+    assert_eq!(actor, format!("service_account:{subject}"));
+}
+#[test]
+fn service_upload_reader_denied_before_usage_and_revoked_credential_after_scan_cannot_publish() {
+    let (_dir, mut owner, cookies, proof, _uid) = setup();
+    let (key, _, credential) = service(&mut owner, &cookies, &proof, "reader");
+    let failure = owner
+        .prepare_document_ingest_service(
+            &key,
+            &Fixed(NOW),
+            file("reader"),
+            metadata(),
+            ScanPolicy::Off,
+        )
+        .unwrap()
+        .outcome
+        .err()
+        .unwrap();
+    assert_eq!(failure.error.code, "access_denied");
+    assert_eq!(remaining(&owner, &credential), 20);
+    assert_eq!(originals(&owner), 0);
+    let (key, _, credential) = service(&mut owner, &cookies, &proof, "bookkeeper");
+    let admission = owner
+        .prepare_document_ingest_service(
+            &key,
+            &Fixed(NOW),
+            file("revoked service"),
+            metadata(),
+            ScanPolicy::Required,
+        )
+        .unwrap()
+        .outcome
+        .unwrap()
+        .result;
+    let evidence = clean(&admission);
+    owner
+        .held
+        .0
+        .as_ref()
+        .unwrap()
+        .control
+        .as_ref()
+        .unwrap()
+        .execute("UPDATE apikey SET enabled=0 WHERE id=?1", [&credential])
+        .unwrap();
+    let failure = owner
+        .finish_document_ingest_service(&key, &Fixed(NOW), admission, Some(evidence))
+        .unwrap()
+        .outcome
+        .err()
+        .unwrap();
+    assert_eq!(failure.error.code, "invalid_credentials");
+    assert_eq!(remaining(&owner, &credential), 19);
+    assert_eq!(count(&owner, "documents"), 0);
+    assert_eq!(originals(&owner), 0);
+}
