@@ -2469,3 +2469,27 @@ kræver gældende læseadgang, momsregistrering og verificerbare originaler. Ugy
 underliggende momsregnskab giver fejl og intet delvist OSS-resultat.
 
 Den samlede prøve på syntetiske data bevarer dansk moms på 25 kr., mens OSS-grundlaget går fra 1.000 kr. til nul efter tilbageførsel. Den oprindelige dato viser fortsat 1.000 kr. HTTP, CLI og MCP, genstart samt kildefri gendannelse med ny ejer består. Fire signerede arkiver bevarer originaler, posteringer og historik.
+
+## Leveringsoplysninger og enhedskoder på fakturaen
+
+Fakturaformularen har valgfri **Levering**: ingen oplysning, en leveringsdato
+eller en periode med både fra- og til-dato. Datoerne skal være gyldige,
+perioden skal være i rækkefølge, og en enkelt dato kan ikke kombineres med en
+periode. Oplysningerne bevares i den udstedte original og vises i PDF'en.
+
+En valgfri enhedskode kan angives for dokumentet og for hver fuld fakturalinje.
+Ingen enhed eller mængde opfindes for en reduceret forenklet faktura. API, CLI og
+MCP bruger `deliveryDate` eller `deliveryPeriodStart`/`deliveryPeriodEnd`, samt
+`unitCode` på dokumentet eller linjen. Forhåndsvisning og udstedelse skal stadig
+bruge identiske input; rettelser kræver ny forhåndsvisning.
+
+En almindelig købers valgfrie momsnummer kan være udenlandsk. Det er en
+identifikator fra brugeren; det vælger ikke momsbehandling og er ikke en
+VIES-validering. Dansk sælger, offentlige modtagere og omvendt betalingspligt
+beholder deres øvrige krav.
+
+Group80 består 19 trin på syntetiske data: fuld standardfaktura med udenlandsk
+køber, leveringsperiode og enhedskoder samt forenklet faktura med leveringsdato.
+Betalinger, kreditnotaer og refunderinger, samme PDF/input gennem HTTP/CLI/MCP,
+genstart og kildefri gendannelse med ny ejer bevarer oplysninger og regnskab.
+Historiske foreign-reverse-charge- og valutaformater er fortsat åbne migreringspunkter.
