@@ -329,6 +329,9 @@ def main():
             save()
             for _ in range(300):
                 if child.poll() is not None:
+                    diagnostic=(work/'server.log').read_bytes()
+                    report['startupDiagnostic']={'stderrSha256':hashlib.sha256(diagnostic).hexdigest(),'unknownFields':re.findall(r'unknown field `([A-Za-z_]+)`',diagnostic.decode('utf-8',errors='replace'))}
+                    save()
                     raise RuntimeError('Owned server exited before readiness')
                 connection = http.client.HTTPConnection('127.0.0.1', backend_port, timeout=.3)
                 try:

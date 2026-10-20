@@ -54,7 +54,7 @@ struct Config {
     imap_transport: Option<crate::imap_transport::Config>,
     #[serde(default)]
     document_pdf_worker: Option<crate::document_pdf::Config>,
-    #[serde(default)]
+    #[serde(default, rename = "publicEInvoice")]
     public_einvoice: std::collections::BTreeMap<String, rentemester_runtime::public_einvoice::Config>,
     #[serde(default)]
     invoice_mail: std::collections::BTreeMap<String, rentemester_runtime::invoice_mail::Config>,
@@ -602,4 +602,15 @@ mod profile_tests {
         assert!(matches!(cookie_profile("http://127.0.0.1:4319"),Ok(CookieProfile::Development)));
         for origin in ["http://accounting.example.invalid","https://u@example.invalid","https://example.invalid/path","https://example.invalid?secret=x"] {assert!(cookie_profile(origin).is_err());}
     }
+    #[test]
+    fn public_einvoice_operator_config_uses_documented_camelcase() {
+        let mut value=serde_json::json!({"root":"/synthetic/workspace","brokerUid":501,"workspace":"synthetic","companySlug":"synthetic","companyName":"Synthetic","cookieKey":"synthetic","mfaKey":"synthetic","publicEInvoice":{"synthetic":{"apiLicenseKey":"synthetic-license-key","environment":"test"}}});
+        let config:Config=serde_json::from_value(value.clone()).unwrap();
+        assert_eq!(config.public_einvoice.len(),1);
+        let map=value.as_object_mut().unwrap();
+        let provider=map.remove("publicEInvoice").unwrap();
+        map.insert("publicEinvoice".into(),provider);
+        assert!(serde_json::from_value::<Config>(value).is_err());
+    }
+
 }
