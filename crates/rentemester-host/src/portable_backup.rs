@@ -1402,7 +1402,14 @@ mod tests {
         );
         assert_eq!(
             store::company(&db).unwrap().uuid,
-            artifact.manifest().context.companies[1].ledger_uuid
+            artifact
+                .manifest()
+                .context
+                .companies
+                .iter()
+                .find(|company| company.slug == "archived")
+                .unwrap()
+                .ledger_uuid
         );
         assert!(validate(&mixed_company_archive(Some(json!(false)), false)).is_ok());
         // The newly accepted flag does not relax per-company domain identity.
