@@ -8,6 +8,7 @@ use rusqlite::Connection;
 use serde_json::Value;
 pub enum Action<'a> {
     List(&'a str),
+    ListWithArchived(&'a str, bool),
     Resolve(i64, &'a rentemester_storage::exceptions::Resolve),
 }
 pub fn execute(
@@ -18,10 +19,10 @@ pub fn execute(
 ) -> Result<Committed<Value>, Failure> {
     let slug = context.selection.slug;
     let permission = match action {
-        Action::List(_) => Permission::CompanyRead,
+        Action::List(_) | Action::ListWithArchived(..) => Permission::CompanyRead,
         Action::Resolve(..) => Permission::CompanyReview,
     };
-    control_fence::execute_cookie_subject(
+    control_fence::execute_cookie_subject_mode(
         control,
         company,
         CookieAuthorization {
@@ -31,8 +32,17 @@ pub fn execute(
         },
         context.selection,
         permission,
+        matches!(action, Action::List(_) | Action::ListWithArchived(..)),
         |tx, actor| match action {
             Action::List(status) => rentemester_storage::exceptions::list(tx, slug, status),
+            Action::ListWithArchived(status, include_archived) => {
+                rentemester_storage::exceptions::list_with_archived(
+                    tx,
+                    slug,
+                    status,
+                    include_archived,
+                )
+            }
             Action::Resolve(id, input) => {
                 rentemester_storage::exceptions::resolve(tx, id, input, actor)
             }
@@ -79,6 +89,19 @@ mod tests {
             },
         };
         let input = rentemester_storage::exceptions::Resolve { note: None };
+        let before = l.total_changes();
+        assert_eq!(
+            execute(
+                &mut c,
+                &mut l,
+                context("a"),
+                Action::ListWithArchived("all", true)
+            )
+            .unwrap()
+            .value["count"],
+            1
+        );
+        assert_eq!(l.total_changes(), before);
         assert_eq!(
             execute(&mut c, &mut l, context("a"), Action::List("open"))
                 .unwrap()
@@ -104,6 +127,16 @@ mod tests {
         );
         c.execute_batch("INSERT INTO rm_company_membership_events(user_id,company_slug,event_type,company_role,actor) VALUES('u','a','revoke',NULL,'agent:synthetic');").unwrap();
         assert!(execute(&mut c, &mut l, context("a"), Action::Resolve(1, &input)).is_err());
+        assert!(
+            execute(
+                &mut c,
+                &mut l,
+                context("a"),
+                Action::ListWithArchived("all", true)
+            )
+            .is_err()
+        );
+        assert!(execute(&mut c, &mut l, context("a"), Action::List("open")).is_err());
         assert_eq!(l.query_row("SELECT count(*) FROM audit_log WHERE event_type='exception_resolve' AND actor='user:u'",[],|r|r.get::<_,i64>(0)).unwrap(),1);
         assert_eq!(
             l.query_row("SELECT count(*) FROM journal_entries", [], |r| r

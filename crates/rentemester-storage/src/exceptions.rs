@@ -18,6 +18,21 @@ fn parsed(value: Option<String>) -> Value {
         .unwrap_or(Value::Null)
 }
 pub(crate) fn rows(tx: &Transaction<'_>, status: &str) -> Result<Vec<Value>, Error> {
+    rows_with_archived(tx, status, false)
+}
+fn is_archived(date: Option<&str>, cutover: Option<&str>, closed: &[(String, String)]) -> bool {
+    date.is_some_and(|d| {
+        cutover.is_some_and(|cut| d < cut)
+            || closed
+                .iter()
+                .any(|(start, end)| d >= start.as_str() && d <= end.as_str())
+    })
+}
+pub(crate) fn rows_with_archived(
+    tx: &Transaction<'_>,
+    status: &str,
+    include_archived: bool,
+) -> Result<Vec<Value>, Error> {
     if !["open", "resolved", "all"].contains(&status) {
         return Err(refused("status must be open, resolved or all"));
     }
@@ -56,20 +71,25 @@ pub(crate) fn rows(tx: &Transaction<'_>, status: &str) -> Result<Vec<Value>, Err
     let mut rows = vec![];
     while let Some(r) = query.next().map_err(invalid)? {
         let date: Option<String> = r.get(14).map_err(invalid)?;
-        let archived = date.as_ref().is_some_and(|d| {
-            cutover.as_ref().is_some_and(|cut| d < cut)
-                || closed.iter().any(|(start, end)| d >= start && d <= end)
-        });
-        if archived {
+        let archived = is_archived(date.as_deref(), cutover.as_deref(), &closed);
+        if archived && !include_archived {
             continue;
         }
-        rows.push(json!({"id":r.get::<_,i64>(0).map_err(invalid)?,"type":r.get::<_,String>(1).map_err(invalid)?,"severity":r.get::<_,String>(2).map_err(invalid)?,"status":r.get::<_,String>(3).map_err(invalid)?,"relatedBankTransactionId":r.get::<_,Option<i64>>(4).map_err(invalid)?,"relatedDocumentId":r.get::<_,Option<i64>>(5).map_err(invalid)?,"message":r.get::<_,String>(6).map_err(invalid)?,"requiredAction":r.get::<_,Option<String>>(7).map_err(invalid)?,"sourceEvidence":parsed(r.get(8).map_err(invalid)?),"postingPreview":parsed(r.get(9).map_err(invalid)?),"createdAt":r.get::<_,String>(10).map_err(invalid)?,"resolvedAt":r.get::<_,Option<String>>(11).map_err(invalid)?,"resolvedBy":r.get::<_,Option<String>>(12).map_err(invalid)?,"resolutionNote":r.get::<_,Option<String>>(13).map_err(invalid)?,"archived":false}));
+        rows.push(json!({"id":r.get::<_,i64>(0).map_err(invalid)?,"type":r.get::<_,String>(1).map_err(invalid)?,"severity":r.get::<_,String>(2).map_err(invalid)?,"status":r.get::<_,String>(3).map_err(invalid)?,"relatedBankTransactionId":r.get::<_,Option<i64>>(4).map_err(invalid)?,"relatedDocumentId":r.get::<_,Option<i64>>(5).map_err(invalid)?,"message":r.get::<_,String>(6).map_err(invalid)?,"requiredAction":r.get::<_,Option<String>>(7).map_err(invalid)?,"sourceEvidence":parsed(r.get(8).map_err(invalid)?),"postingPreview":parsed(r.get(9).map_err(invalid)?),"createdAt":r.get::<_,String>(10).map_err(invalid)?,"resolvedAt":r.get::<_,Option<String>>(11).map_err(invalid)?,"resolvedBy":r.get::<_,Option<String>>(12).map_err(invalid)?,"resolutionNote":r.get::<_,Option<String>>(13).map_err(invalid)?,"archived":archived}));
     }
     Ok(rows)
 }
 pub fn list(tx: &Transaction<'_>, slug: &str, status: &str) -> Result<Value, Error> {
+    list_with_archived(tx, slug, status, false)
+}
+pub fn list_with_archived(
+    tx: &Transaction<'_>,
+    slug: &str,
+    status: &str,
+    include_archived: bool,
+) -> Result<Value, Error> {
     crate::validate(tx)?;
-    let rows = rows(tx, status)?;
+    let rows = rows_with_archived(tx, status, include_archived)?;
     let mut counts = [0; 3];
     for row in &rows {
         let i = match row["severity"].as_str() {
@@ -270,12 +290,44 @@ mod tests {
         );
     }
     #[test]
+    fn archival_dates_use_strict_cutover_inclusive_closed_periods_and_no_undated_guess() {
+        let closed = vec![("2026-02-01".into(), "2026-02-28".into())];
+        assert!(is_archived(Some("2025-12-31"), Some("2026-01-01"), &closed));
+        assert!(!is_archived(
+            Some("2026-01-01"),
+            Some("2026-01-01"),
+            &closed
+        ));
+        for date in ["2026-02-01", "2026-02-14", "2026-02-28"] {
+            assert!(is_archived(Some(date), None, &closed));
+        }
+        assert!(!is_archived(Some("2026-03-01"), None, &closed));
+        assert!(!is_archived(None, Some("2026-01-01"), &closed));
+    }
+    #[test]
     fn list_follows_effective_closed_periods_and_keeps_undated_tasks_visible() {
         let (_c, mut l) = fixture();
         l.execute_batch("INSERT INTO bank_transactions(id,transaction_date,text,amount,currency) VALUES(1,'2026-01-01','Synthetic subject',1,'DKK');INSERT INTO exceptions(id,type,severity,message,related_bank_transaction_id) VALUES(3,'SYNTHETIC_DATED','low','Synthetic archived task',1);INSERT INTO accounting_periods(id,period_start,period_end,kind,status) VALUES(1,'2026-01-01','2026-01-31','custom','open');INSERT INTO audit_log(event_type,entity_type,entity_id,message,actor) VALUES('period_close','accounting_period','1','Synthetic closed period','user:synthetic');").unwrap();
         let tx = l.transaction().unwrap();
         let listed = list(&tx, "synthetic", "open").unwrap();
         assert_eq!(listed["count"], 2);
+        let changes = tx.total_changes();
+        assert_eq!(
+            listed,
+            list_with_archived(&tx, "synthetic", "open", false).unwrap()
+        );
+        let included = list_with_archived(&tx, "synthetic", "open", true).unwrap();
+        assert_eq!(included["count"], 3);
+        assert_eq!(included["rows"][0]["id"], 3);
+        assert_eq!(included["rows"][0]["archived"], true);
+        assert_eq!(included["rows"][1]["archived"], false);
+        assert_eq!(included["bySeverity"], json!({"high":1,"medium":1,"low":1}));
+        assert_eq!(
+            list_with_archived(&tx, "synthetic", "resolved", true).unwrap()["count"],
+            0
+        );
+        assert!(list_with_archived(&tx, "synthetic", "invalid", true).is_err());
+        assert_eq!(tx.total_changes(), changes);
         assert!(
             !listed["rows"]
                 .as_array()
