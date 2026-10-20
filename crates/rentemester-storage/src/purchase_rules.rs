@@ -172,15 +172,11 @@ pub fn inspect(
     {
         reasons.push("only explicit DKK purchase invoice/receipt evidence is supported".into())
     }
-    let extraction: bool = tx
-        .query_row(
-            "SELECT EXISTS(SELECT 1 FROM invoice_extraction_documents WHERE document_id=?1)",
-            [document_id],
-            |r| r.get(0),
-        )
-        .map_err(invalid)?;
-    if extraction {
-        reasons.push("invoice extraction history needs its supported resolution validator before automated rule application".into())
+    if let Err(error) = crate::invoice_extraction::require_completed_or_absent(tx, document_id) {
+        if error.code != "EXTRACTION_NEEDS_RESOLUTION" {
+            return Err(error);
+        }
+        reasons.push(error.message);
     }
     for r in rules(tx, company)? {
         if r.id <= 0 || r.version <= 0 {

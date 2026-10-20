@@ -104,18 +104,7 @@ fn ready(tx: &Transaction<'_>, input: &expense::Input, latest: Date) -> Result<V
             "persisted supplier identity conflicts with immutable document metadata",
         ));
     }
-    let extracted: bool = tx
-        .query_row(
-            "SELECT EXISTS(SELECT 1 FROM invoice_extraction_documents WHERE document_id=?1)",
-            [input.document_id],
-            |r| r.get(0),
-        )
-        .map_err(sql)?;
-    if extracted {
-        return Err(fail(
-            "invoice extraction evidence is not supported by native batch proof; review separately",
-        ));
-    }
+    crate::invoice_extraction::require_completed_or_absent(tx, input.document_id)?;
     let existing: bool = tx
         .query_row(
             "SELECT EXISTS(SELECT 1 FROM purchase_posting_applications WHERE document_id=?1)",
