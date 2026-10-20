@@ -59,7 +59,7 @@ adgang afvises. Alle otte særskilte CLI/MCP-handlinger består også i et
 separat workspace med begge retninger, uafhængig godkendelse, fuld paritet
 med HTTP-svarene og uændrede posteringer før og efter genstart.
 
-Der er 191 verificerede MCP-tools efter den historiske arkivimport i Group62.
+Der er 193 verificerede MCP-tools efter historiske regnskabsvisninger og eksport i Group63.
 De samlede native tests består med 191 beståede og én eksisterende ignoreret
 test; native build består. Mac’en er låst op. Administreret
 lokal opstart, almindelig ejeroprettelse, verificering, MFA og læsning af
@@ -1831,7 +1831,7 @@ Datoafgrænsning medtager originaler og tilbageførsler på deres faktiske datoe
 
 `remote cfo-analytics` og MCP `cfo_analytics` bevarer det fulde native svar uden lokale beregninger. Den faktiske verifikation omfatter to almindelige MFA-brugere, to selskaber, originale købsbilag, dateret tilbageførsel, part/dimensioner, filtre/sider, ændrede rettigheder, web og begge klienter. Genstart og gendannelse under en ny ejer uden kildeworkspace eller gammel signeringsnøgle bevarer de samme kilder og tal. Sammenlignede signerede snapshots viser uændret virksomheds-audit og bogføring.
 
-Det løbende bogføringsgrundlag er kvalificeret i Group61. Group62 kvalificerer nu også originale historiske arkivposter sammen med aktive poster, inklusive genstart og signeret gendannelse. Bredere historiske koncern- og datoperioderapporter afventer fortsat fuld kildeparitet; hele CFO-leverancen er derfor fortsat åben. En godkendt koncernprofil og selve webknappen til paginering er ikke kvalificeret i dette konkrete browserforløb. Der er ingen påstand om færdig desktop- eller samlet migrationsleverance.
+Det løbende bogføringsgrundlag er kvalificeret i Group61. Group62 kvalificerer nu også originale historiske arkivposter sammen med aktive poster, inklusive genstart og signeret gendannelse. Koncernrapporter bygger på den aktive journal; en eksplicit åbningsbalance og overgangsdato er næste forløb for fuldstændige rapporter efter overgangen. Der udledes ikke historiske afslutningsdatoer fra arkivets årstal. En godkendt koncernprofil og selve webknappen til paginering er ikke kvalificeret i dette konkrete browserforløb. Der er ingen påstand om færdig desktop- eller samlet migrationsleverance.
 
 ## Importér afsluttede regnskabsår
 
@@ -1861,6 +1861,30 @@ Efter et uafklaret importudfald skal arkiv og kildehash afstemmes, før et
 særskilt forsøg med samme nøgle og nøjagtigt samme anmodning.
 
 De almindelige historiske regnskabsvisninger og deres CSV/PDF-eksport er
-under udvikling i Group63. Arkivår mangler dokumenterede periodegrænser;
-der vises ikke opfundne afslutningsdatoer, sammenligningstal eller
-blanke saldi som nul. Desktop og den samlede Rust-omskrivning er fortsat åbne.
+kvalificeret i Group63. Vælg det konkrete arkivår i årsvælgeren; samme årstal
+kan findes både som arkiv og aktiv bogføring. Sidemenu, kontolinks og eksport
+bevarer den valgte kilde. Posteringer, saldobalance, resultatopgørelse,
+balance og overblik viser den originale arkivkilde. De fire regnskabs- og
+posteringsvisninger kan hentes som både CSV og PDF med præcise beløb,
+historisk valuta og kildehash.
+
+Saldobalancen bygger på originalens afslutningssaldi. Mangler filen, vises
+utilgængelige tal. Ukendte kontoklassifikationer vises med deres kildebeløb;
+resultat og balance hævdes ikke komplette, før opsætningen er afklaret.
+Arkivår har ingen dokumenterede periodegrænser; der vises ikke opfundne
+afslutningsdatoer eller sammenligningstal. Manglende foregående aktive
+bogføringsår giver også utilgængelige sammenligningstal frem for nul.
+
+Web, CLI/MCP-paritet, otte eksporter, adgangsafslag, beskadiget fysisk
+original, uændret bogføringsaudit, genstart og signeret kildefri gendannelse
+under en ny ejer med MFA består. Desktop og den samlede Rust-omskrivning
+er fortsat åbne. Næste regnskabsforløb er eksplicit åbningsbalance.
+
+CLI: de eksisterende `remote journal`, `trial-balance`, `income-statement`
+og `balance` samt `overview` accepterer `--year` og `--source live|archive`.
+`--account` gælder kun posteringer. `remote report-export --report journal`
+`--format csv|pdf` bruger de samme kildevalg og returnerer originale
+serverbytes; de øvrige rapportnavne er `trial-balance`, `income-statement`
+og `balance`. MCP har tilsvarende kildevalg og `report_export`.
+Udeladt kilde bruger serverens valg med aktiv bogføring først; en eksplicit
+arkivkilde falder aldrig tilbage til aktive tal.
