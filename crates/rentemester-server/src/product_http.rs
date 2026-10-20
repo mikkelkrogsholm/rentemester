@@ -616,6 +616,12 @@ async fn read(State(state): State<Product>, request: Request) -> Response {
             Err(f) if f.error.code == "invalid_credentials" => {
                 refused(StatusCode::UNAUTHORIZED, "unauthorized")
             }
+            Err(f) if f.error.code == "access_denied" => {
+                refused(StatusCode::FORBIDDEN, "access_denied")
+            }
+            Err(f) if f.error.code.contains("unavailable") || !f.control_reusable || !f.company_reusable => {
+                refused(StatusCode::SERVICE_UNAVAILABLE, "report_source_unavailable")
+            }
             Err(f) if f.stage == FailureStage::NotCommitted => {
                 refused(StatusCode::BAD_REQUEST, f.error.code)
             }
