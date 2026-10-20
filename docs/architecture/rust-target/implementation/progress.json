@@ -4,12 +4,12 @@
   "current_increment": "Native local PDF inspection through web bookkeeping, clients and source-free recovery qualified",
   "code_revision": "21d1c245d0e7762d519c355e7c9108781666db8d",
   "spec_revision": "sha256:bb7903e1bc87266026100ba2c16fb4c9eedc56de5bb28930ad3e19a27fb64c4c",
-  "state": "Group66 actual PASS at21d1c245: ordinary MFA public upload of3synthetic PDFs without implicit parsing; explicit native PDFium text/612x792/real character geometry, verified status/paginated text, cached result and pending no_text/malformed retained results. Reviewer403 creates no attempt. HTTP/CLI/MCP200 parity and existing web manual10exempt expense create exactly1journal only after explicit review. Stopped physical-source tamper gives409 PDF_EVIDENCE_TAMPERED on reads and source-compatible committed200/okfalse/source_unavailable parse failure with exactly1failedattempt/NULLresult and no new result/book effects; exact original repaired. FreshMFA restart, four independently verified signed snapshots and signed source-free fresh-owner restore after source/signer/workerbundle deletion preserve exact originals,3results/pages/attempts/journal and prior audit prefix; targetreopen PASS without worker config or reparse. All3binary/fullweb/fullworkerbundle hashes independently matched atqualification, ownedcleanuptrue. Firstactual helper wrongly required4xx for committed sourcefailure; narrow assertion+exact signedfailedattempt correction then wholePASS, no product weakening. Focused tests cover legacy hashes, SQLtamper, rollback, concurrent winner/current revocation and child timeout/IO/crash/RSS; actual0childcache and actualSQLtamper not claimed. Mac RSS512MiB sampled10ms may overshoot; Linux/installed packaging/nativefinancialGUI remain open. Stop66perfection. Next67 native reviewed openingbalance through truthful source-aware reports; fullmission/epic672 OPEN.",
+  "state": "Group66 actual PASS at21d1c245: ordinary MFA public upload of3synthetic PDFs without implicit parsing; explicit native PDFium text/612x792/real character geometry, verified status/paginated text, cached result and pending no_text/malformed retained results. Reviewer403 creates no attempt. HTTP/CLI/MCP200 parity and existing web manual10exempt expense create exactly1journal only after explicit review. Stopped physical-source tamper gives409 PDF_EVIDENCE_TAMPERED on reads and source-compatible committed200/okfalse/source_unavailable parse failure with exactly1failedattempt/NULLresult and no new result/book effects; exact original repaired. FreshMFA restart, four independently verified signed snapshots and signed source-free fresh-owner restore after source/signer/workerbundle deletion preserve exact originals,3results/pages/attempts/journal and prior audit prefix; targetreopen PASS without worker config or reparse. All3binary/fullweb/fullworkerbundle hashes independently matched atqualification, ownedcleanuptrue. Firstactual helper wrongly required4xx for committed sourcefailure; narrow assertion+exact signedfailedattempt correction then wholePASS, no product weakening. Focused tests cover legacy hashes, SQLtamper, rollback, concurrent winner/current revocation and child timeout/IO/crash/RSS; actual0childcache and actualSQLtamper not claimed. Mac RSS512MiB sampled10ms may overshoot; Linux/installed packaging/nativefinancialGUI remain open. Finite66 actual qualification retained. Native67/68/69 opening, company/archive onboarding, fiscal lifecycle, annual preparation and offline backup verification implemented/tested/built; combined233nativePASS and diagnosed annual cutover guard/storage8/web3/SDK3PASS. Actual installed local/remote financial GUI and restart remain unqualified while Maclocked. Fullmission/epic672 OPEN.",
   "issues_closed": [],
   "next": [
-    "Group68 onboarding integrated c6c38da3; native219PASS/1existingignored, SDK2PASS, appbuildPASS. Native67/68 ordinary owner local/remote GUI+restart awaits unlocked Mac; no blind focus retries.",
-    "Complete native annual obligations/review and independent backup verification, then remaining transfer/automation/distribution and TypeScript retirement gates.",
-    "Optional configured HTTPS invoice extraction is a real remaining source capability; preserve its evidence/conflict lifecycle separately without inventing a manual resolution UI or blocking ordinary manual accounting."
+    "Native67/68/69 implementation integrated 15ac4f7a; combined native233PASS/1existingignored, SDK3/storage8/web3PASS, native/server/web buildsPASS. Actual installed local/remote native owner workflows+restart await unlocked Mac; no blind focus retries.",
+    "Next server parity: optional configured HTTPS invoice-extraction evidence/conflict lifecycle via existing CLI/MCP, without inventing manual resolution or blocking manual accounting. Prior source audit retained; bounded implementation contract in preparation.",
+    "Then remaining complete recovery/transfer/automation/provider/distribution and TypeScript retirement gates. Full goal remains open."
   ],
   "preserve_unrelated_paths": [
     ".claude/settings.json",
@@ -1443,6 +1443,53 @@
       },
       "actual_gui": false,
       "installed_bundle": false
+    },
+    "platform69_native_annual_backup_readiness": {
+      "path": "/tmp/rentemester-rust-reports/native-annual-backup-readiness69.json",
+      "sha256": "6bf5c3098e7aeafdc1bab0efe628c79b51cec0707c49e3ba87f06f32282436a8",
+      "state": "implemented_and_built_native_gui_unqualified",
+      "source_revision": "15ac4f7a26ccb57ac90714227f95dcc6c566819f",
+      "native_binary_sha256": "9037283fefa1c6f2838f5c3b218bab5ec9450b6e1d0d5f3d27c97ada55824d92",
+      "server_binary_sha256": "2dbbb95bb418f2c687b755cf64bd98b4355d86f59cae05c9a5dde14bb78e7c52",
+      "tests": {
+        "passed": 233,
+        "ignored": 1,
+        "log": "/tmp/rm69-root-native-tests.log"
+      },
+      "client_tests": {
+        "passed": 3,
+        "log": "/tmp/rm69-root-obligations-tests.log"
+      },
+      "storage_tests": {
+        "opening": {
+          "passed": 6,
+          "log": "/tmp/rm69-root-storage-opening-tests.log"
+        },
+        "annual": {
+          "passed": 2,
+          "log": "/tmp/rm69-root-storage-annual-tests.log"
+        }
+      },
+      "web_tests": {
+        "passed": 3,
+        "log": "/tmp/rm69-root-web-annual-tests.log"
+      },
+      "builds": {
+        "native": {
+          "exit": 0,
+          "log": "/tmp/rm69-root-native-build.log"
+        },
+        "server": {
+          "exit": 0,
+          "log": "/tmp/rm69-root-server-build.log"
+        },
+        "web": {
+          "exit": 0,
+          "log": "/tmp/rm69-root-web-build.log"
+        }
+      },
+      "actual_gui": false,
+      "installed_bundle": false
     }
   },
   "verified_history": [
@@ -2116,6 +2163,18 @@
         "Installed bundle and distribution qualification remain separate"
       ],
       "readiness": "/tmp/rentemester-rust-reports/native-onboarding-readiness68.json"
+    },
+    {
+      "delivery": "Group69 native annual lifecycle, preparation and offline backup verification",
+      "owner": "root navigation/web cutover comparison/integration; rust_accruals fiscal-year period lifecycle; rust_client_cli annual GPUI; rust_budget obligations SDK and diagnosed annual storage cutover guard; rust_mileage offline verification state/GPUI",
+      "status": "IMPLEMENTED 15ac4f7a; combined native233PASS/1existingignored, SDK3PASS, storage8PASS, web3PASS; native/server/web buildsPASS. Actual installed local/remote native GUI and restart remain unqualified; last CUA Maclocked. Full mission OPEN.",
+      "acceptance": "Native owner chooses exact live fiscal year, reads controls and reviews/closes/reopens/records external filing explicitly, prepares truthful annual figures/obligations/coverage. Independently verify frozen signed backup with separate trusted key without source/login/restore. Reject annual partial-current or unavailable-prior before live cutover.",
+      "pending_root_work": [
+        "Actual local/remote native owner annual workflow and restart acceptance",
+        "Actual independent backup selection/verification GUI; existing real crypto/recovery evidence retained separately",
+        "Installed bundle, signing and update distribution remain open"
+      ],
+      "readiness": "/tmp/rentemester-rust-reports/native-annual-backup-readiness69.json"
     }
   ],
   "integrated_pending_browser": [
@@ -2126,7 +2185,8 @@
   ],
   "pending_deliveries": [
     "Group67 native GUI local/remote opening→receipt→reports+restart acceptance; code/tests/build ready, Macunlock pending",
-    "Group68 native GUI local/remote company→archive→accounts→opening→reports+restart acceptance; code/tests/build ready, current Macunlock pending"
+    "Group68 native GUI local/remote company→archive→accounts→opening→reports+restart acceptance; code/tests/build ready, current Macunlock pending",
+    "Group69 native GUI fiscal review/close→annual obligations/report+restart and independent offline backup verification; implementation/test/build ready, Macunlock pending"
   ],
   "completion_gates": [
     "All epic672 child acceptance remains open until scope-matched evidence; current increments are progress only.",

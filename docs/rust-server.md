@@ -60,7 +60,7 @@ separat workspace med begge retninger, uafhængig godkendelse, fuld paritet
 med HTTP-svarene og uændrede posteringer før og efter genstart.
 
 Der er 200 MCP-tools efter PDF-forløbet i Group66.
-De samlede native tests består med 219 beståede og én eksisterende ignoreret
+De samlede native tests består med 233 beståede og én eksisterende ignoreret
 test; native build består. Computerstyringen melder aktuelt Mac’en låst. Administreret
 lokal opstart, almindelig ejeroprettelse, verificering, MFA og læsning af
 saldobalancen er gennemført i det native vindue. Fakturering og udgifter er
@@ -2064,3 +2064,43 @@ Group68 er implementeret og bygget. Den samlede native suite består med
 219 tests og én eksisterende ignoreret test; to klienttests består også.
 Faktisk betjening med lokal og ekstern server samt genstart er fortsat
 uverificeret, fordi computerstyringen aktuelt melder Mac’en låst.
+
+## Årsafslutning og årsrapport i desktopappen
+
+Åbn **Perioder og årsafslutning**, og vælg momsperiode eller regnskabsår.
+Regnskabsårets datoer kommer fra serverens aktive regnskabsår, også ved
+forskudte år. Gennemgå kontrolpakken, før du særskilt bekræfter lukning.
+Genåbning kræver en begrundelse. Registrering af en ekstern indberetning
+kræver dens reference; handlingen sender ikke en indberetning.
+
+Åbn **Årsrapport og frister** (⌘6), vælg regnskabsåret og forbered
+rapporten. Skærmen viser serverens tal, forudsætninger, kildegrundlag og
+forpligtelser. Ukendte frister forbliver ukendte. Noter og ledelsespåtegning
+er skabeloner til ejerens eller revisorens gennemgang.
+
+Rust-serveren afviser nu en årsrapport, hvis det ønskede år begynder før
+den eksplicitte overtagelsesdato, eller arkiver endnu ikke er overtaget
+med en åbningsbalance. Et senere komplet år kan forberedes. Hvis det
+foregående år starter før overtagelsesdatoen, er sammenligningstallene
+utilgængelige frem for nul eller delvise beløb. Det eksisterende web-UI
+forklarer også denne årsag.
+
+## Kontrollér en backup uden kilde eller login
+
+Vælg **Kontrollér backup** (⌘7), også fra velkomstskærmen. Vælg den
+eksporterede backup og en separat betroet offentlig nøgle på 32 bytes.
+Kontrollér filens hash og nøglens fingeraftryk, og bekræft nøglens
+uafhængige oprindelse. Nøglen fra selve arkivet etablerer ikke tillid.
+
+Kontrollen bruger de valgte, fastholdte bytes med det medfølgende eller
+eksplicit konfigurerede native serverprogram. Den validerer signaturen,
+inventaret, de understøttede schemaer, journalkæder og originalfiler.
+Den starter ingen server, gendanner intet og ændrer ikke kildefilerne.
+Private midlertidige kopier fjernes efter kontrollen.
+
+Group69 er implementeret med 233 beståede native tests og én eksisterende
+ignoreret test, tre klienttests, otte relevante storage-tests og tre
+webtests. Desktop, server og web bygger. Backup-wrapperens nye tests
+kontrollerer proces- og filgrænser med et testprogram; de udgør ikke en
+ny kryptografisk gendannelsesprøve. Faktisk native betjening, lokal og
+ekstern genstart samt installeret distribution er fortsat åbne.
