@@ -1,6 +1,8 @@
 //! CSV bank input: exact values, structural validation and explicit date semantics.
 use crate::{Error, calendar, currency::Currency, fx::FxRate, money::Money};
 use std::collections::{BTreeMap, BTreeSet};
+mod profiles;
+pub use profiles::profiles;
 pub struct Row {
     pub date: String,
     pub booking_date: Option<String>,
@@ -11,6 +13,13 @@ pub struct Row {
     pub balance_after: Option<Money>,
     pub amount_dkk: Option<Money>,
     pub rate: Option<FxRate>,
+    pub profile: Option<String>,
+    pub counterparty_name: Option<String>,
+    pub counterparty_account: Option<String>,
+    pub message: Option<String>,
+    pub archive_reference: Option<String>,
+    pub customer_reference: Option<String>,
+    pub raw: Option<BTreeMap<String, String>>,
 }
 fn fail(message: impl Into<String>) -> Error {
     Error::new("invalid_bank_csv", message)
@@ -169,6 +178,17 @@ fn date(value: &str) -> Result<String, Error> {
     Err(fail("bank date must use YYYY-MM-DD"))
 }
 pub fn parse(content: &str) -> Result<Vec<Row>, Error> {
+    parse_with_profile(content, None)
+}
+pub fn parse_with_profile(content: &str, profile: Option<&str>) -> Result<Vec<Row>, Error> {
+    let profile = profile
+        .map(str::trim)
+        .filter(|p| !p.is_empty())
+        .map(str::to_lowercase);
+    if profile.as_deref().is_some_and(|p| p != "danske-bank") {
+        return Err(fail("unknown bank import profile (known: danske-bank)"));
+    }
+    let named = profile.is_some();
     if content.len() > 25 * 1024 * 1024 {
         return Err(fail("bank CSV exceeds 25 MiB"));
     }
@@ -176,36 +196,45 @@ pub fn parse(content: &str) -> Result<Vec<Row>, Error> {
         .lines()
         .find(|s| !s.trim().is_empty())
         .ok_or_else(|| fail("empty bank CSV"))?;
-    let separator = [',', ';', '\t']
-        .into_iter()
-        .max_by_key(|sep| {
-            let mut quoted = false;
-            header
-                .chars()
-                .filter(|c| {
-                    if *c == '"' {
-                        quoted = !quoted;
-                    }
-                    !quoted && c == sep
-                })
-                .count()
-        })
-        .unwrap();
+    let separator = if named {
+        ';'
+    } else {
+        [',', ';', '\t']
+            .into_iter()
+            .max_by_key(|sep| {
+                let mut quoted = false;
+                header
+                    .chars()
+                    .filter(|c| {
+                        if *c == '"' {
+                            quoted = !quoted;
+                        }
+                        !quoted && c == sep
+                    })
+                    .count()
+            })
+            .unwrap()
+    };
     let mut parsed = records(content, separator)?.into_iter();
-    let headers: Vec<_> = parsed
-        .next()
-        .ok_or_else(|| fail("empty bank CSV"))?
+    let original_headers = parsed.next().ok_or_else(|| fail("empty bank CSV"))?;
+    let headers: Vec<Option<String>> = original_headers
         .iter()
-        .map(|s| canonical(s))
+        .map(|h| {
+            if named {
+                profiles::field(h).map(str::to_owned)
+            } else {
+                Some(canonical(h))
+            }
+        })
         .collect();
     let mut seen = BTreeSet::new();
-    for h in &headers {
-        if !seen.insert(h) {
-            return Err(fail(format!("duplicate canonical CSV column {h}")));
+    for header in headers.iter().flatten() {
+        if !seen.insert(header.as_str()) && !named {
+            return Err(fail(format!("duplicate canonical CSV column {header}")));
         }
     }
     for required in ["transaction_date", "text", "amount"] {
-        if !seen.contains(&required.to_owned()) {
+        if !seen.contains(required) {
             return Err(fail(format!("CSV missing required column {required}")));
         }
     }
@@ -217,11 +246,15 @@ pub fn parse(content: &str) -> Result<Vec<Row>, Error> {
         if rows.len() >= 100_000 {
             return Err(fail("too many bank rows"));
         }
-        let fields: BTreeMap<_, _> = headers
-            .iter()
-            .map(String::as_str)
-            .zip(values.iter().map(String::as_str))
-            .collect();
+        let mut fields = BTreeMap::new();
+        for (header, value) in headers.iter().zip(&values) {
+            if let Some(header) = header {
+                let target = fields.entry(header.as_str()).or_insert("");
+                if !named || target.trim().is_empty() {
+                    *target = value.as_str();
+                }
+            }
+        }
         let get = |key| fields.get(key).copied().unwrap_or("");
         let optional = |key| {
             let s = get(key);
@@ -259,8 +292,14 @@ pub fn parse(content: &str) -> Result<Vec<Row>, Error> {
             ));
         }
         rows.push(Row {
-            date: date(get("transaction_date"))?,
-            booking_date: optional("booking_date").map(|s| date(&s)).transpose()?,
+            date: if named {
+                profiles::date(get("transaction_date"))?
+            } else {
+                date(get("transaction_date"))?
+            },
+            booking_date: optional("booking_date")
+                .map(|s| if named { profiles::date(&s) } else { date(&s) })
+                .transpose()?,
             text: get("text").into(),
             amount,
             currency,
@@ -270,6 +309,35 @@ pub fn parse(content: &str) -> Result<Vec<Row>, Error> {
                 .transpose()?,
             amount_dkk,
             rate,
+            profile: profile.clone(),
+            counterparty_name: if named {
+                optional("counterparty_name")
+            } else {
+                None
+            },
+            counterparty_account: if named {
+                optional("counterparty_account")
+            } else {
+                None
+            },
+            message: if named { optional("message") } else { None },
+            archive_reference: if named {
+                optional("archive_reference")
+            } else {
+                None
+            },
+            customer_reference: if named {
+                optional("customer_reference")
+            } else {
+                None
+            },
+            raw: named.then(|| {
+                original_headers
+                    .iter()
+                    .cloned()
+                    .zip(values.iter().cloned())
+                    .collect()
+            }),
         });
     }
     if rows.is_empty() {
