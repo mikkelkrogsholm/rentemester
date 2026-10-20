@@ -1,3 +1,4 @@
+import { assertLegacySourceActive, assertLegacyWorkspaceActive } from "./legacy-retirement";
 import { Database } from "bun:sqlite";
 import { existsSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -261,12 +262,14 @@ export type OpenDbOptions = {
 };
 
 export function openDb(path: string, options: OpenDbOptions = {}) {
+  assertLegacyWorkspaceActive(dirname(dirname(dirname(path))));
   // Compatibility is a read-only preflight. In particular, do not change the
   // persistent journal mode or create WAL sidecars before rejecting a database
   // written by newer software.
   if (existsSync(path)) {
     const preflight = new Database(path, { readonly: true });
     try {
+      assertLegacySourceActive(preflight);
       assertSchemaCompatibility(preflight);
     } finally {
       preflight.close();

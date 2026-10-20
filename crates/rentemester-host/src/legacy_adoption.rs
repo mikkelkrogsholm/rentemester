@@ -116,6 +116,12 @@ fn raw_files(root: &Path, databases: &[Database]) -> Result<Vec<Value>, Error> {
             match root.join(&path).symlink_metadata() {
                 Ok(_) => {
                     let bytes = source_bytes(root, &path, 512 * 1024 * 1024)?;
+                    // Empty sidecars carry no transactions and SQLite may remove
+                    // them during a read/reopen. Logical digests are checked
+                    // separately under the retirement write lock.
+                    if !suffix.is_empty() && bytes.is_empty() {
+                        continue;
+                    }
                     files.push(json!({"path":path,"bytes":bytes.len(),"sha256":digest(&bytes)}));
                 }
                 Err(e) if !suffix.is_empty() && e.kind() == std::io::ErrorKind::NotFound => {}
@@ -446,7 +452,7 @@ fn control_pending(db: &Connection) -> Result<(), Error> {
 }
 fn recheck(p: &Prepared, binding: Option<&Value>, raw: Option<&[Value]>) -> Result<(), Error> {
     if source_bytes(&p.source, "workspace.json", runtime::MAX_METADATA_BYTES)? != p.manifest {
-        return Err(refused("manifest changed"));
+        return Err(Error::new("legacy_source_changed", "manifest changed"));
     }
     for file in &p.files {
         if !matches!(file.kind, runtime::AdoptionFileKind::CompanyLedger { .. })
@@ -458,13 +464,16 @@ fn recheck(p: &Prepared, binding: Option<&Value>, raw: Option<&[Value]>) -> Resu
                 runtime::MAX_FILE_BYTES,
             )? != file.bytes
         {
-            return Err(refused("original changed"));
+            return Err(Error::new("legacy_source_changed", "original changed"));
         }
     }
     for source in &p.databases {
         runtime::with_source_database(&p.source, &source.relative, |db| {
             if retirement::source_digest(db)? != source.logical_digest {
-                return Err(refused("logical source changed"));
+                return Err(Error::new(
+                    "legacy_source_changed",
+                    "logical source changed",
+                ));
             }
             if let Some(expected) = binding {
                 let actual = retirement::verify_overlay(db)?
@@ -472,16 +481,19 @@ fn recheck(p: &Prepared, binding: Option<&Value>, raw: Option<&[Value]>) -> Resu
                     .transpose()
                     .map_err(refused)?;
                 if actual.as_ref() != Some(expected) {
-                    return Err(refused("retirement binding changed"));
+                    return Err(Error::new(
+                        "legacy_source_changed",
+                        "retirement binding changed",
+                    ));
                 }
             }
             Ok(())
         })?;
     }
-    if let Some(expected) = raw {
-        if raw_files(&p.source, &p.databases)? != expected {
-            return Err(refused("raw source changed"));
-        }
+    if let Some(expected) = raw
+        && raw_files(&p.source, &p.databases)? != expected
+    {
+        return Err(Error::new("legacy_source_changed", "raw source changed"));
     }
     Ok(())
 }
@@ -626,7 +638,7 @@ fn recheck_image_source(
     if source_bytes(source, "workspace.json", runtime::MAX_METADATA_BYTES)?
         != image.manifest_bytes()
     {
-        return Err(refused("manifest changed"));
+        return Err(Error::new("legacy_source_changed", "manifest changed"));
     }
     for file in image.files() {
         if !matches!(file.kind, runtime::AdoptionFileKind::CompanyLedger { .. })
@@ -638,7 +650,7 @@ fn recheck_image_source(
                 runtime::MAX_FILE_BYTES,
             )? != file.bytes
         {
-            return Err(refused("original changed"));
+            return Err(Error::new("legacy_source_changed", "original changed"));
         }
     }
     for d in databases {
@@ -656,7 +668,7 @@ fn recheck_image_source(
         })?;
     }
     if raw_files(source, databases)? != raw {
-        return Err(refused("raw source changed"));
+        return Err(Error::new("legacy_source_changed", "raw source changed"));
     }
     Ok(())
 }
@@ -888,6 +900,7 @@ mod tests {
     fn reviewed_retirement_blocks_old_handle_and_adoption_preserves_complete_business_without_auth()
     {
         let f = fixture();
+        std::fs::write(f.source.join("a/data/ledger.sqlite-wal"), []).unwrap();
         let old = Connection::open(f.source.join("a/data/ledger.sqlite")).unwrap();
         let p = prepare(&f.source, &f.target, "synthetic-native", "a").unwrap();
         assert_eq!(p.review()["companies"].as_array().unwrap().len(), 2);

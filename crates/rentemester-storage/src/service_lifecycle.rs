@@ -390,6 +390,25 @@ fn history(tx: &Transaction<'_>, id: &str, now: i64) -> Result<Option<History>, 
         && tx.query_row("SELECT EXISTS(SELECT 1 FROM main.rm_workspace_service_principal_operation_events WHERE provider_operation_marker=?1 COLLATE BINARY AND operation_id<>?2 COLLATE BINARY)",params![h.marker,id],|r|r.get::<_,bool>(0)).map_err(invalid)?{return Err(invalid("ambiguous marker"));}
     Ok(last)
 }
+/// Read-only admission after the caller has recognized the complete legacy
+/// control schema. Old prefixes without service operations have nothing to drain.
+/// A failed provider operation is not proof that a credential was disabled.
+pub fn validate_adoption_retirement(db:&rusqlite::Connection,now:i64)->Result<(),Error>{
+    let tx=db.unchecked_transaction().map_err(invalid)?;
+    let exists:bool=tx.query_row("SELECT EXISTS(SELECT 1 FROM sqlite_schema WHERE type='table' AND name=?1)",[OPS],|r|r.get(0)).map_err(invalid)?;
+    if !exists {tx.commit().map_err(invalid)?;return Ok(());}
+    stream(&tx,OPS)?;
+    let ids={let mut q=tx.prepare("SELECT DISTINCT operation_id FROM rm_workspace_service_principal_operation_events ORDER BY operation_id COLLATE BINARY LIMIT 10001").map_err(invalid)?;q.query_map([],|r|r.get::<_,String>(0)).map_err(invalid)?.collect::<Result<Vec<_>,_>>().map_err(invalid)?};
+    if ids.len()>10000 {return Err(invalid("operation inventory bound"));}
+    for id in ids {
+        uuid(&id).map_err(invalid)?;
+        let h=history(&tx,&id,now)?.ok_or_else(||invalid("operation history missing"))?;
+        if !matches!(h.state.as_str(),"completed"|"recovered") || h.kind=="revoke"&&h.state=="recovered" {
+            return Err(Error::new("legacy_retirement_refused","unresolved service provider operation requires recovery before adoption"));
+        }
+    }
+    tx.commit().map_err(invalid)
+}
 fn recovered(id: &str, h: &History, recovered: bool) -> Result<Receipt, Error> {
     receipt(
         &serde_json::json!({"ok":true,"operationId":id,"status":h.state,"recovered":recovered,"serviceAccountId":h.subject,"credentialId":h.credential,"replacementCredentialId":h.replacement}),
@@ -639,4 +658,25 @@ pub fn execute(
         },
         if kind == "create" { 201 } else { 200 },
     )
+}
+
+#[cfg(test)]
+mod adoption_retirement_tests {
+    use super::*;
+    fn fixture()->rusqlite::Connection{
+        let db=rusqlite::Connection::open_in_memory().unwrap();
+        db.execute_batch("CREATE TABLE rm_workspace_service_principal_operation_events(id INTEGER PRIMARY KEY,operation_id TEXT,operation_type TEXT,operation_status TEXT,user_id TEXT,credential_id TEXT,replacement_credential_id TEXT,provider_operation_marker TEXT,recovery_claim_id TEXT,actor TEXT,created_at TEXT)").unwrap();db
+    }
+    fn append(db:&rusqlite::Connection,state:&str){
+        let credential=if state=="completed"{Some("synthetic-credential")}else{None::<&str>};
+        db.execute("INSERT INTO rm_workspace_service_principal_operation_events(operation_id,operation_type,operation_status,user_id,credential_id,replacement_credential_id,provider_operation_marker,actor,created_at) VALUES('00000000-0000-4000-8000-000000000001','create',?1,'synthetic-service',?2,?2,'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa','user:synthetic','2026-01-01 00:00:00')",params![state,credential]).unwrap();
+    }
+    #[test]
+    fn failed_provider_effect_blocks_until_valid_terminal_recovery(){
+        let db=fixture();let now=stamp("2026-01-02 00:00:00").unwrap();append(&db,"pending");assert!(validate_adoption_retirement(&db,now).is_err());append(&db,"failed");assert!(validate_adoption_retirement(&db,now).is_err());append(&db,"recovered");validate_adoption_retirement(&db,now).unwrap();
+    }
+    #[test]
+    fn completed_requires_valid_history_and_missing_legacy_extension_is_empty(){
+        let db=fixture();let now=stamp("2026-01-02 00:00:00").unwrap();append(&db,"completed");assert!(validate_adoption_retirement(&db,now).is_err());let db=fixture();append(&db,"pending");append(&db,"completed");validate_adoption_retirement(&db,now).unwrap();let empty=rusqlite::Connection::open_in_memory().unwrap();validate_adoption_retirement(&empty,now).unwrap();
+    }
 }

@@ -125,6 +125,44 @@ fn unwrap<T>(result: AuthAttempt<T>) -> Result<T, Failure> {
     result.map_err(|_| unavailable())?.outcome
 }
 impl Backend {
+    /// Offline operator entry; never reachable from HTTP and never starts workers.
+    pub fn adopt_legacy(path: &Path, source: &Path, target: &Path) -> Result<(), Box<dyn std::error::Error>> {
+        let text = Zeroizing::new(std::fs::read_to_string(path)?);
+        let config: Config = serde_json::from_str(&text).map_err(|_| "invalid server configuration")?;
+        if target != config.root { return Err("exact configured fresh target required".into()); }
+        let actor = config.first_owner.as_ref().map(|x| x.actor.as_str()).or(config.setup_actor.as_deref())
+            .ok_or("fresh firstOwner or setupActor required")?;
+        if config.setup_actor.as_deref().is_some_and(|a| a != actor) {
+            return Err("bootstrap operator must be unambiguous".into());
+        }
+        if config.imap_transport.is_some() || !config.public_einvoice.is_empty() || !config.invoice_mail.is_empty() {
+            return Err("adoption config must start with mail and delivery providers disabled".into());
+        }
+        CookieVerifier::new(&config.workspace, CookieProfile::Development, &config.cookie_key)?;
+        MfaKeyring::new(&[(1, &config.mfa_key)], None).map_err(|_| "invalid fresh MFA key")?;
+        let operator = rentemester_runtime::bootstrap::Operator::from_policy(&config.workspace, actor, &config.operator_actors)?;
+        let prepared = rentemester_host::legacy_adoption::prepare(source, target, &config.workspace, &config.company_slug)?;
+        let binding = rentemester_storage::legacy_retirement::RetirementBinding {
+            operation_id: prepared.expected_operation_id().to_owned(),
+            source_workspace_id: prepared.source_workspace_id().to_owned(),
+            operator_actor: actor.to_owned(), source_stopped_confirmed: true,
+        };
+        crate::legacy_adoption_cli::confirm("retire-source", prepared.review(), prepared.review_hash(), &mut std::io::stdin().lock(), &mut std::io::stdout().lock())?;
+        let reviewed = prepared.review_hash().to_owned();
+        let retired = match rentemester_host::legacy_adoption::retire_source(prepared, &operator, &binding, &reviewed, true) {
+            Ok(retired) => retired,
+            Err(failure) => {
+                eprintln!("{}", serde_json::json!({"ok":false,"code":failure.error.code,"retirementProgress":failure.progress,"sourceMayBePartlyRetired":true}));
+                return Err(failure.into());
+            }
+        };
+        crate::legacy_adoption_cli::confirm("publish-target", retired.review(), retired.review_hash(), &mut std::io::stdin().lock(), &mut std::io::stdout().lock())?;
+        let reviewed = retired.review_hash().to_owned();
+        let owner = rentemester_host::legacy_adoption::adopt(retired, target, config.broker_uid, config.runtime_profile, &operator, &reviewed)?;
+        owner.try_close().map_err(|_| "adopted workspace close refused")?;
+        println!("{}", serde_json::json!({"ok":true,"target":target,"next":"Start normally with the same private config; complete fresh owner verification and MFA. The legacy source remains retired."}));
+        Ok(())
+    }
     pub(crate) fn lock_company(&self,slug:&str)->Result<std::sync::MutexGuard<'_,Owner>,()> {
         let mut owner=self.owner.lock().map_err(|_|())?;
         owner.select_company(slug).map_err(|_|())?;
@@ -297,6 +335,8 @@ impl Backend {
                 .map_err(|f| format!("first owner bootstrap refused: {}", f.error.code))?;
             if restore.is_some() {
                 owner.grant_restored_first_owner(&operator, &reservation)?;
+            } else if owner.has_legacy_adoption()? {
+                owner.grant_adopted_first_owner(&operator, &reservation)?;
             }
             println!(
                 "First owner initialized; verification delivery requested."
@@ -374,10 +414,8 @@ impl Backend {
             reservation_key: &installer.key,
             verification: &request,
         };
-        self.owner
-            .lock()
-            .map_err(|_| "owner unavailable".to_owned())?
-            .bootstrap_first_identity(
+        let mut owner = self.owner.lock().map_err(|_| "owner unavailable".to_owned())?;
+        let reservation = owner.bootstrap_first_identity(
                 &installer.operator,
                 &runtime,
                 &mut *self.delivery.lock().map_err(|_| "delivery unavailable".to_owned())?,
@@ -386,6 +424,9 @@ impl Backend {
             .map_err(|_| "owner unavailable".to_owned())?
             .outcome
             .map_err(|f| f.error.code.to_owned())?;
+        if owner.has_legacy_adoption().map_err(|_| "adoption receipt unavailable".to_owned())? {
+            owner.grant_adopted_first_owner(&installer.operator, &reservation).map_err(|_| "adopted owner grant refused".to_owned())?;
+        }
         self.setup_pending
             .store(false, std::sync::atomic::Ordering::Release);
         Ok(())

@@ -1,3 +1,4 @@
+import { assertLegacySourceActive } from "./legacy-retirement";
 import { Database } from "bun:sqlite";
 import { createHash } from "node:crypto";
 import { chmodSync, existsSync, mkdirSync, readFileSync } from "node:fs";
@@ -558,6 +559,10 @@ export function assertWorkspaceControlPrimitives(db: Database): void {
  */
 export function openWorkspaceControlDb(workspaceRoot: string): Database {
   const paths = workspaceControlPaths(workspaceRoot);
+  if (existsSync(paths.db)) {
+    const preflight = new Database(paths.db, { readonly: true });
+    try { assertLegacySourceActive(preflight); } finally { preflight.close(); }
+  }
   mkdirSync(paths.directory, { recursive: true, mode: 0o700 });
   const db = new Database(paths.db);
   try {

@@ -9,6 +9,7 @@ use std::path::Path;
 /// No Deserialize/Debug or raw SQLite escape. All retained sections are the
 /// existing fixed credential-free business codecs, never historical authority.
 pub struct ConvertedControlBusiness {
+    source_logical_digest: String,
     from_version: usize,
     business: business::Control,
     retirement: Option<crate::legacy_retirement::RetirementBinding>,
@@ -23,6 +24,9 @@ fn invalid(_: impl std::fmt::Display) -> Error {
     )
 }
 impl ConvertedControlBusiness {
+    pub fn source_logical_digest(&self) -> &str {
+        &self.source_logical_digest
+    }
     pub fn from_version(&self) -> usize {
         self.from_version
     }
@@ -132,9 +136,11 @@ pub fn convert_control_for_adoption(workspace: &Path) -> Result<ConvertedControl
     Snapshot::capture_control(workspace)
         .map_err(refused)?
         .with_writable_copy(|db| {
+            let source_logical_digest = crate::legacy_retirement::source_digest(db)?;
             let retirement = crate::legacy_retirement::strip_verified_overlay(db)?;
             let (from_version, business) = control_migration::convert_adoption_copy(db)?;
             Ok(ConvertedControlBusiness {
+                source_logical_digest,
                 from_version,
                 business,
                 retirement,

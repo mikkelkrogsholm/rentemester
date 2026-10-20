@@ -1,3 +1,4 @@
+import { assertLegacyWorkspaceActive } from "./legacy-retirement";
 import { existsSync, mkdirSync, readFileSync } from "node:fs";
 import { isAbsolute, join, resolve, sep } from "node:path";
 import { writeFileAtomic } from "./atomic-file";
@@ -164,6 +165,7 @@ export function saveWorkspaceManifest(
 ): void {
   mkdirSync(workspaceRoot, { recursive: true });
   const ordered = sortedManifest(manifest);
+  assertLegacyWorkspaceActive(workspaceRoot);
   writeFileAtomic(manifestPath(workspaceRoot), `${JSON.stringify(ordered, null, 2)}\n`);
 }
 

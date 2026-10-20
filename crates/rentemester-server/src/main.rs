@@ -3,6 +3,7 @@ mod auth_delivery;
 mod backend;
 mod document_scanner;
 mod invoice_extractor;
+mod legacy_adoption_cli;
 mod document_pdf;
 mod hosted_worker;
 mod imap_transport;
@@ -41,6 +42,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut mail_worker = false;
     let mut mail_stdin = false;
     let mut upgrade_mail_schema = false;
+    let mut adopt_legacy = None;
+    let mut legacy_source_stopped = false;
     while let Some(arg) = args.next() {
         match arg.as_str() {
             "--listen" => listen = args.next().ok_or("--listen requires an address")?.parse()?,
@@ -51,6 +54,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 ))
             }
             "--create" => create = true,
+            "--adopt-legacy" => adopt_legacy = Some(PathBuf::from(args.next().ok_or("--adopt-legacy requires source workspace")?)),
+            "--legacy-source-stopped" => legacy_source_stopped = true,
             "--upgrade-mail-schema" => upgrade_mail_schema = true,
             "--mail-worker" => mail_worker = true,
             "--mail-service-key-stdin" => mail_stdin = true,
@@ -106,12 +111,26 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 println!(
                     "Fresh restore: --config NEW_PRIVATE.json --restore-backup ARCHIVE --trusted-backup-key RAW_PUBLIC_KEY --confirm-target EXACT_CONFIG_ROOT --source-unavailable (explicit declaration, no global single-use guarantee)"
                 );
+                println!("Legacy adoption: --adopt-legacy SOURCE --config NEW_PRIVATE.json --confirm-target EXACT_CONFIG_ROOT --legacy-source-stopped (stop and drain every TS server, CLI, MCP and job first; two exact review hashes must be confirmed on stdin; exits after adoption, then start normally for fresh owner/MFA)");
                 println!("Stage handoff: --config NEW_PRIVATE.json --restore-backup OFFERED_ARCHIVE --trusted-backup-key SOURCE_PUBLIC_KEY --confirm-target EXACT_CONFIG_ROOT --restore-transfer (requires transferTrustedKeyFile; remains read-only until reviewed source release activation)");
                 return Ok(());
             }
             _ => return Err(format!("unknown option: {arg}").into()),
         }
     }
+    if let Some(source) = adopt_legacy {
+        if create || upgrade_mail_schema || restore_archive.is_some() || verify_archive.is_some()
+            || scheduled_worker || scheduled_stdin || mail_worker || mail_stdin || restore_transfer
+            || trusted_backup_key.is_some() || source_unavailable || !legacy_source_stopped {
+            return Err("legacy adoption is exclusive and requires --legacy-source-stopped".into());
+        }
+        backend::Backend::adopt_legacy(
+            config.as_deref().ok_or("legacy adoption requires --config")?,
+            &source, confirmed_target.as_deref().ok_or("legacy adoption requires --confirm-target")?,
+        )?;
+        return Ok(());
+    }
+    if legacy_source_stopped { return Err("--legacy-source-stopped requires --adopt-legacy".into()); }
     if upgrade_mail_schema {
         if create || restore_archive.is_some() || verify_archive.is_some()
             || scheduled_worker || scheduled_stdin || mail_worker || mail_stdin || restore_transfer

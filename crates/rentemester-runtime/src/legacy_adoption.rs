@@ -330,3 +330,231 @@ mod tests {
         }
     }
 }
+
+/// Read a selected legacy source through descriptor-relative NOFOLLOW opens.
+/// This is an offline operator boundary, not a native destination namespace or
+/// evidence that external producers stopped. The host must bind hashes/fences.
+#[cfg(any(target_os = "linux", target_os = "macos"))]
+pub fn read_source_file(
+    root: &std::path::Path,
+    relative: &str,
+    limit: usize,
+) -> Result<Vec<u8>, String> {
+    use std::io::Read;
+    if limit == 0 || limit > 512 * 1024 * 1024 {
+        return Err("legacy source byte bound required".into());
+    }
+    let (_, file) = source_file(root, relative)?;
+    let meta = file
+        .metadata()
+        .map_err(|_| "legacy source metadata unavailable")?;
+    if meta.len() > limit as u64 {
+        return Err("legacy source file exceeds bound".into());
+    }
+    let mut bytes = Vec::new();
+    file.take(limit as u64 + 1)
+        .read_to_end(&mut bytes)
+        .map_err(|_| "legacy source read refused")?;
+    if bytes.len() > limit {
+        return Err("legacy source file exceeds bound".into());
+    }
+    Ok(bytes)
+}
+#[cfg(any(target_os = "linux", target_os = "macos"))]
+fn source_file(
+    root: &std::path::Path,
+    relative: &str,
+) -> Result<(std::path::PathBuf, std::fs::File), String> {
+    use rustix::fs::{Mode, OFlags, open, openat};
+    use std::os::unix::fs::MetadataExt;
+    use std::path::Component;
+    if !root.is_absolute()
+        || root
+            .components()
+            .any(|c| matches!(c, Component::ParentDir | Component::CurDir))
+        || std::fs::symlink_metadata(root)
+            .map_err(|_| "legacy root unavailable")?
+            .file_type()
+            .is_symlink()
+    {
+        return Err("absolute unlinked legacy root required".into());
+    }
+    let parts = relative.split('/').collect::<Vec<_>>();
+    if parts.is_empty()
+        || parts.len() > 16
+        || parts.iter().any(|p| {
+            p.is_empty()
+                || *p == "."
+                || *p == ".."
+                || p.contains('\\')
+                || p.chars().any(char::is_control)
+        })
+    {
+        return Err("canonical relative source path required".into());
+    }
+    // Canonicalize trusted ancestor aliases (e.g. macOS /var); reject every
+    // symlink below the explicitly selected root using one openat per component.
+    let canonical = root.canonicalize().map_err(|_| "legacy root unavailable")?;
+    let mut parent = open(
+        &canonical,
+        OFlags::RDONLY | OFlags::DIRECTORY | OFlags::NOFOLLOW | OFlags::CLOEXEC,
+        Mode::empty(),
+    )
+    .map_err(|_| "legacy root open refused")?;
+    for (i, part) in parts.iter().enumerate() {
+        let last = i + 1 == parts.len();
+        let mut flags = OFlags::RDONLY | OFlags::NOFOLLOW | OFlags::CLOEXEC | OFlags::NONBLOCK;
+        if !last {
+            flags |= OFlags::DIRECTORY;
+        }
+        let next = openat(&parent, *part, flags, Mode::empty())
+            .map_err(|_| "legacy source path refused")?;
+        if last {
+            let file = std::fs::File::from(next);
+            let m = file
+                .metadata()
+                .map_err(|_| "legacy source metadata refused")?;
+            if !m.is_file()
+                || m.nlink() != 1
+                || m.uid() != rustix::process::geteuid().as_raw()
+                || m.mode() & 0o022 != 0
+            {
+                return Err(
+                    "legacy source must be an owned single-link regular file without other writers"
+                        .into(),
+                );
+            }
+            return Ok((canonical.join(relative), file));
+        }
+        parent = next;
+    }
+    Err("legacy source path unavailable".into())
+}
+/// Trusted offline operator only. Pin the exact source inode before any SQLite
+/// write and recheck path identity afterward. A failed multi-DB retirement stays
+/// fenced in completed DBs; the host must refuse activation until all verify.
+#[cfg(any(target_os = "linux", target_os = "macos"))]
+pub fn with_source_database<T>(
+    root: &std::path::Path,
+    relative: &str,
+    operation: impl FnOnce(&mut rusqlite::Connection) -> Result<T, rentemester_engine::Error>,
+) -> Result<T, rentemester_engine::Error> {
+    use rentemester_engine::Error;
+    use std::os::unix::fs::MetadataExt;
+    let refused = |s| Error::new("legacy_source_refused", s);
+    let (path, pin) = source_file(root, relative).map_err(&refused)?;
+    let meta = pin
+        .metadata()
+        .map_err(|_| refused("source metadata unavailable".into()))?;
+    let mut db = rusqlite::Connection::open_with_flags(
+        &path,
+        rusqlite::OpenFlags::SQLITE_OPEN_READ_WRITE | rusqlite::OpenFlags::SQLITE_OPEN_NOFOLLOW,
+    )
+    .map_err(|_| refused("source SQLite open refused".into()))?;
+    let identity = db
+        .main_file_identity()
+        .map_err(|_| refused("source SQLite identity unavailable".into()))?;
+    if identity.device != meta.dev() || identity.inode != meta.ino() || identity.links != 1 {
+        return Err(refused("source SQLite inode changed".into()));
+    }
+    db.busy_timeout(std::time::Duration::from_secs(2))
+        .map_err(|_| refused("source SQLite timeout refused".into()))?;
+    db.execute_batch("PRAGMA trusted_schema=OFF;PRAGMA foreign_keys=ON;PRAGMA synchronous=FULL")
+        .map_err(|_| refused("source SQLite session refused".into()))?;
+    let result = operation(&mut db);
+    db.close()
+        .map_err(|_| refused("source SQLite close refused".into()))?;
+    let (_, current) = source_file(root, relative).map_err(&refused)?;
+    let after = current
+        .metadata()
+        .map_err(|_| refused("source metadata unavailable".into()))?;
+    if after.dev() != meta.dev() || after.ino() != meta.ino() {
+        return Err(refused("source SQLite path changed".into()));
+    }
+    result
+}
+#[cfg(not(any(target_os = "linux", target_os = "macos")))]
+pub fn read_source_file(_: &std::path::Path, _: &str, _: usize) -> Result<Vec<u8>, String> {
+    Err("legacy source capture unsupported".into())
+}
+#[cfg(not(any(target_os = "linux", target_os = "macos")))]
+pub fn with_source_database<T>(
+    _: &std::path::Path,
+    _: &str,
+    _: impl FnOnce(&mut rusqlite::Connection) -> Result<T, rentemester_engine::Error>,
+) -> Result<T, rentemester_engine::Error> {
+    Err(rentemester_engine::Error::new(
+        "legacy_source_refused",
+        "legacy source retirement unsupported",
+    ))
+}
+
+#[cfg(all(test, any(target_os = "linux", target_os = "macos")))]
+mod source_tests {
+    use super::*;
+    #[test]
+    fn source_reads_are_bounded_and_reject_links_and_traversal() {
+        let dir = tempfile::tempdir().unwrap();
+        std::fs::create_dir(dir.path().join("company")).unwrap();
+        std::fs::write(
+            dir.path().join("company/original.pdf"),
+            b"synthetic original",
+        )
+        .unwrap();
+        assert_eq!(
+            read_source_file(dir.path(), "company/original.pdf", 64).unwrap(),
+            b"synthetic original"
+        );
+        assert!(read_source_file(dir.path(), "company/original.pdf", 2).is_err());
+        assert!(read_source_file(dir.path(), "company/original.pdf", 0).is_err());
+        assert!(
+            read_source_file(dir.path(), "company/original.pdf", 512 * 1024 * 1024 + 1).is_err()
+        );
+        for path in [
+            "../outside",
+            "company/../company/original.pdf",
+            "company//original.pdf",
+            "/company/original.pdf",
+        ] {
+            assert!(read_source_file(dir.path(), path, 64).is_err());
+        }
+        std::os::unix::fs::symlink(dir.path().join("company"), dir.path().join("linked")).unwrap();
+        assert!(read_source_file(dir.path(), "linked/original.pdf", 64).is_err());
+        std::fs::hard_link(
+            dir.path().join("company/original.pdf"),
+            dir.path().join("hard.pdf"),
+        )
+        .unwrap();
+        assert!(read_source_file(dir.path(), "company/original.pdf", 64).is_err());
+    }
+    #[test]
+    fn source_sqlite_operation_pins_inode_and_refuses_path_replacement() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("legacy.sqlite");
+        let db = rusqlite::Connection::open(&path).unwrap();
+        db.execute_batch(
+            "CREATE TABLE business(value TEXT);INSERT INTO business VALUES('preserved')",
+        )
+        .unwrap();
+        db.close().unwrap();
+        let value = with_source_database(dir.path(), "legacy.sqlite", |db| {
+            db.query_row("SELECT value FROM business", [], |r| r.get::<_, String>(0))
+                .map_err(|_| rentemester_engine::Error::new("test", "read refused"))
+        })
+        .unwrap();
+        assert_eq!(value, "preserved");
+        let result = with_source_database(dir.path(), "legacy.sqlite", |_| {
+            std::fs::rename(&path, dir.path().join("preserved.sqlite")).unwrap();
+            std::fs::write(&path, b"replacement").unwrap();
+            Ok(())
+        });
+        assert_eq!(result.unwrap_err().code, "legacy_source_refused");
+        let preserved = rusqlite::Connection::open(dir.path().join("preserved.sqlite")).unwrap();
+        assert_eq!(
+            preserved
+                .query_row("SELECT value FROM business", [], |r| r.get::<_, String>(0))
+                .unwrap(),
+            "preserved"
+        );
+    }
+}

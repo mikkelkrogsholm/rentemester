@@ -25,6 +25,8 @@ use serde::Deserialize;
 use std::{fs::OpenOptions, io::Write, path::Path, time::Duration};
 use tempfile::TempDir;
 pub mod legacy_adoption;
+pub mod legacy_control_adoption;
+pub mod legacy_retirement;
 mod company_baseline;
 mod company_normalization;
 mod company_physical;
