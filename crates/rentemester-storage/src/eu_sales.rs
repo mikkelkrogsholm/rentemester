@@ -69,29 +69,10 @@ fn original(tx: &Transaction<'_>, doc: &Document) -> Result<(vies::Vat, Money), 
             .as_str()
             .ok_or_else(|| refused("invoice issuance timestamp missing"))?,
     )?;
-    let totals = &p["totals"];
-    let net = if doc.currency == "DKK" {
-        money(&totals["netAmount"])?
-    } else {
-        if p["fxValuationVersion"].as_i64() != Some(1) {
-            return Err(refused("frozen foreign invoice DKK valuation required"));
-        }
-        money(&totals["netAmountDkk"])?
-    };
-    let vat = money(
-        &totals[if doc.currency == "DKK" {
-            "vatAmount"
-        } else {
-            "vatAmountDkk"
-        }],
-    )?;
-    let gross = money(
-        &totals[if doc.currency == "DKK" {
-            "grossAmount"
-        } else {
-            "grossAmountDkk"
-        }],
-    )?;
+    let projection = rentemester_engine::sales_fx::project(p)?;
+    let net = projection.net;
+    let vat = projection.vat;
+    let gross = projection.gross;
     if net.is_negative() || net == Money::default() || vat != Money::default() || gross != net {
         return Err(refused("EU service DKK basis is inconsistent"));
     }
@@ -114,11 +95,53 @@ fn verify_journal(
     if status != "posted"
         || document_id != Some(doc.id)
         || date != doc.date
-        || currency != "DKK"
         || bank.is_some()
         || reversed
     {
         return Err(refused("EU sales source posting requires resolution"));
+    }
+    let metadata = tx
+        .query_row(
+            "SELECT amount_foreign,amount_dkk,fx_rate_to_dkk FROM journal_entries WHERE id=?1",
+            [journal],
+            |r| {
+                let amount = |i| -> rusqlite::Result<Option<Money>> {
+                    match r.get_ref(i)? {
+                        rusqlite::types::ValueRef::Null => Ok(None),
+                        v => legacy_money(v)
+                            .map(Some)
+                            .map_err(|_| rusqlite::Error::InvalidQuery),
+                    }
+                };
+                Ok((amount(0)?, amount(1)?, r.get::<_, Option<f64>>(2)?))
+            },
+        )
+        .map_err(invalid)?;
+    if credit || doc.currency == "DKK" {
+        if currency != "DKK" || metadata.0.is_some() || metadata.1.is_some() || metadata.2.is_some()
+        {
+            return Err(refused(
+                "DKK source journal must not carry foreign valuation metadata",
+            ));
+        }
+    } else {
+        let source = rentemester_engine::sales_invoice::project(&doc.payload)?;
+        let dkk = rentemester_engine::sales_fx::project(&doc.payload)?;
+        let rate = rentemester_engine::fx::FxRate::parse(
+            &doc.payload["totals"]["fxRateToDkk"]
+                .as_number()
+                .ok_or_else(|| refused("frozen FX rate missing"))?
+                .to_string(),
+        )?;
+        if currency != doc.currency
+            || metadata.0.as_ref() != Some(&source.gross)
+            || metadata.1.as_ref() != Some(&dkk.gross)
+            || metadata.2 != Some(crate::journal_post::rate(&rate)?)
+        {
+            return Err(refused(
+                "foreign journal valuation differs from immutable invoice",
+            ));
+        }
     }
     let mut q=tx.prepare("SELECT a.type,l.vat_code,l.debit_amount,l.credit_amount FROM journal_lines l JOIN accounts a ON a.id=l.account_id WHERE l.journal_entry_id=?1 ORDER BY l.id").map_err(invalid)?;
     let mut rows = q.query([journal]).map_err(invalid)?;

@@ -2,7 +2,7 @@ use super::*;
 use rusqlite::{Connection, params};
 fn database() -> Connection {
     let db = Connection::open_in_memory().unwrap();
-    db.execute_batch("CREATE TABLE documents(id INTEGER PRIMARY KEY,document_type TEXT,invoice_no TEXT,invoice_date TEXT,currency TEXT,payload_json TEXT,sha256_hash TEXT);CREATE TABLE issued_invoice_postings(invoice_document_id INTEGER,journal_entry_id INTEGER,booked_gross_dkk NUMERIC);CREATE TABLE credit_note_postings(credit_note_document_id INTEGER,original_invoice_document_id INTEGER,journal_entry_id INTEGER,booked_gross_dkk NUMERIC);CREATE TABLE journal_entries(id INTEGER PRIMARY KEY,status TEXT,document_id INTEGER,transaction_date TEXT,currency TEXT,source_bank_transaction_id INTEGER,reversal_of_entry_id INTEGER);CREATE TABLE accounts(id INTEGER PRIMARY KEY,type TEXT);CREATE TABLE journal_lines(id INTEGER PRIMARY KEY,journal_entry_id INTEGER,account_id INTEGER,vat_code TEXT,debit_amount NUMERIC,credit_amount NUMERIC);INSERT INTO accounts VALUES(1,'income'),(2,'asset');").unwrap();
+    db.execute_batch("CREATE TABLE documents(id INTEGER PRIMARY KEY,document_type TEXT,invoice_no TEXT,invoice_date TEXT,currency TEXT,payload_json TEXT,sha256_hash TEXT);CREATE TABLE issued_invoice_postings(invoice_document_id INTEGER,journal_entry_id INTEGER,booked_gross_dkk NUMERIC);CREATE TABLE credit_note_postings(credit_note_document_id INTEGER,original_invoice_document_id INTEGER,journal_entry_id INTEGER,booked_gross_dkk NUMERIC);CREATE TABLE journal_entries(id INTEGER PRIMARY KEY,status TEXT,document_id INTEGER,transaction_date TEXT,currency TEXT,source_bank_transaction_id INTEGER,reversal_of_entry_id INTEGER,amount_foreign NUMERIC,amount_dkk NUMERIC,fx_rate_to_dkk NUMERIC);CREATE TABLE accounts(id INTEGER PRIMARY KEY,type TEXT);CREATE TABLE journal_lines(id INTEGER PRIMARY KEY,journal_entry_id INTEGER,account_id INTEGER,vat_code TEXT,debit_amount NUMERIC,credit_amount NUMERIC);INSERT INTO accounts VALUES(1,'income'),(2,'asset');").unwrap();
     db
 }
 fn save(tx: &Transaction<'_>, id: i64, kind: &str, no: &str, date: &str, payload: &Value) {
@@ -17,11 +17,11 @@ fn save(tx: &Transaction<'_>, id: i64, kind: &str, no: &str, date: &str, payload
 fn fixture(tx: &Transaction<'_>) {
     let observation = json!({"countryCode":"DE","vatNumber":"123456789","normalized":"DE123456789","valid":true,"name":"Synthetic EU Buyer","address":null,"rawResponse":"{}"});
     let validation = vies::record(&observation, "2026-08-01T12:00:00Z").unwrap();
-    let invoice = json!({"invoiceType":"full","invoiceNumber":"2026-0001","issueDate":"2026-08-02","issuedAt":"2026-08-02T12:00:00Z","currency":"EUR","vatTreatment":"foreign_reverse_charge","reverseChargeBasis":"EU_B2B_SERVICES","viesValidation":validation,"fxValuationVersion":1,"buyer":{"name":"Synthetic EU Buyer","vatOrCvr":"DE123456789"},"totals":{"netAmount":100,"vatAmount":0,"grossAmount":100,"fxRateToDkk":7.5,"netAmountDkk":750,"vatAmountDkk":0,"grossAmountDkk":750}});
+    let invoice = json!({"invoiceType":"full","invoiceNumber":"2026-0001","issueDate":"2026-08-02","issuedAt":"2026-08-02T12:00:00Z","currency":"EUR","vatTreatment":"foreign_reverse_charge","reverseChargeBasis":"EU_B2B_SERVICES","reverseChargeNote":"Reverse charge - customer accounts for VAT","lines":[{"description":"Synthetic EU service","quantity":1,"unitPriceExVat":100,"lineTotalExVat":100,"taxClassification":"reverse_charge","reverseChargeBasis":"EU_B2B_SERVICES","vatRate":0,"vatBase":100,"vatAmount":0,"vatBaseDkk":750,"vatAmountDkk":0}],"viesValidation":validation,"fxValuationVersion":1,"buyer":{"name":"Synthetic EU Buyer","vatOrCvr":"DE123456789"},"totals":{"netAmount":100,"vatAmount":0,"grossAmount":100,"fxRateToDkk":7.5,"netAmountDkk":750,"vatAmountDkk":0,"grossAmountDkk":750}});
     save(tx, 1, "issued_invoice", "2026-0001", "2026-08-02", &invoice);
     let credit = json!({"type":"credit_note","creditNoteNumber":"CN-2026-0001","originalInvoiceNumber":"2026-0001","originalInvoiceDocumentId":1,"issueDate":"2026-09-02","currency":"EUR","netAmount":20,"vatAmount":0,"grossAmount":20,"netAmountDkk":150,"vatAmountDkk":0,"grossAmountDkk":150,"buyer":invoice["buyer"]});
     save(tx, 2, "credit_note", "CN-2026-0001", "2026-09-02", &credit);
-    tx.execute_batch("INSERT INTO issued_invoice_postings VALUES(1,1,750);INSERT INTO credit_note_postings VALUES(2,1,2,150);INSERT INTO journal_entries VALUES(1,'posted',1,'2026-08-02','DKK',NULL,NULL),(2,'posted',2,'2026-09-02','DKK',NULL,NULL);INSERT INTO journal_lines VALUES(1,1,1,'REVERSE_CHARGE_EXEMPT',0,750),(2,1,2,NULL,750,0),(3,2,1,'REVERSE_CHARGE_EXEMPT',150,0),(4,2,2,NULL,0,150);").unwrap();
+    tx.execute_batch("INSERT INTO issued_invoice_postings VALUES(1,1,750);INSERT INTO credit_note_postings VALUES(2,1,2,150);INSERT INTO journal_entries VALUES(1,'posted',1,'2026-08-02','EUR',NULL,NULL,100,750,7.5),(2,'posted',2,'2026-09-02','DKK',NULL,NULL,NULL,NULL,NULL);INSERT INTO journal_lines VALUES(1,1,1,'REVERSE_CHARGE_EXEMPT',0,750),(2,1,2,NULL,750,0),(3,2,1,'REVERSE_CHARGE_EXEMPT',150,0),(4,2,2,NULL,0,150);").unwrap();
 }
 fn report(tx: &Transaction<'_>, from: &str, to: &str) -> Result<Value, Error> {
     read(tx, Date::parse(from).unwrap(), Date::parse(to).unwrap())
@@ -104,4 +104,53 @@ fn frozen_identity_or_snapshot_tampering_refuses() {
     fixture(&tx);
     tx.execute("UPDATE documents SET payload_json=replace(payload_json,'DE123456789','DE000000000') WHERE id=1",[]).unwrap();
     assert!(report(&tx, "2026-01-01", "2026-12-31").is_err());
+}
+
+#[test]
+fn foreign_journal_metadata_must_match_frozen_invoice() {
+    for assignment in [
+        "currency='USD'",
+        "currency='DKK'",
+        "amount_foreign=99",
+        "amount_dkk=749",
+        "fx_rate_to_dkk=7.49",
+        "amount_foreign=NULL",
+    ] {
+        let mut db = database();
+        let tx = db.transaction().unwrap();
+        fixture(&tx);
+        tx.execute(
+            &format!("UPDATE journal_entries SET {assignment} WHERE id=1"),
+            [],
+        )
+        .unwrap();
+        assert!(
+            report(&tx, "2026-08-01", "2026-08-31").is_err(),
+            "{assignment}"
+        );
+    }
+}
+#[test]
+fn foreign_frozen_line_allocation_is_checked_against_rate() {
+    let mut db = database();
+    let tx = db.transaction().unwrap();
+    fixture(&tx);
+    let mut payload: Value = serde_json::from_str(
+        &tx.query_row("SELECT payload_json FROM documents WHERE id=1", [], |r| {
+            r.get::<_, String>(0)
+        })
+        .unwrap(),
+    )
+    .unwrap();
+    payload["lines"][0]["vatBaseDkk"] = json!(749);
+    tx.execute("DELETE FROM documents WHERE id=1", []).unwrap();
+    save(
+        &tx,
+        1,
+        "issued_invoice",
+        "2026-0001",
+        "2026-08-02",
+        &payload,
+    );
+    assert!(report(&tx, "2026-08-01", "2026-08-31").is_err());
 }
