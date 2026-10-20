@@ -42,8 +42,12 @@ fn switch(
     root: &Path,
     slug: &str,
     current: &mut String,
+    for_snapshot: bool,
 ) -> Result<(), rentemester_engine::Error> {
-    if current == slug {
+    if current == slug && company.is_some() {
+        if !for_snapshot {
+            guard.select_company(slug).map_err(error)?;
+        }
         return Ok(());
     }
     if let Some(db) = company.take()
@@ -52,7 +56,11 @@ fn switch(
         *company = Some(db);
         return Err(error(e));
     }
-    guard.select_company(slug).map_err(error)?;
+    if for_snapshot {
+        guard.select_company_for_snapshot(slug).map_err(error)?;
+    } else {
+        guard.select_company(slug).map_err(error)?;
+    }
     *company = Some(
         Connection::open_with_flags(
             root.join(slug).join("data/ledger.sqlite"),
@@ -110,6 +118,7 @@ impl Owner {
                 .collect(),
         };
         let root = &self.root;
+        let original_selected = self.slug.clone();
         let selected = &mut self.slug;
         let tx = slots
             .control
@@ -247,6 +256,7 @@ impl Owner {
                     root,
                     &c.slug,
                     selected,
+                    true,
                 )?;
                 slots
                     .guard
@@ -258,7 +268,12 @@ impl Owner {
                 super::archive_import::validate_live_sources(db, &mut slots.guard)?;
                 super::invoice_extraction::validate_live_sources(db, &mut slots.guard)?;
                 store::validate_inbox_company(&tx, db, &c.slug)?;
-                super::intercompany_dispositions::validate_historical_company(&tx, db, &c.slug, &facts.uuid)?;
+                super::intercompany_dispositions::validate_historical_company(
+                    &tx,
+                    db,
+                    &c.slug,
+                    &facts.uuid,
+                )?;
                 companies.push(artifact::Company {
                     slug: c.slug.clone(),
                     ledger_uuid: facts.uuid,
@@ -364,11 +379,27 @@ impl Owner {
             artifact::create(context, entries, key).map_err(error)
         })();
         let rollback = tx.rollback().is_ok();
+        // Maintenance may pin archived companies. Restore the caller's ordinary
+        // active selection on success AND failure before returning a reusable owner.
+        let restored = switch(
+            &mut slots.company,
+            &mut slots.guard,
+            root,
+            &original_selected,
+            selected,
+            false,
+        )
+        .is_ok();
         let complete = slots.company.is_some();
         let retired = if complete {
-            self.finish(rollback)
+            self.finish(rollback && restored)
         } else {
             true
+        };
+        let outcome = if restored {
+            outcome
+        } else {
+            Err(error("ordinary company selection could not be restored"))
         };
         Ok(Attempt {
             outcome: outcome.map_err(|error| Failure {
@@ -542,6 +573,7 @@ impl Owner {
                 &stage,
                 &c.slug,
                 &mut owner.slug,
+                true,
             )
             .map_err(|_| OwnerError::Database)?;
             store::restore_boundary(slots.company.as_mut().unwrap(), &archive_hash)
@@ -553,6 +585,7 @@ impl Owner {
             &stage,
             primary,
             &mut owner.slug,
+            false,
         )
         .map_err(|_| OwnerError::Database)?;
         // Close every SQLite descriptor while retaining guard + lease. A BUSY result
@@ -657,7 +690,7 @@ fn validate(a: &artifact::VerifiedArtifact) -> Result<(), rentemester_engine::Er
         || registered.len() != actual.len()
         || registered.iter().any(|c| {
             c.as_object().is_none_or(|v| v.len() != 4)
-                || c["archived"] != false
+                || c["archived"].as_bool().is_none()
                 || c["name"].as_str().is_none_or(|s| {
                     s.trim().is_empty() || s.len() > 1024 || s.chars().any(char::is_control)
                 })
@@ -674,7 +707,9 @@ fn validate(a: &artifact::VerifiedArtifact) -> Result<(), rentemester_engine::Er
         a,
         &rentemester_runtime::backup_keys::digest(a.manifest_bytes()),
     )?;
-    let control_tx = control.transaction_with_behavior(TransactionBehavior::Deferred).map_err(error)?;
+    let control_tx = control
+        .transaction_with_behavior(TransactionBehavior::Deferred)
+        .map_err(error)?;
     for c in &ctx.companies {
         if c.schema_version != 36 {
             return Err(error("company schema"));
@@ -689,7 +724,12 @@ fn validate(a: &artifact::VerifiedArtifact) -> Result<(), rentemester_engine::Er
         // before restore_new creates any target stage or publishes a namespace.
         let facts = store::company(&db)?;
         store::validate_inbox_company(&control_tx, &db, &c.slug)?;
-        super::intercompany_dispositions::validate_historical_company(&control_tx, &db, &c.slug, &facts.uuid)?;
+        super::intercompany_dispositions::validate_historical_company(
+            &control_tx,
+            &db,
+            &c.slug,
+            &facts.uuid,
+        )?;
         if facts.uuid != c.ledger_uuid {
             return Err(error("ledger identity differs"));
         }
@@ -1250,6 +1290,12 @@ mod tests {
                 excluded: artifact::Exclusion::ALL.to_vec(),
             },
         };
+        verified(context, entries)
+    }
+    fn verified(
+        context: artifact::Context,
+        entries: Vec<artifact::Snapshot>,
+    ) -> artifact::VerifiedArtifact {
         // Public RFC8032 test-vector material, never an operator default/file.
         let der = concat!(
             "3051020101300506032b657004220420",
@@ -1264,6 +1310,116 @@ mod tests {
         let key = artifact::SigningKey::from_pkcs8(&der).unwrap();
         let trust = artifact::TrustedPublicKey::from_bytes(&key.public_key_bytes()).unwrap();
         artifact::verify(&artifact::create(context, entries, &key).unwrap(), &trust).unwrap()
+    }
+    fn mixed_company_archive(
+        archived: Option<Value>,
+        wrong_uuid: bool,
+    ) -> artifact::VerifiedArtifact {
+        let base = signed(false, false, false, false, false, None);
+        let mut context = base.manifest().context.clone();
+        let mut control = Connection::open_in_memory().unwrap();
+        let mut archived_db = Connection::open_in_memory().unwrap();
+        rentemester_storage::fresh::initialize_empty_pair(
+            &mut control,
+            &mut archived_db,
+            "Synthetic archived company",
+        )
+        .unwrap();
+        archived_db.execute_batch("INSERT INTO accounts(account_no,name,type,normal_balance) VALUES('2990','Synthetic preserved archived account','equity','credit')").unwrap();
+        let uuid = store::company(&archived_db).unwrap().uuid;
+        context.companies.push(artifact::Company {
+            slug: "archived".into(),
+            ledger_uuid: if wrong_uuid { "f".repeat(32) } else { uuid },
+            schema_version: 36,
+        });
+        let mut manifest: Value = serde_json::from_slice(
+            base.entries()
+                .iter()
+                .find(|e| matches!(e.kind(), artifact::EntryKind::WorkspaceManifest))
+                .unwrap()
+                .bytes(),
+        )
+        .unwrap();
+        let mut row = json!({"slug":"archived","name":"Synthetic archived company","createdAt":"2026-01-01T00:00:00.000Z"});
+        if let Some(flag) = archived {
+            row["archived"] = flag;
+        }
+        manifest["companies"].as_array_mut().unwrap().push(row);
+        let mut entries = base
+            .entries()
+            .iter()
+            .map(|e| artifact::Snapshot {
+                kind: e.kind().clone(),
+                path: e.path().into(),
+                bytes: if matches!(e.kind(), artifact::EntryKind::WorkspaceManifest) {
+                    serde_json::to_vec(&manifest).unwrap()
+                } else {
+                    e.bytes().to_vec()
+                },
+            })
+            .collect::<Vec<_>>();
+        entries.push(artifact::Snapshot {
+            kind: artifact::EntryKind::CompanyLedger {
+                company: "archived".into(),
+            },
+            path: "archived/data/ledger.sqlite".into(),
+            bytes: snapshot(&archived_db).unwrap(),
+        });
+        verified(context, entries)
+    }
+    #[test]
+    fn signed_mixed_active_and_archived_companies_preserve_flag_inventory_and_native_ledger() {
+        let artifact = mixed_company_archive(Some(json!(true)), false);
+        validate(&artifact).unwrap();
+        let manifest: Value = serde_json::from_slice(
+            artifact
+                .entries()
+                .iter()
+                .find(|e| matches!(e.kind(), artifact::EntryKind::WorkspaceManifest))
+                .unwrap()
+                .bytes(),
+        )
+        .unwrap();
+        assert_eq!(manifest["companies"][0]["archived"], false);
+        assert_eq!(manifest["companies"][1]["archived"], true);
+        assert_eq!(artifact.manifest().context.companies.len(), 2);
+        let ledger = artifact
+            .entries()
+            .iter()
+            .find(|e| e.path() == "archived/data/ledger.sqlite")
+            .unwrap();
+        let mut db = Connection::open_in_memory().unwrap();
+        db.deserialize_read_exact(MAIN_DB, ledger.bytes(), ledger.bytes().len(), true)
+            .unwrap();
+        assert_eq!(
+            db.query_row::<String, _, _>(
+                "SELECT name FROM accounts WHERE account_no='2990'",
+                [],
+                |r| r.get(0)
+            )
+            .unwrap(),
+            "Synthetic preserved archived account"
+        );
+        assert_eq!(
+            store::company(&db).unwrap().uuid,
+            artifact.manifest().context.companies[1].ledger_uuid
+        );
+        assert!(validate(&mixed_company_archive(Some(json!(false)), false)).is_ok());
+        // The newly accepted flag does not relax per-company domain identity.
+        assert!(validate(&mixed_company_archive(Some(json!(true)), true)).is_err());
+    }
+    #[test]
+    fn signed_archived_flag_requires_explicit_boolean_without_defaulting_or_coercion() {
+        for flag in [
+            None,
+            Some(Value::Null),
+            Some(json!("true")),
+            Some(json!(0)),
+            Some(json!({})),
+        ] {
+            let artifact = mixed_company_archive(flag, false);
+            assert!(validate(&artifact).is_err());
+        }
     }
     #[test]
     fn signed_knowledge_coverage_is_semantically_validated_and_old_audit_only_remains_supported() {
