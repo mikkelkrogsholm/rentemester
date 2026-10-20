@@ -375,7 +375,8 @@ pub fn import(
         )?;
     }
     let continuity = verify_balance_continuity(tx, &fresh)?;
-    let mut result = json!({"importBatchId":batch,"sourceFileHash":source_hash,"bankAccountId":account_id,"imported":imported,"skippedDuplicates":skipped.len(),"skippedDuplicateRows":skipped,"bankAccountSlug":resolved.map(|r|r.1),"profile":rows.first().and_then(|row|row.profile.as_deref()),"balanceWarnings":continuity.warnings,"exceptionsCreated":continuity.created});
+    let unmatched = crate::unmatched_bank::sync(tx)?;
+    let mut result = json!({"importBatchId":batch,"sourceFileHash":source_hash,"bankAccountId":account_id,"imported":imported,"skippedDuplicates":skipped.len(),"skippedDuplicateRows":skipped,"bankAccountSlug":resolved.map(|r|r.1),"profile":rows.first().and_then(|row|row.profile.as_deref()),"balanceWarnings":continuity.warnings,"exceptionsCreated":continuity.created + unmatched});
     if let Some(first) = continuity.first {
         result["firstBalance"] = json!(crate::journal_post::money(&first)?);
     }
