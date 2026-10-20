@@ -3004,3 +3004,41 @@ Almindelig start skal genåbne; oprettelse, restore og migration skal være
 eksplicitte operatørhandlinger. Den nuværende produktionsrute skiftes først
 efter de aftalte accept- og releasegates. Resterende desktopprøver er fortsat
 samlet til slutaccept efter brugerens ønske.
+
+### Rust-container med faktisk installation og genåbning (Group105)
+
+[Containerkontrakten](rust-container.md) beskriver den særskilte
+`Dockerfile.rust`, compose-eksempel og eksplicit oprettelse efterfulgt af
+almindelig genåbning. Runtime indeholder Rust-server, web-UI, CLI/MCP og
+PDF-worker/PDFium; Bun, Node, Python og Rust-toolchain er ikke installeret.
+BuildKit-cachen serialiseres pr. arkitektur og bruger den eksisterende
+pladskontrol, også når Cargo genbruger alle artefakter. `target/` sendes
+ikke i Docker-konteksten.
+
+Den faktiske arm64 Linux-prøve består ved image-konfigurationsdigest
+`sha256:a0a3f8baed2f7de333bc68e319b15cbd088f34d2bf48bb1aa2a579c07606e622`.
+Der bruges read-only root, dedikeret UID 10001, umask 077, no-new-privileges og
+alle fem capability-sæt nulstillet. Den pakkede PDF-parser læser den præcise
+syntetiske tekst og rapporterer de fastlåste bibliotekshashes. Normal web-
+ejeroprettelse, bekræftelse og MFA efterfølges af bogføring af 125,50 kr., korrekt
+saldobalance, resultat/balance og faktiske CSV/PDF-downloads samt præcist
+originalbilag. Kontrolleret Docker-stop giver exit 0. Efter ny containerstart
+med samme datavolumen virker normal MFA-login, journal, rapporter, original
+og idempotent replay uden dobbeltbogføring. Andet stop giver også exit 0.
+Begge egne volumener og containeren er verificeret fjernet.
+
+En ældre testhjælper forventede et opdigtet nul for manglende tidligere år;
+den er rettet til den eksisterende null-/`prior_native_year_not_present`-
+kontrakt. Produktets regnskabslogik er uændret. Den første fejlede prøve og
+den beståede friske prøve bevares separat. Nye rapporter/skærmbilleder har
+egen mappe, så tidligere acceptartefakter bevares.
+
+Evidens: `rust-container105b.json` samt separat `rust-container105-provenance.json`
+med præcise image-, binær-, kilde- og log-hashes. Koden blev samlet fra
+`0b36e959` med de registrerede ændringer, og imaget angiver ærligt dirty-kilde;
+leverancen er siden committed. CLI/MCP er her kun prøvet med `--help`.
+R53's Rust-specifikke release-/Cargo-/PDF-proveniens, SBOM, uafhængig
+reproducerbarhed, HTTPS-proxy/principal-accept og godkendt promotion af
+præcis digest er fortsat åbne. Dette er ingen produktionsudgivelse, amd64-
+eller installeret desktopaccept. Alle tidligere brugerforløb og det fulde
+Rust-mål bevares; resterende desktopprøver venter stadig til slutaccept.
