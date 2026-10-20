@@ -10,7 +10,7 @@ fn archive_tools_discovery_readonly_and_confirmation_admission() {
         ],
     ));
     let tools = rows[1]["result"]["tools"].as_array().unwrap();
-    assert_eq!(tools.len(), 200);
+    assert_eq!(tools.len(), 202);
     for name in ["archive_import_plan", "archives", "archive_import_original"] {
         assert_eq!(
             tools.iter().find(|t| t["name"] == name).unwrap()["annotations"]["readOnlyHint"],

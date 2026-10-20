@@ -19,7 +19,7 @@ fn opening_discovery_strict_selectors_and_separate_confirmation() {
         ],
     ));
     let tools = rows[1]["result"]["tools"].as_array().unwrap();
-    assert_eq!(tools.len(), 200);
+    assert_eq!(tools.len(), 202);
     for (name, readonly) in [
         ("opening_balance", true),
         ("opening_balance_plan", true),

@@ -25,6 +25,7 @@ mod bank_correction;
 mod bank_reconciliation;
 mod documents;
 mod document_pdf;
+mod invoice_extraction;
 mod reviewed_bookkeeping;
 mod annual_reports;
 mod bank_payables;
