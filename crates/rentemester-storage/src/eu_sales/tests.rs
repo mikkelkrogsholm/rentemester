@@ -154,3 +154,183 @@ fn foreign_frozen_line_allocation_is_checked_against_rate() {
     );
     assert!(report(&tx, "2026-08-01", "2026-08-31").is_err());
 }
+
+/// Synthetic stored originals exercise the reader/poster; this is not a
+/// TypeScript-workspace adoption or an authorization bypass in product code.
+#[test]
+fn source_foreign_bases_omitted_vat_and_aggregate_fx_support_post_credit_and_report() {
+    use crate::sales::{self, Artifact};
+    for currency in ["DKK", "EUR"] {
+        for basis in [
+            "DK_MOMSLOVEN_§46_STK_1_NR_3",
+            "EU_MOMSDIREKTIV_ART_196",
+            "EU_MOMSDIREKTIV_ART_199",
+        ] {
+            let mut control = Connection::open_in_memory().unwrap();
+            let mut db = Connection::open_in_memory().unwrap();
+            crate::fresh::initialize_empty_pair(&mut control, &mut db, "Synthetic Seller").unwrap();
+            let tx = db
+                .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
+                .unwrap();
+            tx.execute_batch("UPDATE companies SET address='Synthetic Seller Street',cvr='87654321',vat_period_type='quarter' WHERE id=1; INSERT INTO accounts(account_no,name,type,normal_balance) VALUES('R','Synthetic receivable','asset','debit'),('S','Synthetic sale','income','credit'),('V','Synthetic output VAT','vat','credit'); INSERT INTO account_role_mappings(role,account_no,version,confirmed_by) VALUES('debtors','R',1,'synthetic'),('output_vat','V',1,'synthetic');").unwrap();
+            let mut observation = json!({"countryCode":"DE","vatNumber":"123456789","normalized":"DE123456789","valid":true,"name":"Synthetic EU Buyer","address":null,"rawResponse":"{}"});
+            crate::vies::store(
+                &tx,
+                &vies::record(&observation, "2026-08-01T12:00:00Z").unwrap(),
+                "user:synthetic",
+            )
+            .unwrap();
+            let mut source = json!({"issueDate":"2026-08-02","currency":currency,"vatTreatment":"foreign_reverse_charge","reverseChargeBasis":basis,"reverseChargeNote":"Synthetic reverse charge","buyer":{"name":"Synthetic EU Buyer","address":"Synthetic Buyer Street","vatOrCvr":"DE123456789"},"lines":[{"description":"Synthetic service","quantity":1,"unitPriceExVat":100}]});
+            if currency == "EUR" {
+                source["fxRateToDkk"] = json!(7.5);
+            }
+            let input = serde_json::from_value(source).unwrap();
+            let mut original = sales::prepare(&tx, &input, "2026-08-02T12:00:00Z", true).unwrap();
+            original["totals"]
+                .as_object_mut()
+                .unwrap()
+                .remove("vatAmount");
+            original["totals"]
+                .as_object_mut()
+                .unwrap()
+                .remove("vatAmountDkk");
+            original
+                .as_object_mut()
+                .unwrap()
+                .remove("fxValuationVersion");
+            for key in [
+                "taxClassification",
+                "reverseChargeBasis",
+                "vatRate",
+                "vatBase",
+                "vatAmount",
+                "vatBaseDkk",
+                "vatAmountDkk",
+            ] {
+                original["lines"][0].as_object_mut().unwrap().remove(key);
+            }
+            let bytes = serde_json::to_string_pretty(&original).unwrap();
+            let hash = crate::invoice_email::sha(bytes.as_bytes());
+            let issued = sales::register(
+                &tx,
+                &original,
+                Artifact {
+                    filename: "synthetic.json",
+                    path: "synthetic.json",
+                    hash: &hash,
+                    mime: "application/json",
+                },
+                Artifact {
+                    filename: "synthetic.pdf",
+                    path: "synthetic.pdf",
+                    hash: &"b".repeat(64),
+                    mime: "application/pdf",
+                },
+                "synthetic",
+            )
+            .unwrap();
+            let id = issued["documentId"].as_i64().unwrap();
+            sales::post(
+                &tx,
+                &serde_json::from_value(
+                    json!({"invoiceDocumentId":id,"revenueAccountNo":"S","confirm":true}),
+                )
+                .unwrap(),
+                "synthetic",
+                Date::parse("2026-08-02").unwrap(),
+            )
+            .unwrap();
+            let expected = if currency == "EUR" { 750.0 } else { 100.0 };
+            assert_eq!(
+                report(&tx, "2026-08-01", "2026-08-31").unwrap()["totalValue"],
+                expected
+            );
+            assert_eq!(
+                sales::list(&tx, "synthetic", "2026-08-02", None).unwrap()["invoices"][0]["grossAmountDkk"],
+                expected
+            );
+            let credit = crate::credit_note::prepare(&tx,&serde_json::from_value(json!({"invoiceDocumentId":id,"issueDate":"2026-09-02","reason":"Synthetic correction","grossAmount":20,"confirm":true})).unwrap(),"2026-09-02T12:00:00Z").unwrap();
+            let credit_bytes = serde_json::to_string_pretty(&credit.payload).unwrap();
+            crate::credit_note::register_and_post(
+                &tx,
+                credit,
+                Artifact {
+                    filename: "synthetic-credit.json",
+                    path: "synthetic-credit.json",
+                    hash: &crate::invoice_email::sha(credit_bytes.as_bytes()),
+                    mime: "application/json",
+                },
+                "synthetic",
+                Date::parse("2026-09-02").unwrap(),
+            )
+            .unwrap();
+            assert_eq!(
+                report(&tx, "2026-01-01", "2026-12-31").unwrap()["totalValue"],
+                expected * 0.8
+            );
+            assert_eq!(
+                report(&tx, "2026-09-01", "2026-09-30").unwrap()["totalValue"],
+                -expected * 0.2
+            );
+            observation["valid"] = json!(false);
+            crate::vies::store(
+                &tx,
+                &vies::record(&observation, "2026-09-03T12:00:00Z").unwrap(),
+                "user:synthetic",
+            )
+            .unwrap();
+            assert_eq!(
+                report(&tx, "2026-01-01", "2026-12-31").unwrap()["totalValue"],
+                expected * 0.8
+            );
+            assert!(sales::prepare(&tx, &input, "2026-09-03T12:00:00Z", false).is_err());
+            let saved: (String, String) = tx
+                .query_row(
+                    "SELECT payload_json,sha256_hash FROM documents WHERE id=?1",
+                    [id],
+                    |r| Ok((r.get(0)?, r.get(1)?)),
+                )
+                .unwrap();
+            assert_eq!(saved, (bytes, hash));
+            tx.execute(
+                "UPDATE documents SET sha256_hash=?1 WHERE id=?2",
+                params!["0".repeat(64), id],
+            )
+            .unwrap();
+            assert!(report(&tx, "2026-01-01", "2026-12-31").is_err());
+        }
+    }
+}
+
+#[test]
+fn snapshot_proof_hashes_original_bytes_without_reserializing_source_order() {
+    let mut db = database();
+    let tx = db.transaction().unwrap();
+    fixture(&tx);
+    let original: String = tx
+        .query_row("SELECT payload_json FROM documents WHERE id=1", [], |r| {
+            r.get(0)
+        })
+        .unwrap();
+    let payload: Value = serde_json::from_str(&original).unwrap();
+    let original_bytes = serde_json::to_string(&payload).unwrap();
+    assert_ne!(original_bytes, original);
+    tx.execute(
+        "UPDATE documents SET payload_json=?1,sha256_hash=?2 WHERE id=1",
+        params![
+            original_bytes,
+            crate::invoice_email::sha(original_bytes.as_bytes())
+        ],
+    )
+    .unwrap();
+    assert_eq!(
+        report(&tx, "2026-08-01", "2026-08-31").unwrap()["totalValue"],
+        750.0
+    );
+    tx.execute(
+        "UPDATE documents SET payload_json=payload_json||' ' WHERE id=1",
+        [],
+    )
+    .unwrap();
+    assert!(report(&tx, "2026-08-01", "2026-08-31").is_err());
+}

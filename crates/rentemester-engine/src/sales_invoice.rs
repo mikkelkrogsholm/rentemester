@@ -245,19 +245,33 @@ fn treatment(value: Option<&str>) -> Result<&str, Error> {
         _ => Err(refused("unsupported invoice VAT treatment")),
     }
 }
+/// Explicit source-supported foreign bases; identifiers never infer treatment.
+pub fn foreign_reverse_charge_basis(value: &str) -> bool {
+    matches!(
+        value,
+        "EU_B2B_SERVICES"
+            | "DK_MOMSLOVEN_§46_STK_1_NR_3"
+            | "EU_MOMSDIREKTIV_ART_196"
+            | "EU_MOMSDIREKTIV_ART_199"
+    )
+}
 fn basis(value: &str) -> Result<&str, Error> {
-    match value {
-        "DK_MOMSLOVEN_§46_STK_1_NR_6" | "DK_MOMSLOVEN_§46_STK_1_NR_7" | "EU_B2B_SERVICES" => {
-            Ok(value)
-        }
-        _ => Err(refused(
-            "a supported explicit domestic reverseChargeBasis is required",
-        )),
+    if foreign_reverse_charge_basis(value)
+        || matches!(
+            value,
+            "DK_MOMSLOVEN_§46_STK_1_NR_6" | "DK_MOMSLOVEN_§46_STK_1_NR_7"
+        )
+    {
+        Ok(value)
+    } else {
+        Err(refused(
+            "a supported explicit reverseChargeBasis is required",
+        ))
     }
 }
 fn check_basis(foreign: bool, _domestic: bool, value: Option<&str>) -> Result<(), Error> {
-    if (foreign && value != Some("EU_B2B_SERVICES"))
-        || (!foreign && value == Some("EU_B2B_SERVICES"))
+    if (foreign && !value.is_some_and(foreign_reverse_charge_basis))
+        || (!foreign && value.is_some_and(foreign_reverse_charge_basis))
     {
         return Err(refused(
             "reverse-charge basis must match the explicit invoice treatment",
@@ -737,6 +751,14 @@ pub fn project(payload: &Value) -> Result<TaxProjection, Error> {
                 "domestic reverse-charge totals must omit VAT fields",
             ));
         }
+    } else if foreign && payload["totals"].get("vatAmount").is_none() {
+        // Historical foreign reverse-charge originals omit both VAT fields.
+        // Keep this evidence unchanged; native issuance retains explicit zero.
+        if payload["totals"].get("vatRate").is_some() || vat != Money::default() {
+            return Err(refused(
+                "omitted foreign VAT requires zero tax and no VAT rate",
+            ));
+        }
     } else if money(&payload["totals"]["vatAmount"])? != vat {
         return Err(refused(
             "invoice VAT differs from immutable line tax projection",
@@ -762,6 +784,73 @@ pub fn project(payload: &Value) -> Result<TaxProjection, Error> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn supported_foreign_bases_preserve_native_and_omitted_zero_vat_originals() {
+        for basis in [
+            "EU_B2B_SERVICES",
+            "DK_MOMSLOVEN_§46_STK_1_NR_3",
+            "EU_MOMSDIREKTIV_ART_196",
+            "EU_MOMSDIREKTIV_ART_199",
+        ] {
+            let source = json!({"issueDate":"2026-10-20","vatTreatment":"foreign_reverse_charge","reverseChargeBasis":basis,"reverseChargeNote":"Synthetic reverse charge","lines":[{"description":"Synthetic service","quantity":1,"unitPriceExVat":100}]});
+            let native = computed(source);
+            assert_eq!(native["reverseChargeBasis"], basis);
+            assert_eq!(native["lines"][0]["reverseChargeBasis"], basis);
+            assert_eq!(native["totals"]["vatAmount"], 0.0);
+            assert_eq!(
+                project(&native).unwrap().lines[0].vat_code,
+                "REVERSE_CHARGE_EXEMPT"
+            );
+            let mut historical = native.clone();
+            historical["totals"]
+                .as_object_mut()
+                .unwrap()
+                .remove("vatAmount");
+            for key in [
+                "taxClassification",
+                "reverseChargeBasis",
+                "vatRate",
+                "vatBase",
+                "vatAmount",
+            ] {
+                historical["lines"][0].as_object_mut().unwrap().remove(key);
+            }
+            let original = serde_json::to_vec(&historical).unwrap();
+            let projection = project(&historical).unwrap();
+            assert_eq!(projection.gross.decimal(), "100.00");
+            assert_eq!(projection.vat, Money::default());
+            assert_eq!(projection.lines[0].vat_code, "REVERSE_CHARGE_EXEMPT");
+            assert_eq!(serde_json::to_vec(&historical).unwrap(), original);
+            historical["totals"]["vatRate"] = json!(0);
+            assert!(project(&historical).is_err());
+            historical["totals"]
+                .as_object_mut()
+                .unwrap()
+                .remove("vatRate");
+            historical["totals"]["vatAmount"] = json!(1);
+            assert!(project(&historical).is_err());
+        }
+    }
+    #[test]
+    fn foreign_basis_does_not_weaken_domestic_or_line_admission() {
+        for (treatment, basis) in [
+            ("foreign_reverse_charge", "UNKNOWN"),
+            ("foreign_reverse_charge", "DK_MOMSLOVEN_§46_STK_1_NR_6"),
+            ("foreign_reverse_charge", "DK_MOMSLOVEN_§46_STK_1_NR_7"),
+            ("domestic_reverse_charge", "EU_MOMSDIREKTIV_ART_196"),
+            ("standard", "EU_MOMSDIREKTIV_ART_199"),
+        ] {
+            let source = json!({"issueDate":"2026-10-20","vatTreatment":treatment,"reverseChargeBasis":basis,"reverseChargeNote":"Synthetic reverse charge","lines":[{"description":"Synthetic","quantity":1,"unitPriceExVat":100}]});
+            assert!(compute(&serde_json::from_value(source).unwrap()).is_err());
+        }
+        let mut source = json!({"issueDate":"2026-10-20","vatTreatment":"foreign_reverse_charge","reverseChargeBasis":"EU_MOMSDIREKTIV_ART_196","reverseChargeNote":"Synthetic reverse charge","lines":[{"description":"Synthetic","quantity":1,"unitPriceExVat":100,"taxClassification":"reverse_charge","reverseChargeBasis":"UNKNOWN"}]});
+        assert!(compute(&serde_json::from_value(source.clone()).unwrap()).is_err());
+        source["lines"][0]["reverseChargeBasis"] = json!("DK_MOMSLOVEN_§46_STK_1_NR_6");
+        assert!(compute(&serde_json::from_value(source.clone()).unwrap()).is_err());
+        source["lines"][0]["reverseChargeBasis"] = json!("EU_MOMSDIREKTIV_ART_196");
+        source["lines"][0]["taxClassification"] = json!("taxable");
+        assert!(compute(&serde_json::from_value(source).unwrap()).is_err());
+    }
     #[test]
     fn delivery_and_units_preserve_money_and_are_absent_by_default() {
         let source = json!({"issueDate":"2026-10-20","lines":[{"description":"Synthetic service","quantity":2,"unitPriceExVat":100} ]});

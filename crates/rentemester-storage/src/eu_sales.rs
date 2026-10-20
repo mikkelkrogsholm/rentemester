@@ -22,6 +22,7 @@ struct Document {
     date: String,
     currency: String,
     payload: Value,
+    source_json: String,
     hash: String,
 }
 fn document(tx: &Transaction<'_>, id: i64) -> Result<Document, Error> {
@@ -35,12 +36,12 @@ fn document(tx: &Transaction<'_>, id: i64) -> Result<Document, Error> {
         date: row.2,
         currency: row.3,
         payload,
+        source_json: row.4,
         hash: row.5,
     })
 }
 fn verify_snapshot(doc: &Document) -> Result<(), Error> {
-    let serialized = serde_json::to_string_pretty(&doc.payload).map_err(invalid)?;
-    if crate::invoice_email::sha(serialized.as_bytes()) != doc.hash {
+    if crate::invoice_email::sha(doc.source_json.as_bytes()) != doc.hash {
         return Err(refused("immutable invoice snapshot hash differs"));
     }
     Ok(())
@@ -52,7 +53,9 @@ fn original(tx: &Transaction<'_>, doc: &Document) -> Result<(vies::Vat, Money), 
         || p["invoiceNumber"].as_str() != Some(&doc.number)
         || p["issueDate"].as_str() != Some(&doc.date)
         || p["currency"].as_str() != Some(&doc.currency)
-        || p["reverseChargeBasis"].as_str() != Some("EU_B2B_SERVICES")
+        || !p["reverseChargeBasis"]
+            .as_str()
+            .is_some_and(rentemester_engine::sales_invoice::foreign_reverse_charge_basis)
     {
         return Err(refused(
             "explicit immutable EU B2B service invoice required",
