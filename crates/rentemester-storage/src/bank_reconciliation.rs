@@ -73,6 +73,13 @@ fn bank(tx: &Transaction<'_>, id_value: i64) -> Result<Bank, Error> {
             amount_dkk: optional(6)?,
             rate,
             balance_after: optional(8)?,
+            profile: None,
+            counterparty_name: None,
+            counterparty_account: None,
+            message: None,
+            archive_reference: None,
+            customer_reference: None,
+            raw: None,
         },
         source,
         hash: r.get(10).map_err(invalid)?,
@@ -91,7 +98,8 @@ pub fn verify_source(tx: &Transaction<'_>, bank_id: i64, bytes: &[u8]) -> Result
     }
     let content = std::str::from_utf8(bytes).map_err(invalid)?;
     let mut occurrences = HashMap::new();
-    for row in rentemester_engine::bank::parse(content)? {
+    let profile = crate::bank::source_profile(tx, bank_id)?;
+    for row in rentemester_engine::bank::parse_with_profile(content, profile.as_deref())? {
         let first = fingerprint(&row, Some(bank.account), 0)?;
         let count = occurrences.entry(first).or_insert(0);
         let hash = fingerprint(&row, Some(bank.account), *count)?;

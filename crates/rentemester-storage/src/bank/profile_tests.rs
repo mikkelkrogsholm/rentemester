@@ -10,9 +10,13 @@ fn fixture() -> Connection {
     db
 }
 fn account(tx: &Transaction<'_>) {
+    tx.execute("INSERT INTO accounts(account_no,name,type,normal_balance) VALUES('1872','Synthetic bank asset','asset','debit')", []).unwrap();
     create_account(
         tx,
-        &serde_json::from_value(json!({"name":"Synthetic Bank","slug":"synthetic-bank"})).unwrap(),
+        &serde_json::from_value(
+            json!({"name":"Synthetic Bank","slug":"synthetic-bank","ledgerAccountNo":"1872"}),
+        )
+        .unwrap(),
         "synthetic",
     )
     .unwrap();
