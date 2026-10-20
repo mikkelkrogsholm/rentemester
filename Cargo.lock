@@ -6875,7 +6875,7 @@ checksum = "19b30a45b0cd0bcca8037f3d0dc3421eaf95327a17cad11964fb8179b4fc4832"
 
 [[package]]
 name = "rentemester-application"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "rentemester-engine",
  "rentemester-runtime",
@@ -6888,7 +6888,7 @@ dependencies = [
 
 [[package]]
 name = "rentemester-cli"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "rentemester-client",
  "rentemester-engine",
@@ -6899,7 +6899,7 @@ dependencies = [
 
 [[package]]
 name = "rentemester-client"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "reqwest",
  "serde",
@@ -6911,7 +6911,7 @@ dependencies = [
 
 [[package]]
 name = "rentemester-desktop"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "base64 0.22.1",
  "gpui-kit",
@@ -6929,7 +6929,7 @@ dependencies = [
 
 [[package]]
 name = "rentemester-engine"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "mail-parser",
  "num-bigint 0.5.1",
@@ -6943,7 +6943,7 @@ dependencies = [
 
 [[package]]
 name = "rentemester-host"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "rentemester-application",
  "rentemester-engine",
@@ -6956,7 +6956,7 @@ dependencies = [
 
 [[package]]
 name = "rentemester-mcp"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "rentemester-client",
  "serde",
@@ -6966,7 +6966,7 @@ dependencies = [
 
 [[package]]
 name = "rentemester-pdf-worker"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "pdfium-render",
  "rustix",
@@ -6978,7 +6978,7 @@ dependencies = [
 
 [[package]]
 name = "rentemester-runtime"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "base64 0.22.1",
  "chacha20poly1305",
@@ -7014,7 +7014,7 @@ dependencies = [
 
 [[package]]
 name = "rentemester-server"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "axum",
  "base64 0.22.1",
@@ -7040,7 +7040,7 @@ dependencies = [
 
 [[package]]
 name = "rentemester-storage"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "base64 0.22.1",
  "rentemester-engine",

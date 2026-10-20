@@ -5,7 +5,7 @@ exclude = ["vendor/rusqlite-0.40.2", "vendor/libsqlite3-sys-0.38.2"]
 resolver = "3"
 
 [workspace.package]
-version = "0.1.0"
+version = "0.2.0"
 edition = "2024"
 rust-version = "1.94.1"
 publish = false

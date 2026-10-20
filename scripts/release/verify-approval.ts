@@ -3,6 +3,7 @@ import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { isReleaseProvenance } from "../../src/core/release-provenance";
 import { isValidSemVer } from "../../src/core/semver";
+import { assertRustManifest } from "./rust-manifest";
 
 type JsonObject = Record<string, unknown>;
 
@@ -66,7 +67,7 @@ function parseJson(path: string): { raw: Buffer; value: JsonObject } {
 const manifestPath = process.argv[2];
 const approvalPath = process.argv[3];
 if (!manifestPath || !approvalPath) {
-  throw new Error("usage: verify-approval.ts <release-manifest.json> <approval.json>");
+  throw new Error("usage: verify-approval.ts <release-manifest.json> <approval.json> [build-identity.json for Rust v2]");
 }
 
 const manifest = parseJson(manifestPath);
@@ -78,8 +79,13 @@ const runtime = objectField(manifest.value, "runtime");
 const evidence = objectField(manifest.value, "evidence");
 const reviewer = objectField(approval, "reviewer");
 
-if (manifest.value.manifestVersion !== 1) {
-  throw new Error("release manifestVersion must be 1");
+if (manifest.value.manifestVersion !== 1 && manifest.value.manifestVersion !== 2) {
+  throw new Error("release manifestVersion must be 1 or 2");
+}
+if (manifest.value.manifestVersion === 2) {
+  const identityPath = process.argv[4];
+  if (!identityPath) throw new Error("Rust v2 approval requires the exact packaged build-identity.json");
+  assertRustManifest(manifest.value, readFileSync(identityPath, "utf8"));
 }
 const releaseVersion = stringField(release, "version");
 const releaseCommit = stringField(release, "gitCommit");
@@ -97,12 +103,7 @@ if (Number.isNaN(Date.parse(releaseBuiltAt))) {
 if (!/^sha256:[0-9a-f]{64}$/i.test(releaseImageDigest)) {
   throw new Error("release manifest image digest must be sha256");
 }
-const runtimeBunVersion = stringField(runtime, "bunVersion");
-const runtimeBaseImageDigest = stringField(runtime, "baseImageDigest");
 const sbomSha256 = stringField(evidence, "sbomSha256");
-if (!isValidSemVer(runtimeBunVersion) || !/^sha256:[0-9a-f]{64}$/i.test(runtimeBaseImageDigest)) {
-  throw new Error("release manifest runtime identity is invalid");
-}
 if (!/^sha256:[0-9a-f]{64}$/i.test(sbomSha256)) {
   throw new Error("release manifest SBOM evidence is invalid");
 }
@@ -114,21 +115,28 @@ if (
 ) {
   throw new Error("release manifest workflow run identity is invalid");
 }
-if (!isReleaseProvenance(manifest.value.provenance)) {
-  throw new Error("release manifest provenance is invalid");
-}
-if (
-  manifest.value.provenance.product.version !== releaseVersion ||
-  manifest.value.provenance.product.gitCommit !== releaseCommit ||
-  manifest.value.provenance.product.builtAt !== releaseBuiltAt
-) {
-  throw new Error("release manifest provenance does not match release identity");
-}
-if (
-  manifest.value.provenance.product.bunVersion !== runtimeBunVersion ||
-  manifest.value.provenance.product.baseImageDigest !== runtimeBaseImageDigest
-) {
-  throw new Error("release manifest runtime does not match provenance");
+if (manifest.value.manifestVersion === 1) {
+  const runtimeBunVersion = stringField(runtime, "bunVersion");
+  const runtimeBaseImageDigest = stringField(runtime, "baseImageDigest");
+  if (!isValidSemVer(runtimeBunVersion) || !/^sha256:[0-9a-f]{64}$/i.test(runtimeBaseImageDigest)) {
+    throw new Error("release manifest runtime identity is invalid");
+  }
+  if (!isReleaseProvenance(manifest.value.provenance)) {
+    throw new Error("release manifest provenance is invalid");
+  }
+  if (
+    manifest.value.provenance.product.version !== releaseVersion ||
+    manifest.value.provenance.product.gitCommit !== releaseCommit ||
+    manifest.value.provenance.product.builtAt !== releaseBuiltAt
+  ) {
+    throw new Error("release manifest provenance does not match release identity");
+  }
+  if (
+    manifest.value.provenance.product.bunVersion !== runtimeBunVersion ||
+    manifest.value.provenance.product.baseImageDigest !== runtimeBaseImageDigest
+  ) {
+    throw new Error("release manifest runtime does not match provenance");
+  }
 }
 
 assertExactKeys(

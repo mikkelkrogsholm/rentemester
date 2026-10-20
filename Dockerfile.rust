@@ -34,14 +34,16 @@ ENV CARGO_HOME=/build/cargo-home CARGO_TARGET_DIR=/build/target RENTEMESTER_CARG
 RUN --mount=type=cache,id=rentemester-rust-1.94.1-${TARGETARCH},target=/build,sharing=locked \
     umask 077 && scripts/rust/cargo-guard.sh cargo build --release --locked -p rentemester-server -p rentemester-cli -p rentemester-mcp -p rentemester-pdf-worker \
     && mkdir /out \
-    && cp /build/target/release/rentemester-server /build/target/release/rentemester-rust /build/target/release/rentemester-mcp /build/target/release/rentemester-pdf-worker /out/
+    && cp /build/target/release/rentemester-server /build/target/release/rentemester-rust /build/target/release/rentemester-mcp /build/target/release/rentemester-pdf-worker /out/ \
+    && rustc -vV > /out/rustc.txt && cargo -V > /out/cargo.txt
 
 FROM ${RUNTIME_IMAGE} AS runtime-base
 COPY --from=rust-toolchain /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 # Dated GPG-verified snapshot; TLS verification stays on.
 RUN printf '' > /etc/apt/sources.list.d/debian.sources \
     && printf '%s\n' 'deb [check-valid-until=no] https://snapshot.debian.org/archive/debian/20261005T000000Z bookworm main' > /etc/apt/sources.list \
-    && apt-get update && apt-get install -y --no-install-recommends ca-certificates curl && apt-get clean
+    && apt-get update && apt-get install -y --no-install-recommends ca-certificates curl && apt-get clean \
+    && dpkg-query -W > /debian-packages.txt
 
 FROM runtime-base AS pdf-artifact
 ARG TARGETARCH
@@ -49,6 +51,35 @@ RUN apt-get install -y --no-install-recommends python3 && apt-get clean
 COPY scripts/rust/pdf-worker/ /fetch/
 RUN case "$TARGETARCH" in amd64) artifact=pdfium-linux-x64.tgz ;; arm64) artifact=pdfium-linux-arm64.tgz ;; *) exit 2 ;; esac \
     && python3 /fetch/fetch.py --artifact "$artifact" --destination /pdfium
+
+FROM pdf-artifact AS identity
+ARG RUST_IMAGE
+ARG WEB_IMAGE
+ARG RUNTIME_IMAGE
+ARG RENTEMESTER_GIT_COMMIT
+ARG RENTEMESTER_VERSION
+ARG SOURCE_DATE_EPOCH
+ARG RENTEMESTER_SOURCE_DIRTY=true
+COPY --from=rust-build /out/ /bundle/bin/
+COPY --from=web /build/app/dist/ /bundle/web/
+COPY --from=pdf-artifact /pdfium/ /bundle/bin/pdfium/
+COPY --from=runtime-base /debian-packages.txt /bundle/debian-packages.txt
+COPY Cargo.toml Cargo.lock package.json bun.lock /identity-source/
+COPY app/package.json /identity-source/app/package.json
+COPY vendor/ /identity-source/vendor/
+COPY scripts/rust/pdf-worker/artifacts.json /identity-source/scripts/rust/pdf-worker/artifacts.json
+COPY scripts/release/rust-entrypoint.sh /identity-source/scripts/release/rust-entrypoint.sh
+COPY scripts/release/create-rust-build-identity.py /create-identity.py
+RUN for file in /bundle/bin/rentemester-* /bundle/bin/pdfium/lib/libpdfium.so; do \
+      linked=$(ldd "$file") || exit 1; \
+      printf '%s\n' "$linked" | sed -E 's/[[:space:]]*\(0x[0-9a-f]+\)//g' >> /bundle/linked-libraries.txt; \
+    done \
+    && ! grep -q 'not found' /bundle/linked-libraries.txt \
+    && /bundle/bin/rentemester-server --build-info > /bundle/native-server.json \
+    && /bundle/bin/rentemester-mcp --catalogue > /bundle/native-mcp-catalogue.json \
+    && python3 /create-identity.py --source /identity-source --bundle /bundle \
+         --commit "$RENTEMESTER_GIT_COMMIT" --version "$RENTEMESTER_VERSION" --epoch "$SOURCE_DATE_EPOCH" --dirty "$RENTEMESTER_SOURCE_DIRTY" \
+         --rust-image "$RUST_IMAGE" --web-image "$WEB_IMAGE" --runtime-image "$RUNTIME_IMAGE"
 
 FROM runtime-base AS runtime
 ARG RENTEMESTER_GIT_COMMIT
@@ -61,19 +92,16 @@ LABEL org.opencontainers.image.title="Rentemester Rust candidate" \
     org.opencontainers.image.version="${RENTEMESTER_VERSION}" \
     org.rentemester.runtime="rust" org.rentemester.runtime.rust.version="1.94.1" \
     org.rentemester.source.dirty="${RENTEMESTER_SOURCE_DIRTY}"
-COPY --from=rust-build --chmod=0555 /out/ /opt/rentemester/bin/
-COPY --from=web --chmod=0555 /build/app/dist/ /opt/rentemester/web/
-COPY --from=pdf-artifact --chmod=0555 /pdfium/ /opt/rentemester/bin/pdfium/
+COPY --from=identity /bundle/ /opt/rentemester/
 COPY --chmod=0555 scripts/release/rust-entrypoint.sh /usr/local/bin/rentemester-entrypoint
 RUN test -n "$RENTEMESTER_VERSION" \
     && printf '%s' "$RENTEMESTER_GIT_COMMIT" | grep -Eq '^[0-9a-f]{40}$' \
     && test -n "$SOURCE_DATE_EPOCH" \
     && mkdir -p /state /config && chown 10001:10001 /state && chmod 0700 /state \
-    && dpkg-query -W > /opt/rentemester/debian-packages.txt \
     && for file in /opt/rentemester/bin/rentemester-* /opt/rentemester/bin/pdfium/lib/libpdfium.so; do \
-         ldd "$file" >> /opt/rentemester/linked-libraries.txt; \
-       done \
-    && ! grep -q 'not found' /opt/rentemester/linked-libraries.txt
+         linked=$(ldd "$file") || exit 1; \
+         if printf '%s' "$linked" | grep -q 'not found'; then exit 1; fi; \
+       done
 ENV RENTEMESTER_CONFIG=/config/server.json RENTEMESTER_ORIGIN=http://127.0.0.1:4319
 WORKDIR /opt/rentemester
 EXPOSE 4319

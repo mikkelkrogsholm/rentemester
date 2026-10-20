@@ -54,6 +54,44 @@ describe("Rust release manifest v2", () => {
       expect(assertRustManifest(JSON.parse(result.stdout.toString()), raw())).toEqual(createRustManifest(raw(), metadata));
     } finally { rmSync(dir, { recursive: true, force: true }); }
   });
+  test("approval CLI binds Rust identity, manifest bytes and human approval", () => {
+    const dir = mkdtempSync(join(tmpdir(), "rm-rust-approval-"));
+    try {
+      const identityPath = join(dir, "identity.json");
+      const manifestPath = join(dir, "manifest.json");
+      const approvalPath = join(dir, "approval.json");
+      const identity = raw();
+      const manifestRaw = JSON.stringify(createRustManifest(identity, metadata)) + "\n";
+      const approval = {
+        schemaVersion: 1, approvalId: "synthetic-rust-approval",
+        decision: "approved", approvedAt: "2026-10-21T01:00:00Z",
+        reviewer: { organization: "Digisense", name: "Synthetic reviewer" },
+        releaseManifestDigest: `sha256:${sha(manifestRaw)}`,
+        imageDigest: metadata.imageDigest, version: metadata.version, gitCommit: metadata.gitCommit,
+      };
+      writeFileSync(identityPath, identity);
+      writeFileSync(manifestPath, manifestRaw);
+      writeFileSync(approvalPath, JSON.stringify(approval));
+      const run = (includeIdentity = true) => Bun.spawnSync([
+        process.execPath, new URL("../../scripts/release/verify-approval.ts", import.meta.url).pathname,
+        manifestPath, approvalPath, ...(includeIdentity ? [identityPath] : []),
+      ], { stdout: "pipe", stderr: "pipe" });
+      expect(run().exitCode).toBe(0);
+      const missing = run(false);
+      expect(missing.exitCode).not.toBe(0);
+      expect(missing.stderr.toString()).toContain("exact packaged build-identity.json");
+      writeFileSync(identityPath, identity + " ");
+      expect(run().exitCode).not.toBe(0);
+      writeFileSync(identityPath, identity);
+      writeFileSync(approvalPath, JSON.stringify({ ...approval, imageDigest: `sha256:${"f".repeat(64)}` }));
+      expect(run().exitCode).not.toBe(0);
+      writeFileSync(approvalPath, JSON.stringify(approval));
+      writeFileSync(manifestPath, manifestRaw + " ");
+      const changedManifest = run();
+      expect(changedManifest.exitCode).not.toBe(0);
+      expect(changedManifest.stderr.toString()).toContain("releaseManifestDigest does not match");
+    } finally { rmSync(dir, { recursive: true, force: true }); }
+  });
   test("binds clean actual-shape identity, platform and exact raw bytes", () => {
     const identity = raw();
     const manifest = createRustManifest(identity, metadata);
