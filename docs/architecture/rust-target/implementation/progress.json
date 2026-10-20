@@ -1,13 +1,13 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "Group101 qualified service scanned original→payable→bank payment through actual Rust HTTP/CLI/MCP; remaining installed desktop tests deferred to final acceptance by explicit user direction",
-  "code_revision": "1926e7797301a3c19cfae57873dc7e6f02e9806a",
+  "current_increment": "Group102 qualified service invoice delivery/status/retry/reconcile through actual verified TLS SMTP, CLI/MCP, crash/unknown/restart and signed source-free restore; installed desktop acceptance deferred to the very end by user",
+  "code_revision": "ab113e476f0a7afe506fd7156208b9363bca0d41",
   "spec_revision": "sha256:a7eb3f0d6e65412fa5ee945a7b79721b593806839f4a03e6b8d969ce3327e3fc",
-  "state": "Group101 qualifies normal-owner/MFA service provisioning, required verified-TLS scanned CLI upload, MCP original bytes and payable recognition, exact-original outgoing bank import, payment despite changed creditor mapping, zero payable and canonical reports/HTTP/CLI/MCP equality. Exactly one document/scan/payable/payment/bank row and two journal entries; operational service_account audit and service-principal journals preserved. Duplicate payable/payment refuses without effect. Revocation during second provider scan prevents publication; real server restart preserves exact state/originals and denied revoked access with no rescan. All owned test processes stopped and fixture cleaned. Group99 closes the finite installed managed J06 journey on current unsigned a36617cd package: normal source MFA; genuine accepted lost12.34 reply and unknown SMTP DATA; native freeze and signed archive save matching offered wire SHA256; independent signature verification using separate source public key; fresh target staged against its final OS-trusted HTTPS origin; ordinary delivered email verification and fresh native owner MFA; native original receipt mapping without booking; source independently reviews exact target challenge and saves signed release; native target activation; exact original replay returns original result and creates zero entries. Native explicit new0.45 activity yields exactly two target entries. Full app/local source restart retains moved/permanent readonly; old replay, new posting and mail all refuse. Full HTTPS server/app restart retains active target, mapping, immutable PDF/JSON, original receipt and both entries. Exactly one unknown SMTP attempt, no successful mail or resend. Exact external owned processes stopped and both synthetic profiles cleaned after readonly terminal checks: source1/target2 journal entries, original tombstones/outcomes identical. Current package ordinary local-MFA smoke shows prior five native98 entries, closing the previous lock-only smoke gap. Fixture extensions add controlled native preparation and final-origin HTTPS staging; follow-up review led to completed-archive hash marker, external-process observation and preserving future native fixtures for explicit cleanup. Targeted partial-download/wrong-marker refusal passes; no unchanged financial rerun. Remaining full R54 hostile/older-clone/rollback/nonempty scheduler scope, J07 automation, other-operation recovery, remaining agent/provider workflows, signed distribution/updates and TypeScript retirement remain OPEN.",
+  "state": "Group102 completes the scoped service sales-delivery journey: normal owner verification/MFA explicitly grants service company-owner external-send permission; reader/bookkeeper refuse before quota/provider. Real CLI sends the immutable stored invoice PDF; MCP duplicate opens no SMTP connection. Definite SMTP550 refusal requires a separately reviewed MCP retry. Ordinary credential rotation denies old delivery reads/replay. SIGKILL after durable DATA queueing before acknowledgement leaves unknown; actual restart and exact MCP replay preserve unknown without transport. Explicit CLI reconciliation records exact queue evidence without sending. Exactly four SMTP connections/recipient attempts (accepted1,retry2,unknown1), three real PDF messages, three accepted success records, zero SMTP errors and no change to zero journals or original JSON/PDF. One signed archive is independently verified with original workspace/private signer unavailable; fresh restore/ordinary new owner MFA retains exact history/originals/ledger identity, SMTP unconfigured and send refuses without transport. Service audit principal marker preserves old human hash chains. Five new domain, four human host and one storage test, strict five-package Clippy, three binary build and strict helper checks pass. Pre-handoff live revocation proof is domain evidence, not actual rotation-during-SMTP. Exact owned processes absent and fixture removed. Group101 scanned purchase→payable→bank payment and Group99 installed managed J06 evidence remain accepted. Full epic672/R13/R45/R54 scope, deferred remaining installed J07/closure/recovery acceptance, signed distribution/update/cutover and TypeScript retirement stay OPEN. User explicitly defers all remaining installed GUI tests until the very end; no screen unlock request during implementation.",
   "issues_closed": [],
   "next": [
-    "Complete required remaining server/web/CLI/MCP/provider journeys without waiting for native GUI. Group101 service purchase flow is qualified; select the next missing existing contract rather than repeat accepted flows.",
+    "Next required headless code increment R52: authenticated versioned native package updates and recoverable staging/publication; reject invalid signatures, tampered/missing/unlisted bytes, incompatible or downgraded candidate before publication, preserve previous runnable package after interruption, never touch workspace data. Read R52 acceptance/versioning/release sources before choosing exact contract. Existing unsigned bundle assembly alone is not an updater. Synthetic keys/packages can qualify code without GUI; production signing/notarization credentials and installed update journeys remain explicit final gates.",
     "Installed desktop acceptance is explicitly deferred to the very end by the user. Preserve prepared Group100 profile; collect remaining native automation, closure, recovery and packaging checks for final installed acceptance without requesting screen unlock during development.",
     "J03/R50 and remaining R54 scope: only still-supported operation closure/recovery, nonempty scheduler handoff, hostile/older clone and post-cutover rollback requirements. Group99 qualifies managed installed J06 flow, not every R54 acceptance item.",
     "Signed distribution/update/cutover evidence must match actual full Rust replacement; retain all existing completion gates and TypeScript retirement gate.",
@@ -3910,6 +3910,27 @@
         ]
       },
       "scope": "Service document facts→payable→bank payment plus in-flight revocation/restart. No installed native or source-free restore claim."
+    },
+    "service_mail102": {
+      "report": "/tmp/rentemester-rust-reports/native-service-mail102.json",
+      "sha256": "25545093ad9b62fb0ebf9bf754fb1d4ff388bcf3fb3f5abafff176defb1f61ec",
+      "source_revision": "ab113e476f0a7afe506fd7156208b9363bca0d41",
+      "artifacts": {
+        "server_binary": "64608cddaf670eaae7c1d2b0db447f12a4ae16738e2379fd87c003ea6455e23e",
+        "cli_binary": "1aa43a8076939ce854f33637d1d228c77fde747005c1cafdda80d276191beccb",
+        "mcp_binary": "5ac5eba6cc3c8da4734c1dcf8092f21b30ab17329217eaefcde51965ee91361b"
+      },
+      "service_helper_sha256": "8f29588df225b66b4d3859a82fa57932160063e277c8e6b6d78310ead32c1f12",
+      "terminal_report": "/tmp/rentemester-rust-reports/native-service-mail102-terminal.json",
+      "signed_archive": {
+        "sha256": "f748c04eeacdbc65207c9bf349965a1205777582f4e17ec7bc0736dae91043dc",
+        "bytes": 2200441,
+        "sourceAndPrivateSignerUnavailable": true,
+        "independentlyVerified": true,
+        "trustedPublicKeySha256": "72c1f03a1c647a6bde1d2239ed90489dd55d66af46a85c944bb8fad729e3be6b"
+      },
+      "scope": "All four service delivery operations plus real TLS SMTP, unknown crash/restart and signed source-free restore. Native UI not claimed; in-flight pre-handoff revocation is focused domain evidence.",
+      "cleanup": "Managed worker checkout physically removed; exact fixture and server/controller PIDs absent. Shared cache remains above disk thresholds."
     }
   },
   "verified_history": [
@@ -5153,6 +5174,20 @@
       ],
       "code_revision": "1926e7797301a3c19cfae57873dc7e6f02e9806a",
       "report": "/tmp/rentemester-rust-reports/native-service-purchase101.json"
+    },
+    {
+      "delivery": "Group102 service invoice delivery and durable result recovery",
+      "owner": "root host/HTTP/CLI/MCP integration and actual helper; invoice_domain80 isolated application/storage",
+      "status": "QUALIFIED_SCOPED_SERVER_CLI_MCP_TLS_SMTP_AND_SIGNED_SOURCE_FREE_RESTORE; FULL_MISSION_OPEN",
+      "acceptance": "Normal owner/MFA explicit owner service grant; reader/bookkeeper deny before usage/provider; actual verified TLS SMTP stored PDF, CLI send/MCP duplicate without transmission, definite refusal and explicit retry, crash after DATA and restart unknown without resend, explicit external-evidence reconciliation, immutable books/originals/history and signed source-free backup compatibility. Before-handoff live authority tested at domain boundary. Installed GUI deferred.",
+      "code_revision": "ab113e476f0a7afe506fd7156208b9363bca0d41",
+      "report": "/tmp/rentemester-rust-reports/native-service-mail102.json",
+      "test_logs": [
+        "/tmp/rm102-mail-tests.log",
+        "/tmp/rm102-clippy.log",
+        "/tmp/rm102-build.log",
+        "/tmp/rm102-helper-types.log"
+      ]
     }
   ],
   "integrated_pending_browser": [

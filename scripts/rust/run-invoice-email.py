@@ -473,7 +473,7 @@ def main():
             report['serviceDeliveryQualified'] = args.service_delivery
             report['status'] = 'passed'
             save()
-            print('PASS: real verified TLS SMTP, reviewed web sends, crash/restart unknown and client parity; ' + str(args.evidence))
+            print('PASS: real verified TLS SMTP, ' + ('service CLI/MCP delivery' if args.service_delivery else 'reviewed web sends') + ', crash/restart unknown and client parity; ' + str(args.evidence))
         except BaseException as error:
             report['status'] = 'failed'
             report['failureType'] = type(error).__name__

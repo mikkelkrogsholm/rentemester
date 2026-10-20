@@ -2893,3 +2893,58 @@ installerede desktopapp til allersidst. Server-, web-, CLI-, MCP- og automatiske
 checks fortsætter løbende uden skærmoplåsning. Group100-profilen er forberedt
 med normal MFA og bevaret uden kørende worker; den udgør ikke en bestået
 desktopprøve.
+
+### Servicekonto: fakturamail og afklaring af leveringsresultat (Group102)
+
+De eksisterende operationer for leveringsstatus, afsendelse, afklaring og et
+særskilt gennemgået nyt forsøg accepterer nu en servicekonto med de aktuelle
+virksomhedsrettigheder. Status kræver `CompanyRead`; mutationer kræver
+`CompanyExternalSend`. En service med læser- eller bogholderrolle kan ikke
+sende. Ejerens eksplicitte tildeling af virksomhedsrollen owner kan give
+servicekontoen afsendelsesrettigheden. Servicekontoen kan ikke oprette eller
+udvide sine egne rettigheder. Den menneskelige MFA-kontrakt er bevaret.
+
+Afsendelsen bruger den samme immutable faktura/PDF, faste modtager, MIME og
+leveringsidentitet som det menneskelige forløb. Et logisk servicekald tæller
+forbrug én gang; reservation, ny adgangskontrol før SMTP og efterfølgende
+registrering af udfald bruger samme interne tilladelse og genkontrollerer
+levende nøgle og rettigheder. Der er ingen SQL-transaktion under SMTP. En
+allerede registreret afsendelse returnerer den eksisterende levering uden
+transport. Fejl efter en gemt reservation eller forsøgt transport rapporteres
+som ukendt udfald; de er aldrig automatisk tilladelse til genafsendelse.
+Afklaring registrerer eksplicit ekstern evidens og sender ingen mail. Nyt
+forsøg kræver den aktuelle tilstandshash og dokumenteret ikke-accept.
+
+Servicehændelser tilføjer et eksplicit principalfelt og auditaktøren
+`service_account:<subject>`. Historiske menneskelige hændelser beholder deres
+serialiserede bytes og hashes: det nye felt er fraværende for dem. De
+samme valideringer bruges ved læsning og backup/gendannelse. CLI-kommandoerne
+`invoice-email-status/send/reconcile/retry` og MCP's tilsvarende tools bruger
+den eksisterende private service-nøglefil, præcise bodies og særskilt
+bekræftelse. Ingen SMTP-hemmeligheder overføres gennem klienterne.
+
+Fem nye domænetests, fire eksisterende hosttests og storagekontrakttesten
+består; de dækker blandt andet én forbrugstælling, gentagelse uden transport,
+tilbagekaldelse før transport, tab af rettighed efter transport og eksplicit
+afvikling af ukendt udfald. Streng Clippy, alle tre Rust-binærer og helper-typecheck består.
+Den samlede prøve `run-invoice-email.py --service-delivery --with-backup`
+består ved `ab113e47`: normal ejer/MFA og eksplicit serviceadgang; CLI-afsendelse,
+MCP-gentagelse uden transport, SMTP550-afvisning og særskilt gennemgået
+MCP-retry. En ordinær nøglerotation afviser den gamle nøgles læsning og replay.
+Den faktiske server dræbes efter varig modtagelse af SMTP DATA og før kvittering;
+efter genstart forbliver leveringen ukendt, og MCP-replay sender intet. CLI
+registrerer derefter eksplicit afklaring med den konkrete køevidens uden mail.
+
+Præcis fire SMTP-forbindelser giver tre modtagne mails med den uændrede gemte
+PDF: én accepteret, én afvist og senere accepteret, én med tabt kvittering.
+Journalen forbliver tom, og originale JSON/PDF-bytes er uændrede. Én signeret
+backup verificeres uafhængigt efter sletning af kilde-workspace og privat
+signeringsnøgle. En frisk gendannelse med ny normal ejer/MFA bevarer den
+præcise servicehistorik, originaler og ledgeridentitet; SMTP er ukonfigureret,
+og afsendelse afvises uden transport. Rapporten er
+`native-service-mail102.json`; en separat terminalrapport bekræfter, at de
+konkrete testprocesser og fixture er væk. SMTP-hemmeligheden findes ikke i
+forretningsdata eller rapport. Tilbagekaldelse før SMTP er domænetest-evidens;
+den faktiske prøve roterer nøglen før det ukendte forsøg og beviser ikke
+rotation under en igangværende SMTP-handoff. Installeret desktop er fortsat
+udskudt til slutaccept, og det samlede Rust-mål er åbent.
