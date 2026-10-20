@@ -1,17 +1,17 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "First actual TS posted-invoice adoption with normal fresh native owner/MFA and restart qualified; full migration acceptance remains open",
-  "code_revision": "ed1f986b31ae6bfd1945dd57d59c711b64364cc7",
+  "current_increment": "Actual TS two-company adoption, new native accounting and archived signed source-free restore/restart qualified",
+  "code_revision": "2197bea2621278fd6938e37de8b06a8e7e0b7cc1",
   "spec_revision": "sha256:a7eb3f0d6e65412fa5ee945a7b79721b593806839f4a03e6b8d969ce3327e3fc",
-  "state": "Group89 first actual public TypeScript createCompany/issueInvoice/postIssuedInvoiceToLedger corpus passes reviewed capture, two exact operator confirmations, destination-bound durable source retirement, no-replace native publication, fresh normal owner verification/MFA and fresh password/MFA after restart. Preserves1journal/3lines/2documents, exact originalJSON/PDF and journalhash. Old TS company/control opens and manifest writes refuse. Host4, companypath5, control3, retirement4, service2, runtime7(1ignored), serverconfirmation1 and TS48 tests pass; strictClippy/build pass. Empty zero-byte WAL sidecar cleanup caused a pre-retirement refusal; fixed by excluding transaction-free empty sidecars while retaining logical source checks under each write lock. Actual continued native posting, migrated signed source-free restore, broader source corpus and archived backup remain OPEN. No full TS retirement, productionLinux or signed release/update claim. Prior Group88 installed local financial/shared-web/HTTPS acceptance retained; fullmission/epic672 OPEN.",
+  "state": "Group90 qualifies actual public TS issued/posted invoices in active+archived companies → reviewed native adoption → normal owner/MFA → native journal/replay/restart → existing web signedbackup download → both sources/signingkey deleted → independent native verification → fresh physical restore preserving logicalworkspaceID → new owner/MFA → old native intent HTTP400 RESTORED_KEY_RECONCILIATION_REQUIRED without duplicate → fresh native journal/restart/replay. Exact originalJSON/PDF, ledgerUUIDs, old journals/lines, archived manifest/ledger and full adoptionaudit preserved. Final active3journals/7lines debit270=credit270; archive1journal/3lines debit50=credit50;4documents. Runtime4, signed6+correctedmixed1, auth1 and transfer2 tests, strictClippy/build and new helper lint pass. Full TSruntime typecheck retains only5untoucheddashboardhelpererrors. Fixed archived backup coverage, private snapshot visitation/ordinary-selection restoration, archivedadminauthorization and workspace transferstatus readgate. Wrong workspaceID/expectedtestcode/import were qualification-helper repairs recorded separately; finalrestore resumed retained verifiedarchive without replaying sourceeffects. All owned testprocesses stopped. Group88 installed desktop financial/HTTPS evidence retained. Next explicitgateJ03/R50 installed remote multiuser/revocation/context/uncertainreply; J06handoff/J07automation/signeddistribution and fullRustmission/epic672 remain OPEN.",
   "issues_closed": [],
   "next": [
-    "Finish actual migrated-workspace journey with new native accounting, signed source-free backup/restore and restart; fix observed archived manifest backup refusal",
-    "Broaden supported TS source corpus only for required whole workflows; preserve fail-closed unsupported histories and offline producer drain",
-    "Broader remote rights-loss/multiuser, transfer/recovery and durable automation acceptance",
-    "Signed distribution/updates and remaining backend/CLI/MCP parity before full TS retirement",
-    "Do not repeat qualified unchanged Group86/88 desktop onboarding/invoice/payment/files/HTTPS or Group89 invoice read/auth/restart. Rehearsals remain writer_authority:false. No real-data migration performed."
+    "J03 / R50: installed shared-web desktop connected to remote Rust server with two companies, normal owner/bookkeeper/service identities and canonical web/CLI/MCP parity",
+    "J03: held read/write during company/account changes and revocation, no stale disclosure or wrong-company effects; lost accepted reply reconciles without duplicate or local fallback",
+    "J06: qualify installed GUI handoff/recovery boundaries beyond existing Group56 backend proof",
+    "J07 durable automation and signed distribution/updates; remaining CLI/MCP parity and full backend retirement",
+    "Do not repeat qualified unchanged Group88 financial/HTTPS or Group90 adoption/accounting/signed-sourcefree-recovery. Broaden legacy corpus only for an explicit remaining required journey or concrete defect."
   ],
   "preserve_unrelated_paths": [
     ".claude/settings.json",
@@ -22,10 +22,10 @@
   ],
   "all_goal_requirements_complete": false,
   "previous_verified_increment": {
-    "current_increment": "Installed shared-web desktop invoice/payment/files and independent trusted HTTPS journey qualified",
-    "code_revision": "3ad326c49f132c2fa095301f9e4f5076da8b57b6",
+    "current_increment": "First actual TS posted-invoice adoption with normal fresh native owner/MFA and restart qualified; full migration acceptance remains open",
+    "code_revision": "ed1f986b31ae6bfd1945dd57d59c711b64364cc7",
     "spec_revision": "sha256:a7eb3f0d6e65412fa5ee945a7b79721b593806839f4a03e6b8d969ce3327e3fc",
-    "state": "Group88 installed shared-web Rust desktop completes the preserved domestic invoice1/2026-0001 through sale200/VAT50/gross250, originalPDF SaveAs exacthash, native rawCSV import/payment to open0, receipt upload/nativeview, normal managed shutdown, and independent OS-trusted HTTPS normalMFA/CSVdedup/originalPDF/current-authorized API/reopen. Exactly2journals/5lines/1bankrow/3documents; debtors0,bank250,revenuecredit200,outputVATcredit50. Native Downloads/TCC hang isolated by process sample; RFD SaveAs b5346302 fixes destination with origin fence/auth retained; forced recovery distinguished from later accepted normal shutdown. Web3ad326c4 removes wrong expense posting action from issuedinvoicePDF;20UItests/51assertions and9desktoptests(1ignored),strictClippy/native/webbuild PASS. Final installed unsigned package3ad326c4 exact12manifestfiles verified; all testprocesses stopped, original config/signingkeys preserved. Stricttrusted samehost HTTPS proves connection boundary, not productionLinux/release or fullrights matrix. Full Rust mission/epic672 remains OPEN; next required end-to-end boundary is supported TS workspace adoption with durable source retirement, verified conversion/originals, fresh owner/MFA and protected no-replace publication."
+    "state": "Group89 first actual public TypeScript createCompany/issueInvoice/postIssuedInvoiceToLedger corpus passes reviewed capture, two exact operator confirmations, destination-bound durable source retirement, no-replace native publication, fresh normal owner verification/MFA and fresh password/MFA after restart. Preserves1journal/3lines/2documents, exact originalJSON/PDF and journalhash. Old TS company/control opens and manifest writes refuse. Host4, companypath5, control3, retirement4, service2, runtime7(1ignored), serverconfirmation1 and TS48 tests pass; strictClippy/build pass. Empty zero-byte WAL sidecar cleanup caused a pre-retirement refusal; fixed by excluding transaction-free empty sidecars while retaining logical source checks under each write lock. Actual continued native posting, migrated signed source-free restore, broader source corpus and archived backup remain OPEN. No full TS retirement, productionLinux or signed release/update claim. Prior Group88 installed local financial/shared-web/HTTPS acceptance retained; fullmission/epic672 OPEN."
   },
   "evidence": {
     "combined_browser_log": "/tmp/rm-platform5-combined.log",
@@ -1931,6 +1931,14 @@
       "actualSource": "public TS invoice issue and ledger posting",
       "continuedNativePostingQualified": false,
       "signedSourceFreeRestoreQualified": false
+    },
+    "legacy_adoption90": {
+      "path": "/tmp/rentemester-rust-reports/legacy-adoption90-accounting-sourcefree-v2.json",
+      "sha256": "a1bb40b41e305f7544dfce3f434f171a48cdb38c28319654ae9ecb76e28684c0",
+      "actualNewNativeAccounting": true,
+      "signedSourceFreeRestore": true,
+      "archivedLedgerPreserved": true,
+      "wholeMissionComplete": false
     }
   },
   "verified_history": [
@@ -3111,7 +3119,13 @@
       "delivery": "Group89 TS workspace adoption and durable source retirement",
       "owner": "root integration/operator/actual; isolated storage company/control, runtime stage, host orchestration workers",
       "acceptance": "Existing TS business data and originals → exact review → source retirement → native adoption → fresh owner/MFA → new accounting → source-free backup/restore/restart without duplicate accounting/delivery",
-      "status": "Group89 first actual public TypeScript createCompany/issueInvoice/postIssuedInvoiceToLedger corpus passes reviewed capture, two exact operator confirmations, destination-bound durable source retirement, no-replace native publication, fresh normal owner verification/MFA and fresh password/MFA after restart. Preserves1journal/3lines/2documents, exact originalJSON/PDF and journalhash. Old TS company/control opens and manifest writes refuse. Host4, companypath5, control3, retirement4, service2, runtime7(1ignored), serverconfirmation1 and TS48 tests pass; strictClippy/build pass. Empty zero-byte WAL sidecar cleanup caused a pre-retirement refusal; fixed by excluding transaction-free empty sidecars while retaining logical source checks under each write lock. Actual continued native posting, migrated signed source-free restore, broader source corpus and archived backup remain OPEN. No full TS retirement, productionLinux or signed release/update claim. Prior Group88 installed local financial/shared-web/HTTPS acceptance retained; fullmission/epic672 OPEN."
+      "status": "First actual corpus extended and qualified through continued accounting + archived signed source-free restore/restart in Group90; see current state. Full mission remains open."
+    },
+    {
+      "delivery": "Group90 migrated accounting and archived source-free recovery",
+      "owner": "root runtime/application/status/integration/actual; isolated host snapshot/validator worker",
+      "acceptance": "Actual TS active+archived posted invoices → native adoption/newpost/replay/restart → websignedbackup → source/keyunavailable independentverify → freshowner/MFA/newpost/replay/restart with exact originals/history and no old-intent duplication",
+      "status": "Group90 qualifies actual public TS issued/posted invoices in active+archived companies → reviewed native adoption → normal owner/MFA → native journal/replay/restart → existing web signedbackup download → both sources/signingkey deleted → independent native verification → fresh physical restore preserving logicalworkspaceID → new owner/MFA → old native intent HTTP400 RESTORED_KEY_RECONCILIATION_REQUIRED without duplicate → fresh native journal/restart/replay. Exact originalJSON/PDF, ledgerUUIDs, old journals/lines, archived manifest/ledger and full adoptionaudit preserved. Final active3journals/7lines debit270=credit270; archive1journal/3lines debit50=credit50;4documents. Runtime4, signed6+correctedmixed1, auth1 and transfer2 tests, strictClippy/build and new helper lint pass. Full TSruntime typecheck retains only5untoucheddashboardhelpererrors. Fixed archived backup coverage, private snapshot visitation/ordinary-selection restoration, archivedadminauthorization and workspace transferstatus readgate. Wrong workspaceID/expectedtestcode/import were qualification-helper repairs recorded separately; finalrestore resumed retained verifiedarchive without replaying sourceeffects. All owned testprocesses stopped. Group88 installed desktop financial/HTTPS evidence retained. Next explicitgateJ03/R50 installed remote multiuser/revocation/context/uncertainreply; J06handoff/J07automation/signeddistribution and fullRustmission/epic672 remain OPEN."
     }
   ],
   "integrated_pending_browser": [

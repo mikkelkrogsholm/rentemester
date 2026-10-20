@@ -2741,5 +2741,8 @@ prøven foregiver ikke faktisk tidsaldring eller installeret desktopaccept.
 og publicering i et nyt workspace. Gruppe 89 har verificeret en faktisk TS-udstedt
 og bogført faktura gennem overtagelse, ny ejer/MFA og genstart med uændrede
 journalhashes og original PDF. Se [operatørforløb og præcis acceptgrænse](rust-legacy-adoption.md).
-Fortsat native bogføring og signeret gendannelse af migrerede data mangler samlet
-accept; den fulde Rust-omskrivning er stadig åben.
+Gruppe 90 har nu også kvalificeret fortsat native bogføring, webdownload af
+signeret backup med en arkiveret virksomhed samt kildefri gendannelse, ny
+ejer/MFA og genstart uden dubleret gammel bogføring. J03 med flere brugere,
+adgangstab og usikre svar i den installerede desktop er næste acceptgrænse.
+Den fulde Rust-omskrivning er stadig åben.
