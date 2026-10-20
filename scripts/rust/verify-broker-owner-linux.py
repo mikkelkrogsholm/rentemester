@@ -266,7 +266,7 @@ def main():
                  '--mount', 'type=volume,src=' + build_volume + ',dst=/build',
                  '--mount', 'type=bind,src=' + str(source) + ',dst=/work,readonly',
                  '--workdir', '/work', '--env', 'CARGO_HOME=/build/cargo-home',
-                 '--env', 'CARGO_TARGET_DIR=/build/target', IMAGE, 'sleep', 'infinity'])
+                 '--env', 'CARGO_TARGET_DIR=/build/target', '--env', 'RENTEMESTER_CARGO_CACHE=/build/target', IMAGE, 'sleep', 'infinity'])
             build = run(['docker', 'exec', prefix, 'cargo', 'test', '--locked', '-p',
                          'rentemester-runtime', '-p', 'rentemester-host', '--no-run', '--message-format=json'])
             artifacts = {}

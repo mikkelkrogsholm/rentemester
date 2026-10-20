@@ -139,7 +139,7 @@ def main():
         anchors={str(p.relative_to(source)):hashlib.sha256(p.read_bytes()).hexdigest()for p in sorted(source.rglob("*"))if p.is_file()}
         image=json.loads(run(["docker","image","inspect",IMAGE]))[0]
         try:
-            run(["docker","run","-d","--name",prefix,"--security-opt","no-new-privileges","--mount","type=volume,src="+data_volume+",dst=/qualified","--mount","type=volume,src="+build_volume+",dst=/build","--mount","type=bind,src="+str(source)+",dst=/work,readonly","--workdir","/work","--env","CARGO_HOME=/build/cargo-home","--env","CARGO_TARGET_DIR=/build/target",IMAGE,"sleep","infinity"])
+            run(["docker","run","-d","--name",prefix,"--security-opt","no-new-privileges","--mount","type=volume,src="+data_volume+",dst=/qualified","--mount","type=volume,src="+build_volume+",dst=/build","--mount","type=bind,src="+str(source)+",dst=/work,readonly","--workdir","/work","--env","CARGO_HOME=/build/cargo-home","--env","CARGO_TARGET_DIR=/build/target","--env","RENTEMESTER_CARGO_CACHE=/build/target",IMAGE,"sleep","infinity"])
             build=run(["docker","exec",prefix,"cargo","test","--locked","-p","rentemester-runtime","--no-run","--message-format=json"])
             artifacts=[]
             for line in build.splitlines():

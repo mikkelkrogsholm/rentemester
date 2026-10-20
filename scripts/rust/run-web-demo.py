@@ -73,7 +73,7 @@ def main():
                  '-p',f'127.0.0.1:{args.port}:4319','--mount',f'type=bind,src={stage},dst=/work,readonly',
                  '--mount','type=volume,src=rm-rust-web-smoke-build,dst=/build',
                  '--mount',f'type=volume,src={volume},dst=/qualified','--workdir','/work',
-                 '-e','CARGO_HOME=/build/cargo-home','-e','CARGO_TARGET_DIR=/build/target',IMAGE,'sleep','infinity'],stdout=subprocess.DEVNULL)
+                 '-e','CARGO_HOME=/build/cargo-home','-e','CARGO_TARGET_DIR=/build/target','-e','RENTEMESTER_CARGO_CACHE=/build/target',IMAGE,'sleep','infinity'],stdout=subprocess.DEVNULL)
             run(['docker','exec',prefix,'cargo','build','--locked','-p','rentemester-server'])
             run(['docker','exec',prefix,'sh','-c','mkdir -p /qualified/parent && chown 10001:10001 /qualified/parent && chmod 700 /qualified/parent && chmod 755 /build /build/target /build/target/debug'])
             command = ['docker','exec',prefix,'setpriv','--bounding-set=-all','--reuid=10001',

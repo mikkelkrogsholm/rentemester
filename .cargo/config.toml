@@ -1,0 +1,6 @@
+[build]
+# The wrapper shares target/ across linked worktrees and checks available space.
+rustc-wrapper = "scripts/rust/cargo-guard.py"
+target-dir = "target"
+incremental = false
+jobs = 1

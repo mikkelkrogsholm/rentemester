@@ -57,3 +57,31 @@ Rules:
 - If graphify-out/wiki/index.md exists, use it for broad navigation instead of raw source browsing.
 - Read graphify-out/GRAPH_REPORT.md only for broad architecture review or when query/path/explain do not surface enough context.
 - After modifying code, run `graphify update .` to keep the graph current (AST-only, no API cost).
+
+## Diskplads, worktrees og Rust-bygninger
+
+- Brug højst fire aktive agent-worktrees. Genbrug et egnet checkout, og fjern
+  færdigintegrerede worktrees efter hver integration. Bevar ikke-integrerede
+  commits og ufærdige ændringer i verificerede, gendannelige Git-snapshots før
+  fjernelse. Brug Codex' worktree-arkivering, hvor den er tilgængelig.
+- Alle lokale Rust-bygninger deler hovedcheckoutets `target/`. Projektets
+  `.cargo/config.toml` aktiverer `scripts/rust/cargo-guard.py`, som forbinder
+  worktrees med denne cache og afviser separate compiler-outputmapper. Opret
+  aldrig selvstændige `target`-mapper for agenter, tests eller featuregrene.
+- Kør `scripts/rust/cargo-guard.py status` før større bygninger og nye parallelle
+  arbejdsrunder. Cargo-kontrollen afviser kompilering under **30 GiB ledigt**;
+  under **15 GiB** markeres pladsmanglen som kritisk. Ryd op før nyt arbejde.
+  Kontrollen kører også ved almindelige `cargo build`, `check`, `test` og
+  `clippy`; fjern eller omgå ikke wrapperen eller dens grænser.
+- Brug `scripts/rust/cargo-guard.py cargo <kommando>` til eksplicit preflight,
+  også når Cargo ellers kan genbruge alle artefakter. Rust-bygninger kører
+  med én compilerproces og uden incremental-cache. Cargo serialiserer adgang
+  til den fælles cache; parallelisér udvikling, ikke konkurrerende bygninger.
+- Ryd først genopbyggelige byggefiler og afsluttede worktrees.
+  `scripts/rust/cargo-guard.py cargo clean` må bruges til den fælles byggecache,
+  også under pladsgrænsen, når ingen bygning kører. Slet aldrig virksomhedsdata,
+  testrapporter eller ufærdig kode som automatisk oprydning.
+- Isolerede containere bruger én fælles monteret cache pr. byggemiljø. Kun
+  runnerens operatørkonfiguration må sætte `RENTEMESTER_CARGO_CACHE`;
+  `CARGO_TARGET_DIR` skal pege på samme mappe. Lokale agenter må ikke bruge
+  dette til at omgå den fælles cache.
