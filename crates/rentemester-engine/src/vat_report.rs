@@ -16,6 +16,8 @@ pub struct Line {
     pub settlement: bool,
     pub foreign: bool,
     pub historical: bool,
+    /// Exact contained VAT from a verified immutable sales allocation.
+    pub exact_sales_vat: Option<Money>,
 }
 #[derive(Default, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -46,11 +48,17 @@ struct Base {
     count: usize,
     foreign: usize,
 }
-fn add_base(bases: &mut BTreeMap<String, Base>, code: &str, amount: Money, foreign: bool) {
+fn add_base(
+    bases: &mut BTreeMap<String, Base>,
+    code: &str,
+    amount: Money,
+    foreign: bool,
+    exact: bool,
+) {
     let base = bases.entry(code.into()).or_default();
     base.amount.add(&amount);
-    base.count += 1;
-    base.foreign += usize::from(foreign);
+    base.count += usize::from(!exact);
+    base.foreign += usize::from(foreign && !exact);
 }
 fn sum(bases: &BTreeMap<String, Base>, codes: &[&str]) -> Money {
     let mut total = Money::default();
@@ -98,6 +106,8 @@ pub fn build(lines: &[Line]) -> Result<Report, Error> {
     let mut output = Money::default();
     let mut input = Money::default();
     let mut bases = BTreeMap::new();
+    let mut exact_sales_base = Money::default();
+    let mut exact_sales_vat = Money::default();
     let mut allocated_reverse = Money::default();
     let mut total_expected_reverse = Money::default();
     let mut dedicated_present = BTreeSet::new();
@@ -167,7 +177,23 @@ pub fn build(lines: &[Line]) -> Result<Report, Error> {
             if reverse_codes.contains(&code) {
                 expected_reverse.add(&amount.percent("25")?);
             }
-            add_base(&mut bases, code, amount, line.foreign);
+            if let Some(expected) = &line.exact_sales_vat {
+                if code != "DK_SALE_25" || line.account_type != "income" {
+                    return Err(Error::new(
+                        "invalid_vat_source",
+                        "exact sales VAT requires a verified taxable income counter",
+                    ));
+                }
+                exact_sales_base.add(&amount);
+                exact_sales_vat.add(expected);
+            }
+            add_base(
+                &mut bases,
+                code,
+                amount,
+                line.foreign,
+                line.exact_sales_vat.is_some(),
+            );
         }
         if has_amount && !classified {
             errors.push(format!(
@@ -186,9 +212,11 @@ pub fn build(lines: &[Line]) -> Result<Report, Error> {
     let representation = sum(&bases, &["REPRESENTATION_SPECIAL"])
         .percent("25")?
         .percent("25")?;
-    let mut expected_output = sales.percent("25")?;
+    let mut expected_ordinary = sales.subtract(&exact_sales_base).percent("25")?;
+    expected_ordinary.add(&exact_sales_vat);
+    expected_ordinary = expected_ordinary.subtract(&relief);
+    let mut expected_output = expected_ordinary.clone();
     expected_output.add(&reverse_base.percent("25")?);
-    expected_output = expected_output.subtract(&relief);
     let mut expected_input = purchases.percent("25")?;
     expected_input.add(&reverse_base.percent("25")?);
     expected_input.add(&representation);
@@ -225,7 +253,7 @@ pub fn build(lines: &[Line]) -> Result<Report, Error> {
         &mut errors,
         "Almindelig salgsmoms stemmer ikke",
         &ordinary,
-        &sales.percent("25")?.subtract(&relief),
+        &expected_ordinary,
         tolerance(&bases, &["DK_SALE_25", "DK_BAD_DEBT_25"]),
     );
     // The dedicated category cannot be hidden by an opposite ordinary-VAT error.
@@ -307,7 +335,43 @@ mod tests {
             settlement: false,
             foreign: false,
             historical: false,
+            exact_sales_vat: None,
         }
+    }
+    #[test]
+    fn verified_contained_sales_vat_is_exact_without_relaxing_ordinary_sales() {
+        let mut sale = line(1, "income", Some("DK_SALE_25"), "0", "80.06", None);
+        sale.exact_sales_vat = Some(Money::parse("20.01").unwrap());
+        let mut lines = vec![sale, line(1, "vat", None, "0", "20.01", Some("output"))];
+        assert!(build(&lines).unwrap().errors.is_empty());
+        lines[1].credit = Money::parse("20.02").unwrap();
+        assert!(
+            build(&lines)
+                .unwrap()
+                .errors
+                .iter()
+                .any(|e| e.contains("Salgsmoms stemmer ikke"))
+        );
+        lines[1].credit = Money::parse("20.01").unwrap();
+        lines.extend([
+            line(2, "income", Some("DK_SALE_25"), "0", "100", None),
+            line(2, "vat", None, "0", "25.01", Some("output")),
+        ]);
+        assert!(
+            build(&lines)
+                .unwrap()
+                .errors
+                .iter()
+                .any(|e| e.contains("Salgsmoms stemmer ikke"))
+        );
+        lines[3].credit = Money::parse("25").unwrap();
+        assert!(build(&lines).unwrap().errors.is_empty());
+        let mut refund = line(3, "income", Some("DK_SALE_25"), "80.06", "0", None);
+        refund.exact_sales_vat = Some(Money::parse("-20.01").unwrap());
+        lines.extend([refund, line(3, "vat", None, "20.01", "0", Some("output"))]);
+        let report = build(&lines).unwrap();
+        assert!(report.errors.is_empty());
+        assert_eq!(report.output_vat.decimal(), "25.00");
     }
     #[test]
     fn native_purchase_reversal_and_amount_only_error_are_not_confused() {

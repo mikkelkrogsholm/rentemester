@@ -132,10 +132,15 @@ pub fn invoice_body_schema() -> Value {
     nullable_party["type"] = json!(["object", "null"]);
     let line = object(
         json!({"description":{"type":"string","minLength":1,"maxLength":1000},"quantity":{"type":"number","exclusiveMinimum":0},"unitPriceExVat":{"type":"number","minimum":0},"taxClassification":{"type":["string","null"],"enum":["taxable","exempt","reverse_charge",null]},"vatRate":{"type":["number","null"]},"reverseChargeBasis":optional_text()}),
-        &["description", "quantity", "unitPriceExVat"],
+        &["description"],
     );
+    let mut totals = object(
+        json!({"grossAmount":{"type":"number","exclusiveMinimum":0},"netAmount":{"type":["number","null"]},"vatAmount":{"type":["number","null"]},"vatRate":{"type":"number"},"vatComputationBasis":optional_text()}),
+        &["grossAmount", "vatRate"],
+    );
+    totals["type"] = json!(["object", "null"]);
     object(
-        json!({"issueDate":{"type":"string","pattern":"^[0-9]{4}-[0-9]{2}-[0-9]{2}$"},"lines":{"type":"array","minItems":1,"maxItems":200,"items":line},"vatRatePercent":{"type":["number","null"],"description":"Document percent; explicit line vatRate is fractional. Server validates supported domestic treatment."},"vatTreatment":optional_text(),"reverseChargeBasis":optional_text(),"reverseChargeNote":optional_text(),"customerId":{"type":["integer","null"],"minimum":1},"invoiceNumber":optional_text(),"dueDate":optional_text(),"currency":optional_text(),"seller":nullable_party,"buyer":nullable_party}),
+        json!({"invoiceType":{"type":["string","null"],"enum":["full","simplified",null]},"totals":totals,"fxRateToDkk":{"type":["number","null"],"description":"Explicit DKK per original currency unit; server validates exact six-decimal valuation and simplified DKK threshold."},"issueDate":{"type":"string","pattern":"^[0-9]{4}-[0-9]{2}-[0-9]{2}$"},"lines":{"type":"array","minItems":1,"maxItems":200,"items":line},"vatRatePercent":{"type":["number","null"],"description":"Document percent; explicit line vatRate is fractional. Server validates supported domestic treatment."},"vatTreatment":optional_text(),"reverseChargeBasis":optional_text(),"reverseChargeNote":optional_text(),"customerId":{"type":["integer","null"],"minimum":1},"invoiceNumber":optional_text(),"dueDate":optional_text(),"currency":optional_text(),"seller":nullable_party,"buyer":nullable_party}),
         &["issueDate", "lines"],
     )
 }
@@ -333,6 +338,21 @@ async fn read_pdf(mut response: reqwest::Response) -> Result<Vec<u8>, Error> {
 #[cfg(test)]
 mod invoice_vat_schema_tests {
     use super::*;
+    #[test]
+    fn reduced_simplified_and_foreign_quote_are_forwarded_but_unknown_authority_is_not() {
+        let schema = invoice_body_schema();
+        let input = json!({"issueDate":"2026-10-20","invoiceType":"simplified","currency":"EUR","fxRateToDkk":7.4,"lines":[{"description":"Synthetic reduced sale"}],"totals":{"grossAmount":100.07,"vatRate":0.25,"vatComputationBasis":"VAT_20_OF_GROSS"}});
+        assert!(body(&serde_json::to_vec(&input).unwrap(), &schema).is_ok());
+        let mut bad = input.clone();
+        bad["totals"]["actor"] = json!("agent:invented");
+        assert!(body(&serde_json::to_vec(&bad).unwrap(), &schema).is_err());
+        let mut bad = input.clone();
+        bad["invoiceType"] = json!("invented");
+        assert!(body(&serde_json::to_vec(&bad).unwrap(), &schema).is_err());
+        let mut bad = input;
+        bad["lines"][0]["unexpected"] = json!(1);
+        assert!(body(&serde_json::to_vec(&bad).unwrap(), &schema).is_err());
+    }
     #[test]
     fn exact_domestic_tax_fields_are_bounded_shapes_not_client_arithmetic() {
         let schema = invoice_body_schema();

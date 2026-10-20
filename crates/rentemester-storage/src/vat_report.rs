@@ -1,4 +1,5 @@
 //! VAT display from current owned company state. No file opens or business writes.
+mod simplified;
 use crate::{cockpit::number, invalid, legacy_money};
 use rentemester_engine::{
     Error,
@@ -36,6 +37,7 @@ fn status(tx: &Transaction<'_>, start: &str, end: &str) -> Result<String, Error>
     Ok(state)
 }
 pub(crate) fn lines(tx: &Transaction<'_>) -> Result<Vec<(String, Line)>, Error> {
+    let exact_sales = simplified::exact_vat(tx)?;
     let mut roles = BTreeMap::new();
     let mut query = tx
         .prepare("SELECT role,account_no FROM account_role_mappings WHERE status='confirmed'")
@@ -91,6 +93,9 @@ pub(crate) fn lines(tx: &Transaction<'_>) -> Result<Vec<(String, Line)>, Error> 
                 settlement: is_role("vat_settlement"),
                 foreign: r.get::<_, String>(3).map_err(invalid)? != "DKK",
                 historical,
+                exact_sales_vat: exact_sales
+                    .get(&(r.get(0).map_err(invalid)?, no.clone()))
+                    .cloned(),
             },
         ));
     }

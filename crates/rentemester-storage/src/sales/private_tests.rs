@@ -39,7 +39,9 @@ fn register_value(tx: &Transaction<'_>, payload: &Value) -> Value {
 #[test]
 fn full_private_buyer_needs_name_address_but_no_cvr_and_keeps_seller_gate() {
     let mut db = fixture();
-    let tx = db.transaction().unwrap();
+    let tx = db
+        .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
+        .unwrap();
     let source = json!({"issueDate":"2026-10-20","buyer":{"name":"Synthetic Private Buyer","address":"Synthetic Buyer Street"},"lines":[{"description":"Synthetic sale","quantity":1,"unitPriceExVat":10}]});
     for buyer in [
         Value::Null,
@@ -64,7 +66,9 @@ fn full_private_buyer_needs_name_address_but_no_cvr_and_keeps_seller_gate() {
 #[test]
 fn simplified_refusals_preserve_sequence_and_optional_buyer_has_no_fabricated_identity() {
     let mut db = fixture();
-    let tx = db.transaction().unwrap();
+    let tx = db
+        .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
+        .unwrap();
     let source = reduced(100.07);
     let mut cases = vec![];
     let mut bad = source.clone();
@@ -102,7 +106,9 @@ fn simplified_refusals_preserve_sequence_and_optional_buyer_has_no_fabricated_id
 #[test]
 fn gross_credits_preserve_original_net_vat_cents_at_partial_and_final_boundary() {
     let mut db = fixture();
-    let tx = db.transaction().unwrap();
+    let tx = db
+        .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
+        .unwrap();
     for (gross, part, expected_net, expected_vat) in [
         (100.07, 40.03, "80.06", "20.01"),
         (0.03, 0.01, "0.02", "0.01"),
@@ -121,6 +127,12 @@ fn gross_credits_preserve_original_net_vat_cents_at_partial_and_final_boundary()
             Date::parse("2026-10-20").unwrap(),
         )
         .unwrap();
+        let report = crate::vat_report::range(&tx, "2026-10-01", "2026-12-31").unwrap();
+        assert!(report["errors"].as_array().unwrap().is_empty(), "{report}");
+        assert_eq!(
+            report["outputVat"].as_f64(),
+            Some(expected_vat.parse().unwrap())
+        );
         let before: String = tx
             .query_row(
                 "SELECT payload_json FROM documents WHERE id=?1",
@@ -152,6 +164,9 @@ fn gross_credits_preserve_original_net_vat_cents_at_partial_and_final_boundary()
             )
             .unwrap();
         }
+        let report = crate::vat_report::range(&tx, "2026-10-01", "2026-12-31").unwrap();
+        assert!(report["errors"].as_array().unwrap().is_empty(), "{report}");
+        assert_eq!(report["outputVat"].as_f64(), Some(0.0));
         assert_eq!(
             crate::credit_note::credited(&tx, id).unwrap(),
             Money::parse(&gross.to_string()).unwrap()
@@ -178,7 +193,9 @@ fn gross_credits_preserve_original_net_vat_cents_at_partial_and_final_boundary()
 #[test]
 fn private_identity_erasure_fences_direct_and_saved_customer_inputs_before_numbering() {
     let mut db = fixture();
-    let tx = db.transaction().unwrap();
+    let tx = db
+        .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
+        .unwrap();
     tx.execute_batch("INSERT INTO customers(id,name,address)VALUES(78,'Synthetic Erased Buyer','Synthetic private address');INSERT INTO gdpr_erasures(subject_key,source,source_row_id,redacted_fields,rule_id,reason)VALUES('Synthetic Erased Buyer','customers',78,'[\"name\"]','synthetic','legacy erasure fixture');").unwrap();
     let direct = json!({"issueDate":"2026-10-20","buyer":{"name":"Synthetic Erased Buyer","address":"Synthetic private address"},"lines":[{"description":"Synthetic private sale","quantity":1,"unitPriceExVat":10}]});
     assert!(prepare_value(&tx, direct).is_err());
@@ -189,4 +206,46 @@ fn private_identity_erasure_fences_direct_and_saved_customer_inputs_before_numbe
         prepare_value(&tx, reduced(100.07)).unwrap()["invoiceNumber"],
         "2026-0001"
     );
+}
+
+#[test]
+fn simplified_vat_report_refuses_corrupted_credit_allocation_without_guessing() {
+    let mut db = fixture();
+    let tx = db
+        .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
+        .unwrap();
+    let payload = prepare_value(&tx, reduced(100.07)).unwrap();
+    let id = register_value(&tx, &payload)["documentId"]
+        .as_i64()
+        .unwrap();
+    post(
+        &tx,
+        &Post {
+            invoice_document_id: id,
+            revenue_account_no: "S78".into(),
+            confirm: true,
+        },
+        "synthetic",
+        Date::parse("2026-10-20").unwrap(),
+    )
+    .unwrap();
+    let request=serde_json::from_value(json!({"invoiceDocumentId":id,"issueDate":"2026-10-20","reason":"Synthetic corruption fixture","grossAmount":40.03,"confirm":true})).unwrap();
+    let mut credit = crate::credit_note::prepare(&tx, &request, NOW).unwrap();
+    credit.payload["creditAllocations"][0]["originalAmount"] = json!("80.07");
+    let hash =
+        crate::invoice_email::sha(serde_json::to_string(&credit.payload).unwrap().as_bytes());
+    crate::credit_note::register_and_post(
+        &tx,
+        credit,
+        Artifact {
+            filename: "corrupted.json",
+            path: "corrupted.json",
+            hash: &hash,
+            mime: "application/json",
+        },
+        "synthetic",
+        Date::parse("2026-10-20").unwrap(),
+    )
+    .unwrap();
+    assert!(crate::vat_report::range(&tx, "2026-10-01", "2026-12-31").is_err());
 }
