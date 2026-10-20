@@ -11,6 +11,7 @@ pub enum WorkspaceInboxMutation {
     Ingest,
     Assign(String),
     Complete(String),
+    Review(String),
 }
 pub fn workspace_inbox_body_schema(action: &WorkspaceInboxMutation) -> Value {
     let text = json!({"type":"string","minLength":1});
@@ -35,6 +36,15 @@ pub fn workspace_inbox_body_schema(action: &WorkspaceInboxMutation) -> Value {
                 "metadata",
             ],
         ),
+        WorkspaceInboxMutation::Review(_) => {
+            let mut metadata =
+                crate::documents::document_ingest_schema()["properties"]["metadata"].clone();
+            metadata["required"] = json!([]);
+            object(
+                json!({"companySlug":text,"sourceHash":{"type":"string","pattern":"^[0-9a-f]{64}$","minLength":64,"maxLength":64},"metadata":metadata,"confirm":{"const":true}}),
+                &["companySlug", "sourceHash", "metadata", "confirm"],
+            )
+        }
         _ => object(
             json!({"companySlug":text,"confirm":{"const":true}}),
             &["companySlug", "confirm"],
@@ -150,6 +160,16 @@ impl ApiClient {
             // Shared shape validator counts UTF-8; source text limit is UTF-16/server-owned.
             schema["properties"]["sourceId"]["maxLength"] = json!(400);
         }
+        if matches!(action, WorkspaceInboxMutation::Review(_))
+            && value["sourceHash"].as_str().is_none_or(|s| {
+                s.len() != 64
+                    || !s
+                        .bytes()
+                        .all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b))
+            })
+        {
+            return Err(Error::InvalidInput("exact lowercase sourceSHA required"));
+        }
         body(
             &serde_json::to_vec(&value).map_err(|_| Error::InvalidInput("invalid inbox JSON"))?,
             &schema,
@@ -158,6 +178,9 @@ impl ApiClient {
             WorkspaceInboxMutation::Ingest => "workspace-inbox".to_owned(),
             WorkspaceInboxMutation::Assign(id) => {
                 format!("workspace-inbox/{}/assign", source_segment(&id)?)
+            }
+            WorkspaceInboxMutation::Review(id) => {
+                format!("workspace-inbox/{}/review", source_segment(&id)?)
             }
             WorkspaceInboxMutation::Complete(id) => {
                 format!("workspace-inbox/{}/complete", source_segment(&id)?)
@@ -170,5 +193,89 @@ impl ApiClient {
             Some(bytes),
         )
         .await
+    }
+}
+
+/// Exact authorized original. The server’s recorded SHA header must match all returned bytes.
+#[derive(serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct WorkspaceInboxOriginal {
+    pub content_type: String,
+    pub sha256: String,
+    pub bytes: Vec<u8>,
+}
+impl ApiClient {
+    pub async fn workspace_inbox_original(
+        &self,
+        company: &str,
+        source_id: &str,
+    ) -> Result<WorkspaceInboxOriginal, Error> {
+        use sha2::{Digest, Sha256};
+        let mut response = self
+            .send(
+                Method::GET,
+                &company_path(
+                    company,
+                    &format!("workspace-inbox/{}/original", source_segment(source_id)?),
+                )?,
+                &[],
+                None,
+                self.cookie.as_ref().map(|c| c.as_str()),
+            )
+            .await?;
+        if !response.status().is_success() {
+            return Err(Error::Refused {
+                status: response.status().as_u16(),
+            });
+        }
+        let mime = response
+            .headers()
+            .get("content-type")
+            .and_then(|v| v.to_str().ok())
+            .ok_or(Error::Protocol)?
+            .to_owned();
+        if ![
+            "application/pdf",
+            "image/png",
+            "image/jpeg",
+            "text/plain",
+            "application/json",
+            "application/xml",
+            "message/rfc822",
+        ]
+        .contains(&mime.split(';').next().unwrap_or(""))
+            || response.headers().contains_key("content-encoding")
+            || response
+                .content_length()
+                .is_some_and(|n| n > 25 * 1024 * 1024)
+        {
+            return Err(Error::Protocol);
+        }
+        let sha = response
+            .headers()
+            .get("x-content-sha256")
+            .and_then(|v| v.to_str().ok())
+            .filter(|s| {
+                s.len() == 64
+                    && s.bytes()
+                        .all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b))
+            })
+            .ok_or(Error::Protocol)?
+            .to_owned();
+        let mut bytes = Vec::new();
+        while let Some(chunk) = response.chunk().await.map_err(|_| Error::Transport)? {
+            if bytes.len().saturating_add(chunk.len()) > 25 * 1024 * 1024 {
+                return Err(Error::Protocol);
+            }
+            bytes.extend_from_slice(&chunk);
+        }
+        if bytes.is_empty() || format!("{:x}", Sha256::digest(&bytes)) != sha {
+            return Err(Error::Protocol);
+        }
+        Ok(WorkspaceInboxOriginal {
+            content_type: mime,
+            sha256: sha,
+            bytes,
+        })
     }
 }

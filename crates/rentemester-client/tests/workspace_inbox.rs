@@ -204,3 +204,43 @@ async fn confirmation_envelope_path_and_resource_refusals_before_network() {
         ));
     }
 }
+
+#[tokio::test]
+async fn reviewed_mail_metadata_stays_exact_and_hash_bound() {
+    let body = format!(
+        r#"{{ "companySlug":"target", "sourceHash":"{}", "metadata":{{"documentType":"cash_register_receipt","sender":{{"name":"Synthetic source"}}}}, "confirm":true }}"#,
+        "a".repeat(64)
+    );
+    let (origin, task) = server(
+        "POST /api/companies/synthetic/workspace-inbox/source%2Bid/review HTTP/1.1",
+        &body,
+        "200 OK",
+    );
+    let api = ApiClient::new(&origin, true, Some("session=synthetic".into())).unwrap();
+    api.mutate_workspace_inbox(
+        "synthetic",
+        WorkspaceInboxMutation::Review("source+id".into()),
+        body.into_bytes(),
+        true,
+    )
+    .await
+    .unwrap();
+    task.join().unwrap();
+    let api = ApiClient::new("http://127.0.0.1:9", true, None).unwrap();
+    for value in [
+        serde_json::json!({"companySlug":"target","sourceHash":"A".repeat(64),"metadata":{},"confirm":true}),
+        serde_json::json!({"companySlug":"target","sourceHash":"a".repeat(64),"metadata":{},"confirm":false}),
+        serde_json::json!({"companySlug":"target","sourceHash":"a".repeat(64),"metadata":{},"confirm":true,"ledgerUuid":"forbidden"}),
+    ] {
+        assert!(matches!(
+            api.mutate_workspace_inbox(
+                "synthetic",
+                WorkspaceInboxMutation::Review("source".into()),
+                value.to_string().into_bytes(),
+                true
+            )
+            .await,
+            Err(Error::InvalidInput(_))
+        ));
+    }
+}

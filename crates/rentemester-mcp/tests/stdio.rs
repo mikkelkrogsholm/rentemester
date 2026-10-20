@@ -1985,3 +1985,6 @@ mod invoice_extraction;
 
 #[path="stdio/bank_profile.rs"]
 mod bank_profile;
+
+#[path="stdio/bilagsmail.rs"]
+mod bilagsmail;
