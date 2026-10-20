@@ -2493,3 +2493,34 @@ køber, leveringsperiode og enhedskoder samt forenklet faktura med leveringsdato
 Betalinger, kreditnotaer og refunderinger, samme PDF/input gennem HTTP/CLI/MCP,
 genstart og kildefri gendannelse med ny ejer bevarer oplysninger og regnskab.
 Historiske foreign-reverse-charge- og valutaformater er fortsat åbne migreringspunkter.
+
+## Udenlandske lovgrundlag og historiske valutafakturaer
+
+Ved udenlandsk omvendt betalingspligt kan **Udenlandsk lovgrundlag** vælge
+`EU_B2B_SERVICES` eller de eksisterende kildekontrakter
+`DK_MOMSLOVEN_§46_STK_1_NR_3`, `EU_MOMSDIREKTIV_ART_196` og
+`EU_MOMSDIREKTIV_ART_199`. Grundlaget følger dokumentet og de eksplicitte linjer;
+ændringer kræver ny forhåndsvisning. Alle muligheder beholder krav om køberens
+betroede VIES-kontrol, note og fastfrosset valutavurdering. De danske grundlag
+forbliver særskilte. Funktionen foretager ingen indberetning.
+
+EU-rapporten bruger udstedelsens fastfrosne VIES-oplysninger og kontrolleret
+bogførings-/kreditspor. Senere cacheopslag ændrer ikke den historiske
+berettigelse. Originalernes hash kontrolleres mod de gemte bytes uden at
+omserialisere JSON eller ændre feltorden.
+
+Den historiske læser genkender udenlandske nulmomssnapshots med udeladte
+momsfelter og de ældre fastfrosne valutaaggregater uden native versionsmærke
+eller DKK-linjeallokeringer. Den verificerer kurs, beløb og sammenhæng og
+beregner kun midlertidige regnskabsallokeringer; originaler bliver ikke
+omskrevet eller forsynet med opfundne native felter. Historiske råkurser
+normaliseres efter den eksisterende kildekontrakt, mens nye native fakturaer
+fortsat kræver en eksakt kurs med højst seks decimaler.
+
+Group81 består 19 trin på syntetiske data med alle tre kildegrundlag gennem
+webudstedelse og bogføring. EUR-betalinger, kreditnotaer, refunderinger, dateret
+EU-salg, HTTP/CLI/MCP, genstart og fire signerede arkiver med kildefri
+gendannelse består. Historiske formater er kontrolleret i målrettede kerne- og
+lagringstests. Det er **ikke** en accept af faktisk TypeScript-migrering:
+der mangler stadig en understøttet operatørvej til at overtage et eksisterende
+workspace. Prøvekonverteringer og native backup-gendannelse erstatter ikke den vej.
