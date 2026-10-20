@@ -2447,3 +2447,25 @@ genstart og kildefri gendannelse med ny ejer bevarer originaler og historik.
 Den samlede prøve dækker DKK. Udenlandsk forenklet fakturas DKK-grænse er dækket af
 kernens tests; det er ikke en selvstændig accept af hele dens valutaforløb.
 Installerede native finansforløb og øvrige nævnte migreringspunkter er fortsat åbne.
+
+## OSS-grundlag fra manuelt klassificeret salg
+
+Den native momsvisning kan hente et dateret OSS-grundlag. Vælg **OSS fra** og
+**OSS til**, og tryk **Vis OSS-rapport**. Rapporten viser det signerede
+salgsgrundlag i DKK og antal posteringer, inklusive tilbageførsler. Den beregner
+ikke udenlandsk moms, fordeler ikke efter destinationsland eller sats og
+indsender ingen OSS-angivelse.
+
+Ved **Ny postering** vælges **Momsklassifikation → OSS-salg til EU-forbruger**
+udtrykkeligt. Forløbet kræver DKK, et bilag og en indtægtskonto i kredit.
+Klassifikationen vises i bekræftelsen. En almindelig tilbageførsel bevarer den
+oprindelige historik; rapportens datointerval bestemmer, hvilke bevægelser der
+indgår. OSS-grundlaget bliver ikke dansk salgsmoms eller rubrik B/C.
+
+Samme rapport findes som `GET /api/companies/{slug}/oss-report?from=YYYY-MM-DD&to=YYYY-MM-DD`,
+CLI `remote oss-report --company SLUG --from YYYY-MM-DD --to YYYY-MM-DD` og MCP
+`vat_oss_report`. CLI kræver eksplicit server og privat cookie-fil. Rapporten
+kræver gældende læseadgang, momsregistrering og verificerbare originaler. Ugyldigt
+underliggende momsregnskab giver fejl og intet delvist OSS-resultat.
+
+Den samlede prøve på syntetiske data bevarer dansk moms på 25 kr., mens OSS-grundlaget går fra 1.000 kr. til nul efter tilbageførsel. Den oprindelige dato viser fortsat 1.000 kr. HTTP, CLI og MCP, genstart samt kildefri gendannelse med ny ejer består. Fire signerede arkiver bevarer originaler, posteringer og historik.
