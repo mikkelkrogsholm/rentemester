@@ -207,16 +207,20 @@ leverandørkobling afvises eksplicit, indtil de tilsvarende forløb er porteret.
 
 Åbn **Bankkonti**, opret eller vælg den relevante bankkonto, og vælg
 **Importér kontoudtog**. Angiv kontoen og profilen `danske-bank`, vælg bankens
-UTF-8-CSV, gennemse oplysningerne og bekræft importen. Profilen fortolker
+CSV i UTF-8 eller Windows-1252, gennemse oplysningerne og bekræft importen. Profilen fortolker
 bankens datoer som dag–måned–år og genkender de deklarerede kolonner.
 Uden profil bruges den eksisterende generelle parser, som afviser tvetydige
 datoer.
 
 Importen bevarer afsender, modtagerkonto, besked, arkiv- og kundereference
 samt alle oprindelige kolonnenavne og deres parsede celleværdier. Det præcise
-CSV-indhold, som browseren sender, gemmes separat som original. Browserens
-tekstlæsning fjerner et eventuelt UTF-8-BOM; denne indgang dokumenterer ikke
-bevarelse af filens BOM eller læsning af rå Windows-1252-filer.
+filindhold gemmes separat som original, inklusive BOM og linjeskift.
+Browseren sender filbytes som base64 uden tekstkonvertering. Serveren dekoder
+UTF-8 med valgfrit BOM; profilen `danske-bank` bruger Windows-1252, hvis UTF-8
+ikke kan dekodes uden erstatningstegn. Uden profil kræves gyldig UTF-8.
+Filens SHA-256 beregnes af originale bytes. To kodninger af de samme logiske
+bankposter kan have forskellige filhashes, men samme transaktionsidentitet og
+dubletforekomster. Originalen bevares også ved en import med kun dubletter.
 
 Rækkefølgen samme dag udledes af bankens saldi. Et saldospring vises som
 advarsel og gemmes som `BANK_BALANCE_GAP`; de gyldige bankposter bevares.
@@ -225,14 +229,25 @@ eller ny saldoadvarsel. Et normalt importforsøg får fortsat sit eget auditspor
 Der gættes ingen valutakurs eller bankkonto.
 
 HTTP, CLI `import-bank` og MCP `import_bank` bruger den eksisterende
-importoperation med `profile:"danske-bank"`. `bank-accounts` oplyser den fulde
-profilbeskrivelse. Den registrerede profil gemmes i et kildebevis, så senere
-afstemning genlæser originalen med samme datofortolkning.
+importoperation med `profile:"danske-bank"`. Send præcis ét af `csvContent`
+(den eksisterende tekstindgang) eller `csvBase64` (kanonisk standard-base64 af
+originale bytes), samt `confirm:true` og valgfri `account`/`profile`. Begge
+kilder, ingen kilde, null i kildefeltet, ugyldig base64 og overskredne grænser afvises.
+Originalen og den afkodede UTF-8-tekst må være højst 25 MiB, og JSON-body
+højst 35 MiB. CLI bruger stdin;
+MCP bruger den eksisterende `body`-streng og ydre `confirm:true`, med en særskilt
+rammegrænse på 70 MiB + 64 KiB. Andre værktøjers grænser ændres ikke.
+
+`bank-accounts` oplyser profilbeskrivelsen. Den registrerede profil gemmes i et
+kildebevis, så senere bogføring og afstemning først kontrollerer den originale
+filhash og dernæst genlæser bytes med samme dekoder og datofortolkning.
 
 Group72 består med eksisterende web-UI, afvisning af ugyldige input og adgang,
 dubletter, saldoadvarsel, klientparitet, genstart og signeret kildefri
-gendannelse under en ny ejer. Samlet synkronisering af åbne bankposters
-bilagsforslag og afklaringsopgaver er fortsat et særskilt restpunkt.
+gendannelse under en ny ejer. Group82 kvalificerer desuden oprettelse og
+opdatering af åbne bankposters bilagsvejledning gennem import, senere bilag og
+bogføring. Dette er gennemgangsopgaver; det erstatter ikke særskilte scorede
+forslag til faktura-, købs- og refundmatch.
 
 ## Importér en bankbetaling og bogfør bilaget
 

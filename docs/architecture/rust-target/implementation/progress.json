@@ -1,14 +1,14 @@
 {
   "goal": "Complete Rust server/web, GPUI local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "Unmatched bank tasks and reviewed purchase booking qualified",
-  "code_revision": "6bcb0dfacbde87494d04a786fe0c8a1d0188718c",
-  "spec_revision": "sha256:c16d09043a7205afbb96c55a3d60e8814f154ca408bd2f10cd601f701a04a428",
-  "state": "Group82 qualified at 6bcb0dfa: 19 ordinary-MFA actions complete bank import → wrong-currency/unique/ambiguous late purchase originals → explicit outgoing Bank web selection and reviewed expense posting → CLI review and MCP already-resolved no-op → reimport recreates only still-unbooked incoming task. Exactly2bankrows/3purchase originals/1journal/1bank reconciliation; inputVAT25 and truthful booked-minus-statement difference-200. Immutable task history5 with4resolved/1open. Current reviewer upload/import/post denied and revoked read403; all statuses/archive selectors and financial HTTP/CLI/MCP equal through source/restart/restored/reopen. Four independently verified signed full archives and source-free fresh-owner recovery preserve exact original bytes, tables and historical audit. Raw Windows1252 bank file transport, scored suggestions and CVR remain server gaps. Whole Rust mission/epic672 and installed desktop financial acceptance remain OPEN.",
+  "current_increment": "Original bank bytes and cross-encoding duplicate/source proof qualified",
+  "code_revision": "5bdc17ebcedc3aa6889d2a96e8b1a8fb58f56e7f",
+  "spec_revision": "sha256:802c904b38ae5dbaca8c71bdfa473fff7b38095308df55175623f4ada9f0bff7",
+  "state": "Group83 qualified at 5bdc17eb: 20 ordinary-MFA actions import exact UTF8/BOM/CRLF bank original through web, equivalent Windows1252 through CLI with zero new rows, and Windows1252 third identical fee occurrence through MCP. Original raw SHA differs while transaction occurrence identity remains stable. Exactly5bankrows/3rawbank originals/1purchase original/1reviewed expense journal/reconciliation; VATinput25, expense100, bank-125 and truthful statement-75/difference-50. Six retained tasks with2resolved/4open. All three raw originals, including duplicate-only CLI import, survive four signed complete snapshots and source-free fresh-owner recovery/reopen. Exact fee ordinals0/1/2/profile/source-hash lineage and actual source-verified posting qualified; current rights and malformed raw envelope refusals preserve state; four-phase financial/task HTTP/CLI/MCP equality. Scored bank invoice/purchase/refund suggestions and interactive CVR lookup/sync remain server gaps. Installed desktop financial/bytefile flow, actual TSworkspace adoption and full mission/epic672 remain OPEN.",
   "issues_closed": [],
   "next": [
-    "Finish raw-byte bank import across server/web/CLI/MCP with original-byte SHA and shared source decoder for later reconciliation; independent Group83 prerequisites in three isolated worktrees, not yet integrated or runtime qualified.",
-    "Complete scored bank suggestions separately (issued invoice/purchase/customer refund/supplier refund), raw Windows1252 file/byte import preserving original hash, and interactive CVR lookup/sync. Do not infer full suggestions parity from exception amount-only candidates.",
+    "Complete scored bank suggestions for issued invoice, purchase, customer refund and supplier refund. Review-only amount/currency task hints do not establish that source parity.",
+    "Complete interactive CVR lookup/sync through normal UI/current authority and retained provider source; no fabricated company identity. Then proceed to installed local/remote desktop acceptance and remaining full-mission gates.",
     "Complete installed local/remote desktop financial journeys, remaining safe transfer/recovery/automation/distribution, full CLI/MCP parity and TypeScript retirement. Operator TSworkspace adoption is still required; current rehearsal commands discard copies and grant no writer authority.",
     "Retain explicit native tax/FX contracts and verify source rate differences against posting controls before broader support claims. Qualified75/76/77/78/79/80/81 must not be repeated without changed code or new failure evidence."
   ],
@@ -21,10 +21,10 @@
   ],
   "all_goal_requirements_complete": false,
   "previous_verified_increment": {
-    "current_increment": "Three foreign reverse-charge bases and verified historical FX prerequisites qualified",
-    "code_revision": "e56c74f71af233413109854318fbf055d092e589",
-    "spec_revision": "sha256:8f13a3a6da7833d0dd219aec4ccc121f03da93932bea83da13352210ab930e74",
-    "state": "Group81 qualified at e56c74f7: 19 ordinary-MFA actions through existing web issue/post all three source foreign legal bases with explicit trusted VIES. Main ART196 EUR100 at7.4 retains partial/final receipt-credit-refund lifecycle and finalFX3; NR3/ART199 sideEUR10 invoices each post/fullcredit tozero. Exactly11journals/4bankrows/3posted invoices/4credits; datedEU740 then592 then0 with invoice/credit counts3/2,3/3,3/4. Full four-phase HTTP/CLI/MCP accounting and all-three exact preview-input/PDF equality; current rights/provider mismatch/outage/held revoked result refusal retained. Four independently verified signed full archives and source-free fresh-owner restore/reopen preserve originals, frozen VIES and exact accounting/audit. Focused fixtures verify old omitted-zero-VAT/aggregate-FX, original raw-byte hashes, >6digit original quote normalization and unchanged nativev1. These tests do not qualify actual TSworkspace adoption: supported operator route is still missing. Full mission/epic672 and installed native financial acceptance remain OPEN."
+    "current_increment": "Unmatched bank tasks and reviewed purchase booking qualified",
+    "code_revision": "6bcb0dfacbde87494d04a786fe0c8a1d0188718c",
+    "spec_revision": "sha256:c16d09043a7205afbb96c55a3d60e8814f154ca408bd2f10cd601f701a04a428",
+    "state": "Group82 qualified at 6bcb0dfa: 19 ordinary-MFA actions complete bank import → wrong-currency/unique/ambiguous late purchase originals → explicit outgoing Bank web selection and reviewed expense posting → CLI review and MCP already-resolved no-op → reimport recreates only still-unbooked incoming task. Exactly2bankrows/3purchase originals/1journal/1bank reconciliation; inputVAT25 and truthful booked-minus-statement difference-200. Immutable task history5 with4resolved/1open. Current reviewer upload/import/post denied and revoked read403; all statuses/archive selectors and financial HTTP/CLI/MCP equal through source/restart/restored/reopen. Four independently verified signed full archives and source-free fresh-owner recovery preserve exact original bytes, tables and historical audit. Raw Windows1252 bank file transport, scored suggestions and CVR remain server gaps. Whole Rust mission/epic672 and installed desktop financial acceptance remain OPEN."
   },
   "evidence": {
     "combined_browser_log": "/tmp/rm-platform5-combined.log",
@@ -1709,6 +1709,33 @@
         "Second actual stopped before document upload: nested select label included option text; source-verified select label anchors fix helper only.",
         "Initial bank tasks test rejected signed bank amount through unsigned ledger-money reader; use existing bank::signed_money without weakening ledger gates."
       ]
+    },
+    "group83_bank_original_bytes": {
+      "source_revision": "5bdc17ebcedc3aa6889d2a96e8b1a8fb58f56e7f",
+      "actual_report": "/tmp/rentemester-rust-reports/bank-original-bytes-integrated83-run2.json",
+      "actual_report_sha256": "49c5c108eaee8d27032bd9099c1261e5ad2c12294f340691e61cdd5c298810fa",
+      "actual_log": "/tmp/rm83-actual2.log",
+      "engine": "/tmp/rm83-engine.log (2PASS)",
+      "storage": "/tmp/rm83-storage.log (2PASS), /tmp/rm83-profile.log (4PASS), /tmp/rm83-reconciliation.log (3PASS)",
+      "http": "/tmp/rm83-http.log (3PASS)",
+      "sdk": "/tmp/rm83-client.log (1unit +7HTTP PASS)",
+      "cli": "/tmp/rm83-cli.log (1 large envelope PASS)",
+      "mcp": "/tmp/rm83-mcp2.log (117stdio +3unit PASS)",
+      "web": "/tmp/rm83-web-tests3.log (16PASS/34assertions), /tmp/rm83-web-tsc2.log",
+      "web_build": "/tmp/rm83-web-build.log",
+      "strict": "/tmp/rm83-strict3.log",
+      "build": "/tmp/rm83-build.log",
+      "cleanup": "/Users/mikkelfreltoftkrogsholm/Projekter/rentemester-cleanup-recovery-2026-10-20/integrated83.json",
+      "limitations": [
+        "Named danske-bank decoder follows declared source UTF8/BOM/Windows1252 fallback; generic malformed UTF8 refuses, no encoding inference. Original and decoded UTF8 text each bounded25MiB; envelope35MiB.",
+        "Actual expense uses the UTF8/BOM original; Windows1252 later reconciliation/source verification is covered by focused storage tests, with Windows1252 import/lineage/recovery qualified in the actual.",
+        "Native desktop file picker still needs raw-byte path during its actual financial acceptance; no installed GUI claim.",
+        "No scored bank suggestions, interactive CVR, operator TSworkspace adoption or full retirement claim."
+      ],
+      "failed_attempts": [
+        "First actual imported4rows but helper looked up generic ref under named profile; corrected fixture to declared Kundereference, selected rows by exact text and independently asserted ordinary reference remains null. No profile/parser alias added.",
+        "MCP discovery text-only required assertion updated to exact-one source union. SDK multiple-of and new CLI-test nested condition adjusted to required strict lint rules."
+      ]
     }
   },
   "verified_history": [
@@ -2809,10 +2836,37 @@
     },
     {
       "delivery": "Group83 original bank bytes",
-      "owner": "root runtime/application/HTTP/integration; isolated engine-storage, web and clients writers",
-      "status": "Prerequisites in progress on base6bcb0dfa, not integrated or qualified. Keep Group82 accepted flow intact.",
+      "owner": "root runtime/application/HTTP/framing/integration/actual; isolated engine-storage, web, clients and actual-helper writers",
+      "status": "Group83 qualified at 5bdc17eb: 20 ordinary-MFA actions import exact UTF8/BOM/CRLF bank original through web, equivalent Windows1252 through CLI with zero new rows, and Windows1252 third identical fee occurrence through MCP. Original raw SHA differs while transaction occurrence identity remains stable. Exactly5bankrows/3rawbank originals/1purchase original/1reviewed expense journal/reconciliation; VATinput25, expense100, bank-125 and truthful statement-75/difference-50. Six retained tasks with2resolved/4open. All three raw originals, including duplicate-only CLI import, survive four signed complete snapshots and source-free fresh-owner recovery/reopen. Exact fee ordinals0/1/2/profile/source-hash lineage and actual source-verified posting qualified; current rights and malformed raw envelope refusals preserve state; four-phase financial/task HTTP/CLI/MCP equality. Scored bank invoice/purchase/refund suggestions and interactive CVR lookup/sync remain server gaps. Installed desktop financial/bytefile flow, actual TSworkspace adoption and full mission/epic672 remain OPEN.",
       "contract": "/tmp/rm-platform83-bank-bytes-contract.md",
-      "acceptance": "Original UTF8/BOM and named Windows1252 bank bytes → stable duplicate row identity → actual booking verifies exact archived bytes → canonical clients/restart/signed source-free recovery."
+      "acceptance": "Original UTF8/BOM and named Windows1252 bank bytes → stable duplicate row identity → actual booking verifies exact archived bytes → canonical clients/restart/signed source-free recovery.",
+      "evidence": {
+        "source_revision": "5bdc17ebcedc3aa6889d2a96e8b1a8fb58f56e7f",
+        "actual_report": "/tmp/rentemester-rust-reports/bank-original-bytes-integrated83-run2.json",
+        "actual_report_sha256": "49c5c108eaee8d27032bd9099c1261e5ad2c12294f340691e61cdd5c298810fa",
+        "actual_log": "/tmp/rm83-actual2.log",
+        "engine": "/tmp/rm83-engine.log (2PASS)",
+        "storage": "/tmp/rm83-storage.log (2PASS), /tmp/rm83-profile.log (4PASS), /tmp/rm83-reconciliation.log (3PASS)",
+        "http": "/tmp/rm83-http.log (3PASS)",
+        "sdk": "/tmp/rm83-client.log (1unit +7HTTP PASS)",
+        "cli": "/tmp/rm83-cli.log (1 large envelope PASS)",
+        "mcp": "/tmp/rm83-mcp2.log (117stdio +3unit PASS)",
+        "web": "/tmp/rm83-web-tests3.log (16PASS/34assertions), /tmp/rm83-web-tsc2.log",
+        "web_build": "/tmp/rm83-web-build.log",
+        "strict": "/tmp/rm83-strict3.log",
+        "build": "/tmp/rm83-build.log",
+        "cleanup": "/Users/mikkelfreltoftkrogsholm/Projekter/rentemester-cleanup-recovery-2026-10-20/integrated83.json",
+        "limitations": [
+          "Named danske-bank decoder follows declared source UTF8/BOM/Windows1252 fallback; generic malformed UTF8 refuses, no encoding inference. Original and decoded UTF8 text each bounded25MiB; envelope35MiB.",
+          "Actual expense uses the UTF8/BOM original; Windows1252 later reconciliation/source verification is covered by focused storage tests, with Windows1252 import/lineage/recovery qualified in the actual.",
+          "Native desktop file picker still needs raw-byte path during its actual financial acceptance; no installed GUI claim.",
+          "No scored bank suggestions, interactive CVR, operator TSworkspace adoption or full retirement claim."
+        ],
+        "failed_attempts": [
+          "First actual imported4rows but helper looked up generic ref under named profile; corrected fixture to declared Kundereference, selected rows by exact text and independently asserted ordinary reference remains null. No profile/parser alias added.",
+          "MCP discovery text-only required assertion updated to exact-one source union. SDK multiple-of and new CLI-test nested condition adjusted to required strict lint rules."
+        ]
+      }
     }
   ],
   "integrated_pending_browser": [
@@ -2900,6 +2954,12 @@
       "code_revision": "059b05a92c7a8f2e586d81ba813508852da06fe8",
       "spec_revision": "sha256:d3dd594f9e3ea2cb99c98931143ec314a2af305f939a719a5f84caae71413de9",
       "state": "Group80 qualified at 059b05a9: 19 ordinary-MFA actions through existing web full standard invoice with foreign buyer identifier, explicit delivery period and document/per-line unit codes; reduced simplified invoice with delivery date and no fabricated buyer or quantities. Exact preview/issue input, immutable original and PDF metadata retained; no inferred VIES validity or tax treatment. Existing partial/final receipt, original credit and refund flow retains VAT70.01 then12.01 then0, exactly11journals/6bankrows and final zero accounts. Four-phase HTTP/CLI/MCP canonical reads and exact metadata-input preview/PDF equality; restart and four independently verified signed full archives with source-free fresh-owner restore/reopen retain exact evidence. Full mission/epic672, historical foreign reverse-charge/FX compatibility and installed native financial acceptance remain OPEN."
+    },
+    {
+      "current_increment": "Three foreign reverse-charge bases and verified historical FX prerequisites qualified",
+      "code_revision": "e56c74f71af233413109854318fbf055d092e589",
+      "spec_revision": "sha256:8f13a3a6da7833d0dd219aec4ccc121f03da93932bea83da13352210ab930e74",
+      "state": "Group81 qualified at e56c74f7: 19 ordinary-MFA actions through existing web issue/post all three source foreign legal bases with explicit trusted VIES. Main ART196 EUR100 at7.4 retains partial/final receipt-credit-refund lifecycle and finalFX3; NR3/ART199 sideEUR10 invoices each post/fullcredit tozero. Exactly11journals/4bankrows/3posted invoices/4credits; datedEU740 then592 then0 with invoice/credit counts3/2,3/3,3/4. Full four-phase HTTP/CLI/MCP accounting and all-three exact preview-input/PDF equality; current rights/provider mismatch/outage/held revoked result refusal retained. Four independently verified signed full archives and source-free fresh-owner restore/reopen preserve originals, frozen VIES and exact accounting/audit. Focused fixtures verify old omitted-zero-VAT/aggregate-FX, original raw-byte hashes, >6digit original quote normalization and unchanged nativev1. These tests do not qualify actual TSworkspace adoption: supported operator route is still missing. Full mission/epic672 and installed native financial acceptance remain OPEN."
     }
   ]
 }
