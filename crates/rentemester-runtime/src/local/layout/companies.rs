@@ -19,7 +19,7 @@ impl WorkspaceLayout {
     pub fn catalog(&mut self) -> Result<Vec<(String, String, bool)>, LayoutError> {
         self.ensure_current()?;
         let bytes = retained_bytes(&self.bindings[0].file)?;
-        parse(&bytes, &self.slug)?;
+        parse_selection(&bytes, &self.slug, self.snapshot_selection)?;
         let m: Manifest =
             serde_json::from_slice(&bytes).map_err(|_| LayoutError::InvalidManifest)?;
         if m.companies.len() > 1000 {
@@ -31,52 +31,69 @@ impl WorkspaceLayout {
             .collect())
     }
     pub(crate) fn select_company(&mut self, slug: &str) -> Result<(), LayoutError> {
+        self.select_company_mode(slug, false)
+    }
+    pub(crate) fn select_company_for_snapshot(&mut self, slug: &str) -> Result<(), LayoutError> {
+        self.select_company_mode(slug, true)
+    }
+    fn select_company_mode(&mut self, slug: &str, snapshot: bool) -> Result<(), LayoutError> {
         self.ensure_current()?;
-        parse(&retained_bytes(&self.bindings[0].file)?, slug)?;
-        if slug == self.slug {
-            return Ok(());
-        }
-        let mut bindings: Vec<Binding> = Vec::new();
-        for (parts, directory) in [
-            (vec![slug.to_owned()], true),
-            (vec![slug.to_owned(), "data".into()], true),
-            (
-                vec![slug.to_owned(), "data".into(), "ledger.sqlite".into()],
-                false,
-            ),
-        ] {
-            // Refuse aliases of any live pinned regular file BEFORE opening a
-            // candidate descriptor: closing an alias can drop SQLite POSIX locks.
-            if !directory {
-                let parent = &bindings.last().ok_or(LayoutError::Unavailable)?.file;
-                let st = statat(parent, "ledger.sqlite", AtFlags::SYMLINK_NOFOLLOW)
-                    .map_err(|_| LayoutError::Unavailable)?;
-                if st.st_nlink != 1
-                    || FileType::from_raw_mode(st.st_mode) != FileType::RegularFile
-                    || self.bindings.iter().any(|b| {
-                        b.identity.device == st.st_dev as u64
-                            && b.identity.inode == st.st_ino as u64
-                    })
-                {
+        let was_snapshot = self.snapshot_selection;
+        let result = (|| {
+            parse_selection(&retained_bytes(&self.bindings[0].file)?, slug, snapshot)?;
+            if slug == self.slug {
+                self.snapshot_selection = snapshot;
+                return self.ensure_current();
+            }
+            let mut bindings: Vec<Binding> = Vec::new();
+            for (parts, directory) in [
+                (vec![slug.to_owned()], true),
+                (vec![slug.to_owned(), "data".into()], true),
+                (
+                    vec![slug.to_owned(), "data".into(), "ledger.sqlite".into()],
+                    false,
+                ),
+            ] {
+                // Refuse aliases of any live pinned regular file BEFORE opening a
+                // candidate descriptor: closing an alias can drop SQLite POSIX locks.
+                if !directory {
+                    let parent = &bindings.last().ok_or(LayoutError::Unavailable)?.file;
+                    let st = statat(parent, "ledger.sqlite", AtFlags::SYMLINK_NOFOLLOW)
+                        .map_err(|_| LayoutError::Unavailable)?;
+                    if st.st_nlink != 1
+                        || FileType::from_raw_mode(st.st_mode) != FileType::RegularFile
+                        || self.bindings.iter().any(|b| {
+                            b.identity.device == st.st_dev as u64
+                                && b.identity.inode == st.st_ino as u64
+                        })
+                    {
+                        return Err(LayoutError::Unavailable);
+                    }
+                }
+                let file = open_relative(&self.lease, &parts, directory)?;
+                let identity = physical(&file, directory)?;
+                if identity.device != self.bindings[0].identity.device {
                     return Err(LayoutError::Unavailable);
                 }
+                bindings.push(Binding {
+                    parts,
+                    directory,
+                    file,
+                    identity,
+                });
             }
-            let file = open_relative(&self.lease, &parts, directory)?;
-            let identity = physical(&file, directory)?;
-            if identity.device != self.bindings[0].identity.device {
-                return Err(LayoutError::Unavailable);
-            }
-            bindings.push(Binding {
-                parts,
-                directory,
-                file,
-                identity,
-            });
+            self.bindings.truncate(3);
+            self.bindings.extend(bindings);
+            self.slug = slug.to_owned();
+            self.snapshot_selection = snapshot;
+            self.ensure_current()
+        })();
+        // A failed return from maintenance must never leave a usable Owner
+        // selected on an archived company.
+        if result.is_err() && was_snapshot && !snapshot {
+            self.invalidated = true;
         }
-        self.bindings.truncate(3);
-        self.bindings.extend(bindings);
-        self.slug = slug.to_owned();
-        self.ensure_current()
+        result
     }
     pub(super) fn ensure_pending_company(&self) -> Result<(), LayoutError> {
         if let Some(pins) = &self.pending_company {
@@ -268,6 +285,65 @@ mod tests {
         let layout =
             WorkspaceLayout::bind(WorkspaceLease::acquire(root.path()).unwrap(), "w", "a").unwrap();
         (root, layout, c, l)
+    }
+    fn archived_fixture() -> (tempfile::TempDir, WorkspaceLayout, Connection, Connection) {
+        let root = tempfile::tempdir().unwrap();
+        let (control, ledger) = super::super::connection_tests::fixture(root.path());
+        std::fs::create_dir_all(root.path().join("b/data")).unwrap();
+        Connection::open(root.path().join("b/data/ledger.sqlite"))
+            .unwrap()
+            .execute_batch("CREATE TABLE synthetic(value)")
+            .unwrap();
+        std::fs::write(root.path().join("workspace.json"), br#"{"version":1,"companies":[{"slug":"a","name":"Synthetic live","createdAt":"2026-01-01","archived":false},{"slug":"b","name":"Synthetic archive","createdAt":"2026-01-01","archived":true}]}"#).unwrap();
+        let layout =
+            WorkspaceLayout::bind(WorkspaceLease::acquire(root.path()).unwrap(), "w", "a").unwrap();
+        (root, layout, control, ledger)
+    }
+    #[test]
+    fn snapshot_archived_selection_keeps_pins_and_restores_strict_normal_selection() {
+        let _serial = crate::LEASE_TEST_LOCK.lock().unwrap();
+        let (root, mut layout, control, old) = archived_fixture();
+        assert!(layout.select_company("b").is_err());
+        drop(old);
+        layout.select_company_for_snapshot("b").unwrap();
+        let archived = Connection::open(root.path().join("b/data/ledger.sqlite")).unwrap();
+        layout.ensure_connections(&control, &archived).unwrap();
+        assert!(layout.catalog().unwrap().iter().any(|c| c.0 == "b" && c.2));
+        drop(archived);
+        layout.select_company("a").unwrap();
+        assert!(!layout.snapshot_selection);
+        layout.select_company_for_snapshot("a").unwrap();
+        layout.select_company("a").unwrap();
+        assert!(
+            !layout.snapshot_selection,
+            "same-slug return must clear snapshot mode"
+        );
+        assert!(layout.select_company("b").is_err());
+        let active = Connection::open(root.path().join("a/data/ledger.sqlite")).unwrap();
+        layout.ensure_connections(&control, &active).unwrap();
+    }
+    #[test]
+    fn snapshot_selection_still_refuses_replaced_manifest_or_ledger_and_failed_return_retires() {
+        let _serial = crate::LEASE_TEST_LOCK.lock().unwrap();
+        for change in ["manifest", "ledger", "return"] {
+            let (root, mut layout, control, old) = archived_fixture();
+            drop(old);
+            layout.select_company_for_snapshot("b").unwrap();
+            if change == "return" {
+                assert!(layout.select_company("b").is_err());
+            } else {
+                let path = root.path().join(if change == "manifest" {
+                    "workspace.json"
+                } else {
+                    "b/data/ledger.sqlite"
+                });
+                std::fs::rename(&path, path.with_extension("old")).unwrap();
+                std::fs::write(path, b"replaced").unwrap();
+            }
+            assert!(layout.ensure_current().is_err());
+            assert!(layout.catalog().is_err());
+            drop(control);
+        }
     }
     #[test]
     fn new_company_publication_and_switch_keep_same_control_and_root_lease() {

@@ -36,7 +36,7 @@ fn snapshot(db: &Connection) -> Result<Vec<u8>, rentemester_engine::Error> {
     copy.close().map_err(|(_, e)| error(e))?;
     Ok(bytes)
 }
-fn switch(
+pub(super) fn switch(
     company: &mut Option<Connection>,
     guard: &mut NamespaceGuard,
     root: &Path,

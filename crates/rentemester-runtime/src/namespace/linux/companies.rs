@@ -16,6 +16,19 @@ impl NamespaceGuard {
         self.slug = slug.to_owned();
         self.ensure_current()
     }
+    /// Trusted snapshot/restore traversal only. Host must close the prior DB,
+    /// verify each opened connection, and restore ordinary selection before
+    /// returning any Owner to request handling; failure retires that Owner.
+    pub fn select_company_for_snapshot(&mut self, slug: &str) -> Result<(), Error> {
+        self.ensure_current()?;
+        let (_, directory) = walk(&self.root, self.uid, true)?;
+        metadata(&self.root, &directory, self.uid, slug)?;
+        self.layout
+            .select_company_for_snapshot(slug)
+            .map_err(|_| Error::Invalid)?;
+        self.slug = slug.to_owned();
+        self.ensure_current()
+    }
     pub fn create_company_files(&mut self, slug: &str) -> Result<(), Error> {
         self.ensure_current()?;
         self.layout

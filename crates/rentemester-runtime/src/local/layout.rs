@@ -37,6 +37,9 @@ fn metadata_text(s: &str, max: usize) -> bool {
     !s.trim().is_empty() && s.len() <= max && !s.chars().any(char::is_control)
 }
 fn parse(bytes: &[u8], slug: &str) -> Result<(), LayoutError> {
+    parse_selection(bytes, slug, false)
+}
+fn parse_selection(bytes: &[u8], slug: &str, allow_archived: bool) -> Result<(), LayoutError> {
     let manifest: Manifest =
         serde_json::from_slice(bytes).map_err(|_| LayoutError::InvalidManifest)?;
     if manifest.version != 1 {
@@ -53,7 +56,7 @@ fn parse(bytes: &[u8], slug: &str) -> Result<(), LayoutError> {
             return Err(LayoutError::InvalidManifest);
         }
         if entry.slug == slug {
-            if entry.archived {
+            if entry.archived && !allow_archived {
                 return Err(LayoutError::InvalidSelection);
             }
             selected = true;
@@ -150,6 +153,7 @@ struct Binding {
 pub struct WorkspaceLayout {
     workspace: String,
     slug: String,
+    snapshot_selection: bool,
     bindings: Vec<Binding>,
     manifest_hash: Vec<u8>,
     pending_company: Option<Vec<Binding>>,
@@ -219,6 +223,7 @@ impl WorkspaceLayout {
             bindings,
             manifest_hash,
             pending_company: None,
+            snapshot_selection: false,
             invalidated: false,
         };
         result.ensure_current()?;

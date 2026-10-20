@@ -36,12 +36,6 @@ pub fn authorize(
         return Err(denied());
     }
     for company in &catalog.companies {
-        if company.archived {
-            return Err(Error::new(
-                "backup_coverage_refused",
-                "archived ledger physical admission is not supported by this backup slice",
-            ));
-        }
         let role = rentemester_storage::workspace_members::membership(
             tx,
             &current.subject,
@@ -68,7 +62,7 @@ mod tests {
         }
     }
     #[test]
-    fn every_company_current_owner_and_workspace_management_are_required() {
+    fn every_company_including_archived_requires_current_owner_and_workspace_management() {
         let mut c = Connection::open_in_memory().unwrap();
         let mut l = Connection::open_in_memory().unwrap();
         rentemester_storage::fresh::initialize_empty_pair(&mut c, &mut l, "Synthetic portable")
@@ -92,7 +86,7 @@ mod tests {
                     |s| rentemester_storage::workspace_context::RegisteredCompany {
                         slug: s.into(),
                         name: format!("Synthetic {s}"),
-                        archived: false,
+                        archived: s == "b",
                     },
                 )
                 .collect(),

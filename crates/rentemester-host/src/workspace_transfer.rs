@@ -31,36 +31,68 @@ impl Owner {
     > {
         let catalog = self.catalog()?;
         let selected = self.slug.clone();
-        let mut companies = vec![];
-        let mut pending = vec![];
-        for c in &catalog.companies {
-            self.select_company(&c.slug)?;
-            self.admit()?;
-            let db = self.held.0.as_ref().unwrap().company.as_ref().unwrap();
-            let uuid = db
-                .query_row(
-                    "SELECT ledger_uuid FROM ledger_identity WHERE id=1",
-                    [],
-                    |r| r.get(0),
+        let result = (|| {
+            let mut companies = vec![];
+            let mut pending = vec![];
+            for c in &catalog.companies {
+                self.admit()?;
+                let slots = self.held.0.as_mut().unwrap();
+                super::portable_backup::switch(
+                    &mut slots.company,
+                    &mut slots.guard,
+                    &self.root,
+                    &c.slug,
+                    &mut self.slug,
+                    true,
                 )
                 .map_err(|_| OwnerError::Database)?;
-            companies.push(store::Company {
-                slug: c.slug.clone(),
-                ledger_uuid: uuid,
-            });
-            let rows =
-                rentemester_storage::invoice_email::rows(db).map_err(|_| OwnerError::Database)?;
-            for r in rows {
-                if r["state"] == "unknown" {
-                    pending.push(
-                        json!({"companySlug":c.slug,"messageId":r["messageId"],"state":"unknown"}),
-                    );
+                self.observe()?;
+                let db = self.held.0.as_ref().unwrap().company.as_ref().unwrap();
+                let uuid = db
+                    .query_row(
+                        "SELECT ledger_uuid FROM ledger_identity WHERE id=1",
+                        [],
+                        |r| r.get(0),
+                    )
+                    .map_err(|_| OwnerError::Database)?;
+                companies.push(store::Company {
+                    slug: c.slug.clone(),
+                    ledger_uuid: uuid,
+                });
+                let rows = rentemester_storage::invoice_email::rows(db)
+                    .map_err(|_| OwnerError::Database)?;
+                for r in rows {
+                    if r["state"] == "unknown" {
+                        pending.push(json!({"companySlug":c.slug,"messageId":r["messageId"],"state":"unknown"}));
+                    }
+                }
+                if self.finish(true) {
+                    return Err(OwnerError::Retired);
                 }
             }
-            self.finish(true);
+            Ok((catalog, companies, pending))
+        })();
+        // Status powers the web write gate, so an archived ledger must neither
+        // break status reads nor leave ordinary request handling in maintenance.
+        let slots = self.held.0.as_mut().unwrap();
+        let restored = super::portable_backup::switch(
+            &mut slots.company,
+            &mut slots.guard,
+            &self.root,
+            &selected,
+            &mut self.slug,
+            false,
+        )
+        .is_ok();
+        if !restored {
+            self.reusable = false;
+            return Err(OwnerError::Retired);
         }
-        self.select_company(&selected)?;
-        Ok((catalog, companies, pending))
+        let retired = self.finish(result.is_ok());
+        if retired && result.is_ok() {
+            return Err(OwnerError::Retired);
+        }
+        result
     }
     fn transfer_action(
         &mut self,
