@@ -1,15 +1,15 @@
 {
   "goal": "Complete Rust server/web, GPUI local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "Ordinary PDF upload through automatic invoice extraction, manual web bookkeeping and source-free recovery qualified",
-  "code_revision": "ff7174a51ef3e6659fbbac56b5fdad4c0553fe79",
-  "spec_revision": "sha256:df0f3f2e5aedde3be4c9665cf8b31ad06dbc48ebf73f81cac85c48d0655e4185",
-  "state": "Group71 actual PASS atff7174a5: ordinary verified-MFA bookkeeper uploads six originals through existing web UI; disabledPDF/nonPDF no extraction, configured three PDFs produce completed15citedfields or retained malformed/unavailable needs_resolution; duplicate422 zero secondprovider call; held fourthprovider call permits prompt public revocation, keeps known successful upload receipt and only started history/no result. Explicit Reviewer extraction/upload denied, roles unchanged. One explicit manualweb10exempt expense creates exactly1journal/2lines. Canonical HTTP/CLI/MCP read parity, fresh-MFA restart, four independently verified signed snapshots and source-free fresh-owner restore/reopen preserve6originals/4extraction sources/4startedattempts/1result/15fields/audit/books without provider credentials or rerun. Independently matched3binary/fullweb/helper hashes;24actions,ownedcleanuptrue. Public Upload-only-vsMasterData actor not available in rolematrix; separation focused-code-only. Explicit70 qualification retained. Group72 Danske named-bank import in isolated parallel implementation, not yet integrated/qualified. Native67/68/69 implemented/tested/built; installed local/remote GUI and fullmission/epic672 remain OPEN.",
+  "current_increment": "Danske Bank profile through existing web import, clients and signed source-free recovery qualified",
+  "code_revision": "4a38f4220b655fe99d3ee8f29f53137f48a0eb76",
+  "spec_revision": "sha256:bad4aa888ce04e071293db95385ac2eed5a720c722ced3b0bc760fb39859bfad",
+  "state": "Group72 actual PASS at4a38f422: ordinary verified-MFA users, existing bank import UI explicitaccount/danske-bank, real UTF8BOM fixture decoded to exact postedUnicode CSV, declaredDMY/quoted/NFD-header/raw/senderfallback/references/same-day newest-first balances;3initial rows1100→1130 and2new gaprows1120→900 with1gap exception/drift-210. Repeat skips3/2 without new rows/originals/exceptions/journals; legitimate import audit retained. Unknownprofile/date/unvaluedFX/freshunknownaccount/genericambiguity422 and Reviewer403 preserve business/physical state. Canonical HTTP/CLI/MCP reads, fresh-MFA restart, four independently verified signed snapshots and source-free fresh-owner restore/reopen preserve2exactpostedUTF8originals/5rawrows/2nativeprofileproofs/1gap/0journals/audit. Independent3binary/fullweb/helper hashes matched;23actions,ownedcleanuptrue. Historical raw generic rows remain valid, profile-aware reconciliation original verification focusedtestsPASS; no file-BOM/Windows1252 preservation claim for browser text decoding. Explicit70+automatic71 qualification retained. Full unmatched bank candidate/description/refresh sync remains open, not abbreviated. Nextmajorserverwebflow real Bilagsmail→explicit existing inbox review; read-only sourceprep identified missing metadatareview/IMAP/MIME seams. Native67/68/69 implemented/tested/built; installed local/remote GUI and fullmission/epic672 OPEN.",
   "issues_closed": [],
   "next": [
-    "Complete Group72 Danske Bank named CSV profile through existing UI/HTTP/CLI/MCP; four isolated owners implementing, no workers running Cargo.",
-    "Keep separate remaining bank unmatched candidate/refresh synchronization visible; source import.handlers sync is not implemented by the named-profile parser work.",
-    "Remaining concrete server/web gaps include bilagsmail/IMAP, public e-invoice send/status, sales VAT/currency variants, portfolio/cashflow pages and interactive CVR lookup/sync.",
+    "Next major server/web user journey: configured real Bilagsmail polling → retained EML/attachment → explicit existing inbox metadata review → exactly-once unposted document; source-backed read-only prep /tmp/rm-platform73-mail-prep.md. Freeze shared contracts then parallel isolated implementation.",
+    "Keep remaining full unmatched bank candidate/description/refresh synchronization explicit, plus raw-file Windows1252 CLI compatibility; no all-importer-parity claim.",
+    "Other concrete server/web gaps: public e-invoice send/status, sales VAT/currency variants, portfolio/cashflow pages, interactive CVR lookup/sync.",
     "Complete installed local/remote desktop financial journeys, full recovery/transfer/automation/distribution and TypeScript retirement gates. Full goal remains open."
   ],
   "preserve_unrelated_paths": [
@@ -21,10 +21,10 @@
   ],
   "all_goal_requirements_complete": false,
   "previous_verified_increment": {
-    "current_increment": "Explicit invoice extraction through manual web bookkeeping, clients and signed source-free recovery qualified",
-    "code_revision": "997e39ee5ee5999aa59bf10fffa0447da6ffe04e",
-    "spec_revision": "sha256:c04bd2ff6239c55d16e7c073c93bc76502a81c2b39eef17f8a2c636191c66d29",
-    "state": "Group70 actual PASS at997e39ee: ordinary verified-MFA users, five synthetic registered PDFs, explicit configured verified-TLS extraction, fifteen cited fields and exact cache, conflict and malformed/unavailable evidence, concurrent current-role revocation leaves only started history, explicit manual web10exempt expense exactly1journal/2lines. Canonical HTTP/CLI/MCP parity, fresh-MFA restart, four independently verified signed snapshots and source-free fresh-owner restore/reopen preserve five extraction tables, BLOBs, exact physical originals, journal and audit with no provider credentials or rerun. All3binaries/fullweb/helper hashes independently matched;23actions,ownedcleanuptrue. Two helper-only corrections canonicalDKbuyer/actor user:subject; product unchanged. Native67/68/69 implemented/tested/built; installed local/remote GUI remains unqualified. Group71 configured automatic ordinary-upload extraction now integrated b471c9bb and undergoing checks; fullmission/epic672 OPEN."
+    "current_increment": "Ordinary PDF upload through automatic invoice extraction, manual web bookkeeping and source-free recovery qualified",
+    "code_revision": "ff7174a51ef3e6659fbbac56b5fdad4c0553fe79",
+    "spec_revision": "sha256:df0f3f2e5aedde3be4c9665cf8b31ad06dbc48ebf73f81cac85c48d0655e4185",
+    "state": "Group71 actual PASS atff7174a5: ordinary verified-MFA bookkeeper uploads six originals through existing web UI; disabledPDF/nonPDF no extraction, configured three PDFs produce completed15citedfields or retained malformed/unavailable needs_resolution; duplicate422 zero secondprovider call; held fourthprovider call permits prompt public revocation, keeps known successful upload receipt and only started history/no result. Explicit Reviewer extraction/upload denied, roles unchanged. One explicit manualweb10exempt expense creates exactly1journal/2lines. Canonical HTTP/CLI/MCP read parity, fresh-MFA restart, four independently verified signed snapshots and source-free fresh-owner restore/reopen preserve6originals/4extraction sources/4startedattempts/1result/15fields/audit/books without provider credentials or rerun. Independently matched3binary/fullweb/helper hashes;24actions,ownedcleanuptrue. Public Upload-only-vsMasterData actor not available in rolematrix; separation focused-code-only. Explicit70 qualification retained. Group72 Danske named-bank import in isolated parallel implementation, not yet integrated/qualified. Native67/68/69 implemented/tested/built; installed local/remote GUI and fullmission/epic672 remain OPEN."
   },
   "evidence": {
     "combined_browser_log": "/tmp/rm-platform5-combined.log",
@@ -2220,10 +2220,39 @@
     {
       "delivery": "Group72 named bank profile import",
       "owner": "root integration; rust_accruals engine/storage; rust_client_cli app/host/HTTP; rust_budget clients/existingUI; rust_mileage actualhelper",
-      "status": "IN_PROGRESS in isolated worktrees fromff7174a5; no integration or qualification claim.",
+      "status": "COMPLETE finite Group72. Group72 actual PASS at4a38f422: ordinary verified-MFA users, existing bank import UI explicitaccount/danske-bank, real UTF8BOM fixture decoded to exact postedUnicode CSV, declaredDMY/quoted/NFD-header/raw/senderfallback/references/same-day newest-first balances;3initial rows1100→1130 and2new gaprows1120→900 with1gap exception/drift-210. Repeat skips3/2 without new rows/originals/exceptions/journals; legitimate import audit retained. Unknownprofile/date/unvaluedFX/freshunknownaccount/genericambiguity422 and Reviewer403 preserve business/physical state. Canonical HTTP/CLI/MCP reads, fresh-MFA restart, four independently verified signed snapshots and source-free fresh-owner restore/reopen preserve2exactpostedUTF8originals/5rawrows/2nativeprofileproofs/1gap/0journals/audit. Independent3binary/fullweb/helper hashes matched;23actions,ownedcleanuptrue. Historical raw generic rows remain valid, profile-aware reconciliation original verification focusedtestsPASS; no file-BOM/Windows1252 preservation claim for browser text decoding. Explicit70+automatic71 qualification retained. Full unmatched bank candidate/description/refresh sync remains open, not abbreviated.",
       "contract": "/tmp/rm-platform72-bank-profile-contract.md",
       "acceptance": "Source registry only danske-bank; existing UI explicit profile/account imports exact Unicode source with declaredDMY, quoting/raw/mapped references and balancecontinuity; duplicate skips, gap warnings/exceptions, atomic malformed/profile/FX/account refusals; no journals; canonical clients/restart/signed source-free restore. Browser UTF8 text decoding does not preserve file-levelBOM/Windows1252 bytes.",
-      "remaining_parity": "Separate source unmatched bank candidate/description/refresh synchronization remains required; do not abbreviate rules or claim all bank importer parity."
+      "remaining_parity": "Separate source unmatched bank candidate/description/refresh synchronization remains required; do not abbreviate rules or claim all bank importer parity.",
+      "actual_run": {
+        "path": "/tmp/rentemester-rust-reports/bank-profile-integrated72.json",
+        "log": "/tmp/rm72-root-actual.log",
+        "session_id": 68783,
+        "state": "passed",
+        "source_revision": "4a38f4220b655fe99d3ee8f29f53137f48a0eb76",
+        "sha256": "3213ea132994b2ea5d20faa51ab94480ed4bdf02d2d187f99eaac6aff490ec82"
+      },
+      "checks": {
+        "engine4": "/tmp/rm72-root-bank-tests.log",
+        "storage6": "/tmp/rm72-root-bank-tests-mapped2.log",
+        "physical_reconciliation": "/tmp/rm72-root-reconciliation-tests-final.log",
+        "current_authority_and_original1": "/tmp/rm72-root-host-tests-final.log",
+        "http2": "/tmp/rm72-root-http-bin.log",
+        "sdk2": "/tmp/rm72-root-client-tests.log",
+        "cli1": "/tmp/rm72-root-cli-tests-final.log",
+        "mcp2": "/tmp/rm72-root-mcp-tests-final.log",
+        "strict": "/tmp/rm72-root-strict-bool2.log",
+        "build3": "/tmp/rm72-root-build-final.log",
+        "web15": "/tmp/rm-group72-bank-profile-web-tests.log",
+        "web_build": "/tmp/rm72-root-web-build.log"
+      }
+    },
+    {
+      "delivery": "Group73 real Bilagsmail intake and explicit inbox metadata review",
+      "owner": "root next-boundary contracts/integration; rust_client_cli read-only source audit",
+      "status": "PREPARED READ-ONLY only; no implementation, provider calls or Cargo. Root must freeze interfaces before useful parallel writes.",
+      "acceptance": "Normal MFA mailbox configuration and real synthetic IMAP fetch → exact EML/attachment retention/provenance/dedup → original download and explicit target-bound metadata review in existing inbox → exactly-once unposted document; current revocation/configdelete/transfer/noGETI/O, restart and signed source-free recovery preserve evidence with credentials/polling inactive. No implicit ordinary-upload extraction71 or inferred accounting.",
+      "source_prep": "/tmp/rm-platform73-mail-prep.md"
     }
   ],
   "integrated_pending_browser": [

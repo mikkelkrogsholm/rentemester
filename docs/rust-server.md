@@ -203,6 +203,37 @@ originalfilen bevares ved servergenstart.
 Bilagsindlæsning alene bogfører ingen udgift. Tvungen indlæsning og
 leverandørkobling afvises eksplicit, indtil de tilsvarende forløb er porteret.
 
+## Importér et kontoudtog med Danske Bank-profilen
+
+Åbn **Bankkonti**, opret eller vælg den relevante bankkonto, og vælg
+**Importér kontoudtog**. Angiv kontoen og profilen `danske-bank`, vælg bankens
+UTF-8-CSV, gennemse oplysningerne og bekræft importen. Profilen fortolker
+bankens datoer som dag–måned–år og genkender de deklarerede kolonner.
+Uden profil bruges den eksisterende generelle parser, som afviser tvetydige
+datoer.
+
+Importen bevarer afsender, modtagerkonto, besked, arkiv- og kundereference
+samt alle oprindelige kolonnenavne og deres parsede celleværdier. Det præcise
+CSV-indhold, som browseren sender, gemmes separat som original. Browserens
+tekstlæsning fjerner et eventuelt UTF-8-BOM; denne indgang dokumenterer ikke
+bevarelse af filens BOM eller læsning af rå Windows-1252-filer.
+
+Rækkefølgen samme dag udledes af bankens saldi. Et saldospring vises som
+advarsel og gemmes som `BANK_BALANCE_GAP`; de gyldige bankposter bevares.
+En gentaget import springer allerede kendte poster over uden ny bogføring
+eller ny saldoadvarsel. Et normalt importforsøg får fortsat sit eget auditspor.
+Der gættes ingen valutakurs eller bankkonto.
+
+HTTP, CLI `import-bank` og MCP `import_bank` bruger den eksisterende
+importoperation med `profile:"danske-bank"`. `bank-accounts` oplyser den fulde
+profilbeskrivelse. Den registrerede profil gemmes i et kildebevis, så senere
+afstemning genlæser originalen med samme datofortolkning.
+
+Group72 består med eksisterende web-UI, afvisning af ugyldige input og adgang,
+dubletter, saldoadvarsel, klientparitet, genstart og signeret kildefri
+gendannelse under en ny ejer. Samlet synkronisering af åbne bankposters
+bilagsforslag og afklaringsopgaver er fortsat et særskilt restpunkt.
+
 ## Importér en bankbetaling og bogfør bilaget
 
 1. Indlæs en kassebon med dato, beløb 250 kr., moms 50 kr. og valuta DKK.
