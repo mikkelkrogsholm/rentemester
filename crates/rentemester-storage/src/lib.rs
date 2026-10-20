@@ -1,4 +1,5 @@
 //! Source-read-only reports/rehearsals and caller-owned transactional primitives.
+pub mod mail_intake;
 pub mod document_scan;
 pub mod document_pdf;
 pub mod invoice_extraction;
@@ -39,7 +40,7 @@ pub use journal_preview::{
 };
 mod migration;
 pub mod sequences;
-pub use control_migration::{ControlRehearsalReport, rehearse_control_migration};
+pub use control_migration::{ControlRehearsalReport, rehearse_control_migration, upgrade_mail_control};
 pub use migration::{RehearsalReport, rehearse_company_migration};
 #[cfg(unix)]
 mod snapshot;

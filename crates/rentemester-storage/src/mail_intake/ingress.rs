@@ -12,6 +12,7 @@ fn observation(o: &MailObservation, anchor: &str) -> Result<(), Error> {
     }
     Ok(())
 }
+#[allow(clippy::too_many_arguments)]
 fn insert(
     tx: &Transaction<'_>,
     anchor: &str,
@@ -42,6 +43,7 @@ fn insert(
     let sha = hash(bytes);
     let identity = format!("mail:{}", hash(key.as_bytes()));
     let metadata = canonical(&json!({"nativeMail":meta}))?;
+    ensure(metadata.len() <= 64 * 1024, "mail source metadata exceeds retained source bound")?;
     tx.execute("INSERT INTO rm_workspace_inbox_sources(source_id,visibility_anchor_slug,idempotency_key,original_bytes,sha256,filename,mime_type,transport,transport_identity,received_at,metadata_json,created_by,created_at)VALUES(?,?,?,?,?,?,?,'mail',?,?,?,?,?)",params![id,anchor,key,bytes,sha,filename,mime,identity,p.now,metadata,p.actor,p.now]).map_err(sql)?;
     event(
         tx,

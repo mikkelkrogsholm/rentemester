@@ -615,7 +615,7 @@ fn finish_inner(
         if is_service
             && g.service
                 .as_ref()
-                .map(|g| serde_json::to_string(g))
+                .map(serde_json::to_string)
                 .transpose()
                 .map_err(|_| refused())?
                 .as_deref()

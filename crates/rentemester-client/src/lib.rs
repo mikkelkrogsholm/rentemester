@@ -349,7 +349,9 @@ mod portable_backup;
 pub use portable_backup::{MAX_WORKSPACE_BACKUP_BYTES, WORKSPACE_BACKUP_CONTENT_TYPE};
 
 mod workspace_inbox;
-pub use workspace_inbox::{WorkspaceInboxMutation,MAX_WORKSPACE_INBOX_BODY,workspace_inbox_body_schema};
+mod bilagsmail;
+pub use bilagsmail::{BilagsmailMutation, MAX_BILAGSMAIL_BODY, bilagsmail_body_schema};
+pub use workspace_inbox::{WorkspaceInboxOriginal,WorkspaceInboxMutation,MAX_WORKSPACE_INBOX_BODY,workspace_inbox_body_schema};
 
 mod corporate_records;
 pub use corporate_records::{CorporateRecordMutation,MAX_CORPORATE_BODY,MAX_CORPORATE_INGEST_BODY,MAX_CORPORATE_ORIGINAL_JSON,corporate_record_body_schema};

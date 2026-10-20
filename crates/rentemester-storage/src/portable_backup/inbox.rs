@@ -99,6 +99,9 @@ fn shape(db: &Connection) -> Result<(), Error> {
     Ok(())
 }
 fn dump(db: &Connection) -> Result<Vec<u8>, Error> {
+    dump_with_format(db, FORMAT)
+}
+fn dump_with_format(db: &Connection, format: &str) -> Result<Vec<u8>, Error> {
     shape(db)?;
     let mut tables = BTreeMap::new();
     let mut budget = 0usize;
@@ -162,7 +165,7 @@ fn dump(db: &Connection) -> Result<Vec<u8>, Error> {
         );
     }
     let bytes = serde_json::to_vec(&Inbox {
-        format: FORMAT.into(),
+        format: format.into(),
         tables,
     })
     .map_err(sql)?;
@@ -188,13 +191,12 @@ pub fn initialize(db: &mut Connection, bytes: &[u8], companies: &[String]) -> Re
     {
         return Err(refused("unsupported inbox codec"));
     }
-    if codec.format == LEGACY_FORMAT {
-        if let Some(table) = codec.tables.get(TABLES[1]) {
-            for row in &table.rows {
-                if matches!(row.get(2),Some(InboxCell::Text(k)) if ["mail_observed","metadata_reviewed","mail_refused"].contains(&k.as_str()))
-                {
-                    return Err(refused("mail v2 events cannot use legacy inbox codec"));
-                }
+    if codec.format == LEGACY_FORMAT
+        && let Some(table) = codec.tables.get(TABLES[1]) {
+        for row in &table.rows {
+            if matches!(row.get(2),Some(InboxCell::Text(k)) if ["mail_observed","metadata_reviewed","mail_refused"].contains(&k.as_str()))
+            {
+                return Err(refused("mail v2 events cannot use legacy inbox codec"));
             }
         }
     }
@@ -273,7 +275,7 @@ pub fn initialize(db: &mut Connection, bytes: &[u8], companies: &[String]) -> Re
     }
     facts(&tx)?;
     validate_companies(&tx, companies)?;
-    if dump(&tx)? != bytes {
+    if dump_with_format(&tx, &codec.format)? != bytes {
         return Err(refused("inbox codec order/types changed"));
     }
     crate::control_migration::validate_current_control(&tx)?;
@@ -518,7 +520,7 @@ fn facts(tx: &Transaction<'_>) -> Result<(), Error> {
             .map(|c| c["companySlug"].as_str().unwrap())
             .collect::<BTreeSet<_>>();
         let exception = &source["exception"];
-        if transport == "mail" && !exception.is_null() {
+        if transport == "mail" && metadata.get("nativeMail").is_some() && !exception.is_null() {
             let code = exception["code"]
                 .as_str()
                 .ok_or_else(|| refused("mail exception code missing"))?;

@@ -15,9 +15,9 @@ fn complete_empty_native_pair_persists_without_credentials_accounts_or_access() 
     let root = tempfile::tempdir().unwrap();
     let (mut control, mut company) = pair(root.path());
     let report = initialize_empty_pair(&mut control, &mut company, "Synthetic North").unwrap();
-    assert_eq!((report.control_version, report.company_version), (30, 36));
+    assert_eq!((report.control_version, report.company_version), (31, 36));
     assert_eq!(report.ledger_uuid.len(), 32);
-    assert_eq!(count(&control, "workspace_schema_migrations"), 30);
+    assert_eq!(count(&control, "workspace_schema_migrations"), 31);
     assert_eq!(count(&company, "schema_migrations"), 36);
     for table in [
         "user",
@@ -123,7 +123,7 @@ fn company_write_contention_leaves_control_complete_and_company_empty() {
     blocker.execute_batch("BEGIN IMMEDIATE").unwrap();
     l.busy_timeout(std::time::Duration::ZERO).unwrap();
     assert!(initialize_empty_pair(&mut c, &mut l, "Synthetic").is_err());
-    assert_eq!(count(&c, "workspace_schema_migrations"), 30);
+    assert_eq!(count(&c, "workspace_schema_migrations"), 31);
     assert_eq!(count(&l, "sqlite_schema"), 0);
     blocker.execute_batch("ROLLBACK").unwrap();
     blocker.close().unwrap();

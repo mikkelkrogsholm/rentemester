@@ -6,6 +6,7 @@ mod cfo_analytics;
 mod saft;
 mod company_knowledge;
 mod workspace_inbox;
+mod bilagsmail;
 mod parties;
 mod corporate_records;
 mod workspace_access;
@@ -106,10 +107,16 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
         .route("/api/group-reconciliation", get(intercompany::reconciliation))
         .route("/api/companies/{slug}/intercompany", get(intercompany::handle))
         .route("/api/companies/{slug}/intercompany/{action}", post(intercompany::handle))
+        .route("/api/companies/{slug}/bilagsmail", get(bilagsmail::handle))
+        .route("/api/companies/{slug}/bilagsmail/imap-config", post(bilagsmail::handle).delete(bilagsmail::handle))
+        .route("/api/companies/{slug}/bilagsmail/alias", axum::routing::patch(bilagsmail::handle))
+        .route("/api/companies/{slug}/bilagsmail/poll", post(bilagsmail::handle))
         .route("/api/companies/{slug}/workspace-inbox", get(workspace_inbox::handle).post(workspace_inbox::handle))
         .route("/api/companies/{slug}/workspace-inbox/{source}", get(workspace_inbox::handle))
         .route("/api/companies/{slug}/workspace-inbox/{source}/assign", post(workspace_inbox::handle))
         .route("/api/companies/{slug}/workspace-inbox/{source}/complete", post(workspace_inbox::handle))
+        .route("/api/companies/{slug}/workspace-inbox/{source}/review", post(workspace_inbox::handle))
+        .route("/api/companies/{slug}/workspace-inbox/{source}/original", get(workspace_inbox::handle))
         .route("/api/workspace/backup", post(portable_backup::handle))
         .route("/api/workspace/transfer", get(workspace_transfer::handle))
         .route("/api/workspace/transfer/{action}", post(workspace_transfer::handle))

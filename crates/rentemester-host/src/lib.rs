@@ -296,6 +296,15 @@ impl Owner {
         owner.reusable = true;
         Ok(owner)
     }
+    /// Explicit schema-only operator action. Normal opening remains read/admission only.
+    pub fn upgrade_mail_control_schema(&mut self) -> Result<(), OwnerError> {
+        self.admit()?;
+        let result = rentemester_storage::upgrade_mail_control(
+            self.held.0.as_mut().expect("live owner").control.as_mut().unwrap(),
+        ).map_err(|_| OwnerError::Database);
+        self.finish(result.is_ok());
+        result
+    }
     fn observe(&mut self) -> Result<(), OwnerError> {
         let slots = self.held.0.as_mut().expect("live owner");
         slots
@@ -1280,6 +1289,7 @@ impl Owner{
 }
 
 mod workspace_inbox;
+mod mail_intake;
 mod corporate_records;
 
 mod ownership;

@@ -5,6 +5,8 @@ mod document_scanner;
 mod invoice_extractor;
 mod document_pdf;
 mod hosted_worker;
+mod imap_transport;
+mod mail_worker;
 mod portable_backup_cli;
 mod product_http;
 mod report_export;
@@ -36,6 +38,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut restore_transfer = false;
     let mut scheduled_worker = false;
     let mut scheduled_stdin = false;
+    let mut mail_worker = false;
+    let mut mail_stdin = false;
+    let mut upgrade_mail_schema = false;
     while let Some(arg) = args.next() {
         match arg.as_str() {
             "--listen" => listen = args.next().ok_or("--listen requires an address")?.parse()?,
@@ -46,6 +51,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 ))
             }
             "--create" => create = true,
+            "--upgrade-mail-schema" => upgrade_mail_schema = true,
+            "--mail-worker" => mail_worker = true,
+            "--mail-service-key-stdin" => mail_stdin = true,
             "--scheduled-worker" => scheduled_worker = true,
             "--scheduled-service-key-stdin" => scheduled_stdin = true,
             "--restore-backup" => {
@@ -78,6 +86,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     "rentemester-server [--listen 127.0.0.1:4319] [--web-dir app/dist] [--config PRIVATE.json] [--create] [--origin http://localhost:4319]"
                 );
                 println!("Hosted generation: --scheduled-worker --scheduled-service-key-stdin --config PRIVATE.json (ordinary reopen only; transient stdin service key, no saved cookie/key; 32 candidates every 30 seconds; normal Copenhagen today only, no catch-up)");
+                println!("Schema upgrade: --upgrade-mail-schema --config PRIVATE.json (exclusive stopped server; admits only exact v30→v31 or current, preserves business data; ordinary startup never upgrades)");
+                println!("Mailbox intake: --mail-worker --mail-service-key-stdin --config PRIVATE.json (ordinary reopen only; current service key from stdin, explicitly granted mailbox configuration; credentials excluded from backups). When both workers are enabled, one stdin key is shared in memory.");
                 println!("Build the cockpit first: cd app && bun run build");
                 println!("Without --config, serve the cockpit and health endpoint only.");
                 println!(
@@ -102,7 +112,19 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             _ => return Err(format!("unknown option: {arg}").into()),
         }
     }
+    if upgrade_mail_schema {
+        if create || restore_archive.is_some() || verify_archive.is_some()
+            || scheduled_worker || scheduled_stdin || mail_worker || mail_stdin || restore_transfer
+            || trusted_backup_key.is_some() || confirmed_target.is_some() || source_unavailable {
+            return Err("--upgrade-mail-schema is an exclusive configured operator action".into());
+        }
+        let path = config.as_ref().ok_or("--upgrade-mail-schema requires --config")?;
+        backend::Backend::upgrade_mail_control(path)?;
+        println!("Mail control schema is current; no mailbox network operation performed.");
+        return Ok(());
+    }
     hosted_worker::validate_flags(scheduled_worker, scheduled_stdin, config.is_some(), create || restore_archive.is_some() || verify_archive.is_some())?;
+    mail_worker::validate_flags(mail_worker, mail_stdin, config.is_some(), create || restore_archive.is_some() || verify_archive.is_some())?;
     if let Some(archive) = verify_archive {
         if restore_archive.is_some() || create || confirmed_target.is_some() || source_unavailable || restore_transfer {
             return Err("verification flags cannot select restore/create".into());
@@ -177,11 +199,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     })
     .await?
     .map_err(|e| format!("workspace startup refused: {e}"))?;
-    if scheduled_worker {
+    if scheduled_worker || mail_worker {
         let backend = native.as_mut().ok_or("scheduled worker requires configured workspace")?;
         let backend = std::sync::Arc::get_mut(backend).ok_or("scheduled worker startup refused")?;
         let key=hosted_worker::read_key(std::io::stdin().lock(),backend.cookies.workspace())?;
-        backend.scheduled_executor=Some(std::sync::Arc::new(key));
+        let key = std::sync::Arc::new(key);
+        if scheduled_worker { backend.scheduled_executor=Some(key.clone()); }
+        if mail_worker { backend.mail_executor=Some(key); }
     }
     let identity = native
         .as_ref()
@@ -203,11 +227,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let worker = if scheduled_worker {
         Some(hosted_worker::Worker::start(native.as_ref().ok_or("scheduled worker requires workspace")?.clone()))
     } else { None };
+    let mail = if mail_worker {
+        Some(mail_worker::Worker::start(native.as_ref().ok_or("mail worker requires workspace")?.clone()))
+    } else { None };
     let served = axum::serve(
         listener,
         app.into_make_service_with_connect_info::<SocketAddr>(),
     )
     .await;
+    if let Some(mail)=mail { mail.stop().await; }
     if let Some(worker)=worker { worker.stop().await; }
     served?;
     Ok(())

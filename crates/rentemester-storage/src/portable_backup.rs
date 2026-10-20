@@ -14,6 +14,7 @@ pub use ownership::{
     initialize as initialize_ownership, validate_companies as validate_ownership_companies,
 };
 mod inbox;
+pub mod mail_intake;
 pub use corporate::{
     initialize as initialize_corporate, validate_companies as validate_corporate_companies,
 };
@@ -339,6 +340,7 @@ pub fn company(db: &Connection) -> Result<Company, Error> {
     // generation references and all earlier restore boundaries.
     crate::document_pdf::validate_history(db)?;
     crate::invoice_extraction::validate_history(db)?;
+    mail_intake::validate_mail_intake(db)?;
     crate::document_scan::validate_backup(db)?;
     crate::scheduled_recurring::validate_backup(db)?;
     crate::invoice_email::validate_backup(db)?;

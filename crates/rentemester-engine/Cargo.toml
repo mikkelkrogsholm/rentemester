@@ -6,6 +6,8 @@ rust-version.workspace = true
 publish.workspace = true
 
 [dependencies]
+mail-parser = { version = "=0.11.9", features = ["full_encoding"] }
+sha2 = "0.10"
 unicode-properties = "=0.1.4"
 num-bigint = "0.5"
 time = "0.3"

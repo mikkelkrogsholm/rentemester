@@ -56,7 +56,7 @@ fn source(db: &Connection, id: &str) -> Result<(Value, Vec<u8>, String, String),
     let value: Value =
         serde_json::from_str(&raw).map_err(|_| refused("mail source JSON differs"))?;
     ensure(
-        bytes.len() > 0
+        !bytes.is_empty()
             && bytes.len() <= 25 * 1024 * 1024
             && raw.len() <= 64 * 1024
             && canonical(&value)? == raw

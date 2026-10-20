@@ -2987,6 +2987,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "hashify"
+version = "0.2.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "dd1246c0e5493286aeb2dde35b1f4eb9c4ce00e628641210a5e553fc001a1f26"
+dependencies = [
+ "indexmap",
+ "proc-macro2",
+ "quote",
+ "syn 2.0.119",
+]
+
+[[package]]
 name = "hashlink"
 version = "0.12.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3995,6 +4007,16 @@ name = "mach2"
 version = "0.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "dae608c151f68243f2b000364e1f7b186d9c29845f7d2d85bd31b9ad77ad552b"
+
+[[package]]
+name = "mail-parser"
+version = "0.11.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4ec00bda90c6e645a54506c630c2820cd6b1890cfd2b0a169b50f74b2b8c7c86"
+dependencies = [
+ "encoding_rs",
+ "hashify",
+]
 
 [[package]]
 name = "malloc_buf"
@@ -5783,6 +5805,7 @@ dependencies = [
  "reqwest",
  "serde",
  "serde_json",
+ "sha2 0.10.9",
  "tokio",
  "zeroize",
 ]
@@ -5804,9 +5827,11 @@ dependencies = [
 name = "rentemester-engine"
 version = "0.1.0"
 dependencies = [
+ "mail-parser",
  "num-bigint 0.5.1",
  "serde",
  "serde_json",
+ "sha2 0.10.9",
  "time",
  "unicode-normalization",
  "unicode-properties",
@@ -5867,6 +5892,7 @@ dependencies = [
  "ring",
  "rusqlite",
  "rustix",
+ "rustls",
  "scrypt",
  "serde",
  "serde_json",
@@ -5875,6 +5901,7 @@ dependencies = [
  "subtle",
  "tempfile",
  "tokio",
+ "tokio-rustls",
  "unicode-normalization",
  "url",
  "webpki-root-certs",

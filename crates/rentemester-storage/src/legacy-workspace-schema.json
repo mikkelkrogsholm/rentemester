@@ -148,5 +148,10 @@
     "id": 30,
     "name": "rentemester-document-party-role-taxonomy-v30",
     "checksum": "753b3f3653e286053f0e7592b90824ac647c4a7531c816af128c03d8001ac8e6"
+  },
+  {
+    "id": 31,
+    "name": "rentemester-workspace-mail-intake-v31",
+    "checksum": "d526f52a7c5a428df2656556cf876b166f35e44c7bc8219ae0591b395c599549"
   }
 ]

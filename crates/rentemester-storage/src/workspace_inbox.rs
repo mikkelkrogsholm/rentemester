@@ -282,7 +282,7 @@ pub fn inspect(
     let mut q=tx.prepare("SELECT event_type,payload_hash,actor,created_at,canonical_payload FROM rm_workspace_inbox_events WHERE source_id=? ORDER BY id").map_err(sql)?;
     let mut history = vec![];
     let events = q
-        .query_map([id], |r| {
+        .query_map([&id], |r| {
             Ok((
                 r.get::<_, String>(0)?,
                 r.get::<_, String>(1)?,

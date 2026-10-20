@@ -188,7 +188,7 @@ fn reviewed_metadata_receipt_recovery_is_atomic_and_has_no_journal_effect() {
         .unwrap();
     let approved = approved_attachment(&c, &id, "a", &uuid).unwrap().unwrap();
     assert!(approved_attachment(&c, &id, "a", "00000000000000000000000000000000").is_err());
-    let tx = a.transaction().unwrap();
+    let tx = a.transaction_with_behavior(rusqlite::TransactionBehavior::Immediate).unwrap();
     let meta = serde_json::from_value(approved.metadata().clone()).unwrap();
     let sha = &approved.hash;
     let path = format!("documents/originals/{sha}.pdf");
@@ -288,7 +288,7 @@ fn rollback_does_not_reserve_message_and_tampered_original_refuses() {
         )
         .unwrap();
     let approved = approved_attachment(&c, &id, "a", &uuid).unwrap().unwrap();
-    let tx = a.transaction().unwrap();
+    let tx = a.transaction_with_behavior(rusqlite::TransactionBehavior::Immediate).unwrap();
     assert!(record_document(&tx, &approved, 999, "missing", p()).is_err());
     assert_eq!(
         tx.query_row("SELECT COUNT(*) FROM mail_intake_messages", [], |r| r

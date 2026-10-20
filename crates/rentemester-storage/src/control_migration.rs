@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use std::path::Path;
 
-const ARTIFACTS: [&str; 30] = [
+const ARTIFACTS: [&str; 31] = [
     include_str!("../../../src/core/workspace-migrations/0001-workspace-control-baseline.json"),
     include_str!("../../../src/core/workspace-migrations/0002-better-auth-foundation.json"),
     include_str!("../../../src/core/workspace-migrations/0003-workspace-access-events.json"),
@@ -50,6 +50,7 @@ const ARTIFACTS: [&str; 30] = [
     include_str!(
         "../../../src/core/workspace-migrations/0030-document-party-role-taxonomy-v30.json"
     ),
+    include_str!("../../../src/core/workspace-migrations/0031-workspace-mail-intake-v31.json"),
 ];
 #[derive(Deserialize)]
 struct Artifact {
@@ -91,7 +92,7 @@ fn catalogue() -> Result<Vec<Migration>, Error> {
     serde_json::from_str(include_str!("legacy-workspace-schema.json")).map_err(invalid)
 }
 fn steps(raw: &[&str], expected: &[Migration]) -> Result<Vec<Step>, Error> {
-    if expected.len() != 30 || raw.len() != 30 {
+    if expected.len() != ARTIFACTS.len() || raw.len() != ARTIFACTS.len() {
         return Err(unsupported("control catalogue size differs"));
     }
     raw.iter()
@@ -134,8 +135,8 @@ pub(super) fn initialize_empty(db: &mut Connection) -> Result<(), Error> {
         tx.execute("INSERT INTO workspace_schema_migrations(id,name,checksum,applied_by_version,applied_by_commit) VALUES (?1,?2,?3,?4,NULL)",params![step.identity.id,step.identity.name,step.identity.checksum,concat!("rentemester-rust/",env!("CARGO_PKG_VERSION"))]).map_err(failed)?;
     }
     integrity(&tx)?;
-    if schema(&tx)? != reference(&steps, 30)?
-        || strict_history(&tx, "workspace_schema_migrations", &expected)?.len() != 30
+    if schema(&tx)? != reference(&steps, ARTIFACTS.len())?
+        || strict_history(&tx, "workspace_schema_migrations", &expected)?.len() != ARTIFACTS.len()
     {
         return Err(unsupported("fresh control schema or history differs"));
     }
@@ -244,11 +245,11 @@ fn rehearse(
     }
     integrity(&tx)?;
     let current_schema = schema(&tx)?;
-    if current_schema != reference(steps, 30)? {
+    if current_schema != reference(steps, ARTIFACTS.len())? {
         return Err(unsupported("final control schema differs"));
     }
     let new = history(&tx, expected)?;
-    if new.len() != 30 || new[..version] != old || digest(&tx, &tables)? != before {
+    if new.len() != ARTIFACTS.len() || new[..version] != old || digest(&tx, &tables)? != before {
         return Err(invalid(
             "control migration changed original data/provenance",
         ));
@@ -264,13 +265,13 @@ fn rehearse(
         Sha256::digest(serde_json::to_vec(&current_schema).map_err(invalid)?)
     );
     #[cfg(test)]
-    test_checkpoint(30, "before_commit");
+    test_checkpoint(31, "before_commit");
     tx.commit().map_err(failed)?;
     #[cfg(test)]
-    test_checkpoint(30, "committed");
+    test_checkpoint(31, "committed");
     Ok(ControlRehearsalReport {
         from_version: version,
-        to_version: 30,
+        to_version: ARTIFACTS.len(),
         applied,
         canonical_schema_sha256: fingerprint,
         schema_objects: current_schema.len(),
@@ -281,6 +282,21 @@ fn rehearse(
         private_copy_discarded: true,
         writer_authority: false,
     })
+}
+/// Explicit operator-only extension under an already held namespace lifetime.
+/// Accept only the immediately preceding complete schema or the current one;
+/// never use this as an adoption route for older source databases.
+pub fn upgrade_mail_control(db: &mut Connection) -> Result<(), Error> {
+    let expected = catalogue()?;
+    let steps = steps(&ARTIFACTS, &expected)?;
+    let version = history(db, &expected)?.len();
+    if version == expected.len() {
+        return validate_current_control(db);
+    }
+    if version != 30 || schema(db)? != reference(&steps, 30)? {
+        return Err(unsupported("mail schema upgrade requires complete v30 control"));
+    }
+    rehearse(db, &steps, &expected).map(|_| ())
 }
 /// Deliberately sanitize every public refusal: control copies may contain credentials.
 fn public_error(error: Error) -> Error {
@@ -403,9 +419,55 @@ mod tests {
         validate_current_control(&db).unwrap();
     }
     #[test]
+    fn mail_extension_preserves_v30_inbox_and_append_only_guards() {
+        let mut db = Connection::open_in_memory().unwrap();
+        fixture(&db, 30);
+        db.execute_batch("INSERT INTO rm_workspace_inbox_sources VALUES('source','synthetic','key',X'01','hash','original.pdf','application/pdf','upload',NULL,'2026-01-01T00:00:00Z','{}','user:synthetic','2026-01-01T00:00:00Z');
+            INSERT INTO rm_workspace_inbox_events VALUES(7,'source','ingested','hash','{}','user:synthetic','2026-01-01T00:00:00Z');
+            INSERT INTO rm_workspace_inbox_exceptions VALUES('source','INBOX_NO_CANDIDATE','review_and_assign','2026-01-01T00:00:00Z',NULL);").unwrap();
+        let expected = catalogue().unwrap();
+        let steps = steps(&ARTIFACTS, &expected).unwrap();
+        let report = rehearse(&mut db, &steps, &expected).unwrap();
+        assert_eq!(report.from_version, 30);
+        assert_eq!(report.to_version, 31);
+        assert_eq!(report.applied.len(), 1);
+        assert!(report.prior_data_preserved && report.prior_provenance_preserved);
+        assert_eq!(db.query_row("SELECT id FROM rm_workspace_inbox_events", [], |r| r.get::<_,i64>(0)).unwrap(), 7);
+        db.execute("INSERT INTO rm_workspace_inbox_events(source_id,event_type,payload_hash,canonical_payload,actor,created_at) VALUES('source','metadata_reviewed','hash','{}','user:synthetic','2026-01-02T00:00:00Z')", []).unwrap();
+        assert!(db.execute("UPDATE rm_workspace_inbox_events SET actor='changed' WHERE id=7", []).is_err());
+        assert!(db.execute("DELETE FROM rm_workspace_inbox_events WHERE id=7", []).is_err());
+        assert!(db.execute("INSERT INTO rm_workspace_inbox_events(source_id,event_type,payload_hash,canonical_payload,actor,created_at) VALUES('source','unknown_kind','hash','{}','user:synthetic','2026-01-02T00:00:00Z')", []).is_err());
+        integrity(&db).unwrap();
+    }
+    #[test]
+    fn explicit_mail_upgrade_accepts_only_exact_previous_or_current_schema() {
+        for version in [29, 30, 31] {
+            let mut db = Connection::open_in_memory().unwrap();
+            fixture(&db, version);
+            let before = schema(&db).unwrap();
+            let result = upgrade_mail_control(&mut db);
+            if version == 29 {
+                assert!(result.is_err());
+                assert_eq!(schema(&db).unwrap(), before);
+            } else {
+                result.unwrap();
+                validate_current_control(&db).unwrap();
+                let changes = db.total_changes();
+                upgrade_mail_control(&mut db).unwrap();
+                assert_eq!(db.total_changes(), changes);
+            }
+        }
+        let mut db = Connection::open_in_memory().unwrap();
+        fixture(&db, 30);
+        db.execute_batch("CREATE TABLE unexpected(value TEXT);").unwrap();
+        let before = schema(&db).unwrap();
+        assert!(upgrade_mail_control(&mut db).is_err());
+        assert_eq!(schema(&db).unwrap(), before);
+    }
+    #[test]
     fn all_control_artifacts_are_bound_and_public_errors_are_opaque() {
         let expected = catalogue().unwrap();
-        assert_eq!(steps(&ARTIFACTS, &expected).unwrap().len(), 30);
+        assert_eq!(steps(&ARTIFACTS, &expected).unwrap().len(), ARTIFACTS.len());
         let bytes = format!("{} ", ARTIFACTS[0]);
         let mut raw = ARTIFACTS.to_vec();
         raw[0] = &bytes;
@@ -498,8 +560,8 @@ mod tests {
         for (step, phase) in [
             (5, "sql"),
             (12, "history"),
-            (30, "before_commit"),
-            (30, "committed"),
+            (31, "before_commit"),
+            (31, "committed"),
         ] {
             let dir = tempfile::tempdir().unwrap();
             let path = dir.path().join("private.sqlite");
@@ -543,7 +605,7 @@ mod tests {
             let mut db = Connection::open(&path).unwrap();
             let expected = catalogue().unwrap();
             let steps = steps(&ARTIFACTS, &expected).unwrap();
-            let version = if phase == "committed" { 30 } else { 4 };
+            let version = if phase == "committed" { ARTIFACTS.len() } else { 4 };
             assert_eq!(history(&db, &expected).unwrap().len(), version);
             assert_eq!(schema(&db).unwrap(), reference(&steps, version).unwrap());
             integrity(&db).unwrap();

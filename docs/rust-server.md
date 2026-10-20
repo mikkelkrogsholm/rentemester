@@ -2197,3 +2197,52 @@ webtests. Desktop, server og web bygger. Backup-wrapperens nye tests
 kontrollerer proces- og filgrænser med et testprogram; de udgør ikke en
 ny kryptografisk gendannelsesprøve. Faktisk native betjening, lokal og
 ekstern genstart samt installeret distribution er fortsat åbne.
+
+## Hent bilagsmail og gennemgå originalen
+
+Rust-serveren har nu Bilagsmail i det eksisterende web-UI. Gem postkassens
+`host`, `port`, `username`, `password` og eventuelt `secure` og `mailbox`.
+Standarderne er TLS og `INBOX`; `secure:false` bruger klartekst TCP.
+Adgangskoden returneres ikke fra status. Et mailalias er lokal konfiguration;
+det opretter ikke en postkasse eller et domæne.
+
+En virksomhedsadministrator kan vælge **Gennemgå postkasse nu** og bekræfte
+én hentning. Serveren gemmer den præcise EML og understøttede PDF-, PNG- og
+JPEG-bilag i den fælles dokumentindbakke. Hent originalen, vælg målvirksomhed,
+og gennemgå selv bilagstype, valuta og øvrige oplysninger. Bekræft gennemgangen
+og vælg **Fuldfør handoff**. Det opretter et ubogført bilag. Beløb, klassifikation
+og bogføring udledes ikke fra mailen; gentagelser opretter ikke ekstra bilag.
+Mail uden Message-ID eller brugbare bilag forbliver en original med en
+undtagelse. Overstore mails får en tydelig afvisningskvittering uden en
+opdigtet original eller filhash.
+
+Automatisk hentning kræver en eksplicit startet proces med
+`--mail-worker --mail-service-key-stdin --config PRIVATE.json` ved almindelig
+genåbning. En aktuel servicekonto med bilagsadgang leverer sin nøgle via stdin;
+gem derefter postkassekonfigurationen som en aktuel administrator, så den
+konkrete modtagelsesadgang bindes til konfigurationen og servicekontoen.
+Serveren kontrollerer adgang og konfiguration igen efter netværkskaldet.
+Der gemmes ingen bruger-cookie eller servicenøgle. Hvis begge worker-typer
+startes, deles den ene stdin-nøgle kun i hukommelsen.
+
+Operatørfeltet `imapTransport` kan angive `timeoutMs` fra 100 til 30000
+(standard 30000) og en ekstra `trustedCaPem`. Certifikatets værtsnavn og
+normal tillid kontrolleres stadig. En hentning er begrænset til 32 mails,
+25 MiB pr. mail og 64 MiB samlet. Indbakkebackuppens eksisterende samlede
+grænse på 32 MiB gælder fortsat.
+
+Eksisterende native control-schema v30 opgraderes eksplicit med
+`--upgrade-mail-schema --config PRIVATE.json`, mens serveren er stoppet.
+Kommandoen accepterer kun det komplette v30-schema eller det aktuelle v31;
+almindelig opstart foretager ingen schemaopgradering.
+
+CLI og MCP har status, konfiguration, sletning, alias, hentning, kildegennemgang
+og originaldownload; se `remote --help` og værktøjernes schemaer. CLI skriver
+originaler til en ny privat fil uden overskrivning. MCP returnerer de præcise
+bytes; klienterne kontrollerer originalens SHA-256. Backup bevarer originaler,
+gennemgang og deduplikering. Postkasseadgangskode og aktiv modtagelsesadgang
+følger ikke med ved gendannelse.
+
+Group73 er implementeret med fokuserede motor-, runtime-, storage-, Owner-,
+klient- og webtests. Den samlede praktiske IMAP/browser-/genstarts- og
+kildeuafhængige gendannelsesprøve er endnu ikke kvalificeret.

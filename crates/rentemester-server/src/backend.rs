@@ -51,6 +51,8 @@ struct Config {
     #[serde(default)]
     invoice_extractor: Option<crate::invoice_extractor::Config>,
     #[serde(default)]
+    imap_transport: Option<crate::imap_transport::Config>,
+    #[serde(default)]
     document_pdf_worker: Option<crate::document_pdf::Config>,
     #[serde(default)]
     invoice_mail: std::collections::BTreeMap<String, rentemester_runtime::invoice_mail::Config>,
@@ -94,6 +96,8 @@ pub struct Backend {
     pub(crate) setup_pending: std::sync::atomic::AtomicBool,
     pub(crate) backup_signer: Option<rentemester_runtime::backup_artifact::SigningKey>,
     pub(crate) transfer_trusted_key: Option<rentemester_runtime::backup_artifact::TrustedPublicKey>,
+    pub(crate) imap_transport: rentemester_runtime::imap::OperatorConfig,
+    pub(crate) mail_executor: Option<Arc<rentemester_runtime::service_key::ServiceKey>>,
     pub(crate) scheduled_executor: Option<Arc<rentemester_runtime::service_key::ServiceKey>>,
     pub(crate) invoice_mail: std::collections::BTreeMap<String, Mutex<rentemester_runtime::invoice_mail::SmtpSender>>,
     keys: MfaKeyring,
@@ -119,6 +123,16 @@ impl Backend {
         let mut owner=self.owner.lock().map_err(|_|())?;
         owner.select_company(slug).map_err(|_|())?;
         Ok(owner)
+    }
+    /// Explicit schema operation on the configured protected namespace; no HTTP or bootstrap.
+    pub fn upgrade_mail_control(path: &Path) -> Result<(), Box<dyn std::error::Error>> {
+        let text = Zeroizing::new(std::fs::read_to_string(path)?);
+        let config: Config = serde_json::from_str(&text).map_err(|_| "invalid server configuration")?;
+        let mut owner = Owner::open_with_profile(&config.root, config.broker_uid,
+            &config.workspace, &config.company_slug, config.runtime_profile)?;
+        owner.upgrade_mail_control_schema()?;
+        owner.try_close().map_err(|_| "schema owner close refused")?;
+        Ok(())
     }
     pub fn load(
         path: &Path,
@@ -156,6 +170,7 @@ impl Backend {
         let profile = cookie_profile(origin)?;
         let document_scanner = crate::document_scanner::build(config.document_scanner.as_ref())?;
         let invoice_extractor = crate::invoice_extractor::build(config.invoice_extractor.as_ref())?;
+        let imap_transport = crate::imap_transport::build(config.imap_transport.as_ref())?;
         let document_pdf_worker = crate::document_pdf::build(config.document_pdf_worker.as_ref())?;
         let mut delivery=crate::auth_delivery::Delivery::new(config.auth_mail.as_ref(), profile == CookieProfile::Development, &config.root.join(".rentemester"))?;
         let invoice_mail=config.invoice_mail.iter().map(|(slug,config)| {
@@ -315,6 +330,8 @@ impl Backend {
             backup_signer,
             transfer_trusted_key,
             scheduled_executor: None,
+            mail_executor: None,
+            imap_transport,
             invoice_mail,
             signer,
             links,

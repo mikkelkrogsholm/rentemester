@@ -13,6 +13,7 @@ mod mileage;
 mod company_knowledge;
 mod parties;
 mod workspace_inbox;
+mod bilagsmail;
 mod corporate_records;
 mod ownership;
 mod intercompany;
