@@ -96,10 +96,10 @@ pub fn verify_source(tx: &Transaction<'_>, bank_id: i64, bytes: &[u8]) -> Result
     if format!("{:x}", Sha256::digest(bytes)) != bank.source {
         return Err(refused("bank statement original hash mismatch"));
     }
-    let content = std::str::from_utf8(bytes).map_err(invalid)?;
     let mut occurrences = HashMap::new();
     let profile = crate::bank::source_profile(tx, bank_id)?;
-    for row in rentemester_engine::bank::parse_with_profile(content, profile.as_deref())? {
+    let content = rentemester_engine::bank::decode_bytes(bytes, profile.as_deref())?;
+    for row in rentemester_engine::bank::parse_with_profile(&content, profile.as_deref())? {
         let first = fingerprint(&row, Some(bank.account), 0)?;
         let count = occurrences.entry(first).or_insert(0);
         let hash = fingerprint(&row, Some(bank.account), *count)?;

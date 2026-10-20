@@ -1,6 +1,8 @@
 //! CSV bank input: exact values, structural validation and explicit date semantics.
 use crate::{Error, calendar, currency::Currency, fx::FxRate, money::Money};
 use std::collections::{BTreeMap, BTreeSet};
+mod bytes;
+pub use bytes::decode_bytes;
 mod profiles;
 pub use profiles::profiles;
 pub struct Row {
@@ -180,7 +182,7 @@ fn date(value: &str) -> Result<String, Error> {
 pub fn parse(content: &str) -> Result<Vec<Row>, Error> {
     parse_with_profile(content, None)
 }
-pub fn parse_with_profile(content: &str, profile: Option<&str>) -> Result<Vec<Row>, Error> {
+pub(super) fn profile_name(profile: Option<&str>) -> Result<Option<String>, Error> {
     let profile = profile
         .map(str::trim)
         .filter(|p| !p.is_empty())
@@ -188,6 +190,10 @@ pub fn parse_with_profile(content: &str, profile: Option<&str>) -> Result<Vec<Ro
     if profile.as_deref().is_some_and(|p| p != "danske-bank") {
         return Err(fail("unknown bank import profile (known: danske-bank)"));
     }
+    Ok(profile)
+}
+pub fn parse_with_profile(content: &str, profile: Option<&str>) -> Result<Vec<Row>, Error> {
+    let profile = profile_name(profile)?;
     let named = profile.is_some();
     if content.len() > 25 * 1024 * 1024 {
         return Err(fail("bank CSV exceeds 25 MiB"));

@@ -275,10 +275,22 @@ pub fn import(
     now: &str,
     archive: &str,
 ) -> Result<Value, Error> {
+    import_bytes(tx, content.as_bytes(), rows, account, actor, now, archive)
+}
+/// Preserve the exact statement bytes in its source hash and archive lineage.
+pub fn import_bytes(
+    tx: &Transaction<'_>,
+    content: &[u8],
+    rows: &[Row],
+    account: Option<&str>,
+    actor: &str,
+    now: &str,
+    archive: &str,
+) -> Result<Value, Error> {
     crate::journal_post::require_current(tx)?;
     let resolved = resolve_import_account(tx, account)?;
     let account_id = resolved.as_ref().map(|r| r.0);
-    let source_hash = format!("{:x}", Sha256::digest(content.as_bytes()));
+    let source_hash = format!("{:x}", Sha256::digest(content));
     let batch = format!(
         "BANK-{}-{}",
         now.chars()
@@ -926,3 +938,6 @@ mod tests {
 
 #[cfg(test)]
 mod profile_tests;
+
+#[cfg(test)]
+mod byte_tests;
