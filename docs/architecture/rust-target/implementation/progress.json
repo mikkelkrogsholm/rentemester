@@ -1,14 +1,14 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "Group99 installed local→HTTPS managed transfer, original receipt replay, one target-only posting and full app/server restart qualified; current a36617cd native smoke also qualified; full mission remains open",
-  "code_revision": "dd14a69549c9c5cdcc46a52232ad29a59a71de9e",
+  "current_increment": "Group101 qualified service scanned original→payable→bank payment through actual Rust HTTP/CLI/MCP; remaining installed desktop tests deferred to final acceptance by explicit user direction",
+  "code_revision": "1926e7797301a3c19cfae57873dc7e6f02e9806a",
   "spec_revision": "sha256:a7eb3f0d6e65412fa5ee945a7b79721b593806839f4a03e6b8d969ce3327e3fc",
-  "state": "Group99 closes the finite installed managed J06 journey on current unsigned a36617cd package: normal source MFA; genuine accepted lost12.34 reply and unknown SMTP DATA; native freeze and signed archive save matching offered wire SHA256; independent signature verification using separate source public key; fresh target staged against its final OS-trusted HTTPS origin; ordinary delivered email verification and fresh native owner MFA; native original receipt mapping without booking; source independently reviews exact target challenge and saves signed release; native target activation; exact original replay returns original result and creates zero entries. Native explicit new0.45 activity yields exactly two target entries. Full app/local source restart retains moved/permanent readonly; old replay, new posting and mail all refuse. Full HTTPS server/app restart retains active target, mapping, immutable PDF/JSON, original receipt and both entries. Exactly one unknown SMTP attempt, no successful mail or resend. Exact external owned processes stopped and both synthetic profiles cleaned after readonly terminal checks: source1/target2 journal entries, original tombstones/outcomes identical. Current package ordinary local-MFA smoke shows prior five native98 entries, closing the previous lock-only smoke gap. Fixture extensions add controlled native preparation and final-origin HTTPS staging; follow-up review led to completed-archive hash marker, external-process observation and preserving future native fixtures for explicit cleanup. Targeted partial-download/wrong-marker refusal passes; no unchanged financial rerun. Remaining full R54 hostile/older-clone/rollback/nonempty scheduler scope, J07 automation, other-operation recovery, remaining agent/provider workflows, signed distribution/updates and TypeScript retirement remain OPEN.",
+  "state": "Group101 qualifies normal-owner/MFA service provisioning, required verified-TLS scanned CLI upload, MCP original bytes and payable recognition, exact-original outgoing bank import, payment despite changed creditor mapping, zero payable and canonical reports/HTTP/CLI/MCP equality. Exactly one document/scan/payable/payment/bank row and two journal entries; operational service_account audit and service-principal journals preserved. Duplicate payable/payment refuses without effect. Revocation during second provider scan prevents publication; real server restart preserves exact state/originals and denied revoked access with no rescan. All owned test processes stopped and fixture cleaned. Group99 closes the finite installed managed J06 journey on current unsigned a36617cd package: normal source MFA; genuine accepted lost12.34 reply and unknown SMTP DATA; native freeze and signed archive save matching offered wire SHA256; independent signature verification using separate source public key; fresh target staged against its final OS-trusted HTTPS origin; ordinary delivered email verification and fresh native owner MFA; native original receipt mapping without booking; source independently reviews exact target challenge and saves signed release; native target activation; exact original replay returns original result and creates zero entries. Native explicit new0.45 activity yields exactly two target entries. Full app/local source restart retains moved/permanent readonly; old replay, new posting and mail all refuse. Full HTTPS server/app restart retains active target, mapping, immutable PDF/JSON, original receipt and both entries. Exactly one unknown SMTP attempt, no successful mail or resend. Exact external owned processes stopped and both synthetic profiles cleaned after readonly terminal checks: source1/target2 journal entries, original tombstones/outcomes identical. Current package ordinary local-MFA smoke shows prior five native98 entries, closing the previous lock-only smoke gap. Fixture extensions add controlled native preparation and final-origin HTTPS staging; follow-up review led to completed-archive hash marker, external-process observation and preserving future native fixtures for explicit cleanup. Targeted partial-download/wrong-marker refusal passes; no unchanged financial rerun. Remaining full R54 hostile/older-clone/rollback/nonempty scheduler scope, J07 automation, other-operation recovery, remaining agent/provider workflows, signed distribution/updates and TypeScript retirement remain OPEN.",
   "issues_closed": [],
   "next": [
-    "J07: complete installed local closure/sleep versus hosted automation, with durable cancellation/revocation and explicit catch-up; preserve signed installation/update and TypeScript retirement gates.",
-    "R13/R45: remaining agent document/purchase intake→review→payable→bank payment through existing domain operations. Service journal, sales and bank receipt settlement already qualified; preserve current authority and operation-specific unknown-result recovery.",
+    "Complete required remaining server/web/CLI/MCP/provider journeys without waiting for native GUI. Group101 service purchase flow is qualified; select the next missing existing contract rather than repeat accepted flows.",
+    "Installed desktop acceptance is explicitly deferred to the very end by the user. Preserve prepared Group100 profile; collect remaining native automation, closure, recovery and packaging checks for final installed acceptance without requesting screen unlock during development.",
     "J03/R50 and remaining R54 scope: only still-supported operation closure/recovery, nonempty scheduler handoff, hostile/older clone and post-cutover rollback requirements. Group99 qualifies managed installed J06 flow, not every R54 acceptance item.",
     "Signed distribution/update/cutover evidence must match actual full Rust replacement; retain all existing completion gates and TypeScript retirement gate.",
     "Do not repeat unchanged accepted Group88–99 journeys. Current-package GUI smoke and installed managed transfer are now qualified. Extend only for required missing flows or diagnosed defects."
@@ -21,11 +21,7 @@
     ".gitattributes"
   ],
   "all_goal_requirements_complete": false,
-  "previous_verified_increment": {
-    "current_increment": "Group97 service invoice→exact bank original→single payment/zero debtor/restart and Group98 installed full-app accepted-response-loss recovery across remote/local origins qualified; full mission remains open",
-    "state": "Group97 completes the same service-issued invoice through owner-configured bank account and replacement debtor mapping, CLI exact BOM/CRLF statement import, MCP exact original deduplication and explicit invoice settlement. One187.50 receipt/payment debits configured1797 and credits historical1194 despite current1198 mapping; no new VAT/revenue, invoice/customer zero balance, statement/booked bank187.50/difference0, immutable PDF unchanged. Actual normal-MFA native-server/CLI/MCP composed journey and second real server restart pass; read-only stopped-fixture checks verify exact archived bytes, one bank row/payment, service_account operational audits and user:<subject>/service-principal journal. Reader/admin attempts refuse before quota; company/key revocation and duplicate settlement refuse. Human domain wrappers preserved. Service HTTP bank/settle and CLI allowlist/MCP guidance integrated. Group98 installed package9f3ede14: actual native owner0.44 posting accepted200 held21.499sec, entire app quits before delivery, canonical one entry; remote full reopen/normal MFA shows same receipt and blocks fresh form, independent server survives quit; stop it, reopen same profile exclusively through app-managed local backend on new origin/port, normal MFA same receipt, explicit native acknowledgement no repost. Local child stops with app, primary2/second5, original config preserved. Exact original-key reconciliation and stale browser barrier release fixed after composed regression exposed old Group91 oracle: only reserved own current-ledger journal_post keys may reach normal idempotency replay; fresh keys remain blocked.62web,5receipt-recovery,3service-domain and37bank tests plus strict Clippy/build/types pass. A later actual run caught missing service Settle HTTP allowlist; fixed then fresh complete run passed. Current unsigned a36617cd staged/installed packages exact12-file manifests; Mac locked again so current-package GUI smoke remains unqualified, earlier pinned full native98 proof retained and incremental changes verified through actual browser/client/server journey. Full J03 across other operation closure cases, J06 installed handoff, J07 local/hosted automation, remaining agent/provider parity, signed distribution/updates and TypeScript backend retirement remain OPEN; no scope reduction or unchanged extra acceptance rounds.",
-    "code_revision": "a36617cdcffb2d7bbc8fb9bba09fb46ed4308296"
-  },
+  "previous_verified_increment": "Group100 installed automation fixture prepared, native test awaiting unlocked Mac; Group101 service scanned document→payable→bank payment implementation integrated, focused tests/strict checks pass, actual composed qualification pending",
   "evidence": {
     "combined_browser_log": "/tmp/rm-platform5-combined.log",
     "combined_browser_exit": 0,
@@ -3867,6 +3863,53 @@
         "nativeSmokeAt": "2026-10-20T20:22:41.332Z",
         "nativeSmokeAxSha256": "da7c05f5fe9c615963198afc22502842259f489264bd81f6049aed7724fd3cc9"
       }
+    },
+    "service_purchase101": {
+      "report": "/tmp/rentemester-rust-reports/native-service-purchase101.json",
+      "sha256": "1ad1e2d3054cbc5a41797b8e1764ffb44a9a3fb5a60787ded5b25c87309722bc",
+      "run_head": "b6ff48b23872b036ee8695627a1b64233d84d917",
+      "qualified_source_commit": "1926e7797301a3c19cfae57873dc7e6f02e9806a",
+      "source_provenance": "Actual binaries built from root working sources subsequently committed as qualified_source_commit; run_head predates these adapters. Artifact SHA256 identifies executed binaries.",
+      "artifacts": {
+        "server_binary": "dba9a2502ae43143d352ac88b62fb59123d20b7949a7e16ceb5dcad66a0568cc",
+        "cli_binary": "55486426cd8be56940fb46acd6a300c4461f1931c503baf6b877050281ef16a1",
+        "mcp_binary": "5051b2cca42e81c07bfe879895072ea7f10791bf6b6b6fd88184347c057b3dfa"
+      },
+      "terminal_sql": {
+        "counts": {
+          "documents": 1,
+          "document_scan_evidence": 1,
+          "payables": 1,
+          "payable_payments": 1,
+          "bank_transactions": 1,
+          "journal_entries": 2
+        },
+        "operationalActors": [
+          [
+            "document_ingest",
+            "service_account:service_906e3649dc974cc0b334cc74161d296a"
+          ],
+          [
+            "payable_register",
+            "service_account:service_906e3649dc974cc0b334cc74161d296a"
+          ],
+          [
+            "payable_payment_apply",
+            "service_account:service_906e3649dc974cc0b334cc74161d296a"
+          ]
+        ],
+        "journalActors": [
+          [
+            "user:service_906e3649dc974cc0b334cc74161d296a",
+            "service-principal"
+          ],
+          [
+            "user:service_906e3649dc974cc0b334cc74161d296a",
+            "service-principal"
+          ]
+        ]
+      },
+      "scope": "Service document facts→payable→bank payment plus in-flight revocation/restart. No installed native or source-free restore claim."
     }
   },
   "verified_history": [
@@ -5084,6 +5127,32 @@
       "owner": "root installed UI, fixture adaptations, integration, auth/readback/replay and terminal custody; exception_read82 read-only bounded fixture review",
       "status": "QUALIFIED_SCOPED_INSTALLED_MANAGED_J06; FULL_R54_AND_MISSION_OPEN",
       "acceptance": "Native freeze/export/save→independent trust/stage finalHTTPS→fresh owner verification/MFA→original receipt map→reviewed exact challenge release→target activation→exact old replay without booking→one native new0.45→source moved refusal and target active/two entries after full native/server restart. One unknown SMTP attempt/no resend; original PDF/JSON/receipts preserved; terminal readonly SQL and owned-process cleanup verified. Future fixtures require explicit completed archive marker and retain native profiles for explicit cleanup."
+    },
+    {
+      "delivery": "Group100 installed local/hosted automation lifecycle",
+      "owner": "root",
+      "status": "NORMAL_MFA_NATIVE_PROFILE_PREPARED; INSTALLED_GUI_DEFERRED_TO_FINAL_ACCEPTANCE_BY_USER",
+      "acceptance": "Installed managed local recurring enable/close/reopen/no hidden worker; missed/queued review and explicit cancel/skip; independent HTTPS hosted worker and revocation; actual sleep/DST and other supported task families remain explicit broader J07 requirements. Prepared fixture has no live preparatory process and no generation/journal. User explicitly defers remaining installed GUI tests to the very end; no further unlock requests during implementation.",
+      "checkpoint": "/tmp/rm100-state.json",
+      "preparation_report": "/tmp/rentemester-rust-reports/native-automation100-preparation.json"
+    },
+    {
+      "delivery": "Group101 service scanned purchase original→payable→bank payment",
+      "owner": "root document stages/credential-bound precharged admission/host/HTTP/client integration/actual; invoice_domain80 isolated payable domain + separate actual helper worktree",
+      "status": "QUALIFIED_SCOPED_SERVER_CLI_MCP_PURCHASE_FLOW; FULL_R13_R45_AND_MISSION_OPEN",
+      "acceptance": "Required verified TLS scan outside Owner/SQL locks, fresh exact credential/company/physical authority before publication and one logical usage charge; service CLI upload and MCP exact original, explicit payable recognition, outgoing exact-original bank import, payment on original booked creditor despite mapping change, no duplicate expense/VAT, zero payable and canonical bank reconciliation, in-flight revocation no publication and real normal-MFA restart.",
+      "payable_code_revision": "dc108dfb",
+      "test_logs": [
+        "/tmp/rm101-document-tests.log",
+        "/tmp/rm101-payable-app-tests.log",
+        "/tmp/rm101-payable-storage-tests.log"
+      ],
+      "check_logs": [
+        "/tmp/rm101-clippy-final.log",
+        "/tmp/rm101-build.log"
+      ],
+      "code_revision": "1926e7797301a3c19cfae57873dc7e6f02e9806a",
+      "report": "/tmp/rentemester-rust-reports/native-service-purchase101.json"
     }
   ],
   "integrated_pending_browser": [

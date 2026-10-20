@@ -2841,3 +2841,55 @@ flytning med ikke-tom planlægningshistorik har fortsat særskilte åbne krav.
 Signeret distribution, opdateringer og udfasning af TypeScript-backenden er
 også fortsat åbne. Acceptbevis: `installed-transfer99.json` med tilhørende
 fixture- og markørkontrol i den lokale rapportmappe.
+
+### Servicekonto: scannet købsbilag og kreditorbetaling (Group101)
+
+Servicekontoens bilagsindlæsning følger samme todelte scannerforløb som en
+menneskelig bruger: indledende adgang og forbrugsregistrering, scanning uden
+Owner-lås eller åben SQL-transaktion, derefter ny kontrol af nøgle,
+virksomhedsadgang, ledger og filnamespace før publicering. En intern
+engangstilladelse binder afslutningen til den oprindelige nøgle; afslutningen
+forbruger ikke endnu et kald. Læseadgang alene giver ingen uploadrettighed.
+Originaler og den registrerede scannerevidens er fortsat uforanderlige.
+
+Med eksplicit leverede bilagsfakta kan servicekontoen indlæse originalen,
+læse dokumenter/originalbytes, registrere en leverandørfaktura, importere det
+præcise kontoudtog og registrere betaling mod den konkrete udgående bankrække.
+Betaling følger den oprindeligt bogførte kreditorkonto, selv hvis den aktuelle
+kontomapping siden er ændret; den gentager ikke udgift eller købsmoms.
+Driftsaudit bruger `service_account:<subject>`, mens journalen bevarer
+`user:<subject>` og programmet `service-principal`.
+
+Rust-CLI'ens eksisterende kommandoer `documents`, `document-original`,
+`ingest-document`, `expense-booking-options`, `payables`, `register-payable`
+og `pay-payable` accepterer nu den eksisterende private service-nøglefil.
+MCP bruger de tilsvarende eksisterende tools og samme HTTP-kontrakt. Human
+kontoadministration og automatisk fakturaudtræk efter upload får ingen nye
+servicebeføjelser; det eksisterende menneskelige udtræksforløb er bevaret.
+Servicekøbsforløbet bruger derfor eksplicit faktuel metadata. Fuldt agent- og
+provideromfang er fortsat en særskilt afslutningsgate.
+
+Fokuseret verifikation: syv hosttests dækker scanner/publiceringsgrænsen og
+serviceforbrug, tre applikationstests dækker servicekreditorer, og to
+storagetests dækker menneskelig og servicebaseret del-/fuldbetaling med bevaret
+oprindelig kreditorkonto. Streng Clippy og alle tre Rust-binærer er bygget.
+Den samlede prøve `run-document-scanner.py --service-purchase` består nu
+med påkrævet verificeret TLS-scanner, normal ejer/MFA, faktisk CLI/MCP og
+genstart. Ét bilag på 125 DKK giver udgift 100, købsmoms 25, én kreditor og
+én udgående bankbetaling; præcis to journalposter og nul åben kreditor.
+Ændret kontomapping flytter ikke den oprindelige kreditorkonto. Gentagen
+registrering og betaling afvises uden ny effekt. En tilbagekaldelse under
+en særskilt igangværende scanning afviser publicering, og genstart bevarer
+originalbytes, regnskab, afstemning og den tilbagekaldte adgang uden ny scanning.
+Terminalkontrol viser ét dokument, én scannerevidens, én kreditor, én betaling
+og én bankrække. Rapport: `native-service-purchase101.json` under den lokale
+Rust-rapportmappe. Alle prøvens processer er stoppet og det syntetiske runtime
+ryddet op. Dette er server/CLI/MCP-evidens; installeret desktop, kildefri
+gendannelse af netop denne fixture og fuldt R13/R45-omfang er ikke kvalificeret
+af prøven.
+
+Brugeren har efterfølgende valgt at samle de resterende prøver i den
+installerede desktopapp til allersidst. Server-, web-, CLI-, MCP- og automatiske
+checks fortsætter løbende uden skærmoplåsning. Group100-profilen er forberedt
+med normal MFA og bevaret uden kørende worker; den udgør ikke en bestået
+desktopprøve.
