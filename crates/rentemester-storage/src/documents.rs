@@ -25,6 +25,24 @@ pub fn register(
     actor: &str,
     today: &str,
 ) -> Result<Value, Error> {
+    register_scanned(tx, original, metadata, actor, today, None)
+}
+pub fn register_scanned(
+    tx: &Transaction<'_>,
+    original: Original<'_>,
+    metadata: &Metadata,
+    actor: &str,
+    today: &str,
+    scan: Option<&rentemester_engine::document_scan::ScanEvidence>,
+) -> Result<Value, Error> {
+    if let Some(scan) = scan {
+        scan.validate()?;
+        if scan.sha256 != original.hash {
+            return Err(fail(
+                "clean scanner evidence must bind the exact document original",
+            ));
+        }
+    }
     crate::validate(tx)?;
     let identity = metadata.validate()?;
     let exists: Option<String> = tx
@@ -114,6 +132,9 @@ pub fn register(
     let retention = rentemester_engine::calendar::retention_deadline(basis, month as u32)?;
     let payload = serde_json::to_string(metadata).map_err(|_| fail("metadata encoding failed"))?;
     let id:i64=tx.query_row("INSERT INTO documents(document_no,source,original_filename,stored_path,mime_type,sha256_hash,supplier_name,invoice_no,invoice_date,amount_inc_vat,currency,document_type,delivery_description,sender_name,sender_address,sender_vat_cvr,supplier_country_code,supplier_identifier_kind,supplier_identity_status,recipient_name,recipient_address,recipient_vat_cvr,vat_amount,payment_details,exemption_code,payload_json,retain_until) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?7,?14,?15,?16,?17,?18,?19,?20,?21,?22,?23,?24,?25,?26) RETURNING id",params![number,metadata.source,original.filename,original.path,original.mime,original.hash,sender.and_then(|p|p.name.as_deref()),metadata.invoice_no,metadata.issue_date,metadata.amount_inc_vat.as_ref().and_then(|n|n.as_f64()),metadata.currency(),metadata.kind(),metadata.delivery_description,sender.and_then(|p|p.address.as_deref()),identifier,identity.as_ref().map(|i|i.country.as_str()),identity.as_ref().map(|i|i.kind.as_str()),identity.as_ref().map(|_|"resolved"),recipient.and_then(|p|p.name.as_deref()),recipient.and_then(|p|p.address.as_deref()),recipient.and_then(|p|p.vat_or_cvr.as_deref()),metadata.vat_amount.as_ref().and_then(|n|n.as_f64()),metadata.payment_details,metadata.exemption_code,payload,retention],|r|r.get(0)).map_err(sql)?;
+    if let Some(scan) = scan {
+        tx.execute("INSERT INTO document_scan_evidence(document_id,sha256_hash,scanner_id,scanner_version,result,evidence_ref) VALUES(?1,?2,?3,?4,'clean',?5)",params![id,scan.sha256,scan.scanner_id,scan.scanner_version,scan.evidence_ref]).map_err(sql)?;
+    }
     if metadata.kind() == "internal_voucher" {
         tx.execute("INSERT INTO internal_voucher_evidence(document_id,bank_transaction_id,accounting_rationale,prepared_by,prepared_by_program) VALUES(?1,?2,?3,?4,'rentemester')",params![id,metadata.source_bank_transaction_id,metadata.accounting_rationale,actor]).map_err(sql)?;
     }
