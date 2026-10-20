@@ -81,7 +81,7 @@ fn canonical(hash: &str) -> Option<(&str, Zeroizing<[u8; 64]>)> {
         }
     }
     let mut key = Zeroizing::new([0u8; 64]);
-    for (i, pair) in b[33..].chunks_exact(2).enumerate() {
+    for (i, pair) in b[33..].as_chunks::<2>().0.iter().enumerate() {
         key[i] = (nibble(pair[0]) << 4) | nibble(pair[1]);
     }
     Some((&hash[..32], key))

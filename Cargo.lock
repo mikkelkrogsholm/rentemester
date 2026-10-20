@@ -6916,6 +6916,7 @@ dependencies = [
  "base64 0.22.1",
  "gpui-kit",
  "rentemester-client",
+ "rentemester-runtime",
  "rfd",
  "ring",
  "serde",

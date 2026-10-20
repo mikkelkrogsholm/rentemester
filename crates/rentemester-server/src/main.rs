@@ -25,6 +25,8 @@ use tower_http::{
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    #[cfg(any(target_os = "macos", target_os = "linux"))]
+    let _package_lease = rentemester_runtime::package_update::current_executable_lease()?;
     let mut args = std::env::args().skip(1);
     let mut listen: SocketAddr = "127.0.0.1:4319".parse()?;
     let mut web = PathBuf::from("app/dist");

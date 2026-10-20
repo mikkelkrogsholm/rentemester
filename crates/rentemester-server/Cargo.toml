@@ -1,5 +1,6 @@
 [package]
 name = "rentemester-server"
+default-run = "rentemester-server"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true

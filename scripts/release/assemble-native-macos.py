@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Assemble an unsigned native Mac app from existing artifacts; never builds or launches."""
+"""Assemble native Mac artifacts, optionally authenticating updates; never builds, launches or Apple-signs."""
 import argparse
 import hashlib
 import json
@@ -9,6 +9,7 @@ import plistlib
 import re
 import shutil
 import stat
+import subprocess
 import tempfile
 import unittest
 
@@ -34,7 +35,7 @@ def binaries(root, target_dir, profile, target):
     if target:
         build /= target
     build /= "debug" if profile in ("dev", "test") else profile
-    return regular(build / "rentemester-desktop"), regular(build / "rentemester-server")
+    return tuple(regular(build / name) for name in ("rentemester-desktop", "rentemester-server", "rentemester-update"))
 
 
 def digest(path):
@@ -54,7 +55,7 @@ def copy_artifact(source, destination, executable=False):
 
 def assemble(args):
     root = Path(args.root).resolve(strict=True)
-    desktop, server = binaries(root, args.target_dir, args.profile, args.target)
+    desktop, server, updater = binaries(root, args.target_dir, args.profile, args.target)
     web = Path(args.web)
     if web.is_symlink() or not web.is_dir():
         raise ValueError("web source must be a real directory")
@@ -69,7 +70,12 @@ def assemble(args):
         raise ValueError("source revision must be a full Git SHA")
     if not re.fullmatch(r"[0-9]+(?:\.[0-9]+){0,2}", args.version):
         raise ValueError("bundle version must be a numeric macOS version")
+    update_flags = (getattr(args, "update_signing_key", None), getattr(args, "update_public_key", None), getattr(args, "release_sequence", None))
+    if any(v is not None for v in update_flags) and not all(v is not None for v in update_flags):
+        raise ValueError("update signing requires private key, independent public key and release sequence together")
     output = Path(args.output).absolute()
+    if all(v is not None for v in update_flags) and output.exists():
+        raise ValueError("authenticated assembly requires a fresh output; use rentemester-update for installed packages")
     if output.suffix != ".app" or output.is_symlink():
         raise ValueError("output must be a non-symlink .app path")
     output.parent.mkdir(parents=True, exist_ok=True)
@@ -91,6 +97,7 @@ def assemble(args):
         (resources / "web").mkdir(parents=True)
         copy_artifact(desktop, contents / "MacOS/rentemester-desktop", True)
         copy_artifact(server, contents / "MacOS/rentemester-server", True)
+        copy_artifact(updater, contents / "MacOS/rentemester-update", True)
         copy_artifact(icon, resources / "Rentemester.icns")
         for source in web_files:
             if source.is_file():
@@ -120,6 +127,12 @@ def assemble(args):
         }
         (resources / "native-artifact-manifest.json").write_text(
             json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        if all(v is not None for v in update_flags):
+            subprocess.run(["python3", str(root / "scripts/release/sign-native-update.py"),
+                "--bundle", str(stage), "--key", str(update_flags[0]), "--public-key", str(update_flags[1]),
+                "--sequence", str(update_flags[2]), "--platform", "macos-" + args.architecture,
+                "--api-epoch", "1", "--control-schema", "31", "--company-schema", "36"], check=True,
+                stdout=subprocess.DEVNULL)
         previous = Path(temporary) / "previous.app"
         if output.exists():
             output.rename(previous)
@@ -138,7 +151,7 @@ class AssemblyFixture(unittest.TestCase):
             root = Path(temporary)
             build = root / "custom-target/aarch64-apple-darwin/release"
             build.mkdir(parents=True)
-            for name in ("rentemester-desktop", "rentemester-server"):
+            for name in ("rentemester-desktop", "rentemester-server", "rentemester-update"):
                 (build / name).write_bytes(("fixture " + name).encode())
             web = root / "web"
             (web / "assets").mkdir(parents=True)
@@ -200,7 +213,7 @@ class AssemblyFixture(unittest.TestCase):
             # Default dev profile resolves debug, independently of custom release above.
             debug = root / "target/debug"
             debug.mkdir(parents=True)
-            for name in ("rentemester-desktop", "rentemester-server"):
+            for name in ("rentemester-desktop", "rentemester-server", "rentemester-update"):
                 (debug / name).write_bytes(b"debug fixture")
             self.assertEqual(binaries(root, "target", "dev", "")[0], debug / "rentemester-desktop")
 
@@ -221,6 +234,9 @@ def main():
     parser.add_argument("--server-toolchain")
     parser.add_argument("--desktop-toolchain")
     parser.add_argument("--source-dirty", action="store_true")
+    parser.add_argument("--update-signing-key", help="Explicit private Ed25519 PKCS8 update key; never a bundled trust anchor")
+    parser.add_argument("--update-public-key", help="Separately configured raw32 Ed25519 public key")
+    parser.add_argument("--release-sequence", type=int, help="Strictly increasing authenticated release sequence")
     args = parser.parse_args()
     if args.self_test:
         suite = unittest.defaultTestLoader.loadTestsFromTestCase(AssemblyFixture)
@@ -230,7 +246,7 @@ def main():
         parser.error("assembly requires " + ", ".join("--" + key.replace("_", "-") for key in required))
     try:
         print(assemble(args))
-    except (OSError, ValueError, plistlib.InvalidFileException) as error:
+    except (OSError, ValueError, plistlib.InvalidFileException, subprocess.CalledProcessError) as error:
         parser.exit(2, "native bundle refused: " + str(error) + "\n")
 
 

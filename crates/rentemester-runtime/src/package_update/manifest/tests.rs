@@ -17,7 +17,7 @@ struct Fixture {
 }
 impl Fixture {
     fn new() -> Self {
-        let temp = tempfile::tempdir().unwrap();
+        let temp = tempfile::tempdir_in(std::env::temp_dir().canonicalize().unwrap()).unwrap();
         let key = Ed25519KeyPair::from_seed_unchecked(&[7; 32]).unwrap();
         let mut files = Vec::new();
         for path in REQUIRED

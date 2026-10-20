@@ -27,6 +27,7 @@ sha2 = "0.10"
 gpui-kit = { version = "=0.7.3", optional = true }
 tauri = "=2.12.4"
 serde.workspace = true
+rentemester-runtime = { path = "../rentemester-runtime" }
 rentemester-client = { path = "../rentemester-client" }
 ring = "=0.17.14"
 serde_json.workspace = true

@@ -184,3 +184,5 @@ pub mod workspace_transfer;
 pub mod contact_import;
 
 pub mod public_einvoice;
+
+pub mod package_update;

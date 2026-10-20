@@ -442,7 +442,7 @@ pub fn with_source_database<T>(
     use rentemester_engine::Error;
     use std::os::unix::fs::MetadataExt;
     let refused = |s| Error::new("legacy_source_refused", s);
-    let (path, pin) = source_file(root, relative).map_err(&refused)?;
+    let (path, pin) = source_file(root, relative).map_err(refused)?;
     let meta = pin
         .metadata()
         .map_err(|_| refused("source metadata unavailable".into()))?;
@@ -464,7 +464,7 @@ pub fn with_source_database<T>(
     let result = operation(&mut db);
     db.close()
         .map_err(|_| refused("source SQLite close refused".into()))?;
-    let (_, current) = source_file(root, relative).map_err(&refused)?;
+    let (_, current) = source_file(root, relative).map_err(refused)?;
     let after = current
         .metadata()
         .map_err(|_| refused("source metadata unavailable".into()))?;

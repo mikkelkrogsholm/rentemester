@@ -216,7 +216,10 @@ async fn connect_inner(
                     // location. An implicit Downloads write can otherwise block
                     // WebKit's main thread on macOS folder-privacy admission.
                     // RFD runs the panel directly when already on the main thread.
-                    let name = destination.file_name().unwrap_or_default().to_string_lossy();
+                    let name = destination
+                        .file_name()
+                        .unwrap_or_default()
+                        .to_string_lossy();
                     let Some(selected) = rfd::FileDialog::new()
                         .set_parent(&window.window())
                         .set_title("Gem fil")
@@ -332,6 +335,14 @@ fn local_menu(app: &AppHandle, id: &str) {
     }
 }
 fn main() {
+    // Held until the managed child has stopped and the application exits.
+    let _package_lease = match rentemester_runtime::package_update::current_executable_lease() {
+        Ok(lease) => lease,
+        Err(error) => {
+            eprintln!("App-pakken kan ikke åbnes under en opdatering: {error}");
+            std::process::exit(1);
+        }
+    };
     if std::env::args().any(|arg| arg == "--help") {
         println!(
             "Rentemester Desktop\n  --local | --create-local [--local-workspace PATH]\n  --server HTTPS_ORIGIN\n  Development: --server-binary PATH --web-dir PATH\nLogin og MFA foregår i webinterfacet. Lokal data og nøgler forbliver i den private profil."

@@ -102,7 +102,7 @@ fn unhex(value: &str) -> Result<Zeroizing<Vec<u8>>, MfaError> {
         }
     };
     Ok(Zeroizing::new(
-        b.chunks_exact(2)
+        b.as_chunks::<2>().0.iter()
             .map(|p| digit(p[0]) * 16 + digit(p[1]))
             .collect(),
     ))
