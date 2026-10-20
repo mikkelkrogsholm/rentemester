@@ -1919,3 +1919,49 @@ flyttesiden, før den oprindelige nøgle kan genkalde resultatet. Tilknytning og
 y genstart giver ingen ekstra åbningspostering. Det oprindelige auditspor
 bevares; bevidste kvitteringsgenkald tilføjer kun de forventede auditlinjer.
 Installeret desktop og hele Rust-omskrivningen er fortsat åbne.
+
+
+## Scanning af almindelige bilagsuploads
+
+Serverens private JSON-konfiguration kan kræve scanning ved almindeligt
+bilagsupload. Samme indgang bruges fra web, CLI og MCP:
+
+```json
+{
+  "documentScanner": {
+    "policy": "required",
+    "provider": "http-json-v1",
+    "url": "https://scanner.example.invalid/scan",
+    "bearerToken": "<leverandørens private nøgle>",
+    "timeoutMs": 15000
+  }
+}
+```
+
+Uden feltet er politikken `off`. `off` sammen med leverandørfelter og
+`required` uden gyldig opsætning afvises ved opstart. Timeout er 100–120000 ms.
+Udbyderen modtager SHA-256, filnavn, MIME-type og originale bytes som base64 og
+skal levere et direkte, ukomprimeret JSON-svar over HTTPS. Et rent svar har
+`ok:true`, `scannerId` og eventuelt `scannerVersion` og `evidenceRef`.
+
+Til en privat scanner kan `trustedCaFile` pege på en absolut PEM-sti. Denne
+udtrykkelige tillid tillader også en lokal HTTPS-adresse med literal loopback-IP;
+certifikat og værtsnavn kontrolleres fortsat. Den almindelige opsætning bruger
+serverens offentlige CA-rødder og en adresse uden loopback.
+
+Rettigheder kontrolleres før scanningen og igen før lagring. Andre
+forespørgsler kan ændre brugerens adgang undervejs. Original, bilag og
+SHA-bundet clean-kontrolspor gemmes samlet efter et godkendt svar og den
+afsluttende adgangskontrol. Historiske bilag bevarer deres oprindelige
+kontrolspor; leverandørnøgler hører til operatørkonfigurationen.
+
+Indstillingen omfatter det almindelige bilagsupload. Fælles indbakke og
+selskabsdokumenter er uden for denne scanningsindstilling. Den lover hverken
+OCR eller automatisk regnskabsmæssig godkendelse.
+
+Group65 består med faktisk webupload, betroet lokal TLS-udbyder, afslag og
+timeout uden lagrede bilag, offentlig tilbagekaldelse af adgang under en
+igangværende scanning, CLI/MCP, genstart og signeret kildefri gendannelse med
+ny ejer og MFA. Originaler og kontrolspor bevares uden nye scanninger eller
+importerede leverandørnøgler. Lokal PDF-tekstbehandling og den samlede
+Rust-omskrivning er fortsat åbne.
