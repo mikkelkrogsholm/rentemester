@@ -1,0 +1,347 @@
+//! Stable source capture -> credential-free business codecs -> fresh control.
+//! Conversion is evidence only. Host owns source retirement, publication and fresh identity.
+use crate::{Snapshot, control_migration, portable_backup as business};
+use rentemester_engine::Error;
+use rusqlite::{Connection, TransactionBehavior};
+use sha2::{Digest, Sha256};
+use std::path::Path;
+
+/// No Deserialize/Debug or raw SQLite escape. All retained sections are the
+/// existing fixed credential-free business codecs, never historical authority.
+pub struct ConvertedControlBusiness {
+    from_version: usize,
+    business: business::Control,
+    retirement: Option<crate::legacy_retirement::RetirementBinding>,
+}
+fn refused(error: Error) -> Error {
+    Error::new(error.code, "legacy control adoption conversion refused")
+}
+fn invalid(_: impl std::fmt::Display) -> Error {
+    Error::new(
+        "legacy_control_adoption_refused",
+        "fresh legacy control initialization refused",
+    )
+}
+impl ConvertedControlBusiness {
+    pub fn from_version(&self) -> usize {
+        self.from_version
+    }
+    pub fn to_version(&self) -> usize {
+        31
+    }
+    pub fn retirement_binding(&self) -> Option<&crate::legacy_retirement::RetirementBinding> {
+        self.retirement.as_ref()
+    }
+    /// Stable length-framed digest of all eight codec sections; no auth bytes included.
+    pub fn payload_sha256(&self) -> String {
+        let mut hash = Sha256::new();
+        hash.update(b"rentemester-legacy-control-business/1\0");
+        for bytes in [
+            &self.business.bytes,
+            &self.business.knowledge_bytes,
+            &self.business.parties_bytes,
+            &self.business.inbox_bytes,
+            &self.business.corporate_bytes,
+            &self.business.ownership_bytes,
+            &self.business.intercompany_bytes,
+            &self.business.consolidation_bytes,
+        ] {
+            hash.update((bytes.len() as u64).to_be_bytes());
+            hash.update(bytes);
+        }
+        format!("{:x}", hash.finalize())
+    }
+    /// The host may consume only the credential-free codecs and verified binding.
+    pub fn into_parts(
+        self,
+    ) -> (
+        business::Control,
+        Option<crate::legacy_retirement::RetirementBinding>,
+    ) {
+        (self.business, self.retirement)
+    }
+    /// Caller owns a new private file and its entire namespace lifetime. Multiple
+    /// codec commits are not atomic: on failure quarantine the stage, never retry
+    /// into or publish a partially initialized control. No identity/access seeded.
+    pub fn initialize_new_control(
+        &self,
+        db: &mut Connection,
+        registered: &[String],
+        receipt_hash: &str,
+        actor: &str,
+    ) -> Result<(), Error> {
+        if !crate::workspace_transfer::hex(receipt_hash, 64)
+            || actor.trim().is_empty()
+            || actor.len() > 1024
+            || actor.chars().any(char::is_control)
+            || registered.is_empty()
+            || registered.len() > 64
+            || registered.iter().any(|s| s.is_empty())
+            || registered
+                .iter()
+                .collect::<std::collections::BTreeSet<_>>()
+                .len()
+                != registered.len()
+        {
+            return Err(invalid("context"));
+        }
+        if !db.is_autocommit() || db.is_readonly(rusqlite::MAIN_DB).map_err(invalid)? {
+            return Err(invalid("connection"));
+        }
+        for sql in [
+            "SELECT count(*) FROM sqlite_temp_schema",
+            "SELECT count(*) FROM pragma_database_list WHERE name NOT IN ('main','temp')",
+            "PRAGMA user_version",
+            "PRAGMA application_id",
+            "PRAGMA query_only",
+        ] {
+            if db
+                .query_row::<i64, _, _>(sql, [], |r| r.get(0))
+                .map_err(invalid)?
+                != 0
+            {
+                return Err(invalid("fresh target required"));
+            }
+        }
+        control_migration::initialize_empty(db).map_err(refused)?;
+        let tx = db
+            .transaction_with_behavior(TransactionBehavior::Immediate)
+            .map_err(invalid)?;
+        business::initialize_audit_business(&tx, &self.business.bytes).map_err(refused)?;
+        tx.execute("INSERT INTO workspace_audit(event_type,entity_type,entity_id,actor) VALUES('legacy_control_adoption','legacy_adoption',?1,?2)",rusqlite::params![receipt_hash,actor]).map_err(invalid)?;
+        tx.commit().map_err(invalid)?;
+        business::initialize_parties(db, &self.business.parties_bytes, registered)
+            .map_err(refused)?;
+        business::initialize_knowledge(db, &self.business.knowledge_bytes).map_err(refused)?;
+        business::initialize_inbox(db, &self.business.inbox_bytes, registered).map_err(refused)?;
+        business::initialize_corporate(db, &self.business.corporate_bytes, registered)
+            .map_err(refused)?;
+        business::initialize_ownership(db, &self.business.ownership_bytes, registered)
+            .map_err(refused)?;
+        business::initialize_intercompany(db, &self.business.intercompany_bytes, registered)
+            .map_err(refused)?;
+        business::initialize_consolidation(db, &self.business.consolidation_bytes, registered)
+            .map_err(refused)?;
+        control_migration::validate_current_control(db).map_err(refused)
+    }
+}
+/// Existing bounded stable NOFOLLOW capture and private writable-copy cleanup.
+/// A missing retirement binding is truthful conversion evidence, not permission
+/// for host publication. Host must require matching retired control/companies.
+pub fn convert_control_for_adoption(workspace: &Path) -> Result<ConvertedControlBusiness, Error> {
+    Snapshot::capture_control(workspace)
+        .map_err(refused)?
+        .with_writable_copy(|db| {
+            let retirement = crate::legacy_retirement::strip_verified_overlay(db)?;
+            let (from_version, business) = control_migration::convert_adoption_copy(db)?;
+            Ok(ConvertedControlBusiness {
+                from_version,
+                business,
+                retirement,
+            })
+        })
+        .map_err(refused)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use rusqlite::params;
+    use serde_json::{Value, json};
+    fn fixture(version: usize) -> (tempfile::TempDir, Connection) {
+        let dir = tempfile::tempdir().unwrap();
+        std::fs::create_dir(dir.path().join(".rentemester")).unwrap();
+        let db =
+            Connection::open(dir.path().join(".rentemester/workspace-control.sqlite")).unwrap();
+        db.execute_batch("PRAGMA foreign_keys=ON").unwrap();
+        let identities: Value =
+            serde_json::from_str(include_str!("legacy-workspace-schema.json")).unwrap();
+        let root =
+            Path::new(env!("CARGO_MANIFEST_DIR")).join("../../src/core/workspace-migrations");
+        let mut paths = std::fs::read_dir(root)
+            .unwrap()
+            .map(|p| p.unwrap().path())
+            .collect::<Vec<_>>();
+        paths.sort();
+        for (path, identity) in paths
+            .iter()
+            .zip(identities.as_array().unwrap())
+            .take(version)
+        {
+            let value: Value =
+                serde_json::from_str(&std::fs::read_to_string(path).unwrap()).unwrap();
+            db.execute_batch(value["sql"].as_str().unwrap()).unwrap();
+            db.execute("INSERT INTO workspace_schema_migrations(id,name,checksum,applied_by_version)VALUES(?1,?2,?3,'synthetic-source')",params![identity["id"].as_i64().unwrap(),identity["name"].as_str().unwrap(),identity["checksum"].as_str().unwrap()]).unwrap();
+        }
+        (dir, db)
+    }
+    #[test]
+    fn every_exact_control_prefix_converts_without_mutating_source_or_inheriting_authority() {
+        for version in 0..=31 {
+            let (dir, _db) = fixture(version);
+            let path = dir.path().join(".rentemester/workspace-control.sqlite");
+            let before = std::fs::read(&path).unwrap();
+            let value = convert_control_for_adoption(dir.path()).unwrap();
+            assert_eq!(value.from_version(), version);
+            assert_eq!(value.to_version(), 31);
+            assert!(value.retirement_binding().is_none());
+            let mut target = Connection::open_in_memory().unwrap();
+            value
+                .initialize_new_control(
+                    &mut target,
+                    &["synthetic".into()],
+                    &"a".repeat(64),
+                    "system:synthetic-adopter",
+                )
+                .unwrap();
+            assert_eq!(std::fs::read(path).unwrap(), before);
+            for table in [
+                "user",
+                "account",
+                "session",
+                "twoFactor",
+                "apikey",
+                "rm_company_membership_events",
+                "rm_workspace_bootstrap_events",
+            ] {
+                assert_eq!(
+                    target
+                        .query_row::<i64, _, _>(&format!("SELECT count(*) FROM {table}"), [], |r| r
+                            .get(0))
+                        .unwrap(),
+                    0,
+                    "{version}/{table}"
+                );
+            }
+        }
+    }
+    #[test]
+    fn populated_business_actors_survive_but_secrets_and_old_grants_do_not() {
+        let (dir, mut db) = fixture(31);
+        db.execute_batch("INSERT INTO user(id,name,email,emailVerified,twoFactorEnabled,createdAt,updatedAt)VALUES('old','Synthetic old owner','old@example.invalid',1,1,'2026-01-01','2026-01-01');INSERT INTO account(id,issuer,accountId,providerId,userId,password,createdAt,updatedAt)VALUES('credential','local:credential','old','credential','old','synthetic-password-secret','2026-01-01','2026-01-01');INSERT INTO session(id,token,userId,createdAt,updatedAt,expiresAt)VALUES('s','synthetic-token-secret','old','2026-01-01','2026-01-01','2099-01-01');INSERT INTO twoFactor(id,secret,backupCodes,userId,verified)VALUES('f','synthetic-totp-secret','[]','old',1);INSERT INTO rm_workspace_user_access_events(user_id,event_type,workspace_role,actor)VALUES('old','activate','workspace_owner','user:old');INSERT INTO rm_company_membership_events(user_id,company_slug,event_type,company_role,actor)VALUES('old','synthetic','grant','owner','user:old');INSERT INTO workspace_audit(event_type,entity_type,entity_id,actor)VALUES('synthetic-history','synthetic','preserved','user:old')").unwrap();
+        let tx = db
+            .transaction_with_behavior(TransactionBehavior::Immediate)
+            .unwrap();
+        let input=serde_json::from_value::<crate::parties::Create>(json!({"kind":"organization","name":"Synthetic preserved party","source":"manual","observedAt":"2026-01-01T00:00:00.000Z","reviewAssertion":"approved","role":"supplier","aliases":["Synthetic alias"]})).unwrap();
+        crate::parties::create(
+            &tx,
+            &input,
+            "synthetic-party",
+            "user:old",
+            "2026-01-01T00:00:00.000Z",
+        )
+        .unwrap();
+        tx.commit().unwrap();
+        let source_payload = {
+            let tx = db
+                .transaction_with_behavior(TransactionBehavior::Immediate)
+                .unwrap();
+            let result = business::export_control(&tx).unwrap();
+            tx.rollback().unwrap();
+            result
+        };
+        let original =
+            std::fs::read(dir.path().join(".rentemester/workspace-control.sqlite")).unwrap();
+        let converted = convert_control_for_adoption(dir.path()).unwrap();
+        assert_eq!(
+            std::fs::read(dir.path().join(".rentemester/workspace-control.sqlite")).unwrap(),
+            original
+        );
+        for bytes in [
+            &converted.business.bytes,
+            &converted.business.knowledge_bytes,
+            &converted.business.parties_bytes,
+            &converted.business.inbox_bytes,
+            &converted.business.corporate_bytes,
+            &converted.business.ownership_bytes,
+            &converted.business.intercompany_bytes,
+            &converted.business.consolidation_bytes,
+        ] {
+            let text = std::str::from_utf8(bytes).unwrap();
+            for secret in [
+                "synthetic-password-secret",
+                "synthetic-token-secret",
+                "synthetic-totp-secret",
+            ] {
+                assert!(!text.contains(secret));
+            }
+        }
+        assert_eq!(converted.business.bytes, source_payload.bytes);
+        assert_eq!(
+            converted.business.parties_bytes,
+            source_payload.parties_bytes
+        );
+        assert_eq!(converted.payload_sha256().len(), 64);
+        let mut target = Connection::open_in_memory().unwrap();
+        converted
+            .initialize_new_control(
+                &mut target,
+                &["synthetic".into()],
+                &"b".repeat(64),
+                "system:synthetic-adopter",
+            )
+            .unwrap();
+        assert_eq!(
+            target
+                .query_row::<String, _, _>(
+                    "SELECT actor FROM workspace_audit WHERE event_type='synthetic-history'",
+                    [],
+                    |r| r.get(0)
+                )
+                .unwrap(),
+            "user:old"
+        );
+        assert_eq!(
+            target
+                .query_row::<i64, _, _>("SELECT count(*) FROM rm_party_events", [], |r| r.get(0))
+                .unwrap(),
+            1
+        );
+        for table in [
+            "user",
+            "account",
+            "session",
+            "twoFactor",
+            "apikey",
+            "rm_workspace_user_access_events",
+            "rm_company_membership_events",
+            "rm_workspace_bootstrap_events",
+        ] {
+            assert_eq!(
+                target
+                    .query_row::<i64, _, _>(&format!("SELECT count(*) FROM {table}"), [], |r| r
+                        .get(0))
+                    .unwrap(),
+                0,
+                "{table}"
+            );
+        }
+        assert_eq!(target.query_row::<i64,_,_>("SELECT count(*) FROM workspace_audit WHERE event_type='native_portable_restore'",[],|r|r.get(0)).unwrap(),0);
+        assert_eq!(target.query_row::<i64,_,_>("SELECT count(*) FROM workspace_audit WHERE event_type='legacy_control_adoption'",[],|r|r.get(0)).unwrap(),1);
+        assert!(
+            converted
+                .initialize_new_control(
+                    &mut target,
+                    &["synthetic".into()],
+                    &"b".repeat(64),
+                    "system:synthetic-adopter"
+                )
+                .is_err()
+        );
+    }
+    #[test]
+    fn unknown_schema_and_nonempty_uncoded_tables_refuse_without_source_changes() {
+        for extra in [
+            "CREATE TABLE unknown_source_history(id INTEGER PRIMARY KEY);INSERT INTO unknown_source_history VALUES(1)",
+            "CREATE TRIGGER unknown_guard BEFORE INSERT ON workspace_audit BEGIN SELECT 1;END",
+            "INSERT INTO rm_party_events(party_id,event_type,canonical_kind,payload_hash,canonical_payload,actor,created_at)VALUES('synthetic-bad','created','organization','aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa','{}','user:old','2026-01-01T00:00:00.000Z')",
+        ] {
+            let (dir, db) = fixture(31);
+            db.execute_batch(extra).unwrap();
+            let path = dir.path().join(".rentemester/workspace-control.sqlite");
+            let before = std::fs::read(&path).unwrap();
+            assert!(convert_control_for_adoption(dir.path()).is_err());
+            assert_eq!(std::fs::read(path).unwrap(), before);
+        }
+    }
+}

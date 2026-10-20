@@ -283,6 +283,21 @@ fn rehearse(
         writer_authority: false,
     })
 }
+/// Conversion-only private copy. Reuses the exact full-prefix rehearsal guards;
+/// never grants writer authority or retains the old control authentication state.
+pub(super) fn convert_adoption_copy(
+    db: &mut Connection,
+) -> Result<(usize, crate::portable_backup::Control), Error> {
+    let expected = catalogue()?;
+    let steps = steps(&ARTIFACTS, &expected)?;
+    let report = rehearse(db, &steps, &expected)?;
+    let tx = db
+        .transaction_with_behavior(TransactionBehavior::Immediate)
+        .map_err(failed)?;
+    let business = crate::portable_backup::export_control(&tx)?;
+    tx.rollback().map_err(failed)?;
+    Ok((report.from_version, business))
+}
 /// Explicit operator-only extension under an already held namespace lifetime.
 /// Accept only the immediately preceding complete schema or the current one;
 /// never use this as an adoption route for older source databases.

@@ -226,18 +226,24 @@ pub fn initialize_control(
     archive_hash: &str,
 ) -> Result<(), Error> {
     crate::control_migration::initialize_empty(db)?;
+    let tx = db
+        .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
+        .map_err(sql)?;
+    initialize_audit_business(&tx, bytes)?;
+    tx.execute("INSERT INTO workspace_audit(event_type,entity_type,entity_id,actor) VALUES('native_portable_restore','backup',?1,'system:portable-restore')",[archive_hash]).map_err(sql)?;
+    tx.commit().map_err(sql)?;
+    crate::control_migration::validate_current_control(db)
+}
+/// Credential-free audit codec only, under the caller's current control writer.
+/// Provenance of adoption versus native restore belongs to the distinct caller.
+pub(crate) fn initialize_audit_business(tx: &Transaction<'_>, bytes: &[u8]) -> Result<(), Error> {
     let b: Business = serde_json::from_slice(bytes).map_err(sql)?;
     if b.format != "rentemester-native-business-control/1" || b.tables.len() != AUDIT_TABLES.len() {
         return Err(refused("unsupported business codec"));
     }
-    let tx = db
-        .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
-        .map_err(sql)?;
-    insert_tables(&tx, &b, &AUDIT_TABLES)?;
-    crate::workspace_transfer::current(&tx)?;
-    tx.execute("INSERT INTO workspace_audit(event_type,entity_type,entity_id,actor) VALUES('native_portable_restore','backup',?1,'system:portable-restore')",[archive_hash]).map_err(sql)?;
-    tx.commit().map_err(sql)?;
-    crate::control_migration::validate_current_control(db)
+    insert_tables(tx, &b, &AUDIT_TABLES)?;
+    crate::workspace_transfer::current(tx)?;
+    Ok(())
 }
 /// Restores only historical business assertions/events. Historical principal IDs
 /// are provenance labels; neither table references live authentication authority.
