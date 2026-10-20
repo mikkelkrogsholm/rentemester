@@ -35,3 +35,50 @@ fn missing_identity_no_attachment_and_magic_mismatch_remain_explicit() {
     assert!(parse(invalid.as_bytes()).unwrap().attachments.is_empty());
     assert_eq!(parse(&[]).unwrap_err(), MailFailure::Invalid);
 }
+
+#[test]
+fn combined_escaped_headers_cannot_exceed_retained_metadata_bound() {
+    let escaped = "\"".repeat(8192);
+    for name in ["Message-ID", "From", "Subject", "Date"] {
+        let raw = format!("{name}: {escaped}\r\n\r\nSynthetic body");
+        let parsed = parse(raw.as_bytes()).unwrap();
+        let retained = match name {
+            "Message-ID" => parsed.message_id,
+            "From" => parsed.sender,
+            "Subject" => parsed.subject,
+            _ => parsed.date,
+        };
+        assert_eq!(retained.as_deref(), Some(escaped.as_str()));
+    }
+    let raw = format!(
+        "Message-ID: {escaped}\r\nFrom: {escaped}\r\nSubject: {escaped}\r\nDate: {escaped}\r\n\r\nSynthetic body"
+    );
+    assert_eq!(
+        parse(raw.as_bytes()).unwrap_err(),
+        MailFailure::ResourceLimit
+    );
+}
+
+#[test]
+fn attachment_filename_escaping_is_part_of_each_source_metadata_budget() {
+    // Four individually bounded headers fit until the attachment's escaped
+    // original filename is included. No truncation or lossy header replacement.
+    let header = Some("\"".repeat(7500));
+    let base = serde_json::to_vec(&(&header, &header, &header, &header))
+        .unwrap()
+        .len();
+    assert!(metadata_budget(base, 0).is_ok());
+    let filename = Some("\\".repeat(3000));
+    let encoded = serde_json::to_vec(&filename).unwrap().len();
+    assert_eq!(
+        metadata_budget(base, encoded),
+        Err(MailFailure::ResourceLimit)
+    );
+    assert!(
+        metadata_budget(
+            base,
+            serde_json::to_vec(&Some("invoice.pdf")).unwrap().len()
+        )
+        .is_ok()
+    );
+}

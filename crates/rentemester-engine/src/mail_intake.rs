@@ -112,6 +112,17 @@ fn collect(
     }
     Ok(())
 }
+fn metadata_budget(header_cost: usize, filename_cost: usize) -> Result<(), MailFailure> {
+    // Native fixed keys, source IDs, hashes and numeric fields occupy <1 KiB.
+    if header_cost
+        .saturating_add(filename_cost)
+        .saturating_add(1024)
+        > 64 * 1024
+    {
+        return Err(MailFailure::ResourceLimit);
+    }
+    Ok(())
+}
 pub fn parse(raw: &[u8]) -> Result<ParsedMail, MailFailure> {
     if raw.is_empty() {
         return Err(MailFailure::Invalid);
@@ -139,8 +150,21 @@ pub fn parse(raw: &[u8]) -> Result<ParsedMail, MailFailure> {
     {
         return Err(MailFailure::ResourceLimit);
     }
+    // Bound the actual escaped JSON, not just decoded header lengths. These
+    // strings become immutable per-source metadata; rejection must happen before
+    // retention so an oversized envelope cannot poison later reads or backups.
+    let header_cost = serde_json::to_vec(&(&message_id, &sender, &subject, &date))
+        .map_err(|_| MailFailure::ResourceLimit)?
+        .len();
+    metadata_budget(header_cost, 0)?;
     let mut attachments = vec![];
     collect(&message, 0, &mut 0, &mut attachments, &mut 0)?;
+    for attachment in &attachments {
+        let filename_cost = serde_json::to_vec(&attachment.original_filename)
+            .map_err(|_| MailFailure::ResourceLimit)?
+            .len();
+        metadata_budget(header_cost, filename_cost)?;
+    }
     attachments.sort_by(|a, b| {
         a.filename
             .encode_utf16()
