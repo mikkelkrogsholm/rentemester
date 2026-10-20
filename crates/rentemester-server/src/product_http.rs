@@ -779,6 +779,9 @@ async fn write(State(state): State<Product>, request: Request) -> Response {
             Err((f, _)) if f.error.code == "invalid_credentials" => {
                 refused(StatusCode::UNAUTHORIZED, "unauthorized")
             }
+            Err((f, _)) if f.error.code == "access_denied" => {
+                refused(StatusCode::FORBIDDEN, "access_denied")
+            }
             Err((f, business)) => match business {
                 Some(value) => response(StatusCode::UNPROCESSABLE_ENTITY, value),
                 None => refused(StatusCode::BAD_REQUEST, f.error.code),
