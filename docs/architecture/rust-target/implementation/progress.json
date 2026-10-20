@@ -1,13 +1,13 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "Group95 installed shared-web desktop HTTPS owner/bookkeeper/service, pending context/revocation and canonical client parity qualified; complete app-closure uncertainty recovery remains open",
-  "code_revision": "554647f2f94eb1ed81dc001317b0aed8cfe67dd6",
+  "current_increment": "Group96 durable current-human manual-post receipt recovery implemented and real server restart/new-origin qualified; installed full-app quit/reopen remains pending Mac unlock",
+  "code_revision": "9f3ede140a696397687545e4a8d1fd8092694d1d",
   "spec_revision": "sha256:a7eb3f0d6e65412fa5ee945a7b79721b593806839f4a03e6b8d969ce3327e3fc",
-  "state": "Group95 uses the actual installed unsigned shared-web Rust desktop against an independent OS-trusted HTTPS Rust server and existing synthetic Group88 profile. Normal native owner password/TOTP, native second-company creation and12.34 posting, separate ordinary invited/verified/MFA bookkeeper5.67 posting, native company/account switching and role-correct ledger isolation pass. Real server-authorized old-company200 replies held by private one-shot proxy gates across native company/account change are cancelled/discarded; release delays10.393/34.511seconds are within45second bounds. Pending native read/write held before server admission, then normal owner revokes company membership: actual403 each, both canonical journals unchanged, denied0.56 posting absent. Explicit normal regrant restores reading. Fresh owner MFA issues/grants service; CLI0.99 posting and MCP exact original receipt replay create exactly one additional entry, primary stays2, second3. Five canonical reports match owner API and bookkeeper/service CLI/MCP. Native app reopened with normal MFA and current journal shows the same three owner/bookkeeper/service entries. Found raw internal403 text in UI; common JSON/binary error adapter now displays Danish permission guidance without expiring unrelated account or changing other policy errors.28 targeted API tests and production design/typecheck/web build pass. One pre-existing cancelled-read mock test contradicted Group92 post-body abort contract; corrected it to expect cancelled-read rejection while retaining next-write signal-isolation assertions. Current staged/installed unsigned packages554647f2 have exact12file manifests and the localized403 was observed in current installed app. Native normal quits leave independent server alive; both fixture controllers then stopped explicitly and original profile config retained. Strict HTTPS verification unchanged; no trust override/OS changes/offline identity seeds or live external deliveries. Group94 service sales and all earlier qualified journeys retained. Complete native accepted-response-loss recovery across full app closure is not qualified: MutationMemory uses sessionStorage, covering same-window reload but requiring a durable app-reopen solution, including changing local origins. Full J03/R50, J06 installed handoff, J07 local/hosted automation, remaining service parity, signed distribution/updates, TS retirement and epic672 remain OPEN.",
+  "state": "Group96 closes the server persistence gap for opted-in browser manual posts: recoveryRequired creates a pending acknowledgement fact atomically with its original accepted idempotency receipt, preserving historical/CLI/MCP receipts unchanged. Current human/company inventory and ledger-post-authorized explicit acknowledgement never repeat the financial operation, edit the journal or remove reserved keys. A fresh opted-in posting is refused while recovery is pending. Shared ConfirmDialog now saves its immediate uncertainty barrier BEFORE sending, retains it for coded503/unknown results, and releases only known success or definite refusal. Web renders server receipt/hash read-back with explicit human acknowledgement, failing closed on unavailable/expired recovery and unconfirmed acknowledgement. Actual strict trusted HTTPS native-server fixture used normal invited bookkeeper password/TOTP, discarded an accepted200 reply, verified exactly one0.43 entry, rejected fresh-key duplicate intent, denied foreign-principal/company and revoked-member recovery/ack, restored ordinary grant, stopped/restarted actual server on a new origin and normal MFA read back the same exact pending receipt; explicit repeated ack preserved canonical journal. Original primary remains2 entries; second4.4storage recovery,7idempotency,7service-read regression and61targeted web tests pass; strict Clippy, server build and design/typecheck/web build pass. Both owned fixture servers stopped and original config preserved. Installed current unsigned package has exact12-file manifests, but CUA reports Mac locked; FULL installed app accepted-response-loss quit/reopen is still NOT qualified. Earlier Group95 installed multiuser/context/revocation and Group94 service invoice/PDF/accounting proofs retained. J03/R50, installed J06 handoff, J07 automation, remaining service parity, signed distribution/updates, TypeScript backend retirement and full epic672 remain OPEN.",
   "issues_closed": [],
   "next": [
-    "R50/J03: complete durable unknown-write reconciliation across FULL installed app closure/reopen, not just reload. Current app/src/lib/mutation-memory.tsx uses sessionStorage. Preserve opaque operation identifiers, explicit original-key/read-back recovery and current authority; qualify accepted200 response held, app quit, exactly one canonical entry, reopen cannot blindly submit a fresh key. Cover remote stable origin and local managed origin/port boundary.",
+    "R50/J03: finish actual installed app accepted-response-loss FULL quit/reopen against current package9f3ede14. Server recovery now persists across restart/new origin and web tests simulate absent tab memory. Wait for user unlock/new CUA evidence, then hold accepted200 native manual-post response, quit before receipt, canonical exactly one, reopen normal MFA and explicit original-receipt read-back/ack without resending. Cover local managed origin boundary; no certificate bypass/remote IPC or fixed port. Do not repeat completed Group96 API checks unchanged.",
     "J03/R13/R45: next whole service flow: owner-configured bank account, service bank read/confirmed exact CSV import, explicit invoice receipt settlement to zero debtor, duplicate refusal and restart. Remaining service-operation parity beyond accepted journal/reports and invoice issue/post/PDF; preserve current authority and operation-specific uncertain-result recovery. Do not repeat unchanged Group93/94 acceptance.",
     "J06: qualify installed GUI handoff/recovery beyond Group56 backend and Group95 native HTTPS/context/access-loss proofs; no duplicate writer/booking/delivery.",
     "J07 local closure/sleep versus hosted automation, signed installation/updates, remaining CLI/MCP parity and full TypeScript backend retirement.",
@@ -22,10 +22,10 @@
   ],
   "all_goal_requirements_complete": false,
   "previous_verified_increment": {
-    "current_increment": "Group94 service customer/invoice/PDF/accounting through real Rust CLI/MCP and normal-MFA restart qualified; installed remote J03 and other service operations remain open",
-    "code_revision": "e668c83055395e8419ff2d0a43a59dc431c92f12",
+    "current_increment": "Group95 installed shared-web desktop HTTPS owner/bookkeeper/service, pending context/revocation and canonical client parity qualified; complete app-closure uncertainty recovery remains open",
+    "code_revision": "554647f2f94eb1ed81dc001317b0aed8cfe67dd6",
     "spec_revision": "sha256:a7eb3f0d6e65412fa5ee945a7b79721b593806839f4a03e6b8d969ce3327e3fc",
-    "state": "Group94 completes explicit service contacts/customer creation and invoice preview/issue/explicit post/list/immutable PDF through the existing native domain and two-phase quota/current-authority fence. Typed service results carry binary PDF without a new encoding. Human storage wrappers preserve their defaults; service customer/invoice audits use ServiceAccount and journal attribution preserves user:subject plus service-principal program. Readonly company checks protect preview/list/PDF; unsupported vendor/settlement/credit/refund actions remain excluded. Four new application service-sales tests and11 storage sales-filter regressions pass, including3 direct human sales tests; all92 existing service quota/concurrency/unknown-commit scenarios pass after generic fence change. Strict storage/application/host/server/CLI/MCP Clippy, server/CLI/MCP build, targeted TypeScript and Python syntax checks pass. Actual fresh normal-owner verification/MFA two-company fixture passes complete CLI customer creation, nonmutating PDF preview, MCP issuance, CLI posting, MCP duplicate-post refusal, canonical invoice/receivable/journal/trial balance/income parity and exact stored PDF across owner/service HTTP/CLI/MCP. After a second real server restart and independent normal owner TOTP login, original PDF hash, posted invoice/open balance and complete canonical journal rows match. Prior Group91/92/93 accepted response-loss, company/account-switch, key rotation and current-access revocation proofs pass in the same composed run. The first composed run reached the context-switch harness after service sales; the route oracle also intercepted later correctly refused403 requests after account change. It now claims exactly one real authorized reply and forwards later requests with their current authority; fresh composed acceptance passed. All fixture processes/private data cleaned. Desktop packaging script now handles app-launched shell lacking rustup PATH; refreshed unsigned native package carries current server/web/icon with exact manifest verification. Native GUI freshly reports locked; no installed current-release GUI claim. Group88 installed shared-web and Group90 adoption/recovery retained. Full Rust mission/epic672, installed J03 remote multiuser matrix, remaining service-operation parity, J06/J07, signed distribution/updates and TS retirement remain OPEN."
+    "state": "Group95 uses the actual installed unsigned shared-web Rust desktop against an independent OS-trusted HTTPS Rust server and existing synthetic Group88 profile. Normal native owner password/TOTP, native second-company creation and12.34 posting, separate ordinary invited/verified/MFA bookkeeper5.67 posting, native company/account switching and role-correct ledger isolation pass. Real server-authorized old-company200 replies held by private one-shot proxy gates across native company/account change are cancelled/discarded; release delays10.393/34.511seconds are within45second bounds. Pending native read/write held before server admission, then normal owner revokes company membership: actual403 each, both canonical journals unchanged, denied0.56 posting absent. Explicit normal regrant restores reading. Fresh owner MFA issues/grants service; CLI0.99 posting and MCP exact original receipt replay create exactly one additional entry, primary stays2, second3. Five canonical reports match owner API and bookkeeper/service CLI/MCP. Native app reopened with normal MFA and current journal shows the same three owner/bookkeeper/service entries. Found raw internal403 text in UI; common JSON/binary error adapter now displays Danish permission guidance without expiring unrelated account or changing other policy errors.28 targeted API tests and production design/typecheck/web build pass. One pre-existing cancelled-read mock test contradicted Group92 post-body abort contract; corrected it to expect cancelled-read rejection while retaining next-write signal-isolation assertions. Current staged/installed unsigned packages554647f2 have exact12file manifests and the localized403 was observed in current installed app. Native normal quits leave independent server alive; both fixture controllers then stopped explicitly and original profile config retained. Strict HTTPS verification unchanged; no trust override/OS changes/offline identity seeds or live external deliveries. Group94 service sales and all earlier qualified journeys retained. Complete native accepted-response-loss recovery across full app closure is not qualified: MutationMemory uses sessionStorage, covering same-window reload but requiring a durable app-reopen solution, including changing local origins. Full J03/R50, J06 installed handoff, J07 local/hosted automation, remaining service parity, signed distribution/updates, TS retirement and epic672 remain OPEN."
   },
   "evidence": {
     "combined_browser_log": "/tmp/rm-platform5-combined.log",
@@ -2279,6 +2279,48 @@
         "native_runtime": "scoped pass"
       },
       "handoff": "/tmp/rm95-handoff.md"
+    },
+    "manual_post_recovery96": {
+      "path": "/tmp/rentemester-rust-reports/manual-post-recovery96.json",
+      "sha256": "c6fcf6ee5c5a64cce5ac3d1f166f6ab283eb0f05826602973712a6bb3c67b91b",
+      "report": {
+        "status": "server_recovery_qualified_native_pending",
+        "fullGoalQualified": false,
+        "fullJ03Qualified": false,
+        "installedAppClosureQualified": false,
+        "nativeBlocker": "Mac locked according to CUA; user unlock question pending",
+        "fixture": "existing synthetic Group88 profile with Group95 second company and normal invited bookkeeper; no offline identity seeds",
+        "normalPasswordTotp": true,
+        "acceptedHttp200ReplyDiscarded": true,
+        "exactlyOneAcceptedEntry": true,
+        "freshKeyResubmissionRefusedBeforeEffect": true,
+        "ownPrincipalAndCompanyIsolation": true,
+        "currentRevokedReadAndAckDenied": true,
+        "explicitRegrantRestoresOriginalReceipt": true,
+        "actualServerRestartNewOriginNormalMfa": true,
+        "sameOriginalPendingReceiptAfterRestart": true,
+        "explicitIdempotentAckNoJournalChange": true,
+        "oldReceiptsNotRetroactivelyPending": true,
+        "firstOrigin": "https://localhost:59967",
+        "secondOrigin": "https://localhost:60344",
+        "receiptId": 4,
+        "entryHash": "4ccdeb1eefe3d1a5062365ba5563ed60a4ad2a120d06f34bb547a499065646a6",
+        "primaryEntries": 2,
+        "secondEntries": 4,
+        "storageRecoveryTests": 4,
+        "webRegressionTests": 61,
+        "strictClippy": "/tmp/rm96-clippy.log",
+        "webBuild": "/tmp/rm96-web-build.log",
+        "sourceConfigPreservedFirstStop": true,
+        "fixtureStopped": true,
+        "sourceConfigPreservedBothStops": true,
+        "codeRevision": "9f3ede140a696397687545e4a8d1fd8092694d1d",
+        "idempotencyRegressionPassed": true,
+        "serviceCompanyRegressionPassed": true,
+        "storageIdempotencyRegressionTests": 7,
+        "applicationServiceRegressionTests": 7
+      },
+      "packageReport": "/tmp/rentemester-rust-reports/shared-web-desktop96-package.json"
     }
   },
   "verified_history": [
@@ -3478,6 +3520,12 @@
       "owner": "root implementation/actual/integration; exception_read82 read-only review; invoice_domain80 read-only next service gap scout",
       "status": "COMPLETE finite browser/server and auth unit scope; whole J03 still OPEN",
       "acceptance": "Superseded auth replies cannot resurrect/logout/mix a newer identity; held real authorized journal response cannot overwrite company or independent MFA user view."
+    },
+    {
+      "delivery": "Group96 durable browser manual-post recovery across process/origin loss",
+      "owner": "root implementation/integration/verification; exception_read82 read-only design and material review",
+      "status": "SERVER_AND_WEB_QUALIFIED; INSTALLED_FULL_QUIT_REOPEN_PENDING_MAC_UNLOCK",
+      "acceptance": "Actual accepted200 reply loss, canonical single entry, server fresh-key guard, current principal/company/revoked authority isolation, actual server restart/new origin, same receipt normal MFA, explicit acknowledgement no ledger changes.4+7+7Rust and61web tests, strict Clippy/build. Native app full closure remains unqualified."
     }
   ],
   "integrated_pending_browser": [
