@@ -173,7 +173,10 @@ fn source(db: &Connection, id: i64, bs: &[Boundary]) -> Result<Source, Error> {
         || !hex(&ledger, 32)
         || !hex(&key, 64)
         || !hex(&payload, 64)
-        || !matches!(operation.as_str(), "journal_post" | "journal_reverse")
+        || !matches!(
+            operation.as_str(),
+            "journal_post" | "journal_reverse" | "opening_balance_post"
+        )
         || !matches!(kind.as_str(), "user" | "service-account")
         || !text(&subject, 1, 256)
     {
@@ -216,6 +219,17 @@ fn source(db: &Connection, id: i64, bs: &[Boundary]) -> Result<Source, Error> {
     })
 }
 fn verify_result(db: &Connection, operation: &str, result: &Value) -> Result<(), Error> {
+    if operation == "opening_balance_post" {
+        let opening = crate::opening_balance::validate_history(db)
+            .map_err(|_| refused())?
+            .ok_or_else(refused)?;
+        // Reconciliation adopts the exact historical result, never a new opening
+        // or a projection rebuilt from current editable company settings.
+        if *result != json!({"ok":true,"openingBalance":opening.record(),"errors":[]}) {
+            return Err(refused());
+        }
+        return Ok(());
+    }
     if result["ok"] != true {
         return Err(refused());
     }
@@ -323,7 +337,7 @@ fn projection(s: &Source, m: Option<&Mapping>) -> Result<Value, Error> {
 pub fn inventory(db: &Connection) -> Result<Value, Error> {
     let bs = boundaries(db)?;
     let high = bs.last().map_or(0, |b| b.high);
-    let mut q=db.prepare("SELECT id FROM mutation_idempotency_tombstones WHERE id<=?1 AND operation IN ('journal_post','journal_reverse') ORDER BY id").map_err(sql)?;
+    let mut q=db.prepare("SELECT id FROM mutation_idempotency_tombstones WHERE id<=?1 AND operation IN ('journal_post','journal_reverse','opening_balance_post') ORDER BY id").map_err(sql)?;
     let ids = q
         .query_map([high], |r| r.get::<_, i64>(0))
         .map_err(sql)?

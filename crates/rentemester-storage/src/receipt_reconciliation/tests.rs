@@ -305,3 +305,134 @@ fn reversal_receipt_maps_exact_child_and_rollback_does_not_publish_mapping() {
         2
     );
 }
+
+fn opening_fixture() -> (Connection, Value, Value) {
+    let mut control = Connection::open_in_memory().unwrap();
+    let mut db = Connection::open_in_memory().unwrap();
+    crate::fresh::initialize_empty_pair(&mut control, &mut db, "Synthetic restored opening")
+        .unwrap();
+    let tx = db
+        .transaction_with_behavior(TransactionBehavior::Immediate)
+        .unwrap();
+    tx.execute_batch("INSERT INTO accounts(account_no,name,type,normal_balance)VALUES('A','Synthetic asset','asset','debit'),('E','Synthetic equity','equity','credit')").unwrap();
+    let date = rentemester_engine::fiscal_year::Date::parse("2026-02-15").unwrap();
+    let source = serde_json::from_value(json!({"cutOverDate":"2026-01-01","lines":[{"accountNo":"A","debitAmount":"10.00"},{"accountNo":"E","creditAmount":"10.00"}]})).unwrap();
+    let plan = crate::opening_balance::prepare(&tx, &source, &[], date).unwrap();
+    let command = crate::opening_balance::Apply {
+        input: source,
+        plan_hash: plan.review()["planHash"].as_str().unwrap().into(),
+        idempotency_key: "accepted-opening-lost-response".into(),
+        confirm: true,
+    };
+    let payload = serde_json::to_value(&command).unwrap();
+    let mut intent = input(&payload, &command.idempotency_key, "old-owner");
+    intent.operation = Operation::OpeningBalancePost;
+    let outcome = idempotency::execute(&tx, intent, |tx| {
+        crate::opening_balance::apply(
+            tx,
+            &command,
+            &[],
+            date,
+            crate::journal_post::Actor {
+                subject: "user:old-owner",
+                program: crate::opening_balance::PROGRAM,
+            },
+            1_767_225_600_000,
+        )
+    })
+    .unwrap();
+    let Outcome::Accepted { result, .. } = outcome else {
+        panic!("opening accepted")
+    };
+    tx.commit().unwrap();
+    boundary(&db, "4");
+    (db, payload, result)
+}
+
+#[test]
+fn opening_receipt_requires_explicit_mapping_and_replays_exact_original_without_writing() {
+    let (mut db, payload, original) = opening_fixture();
+    let rows = inventory(&db).unwrap();
+    assert_eq!(rows["rows"].as_array().unwrap().len(), 1);
+    assert_eq!(rows["rows"][0]["operation"], "opening_balance_post");
+    assert_eq!(rows["rows"][0]["result"], original);
+    assert_eq!(rows["rows"][0]["sourcePrincipal"]["subject"], "old-owner");
+    {
+        let tx = db
+            .transaction_with_behavior(TransactionBehavior::Immediate)
+            .unwrap();
+        let mut intent = input(&payload, "accepted-opening-lost-response", "new-owner");
+        intent.operation = Operation::OpeningBalancePost;
+        assert!(
+            idempotency::execute(&tx, intent, |_| panic!("must not create second opening"))
+                .is_err()
+        );
+        tx.rollback().unwrap();
+    }
+    reconcile_one(&mut db, "new-owner");
+    let tx = db
+        .transaction_with_behavior(TransactionBehavior::Immediate)
+        .unwrap();
+    let before = tx.total_changes();
+    let mut intent = input(&payload, "accepted-opening-lost-response", "new-owner");
+    intent.operation = Operation::OpeningBalancePost;
+    match idempotency::execute(&tx, intent, |_| panic!("never apply again")).unwrap() {
+        Outcome::Accepted { result, receipt } => {
+            assert_eq!(result, original);
+            assert!(receipt.replayed);
+            let provenance = receipt.reconciliation.unwrap();
+            assert_eq!(provenance["sourcePrincipal"]["subject"], "old-owner");
+            assert_eq!(provenance["mappedUserId"], "new-owner");
+        }
+        _ => panic!("retained opening required"),
+    }
+    assert_eq!(tx.total_changes(), before + 1);
+    assert_eq!(
+        tx.query_row(
+            "SELECT count(*) FROM audit_log WHERE event_type='idempotency_replay'",
+            [],
+            |r| r.get::<_, i64>(0)
+        )
+        .unwrap(),
+        1
+    );
+    assert_eq!(
+        tx.query_row("SELECT count(*) FROM journal_entries", [], |r| r
+            .get::<_, i64>(0))
+            .unwrap(),
+        1
+    );
+    assert_eq!(
+        tx.query_row("SELECT count(*) FROM opening_balances", [], |r| r
+            .get::<_, i64>(0))
+            .unwrap(),
+        1
+    );
+    tx.commit().unwrap();
+}
+
+#[test]
+fn opening_receipt_corrupt_result_or_authoritative_history_refuses() {
+    for field in [
+        "cutOverDate",
+        "journalEntryHash",
+        "planHash",
+        "actor",
+        "sourceBasis",
+    ] {
+        let (db, _, mut result) = opening_fixture();
+        // Deliberately corrupt retained bytes, retaining canonical JSON encoding.
+        db.execute_batch("DROP TRIGGER IF EXISTS mutation_idempotency_outcomes_no_update")
+            .unwrap();
+        result["openingBalance"][field] = json!("corrupt");
+        db.execute(
+            "UPDATE mutation_idempotency_outcomes SET outcome_json=?1",
+            [idempotency::outcome_json(&result).unwrap()],
+        )
+        .unwrap();
+        assert!(inventory(&db).is_err(), "altered {field}");
+    }
+    let (db, _, _) = opening_fixture();
+    db.execute_batch("DROP TRIGGER IF EXISTS opening_balances_no_update; UPDATE opening_balances SET journal_entry_no='CORRUPT'").unwrap();
+    assert!(inventory(&db).is_err());
+}
