@@ -232,9 +232,9 @@ pub fn source_profile(tx: &Transaction<'_>, bank_id: i64) -> Result<Option<Strin
             if value.as_object().is_none_or(|m| m.len() != 8)
                 || value["version"] != "rentemester-native-bank-import/1"
                 || value["requiredProfile"] != "danske-bank"
-                || !value["imported"].as_u64().is_some_and(|n| n > 0)
+                || value["imported"].as_u64().is_none_or(|n| n == 0)
                 || value["skippedDuplicates"].as_u64().is_none()
-                || !value["original"].as_str().is_some_and(|p| !p.is_empty())
+                || value["original"].as_str().is_none_or(str::is_empty)
             {
                 return Err(fail("bank import marker is unsupported"));
             }
