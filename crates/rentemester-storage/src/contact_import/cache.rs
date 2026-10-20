@@ -26,9 +26,11 @@ const FIELDS: &[(&str, &str)] = &[
     ("employees", "employees"),
     ("advertising_protected", "advertisingProtected"),
 ];
-pub(super) struct Cached {
+#[derive(Clone)]
+pub(crate) struct Cached {
     pub company: CvrCompany,
     pub expires_at: String,
+    pub fetched_at: String,
 }
 impl Cached {
     pub fn fresh(&self, now: &str) -> bool {
@@ -36,7 +38,7 @@ impl Cached {
             .is_ok_and(|expiry| expiry.as_str() >= now)
     }
 }
-pub(super) fn read(tx: &Transaction<'_>, cvr: &str) -> Result<Option<Cached>, Error> {
+pub(crate) fn read(tx: &Transaction<'_>, cvr: &str) -> Result<Option<Cached>, Error> {
     let mut q = tx
         .prepare("SELECT * FROM cvr_lookups WHERE cvr=?1")
         .map_err(sql)?;
@@ -79,9 +81,10 @@ pub(super) fn read(tx: &Transaction<'_>, cvr: &str) -> Result<Option<Cached>, Er
     Ok(Some(Cached {
         company: serde_json::from_value(Value::Object(object)).map_err(sql)?,
         expires_at: row.get("expires_at").map_err(sql)?,
+        fetched_at: row.get("fetched_at").map_err(sql)?,
     }))
 }
-pub(super) fn store(
+pub(crate) fn store(
     tx: &Transaction<'_>,
     company: &CvrCompany,
     entity: &Value,

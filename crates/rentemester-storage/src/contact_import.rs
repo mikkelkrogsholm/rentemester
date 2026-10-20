@@ -1,5 +1,5 @@
 //! Prepared contact-only import, using current writers and retained public CVR snapshots.
-mod cache;
+pub(crate) mod cache;
 #[cfg(test)]
 mod tests;
 use rentemester_engine::{
