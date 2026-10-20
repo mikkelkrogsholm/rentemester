@@ -3,6 +3,7 @@ import { act, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useLocation } from "react-router-dom";
 import { CockpitLayout } from "./AppChrome";
+import { CompanyNav, CompanyNavigationShell } from "./CompanyNav";
 import { AuthProvider } from "../lib/auth-context";
 import { api } from "../lib/api";
 import { renderAt } from "../test/render";
@@ -42,4 +43,20 @@ test("shell keeps explicit live source but excludes unsupported source and view 
   first.unmount();
   await mount("year=2024&source=invalid&q=private");
   expect(screen.getByRole("link", { name: "Posteringer", hidden: true })).toHaveAttribute("href", "/companies/synthetic/posteringer?year=2024");
+});
+
+test("native cashflow exposes the registered shifted fiscal selector in the actual shell", async () => {
+  vi.spyOn(api, "companies").mockResolvedValue([{slug:"synthetic",name:"Synthetic shifted",archived:false,createdAt:"2025-01-01T00:00:00Z"}]);
+  const years = [
+    {label:"2025/26",start:"2025-07-01",end:"2026-06-30",source:"live" as const,selectable:true},
+    {label:"2026/27",start:"2026-07-01",end:"2027-06-30",source:"live" as const,selectable:true},
+  ];
+  renderAt(<AuthProvider hosted={false} backend="rust"><CompanyNavigationShell><CockpitLayout>
+    <CompanyNav slug="synthetic" years={years} selectedYear="2025/26" onYearChange={()=>{}}/><Location/>
+  </CockpitLayout></CompanyNavigationShell></AuthProvider>,{route:"/companies/synthetic/likviditet?year=2025%2F26&source=live",path:"*"});
+  const selector=await screen.findByLabelText("Vælg regnskabsår");
+  expect(screen.getAllByLabelText("Vælg regnskabsår")).toHaveLength(1);
+  expect(selector).toHaveValue("live:2025/26");
+  await userEvent.selectOptions(selector,"live:2026/27");
+  expect(screen.getByTestId("location")).toHaveTextContent("year=2026%2F27&source=live");
 });
