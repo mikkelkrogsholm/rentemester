@@ -1,5 +1,22 @@
 # MCP agent contract — the standalone tool surface (#203)
 
+## Native Rust surface
+
+The TypeScript contract below remains the legacy reference. The Rust MCP
+process exposes its actual tool names and schemas with `--catalogue`; use
+`meta_about`, `agent_capability_search` and `agent_workflow_describe` to discover
+the finite native supplier-payable journey. `toolCount` comes from the live
+MCP registry, not this document's historical count. Native metadata explicitly
+reports `fullCoverage:false`, unavailable TypeScript rule-bundle identity and
+unavailable commit/build-time identity when not accessible to that metadata
+module. Verify the packaged build identity separately.
+
+Discovery is read-only and public. Accounting operations still require current
+company authority and explicit confirmation. Native payable writes have no
+generic keyed retry promise: reconcile an uncertain outcome using payables
+(with `status:all`), bank, journal and documents before further action. The
+[native server contract](rust-server.md) documents scope and evidence.
+
 This is the operating contract for an **external agent** (Claude Desktop,
 Cursor, Claude Code, Codex, …) that drives Rentemester through the **MCP
 server's 214 loose tools**.

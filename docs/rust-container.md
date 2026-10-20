@@ -180,7 +180,6 @@ rapporter og browserartefakter gemmes særskilt.
 
 Dette CI-job publicerer ikke et image og ændrer ikke produktionspromotionen.
 Den første fjernkørsel på Ubuntu/amd64 er endnu ikke verificeret; lokale arm64-
-pakkekontroller beviser ikke dette. Fuld native discovery mangler bl.a.
-capability-/workflowopslag og de tidligere interfaces for backupdestination,
-placering og verifikation. Katalogets værktøjsantal må ikke bruges som grønt
+pakkekontroller beviser ikke dette. Det native discovery-katalog dækker foreløbig leverandørkøb. De tidligere
+interfaces for backupdestination, placering og verifikation mangler stadig. Katalogets værktøjsantal må ikke bruges som grønt
 paritetsbevis eller som erstatning for releasegatens dækningskrav.

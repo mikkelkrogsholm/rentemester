@@ -4,6 +4,10 @@ use serde_json::{Value, json};
 
 pub fn list() -> Value {
     let mut tools = Vec::new();
+    tools.push(tool("meta_about", "Identify the native Rust runtime and partial catalogue; no ledger access", json!({"type":"object","properties":{},"additionalProperties":false}), true));
+    tools.push(tool("agent_capability_search", "Search native implemented capabilities; partial coverage is explicit", json!({"type":"object","properties":{"query":{"type":"string","maxLength":200},"cursor":{"type":"integer","minimum":0,"maximum":1000000},"limit":{"type":"integer","minimum":1,"maximum":50}},"additionalProperties":false}), true));
+    tools.push(tool("agent_workflow_describe", "Describe a native workflow and actual operation/recovery contracts without executing it", json!({"type":"object","required":["id"],"properties":{"id":{"type":"string","maxLength":128}},"additionalProperties":false}), true));
+
     for (name, description) in [
         ("me", "Current authenticated user and workspace context"),
         (
@@ -244,6 +248,23 @@ pub async fn call(api: &ApiClient, name: &str, args: Value) -> Result<Value, &'s
     }
     let mut idempotency = None;
     let outcome = match name {
+        "meta_about" => {
+            if !args.as_object().unwrap().is_empty() { return Err("unexpected about arguments"); }
+            api.agent_about().await.map(|mut value| { value["toolCount"] = json!(list()["tools"].as_array().unwrap().len()); value })
+        }
+        "agent_capability_search" => {
+            if args.as_object().unwrap().keys().any(|k| !["query", "cursor", "limit"].contains(&k.as_str())) { return Err("unexpected discovery arguments"); }
+            let query = match args.get("query") { None => "", Some(v) => v.as_str().ok_or("query must be a string")? };
+            let cursor = match args.get("cursor") { None => 0, Some(v) => usize::try_from(v.as_u64().ok_or("invalid cursor")?).map_err(|_|"invalid cursor")? };
+            let limit = match args.get("limit") { None => 10, Some(v) => usize::try_from(v.as_u64().ok_or("invalid limit")?).map_err(|_|"invalid limit")? };
+            if query.chars().count()>200 || cursor>1_000_000 || !(1..=50).contains(&limit) { return Err("invalid discovery pagination/query"); }
+            api.agent_capabilities(query,cursor,limit).await
+        }
+        "agent_workflow_describe" => {
+            if args.as_object().unwrap().len()!=1 { return Err("expected only workflow id"); }
+            api.agent_workflow(args["id"].as_str().ok_or("workflow id required")?).await
+        }
+
         "create_company" => crate::company_creation::call(api,args).await?,
         name if crate::reminder_claims::accepts(name) => crate::reminder_claims::call(api,name,args).await?,
         name if crate::company_setup::accepts(name) => crate::company_setup::call(api,name,args).await?,

@@ -1,4 +1,5 @@
 //! Standalone Rust HTTP process serving the existing cockpit on the API origin.
+mod agent_discovery;
 mod auth_delivery;
 mod backend;
 mod document_scanner;
@@ -328,6 +329,7 @@ fn cockpit_router(
         });
     let router = Router::new()
         .nest("/api", api)
+        .merge(agent_discovery::router(connected))
         .fallback_service(ServeDir::new(&web).fallback(ServeFile::new(web.join("index.html"))));
     let router = if let Some(identity) = identity {
         router.merge(identity)

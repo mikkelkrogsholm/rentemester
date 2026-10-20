@@ -1,5 +1,15 @@
 # MCP Tool Surface — Rentemester
 
+## Rust-katalog
+
+Listen nedenfor er TypeScript-overfladens historiske kontrakt. Den native
+Rust-proces eksponerer den faktiske registry via `rentemester-mcp --catalogue`.
+`meta_about` viser dens aktuelle antal; `agent_capability_search` og
+`agent_workflow_describe` beskriver foreløbig leverandørfaktura/-betaling med
+`fullCoverage:false`. Brug de returnerede native navne og inputskemaer.
+Dette er ingen erklæring om fuld paritet med listen nedenfor. Se også
+[den native serverkontrakt](rust-server.md).
+
 Den autoritative liste over de tools Rentemester-MCP-serveren eksponerer til
 agenter (Claude, Cursor, Claude Code, Codex osv.). Dokumentet startede som
 bygge-tegning for MCP-epicen (#89, scaffold #77, implementation #78) og

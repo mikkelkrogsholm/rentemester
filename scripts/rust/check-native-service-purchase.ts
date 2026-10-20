@@ -70,6 +70,59 @@ export async function createServicePurchaseProof(ownerPage: Page, base: string, 
     need(reply?.result?.isError === !success && !reply.error, `MCP purchase ${command} unexpected outcome`);
     return success ? reply.result.structuredContent.data : { refused: true };
   }
+  async function discoveryProof() {
+    const invoke = (kind: "cli" | "mcp", name: string, args: Record<string, unknown> = {}) => {
+      const common = ["--server", base, "--allow-loopback-http", "--service-key-file", keyFile];
+      const input = kind === "cli" ? "" : [
+        { jsonrpc: "2.0", id: 1, method: "initialize", params: { protocolVersion: "2025-11-25", capabilities: {}, clientInfo: { name: "synthetic-discovery", version: "1" } } },
+        { jsonrpc: "2.0", method: "notifications/initialized" },
+        { jsonrpc: "2.0", id: 2, method: "tools/call", params: { name, arguments: args } },
+      ].map(v => JSON.stringify(v)).join("\n") + "\n";
+      const argv = kind === "cli" ? ["remote", name, ...common, ...Object.entries(args).flatMap(([k,v]) => ["--" + k, String(v)])] : common;
+      const result = spawnSync(join(work, kind === "cli" ? "rentemester-rust" : "rentemester-mcp"), argv, { input, encoding: "utf8", timeout: 15000 });
+      need(result.status === 0 && !result.stdout.includes(key) && !result.stderr.includes(key), "Discovery process/credential safety");
+      if (kind === "cli") return JSON.parse(result.stdout).data;
+      const reply = result.stdout.trim().split("\n").map(line => JSON.parse(line)).find(v => v.id === 2);
+      need(reply?.result?.isError === false, "MCP discovery read failed");
+      return reply.result.structuredContent.data;
+    };
+    const get = async (path: string) => { const r = await ownerPage.request.get(base + path); need(r.ok(), "HTTP discovery refused"); return r.json(); };
+    const about = await get("/api/agent-about");
+    const capabilities = await get("/api/agent-capabilities?query=payable&limit=1");
+    const workflow = await get("/api/agent-workflows/supplier-payable-handling");
+    need(isDeepStrictEqual(invoke("cli", "about"), about), "CLI about differs from HTTP");
+    need(isDeepStrictEqual(invoke("cli", "agent-capabilities", { query: "payable", limit: 1 }), capabilities), "CLI search differs");
+    need(isDeepStrictEqual(invoke("mcp", "agent_capability_search", { query: "payable", limit: 1 }), capabilities), "MCP search differs");
+    need(isDeepStrictEqual(invoke("cli", "agent-workflow", { id: "supplier-payable-handling" }), workflow), "CLI workflow differs");
+    need(isDeepStrictEqual(invoke("mcp", "agent_workflow_describe", { id: "supplier-payable-handling" }), workflow), "MCP workflow differs");
+    const catalogue = JSON.parse(spawnSync(join(work, "rentemester-mcp"), ["--catalogue"], { encoding: "utf8" }).stdout);
+    const mcpAbout = invoke("mcp", "meta_about");
+    need(mcpAbout.toolCount === catalogue.tools.length, "MCP about count not actual registry");
+    mcpAbout.toolCount = about.toolCount;
+    need(isDeepStrictEqual(mcpAbout, about), "MCP about identity differs");
+    const help = JSON.parse(spawnSync(join(work, "rentemester-rust"), ["remote", "--help"], { encoding: "utf8" }).stdout);
+    need(workflow.workflow.live === true && workflow.workflow.unresolvedOperations.length === 0, "Configured payable workflow unresolved");
+    need(capabilities.count === 1 && capabilities.items[0].id === "supplier-purchases", "Payable capability not found");
+    for (const step of workflow.workflow.steps) {
+      need(step.operation.resolved === true, "HTTP step not registered");
+      for (const alias of step.aliases) {
+        need(alias.surface === "mcp" ? catalogue.tools.some((t: any) => t.name === alias.name) : help.commands.includes(alias.key.replace(/^remote /, "")), "Advertised alias absent from actual registry");
+      }
+      if (step.requiresConfirmation) need(step.retryClass === "unsafe-read-back" && step.expectedIdempotent === false, "Unsafe keyed retry claim");
+    }
+    for (const path of ["/api/agent-capabilities?limit=0", "/api/agent-capabilities?cursor=-1", "/api/agent-capabilities?query=a&query=b", "/api/agent-capabilities?extra=x"]) need((await ownerPage.request.get(base + path)).status() === 400, "Invalid discovery query accepted");
+    need((await ownerPage.request.get(base + "/api/agent-workflows/unknown")).status() === 404, "Unknown workflow accepted");
+    const empty = await get("/api/agent-capabilities?cursor=1&limit=1");
+    need(empty.count === 0 && empty.hasMore === false && empty.nextCursor === null, "Pagination beyond end invalid");
+    const anonymous = await request.newContext();
+    try {
+      for (const [method, path] of [["GET", "/payables"], ["POST", "/payables"], ["POST", "/payables/1/pay"]]) {
+        const r = await anonymous.fetch(base + prefix + path.slice(1), { method, headers: { origin: base, "content-type": "application/json" }, ...(method === "POST" ? { data: {} } : {}) });
+        need([401,403].includes(r.status()), "Described actual route missing or anonymous write/read admitted");
+      }
+    } finally { await anonymous.dispose(); }
+    return { registerTool: workflow.workflow.steps.find((s: any) => s.id === "register-payable").aliases.find((a: any) => a.surface === "mcp").name as string, payCommand: workflow.workflow.steps.find((s: any) => s.id === "pay-payable").aliases.find((a: any) => a.surface === "cli").key.replace(/^remote /, "") as string, crossSurfaceIdentity: true, actualToolCount: catalogue.tools.length, workflow: workflow.workflow.id, actualAliasesResolved: true, invalidInputsRefused: true, anonymousAccountingRefused: true, unsafeReplayNotAdvertised: true };
+  }
   async function snapshot() {
     return { documents: (await human("documents")).documents, payables: (await human(`payables?status=all&asOf=${today}`)).payables,
       bank: (await human("bank")).bank, journal: (await human("journal")).journal,
@@ -115,6 +168,8 @@ export async function createServicePurchaseProof(ownerPage: Page, base: string, 
     await admin("members/company", { userId: serviceId, action: "grant", companySlug: "synthetic", role: "bookkeeper" });
     http = await request.newContext({ baseURL: base, extraHTTPHeaders: { origin: base, "x-rentemester-service-key": key } });
     const beforeUpload = await snapshot();
+    const discovery = await discoveryProof();
+    await unchanged(beforeUpload);
     const uploadReceipt = client("cli", "ingest_document", upload("cli")); documentId = uploadReceipt.document.id;
     need(Number.isSafeInteger(documentId) && documentId > 0, "CLI service required scan registered one document");
     const listed = client("mcp", "documents").documents;
@@ -124,7 +179,7 @@ export async function createServicePurchaseProof(ownerPage: Page, base: string, 
     need(evidence.contentType === "text/plain" && Buffer.from(evidence.bytes).equals(original("cli")), "MCP exact required-scanner original bytes");
     need(isDeepStrictEqual((await human("journal")).journal, beforeUpload.journal), "Scanned ingress creates no financial posting");
     const registration = { documentId, billDate: today, dueDate: today, expenseAccountNo: account.expense, confirm: true };
-    const recognized = client("mcp", "register_payable", registration).payable; payableId = recognized.payableId;
+    const recognized = client("mcp", discovery.registerTool, registration).payable; payableId = recognized.payableId;
     need(payableId > 0 && recognized.grossAmount === 125 && recognized.netAmount === 100 && recognized.vatAmount === 25, "MCP factual supplier bill recognition");
     const afterRecognition = await snapshot();
     const duplicateBill = await service().post(prefix + "payables", { data: registration });
@@ -138,7 +193,7 @@ export async function createServicePurchaseProof(ownerPage: Page, base: string, 
     const row = bank.transactions.find((value: any) => value.reference === "synthetic-service-purchase-payment-101");
     need(bank.transactions.length === 1 && row?.amount === -125 && row.sourceFileHash === hash(bytes), "One exact outgoing bank transaction");
     const paymentBody = { bankTransactionId: row.id, confirm: true };
-    const payment = client("cli", "pay_payable", paymentBody, payableId).payment;
+    const payment = client("cli", discovery.payCommand.replaceAll("-", "_"), paymentBody, payableId).payment;
     need(payment.paymentId > 0 && payment.openBalance === 0, "CLI service payment clears payable");
     stable = await snapshot();
     need(stable.journal.entries.length === 2 && stable.trialBalance.balanced && stable.incomeStatement.totalExpense === 100 && stable.vat.inputVat === 25, "Recognition/payment has exact expense/VAT and balanced two-entry journal");
@@ -153,7 +208,7 @@ export async function createServicePurchaseProof(ownerPage: Page, base: string, 
     const duplicatePayment = await service().post(prefix + `payables/${payableId}/pay`, { data: paymentBody });
     need(duplicatePayment.status() === 422 && (await duplicatePayment.json()).business === "not_committed", "Duplicate payment is a definite business refusal");
     await unchanged(stable); await parity(stable);
-    return { serviceAccountId: serviceId, credentialId, documentId, payableId, requiredScanCliIngest: true, mcpOriginalAndList: true,
+    return { discovery, serviceAccountId: serviceId, credentialId, documentId, payableId, requiredScanCliIngest: true, mcpOriginalAndList: true,
       mcpBillRecognition: true, cliBankPayment: true, originalCreditorPreserved: true, duplicateBillAndPaymentRefused: true,
       canonicalClientParity: true, documentSource: await sourceBytes(), bankSourceBase64: bytes.toString("base64"), bankSourceSha256: hash(bytes), canonical: stable };
   }

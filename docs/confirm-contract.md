@@ -1,5 +1,16 @@
 # Confirm-konventionen — én tabel på tværs af MCP, cockpit og CLI (#369)
 
+## Rust remote / native MCP
+
+Tabellerne nedenfor beskriver den tidligere TypeScript-overflade. I den native
+leverandørarbejdsgang kræver `remote register-payable` og `remote pay-payable`
+bar `--confirm` samt native JSON-body med `confirm:true`. MCP kræver outer
+`confirm:true` samt den samme bekræftede native body. Serveren håndhæver den
+aktuelle bruger-/serviceautoritet. De nye agentopslag udfører ingen mutation
+og accepterer ikke et bekræftelsesflag. Brug det faktiske native katalog og
+[serverkontrakten](rust-server.md); udled ikke native retry-regler af de gamle
+kommandoers navne.
+
 Rentemester har tre kalde-overflader (MCP, cockpit HTTP API, CLI) der hver
 har deres egen `confirm`-konvention. Det er **bevidst** — overfladerne har
 forskellige UI-mæssige forudsætninger (cockpit har en modal som samtykke,

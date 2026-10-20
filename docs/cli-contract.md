@@ -1,5 +1,23 @@
 # CLI-kontrakt: actor-politik og exit-koder
 
+## Rust-klienten og agentopslag
+
+Resten af dette dokument beskriver TypeScript-CLI'en. For `rentemester-rust
+remote` gælder den [native serverkontrakt](rust-server.md). `remote --help`
+viser de faktiske kommandoer og inputkontrakter. Remote-writes tilskrives den
+autentificerede bruger eller serviceidentitet på serveren; klienten må ikke
+opfinde en actor. Leverandørregistrering/-betaling kræver både bar `--confirm`
+og `confirm:true` i den native JSON-body fra stdin. Overfør ikke den gamle
+CLI's `--confirm yes`-syntaks eller generelle retry-antagelser til denne klient.
+
+`remote about`, `remote agent-capabilities --query payable --limit 1` og
+`remote agent-workflow --id supplier-payable-handling` er offentlige read-only
+opslag; angiv altid `--server`, samt `--allow-loopback-http` ved lokal HTTP.
+De returnerer `{ok:true,data:…}`. Kataloget er udtrykkeligt delvist. Beskrivelsen
+autoriserer ingen mutation; følg de aktuelle værktøjsskemaer, adgangskrav og
+readback-/stopbetingelser. CLI-fejl bruger fortsat 2 for brugsfejl og 1 for
+transport-/serverafvisning.
+
 Dette dokument beskriver to forudsætninger, som ikke fremgår af den enkelte
 kommandos `--help`, men som en agent skal kende for at kalde `rentemester`-CLI'en
 korrekt. Implementeringen ligger i `src/cli-actor.ts` og `src/cli.ts`.

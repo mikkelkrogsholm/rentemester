@@ -3104,3 +3104,48 @@ ikke disse interfaces ved navneoptælling. Næste paritetsarbejde skal lukke de
 konkrete agentbrugerforløb og bevare deres sikkerheds-/retrykontrakter; release-
 dækningsgaten må ikke springes over. Fuld R53, øvrige restkrav og den afsluttende
 desktopaccept forbliver åbne.
+
+
+### Agentopslag og faktisk leverandørarbejdsgang (Group108)
+
+Native `meta_about`, `agent_capability_search` og `agent_workflow_describe`
+har nu HTTP-/CLI-pendanter: GET `/api/agent-about`, `/api/agent-capabilities`
+og `/api/agent-workflows/:id` samt `remote about`, `remote agent-capabilities`
+og `remote agent-workflow`. Offentlige metadataopslag åbner ingen ledger og
+udfører ingen mutation. De beskriver foreløbig `supplier-purchases` /
+`supplier-payable-handling`; `fullCoverage:false` bevares. Andre native funktioner
+kan eksistere uden at være dækket af dette finite katalog.
+
+Om-serveren viser native runtime/version, faktisk MCP-toolCount (228 i prøven),
+kontraktdokumenter og deterministisk kataloghash. HTTP/CLI har toolCount:null,
+fordi de ikke ejer MCP-registry. Regelbundle-, commit- og byggetid tilskrives
+ikke opdigtet identitet; metadata angiver utilgængeligheden, og pakket identitet
+skal kontrolleres separat. Søgning har maks. 200 tegn, cursor 0–1000000 og limit
+1–50 (standard 0/10), AND-match og stabil pagination. Ukendte workflows giver
+404, ugyldige/duplikerede queryfelter 400. Uden tilsluttet workspace er workflow
+live:false. Ved tilsluttet workspace betyder live kun registrerede HTTP-ruter,
+ikke brugerens ret eller samtykke til at udføre dem; aliases skal opløses mod
+faktisk MCP-katalog/CLI-hjælp.
+
+Beskrivelsen angiver originalbilag, konti/roller, bekræftet request-body,
+forfaldsdato og DKK-bankrække som forudsætninger. Registrering og betaling har
+unsafe-read-back, ingen generel keyed replay. Betalte poster læses med status:all;
+ukendt udfald kræver canonical kontrol og stop ved uafklaret resultat.
+
+Den faktiske normale ejer/MFA-prøve sammenligner about/søgning/beskrivelse på
+HTTP/CLI/MCP, opløser alle aliases mod de faktiske registries, afviser ugyldige
+opslag og anonyme regnskabsruter og viser uændret regnskab efter discovery.
+Derefter bruger den beskrivelsens MCP-tool til registrering og dens CLI-kommando
+til betaling af et scannet originalbilag (100 + 25 moms = 125 DKK). Dubletbilag
+og -betaling afvises; oprindelig kreditorkonto, journal/bank/rapporter og original
+stemmer. Tilbagekaldelse under scanning forhindrer publicering. Efter genstart
+er betalt tilstand/original uændret, tilbagekaldt service giver 401, og der scannes
+eller bogføres ikke igen. Den egne syntetiske profil er fjernet.
+
+Evidens: `native-agent-payable108.json`, SHA256
+`b5afb09e7fab780d7eb3e161651372fc6e7da26c6696f574addd848d1bd1dded`.
+Tre katalogtests, to MCP-katalogtests, en rigtig serverprocesprøve, streng Clippy
+og afgrænset TypeScript/lint består. Første serverprocesprøve havde en forkert
+relativ webfixture; den er rettet til en selvstændig midlertidig fixture og
+består. Dette beviser det beskrevne købsforløb, ikke fuld native discovery,
+backupdestinationer, CI-release, installeret GUI eller TypeScript-udfasning.

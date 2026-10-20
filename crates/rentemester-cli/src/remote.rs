@@ -13,7 +13,7 @@ fn invalid(message: &str) -> Failure {
 
 pub fn run(args: &[String]) -> Result<Value, Failure> {
     if args == ["--help"] {
-        let mut commands=vec!["workspace-transfer-status","workspace-transfer-freeze","workspace-transfer-cancel","workspace-transfer-export","workspace-transfer-release","workspace-transfer-activate","restored-receipts","reconcile-restored-receipt","invoice-email-status","invoice-email-send","invoice-email-reconcile","invoice-email-retry","hosted-recurring-plan","consent-hosted-recurring","revoke-hosted-recurring","service-principals","create-service-principal","rotate-service-principal","revoke-service-principal","recover-service-principal","scheduled-recurring","scheduled-recurring-plan","enable-scheduled-recurring","pause-scheduled-recurring","resume-scheduled-recurring","cancel-scheduled-recurring","catch-up-scheduled-recurring","skip-scheduled-recurring","dispatch-scheduled-recurring","reconsent-scheduled-recurring","eliminations","group-eliminations","plan-elimination","propose-elimination","approve-elimination","reject-elimination","apply-elimination","reverse-elimination","consolidation","group-report-profiles","group-consolidated-report","propose-consolidation-profile","approve-consolidation-profile","revoke-consolidation-profile","intercompany","group-reconciliation","apply-group-manifest","propose-intercompany-mapping","approve-intercompany-mapping","revoke-intercompany-mapping","ownership","ownership-history","propose-ownership","review-ownership","apply-ownership","corporate-records","corporate-record","corporate-record-original","ingest-corporate-record","link-corporate-record","enrich-corporate-record","supersede-corporate-record","workspace-inbox","workspace-inbox-source","ingest-workspace-inbox","assign-workspace-inbox","complete-workspace-inbox","workspace-parties","workspace-party","create-workspace-party","link-workspace-party-role","assert-workspace-party-field","assert-workspace-party-alias","workspace-backup","company-knowledge","propose-company-knowledge","review-company-knowledge","supersede-company-knowledge","create-company","company-profile","update-company-profile","create-account","confirm-account-role","retention","gdpr-export","gdpr-erase","budget","budget-vs-actual","budget-dimension-actuals","set-budget","mileage","register-mileage","accruals","accrual-schedule","register-accrual","recognize-accrual","assets","next-asset-depreciation","register-asset","depreciate-asset","recurring-invoices","create-recurring-invoice","generate-recurring-invoice","retire-recurring-invoice","bank-reconciliation-correction-plan","bank-reconciliation-correction","bank-reconciliation-candidates","bank-reconciliation-link","ingest-document","document-original","reviewed-bank","accounting-drafts","posting-rules","create-bank-draft","submit-draft","reject-draft","approve-draft","annual-report","health","me","companies","journal","trial-balance","income-statement","balance","post-journal","reverse-journal","login","accounts","contacts","documents","invoices","invoice-pdf","preview-invoice","create-customer","update-customer","delete-customer","create-vendor","update-vendor","delete-vendor","issue-invoice","post-invoice","settle-invoice","credit-invoice","refund-invoice","bank","bank-accounts","payables","expense-booking-options","create-bank-account","import-bank","register-payable","pay-payable","match-bank-expense","vat","periods","period-close-readiness","review-period","close-period","reopen-period","report-period","supplier-commitments","supplier-commitment-matches","plan-supplier-commitment","approve-supplier-commitment","change-supplier-commitment","match-supplier-commitment"];
+        let mut commands=vec!["about","agent-capabilities","agent-workflow","workspace-transfer-status","workspace-transfer-freeze","workspace-transfer-cancel","workspace-transfer-export","workspace-transfer-release","workspace-transfer-activate","restored-receipts","reconcile-restored-receipt","invoice-email-status","invoice-email-send","invoice-email-reconcile","invoice-email-retry","hosted-recurring-plan","consent-hosted-recurring","revoke-hosted-recurring","service-principals","create-service-principal","rotate-service-principal","revoke-service-principal","recover-service-principal","scheduled-recurring","scheduled-recurring-plan","enable-scheduled-recurring","pause-scheduled-recurring","resume-scheduled-recurring","cancel-scheduled-recurring","catch-up-scheduled-recurring","skip-scheduled-recurring","dispatch-scheduled-recurring","reconsent-scheduled-recurring","eliminations","group-eliminations","plan-elimination","propose-elimination","approve-elimination","reject-elimination","apply-elimination","reverse-elimination","consolidation","group-report-profiles","group-consolidated-report","propose-consolidation-profile","approve-consolidation-profile","revoke-consolidation-profile","intercompany","group-reconciliation","apply-group-manifest","propose-intercompany-mapping","approve-intercompany-mapping","revoke-intercompany-mapping","ownership","ownership-history","propose-ownership","review-ownership","apply-ownership","corporate-records","corporate-record","corporate-record-original","ingest-corporate-record","link-corporate-record","enrich-corporate-record","supersede-corporate-record","workspace-inbox","workspace-inbox-source","ingest-workspace-inbox","assign-workspace-inbox","complete-workspace-inbox","workspace-parties","workspace-party","create-workspace-party","link-workspace-party-role","assert-workspace-party-field","assert-workspace-party-alias","workspace-backup","company-knowledge","propose-company-knowledge","review-company-knowledge","supersede-company-knowledge","create-company","company-profile","update-company-profile","create-account","confirm-account-role","retention","gdpr-export","gdpr-erase","budget","budget-vs-actual","budget-dimension-actuals","set-budget","mileage","register-mileage","accruals","accrual-schedule","register-accrual","recognize-accrual","assets","next-asset-depreciation","register-asset","depreciate-asset","recurring-invoices","create-recurring-invoice","generate-recurring-invoice","retire-recurring-invoice","bank-reconciliation-correction-plan","bank-reconciliation-correction","bank-reconciliation-candidates","bank-reconciliation-link","ingest-document","document-original","reviewed-bank","accounting-drafts","posting-rules","create-bank-draft","submit-draft","reject-draft","approve-draft","annual-report","health","me","companies","journal","trial-balance","income-statement","balance","post-journal","reverse-journal","login","accounts","contacts","documents","invoices","invoice-pdf","preview-invoice","create-customer","update-customer","delete-customer","create-vendor","update-vendor","delete-vendor","issue-invoice","post-invoice","settle-invoice","credit-invoice","refund-invoice","bank","bank-accounts","payables","expense-booking-options","create-bank-account","import-bank","register-payable","pay-payable","match-bank-expense","vat","periods","period-close-readiness","review-period","close-period","reopen-period","report-period","supplier-commitments","supplier-commitment-matches","plan-supplier-commitment","approve-supplier-commitment","change-supplier-commitment","match-supplier-commitment"];
         commands.extend(["bilagsmail", "configure-bilagsmail", "delete-bilagsmail-config", "set-bilagsmail-alias", "poll-bilagsmail", "review-workspace-inbox", "workspace-inbox-original"]);
         let mut help = json!({"ok":true,
             "usage":"remote --server ORIGIN [--allow-loopback-http] [--cookie-file PATH | --service-key-file PATH] COMMAND [--company SLUG] [--year YEAR] [--account CODE]",
@@ -96,6 +96,7 @@ pub fn run(args: &[String]) -> Result<Value, Failure> {
         help["invoiceEmail"]=crate::invoice_email::help();
         help["hosted_recurring"]=crate::hosted_recurring::help();
         help["scheduledRecurring"]=crate::scheduled_recurring::help();
+        help["agentDiscovery"] = json!("Public read-only metadata: remote about; remote agent-capabilities [--query TEXT] [--cursor 0] [--limit 10]; remote agent-workflow --id supplier-payable-handling. Explicit --server always required; optional private credentials, --allow-loopback-http for local test. Query<=200 characters,cursor<=1000000,limit1..50. Partial catalogue, not full backend parity. Description never authorizes or confirms execution; reconcile uncertain payable writes instead of automatic retry.");
         help["eliminations"] = crate::elimination::help();
         help["consolidation"] = crate::consolidation::help();
         return Ok(help);
@@ -205,6 +206,10 @@ pub fn run(args: &[String]) -> Result<Value, Failure> {
         }
     }
     let command = command.ok_or_else(|| invalid("expected remote command; see remote --help"))?;
+    if matches!(command, "about" | "agent-capabilities" | "agent-workflow") {
+        return discovery(command, &flags, allow_http, confirmed || preview_reviewed);
+    }
+
     if flags.contains_key("--cookie-file") && flags.contains_key("--service-key-file") {
         return Err(invalid("choose one of --cookie-file or --service-key-file"));
     }
@@ -754,4 +759,26 @@ pub(crate) fn credential_client(
             "authenticated remote commands require --cookie-file or --service-key-file",
         )),
     }
+}
+
+fn discovery(command: &str, flags: &BTreeMap<&str, &str>, allow_http: bool, confirmation: bool) -> Result<Value, Failure> {
+    let allowed = match command {
+        "about" => vec!["--server", "--cookie-file", "--service-key-file"],
+        "agent-capabilities" => vec!["--server", "--cookie-file", "--service-key-file", "--query", "--cursor", "--limit"],
+        _ => vec!["--server", "--cookie-file", "--service-key-file", "--id"],
+    };
+    if confirmation || flags.keys().any(|k| !allowed.contains(k)) { return Err(invalid("invalid discovery flags; metadata is read-only")); }
+    let server = flags.get("--server").ok_or_else(|| invalid("explicit --server origin required"))?;
+    let client = credential_client(server, allow_http, flags, true)?;
+    let cursor = flags.get("--cursor").map(|v|v.parse::<usize>()).transpose().map_err(|_|invalid("invalid cursor"))?.unwrap_or(0);
+    let limit = flags.get("--limit").map(|v|v.parse::<usize>()).transpose().map_err(|_|invalid("invalid limit"))?.unwrap_or(10);
+    let runtime = tokio::runtime::Runtime::new().map_err(|_|invalid("HTTP runtime unavailable"))?;
+    let result = runtime.block_on(async {
+        match command {
+            "about" => client.agent_about().await,
+            "agent-capabilities" => client.agent_capabilities(flags.get("--query").copied().unwrap_or(""), cursor, limit).await,
+            _ => client.agent_workflow(flags.get("--id").copied().unwrap_or("")).await,
+        }
+    }).map_err(client_error)?;
+    Ok(json!({"ok":true,"data":result}))
 }
