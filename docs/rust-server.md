@@ -2749,7 +2749,7 @@ Den fulde Rust-omskrivning er stadig åben.
 
 ## Servicekonto i Rust CLI og MCP
 
-En ejer opretter og aktiverer servicekontoen gennem de almindelige administrationsforløb og giver eksplicit adgang til den ønskede virksomhed. Gem engangsnøglen i en privat fil (Unix: `chmod 600`); brug `--service-key-file` i stedet for `--cookie-file`. Rust CLI/MCP understøtter nu serviceidentitet for `me`, virksomheder, journal og regnskabsrapporter samt manuel bogføring og tilbageførsel. Øvrige virksomhedsoperationer og administration kræver fortsat deres eksisterende menneskelige adgang.
+En ejer opretter og aktiverer servicekontoen gennem de almindelige administrationsforløb og giver eksplicit adgang til den ønskede virksomhed. Gem engangsnøglen i en privat fil (Unix: `chmod 600`); brug `--service-key-file` i stedet for `--cookie-file`. Rust CLI/MCP understøtter nu serviceidentitet for `me`, virksomheder, journal og regnskabsrapporter samt manuel bogføring og tilbageførsel. Servicekonti kan også læse kontakter, oprette kunder og gennemføre fakturaens forhåndsvisning, udstedelse, særskilte bogføring, liste og oprindelige PDF. Øvrige virksomhedsoperationer og administration kræver fortsat deres eksisterende menneskelige adgang.
 
 ```sh
 rentemester-rust remote journal --server https://SERVER --service-key-file /private/service.key --company VIRKSOMHED
@@ -2757,3 +2757,5 @@ rentemester-mcp --server https://SERVER --service-key-file /private/service.key
 ```
 
 Bogføringskommandoerne `post-journal` og `reverse-journal` læser den præcise bekræftede serverpakke fra stdin, inklusive den oprindelige idempotensnøgle. MCP bruger samme pakke i `envelope`. Ingen automatisk gentagelse: ved tabt svar skal original pakke og nøgle bevares til eksplicit afklaring. En ny autoriseret forespørgsel kan forbruge kvote igen, selv når den returnerer en eksisterende bogføringskvittering. Tilbagekaldt nøgle eller virksomhedsadgang giver heller ikke adgang til gamle kvitteringer. Se [servicekontrakten](architecture/rust-target/implementation/service-company/CONTRACT.md) for de separate kvote- og bogføringsudfald.
+
+Servicefakturering bruger de samme rettigheder, kontoroller, regnskabsregler og uforanderlige originaler som brugerforløbet. CLI `create-customer` og `post-invoice` kræver `--confirm`; `preview-invoice` er en læsning, og `issue-invoice` kræver både `--confirm` og `--preview-reviewed` for identisk gennemgået input. MCP bruger `body` og de tilsvarende `confirm`/`previewReviewed`-felter. Disse operationer har ingen generisk idempotensnøgle og gentages aldrig automatisk. Ved ukendt resultat kontrolleres kontakter, fakturaer, journal og originaler før en ny handling.
