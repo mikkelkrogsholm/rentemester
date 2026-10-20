@@ -906,3 +906,69 @@ test("legacy backend never offers the native simplified type",async()=>{
  mockFetch(companyRoute());render(<InvoiceIssueModal slug="acme-aps" onIssued={noop} onClose={noop}/>);
  await screen.findByDisplayValue("DK12345678");expect(screen.queryByLabelText("Fakturatype")).not.toBeInTheDocument();expect(screen.getByLabelText("Linje 1 antal")).toBeInTheDocument();
 });
+
+test("delivery period and explicit units use identical preview and issue input; edits invalidate preview", async () => {
+  const {preview, issue} = await nativeTaxForm();
+  await userEvent.clear(screen.getByLabelText("Kunde CVR/moms (valgfrit)"));
+  await userEvent.type(screen.getByLabelText("Kunde CVR/moms (valgfrit)"), "DE123456789");
+  await userEvent.selectOptions(screen.getByLabelText("Levering"), "period");
+  fireEvent.change(screen.getByLabelText("Leveringsperiode fra"), {target:{value:"2026-10-01"}});
+  fireEvent.change(screen.getByLabelText("Leveringsperiode til"), {target:{value:"2026-10-20"}});
+  await userEvent.type(screen.getByLabelText("Enhedskode (valgfri)", {exact:true}), "HUR");
+  await userEvent.type(screen.getByLabelText("Linje 1 enhedskode (valgfri)"), "H87");
+  await userEvent.click(screen.getByRole("button", {name:"Forhåndsvis"}));
+  await screen.findByRole("link", {name:"Åbn forhåndsvisning"});
+  fireEvent.change(screen.getByLabelText("Leveringsperiode til"), {target:{value:"2026-10-21"}});
+  expect(screen.queryByRole("link", {name:"Åbn forhåndsvisning"})).not.toBeInTheDocument();
+  await userEvent.click(screen.getByRole("button", {name:"Forhåndsvis"}));
+  await screen.findByRole("link", {name:"Åbn forhåndsvisning"});
+  await userEvent.click(screen.getByRole("button", {name:"Udsted faktura"}));
+  const input = issue.mock.calls[0]![1];
+  expect(input).toEqual(preview.mock.calls[1]![1]);
+  expect(input).toMatchObject({deliveryPeriodStart:"2026-10-01", deliveryPeriodEnd:"2026-10-21", unitCode:"HUR", buyer:{vatOrCvr:"DE123456789"}, lines:[{unitCode:"H87"}], vatRatePercent:25});
+  expect(input).not.toHaveProperty("deliveryDate");
+  expect(input).not.toHaveProperty("vatTreatment");
+});
+
+test("optional metadata is absent by default and clearing delivery omits prior dates", async () => {
+  const {preview} = await nativeTaxForm();
+  await userEvent.click(screen.getByRole("button", {name:"Forhåndsvis"}));
+  await screen.findByRole("link", {name:"Åbn forhåndsvisning"});
+  const initial = preview.mock.calls[0]![1];
+  for (const key of ["deliveryDate", "deliveryPeriodStart", "deliveryPeriodEnd", "unitCode"]) expect(initial).not.toHaveProperty(key);
+  expect(initial.lines[0]).not.toHaveProperty("unitCode");
+  await userEvent.selectOptions(screen.getByLabelText("Levering"), "date");
+  fireEvent.change(screen.getByLabelText("Leveringsdato"), {target:{value:"2026-10-20"}});
+  await userEvent.selectOptions(screen.getByLabelText("Levering"), "none");
+  await userEvent.click(screen.getByRole("button", {name:"Forhåndsvis"}));
+  await screen.findByRole("link", {name:"Åbn forhåndsvisning"});
+  expect(preview.mock.calls[1]![1]).toEqual(initial);
+});
+
+test("simplified validates selected delivery and keeps reduced lines with only explicit document unit", async () => {
+  const {preview, issue} = await nativeTaxForm();
+  await userEvent.selectOptions(screen.getByLabelText("Fakturatype"), "simplified");
+  await userEvent.type(screen.getByLabelText("Beskrivelse"), "Synthetic reduced service");
+  await userEvent.type(screen.getByLabelText("Beløb inkl. moms"), "100,07");
+  await userEvent.selectOptions(screen.getByLabelText("Levering"), "period");
+  fireEvent.change(screen.getByLabelText("Leveringsperiode fra"), {target:{value:"2026-10-21"}});
+  await userEvent.click(screen.getByRole("button", {name:"Forhåndsvis"}));
+  expect(preview).not.toHaveBeenCalled();
+  fireEvent.change(screen.getByLabelText("Leveringsperiode til"), {target:{value:"2026-10-20"}});
+  await userEvent.click(screen.getByRole("button", {name:"Forhåndsvis"}));
+  expect(preview).not.toHaveBeenCalled();
+  await userEvent.selectOptions(screen.getByLabelText("Levering"), "date");
+  await userEvent.click(screen.getByRole("button", {name:"Forhåndsvis"}));
+  expect(preview).not.toHaveBeenCalled();
+  fireEvent.change(screen.getByLabelText("Leveringsdato"), {target:{value:"2026-10-20"}});
+  await userEvent.type(screen.getByLabelText("Enhedskode (valgfri)"), "HUR");
+  expect(screen.queryByLabelText("Linje 1 enhedskode (valgfri)")).not.toBeInTheDocument();
+  await userEvent.click(screen.getByRole("button", {name:"Forhåndsvis"}));
+  await screen.findByRole("link", {name:"Åbn forhåndsvisning"});
+  await userEvent.click(screen.getByRole("button", {name:"Udsted faktura"}));
+  const input = issue.mock.calls[0]![1];
+  expect(input).toEqual(preview.mock.calls[0]![1]);
+  expect(input).toMatchObject({invoiceType:"simplified", deliveryDate:"2026-10-20", unitCode:"HUR", lines:[{description:"Synthetic reduced service"}]});
+  expect(input.lines[0]).not.toHaveProperty("quantity");
+  expect(input).not.toHaveProperty("deliveryPeriodStart");
+});

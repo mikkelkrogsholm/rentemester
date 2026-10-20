@@ -44,6 +44,7 @@ type LineDraft = {
   description: string;
   quantity: string;
   unitPriceExVat: string;
+  unitCode: string;
   taxClassification: InvoiceTaxClassification;
   reverseChargeBasis: DomesticReverseChargeBasis | "";
 };
@@ -52,6 +53,7 @@ const EMPTY_LINE: LineDraft = {
   description: "",
   quantity: "",
   unitPriceExVat: "",
+  unitCode: "",
   taxClassification: "taxable",
   reverseChargeBasis: "",
 };
@@ -70,6 +72,11 @@ export function InvoiceIssueForm({
   const [grossAmount, setGrossAmount] = useState("");
   const [issueDate, setIssueDate] = useState("");
   const [dueDate, setDueDate] = useState("");
+  const [deliveryMode, setDeliveryMode] = useState<"none" | "date" | "period">("none");
+  const [deliveryDate, setDeliveryDate] = useState("");
+  const [deliveryPeriodStart, setDeliveryPeriodStart] = useState("");
+  const [deliveryPeriodEnd, setDeliveryPeriodEnd] = useState("");
+  const [unitCode, setUnitCode] = useState("");
   const [vatRatePercent, setVatRatePercent] = useState("25");
   const [vatTreatment,setVatTreatment]=useState<"standard"|"domestic_reverse_charge"|"foreign_reverse_charge">("standard");
   const [lineTaxes,setLineTaxes]=useState(false);
@@ -247,6 +254,10 @@ export function InvoiceIssueForm({
       dateRef.current?.focus();
       return null;
     }
+    if (deliveryMode === "date" && !deliveryDate) { setError("Angiv en leveringsdato."); return null; }
+    if (deliveryMode === "period" && (!deliveryPeriodStart || !deliveryPeriodEnd || deliveryPeriodStart > deliveryPeriodEnd)) {
+      setError("Angiv en leveringsperiode med fra-dato senest på til-datoen."); return null;
+    }
     if (simplified) {
       const gross = parseDanishAmount(grossAmount);
       if (!simplifiedDescription.trim()) { setError("Angiv en beskrivelse."); return null; }
@@ -296,6 +307,7 @@ export function InvoiceIssueForm({
         description: line.description.trim(),
         quantity,
         unitPriceExVat: unitPrice,
+        ...(line.unitCode.trim() ? {unitCode: line.unitCode.trim()} : {}),
         ...(explicitTaxes?{taxClassification:classification,vatRate:classification==="taxable"?0.25:0,...(classification==="reverse_charge"&&basis?{reverseChargeBasis:basis}:{})}:{}),
       });
     }
@@ -311,6 +323,9 @@ export function InvoiceIssueForm({
    */
   function buildPartyAndExtras() {
     return {
+      ...(deliveryMode === "date" ? {deliveryDate} : {}),
+      ...(deliveryMode === "period" ? {deliveryPeriodStart, deliveryPeriodEnd} : {}),
+      ...(unitCode.trim() ? {unitCode: unitCode.trim()} : {}),
       ...(explicitTaxes?{vatTreatment,...(foreign?{reverseChargeBasis:"EU_B2B_SERVICES" as const,reverseChargeNote:reverseChargeNote.trim()}:vatTreatment==="domestic_reverse_charge"&&reverseChargeBasis?{reverseChargeBasis,reverseChargeNote:reverseChargeNote.trim()}:{})}:{}),
       ...(native&&(currency.trim().toUpperCase()||"DKK")!=="DKK"?{fxRateToDkk:parseDanishAmount(fxRate)!}:{}),
       customerId: !simplified && selectedCustomerId ? Number(selectedCustomerId) : undefined,
@@ -405,7 +420,7 @@ export function InvoiceIssueForm({
 
   return (
     <Dialog title="Udsted faktura" onClose={guard.onClose} busy={busy} mode={presentation} initialFocusRef={closeRef}>
-      <div className="workflow-form" ref={formRef} onChange={() => setDirty(true)}>
+      <div className="workflow-form" ref={formRef} onChange={() => { setDirty(true); setPreviewUrl(null); }}>
         {done ? (
           // After a successful issue the modal becomes a short receipt that
           // shows the human exactly what Rentemester computed.
@@ -528,6 +543,21 @@ export function InvoiceIssueForm({
                 />
               </label>
             </div>
+
+            <fieldset disabled={busy || uncertain} className="modal-body">
+              <legend>Levering og enheder</legend>
+              <label className="modal-field">Levering
+                <Select aria-label="Levering" value={deliveryMode} onChange={e => setDeliveryMode(e.target.value as typeof deliveryMode)}>
+                  <option value="none">Ikke angivet</option><option value="date">Leveringsdato</option><option value="period">Leveringsperiode</option>
+                </Select>
+              </label>
+              {deliveryMode === "date" && <label className="modal-field">Leveringsdato<Input type="date" value={deliveryDate} onChange={e => setDeliveryDate(e.target.value)}/></label>}
+              {deliveryMode === "period" && <div className="modal-field-grid">
+                <label className="modal-field">Leveringsperiode fra<Input type="date" value={deliveryPeriodStart} onChange={e => setDeliveryPeriodStart(e.target.value)}/></label>
+                <label className="modal-field">Leveringsperiode til<Input type="date" value={deliveryPeriodEnd} onChange={e => setDeliveryPeriodEnd(e.target.value)}/></label>
+              </div>}
+              <label className="modal-field">Enhedskode (valgfri)<Input value={unitCode} maxLength={32} onChange={e => setUnitCode(e.target.value)}/></label>
+            </fieldset>
 
             {native&&!simplified&&<fieldset disabled={busy||uncertain} className="modal-body">
               <legend>Moms på fakturaen</legend>
@@ -713,6 +743,9 @@ export function InvoiceIssueForm({
                       }
                       disabled={busy || uncertain}
                     />
+                  </label>
+                  <label className="modal-field">{`Linje ${index + 1} enhedskode (valgfri)`}
+                    <Input aria-label={`Linje ${index + 1} enhedskode (valgfri)`} value={line.unitCode} maxLength={32} onChange={e => updateLine(index, {unitCode: e.target.value})} disabled={busy || uncertain}/>
                   </label>
                   {explicitTaxes&&vatTreatment==="standard"&&<>
                     <label className="modal-field">Momstype<Select aria-label={`Linje ${index+1} momstype`} value={line.taxClassification} disabled={busy||uncertain} onChange={e=>updateLine(index,{taxClassification:e.target.value as InvoiceTaxClassification})}>

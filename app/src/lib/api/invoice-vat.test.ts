@@ -37,3 +37,14 @@ test("simplified preview and issue preserve reduced original-currency wire and s
  await invoicesApi.previewInvoice("synthetic",input);const result=await invoicesApi.issueInvoice("synthetic",input);
  expect(calls).toEqual([input,input]);expect(result.invoiceType).toBe("simplified");expect(result.vatAmount).toBe(20.01);expect(result.lines).toEqual([{description:"Synthetic service"}]);
 });
+
+test("invoice metadata is serialized identically for preview and issue",async()=>{
+ const calls:unknown[]=[];
+ stubGlobal("fetch",async(input:RequestInfo|URL,init?:RequestInit)=>{
+  calls.push(JSON.parse(String(init?.body)));
+  return String(input).endsWith("/preview")?new Response("%PDF",{headers:{"content-type":"application/pdf"}}):new Response(JSON.stringify({ok:true,invoice:{documentId:80,invoiceNumber:"S-80",netAmount:200,vatAmount:50,grossAmount:250,lines:[]}}));
+ });
+ const input:InvoiceIssueInput={issueDate:"2026-10-20",deliveryPeriodStart:"2026-10-01",deliveryPeriodEnd:"2026-10-20",unitCode:"HUR",buyer:{vatOrCvr:"DE123456789"},lines:[{description:"Synthetic service",quantity:1,unitPriceExVat:200,unitCode:"H87"}]};
+ await invoicesApi.previewInvoice("synthetic",input);await invoicesApi.issueInvoice("synthetic",input);
+ expect(calls).toEqual([input,input]);
+});

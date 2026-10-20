@@ -11,6 +11,10 @@ import { type ReadRequestOptions, request, requestBlob } from "./_shared";
 function invoiceRequestPayload(input: InvoiceIssueInput) {
   return {
     issueDate: input.issueDate,
+    ...(input.deliveryDate !== undefined ? {deliveryDate: input.deliveryDate} : {}),
+    ...(input.deliveryPeriodStart !== undefined ? {deliveryPeriodStart: input.deliveryPeriodStart} : {}),
+    ...(input.deliveryPeriodEnd !== undefined ? {deliveryPeriodEnd: input.deliveryPeriodEnd} : {}),
+    ...(input.unitCode !== undefined ? {unitCode: input.unitCode} : {}),
     ...(input.invoiceType !== undefined ? {invoiceType:input.invoiceType} : {}),
     ...(input.totals !== undefined ? {totals:input.totals} : {}),
     lines: input.lines,
@@ -306,6 +310,7 @@ export type InvoiceLineInput = {
   description: string;
   quantity: number;
   unitPriceExVat: number;
+  unitCode?: string;
   taxClassification?: InvoiceTaxClassification;
   vatRate?: number;
   reverseChargeBasis?: InvoiceReverseChargeBasis;
@@ -329,6 +334,10 @@ export type DomesticReverseChargeBasis = "DK_MOMSLOVEN_§46_STK_1_NR_6" | "DK_MO
 /** Input for `api.issueInvoice`. */
 type InvoiceIssueCommon = {
   issueDate: string;
+  deliveryDate?: string;
+  deliveryPeriodStart?: string;
+  deliveryPeriodEnd?: string;
+  unitCode?: string;
   vatRatePercent?: number;
   vatTreatment?: "standard" | "domestic_reverse_charge" | "foreign_reverse_charge";
   reverseChargeBasis?: InvoiceReverseChargeBasis;
@@ -349,6 +358,10 @@ export type InvoiceIssueInput = InvoiceIssueCommon & (
 
 /** The issue result the server echoes back — every amount Rentemester computed. */
 export type InvoiceIssueSummary = {
+  deliveryDate?: string;
+  deliveryPeriodStart?: string;
+  deliveryPeriodEnd?: string;
+  unitCode?: string;
   invoiceType?: "full" | "simplified";
   currency?: string;
   fxRateToDkk?: number;
