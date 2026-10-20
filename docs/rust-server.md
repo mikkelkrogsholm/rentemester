@@ -943,7 +943,52 @@ kommandoflag. `--factor backup` bruger en recovery code. Filen oprettes som
 0600 på Unix, og en eksisterende fil overskrives aldrig. MFA-tilmelding foregår
 fortsat i browseren. Den udstedte session bruges derefter med `--cookie-file`.
 
-## Native GPUI-desktop
+## Rust-desktop med fælles web-UI
+
+Fra den godkendte beslutning 20. oktober 2026 er standardprogrammet
+`rentemester-desktop` en Tauri 2-host med det eksisterende React-web-UI.
+Den starter enten den administrerede lokale Rust-server eller forbinder til
+et eksplicit valgt HTTPS-serverorigin. Login og MFA foregår i det samme
+web-UI inde i appen. Regnskabsregler og adgang forbliver på Rust-serveren.
+Der er ingen automatisk lokal reserve ved serverfejl.
+
+```sh
+CARGO_PROFILE_DEV_DEBUG=0 python3 scripts/rust/cargo-guard.py cargo +stable build --locked -p rentemester-desktop --bin rentemester-desktop -j1
+crates/rentemester-desktop/build-macos.sh
+```
+
+Start appen uden flag for at vælge **Åbn lokalt regnskab**, **Opret lokalt
+regnskab** eller **Forbind til server**. Udviklings- og acceptkørsler kan bruge
+`--local`, `--create-local`, `--local-workspace PATH`, `--server-binary PATH`,
+`--web-dir PATH` eller `--server HTTPS_ORIGIN`. Lokal standardmappe er fortsat
+`~/Library/Application Support/Rentemester`; acceptprøver skal bruge en
+særskilt syntetisk mappe. Menupunktet **Lokal drift** giver adgang til det
+private lokale e-mailbekræftelseslink og den offentlige backupnøgle.
+
+Web-UI og API bruger den valgte servers samme origin, også i lokal drift.
+Serverindhold får ingen native IPC-rettigheder. Startsidens ene native
+kommando kræver den indbyggede startside, dens vinduesidentitet og dens
+særskilte capability. Den godkendte grafik fra `assets/branding/` genbruges;
+den indbyggede PNG-kopi har identiske RGB-pixels og et uigennemsigtigt
+alfalag, som Tauri kræver.
+
+Den installerede usignerede macOS-pakke er nu afprøvet med syntetiske data:
+normal første ejer, privat e-mailbekræftelse gennem appmenuen, adgangskode,
+TOTP-tilmelding og portefølje, afslutning og genåbning med samme ejer, data
+og uændrede konfigurations- og backupnøgler. Begge afslutninger stoppede
+den ejede Rust-server. De 12 pakkefiler matcher manifestet. Desktoptests
+består med 9 beståede og én eksisterende ignoreret test; kodekontrol og
+bygning består. Evidens:
+`/tmp/rentemester-rust-reports/shared-web-desktop86-local-onboarding.json`.
+
+Finansielle desktopforløb, ekstern HTTPS-server, filupload, download, PDF
+og signeret distribution kræver fortsat installeret accept. GPUI-tests,
+skærmbilleder, tidligere låst-skærm-observationer og desktopparagraffer
+nedenfor beskriver den historiske GPUI-implementation og beviser ikke den
+nye hosts login, filupload, download eller PDF-funktion. Den historiske
+binær kan bygges særskilt med `--features legacy-gpui --bin rentemester-desktop-gpui`.
+
+## Historisk GPUI-desktop
 
 Craten `rentemester-desktop` bruger Longbridges `gpui-kit` 0.7.3 og det fælles
 HTTP-klientbibliotek. En faktisk macOS-app har vist serverens virksomhed og
@@ -957,7 +1002,7 @@ fastlåste 1.94.1, og desktop er udeladt fra standardmedlemmerne.
 
 ```sh
 CARGO_PROFILE_DEV_DEBUG=0 CARGO_INCREMENTAL=0 \
-  cargo +stable build --locked -p rentemester-desktop -j4
+  python3 scripts/rust/cargo-guard.py cargo +stable build --locked -p rentemester-desktop --features legacy-gpui --bin rentemester-desktop-gpui -j1
 crates/rentemester-desktop/build-macos.sh
 ```
 
