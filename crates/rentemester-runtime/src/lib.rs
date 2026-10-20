@@ -180,3 +180,5 @@ pub mod invoice_mail;
 pub mod workspace_transfer;
 
 pub mod contact_import;
+
+pub mod public_einvoice;
