@@ -2575,3 +2575,36 @@ eksplicit server og privat cookie-fil som ved andre remote-kommandoer. MCP:
 `exception_resolve` med `company`, `id`, valgfri `note` og `confirm:true`.
 Klienterne gentager ikke beslutningen automatisk efter et ukendt resultat;
 læs opgaven og revisionssporet før en ny handling.
+
+## Matchforslag til bankposter
+
+I **Bank → Matchforslag** vises forslag til kundefakturaer, købsbilag,
+tilbagebetaling af kreditnotaer og mulige leverandørrefusioner. Hvert forslag
+viser bilag, matchscore og begrundelser samt et link til originalens bilagsvisning.
+Scoren er en rangering og kan overstige 1. Forslagene ændrer ingen bogføring,
+afstemninger eller opgaver og vælger aldrig et bilag automatisk.
+
+Luk forslagene og brug den eksisterende **Bogfør**-gennemgang til køb og
+kundebetalinger. Kunderefusioner afstemmes under **Fakturaer** efter gennemgang af
+kreditnotaen. En mulig leverandørrefusion er alene et spor til det oprindelige
+køb; forslaget dokumenterer ikke en kreditnota eller et tilgodehavende.
+
+`GET /api/companies/{slug}/bank/match-suggestions` kræver aktuel læseadgang.
+Valgfri `bankTransactionId` vælger én uafstemt post. `max` er et positivt heltal,
+standard 5, og begrænser forslag pr. bankpost. Svaret indeholder direkte
+`ok`, `count`, `rows` og `errors`. Et ukendt eller allerede afstemt id giver
+`ok:false`; ugyldige, gentagne og ukendte queryfelter afvises med HTTP 400.
+
+CLI: `remote bank-suggest-matches --company SLUG [--bank-transaction-id ID]
+[--max N]`, med eksplicit server og privat cookie-fil. MCP:
+`bank_suggest_matches {company,bankTransactionId?,max?}`. Begge bevarer serverens
+resultat uden lokal scoring; CLI returnerer exitkode 1 ved `ok:false`.
+Tvetydige beløb og manglende identifikation vises som vejledning til manuel
+kontrol. Beløbsvejledning for køb kræver fortsat en udbetaling i bilagets valuta.
+
+Group84 består 20 trin på syntetiske data med alle fire forslagstyper, eksplicit
+gennemgået køb, kundebetaling og tilbagebetaling. Syv posteringer, seks bankposter,
+fire afstemninger, seks forretningsoriginaler og to faktura-PDF’er bevares gennem
+genstart og fire signerede arkiver med kildefri gendannelse og genåbning.
+Leverandørrefusionen forbliver rådgivning. Installerede desktopforløb og faktisk
+TypeScript-overtagelse er fortsat åbne; se implementeringsstatus for evidens.

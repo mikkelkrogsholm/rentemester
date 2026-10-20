@@ -1,13 +1,12 @@
 {
   "goal": "Complete Rust server/web, GPUI local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "Original bank bytes and cross-encoding duplicate/source proof qualified",
-  "code_revision": "5bdc17ebcedc3aa6889d2a96e8b1a8fb58f56e7f",
-  "spec_revision": "sha256:802c904b38ae5dbaca8c71bdfa473fff7b38095308df55175623f4ada9f0bff7",
-  "state": "Group83 qualified at 5bdc17eb: 20 ordinary-MFA actions import exact UTF8/BOM/CRLF bank original through web, equivalent Windows1252 through CLI with zero new rows, and Windows1252 third identical fee occurrence through MCP. Original raw SHA differs while transaction occurrence identity remains stable. Exactly5bankrows/3rawbank originals/1purchase original/1reviewed expense journal/reconciliation; VATinput25, expense100, bank-125 and truthful statement-75/difference-50. Six retained tasks with2resolved/4open. All three raw originals, including duplicate-only CLI import, survive four signed complete snapshots and source-free fresh-owner recovery/reopen. Exact fee ordinals0/1/2/profile/source-hash lineage and actual source-verified posting qualified; current rights and malformed raw envelope refusals preserve state; four-phase financial/task HTTP/CLI/MCP equality. Scored bank invoice/purchase/refund suggestions and interactive CVR lookup/sync remain server gaps. Installed desktop financial/bytefile flow, actual TSworkspace adoption and full mission/epic672 remain OPEN.",
+  "current_increment": "Four-family scored bank advice and reviewed financial journeys qualified",
+  "code_revision": "b3c66b2b7114f48c5ccf4b046a7a7254c5460ff6",
+  "spec_revision": "sha256:cbb7bdc0daaee7858e255d89db1e5d68fb9df5393f2fb24483162fad612939ea",
+  "state": "Group84 qualified at b3c66b2b: 20 ordinary-MFA actions show all four scored bank match families in existing web Bank and exact canonical HTTP/CLI/MCP advice; max per bankrow, selected IDs, business refusals, current reviewer access/revocation and read-only effects verified. Explicit reviewed purchase125/VAT25, customer receipt200 and customer credit refund100 produce exactly7journals/6bankrows/4reconciliations; outputVAT70/input25/payable45, bank225 vs independent statement300/difference-75, zero customer balances. Eight stored documents are6business originals+2issued PDFs;4continuous raw bank segments retain profile name/message evidence and a separately referenced refund. Immutable task history9 with7resolved/2truly unmatched open. Four independently verified signed full snapshots and source-free fresh-owner restore/reopen preserve tables, originals and historical audit. Interactive CVR lookup/sync remains the next server gap. Whole Rust mission/epic672, installed desktop financial acceptance, actual TSworkspace adoption and distribution remain OPEN.",
   "issues_closed": [],
   "next": [
-    "Complete scored bank suggestions for issued invoice, purchase, customer refund and supplier refund. Review-only amount/currency task hints do not establish that source parity.",
     "Complete interactive CVR lookup/sync through normal UI/current authority and retained provider source; no fabricated company identity. Then proceed to installed local/remote desktop acceptance and remaining full-mission gates.",
     "Complete installed local/remote desktop financial journeys, remaining safe transfer/recovery/automation/distribution, full CLI/MCP parity and TypeScript retirement. Operator TSworkspace adoption is still required; current rehearsal commands discard copies and grant no writer authority.",
     "Retain explicit native tax/FX contracts and verify source rate differences against posting controls before broader support claims. Qualified75/76/77/78/79/80/81 must not be repeated without changed code or new failure evidence."
@@ -21,10 +20,10 @@
   ],
   "all_goal_requirements_complete": false,
   "previous_verified_increment": {
-    "current_increment": "Unmatched bank tasks and reviewed purchase booking qualified",
-    "code_revision": "6bcb0dfacbde87494d04a786fe0c8a1d0188718c",
-    "spec_revision": "sha256:c16d09043a7205afbb96c55a3d60e8814f154ca408bd2f10cd601f701a04a428",
-    "state": "Group82 qualified at 6bcb0dfa: 19 ordinary-MFA actions complete bank import → wrong-currency/unique/ambiguous late purchase originals → explicit outgoing Bank web selection and reviewed expense posting → CLI review and MCP already-resolved no-op → reimport recreates only still-unbooked incoming task. Exactly2bankrows/3purchase originals/1journal/1bank reconciliation; inputVAT25 and truthful booked-minus-statement difference-200. Immutable task history5 with4resolved/1open. Current reviewer upload/import/post denied and revoked read403; all statuses/archive selectors and financial HTTP/CLI/MCP equal through source/restart/restored/reopen. Four independently verified signed full archives and source-free fresh-owner recovery preserve exact original bytes, tables and historical audit. Raw Windows1252 bank file transport, scored suggestions and CVR remain server gaps. Whole Rust mission/epic672 and installed desktop financial acceptance remain OPEN."
+    "current_increment": "Original bank bytes and cross-encoding duplicate/source proof qualified",
+    "code_revision": "5bdc17ebcedc3aa6889d2a96e8b1a8fb58f56e7f",
+    "spec_revision": "sha256:802c904b38ae5dbaca8c71bdfa473fff7b38095308df55175623f4ada9f0bff7",
+    "state": "Group83 qualified at 5bdc17eb: 20 ordinary-MFA actions import exact UTF8/BOM/CRLF bank original through web, equivalent Windows1252 through CLI with zero new rows, and Windows1252 third identical fee occurrence through MCP. Original raw SHA differs while transaction occurrence identity remains stable. Exactly5bankrows/3rawbank originals/1purchase original/1reviewed expense journal/reconciliation; VATinput25, expense100, bank-125 and truthful statement-75/difference-50. Six retained tasks with2resolved/4open. All three raw originals, including duplicate-only CLI import, survive four signed complete snapshots and source-free fresh-owner recovery/reopen. Exact fee ordinals0/1/2/profile/source-hash lineage and actual source-verified posting qualified; current rights and malformed raw envelope refusals preserve state; four-phase financial/task HTTP/CLI/MCP equality. Scored bank invoice/purchase/refund suggestions and interactive CVR lookup/sync remain server gaps. Installed desktop financial/bytefile flow, actual TSworkspace adoption and full mission/epic672 remain OPEN."
   },
   "evidence": {
     "combined_browser_log": "/tmp/rm-platform5-combined.log",
@@ -1736,6 +1735,41 @@
         "First actual imported4rows but helper looked up generic ref under named profile; corrected fixture to declared Kundereference, selected rows by exact text and independently asserted ordinary reference remains null. No profile/parser alias added.",
         "MCP discovery text-only required assertion updated to exact-one source union. SDK multiple-of and new CLI-test nested condition adjusted to required strict lint rules."
       ]
+    },
+    "bank_match_suggestions84": {
+      "status": "passed",
+      "evidence": "/tmp/rentemester-rust-reports/bank-match-suggestions-integrated84-run4.json",
+      "sha256": "e5fdfb0bbba76286db3ce5840879a061ce6f90c8bcb578f0d93c12f110ff8923",
+      "sourceRevision": "b3c66b2b7114f48c5ccf4b046a7a7254c5460ff6",
+      "actions": 20,
+      "snapshots": 4,
+      "businessOriginals": 6,
+      "invoicePdfs": 2,
+      "bankOriginalSegments": 4,
+      "bankRows": 6,
+      "journals": 7,
+      "matchedBankRows": 4,
+      "tasks": {
+        "total": 9,
+        "open": 2,
+        "resolved": 7
+      },
+      "exactLedgerBalances": {
+        "1100": "0",
+        "1800": "225",
+        "1000": "-280",
+        "6000": "100",
+        "4300": "25",
+        "4200": "-70"
+      },
+      "installedNativeQualified": false,
+      "goalComplete": false,
+      "rootQualification": "/tmp/rm84-root-independent-qualification.json",
+      "strictAllTargets": "PASS /tmp/rm84-clippy.log",
+      "build": "PASS /tmp/rm84-build.log",
+      "targetedTests": "Engine3/storage5/credit-note14/application1/HTTP1/SDK3/CLI2/MCP118stdio+2unit; web32tests99assertions/tsc/fullbuild passed",
+      "sourceNarrowImprovement": "Amount-only purchase guidance requires outgoing movement in matching currency; does not copy source unsafe incoming/cross-currency near-miss. Supplier refund remains advice only.",
+      "fixtureCorrections": "Named CSV uses declared Kundereference/Afsender/Besked. Existing referenced refund uses generic CSV between before/after named segments; all segment balances independently continuous. Physical invoice PDFs counted separately; no product guards relaxed."
     }
   },
   "verified_history": [
@@ -2867,6 +2901,17 @@
           "MCP discovery text-only required assertion updated to exact-one source union. SDK multiple-of and new CLI-test nested condition adjusted to required strict lint rules."
         ]
       }
+    },
+    {
+      "delivery": "Group84 four-family bank match advice and reviewed financial workflows",
+      "owner": "root integration/application/HTTP/qualification; isolated domain, SDK/CLI/MCP, web and actual-helper writers",
+      "depends_on": [
+        "Source bank-suggest-matches scoring and existing native immutable invoice/credit proof.",
+        "Existing Bank purchase/customer settlement and Invoices customer-refund actions; no supplier-refund apply invented."
+      ],
+      "acceptance": "All four advisory families, exact normal reviewed purchase/receipt/refund effects, current authority and no read effects, HTTP/CLI/MCP equality, restart/four signed source-free snapshots/reopen.",
+      "status": "COMPLETE finite Group84: Group84 qualified at b3c66b2b: 20 ordinary-MFA actions show all four scored bank match families in existing web Bank and exact canonical HTTP/CLI/MCP advice; max per bankrow, selected IDs, business refusals, current reviewer access/revocation and read-only effects verified. Explicit reviewed purchase125/VAT25, customer receipt200 and customer credit refund100 produce exactly7journals/6bankrows/4reconciliations; outputVAT70/input25/payable45, bank225 vs independent statement300/difference-75, zero customer balances. Eight stored documents are6business originals+2issued PDFs;4continuous raw bank segments retain profile name/message evidence and a separately referenced refund. Immutable task history9 with7resolved/2truly unmatched open. Four independently verified signed full snapshots and source-free fresh-owner restore/reopen preserve tables, originals and historical audit. Interactive CVR lookup/sync remains the next server gap. Whole Rust mission/epic672, installed desktop financial acceptance, actual TSworkspace adoption and distribution remain OPEN.",
+      "cleanup": "All4owned worktrees removed; recovery refs retained in rentemester-cleanup-recovery-2026-10-20/integrated84-final.json. No remaining Group84 writer checkout."
     }
   ],
   "integrated_pending_browser": [
@@ -2960,6 +3005,12 @@
       "code_revision": "e56c74f71af233413109854318fbf055d092e589",
       "spec_revision": "sha256:8f13a3a6da7833d0dd219aec4ccc121f03da93932bea83da13352210ab930e74",
       "state": "Group81 qualified at e56c74f7: 19 ordinary-MFA actions through existing web issue/post all three source foreign legal bases with explicit trusted VIES. Main ART196 EUR100 at7.4 retains partial/final receipt-credit-refund lifecycle and finalFX3; NR3/ART199 sideEUR10 invoices each post/fullcredit tozero. Exactly11journals/4bankrows/3posted invoices/4credits; datedEU740 then592 then0 with invoice/credit counts3/2,3/3,3/4. Full four-phase HTTP/CLI/MCP accounting and all-three exact preview-input/PDF equality; current rights/provider mismatch/outage/held revoked result refusal retained. Four independently verified signed full archives and source-free fresh-owner restore/reopen preserve originals, frozen VIES and exact accounting/audit. Focused fixtures verify old omitted-zero-VAT/aggregate-FX, original raw-byte hashes, >6digit original quote normalization and unchanged nativev1. These tests do not qualify actual TSworkspace adoption: supported operator route is still missing. Full mission/epic672 and installed native financial acceptance remain OPEN."
+    },
+    {
+      "current_increment": "Original bank bytes and cross-encoding duplicate/source proof qualified",
+      "code_revision": "5bdc17ebcedc3aa6889d2a96e8b1a8fb58f56e7f",
+      "spec_revision": "sha256:802c904b38ae5dbaca8c71bdfa473fff7b38095308df55175623f4ada9f0bff7",
+      "state": "Group83 qualified at 5bdc17eb: 20 ordinary-MFA actions import exact UTF8/BOM/CRLF bank original through web, equivalent Windows1252 through CLI with zero new rows, and Windows1252 third identical fee occurrence through MCP. Original raw SHA differs while transaction occurrence identity remains stable. Exactly5bankrows/3rawbank originals/1purchase original/1reviewed expense journal/reconciliation; VATinput25, expense100, bank-125 and truthful statement-75/difference-50. Six retained tasks with2resolved/4open. All three raw originals, including duplicate-only CLI import, survive four signed complete snapshots and source-free fresh-owner recovery/reopen. Exact fee ordinals0/1/2/profile/source-hash lineage and actual source-verified posting qualified; current rights and malformed raw envelope refusals preserve state; four-phase financial/task HTTP/CLI/MCP equality. Scored bank invoice/purchase/refund suggestions and interactive CVR lookup/sync remain server gaps. Installed desktop financial/bytefile flow, actual TSworkspace adoption and full mission/epic672 remain OPEN."
     }
   ]
 }
