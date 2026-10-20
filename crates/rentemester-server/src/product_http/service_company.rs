@@ -9,7 +9,7 @@ use rentemester_runtime::service_key::ServiceKey;
 pub(super) fn requested(request: &Request) -> bool {
     request.headers().contains_key("x-rentemester-service-key")
 }
-fn proof(state: &Product, request: &Request, mutation: bool) -> Result<ServiceKey, Box<Response>> {
+pub(super) fn proof(state: &Product, request: &Request, mutation: bool) -> Result<ServiceKey, Box<Response>> {
     origin_proof(state, request, mutation)?;
     let headers = request.headers();
     if headers.contains_key("cookie") || headers.contains_key("authorization") {
@@ -30,7 +30,7 @@ fn read_headers(request: &Request) -> bool {
         && !request.headers().contains_key("idempotency-key")
         && one(request.headers(), "content-length").is_none_or(|v| v == "0")
 }
-fn failure(f: ServiceFailure) -> Response {
+pub(super) fn failure(f: ServiceFailure) -> Response {
     let code = f.error.code;
     let status = if f.usage == UsageStage::OutcomeUnknown
         || f.business == BusinessStage::OutcomeUnknown
@@ -42,7 +42,7 @@ fn failure(f: ServiceFailure) -> Response {
         StatusCode::UNAUTHORIZED
     } else if code == "access_denied" {
         StatusCode::FORBIDDEN
-    } else if f.rejection.is_some() {
+    } else if f.rejection.is_some() || f.business == BusinessStage::NotCommitted {
         StatusCode::UNPROCESSABLE_ENTITY
     } else {
         StatusCode::BAD_REQUEST

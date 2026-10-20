@@ -4,6 +4,7 @@ import { basename, join, resolve } from "node:path";
 import { chromium, type Page } from "@playwright/test";
 import { checkNativeLostPosting } from "./check-native-lost-posting";
 import { checkNativeAccessLoss } from "./check-native-access-loss";
+import { verifyNativeServiceSalesRestart } from "./check-native-service-sales";
 import { checkNativeServiceCompany } from "./check-native-service-company";
 import { checkNativeContextSwitch } from "./check-native-context-switch";
 
@@ -269,6 +270,19 @@ async function standalone() {
     if (!ownerRead.ok()) throw new Error("Permission refusal retired owner");
   }
   try {
+    if (process.argv.includes("--service-sales-restart")) {
+      const state = JSON.parse(readFileSync(privateState, "utf8"));
+      await owner.goto(base);
+      await owner.getByLabel("E-mail", { exact: true }).fill("owner@example.invalid");
+      await owner.getByLabel("Adgangskode", { exact: true }).fill(ownerPassword);
+      await owner.getByRole("button", { name: "Log ind", exact: true }).click();
+      await owner.getByLabel("Engangskode", { exact: true }).fill(totp(state.ownerTotp));
+      await owner.getByRole("button", { name: "Bekræft", exact: true }).click();
+      await owner.getByRole("link", { name: "Åbn bogføring" }).first().waitFor();
+      await verifyNativeServiceSalesRestart(owner, base);
+      console.log("PASS: service customer/invoice/original/journal persist after second restart and normal MFA");
+      return;
+    }
     if (process.argv.includes("--reopen")) {
       const state = JSON.parse(readFileSync(privateState, "utf8"));
       await login(owner, "owner@example.invalid", ownerPassword, state.ownerRecovery);
@@ -300,7 +314,7 @@ async function standalone() {
       await reader.goto(link("verification-", verifyBefore));
       const readerRecovery = await enroll(reader, "reader@example.invalid", readerPassword);
       await permissions();
-      writeFileSync(privateState, JSON.stringify({ ownerRecovery, readerRecovery, readerTotp: totpSecrets["reader@example.invalid"] }), {
+      writeFileSync(privateState, JSON.stringify({ ownerRecovery, readerRecovery, ownerTotp: totpSecrets["owner@example.invalid"], readerTotp: totpSecrets["reader@example.invalid"] }), {
         mode: 0o600,
       });
     }

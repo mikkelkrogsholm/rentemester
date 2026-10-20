@@ -3,6 +3,7 @@ import { spawnSync } from "node:child_process";
 import { writeFileSync, unlinkSync } from "node:fs";
 import { join } from "node:path";
 import { connect } from "node:net";
+import { checkNativeServiceSales } from "./check-native-service-sales";
 
 /** Normal owner-issued service identity, real accounting and native client reconciliation. */
 export async function checkNativeServiceCompany(owner: Page, base: string, work: string, cli: string, mcp: string) {
@@ -23,19 +24,19 @@ export async function checkNativeServiceCompany(owner: Page, base: string, work:
     const r = await owner.request.get(`${base}${prefix}journal`); need(r.ok(), "Canonical owner journal readable"); return (await r.json()).journal;
   };
   const grant = (role: string) => admin("members/company", { userId: issued.serviceAccountId, companySlug: "synthetic", action: "grant", role });
-  function client(kind: "cli" | "mcp", command: string, body?: unknown, success = true) {
+  function client(kind: "cli" | "mcp", command: string, body?: unknown, success = true, id?: number) {
     const common = ["--server", base, "--allow-loopback-http", "--service-key-file", keyFile];
     const company = !["me", "companies"].includes(command);
     let args: string[]; let input: string;
     if (kind === "cli") {
-      args = ["remote", command.replaceAll("_", "-"), ...common, ...(company ? ["--company", "synthetic"] : []), ...(body === undefined || ["post_journal", "reverse_journal"].includes(command) ? [] : ["--confirm"])];
+      args = ["remote", command.replaceAll("_", "-"), ...common, ...(company ? ["--company", "synthetic"] : []), ...(id === undefined ? [] : ["--id", String(id)]), ...(body === undefined || ["post_journal", "reverse_journal", "preview_invoice"].includes(command) ? [] : ["--confirm"]), ...(command === "issue_invoice" ? ["--preview-reviewed"] : [])];
       input = body === undefined ? "" : JSON.stringify(body);
     } else {
       args = common;
       input = [
         { jsonrpc: "2.0", id: 1, method: "initialize", params: { protocolVersion: "2025-11-25", capabilities: {}, clientInfo: { name: "synthetic-service-accounting", version: "1" } } },
         { jsonrpc: "2.0", method: "notifications/initialized" },
-        { jsonrpc: "2.0", id: 2, method: "tools/call", params: { name: command, arguments: { ...(company ? { company: "synthetic" } : {}), ...(body === undefined ? {} : { envelope: JSON.stringify(body) }) } } },
+        { jsonrpc: "2.0", id: 2, method: "tools/call", params: { name: command, arguments: { ...(company ? { company: "synthetic" } : {}), ...(id === undefined ? {} : { id }), ...(body === undefined ? {} : ["post_journal", "reverse_journal"].includes(command) ? { envelope: JSON.stringify(body) } : { body: JSON.stringify(body), ...(command === "preview_invoice" ? {} : { confirm: true }), ...(command === "issue_invoice" ? { previewReviewed: true } : {}) }) } } },
       ].map((v) => JSON.stringify(v)).join("\n") + "\n";
     }
     const out = spawnSync(kind === "cli" ? cli : mcp, args, { input, encoding: "utf8", timeout: 30000, maxBuffer: 4 * 1024 * 1024 });
@@ -107,19 +108,21 @@ export async function checkNativeServiceCompany(owner: Page, base: string, work:
     const reversed = client("mcp", "reverse_journal", reversal);
     const reverseReplay = client("cli", "reverse_journal", reversal);
     need(reversed.ok === true && reversed.receipt?.replayed === false && reverseReplay.receipt?.replayed === true, "Service reversal applies once across native clients");
-    const after = await canonical(); need(after.entries.length === before.entries.length + 2, "Exactly one service posting and one reversal");
+    let after = await canonical(); need(after.entries.length === before.entries.length + 2, "Exactly one service posting and one reversal");
     for (const [resource, envelope, command] of [["journal", "journal", "journal"], ["trial-balance", "trialBalance", "trial_balance"], ["income-statement", "incomeStatement", "income_statement"], ["balance", "balance", "balance"], ["overview", "overview", "overview"]]) {
       const human = await (await owner.request.get(`${base}${prefix}${resource}`)).json();
       const service = await (await http.get(prefix + resource)).json();
       need(JSON.stringify(human[envelope]) === JSON.stringify(service[envelope]), `Human/service ${resource} parity`);
       for (const kind of ["cli", "mcp"] as const) need(JSON.stringify(client(kind, command)[envelope]) === JSON.stringify(service[envelope]), `${kind} service ${resource} parity`);
     }
+    const sales = await checkNativeServiceSales(owner, http, base, client);
+    after = await canonical();
     await admin("members/company", { userId: issued.serviceAccountId, companySlug: "synthetic", action: "revoke" });
     need((await http.get(prefix + "journal")).status() === 403 && (await http.post(prefix + "manual-journal", { data: original })).status() === 403, "Revoked membership blocks reads and existing receipt replay");
     await grant("reader");
     await admin("service-principals/revoke", { serviceAccountId: issued.serviceAccountId, credentialId: rotated.credentialId, operationId: crypto.randomUUID(), confirm: true });
     client("cli", "me", undefined, false); client("mcp", "journal", undefined, false);
     need(JSON.stringify(await canonical()) === JSON.stringify(after), "Revocation must not change accounting");
-    return { normalOwnerIssuedAndExplicitlyGranted: true, companyIsolation: true, readerWriteRefusedBeforeCharge: true, acceptedLostReply: true, cliMcpExactReplay: true, stableReceiptAcrossRotation: true, reversalExactlyOnce: true, canonicalFiveReportParity: true, membershipAndCredentialRevocation: true, servicePostingEntryHash: replay.entryHash, finalEntries: after.entries.length };
+    return { sales, normalOwnerIssuedAndExplicitlyGranted: true, companyIsolation: true, readerWriteRefusedBeforeCharge: true, acceptedLostReply: true, cliMcpExactReplay: true, stableReceiptAcrossRotation: true, reversalExactlyOnce: true, canonicalFiveReportParity: true, membershipAndCredentialRevocation: true, servicePostingEntryHash: replay.entryHash, finalEntries: after.entries.length };
   } finally { await http.dispose(); try { unlinkSync(keyFile); } catch {} }
 }

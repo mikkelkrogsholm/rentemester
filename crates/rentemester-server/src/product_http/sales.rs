@@ -2,6 +2,10 @@ use super::*;
 use rentemester_application::sales::{Action, Output};
 use rentemester_engine::sales_invoice::Input;
 use rentemester_storage::sales::{Customer, Post};
+enum Credential {
+    Human(rentemester_runtime::auth::VerifiedCookie),
+    Service(rentemester_runtime::service_key::ServiceKey),
+}
 enum Command {
     Contacts,
     DeleteCustomer(i64, bool),
@@ -20,13 +24,35 @@ enum Command {
     Pdf(i64),
 }
 pub(super) async fn handle(State(state): State<Product>, request: Request) -> Response {
-    let company_slug=request.uri().path().split('/').nth(3).unwrap_or("").to_owned();
+    let company_slug = request
+        .uri()
+        .path()
+        .split('/')
+        .nth(3)
+        .unwrap_or("")
+        .to_owned();
     let method = request.method().clone();
     let mutation = method != axum::http::Method::GET;
-    let cookie = match proof(&state, &request, mutation) {
-        Ok(p) => p,
-        Err(r) => return *r,
+    let credential = if super::service_company::requested(&request) {
+        match super::service_company::proof(&state, &request, mutation) {
+            Ok(key) => Credential::Service(key),
+            Err(r) => return *r,
+        }
+    } else {
+        match proof(&state, &request, mutation) {
+            Ok(cookie) => Credential::Human(cookie),
+            Err(r) => return *r,
+        }
     };
+    if matches!(credential, Credential::Service(_))
+        && !mutation
+        && (request.headers().contains_key("content-encoding")
+            || request.headers().contains_key("transfer-encoding")
+            || request.headers().contains_key("idempotency-key")
+            || one(request.headers(), "content-length").is_some_and(|v| v != "0"))
+    {
+        return refused(StatusCode::BAD_REQUEST, "invalid_input");
+    }
     if !selected(&state, &request) {
         return refused(StatusCode::NOT_FOUND, "company_not_found");
     }
@@ -143,6 +169,20 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
     } else {
         Command::List
     };
+    if matches!(credential, Credential::Service(_))
+        && !matches!(
+            command,
+            Command::Contacts
+                | Command::Customer(_)
+                | Command::List
+                | Command::Preview(_)
+                | Command::Issue(_)
+                | Command::Post(_)
+                | Command::Pdf(_)
+        )
+    {
+        return refused(StatusCode::FORBIDDEN, "service_operation_unavailable");
+    }
     let key = match command {
         Command::Contacts => "contacts",
         Command::Vendor(_) | Command::UpdateVendor(_, _) | Command::DeleteVendor(_, _) => "vendor",
@@ -180,27 +220,55 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
             Command::Pdf(id) => Action::Pdf(*id),
         };
         let now = chrono::DateTime::<chrono::Utc>::from(std::time::SystemTime::now());
-        owner
-            .sales(
-                &cookie,
-                &SystemClock,
-                action,
-                &now.format("%Y-%m-%d").to_string(),
-                &now.to_rfc3339(),
-                query.year.as_deref(),
-            )
-            .map_err(|_| ())
+        match credential {
+            Credential::Human(cookie) => {
+                let attempt = owner
+                    .sales(
+                        &cookie,
+                        &SystemClock,
+                        action,
+                        &now.format("%Y-%m-%d").to_string(),
+                        &now.to_rfc3339(),
+                        query.year.as_deref(),
+                    )
+                    .map_err(|_| ())?;
+                Ok::<_, ()>(super::documents::outcome(attempt).map(|value| (value, None)))
+            }
+            Credential::Service(key) => {
+                let attempt = owner
+                    .sales_service(
+                        &key,
+                        &SystemClock,
+                        rentemester_application::sales::Request {
+                            action,
+                            today: &now.format("%Y-%m-%d").to_string(),
+                            now: &now.to_rfc3339(),
+                            year: query.year.as_deref(),
+                        },
+                    )
+                    .map_err(|_| ())?;
+                Ok::<_, ()>(match attempt.outcome {
+                    Ok(value) => Ok((value.result, Some((value.usage, value.business)))),
+                    Err(f) => Err(Box::new(super::service_company::failure(f))),
+                })
+            }
+        }
     })
     .await;
-    let result = match result {
-        Ok(Ok(attempt)) => match super::documents::outcome(attempt) {
-            Ok(o) => o,
-            Err(r) => return *r,
-        },
+    let (result, stages) = match result {
+        Ok(Ok(Ok(value))) => value,
+        Ok(Ok(Err(response))) => return *response,
         _ => return refused(StatusCode::SERVICE_UNAVAILABLE, "outcome_unconfirmed"),
     };
     match result {
-        Output::Json(value) => response(StatusCode::OK, json!({"ok":true,key:value})),
+        Output::Json(value) => {
+            let mut body = json!({"ok":true,key:value});
+            if let Some((usage, business)) = stages {
+                body["usage"] = json!(usage);
+                body["business"] = json!(business);
+            }
+            response(StatusCode::OK, body)
+        }
         Output::Pdf(bytes) => {
             let mut response = (StatusCode::OK, bytes).into_response();
             response.headers_mut().insert(

@@ -13,12 +13,17 @@ export async function checkNativeContextSwitch(page: Page, base: string, loginAs
     let release!: () => void;
     let finish!: () => void;
     let failure: unknown;
+    let claimed = false;
     const arrived = new Promise<void>((resolve, fail) => { ready = resolve; reject = fail; });
     const gate = new Promise<void>((resolve) => { release = resolve; });
     const done = new Promise<void>((resolve) => { finish = resolve; });
     const timer = setTimeout(() => reject(new Error("No held authorized journal reply")), 45000);
     const pattern = `${base}/api/companies/${primary}/journal*`;
     await page.route(pattern, async (route) => {
+      // Hold one observed owner reply. Later requests retain their own current
+      // authorization, including expected403 after the account has changed.
+      if (claimed) return route.continue();
+      claimed = true;
       try {
         const response = await route.fetch();
         const body = await response.json();

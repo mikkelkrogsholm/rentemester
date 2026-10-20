@@ -3,6 +3,7 @@
 //! Never open other regular descriptors for owned database inodes in this process.
 pub mod legacy_adoption;
 mod eu_sales;
+mod service_sales;
 mod oss_report;
 mod public_einvoice;
 use rentemester_application::{

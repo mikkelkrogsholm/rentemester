@@ -42,6 +42,9 @@ def main():
   subprocess.run(['/opt/homebrew/bin/bun','run','scripts/rust/check-native-multi-company.ts'],cwd=REPO,env=env,check=True)
   stop();del config['firstOwner'];write();start()
   subprocess.run(['/opt/homebrew/bin/bun','run','scripts/rust/check-native-multi-company.ts','--reopen'],cwd=REPO,env=env,check=True)
+  if clients:
+   stop();start()
+   subprocess.run(['/opt/homebrew/bin/bun','run','scripts/rust/check-native-multi-company.ts','--service-sales-restart'],cwd=REPO,env=env,check=True)
   evidence=Path('/tmp/rentemester-rust-reports/native-multi-company.json');data=json.loads(evidence.read_text());data.update({'binarySha256':hashlib.sha256(binary.read_bytes()).hexdigest(),'webIndexSha256':hashlib.sha256((web/'index.html').read_bytes()).hexdigest(),'noOfflineIdentityFixture':True,'profile':'local-user-macos'});data['clientSha256']={kind:hashlib.sha256(Path(path).read_bytes()).hexdigest() for kind,path in clients.items()};evidence.write_text(json.dumps(data,indent=2));evidence.chmod(0o600)
   print('PASS: separate native company ledgers, normal verification/MFA, permission isolation and restart; '+str(evidence))
  finally:

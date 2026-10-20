@@ -5,6 +5,11 @@ if [ "$(uname -s)" != Darwin ]; then
   echo "The current bundle helper requires macOS." >&2
   exit 2
 fi
+# App-launched shells may omit rustup from PATH although guarded Cargo resolves it.
+if ! command -v rustc >/dev/null 2>&1 && [ -x "$HOME/.cargo/bin/rustc" ]; then
+  PATH="$HOME/.cargo/bin:$PATH"
+  export PATH
+fi
 root=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
 cd "$root"
 web_source=${RENTEMESTER_DESKTOP_WEB_DIR:-"$root/app/dist"}
