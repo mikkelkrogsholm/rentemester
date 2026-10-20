@@ -47,6 +47,8 @@ struct Config {
     #[serde(default)]
     auth_mail: Option<crate::auth_delivery::Config>,
     #[serde(default)]
+    document_scanner: Option<crate::document_scanner::Config>,
+    #[serde(default)]
     invoice_mail: std::collections::BTreeMap<String, rentemester_runtime::invoice_mail::Config>,
 }
 #[derive(Deserialize)]
@@ -80,6 +82,7 @@ pub struct RestoreRequest {
 
 pub struct Backend {
     pub(crate) owner: Mutex<Owner>,
+    pub(crate) document_scanner: Option<rentemester_runtime::document_scanner::HttpJsonScanner>,
     pub(crate) cookies: Arc<CookieVerifier>,
     pub(crate) setup: Option<crate::setup_http::Installer>,
     pub(crate) setup_pending: std::sync::atomic::AtomicBool,
@@ -145,6 +148,7 @@ impl Backend {
             }
         }
         let profile = cookie_profile(origin)?;
+        let document_scanner = crate::document_scanner::build(config.document_scanner.as_ref())?;
         let mut delivery=crate::auth_delivery::Delivery::new(config.auth_mail.as_ref(), profile == CookieProfile::Development, &config.root.join(".rentemester"))?;
         let invoice_mail=config.invoice_mail.iter().map(|(slug,config)| {
             rentemester_runtime::invoice_mail::SmtpSender::new(config).map(|sender|(slug.clone(),Mutex::new(sender)))
@@ -293,6 +297,7 @@ impl Backend {
         let setup_pending = std::sync::atomic::AtomicBool::new(setup.is_some());
         Ok(Arc::new(Self {
             owner: Mutex::new(owner),
+            document_scanner,
             setup,
             setup_pending,
             cookies,

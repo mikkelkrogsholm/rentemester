@@ -1,6 +1,7 @@
 //! Standalone Rust HTTP process serving the existing cockpit on the API origin.
 mod auth_delivery;
 mod backend;
+mod document_scanner;
 mod hosted_worker;
 mod portable_backup_cli;
 mod product_http;

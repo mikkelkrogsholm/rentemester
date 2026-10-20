@@ -1,4 +1,5 @@
 //! Runtime identity verification and cooperative process lifetime.
+pub mod document_scanner;
 pub mod auth;
 pub mod auth_mail;
 pub mod backup_artifact;

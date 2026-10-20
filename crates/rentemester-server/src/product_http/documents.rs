@@ -1,6 +1,7 @@
 use super::*;
 use base64::{Engine, engine::general_purpose::STANDARD};
-use rentemester_application::documents::Ingest;
+use rentemester_application::documents::ScanPolicy;
+use rentemester_runtime::document_scanner::{ScanFailure, Scanner};
 use rentemester_engine::document::Metadata;
 use rentemester_runtime::document::Prepared;
 #[derive(Deserialize)]
@@ -26,6 +27,9 @@ pub(super) fn outcome<T>(
         Ok(value) => Ok(value.value),
         Err(f) if f.error.code == "invalid_credentials" => {
             Err(Box::new(refused(StatusCode::UNAUTHORIZED, "unauthorized")))
+        }
+        Err(f) if f.error.code == "access_denied" && f.stage == FailureStage::NotCommitted => {
+            Err(Box::new(refused(StatusCode::FORBIDDEN, "access_denied")))
         }
         Err(f) if f.stage == FailureStage::NotCommitted => Err(Box::new(response(
             StatusCode::UNPROCESSABLE_ENTITY,
@@ -84,21 +88,29 @@ pub(super) async fn ingest(State(state): State<Product>, request: Request) -> Re
                 json!({"ok":false,"code":"invalid_document_file","errors":[message]}),
             )
         })?;
-        let today = chrono::DateTime::<chrono::Utc>::from(std::time::SystemTime::now())
-            .format("%Y-%m-%d")
-            .to_string();
+        let admission = {
+            let mut owner = state.native.lock_company(&company_slug)
+                .map_err(|_| refused(StatusCode::SERVICE_UNAVAILABLE, "owner_unavailable"))?;
+            let policy = if state.native.document_scanner.is_some() { ScanPolicy::Required } else { ScanPolicy::Off };
+            let attempt = owner.prepare_document_ingest(&cookie, &SystemClock, file, input.metadata, policy)
+                .map_err(|_| refused(StatusCode::SERVICE_UNAVAILABLE, "owner_unavailable"))?;
+            if attempt.retired {
+                return Err(Box::new(refused(StatusCode::SERVICE_UNAVAILABLE, "owner_unavailable")));
+            }
+            outcome(attempt)?
+        }; // Release the global Owner mutex and all SQL transactions before provider I/O.
+        let scan = match &state.native.document_scanner {
+            Some(scanner) => Some(scanner.scan(admission.file()).map_err(|failure| {
+                Box::new(match failure {
+                    ScanFailure::Rejected => refused(StatusCode::UNPROCESSABLE_ENTITY, "document_scanner_rejected"),
+                    ScanFailure::Unavailable => refused(StatusCode::SERVICE_UNAVAILABLE, "document_scanner_unavailable"),
+                })
+            })?),
+            None => None,
+        };
         let mut owner = state.native.lock_company(&company_slug)
             .map_err(|_| refused(StatusCode::SERVICE_UNAVAILABLE, "owner_unavailable"))?;
-        let attempt = owner
-            .ingest_document(
-                &cookie,
-                &SystemClock,
-                Ingest {
-                    file: &file,
-                    metadata: &input.metadata,
-                    today: &today,
-                },
-            )
+        let attempt = owner.finish_document_ingest(&cookie, &SystemClock, admission, scan)
             .map_err(|_| refused(StatusCode::SERVICE_UNAVAILABLE, "owner_unavailable"))?;
         outcome(attempt)
     })
@@ -273,5 +285,23 @@ pub(super) async fn expense(State(state): State<Product>, request: Request) -> R
             Err(r) => *r,
         },
         _ => refused(StatusCode::SERVICE_UNAVAILABLE, "outcome_unconfirmed"),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn upload_cannot_supply_scanner_policy_or_clean_evidence() {
+        let valid = json!({"confirm":true,"fileName":"synthetic.txt","fileBase64":"WA==","metadata":{"source":"Synthetic","documentType":"cash_register_receipt"}});
+        assert!(serde_json::from_value::<Upload>(valid.clone()).is_ok());
+        for field in ["scanner", "scannerPolicy", "scanEvidence", "admission"] {
+            let mut request = valid.clone();
+            request[field] = json!({"ok":true,"scannerId":"caller"});
+            assert!(serde_json::from_value::<Upload>(request).is_err());
+            let mut request = valid.clone();
+            request["metadata"][field] = json!({"ok":true,"scannerId":"caller"});
+            assert!(serde_json::from_value::<Upload>(request).is_err());
+        }
     }
 }
