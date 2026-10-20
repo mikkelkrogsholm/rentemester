@@ -2306,6 +2306,12 @@ og `refresh-public-invoice-status`. Se `remote --help` for kaldets kontrakt.
 Den signerede backup bevarer kilder, registreringsbevis og afsendelseshistorik;
 private leverandørindstillinger følger ikke med, og gendannelse sender intet.
 
-Group74 er integreret med fokuserede prøver. Den samlede praktiske prøve med
-browser, syntetisk TLS-leverandør, genstart og kildeuafhængig gendannelse er
-endnu ikke kvalificeret. Der er ikke foretaget en virkelig ekstern afsendelse.
+Group74 er kvalificeret gennem 25 praktiske trin med almindelige MFA-brugere
+og en syntetisk TLS-leverandør. Den eksisterende webformular forhåndsviser og
+udsteder fakturaen; eksplicit tilmelding og afsendelse bevarer den frosne
+modtager og præcis XML. Accepteret afvisning og uafklaret resultat blokerer
+ny afsendelse. Tilbagekaldelse af adgang under validering forhindrer afsendelse.
+HTTP, CLI og MCP samt genstart og fire signerede backupprøver med gendannelse
+uden den oprindelige datamappe bevarer originaler og historik uden genafsendelse.
+Private leverandørnøgler følger ikke med. Der er ikke foretaget en virkelig
+ekstern afsendelse; den installerede desktops samlede forløb er fortsat åbent.

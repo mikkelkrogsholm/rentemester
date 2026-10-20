@@ -1,15 +1,15 @@
 {
   "goal": "Complete Rust server/web, GPUI local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "Bilagsmail manual/service intake, explicit inbox review and signed source-free recovery qualified",
-  "code_revision": "62c085a4099e7611696e36ca625bb29462096967",
-  "spec_revision": "sha256:008be046798e32b6c57d8040225225bbf6e40beace842b5b04863044a9e8a71a",
-  "state": "Group73 actual PASS at62c085a4: 28 actions with ordinary verified-MFA users, existing Bilagsmail configuration and real synthetic verified-TLS IMAP manual/service-account polling, exact original EML/PDF retention, explicit existing inbox classification/currency review and exactly one unposted document. Repeated UIDs and identical EML under a new UID deduplicate; invalid/missing-ID/oversized messages retain truthful evidence. Configuration deletion and current grantor revocation during held fetch promptly deny without retained effects. Canonical HTTP/CLI/MCP status/source/original byte parity, fresh-MFA restart and four independently verified signed source-free fresh-owner restore/reopens preserve originals, review, dedup, document and audit with credentials/polling disabled and zero journals. Root independently matched three binaries, full web inventory, helper hashes, full InboxV2 and company table snapshots, originals and audit prefixes. Owned runtime/process cleanup true. Installed native GUI, real external mail and full mission remain OPEN; next74 real public e-invoice.",
+  "current_increment": "Public e-invoice explicit registration, immutable source delivery/status and signed source-free recovery qualified",
+  "code_revision": "de2a3397ec558fff8e12b7e81142d55b52de9c21",
+  "spec_revision": "sha256:9a7bc5653b14cf898d1040e766f7fae945771be89b83b07ee50f62ffc1234753",
+  "state": "Group74 actual PASS atde2a3397 with exact independently matched server/CLI/MCP/web/helper hashes: 25 ordinary-MFA actions through existing web PDF preview/issuance and explicit legal-company/outbound registration, verified-TLS synthetic provider validation/delivery/status, frozen EAN despite contact edit, accepted terminal and ambiguous outcomes permanently blocking redelivery. Exactly3 delivery POSTs,5 validations,1 status GET; current revocation during held validation yields403 without reservation/delivery. Exact HTTP/CLI/MCP retained outcome/read parity, fresh-MFA restart and four independently verified signed source-free fresh-owner restore/reopens preserve10 originals/3 submissions/6 events/registration and audit prefix, credentials absent and no replay. Root independently audited exact domain tables, originals, provider XML hashes and only restore-boundary audit append. Owned cleanup true. No real external transmission or installed-native qualification. Full mission/epic672 OPEN; next75 mixed/exempt/domestic-reverse invoice lifecycle.",
   "issues_closed": [],
   "next": [
-    "Group74: complete public e-invoice through existing web UI, immutable recipient snapshot, deterministic OIOUBL, private DigiSense company binding, real bounded transport/status, clients and signed recovery without resend; actual synthetic TLS provider only.",
+    "Group75: finish full DKK invoices with mixed taxable/exempt and domestic reverse-charge lines through preview/issue, immutable originals, posting, partial/final credit, payment/refund, VAT/dated close, clients and signed recovery. Four isolated implementation owners active; not yet qualified.",
     "Keep remaining full unmatched bank candidate/description/refresh synchronization explicit, plus raw-file Windows1252 CLI compatibility; no all-importer-parity claim.",
-    "Other concrete server/web gaps: public e-invoice send/status, sales VAT/currency variants, portfolio/cashflow pages, interactive CVR lookup/sync.",
+    "Other concrete server/web gaps remain: sales simplified/currency/foreign reverse-charge and OSS variants, portfolio/cashflow pages, interactive CVR lookup/sync. Preserve explicit bank followups.",
     "Complete installed local/remote desktop financial journeys, full recovery/transfer/automation/distribution and TypeScript retirement gates. Full goal remains open."
   ],
   "preserve_unrelated_paths": [
@@ -21,10 +21,10 @@
   ],
   "all_goal_requirements_complete": false,
   "previous_verified_increment": {
-    "current_increment": "Ordinary PDF upload through automatic invoice extraction, manual web bookkeeping and source-free recovery qualified",
-    "code_revision": "ff7174a51ef3e6659fbbac56b5fdad4c0553fe79",
-    "spec_revision": "sha256:df0f3f2e5aedde3be4c9665cf8b31ad06dbc48ebf73f81cac85c48d0655e4185",
-    "state": "Group71 actual PASS atff7174a5: ordinary verified-MFA bookkeeper uploads six originals through existing web UI; disabledPDF/nonPDF no extraction, configured three PDFs produce completed15citedfields or retained malformed/unavailable needs_resolution; duplicate422 zero secondprovider call; held fourthprovider call permits prompt public revocation, keeps known successful upload receipt and only started history/no result. Explicit Reviewer extraction/upload denied, roles unchanged. One explicit manualweb10exempt expense creates exactly1journal/2lines. Canonical HTTP/CLI/MCP read parity, fresh-MFA restart, four independently verified signed snapshots and source-free fresh-owner restore/reopen preserve6originals/4extraction sources/4startedattempts/1result/15fields/audit/books without provider credentials or rerun. Independently matched3binary/fullweb/helper hashes;24actions,ownedcleanuptrue. Public Upload-only-vsMasterData actor not available in rolematrix; separation focused-code-only. Explicit70 qualification retained. Group72 Danske named-bank import in isolated parallel implementation, not yet integrated/qualified. Native67/68/69 implemented/tested/built; installed local/remote GUI and fullmission/epic672 remain OPEN."
+    "current_increment": "Bilagsmail manual/service intake, explicit inbox review and signed source-free recovery qualified",
+    "code_revision": "62c085a4099e7611696e36ca625bb29462096967",
+    "spec_revision": "sha256:008be046798e32b6c57d8040225225bbf6e40beace842b5b04863044a9e8a71a",
+    "state": "Group73 actual PASS at62c085a4: 28 actions with ordinary verified-MFA users, existing Bilagsmail configuration and real synthetic verified-TLS IMAP manual/service-account polling, exact original EML/PDF retention, explicit existing inbox classification/currency review and exactly one unposted document. Repeated UIDs and identical EML under a new UID deduplicate; invalid/missing-ID/oversized messages retain truthful evidence. Configuration deletion and current grantor revocation during held fetch promptly deny without retained effects. Canonical HTTP/CLI/MCP status/source/original byte parity, fresh-MFA restart and four independently verified signed source-free fresh-owner restore/reopens preserve originals, review, dedup, document and audit with credentials/polling disabled and zero journals. Root independently matched three binaries, full web inventory, helper hashes, full InboxV2 and company table snapshots, originals and audit prefixes. Owned runtime/process cleanup true. Installed native GUI, real external mail and full mission remain OPEN; next74 real public e-invoice."
   },
   "evidence": {
     "combined_browser_log": "/tmp/rm-platform5-combined.log",
@@ -1977,6 +1977,12 @@
       "code_revision": "69712e26f5dfad0047e3d5d1dffb4eb906f51a79",
       "spec_revision": "sha256:893fa8780b97c01242f05b1924151ef0a9877c79da570ebf816e7aabc2674225",
       "state": "Group64 actual PASS at69712e26: ordinary verified/MFA humans review one explicit October cutover opening in July fiscal years, with retained original-backed2024archive citations but no inferred999 archive carryforward; later original-backed native expenses and existing later entry retained. Real Manage confirmation and journal link, stale/unbalanced/closed/current-rights refusals, same accepted-key HTTP/CLI/MCP196 recovery and changed-body/new-key/precutover/opening-reversal refusal PASS. Native company figures and approved-group closing reconcile, pre-cutover group refuses and partial fiscal coverage is explicit; historical raw CFO remains available. Fresh-MFA source restart and independently verified signed source-free fresh-owner restore preserve original journals, singleton markers, typed proofs, cited originals, UUID and reports. Fresh owner cannot use old key until actual web explicit original-receipt mapping; canonical HTTP/CLI/MCP replay and target reopen preserve original result without new opening. Read/refusal/replay proof preserves immutable audit prefix and journal/marker with exactly8expected receipt diagnostics. All3binary/web hashes independently matched atqualification; owned cleanuptrue. Initial helper status/audit expectations corrected; concrete restored-key HTTP mapping and missing opening receipt-family inventory fixed. Fullmission/epic672 OPEN; no further64perfection round. Next65 existing required-policy ordinary document scanning, desktop financial journeys, distribution and TS retirement remain open."
+    },
+    {
+      "current_increment": "Bilagsmail manual/service intake, explicit inbox review and signed source-free recovery qualified",
+      "code_revision": "62c085a4099e7611696e36ca625bb29462096967",
+      "spec_revision": "sha256:008be046798e32b6c57d8040225225bbf6e40beace842b5b04863044a9e8a71a",
+      "state": "Group73 actual PASS at62c085a4: 28 actions with ordinary verified-MFA users, existing Bilagsmail configuration and real synthetic verified-TLS IMAP manual/service-account polling, exact original EML/PDF retention, explicit existing inbox classification/currency review and exactly one unposted document. Repeated UIDs and identical EML under a new UID deduplicate; invalid/missing-ID/oversized messages retain truthful evidence. Configuration deletion and current grantor revocation during held fetch promptly deny without retained effects. Canonical HTTP/CLI/MCP status/source/original byte parity, fresh-MFA restart and four independently verified signed source-free fresh-owner restore/reopens preserve originals, review, dedup, document and audit with credentials/polling disabled and zero journals. Root independently matched three binaries, full web inventory, helper hashes, full InboxV2 and company table snapshots, originals and audit prefixes. Owned runtime/process cleanup true. Installed native GUI, real external mail and full mission remain OPEN; next74 real public e-invoice."
     }
   ],
   "active_work": [
@@ -2278,11 +2284,11 @@
     {
       "delivery": "Group74 public invoice registration, immutable recipient and actual DigiSense delivery/status",
       "owner": "root phases/private server configuration/HTTP/integration/actual; isolated snapshot+web, deterministic XML+clients, runtime+actual helper, storage+registration recovery workers",
-      "status": "IMPLEMENTED and integrated, actual qualification PENDING. Immutable recipient/OIOUBL/runtime/submission evidence/existing web/five client operations plus provider-authoritative registration recovery integrated. Root all9package/alltarget strict Clippy PASS; later added separate current-authorized discovery/register phases and physicalOwner2 revocation tests PASS. Focused engine/storage/runtime/client/web tests, server DK-CVR adapter, root web build and full112 MCP stdio PASS. Final3binarybuild and later host/server alltarget strict PASS. Actual ordinary-MFA browser/provider/restart/four signed source-free recovery pending. No full74 PASS; full mission/epic672 OPEN.",
+      "status": "COMPLETE finite Group74. Group74 actual PASS atde2a3397 with exact independently matched server/CLI/MCP/web/helper hashes: 25 ordinary-MFA actions through existing web PDF preview/issuance and explicit legal-company/outbound registration, verified-TLS synthetic provider validation/delivery/status, frozen EAN despite contact edit, accepted terminal and ambiguous outcomes permanently blocking redelivery. Exactly3 delivery POSTs,5 validations,1 status GET; current revocation during held validation yields403 without reservation/delivery. Exact HTTP/CLI/MCP retained outcome/read parity, fresh-MFA restart and four independently verified signed source-free fresh-owner restore/reopens preserve10 originals/3 submissions/6 events/registration and audit prefix, credentials absent and no replay. Root independently audited exact domain tables, originals, provider XML hashes and only restore-boundary audit append. Owned cleanup true. No real external transmission or installed-native qualification. Full mission/epic672 OPEN; next75 mixed/exempt/domestic-reverse invoice lifecycle.",
       "contract": "/tmp/rm-platform74-public-einvoice-contract.md",
       "acceptance": "Ordinary current-MFA user verifies/registers exact legal company and outbound participant, freezes EAN in issued invoice, explicitly sends exact immutable OIOUBL once, observes accepted-ID status only, retains ambiguous outcomes without resend, and preserves exact source/submission/audit history through HTTP/CLI/MCP, restart and signed source-free restore without credentials or replay. Synthetic verifiedTLS provider only; no real financial transmission authorized.",
       "evidence": {
-        "actual_qualified": false,
+        "actual_qualified": true,
         "focused_core": "snapshot4, exporter7, runtime5 and storage7 PASS",
         "focused_clients": "SDK4/CLI2/MCP3 PASS",
         "web": "64 focused tests and tsc PASS; root production build PASS",
@@ -2294,8 +2300,30 @@
         "root_physical_phases": "/tmp/rm74-root-physical-phase-tests.log physical Owner2 PASS",
         "actual_runner": "scripts/rust/run-public-einvoice.py",
         "root_final_build": "/tmp/rm74-root-build-final.log server/CLI/MCP PASS",
-        "root_phase_strict": "/tmp/rm74-root-phase-strict.log PASS"
+        "root_phase_strict": "/tmp/rm74-root-phase-strict.log PASS",
+        "actual_report": "/tmp/rentemester-rust-reports/public-einvoice-integrated74-run7.json",
+        "actual_report_sha256": "d4f166bccc53d3507528fe21678c85bd8d1f61dacc492727fbcec5631dd1a660",
+        "root_independent_audit": "/tmp/rm74-root-independent-qualification.json",
+        "actions": 25,
+        "owned_cleanup": true,
+        "source_free_restore_qualified": true,
+        "installed_native_qualified": false,
+        "actual_runner_sha256": "3ed0b8f1053f72a28f77b39ec14a1d8179d782610c50b7ccb29d035dab475da1",
+        "actual_browser_sha256": "b51201e27c7573203567016aad91de32fdc6766aece504caf69a7405e7ed2910"
       }
+    },
+    {
+      "delivery": "Group75 full DKK mixed/exempt/domestic-reverse invoice lifecycle",
+      "owner": "root contract/integration/actual; four isolated engine, posting, credit-close and web-client writers",
+      "status": "IMPLEMENTATION ACTIVE; no integrated or actual75 qualification. Historical issued snapshots must not be recomputed. Full mission remains OPEN.",
+      "contract": "/tmp/rm-platform75-domestic-vat-contract.md",
+      "acceptance": "Existing web explicit classification/basis and truthful PDF → immutable issue → one current-authorized classified posting → cumulative partial/final credits preserving every original net/VAT cent → ordinary receipt/refund and dated VAT/close → HTTP/CLI/MCP and signed source-free original/history recovery. Other invoice variants remain explicit full-goal followups."
+    },
+    {
+      "delivery": "Native desktop web styling and approved app logo",
+      "owner": "root",
+      "status": "Implemented atde2a3397. Shared generated DESIGN.md colors, embedded licensed web fonts, approved PNG inside window and approved ICNS in owned preview bundle; compact dispatcher details, invoice form and side-by-side overview. Build and233testsPASS/1ignored; palette/fonts/inline logo visually observed. CUA noWindowsAvailable blocks new invoice GUI interaction despite window screenshots. Full installed local/remote financial GUI remains unqualified.",
+      "evidence": "/tmp/rm-native-style-evidence.json"
     }
   ],
   "integrated_pending_browser": [
@@ -2305,9 +2333,9 @@
     "Group53 actual V3 recovery uses one signed archive and one fresh restore; second restore/reconsent/new worker, sleep/DST and global single-use are not qualified."
   ],
   "pending_deliveries": [
-    "Group67 native GUI local/remote opening→receipt→reports+restart acceptance; code/tests/build ready, Macunlock pending",
-    "Group68 native GUI local/remote company→archive→accounts→opening→reports+restart acceptance; code/tests/build ready, current Macunlock pending",
-    "Group69 native GUI fiscal review/close→annual obligations/report+restart and independent offline backup verification; implementation/test/build ready, Macunlock pending"
+    "Group67 native GUI local/remote opening→receipt→reports+restart acceptance; code/tests/build ready, CUA noWindowsAvailable interaction blocker; screenshots available",
+    "Group68 native GUI local/remote company→archive→accounts→opening→reports+restart acceptance; code/tests/build ready, current CUA noWindowsAvailable interaction blocker; screenshots available",
+    "Group69 native GUI fiscal review/close→annual obligations/report+restart and independent offline backup verification; implementation/test/build ready, CUA noWindowsAvailable interaction blocker; screenshots available"
   ],
   "completion_gates": [
     "All epic672 child acceptance remains open until scope-matched evidence; current increments are progress only.",
