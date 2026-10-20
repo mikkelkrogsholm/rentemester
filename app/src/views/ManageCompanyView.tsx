@@ -1,3 +1,5 @@
+import { OpeningBalancePanel } from "../components/OpeningBalancePanel";
+import { useOptionalAuth } from "../lib/auth-context";
 import { useMutationOutcome } from "../lib/useMutationOutcome";
 import { useUnsavedChanges } from "../lib/useUnsavedChanges";
 import * as stylex from "@stylexjs/stylex";
@@ -77,6 +79,7 @@ function ManageForm({
   settings: CompanySettings;
   onArchivedAway: () => void;
 }) {
+  const native = useOptionalAuth()?.backend === "rust";
   const [name, setName] = useState(company.name);
   // Local mirrors of the persisted state, so the form stays consistent after a
   // save without re-fetching (a re-fetch would unmount this form mid-notice).
@@ -185,6 +188,8 @@ function ManageForm({
       <ProfileCard slug={company.slug} initial={settings} />
 
       <CvrCard slug={company.slug} initial={settings} />
+
+      {native && <OpeningBalancePanel slug={company.slug} />}
 
       <AccountantExportCard slug={company.slug} />
 

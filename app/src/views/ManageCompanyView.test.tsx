@@ -289,7 +289,7 @@ describe("ManageCompanyView", () => {
       await screen.findByRole("heading", { name: /Revisor-eksport/i }),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: /Generér og download/i }),
+      screen.getByRole("button", { name: "Generér og download" }),
     ).toBeInTheDocument();
   });
 });

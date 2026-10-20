@@ -81,6 +81,8 @@ export type ReportMoney = number | string | null;
 export type ReportSource = "live" | "archive";
 export type ArchiveAccountEvidence = { accountNo: string; name: string; type: string | null; normalBalance: string | null; amount: ReportMoney; sourceRows: Array<{ lineNo: number; sourceAmount: string; amount: ReportMoney }> };
 export type ReportSourceMetadata = {
+  openingBalanceBasis?: { basis: "live"; cutOverDate: string | null; openingJournalEntryId: number | null; archiveAmountsIncluded: false };
+  liveCoverage?: { status: "partial" | "complete"; reason: "native_history_begins_at_explicit_cutover" | null; periodStart: string; periodEnd: string; cutOverDate: string | null };
   ledgerBasis?: "native_ledger_only";
   fiscalYears?: FiscalYearEntry[];
   source?: ReportSource; selectedSource?: ReportSource; declaredCurrency?: string;
