@@ -187,10 +187,28 @@ struct Event {
     attempt_index: u32,
     previous_state_hash: String,
     actor: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    principal_kind: Option<String>,
     at: String,
     reason: Option<String>,
     evidence: Option<String>,
     resolution: Option<String>,
+}
+fn principal_field(principal: crate::idempotency::PrincipalKind) -> Option<String> {
+    match principal {
+        crate::idempotency::PrincipalKind::User => None,
+        crate::idempotency::PrincipalKind::ServiceAccount => Some("service_account".into()),
+    }
+}
+impl Event {
+    fn audit_actor(&self) -> Result<String, Error> {
+        let prefix = match self.principal_kind.as_deref() {
+            None => "user",
+            Some("service_account") => "service_account",
+            _ => return Err(refused()),
+        };
+        Ok(format!("{prefix}:{}", self.actor))
+    }
 }
 #[derive(Clone)]
 pub struct Delivery {
@@ -297,7 +315,7 @@ fn load(db: &Connection) -> Result<BTreeMap<String, Delivery>, Error> {
             || kind != format!("native_invoice_email_{}", e.event_type)
             || entity != "native_invoice_email_v1"
             || id != e.source.message_id
-            || actor != format!("user:{}", e.actor)
+            || actor != e.audit_actor()?
             || at != e.at
             || !text(&e.actor, 4096)
             || !text(&e.at, 100)
@@ -428,7 +446,7 @@ pub fn rows(db: &Connection) -> Result<Vec<Value>, Error> {
 }
 fn append(tx: &Transaction<'_>, e: Event) -> Result<Delivery, Error> {
     let raw = serde_json::to_string(&e).map_err(invalid)?;
-    tx.execute("INSERT INTO audit_log(event_type,entity_type,entity_id,message,actor,created_at)VALUES(?1,'native_invoice_email_v1',?2,?3,?4,?5)",params![format!("native_invoice_email_{}",e.event_type),e.source.message_id,raw,format!("user:{}",e.actor),e.at]).map_err(invalid)?;
+    tx.execute("INSERT INTO audit_log(event_type,entity_type,entity_id,message,actor,created_at)VALUES(?1,'native_invoice_email_v1',?2,?3,?4,?5)",params![format!("native_invoice_email_{}",e.event_type),e.source.message_id,raw,e.audit_actor()?,e.at]).map_err(invalid)?;
     get(tx, &e.source.message_id)?.ok_or_else(refused)
 }
 fn log_success(tx: &Transaction<'_>, s: &Source, at: &str) -> Result<(), Error> {
@@ -446,6 +464,25 @@ pub fn reserve(
     actor: &str,
     at: &str,
     retry: Option<&Retry>,
+) -> Result<Reservation, Error> {
+    reserve_with_principal(
+        tx,
+        source,
+        attempt_id,
+        actor,
+        at,
+        retry,
+        crate::idempotency::PrincipalKind::User,
+    )
+}
+pub fn reserve_with_principal(
+    tx: &Transaction<'_>,
+    source: Source,
+    attempt_id: &str,
+    actor: &str,
+    at: &str,
+    retry: Option<&Retry>,
+    principal: crate::idempotency::PrincipalKind,
 ) -> Result<Reservation, Error> {
     crate::journal_post::require_current(tx)?;
     validate_source(tx, &source)?;
@@ -506,6 +543,7 @@ pub fn reserve(
             attempt_index: index,
             previous_state_hash: previous,
             actor: actor.into(),
+            principal_kind: principal_field(principal),
             at: at.into(),
             reason,
             evidence: None,
@@ -520,6 +558,25 @@ pub fn terminal(
     outcome: &str,
     actor: &str,
     at: &str,
+) -> Result<Delivery, Error> {
+    terminal_with_principal(
+        tx,
+        id,
+        expected,
+        outcome,
+        actor,
+        at,
+        crate::idempotency::PrincipalKind::User,
+    )
+}
+pub fn terminal_with_principal(
+    tx: &Transaction<'_>,
+    id: &str,
+    expected: &str,
+    outcome: &str,
+    actor: &str,
+    at: &str,
+    principal: crate::idempotency::PrincipalKind,
 ) -> Result<Delivery, Error> {
     let d = get(tx, id)?.ok_or_else(refused)?;
     if !d.pending
@@ -541,6 +598,7 @@ pub fn terminal(
             attempt_index: d.attempt_index,
             previous_state_hash: d.state_hash,
             actor: actor.into(),
+            principal_kind: principal_field(principal),
             at: at.into(),
             reason: None,
             evidence: None,
@@ -553,6 +611,15 @@ pub fn reconcile(
     i: &Reconcile,
     actor: &str,
     at: &str,
+) -> Result<Delivery, Error> {
+    reconcile_with_principal(tx, i, actor, at, crate::idempotency::PrincipalKind::User)
+}
+pub fn reconcile_with_principal(
+    tx: &Transaction<'_>,
+    i: &Reconcile,
+    actor: &str,
+    at: &str,
+    principal: crate::idempotency::PrincipalKind,
 ) -> Result<Delivery, Error> {
     let (reason, evidence) = i.validate()?;
     let d = get(tx, &i.message_id)?.ok_or_else(refused)?;
@@ -572,6 +639,7 @@ pub fn reconcile(
             attempt_index: d.attempt_index,
             previous_state_hash: d.state_hash,
             actor: actor.into(),
+            principal_kind: principal_field(principal),
             at: at.into(),
             reason: Some(reason),
             evidence: Some(evidence),
