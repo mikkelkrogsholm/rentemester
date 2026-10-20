@@ -19,9 +19,9 @@ fn fixture(tx: &Transaction<'_>) {
     let validation = vies::record(&observation, "2026-08-01T12:00:00Z").unwrap();
     let invoice = json!({"invoiceType":"full","invoiceNumber":"2026-0001","issueDate":"2026-08-02","issuedAt":"2026-08-02T12:00:00Z","currency":"EUR","vatTreatment":"foreign_reverse_charge","reverseChargeBasis":"EU_B2B_SERVICES","reverseChargeNote":"Reverse charge - customer accounts for VAT","lines":[{"description":"Synthetic EU service","quantity":1,"unitPriceExVat":100,"lineTotalExVat":100,"taxClassification":"reverse_charge","reverseChargeBasis":"EU_B2B_SERVICES","vatRate":0,"vatBase":100,"vatAmount":0,"vatBaseDkk":750,"vatAmountDkk":0}],"viesValidation":validation,"fxValuationVersion":1,"buyer":{"name":"Synthetic EU Buyer","vatOrCvr":"DE123456789"},"totals":{"netAmount":100,"vatAmount":0,"grossAmount":100,"fxRateToDkk":7.5,"netAmountDkk":750,"vatAmountDkk":0,"grossAmountDkk":750}});
     save(tx, 1, "issued_invoice", "2026-0001", "2026-08-02", &invoice);
-    let credit = json!({"type":"credit_note","creditNoteNumber":"CN-2026-0001","originalInvoiceNumber":"2026-0001","originalInvoiceDocumentId":1,"issueDate":"2026-09-02","currency":"EUR","netAmount":20,"vatAmount":0,"grossAmount":20,"netAmountDkk":150,"vatAmountDkk":0,"grossAmountDkk":150,"buyer":invoice["buyer"]});
+    let credit = json!({"type":"credit_note","creditNoteNumber":"CN-2026-0001","originalInvoiceNumber":"2026-0001","originalInvoiceDocumentId":1,"issueDate":"2026-09-02","currency":"EUR","netAmount":20,"vatAmount":0,"grossAmount":20,"netAmountDkk":150,"vatAmountDkk":0,"grossAmountDkk":150,"fxRateToDkk":7.5,"journalFxRateToDkk":7.5,"fxValuationVersion":1,"buyer":invoice["buyer"]});
     save(tx, 2, "credit_note", "CN-2026-0001", "2026-09-02", &credit);
-    tx.execute_batch("INSERT INTO issued_invoice_postings VALUES(1,1,750);INSERT INTO credit_note_postings VALUES(2,1,2,150);INSERT INTO journal_entries VALUES(1,'posted',1,'2026-08-02','EUR',NULL,NULL,100,750,7.5),(2,'posted',2,'2026-09-02','DKK',NULL,NULL,NULL,NULL,NULL);INSERT INTO journal_lines VALUES(1,1,1,'REVERSE_CHARGE_EXEMPT',0,750),(2,1,2,NULL,750,0),(3,2,1,'REVERSE_CHARGE_EXEMPT',150,0),(4,2,2,NULL,0,150);").unwrap();
+    tx.execute_batch("INSERT INTO issued_invoice_postings VALUES(1,1,750);INSERT INTO credit_note_postings VALUES(2,1,2,150);INSERT INTO journal_entries VALUES(1,'posted',1,'2026-08-02','EUR',NULL,NULL,100,750,7.5),(2,'posted',2,'2026-09-02','EUR',NULL,NULL,20,150,7.5);INSERT INTO journal_lines VALUES(1,1,1,'REVERSE_CHARGE_EXEMPT',0,750),(2,1,2,NULL,750,0),(3,2,1,'REVERSE_CHARGE_EXEMPT',150,0),(4,2,2,NULL,0,150);").unwrap();
 }
 fn report(tx: &Transaction<'_>, from: &str, to: &str) -> Result<Value, Error> {
     read(tx, Date::parse(from).unwrap(), Date::parse(to).unwrap())
@@ -32,16 +32,16 @@ fn frozen_dkk_bases_and_dated_signed_credits_survive_cache_expiry() {
     let tx = db.transaction().unwrap();
     fixture(&tx);
     let august = report(&tx, "2026-08-01", "2026-08-31").unwrap();
-    assert_eq!(august["totalValue"], 750);
+    assert_eq!(august["totalValue"], 750.0);
     assert_eq!(august["invoiceCount"], 1);
     assert_eq!(august["creditNoteCount"], 0);
     let september = report(&tx, "2026-09-01", "2026-09-30").unwrap();
-    assert_eq!(september["totalValue"], -150);
+    assert_eq!(september["totalValue"], -150.0);
     assert_eq!(september["invoiceCount"], 0);
-    assert_eq!(september["sources"][0]["netAmountDkk"], -150);
+    assert_eq!(september["sources"][0]["netAmountDkk"], -150.0);
     let year = report(&tx, "2026-01-01", "2026-12-31").unwrap();
-    assert_eq!(year["totalValue"], 600);
-    assert_eq!(year["customers"][0]["totalValue"], 600);
+    assert_eq!(year["totalValue"], 600.0);
+    assert_eq!(year["customers"][0]["totalValue"], 600.0);
     assert_eq!(year["customers"][0]["vatNumber"], "DE123456789");
     assert!(report(&tx, "2026-09-01", "2026-08-01").is_err());
 }
@@ -81,7 +81,7 @@ fn unposted_invoices_are_excluded_but_reversed_or_inconsistent_links_refuse() {
         .unwrap();
     assert_eq!(
         report(&tx, "2026-08-01", "2026-08-31").unwrap()["totalValue"],
-        0
+        0.0
     );
     tx.execute("INSERT INTO issued_invoice_postings VALUES(1,1,750)", [])
         .unwrap();

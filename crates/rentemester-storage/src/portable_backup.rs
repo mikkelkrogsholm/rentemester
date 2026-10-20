@@ -343,6 +343,7 @@ pub fn company(db: &Connection) -> Result<Company, Error> {
     mail_intake::validate_mail_intake(db)?;
     crate::document_scan::validate_backup(db)?;
     crate::scheduled_recurring::validate_backup(db)?;
+    crate::native_fx_roles::validate_history(db)?;
     crate::invoice_email::validate_backup(db)?;
     crate::public_einvoice::validate_backup(db)?;
     crate::document_party_links::validate_backup(db)?;

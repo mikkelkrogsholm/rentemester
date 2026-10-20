@@ -1,4 +1,5 @@
 //! Thin browser adapter over the same owner used for authentication.
+mod eu_sales;
 mod public_einvoice;
 mod archive_import;
 mod opening_balance;
@@ -85,6 +86,8 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
         pdf_workers: Arc::new(Semaphore::new(4)),
     };
     Router::new()
+        .route("/api/companies/{slug}/vies/validate",post(eu_sales::handle))
+        .route("/api/companies/{slug}/eu-sales",get(eu_sales::handle))
         .route("/api/companies/{slug}/opening-balance",get(opening_balance::handle))
         .route("/api/companies/{slug}/opening-balance/plan",post(opening_balance::handle))
         .route("/api/companies/{slug}/opening-balance/apply",post(opening_balance::handle))

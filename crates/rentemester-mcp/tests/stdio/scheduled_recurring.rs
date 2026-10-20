@@ -11,7 +11,7 @@ fn scheduled_discovery_158_tools_and_strict_read_write_arguments() {
         ],
     ));
     let tools = rows[1]["result"]["tools"].as_array().unwrap();
-    assert_eq!(tools.len(), 214);
+    assert_eq!(tools.len(), 218);
     for name in ["scheduled_recurring", "scheduled_recurring_plan"] {
         assert_eq!(
             tools.iter().find(|t| t["name"] == name).unwrap()["annotations"]["readOnlyHint"],

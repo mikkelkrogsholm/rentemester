@@ -1,4 +1,5 @@
 //! Shared use-case policy. Trusted adapters own authentication and current source observations.
+pub mod eu_sales;
 pub mod public_einvoice;
 pub mod mail_intake;
 pub mod corporate_records;

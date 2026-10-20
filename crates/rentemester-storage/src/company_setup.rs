@@ -13,6 +13,10 @@ const ROLES: [(&str, &str, &str); 8] = [
     ("vat_settlement", "liability", "credit"),
     ("operational_default", "expense", "debit"),
 ];
+const OPTIONAL_ROLES: [(&str, &str, &str); 2] = [
+    ("fx_gain", "income", "credit"),
+    ("fx_loss", "expense", "debit"),
+];
 fn fail(s: impl Into<String>) -> Error {
     Error::new("company_setup_refused", s)
 }
@@ -32,6 +36,7 @@ fn audit(
 fn expected(role: &str) -> Result<(&'static str, &'static str), Error> {
     ROLES
         .iter()
+        .chain(OPTIONAL_ROLES.iter())
         .find(|r| r.0 == role)
         .map(|r| (r.1, r.2))
         .ok_or_else(|| fail("unsupported account role"))
@@ -47,7 +52,11 @@ fn compatible(tx: &Transaction<'_>, role: &str, account: &str) -> Result<(), Err
     Ok(())
 }
 fn resolution(tx: &Transaction<'_>, role: &str) -> Result<Value, Error> {
-    let row:Option<(String,i64,String,String)>=tx.query_row("SELECT account_no,version,confirmed_by,confirmation_source FROM account_role_mappings WHERE role=?1 AND status='confirmed'",[role],|r|Ok((r.get(0)?,r.get(1)?,r.get(2)?,r.get(3)?))).optional().map_err(sql)?;
+    let row: Option<(String, i64, String, String)> = if OPTIONAL_ROLES.iter().any(|r| r.0 == role) {
+        crate::native_fx_roles::resolve(tx, role)?
+    } else {
+        tx.query_row("SELECT account_no,version,confirmed_by,confirmation_source FROM account_role_mappings WHERE role=?1 AND status='confirmed'",[role],|r|Ok((r.get(0)?,r.get(1)?,r.get(2)?,r.get(3)?))).optional().map_err(sql)?
+    };
     match row {
         Some((account, version, actor, source)) if compatible(tx, role, &account).is_ok() => Ok(
             json!({"ok":true,"role":role,"accountNo":account,"version":version,"confirmedBy":actor,"confirmationSource":source}),
@@ -70,9 +79,9 @@ pub fn accounts(tx: &Transaction<'_>, slug: &str) -> Result<Value, Error> {
     let mut resolutions = Vec::new();
     let mut missing = Vec::new();
     let mut reasons = Vec::new();
-    for (role, _, _) in ROLES {
+    for (role, _, _) in ROLES.into_iter().chain(OPTIONAL_ROLES) {
         let value = resolution(tx, role)?;
-        if value["ok"] != true {
+        if value["ok"] != true && ROLES.iter().any(|r| r.0 == role) {
             missing.push(role);
             reasons.push(json!({"role":role,"reason":value["error"]}));
         }
@@ -163,6 +172,17 @@ pub fn confirm_role(tx: &Transaction<'_>, input: &Role, actor: &str) -> Result<V
         return Err(fail("explicit role confirmation required"));
     }
     compatible(tx, &input.role, &input.account_no)?;
+    if OPTIONAL_ROLES.iter().any(|r| r.0 == input.role) {
+        crate::native_fx_roles::confirm(tx, &input.role, &input.account_no, actor)?;
+        audit(
+            tx,
+            "account_role_confirmed",
+            &input.role,
+            &format!("Confirmed {} -> {}", input.role, input.account_no),
+            actor,
+        )?;
+        return resolution(tx, &input.role);
+    }
     let current = resolution(tx, &input.role)?;
     if current["ok"] == true && current["accountNo"] == input.account_no {
         return Ok(current);
@@ -440,6 +460,37 @@ mod tests {
         let mut company = rusqlite::Connection::open_in_memory().unwrap();
         crate::fresh::initialize_empty_pair(&mut control, &mut company, "Synthetic Setup").unwrap();
         company
+    }
+    #[test]
+    fn fx_roles_are_optional_and_require_compatible_confirmed_accounts() {
+        let mut db = company();
+        let tx = db
+            .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
+            .unwrap();
+        tx.execute_batch("INSERT INTO accounts(account_no,name,type,normal_balance) VALUES('G77','Synthetic gain','income','credit'),('L77','Synthetic loss','expense','debit');").unwrap();
+        let before = accounts(&tx, "synthetic").unwrap();
+        assert!(
+            !before["accountRoles"]["missing"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .any(|r| r == "fx_gain" || r == "fx_loss")
+        );
+        for (role, account) in [("fx_gain", "G77"), ("fx_loss", "L77")] {
+            let input = Role {
+                role: role.into(),
+                account_no: account.into(),
+                confirm: true,
+            };
+            assert_eq!(confirm_role(&tx, &input, "synthetic").unwrap()["ok"], true);
+        }
+        let wrong = Role {
+            role: "fx_gain".into(),
+            account_no: "L77".into(),
+            confirm: true,
+        };
+        assert!(confirm_role(&tx, &wrong, "synthetic").is_err());
+        assert_eq!(resolution(&tx, "fx_gain").unwrap()["accountNo"], "G77");
     }
     #[test]
     fn account_and_role_setup_is_explicit_compatible_and_retry_safe() {

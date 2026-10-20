@@ -54,6 +54,8 @@ struct Config {
     imap_transport: Option<crate::imap_transport::Config>,
     #[serde(default)]
     document_pdf_worker: Option<crate::document_pdf::Config>,
+    #[serde(default)]
+    vies: Option<rentemester_runtime::vies::Config>,
     #[serde(default, rename = "publicEInvoice")]
     public_einvoice: std::collections::BTreeMap<String, rentemester_runtime::public_einvoice::Config>,
     #[serde(default)]
@@ -101,6 +103,7 @@ pub struct Backend {
     pub(crate) imap_transport: rentemester_runtime::imap::OperatorConfig,
     pub(crate) mail_executor: Option<Arc<rentemester_runtime::service_key::ServiceKey>>,
     pub(crate) scheduled_executor: Option<Arc<rentemester_runtime::service_key::ServiceKey>>,
+    pub(crate) vies: rentemester_runtime::vies::Client,
     pub(crate) public_einvoice: std::collections::BTreeMap<String, rentemester_runtime::public_einvoice::Client>,
     pub(crate) invoice_mail: std::collections::BTreeMap<String, Mutex<rentemester_runtime::invoice_mail::SmtpSender>>,
     keys: MfaKeyring,
@@ -176,6 +179,7 @@ impl Backend {
         let imap_transport = crate::imap_transport::build(config.imap_transport.as_ref())?;
         let document_pdf_worker = crate::document_pdf::build(config.document_pdf_worker.as_ref())?;
         let mut delivery=crate::auth_delivery::Delivery::new(config.auth_mail.as_ref(), profile == CookieProfile::Development, &config.root.join(".rentemester"))?;
+        let vies = rentemester_runtime::vies::Client::new(config.vies.as_ref().unwrap_or(&Default::default()))?;
         let public_einvoice=config.public_einvoice.iter().map(|(slug,config)| {
             rentemester_runtime::public_einvoice::Client::new(config.clone()).map(|client|(slug.clone(),client))
         }).collect::<Result<std::collections::BTreeMap<_,_>,_>>()?;
@@ -340,6 +344,7 @@ impl Backend {
             imap_transport,
             invoice_mail,
             public_einvoice,
+            vies,
             signer,
             links,
             delivery: Mutex::new(delivery),

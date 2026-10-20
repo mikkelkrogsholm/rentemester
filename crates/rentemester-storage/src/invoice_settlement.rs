@@ -231,8 +231,8 @@ fn transfer(
     }
     let before = if refund { &refunded } else { &paid };
     let principal = crate::invoice_fx::portion(&gross, &gross_dkk, before, &amount)?;
-    let bank_dkk = if currency == "DKK" {
-        amount.clone()
+    let (bank_dkk, bank_fx) = if currency == "DKK" {
+        (amount.clone(), None)
     } else {
         let (dkk, rate): (Option<Money>, Option<String>) = tx
             .query_row(
@@ -271,7 +271,7 @@ fn transfer(
                 "foreign bank DKK valuation contradicts imported FX rate",
             ));
         }
-        absolute
+        (absolute, Some(rate))
     };
     let difference = if refund {
         principal.subtract(&bank_dkk)
@@ -279,12 +279,12 @@ fn transfer(
         bank_dkk.subtract(&principal)
     };
     let fx_account = if difference != Money::default() {
-        let (role, kind, balance) = if difference.is_negative() {
-            ("fx_loss", "expense", "debit")
+        let role = if difference.is_negative() {
+            "fx_loss"
         } else {
-            ("fx_gain", "income", "credit")
+            "fx_gain"
         };
-        let account:Option<String>=tx.query_row("SELECT m.account_no FROM account_role_mappings m JOIN accounts a ON a.account_no=m.account_no WHERE m.role=?1 AND m.status='confirmed' AND a.type=?2 AND a.normal_balance=?3 AND a.active=1",params![role,kind,balance],|r|r.get(0)).optional().map_err(invalid)?;
+        let account = crate::native_fx_roles::resolve(tx, role)?.map(|record| record.0);
         let account = account
             .ok_or_else(|| refused("confirmed compatible realized FX account role required"))?;
         if account == bank || account == debtor {
@@ -344,12 +344,12 @@ fn transfer(
                 "Kundebetaling"
             }
         ),
-        currency: Currency::parse("DKK")?,
+        currency: Currency::parse(&currency)?,
         document_id: Some(DocumentId::from_sqlite(id)),
         source_bank_transaction_id: Some(BankTransactionId::from_sqlite(bank_id)),
-        amount_foreign: None,
-        amount_dkk: None,
-        fx_rate_to_dkk: None,
+        amount_foreign: (currency != "DKK").then_some(amount.clone()),
+        amount_dkk: (currency != "DKK").then_some(bank_dkk.clone()),
+        fx_rate_to_dkk: bank_fx,
         created_by_program: None,
         lines,
     };

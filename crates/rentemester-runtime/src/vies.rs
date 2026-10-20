@@ -197,19 +197,20 @@ fn observation(vat: &vies::Vat, body: &Value) -> Result<Value, Error> {
         validity = Some(valid);
     }
     let valid = validity.ok_or(Error::Protocol)?;
-    if let Some(status) = body.get("userError") {
-        if !status.is_null() && status.as_str() != Some("VALID") {
-            return Err(Error::Protocol);
-        }
+    if let Some(status) = body.get("userError")
+        && !status.is_null()
+        && status.as_str() != Some("VALID")
+    {
+        return Err(Error::Protocol);
     }
     for (key, expected) in [
         ("countryCode", &vat.country_code),
         ("vatNumber", &vat.vat_number),
     ] {
-        if let Some(value) = body.get(key) {
-            if value.as_str() != Some(expected) {
-                return Err(Error::Protocol);
-            }
+        if let Some(value) = body.get(key)
+            && value.as_str() != Some(expected)
+        {
+            return Err(Error::Protocol);
         }
     }
     let text = |keys: &[&str], max: usize| -> Result<Value, Error> {

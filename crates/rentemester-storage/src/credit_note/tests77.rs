@@ -1,15 +1,35 @@
 //! Synthetic EUR lifecycle: original units, frozen DKK and actual bank value stay distinct.
 use super::*;
 fn fixture() -> rusqlite::Connection {
+    fixture_with_fx(true)
+}
+fn fixture_with_fx(with_fx: bool) -> rusqlite::Connection {
+    fixture_with_value(with_fx, 100.0)
+}
+fn fixture_with_value(with_fx: bool, price: f64) -> rusqlite::Connection {
     let mut control = rusqlite::Connection::open_in_memory().unwrap();
     let mut db = rusqlite::Connection::open_in_memory().unwrap();
     crate::fresh::initialize_empty_pair(&mut control, &mut db, "Synthetic EU Seller").unwrap();
     let tx = db
         .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
         .unwrap();
-    tx.execute_batch("UPDATE companies SET address='Synthetic Street',cvr='87654321',vat_period_type='quarter' WHERE id=1; INSERT INTO accounts(account_no,name,type,normal_balance) VALUES('R','Synthetic receivables','asset','debit'),('S','Synthetic services','income','credit'),('B','Synthetic EUR bank','asset','debit'),('G','Synthetic FX gain','income','credit'),('L','Synthetic FX loss','expense','debit'); INSERT INTO account_role_mappings(role,account_no,version,confirmed_by) VALUES('debtors','R',1,'synthetic'),('fx_gain','G',1,'synthetic'),('fx_loss','L',1,'synthetic'); INSERT INTO bank_accounts(slug,name,currency,ledger_account_no) VALUES('synthetic-eur','Synthetic EUR bank','EUR','B');").unwrap();
-    crate::vies::store(&tx,&json!({"countryCode":"DE","vatNumber":"123456789","normalized":"DE123456789","valid":true,"name":"Synthetic EU Buyer","address":"Synthetic EU Street","validatedAt":"2026-10-18T10:00:00Z","expiresAt":"2027-01-16T10:00:00Z","rawResponse":{"isValid":true}}),"user:synthetic").unwrap();
-    let input=serde_json::from_value(json!({"issueDate":"2026-10-18","currency":"EUR","fxRateToDkk":7.46,"vatTreatment":"foreign_reverse_charge","reverseChargeBasis":"EU_B2B_SERVICES","reverseChargeNote":"Reverse charge, EU B2B services","buyer":{"name":"Synthetic EU Buyer","address":"Synthetic EU Street","vatOrCvr":"DE123456789"},"lines":[{"description":"Synthetic service","quantity":1,"unitPriceExVat":100,"taxClassification":"reverse_charge"}]})).unwrap();
+    tx.execute_batch("UPDATE companies SET address='Synthetic Street',cvr='87654321',vat_period_type='quarter' WHERE id=1; INSERT INTO accounts(account_no,name,type,normal_balance) VALUES('R','Synthetic receivables','asset','debit'),('S','Synthetic services','income','credit'),('B','Synthetic EUR bank','asset','debit'),('G','Synthetic FX gain','income','credit'),('L','Synthetic FX loss','expense','debit'); INSERT INTO account_role_mappings(role,account_no,version,confirmed_by) VALUES('debtors','R',1,'synthetic'); INSERT INTO bank_accounts(slug,name,currency,ledger_account_no) VALUES('synthetic-eur','Synthetic EUR bank','EUR','B');").unwrap();
+    if with_fx {
+        for (role, account) in [("fx_gain", "G"), ("fx_loss", "L")] {
+            crate::company_setup::confirm_role(
+                &tx,
+                &crate::company_setup::Role {
+                    role: role.into(),
+                    account_no: account.into(),
+                    confirm: true,
+                },
+                "synthetic",
+            )
+            .unwrap();
+        }
+    }
+    crate::vies::store(&tx,&json!({"countryCode":"DE","vatNumber":"123456789","normalized":"DE123456789","valid":true,"name":"Synthetic EU Buyer","address":"Synthetic EU Street","validatedAt":"2026-10-18T10:00:00Z","expiresAt":"2027-01-16T10:00:00Z","rawResponse":"{\"isValid\":true}"}),"user:synthetic").unwrap();
+    let input=serde_json::from_value(json!({"issueDate":"2026-10-18","currency":"EUR","fxRateToDkk":7.46,"vatTreatment":"foreign_reverse_charge","reverseChargeBasis":"EU_B2B_SERVICES","reverseChargeNote":"Reverse charge, EU B2B services","buyer":{"name":"Synthetic EU Buyer","address":"Synthetic EU Street","vatOrCvr":"DE123456789"},"lines":[{"description":"Synthetic service","quantity":1,"unitPriceExVat":price,"taxClassification":"reverse_charge","reverseChargeBasis":"EU_B2B_SERVICES"}]})).unwrap();
     let payload = crate::sales::prepare(&tx, &input, "2026-10-18T12:00:00Z", true).unwrap();
     crate::sales::register(
         &tx,
@@ -119,9 +139,9 @@ fn eur_partial_final_receipt_credit_refund_book_original_basis_and_realized_fx()
         Date::parse("2026-10-20").unwrap(),
     )
     .unwrap();
-    assert_eq!(refund["remainingCreditBalance"], json!(0));
+    assert_eq!(refund["remainingCreditBalance"], json!(0.0));
     assert_eq!(refund["principalAmountDkk"], json!(186.5));
-    assert_eq!(refund["realizedFxAmountDkk"], json!(-1));
+    assert_eq!(refund["realizedFxAmountDkk"], json!(-1.0));
     assert!(
         crate::invoice_settlement::refund(
             &tx,
@@ -157,15 +177,10 @@ fn eur_partial_and_final_credit_conserve_original_cents_and_dkk() {
 }
 #[test]
 fn foreign_nonzero_difference_requires_confirmed_fx_role_before_any_effect() {
-    let mut db = fixture();
+    let mut db = fixture_with_fx(false);
     let tx = db
         .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
         .unwrap();
-    tx.execute(
-        "UPDATE account_role_mappings SET status='superseded' WHERE role='fx_gain'",
-        [],
-    )
-    .unwrap();
     let before: i64 = tx
         .query_row("SELECT count(*) FROM journal_entries", [], |r| r.get(0))
         .unwrap();
@@ -183,7 +198,7 @@ fn foreign_nonzero_difference_requires_confirmed_fx_role_before_any_effect() {
 }
 
 #[test]
-fn reversed_foreign_receipt_blocks_following_principal_and_refund() {
+fn protected_foreign_receipt_reversal_preserves_principal_and_cannot_bypass_sql() {
     let mut db = fixture();
     let tx = db
         .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
@@ -207,6 +222,37 @@ fn reversed_foreign_receipt_blocks_following_principal_and_refund() {
         },
     )
     .unwrap();
-    assert_eq!(result["ok"], true);
-    assert!(receipt(&tx, "final").is_err());
+    assert_eq!(result["ok"], false, "{result}");
+    assert!(
+        result["errors"]
+            .to_string()
+            .contains("protected invoice evidence")
+    );
+    // The physical append-only gate also refuses bypassing the public
+    // correction workflow. A refused reversal does not corrupt the receipt.
+    tx.execute("INSERT INTO journal_entries(id,entry_no,transaction_date,text,reversal_of_entry_id,rule_version,entry_hash,status) VALUES(1000,'SYN-unsupported-reversal','2026-10-19','Synthetic unsupported reversal',?1,'synthetic','synthetic-reversal','reversed')",[paid["entryId"].as_i64().unwrap()]).unwrap_err();
+    assert!(receipt(&tx, "part").is_err());
+    assert_eq!(
+        receipt(&tx, "final").unwrap()["openBalance"].as_f64(),
+        Some(0.0)
+    );
+}
+
+#[test]
+fn tiny_foreign_credits_preserve_original_quote_and_allocate_every_dkk_cent() {
+    let mut db = fixture_with_value(true, 0.02);
+    let tx = db
+        .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
+        .unwrap();
+    credit(&tx, json!(0.01)).unwrap();
+    credit(&tx, Value::Null).unwrap();
+    assert_eq!(credited(&tx, 1).unwrap().decimal(), "0.02");
+    assert_eq!(
+        crate::invoice_fx::credited_dkk(&tx, 1).unwrap().decimal(),
+        "0.15"
+    );
+    let payload:String=tx.query_row("SELECT payload_json FROM documents WHERE document_type='credit_note' ORDER BY id LIMIT 1",[],|r|r.get(0)).unwrap();
+    let value: Value = serde_json::from_str(&payload).unwrap();
+    assert_eq!(value["fxRateToDkk"], 7.46);
+    assert_eq!(value["journalFxRateToDkk"], 8.0);
 }

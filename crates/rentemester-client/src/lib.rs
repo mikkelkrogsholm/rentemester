@@ -1,6 +1,7 @@
 //! Origin-bound HTTP adapter shared by interactive and agent clients. No ledger logic.
 //! Supply a browser session's Cookie request-header value, never a Set-Cookie header.
 //! Authentication/enrollment is currently performed by the server's browser UI.
+mod eu_sales;
 mod parties;
 pub use parties::{PartyMutation,MAX_PARTY_BODY,party_body_schema};
 mod company_knowledge;

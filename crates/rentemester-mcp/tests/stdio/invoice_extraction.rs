@@ -10,7 +10,7 @@ fn invoice_extraction_tools_publish_exact_source_names_bounds_and_confirmation()
         ],
     ));
     let tools = rows[1]["result"]["tools"].as_array().unwrap();
-    assert_eq!(tools.len(), 214);
+    assert_eq!(tools.len(), 218);
     for (name, read) in [
         ("documents_invoice_extraction", true),
         ("documents_extract_invoice", false),

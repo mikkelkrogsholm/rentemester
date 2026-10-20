@@ -177,6 +177,15 @@ pub fn prepare(tx: &Transaction<'_>, input: &Input, now: &str) -> Result<Prepare
     cumulative.add(&amount);
     let mut payload = json!({"type":"credit_note","creditNoteNumber":number,"originalInvoiceNumber":original_no,"originalInvoiceDocumentId":id,"issueDate":input.issue_date,"reason":reason,"currency":currency,"seller":original["seller"],"buyer":original["buyer"],"grossAmount":wire(&amount)?,"vatAmount":wire(&vat)?,"netAmount":wire(&amount.subtract(&vat))?,"creditedSoFar":wire(&prior_total)?,"remainingAfterThisCredit":wire(&projection.gross.subtract(&cumulative))?,"issuedAt":now});
     if currency != "DKK" {
+        // The original market quote remains frozen. The journal's explicitly
+        // derived carrying quote represents this cumulative cent allocation.
+        let posting_rate = rentemester_engine::fx::FxRate::from_settlement(&amount, &amount_dkk)?;
+        if posting_rate.apply(&amount) != amount_dkk {
+            return Err(refused(
+                "credit carrying valuation cannot be represented exactly",
+            ));
+        }
+        payload["journalFxRateToDkk"] = json!(crate::journal_post::rate(&posting_rate)?);
         payload["fxValuationVersion"] = json!(1);
         payload["fxRateToDkk"] = original["totals"]["fxRateToDkk"].clone();
         payload["grossAmountDkk"] = wire(&amount_dkk)?;
@@ -325,6 +334,16 @@ pub fn register_and_post(
         month as u32,
     )?;
     let id:i64=tx.query_row("INSERT INTO documents(document_no,source,original_filename,stored_path,mime_type,sha256_hash,supplier_name,invoice_no,invoice_date,amount_inc_vat,currency,status,document_type,delivery_description,sender_name,sender_address,sender_vat_cvr,recipient_name,recipient_address,recipient_vat_cvr,vat_amount,payment_details,payload_json,retain_until) VALUES(?1,'rentemester',?2,?3,?4,?5,?6,?1,?7,?8,?19,'issued','credit_note',?9,?6,?10,?11,?12,?13,?14,?15,?16,?17,?18) RETURNING id",params![payload["creditNoteNumber"].as_str(),file.filename,file.path,file.mime,file.hash,payload["seller"]["name"].as_str(),payload["issueDate"].as_str(),payload["grossAmount"].as_f64(),format!("Kreditnota for {}: {}",payload["originalInvoiceNumber"].as_str().unwrap(),payload["reason"].as_str().unwrap()),payload["seller"]["address"].as_str(),payload["seller"]["vatOrCvr"].as_str(),payload["buyer"]["name"].as_str(),payload["buyer"]["address"].as_str(),payload["buyer"]["vatOrCvr"].as_str(),payload["vatAmount"].as_f64(),payload["originalInvoiceNumber"].as_str(),serialized,retention,payload["currency"].as_str()],|r|r.get(0)).map_err(invalid)?;
+    let foreign = payload["currency"] != "DKK";
+    let source_amount = crate::invoice_fx::amount(&payload["grossAmount"])?;
+    let posting_rate = if foreign {
+        Some(rentemester_engine::sales_fx::rate(
+            payload["currency"].as_str().unwrap(),
+            payload["journalFxRateToDkk"].as_number(),
+        )?)
+    } else {
+        None
+    };
     let request = ManualJournal {
         transaction_date: Date::parse(payload["issueDate"].as_str().unwrap())?,
         text: format!(
@@ -332,12 +351,12 @@ pub fn register_and_post(
             payload["creditNoteNumber"].as_str().unwrap(),
             payload["originalInvoiceNumber"].as_str().unwrap()
         ),
-        currency: Currency::parse("DKK")?,
+        currency: Currency::parse(payload["currency"].as_str().unwrap_or("DKK"))?,
         document_id: Some(DocumentId::from_sqlite(id)),
         source_bank_transaction_id: None,
-        amount_foreign: None,
-        amount_dkk: None,
-        fx_rate_to_dkk: None,
+        amount_foreign: foreign.then_some(source_amount),
+        amount_dkk: foreign.then_some(gross.clone()),
+        fx_rate_to_dkk: posting_rate,
         created_by_program: None,
         lines,
     };

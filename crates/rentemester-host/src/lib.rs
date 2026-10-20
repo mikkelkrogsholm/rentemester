@@ -1,6 +1,7 @@
 //! Private physical ownership under explicit Linux-broker or macOS-local profiles.
 //! This is not schema adoption, fresh initialization, or transport authorization.
 //! Never open other regular descriptors for owned database inodes in this process.
+mod eu_sales;
 mod public_einvoice;
 use rentemester_application::{
     control_fence::{Committed, CompanySelection},

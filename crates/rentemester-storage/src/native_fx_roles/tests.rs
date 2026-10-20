@@ -95,3 +95,24 @@ fn noncontiguous_versions_or_missing_historical_accounts_are_refused() {
         assert!(validate_history(&d).is_err());
     }
 }
+
+#[test]
+fn fx_roles_and_scheduled_extension_coexist_in_both_install_orders() {
+    for scheduler_first in [false, true] {
+        let mut db = fixture();
+        let tx = db
+            .transaction_with_behavior(TransactionBehavior::Immediate)
+            .unwrap();
+        if scheduler_first {
+            crate::scheduled_recurring_schema::install(&tx).unwrap();
+        }
+        confirm(&tx, "fx_gain", "GAIN", "synthetic").unwrap();
+        if !scheduler_first {
+            crate::scheduled_recurring_schema::install(&tx).unwrap();
+        }
+        crate::journal_preview::require_current(&tx).unwrap();
+        assert!(crate::scheduled_recurring_schema::installed(&tx).unwrap());
+        validate_history(&tx).unwrap();
+        assert_eq!(resolve(&tx, "fx_gain").unwrap().unwrap().0, "GAIN");
+    }
+}

@@ -1,4 +1,5 @@
 //! Runtime identity verification and cooperative process lifetime.
+pub mod vies;
 pub mod imap;
 pub mod document_scanner;
 pub mod invoice_extractor;

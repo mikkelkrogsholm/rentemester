@@ -117,7 +117,7 @@ fn verify_journal(
             },
         )
         .map_err(invalid)?;
-    if credit || doc.currency == "DKK" {
+    if doc.currency == "DKK" {
         if currency != "DKK" || metadata.0.is_some() || metadata.1.is_some() || metadata.2.is_some()
         {
             return Err(refused(
@@ -125,17 +125,31 @@ fn verify_journal(
             ));
         }
     } else {
-        let source = rentemester_engine::sales_invoice::project(&doc.payload)?;
-        let dkk = rentemester_engine::sales_fx::project(&doc.payload)?;
+        let (source_gross, dkk_gross, rate_value) = if credit {
+            (
+                money(&doc.payload["grossAmount"])?,
+                money(&doc.payload["grossAmountDkk"])?,
+                &doc.payload["journalFxRateToDkk"],
+            )
+        } else {
+            (
+                rentemester_engine::sales_invoice::project(&doc.payload)?.gross,
+                rentemester_engine::sales_fx::project(&doc.payload)?.gross,
+                &doc.payload["totals"]["fxRateToDkk"],
+            )
+        };
         let rate = rentemester_engine::fx::FxRate::parse(
-            &doc.payload["totals"]["fxRateToDkk"]
+            &rate_value
                 .as_number()
-                .ok_or_else(|| refused("frozen FX rate missing"))?
+                .ok_or_else(|| refused("frozen journal valuation rate missing"))?
                 .to_string(),
         )?;
+        if rate.apply(&source_gross) != dkk_gross {
+            return Err(refused("foreign carrying valuation differs"));
+        }
         if currency != doc.currency
-            || metadata.0.as_ref() != Some(&source.gross)
-            || metadata.1.as_ref() != Some(&dkk.gross)
+            || metadata.0.as_ref() != Some(&source_gross)
+            || metadata.1.as_ref() != Some(&dkk_gross)
             || metadata.2 != Some(crate::journal_post::rate(&rate)?)
         {
             return Err(refused(
