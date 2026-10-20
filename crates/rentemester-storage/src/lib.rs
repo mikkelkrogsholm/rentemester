@@ -24,6 +24,7 @@ use rusqlite::{Connection, OpenFlags, types::ValueRef};
 use serde::Deserialize;
 use std::{fs::OpenOptions, io::Write, path::Path, time::Duration};
 use tempfile::TempDir;
+pub mod legacy_adoption;
 mod company_baseline;
 mod company_normalization;
 mod company_physical;
@@ -137,6 +138,9 @@ impl Snapshot {
         Self::capture_at(workspace, ".rentemester", "workspace-control.sqlite")
     }
     fn capture_at(root: &Path, directory: &str, filename: &str) -> Result<Self, Error> {
+        Self::capture_with_inventory(root, directory, filename).map(|(snapshot, _)| snapshot)
+    }
+    fn capture_with_inventory(root: &Path, directory: &str, filename: &str) -> Result<(Self, Vec<legacy_adoption::SourceFileDigest>), Error> {
         #[cfg(not(unix))]
         {
             let _ = (root, directory, filename);
@@ -148,6 +152,7 @@ impl Snapshot {
         #[cfg(unix)]
         {
             let captured = snapshot::capture_at(root, directory, filename)?;
+            let source_files = captured.iter().map(|f| legacy_adoption::SourceFileDigest::new(f.suffix, &f.bytes)).collect();
             let dir =
                 tempfile::tempdir().map_err(|e| Error::new("storage_failure", e.to_string()))?;
             let path = dir.path().join("snapshot.sqlite");
@@ -169,7 +174,7 @@ impl Snapshot {
                 Self::open(&path)
             })();
             match result {
-                Ok(conn) => Ok(Self { conn, _dir: dir }),
+                Ok(conn) => Ok((Self { conn, _dir: dir }, source_files)),
                 Err(error) => {
                     dir.close()
                         .map_err(|e| Error::new("storage_failure", e.to_string()))?;

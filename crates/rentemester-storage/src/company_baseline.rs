@@ -392,6 +392,130 @@ mod tests {
         }
     }
     #[test]
+    fn retained_conversion_accepts_populated_full_prefixes_and_preserves_source() {
+        for version in [1, 2, 31, 32, 36] {
+            let dir = tempfile::tempdir().unwrap();
+            std::fs::create_dir(dir.path().join("data")).unwrap();
+            let path = dir.path().join("data/ledger.sqlite");
+            let db = Connection::open(&path).unwrap();
+            prefix(&db, version);
+            if version == 36 {
+                final_guards(&db, &load_images().unwrap()).unwrap();
+            }
+            db.execute_batch("INSERT INTO companies(id,name) VALUES(1,'Synthetic adoption');INSERT INTO accounts(account_no,name,type,normal_balance) VALUES('1890','Synthetic bank','asset','debit');INSERT INTO customers(name,payment_terms_days) VALUES('Synthetic buyer',30)").unwrap();
+            crate::legacy_adoption::seed_test_journal(&db);
+            drop(db);
+            let original = std::fs::read(&path).unwrap();
+            let converted =
+                crate::legacy_adoption::convert_company_for_adoption(dir.path()).unwrap();
+            assert_eq!(std::fs::read(&path).unwrap(), original);
+            assert_eq!(converted.source_files()[0].bytes(), original.len() as u64);
+            assert_eq!(
+                converted.source_files()[0].sha256(),
+                format!("{:x}", Sha256::digest(&original))
+            );
+            assert_eq!(converted.source_files()[0].path(), "data/ledger.sqlite");
+            assert_eq!(converted.inventory().ledger_uuid().len(), 32);
+            let report = serde_json::to_value(converted.report()).unwrap();
+            assert_eq!(report["writer_authority"], false);
+            assert_eq!(report["source_retired"], false);
+            assert_eq!(report["conversion"]["from_version"], version);
+            let result_path = dir.path().join("converted.sqlite");
+            std::fs::write(&result_path, converted.bytes()).unwrap();
+            let result = Connection::open(&result_path).unwrap();
+            crate::portable_backup::company(&result).unwrap();
+            assert_eq!(
+                crate::journal_hash::verify(&result)
+                    .unwrap()
+                    .entries_checked,
+                1
+            );
+
+            assert_eq!(
+                result
+                    .query_row(
+                        "SELECT COUNT(*) FROM accounts WHERE account_no='1890'",
+                        [],
+                        |r| r.get::<_, i64>(0)
+                    )
+                    .unwrap(),
+                1
+            );
+            assert_eq!(
+                result
+                    .query_row(
+                        "SELECT COUNT(*) FROM customers WHERE name='Synthetic buyer'",
+                        [],
+                        |r| r.get::<_, i64>(0)
+                    )
+                    .unwrap(),
+                1
+            );
+        }
+    }
+    #[test]
+    fn retained_conversion_refuses_empty_and_suffix_only_databases() {
+        for suffix_only in [false, true] {
+            let dir = tempfile::tempdir().unwrap();
+            std::fs::create_dir(dir.path().join("data")).unwrap();
+            let path = dir.path().join("data/ledger.sqlite");
+            let db = Connection::open(&path).unwrap();
+            if suffix_only {
+                let images = load_images().unwrap();
+                let history = images
+                    .current
+                    .iter()
+                    .find(|o| o.name == "schema_migrations")
+                    .unwrap();
+                db.execute_batch(&history.sql).unwrap();
+                for step in catalogue().unwrap() {
+                    stamp(&db, &step).unwrap();
+                }
+            }
+            drop(db);
+            let before = std::fs::read(&path).unwrap();
+            assert!(crate::legacy_adoption::convert_company_for_adoption(dir.path()).is_err());
+            assert_eq!(std::fs::read(&path).unwrap(), before);
+        }
+    }
+    #[test]
+    fn retained_conversion_refuses_unknown_schema_bad_history_and_missing_original() {
+        for damage in [
+            "CREATE TABLE unexplained(value)",
+            "ALTER TABLE customers ADD COLUMN unexplained TEXT",
+            "DROP TRIGGER schema_migrations_no_update; UPDATE schema_migrations SET checksum='bad' WHERE id=1",
+            "INSERT INTO documents(source,sha256_hash) VALUES('synthetic','missing-original')",
+        ] {
+            let dir = tempfile::tempdir().unwrap();
+            std::fs::create_dir(dir.path().join("data")).unwrap();
+            let path = dir.path().join("data/ledger.sqlite");
+            let mut db = Connection::open(&path).unwrap();
+            initialize_empty(&mut db, "Synthetic refused").unwrap();
+            // History mutation needs the actual immutable trigger name, if any.
+            if damage.starts_with("DROP TRIGGER") {
+                for object in schema(&db)
+                    .unwrap()
+                    .into_iter()
+                    .filter(|o| o.kind == "trigger" && o.table == "schema_migrations")
+                {
+                    db.execute_batch(&format!("DROP TRIGGER {}", quote(&object.name)))
+                        .unwrap();
+                }
+                db.execute_batch("UPDATE schema_migrations SET checksum='bad' WHERE id=1")
+                    .unwrap();
+            } else {
+                db.execute_batch(damage).unwrap();
+            }
+            drop(db);
+            let original = std::fs::read(&path).unwrap();
+            assert!(
+                crate::legacy_adoption::convert_company_for_adoption(dir.path()).is_err(),
+                "{damage}"
+            );
+            assert_eq!(std::fs::read(&path).unwrap(), original);
+        }
+    }
+    #[test]
     fn fresh_schema_is_complete_and_images_are_byte_bound() {
         let expected = catalogue().unwrap();
         let raw = include_str!("legacy-company-schemas.json");

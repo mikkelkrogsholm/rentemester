@@ -28,7 +28,7 @@ struct Contract {
 }
 #[derive(Debug, Serialize)]
 pub struct PhysicalRehearsalReport {
-    source_layouts: Vec<String>,
+    pub(super) source_layouts: Vec<String>,
     baseline_history_stamped: bool,
     vat_rows_relabeled: usize,
     unchanged_cell_digest_before: String,
@@ -138,7 +138,7 @@ fn rebuild(db: &Connection, rule: &Rule, normalized: &[SchemaObject]) -> Result<
     }
     Ok(())
 }
-fn rehearse(db: &mut Connection) -> Result<PhysicalRehearsalReport, Error> {
+pub(super) fn rehearse(db: &mut Connection) -> Result<PhysicalRehearsalReport, Error> {
     let c = contract(include_str!("legacy-company-physical.json"))?;
     let mut images = company_baseline::load_images()?;
     db.execute_batch("PRAGMA foreign_keys=ON;PRAGMA trusted_schema=OFF;PRAGMA synchronous=FULL")
@@ -259,6 +259,88 @@ fn rehearse(db: &mut Connection) -> Result<PhysicalRehearsalReport, Error> {
         writer_authority: false,
     })
 }
+/// Rebuild only the exact admitted physical result through independent canonical
+/// DDL. The rehearsal proof covers legacy VAT relabeling; this proof covers every
+/// typed cell and row multiplicity, including the unchanged migration history.
+pub(super) fn canonicalize(
+    db: &Connection,
+    report: &PhysicalRehearsalReport,
+) -> Result<Connection, Error> {
+    let canonical = company_baseline::load_images()?.current;
+    let mut admitted = canonical.clone();
+    let contract = contract(include_str!("legacy-company-physical.json"))?;
+    for name in &report.source_layouts {
+        let rule = contract
+            .rules
+            .iter()
+            .find(|r| &r.table == name)
+            .ok_or_else(|| unsupported("unrecognized physical conversion layout"))?;
+        overlay(&mut admitted, &rule.current_delta)?;
+    }
+    admitted.sort_by(|a, b| a.name.cmp(&b.name));
+    if schema(db)? != admitted {
+        return Err(unsupported(
+            "physical conversion result differs from admitted overlays",
+        ));
+    }
+    let tables = canonical
+        .iter()
+        .filter(|o| o.kind == "table")
+        .map(|o| o.name.clone())
+        .collect::<Vec<_>>();
+    let columns = projection(db, &tables)?;
+    let before = project_digest(db, &columns)?;
+    let rebuilt = Connection::open_in_memory().map_err(invalid)?;
+    // Foreign keys are checked after the entire graph has been copied. No
+    // mutation trigger is installed until its historical rows are in place.
+    rebuilt
+        .execute_batch("PRAGMA trusted_schema=OFF; PRAGMA synchronous=FULL;")
+        .map_err(failed)?;
+    for object in canonical.iter().filter(|o| o.kind == "table") {
+        rebuilt.execute_batch(&object.sql).map_err(failed)?;
+    }
+    for (table, cols) in &columns {
+        let names = cols.iter().map(|c| quote(c)).collect::<Vec<_>>().join(",");
+        let placeholders = (1..=cols.len())
+            .map(|i| format!("?{i}"))
+            .collect::<Vec<_>>()
+            .join(",");
+        let mut read = db
+            .prepare(&format!("SELECT {names} FROM {}", quote(table)))
+            .map_err(invalid)?;
+        let mut write = rebuilt
+            .prepare(&format!(
+                "INSERT INTO {} ({names}) VALUES ({placeholders})",
+                quote(table)
+            ))
+            .map_err(failed)?;
+        let mut rows = read.query([]).map_err(invalid)?;
+        while let Some(row) = rows.next().map_err(invalid)? {
+            let values = (0..cols.len())
+                .map(|i| row.get::<_, rusqlite::types::Value>(i))
+                .collect::<Result<Vec<_>, _>>()
+                .map_err(invalid)?;
+            write
+                .execute(rusqlite::params_from_iter(values))
+                .map_err(failed)?;
+        }
+    }
+    for object in canonical.iter().filter(|o| o.kind != "table") {
+        rebuilt.execute_batch(&object.sql).map_err(failed)?;
+    }
+    rebuilt
+        .execute_batch("PRAGMA foreign_keys=ON")
+        .map_err(failed)?;
+    let mut expected = canonical;
+    expected.sort_by(|a, b| a.name.cmp(&b.name));
+    if schema(&rebuilt)? != expected || project_digest(&rebuilt, &columns)? != before {
+        return Err(invalid(
+            "canonical physical rebuild changed schema or typed cells",
+        ));
+    }
+    integrity(&rebuilt)?;
+    Ok(rebuilt)
+}
 pub fn rehearse_company_baseline(company: &Path) -> Result<PhysicalRehearsalReport, Error> {
     Snapshot::capture_unvalidated(company)?.with_writable_copy(rehearse)
 }
@@ -294,6 +376,48 @@ mod tests {
             db.execute_batch(sql).unwrap();
         }
         db.execute_batch("INSERT INTO companies(id,name,vat_period_type) VALUES(1,'Synthetic','quarter');INSERT INTO customers(id,name,payment_terms_days,created_at) VALUES(9007199254740993,'Synthetic customer',30,'2020-01-01 00:00:00');INSERT INTO gdpr_erasures(id,subject_key,source,source_row_id,redacted_fields,rule_id,reason,erased_at) VALUES(9007199254740993,'synthetic'||char(0)||'subject','customers',9007199254740993,'[]','synthetic','synthetic','2020-01-01 00:00:00');INSERT INTO accounting_periods(id,period_start,period_end,kind,status,closed_at,closed_by,reference,created_at) VALUES(9007199254740993,'2026-01-01','2026-03-31','vat_quarter','closed','2026-04-01','agent:synthetic','Synthetic reference','2020-01-01 00:00:00');INSERT INTO accounts(account_no,name,type,normal_balance) VALUES('2000','Synthetic bank','asset','debit')").unwrap();
+    }
+    #[test]
+    fn retained_physical_conversion_has_canonical_schema_and_preserves_source() {
+        for mask in 0..16 {
+            let dir = tempfile::tempdir().unwrap();
+            std::fs::create_dir(dir.path().join("data")).unwrap();
+            let path = dir.path().join("data/ledger.sqlite");
+            let db = Connection::open(&path).unwrap();
+            fixture(&db, mask);
+            drop(db);
+            let original = std::fs::read(&path).unwrap();
+            let converted =
+                crate::legacy_adoption::convert_company_for_adoption(dir.path()).unwrap();
+            assert_eq!(std::fs::read(&path).unwrap(), original);
+            let converted_path = dir.path().join("converted.sqlite");
+            std::fs::write(&converted_path, converted.bytes()).unwrap();
+            let result = Connection::open(&converted_path).unwrap();
+            crate::portable_backup::company(&result).unwrap();
+            let mut expected = company_baseline::load_images().unwrap().current;
+            expected.sort_by(|a, b| a.name.cmp(&b.name));
+            assert_eq!(schema(&result).unwrap(), expected);
+            assert_eq!(
+                result
+                    .query_row(
+                        "SELECT kind FROM accounting_periods WHERE id=9007199254740993",
+                        [],
+                        |r| r.get::<_, String>(0)
+                    )
+                    .unwrap(),
+                "vat_period"
+            );
+            assert_eq!(
+                result
+                    .query_row(
+                        "SELECT payment_terms_days FROM customers WHERE id=9007199254740993",
+                        [],
+                        |r| r.get::<_, i64>(0)
+                    )
+                    .unwrap(),
+                30
+            );
+        }
     }
     #[test]
     fn all_known_layout_combinations_preserve_data_and_restore_constraints() {
