@@ -78,18 +78,74 @@ pub fn build(payload: &Value) -> Vec<u8> {
             ),
             amount: amount(&line["lineTotalExVat"]),
         });
+        if let Some(class) = line["taxClassification"].as_str() {
+            let label = match class {
+                "taxable" => "Moms 25%".to_owned(),
+                "exempt" => "Momsfritaget".to_owned(),
+                "reverse_charge" => format!(
+                    "Omvendt betalingspligt: {}",
+                    text(&line["reverseChargeBasis"])
+                ),
+                _ => String::new(),
+            };
+            rows.push(Row {
+                section: false,
+                total: false,
+                label,
+                amount: String::new(),
+            });
+        }
     }
+    let domestic = payload["vatTreatment"] == "domestic_reverse_charge";
+    let explicit = payload["lines"].as_array().is_some_and(|lines| {
+        lines
+            .iter()
+            .any(|line| line.get("taxClassification").is_some())
+    });
+    let uniform = payload["lines"].as_array().is_some_and(|lines| {
+        lines
+            .iter()
+            .all(|line| line["taxClassification"] == "taxable")
+    });
+    let exempt = payload["lines"].as_array().is_some_and(|lines| {
+        lines
+            .iter()
+            .all(|line| line["taxClassification"] == "exempt")
+    });
+    let vat_label = if !explicit || uniform {
+        "Moms 25%"
+    } else if exempt {
+        "Momsfritaget"
+    } else {
+        "Moms i alt"
+    };
     for (key, label) in [
         ("netAmount", "I alt ekskl. moms"),
-        ("vatAmount", "Moms 25%"),
+        ("vatAmount", vat_label),
         ("grossAmount", "Til betaling DKK"),
     ] {
+        if domestic && key == "vatAmount" {
+            continue;
+        }
         rows.push(Row {
             section: false,
             total: key == "grossAmount",
             label: label.into(),
             amount: amount(&payload["totals"][key]),
         });
+    }
+    for key in ["reverseChargeBasis", "reverseChargeNote"] {
+        if let Some(value) = payload[key].as_str() {
+            let chars: Vec<_> = value.chars().collect();
+            for chunk in chars.chunks(80) {
+                rows.push(Row {
+                    section: false,
+                    total: false,
+                    label: chunk.iter().collect(),
+                    amount: String::new(),
+                });
+            }
+        }
     }
     if payload["payment"].is_object() {
         rows.push(Row {
@@ -234,5 +290,45 @@ mod tests {
         assert!(text.contains("1,01"));
         assert!(bytes.starts_with(b"%PDF-"));
         assert_eq!(bytes, build(&value));
+    }
+    #[test]
+    fn mixed_exempt_and_reverse_pdfs_show_the_retained_tax_decisions() {
+        for (extra, lines, label, absent) in [
+            (
+                json!({}),
+                json!([
+                {"description":"Taxable","quantity":1,"unitPriceExVat":100},
+                {"description":"Exempt","quantity":1,"unitPriceExVat":50,"taxClassification":"exempt"}]),
+                "Moms i alt",
+                None,
+            ),
+            (
+                json!({}),
+                json!([{ "description":"Exempt","quantity":1,"unitPriceExVat":100,"taxClassification":"exempt"}]),
+                "Momsfritaget",
+                Some("Moms 25%"),
+            ),
+            (
+                json!({"vatTreatment":"domestic_reverse_charge","reverseChargeBasis":"DK_MOMSLOVEN_§46_STK_1_NR_6","reverseChargeNote":"Omvendt betalingspligt"}),
+                json!([{ "description":"Service","quantity":1,"unitPriceExVat":100}]),
+                "Omvendt betalingspligt",
+                Some("Moms 25%"),
+            ),
+        ] {
+            let mut input = json!({"issueDate":"2026-10-20","lines":lines});
+            input
+                .as_object_mut()
+                .unwrap()
+                .extend(extra.as_object().unwrap().clone());
+            let computed =
+                crate::sales_invoice::compute(&serde_json::from_value(input).unwrap()).unwrap();
+            let bytes = build(&computed);
+            let text = String::from_utf8_lossy(&bytes);
+            assert!(text.contains(label));
+            if let Some(absent) = absent {
+                assert!(!text.contains(absent));
+            }
+            assert_eq!(bytes, build(&computed));
+        }
     }
 }
