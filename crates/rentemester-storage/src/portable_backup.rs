@@ -337,6 +337,7 @@ pub fn company(db: &Connection) -> Result<Company, Error> {
     // The signed SQLite image already contains the complete scheduler extension.
     // Admit its source history only after validating its physical schema, chain,
     // generation references and all earlier restore boundaries.
+    crate::document_pdf::validate_history(db)?;
     crate::document_scan::validate_backup(db)?;
     crate::scheduled_recurring::validate_backup(db)?;
     crate::invoice_email::validate_backup(db)?;
