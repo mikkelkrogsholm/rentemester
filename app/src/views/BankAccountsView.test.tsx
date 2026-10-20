@@ -16,22 +16,14 @@ function payload(accounts: any[] = []) {
         currency: "DKK",
       },
       accounts,
-      profiles: [
-        {
-          name: "lunar",
-          bankName: "Lunar Bank",
-          separator: ";",
-          encoding: "utf-8",
-          dateOrder: "dmy",
-        },
-        {
-          name: "danske-bank",
-          bankName: "Danske Bank",
-          separator: ";",
-          encoding: "utf-8",
-          dateOrder: "dmy",
-        },
-      ],
+      profiles: [{
+        name: "danske-bank",
+        label: "Danske Bank account export",
+        delimiter: ";",
+        encoding: "utf8",
+        dateOrder: "dmy",
+        columns: { date: "Dato" },
+      }],
     },
   };
 }
@@ -50,9 +42,20 @@ describe("BankAccountsView (#345)", () => {
     expect(
       await screen.findByText(/Ingen bankkonti endnu/),
     ).toBeInTheDocument();
-    expect(screen.getByText("lunar")).toBeInTheDocument();
-    expect(screen.getByText("Lunar Bank")).toBeInTheDocument();
+    expect(screen.getByText("Danske Bank account export")).toBeInTheDocument();
+    expect(screen.getByText(";")).toBeInTheDocument();
+    expect(screen.getByText("utf8")).toBeInTheDocument();
     expect(screen.getByText("danske-bank")).toBeInTheDocument();
+  });
+
+  test("preserves legacy profile labels and separators without inventing missing format facts", async () => {
+    const body = payload();
+    body.bankAccounts.profiles = [{ name: "legacy", bankName: "Legacy bank", separator: "|" }] as any;
+    renderView(body);
+    expect(await screen.findByText("Legacy bank")).toBeInTheDocument();
+    expect(screen.getByText("|")).toBeInTheDocument();
+    expect(screen.queryByText("dmy")).not.toBeInTheDocument();
+    expect(screen.queryByText("utf-8")).not.toBeInTheDocument();
   });
 
   test("har en 'Opret bankkonto'-knap i page-head", async () => {

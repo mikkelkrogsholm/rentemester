@@ -27,7 +27,7 @@ pub fn tools() -> Vec<Value> {
         ),
         (
             "bank_accounts",
-            "Discover active bank account ids/slugs, currencies and ledger mappings; named import profiles currently unavailable",
+            "Discover active bank account ids/slugs, currencies and ledger mappings; supported import profiles and their declared columns/date order",
         ),
         (
             "payables",
@@ -65,7 +65,7 @@ pub fn tools() -> Vec<Value> {
         (
             "import_bank",
             BankMutation::ImportStatement,
-            "Ledger-post operation: import generic UTF-8 CSV into an existing bank account; preserve source and row identity, report known duplicates; no named profiles",
+            "Import UTF-8 bank rows into an existing bank account without posting a journal: omitted/null/empty profile selects generic CSV; danske-bank selects declared semicolon/day-month-year CSV. Unknown profiles and ambiguous generic dates are refused; preserve source and row identity and report known duplicates",
         ),
         (
             "register_payable",

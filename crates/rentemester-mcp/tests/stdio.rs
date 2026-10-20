@@ -1982,3 +1982,6 @@ mod opening_balance;
 
 #[path="stdio/invoice_extraction.rs"]
 mod invoice_extraction;
+
+#[path="stdio/bank_profile.rs"]
+mod bank_profile;

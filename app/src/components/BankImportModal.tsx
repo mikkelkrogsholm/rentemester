@@ -159,14 +159,12 @@ export function BankImportModal({ slug, onImported, onClose: onDismiss }: BankIm
           <>
             <div className="modal-body">
               <p>
-                Vælg en bank-CSV. Transaktionerne lægges i regnskabet — dubletter
-                springes automatisk over. Uafstemte transaktioner bliver til
-                opgaver.
+                Vælg en bank-CSV. Banktransaktionerne indlæses til afstemning;
+                importen bogfører ikke. Kendte dubletter springes over.
               </p>
               <p className={["muted", stylex.props(viewStyles.site0).className].filter(Boolean).join(" ")} >
-                Eksportér som CSV fra netbanken med standardindstillinger.
-                Filen må gerne være UTF-8 eller Latin-1; importeren forsøger
-                begge og auto-detekterer komma, semikolon og tabulator.{" "}
+                Vælg UTF-8 CSV. Browseren læser filen som tekst. Standard-CSV
+                understøtter komma, semikolon og tabulator.{" "}
                 <a
                   href="https://rentemester.dk/docs/bank-import"
                   target="_blank"
@@ -184,8 +182,7 @@ export function BankImportModal({ slug, onImported, onClose: onDismiss }: BankIm
                     <code>{p.name}</code> ({p.label})
                   </span>
                 ))}
-                . Andre danske banker virker ofte uden profil — importeren
-                læser standard-CSV med danske kolonnenavne.
+                . Uden profil skal filen følge standard-CSV-formatet.
               </p>
             </div>
 
@@ -233,11 +230,9 @@ export function BankImportModal({ slug, onImported, onClose: onDismiss }: BankIm
                 disabled={outcome.blocked || (busy)}
               />
               <span className="field-hint">
-                Lad feltet stå tomt — importeren forsøger automatisk at
-                genkende formatet for de fleste danske bank-CSV'er. Angiv kun
-                et formatnavn (se listen ovenfor), hvis autogenkendelsen fejler.
-                Andre banker virker også, hvis du vælger eksport som
-                standard-CSV — sig til hvis din ikke virker.
+                Uden profil bruges standard-CSV; tvetydige datoer afvises.
+                Angiv danske-bank for Danske Banks semikolon-CSV med
+                dag-måned-år.
               </span>
             </label>
 

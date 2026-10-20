@@ -137,6 +137,8 @@ export type BankAccount = {
 
 export type BankImportProfile = {
   name: string;
+  label?: string;
+  delimiter?: string;
   bankName?: string;
   separator?: string;
   encoding?: string;

@@ -4,7 +4,7 @@ import { ButtonLink, Dialog, Button, Input, PageHeader } from "../components/ui"
 // Bankkonti + CSV-mapping-profiler (#345).
 //
 // Per-virksomhed liste over registrerede bankkonti + de indbyggede
-// CSV-mapping-profiler (Lunar, Danske Bank, Sydbank, …). 'Opret konto'-
+// CSV-mapping-profiler (de understøttede eksportformater). 'Opret konto'-
 // modal kalder POST /api/companies/:slug/bank-accounts.
 //
 // Note: pr.-konto mapping-override + sample-CSV-preview er parkeret som
@@ -101,9 +101,8 @@ export function BankAccountsView() {
       <section className="card">
         <h3>Indbyggede CSV-mapping-profiler ({data.profiles.length})</h3>
         <p className="muted">
-          BankImportModal og CLI'ens <code>bank import --profile &lt;navn&gt;</code>
-          genbruger disse hard-kodede mapping-profiler. Pr.-konto mapping-
-          override er en follow-up.
+          Brug profilnavnet i Importér kontoudtog. Profilen angiver filens
+          kolonner, separator og datoformat.
         </p>
         <div className="table-scroll"><table className="table">
           <thead>
@@ -121,12 +120,12 @@ export function BankAccountsView() {
                 <td>
                   <code>{p.name}</code>
                 </td>
-                <td>{p.bankName ?? "—"}</td>
+                <td>{p.label ?? p.bankName ?? "—"}</td>
                 <td>
-                  <code>{p.separator ?? ";"}</code>
+                  <code>{p.delimiter ?? p.separator ?? "—"}</code>
                 </td>
-                <td>{p.encoding ?? "utf-8"}</td>
-                <td>{p.dateOrder ?? "dmy"}</td>
+                <td>{p.encoding ?? "—"}</td>
+                <td>{p.dateOrder ?? "—"}</td>
               </tr>
             ))}
           </tbody>

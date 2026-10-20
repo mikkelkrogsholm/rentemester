@@ -81,6 +81,7 @@ describe("BankImportModal", () => {
       const sent = JSON.parse(String(init.body));
       expect(sent.csvContent).toContain("Card payment");
       expect(sent.confirm).toBe(true);
+      expect(sent.profile).toBeUndefined();
     });
     expect(onImported).toHaveBeenCalled();
   });
@@ -137,6 +138,22 @@ describe("BankImportModal", () => {
     expect(await screen.findByText("Ugyldig CSV.")).toBeInTheDocument();
   });
 
+  test("sends the chosen account and Danske profile without interpreting CSV dates", async () => {
+    mockFetch(importRoute());
+    render(<BankImportModal slug="acme-aps" onImported={noop} onClose={noop} />);
+    const csv = "Dato;Tekst;Beløb;Valuta\n01-02-2026;Synthetic;-12,34;DKK";
+    await userEvent.upload(screen.getByLabelText("CSV-fil"), new File([csv], "danske.csv", { type: "text/csv" }));
+    await userEvent.type(screen.getByLabelText(/^Bankkonto \(valgfri\)/), "synthetic-account");
+    await userEvent.type(screen.getByLabelText(/^Bankformat \(valgfri\)/), "danske-bank");
+    await userEvent.click(screen.getByRole("button", { name: "Importér" }));
+    await waitFor(() => {
+      const calls = (globalThis.fetch as unknown as ReturnType<typeof vi.fn>).mock.calls;
+      const call = calls.find(c => String(c[0]).includes("/bank/import"));
+      expect(call).toBeDefined();
+      expect(JSON.parse(String((call![1] as RequestInit).body))).toEqual({ csvContent: csv, account: "synthetic-account", profile: "danske-bank", confirm: true });
+    });
+  });
+
   test("lists supported bank profiles before upload (#422)", () => {
     render(
       <BankImportModal slug="acme-aps" onImported={noop} onClose={noop} />,
@@ -146,7 +163,7 @@ describe("BankImportModal", () => {
       screen.getByText(/Understøttede bankprofiler/i),
     ).toBeInTheDocument();
     // The Danske Bank profile is registered in the core, so it must show.
-    expect(screen.getByText(/danske-bank/)).toBeInTheDocument();
+    expect(screen.getByText("danske-bank", { selector: "code" })).toBeInTheDocument();
   });
 
   test("shows hints for the Bankkonto and Bankformat fields (#422)", () => {
@@ -157,9 +174,9 @@ describe("BankImportModal", () => {
     expect(
       screen.getByText(/flere bankkonti/i),
     ).toBeInTheDocument();
-    // Bankformat hint explains auto-detection when the field is empty.
+    // Generic dates remain explicit rather than promising bank-format guessing.
     expect(
-      screen.getByText(/automatisk at genkende formatet/i),
+      screen.getByText(/tvetydige datoer afvises/i),
     ).toBeInTheDocument();
   });
 

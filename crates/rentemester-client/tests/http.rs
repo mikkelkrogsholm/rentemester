@@ -582,3 +582,54 @@ async fn elimination_confirmation_bounds_unknown_fields_and_context_fail_before_
  assert!(matches!(api.mutate_elimination("synthetic",EliminationMutation::Apply,b"{}".to_vec(),false).await,Err(Error::InvalidInput(_))));
  assert!(matches!(api.elimination_plan("synthetic",br#"{"id":"own","mappingId":"map","asOf":"2026-06-01","evidenceRefs":["ref"],"confirm":true}"#.to_vec()).await,Err(Error::InvalidInput(_))));
 }
+
+#[tokio::test]
+async fn bank_profile_enum_preserves_each_supported_body_once() {
+    use rentemester_client::{BankMutation, bank_body_schema};
+    let schema = bank_body_schema(BankMutation::ImportStatement);
+    assert_eq!(
+        schema["properties"]["profile"]["enum"],
+        serde_json::json!([null, "", "danske-bank"])
+    );
+    for profile in [None, Some("null"), Some("\"\""), Some("\"danske-bank\"")] {
+        let field = profile
+            .map(|p| format!(", \"profile\":{p}"))
+            .unwrap_or_default();
+        let body = format!(
+            "{{ \"csvContent\":\"Dato;Tekst;Beløb\\n01-02-2026;Synthetic;-12,34\\n\", \"account\":\"synthetic-account\"{field}, \"confirm\":true }}"
+        );
+        let (origin, request, task) = server(OK);
+        let api = ApiClient::new(&origin, true, None).unwrap();
+        api.bank_mutation(
+            "demo",
+            BankMutation::ImportStatement,
+            body.as_bytes().to_vec(),
+            true,
+        )
+        .await
+        .unwrap();
+        let wire = request.recv().unwrap();
+        assert!(wire.starts_with(b"POST /api/companies/demo/bank/import HTTP/1.1"));
+        assert!(wire.ends_with(body.as_bytes()));
+        assert_eq!(task.join().unwrap(), 1);
+    }
+}
+
+#[tokio::test]
+async fn bank_profile_unknown_case_and_whitespace_fail_before_network() {
+    use rentemester_client::BankMutation;
+    let api = ApiClient::new("http://127.0.0.1:9", true, None).unwrap();
+    for profile in ["lunar", "sydbank", "Danske-Bank", " danske-bank", " "] {
+        let body = serde_json::json!({"csvContent":"date;text;amount\n2026-01-01;Synthetic;-1", "profile":profile,"confirm":true}).to_string();
+        assert!(matches!(
+            api.bank_mutation(
+                "demo",
+                BankMutation::ImportStatement,
+                body.into_bytes(),
+                true
+            )
+            .await,
+            Err(Error::InvalidInput(_))
+        ));
+    }
+}

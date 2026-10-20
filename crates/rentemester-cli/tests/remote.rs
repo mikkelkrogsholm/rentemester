@@ -188,6 +188,8 @@ fn bank_commands_document_native_bodies_and_reject_mixed_filters() {
         .output()
         .unwrap();
     let help: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
+    assert_eq!(help["bankBodySchemas"]["importBank"]["properties"]["profile"]["enum"], serde_json::json!([null, "", "danske-bank"]));
+    assert!(help["bankPayables"].as_str().unwrap().contains("danske-bank"));
     assert_eq!(
         help["bankBodySchemas"]["payPayable"]["required"],
         serde_json::json!(["bankTransactionId", "confirm"])
