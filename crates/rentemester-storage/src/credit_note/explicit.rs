@@ -44,7 +44,12 @@ fn journal_counters(
                 || !((kind == "income"
                     && matches!(
                         code.as_deref(),
-                        Some("DK_SALE_25" | "DK_SALE_EXEMPT" | "DOMESTIC_REVERSE_CHARGE_EXEMPT")
+                        Some(
+                            "DK_SALE_25"
+                                | "DK_SALE_EXEMPT"
+                                | "DOMESTIC_REVERSE_CHARGE_EXEMPT"
+                                | "REVERSE_CHARGE_EXEMPT"
+                        )
                     ))
                     || (kind == "vat" && code.is_none()))
             {

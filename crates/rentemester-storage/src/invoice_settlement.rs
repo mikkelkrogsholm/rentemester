@@ -33,22 +33,14 @@ pub struct RefundInput {
     pub confirm: bool,
 }
 pub(crate) fn refunded(tx: &Transaction<'_>, id: i64) -> Result<Money, Error> {
-    let mut total = Money::default();
-    let mut q=tx.prepare("SELECT r.amount,r.currency,j.status,EXISTS(SELECT 1 FROM journal_entries reversal WHERE reversal.reversal_of_entry_id=j.id) FROM invoice_refunds r JOIN journal_entries j ON j.id=r.journal_entry_id WHERE r.invoice_document_id=?1").map_err(invalid)?;
-    let mut rows = q.query([id]).map_err(invalid)?;
-    while let Some(r) = rows.next().map_err(invalid)? {
-        if r.get::<_, String>(1).map_err(invalid)? != "DKK"
-            || r.get::<_, String>(2).map_err(invalid)? != "posted"
-            || r.get::<_, bool>(3).map_err(invalid)?
-        {
-            return Err(refused(
-                "previous invoice refund evidence requires resolution",
-            ));
-        }
-        total.add(&legacy_money(r.get_ref(0).map_err(invalid)?)?);
-    }
-    Ok(total)
+    let currency: String = tx
+        .query_row("SELECT currency FROM documents WHERE id=?1", [id], |r| {
+            r.get(0)
+        })
+        .map_err(invalid)?;
+    crate::invoice_fx::movements(tx, id, &currency, true)
 }
+
 pub fn refund(
     tx: &Transaction<'_>,
     input: &RefundInput,
@@ -121,11 +113,11 @@ fn transfer(
         ));
     }
     let (date,amount,currency,mapping,account_id,account_currency):(String,Money,String,Option<String>,Option<i64>,Option<String>)=tx.query_row("SELECT bt.transaction_date,bt.amount,bt.currency,ba.ledger_account_no,bt.bank_account_id,ba.currency FROM bank_transactions bt LEFT JOIN bank_accounts ba ON ba.id=bt.bank_account_id WHERE bt.id=?1",[bank_id],|r|Ok((r.get(0)?,crate::bank::signed_money(r.get_ref(1)?).map_err(|_|rusqlite::Error::InvalidQuery)?,r.get(2)?,r.get(3)?,r.get(4)?,r.get(5)?))).optional().map_err(invalid)?.ok_or_else(||refused("imported bank receipt required"))?;
-    if currency != "DKK" || amount == Money::default() || amount.is_negative() != refund {
+    if amount == Money::default() || amount.is_negative() != refund {
         return Err(refused(if refund {
-            "outgoing DKK customer refund required"
+            "outgoing customer refund required"
         } else {
-            "positive DKK customer receipt required"
+            "positive customer receipt required"
         }));
     }
     let amount = if refund {
@@ -133,7 +125,9 @@ fn transfer(
     } else {
         amount
     };
-    if account_id.is_some() && (mapping.is_none() || account_currency.as_deref() != Some("DKK")) {
+    if account_id.is_some()
+        && (mapping.is_none() || account_currency.as_deref() != Some(currency.as_str()))
+    {
         return Err(refused(
             "receipt bank account requires its own compatible ledger mapping",
         ));
@@ -180,30 +174,29 @@ fn transfer(
         ));
     }
 
-    let (no,invoice_date,debtor_id,debtor,gross):(String,String,i64,String,Money)=tx.query_row("SELECT d.invoice_no,d.invoice_date,p.receivable_account_id,a.account_no,p.booked_gross_dkk FROM documents d JOIN issued_invoice_postings p ON p.invoice_document_id=d.id JOIN journal_entries j ON j.id=p.journal_entry_id JOIN accounts a ON a.id=p.receivable_account_id WHERE d.id=?1 AND d.document_type='issued_invoice' AND d.currency='DKK' AND j.status='posted' AND j.document_id=d.id AND j.transaction_date=d.invoice_date AND j.source_bank_transaction_id IS NULL AND NOT EXISTS(SELECT 1 FROM journal_entries reversal WHERE reversal.reversal_of_entry_id=j.id)",[id],|r|Ok((r.get(0)?,r.get(1)?,r.get(2)?,r.get(3)?,legacy_money(r.get_ref(4)?).map_err(|_|rusqlite::Error::InvalidQuery)?))).optional().map_err(invalid)?.ok_or_else(||refused("active posted DKK invoice required before settlement"))?;
+    let (no,invoice_date,debtor_id,debtor,gross_dkk,invoice_currency,payload):(String,String,i64,String,Money,String,String)=tx.query_row("SELECT d.invoice_no,d.invoice_date,p.receivable_account_id,a.account_no,p.booked_gross_dkk,d.currency,d.payload_json FROM documents d JOIN issued_invoice_postings p ON p.invoice_document_id=d.id JOIN journal_entries j ON j.id=p.journal_entry_id JOIN accounts a ON a.id=p.receivable_account_id WHERE d.id=?1 AND d.document_type='issued_invoice' AND j.status='posted' AND j.document_id=d.id AND j.transaction_date=d.invoice_date AND j.source_bank_transaction_id IS NULL AND NOT EXISTS(SELECT 1 FROM journal_entries reversal WHERE reversal.reversal_of_entry_id=j.id)",[id],|r|Ok((r.get(0)?,r.get(1)?,r.get(2)?,r.get(3)?,legacy_money(r.get_ref(4)?).map_err(|_|rusqlite::Error::InvalidQuery)?,r.get(5)?,r.get(6)?))).optional().map_err(invalid)?.ok_or_else(||refused("active posted invoice required before settlement"))?;
     if bank == debtor || date < invoice_date {
         return Err(refused(
             "receipt must use a distinct bank account and cannot precede the invoice",
         ));
     }
-    let mut paid = Money::default();
-    let mut q=tx.prepare("SELECT p.amount,p.currency,j.status,EXISTS(SELECT 1 FROM journal_entries reversal WHERE reversal.reversal_of_entry_id=j.id) FROM invoice_payments p JOIN journal_entries j ON j.id=p.journal_entry_id WHERE p.invoice_document_id=?1").map_err(invalid)?;
-    let mut rows = q.query([id]).map_err(invalid)?;
-    while let Some(r) = rows.next().map_err(invalid)? {
-        if r.get::<_, String>(1).map_err(invalid)? != "DKK"
-            || r.get::<_, String>(2).map_err(invalid)? != "posted"
-            || r.get::<_, bool>(3).map_err(invalid)?
-        {
-            return Err(refused(
-                "previous invoice payment evidence requires resolution",
-            ));
-        }
-        paid.add(&legacy_money(r.get_ref(0).map_err(invalid)?)?);
+    if currency != invoice_currency {
+        return Err(refused(
+            "imported cash movement must use the invoice currency",
+        ));
     }
+    let payload: Value = serde_json::from_str(&payload).map_err(invalid)?;
+    let original = rentemester_engine::sales_invoice::project(&payload)?;
+    if crate::invoice_fx::projection(&payload)?.gross != gross_dkk {
+        return Err(refused("invoice frozen DKK basis differs from posting"));
+    }
+    let gross = original.gross;
+    let paid = crate::invoice_fx::movements(tx, id, &currency, false)?;
+    let refunded = refunded(tx, id)?;
     let mut open = gross
         .subtract(&crate::credit_note::credited(tx, id)?)
         .subtract(&paid);
-    open.add(&refunded(tx, id)?);
+    open.add(&refunded);
     let available = if refund {
         Money::default().subtract(&open)
     } else {
@@ -220,11 +213,89 @@ fn transfer(
         }));
     }
     let carrying = principal_carrying(tx, id, debtor_id)?;
-    if carrying != open {
+    let basis = |a: &Money| -> Result<Money, Error> {
+        if *a == Money::default() {
+            Ok(Money::default())
+        } else {
+            crate::invoice_fx::portion(&gross, &gross_dkk, &Money::default(), a)
+        }
+    };
+    let mut expected = gross_dkk
+        .subtract(&crate::invoice_fx::credited_dkk(tx, id)?)
+        .subtract(&basis(&paid)?);
+    expected.add(&basis(&refunded)?);
+    if carrying != expected {
         return Err(refused(
             "invoice outstanding principal does not match its booked receivable; review the linked entries",
         ));
     }
+    let before = if refund { &refunded } else { &paid };
+    let principal = crate::invoice_fx::portion(&gross, &gross_dkk, before, &amount)?;
+    let bank_dkk = if currency == "DKK" {
+        amount.clone()
+    } else {
+        let (dkk, rate): (Option<Money>, Option<String>) = tx
+            .query_row(
+                "SELECT amount_dkk,CAST(fx_rate_to_dkk AS TEXT) FROM bank_transactions WHERE id=?1",
+                [bank_id],
+                |r| {
+                    Ok((
+                        if matches!(r.get_ref(0)?, rusqlite::types::ValueRef::Null) {
+                            None
+                        } else {
+                            Some(
+                                crate::bank::signed_money(r.get_ref(0)?)
+                                    .map_err(|_| rusqlite::Error::InvalidQuery)?,
+                            )
+                        },
+                        r.get(1)?,
+                    ))
+                },
+            )
+            .map_err(invalid)?;
+        let signed =
+            dkk.ok_or_else(|| refused("foreign bank movement requires explicit DKK valuation"))?;
+        let rate = rentemester_engine::fx::FxRate::parse(
+            &rate.ok_or_else(|| refused("foreign bank movement requires explicit FX rate"))?,
+        )?;
+        if signed.is_negative() != refund {
+            return Err(refused("foreign DKK bank valuation has wrong direction"));
+        }
+        let absolute = if refund {
+            Money::default().subtract(&signed)
+        } else {
+            signed
+        };
+        if absolute == Money::default() || rate.apply(&amount) != absolute {
+            return Err(refused(
+                "foreign bank DKK valuation contradicts imported FX rate",
+            ));
+        }
+        absolute
+    };
+    let difference = if refund {
+        principal.subtract(&bank_dkk)
+    } else {
+        bank_dkk.subtract(&principal)
+    };
+    let fx_account = if difference != Money::default() {
+        let (role, kind, balance) = if difference.is_negative() {
+            ("fx_loss", "expense", "debit")
+        } else {
+            ("fx_gain", "income", "credit")
+        };
+        let account:Option<String>=tx.query_row("SELECT m.account_no FROM account_role_mappings m JOIN accounts a ON a.account_no=m.account_no WHERE m.role=?1 AND m.status='confirmed' AND a.type=?2 AND a.normal_balance=?3 AND a.active=1",params![role,kind,balance],|r|r.get(0)).optional().map_err(invalid)?;
+        let account = account
+            .ok_or_else(|| refused("confirmed compatible realized FX account role required"))?;
+        if account == bank || account == debtor {
+            return Err(refused(
+                "realized FX account must be distinct from bank and debtor",
+            ));
+        }
+        Some(account)
+    } else {
+        None
+    };
     let line = |account: &str, debit: Money, credit: Money| -> Result<JournalLine, Error> {
         Ok(JournalLine {
             account_no: AccountNo::parse(account)?,
@@ -241,6 +312,28 @@ fn transfer(
             )),
         })
     };
+    let mut lines = if refund {
+        vec![
+            line(&debtor, principal.clone(), Money::default())?,
+            line(&bank, Money::default(), bank_dkk.clone())?,
+        ]
+    } else {
+        vec![
+            line(&bank, bank_dkk.clone(), Money::default())?,
+            line(&debtor, Money::default(), principal.clone())?,
+        ]
+    };
+    if let Some(account) = fx_account {
+        lines.push(if difference.is_negative() {
+            line(
+                &account,
+                Money::default().subtract(&difference),
+                Money::default(),
+            )?
+        } else {
+            line(&account, Money::default(), difference.clone())?
+        });
+    }
     let request = ManualJournal {
         transaction_date: Date::parse(&date)?,
         text: format!(
@@ -258,17 +351,7 @@ fn transfer(
         amount_dkk: None,
         fx_rate_to_dkk: None,
         created_by_program: None,
-        lines: if refund {
-            vec![
-                line(&debtor, amount.clone(), Money::default())?,
-                line(&bank, Money::default(), amount.clone())?,
-            ]
-        } else {
-            vec![
-                line(&bank, amount.clone(), Money::default())?,
-                line(&debtor, Money::default(), amount.clone())?,
-            ]
-        },
+        lines,
     };
     let result = crate::journal_post::post(
         tx,
@@ -284,16 +367,16 @@ fn transfer(
         return Err(refused(result["errors"].to_string()));
     }
     if refund {
-        let id:i64=tx.query_row("INSERT INTO invoice_refunds(invoice_document_id,bank_transaction_id,journal_entry_id,refund_date,amount,currency,note) VALUES(?1,?2,?3,?4,?5,'DKK',?6) RETURNING id",params![id,bank_id,result["entryId"].as_i64(),date,wire(&amount)?.as_f64(),format!("Customer refund from transaction {bank_id}")],|r|r.get(0)).map_err(invalid)?;
+        let id:i64=tx.query_row("INSERT INTO invoice_refunds(invoice_document_id,bank_transaction_id,journal_entry_id,refund_date,amount,currency,note) VALUES(?1,?2,?3,?4,?5,?7,?6) RETURNING id",params![id,bank_id,result["entryId"].as_i64(),date,wire(&amount)?.as_f64(),format!("Customer refund from transaction {bank_id}"),currency],|r|r.get(0)).map_err(invalid)?;
         tx.execute("INSERT INTO audit_log(event_type,entity_type,entity_id,message,actor) VALUES('invoice_refund_apply','invoice_refund',?1,?2,?3)",params![id.to_string(),format!("Applied refund {} to invoice {no}",amount.decimal()),format!("user:{subject}")]).map_err(invalid)?;
         return Ok(
-            json!({"entryId":result["entryId"],"refundId":id,"invoiceNumber":no,"remainingCreditBalance":wire(&available.subtract(&amount))?}),
+            json!({"entryId":result["entryId"],"refundId":id,"invoiceNumber":no,"remainingCreditBalance":wire(&available.subtract(&amount))?,"currency":currency,"principalAmountDkk":wire(&principal)?,"bankAmountDkk":wire(&bank_dkk)?,"realizedFxAmountDkk":wire(&difference)?}),
         );
     }
-    let payment:i64=tx.query_row("INSERT INTO invoice_payments(invoice_document_id,bank_transaction_id,journal_entry_id,payment_date,amount,currency,note) VALUES(?1,?2,?3,?4,?5,'DKK',?6) RETURNING id",params![id,bank_id,result["entryId"].as_i64(),date,wire(&amount)?.as_f64(),format!("Bank settlement from transaction {bank_id}")],|r|r.get(0)).map_err(invalid)?;
+    let payment:i64=tx.query_row("INSERT INTO invoice_payments(invoice_document_id,bank_transaction_id,journal_entry_id,payment_date,amount,currency,note) VALUES(?1,?2,?3,?4,?5,?7,?6) RETURNING id",params![id,bank_id,result["entryId"].as_i64(),date,wire(&amount)?.as_f64(),format!("Bank settlement from transaction {bank_id}"),currency],|r|r.get(0)).map_err(invalid)?;
     tx.execute("INSERT INTO audit_log(event_type,entity_type,entity_id,message,actor) VALUES('invoice_payment_apply','invoice_payment',?1,?2,?3)",params![payment.to_string(),format!("Applied receipt {} to invoice {no}",amount.decimal()),format!("user:{subject}")]).map_err(invalid)?;
     Ok(
-        json!({"entryId":result["entryId"],"paymentId":payment,"principalAmount":wire(&amount)?,"claimAmount":0,"invoiceNumber":no,"openBalance":wire(&open.subtract(&amount))?}),
+        json!({"entryId":result["entryId"],"paymentId":payment,"principalAmount":wire(&amount)?,"claimAmount":0,"invoiceNumber":no,"openBalance":wire(&open.subtract(&amount))?,"currency":currency,"principalAmountDkk":wire(&principal)?,"bankAmountDkk":wire(&bank_dkk)?,"realizedFxAmountDkk":wire(&difference)?}),
     )
 }
 

@@ -39,17 +39,26 @@ pub fn credited(tx: &Transaction<'_>, id: i64) -> Result<Money, Error> {
         return Err(refused("unlinked credit note requires evidence resolution"));
     }
     let mut total = Money::default();
-    let mut q=tx.prepare("SELECT p.booked_gross_dkk,c.amount_inc_vat,j.status,EXISTS(SELECT 1 FROM journal_entries reversal WHERE reversal.reversal_of_entry_id=j.id) FROM credit_note_postings p JOIN documents c ON c.id=p.credit_note_document_id JOIN journal_entries j ON j.id=p.journal_entry_id WHERE p.original_invoice_document_id=?1").map_err(invalid)?;
+    let mut q=tx.prepare("SELECT p.booked_gross_dkk,c.amount_inc_vat,j.status,EXISTS(SELECT 1 FROM journal_entries reversal WHERE reversal.reversal_of_entry_id=j.id),c.currency,COALESCE(c.payload_json,'null'),j.document_id,c.id,(SELECT currency FROM documents WHERE id=p.original_invoice_document_id) FROM credit_note_postings p JOIN documents c ON c.id=p.credit_note_document_id JOIN journal_entries j ON j.id=p.journal_entry_id WHERE p.original_invoice_document_id=?1").map_err(invalid)?;
     let mut rows = q.query([id]).map_err(invalid)?;
     while let Some(r) = rows.next().map_err(invalid)? {
         let value = legacy_money(r.get_ref(0).map_err(invalid)?)?;
         if r.get::<_, String>(2).map_err(invalid)? != "posted"
             || r.get::<_, bool>(3).map_err(invalid)?
-            || value != legacy_money(r.get_ref(1).map_err(invalid)?)?
+            || r.get::<_, Option<i64>>(6).map_err(invalid)?
+                != Some(r.get::<_, i64>(7).map_err(invalid)?)
+            || r.get::<_, String>(4).map_err(invalid)? != r.get::<_, String>(8).map_err(invalid)?
+            || value
+                != crate::invoice_fx::credit_dkk(
+                    &serde_json::from_str::<Value>(&r.get::<_, String>(5).map_err(invalid)?)
+                        .map_err(invalid)?,
+                    &r.get::<_, String>(4).map_err(invalid)?,
+                    &legacy_money(r.get_ref(1).map_err(invalid)?)?,
+                )?
         {
             return Err(refused("credit note evidence requires resolution"));
         }
-        total.add(&value);
+        total.add(&legacy_money(r.get_ref(1).map_err(invalid)?)?);
     }
     Ok(total)
 }
@@ -61,21 +70,25 @@ pub fn prepare(tx: &Transaction<'_>, input: &Input, now: &str) -> Result<Prepare
     }
     let reason = text(&input.reason, 2000)?;
     let id = input.invoice_document_id;
-    let row:Option<(String,String,String,i64,i64,String,Money)>=tx.query_row("SELECT d.invoice_no,d.invoice_date,d.payload_json,p.journal_entry_id,p.receivable_account_id,a.account_no,p.booked_gross_dkk FROM documents d JOIN issued_invoice_postings p ON p.invoice_document_id=d.id JOIN journal_entries j ON j.id=p.journal_entry_id JOIN accounts a ON a.id=p.receivable_account_id WHERE d.id=?1 AND d.document_type='issued_invoice' AND d.currency='DKK' AND j.status='posted' AND j.document_id=d.id AND j.source_bank_transaction_id IS NULL AND NOT EXISTS(SELECT 1 FROM journal_entries reversal WHERE reversal.reversal_of_entry_id=j.id)",[id],|r|Ok((r.get(0)?,r.get(1)?,r.get(2)?,r.get(3)?,r.get(4)?,r.get(5)?,legacy_money(r.get_ref(6)?).map_err(|_|rusqlite::Error::InvalidQuery)?))).optional().map_err(invalid)?;
+    let row:Option<(String,String,String,i64,i64,String,Money)>=tx.query_row("SELECT d.invoice_no,d.invoice_date,d.payload_json,p.journal_entry_id,p.receivable_account_id,a.account_no,p.booked_gross_dkk FROM documents d JOIN issued_invoice_postings p ON p.invoice_document_id=d.id JOIN journal_entries j ON j.id=p.journal_entry_id JOIN accounts a ON a.id=p.receivable_account_id WHERE d.id=?1 AND d.document_type='issued_invoice' AND j.status='posted' AND j.document_id=d.id AND j.source_bank_transaction_id IS NULL AND NOT EXISTS(SELECT 1 FROM journal_entries reversal WHERE reversal.reversal_of_entry_id=j.id)",[id],|r|Ok((r.get(0)?,r.get(1)?,r.get(2)?,r.get(3)?,r.get(4)?,r.get(5)?,legacy_money(r.get_ref(6)?).map_err(|_|rusqlite::Error::InvalidQuery)?))).optional().map_err(invalid)?;
     let (original_no, date, payload, journal_id, debtor_id, debtor, gross) =
-        row.ok_or_else(|| refused("active booked DKK invoice required for credit note"))?;
+        row.ok_or_else(|| refused("active booked invoice required for credit note"))?;
     if input.issue_date < date {
         return Err(refused("credit note cannot precede the original invoice"));
     }
     let original: Value = serde_json::from_str(&payload).map_err(invalid)?;
     let projection = rentemester_engine::sales_invoice::project(&original)?;
-    if projection.gross != gross {
+    let dkk_projection = crate::invoice_fx::projection(&original)?;
+    let currency = original["currency"]
+        .as_str()
+        .ok_or_else(|| refused("invoice currency required"))?;
+    if dkk_projection.gross != gross {
         return Err(refused(
             "original snapshot gross differs from posting identity",
         ));
     }
     let prior_total = credited(tx, id)?;
-    let remaining = gross.subtract(&prior_total);
+    let remaining = projection.gross.subtract(&prior_total);
     if remaining.is_negative() || remaining == Money::default() {
         return Err(refused("invoice is already fully credited"));
     }
@@ -85,7 +98,9 @@ pub fn prepare(tx: &Transaction<'_>, input: &Input, now: &str) -> Result<Prepare
         .map(|n| Money::parse(&n.to_string()))
         .transpose()?
         .unwrap_or(remaining);
-    let (lines, vat, allocations) = if projection.legacy {
+    let prior_dkk = crate::invoice_fx::credited_dkk(tx, id)?;
+    let amount_dkk = crate::invoice_fx::portion(&projection.gross, &gross, &prior_total, &amount)?;
+    let (lines, vat_dkk, allocations) = if projection.legacy {
         legacy_lines(
             tx,
             id,
@@ -94,8 +109,8 @@ pub fn prepare(tx: &Transaction<'_>, input: &Input, now: &str) -> Result<Prepare
             &debtor,
             &original_no,
             &gross,
-            &prior_total,
-            &amount,
+            &prior_dkk,
+            &amount_dkk,
         )?
     } else {
         explicit::lines(
@@ -105,10 +120,17 @@ pub fn prepare(tx: &Transaction<'_>, input: &Input, now: &str) -> Result<Prepare
             debtor_id,
             &debtor,
             &original_no,
-            &projection,
-            &prior_total,
-            &amount,
+            &dkk_projection,
+            &prior_dkk,
+            &amount_dkk,
         )?
+    };
+    let vat = if currency == "DKK" {
+        vat_dkk.clone()
+    } else if projection.vat == Money::default() {
+        Money::default()
+    } else {
+        crate::invoice_fx::portion(&projection.gross, &projection.vat, &prior_total, &amount)?
     };
     let company = crate::company_setup::profile(tx)?;
     let year = fiscal_year::for_date(
@@ -153,7 +175,17 @@ pub fn prepare(tx: &Transaction<'_>, input: &Input, now: &str) -> Result<Prepare
     crate::sequences::next(tx, "credit_note", &scope, floor)?;
     let mut cumulative = prior_total.clone();
     cumulative.add(&amount);
-    let mut payload = json!({"type":"credit_note","creditNoteNumber":number,"originalInvoiceNumber":original_no,"originalInvoiceDocumentId":id,"issueDate":input.issue_date,"reason":reason,"currency":"DKK","seller":original["seller"],"buyer":original["buyer"],"grossAmount":wire(&amount)?,"vatAmount":wire(&vat)?,"netAmount":wire(&amount.subtract(&vat))?,"creditedSoFar":wire(&prior_total)?,"remainingAfterThisCredit":wire(&gross.subtract(&cumulative))?,"issuedAt":now});
+    let mut payload = json!({"type":"credit_note","creditNoteNumber":number,"originalInvoiceNumber":original_no,"originalInvoiceDocumentId":id,"issueDate":input.issue_date,"reason":reason,"currency":currency,"seller":original["seller"],"buyer":original["buyer"],"grossAmount":wire(&amount)?,"vatAmount":wire(&vat)?,"netAmount":wire(&amount.subtract(&vat))?,"creditedSoFar":wire(&prior_total)?,"remainingAfterThisCredit":wire(&projection.gross.subtract(&cumulative))?,"issuedAt":now});
+    if currency != "DKK" {
+        payload["fxValuationVersion"] = json!(1);
+        payload["fxRateToDkk"] = original["totals"]["fxRateToDkk"].clone();
+        payload["grossAmountDkk"] = wire(&amount_dkk)?;
+        payload["vatAmountDkk"] = wire(&vat_dkk)?;
+        payload["netAmountDkk"] = wire(&amount_dkk.subtract(&vat_dkk))?;
+        payload["vatTreatment"] = original["vatTreatment"].clone();
+        payload["reverseChargeBasis"] = original["reverseChargeBasis"].clone();
+        payload["viesValidation"] = original["viesValidation"].clone();
+    }
     if !projection.legacy {
         payload["creditAllocations"] = allocations;
     }
@@ -162,7 +194,7 @@ pub fn prepare(tx: &Transaction<'_>, input: &Input, now: &str) -> Result<Prepare
         lines,
         original_id: id,
         debtor_id,
-        gross: amount,
+        gross: amount_dkk,
     })
 }
 #[allow(clippy::too_many_arguments)]
@@ -292,7 +324,7 @@ pub fn register_and_post(
         payload["issueDate"].as_str().unwrap(),
         month as u32,
     )?;
-    let id:i64=tx.query_row("INSERT INTO documents(document_no,source,original_filename,stored_path,mime_type,sha256_hash,supplier_name,invoice_no,invoice_date,amount_inc_vat,currency,status,document_type,delivery_description,sender_name,sender_address,sender_vat_cvr,recipient_name,recipient_address,recipient_vat_cvr,vat_amount,payment_details,payload_json,retain_until) VALUES(?1,'rentemester',?2,?3,?4,?5,?6,?1,?7,?8,'DKK','issued','credit_note',?9,?6,?10,?11,?12,?13,?14,?15,?16,?17,?18) RETURNING id",params![payload["creditNoteNumber"].as_str(),file.filename,file.path,file.mime,file.hash,payload["seller"]["name"].as_str(),payload["issueDate"].as_str(),wire(&gross)?.as_f64(),format!("Kreditnota for {}: {}",payload["originalInvoiceNumber"].as_str().unwrap(),payload["reason"].as_str().unwrap()),payload["seller"]["address"].as_str(),payload["seller"]["vatOrCvr"].as_str(),payload["buyer"]["name"].as_str(),payload["buyer"]["address"].as_str(),payload["buyer"]["vatOrCvr"].as_str(),payload["vatAmount"].as_f64(),payload["originalInvoiceNumber"].as_str(),serialized,retention],|r|r.get(0)).map_err(invalid)?;
+    let id:i64=tx.query_row("INSERT INTO documents(document_no,source,original_filename,stored_path,mime_type,sha256_hash,supplier_name,invoice_no,invoice_date,amount_inc_vat,currency,status,document_type,delivery_description,sender_name,sender_address,sender_vat_cvr,recipient_name,recipient_address,recipient_vat_cvr,vat_amount,payment_details,payload_json,retain_until) VALUES(?1,'rentemester',?2,?3,?4,?5,?6,?1,?7,?8,?19,'issued','credit_note',?9,?6,?10,?11,?12,?13,?14,?15,?16,?17,?18) RETURNING id",params![payload["creditNoteNumber"].as_str(),file.filename,file.path,file.mime,file.hash,payload["seller"]["name"].as_str(),payload["issueDate"].as_str(),payload["grossAmount"].as_f64(),format!("Kreditnota for {}: {}",payload["originalInvoiceNumber"].as_str().unwrap(),payload["reason"].as_str().unwrap()),payload["seller"]["address"].as_str(),payload["seller"]["vatOrCvr"].as_str(),payload["buyer"]["name"].as_str(),payload["buyer"]["address"].as_str(),payload["buyer"]["vatOrCvr"].as_str(),payload["vatAmount"].as_f64(),payload["originalInvoiceNumber"].as_str(),serialized,retention,payload["currency"].as_str()],|r|r.get(0)).map_err(invalid)?;
     let request = ManualJournal {
         transaction_date: Date::parse(payload["issueDate"].as_str().unwrap())?,
         text: format!(
@@ -590,3 +622,6 @@ mod tests {
 
 #[cfg(test)]
 mod tests75;
+
+#[cfg(test)]
+mod tests77;
