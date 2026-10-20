@@ -1,13 +1,13 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "Group108 native about/capability/workflow discovery across HTTP/CLI/MCP, actual described supplier payable recognition/payment/revocation/reopen accepted",
-  "code_revision": "d0e133d82a516f7bbc51bc56955cb63007afd6eb + Group108 transport integration in this commit",
-  "spec_revision": "sha256:0e4f90a240e4d07e778488af3e8af17a0b183d2a5c9a5a7b6b5048f65a45ebdd",
-  "state": "Group108 implements public inert about/search/workflow metadata on native HTTP, origin-bound client, CLI and MCP. Shared engine advertises one partial supplier-purchases/supplier-payable-handling journey with deterministic canonical hash, native identity and explicit unavailable TS rules/commit/time provenance, fullCoverage:false. MCP about derives228tools from actual registry; HTTP/CLI toolCountnull. Bounded AND search query200chars/cursor<=1e6/limit1..50, unknown404/invalid400; no-workspace workflowlivefalse. Connected live means only actual3HTTP registrations, not authorization; aliases resolved separately. Described register/pay inputs/prerequisites/roles/bank mapping, confirm and unsafe-read-back/no generic keyed retry/statusall readback align actual operations. Actual normal owner verification/MFA proof compares HTTP/CLI/MCP discovery, actual MCP/CLI aliases, invalidqueries/unknownpagination, anonymous realpayable401/403, unchanged canonical books; then uses returned MCP registerTool and CLI payCommand for scanned original125DKK=100expense+25VAT, duplicate bill/payment refusals, original creditor preservation, full canonical report parity, revocation while held scan prevents publication, restart exact paid/original with revoked service401/norescan. Owned synthetic profile absent. Evidence native-agent-payable108.json SHAb5afb09e7fab780d7eb3e161651372fc6e7da26c6696f574addd848d1bd1dded. Three engine tests/two MCP catalogue tests/one actual no-workspace serverprocess test/strict Clippy/selected TS+lint pass. Initial test used wrong relative webfixture, repaired own tempfixture and passes. Scoped independent readonly review found no blockers. Native contract notes distinguish legacy TS docs/confirm syntax; no fake full parity. Backup destination/health-audit interfaces and broader catalogue mappings, R53 releaseSBOM/supplychain/coverage/promotion/reproducibility, CIremote qualification, migration/recovery/platform/HTTPS/TSretirement and final installed GUI remain OPEN. User GUI deferral preserved, no unlock requested.",
+  "current_increment": "Group109 configured local/synced backup destination publication and exact signed readback through server/web/CLI/MCP with restart accepted",
+  "code_revision": "a307cc2893d46233c5ee9e795082a514fd43b036 + Group109 integration in this commit",
+  "spec_revision": "sha256:da730e2b1d632ad570e50773bdcdae0f738edd039d61f40cd0d4c37a2745a6f0",
+  "state": "Group109 completes configured local/synced-directory signed backup placement and exact readback through native server/shared web/origin-bound client/CLI/MCP. Operator config only, max16 strict IDs/private protected outside-workspace directories and signer required, no client path/archive/key authority; kind labels do not prove remote synchronization. Current human WorkspaceManage plus CompanyAdmin for every company including archived rechecked under held control transaction before filesystem effect. Exclusive private temp/fsync/no-replace publication, descriptor-pinned nofollow/single-link/owner/mode/ACL validation, signed exact inventory/workspace/hash reread; append-only audit derives current actor. Existing operation refuses overwrite; uncertain publication/audit retains landed bytes and requires same-ID GET reconciliation. UI persists pending ID keyed stable workspace before POST, submission fence, explicit readback after reload/lost reply, no automatic retry; missing audit blocks next backup. Actual normal owner/MFA proof passes web placement, HTTP/CLI/MCP whole response parity, independent signed plus SQLite verification, duplicate unchanged archive, tamper/anonymous refusal, unchanged journals/bank/trial balance, same pending ID after web reload and exact archive/audit after server restart. Own runtime/process cleanup true. Runtime2tests and application1 current-auth/revocation test, four UI tests24assertions including lost reply, strict seven-crate Clippy/all-targets, guarded build, web build and helper types/lint pass. Early own test fixtures violated protected directory/journalmode rules, repaired fixtures without weaker product guards; real browser found missing explicit selector accessible name, fixed before successful109c. No actual crash-in-publication, source-free restore of this landed file, remote cloud sync, legal attestation verification, freshness/lock, complete backup parity, clean packaged release or installed GUI claim. Google Drive API verification, declared external transfer, destination administration and status/health/audit remain required. Full mission/epic672 and all completion gates OPEN; user defers every remaining installed desktop GUI test to the very end, no unlock requests.",
   "issues_closed": [],
   "next": [
-    "Complete next missing native backup-health-audit user flow and explicit configured destination placement/verification contracts through server/CLI/MCP; reuse native portable backup/offline independent verification without pretending their boundaries equal old destinations. Extend discovery only to actual implemented complete workflows; retain fullCoverage:false until complete live baseline mapping across CLI/MCP/HTTP. Integrate Rust supplychain/SBOM/actual equivalent discovery into trusted candidate/promotion preserving exact identity/manifest/reviewer/workflow/attestation/digest-only gates. CI107 remote Ubuntu/amd64 still unverified. No TS retirement before full accepted replacement.",
+    "Complete remaining full native backup parity as whole user flows: Google Drive API exact-object remote verification and declared external transfers, destination administration, freshness/latest-backup status/health/audit and explicit opt-in booking lock. Reuse signed native artifact contracts, do not substitute generic gateway or cloud label for actual bytes. Extend discovery only to implemented complete workflows, fullCoverage:false until complete live baseline mapping. Then finish trusted Rust candidate/promotion/SBOM/supplychain/reproducibility and CIremote evidence, preserving existing release/reviewer/identity gates. No TS retirement before full accepted replacement.",
     "Installed desktop acceptance is explicitly deferred to the very end by the user. Preserve prepared Group100 profile; collect remaining native automation, closure, recovery and packaging checks for final installed acceptance without requesting screen unlock during development.",
     "J03/R50 and remaining R54 scope: only still-supported operation closure/recovery, nonempty scheduler handoff, hostile/older clone and post-cutover rollback requirements. Group99 qualifies managed installed J06 flow, not every R54 acceptance item.",
     "Signed distribution/update/cutover evidence must match actual full Rust replacement; retain all existing completion gates and TypeScript retirement gate.",
@@ -21,7 +21,12 @@
     ".gitattributes"
   ],
   "all_goal_requirements_complete": false,
-  "previous_verified_increment": "Group107 dedicated Rust server/web CI acceptance and reusable actual-package verification; native discovery/backup interfaces remain concrete parity blockers",
+  "previous_verified_increment": {
+    "current_increment": "Group108 native about/capability/workflow discovery across HTTP/CLI/MCP, actual described supplier payable recognition/payment/revocation/reopen accepted",
+    "code_revision": "d0e133d82a516f7bbc51bc56955cb63007afd6eb + Group108 transport integration in this commit",
+    "spec_revision": "sha256:0e4f90a240e4d07e778488af3e8af17a0b183d2a5c9a5a7b6b5048f65a45ebdd",
+    "state": "Group108 implements public inert about/search/workflow metadata on native HTTP, origin-bound client, CLI and MCP. Shared engine advertises one partial supplier-purchases/supplier-payable-handling journey with deterministic canonical hash, native identity and explicit unavailable TS rules/commit/time provenance, fullCoverage:false. MCP about derives228tools from actual registry; HTTP/CLI toolCountnull. Bounded AND search query200chars/cursor<=1e6/limit1..50, unknown404/invalid400; no-workspace workflowlivefalse. Connected live means only actual3HTTP registrations, not authorization; aliases resolved separately. Described register/pay inputs/prerequisites/roles/bank mapping, confirm and unsafe-read-back/no generic keyed retry/statusall readback align actual operations. Actual normal owner verification/MFA proof compares HTTP/CLI/MCP discovery, actual MCP/CLI aliases, invalidqueries/unknownpagination, anonymous realpayable401/403, unchanged canonical books; then uses returned MCP registerTool and CLI payCommand for scanned original125DKK=100expense+25VAT, duplicate bill/payment refusals, original creditor preservation, full canonical report parity, revocation while held scan prevents publication, restart exact paid/original with revoked service401/norescan. Owned synthetic profile absent. Evidence native-agent-payable108.json SHAb5afb09e7fab780d7eb3e161651372fc6e7da26c6696f574addd848d1bd1dded. Three engine tests/two MCP catalogue tests/one actual no-workspace serverprocess test/strict Clippy/selected TS+lint pass. Initial test used wrong relative webfixture, repaired own tempfixture and passes. Scoped independent readonly review found no blockers. Native contract notes distinguish legacy TS docs/confirm syntax; no fake full parity. Backup destination/health-audit interfaces and broader catalogue mappings, R53 releaseSBOM/supplychain/coverage/promotion/reproducibility, CIremote qualification, migration/recovery/platform/HTTPS/TSretirement and final installed GUI remain OPEN. User GUI deferral preserved, no unlock requested."
+  },
   "evidence": {
     "combined_browser_log": "/tmp/rm-platform5-combined.log",
     "combined_browser_exit": 0,
@@ -3998,6 +4003,45 @@
       "helperTypes": "/tmp/rm108-helper-types.log",
       "helperLint": "/tmp/rm108-helper-lint.log",
       "scope": "Finite supplier-payable discovery and described execution; not full coverage/backupdestination/CI-release/GUI/TSretirement"
+    },
+    "native_backup_destinations109": {
+      "path": "/tmp/rentemester-rust-reports/native-backup-destinations109c.json",
+      "sha256": "6da2c4d095a00db756e8c4604ee5f8c9279832c311bb5da1efcf9458228166ad",
+      "status": "passed",
+      "source_revision": "a307cc2893d46233c5ee9e795082a514fd43b036 plus recorded109 working code",
+      "archive_sha256": "1b6b169622aad0ad7384ec1bf46224fa8d3a83779b4ecb9e4f4d9ca7cec2cc05",
+      "archive_bytes": 2175411,
+      "scope": [
+        "normal owner/MFA web signed local-directory placement",
+        "HTTP/CLI/MCP exact readback and destination list parity",
+        "independent artifact signature/inventory/SQLite verification",
+        "duplicate refused and exact bytes unchanged",
+        "tampered bytes and anonymous calls refused",
+        "web reload retains same stable workspace operation ID",
+        "server restart exact same archive and audit",
+        "unchanged accounting; owned process/profile cleanup"
+      ],
+      "tests": {
+        "runtime": "/tmp/rm109-runtime-tests-fixed.log:2pass",
+        "application": "/tmp/rm109-authority-tests-final.log:1pass current human all-company authority and revoked session refusal",
+        "web": "/tmp/rm109-web-tests-final.log:4pass/24assertions including lost-reply manual readback",
+        "clippy": "/tmp/rm109-clippy.log:seven crates all-targets strict pass",
+        "build": "/tmp/rm109-build.log:server CLI MCP pass",
+        "web_build": "/tmp/rm109-web-build-final.log:design check types build pass",
+        "helper_types": "/tmp/rm109-helper-types-final.log:pass",
+        "lint": "/tmp/rm109-lint-final.log:pass"
+      },
+      "diagnosed_failures": [
+        "109/109b browser selector accessibility; explicit aria-label fixed before109c",
+        "runtime fixtures moved out of insecure Projects ancestor; application fixture uses ordinary file SQLite journalmode and exact invalid_credentials expectation"
+      ],
+      "limits": [
+        "local/synced directory only, cloudSyncVerified false",
+        "human attestation not independently verified",
+        "freshnessEvaluated and automaticBackupLock false",
+        "no actual publication crash test or current archive source-free restore",
+        "not installed desktop or rebuilt Linux package acceptance"
+      ]
     }
   },
   "verified_history": [
@@ -5439,6 +5483,12 @@
       "code_revision": "7ef074ce80727318350027919856ab1aef3ee103",
       "spec_revision": "sha256:31c7e0aff94dba06b09a399feed327eda387747a111875e387ebf3ae77791b06",
       "state": "Group107 adds separate read-only-permission GitHub Rust acceptance workflow: exact checked source/epoch/version/clean-tracked preflight, frozen dependencies, headless Chromium, seven Python producer/archive tests + release tests, pinned Dockerfile.rust with shared guarded Cargo cache, actual immutable package verification then normal owner/MFA/accounting/report/original/restart/replay container runner. No registry publishing/promotion and no waived legacy gates. Reusable verifier reads image by config digest, validates exact runtime bytes/modes and independent entrypoint hash, compares actual rerun server/MCP metadata with packaged catalogue, verifies labels/target/expected source/version; archive paths/links/duplicates/mutable modes refuse without extraction. Actual unchanged106arm64 image passes38files/225tools and exact identity SHA814151f0619f565f9c1db41d44ec888aba2ff39a7643dace221825396af96855. Actual require-clean refuses dirty image before writing accepted evidence. Seven unit tests and YAML parse pass; Python compiles. GitHub Ubuntu/amd64 workflow not pushed/executed/qualified, no clean release or new accounting proof claimed; accepted106accounting remains valid. Bounded native parity review found missing meta_about/agent_capability_search/agent_workflow_describe and HTTP capability/workflow lookups plus legacy backup health/audit/status/destination placement/remote verification/restore interfaces. Native workspace backup/offline restore are different boundaries, not evidence of complete destination workflow. Next implement actual native discovery journey and explicit mappings; never replace full coverage gate with counts or skip it. Full R53 SBOM/supplychain/trusted review/attestation/promotion/reproducibility, remaining migration/parity/platform/HTTPS/recovery/TSretirement and final GUI remain open. User defers installed GUI to very end; no unlock requests."
+    },
+    {
+      "current_increment": "Group108 native about/capability/workflow discovery across HTTP/CLI/MCP, actual described supplier payable recognition/payment/revocation/reopen accepted",
+      "code_revision": "d0e133d82a516f7bbc51bc56955cb63007afd6eb + Group108 transport integration in this commit",
+      "spec_revision": "sha256:0e4f90a240e4d07e778488af3e8af17a0b183d2a5c9a5a7b6b5048f65a45ebdd",
+      "state": "Group108 implements public inert about/search/workflow metadata on native HTTP, origin-bound client, CLI and MCP. Shared engine advertises one partial supplier-purchases/supplier-payable-handling journey with deterministic canonical hash, native identity and explicit unavailable TS rules/commit/time provenance, fullCoverage:false. MCP about derives228tools from actual registry; HTTP/CLI toolCountnull. Bounded AND search query200chars/cursor<=1e6/limit1..50, unknown404/invalid400; no-workspace workflowlivefalse. Connected live means only actual3HTTP registrations, not authorization; aliases resolved separately. Described register/pay inputs/prerequisites/roles/bank mapping, confirm and unsafe-read-back/no generic keyed retry/statusall readback align actual operations. Actual normal owner verification/MFA proof compares HTTP/CLI/MCP discovery, actual MCP/CLI aliases, invalidqueries/unknownpagination, anonymous realpayable401/403, unchanged canonical books; then uses returned MCP registerTool and CLI payCommand for scanned original125DKK=100expense+25VAT, duplicate bill/payment refusals, original creditor preservation, full canonical report parity, revocation while held scan prevents publication, restart exact paid/original with revoked service401/norescan. Owned synthetic profile absent. Evidence native-agent-payable108.json SHAb5afb09e7fab780d7eb3e161651372fc6e7da26c6696f574addd848d1bd1dded. Three engine tests/two MCP catalogue tests/one actual no-workspace serverprocess test/strict Clippy/selected TS+lint pass. Initial test used wrong relative webfixture, repaired own tempfixture and passes. Scoped independent readonly review found no blockers. Native contract notes distinguish legacy TS docs/confirm syntax; no fake full parity. Backup destination/health-audit interfaces and broader catalogue mappings, R53 releaseSBOM/supplychain/coverage/promotion/reproducibility, CIremote qualification, migration/recovery/platform/HTTPS/TSretirement and final installed GUI remain OPEN. User GUI deferral preserved, no unlock requested."
     }
   ]
 }

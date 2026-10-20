@@ -7,6 +7,11 @@ starter ikke TypeScript-backenden og sender ikke forespørgsler videre til den.
 
 ## Aktuel Rust-levering
 
+Konfigureret backupplacering og genlæsning af samme signerede arkiv fungerer nu
+gennem server, web, CLI og MCP med genstart. Se [opsætning og afgrænsning](rust-backup-destinations.md).
+Det er en lokal/synkroniseret mappekopi; ekstern cloudverifikation og friskhed
+er fortsat åbne dele af backup-pariteten.
+
 Den fælles bilagsindbakke kører nu gennem Rust-server, web, CLI og MCP.
 Originalen kan visiteres til en eksplicit virksomhed og afleveres til dens
 bilagsregister uden en bogføringspost. Faktiske web- og klientforløb med

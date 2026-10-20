@@ -1,3 +1,4 @@
+import { backupDestinationProof } from "./check-native-backup-destinations";
 import { request, type APIRequestContext, type Page } from "@playwright/test";
 import { spawnSync } from "node:child_process";
 import { createHash, randomUUID } from "node:crypto";
@@ -9,6 +10,8 @@ type Reply = { status: number; body: any };
 /** Owned synthetic required-scanner purchase proof. Root controls provider hold/restart/login. */
 export async function createServicePurchaseProof(ownerPage: Page, base: string, work: string) {
   const prefix = "/api/companies/synthetic/";
+  const backupProof = process.env.RM_NATIVE_BACKUP_DESTINATION_PROOF === "1" ? backupDestinationProof(ownerPage,base,work) : null;
+  let backupResult: unknown;
   const today = new Date().toLocaleDateString("sv-SE", { timeZone: "Europe/Copenhagen" });
   const keyFile = join(work, "service-purchase.key");
   const account = { expense: "6101", vat: "4101", creditor: "3101", replacement: "3102", bank: "1701" };
@@ -208,7 +211,8 @@ export async function createServicePurchaseProof(ownerPage: Page, base: string, 
     const duplicatePayment = await service().post(prefix + `payables/${payableId}/pay`, { data: paymentBody });
     need(duplicatePayment.status() === 422 && (await duplicatePayment.json()).business === "not_committed", "Duplicate payment is a definite business refusal");
     await unchanged(stable); await parity(stable);
-    return { discovery, serviceAccountId: serviceId, credentialId, documentId, payableId, requiredScanCliIngest: true, mcpOriginalAndList: true,
+    if (backupProof) backupResult = await backupProof.run();
+    return { backupDestinations: backupResult, discovery, serviceAccountId: serviceId, credentialId, documentId, payableId, requiredScanCliIngest: true, mcpOriginalAndList: true,
       mcpBillRecognition: true, cliBankPayment: true, originalCreditorPreserved: true, duplicateBillAndPaymentRefused: true,
       canonicalClientParity: true, documentSource: await sourceBytes(), bankSourceBase64: bytes.toString("base64"), bankSourceSha256: hash(bytes), canonical: stable };
   }
@@ -240,7 +244,8 @@ export async function createServicePurchaseProof(ownerPage: Page, base: string, 
     await unchanged(stable); const source = await sourceBytes();
     need((await service().get(prefix + "documents")).status() === 401, "Revoked service still refused after restart");
     client("cli", "payables", undefined, undefined, false);
-    return { exactPaidStateAfterRestart: true, exactOriginalAfterRestart: source, revokedService401: true, noRescanRequested: true, canonical: stable };
+    const backupReopen = backupProof ? await backupProof.reopen() : undefined;
+    return { backupDestinations: backupReopen, exactPaidStateAfterRestart: true, exactOriginalAfterRestart: source, revokedService401: true, noRescanRequested: true, canonical: stable };
   }
   return { run, holdBegin, revoke, holdFinish, reopen };
 }

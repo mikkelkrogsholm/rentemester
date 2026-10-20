@@ -403,3 +403,10 @@ mod companies;
 mod portable_restore;
 
 mod legacy_adoption;
+
+pub(super) fn backup_directory(path: &Path, uid: u32) -> Result<File, Error> {
+    walk(path, uid, true).map(|(_, directory)| directory)
+}
+pub(super) fn backup_file_acl(file: &File) -> Result<(), Error> {
+    acl_walk_fd(file, false)
+}

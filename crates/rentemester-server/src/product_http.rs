@@ -41,6 +41,7 @@ mod obligations;
 mod payables;
 mod periods;
 mod portable_backup;
+mod backup_destinations;
 mod workspace_transfer;
 mod restored_receipts;
 mod recurring_invoices;
@@ -91,6 +92,9 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
         pdf_workers: Arc::new(Semaphore::new(4)),
     };
     Router::new()
+        .route("/api/workspace/backup-destinations",get(backup_destinations::handle))
+        .route("/api/workspace/backup-destinations/{id}/place",post(backup_destinations::handle))
+        .route("/api/workspace/backup-destinations/{id}/placements/{operation}",get(backup_destinations::handle))
         .route("/api/companies/{slug}/vies/validate",post(eu_sales::handle))
         .route("/api/companies/{slug}/eu-sales",get(eu_sales::handle))
         .route("/api/companies/{slug}/oss-report",get(oss_report::handle))

@@ -41,6 +41,8 @@ struct Config {
     #[serde(default)]
     backup_signing_key_file: Option<PathBuf>,
     #[serde(default)]
+    backup_destinations: Vec<rentemester_runtime::backup_destination::Config>,
+    #[serde(default)]
     transfer_trusted_key_file: Option<PathBuf>,
     #[serde(default)]
     restore_actor: Option<String>,
@@ -99,6 +101,8 @@ pub struct Backend {
     pub(crate) setup: Option<crate::setup_http::Installer>,
     pub(crate) setup_pending: std::sync::atomic::AtomicBool,
     pub(crate) backup_signer: Option<rentemester_runtime::backup_artifact::SigningKey>,
+    pub(crate) backup_destinations: Vec<rentemester_runtime::backup_destination::Config>,
+    pub(crate) backup_destination_uid: u32,
     pub(crate) transfer_trusted_key: Option<rentemester_runtime::backup_artifact::TrustedPublicKey>,
     pub(crate) imap_transport: rentemester_runtime::imap::OperatorConfig,
     pub(crate) mail_executor: Option<Arc<rentemester_runtime::service_key::ServiceKey>>,
@@ -237,6 +241,12 @@ impl Backend {
             .as_ref()
             .map(|p| rentemester_runtime::backup_keys::signing_key(p, &config.root))
             .transpose()?;
+        if config.backup_destinations.len()>16 || !config.backup_destinations.is_empty() && backup_signer.is_none() { return Err("backup destinations require a signer and at most16entries".into()); }
+        let mut destination_ids=std::collections::BTreeSet::new();
+        for destination in &config.backup_destinations {
+            if !destination_ids.insert(&destination.id) { return Err("duplicate backup destination".into()); }
+            destination.validate(&config.root,config.broker_uid)?;
+        }
         let transfer_trusted_key = config.transfer_trusted_key_file.as_deref()
             .map(rentemester_runtime::backup_keys::trusted_key).transpose()?;
         let mut owner = if let Some(request) = restore {
@@ -378,6 +388,8 @@ impl Backend {
             cookies,
             keys,
             backup_signer,
+            backup_destinations: config.backup_destinations.clone(),
+            backup_destination_uid: config.broker_uid,
             transfer_trusted_key,
             scheduled_executor: None,
             mail_executor: None,

@@ -7,6 +7,7 @@ pub mod document_pdf;
 pub mod auth;
 pub mod auth_mail;
 pub mod backup_artifact;
+pub mod backup_destination;
 pub mod legacy_adoption;
 pub mod email_token;
 pub mod mfa;

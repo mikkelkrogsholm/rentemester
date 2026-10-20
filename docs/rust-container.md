@@ -180,6 +180,9 @@ rapporter og browserartefakter gemmes særskilt.
 
 Dette CI-job publicerer ikke et image og ændrer ikke produktionspromotionen.
 Den første fjernkørsel på Ubuntu/amd64 er endnu ikke verificeret; lokale arm64-
-pakkekontroller beviser ikke dette. Det native discovery-katalog dækker foreløbig leverandørkøb. De tidligere
-interfaces for backupdestination, placering og verifikation mangler stadig. Katalogets værktøjsantal må ikke bruges som grønt
+pakkekontroller beviser ikke dette. Det native discovery-katalog dækker foreløbig leverandørkøb. Konfigureret lokal/synkroniseret backupplacering og eksakt genlæsning er nu
+implementeret og accepteret gennem web/CLI/MCP med genstart på macOS; se
+[backupdestinationer](rust-backup-destinations.md). Containeren kræver en særskilt
+beskyttet destinationsmount. Ekstern cloudverifikation, friskhed og fuld
+backupstatus/-audit mangler stadig. Katalogets værktøjsantal må ikke bruges som grønt
 paritetsbevis eller som erstatning for releasegatens dækningskrav.

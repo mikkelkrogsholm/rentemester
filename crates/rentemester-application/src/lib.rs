@@ -88,6 +88,7 @@ pub mod saft;
 pub mod reminder_claims;
 
 pub mod portable_backup;
+pub mod backup_destination;
 
 pub mod workspace_inbox;
 

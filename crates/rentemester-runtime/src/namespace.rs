@@ -174,3 +174,12 @@ mod tests {
         assert!(!path.exists());
     }
 }
+
+#[cfg(any(target_os = "linux", target_os = "macos"))]
+pub(crate) fn backup_directory(path: &std::path::Path, uid: u32) -> Result<std::fs::File, NamespaceError> {
+    linux::backup_directory(path, uid)
+}
+#[cfg(any(target_os = "linux", target_os = "macos"))]
+pub(crate) fn backup_file_acl(file: &std::fs::File) -> Result<(), NamespaceError> {
+    linux::backup_file_acl(file)
+}

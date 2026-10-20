@@ -123,8 +123,11 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     for option in ['server-binary', 'web-dir', 'cli-binary', 'mcp-binary', 'evidence']:
         parser.add_argument('--' + option, required=True, type=Path)
+    parser.add_argument('--backup-destinations', action='store_true', help='Add normal web placement and CLI/MCP readback of a signed backup to the service-purchase proof')
     parser.add_argument('--service-purchase', action='store_true', help='Focused service scanned-original→payable→bank payment/revocation/restart proof')
     args = parser.parse_args()
+    if args.backup_destinations and not args.service_purchase:
+        parser.error('--backup-destinations requires --service-purchase')
     if args.evidence.exists() or args.evidence.with_suffix('.png').exists():
         parser.error('New evidence and screenshot paths required')
     if os.uname().sysname != 'Darwin' or os.getuid() == 0 or os.getuid() != os.geteuid():
@@ -345,6 +348,8 @@ def main():
                 raise RuntimeError('Controller response envelope or proof file invalid') from None
             if not value.get('ok'):
                 report['browserFailure'] = value
+                if args.backup_destinations and (work / 'backup-diagnostic.json').is_file():
+                    report['backupDiagnostic'] = json.loads((work / 'backup-diagnostic.json').read_text())
                 save()
                 raise RuntimeError('Browser assertion failed at ' + value.get('step', action))
             with gateway_lock:
@@ -479,13 +484,16 @@ def main():
             subprocess.run(['/opt/homebrew/bin/bun', '-e', "const c=require('node:crypto'),f=require('node:fs'),k=c.generateKeyPairSync('ed25519'),s=k.privateKey.export({format:'der',type:'pkcs8'}).subarray(-32),p=k.publicKey.export({format:'der',type:'spki'}).subarray(-32);f.writeFileSync(process.argv[1],Buffer.concat([Buffer.from('3051020101300506032b657004220420','hex'),s,Buffer.from('812100','hex'),p]),{mode:0o600});f.writeFileSync(process.argv[2],p,{mode:0o600});", str(work / 'signing.der'), str(work / 'trusted.pub')], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             key = lambda: base64.urlsafe_b64encode(secrets.token_bytes(32)).decode().rstrip('=')
             config = {'runtimeProfile': 'local-user-macos', 'root': str(work / 'workspace'), 'brokerUid': os.getuid(), 'workspace': 'synthetic-native-document-scanner', 'companySlug': 'synthetic', 'companyName': 'Synthetic Document Scanner Company', 'cookieKey': key(), 'mfaKey': key(), 'operatorActors': ['system:synthetic-installer'], 'accounts': [], 'firstOwner': {'actor': 'system:synthetic-installer', 'email': 'owner@example.invalid', 'name': 'Synthetic Owner', 'password': 'synthetic-owner-password-123'}, 'backupSigningKeyFile': str(work / 'signing.der'), 'authMail': {'endpoint': f'https://127.0.0.1:{mail_port}/mail', 'bearerToken': bearer, 'from': 'auth@example.invalid', 'idempotencySecret': secrets.token_urlsafe(32), 'trustedCaFile': str(ca)}}
+            if args.backup_destinations:
+                (work / 'offsite').mkdir(mode=0o700)
+                config['backupDestinations']=[{'id':'synthetic-destination','label':'Synthetic folder','kind':'local-folder','directory':str(work/'offsite'),'nonRelatedParty':False,'inEeaOrEu':False,'country':'DK','meetsRecognisedStandards':False,'attestedBy':'Synthetic operator','attestedAt':'2026-01-01T00:00:00Z'}]
             if not args.service_purchase:
                 invalid_config_checks()
             write_config()
             start(create=True)
             script = work / 'browser.mjs'
             script.write_text(BROWSER)
-            controller = subprocess.Popen(['/opt/homebrew/bin/bun', str(script)], cwd=REPO, env={**os.environ, 'RM_SERVICE_PURCHASE_HELPER': str(REPO / 'scripts/rust/check-native-service-purchase.ts'), 'RM_SCANNER_BASE': origin, 'RM_SCANNER_WORK': str(work), 'RM_SCANNER_SCREENSHOT': str(args.evidence.with_suffix('.png')), 'RM_SCANNER_PLAYWRIGHT': str((REPO / 'node_modules/@playwright/test/index.mjs').resolve(strict=True))}, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True, bufsize=1, start_new_session=True)
+            controller = subprocess.Popen(['/opt/homebrew/bin/bun', str(script)], cwd=REPO, env={**os.environ, 'RM_NATIVE_BACKUP_DESTINATION_PROOF':'1' if args.backup_destinations else '0', 'RM_SERVICE_PURCHASE_HELPER': str(REPO / 'scripts/rust/check-native-service-purchase.ts'), 'RM_SCANNER_BASE': origin, 'RM_SCANNER_WORK': str(work), 'RM_SCANNER_SCREENSHOT': str(args.evidence.with_suffix('.png')), 'RM_SCANNER_PLAYWRIGHT': str((REPO / 'node_modules/@playwright/test/index.mjs').resolve(strict=True))}, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True, bufsize=1, start_new_session=True)
             report['browserControllerPid'] = controller.pid
             phase('authenticate')
             if args.service_purchase:
@@ -534,7 +542,7 @@ def main():
                     if errors or len(provider_requests) != 2 or sorted(r['kind'] for r in provider_requests) != ['cli','held']:
                         raise RuntimeError('Service purchase scanner calls differ or private provider failed')
                     report['provider'] = {'verifiedTls':True,'requests':list(provider_requests),'restartNoRescan':True}
-                report.update(status='passed',currentAction='complete',servicePurchaseQualified=True,currentRevocationDuringScanQualified=True)
+                report.update(status='passed',currentAction='complete',servicePurchaseQualified=True,currentRevocationDuringScanQualified=True,backupDestinationsQualified=args.backup_destinations)
                 save()
                 print('PASS: service scanned original→payable→bank payment, revoked in-flight upload, exact restart/terminal counts; '+str(args.evidence))
                 return

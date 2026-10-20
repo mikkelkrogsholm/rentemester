@@ -319,6 +319,7 @@ pub async fn call(api: &ApiClient, name: &str, args: Value) -> Result<Value, &'s
         "documents_extract_invoice" | "documents_invoice_extraction" => crate::invoice_extraction::call(api,name,args).await?,
         "ingest_document" | "document_original" => crate::documents::call(api,name,args).await?,
         name if crate::reviewed_bookkeeping::accepts(name) => crate::reviewed_bookkeeping::call(api,name,args).await?,
+        name @ ("backup_destinations"|"place_backup"|"verify_backup_placement") => crate::portable_backup::destination_call(api,name,args).await?,
         "workspace_backup" => crate::portable_backup::call(api,args).await?,
         "saft_export" => crate::saft::call(api,args).await?,
         "annual_report" => crate::annual_reports::call(api, args).await?,

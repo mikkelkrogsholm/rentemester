@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
 import { downloadNativeBackup } from "../lib/api/native-backup";
 import { useMutationOutcome } from "../lib/useMutationOutcome";
+import { NativeBackupDestinations } from "./NativeBackupDestinations";
 import { Button } from "./ui";
 
 export function NativeBackupCard() {
@@ -40,5 +41,6 @@ export function NativeBackupCard() {
     <Button type="button" disabled={!confirmed || busy || outcome.blocked} onClick={() => void download()}>{busy ? "Danner backup…" : "Dan og download backup"}</Button>
     {error && <p role="alert">{error}</p>}
     {message && <p role="status">{message}</p>}
+    <NativeBackupDestinations />
   </section>;
 }
