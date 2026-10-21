@@ -13,7 +13,10 @@ export async function createBackupLockProof(page: Page, base: string, work: stri
   const today = new Date().toLocaleDateString("sv-SE", { timeZone: "Europe/Copenhagen" });
   const historical = `${today.slice(0, 4)}-01-02`;
   let key = "", serviceId = "", credentialId = "", service: APIRequestContext | undefined, stable: any, posting: any, accepted: any;
-  let started = false, complete = false;
+  let started = false, complete = false, stableMetadata: any, acceptedKnowledge: any;
+  const knowledgeProposal = { predicate: "operating_status", value: "Synthetic backup lock metadata accepted once", source: { kind: "user", ref: "synthetic-backup-lock-knowledge-112" }, validFrom: today, certainty: "confirmed", confirm: true };
+  const corporateOriginal = Buffer.from("Synthetic backup lock corporate source 112\nNo personal or production data.\n");
+  const corporateIngest = { recordId: "synthetic-backup-lock-corporate-112", type: "articles", bytesBase64: corporateOriginal.toString("base64"), filename: "synthetic-backup-lock-corporate-112.txt", source: "Synthetic explicitly reviewed corporate source", receivedAt: today, uploader: "Synthetic Owner", sensitivity: "normal", links: [{ type: "company", id: "synthetic" }], confirm: true };
   function sessionFile(fresh: boolean) {
     return page.context().cookies(base).then(cookies => {
       need(cookies.some(cookie => cookie.httpOnly), "Normal MFA HttpOnly session required");
@@ -33,12 +36,18 @@ export async function createBackupLockProof(page: Page, base: string, work: stri
   }
   function client(kind: "cli" | "mcp", command: string, body?: unknown, principal: "human" | "service" = "human", success = true): any {
     const common = ["--server", base, "--allow-loopback-http", principal === "human" ? "--cookie-file" : "--service-key-file", principal === "human" ? cookieFile : keyFile];
+    const envelope = ["post_journal", "reverse_journal"].includes(command);
+    const confirmed = body !== undefined && !envelope;
+    const selectors = command === "company_knowledge" ? { asOf: today, includeProposed: true }
+      : command === "corporate_records" ? { cursor: 0, limit: 100 } : {};
+    const selectorFlags = command === "company_knowledge" ? ["--as-of", today, "--include-proposed", "true"]
+      : command === "corporate_records" ? ["--cursor", "0", "--limit", "100"] : [];
     const input = kind === "cli" ? body === undefined ? "" : JSON.stringify(body) : [
       { jsonrpc: "2.0", id: 1, method: "initialize", params: { protocolVersion: "2025-11-25", capabilities: {}, clientInfo: { name: "synthetic-backup-lock", version: "1" } } },
       { jsonrpc: "2.0", method: "notifications/initialized" },
-      { jsonrpc: "2.0", id: 2, method: "tools/call", params: { name: command, arguments: { company: "synthetic", ...(body === undefined ? {} : command === "backup_lock" ? { body: JSON.stringify(body), confirm: true } : { envelope: JSON.stringify(body) }) } } },
+      { jsonrpc: "2.0", id: 2, method: "tools/call", params: { name: command, arguments: { company: "synthetic", ...selectors, ...(body === undefined ? {} : envelope ? { envelope: JSON.stringify(body) } : { body: JSON.stringify(body), confirm: true }) } } },
     ].map(value => JSON.stringify(value)).join("\n") + "\n";
-    const argv = kind === "cli" ? ["remote", command.replaceAll("_", "-"), ...common, "--company", "synthetic", ...(command === "backup_lock" ? ["--confirm"] : [])] : common;
+    const argv = kind === "cli" ? ["remote", command.replaceAll("_", "-"), ...common, "--company", "synthetic", ...selectorFlags, ...(confirmed ? ["--confirm"] : [])] : common;
     const result = spawnSync(join(work, kind === "cli" ? "rentemester-rust" : "rentemester-mcp"), argv, { input, encoding: "utf8", timeout: 45000, maxBuffer: 16 * 1024 * 1024 });
     need(!result.error && (!key || !result.stdout.includes(key) && !result.stderr.includes(key)), `${kind} process/credential safety`);
     if (kind === "cli") {
@@ -58,6 +67,39 @@ export async function createBackupLockProof(page: Page, base: string, work: stri
       trialBalance: (await human("trial-balance")).trialBalance, balance: (await human("balance")).balance };
   }
   async function unchanged(expected: any) { need(isDeepStrictEqual(await books(), expected), "Lock refusal changed canonical financial state"); }
+  async function metadata() {
+    return { knowledge: await human(`knowledge?asOf=${today}&includeProposed=true`), corporateRecords: await human("corporate-records?cursor=0&limit=100") };
+  }
+  async function unchangedMetadata(expected: any, financial: any) {
+    need(isDeepStrictEqual(await metadata(), expected), "Refused metadata action changed canonical knowledge/history/corporate records");
+    await unchanged(financial);
+  }
+  async function metadataParity(expected: any) {
+    for (const kind of ["cli", "mcp"] as const) {
+      need(isDeepStrictEqual(client(kind, "company_knowledge"), expected.knowledge), `${kind} canonical knowledge context/history differs`);
+      need(isDeepStrictEqual(client(kind, "corporate_records"), expected.corporateRecords), `${kind} canonical corporate list differs`);
+    }
+  }
+  async function refusedMetadata(expected: any, financial: any) {
+    const outcomes: Record<string, unknown> = {};
+    for (const [resource, command, input] of [
+      ["knowledge/propose", "propose_company_knowledge", knowledgeProposal],
+      ["corporate-records", "ingest_corporate_record", corporateIngest],
+    ] as const) {
+      const response = await page.request.post(base + prefix + resource, { headers: { origin: base }, data: input });
+      const body = await response.json();
+      need(!response.ok() && body.ok === false && body.code === "backup_overdue", `Owner ${resource} must reach current backup lock`);
+      await unchangedMetadata(expected, financial);
+      const clients: Record<string, unknown> = {};
+      for (const kind of ["cli", "mcp"] as const) {
+        clients[kind] = client(kind, command, input, "human", false);
+        await unchangedMetadata(expected, financial);
+      }
+      outcomes[command] = { http: { status: response.status(), code: body.code }, clients };
+    }
+    await metadataParity(expected);
+    return outcomes;
+  }
   function normalizedStatus(value: any) {
     const copy = structuredClone(value);
     if (!copy.backup.latestBackupId && copy.backup.backupDue) {
@@ -94,6 +136,8 @@ export async function createBackupLockProof(page: Page, base: string, work: stri
     const imported = (await human("bank/import", { csvBase64: bytes.toString("base64"), account: "synthetic-backup-lock", confirm: true })).import;
     need(imported.imported === 1 && imported.sourceFileHash === hash(bytes) && imported.bankAccountId === bankAccount.id, "One exact historical bank row establishes activity without SQL/time seeds");
     const baseline = await books(); need(baseline.journal.entries.length === 0 && baseline.bank.transactions.length === 1, "Historical import must not post");
+    const metadataBaseline = await metadata();
+    need(metadataBaseline.knowledge.history.length === 0 && metadataBaseline.corporateRecords.rows.length === 0, "Fresh synthetic metadata inventory required");
     posting = { confirm: true, input: { format: "rentemester-manual-journal-post/1", expectedRuleVersion: baseline.journal.nativePosting.ruleVersion, idempotencyKey: "synthetic-backup-lock-one-post-111", request: {
       transactionDate: today, text: "Synthetic backup lock accepted once", currency: "DKK", lines: [
         { accountNo: "1711", debitAmount: "7.25", creditAmount: "0.00" }, { accountNo: "8711", debitAmount: "0.00", creditAmount: "7.25" },
@@ -124,6 +168,7 @@ export async function createBackupLockProof(page: Page, base: string, work: stri
       await unchanged(baseline);
     }
     const refusals = { human: await refused("human", baseline), service: await refused("service", baseline) };
+    const metadataRefusals = await refusedMetadata(metadataBaseline, baseline);
     const serviceLockedRead = await service.get(base + prefix + "journal");
     need(serviceLockedRead.ok() && isDeepStrictEqual((await serviceLockedRead.json()).journal, baseline.journal), "Locked service accounting reads remain available");
     for (const kind of ["cli", "mcp"] as const) need(isDeepStrictEqual(client(kind, "journal", undefined, "service").journal, baseline.journal), "Locked service client read parity");
@@ -152,6 +197,15 @@ export async function createBackupLockProof(page: Page, base: string, work: stri
     } finally { writeFileSync(retained, artifact, { flag: "r+" }); }
     need(hash(readFileSync(retained)) === archiveSha256, "Synthetic integrity probe restores exact original bytes");
     await status(false); await unchanged(baseline);
+    acceptedKnowledge = await human("knowledge/propose", knowledgeProposal);
+    need(acceptedKnowledge.ok === true && typeof acceptedKnowledge.assertion?.assertionId === "string" && acceptedKnowledge.assertion.reviewState === "proposed", "Previously refused valid metadata proposal succeeds after qualified backup");
+    stableMetadata = await metadata();
+    need(stableMetadata.knowledge.history.length === 1
+      && stableMetadata.knowledge.history[0].assertionId === acceptedKnowledge.assertion.assertionId
+      && stableMetadata.knowledge.history[0].value === knowledgeProposal.value
+      && stableMetadata.knowledge.history[0].reviewState === "proposed"
+      && isDeepStrictEqual(stableMetadata.corporateRecords, metadataBaseline.corporateRecords), "One exact accepted knowledge proposal and zero refused corporate records");
+    await unchanged(baseline); await metadataParity(stableMetadata);
     accepted = await human("manual-journal", posting);
     need(accepted.entryId > 0 && typeof accepted.entryHash === "string" && accepted.receipt?.replayed === false, "One exact current-key manual journal receipt");
     stable = await books();
@@ -168,7 +222,9 @@ export async function createBackupLockProof(page: Page, base: string, work: stri
       artifact: { sha256: archiveSha256, bytes: artifact.length, independentlyVerified: true, uiDownloadComplete: true },
       missingCurrentFileLocked: missingStatus.lock.locked, tamperedCurrentFileLocked: tamperedStatus.lock.locked, lockedServiceReadsQualified: true,
       exactArtifactRestored: true, accepted, canonical: stable, financialCoreAndServiceQualified: true, cliMcpPolicyWritesQualified: true,
-      directControlMetadataGateQualified: false, smtpDispatchGateQualified: false, keyRotationQualified: false, installedNativeQualified: false, offsiteQualified: false };
+      directControlMetadataGateQualified: true, directControlMetadataScope: ["company-knowledge", "corporate-record-ingest"],
+      metadataRefusals, acceptedKnowledge, canonicalMetadata: stableMetadata, multiCompanyMetadataGateQualified: false,
+      partiesGateQualified: false, mailIntakeConfigurationGateQualified: false, smtpDispatchGateQualified: false, keyRotationQualified: false, installedNativeQualified: false, offsiteQualified: false };
   }
   async function reopen() {
     need(complete && stable, "Completed whole backup lock flow required before restart proof");
@@ -180,8 +236,10 @@ export async function createBackupLockProof(page: Page, base: string, work: stri
       const value = client(kind, "post_journal", posting); need(value.receipt?.replayed && value.entryId === accepted.entryId && value.entryHash === accepted.entryHash, "Restart retains exact accepted receipt");
       need(isDeepStrictEqual(client(kind, "journal").journal, stable.journal), "Restart accounting client parity");
     }
-    await unchanged(stable); await service!.dispose();
-    return { normalMfaRestartQualified: true, exactAcceptedReceiptSurvives: true, currentQualifiedArtifactUnlocks: true, canonical: stable };
+    await unchanged(stable); await unchangedMetadata(stableMetadata, stable); await metadataParity(stableMetadata);
+    need(stableMetadata.knowledge.history[0].assertionId === acceptedKnowledge.assertion.assertionId, "Accepted metadata identity retained across normal MFA restart");
+    await service!.dispose();
+    return { normalMfaRestartQualified: true, exactAcceptedReceiptSurvives: true, currentQualifiedArtifactUnlocks: true, metadataRestartQualified: true, canonicalMetadata: stableMetadata, canonical: stable };
   }
   return { run, reopen };
 }

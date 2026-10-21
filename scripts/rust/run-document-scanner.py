@@ -523,9 +523,9 @@ def main():
                 with gateway_lock:
                     if errors or provider_requests:
                         raise RuntimeError('Backup lock proof must not call scanner/provider')
-                report.update(status='passed',currentAction='complete',financialBackupLockQualified=True,normalMfaRestartQualified=True,currentFileMissingAndTamperQualified=True,directControlMetadataGateQualified=False,smtpDispatchGateQualified=False,keyRotationQualified=False)
+                report.update(status='passed',currentAction='complete',financialBackupLockQualified=True,normalMfaRestartQualified=True,currentFileMissingAndTamperQualified=True,directControlMetadataGateQualified=True,directControlMetadataScope=['company-knowledge','corporate-record-ingest'],metadataRestartQualified=True,multiCompanyMetadataGateQualified=False,partiesGateQualified=False,mailIntakeConfigurationGateQualified=False,smtpDispatchGateQualified=False,keyRotationQualified=False)
                 save()
-                print('PASS: normal MFA financial backup lock, human/service HTTP/CLI/MCP refusal, UI verified artifact, missing/tamper lock, single posting and restart; '+str(args.evidence))
+                print('PASS: normal MFA financial backup lock, human/service HTTP/CLI/MCP refusal, metadata refusal/recovery, UI verified artifact, missing/tamper lock, single posting and restart; '+str(args.evidence))
                 return
             if args.service_purchase:
                 report['workflow'] = 'service_scanned_document_payable_bank_payment'
