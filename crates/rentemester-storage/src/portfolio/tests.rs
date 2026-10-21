@@ -64,7 +64,7 @@ fn shifted_year_true_cutoff_ignores_later_sale_and_credit() {
     issue(&tx, "2026-10-21", 200);
     let request=serde_json::from_value(json!({"invoiceDocumentId":id,"issueDate":"2026-10-21","reason":"Synthetic full correction","confirm":true})).unwrap();
     let credit = crate::credit_note::prepare(&tx, &request, "2026-10-21T12:00:00Z").unwrap();
-    let raw = serde_json::to_vec(&credit.payload).unwrap();
+    let raw = serde_json::to_vec_pretty(&credit.payload).unwrap();
     let hash = crate::invoice_email::sha(&raw);
     crate::credit_note::register_and_post(
         &tx,
@@ -250,7 +250,7 @@ fn real_import_preserves_separate_historical_schedule_and_dated_native_invoice_s
     assert!(crate::journal_hash::verify(&tx).unwrap().ok);
 }
 #[test]
-fn foreign_native_invoice_still_makes_invoice_totals_unavailable() {
+fn foreign_native_invoice_has_explicit_original_and_dkk_units() {
     let mut db = fixture();
     let tx = db
         .transaction_with_behavior(TransactionBehavior::Immediate)
@@ -260,12 +260,238 @@ fn foreign_native_invoice_still_makes_invoice_totals_unavailable() {
     assert_eq!(before["openInvoiceTotal"], 0.0);
     let changes = tx.total_changes();
     let card = company(&tx, "synthetic", "2026-10-20").unwrap();
-    assert!(card["openInvoiceTotal"].is_null());
-    assert!(card["openInvoiceCount"].is_null());
-    assert_eq!(card["availability"]["invoices"]["status"], "unavailable");
-    assert_eq!(
-        card["availability"]["invoices"]["reason"],
-        "unvalued_or_adjusted_receivable"
-    );
+    assert_eq!(card["openInvoiceTotal"], 937.5);
+    assert_eq!(card["openInvoiceCount"], 1);
+    assert_eq!(card["availability"]["invoices"]["status"], "complete");
+    let dated = dated_invoices(&tx, "2026-10-20").unwrap();
+    assert_eq!(dated["rows"][0]["currency"], "EUR");
+    assert_eq!(dated["rows"][0]["openBalance"], 125.0);
+    assert_eq!(dated["rows"][0]["openBalanceDkk"], 937.5);
     assert_eq!(tx.total_changes(), changes);
+}
+
+fn credit_amount(tx: &Transaction<'_>, id: i64, date: &str, amount: i32) {
+    let request = serde_json::from_value(json!({"invoiceDocumentId":id,"issueDate":date,"reason":"Synthetic dated correction","grossAmount":amount,"confirm":true})).unwrap();
+    let credit = crate::credit_note::prepare(tx, &request, "2026-10-22T12:00:00Z").unwrap();
+    let hash = crate::invoice_email::sha(&serde_json::to_vec_pretty(&credit.payload).unwrap());
+    crate::credit_note::register_and_post(
+        tx,
+        credit,
+        Artifact {
+            filename: "synthetic-credit.json",
+            path: &format!("invoices/{hash}.json"),
+            hash: &hash,
+            mime: "application/json",
+        },
+        "synthetic",
+        Date::parse("2026-10-22").unwrap(),
+    )
+    .unwrap();
+}
+fn loss_amount(tx: &Transaction<'_>, id: i64, date: &str, amount: i32) {
+    crate::invoice_bad_debt::write_off(tx, &serde_json::from_value(json!({"invoiceDocumentId":id,"writeOffDate":date,"grossAmount":amount,"expenseAccountNo":"E","note":"Synthetic established loss","confirm":true})).unwrap(), "synthetic", Date::parse("2026-10-22").unwrap()).unwrap();
+}
+#[test]
+fn dated_fx_losses_credits_and_claims_keep_exact_separate_units() {
+    let mut db = fixture();
+    let tx = db
+        .transaction_with_behavior(TransactionBehavior::Immediate)
+        .unwrap();
+    tx.execute_batch("INSERT INTO accounts(account_no,name,type,normal_balance)VALUES('E','Synthetic loss','expense','debit'),('I','Synthetic claim income','income','credit'),('G','Synthetic FX gain','income','credit'),('L','Synthetic FX loss','expense','debit');INSERT INTO bank_accounts(slug,name,ledger_account_no,currency)VALUES('eur','Synthetic EUR bank','B','EUR');").unwrap();
+    crate::native_fx_roles::confirm(&tx, "fx_gain", "G", "synthetic").unwrap();
+    crate::native_fx_roles::confirm(&tx, "fx_loss", "L", "synthetic").unwrap();
+    let eur = issue_currency(&tx, "2026-07-02", 100, "EUR");
+    let dkk = issue(&tx, "2026-07-03", 100);
+    let csv = "date;text;amount;currency;reference;amount_dkk;fx_rate_to_dkk\n2026-08-02;Synthetic partial;25;EUR;first;190;7.6\n2026-08-05;Synthetic remaining;50;EUR;last;380;7.6\n";
+    crate::bank::import(
+        &tx,
+        csv,
+        &rentemester_engine::bank::parse(csv).unwrap(),
+        Some("eur"),
+        "synthetic",
+        "2026-10-22T12:00:00Z",
+        "synthetic",
+    )
+    .unwrap();
+    let pay = |reference: &str| {
+        crate::invoice_settlement::settle(&tx, &serde_json::from_value(json!({"invoiceDocumentId":eur,"bankTransactionReference":reference,"confirm":true})).unwrap(), "synthetic", Date::parse("2026-10-22").unwrap()).unwrap();
+    };
+    pay("first");
+    credit_amount(&tx, eur, "2026-08-03", 25);
+    loss_amount(&tx, eur, "2026-08-04", 25);
+    pay("last");
+    // Future unrelated loss must not suppress earlier invoices or their totals.
+    loss_amount(&tx, dkk, "2026-08-20", 25);
+    crate::invoice_compensation::register(&tx, &serde_json::from_value(json!({"invoiceDocumentId":dkk,"asOfDate":"2026-08-10","compensationAmountDkk":50,"confirm":true})).unwrap(), "synthetic").unwrap();
+    crate::invoice_compensation::post(&tx, &serde_json::from_value(json!({"invoiceDocumentId":dkk,"transactionDate":"2026-08-10","receivableAccountNo":"R","compensationIncomeAccountNo":"I","confirm":true})).unwrap(), "synthetic", Date::parse("2026-10-22").unwrap()).unwrap();
+    let csv = "date;text;amount;currency;reference\n2026-08-22;Synthetic claim;50;DKK;claim\n";
+    crate::bank::import(
+        &tx,
+        csv,
+        &rentemester_engine::bank::parse(csv).unwrap(),
+        Some("synthetic"),
+        "synthetic",
+        "2026-10-22T12:00:00Z",
+        "synthetic",
+    )
+    .unwrap();
+    // Claim receipt requires principal cleared. Its separate journal still must
+    // not enter the historical principal carrying on the shared debtor account.
+    let bank: i64 = tx
+        .query_row(
+            "SELECT id FROM bank_transactions WHERE reference='claim'",
+            [],
+            |r| r.get(0),
+        )
+        .unwrap();
+    // The supported claim writer permits payment only after principal settlement;
+    // settle that remaining principal on a later date and verify earlier reads.
+    let csv = "date;text;amount;currency;reference\n2026-08-21;Synthetic DKK principal;100;DKK;dkk-principal\n";
+    crate::bank::import(
+        &tx,
+        csv,
+        &rentemester_engine::bank::parse(csv).unwrap(),
+        Some("synthetic"),
+        "synthetic",
+        "2026-10-22T12:00:00Z",
+        "synthetic",
+    )
+    .unwrap();
+    crate::invoice_settlement::settle(&tx, &serde_json::from_value(json!({"invoiceDocumentId":dkk,"bankTransactionReference":"dkk-principal","confirm":true})).unwrap(), "synthetic", Date::parse("2026-10-22").unwrap()).unwrap();
+    crate::reminder_claims::settle(
+        &tx,
+        &serde_json::from_value(
+            json!({"invoiceDocumentId":dkk,"bankTransactionId":bank,"confirm":true}),
+        )
+        .unwrap(),
+        "synthetic",
+        Date::parse("2026-10-22").unwrap(),
+    )
+    .unwrap();
+    let changes = tx.total_changes();
+    for (date, original, carrying, total, count) in [
+        ("2026-08-01", 125.0, 937.5, 1062.5, 2),
+        ("2026-08-02", 100.0, 750.0, 875.0, 2),
+        ("2026-08-03", 75.0, 562.5, 687.5, 2),
+        ("2026-08-04", 50.0, 375.0, 500.0, 2),
+        ("2026-08-05", 0.0, 0.0, 125.0, 1),
+        ("2026-08-07", 0.0, 0.0, 125.0, 1),
+        ("2026-08-11", 0.0, 0.0, 125.0, 1),
+        ("2026-08-20", 0.0, 0.0, 100.0, 1),
+        ("2026-08-21", 0.0, 0.0, 0.0, 0),
+        ("2026-08-22", 0.0, 0.0, 0.0, 0),
+    ] {
+        let principal = crate::invoice_fx::dated_principal(&tx, eur, date).unwrap();
+        assert_eq!(wire(&principal.open).unwrap(), json!(original), "{date}");
+        assert_eq!(
+            wire(&principal.carrying_dkk).unwrap(),
+            json!(carrying),
+            "{date}"
+        );
+        assert_eq!(principal.currency, "EUR");
+        let snapshot = dated_invoices(&tx, date).unwrap();
+        assert_eq!(snapshot["openInvoiceTotal"], json!(total), "{date}");
+        assert_eq!(snapshot["openInvoiceCount"], json!(count), "{date}");
+        if original > 0.0 {
+            assert_eq!(snapshot["rows"][0]["documentId"], eur);
+            assert_eq!(snapshot["rows"][0]["currency"], "EUR");
+            assert_eq!(snapshot["rows"][0]["openBalanceDkk"], json!(carrying));
+        }
+        for row in snapshot["rows"].as_array().unwrap() {
+            if row["currency"] == "DKK" {
+                assert_eq!(row["openBalance"], row["openBalanceDkk"]);
+            }
+        }
+    }
+    assert_eq!(tx.total_changes(), changes);
+    assert_eq!(crate::audit_invoice::verify(&tx).unwrap()["ok"], true);
+    // Deliberate retained-link corruption must refuse, including an earlier read.
+    let triggers = tx
+        .prepare(
+            "SELECT name FROM sqlite_schema WHERE type='trigger' AND tbl_name='invoice_payments'",
+        )
+        .unwrap()
+        .query_map([], |r| r.get::<_, String>(0))
+        .unwrap()
+        .collect::<Result<Vec<_>, _>>()
+        .unwrap();
+    for trigger in triggers {
+        tx.execute_batch(&format!(
+            "DROP TRIGGER \"{}\"",
+            trigger.replace('"', "\"\"")
+        ))
+        .unwrap();
+    }
+    tx.execute(
+        "UPDATE invoice_payments SET currency='USD' WHERE invoice_document_id=?1",
+        [eur],
+    )
+    .unwrap();
+    assert!(dated_invoices(&tx, "2026-08-01").is_err());
+}
+
+#[test]
+fn dated_fx_refund_reuses_frozen_principal_without_cash_rate_revaluation() {
+    let mut db = fixture();
+    let tx = db
+        .transaction_with_behavior(TransactionBehavior::Immediate)
+        .unwrap();
+    tx.execute_batch("INSERT INTO accounts(account_no,name,type,normal_balance)VALUES('G','Synthetic FX gain','income','credit'),('L','Synthetic FX loss','expense','debit');INSERT INTO bank_accounts(slug,name,ledger_account_no,currency)VALUES('eur','Synthetic EUR bank','B','EUR');").unwrap();
+    crate::native_fx_roles::confirm(&tx, "fx_gain", "G", "synthetic").unwrap();
+    crate::native_fx_roles::confirm(&tx, "fx_loss", "L", "synthetic").unwrap();
+    let id = issue_currency(&tx, "2026-07-02", 100, "EUR");
+    let csv = "date;text;amount;currency;reference;amount_dkk;fx_rate_to_dkk\n2026-08-02;Synthetic full payment;125;EUR;paid;950;7.6\n2026-08-04;Synthetic refund;-25;EUR;refund;-190;7.6\n";
+    crate::bank::import(
+        &tx,
+        csv,
+        &rentemester_engine::bank::parse(csv).unwrap(),
+        Some("eur"),
+        "synthetic",
+        "2026-10-22T12:00:00Z",
+        "synthetic",
+    )
+    .unwrap();
+    crate::invoice_settlement::settle(
+        &tx,
+        &serde_json::from_value(
+            json!({"invoiceDocumentId":id,"bankTransactionReference":"paid","confirm":true}),
+        )
+        .unwrap(),
+        "synthetic",
+        Date::parse("2026-10-22").unwrap(),
+    )
+    .unwrap();
+    credit_amount(&tx, id, "2026-08-03", 25);
+    crate::invoice_settlement::refund(
+        &tx,
+        &serde_json::from_value(
+            json!({"invoiceDocumentId":id,"bankTransactionReference":"refund","confirm":true}),
+        )
+        .unwrap(),
+        "synthetic",
+        Date::parse("2026-10-22").unwrap(),
+    )
+    .unwrap();
+    let changes = tx.total_changes();
+    for (date, original, carrying) in [
+        ("2026-08-01", 125.0, 937.5),
+        ("2026-08-02", 0.0, 0.0),
+        ("2026-08-03", -25.0, -187.5),
+        ("2026-08-04", 0.0, 0.0),
+    ] {
+        let dated = crate::invoice_fx::dated_principal(&tx, id, date).unwrap();
+        assert_eq!(dated.currency, "EUR");
+        assert_eq!(wire(&dated.open).unwrap(), json!(original), "{date}");
+        assert_eq!(
+            wire(&dated.carrying_dkk).unwrap(),
+            json!(carrying),
+            "{date}"
+        );
+        assert_eq!(
+            dated_invoices(&tx, date).unwrap()["openInvoiceCount"],
+            if original > 0.0 { 1 } else { 0 }
+        );
+    }
+    assert_eq!(tx.total_changes(), changes);
+    assert_eq!(crate::audit_invoice::verify(&tx).unwrap()["ok"], true);
 }

@@ -19,6 +19,106 @@ pub(crate) fn amount(value: &Value) -> Result<Money, Error> {
     }
     Ok(amount)
 }
+/// One dated principal with explicit, separate original-currency and DKK units.
+pub(crate) struct DatedPrincipal {
+    pub currency: String,
+    pub open: Money,
+    pub carrying_dkk: Money,
+}
+pub(crate) fn dated_principal(
+    tx: &Transaction<'_>,
+    id: i64,
+    as_of: &str,
+) -> Result<DatedPrincipal, Error> {
+    use rentemester_engine::{currency::Currency, fiscal_year::Date};
+    use rusqlite::{OptionalExtension, params};
+    Date::parse(as_of)?;
+    let (currency, raw, gross): (String, String, Money) = tx.query_row(
+        "SELECT currency,payload_json,amount_inc_vat FROM documents WHERE id=?1 AND document_type='issued_invoice' AND invoice_date<=?2",
+        params![id, as_of],
+        |r| Ok((r.get(0)?, r.get(1)?, legacy_money(r.get_ref(2)?).map_err(|_| rusqlite::Error::InvalidQuery)?)),
+    ).map_err(invalid)?;
+    Currency::parse(&currency)?;
+    let payload: Value = serde_json::from_str(&raw).map_err(invalid)?;
+    if payload["currency"] != currency || gross.is_negative() {
+        return Err(refused("invoice source currency or gross differs"));
+    }
+    let debtor: Option<i64> = tx.query_row(
+        "SELECT receivable_account_id FROM issued_invoice_postings WHERE invoice_document_id=?1",
+        [id], |r| r.get(0),
+    ).optional().map_err(invalid)?;
+    let Some(debtor) = debtor else {
+        // Retain existing unposted DKK presentation. A document without a posting
+        // cannot have any linked principal or claim effects, in any currency.
+        let linked: bool = tx.query_row(
+            "SELECT EXISTS(SELECT 1 FROM invoice_payments WHERE invoice_document_id=?1) OR EXISTS(SELECT 1 FROM invoice_refunds WHERE invoice_document_id=?1) OR EXISTS(SELECT 1 FROM credit_note_postings WHERE original_invoice_document_id=?1) OR EXISTS(SELECT 1 FROM invoice_bad_debt_writeoffs WHERE invoice_document_id=?1) OR EXISTS(SELECT 1 FROM journal_entries WHERE document_id=?1)",
+            [id], |r| r.get(0),
+        ).map_err(invalid)?;
+        crate::credit_note::credited(tx, id)?;
+        if linked {
+            return Err(refused("unposted invoice has unexplained movements"));
+        }
+        let carrying_dkk = if currency == "DKK" {
+            gross.clone()
+        } else {
+            let (no, date, hash): (String, String, String) = tx
+                .query_row(
+                    "SELECT invoice_no,invoice_date,sha256_hash FROM documents WHERE id=?1",
+                    [id],
+                    |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?)),
+                )
+                .map_err(invalid)?;
+            if crate::invoice_email::sha(raw.as_bytes()) != hash
+                || payload["invoiceNumber"] != no
+                || payload["issueDate"] != date
+                || sales_invoice::project(&payload)?.gross != gross
+            {
+                return Err(refused("unposted foreign invoice source differs"));
+            }
+            projection(&payload)?.gross
+        };
+        return Ok(DatedPrincipal {
+            currency,
+            open: gross,
+            carrying_dkk,
+        });
+    };
+    // Authenticate the full retained history before selecting a date. Today's
+    // principal is a cross-check only, never the reported historical balance.
+    let (_, current_currency) = crate::reminder_claims::principal_open(tx, id)?;
+    if current_currency != currency {
+        return Err(refused("invoice principal currency differs"));
+    }
+    let carrying_dkk =
+        crate::invoice_bad_debt::adjusted_carrying_through(tx, id, debtor, Some(as_of))?;
+    let mut open = gross;
+    let mut q = tx.prepare(
+        "SELECT amount,0 FROM invoice_payments WHERE invoice_document_id=?1 AND payment_date<=?2
+         UNION ALL SELECT amount,1 FROM invoice_refunds WHERE invoice_document_id=?1 AND refund_date<=?2
+         UNION ALL SELECT c.amount_inc_vat,0 FROM credit_note_postings p JOIN documents c ON c.id=p.credit_note_document_id WHERE p.original_invoice_document_id=?1 AND c.invoice_date<=?2
+         UNION ALL SELECT gross_amount,0 FROM invoice_bad_debt_writeoffs WHERE invoice_document_id=?1 AND writeoff_date<=?2"
+    ).map_err(invalid)?;
+    let mut rows = q.query(params![id, as_of]).map_err(invalid)?;
+    while let Some(row) = rows.next().map_err(invalid)? {
+        let amount = legacy_money(row.get_ref(0).map_err(invalid)?)?;
+        if row.get::<_, bool>(1).map_err(invalid)? {
+            open.add(&amount);
+        } else {
+            open = open.subtract(&amount);
+        }
+    }
+    if currency == "DKK" && open != carrying_dkk {
+        return Err(refused(
+            "dated DKK principal differs from canonical carrying",
+        ));
+    }
+    Ok(DatedPrincipal {
+        currency,
+        open,
+        carrying_dkk,
+    })
+}
+
 /// Bounded integer ratio, rounded once; no binary64 financial arithmetic.
 pub(crate) fn portion(
     gross: &Money,

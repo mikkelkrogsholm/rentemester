@@ -67,9 +67,22 @@ pub(crate) fn adjusted_carrying(
     id: i64,
     debtor: i64,
 ) -> Result<Money, Error> {
+    adjusted_carrying_through(tx, id, debtor, None)
+}
+/// Actual principal carrying through the source journal transaction date.
+/// Claim postings and claim receipts are absent from the canonical effect view.
+pub(crate) fn adjusted_carrying_through(
+    tx: &Transaction<'_>,
+    id: i64,
+    debtor: i64,
+    as_of: Option<&str>,
+) -> Result<Money, Error> {
+    if let Some(date) = as_of {
+        Date::parse(date)?;
+    }
     crate::audit_invoice::adjusted_principal_evidence(tx, id)?;
-    let mut q=tx.prepare("SELECT l.debit_amount,l.credit_amount FROM invoice_principal_receivable_effects e JOIN journal_lines l ON l.journal_entry_id=e.journal_entry_id AND l.account_id=e.receivable_account_id WHERE e.invoice_document_id=?1 AND e.receivable_account_id=?2 ORDER BY e.journal_entry_id,l.id").map_err(invalid)?;
-    let mut rs = q.query(params![id, debtor]).map_err(invalid)?;
+    let mut q=tx.prepare("SELECT l.debit_amount,l.credit_amount FROM invoice_principal_receivable_effects e JOIN journal_entries j ON j.id=e.journal_entry_id JOIN journal_lines l ON l.journal_entry_id=e.journal_entry_id AND l.account_id=e.receivable_account_id WHERE e.invoice_document_id=?1 AND e.receivable_account_id=?2 AND (?3 IS NULL OR j.transaction_date<=?3) ORDER BY e.journal_entry_id,l.id").map_err(invalid)?;
+    let mut rs = q.query(params![id, debtor, as_of]).map_err(invalid)?;
     let mut total = Money::default();
     while let Some(r) = rs.next().map_err(invalid)? {
         total.add(

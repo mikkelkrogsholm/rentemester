@@ -1,9 +1,9 @@
 //! One admitted, current-authorized company card. No connection opens, discovery or writes.
-use crate::{invalid, legacy_money};
+use crate::invalid;
 use rentemester_engine::{
     Error, fiscal_year::Date, money::Money, sales_invoice::wire, trial_balance::Period, vat_period,
 };
-use rusqlite::{Transaction, params};
+use rusqlite::Transaction;
 use serde_json::{Value, json};
 mod invoices;
 #[cfg(test)]
