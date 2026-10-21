@@ -1,15 +1,15 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "Group130 original R32/#703 dated FX/loss invoice visibility using shared authenticated principal/carrying",
+  "current_increment": "Group131 original R32/#703 journal-history CLI/MCP compatibility, current-source HTTP/shared reader",
   "code_revision": "07a963ad",
   "spec_revision": "sha256:bc98636be4a972407adce0f817a76bb9d4bb7200cb292a70965e75ab62fae250",
-  "state": "Focused core8, HTML4, strict Clippy and normal binaries pass. First actual failed solely on invented portfolio amount UI locator; existing UI displays invoice count. Corrected isolated expectation; exact API/HTML amount assertions retained. One justified rerun pending. Whole R32 and epic remain open; original scope retained. No build rerun needed because only proof expectation changed.",
+  "state": "Group130 accepted at22829c5b: actual ordinaryMFA dated original-currency/DKK reports, exact React/HTML/HTTP/CLI/MCP and normal restart, fullaudit10, originals, three bank source files/four bank rows, signedbackup and cleanup independently verified. Existing129/128/63/76 evidence retained. Group131 core/clients/HTTP implemented independently in three isolated worktrees from22829c5b; compile/tests/integration pending. First shared Cargo slot assigned core. Original report date selectors and dashboard JSON mapping remain, R31 tax/iXBRL preserved, whole epic and installed desktop last remain OPEN.",
   "issues_closed": [
     701
   ],
   "next": [
-    "Finish dated FX/loss actual using corrected existing-card expectation and unchanged bins; then R32 journal-history compatibility, arbitrary-period report selectors, dashboard JSON mapping; original R31 tax/iXBRL remains. No whole issue closure on a subset.",
+    "Integrate and qualify original journal list bare snake_case/human and MCP journal_list date/status/page through one shared current-source HTTP reader. Reuse minimal normalMFA branch in existing run-document-scanner, two native posts plus reversal across years, exact readonly values/revocation/restart and independent SQL. No repeat unchanged FX/debt/archive journeys. Then arbitrary-period report selectors/dashboard JSON mapping and original R31 tax/iXBRL.",
     "Installed desktop acceptance is explicitly deferred to the very end by the user. Preserve prepared Group100 profile; collect remaining native automation, closure, recovery and packaging checks for final installed acceptance without requesting screen unlock during development.",
     "J03/R50 and remaining R54 scope: only still-supported operation closure/recovery, nonempty scheduler handoff, hostile/older clone and post-cutover rollback requirements. Group99 qualifies managed installed J06 flow, not every R54 acceptance item.",
     "Signed distribution/update/cutover evidence must match actual full Rust replacement; retain all existing completion gates and TypeScript retirement gate.",
@@ -7119,7 +7119,7 @@
       "conclusion": "success"
     },
     "dated_invoice_fx_loss130": {
-      "status": "Focused core8, HTML4, strict Clippy and normal binaries pass. First actual failed solely on invented portfolio amount UI locator; existing UI displays invoice count. Corrected isolated expectation; exact API/HTML amount assertions retained. One justified rerun pending.",
+      "status": "PASS actual ordinaryMFA HTTP/React/HTML/CLI/MCP dated FX/loss exact amounts and normal restart; independent pinned-source/originals/audit10/signedbackup/SQL/cleanup verification PASS",
       "issue": 703,
       "worker_source": "57763b02",
       "integration": "07a963ad",
@@ -7129,8 +7129,8 @@
       "normal_three_bin_build": "/tmp/rm130-normal-build.log",
       "proof_helper": "scripts/rust/check-native-invoice-bad-debt.ts",
       "planned_actual_report": "/tmp/rentemester-rust-reports/dated-fx-loss130b.json",
-      "actual_mfa_qualified": false,
-      "normal_restart_qualified": false,
+      "actual_mfa_qualified": true,
+      "normal_restart_qualified": true,
       "installed_desktop_qualified": false,
       "fixture_strategy_change": "Exact writer bytes and mandatory Immediate restored; schema permits credit before loss, not after, so one separate no-loss EUR refund fixture avoids invalid combined lifecycle. Isolated corrected tests passed before one final focused group. Accounting source validation retained.",
       "worktree_recovery": ".git/rentemester-recovery/archived130.json",
@@ -7152,7 +7152,54 @@
         "terminal_exit": 1,
         "owned_cleanup": true,
         "diagnosis": "NativePortfolioOverview dl includes count but no invoice-total display. HTTP historical totals and first HTML/CLI report passed; failure was only the newly invented UI amount locator. Remove that nonexistent-field expectation, retain exact count and canonical amount assertions. No product change or accounting/access weakening."
-      }
+      },
+      "actual_report": "/tmp/rentemester-rust-reports/dated-fx-loss130b.json",
+      "actual_report_sha256": "3b35fb61106350d4843569f838982a48af34a8acacd7eb9a869617ce40069f9a",
+      "actual_source_revision": "22829c5b3bb7cf630f41db8de3f38f9acac07b52",
+      "independent_verification": "/tmp/rm130-independent-verification.log",
+      "html_artifact": "/tmp/rentemester-rust-reports/dated-fx-loss130b.html",
+      "html_sha256": "4f8670b7aefdebebc0628ec70e826ade99abb7f6c44b8326cb380d50e9c5c1af",
+      "owned_cleanup": true,
+      "full_audit_entries": 10,
+      "terminal_counts": {
+        "documents": 4,
+        "bank_transactions": 4,
+        "journal_entries": 10
+      },
+      "bank_original_files": 3,
+      "signed_backup_sha256": "609190e479e5b95d480c3d7a55db8ebb5bb14a8d2111a0b4d9af4e95d75212dd",
+      "signed_backup_verified": true,
+      "source_free_restore_qualified": false,
+      "exact_dated_values": [
+        {
+          "openCount": 2,
+          "openDkk": 2179.01,
+          "eurOriginal": 125,
+          "eurDkk": 929.01
+        },
+        {
+          "openCount": 2,
+          "openDkk": 1807.03,
+          "eurOriginal": 74.95,
+          "eurDkk": 557.03
+        },
+        {
+          "openCount": 0,
+          "openDkk": 0
+        }
+      ]
+    },
+    "journal_history131": {
+      "issue": 703,
+      "status": "Isolated core, clients and main HTTP code implemented; tests/integration/actual proof pending",
+      "base": "22829c5b",
+      "resume": "/tmp/rm131-live-state.json",
+      "storage_host_owner": "/root/dashboard_html129",
+      "sdk_cli_mcp_owner": "/root/dashboard_clients129",
+      "http_proof_owner": "/root",
+      "scope": "Original12fields, native all years, stored status, idDESC, inclusive date/filter/page, original CLI JSON bare snake and human canonical amount fallback; read current-authorized physical sources only",
+      "actual_qualified": false,
+      "installed_desktop_qualified": false
     }
   },
   "verified_history": [
