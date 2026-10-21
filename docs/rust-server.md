@@ -3171,3 +3171,8 @@ fejl ved rollback eller gendannelse pensionerer ejeren. Se
 [backupvejledningen](rust-backup-destinations.md) for scope og resterende mail-/
 indbakkeintegration. Den afsluttende installerede desktopprøve er fortsat udskudt
 til allersidst.
+
+Mailopsætning, alias og nye mailaflæsninger kontrollerer nu backupspærren efter
+aktuel autorisation. Indbakkeruting kontrollerer den udtrykkelige modtager;
+en tidligere accepteret bilagsoverførsel kan fortsat afsluttes uden dubletter
+under en ny lås. Se Group113 i [backupvejledningen](rust-backup-destinations.md).

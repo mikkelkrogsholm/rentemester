@@ -261,3 +261,40 @@ og én journalpost. Rapport:
 Alle 101 applikationstests består med otte særskilte hjælpetests ignoreret;
 bygning og streng kodekontrol består. Prøven beviser ikke faktisk flerfirmadrift,
 parter, mailindtag, SMTP, nøglerotation, ekstern backup eller installeret desktop.
+
+## Mail og fælles indbakke (Group113)
+
+Nye ændringer af mailopsætning og alias samt nye mailaflæsninger kontrollerer nu
+virksomhedens backupspærre efter aktuelle rettigheder og servicebindinger.
+En afvist serviceaflæsning gemmer ingen forbrugsafgift. En aflæsning, der allerede
+blev accepteret før låsen, kan fortsat registrere sit faktiske udfald og sin
+mailcursor; de eksisterende adgangs-, konfigurations- og flyttekontroller gælder.
+
+I den fælles indbakke kontrolleres indlæsning hos adgangsvirksomheden og
+ruting/gennemgang hos den udtrykkelige modtagervirksomhed. Kandidatforslag er
+læsedata og låser ikke i sig selv en indlæsning. En ny claim og en ny
+bilagsregistrering kontrolleres før effekter. Hvis bilaget allerede er registreret,
+kan den præcise dokumentidentitet og original genfindes og overførslen afsluttes,
+selv om låsen siden er blevet aktiv. Dette opretter ikke endnu et bilag.
+
+De fem indbakketests og fem mailtests består på syntetiske data. De dækker blandt
+andet særskilt modtagervirksomhed, uændret indbakke efter afvisning, ingen ny claim,
+rettigheder før lås, tilbageførsel af forbrugsafgift og færdiggørelse af en tidligere
+accepteret handling under en ny lås. Faktisk web-/klientaccept af denne udvidelse
+registreres separat; unit-tests er ikke dokumentation for rigtig IMAP eller SMTP.
+
+Den faktiske Group113-prøve består med to API-oprettede virksomheder og normal
+MFA. En låst modtagervirksomhed kan være kandidat under indlæsning hos en åben
+virksomhed, men konkret ruting til modtageren afvises gennem HTTP, CLI og MCP.
+Mailaliasændringer afvises tilsvarende, efter at adgangsvirksomheden låses.
+Begge virksomheders regnskab og den kanoniske kilde forbliver uændrede.
+Efter en signeret backup lykkes ruting, præcis én bilagsoverførsel og aliasændring;
+gentagne klientkald og genstart genfinder samme kilde, bilag og originale bytes.
+Kildevirksomheden har til slut nul bilag, én banktransaktion og én journalpost;
+modtageren har ét bilag, én banktransaktion og nul journalposter.
+Rapport: `/tmp/rentemester-rust-reports/native-backup-lock113.json`, SHA-256
+`b9f132dde8d62e465fa974812ce9cb4b9ab278070d3aec4f68f38efdcdcebbba`.
+Artefakter, begge hjælpefiler og runner er hashkontrolleret mod rapporten,
+og den ejede syntetiske drift er stoppet og fjernet. Rigtig IMAP, mailopsætning,
+SMTP, nøglerotation, ekstern backup og installeret desktop kvalificeres ikke af
+prøven; mailaflæsningernes låse-/afslutningskontrakt er dækket af unit-tests.

@@ -240,6 +240,9 @@ fn workspace_inbox_claim_split_recovers_same_committed_document_after_expiry() {
         )
         .is_err()
     );
+    // The exact company document was committed before the lock became active.
+    // Recovery must still close the source handoff without creating another document.
+    backup_policy(&mut owner, "b", true);
     let recovered = call(
         &mut owner,
         &cookies,
@@ -382,4 +385,107 @@ fn workspace_inbox_competing_targets_have_one_durable_winner() {
         1
     );
     assert_eq!(counts(&owner), (0, 0));
+}
+
+fn backup_policy(owner: &mut Owner, slug: &str, enabled: bool) {
+    let original = owner.slug.clone();
+    owner.select_company(slug).unwrap();
+    let slots = owner.held.0.as_mut().unwrap();
+    let ct = slots
+        .control
+        .as_mut()
+        .unwrap()
+        .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
+        .unwrap();
+    let lt = slots
+        .company
+        .as_mut()
+        .unwrap()
+        .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
+        .unwrap();
+    lt.execute_batch("INSERT OR IGNORE INTO accounts(account_no,name,type,normal_balance)VALUES('B','Synthetic bank','asset','debit');INSERT OR IGNORE INTO bank_accounts(id,slug,name,currency,ledger_account_no)VALUES(1,'synthetic','Synthetic','DKK','B');INSERT INTO bank_transactions(transaction_date,text,amount,currency,bank_account_id) SELECT '2025-12-01','Synthetic old activity',1,'DKK',1 WHERE NOT EXISTS(SELECT 1 FROM bank_transactions)").unwrap();
+    rentemester_storage::backup_state::configure(
+        &ct,
+        &lt,
+        slug,
+        enabled,
+        0,
+        "user:u",
+        "2026-01-01T00:00:00.000Z",
+    )
+    .unwrap();
+    lt.commit().unwrap();
+    ct.commit().unwrap();
+    owner.select_company(&original).unwrap();
+}
+#[test]
+fn workspace_inbox_backup_lock_follows_explicit_target_and_refuses_before_claim() {
+    let (_dir, mut owner, cookies, proof, _) = setup();
+    let id = source(&mut owner, &cookies, &proof);
+    let b = Destination {
+        company_slug: "b".into(),
+    };
+    let before = call(&mut owner, &cookies, &proof, NOW, Action::Inspect(&id)).unwrap();
+    backup_policy(&mut owner, "b", true);
+    let refused = call(&mut owner, &cookies, &proof, NOW, Action::Assign(&id, &b)).unwrap_err();
+    assert_eq!(refused.error.code, "backup_overdue");
+    assert_eq!(owner.slug, "a");
+    assert_eq!(
+        call(&mut owner, &cookies, &proof, NOW, Action::Inspect(&id)).unwrap(),
+        before
+    );
+    assert_eq!(
+        call(
+            &mut owner,
+            &cookies,
+            &proof,
+            NOW,
+            Action::Assign("synthetic-unknown", &b)
+        )
+        .unwrap_err()
+        .error
+        .code,
+        "workspace_inbox_not_found"
+    );
+    backup_policy(&mut owner, "b", false);
+    backup_policy(&mut owner, "a", true);
+    call(&mut owner, &cookies, &proof, NOW, Action::Assign(&id, &b)).unwrap();
+    assert_eq!(owner.slug, "a");
+    backup_policy(&mut owner, "b", true);
+    owner.select_company("b").unwrap();
+    let assigned = call(&mut owner, &cookies, &proof, NOW, Action::Inspect(&id)).unwrap();
+    assert_eq!(
+        call(&mut owner, &cookies, &proof, NOW, Action::Complete(&id, &b))
+            .unwrap_err()
+            .error
+            .code,
+        "backup_overdue"
+    );
+    assert_eq!(
+        call(&mut owner, &cookies, &proof, NOW, Action::Inspect(&id)).unwrap(),
+        assigned
+    );
+    assert_eq!(counts(&owner), (0, 0));
+    assert_eq!(
+        call(
+            &mut owner,
+            &cookies,
+            &proof,
+            NOW,
+            Action::Ingest(&input("new-locked-source"), &file())
+        )
+        .unwrap_err()
+        .error
+        .code,
+        "backup_overdue"
+    );
+    assert_eq!(owner.slug, "b");
+    owner.held.0.as_mut().unwrap().control.as_mut().unwrap().execute_batch("INSERT INTO rm_company_membership_events(user_id,company_slug,event_type,actor)VALUES('u','b','revoke','user:u')").unwrap();
+    assert_eq!(
+        call(&mut owner, &cookies, &proof, NOW, Action::Assign(&id, &b))
+            .unwrap_err()
+            .error
+            .code,
+        "access_denied"
+    );
 }

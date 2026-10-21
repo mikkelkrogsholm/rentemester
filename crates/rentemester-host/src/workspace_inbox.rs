@@ -14,7 +14,18 @@ impl Owner {
         OwnerError,
     > {
         let catalog = self.catalog()?;
-        self.document_action(cookie, clock, |c, l, g, context| {
+        let original = self.slug.clone();
+        let observe = match &action {
+            rentemester_application::workspace_inbox::Action::Assign(_, target) => {
+                Some(target.company_slug.as_str())
+            }
+            rentemester_application::workspace_inbox::Action::Ingest(..) => Some(anchor),
+            _ => None,
+        };
+        if let Some(target) = observe {
+            self.select_company(target)?;
+        }
+        let mut attempt = self.document_action(cookie, clock, |c, l, g, context| {
             rentemester_application::workspace_inbox::execute(
                 c,
                 l,
@@ -27,7 +38,21 @@ impl Owner {
                 },
                 action,
             )
-        })
+        })?;
+        if self.reusable && self.slug != original && self.select_company(&original).is_err() {
+            self.reusable = false;
+            attempt.retired = true;
+            attempt.outcome = Err(rentemester_application::control_fence::Failure {
+                stage: rentemester_application::control_fence::FailureStage::OutcomeUnknown,
+                error: rentemester_engine::Error::new(
+                    "company_selection_unavailable",
+                    "Inbox result requires reconciliation after company restoration failure",
+                ),
+                control_reusable: false,
+                company_reusable: false,
+            });
+        }
+        Ok(attempt)
     }
 }
 #[cfg(all(test, target_os = "macos"))]

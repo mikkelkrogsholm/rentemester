@@ -69,6 +69,93 @@ fn transact<T>(
         }
     }
 }
+// The control transaction may append inbox events; the company transaction is
+// held at the same time for policy observations and exact handoff recovery.
+fn transact_pair<T>(
+    control: &mut Connection,
+    company: &mut Connection,
+    work: impl FnOnce(&Transaction<'_>, &Transaction<'_>) -> Result<T, Error>,
+) -> Result<Committed<T>, Failure> {
+    control_fence::connection_ready(control).map_err(|e| failure(e, false))?;
+    control_fence::connection_ready(company).map_err(|e| Failure {
+        company_reusable: false,
+        ..failure(e, true)
+    })?;
+    let ct = control
+        .transaction_with_behavior(TransactionBehavior::Immediate)
+        .map_err(|_| failure(error("control_busy_or_unavailable"), false))?;
+    let lt = match company.transaction_with_behavior(TransactionBehavior::Immediate) {
+        Ok(tx) => tx,
+        Err(_) => {
+            let reusable = ct.rollback().is_ok();
+            return Err(Failure {
+                company_reusable: false,
+                ..failure(error("company_busy_or_unavailable"), reusable)
+            });
+        }
+    };
+    let result = work(&ct, &lt);
+    if ct.is_autocommit() || lt.is_autocommit() {
+        let _ = lt.rollback();
+        let _ = ct.rollback();
+        return Err(Failure {
+            stage: FailureStage::OutcomeUnknown,
+            control_reusable: false,
+            company_reusable: false,
+            error: error("transaction_escaped"),
+        });
+    }
+    match result {
+        Err(e) => {
+            let company_reusable = lt.rollback().is_ok();
+            let control_reusable = ct.rollback().is_ok();
+            Err(Failure {
+                stage: FailureStage::NotCommitted,
+                error: e,
+                control_reusable,
+                company_reusable,
+            })
+        }
+        Ok(value) => {
+            if lt.commit().is_err() {
+                let reusable = ct.rollback().is_ok();
+                return Err(Failure {
+                    stage: FailureStage::OutcomeUnknown,
+                    error: error("commit_outcome_unknown"),
+                    control_reusable: reusable,
+                    company_reusable: false,
+                });
+            }
+            ct.commit().map_err(|_| Failure {
+                stage: FailureStage::OutcomeUnknown,
+                error: error("commit_outcome_unknown"),
+                control_reusable: false,
+                company_reusable: true,
+            })?;
+            Ok(Committed {
+                value,
+                control_reusable: true,
+            })
+        }
+    }
+}
+fn require_target_backup(
+    control: &Transaction<'_>,
+    company: &Transaction<'_>,
+    context: &Context<'_>,
+    target: &str,
+) -> Result<(), Error> {
+    if context.selection.slug != target {
+        return Err(error("company_selection_mismatch"));
+    }
+    crate::backup_status::require_write(
+        control,
+        company,
+        context.selection.workspace,
+        target,
+        context.clock,
+    )
+}
 /// Permissions are observed from current events on the held control writer. The
 /// workspace role never supplies implicit company permissions or hidden targets.
 fn authorize(
@@ -170,7 +257,7 @@ pub fn execute(
     let (id, destination) = if let Action::Complete(id, d) = action {
         (id, d)
     } else {
-        let value = transact(control, |tx| {
+        return transact_pair(control, company, |tx, ledger| {
             let (subject, visible, now) = authorize(
                 tx,
                 &runtime,
@@ -196,6 +283,7 @@ pub fn execute(
                             "declared MIME differs from verified original",
                         ));
                     }
+                    require_target_backup(tx, ledger, &context, runtime.anchor)?;
                     let generated = format!(
                         "inbox-{}",
                         rentemester_runtime::auth::new_token()
@@ -216,16 +304,20 @@ pub fn execute(
                     )
                     .map(|s| json!({"source":s}))
                 }
-                Action::Assign(id, d) => storage::assign(
-                    tx,
-                    runtime.anchor,
-                    id,
-                    &d.company_slug,
-                    &visible,
-                    &actor,
-                    &now,
-                )
-                .map(|s| json!({"source":s})),
+                Action::Assign(id, d) => {
+                    storage::inspect(tx, runtime.anchor, id, &visible)?;
+                    require_target_backup(tx, ledger, &context, &d.company_slug)?;
+                    storage::assign(
+                        tx,
+                        runtime.anchor,
+                        id,
+                        &d.company_slug,
+                        &visible,
+                        &actor,
+                        &now,
+                    )
+                    .map(|s| json!({"source":s}))
+                }
                 Action::Review(id, input) => {
                     if context.selection.slug != input.company_slug {
                         return Err(error("company_selection_mismatch"));
@@ -245,7 +337,9 @@ pub fn execute(
                         metadata: serde_json::to_value(metadata)
                             .map_err(|_| error("invalid_control"))?,
                     };
-                    let target_ledger: String = company
+                    storage::inspect(tx, runtime.anchor, id, &visible)?;
+                    require_target_backup(tx, ledger, &context, &input.company_slug)?;
+                    let target_ledger: String = ledger
                         .query_row(
                             "SELECT ledger_uuid FROM ledger_identity WHERE id=1",
                             [],
@@ -268,10 +362,6 @@ pub fn execute(
                 }
                 Action::Complete(..) => unreachable!(),
             }
-        })?;
-        return Ok(Committed {
-            value,
-            control_reusable: true,
         });
     };
     if context.selection.slug != destination.company_slug {
@@ -279,82 +369,89 @@ pub fn execute(
     }
     // Commit the claim before any company mutation. No method exposes owned handles;
     // the host mutex remains held across all three database transactions.
-    let (source, file, metadata, claim, completed, approved) = transact(control, |tx| {
-        let (_, visible, now) = authorize(
-            tx,
-            &runtime,
-            &context,
-            true,
-            Some(&destination.company_slug),
-        )?;
-        let source = storage::inspect(tx, runtime.anchor, id, &visible)?;
-        let bytes = storage::original(tx, id)?;
-        let file = Prepared::new(
-            source["filename"]
-                .as_str()
-                .ok_or_else(|| error("invalid_control"))?
-                .into(),
-            bytes,
-        )
-        .map_err(storage::refused)?;
-        if source["mimeType"] != file.mime() {
-            return Err(storage::refused("stored MIME differs from original"));
-        }
-        let target_ledger: String = company
-            .query_row(
-                "SELECT ledger_uuid FROM ledger_identity WHERE id=1",
-                [],
-                |r| r.get(0),
+    let (source, file, metadata, claim, completed, approved) =
+        transact_pair(control, company, |tx, ledger| {
+            let (_, visible, now) = authorize(
+                tx,
+                &runtime,
+                &context,
+                true,
+                Some(&destination.company_slug),
+            )?;
+            let source = storage::inspect(tx, runtime.anchor, id, &visible)?;
+            let bytes = storage::original(tx, id)?;
+            let file = Prepared::new(
+                source["filename"]
+                    .as_str()
+                    .ok_or_else(|| error("invalid_control"))?
+                    .into(),
+                bytes,
             )
-            .map_err(|_| error("invalid_company"))?;
-        let approved = rentemester_storage::mail_intake::approved_attachment(
-            tx,
-            id,
-            &destination.company_slug,
-            &target_ledger,
-        )?;
-        let mut metadata = approved
-            .as_ref()
-            .map(|a| a.metadata().clone())
-            .unwrap_or_else(|| source["metadata"].clone());
-        if !metadata.is_object() {
-            return Err(storage::refused("metadata object required"));
-        }
-        metadata["source"] = json!(format!("workspace-inbox:{id}"));
-        let metadata: Metadata = serde_json::from_value(metadata).map_err(|_| {
+            .map_err(storage::refused)?;
+            if source["mimeType"] != file.mime() {
+                return Err(storage::refused("stored MIME differs from original"));
+            }
+            let target_ledger: String = ledger
+                .query_row(
+                    "SELECT ledger_uuid FROM ledger_identity WHERE id=1",
+                    [],
+                    |r| r.get(0),
+                )
+                .map_err(|_| error("invalid_company"))?;
+            let approved = rentemester_storage::mail_intake::approved_attachment(
+                tx,
+                id,
+                &destination.company_slug,
+                &target_ledger,
+            )?;
+            let mut metadata = approved
+                .as_ref()
+                .map(|a| a.metadata().clone())
+                .unwrap_or_else(|| source["metadata"].clone());
+            if !metadata.is_object() {
+                return Err(storage::refused("metadata object required"));
+            }
+            metadata["source"] = json!(format!("workspace-inbox:{id}"));
+            let metadata: Metadata = serde_json::from_value(metadata).map_err(|_| {
             storage::refused(
                 "explicit supported document classification and metadata required before handoff",
             )
         })?;
-        metadata.validate()?;
-        let assignment = source["assignments"]
-            .as_array()
-            .and_then(|a| {
-                a.iter()
-                    .find(|a| a["companySlug"] == destination.company_slug)
-            })
-            .ok_or_else(|| storage::refused("source has no approved target assignment"))?;
-        let completed = assignment["state"] == "completed";
-        let claim = format!(
-            "inbox-claim-{}",
-            rentemester_runtime::auth::new_token()
-                .map_err(|_| error("entropy_unavailable"))?
-                .as_str()
-        );
-        if !completed {
-            let now_ms = context
-                .clock
-                .now_unix_ms()
-                .map_err(|_| error("invalid_auth_clock"))?;
-            let expires = rentemester_engine::company_knowledge::timestamp(
-                now_ms
-                    .checked_add(120_000)
-                    .ok_or_else(|| error("invalid_auth_clock"))?,
-            )?;
-            storage::claim(tx, id, &destination.company_slug, &claim, &now, &expires)?;
-        }
-        Ok((source, file, metadata, claim, completed, approved))
-    })?;
+            metadata.validate()?;
+            let assignment = source["assignments"]
+                .as_array()
+                .and_then(|a| {
+                    a.iter()
+                        .find(|a| a["companySlug"] == destination.company_slug)
+                })
+                .ok_or_else(|| storage::refused("source has no approved target assignment"))?;
+            let completed = assignment["state"] == "completed";
+            let claim = format!(
+                "inbox-claim-{}",
+                rentemester_runtime::auth::new_token()
+                    .map_err(|_| error("entropy_unavailable"))?
+                    .as_str()
+            );
+            if !completed {
+                if storage::recovered_document(ledger, &metadata.source, file.hash(), &metadata)?
+                    .is_none()
+                {
+                    require_target_backup(tx, ledger, &context, &destination.company_slug)?;
+                }
+                let now_ms = context
+                    .clock
+                    .now_unix_ms()
+                    .map_err(|_| error("invalid_auth_clock"))?;
+                let expires = rentemester_engine::company_knowledge::timestamp(
+                    now_ms
+                        .checked_add(120_000)
+                        .ok_or_else(|| error("invalid_auth_clock"))?,
+                )?;
+                storage::claim(tx, id, &destination.company_slug, &claim, &now, &expires)?;
+            }
+            Ok((source, file, metadata, claim, completed, approved))
+        })?
+        .value;
     let today = rentemester_runtime::posting_time::latest_date(
         context
             .clock
@@ -363,7 +460,7 @@ pub fn execute(
         0,
     )
     .map_err(|_| failure(error("invalid_auth_clock"), true))?;
-    let document = control_fence::execute_cookie_subject(
+    let document = control_fence::execute_cookie_both(
         control,
         company,
         control_fence::CookieAuthorization {
@@ -378,7 +475,9 @@ pub fn execute(
             archived: context.selection.archived,
         },
         Permission::CompanyDocumentsUpload,
-        |tx, subject| {
+        false,
+        true,
+        |control_tx, tx, subject| {
             if let Some(document) =
                 storage::recovered_document(tx, &metadata.source, file.hash(), &metadata)?
             {
@@ -418,6 +517,7 @@ pub fn execute(
                     "completed handoff document missing; reconciliation required",
                 ));
             }
+            require_target_backup(control_tx, tx, &context, &destination.company_slug)?;
             let path = guard
                 .publish_document(&file)
                 .map_err(|_| storage::refused("protected source publication unavailable"))?;
