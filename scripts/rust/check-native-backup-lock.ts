@@ -1,3 +1,4 @@
+import { createBackupMailInboxProof } from "./check-native-backup-mail-inbox";
 import { request, type APIRequestContext, type Page } from "@playwright/test";
 import { spawnSync } from "node:child_process";
 import { createHash, randomUUID } from "node:crypto";
@@ -34,7 +35,7 @@ export async function createBackupLockProof(page: Page, base: string, work: stri
     need(response.ok(), `Normal service administration ${resource} HTTP${response.status()}`);
     return response.json();
   }
-  function client(kind: "cli" | "mcp", command: string, body?: unknown, principal: "human" | "service" = "human", success = true): any {
+  function client(kind: "cli" | "mcp", command: string, body?: unknown, principal: "human" | "service" = "human", success = true, options: { company?: string; sourceId?: string; id?: number } = {}): any {
     const common = ["--server", base, "--allow-loopback-http", principal === "human" ? "--cookie-file" : "--service-key-file", principal === "human" ? cookieFile : keyFile];
     const envelope = ["post_journal", "reverse_journal"].includes(command);
     const confirmed = body !== undefined && !envelope;
@@ -45,9 +46,9 @@ export async function createBackupLockProof(page: Page, base: string, work: stri
     const input = kind === "cli" ? body === undefined ? "" : JSON.stringify(body) : [
       { jsonrpc: "2.0", id: 1, method: "initialize", params: { protocolVersion: "2025-11-25", capabilities: {}, clientInfo: { name: "synthetic-backup-lock", version: "1" } } },
       { jsonrpc: "2.0", method: "notifications/initialized" },
-      { jsonrpc: "2.0", id: 2, method: "tools/call", params: { name: command, arguments: { company: "synthetic", ...selectors, ...(body === undefined ? {} : envelope ? { envelope: JSON.stringify(body) } : { body: JSON.stringify(body), confirm: true }) } } },
+      { jsonrpc: "2.0", id: 2, method: "tools/call", params: { name: command, arguments: { company: options.company ?? "synthetic", ...selectors, ...(options.sourceId === undefined ? {} : { sourceId: options.sourceId }), ...(options.id === undefined ? {} : { id: options.id }), ...(body === undefined ? {} : envelope ? { envelope: JSON.stringify(body) } : { body: JSON.stringify(body), confirm: true }) } } },
     ].map(value => JSON.stringify(value)).join("\n") + "\n";
-    const argv = kind === "cli" ? ["remote", command.replaceAll("_", "-"), ...common, "--company", "synthetic", ...selectorFlags, ...(confirmed ? ["--confirm"] : [])] : common;
+    const argv = kind === "cli" ? ["remote", command.replaceAll("_", "-"), ...common, "--company", options.company ?? "synthetic", ...selectorFlags, ...(options.sourceId === undefined ? [] : ["--source-id", options.sourceId]), ...(options.id === undefined ? [] : ["--id", String(options.id)]), ...(confirmed ? ["--confirm"] : [])] : common;
     const result = spawnSync(join(work, kind === "cli" ? "rentemester-rust" : "rentemester-mcp"), argv, { input, encoding: "utf8", timeout: 45000, maxBuffer: 16 * 1024 * 1024 });
     need(!result.error && (!key || !result.stdout.includes(key) && !result.stderr.includes(key)), `${kind} process/credential safety`);
     if (kind === "cli") {
@@ -62,6 +63,7 @@ export async function createBackupLockProof(page: Page, base: string, work: stri
     if (!success) { need(JSON.stringify(reply.result).includes("server_refused"), "MCP reaches server refusal"); return { refused: true }; }
     return reply.result.structuredContent.data;
   }
+  const mailInboxProof = createBackupMailInboxProof(page, base, (kind, command, body, options = {}) => client(kind, command, body, "human", options.success ?? true, options));
   async function books() {
     return { journal: (await human("journal")).journal, bank: (await human("bank")).bank,
       trialBalance: (await human("trial-balance")).trialBalance, balance: (await human("balance")).balance };
@@ -152,6 +154,7 @@ export async function createBackupLockProof(page: Page, base: string, work: stri
     service = await request.newContext({ extraHTTPHeaders: { origin: base, "x-rentemester-service-key": key } });
     need((await service.get(base + prefix + "journal")).ok(), "Current service bookkeeper can read accounting");
     await sessionFile(true);
+    const inboxPrepared = await mailInboxProof.beforeALock(historical);
     const before = await status(false); need(before.backup.backupDue === true && !before.lock.enforced, "Never-backed old activity is due before explicit policy change");
     await page.goto(base + "/companies/synthetic/integritet");
     await page.getByRole("button", { name: "Hent backupstatus", exact: true }).click();
@@ -169,6 +172,7 @@ export async function createBackupLockProof(page: Page, base: string, work: stri
     }
     const refusals = { human: await refused("human", baseline), service: await refused("service", baseline) };
     const metadataRefusals = await refusedMetadata(metadataBaseline, baseline);
+    const inboxLocked = await mailInboxProof.locked();
     const serviceLockedRead = await service.get(base + prefix + "journal");
     need(serviceLockedRead.ok() && isDeepStrictEqual((await serviceLockedRead.json()).journal, baseline.journal), "Locked service accounting reads remain available");
     for (const kind of ["cli", "mcp"] as const) need(isDeepStrictEqual(client(kind, "journal", undefined, "service").journal, baseline.journal), "Locked service client read parity");
@@ -197,6 +201,7 @@ export async function createBackupLockProof(page: Page, base: string, work: stri
     } finally { writeFileSync(retained, artifact, { flag: "r+" }); }
     need(hash(readFileSync(retained)) === archiveSha256, "Synthetic integrity probe restores exact original bytes");
     await status(false); await unchanged(baseline);
+    const inboxUnlocked = await mailInboxProof.unlocked();
     acceptedKnowledge = await human("knowledge/propose", knowledgeProposal);
     need(acceptedKnowledge.ok === true && typeof acceptedKnowledge.assertion?.assertionId === "string" && acceptedKnowledge.assertion.reviewState === "proposed", "Previously refused valid metadata proposal succeeds after qualified backup");
     stableMetadata = await metadata();
@@ -223,7 +228,8 @@ export async function createBackupLockProof(page: Page, base: string, work: stri
       missingCurrentFileLocked: missingStatus.lock.locked, tamperedCurrentFileLocked: tamperedStatus.lock.locked, lockedServiceReadsQualified: true,
       exactArtifactRestored: true, accepted, canonical: stable, financialCoreAndServiceQualified: true, cliMcpPolicyWritesQualified: true,
       directControlMetadataGateQualified: true, directControlMetadataScope: ["company-knowledge", "corporate-record-ingest"],
-      metadataRefusals, acceptedKnowledge, canonicalMetadata: stableMetadata, multiCompanyMetadataGateQualified: false,
+      metadataRefusals, inboxPrepared, inboxLocked, inboxUnlocked, twoCompanyInboxTargetGateQualified: true, humanMailAliasGateQualified: true,
+      acceptedKnowledge, canonicalMetadata: stableMetadata, multiCompanyMetadataGateQualified: false,
       partiesGateQualified: false, mailIntakeConfigurationGateQualified: false, smtpDispatchGateQualified: false, keyRotationQualified: false, installedNativeQualified: false, offsiteQualified: false };
   }
   async function reopen() {
@@ -238,8 +244,9 @@ export async function createBackupLockProof(page: Page, base: string, work: stri
     }
     await unchanged(stable); await unchangedMetadata(stableMetadata, stable); await metadataParity(stableMetadata);
     need(stableMetadata.knowledge.history[0].assertionId === acceptedKnowledge.assertion.assertionId, "Accepted metadata identity retained across normal MFA restart");
+    const inboxReopen = await mailInboxProof.reopen();
     await service!.dispose();
-    return { normalMfaRestartQualified: true, exactAcceptedReceiptSurvives: true, currentQualifiedArtifactUnlocks: true, metadataRestartQualified: true, canonicalMetadata: stableMetadata, canonical: stable };
+    return { inboxReopen, twoCompanyInboxTargetGateQualified: true, humanMailAliasGateQualified: true, normalMfaRestartQualified: true, exactAcceptedReceiptSurvives: true, currentQualifiedArtifactUnlocks: true, metadataRestartQualified: true, canonicalMetadata: stableMetadata, canonical: stable };
   }
   return { run, reopen };
 }

@@ -504,10 +504,17 @@ def main():
             if args.backup_lock:
                 report['workflow'] = 'financial_backup_lock_qualified_artifact_unlock'
                 report['backupLockHelperSha256'] = digest(REPO / 'scripts/rust/check-native-backup-lock.ts')
+                proof_helpers = [REPO / 'scripts/rust/check-native-backup-lock.ts', REPO / 'scripts/rust/check-native-backup-mail-inbox.ts']
+                report['backupLockMailInboxHelperSha256'] = digest(proof_helpers[1])
+                helper_hashes = {str(path): digest(path) for path in proof_helpers}
                 phase('service-run')
+                if any(digest(path) != helper_hashes[str(path)] for path in proof_helpers):
+                    raise RuntimeError('Backup proof imported helper changed during execution')
                 stop(); config.pop('firstOwner')
                 write_config(); start()
                 phase('service-reopen')
+                if any(digest(path) != helper_hashes[str(path)] for path in proof_helpers):
+                    raise RuntimeError('Backup proof imported helper changed during restart verification')
                 phase('finish', 20)
                 controller.stdin.close(); controller.wait(timeout=10)
                 if controller.returncode != 0:
@@ -520,12 +527,19 @@ def main():
                         raise RuntimeError('Backup lock terminal financial effects differ')
                     report['terminalSql'] = {'counts':counts,'journalActors':db.execute('SELECT created_by,created_by_program FROM journal_entries ORDER BY id').fetchall()}
                 finally: db.close()
+                target_db = sqlite3.connect((work/'workspace/synthetic-backup-inbox-target/data/ledger.sqlite').as_uri()+'?mode=ro', uri=True)
+                try:
+                    target_counts = {table: target_db.execute('SELECT count(*) FROM '+table).fetchone()[0] for table in ['documents','bank_transactions','journal_entries']}
+                    if target_counts != {'documents':1,'bank_transactions':1,'journal_entries':0}:
+                        raise RuntimeError('Backup inbox target terminal effects differ')
+                    report['targetTerminalSql'] = {'company':'synthetic-backup-inbox-target','counts':target_counts}
+                finally: target_db.close()
                 with gateway_lock:
                     if errors or provider_requests:
                         raise RuntimeError('Backup lock proof must not call scanner/provider')
-                report.update(status='passed',currentAction='complete',financialBackupLockQualified=True,normalMfaRestartQualified=True,currentFileMissingAndTamperQualified=True,directControlMetadataGateQualified=True,directControlMetadataScope=['company-knowledge','corporate-record-ingest'],metadataRestartQualified=True,multiCompanyMetadataGateQualified=False,partiesGateQualified=False,mailIntakeConfigurationGateQualified=False,smtpDispatchGateQualified=False,keyRotationQualified=False)
+                report.update(status='passed',currentAction='complete',financialBackupLockQualified=True,normalMfaRestartQualified=True,currentFileMissingAndTamperQualified=True,directControlMetadataGateQualified=True,directControlMetadataScope=['company-knowledge','corporate-record-ingest'],metadataRestartQualified=True,twoCompanyInboxTargetGateQualified=True,humanMailAliasGateQualified=True,multiCompanyMetadataGateQualified=False,partiesGateQualified=False,mailIntakeConfigurationGateQualified=False,smtpDispatchGateQualified=False,keyRotationQualified=False)
                 save()
-                print('PASS: normal MFA financial backup lock, human/service HTTP/CLI/MCP refusal, metadata refusal/recovery, UI verified artifact, missing/tamper lock, single posting and restart; '+str(args.evidence))
+                print('PASS: normal MFA financial backup lock, human/service HTTP/CLI/MCP refusal, metadata refusal/recovery, two-company inbox/alias gate and exact handoff, UI verified artifact, missing/tamper lock, single posting and restart; '+str(args.evidence))
                 return
             if args.service_purchase:
                 report['workflow'] = 'service_scanned_document_payable_bank_payment'
