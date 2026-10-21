@@ -3,11 +3,13 @@
 use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
 
+mod bank;
+
 const SCHEMA: &str = "rentemester-agent-discovery-v1";
 const WORKFLOW: &str = "supplier-payable-handling";
 const CAPABILITY: &str = "supplier-purchases";
 const RULE_REASON: &str = "Native workflow metadata does not load or attest a TypeScript rule bundle; current server accounting validation remains authoritative.";
-const PARTIAL: &str = "Only supplier-payable-handling is described. Other native capabilities may exist but are not covered by this catalogue; discovery is not full CLI/MCP/HTTP parity.";
+const PARTIAL: &str = "Only supplier-payable-handling and bank-reconciliation-batch are described. Other native capabilities may exist but are not covered by this catalogue; discovery is not full CLI/MCP/HTTP parity.";
 
 fn build() -> Value {
     json!({"version":env!("CARGO_PKG_VERSION"),"runtime":"rust",
@@ -191,14 +193,16 @@ fn canonical(value: &Value) -> String {
         _ => value.to_string(),
     }
 }
+fn contents() -> Value {
+    json!({"schemaVersion":SCHEMA,"capabilities":[capability(),bank::capability()],"workflows":[workflow(),bank::workflow()]})
+}
 fn catalogue() -> Value {
-    let contents =
-        json!({"schemaVersion":SCHEMA,"capabilities":[capability()],"workflows":[workflow()]});
+    let contents = contents();
     let hash = format!("{:x}", Sha256::digest(canonical(&contents).as_bytes()));
     json!({"schemaVersion":SCHEMA,"hash":hash,
         "entryPoint":"meta_about -> agent_capability_search -> agent_workflow_describe -> tools/list",
-        "capabilityCount":1,"workflowCount":1,"fullCoverage":false,
-        "coverage":{"schemaVersion":"rentemester-agent-discovery-coverage-v1","fullCoverage":false,"scope":[WORKFLOW],"reason":PARTIAL},
+        "capabilityCount":contents["capabilities"].as_array().unwrap().len(),"workflowCount":contents["workflows"].as_array().unwrap().len(),"fullCoverage":false,
+        "coverage":{"schemaVersion":"rentemester-agent-discovery-coverage-v1","fullCoverage":false,"scope":[WORKFLOW,bank::WORKFLOW],"reason":PARTIAL},
         "build":build(),"provenance":{"product":{"name":"rentemester","version":env!("CARGO_PKG_VERSION"),"runtime":"rust"},"scope":"finite native workflow metadata; verify packaged build identity separately"},
         "ruleBundleVersion":null,"ruleBundleVersionReason":RULE_REASON})
 }
@@ -212,7 +216,7 @@ pub fn about() -> Value {
         "contractDocs":["docs/mcp-agent-contract.md","docs/mcp-tool-surface.md","docs/confirm-contract.md","docs/cli-contract.md"],
         "catalogue":catalogue,"fullCoverage":false})
 }
-/// AND-match query tokens over one advertised capability. Character limits are
+/// AND-match query tokens over each advertised capability. Character limits are
 /// Unicode scalar counts; byte-heavy queries cannot evade the documented bound.
 pub fn search(query: &str, cursor: usize, limit: usize) -> Result<Value, &'static str> {
     if query.chars().count() > 200 {
@@ -224,36 +228,56 @@ pub fn search(query: &str, cursor: usize, limit: usize) -> Result<Value, &'stati
     if !(1..=50).contains(&limit) {
         return Err("limit must be between 1 and 50");
     }
-    let mut capability = capability();
-    let haystack = ["id", "title", "purpose", "domain", "outcomes", "keywords"]
-        .iter()
-        .map(|key| capability[*key].to_string())
-        .collect::<Vec<_>>()
-        .join(" ")
-        .to_lowercase();
-    let matches = query
-        .split_whitespace()
-        .all(|token| haystack.contains(&token.to_lowercase()));
-    let total = usize::from(matches);
-    let mut items = Vec::new();
-    if matches && cursor == 0 {
-        capability.as_object_mut().unwrap().remove("keywords");
-        capability.as_object_mut().unwrap().remove("canonicalState");
-        capability["operations"] = json!([
-            operation("GET", "/api/companies/:slug/payables"),
-            operation("POST", "/api/companies/:slug/payables"),
-            operation("POST", "/api/companies/:slug/payables/:id/pay")
-        ]);
-        items.push(capability);
-    }
+    let matches = [capability(), bank::capability()]
+        .into_iter()
+        .filter(|capability| {
+            let haystack = ["id", "title", "purpose", "domain", "outcomes", "keywords"]
+                .iter()
+                .map(|key| capability[*key].to_string())
+                .collect::<Vec<_>>()
+                .join(" ")
+                .to_lowercase();
+            query
+                .split_whitespace()
+                .all(|token| haystack.contains(&token.to_lowercase()))
+        })
+        .collect::<Vec<_>>();
+    let total = matches.len();
+    let items = matches
+        .into_iter()
+        .skip(cursor)
+        .take(limit)
+        .map(|mut capability| {
+            capability.as_object_mut().unwrap().remove("keywords");
+            capability.as_object_mut().unwrap().remove("canonicalState");
+            capability["operations"] = if capability["id"] == CAPABILITY {
+                json!([
+                    operation("GET", "/api/companies/:slug/payables"),
+                    operation("POST", "/api/companies/:slug/payables"),
+                    operation("POST", "/api/companies/:slug/payables/:id/pay")
+                ])
+            } else {
+                bank::operations()
+            };
+            capability
+        })
+        .collect::<Vec<_>>();
+    let next = cursor + items.len();
+    let more = next < total;
     Ok(
-        json!({"catalogue":catalogue(),"total":total,"count":items.len(),
-        "cursor":cursor,"limit":limit,"hasMore":false,"nextCursor":null,"items":items}),
+        json!({"catalogue":catalogue(),"total":total,"count":items.len(),"cursor":cursor,"limit":limit,"hasMore":more,"nextCursor":if more{json!(next)}else{Value::Null},"items":items}),
     )
 }
 pub fn describe(id: &str) -> Option<Value> {
-    (id == WORKFLOW)
-        .then(|| json!({"catalogue":catalogue(),"capability":capability(),"workflow":workflow()}))
+    match id {
+        WORKFLOW => {
+            Some(json!({"catalogue":catalogue(),"capability":capability(),"workflow":workflow()}))
+        }
+        bank::WORKFLOW => Some(
+            json!({"catalogue":catalogue(),"capability":bank::capability(),"workflow":bank::workflow()}),
+        ),
+        _ => None,
+    }
 }
 
 #[cfg(test)]
@@ -272,13 +296,12 @@ mod tests {
                 .is_empty()
         );
         assert_eq!(first["fullCoverage"], false);
-        assert_eq!(first["catalogue"]["capabilityCount"], 1);
-        assert_eq!(first["catalogue"]["workflowCount"], 1);
+        assert_eq!(first["catalogue"]["capabilityCount"], 2);
+        assert_eq!(first["catalogue"]["workflowCount"], 2);
         let digest = first["catalogue"]["hash"].as_str().unwrap();
         assert_eq!(digest.len(), 64);
         assert!(digest.bytes().all(|b| b.is_ascii_hexdigit()));
-        let contents =
-            json!({"schemaVersion":SCHEMA,"capabilities":[capability()],"workflows":[workflow()]});
+        let contents = contents();
         assert_eq!(
             digest,
             format!("{:x}", Sha256::digest(canonical(&contents).as_bytes()))
@@ -296,7 +319,20 @@ mod tests {
         assert_eq!(found["items"][0]["id"], CAPABILITY);
         assert_eq!(found["hasMore"], false);
         assert!(found["nextCursor"].is_null());
-        assert_eq!(search("", 1, 50).unwrap()["count"], 0);
+        let first = search("", 0, 1).unwrap();
+        assert_eq!(first["total"], 2);
+        assert_eq!(first["count"], 1);
+        assert_eq!(first["hasMore"], true);
+        assert_eq!(first["nextCursor"], 1);
+        let second = search("", 1, 1).unwrap();
+        assert_eq!(second["items"][0]["id"], bank::CAPABILITY);
+        assert_eq!(second["hasMore"], false);
+        assert!(second["nextCursor"].is_null());
+        assert_eq!(search("", 2, 50).unwrap()["count"], 0);
+        let bank = search("BANK bookkeeping", 0, 50).unwrap();
+        assert_eq!(bank["count"], 1);
+        assert_eq!(bank["items"][0]["id"], bank::CAPABILITY);
+        assert_eq!(bank["catalogue"]["hash"], first["catalogue"]["hash"]);
         assert_eq!(search("", 1_000_000, 1).unwrap()["count"], 0);
         assert_eq!(search("not-a-real-domain", 0, 1).unwrap()["total"], 0);
         assert!(search(&"ø".repeat(200), 0, 1).is_ok());
@@ -346,6 +382,179 @@ mod tests {
             description["workflow"]["recovery"]
                 .to_string()
                 .contains("Stop automatic retry")
+        );
+    }
+    #[test]
+    fn native_bank_journey_preserves_source_review_dependencies_and_exact_hashes() {
+        let description = describe(bank::WORKFLOW).unwrap();
+        let steps = description["workflow"]["steps"].as_array().unwrap();
+        assert_eq!(steps.len(), 13);
+        let mut seen = std::collections::BTreeSet::new();
+        for step in steps {
+            let id = step["id"].as_str().unwrap();
+            for dependency in step["dependsOn"].as_array().unwrap() {
+                assert!(
+                    seen.contains(dependency.as_str().unwrap()),
+                    "{id} dependency must precede it"
+                );
+            }
+            assert!(seen.insert(id));
+            let write = step["expectedSafety"] == "write";
+            assert_eq!(step["requiresConfirmation"], write);
+            assert_eq!(step["requiresActor"], write);
+            assert_eq!(step["expectedIdempotent"], !write);
+            assert_eq!(
+                step["retryClass"],
+                if write {
+                    "unsafe-read-back"
+                } else {
+                    "safe-read"
+                }
+            );
+            assert!(step["operation"]["resolved"].is_null());
+            if write {
+                assert_eq!(
+                    step["mcpInputSchema"]["properties"]["confirm"]["const"],
+                    true
+                );
+                assert_eq!(step["bodySchema"]["properties"]["confirm"]["const"], true);
+                assert_eq!(step["uncertainOutcomeReadBack"]["method"], "GET");
+            }
+        }
+        let get = |id: &str| steps.iter().find(|s| s["id"] == id).unwrap();
+        assert_eq!(
+            get("persist-batch")["authority"]["permission"],
+            "CompanyDraftWrite"
+        );
+        assert_eq!(
+            get("approve-batch")["authority"]["permission"],
+            "CompanyReview"
+        );
+        assert_eq!(
+            get("apply-batch")["authority"]["permission"],
+            "CompanyLedgerPost"
+        );
+        assert!(
+            get("approve-batch")["prerequisites"]
+                .to_string()
+                .contains("different from the stored planner")
+        );
+        assert_eq!(
+            get("persist-batch")["bodySchema"]["required"],
+            json!([
+                "accountingFrom",
+                "accountingTo",
+                "bankFrom",
+                "bankTo",
+                "runKey",
+                "expectedPlanHash",
+                "confirm"
+            ])
+        );
+        for id in ["approve-batch", "apply-batch"] {
+            assert_eq!(
+                get(id)["bodySchema"]["required"],
+                json!(["runId", "planHash", "confirm"])
+            );
+        }
+        assert_eq!(get("apply-batch")["dependsOn"], json!(["approve-batch"]));
+        assert!(
+            get("apply-batch")["prerequisites"]
+                .to_string()
+                .contains("atomic_v1")
+        );
+        assert!(
+            get("apply-batch")["replayContract"]
+                .as_str()
+                .unwrap()
+                .contains("no automatic resend")
+        );
+        assert!(
+            description["workflow"]["recovery"]
+                .to_string()
+                .contains("inspect-only")
+        );
+        let original = contents();
+        let mut changed = original.clone();
+        changed["workflows"][1]["steps"][6]["bodySchema"]["required"] = json!(["wrong"]);
+        assert_ne!(
+            Sha256::digest(canonical(&original).as_bytes()),
+            Sha256::digest(canonical(&changed).as_bytes())
+        );
+    }
+    #[test]
+    fn native_bank_operations_have_exact_names_and_clean_route_specific_queries() {
+        let description = describe(bank::WORKFLOW).unwrap();
+        let steps = description["workflow"]["steps"].as_array().unwrap();
+        let get = |id: &str| steps.iter().find(|s| s["id"] == id).unwrap();
+        assert_eq!(get("import-bank")["aliases"][0]["name"], "import_bank");
+        assert_eq!(
+            get("import-bank")["aliases"][1]["key"],
+            "remote import-bank"
+        );
+        assert_eq!(get("inspect-bank")["aliases"][0]["name"], "bank");
+        assert_eq!(
+            get("inspect-suggestions")["aliases"][0]["name"],
+            "bank_suggest_matches"
+        );
+        assert_eq!(
+            get("inspect-source-queue")["aliases"][0]["name"],
+            "reviewed_bank"
+        );
+        assert_eq!(
+            get("plan-batch")["mcpInputSchema"]["required"],
+            json!(["company", "scope"])
+        );
+        assert_eq!(
+            get("plan-batch")["operation"]["querySchema"]["required"],
+            json!(["accountingFrom", "accountingTo", "bankFrom", "bankTo"])
+        );
+        assert_eq!(
+            get("persist-batch")["uncertainOutcomeReadBack"]["pattern"],
+            "/api/companies/:slug/bookkeeping-batch/runs"
+        );
+        assert_eq!(
+            get("persist-batch")["uncertainOutcomeReadBack"]["queryParameters"]["runKey"],
+            "exact original caller runKey"
+        );
+        assert_eq!(
+            get("inspect-stored-run")["mcpInputSchema"]["oneOf"],
+            json!([{"required":["runId"]},{"required":["runKey"]}])
+        );
+        assert_eq!(
+            get("verify-journal")["operation"]["queryParameters"],
+            json!({"source":"live"})
+        );
+        let import = &get("import-bank")["bodySchema"];
+        assert_eq!(import["required"], json!(["confirm"]));
+        assert_eq!(import["oneOf"].as_array().unwrap().len(), 2);
+        assert_eq!(
+            get("import-bank")["mcpInputSchema"]["properties"]["body"]["maxLength"],
+            35 * 1024 * 1024
+        );
+        for step in steps {
+            for key in ["operation", "uncertainOutcomeReadBack"] {
+                if let Some(op) = step.get(key) {
+                    assert!(op["queryParameters"].get("status").is_none());
+                    assert!(op["queryParameters"].get("asOf").is_none());
+                    assert!(!op["pattern"].as_str().unwrap().contains('?'));
+                }
+            }
+            for alias in step["aliases"].as_array().unwrap() {
+                assert_ne!(alias["name"], "bank_list");
+                assert_ne!(alias["name"], "bank_import");
+            }
+        }
+        let operations = bank::operations();
+        assert_eq!(operations.as_array().unwrap().len(), 12);
+        let mut ids = std::collections::BTreeSet::new();
+        for op in operations.as_array().unwrap() {
+            assert!(ids.insert(op["id"].as_str().unwrap()));
+        }
+        assert_eq!(description["catalogue"]["fullCoverage"], false);
+        assert_eq!(
+            description["catalogue"]["coverage"]["scope"],
+            json!([WORKFLOW, bank::WORKFLOW])
         );
     }
 }
