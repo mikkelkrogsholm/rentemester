@@ -168,6 +168,7 @@ pub fn list() -> Value {
     tools.extend(crate::budget::tools());
     tools.extend(crate::bank_matches::tools());
     tools.extend(crate::bank_queries::tools());
+    tools.extend(crate::bank_import::tools());
     tools.extend(crate::cvr::tools());
     tools.extend(crate::exceptions::tools());
     tools.extend(crate::mileage::tools());
@@ -257,6 +258,7 @@ pub async fn call(api: &ApiClient, name: &str, args: Value) -> Result<Value, &'s
     if !args.is_object() {
         return Err("expected arguments object");
     }
+    if name=="bank_import" {return crate::bank_import::call(api,args).await;}
     if matches!(name,"bank_list"|"reconcile_bank"|"bank_account_list") {return crate::bank_queries::call(api,name,args).await;}
     if name == "system_export_authority" { return crate::handoff_export::call(api,args).await; }
     if name == "tax_return_prepare" { return crate::annual_exports::call(api,args).await; }

@@ -97,7 +97,7 @@ fn bounded_base64(value: &str) -> bool {
             _ => true,
         }
 }
-fn import_body(bytes: &[u8]) -> Result<(), Error> {
+pub(crate) fn import_body(bytes: &[u8]) -> Result<(), Error> {
     if bytes.len() > MAX_BANK_IMPORT_BODY {
         return Err(Error::InvalidInput(
             "bank import exceeds native35MiB JSON bound",
