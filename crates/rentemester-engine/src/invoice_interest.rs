@@ -169,10 +169,10 @@ fn validate(h: &History) -> Result<Vec<&InterestClaim>, Error> {
         {
             return Err(refused("claim table rate differs from source table"));
         }
-        if let Some(j) = c.posted_journal_id {
-            if j <= 0 || !journals.insert(j) {
-                return Err(refused("invalid or reused claim journal"));
-            }
+        if let Some(j) = c.posted_journal_id
+            && (j <= 0 || !journals.insert(j))
+        {
+            return Err(refused("invalid or reused claim journal"));
         }
     }
     let mut correction_ids = BTreeSet::new();

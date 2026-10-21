@@ -81,7 +81,8 @@ fn causal_correction_is_separate_from_account_capacity() {
         journal_id: 200,
     });
     assert_eq!(correction(&h).unwrap().over_claimed_amount, m("0"));
-    assert_eq!(calc(&h, "2025-01-21").accrued_interest_amount, m("2.06"));
+    // Total3.42 less net prior claim(2.74 - 0.69)=2.05 leaves1.37.
+    assert_eq!(calc(&h, "2025-01-21").accrued_interest_amount, m("1.37"));
 }
 #[test]
 fn table_halfyears_and_old_claims_share_the_same_windows() {
