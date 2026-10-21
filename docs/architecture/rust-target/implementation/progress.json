@@ -1,15 +1,15 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "Group142 original bank import file/inline/duplicate/error receipts through shared Rust server/CLI/MCP accepted",
-  "code_revision": "71fbe50cf799ad8eb66f40c290795b3e0aba5c2b",
+  "current_increment": "Group143 original bank account create/update/payment-profile/deactivate/reactivate and existing browser PATCH accepted",
+  "code_revision": "0b437f0ea905cae815ae45d9ef8a80803a0977b2",
   "spec_revision": "sha256:bc98636be4a972407adce0f817a76bb9d4bb7200cb292a70965e75ab62fae250",
-  "state": "Group142 ACCEPTED original CLI bank import --file and MCP bank_import csvPath/csvContent through same native Rust parser/import/source/audit transaction. Caller-local bounded raw bytes become canonicalbase64; nonempty path wins without inline fallback, MCP confirmation precedes file IO. Server-owned original receipts omit unset account/profile, expose original unmatched-only exceptions count while native receipt unchanged; trimmed account IDs/slugs supported. Only three explicit confirmed/reusable business-error codes map to legacy envelope; access/source/storage/unknown outcomes remain typed. Five backend and six client focused tests PASS; integrated strict6crate all-targetClippy and normal3binary build PASS. One actual ordinary-MFA shared-bank fixture PASS first try: CLIfile and MCPinline, cross-client exactduplicates with zero newrows/exceptions, suppliedpath precedence, missingconfirm refusal, unknownaccount exactserver/MCP/CLIerrors, original money/query/link/reversal/correction/currentrevocation/unmatched-source/restart all retained. Independent terminal SQL/source/hash/cleanup proof PASS. Both integrated workers snapshotted/verified/removed. Prior141and all full-goal evidence preserved. Unknown CLI profile retains safe native invalid-input error rather than exact legacy business wording; this exact-message gap and all actor/env/path/defaultlauncher scope remain explicit. Next bank-account create/update/payment-profile/deactivate/reactivate parity. Full epic/release/cutover/TS retirement/final installed desktop remain OPEN.",
+  "state": "Group143 ACCEPTED one shared bank-account updater and source-defined original creation: full stable DTO, original CLI add/update and MCP update, existing browser PATCH/React read. Original actions use existing CURRENT CompanyMasterData human/service; native create and browser update remain current human CompanyAdmin. No new service admin or ledger-post grant. Original NFD slug and blank currency/slug fallback retained; native create unchanged. Omitted fields preserve values, empty strings clear, browser-only null clears supported, original MCP rejects null; strict active bool/CLI true|false correct unsafe typo behavior. Preserved bank rows forbid ledger remap/clear and incompatible currency changes; inactive account retains all3rows and blocks even duplicate import, reactivation retains identity/history. No-op audit and forced audit rollback covered. Storage2/app1/HTTP1 and client6 focused PASS, strict7crate all-targetClippy and normal3binary build PASS. Actual143 first failed only helper UI route APIid bank-accounts versus source segment bankkonti; same retained normal cookie GET-only isolated headless proof displayed updated account without MFA/financial mutations. One corrected143b with identical Rust bytes PASS: original account lifecycle, shared React table, existing imports/queries/link/reversal/correction/current revocation/source tamper/fresh-MFA restart. Independent SQL verifies two exact full accounts,2add+4update owner audits,3bank/3journal/6lines/0docs and2original CSV hashes; all successful runtime/processes cleaned. Integrated worker snapshots verified/removed; failed fixture retained privately with manifest. Prior acceptance/full original scope preserved. Next original bank suggest/link/correction bindings/provenance using existing engine, then direct-payable correction. Actor/env/path/defaultlauncher, exact CLI unknown-profile error, broader discovery/release/cutover/TSretirement and final installed desktop remain OPEN.",
   "issues_closed": [
     701
   ],
   "next": [
-    "R44/R45 next necessary bank-account flow: original CLI add/update and original MCP update, full server-owned receipts, stable account identity/payment profile, safe historical ledger/currency constraints and deactivate/reactivate/import refusal. Read-only source scout /tmp/rm143-bank-account-notes.md; resolve current native CompanyAdmin/master-data permission mapping without broadening ledger/service rights. No extra MCP create/delete alias. Actor/env/path/defaultlauncher and exact CLI unknown-profile message remain required separately.",
+    "R44/R45 next whole bank matching journey: original suggestions -> link existing journal -> reverse -> inspect/apply correction, using existing native scorer/link/correction engine. Restore original flags/flat MCP names/envelopes with server-owned plan/provenance, never trust legacy principal as identity or invent hashes on clients. Read-only source scout /tmp/rm144-bank-matching-notes.md. Original direct-payable correction is separate next flow; actor/env/path/defaultlauncher and exact CLI unknown-profile message remain required.",
     "Installed desktop acceptance is explicitly deferred to the very end by the user. Preserve prepared Group100 profile; collect remaining native automation, closure, recovery and packaging checks for final installed acceptance without requesting screen unlock during development.",
     "J03/R50 and remaining R54 scope: only still-supported operation closure/recovery, nonempty scheduler handoff, hostile/older clone and post-cutover rollback requirements. Group99 qualifies managed installed J06 flow, not every R54 acceptance item.",
     "Signed distribution/update/cutover evidence must match actual full Rust replacement; retain all existing completion gates and TypeScript retirement gate.",
@@ -8004,6 +8004,59 @@
       "worker_worktrees_removed": true,
       "worktree_recovery": ".git/rentemester-recovery/archived142.json",
       "remaining": "Original bank-account mutations, actor/env/path/default selection and exact unknown CLI profile message; full broader discovery/release/cutover/TS retirement/final installed desktop. Whole epic OPEN."
+    },
+    "bank_account143": {
+      "issue": 717,
+      "status": "ACCEPTED143_original_bank_account_lifecycle",
+      "source_revision": "0b437f0ea905cae815ae45d9ef8a80803a0977b2",
+      "backend_worker_commit": "05789888",
+      "backend_integrated": "b5e81945",
+      "clients_worker_commit": "84ac5d71",
+      "clients_integrated": "561d9a1e",
+      "helper_commit": "1580b063",
+      "helper_route_correction": "0b437f0e",
+      "contract": "/tmp/rm143-bank-account-contract.md",
+      "report": "/tmp/rentemester-rust-reports/bank-account143b.json",
+      "report_sha256": "9191825ef4cff7fe67be0c7ca5c6b42a7fb8d944304aa3a20d2bd0709cb51acd",
+      "terminal_exit": 0,
+      "independent_verification": "/tmp/rm143-independent-verification.log",
+      "focused_backend_checks": 4,
+      "focused_client_checks": 6,
+      "focused_logs": [
+        "/tmp/rm143-storage-final.log",
+        "/tmp/rm143-application.log",
+        "/tmp/rm143-http.log",
+        "/tmp/rm143-clients.log"
+      ],
+      "strict_clippy": "/tmp/rm143-integrated-clippy.log",
+      "normal_build": "/tmp/rm143-normal-build.log",
+      "new_original_actions_permission": "Current CompanyMasterData human and explicitly granted service; focused current role/scope/revocation proof",
+      "native_admin_surfaces_unchanged": "Native create and restored browser PATCH current human CompanyAdmin; service refused",
+      "actual_normal_human_lifecycle": true,
+      "actual_positive_service_write_claimed": false,
+      "stable_identity_empty_and_browser_null_clears": true,
+      "deactivated_with_preserved_bank_rows": 3,
+      "historical_remap_clear_currency_refused": true,
+      "no_op_audit_and_forced_audit_rollback": "Focused storage proof; no extra actual writes",
+      "terminal_counts": {
+        "documents": 0,
+        "bank_transactions": 3,
+        "journal_entries": 3,
+        "journal_lines": 6
+      },
+      "terminal_bank_accounts": 2,
+      "terminal_bank_account_audits": 6,
+      "normal_mfa_restart_source_and_current_authority": true,
+      "shared_react_read_and_existing_browser_patch": true,
+      "owned_runtime_cleaned": true,
+      "owned_processes_stopped": true,
+      "worker_worktrees_removed": true,
+      "worktree_recovery": ".git/rentemester-recovery/archived143.json",
+      "failed_first_report": "/tmp/rentemester-rust-reports/bank-account143.json",
+      "isolated_ui_route_correction": "/tmp/rm143-ui-isolated.json",
+      "unchanged_rust_binary_hashes_after_helper_fix": true,
+      "failed_fixture_retained_manifest": "/tmp/rentemester-rust-reports/bank-account143-retained-manifest.json",
+      "remaining": "Original bank matching/link/correction/direct-payable bindings and server-owned provenance; actor/env/path/default selections/exact unknown CLI profile message; whole broader discovery/release/cutover/TS retirement/final installed desktop remain OPEN."
     }
   },
   "verified_history": [
@@ -9615,6 +9668,12 @@
       "code_revision": "bad20c5bf816d67377d7956a3e5b3aac529896a8",
       "spec_revision": "sha256:bc98636be4a972407adce0f817a76bb9d4bb7200cb292a70965e75ab62fae250",
       "state": "Group141 ACCEPTED original all-year bank queries/report/accounts via shared Rust server, original CLI and MCP names. Canonical filters/account/page metadata and original monetary units match exactly; three real rows across two years/two accounts include EUR10 versus DKK75. Real original journal/link/reversal requires typed422 refusal until reviewed correction to independently posted replacement. Current membership revocation and unmatched physical CSV corruption refuse; normal-MFA restart preserves exact query/report/account/book state. Independent terminal SQL confirms3bank/3journal/6lines/0docs, two exact original CSV hashes, corrected canonical relation and owner posting audit. First actual failed only helper503 expectation; retained-state GET proved existing422 mapping without financial writes, corrected assertion and one141b pass. Worker focused12checks, integrated strict6crate all-target Clippy and normal three-binary build retained. Worker snapshots/removal verified; successful runtime fully stopped/cleaned, failed fixture retained privately with manifest. All prior acceptance/full original scope preserved. Next original bank import bindings/receipts; actor/path/env/defaultlauncher, broader discovery, release/cutover/TS retirement and final installed desktop remain OPEN."
+    },
+    {
+      "current_increment": "Group142 original bank import file/inline/duplicate/error receipts through shared Rust server/CLI/MCP accepted",
+      "code_revision": "71fbe50cf799ad8eb66f40c290795b3e0aba5c2b",
+      "spec_revision": "sha256:bc98636be4a972407adce0f817a76bb9d4bb7200cb292a70965e75ab62fae250",
+      "state": "Group142 ACCEPTED original CLI bank import --file and MCP bank_import csvPath/csvContent through same native Rust parser/import/source/audit transaction. Caller-local bounded raw bytes become canonicalbase64; nonempty path wins without inline fallback, MCP confirmation precedes file IO. Server-owned original receipts omit unset account/profile, expose original unmatched-only exceptions count while native receipt unchanged; trimmed account IDs/slugs supported. Only three explicit confirmed/reusable business-error codes map to legacy envelope; access/source/storage/unknown outcomes remain typed. Five backend and six client focused tests PASS; integrated strict6crate all-targetClippy and normal3binary build PASS. One actual ordinary-MFA shared-bank fixture PASS first try: CLIfile and MCPinline, cross-client exactduplicates with zero newrows/exceptions, suppliedpath precedence, missingconfirm refusal, unknownaccount exactserver/MCP/CLIerrors, original money/query/link/reversal/correction/currentrevocation/unmatched-source/restart all retained. Independent terminal SQL/source/hash/cleanup proof PASS. Both integrated workers snapshotted/verified/removed. Prior141and all full-goal evidence preserved. Unknown CLI profile retains safe native invalid-input error rather than exact legacy business wording; this exact-message gap and all actor/env/path/defaultlauncher scope remain explicit. Next bank-account create/update/payment-profile/deactivate/reactivate parity. Full epic/release/cutover/TS retirement/final installed desktop remain OPEN."
     }
   ],
   "scope_clarifications": [
