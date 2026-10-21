@@ -187,3 +187,5 @@ pub mod contact_import;
 pub mod public_einvoice;
 
 pub mod package_update;
+
+pub mod backup_remote;
