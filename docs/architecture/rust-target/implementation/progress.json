@@ -1,13 +1,13 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "Group122 established bad-debt writeoff, remaining principal and separate claim receipt, DKK/foreign actual carrying and VAT across native web/CLI/MCP accepted",
-  "code_revision": "1ca1e318 plus root confirmed app/host/server, all-invoice period assurance and corrected foreign-interest refusal integration",
+  "current_increment": "Group123 existing direct-bank purchase-to-payable correction now qualified for period assurance and reviewed close/reopen",
+  "code_revision": "959f6c6a plus root existing-validator period wiring",
   "spec_revision": "sha256:bc98636be4a972407adce0f817a76bb9d4bb7200cb292a70965e75ab62fae250",
-  "state": "Group122 completes source-defined established bad-debt writeoff for DKK and foreign invoices, exact partial/full/cumulative VAT splits, remaining actual DKK carrying and later bank FX/principal receipts, with separate claims retained and paid. Current human MFA/bogføringsret, invoice/credit/bank originals, current role/revocation, backup/date/period and explicit confirmation remain. Native catalogue252. Actual normal-MFA sharedweb accepted-loss/dropped-reply/manual canonical reconciliation blocks repeat, second deliberate CLI partial loss and MCP remaining EUR loss all succeed. DKK two312.50 losses leave625principal plus310 compensation; actual625+310 receipts clear both. EUR125 frozen929.01, payment50.05 with375.38 actual cash/371.98relief leaves74.95 and557.03carrying; loss557.03 splits445.62expense/111.41VAT. Exactly10journals/4bank/4distinctJSON-PDFdocuments, VATpayable199.39; all5auditcomponents clean, HTTP/CLI/MCP exact status/originals, freshMFA restart and independent signed export verified. All-invoice period assurance validates even no-claim loss invoices; librarytests cover cumulative VAT, laterforeignreceipts, closures/refusals and sourcehistory. Original R01/R19/frozen source require explicit corrected foreign-interest refusal rather than a new positive foreign-interest feature; five-action/no-effects test passes. No legal loss establishment, source-free restore of this new flow, recovered written-off debt, service write or installed GUI claimed. Full original rewrite/GDD/epic672 remains active: remaining imported-receivable/control and supported lifecycle/recovery, release/install/transfer/platform and TypeScript retirement gates; installed desktop acceptance last.",
+  "state": "Group123 removes only obsolete direct-bank-correction period blanket after wiring existing retained-history validate_backup into canonical period assurance. Nine direct correction tests pass: actual process death/rollback/concurrent replay, same/cross-period mixed VAT, file reopen, reviewed Q3 close/reopen preserving all journal entries/lines/correction rows, tampered retained journal hash refusal without effects. General reviewed close/reopen regression1 and strict storage lib/tests Clippy pass. This increment is storage/library period evidence, not a new normal-MFA actual-close claim; Group58 prior whole-flow actual acceptance and Group122 actual DKK/foreign bad-debt web/CLI/MCP/restart/signed-backup acceptance remain retained. Newest accepted whole-flow report /tmp/rentemester-rust-reports/native-invoice-bad-debt122b.json SHA256 ed95e3e46fbc842a405c57bf4e9101c09068a124518be3ce820f9b38c01a65fb. Imported receivables remain correctly blocked pending source-authoritative Dinero latest-year opening/history/import-attempt/schedule and combined control proof, an explicit R19/R27 source-parity gap. Full original rewrite/GDD/epic672 remains active; remaining supported lifecycle/recovery, transfer/release/install/platform/CLI-MCP/TypeScript retirement and final installed desktop gates remain. Desktop GUI last; no unlock probes. Original corrected foreign-interest refusal and no invented recovery feature preserved.",
   "issues_closed": [],
   "next": [
-    "Qualify existing direct-bank-correction through period assurance and reviewed close/reopen; then port source-defined imported-receivable schedule import/read/as-of/control parity. Preserve full original mission gates, corrected foreign-interest refusal, and final installed desktop GUI last. Do not invent unsupported recovery or positive foreign-interest features.",
+    "Port complete source-defined latest-year Dinero import with authoritative opening/history journal, source control balances, accepted provenance attempt and imported-receivable schedule atomically; add exact as-of reads and native/imported control reconciliation. Reuse closed-history/archive and opening mechanisms without pretending archive-only import already supports live year. Scout /tmp/rm124-imported-receivables-scout.md records original R19/R27 and source seams. Keep all original mission gates and installed desktop GUI last.",
     "Installed desktop acceptance is explicitly deferred to the very end by the user. Preserve prepared Group100 profile; collect remaining native automation, closure, recovery and packaging checks for final installed acceptance without requesting screen unlock during development.",
     "J03/R50 and remaining R54 scope: only still-supported operation closure/recovery, nonempty scheduler handoff, hostile/older clone and post-cutover rollback requirements. Group99 qualifies managed installed J06 flow, not every R54 acceptance item.",
     "Signed distribution/update/cutover evidence must match actual full Rust replacement; retain all existing completion gates and TypeScript retirement gate.",
@@ -6853,6 +6853,19 @@
       "source_free_restore": false,
       "installed_desktop": false,
       "worker_cleanup": "/tmp/rm122-finished-worktrees.json"
+    },
+    "native_direct_correction_period123": {
+      "status": "passed",
+      "worker_commit": "2069a404",
+      "integrated_test_commit": "959f6c6a",
+      "previous_complete_flow_commit": "ee5649af",
+      "tests9": "/tmp/rm123-period-tests.log",
+      "period_regression1": "/tmp/rm123-period-regression.log",
+      "strict_storage_clippy": "/tmp/rm123-clippy.log",
+      "explicit_ast_update": "/tmp/rm123-ast.log",
+      "worker_cleanup": "/tmp/rm123-finished-worktree.json",
+      "normal_mfa_actual_period_close_qualified": false,
+      "scope": "Existing source-backed correction validator plus canonical period assurance, reviewed close/reopen and source tamper fail-closed; no new operation or source gate bypass."
     }
   },
   "verified_history": [
@@ -8210,6 +8223,11 @@
       "delivery": "Group122 native established bad-debt financial flow",
       "status": "COMPLETE finite Group122 source-supported DKK/foreign scopes; entire original mission active, desktop GUI last.",
       "acceptance": "Actual confirmed positive web/CLI/MCP loss writes, lost accepted reply reconciliation without retry, original-currency/DKK split, remaining principal and claim receipts, current rights/backup/refusals, exact originals/status/audit/restart and independent signed export; no legal establishment, source-free restore or desktop claim."
+    },
+    {
+      "delivery": "Group123 existing direct correction period assurance",
+      "status": "COMPLETE finite storage/library period qualification; full original mission active.",
+      "acceptance": "Nine targeted correction tests, general reviewed close/reopen regression1 and strict storage Clippy; no new normal-MFA actual close or installed GUI claim."
     }
   ],
   "integrated_pending_browser": [
@@ -8441,6 +8459,12 @@
       "code_revision": "209b4627 plus root app/host/server authority, period assurance and proof integration",
       "spec_revision": "sha256:bc98636be4a972407adce0f817a76bb9d4bb7200cb292a70965e75ab62fae250",
       "state": "Group121 completes the source-defined DKK interest flow: exact integer simple interest segmented by dated principal/rate changes; optional statutory-table or explicit manual reference rate; separate no-journal registration and explicit-account posting; causal server-derived correction; actual principal and claim bank receipts. Calculation and correction share source-aware windows; historical asOf source semantics retained. Previously lawful corrections remain valid after a later effective refund lowers current gross overclaim. Primitive dated History avoids principal/claims recursion; origin/correction/receipt claims, grouped historical cash, certain/possible/ambiguous original-account capacity and saved causal plans retain evidence. Current human MFA read/draft/post permissions, current revocation, trusted Danish date, original invoice/bank sources, backup and closed-period gates remain. Native tool count251. Targeted motor9, integrated application1/storage4, new concrete period assurance1 and close/reopen regression1, SDK2/MCP1/registry1/web8, webbuild and strict8crate alltarget Clippy pass. Actual normal-MFA web calculate/register/post/backdated500principal/correction0.69/remainingprincipal/claimreceipt1.78 against claim2.47 completes exactly7journals4bank2JSON-PDForiginals. Full five-component audit clean, HTTP/CLI/MCP exact calculation/correction/status/original read parity and write refusals, reader/revoked/backup/confirm/duplicate no-effects, exact fresh-MFA restart and independently verified signed export. No claim of positive CLI/MCP interest mutation in this actual run, paid/ambiguous actual refusal, foreign-interest contract, source-free restore or installed GUI. Paid/ambiguous and historical credit/refund cases have storage tests. Original scope clarified against R01/R19/epic and frozen source: positive foreign-interest posting was unsupported; explicit corrected refusal of misleading foreign calculations/registration/posting is required instead of inventing a new feature. Known correction recorded in implementation/known-contract-corrections.md. Source bad-debt write/principal integration remains next. All remaining accounting/foreign/lifecycle/restore, transfer/release/install/platform/discovery/SBOM/promotion/repro/remoteCI, TypeScript retirement and final desktop gates remain. Whole goal/GDD/epic672/prior acceptance preserved."
+    },
+    {
+      "current_increment": "Group122 established bad-debt writeoff, remaining principal and separate claim receipt, DKK/foreign actual carrying and VAT across native web/CLI/MCP accepted",
+      "code_revision": "1ca1e318 plus root confirmed app/host/server, all-invoice period assurance and corrected foreign-interest refusal integration",
+      "spec_revision": "sha256:bc98636be4a972407adce0f817a76bb9d4bb7200cb292a70965e75ab62fae250",
+      "state": "Group122 completes source-defined established bad-debt writeoff for DKK and foreign invoices, exact partial/full/cumulative VAT splits, remaining actual DKK carrying and later bank FX/principal receipts, with separate claims retained and paid. Current human MFA/bogføringsret, invoice/credit/bank originals, current role/revocation, backup/date/period and explicit confirmation remain. Native catalogue252. Actual normal-MFA sharedweb accepted-loss/dropped-reply/manual canonical reconciliation blocks repeat, second deliberate CLI partial loss and MCP remaining EUR loss all succeed. DKK two312.50 losses leave625principal plus310 compensation; actual625+310 receipts clear both. EUR125 frozen929.01, payment50.05 with375.38 actual cash/371.98relief leaves74.95 and557.03carrying; loss557.03 splits445.62expense/111.41VAT. Exactly10journals/4bank/4distinctJSON-PDFdocuments, VATpayable199.39; all5auditcomponents clean, HTTP/CLI/MCP exact status/originals, freshMFA restart and independent signed export verified. All-invoice period assurance validates even no-claim loss invoices; librarytests cover cumulative VAT, laterforeignreceipts, closures/refusals and sourcehistory. Original R01/R19/frozen source require explicit corrected foreign-interest refusal rather than a new positive foreign-interest feature; five-action/no-effects test passes. No legal loss establishment, source-free restore of this new flow, recovered written-off debt, service write or installed GUI claimed. Full original rewrite/GDD/epic672 remains active: remaining imported-receivable/control and supported lifecycle/recovery, release/install/transfer/platform and TypeScript retirement gates; installed desktop acceptance last."
     }
   ],
   "scope_clarifications": [

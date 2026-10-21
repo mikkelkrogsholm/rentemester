@@ -24,17 +24,20 @@ pub(crate) fn verify(tx: &Transaction<'_>) -> Result<Vec<Value>, Error> {
             errors.push(json!({"code":code,"source":value}));
         }
     }
-    for table in [
-        "direct_bank_purchase_payable_corrections",
-        "imported_receivable_headers",
-    ] {
-        let evidence = rows(tx, &format!("SELECT id FROM {table} LIMIT 1"), &[])?;
-        if !evidence.is_empty() {
-            errors.push(json!({"code":"AUDIT_WORKFLOW_NOT_PORTED","source":table}));
-        }
+    if !rows(
+        tx,
+        "SELECT id FROM imported_receivable_headers LIMIT 1",
+        &[],
+    )?
+    .is_empty()
+    {
+        errors.push(
+            json!({"code":"AUDIT_WORKFLOW_NOT_PORTED","source":"imported_receivable_headers"}),
+        );
     }
     crate::archive_import::validate_history(tx)?;
     crate::opening_balance::validate_history(tx)?;
+    crate::direct_bank_payable_correction::validate_backup(tx)?;
     for source in rows(
         tx,
         "SELECT DISTINCT invoice_document_id AS id FROM invoice_bad_debt_writeoffs",
