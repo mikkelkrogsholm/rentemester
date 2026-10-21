@@ -20,8 +20,11 @@ kan derefter kontrollere metadata og genlæse den eksterne fils præcise bytes
 med operatørens token og mappebinding. Kvitteringer, mistet svar, aktuelle
 rettigheder før/efter netværkskald og genstart er afprøvet med en privat
 TLS-protokolfixture gennem web, CLI og MCP. Ingen virkelig Google-konto eller
-offsite-drift er dermed kvalificeret. Samlet backupstatus, destinationsadministration
-og øvrig governance/health/audit-paritet er fortsat åbne dele af omskrivningen.
+offsite-drift er dermed kvalificeret. Den samlede virksomhedsspecifikke backupvisning
+sammenholder lokal friskhed og lås med placerings- og eksterne kvitteringer for
+præcis samme arkiv; en nyere backup overtager ikke en ældre kvittering.
+Destinationsadministration og øvrig health/audit-paritet er fortsat åbne dele
+af omskrivningen.
 
 Den fælles bilagsindbakke kører nu gennem Rust-server, web, CLI og MCP.
 Originalen kan visiteres til en eksplicit virksomhed og afleveres til dens

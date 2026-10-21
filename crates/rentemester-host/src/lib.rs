@@ -697,6 +697,16 @@ impl Owner {
     pub fn backup_status(&mut self,cookie:&VerifiedCookie,clock:&dyn Clock,action:rentemester_application::backup_status::Action)->Result<Attempt<Result<Committed<serde_json::Value>,rentemester_application::control_fence::Failure>>,OwnerError>{
         self.document_action(cookie,clock,|c,l,_,context|rentemester_application::backup_status::execute(c,l,context,action))
     }
+    pub fn backup_governance(
+        &mut self,
+        cookie: &VerifiedCookie,
+        clock: &dyn Clock,
+        configs: &[rentemester_runtime::backup_destination::Config],
+    ) -> Result<Attempt<Result<Committed<serde_json::Value>, rentemester_application::control_fence::Failure>>, OwnerError> {
+        self.document_action(cookie, clock, |control, company, _, context| {
+            rentemester_application::backup_governance::execute(control, company, context, configs)
+        })
+    }
     pub fn integrity(
         &mut self,
         cookie: &VerifiedCookie,

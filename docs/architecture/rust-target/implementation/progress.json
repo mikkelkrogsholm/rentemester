@@ -1,13 +1,13 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "Group114 exact externally copied native backup verification through web/HTTP/CLI/MCP, manual lost-reply reconciliation, current revocation and fresh-MFA restart accepted",
-  "code_revision": "d0164f98 + recorded Group114 root host/server/shared-web integration and boxed preparation fix in this commit",
+  "current_increment": "Group115 current company backup governance through web/HTTP/CLI/MCP; exact latest archive evidence, newer backup exclusion and fresh-MFA restart accepted",
+  "code_revision": "2500c0d5 + recorded Group115 root host/server/shared-web integration in this commit",
   "spec_revision": "sha256:bc98636be4a972407adce0f817a76bb9d4bb7200cb292a70965e75ab62fae250",
-  "state": "Group114 completes exact remote-copy verification, not upload. Operator-owned GoogleDrive token and approved destination/folder binding; fixed HTTPS metadata and independent media reread check object/name/parent/size/SHA with bounded transport and no redirects or retries. Prepare and finish require current human wholeworkspace/allcompany authority; no Owner or SQL lock over provider. Durable exact receipt replays without provider and manual GET works without provider/key/localfile. New explicit operation causes fresh read. Web persists original intent before POST, remount does not POST, explicit GET null allows reviewed same-id retry or preserved-old-id correction, and provider removal retains reconciliation. Actual114b normalMFA web signed placement, independent archive verification and harness copy to separate privateTLS object; lost accepted reply/remount/manualGET, HTTP/CLI/MCP exact receipt/replay, fresh CLI/MCP observations, wrong parent/corrupt actual media/oversized/missing refusals with no receipt, current company owner revocation while provider held then restored through existing second MFA owner, and freshMFArestart pass. Exactly14 providerGETs, no accounting changes from remote checks; A0docs/1bank/1journal and B1doc/1bank/0journal. Final artifact/threehelper/runner hashes independently matched and owned process/profile cleanup verified. Targeted runtime/application/storage/client/CLI/MCP/server/UI tests, web type/build and strict8crate all-targetClippy pass. No realGoogleaccount/offsite/source-free restore of remote receipts/GUI claim. Entiremission/epic672 and prior evidence preserved; next coherent required flow is aggregate backup governance/status using exact archive identity, then destination administration/health/audit, release/parity/transfer/recovery/TS retirement and final installed desktop acceptance. No extra perfection round.",
+  "state": "Group115 completes the required current-company aggregate backup view without new provider calls or writes. Same current human CompanyAdmin/control+company read fence and qualified retained inventory/freshness/lock reused. Active post-restore placement and typed remote receipts join exact latest archive SHA/size/createdAt and placement operation; current public destination declarations only, no paths/keys. Unknown destination/future/unrelated archive excluded, malformed matching evidence failsclosed, retained qualification errors prevent external-copy flag. Historical observations remain dated and declarations/recovery are not independently verified. Web explicitread, HTTP/CLI/MCP current snapshot parity; new signed actualweb backup has newSHA and cannot borrow older placement/remote records, survives normalMFArestart. Six app/storage tests, six client/CLI/MCP tests, web2tests, webbuild/lint, native3binarybuild, strict7crate all-targetClippy and actual115 pass; MCPdiscovery236 separately checked. Actual115 retains114 privateTLS14GET remote/lostreply/revocation/restart flow while adds governance beforeplacement/threeexactremote receipts/newer independentlyverified signeddownload/newlatest afterrestart, no extraDriveGETs or accounting effects. PrimaryA0docs/1bank/1journal; B1doc/1bank/0journal. Final artifact/4helper/runner hashes independentlymatched, ownedprocess/profilecleanup verified. Entiremission/epic672/prior accepted evidence preserved and allcompletiongates remainopen. No actualGoogleaccount/offsite/fullhealth-audit/destination administration/remote-receipt sourcefree restore/GUI claim. Next necessary destination administration and health/audit/parity/release/transfer/recovery/TS retirement; installeddesktop GUI remains explicitly last, no unlockrequest.",
   "issues_closed": [],
   "next": [
-    "Complete native backup governance/status through server/web/CLI/MCP: join current qualified retained backup and freshness/lock with destination declarations, placement and remote observation by exact archive SHA. Newer backup must not borrow older remote evidence; missing/tampered retained bytes and restore boundary must not produce current verified state. Then remaining destination administration, health/audit, truthful discoverycoverage, trusted Rust release/SBOM/promotion/repro/remote CI and all fullmission gates. Do not repeat accepted Group114 unchanged; no TS retirement before accepted complete replacement.",
+    "Complete remaining required native backup destination administration and health/audit parity under explicit owner/operator authority, preserving observed evidence and current safe filesystem/provider contracts. Then truthful discoverycoverage, trusted Rust release/SBOM/promotion/repro/remoteCI and full remaining accounting/transfer/recovery/platform gates. Do not repeat accepted Group115 unchanged or retire TS before complete accepted replacement.",
     "Installed desktop acceptance is explicitly deferred to the very end by the user. Preserve prepared Group100 profile; collect remaining native automation, closure, recovery and packaging checks for final installed acceptance without requesting screen unlock during development.",
     "J03/R50 and remaining R54 scope: only still-supported operation closure/recovery, nonempty scheduler handoff, hostile/older clone and post-cutover rollback requirements. Group99 qualifies managed installed J06 flow, not every R54 acceptance item.",
     "Signed distribution/update/cutover evidence must match actual full Rust replacement; retain all existing completion gates and TypeScript retirement gate.",
@@ -4275,6 +4275,84 @@
       "offsite": false,
       "source_free_remote_receipt_restore": false,
       "installed_desktop": false
+    },
+    "native_backup_governance115": {
+      "path": "/tmp/rentemester-rust-reports/native-backup-governance115.json",
+      "sha256": "94bc562d89895232d324afe7eb2f3fce162959e63f31e54fe1980903e381eb29",
+      "status": "passed",
+      "source_revision": "2500c0d5caf4d7dda383a020413650511e3ae7a6 plus recorded root integration",
+      "artifacts": {
+        "server_binary": "3b8cf9b69a8ab5393ff699933d48e89cdef7ee218a546c4a242282dc80514aa2",
+        "cli_binary": "d9c6a4e8144609bd48648b2ecd4e569db7597ebdf3857fe6f504f5cdc7934dda",
+        "mcp_binary": "e7d1486b2120f21659cee7c885e40e513620d78861045c6c1f47c655375bcfc5"
+      },
+      "helper_sha256": {
+        "runnerSha256": "fcf6a013fc2681ed00a1aebe9dd45085f7bef5fb7577cb3d9d3ef516b21cfd58",
+        "backupLockHelperSha256": "6eb82b8201dc05973c4f62a3098ce6223dfa427b2332465018e929acfe1e2e0b",
+        "backupLockMailInboxHelperSha256": "b2d9b6d088a4336e62c9102edb58833e2645ed15b73761c9cebb681e2ccc8327",
+        "backupRemoteHelperSha256": "ce723a3f8b8a7ac0cf393aba261c167f3219b4f651dcbc67542e00480532e57b",
+        "backupGovernanceHelperSha256": "2ea63a1bfb52cc3b26659e6bd1a29155a948ebc3b4c6a45b4b0976ef179f71fe"
+      },
+      "primary_counts": {
+        "documents": 0,
+        "bank_transactions": 1,
+        "journal_entries": 1
+      },
+      "target_counts": {
+        "company": "synthetic-backup-inbox-target",
+        "counts": {
+          "documents": 1,
+          "bank_transactions": 1,
+          "journal_entries": 0
+        }
+      },
+      "scope": {
+        "qualified": true,
+        "beforePlacement": {
+          "priorLatestBackupId": "87c9e09d3a8a4eeed20e50f9a0afac5c68751d6d983a3264cfa1cf3e6411dc94",
+          "noPriorExternalEvidence": true,
+          "readOnlyClientAndWebParity": true
+        },
+        "observed": {
+          "latestBackupId": "25a0461f728a4c7e9e2823000e18d854294dc9ec751cba4cae4a5b8f983a4e1c",
+          "matchingPlacements": 1,
+          "matchingRemoteObservations": 3,
+          "originalObservedAt": [
+            "2026-10-21T01:15:16.965Z",
+            "2026-10-21T01:15:40.338Z",
+            "2026-10-21T01:15:43.000Z"
+          ],
+          "exactReceiptParity": true
+        },
+        "newerBackup": {
+          "oldArchiveSha256": "25a0461f728a4c7e9e2823000e18d854294dc9ec751cba4cae4a5b8f983a4e1c",
+          "newArchiveSha256": "4cb51104748a41bff2d3941d18cf0a97c8b93cb417e98cca24fa999796feb930",
+          "newerUiBackupIndependentlyVerified": true,
+          "olderExternalEvidenceNotBorrowed": true,
+          "unchangedDriveGetCount": true
+        }
+      },
+      "restart": {
+        "sameNewLatestAfterNormalMfaRestart": true,
+        "latestBackupId": "4cb51104748a41bff2d3941d18cf0a97c8b93cb417e98cca24fa999796feb930",
+        "historicalEvidenceNotBorrowed": true,
+        "readOnlyClientAndWebParity": true
+      },
+      "provider_get_count": 14,
+      "tests": {
+        "app_storage": "/tmp/rm115-governance-tests.log:6pass",
+        "clients": "/tmp/rm115-client-tests.log:6pass",
+        "mcp_registry": "/tmp/rm115-registry-test.log:passed",
+        "web": "/tmp/rm115-web-tests.log:2pass/9asserts",
+        "web_build": "/tmp/rm115-web-build.log:passed",
+        "lint": "/tmp/rm115-lint.log:passed",
+        "build": "/tmp/rm115-build.log:passed",
+        "clippy": "/tmp/rm115-clippy.log:7crates/all-targets/-Dwarnings passed"
+      },
+      "actual_google_account": false,
+      "offsite": false,
+      "source_free_remote_receipt_restore": false,
+      "installed_desktop": false
     }
   },
   "verified_history": [
@@ -5583,6 +5661,12 @@
       "owner": "root host/server/shared-web integration and actual acceptance; isolated runtime/application/client/proof workers",
       "status": "COMPLETE finite Group114; actual114b and revision-bound checks passed. Entiremission remains open; installed GUI explicitly final only.",
       "acceptance": "Signed placed archive -> separate copied privateTLS object -> web verification/lostreply/manualGET -> exact CLI/MCP replay/fresh reads -> negative files/current mid-provider revocation -> restart and unchanged accounting."
+    },
+    {
+      "delivery": "Group115 current exact-archive backup governance",
+      "owner": "root host/server/shared-web/integration/actual; isolated app-storage/client/proof workers",
+      "status": "COMPLETE finite Group115; normalMFA/privateTLS/read-only parity/newerbackup/restart accepted. Entiremission open and desktop GUI final only.",
+      "acceptance": "Current qualified local archive plus exact operation-bound placement and historical remote evidence; new signed backup does not inherit older receipts; current authorization, malformed/missing/tampered/restore cases and unchanged accounting."
     }
   ],
   "integrated_pending_browser": [
@@ -5766,6 +5850,12 @@
       "code_revision": "afe320db + Group113 inbox transaction/target/recovery integration in this commit",
       "spec_revision": "sha256:bc98636be4a972407adce0f817a76bb9d4bb7200cb292a70965e75ab62fae250",
       "state": "Group113 completes the current mail/inbox backup-lock increment. New human mailbox config/delete/alias and human/service poll admission check current company backup policy after full current authority/grant binding; refusals rollback usage with control writer. Already admitted fetch completion retains actual observation/cursor/failure with existing auth/grant/transfer checks. Inbox metadata/claims use held control+company Immediate transactions; ingest checks anchor, assignment/review explicit destination, readonly candidate companies excluded. Host temporary assignment/ingest selection restores original on reusable success/refusal, restoration failure is unknown/retired. Fresh claim and fresh publication gated; exact prior document recovery checks original and finalizes source without duplicate under newly active lock. Five actualhost inbox unit tests and five appmail tests pass, including locked B/unlocked A/no claim, originalscope restoration, prior durable-split recovery underlock, service quota rollback and synthetic admitted received/failure completion. Native server/CLI/MCP build and strict6crate all-targetClippy pass; readonly review no actionable defects. Actual113 normalMFA creates two companies through API, B historical bank viaCSV, B locked before candidate-source ingress at unlocked A, HTTP/CLI/MCP target-B assignment refusal without source/mail/bothcompany state changes, then actualweb A lock and HTTP/CLI/MCP alias refusals. Current signed two-companybackup unlocks; MCPassignment/CLIcompletion and explicitclient replay/source/doc/original parity, alias update, freshMFArestart. PrimaryA terminal0documents/1bank/1journal, targetB1document/1bank/0journal; all binary/twohelper/runner hashes independentlymatched and ownedprocess/profilecleanup verified. No realIMAP/config/poll/SMTP/keyrotation/offsite/GUI claim. Prior111/112 evidence and entiremission preserved; required remote backup/destination administration/health/audit/governance/discovery/release/platform/migration/TS retirement and final installeddesktop acceptance remain open."
+    },
+    {
+      "current_increment": "Group114 exact externally copied native backup verification through web/HTTP/CLI/MCP, manual lost-reply reconciliation, current revocation and fresh-MFA restart accepted",
+      "code_revision": "d0164f98 + recorded Group114 root host/server/shared-web integration and boxed preparation fix in this commit",
+      "spec_revision": "sha256:bc98636be4a972407adce0f817a76bb9d4bb7200cb292a70965e75ab62fae250",
+      "state": "Group114 completes exact remote-copy verification, not upload. Operator-owned GoogleDrive token and approved destination/folder binding; fixed HTTPS metadata and independent media reread check object/name/parent/size/SHA with bounded transport and no redirects or retries. Prepare and finish require current human wholeworkspace/allcompany authority; no Owner or SQL lock over provider. Durable exact receipt replays without provider and manual GET works without provider/key/localfile. New explicit operation causes fresh read. Web persists original intent before POST, remount does not POST, explicit GET null allows reviewed same-id retry or preserved-old-id correction, and provider removal retains reconciliation. Actual114b normalMFA web signed placement, independent archive verification and harness copy to separate privateTLS object; lost accepted reply/remount/manualGET, HTTP/CLI/MCP exact receipt/replay, fresh CLI/MCP observations, wrong parent/corrupt actual media/oversized/missing refusals with no receipt, current company owner revocation while provider held then restored through existing second MFA owner, and freshMFArestart pass. Exactly14 providerGETs, no accounting changes from remote checks; A0docs/1bank/1journal and B1doc/1bank/0journal. Final artifact/threehelper/runner hashes independently matched and owned process/profile cleanup verified. Targeted runtime/application/storage/client/CLI/MCP/server/UI tests, web type/build and strict8crate all-targetClippy pass. No realGoogleaccount/offsite/source-free restore of remote receipts/GUI claim. Entiremission/epic672 and prior evidence preserved; next coherent required flow is aggregate backup governance/status using exact archive identity, then destination administration/health/audit, release/parity/transfer/recovery/TS retirement and final installed desktop acceptance. No extra perfection round."
     }
   ]
 }

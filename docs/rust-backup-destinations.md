@@ -372,3 +372,35 @@ Der bruges ingen vilkårlig provider-URL i produktion. Til isolerede syntetiske
 protokolprøver findes en operatørkonfigureret privat CA og et bogstaveligt
 HTTPS-loopback-endpoint. En bestået sådan prøve kvalificerer protokollen og
 brugerforløbet; den kvalificerer ikke en virkelig Google-konto eller offsite-drift.
+
+
+## Samlet backupstatus for virksomheden
+
+Panelet **Samlet backupstatus** i integritetsvisningen sammenholder den aktuelle
+virksomheds seneste brugbare lokale backup med placeringskvitteringer og
+observationer af en ekstern kopi. Tryk **Hent samlet backupstatus** for at
+opdatere. Visningen foretager ingen providerkald, danner ingen backup og ændrer
+ikke bogføringslåsen.
+
+Alle kvitteringer skal matche samme arkiv-SHA256, størrelse og tidspunkt for
+backupfilen. En nyere backup overtager derfor ikke en ældre backups eksterne
+kvittering. Historiske kvitteringer fra før en gendannelsesgrænse tæller ikke
+som aktive beviser på den nye instans. Manglende eller ændrede lokale arkiver
+kan ikke give et positivt samlet udsagn om en brugbar backup med ekstern kopi.
+En placeringskvittering viser en tidligere registrering; den er ikke i sig selv
+en ny genlæsning af destinationsfilen.
+
+Panelet viser backupbehov og bogføringslås, den præcise lokale arkividentitet,
+konfigurerede destinationer samt eksterne observationers oprindelige tidspunkter.
+Administratorens erklæringer om opbevaring står særskilt. En ekstern bytekontrol
+beviser ikke geografisk placering, fortsat tilgængelighed eller gennemført
+gendannelsesprøve. Status bruger derfor aldrig erklæringer som uafhængigt
+verificerede forhold.
+
+HTTP bruger `GET /api/companies/{slug}/backup-governance` uden body eller
+forespørgselsparametre. CLI bruger `remote backup-governance --company SLUG`
+med normal server- og menneskelig cookieopsætning. MCP bruger
+`system_backup_governance` med `{company: SLUG}`. Alle tre bruger den aktuelle
+virksomhedsadministrators rettigheder og samme serverberegning. Klienterne kan
+ikke indsætte et historisk `asOf`, en provideradresse eller en selvangivet
+kvittering. Serverstier, token og privat signeringsmateriale udleveres ikke.

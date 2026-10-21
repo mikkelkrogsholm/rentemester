@@ -570,6 +570,8 @@ def main():
                 # Static imports execute even when the optional extension is disabled.
                 proof_helpers.append(REPO / 'scripts/rust/check-native-backup-remote.ts')
                 report['backupRemoteHelperSha256'] = digest(proof_helpers[2])
+                proof_helpers.append(REPO / 'scripts/rust/check-native-backup-governance.ts')
+                report['backupGovernanceHelperSha256'] = digest(proof_helpers[3])
                 helper_hashes = {str(path): digest(path) for path in proof_helpers}
                 phase('service-run')
                 if any(digest(path) != helper_hashes[str(path)] for path in proof_helpers):
@@ -606,7 +608,11 @@ def main():
                     expected_drive = [{'objectId':obj,'kind':kind} for obj,kinds in [('synthetic_good',['metadata','media']),('synthetic_wrong_parent',['metadata']),('synthetic_wrong_hash',['metadata','media']),('synthetic_oversized',['metadata','media']),('synthetic_missing',['metadata']),('synthetic_held',['metadata','media']),('synthetic_good',['metadata','media']),('synthetic_good',['metadata','media'])] for kind in kinds]
                     if drive_requests != expected_drive:
                         raise RuntimeError('Drive GET trace differs: skipped work or unexpected retries')
-                    report.update(remoteBackupVerificationQualified=True,driveGetTrace=list(drive_requests),fixtureCopyByHarness=True,actualGoogleAccountQualified=False,offsiteQualified=False,installedNativeQualified=False)
+                    governance = report['results']['service-run']['remoteBackup']['governance']
+                    reopened_governance = report['results']['service-reopen']['remoteBackupReopen']['governance']
+                    if not governance.get('qualified') or not reopened_governance.get('sameNewLatestAfterNormalMfaRestart') or not reopened_governance.get('historicalEvidenceNotBorrowed'):
+                        raise RuntimeError('Current exact-archive governance or restart parity not qualified')
+                    report.update(backupGovernanceQualified=True,remoteBackupVerificationQualified=True,driveGetTrace=list(drive_requests),fixtureCopyByHarness=True,actualGoogleAccountQualified=False,offsiteQualified=False,installedNativeQualified=False)
                 save()
                 print('PASS: normal MFA financial backup lock, human/service HTTP/CLI/MCP refusal, metadata refusal/recovery, two-company inbox/alias gate and exact handoff, UI verified artifact, missing/tamper lock, single posting and restart; '+str(args.evidence))
                 return
