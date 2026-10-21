@@ -149,7 +149,7 @@ pub(crate) fn verify_link_audit(
             return Err(proof_error());
         }
         expected["compatibility"] = serde_json::to_value(claims).map_err(invalid)?;
-    } else if !actor.strip_prefix("user:").is_some_and(|s| !s.is_empty()) {
+    } else if actor.strip_prefix("user:").is_none_or(|s| s.is_empty()) {
         return Err(proof_error());
     }
     if expected != *audit {
