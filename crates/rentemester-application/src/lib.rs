@@ -129,3 +129,5 @@ pub mod portfolio_cashflow;
 pub mod manual_post_recovery;
 
 pub mod backup_remote;
+
+pub mod backup_governance;
