@@ -1,3 +1,4 @@
+import { createBackupRegistrationProof } from "./check-native-backup-registration";
 import { createBackupGovernanceProof } from "./check-native-backup-governance";
 import type { Page } from "@playwright/test";
 import { spawnSync } from "node:child_process";
@@ -18,6 +19,7 @@ export function createBackupRemoteProof(page: Page, base: string, work: string, 
   const get = async (url: string) => { const response = await page.request.get(base + url); need(response.ok(), "Remote proof authorized read refused"); return response.json(); };
   const books = async () => Promise.all(["synthetic", "synthetic-backup-inbox-target"].map(async slug => ({ slug, journal: await get(`/api/companies/${slug}/journal`), bank: await get(`/api/companies/${slug}/bank`), trial: await get(`/api/companies/${slug}/trial-balance`) })));
   const cookies = async () => writeFileSync(cookieFile, (await page.context().cookies(base)).map(c => `${c.name}=${c.value}`).join("; ") + "\n", { mode: 0o600 });
+  const registrationProof = createBackupRegistrationProof(page, base, work, () => trace().length, secondOwnerPage);
   const governanceProof = createBackupGovernanceProof(page, base, work, () => trace().length);
   let placement = "", canonical: any, baseline: any, storageKey = "", browserPosts = 0;
   page.on("request", request => { if (request.url() === base + path && request.method() === "POST") browserPosts++; });
@@ -144,8 +146,9 @@ export function createBackupRemoteProof(page: Page, base: string, work: string, 
       const freshMcp = client("mcp", randomUUID(), "synthetic_good"); need(trace().length === beforeFresh + 4, "New explicit MCP operation requires fresh metadata/media"); await parity(freshMcp);
       const governanceObserved = await governanceProof.observed([canonical, fresh, freshMcp]);
       const governanceNewer = await governanceProof.newerBackup(canonical.archiveSha256);
+      const registrations = await registrationProof.run(governanceNewer.newArchiveSha256, placement);
       await unchanged();
-      return { governance: { qualified: true, beforePlacement: governanceBefore, observed: governanceObserved, newerBackup: governanceNewer }, placementOperationId: placement, receipt: canonical, newCliReceipt: fresh, newMcpReceipt: freshMcp, negatives, revokedDuringHeldProvider: true, independentTrustedSignatureVerified: true, exactLocalAndSeparateRemoteBytes: true, fixtureCopyByHarness: true, normalWebPlacement: true, normalWebRemoteVerification: true, lostReplyManualReconcile: true, persistedPendingId: true, providerTrace: trace(), unchangedAccounting: true, actualGoogleAccountQualified: false, offsiteQualified: false, installedNativeQualified: false };
+      return { registrations, governance: { qualified: true, beforePlacement: governanceBefore, observed: governanceObserved, newerBackup: governanceNewer }, placementOperationId: placement, receipt: canonical, newCliReceipt: fresh, newMcpReceipt: freshMcp, negatives, revokedDuringHeldProvider: true, independentTrustedSignatureVerified: true, exactLocalAndSeparateRemoteBytes: true, fixtureCopyByHarness: true, normalWebPlacement: true, normalWebRemoteVerification: true, lostReplyManualReconcile: true, persistedPendingId: true, providerTrace: trace(), unchangedAccounting: true, actualGoogleAccountQualified: false, offsiteQualified: false, installedNativeQualified: false };
     },
     async reopen() {
       const count = trace().length, posts = browserPosts;
@@ -154,7 +157,8 @@ export function createBackupRemoteProof(page: Page, base: string, work: string, 
       await page.getByText(/Serveren verificerede fjernkopiens bytes/).waitFor();
       need(trace().length === count && browserPosts === posts, "Restart readback must not POST or reread provider");
       const governanceReopen = await governanceProof.reopen();
-      return { governance: governanceReopen, sameExactReceiptAfterNormalMfaRestart: true, originalObservedAt: canonical.observedAt, receipt: canonical, actualGoogleAccountQualified: false, offsiteQualified: false, installedNativeQualified: false };
+      const registrations = await registrationProof.reopen();
+      return { registrations, governance: governanceReopen, sameExactReceiptAfterNormalMfaRestart: true, originalObservedAt: canonical.observedAt, receipt: canonical, actualGoogleAccountQualified: false, offsiteQualified: false, installedNativeQualified: false };
     },
   };
 }
