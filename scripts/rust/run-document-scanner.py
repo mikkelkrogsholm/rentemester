@@ -114,12 +114,18 @@ async function auditPhase(action){
  if(action==='audit-reopen'){await ownerPage.context().clearCookies();await login(ownerPage,owner);return auditProof.reopen();}
  return auditProof.run();
 }
-let servicePurchase,serviceRunResult,backupRecovery,compensationProof;
+let servicePurchase,serviceRunResult,backupRecovery,compensationProof,interestProof;
 async function compensationPhase(action){
  step=action;diagnosticPage=ownerPage;
  if(!compensationProof){const module=await import(process.env.RM_INVOICE_COMPENSATION_HELPER);need(typeof module.createInvoiceCompensationProof==='function','pinned compensation proof factory required');compensationProof=module.createInvoiceCompensationProof(ownerPage,base,work,memberPage,serviceRunResult);}
  if(action==='compensation-reopen'){await ownerPage.context().clearCookies();await login(ownerPage,owner);return compensationProof.reopen();}
  return compensationProof.run();
+}
+async function interestPhase(action){
+ step=action;diagnosticPage=ownerPage;
+ if(!interestProof){const module=await import(process.env.RM_INVOICE_INTEREST_HELPER);need(typeof module.createInvoiceInterestProof==='function','pinned interest proof factory required');interestProof=module.createInvoiceInterestProof(ownerPage,base,work,memberPage,serviceRunResult);}
+ if(action==='interest-reopen'){await ownerPage.context().clearCookies();await login(ownerPage,owner);return interestProof.reopen();}
+ return interestProof.run();
 }
 async function backupRecoveryPhase(action){
  step=action;
@@ -135,7 +141,7 @@ async function servicePhase(action){
  if(action==='service-reopen'){await ownerPage.context().clearCookies();await login(ownerPage,owner);return servicePurchase.reopen();}
  const result=await servicePurchase[{'service-run':'run','service-hold-begin':'holdBegin','service-revoke':'revoke','service-hold-finish':'holdFinish'}[action]]();if(action==='service-run')serviceRunResult=result;return result;
 }
-for await(const line of createInterface({input:process.stdin,crlfDelay:Infinity})){try{const action=JSON.parse(line);let value;if(action.startsWith('compensation-')){try{value=await compensationPhase(action);}catch(error){detail=String(error.message).slice(0,1200);throw error;}}else if(action.startsWith('verification-')){try{value=await verificationPhase(action);}catch(error){detail=String(error.message).slice(0,1200);throw error;}}else if(action.startsWith('audit-')){try{value=await auditPhase(action);}catch(error){detail=String(error.message).slice(0,200);throw error;}}else if(action.startsWith('backup-recovery-')){try{value=await backupRecoveryPhase(action);}catch(error){detail=String(error.message).slice(0,200);throw error;}}else if(action.startsWith('service-'))value=await servicePhase(action);else if(action==='authenticate')value=await authenticate();else if(action==='historical')value=await historical();else if(action==='clean')value=await clean();else if(action==='negatives')value=await negatives();else if(action==='unauthorized')value=await unauthorized();else if(action==='hold-begin')value=await holdBegin();else if(action==='revoke')value=await revoke();else if(action==='hold-finish')value=await holdFinish();else if(action==='clients')value=await clients();else if(action==='reopen')value=await reopen();else if(['archive-source','archive-restarted','archive-restored'].includes(action))value=await archive(action.slice(8));else if(action==='restored')value=await restored();else if(action==='restored-reopen')value=await restoredReopen();else if(action==='finish'){await browser?.close();emit({ok:true,value:{finished:true}});break;}else throw Error('unknown phase');emit({ok:true,value});}catch(error){let pageState=null;try{pageState=await Promise.race([diagnosticPage?.evaluate(()=>({pathname:location.pathname,headings:[...document.querySelectorAll('h1,h2,h3,h4')].map(e=>e.textContent.slice(0,100)),buttons:[...document.querySelectorAll('button')].map(e=>e.textContent.slice(0,100)),alerts:[...document.querySelectorAll('[role=alert]')].map(e=>e.textContent.slice(0,300))})),new Promise(resolve=>setTimeout(()=>resolve(null),2000))]);}catch{}emit({ok:false,step,detail,errorType:error?.name,trace,pageState});await Promise.race([browser?.close().catch(()=>{}),new Promise(resolve=>setTimeout(resolve,2000))]);process.exitCode=1;break;}}
+for await(const line of createInterface({input:process.stdin,crlfDelay:Infinity})){try{const action=JSON.parse(line);let value;if(action.startsWith('interest-')){try{value=await interestPhase(action);}catch(error){detail=String(error.message).slice(0,1200);throw error;}}else if(action.startsWith('compensation-')){try{value=await compensationPhase(action);}catch(error){detail=String(error.message).slice(0,1200);throw error;}}else if(action.startsWith('verification-')){try{value=await verificationPhase(action);}catch(error){detail=String(error.message).slice(0,1200);throw error;}}else if(action.startsWith('audit-')){try{value=await auditPhase(action);}catch(error){detail=String(error.message).slice(0,200);throw error;}}else if(action.startsWith('backup-recovery-')){try{value=await backupRecoveryPhase(action);}catch(error){detail=String(error.message).slice(0,200);throw error;}}else if(action.startsWith('service-'))value=await servicePhase(action);else if(action==='authenticate')value=await authenticate();else if(action==='historical')value=await historical();else if(action==='clean')value=await clean();else if(action==='negatives')value=await negatives();else if(action==='unauthorized')value=await unauthorized();else if(action==='hold-begin')value=await holdBegin();else if(action==='revoke')value=await revoke();else if(action==='hold-finish')value=await holdFinish();else if(action==='clients')value=await clients();else if(action==='reopen')value=await reopen();else if(['archive-source','archive-restarted','archive-restored'].includes(action))value=await archive(action.slice(8));else if(action==='restored')value=await restored();else if(action==='restored-reopen')value=await restoredReopen();else if(action==='finish'){await browser?.close();emit({ok:true,value:{finished:true}});break;}else throw Error('unknown phase');emit({ok:true,value});}catch(error){let pageState=null;try{pageState=await Promise.race([diagnosticPage?.evaluate(()=>({pathname:location.pathname,headings:[...document.querySelectorAll('h1,h2,h3,h4')].map(e=>e.textContent.slice(0,100)),buttons:[...document.querySelectorAll('button')].map(e=>e.textContent.slice(0,100)),alerts:[...document.querySelectorAll('[role=alert]')].map(e=>e.textContent.slice(0,300))})),new Promise(resolve=>setTimeout(()=>resolve(null),2000))]);}catch{}emit({ok:false,step,detail,errorType:error?.name,trace,pageState});await Promise.race([browser?.close().catch(()=>{}),new Promise(resolve=>setTimeout(resolve,2000))]);process.exitCode=1;break;}}
 
 '''
 
@@ -162,7 +168,10 @@ def main():
     parser.add_argument('--audit-log', action='store_true', help='Continue backup-lock single-post proof with one reversal and audit web/HTTP/CLI/MCP inspection, current revocation and restart')
     parser.add_argument('--audit-verify', action='store_true', help='Read-only complete accounting verification, cross-client parity, originals tamper, current revocation and restart')
     parser.add_argument('--invoice-compensation', action='store_true', help='Continue backup-lock through actual DKK/EUR compensation calculate/register/post/principal/claim receipt, exact full audit and normal MFA restart')
+    parser.add_argument('--invoice-interest', action='store_true', help='Actual DKK dated interest registration, posting, causal correction, receipts, full audit and fresh MFA restart; foreign interest remains unqualified')
     args = parser.parse_args()
+    if args.invoice_interest and (not args.backup_lock or args.invoice_compensation or args.audit_log or args.audit_verify or args.remote_backup or args.backup_recovery or args.backup_destinations or args.service_purchase):
+        parser.error('--invoice-interest requires --backup-lock and excludes other proof extensions')
     if args.invoice_compensation and (not args.backup_lock or args.audit_log or args.remote_backup):
         parser.error('--invoice-compensation requires --backup-lock and excludes --audit-log/--remote-backup')
     if args.audit_verify and not args.audit_log:
@@ -599,7 +608,7 @@ def main():
             start(create=True)
             script = work / 'browser.mjs'
             script.write_text(BROWSER)
-            controller = subprocess.Popen(['/opt/homebrew/bin/bun', str(script)], cwd=REPO, env={**os.environ, 'RM_INVOICE_COMPENSATION_HELPER': str(REPO / 'scripts/rust/check-native-invoice-compensation.ts'), 'RM_NATIVE_BACKUP_DESTINATION_PROOF':'1' if args.backup_destinations else '0', 'RM_NATIVE_REMOTE_BACKUP_PROOF':'1' if args.remote_backup else '0', 'RM_AUDIT_VERIFY_HELPER': str(REPO / 'scripts/rust/check-native-audit-verify.ts'), 'RM_AUDIT_HELPER': str(REPO / 'scripts/rust/check-native-audit-log.ts'), 'RM_BACKUP_RECOVERY_HELPER': str(REPO / 'scripts/rust/check-native-backup-recovery.ts'), 'RM_SERVICE_PURCHASE_HELPER': str(REPO / ('scripts/rust/check-native-backup-lock.ts' if args.backup_lock else 'scripts/rust/check-native-service-purchase.ts')), 'RM_SCANNER_PROOF_FACTORY': 'createBackupLockProof' if args.backup_lock else 'createServicePurchaseProof', 'RM_SCANNER_BASE': origin, 'RM_SCANNER_WORK': str(work), 'RM_SCANNER_SCREENSHOT': str(args.evidence.with_suffix('.png')), 'RM_SCANNER_PLAYWRIGHT': str((REPO / 'node_modules/@playwright/test/index.mjs').resolve(strict=True))}, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True, bufsize=1, start_new_session=True)
+            controller = subprocess.Popen(['/opt/homebrew/bin/bun', str(script)], cwd=REPO, env={**os.environ, 'RM_INVOICE_INTEREST_HELPER': str(REPO / 'scripts/rust/check-native-invoice-interest.ts'), 'RM_INVOICE_COMPENSATION_HELPER': str(REPO / 'scripts/rust/check-native-invoice-compensation.ts'), 'RM_NATIVE_BACKUP_DESTINATION_PROOF':'1' if args.backup_destinations else '0', 'RM_NATIVE_REMOTE_BACKUP_PROOF':'1' if args.remote_backup else '0', 'RM_AUDIT_VERIFY_HELPER': str(REPO / 'scripts/rust/check-native-audit-verify.ts'), 'RM_AUDIT_HELPER': str(REPO / 'scripts/rust/check-native-audit-log.ts'), 'RM_BACKUP_RECOVERY_HELPER': str(REPO / 'scripts/rust/check-native-backup-recovery.ts'), 'RM_SERVICE_PURCHASE_HELPER': str(REPO / ('scripts/rust/check-native-backup-lock.ts' if args.backup_lock else 'scripts/rust/check-native-service-purchase.ts')), 'RM_SCANNER_PROOF_FACTORY': 'createBackupLockProof' if args.backup_lock else 'createServicePurchaseProof', 'RM_SCANNER_BASE': origin, 'RM_SCANNER_WORK': str(work), 'RM_SCANNER_SCREENSHOT': str(args.evidence.with_suffix('.png')), 'RM_SCANNER_PLAYWRIGHT': str((REPO / 'node_modules/@playwright/test/index.mjs').resolve(strict=True))}, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True, bufsize=1, start_new_session=True)
             report['browserControllerPid'] = controller.pid
             phase('authenticate')
             if args.backup_lock:
@@ -626,6 +635,9 @@ def main():
                 if args.invoice_compensation:
                     proof_helpers.append(REPO / 'scripts/rust/check-native-invoice-compensation.ts')
                     report['invoiceCompensationHelperSha256'] = digest(proof_helpers[-1])
+                if args.invoice_interest:
+                    proof_helpers.append(REPO / 'scripts/rust/check-native-invoice-interest.ts')
+                    report['invoiceInterestHelperSha256'] = digest(proof_helpers[-1])
                 helper_hashes = {str(path): digest(path) for path in proof_helpers}
                 phase('service-run')
                 if any(digest(path) != helper_hashes[str(path)] for path in proof_helpers):
@@ -643,6 +655,14 @@ def main():
                     phase('compensation-reopen', 300)
                     if any(digest(path) != helper_hashes[str(path)] for path in proof_helpers):
                         raise RuntimeError('Compensation proof helper changed during restart')
+                if args.invoice_interest:
+                    phase('interest-run', 600)
+                    if any(digest(path) != helper_hashes[str(path)] for path in proof_helpers):
+                        raise RuntimeError('Interest proof helper changed during actual execution')
+                    stop(); write_config(); start()
+                    phase('interest-reopen', 300)
+                    if any(digest(path) != helper_hashes[str(path)] for path in proof_helpers):
+                        raise RuntimeError('Interest proof helper changed during restart')
                 if args.audit_log:
                     phase('audit-run')
                     if args.audit_verify:
@@ -668,10 +688,21 @@ def main():
                         raise RuntimeError('Independent signed compensation backup/schema verification refused')
                     report['invoiceCompensationSignedBackup'] = {'sha256':receipt['sha256'],'bytes':receipt['bytes'],'verified':True,'sourceFreeRestoreQualified':False}
                     save()
+                if args.invoice_interest:
+                    progress('operator:independent-signed-interest-backup-verification')
+                    archive = work / 'interest-source.native-backup.json'
+                    receipt = report['results']['interest-run']['signedBackup']
+                    if not owned() or archive.is_symlink() or not archive.is_file() or digest(archive) != receipt['sha256'] or archive.stat().st_size != receipt['bytes']:
+                        raise RuntimeError('Exact owned signed interest backup changed')
+                    verified = subprocess.run([str(pinned['server_binary']), '--verify-backup', str(archive), '--trusted-backup-key', str(work / 'trusted.pub')], cwd=REPO, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=60)
+                    if verified.returncode != 0:
+                        raise RuntimeError('Independent signed interest backup/schema verification refused')
+                    report['invoiceInterestSignedBackup'] = {'sha256':receipt['sha256'],'bytes':receipt['bytes'],'verified':True,'sourceFreeRestoreQualified':False}
+                    save()
                 db = sqlite3.connect((work/'workspace/synthetic/data/ledger.sqlite').as_uri()+'?mode=ro', uri=True)
                 try:
                     counts = {table: db.execute('SELECT count(*) FROM '+table).fetchone()[0] for table in ['documents','bank_transactions','journal_entries']}
-                    expected_counts = {'documents':4,'bank_transactions':5,'journal_entries':9} if args.invoice_compensation else {'documents':0,'bank_transactions':1,'journal_entries':2 if args.audit_log else 1}
+                    expected_counts = {'documents':2,'bank_transactions':4,'journal_entries':7} if args.invoice_interest else {'documents':4,'bank_transactions':5,'journal_entries':9} if args.invoice_compensation else {'documents':0,'bank_transactions':1,'journal_entries':2 if args.audit_log else 1}
                     if counts != expected_counts:
                         raise RuntimeError('Backup lock terminal financial effects differ: '+json.dumps(counts,sort_keys=True))
                     report['terminalSql'] = {'counts':counts,'journalActors':db.execute('SELECT created_by,created_by_program FROM journal_entries ORDER BY id').fetchall()}
@@ -751,6 +782,12 @@ def main():
                     if not actual.get('qualified') or not reopened.get('qualified') or not reopened.get('exactNormalMfaRestartState') or not reopened.get('fullAudit119GreenAfterRestart') or actual['accountingFingerprint'] != reopened['accountingFingerprint']:
                         raise RuntimeError('Compensation whole-flow or exact restart not qualified')
                     report.update(workflow='invoice_compensation_dkk_eur_full_flow',invoiceCompensationQualified=True,invoiceCompensationRestartQualified=True,invoiceCompensationFullAudit119Qualified=True,invoiceCompensationSourceFreeRestoreQualified=False,invoiceCompensationPrivateBuyerActualQualified=False)
+                if args.invoice_interest:
+                    actual = report['results']['interest-run']
+                    reopened = report['results']['interest-reopen']
+                    if not actual.get('qualified') or not reopened.get('qualified') or not reopened.get('exactNormalMfaRestartState') or not reopened.get('fullAudit119GreenAfterRestart') or actual['accountingFingerprint'] != reopened['accountingFingerprint']:
+                        raise RuntimeError('Interest whole-flow or exact restart not qualified')
+                    report.update(workflow='invoice_interest_dkk_dated_full_flow',invoiceInterestQualified=True,invoiceInterestRestartQualified=True,invoiceInterestFullAudit119Qualified=True,invoiceInterestSourceFreeRestoreQualified=False,invoiceInterestForeignActualQualified=False,installedNativeQualified=False)
                 if args.audit_log:
                     report.update(auditLogQualified=True,auditLogRestartQualified=True,auditLogFullVerificationQualified=False)
                 if args.audit_verify:
@@ -771,6 +808,9 @@ def main():
                 save()
                 if args.invoice_compensation:
                     print('PASS: normal MFA DKK/EUR compensation calculation, separate registration/posting, principal and DKK claim receipts, exact adapters/full audit119 and restart; '+str(args.evidence))
+                    return
+                if args.invoice_interest:
+                    print('PASS: normal MFA DKK interest calculation, separate claim/post, dated partial principal, causal correction, actual receipts, full audit119 and exact restart; '+str(args.evidence))
                     return
                 print('PASS: normal MFA financial backup lock, human/service HTTP/CLI/MCP refusal, metadata refusal/recovery, two-company inbox/alias gate and exact handoff, UI verified artifact, missing/tamper lock, single posting and restart; '+str(args.evidence))
                 return
@@ -941,6 +981,14 @@ def main():
             save()
             print('PASS: ordinary MFA required scanner, exact originals/evidence, provider refusals, current revocation, clients and source-free restore; ' + str(args.evidence))
         except BaseException as error:
+            if args.invoice_interest and owned():
+                try:
+                    diagnostic_db = sqlite3.connect((work/'workspace/synthetic/data/ledger.sqlite').as_uri()+'?mode=ro', uri=True)
+                    try:
+                        report['interestFailureSql'] = {table: diagnostic_db.execute('SELECT count(*) FROM '+table).fetchone()[0] for table in ['documents','bank_transactions','journal_entries','invoice_interest_claims','invoice_interest_postings','invoice_interest_corrections','invoice_claim_payments']}
+                    finally: diagnostic_db.close()
+                except (OSError, sqlite3.Error):
+                    report['interestFailureSqlUnavailable'] = True
             with gateway_lock:
                 report['providerRequestTrace'] = list(provider_requests)
                 if args.remote_backup:
