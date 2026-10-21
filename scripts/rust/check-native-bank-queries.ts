@@ -11,6 +11,7 @@ export function createBankQueriesProof(page: Page, base: string, work: string, m
   let step = 'setup', today = '', old = '', complete = false, stable: any, selected: any, originalId = 0, replacementId = 0, reversalId = 0;
   let sources: { sha256: string; bytesBase64: string }[] = [];
   const importReceipts: any[] = [];
+  const accountLifecycle: any = { created: [], updated: [] };
   const need = (v: unknown, message: string) => { if (!v) { const error = Error(message); error.name = 'BankQueries_' + step + '_' + message.replace(/[^A-Za-z0-9_]/g, '_').slice(0, 80); throw error; } };
   const hash = (v: Buffer | string) => createHash('sha256').update(v).digest('hex');
   const query = (v: Record<string, any>) => new URLSearchParams(Object.entries(v).map(([k, value]) => [k, String(value)])).toString();
@@ -18,15 +19,15 @@ export function createBankQueriesProof(page: Page, base: string, work: string, m
   async function post(path: string, data: unknown) { const r = await page.request.post(base + path, { headers: { origin: base }, data }); const v = await r.json(); need(r.ok() && v.ok !== false, 'Setup_' + path); return v; }
   async function cookie(actor: Page, file: string) { rmSync(file, { force: true }); writeFileSync(file, (await actor.context().cookies(base)).map(c => `${c.name}=${c.value}`).join('; '), { mode: 0o600, flag: 'wx' }); }
   function cli(name: string, args: Record<string, any> = {}, file = ownerFile, denied = false, human = false) {
-    const commands: Record<string, string[]> = { list: ['bank', 'list'], report: ['reconcile', 'bank'], accounts: ['bank-account', 'list'], import: ['bank', 'import'] };
-    const flags: Record<string, string> = { textMatch: 'text-match', includeInactive: 'include-inactive' };
+    const commands: Record<string, string[]> = { list: ['bank', 'list'], report: ['reconcile', 'bank'], accounts: ['bank-account', 'list'], import: ['bank', 'import'], accountAdd: ['bank-account', 'add'], accountUpdate: ['bank-account', 'update'] };
+    const flags: Record<string, string> = { textMatch: 'text-match', includeInactive: 'include-inactive', bankName: 'bank-name', registrationNo: 'registration-no', accountNo: 'account-no', accountOwner: 'account-owner', customerNo: 'customer-no', ledgerAccountNo: 'ledger-account' };
     const r = spawnSync(join(work, 'rentemester-rust'), [...commands[name], '--server', base, '--allow-loopback-http', '--cookie-file', file, '--company', 'synthetic', ...(human ? [] : ['--json']), ...Object.entries(args).flatMap(([key, v]) => ['--' + (flags[key] ?? key), String(v)])], { encoding: 'utf8', timeout: 45000, maxBuffer: 16 * 1024 * 1024 });
     need(!r.error && r.status === (denied ? 1 : 0), 'Original_CLI_exit');
     const secret = readFileSync(file, 'utf8').trim(); need(secret && !r.stdout.includes(secret) && !r.stderr.includes(secret), 'CLI_session_privacy');
     return human ? r.stdout : JSON.parse(r.stdout);
   }
   function mcp(name: string, args: Record<string, any> = {}, file = ownerFile, denied = false, schemaError = false) {
-    const names: Record<string, string> = { list: 'bank_list', report: 'reconcile_bank', accounts: 'bank_account_list', import: 'bank_import' };
+    const names: Record<string, string> = { list: 'bank_list', report: 'reconcile_bank', accounts: 'bank_account_list', import: 'bank_import', accountUpdate: 'bank_account_update' };
     const wire = [{ jsonrpc: '2.0', id: 1, method: 'initialize', params: { protocolVersion: '2025-11-25', capabilities: {}, clientInfo: { name: 'synthetic-bank-queries141', version: '1' } } }, { jsonrpc: '2.0', method: 'notifications/initialized' }, { jsonrpc: '2.0', id: 2, method: 'tools/call', params: { name: names[name], arguments: { company: 'synthetic', ...args } } }].map(v => JSON.stringify(v)).join('\n') + '\n';
     const r = spawnSync(join(work, 'rentemester-mcp'), ['--server', base, '--allow-loopback-http', '--cookie-file', file], { input: wire, encoding: 'utf8', timeout: 45000, maxBuffer: 16 * 1024 * 1024 });
     const secret = readFileSync(file, 'utf8').trim(); need(!r.error && r.status === 0 && !r.stdout.includes(secret) && !r.stderr.includes(secret), 'MCP_transport_privacy');
@@ -70,7 +71,17 @@ export function createBankQueriesProof(page: Page, base: string, work: string, m
       need(!complete, 'Run_once'); await cookie(page, ownerFile); await cookie(member, memberFile);
       today = (await get('/api/portfolio')).portfolio.asOf; old = String(Number(today.slice(0, 4)) - 1) + '-12-31';
       for (const [accountNo, type, normalBalance] of [['1741', 'asset', 'debit'], ['1742', 'asset', 'debit'], ['8741', 'equity', 'credit'], ['8742', 'equity', 'credit']]) await post(prefix + 'accounts', { accountNo, name: 'Synthetic query ' + accountNo, type, normalBalance });
-      for (const [slug, currency, ledgerAccountNo] of [['synthetic-query-dkk', 'DKK', '1741'], ['synthetic-query-eur', 'EUR', '1742']]) await post(prefix + 'bank-accounts', { name: 'Synthetic query ' + currency, slug, currency, ledgerAccountNo });
+      step = 'original_bank_account_lifecycle';
+      for (const [slug, currency, ledgerAccountNo] of [['synthetic-query-dkk', 'DKK', '1741'], ['synthetic-query-eur', 'EUR', '1742']]) {
+        const created = cli('accountAdd', { name: 'Synthetic query ' + currency, slug, currency, ledgerAccountNo, bankName: 'Synthetic bank143', accountNo: '123456143' });
+        need(created.ok && created.account.slug === slug && created.account.currency === currency && created.account.ledgerAccountNo === ledgerAccountNo, 'Original_account_create_full_receipt'); accountLifecycle.created.push(created.account);
+      }
+      const firstAccount = accountLifecycle.created[0], secondAccount = accountLifecycle.created[1];
+      const unconfirmedAccount = mcp('accountUpdate', { account: firstAccount.slug, active: false }, ownerFile, true); need(unconfirmedAccount.code === 'CONFIRM_REQUIRED', 'Account_confirmation_before_mutation');
+      const edited = mcp('accountUpdate', { account: '  ' + firstAccount.slug + '  ', bankName: 'Synthetic edited143', accountNo: '', bic: 'SYNTHDK143', confirm: true }).data.account;
+      need(edited.id === firstAccount.id && edited.slug === firstAccount.slug && edited.createdAt === firstAccount.createdAt && edited.bankName === 'Synthetic edited143' && edited.accountNo === null && edited.bic === 'SYNTHDK143' && edited.ledgerAccountNo === firstAccount.ledgerAccountNo, 'Account_identity_preserved_and_empty_cleared'); accountLifecycle.updated.push(edited);
+      const browserEdit = await page.request.patch(base + prefix + 'bank-accounts/' + secondAccount.slug, { headers: { origin: base }, data: { confirm: true, bankName: 'Synthetic browser143', customerNo: '143', accountNo: null } }); const browserAccount = (await browserEdit.json()).bankAccount;
+      need(browserEdit.ok() && browserAccount.id === secondAccount.id && browserAccount.createdAt === secondAccount.createdAt && browserAccount.customerNo === '143' && browserAccount.accountNo === null && browserAccount.bankName === 'Synthetic browser143', 'Existing_browser_PATCH_same_account'); accountLifecycle.updated.push(browserAccount);
       const csvs = [
         { account: 'synthetic-query-dkk', csvContent: `transaction_date,text,amount,currency,reference\n${old},Synthetic old query141,7.25,DKK,OLD141\n${today},Synthetic current query141,24.14,DKK,CURRENT141\n` },
         { account: 'synthetic-query-eur', csvContent: `transaction_date,text,amount,currency,reference,amount_dkk,fx_rate_to_dkk\n${today},Synthetic FX query141,10.00,EUR,FX141,75.00,7.5\n` },
@@ -94,6 +105,21 @@ export function createBankQueriesProof(page: Page, base: string, work: string, m
       need(isDeepStrictEqual(mcp('import', { ...csvs[0], account: 'missing-import142', confirm: true }, ownerFile, true), refusedImport), 'Original_import_MCP_business_errors');
       need(isDeepStrictEqual(cli('import', { file: files[0], account: 'missing-import142' }, ownerFile, true), flattened(refusedImport)), 'Original_import_CLI_business_errors');
       for (const file of files) rmSync(file);
+      step = 'historical_account_constraints';
+      const beforeHistorical = await books();
+      for (const patch of [{ ledgerAccountNo: '1742' }, { ledgerAccountNo: '' }, { currency: 'EUR' }]) {
+        const r = await page.request.post(base + prefix + 'bank/accounts-original/update', { headers: { origin: base }, data: { account: firstAccount.slug, confirm: true, ...patch } }); const failure = await r.json();
+        need(r.status() === 200 && failure.ok === false && failure.data === undefined && failure.errors.length > 0, 'Historical_account_change_refused');
+        need(isDeepStrictEqual(mcp('accountUpdate', { account: firstAccount.slug, confirm: true, ...patch }, ownerFile, true), failure), 'Historical_account_MCP_error_exact');
+        need(isDeepStrictEqual(cli('accountUpdate', { account: firstAccount.slug, ...patch }, ownerFile, true), flattened(failure)), 'Historical_account_CLI_error_exact');
+      }
+      need(isDeepStrictEqual(await books(), beforeHistorical), 'Historical_refusals_have_no_effects');
+      accountLifecycle.historicalRemapCurrencyRefused = true;
+      const inactive = cli('accountUpdate', { account: String(firstAccount.id), active: false }); need(inactive.ok && !inactive.account.active && inactive.account.id === firstAccount.id, 'Deactivate_preserves_identity');
+      const beforeInactive = await books(); need(beforeInactive.bank.data.count === 3, 'Deactivate_retains_imported_history'); accountLifecycle.deactivatedWithBankRows = beforeInactive.bank.data.count; mcp('import', { ...csvs[0], confirm: true }, ownerFile, true); need(isDeepStrictEqual(await books(), beforeInactive), 'Inactive_import_has_no_effects');
+      const reactivated = mcp('accountUpdate', { account: firstAccount.slug, active: true, confirm: true }).data.account; need(reactivated.active && reactivated.id === firstAccount.id && reactivated.createdAt === firstAccount.createdAt, 'Reactivate_preserves_history');
+      accountLifecycle.reactivated = reactivated;
+      await page.goto(base + '/companies/synthetic/bank-accounts'); await page.getByRole('heading', { name: 'Bankkonti', exact: true }).waitFor(); await page.getByText('Synthetic browser143', { exact: true }).waitFor(); accountLifecycle.sharedReactReadQualified = true;
       const rows = (await canonical('list')).data.rows, row = rows.find((r: any) => r.reference === 'CURRENT141'), fx = rows.find((r: any) => r.reference === 'FX141'); need(row && fx, 'Actual_imported_row_ids'); selected = { bankId: row.id, fxAccountId: fx.bankAccountId };
       async function journal(text: string, equity: string, key: string) { return post(prefix + 'manual-journal', { confirm: true, input: { format: 'rentemester-manual-journal-post/1', expectedRuleVersion: (await get(prefix + 'journal')).journal.nativePosting.ruleVersion, idempotencyKey: key, request: { transactionDate: today, text, currency: 'DKK', lines: [{ accountNo: '1741', debitAmount: '24.14', creditAmount: '0.00' }, { accountNo: equity, debitAmount: '0.00', creditAmount: '24.14' }] } } }); }
       step = 'real_link_reversal_correction';
@@ -120,11 +146,13 @@ export function createBankQueriesProof(page: Page, base: string, work: string, m
       need(isDeepStrictEqual(await canonical('list', {}, member), await canonical('list')), 'Current_reader_exact_data');
       const memberId = (await get('/api/me', member)).user.id; await post('/api/workspace/members/company', { userId: memberId, action: 'revoke', companySlug: 'synthetic' });
       need((await member.request.get(base + endpoint('list'))).status() === 403, 'Current_revoked_HTTP_read'); mcp('list', {}, memberFile, true); cli('list', {}, memberFile, true);
+      mcp('accountUpdate', { account: firstAccount.slug, bankName: 'Refused current grant143', confirm: true }, memberFile, true); cli('accountUpdate', { account: firstAccount.slug, bankName: 'Refused current grant143' }, memberFile, true);
+      need((await member.request.patch(base + prefix + 'bank-accounts/' + firstAccount.slug, { headers: { origin: base }, data: { confirm: true, bankName: 'Refused browser143' } })).status() === 403, 'Current_revoked_browser_account_mutation');
       step = 'physical_source_refusal';
       const file = join(work, 'workspace/synthetic/bank/processed', sources[1].sha256 + '.txt'), bytes = readFileSync(file); writeFileSync(file, Buffer.from('Synthetic corrupt source141\n'));
       try { const r = await page.request.get(base + endpoint('list')); need(!r.ok(), 'Unmatched_original_corruption_refused'); mcp('list', {}, ownerFile, true); cli('list', {}, ownerFile, true); } finally { writeFileSync(file, bytes); }
       await sourceFiles(); await unchanged(); complete = true;
-      return { qualified: true, ordinaryMfa: true, originalBankQueryQualified: true, originalBankImportQualified: true, importReceipts, reversedChainRefused: true, sourceCorruptionRefused: true, currentRevocationRefused: true, sources, today, old, selected, originalId, replacementId, reversalId, projections: proof, accountingFingerprint: hash(JSON.stringify(stable)), installedNativeQualified: false, sourceFreeRestoreQualified: false };
+      return { qualified: true, ordinaryMfa: true, originalBankQueryQualified: true, originalBankImportQualified: true, importReceipts, originalBankAccountQualified: true, accountLifecycle, reversedChainRefused: true, sourceCorruptionRefused: true, currentRevocationRefused: true, sources, today, old, selected, originalId, replacementId, reversalId, projections: proof, accountingFingerprint: hash(JSON.stringify(stable)), installedNativeQualified: false, sourceFreeRestoreQualified: false };
     },
     async reopen() { need(complete, 'Completed_fixture'); await cookie(page, ownerFile); await unchanged(); const proof = await projections(); rmSync(ownerFile); rmSync(memberFile); return { qualified: true, ordinaryMfa: true, exactNormalMfaRestartState: true, projections: proof, accountingFingerprint: hash(JSON.stringify(stable)), installedNativeQualified: false, sourceFreeRestoreQualified: false }; },
   };

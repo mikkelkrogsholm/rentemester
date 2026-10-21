@@ -733,7 +733,11 @@ def main():
                             query_sources.append({'sha256':query_hash,'bytes':query_path.stat().st_size})
                         if len(query_sources) != 2 or len({r[7] for r in query_bank_rows}) != 2:
                             raise RuntimeError('Bank query expected two retained statement originals')
-                        report['terminalSql'].update(bankRows=query_bank_rows,reconciliations=query_links,postingAudits=query_posts,originals=query_sources)
+                        query_accounts = db.execute('SELECT id,slug,name,bank_name,registration_no,account_no,iban,bic,account_owner,customer_no,currency,ledger_account_no,active,created_at FROM bank_accounts ORDER BY id').fetchall()
+                        account_audits = db.execute("SELECT event_type,entity_type,entity_id,actor FROM audit_log WHERE event_type IN ('bank_account_add','bank_account_update') ORDER BY id").fetchall()
+                        if len(query_accounts) != 2 or [a[0] for a in account_audits] != ['bank_account_add']*2 + ['bank_account_update']*4:
+                            raise RuntimeError('Original bank account lifecycle exact account/audit effects differ')
+                        report['terminalSql'].update(bankRows=query_bank_rows,reconciliations=query_links,postingAudits=query_posts,originals=query_sources,bankAccounts=query_accounts,bankAccountAudits=account_audits)
                     if (args.local_runtime_join or args.local_runtime_mcp):
                         local_post_rows = db.execute("SELECT event_type,actor FROM audit_log WHERE event_type IN ('journal_post','journal_reverse') ORDER BY id").fetchall()
                         local_owner_id = report['results']['authenticate']['ownerId']
@@ -802,7 +806,7 @@ db.close();process.stdout.write(JSON.stringify(out));"""
                     raise RuntimeError('Standalone report browser controller failed')
                 report.update(status='passed',currentAction='complete',installedNativeQualified=False,sourceFreeRestoreQualified=False)
                 if args.bank_queries:
-                    report.update(workflow='original_bank_import_queries_reconciliation',bankQueriesQualified=True,bankQueriesRestartQualified=True,bankOriginalImportQualified=report['results']['service-run'].get('originalBankImportQualified', False))
+                    report.update(workflow='original_bank_account_import_queries_reconciliation',bankQueriesQualified=True,bankQueriesRestartQualified=True,bankOriginalImportQualified=report['results']['service-run'].get('originalBankImportQualified', False),bankOriginalAccountQualified=report['results']['service-run'].get('originalBankAccountQualified', False))
                 elif (args.local_runtime_join or args.local_runtime_mcp):
                     report.update(workflow='local_mcp_same_rust_owner_unix_socket' if args.local_runtime_mcp else 'local_cli_same_rust_owner_unix_socket',localRuntimeQualified=True,localRuntimeRestartQualified=True,localRuntimeMcpQualified=args.local_runtime_mcp)
                 elif args.saft_artifact:
