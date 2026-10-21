@@ -111,25 +111,23 @@ fn bounded(value: &Value) -> Result<(), Error> {
     Ok(())
 }
 fn id(v: Option<&Value>) -> Result<(), Error> {
-    if let Some(v) = v {
-        if !v
+    if let Some(v) = v
+        && !v
             .as_i64()
             .is_some_and(|n| (1..=9_007_199_254_740_991).contains(&n))
-        {
-            return Err(input_error(
-                "positive safe document/bank/customer id required",
-            ));
-        }
+    {
+        return Err(input_error(
+            "positive safe document/bank/customer id required",
+        ));
     }
     Ok(())
 }
 fn string(v: Option<&Value>) -> Result<(), Error> {
-    if let Some(v) = v {
-        if v.as_str()
+    if let Some(v) = v
+        && v.as_str()
             .is_none_or(|s| s.trim().is_empty() || s.len() > 2000)
-        {
-            return Err(input_error("nonblank invoice selector/text required"));
-        }
+    {
+        return Err(input_error("nonblank invoice selector/text required"));
     }
     Ok(())
 }
@@ -355,18 +353,18 @@ pub fn prepare(
         if source.get("currency").is_none() {
             source["currency"] = json!(currency);
         }
-        if source.get("dueDate").is_none() {
-            if let Some(terms) = terms {
-                let company: i64 = tx
-                    .query_row(
-                        "SELECT payment_terms_days FROM companies WHERE id=1",
-                        [],
-                        |r| r.get(0),
-                    )
-                    .map_err(invalid)?;
-                if company != terms {
-                    notes.push(format!("Betalingsfrist {terms} dage fra kundekortet — virksomhedens standard er {company} dage."));
-                }
+        if source.get("dueDate").is_none()
+            && let Some(terms) = terms
+        {
+            let company: i64 = tx
+                .query_row(
+                    "SELECT payment_terms_days FROM companies WHERE id=1",
+                    [],
+                    |r| r.get(0),
+                )
+                .map_err(invalid)?;
+            if company != terms {
+                notes.push(format!("Betalingsfrist {terms} dage fra kundekortet — virksomhedens standard er {company} dage."));
             }
         }
     }
