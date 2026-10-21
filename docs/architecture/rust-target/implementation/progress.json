@@ -1,13 +1,15 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "Group127 accepted; move original R27/#701 to done, then original R32/#706 imported/native portfolio subset",
-  "code_revision": "a4ca47e5 +394c37c0 plus pending main raw-ZIP source/physical/backup integration",
+  "current_increment": "Group128 imported-company native invoice portfolio subset; original R27/#701 closed on accepted evidence",
+  "code_revision": "6cd9b9a5",
   "spec_revision": "sha256:bc98636be4a972407adce0f817a76bb9d4bb7200cb292a70965e75ab62fae250",
-  "state": "Group127 complete finite original import remainder: normal-MFA real CLI exact UTF8/BOM/CRLF CSV import, source-chart reconciliation, explicit MCP replay and duplicate refusal, existing web recorded opening and first non-VAT expense, shifted fiscal reports, nonwaivable unresolved historical debtor close blocker, all five audit components, independently verified signed backup and fresh normal-MFA restart passed. Report f01dcefee2e0269f40c4bb268aca4b94e1650cd1aa041a99115965cbab8bfe65 independently verifies exact normal binaries/web/helpers, source bytes, SQL effects and owned cleanup. Canonical shared receipt defect fixed at7019c92b without changing validators. Preserve accepted124/125/126, source chart25/helper1 and migration core3. Original Billy requests328/329/330 remain open, not invented parsers. Stop127 perfection. Next original R32/#706 fixes imported-company native invoice portfolio subset; every whole mission gate remains, installed GUI allersidst.",
-  "issues_closed": [],
+  "state": "Original R27/#701 closed flow:done with acceptance comment6315462026 and accepted60/62/124/125/126/127 proof. Group128 integrates real imported-company native invoice subset in storage, exact native-only aggregation and Danish API/web boundary. Storage6, engine4, UI9, integrated10, strict engine/storage Clippy, normal three-bin build and webbuild pass. First actual completed import/restart then correctly refused native invoice because test omitted seller address; fixture corrected at6cd9b9a5 using explicit company profile. Focused128b safely interrupted before known pre-import year-selection fixture mistake; corrected conditional source-year snapshot and bounded contract preflight pending before128c; do not repeat full accepted import negatives. Existing R32 remains incomplete: static HTML dashboard, annual iXBRL/tax and original mapping remain. Whole mission active; installed GUI allersidst.",
+  "issues_closed": [
+    701
+  ],
   "next": [
-    "Record original R27/#701 complete acceptance with124/125/126/127 evidence and pending Billy references, then move #701 done. Prepare existing R32/#706 finite imported-company native invoice portfolio subset correction from read-only scout; preserve imported schedule separately, no combined invented totals. Parallel bounded ownership in isolated worktrees; one active child, shared cache, no polish. Installed GUI last.",
+    "Complete focused actual128c and independent artifact/SQL/backup/restart verification. When accepted, stop this subset and continue necessary static HTML dashboard artifact under existing R32/#706; contract /tmp/rm129-dashboard-contract.md. Preserve iXBRL/tax and all original formats as explicit remainders; do not close whole R32 on portfolio subset.",
     "Installed desktop acceptance is explicitly deferred to the very end by the user. Preserve prepared Group100 profile; collect remaining native automation, closure, recovery and packaging checks for final installed acceptance without requesting screen unlock during development.",
     "J03/R50 and remaining R54 scope: only still-supported operation closure/recovery, nonempty scheduler handoff, hostile/older clone and post-cutover rollback requirements. Group99 qualifies managed installed J06 flow, not every R54 acceptance item.",
     "Signed distribution/update/cutover evidence must match actual full Rust replacement; retain all existing completion gates and TypeScript retirement gate.",
@@ -6991,7 +6993,40 @@
         328,
         329,
         330
-      ]
+      ],
+      "issue_acceptance_comment": "https://github.com/mikkelkrogsholm/rentemester/issues/701#issuecomment-6315462026"
+    },
+    "native_imported_portfolio128": {
+      "status": "targeted product checks passed; focused actual proof pending after diagnosed fixture correction",
+      "source_revision": "6cd9b9a5",
+      "worker_sources": [
+        "a22e4120",
+        "fab32343"
+      ],
+      "integrated_sources": [
+        "dd1efded",
+        "7687aecf"
+      ],
+      "storage6": "/tmp/rm128-portfolio-storage-tests-final.log",
+      "engine4": "/tmp/rm128-portfolio-engine.log",
+      "ui9": "/tmp/rm128-portfolio-ui.log",
+      "integrated10": "/tmp/rm128-integrated-tests.log",
+      "strict_clippy": "/tmp/rm128-clippy.log",
+      "normal_three_bin_build": "/tmp/rm128-normal-build.log",
+      "web_build": "/tmp/rm128-web-build.log",
+      "first_actual_failure": {
+        "report": "/tmp/rentemester-rust-reports/native-imported-portfolio128.json",
+        "diagnosis": "Real import and restart completed; native invoice correctly refused because test company seller address omitted. Existing invoice guard retained; explicit public company profile PATCH added. Focused source import replaces repetition of accepted full import refusal/replay checks. Owned runtime/process cleanup verified."
+      },
+      "planned_actual_report": "/tmp/rentemester-rust-reports/native-imported-portfolio128c.json",
+      "independent_verifier": "/tmp/rm128-independent-verification.py",
+      "whole_flow_qualified": false,
+      "source_free_restore_qualified": false,
+      "installed_desktop_qualified": false,
+      "second_actual_interrupted": {
+        "report": "/tmp/rentemester-rust-reports/native-imported-portfolio128b.json",
+        "diagnosis": "Main spotted fixed year2025 selected before source import existed; interrupted exact owned runner with SIGINT, terminal130 and owned cleanup verified. Uses default journal/trial year until sourceReceipt then explicit2025. Preserve raw report; status running is stale after interruption, not a live handle. Bounded read-only exact-contract preflight before rerun."
+      }
     }
   },
   "verified_history": [

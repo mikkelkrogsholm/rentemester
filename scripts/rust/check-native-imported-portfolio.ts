@@ -31,11 +31,12 @@ export function createImportedPortfolioProof(page: Page, base: string, work: str
     return value;
   }
   async function snapshot() {
+    const sourceYear = sourceReceipt ? '?year=2025&source=live' : '';
     return {
       documents: await get(prefix + 'documents'),
-      journal: await get(prefix + 'journal?year=2025&source=live'),
+      journal: await get(prefix + 'journal' + sourceYear),
       bank: await get(prefix + 'bank'),
-      trial: await get(prefix + 'trial-balance?year=2025&source=live'),
+      trial: await get(prefix + 'trial-balance' + sourceYear),
       imported: await get(prefix + 'invoices/imported-receivables?asOf=' + late),
       audit: await get(prefix + 'audit-log?limit=5000'),
     };
