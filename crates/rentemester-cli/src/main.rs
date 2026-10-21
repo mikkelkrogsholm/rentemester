@@ -1,3 +1,4 @@
+mod bank_queries;
 mod local_binding;
 mod handoff_export;
 mod saft_artifact;
@@ -73,6 +74,7 @@ fn run(args: Vec<String>) -> Result<serde_json::Value, (u8, Error)> {
     }
     if args == ["--help"] {
         return Ok(json!({"ok":true,"localBinding":"Existing migrated commands may select --local-profile ABS_PRIVATE_PROFILE instead of --server/--allow-loopback-http. Join only: same server via private Unix socket with normal cookie/service authentication. No actor, legacy path, environment-default or launcher parity claim.","commands":[
+            {"name":"bank list|reconcile bank|bank-account list","usage":"bank list --help","scope":"original canonical bank reads and reconciliation, unpaged CLI output"},
             {"name":"system export-saft","usage":"system export-saft --help","scope":"one audited SAF-T export and verified fresh local package"},
             {"name":"system export-authority|export-accountant","usage":"system export-authority --help","scope":"one audited export and verified fresh local handover package"},
             {"name":"report annual|tax","usage":"report annual --help; report tax --help","scope":"closed-year preparation and verified optional XHTML; no submission"},
@@ -289,6 +291,7 @@ fn run(args: Vec<String>) -> Result<serde_json::Value, (u8, Error)> {
 }
 fn main() -> ExitCode {
     let args=match local_binding::prepare(std::env::args().skip(1).collect()) {Ok(args)=>args,Err((code,error))=>{println!("{}",json!({"ok":false,"code":error.code,"errors":[error.message]}));return ExitCode::from(code);}};
+    if bank_queries::accepts(&args) {let output=bank_queries::execute(&args);print!("{}",output.stdout);eprint!("{}",output.stderr);return ExitCode::from(output.exit);}
     if args.first().map(String::as_str)==Some("system") && args.get(1).map(String::as_str)==Some("export-saft") {let output=saft_artifact::execute(&args[1..]);print!("{}",output.stdout);eprint!("{}",output.stderr);return ExitCode::from(output.exit);}
     if args.first().map(String::as_str)==Some("system") && args.get(1).is_some_and(|s|matches!(s.as_str(),"export-authority"|"export-accountant")) {let output=handoff_export::execute(&args[1..]);print!("{}",output.stdout);eprint!("{}",output.stderr);return ExitCode::from(output.exit);}
 
