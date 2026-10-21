@@ -2,7 +2,7 @@ import { backupDestinationProof } from "./check-native-backup-destinations";
 import { request, type APIRequestContext, type Page } from "@playwright/test";
 import { spawnSync } from "node:child_process";
 import { createHash, randomUUID } from "node:crypto";
-import { writeFileSync } from "node:fs";
+import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { isDeepStrictEqual } from "node:util";
 
@@ -12,10 +12,11 @@ export async function createServicePurchaseProof(ownerPage: Page, base: string, 
   const prefix = "/api/companies/synthetic/";
   const backupProof = process.env.RM_NATIVE_BACKUP_DESTINATION_PROOF === "1" ? backupDestinationProof(ownerPage,base,work) : null;
   let backupResult: unknown;
-  const today = new Date().toLocaleDateString("sv-SE", { timeZone: "Europe/Copenhagen" });
+  let today = new Date().toISOString().slice(0, 10);
   const keyFile = join(work, "service-purchase.key");
   const account = { expense: "6101", vat: "4101", creditor: "3101", replacement: "3102", bank: "1701" };
   let key = "", serviceId = "", credentialId = "", companyName = "";
+  let originalRegistration: any, originalPartial: any, registerReceipt: any, partialReceipt: any, originalLists: any, receiptRestartProof: any, originalSourceRefused = false;
   let http: APIRequestContext | undefined, pending: Promise<Reply> | undefined;
   let baseline: any, stable: any, documentId = 0, payableId = 0, started = false, revoked = false, finished = false;
   const need = (value: unknown, label: string) => { if (!value) throw Error(label); };
@@ -73,6 +74,34 @@ export async function createServicePurchaseProof(ownerPage: Page, base: string, 
     need(reply?.result?.isError === !success && !reply.error, `MCP purchase ${command} unexpected outcome`);
     return success ? reply.result.structuredContent.data : { refused: true };
   }
+  function originalClient(kind: "cli" | "mcp", name: "register" | "pay" | "list", args: Record<string, any>, denied = false) {
+    const common = ["--server", base, "--allow-loopback-http", "--service-key-file", keyFile];
+    const flags: Record<string,string> = { documentId:"document-id", billDate:"bill-date", dueDate:"due-date", expenseAccount:"expense-account", vatTreatment:"vat-treatment", vendorId:"vendor-id", payableId:"payable-id", bankTransactionId:"bank-transaction-id", paymentAccount:"payment-account", asOf:"as-of", minDays:"min-days" };
+    let argv: string[], input: string | undefined;
+    if (kind === "cli") {
+      const cliArgs = { ...args }; delete cliArgs.confirm; delete cliArgs.idempotencyKey;
+      if (cliArgs.asOfDate !== undefined && cliArgs.asOf === undefined) cliArgs.asOf = cliArgs.asOfDate; delete cliArgs.asOfDate;
+      argv = ["payable", name, ...common, "--company", "synthetic", "--json", ...Object.entries(cliArgs).flatMap(([k,v])=>["--"+(flags[k]??k),String(v)])];
+    } else {
+      argv = common;
+      input = [{jsonrpc:"2.0",id:1,method:"initialize",params:{protocolVersion:"2025-11-25",capabilities:{},clientInfo:{name:"synthetic-original-payable146",version:"1"}}},{jsonrpc:"2.0",method:"notifications/initialized"},{jsonrpc:"2.0",id:2,method:"tools/call",params:{name:"payable_"+name,arguments:{company:"synthetic",...args}}}].map(v=>JSON.stringify(v)).join("\n")+"\n";
+    }
+    const result = spawnSync(join(work,kind==="cli"?"rentemester-rust":"rentemester-mcp"),argv,{input,encoding:"utf8",timeout:45000,maxBuffer:16*1024*1024});
+    need(!result.error && result.status === (kind==="cli"&&denied?1:0) && !result.stdout.includes(key) && !result.stderr.includes(key),"Original payable client terminal/privacy");
+    if(kind==="cli"){const value=JSON.parse(result.stdout);need(value.ok===!denied&&Array.isArray(value.errors),"Original payable CLI flat envelope");return value;}
+    const reply=result.stdout.trim().split("\n").map(v=>JSON.parse(v)).find(v=>v.id===2), value=reply?.result?.structuredContent;
+    need(!reply?.error&&reply.result.isError===denied&&value?.ok===!denied&&Array.isArray(value.errors)&&isDeepStrictEqual(JSON.parse(reply.result.content[0].text),value),"Original payable MCP exact envelope");
+    return {ok:value.ok,...(value.data??{}),errors:value.errors,...(value.appliedRules?{appliedRules:value.appliedRules}:{}),...(value.code?{code:value.code}:{})};
+  }
+  async function listOriginal(expectedOpen: number, expectedPaid: number) {
+    const future = new Date(today+"T00:00:00Z"); future.setUTCDate(future.getUTCDate()+3); const aged=future.toISOString().slice(0,10);
+    const cases: [Record<string,any>,number,number][] = [[{},1,expectedOpen],[{supplier:" SYNTHETIC SUPPLIER "},1,expectedOpen],[{supplier:"absent-supplier146"},0,0],[{vendorId:9007199254740991},0,0],[{from:today,to:today},1,expectedOpen],[{from:aged,to:today},0,0],[{asOf:"1970-01-01"},0,0],[{asOf:today,asOfDate:"1970-01-01"},1,expectedOpen],[{asOfDate:today},1,expectedOpen],[{status:"overdue",asOf:aged,minDays:3},expectedOpen>0?1:0,expectedOpen],[{status:"overdue",asOf:aged,minDays:4},0,0],[{status:"paid"},expectedOpen===0?1:0,0]];
+    const proof=[];
+    for(const [query,count,total] of cases){const raw=await service().get(prefix+"payables/original/list?"+new URLSearchParams(Object.entries(query).map(([k,v])=>[k,String(v)])));const value=await raw.json();need(raw.ok()&&value.ok&&value.data.count===count&&value.data.totalOpenBalance===total,"Original filtered payable count/total");
+      const flat={ok:value.ok,...value.data,errors:value.errors};need(isDeepStrictEqual(originalClient("mcp","list",query),flat)&&isDeepStrictEqual(originalClient("cli","list",query),flat),"Original payable query HTTP CLI MCP parity");
+      if(count===1)need(value.data.rows[0].paidAmount===expectedPaid&&value.data.rows[0].payableId===payableId,"Original dated paid principal");proof.push({query,value});}
+    return proof;
+  }
   async function discoveryProof() {
     const invoke = (kind: "cli" | "mcp", name: string, args: Record<string, unknown> = {}) => {
       const common = ["--server", base, "--allow-loopback-http", "--service-key-file", keyFile];
@@ -115,7 +144,8 @@ export async function createServicePurchaseProof(ownerPage: Page, base: string, 
     }
     for (const path of ["/api/agent-capabilities?limit=0", "/api/agent-capabilities?cursor=-1", "/api/agent-capabilities?query=a&query=b", "/api/agent-capabilities?extra=x"]) need((await ownerPage.request.get(base + path)).status() === 400, "Invalid discovery query accepted");
     need((await ownerPage.request.get(base + "/api/agent-workflows/unknown")).status() === 404, "Unknown workflow accepted");
-    const empty = await get("/api/agent-capabilities?cursor=1&limit=1");
+    need(Number.isSafeInteger(about.catalogue.capabilityCount) && about.catalogue.capabilityCount > 0, "Advertised finite capability count");
+    const empty = await get("/api/agent-capabilities?cursor=" + about.catalogue.capabilityCount + "&limit=1");
     need(empty.count === 0 && empty.hasMore === false && empty.nextCursor === null, "Pagination beyond end invalid");
     const anonymous = await request.newContext();
     try {
@@ -148,6 +178,7 @@ export async function createServicePurchaseProof(ownerPage: Page, base: string, 
   }
   async function run() {
     need(!started, "Purchase proof must run once"); started = true;
+    const clockRead = await ownerPage.request.get(base+"/api/portfolio"); need(clockRead.ok(),"Trusted default date available"); today=(await clockRead.json()).portfolio.asOf; need(/^\d{4}-\d{2}-\d{2}$/.test(today),"Trusted UTC date shape");
     const fresh = { documents: (await human("documents")).documents, journal: (await human("journal")).journal,
       bank: (await human("bank")).bank, payables: (await human(`payables?status=all&asOf=${today}`)).payables };
     need(fresh.documents.documents.length === 0 && fresh.journal.entries.length === 0 && fresh.bank.transactions.length === 0 && fresh.payables.rows.length === 0, "Fresh synthetic purchase workspace required");
@@ -182,37 +213,45 @@ export async function createServicePurchaseProof(ownerPage: Page, base: string, 
     need(evidence.contentType === "text/plain" && Buffer.from(evidence.bytes).equals(original("cli")), "MCP exact required-scanner original bytes");
     need(isDeepStrictEqual((await human("journal")).journal, beforeUpload.journal), "Scanned ingress creates no financial posting");
     const registration = { documentId, billDate: today, dueDate: today, expenseAccountNo: account.expense, confirm: true };
-    const recognized = client("mcp", discovery.registerTool, registration).payable; payableId = recognized.payableId;
+    originalRegistration = {documentId,billDate:today,dueDate:today,expenseAccount:account.expense,confirm:true,idempotencyKey:"synthetic-original-payable-register146"};
+    const unconfirmed=originalClient("mcp","register",{...originalRegistration,confirm:false},true);need(unconfirmed.code==="CONFIRM_REQUIRED","Original payable confirmation precedes network");
+    registerReceipt=originalClient("mcp","register",originalRegistration);const recognized=registerReceipt;payableId=recognized.payableId;
+    const registerReplay=originalClient("mcp","register",originalRegistration);need(registerReceipt.idempotency?.replayed===false&&registerReplay.idempotency?.replayed===true&&registerReplay.idempotency.receiptId===registerReceipt.idempotency.receiptId&&registerReplay.payableId===payableId,"Original keyed recognition no extra posting");
+    originalLists={registered:await listOriginal(125,0)};
     need(payableId > 0 && recognized.grossAmount === 125 && recognized.netAmount === 100 && recognized.vatAmount === 25, "MCP factual supplier bill recognition");
     const afterRecognition = await snapshot();
     const duplicateBill = await service().post(prefix + "payables", { data: registration });
     need(duplicateBill.status() === 422 && (await duplicateBill.json()).business === "not_committed", "Duplicate payable is a definite business refusal");
     await unchanged(afterRecognition);
     await human("account-roles", { role: "creditors", accountNo: account.replacement, confirm: true });
-    const bytes = Buffer.from(`\uFEFFdate,text,amount,currency,reference,balance_after\r\n${today},Synthetic supplier payment,-125.00,DKK,synthetic-service-purchase-payment-101,-125.00\r\n`, "utf8");
+    const bytes = Buffer.from(`\uFEFFdate,text,amount,currency,reference,balance_after\r\n${today},Synthetic partial supplier payment,-50.00,DKK,synthetic-partial146,-50.00\r\n${today},Synthetic final supplier payment,-75.00,DKK,synthetic-final146,-125.00\r\n`, "utf8");
     const imported = client("mcp", "import_bank", { csvBase64: bytes.toString("base64"), account: "service-purchases", confirm: true }).import;
-    need(imported.imported === 1 && imported.sourceFileHash === hash(bytes) && imported.bankAccountId === bankAccount.id, "Exact BOM/CRLF mapped outgoing source import");
-    const bank = (await human("bank")).bank;
-    const row = bank.transactions.find((value: any) => value.reference === "synthetic-service-purchase-payment-101");
-    need(bank.transactions.length === 1 && row?.amount === -125 && row.sourceFileHash === hash(bytes), "One exact outgoing bank transaction");
-    const paymentBody = { bankTransactionId: row.id, confirm: true };
-    const payment = client("cli", discovery.payCommand.replaceAll("-", "_"), paymentBody, payableId).payment;
-    need(payment.paymentId > 0 && payment.openBalance === 0, "CLI service payment clears payable");
-    stable = await snapshot();
-    need(stable.journal.entries.length === 2 && stable.trialBalance.balanced && stable.incomeStatement.totalExpense === 100 && stable.vat.inputVat === 25, "Recognition/payment has exact expense/VAT and balanced two-entry journal");
-    const entry = stable.journal.entries.find((value: any) => value.id === payment.journalEntryId);
-    need(entry?.lines.length === 2 && entry.lines.some((line: any) => line.accountNo === account.creditor && line.debit === 125 && line.credit === 0)
-      && entry.lines.some((line: any) => line.accountNo === account.bank && line.debit === 0 && line.credit === 125), "Payment relieves original creditor, not replacement mapping, without repeated expense/VAT");
+    need(imported.imported === 2 && imported.sourceFileHash === hash(bytes) && imported.bankAccountId === bankAccount.id, "Exact two-row BOM/CRLF mapped outgoing source import");
+    const bank=(await human("bank")).bank,partial=bank.transactions.find((v:any)=>v.reference==="synthetic-partial146"),row=bank.transactions.find((v:any)=>v.reference==="synthetic-final146");
+    need(bank.transactions.length===2&&partial?.amount===-50&&row?.amount===-75&&bank.transactions.every((v:any)=>v.sourceFileHash===hash(bytes)),"Two exact partial/full source rows");
+    originalPartial={payableId,bankTransactionId:partial.id,amount:50,confirm:true,idempotencyKey:"synthetic-original-payable-partial146"};
+    partialReceipt=originalClient("mcp","pay",originalPartial);need(partialReceipt.openBalance===75&&!partialReceipt.idempotency.replayed,"Original keyed partial bank payment");
+    const replay=originalClient("mcp","pay",originalPartial);need(replay.idempotency.replayed&&replay.paymentId===partialReceipt.paymentId&&replay.idempotency.receiptId===partialReceipt.idempotency.receiptId,"Original partial payment known receipt");
+    originalLists.partial=await listOriginal(75,50);
+    const paymentBody={bankTransactionId:row.id,confirm:true};
+    const payment=originalClient("cli","pay",{payableId,bankTransactionId:row.id,amount:75,date:today,paymentAccount:account.bank,note:"Synthetic original final payment146"});
+    need(payment.paymentId>0&&payment.openBalance===0,"Original CLI full payment clears payable");
+    stable=await snapshot();
+    need(stable.journal.entries.length===3&&stable.trialBalance.balanced&&stable.incomeStatement.totalExpense===100&&stable.vat.inputVat===25,"Bill plus two payments preserves one expense/VAT");
+    for(const [receipt,amount] of [[partialReceipt,50],[payment,75]] as const){const entry=stable.journal.entries.find((v:any)=>v.id===receipt.journalEntryId);need(entry?.lines.length===2&&entry.lines.some((v:any)=>v.accountNo===account.creditor&&v.debit===amount&&v.credit===0)&&entry.lines.some((v:any)=>v.accountNo===account.bank&&v.debit===0&&v.credit===amount),"Both payments relieve original creditor/bank only");}
     need(stable.trialBalance.rows.find((value: any) => value.accountNo === account.creditor)?.balance === 0
       && !stable.journal.entries.some((value: any) => value.lines.some((line: any) => line.accountNo === account.replacement)), "Original creditor reconciles to zero and replacement receives no posting");
     const paid = stable.payables.rows.find((value: any) => value.payableId === payableId);
     need(paid?.status === "paid" && paid.openBalance === 0 && stable.payables.totalOpenBalance === 0, "Canonical paid payable has zero open balance");
-    need(stable.bank.transactions[0].reconciliationStatus === "matched" && stable.bank.bookedBalance === -125 && stable.bank.actualBalance === -125 && stable.bank.difference === 0, "Source statement and bank journal reconcile exactly");
+    need(stable.bank.transactions.every((v:any)=>v.reconciliationStatus === "matched") && stable.bank.bookedBalance === -125 && stable.bank.actualBalance === -125 && stable.bank.difference === 0, "Source statement and bank journal reconcile exactly");
     const duplicatePayment = await service().post(prefix + `payables/${payableId}/pay`, { data: paymentBody });
     need(duplicatePayment.status() === 422 && (await duplicatePayment.json()).business === "not_committed", "Duplicate payment is a definite business refusal");
-    await unchanged(stable); await parity(stable);
+    await unchanged(stable); await parity(stable);originalLists.paid=await listOriginal(0,125);
+    const source=join(work,"workspace/synthetic/bank/processed",hash(bytes)+".txt"),statementBytes=readFileSync(source);writeFileSync(source,Buffer.from("Synthetic tampered original payable statement146\n"));
+    try{originalClient("mcp","pay",originalPartial,true);originalSourceRefused=true;}finally{writeFileSync(source,statementBytes);}
+    await unchanged(stable);
     if (backupProof) backupResult = await backupProof.run();
-    return { backupDestinations: backupResult, discovery, serviceAccountId: serviceId, credentialId, documentId, payableId, requiredScanCliIngest: true, mcpOriginalAndList: true,
+    return { originalPayableQualified:true,originalRegistration,originalPartial,registerReceipt,partialReceipt,originalLists,originalSourceRefused,backupDestinations: backupResult, discovery, serviceAccountId: serviceId, credentialId, documentId, payableId, requiredScanCliIngest: true, mcpOriginalAndList: true,
       mcpBillRecognition: true, cliBankPayment: true, originalCreditorPreserved: true, duplicateBillAndPaymentRefused: true,
       canonicalClientParity: true, documentSource: await sourceBytes(), bankSourceBase64: bytes.toString("base64"), bankSourceSha256: hash(bytes), canonical: stable };
   }
@@ -240,12 +279,14 @@ export async function createServicePurchaseProof(ownerPage: Page, base: string, 
     return { refusal: result, noDocumentPublication: true, unchangedBooksAndPayables: true, noAutomaticRetry: true };
   }
   async function reopen() {
-    need(finished && revoked, "Held revocation must finish before normal reopened verification");
+    if(!revoked){need(stable&&started&&!finished,"Paid source ready for pre-revocation receipt restart");await unchanged(stable);const registration=originalClient("mcp","register",originalRegistration),payment=originalClient("mcp","pay",originalPartial);need(registration.idempotency.replayed&&payment.idempotency.replayed&&registration.idempotency.receiptId===registerReceipt.idempotency.receiptId&&payment.idempotency.receiptId===partialReceipt.idempotency.receiptId&&registration.payableId===payableId&&payment.paymentId===partialReceipt.paymentId,"Exact principal-bound original receipts after restart");await unchanged(stable);receiptRestartProof={qualified:true,registration,payment,lists:await listOriginal(0,125)};return{originalReceiptRestartQualified:true,receiptRestartProof};}
+    need(finished && revoked && receiptRestartProof?.qualified, "Current receipt restart and held revocation must finish before final verification");
     await unchanged(stable); const source = await sourceBytes();
     need((await service().get(prefix + "documents")).status() === 401, "Revoked service still refused after restart");
     client("cli", "payables", undefined, undefined, false);
+    originalClient("cli","list",{},true);originalClient("mcp","register",originalRegistration,true);originalClient("mcp","pay",originalPartial,true);
     const backupReopen = backupProof ? await backupProof.reopen() : undefined;
-    return { backupDestinations: backupReopen, exactPaidStateAfterRestart: true, exactOriginalAfterRestart: source, revokedService401: true, noRescanRequested: true, canonical: stable };
+    return { originalReceiptRestartQualified:true,receiptRestartProof,originalRevokedReceiptsRefused:true,backupDestinations: backupReopen, exactPaidStateAfterRestart: true, exactOriginalAfterRestart: source, revokedService401: true, noRescanRequested: true, canonical: stable };
   }
   return { run, holdBegin, revoke, holdFinish, reopen };
 }

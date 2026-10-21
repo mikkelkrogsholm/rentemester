@@ -1175,11 +1175,14 @@ db.close();process.stdout.write(JSON.stringify(out));"""
                 print('PASS: normal MFA financial backup lock, human/service HTTP/CLI/MCP refusal, metadata refusal/recovery, two-company inbox/alias gate and exact handoff, UI verified artifact, missing/tamper lock, single posting and restart; '+str(args.evidence))
                 return
             if args.service_purchase:
-                report['workflow'] = 'service_scanned_document_payable_bank_payment'
+                report['workflow'] = 'original_payable_service_scanned_bill_partial_full_receipts'
+                report['servicePurchaseHelperSha256'] = digest(REPO / 'scripts/rust/check-native-service-purchase.ts')
                 stop(); config.pop('firstOwner')
                 config['documentScanner'] = {'policy': 'required', 'provider': 'http-json-v1', 'url': f'https://127.0.0.1:{mail_port}/scan', 'bearerToken': scanner_token, 'timeoutMs': 10000, 'trustedCaFile': str(ca)}
                 write_config(); start()
                 phase('service-run')
+                stop(); write_config(); start()
+                phase('service-reopen')
                 originals_before = original_inventory()
                 if len(originals_before) != 1:
                     raise RuntimeError('Exactly one service purchase original required')
@@ -1198,6 +1201,8 @@ db.close();process.stdout.write(JSON.stringify(out));"""
                 phase('service-reopen')
                 if provider_count() != requests_before_restart:
                     raise RuntimeError('Service restart/read rescanned original')
+                if digest(REPO / 'scripts/rust/check-native-service-purchase.ts') != report['servicePurchaseHelperSha256']:
+                    raise RuntimeError('Original payable helper changed during execution')
                 phase('finish', 20)
                 controller.stdin.close(); controller.wait(timeout=10)
                 if controller.returncode != 0:
@@ -1206,15 +1211,21 @@ db.close();process.stdout.write(JSON.stringify(out));"""
                 db = sqlite3.connect((work/'workspace/synthetic/data/ledger.sqlite').as_uri()+'?mode=ro', uri=True)
                 try:
                     counts = {table: db.execute('SELECT count(*) FROM '+table).fetchone()[0] for table in ['documents','document_scan_evidence','payables','payable_payments','bank_transactions','journal_entries']}
-                    if counts != {'documents':1,'document_scan_evidence':1,'payables':1,'payable_payments':1,'bank_transactions':1,'journal_entries':2}:
+                    if counts != {'documents':1,'document_scan_evidence':1,'payables':1,'payable_payments':2,'bank_transactions':2,'journal_entries':3}:
                         raise RuntimeError('Service purchase terminal ledger effect counts differ')
                     report['terminalSql'] = {'counts':counts,'operationalActors':db.execute("SELECT event_type,actor FROM audit_log WHERE event_type IN ('document_ingest','payable_register','payable_payment_apply') ORDER BY id").fetchall(), 'journalActors':db.execute('SELECT created_by,created_by_program FROM journal_entries ORDER BY id').fetchall()}
                     actors = report['terminalSql']['operationalActors']
-                    if len(actors) != 3 or not actors[0][1].startswith('service_account:') or any(actor != actors[0][1] for _, actor in actors):
+                    if len(actors) != 4 or not actors[0][1].startswith('service_account:') or any(actor != actors[0][1] for _, actor in actors):
                         raise RuntimeError('Service operational attribution differs')
                     subject = actors[0][1].removeprefix('service_account:')
-                    if report['terminalSql']['journalActors'] != [('user:'+subject,'service-principal')]*2:
+                    if report['terminalSql']['journalActors'] != [('user:'+subject,'service-principal')]*3:
                         raise RuntimeError('Service journal attribution differs')
+                    db.row_factory = sqlite3.Row
+                    for table in ['payables','payable_payments','bank_transactions','journal_entries','journal_lines','mutation_idempotency_tombstones','mutation_idempotency_outcomes']:
+                        report['terminalSql'][table] = [dict(row) for row in db.execute('SELECT * FROM '+table+' ORDER BY '+('tombstone_id' if table == 'mutation_idempotency_outcomes' else 'id'))]
+                    report['terminalSql']['payableReceiptAudits'] = [dict(row) for row in db.execute("SELECT id,event_type,entity_type,entity_id,message,actor FROM audit_log WHERE message LIKE '%payable_register%' OR message LIKE '%payable_pay%' ORDER BY id")]
+                    report['originalPayableQualified'] = report['results']['service-run'].get('originalPayableQualified', False)
+                    report['originalPayableReceiptRestartQualified'] = report['results']['service-reopen'].get('originalReceiptRestartQualified', False)
                 finally: db.close()
                 if args.backup_destinations:
                     # Read only after every owned server has stopped. Never open a
@@ -1382,7 +1393,7 @@ db.close();process.stdout.write(JSON.stringify(out));"""
                 server.shutdown()
                 server.server_close()
             report['ownedProcessesStopped'] = child is None and (controller is None or controller.poll() is not None)
-            if owned() and (args.bank_queries or args.local_runtime_join or args.local_runtime_mcp) and report['status'] == 'failed':
+            if owned() and (args.bank_queries or args.local_runtime_join or args.local_runtime_mcp or args.service_purchase) and report['status'] == 'failed':
                 # Retain the stopped, private synthetic fixture for targeted diagnosis.
                 # This prevents repeating MFA merely to recover an assertion's source.
                 report['ownedRuntimeCleaned'] = False
