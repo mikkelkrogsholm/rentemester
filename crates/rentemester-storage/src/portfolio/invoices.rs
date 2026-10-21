@@ -1,7 +1,7 @@
 //! Dated invoice principal from explicit linked effects, never today's invoice-list total.
 use super::*;
 pub(super) fn collect(tx: &Transaction<'_>, as_of: &str) -> Result<Value, Error> {
-    let unsupported:bool=tx.query_row("SELECT EXISTS(SELECT 1 FROM imported_receivable_headers) OR EXISTS(SELECT 1 FROM invoice_bad_debt_writeoffs) OR EXISTS(SELECT 1 FROM documents WHERE document_type='issued_invoice' AND invoice_date<=?1 AND currency!='DKK')",[as_of],|r|r.get(0)).map_err(invalid)?;
+    let unsupported:bool=tx.query_row("SELECT EXISTS(SELECT 1 FROM invoice_bad_debt_writeoffs) OR EXISTS(SELECT 1 FROM documents WHERE document_type='issued_invoice' AND invoice_date<=?1 AND currency!='DKK')",[as_of],|r|r.get(0)).map_err(invalid)?;
     if unsupported {
         return Ok(
             json!({"openInvoiceCount":null,"openInvoiceTotal":null,"overdueInvoiceCount":null}),

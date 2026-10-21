@@ -123,8 +123,21 @@ pub fn company(tx: &Transaction<'_>, slug: &str, as_of: &str) -> Result<Value, E
     {
         card[key] = value.clone();
     }
+    let imported_receivables: bool = tx
+        .query_row(
+            "SELECT EXISTS(SELECT 1 FROM imported_receivable_headers)",
+            [],
+            |r| r.get(0),
+        )
+        .map_err(invalid)?;
     card["availability"]["invoices"] = if card["openInvoiceTotal"].is_null() {
         availability("unavailable", Some("unvalued_or_adjusted_receivable"))
+    } else if imported_receivables {
+        card["limitations"].as_array_mut().ok_or_else(|| invalid("portfolio limitations"))?.push(json!("Fakturatallene omfatter kun fakturaer udstedt i Rentemester; importerede tilgodehavender vises i deres separate oversigt."));
+        availability(
+            "partial",
+            Some("native_invoices_only_imported_receivables_separate"),
+        )
     } else {
         availability("complete", None)
     };

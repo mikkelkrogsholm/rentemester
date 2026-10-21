@@ -13,7 +13,10 @@ fn fixture() -> Connection {
     db
 }
 fn issue(tx: &Transaction<'_>, date: &str, amount: i32) -> i64 {
-    let input=serde_json::from_value(json!({"issueDate":date,"buyer":{"name":"Synthetic Buyer","address":"Synthetic Street 2","vatOrCvr":"DK12345678"},"lines":[{"description":"Synthetic service","quantity":1,"unitPriceExVat":amount}]})).unwrap();
+    issue_currency(tx, date, amount, "DKK")
+}
+fn issue_currency(tx: &Transaction<'_>, date: &str, amount: i32, currency: &str) -> i64 {
+    let input=serde_json::from_value(json!({"issueDate":date,"currency":currency,"fxRateToDkk":if currency=="DKK"{1.0}else{7.5},"buyer":{"name":"Synthetic Buyer","address":"Synthetic Street 2","vatOrCvr":"DK12345678"},"lines":[{"description":"Synthetic service","quantity":1,"unitPriceExVat":amount}]})).unwrap();
     let payload = crate::sales::prepare(tx, &input, "2026-10-22T12:00:00Z", true).unwrap();
     let hash =
         crate::invoice_email::sha(serde_json::to_string_pretty(&payload).unwrap().as_bytes());
@@ -158,4 +161,111 @@ fn invalid_date_and_non_dkk_functional_currency_refuse() {
             .message
             .contains("DKK")
     );
+}
+
+#[test]
+fn real_import_preserves_separate_historical_schedule_and_dated_native_invoice_subset() {
+    let mut control = Connection::open_in_memory().unwrap();
+    let mut db = Connection::open_in_memory().unwrap();
+    crate::fresh::initialize_empty_pair(&mut control, &mut db, "Synthetic imported portfolio")
+        .unwrap();
+    let tx = db
+        .transaction_with_behavior(TransactionBehavior::Immediate)
+        .unwrap();
+    let bytes = include_bytes!("../dinero_import/fixtures/source126-deflated.zip");
+    let latest = Date::parse("2026-10-22").unwrap();
+    let source = crate::dinero_import::decode_source(bytes).unwrap();
+    let prepared = crate::dinero_import::prepare(&tx, &source, latest).unwrap();
+    let review = prepared.review();
+    assert_eq!(review["status"], "ready", "{review}");
+    crate::dinero_import::apply(
+        &tx,
+        &prepared,
+        &crate::dinero_import::Apply {
+            plan_hash: review["planHash"].as_str().unwrap().into(),
+            idempotency_key: "synthetic-portfolio-import128".into(),
+            confirm: true,
+        },
+        latest,
+        "synthetic",
+        1_792_497_600_000,
+    )
+    .unwrap();
+    let boundary = |card: &Value| {
+        assert_eq!(card["availability"]["invoices"]["status"], "partial");
+        assert_eq!(
+            card["availability"]["invoices"]["reason"],
+            "native_invoices_only_imported_receivables_separate"
+        );
+        assert!(
+            card["limitations"].as_array().unwrap().iter().any(|v| v
+                .as_str()
+                .is_some_and(|s| s.contains("importerede tilgodehavender")
+                    && s.contains("separate oversigt")))
+        );
+    };
+    let changes = tx.total_changes();
+    let imported_only = company(&tx, "synthetic", "2026-10-20").unwrap();
+    boundary(&imported_only);
+    assert_eq!(imported_only["openInvoiceCount"], 0);
+    assert_eq!(imported_only["openInvoiceTotal"], 0.0);
+    assert_eq!(imported_only["overdueInvoiceCount"], 0);
+    let schedule = crate::imported_receivables::read(&tx, "2026-10-20").unwrap();
+    assert_eq!(schedule["totalOpen"], 24500.0);
+    assert_eq!(tx.total_changes(), changes);
+    // Explicit native setup follows import; source mapping/provenance remains untouched.
+    tx.execute_batch("UPDATE companies SET address='Synthetic Street',vat_period_type='quarter' WHERE id=1;INSERT INTO accounts(account_no,name,type,normal_balance)VALUES('R','Synthetic native debtor','asset','debit'),('S','Synthetic native sales','income','credit'),('V','Synthetic native VAT','vat','credit');INSERT INTO account_role_mappings(role,account_no,version,confirmed_by)VALUES('debtors','R',1,'synthetic'),('output_vat','V',1,'synthetic');").unwrap();
+    issue(&tx, "2026-07-02", 100);
+    let counts = || {
+        tx.query_row(
+            "SELECT (SELECT count(*) FROM documents),(SELECT count(*) FROM journal_entries)",
+            [],
+            |r| Ok((r.get::<_, i64>(0)?, r.get::<_, i64>(1)?)),
+        )
+        .unwrap()
+    };
+    let before_counts = counts();
+    let changes = tx.total_changes();
+    let before_issue = company(&tx, "synthetic", "2026-07-01").unwrap();
+    boundary(&before_issue);
+    assert_eq!(before_issue["openInvoiceCount"], 0);
+    assert_eq!(before_issue["openInvoiceTotal"], 0.0);
+    let issued = company(&tx, "synthetic", "2026-07-02").unwrap();
+    boundary(&issued);
+    assert_eq!(issued["openInvoiceCount"], 1);
+    assert_eq!(issued["openInvoiceTotal"], 125.0);
+    assert_eq!(issued["overdueInvoiceCount"], 0);
+    let later = company(&tx, "synthetic", "2026-10-20").unwrap();
+    boundary(&later);
+    assert_eq!(later["openInvoiceCount"], 1);
+    assert_eq!(later["openInvoiceTotal"], 125.0);
+    assert_eq!(later["overdueInvoiceCount"], 1);
+    assert_eq!(
+        crate::imported_receivables::read(&tx, "2026-10-20").unwrap(),
+        schedule
+    );
+    assert_eq!(counts(), before_counts);
+    assert_eq!(tx.total_changes(), changes);
+    crate::dinero_import::validate_history(&tx).unwrap();
+    assert!(crate::journal_hash::verify(&tx).unwrap().ok);
+}
+#[test]
+fn foreign_native_invoice_still_makes_invoice_totals_unavailable() {
+    let mut db = fixture();
+    let tx = db
+        .transaction_with_behavior(TransactionBehavior::Immediate)
+        .unwrap();
+    issue_currency(&tx, "2026-07-02", 100, "EUR");
+    let before = company(&tx, "synthetic", "2026-07-01").unwrap();
+    assert_eq!(before["openInvoiceTotal"], 0.0);
+    let changes = tx.total_changes();
+    let card = company(&tx, "synthetic", "2026-10-20").unwrap();
+    assert!(card["openInvoiceTotal"].is_null());
+    assert!(card["openInvoiceCount"].is_null());
+    assert_eq!(card["availability"]["invoices"]["status"], "unavailable");
+    assert_eq!(
+        card["availability"]["invoices"]["reason"],
+        "unvalued_or_adjusted_receivable"
+    );
+    assert_eq!(tx.total_changes(), changes);
 }
