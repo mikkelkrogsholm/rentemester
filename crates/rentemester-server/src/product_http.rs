@@ -253,6 +253,10 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
             "/api/companies/{slug}/accountant-export",
             post(accountant::export),
         )
+        .route(
+            "/api/companies/{slug}/authority-export",
+            post(accountant::export),
+        )
         .route("/api/companies/{slug}/saft-export", post(saft::export))
         .route("/api/companies/{slug}/invoices/{id}/reminder-claims",get(reminder_claims::handle))
         .route("/api/companies/{slug}/invoices/reminders/register",post(reminder_claims::handle))

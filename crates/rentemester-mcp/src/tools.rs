@@ -137,6 +137,7 @@ pub fn list() -> Value {
     tools.extend(crate::commitments::tools());
     tools.extend(crate::annual_reports::tools());
     tools.extend(crate::annual_exports::tools());
+    tools.extend(crate::handoff_export::tools());
     tools.extend(crate::portfolio_overview::tools());
     tools.extend(crate::portfolio_cashflow::tools());
     tools.extend(crate::dashboard_artifact::tools());
@@ -255,6 +256,7 @@ pub async fn call(api: &ApiClient, name: &str, args: Value) -> Result<Value, &'s
     if !args.is_object() {
         return Err("expected arguments object");
     }
+    if name == "system_export_authority" { return crate::handoff_export::call(api,args).await; }
     if name == "tax_return_prepare" { return crate::annual_exports::call(api,args).await; }
     if name == "portfolio_overview" { return crate::portfolio_overview::call(api,args).await; }
     for field in ["year", "account"] {

@@ -1,10 +1,10 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "Group135 R31 closed annual year -> exact tax preparation -> deterministic iXBRL and original CLI/MCP",
+  "current_increment": "Group136 R31 original authority/accountant handover request context and clients",
   "code_revision": "f4193c18ae88ba9fb57814906fb49bed11a45730",
   "spec_revision": "sha256:bc98636be4a972407adce0f817a76bb9d4bb7200cb292a70965e75ab62fae250",
-  "state": "Group135 ACCEPTED annual->tax->deterministic iXBRL original clients, real MFA/restart, XML20facts/contexts/units/equity independently parsed, exact representation881.25/89.06/970.31, current reader/revocation, sourceaudit2 and unchanged SQL2docs0bank2journals6lines. Unknownform remains explicit review (no fabricated ApS tax); positiveApS focused tests passed. Next R31 original authority export requestedAt/requester/deadline context missing from native accountant archive. Existing SAF-T23/24 evidence retained without rerun. Full R31/J04, R44/local launcher, epic and finaldesktop remain OPEN.",
+  "state": "Group136 core+clients integrated with same CompanyExport/NamespaceGuard pipeline, correctrecipient endpoints and existing-harness actualproof. Focused context/default/source/audit and8client tests pass. Integrated strict compile then normalMFA/client/localfile/source/audit/restart acceptance pending. #706 soleactive integrating; annual135/SAFT/J04 accepted evidence retained. FullR31, globalR44/TSretirement/release/finaldesktop remainOPEN.",
   "issues_closed": [
     701
   ],
@@ -7633,6 +7633,40 @@
       "both_new_worktrees_removed": true,
       "positive_ApS_tax_actual_qualified": false,
       "positive_ApS_tax_focused_qualified": true
+    },
+    "authority_export136": {
+      "issue": 706,
+      "status": "integrated_focused_passed_actual_pending",
+      "contract": "/tmp/rm136-contract.md",
+      "actual_qualified": false,
+      "fixture": "Existing standalone runner/accountant helper; one synthetic retained original+real posting, source files/hash/context/deadline/local CLI/MCP packages, exact audit-only effects, normalMFArestart. No new harness.",
+      "core_logs": [
+        "/tmp/rm136-storage.log",
+        "/tmp/rm136-default.log",
+        "/tmp/rm136-authority.log",
+        "/tmp/rm136-refusal.log"
+      ],
+      "development_correction": "Two new successful fixture cases used deferred transactions and hit existing transaction_required before export. Stopped fixture growth, corrected new fixture only to Immediate, isolated failed and invalid-context cases each passed. No weakened storage/auth/source controls; no expensive actual run started.",
+      "preserved_evidence": [
+        "annual_exports135",
+        "platform23_saft",
+        "platform23_combined",
+        "platform24_saft_privacy",
+        "platform10_combined",
+        "platform11_combined"
+      ],
+      "remaining": "Full original SAF-T command/generated-at mapping; global localworkspace/defaultlauncher/envelope parity; native release/rule provenance unavailable explicitnull, not a filing/signature guarantee. Full R31/J04 and final mission audit still required.",
+      "core_commit": "172279c9",
+      "clients_commit": "1f90c9f9",
+      "client_focused_passed": 8,
+      "client_log": "/tmp/rm136-clients.log",
+      "strict_clippy": "/tmp/rm136-clippy.log",
+      "strict_clippy_passed": true,
+      "normal_build": "/tmp/rm136-normal-build.log",
+      "normal_build_pending": true,
+      "root_clippy_corrections": "/tmp/rm136-root-clippy.patch",
+      "isolated_changed_mcp_test": "/tmp/rm136-mcp-isolated.log",
+      "root_corrections": "Two Clippy diagnostics corrected directly: collapse equivalent nestedSDKconditional; consume/assert received byte count in lost-response mock. Changed lost-response test isolated1 PASS; final7crate all-target strictClippy PASS. No disabled lints or weakened archive/source/authority checks."
     }
   },
   "verified_history": [

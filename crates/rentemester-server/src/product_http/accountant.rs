@@ -1,6 +1,13 @@
 use super::*;
 pub(super) async fn export(State(state): State<Product>, request: Request) -> Response {
-    let company_slug=request.uri().path().split('/').nth(3).unwrap_or("").to_owned();
+    let authority = request.uri().path().ends_with("/authority-export");
+    let company_slug = request
+        .uri()
+        .path()
+        .split('/')
+        .nth(3)
+        .unwrap_or("")
+        .to_owned();
     let cookie = match proof(&state, &request, true) {
         Ok(c) => c,
         Err(r) => return *r,
@@ -18,12 +25,33 @@ pub(super) async fn export(State(state): State<Product>, request: Request) -> Re
     let Ok(bytes) = to_bytes(request.into_body(), 4096).await else {
         return refused(StatusCode::PAYLOAD_TOO_LARGE, "invalid_input");
     };
-    let Ok(input) = serde_json::from_slice::<rentemester_storage::accountant::Input>(&bytes) else {
+    let Ok(mut input) = serde_json::from_slice::<rentemester_storage::accountant::Input>(&bytes)
+    else {
         return refused(StatusCode::BAD_REQUEST, "invalid_input");
     };
+    let profile = if authority {
+        "authority"
+    } else {
+        "accountant_handoff"
+    };
+    if input
+        .package_profile
+        .as_deref()
+        .is_some_and(|p| p != profile)
+    {
+        return refused(StatusCode::BAD_REQUEST, "invalid_input");
+    }
+    input.package_profile = Some(profile.into());
     let filename = format!(
-        "revisor-eksport-{}-{}-{}.tar",
-        company_slug, input.period_start, input.period_end
+        "{}-{}-{}-{}.tar",
+        if authority {
+            "myndigheds-eksport"
+        } else {
+            "revisor-eksport"
+        },
+        company_slug,
+        input.period_start,
+        input.period_end
     );
     let Ok(permit) = state.workers.clone().try_acquire_owned() else {
         return refused(StatusCode::SERVICE_UNAVAILABLE, "busy");

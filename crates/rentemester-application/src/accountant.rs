@@ -91,6 +91,7 @@ mod tests {
             period_start: "2026-01-01".into(),
             period_end: "2026-12-31".into(),
             confirm: false,
+            ..Default::default()
         };
         assert!(
             execute(&mut c, &mut l, context("a"), &input, |_| panic!(

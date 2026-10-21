@@ -1,4 +1,5 @@
 //! Accountant handoff built inside an admitted transaction; no file paths are opened here.
+mod context;
 use crate::invalid;
 use rentemester_engine::{
     Error,
@@ -11,12 +12,15 @@ use serde::Deserialize;
 use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
 use std::collections::BTreeMap;
-#[derive(Deserialize)]
+#[derive(Default, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct Input {
     pub period_start: String,
     pub period_end: String,
     pub confirm: bool,
+    pub package_profile: Option<String>,
+    pub requested_at: Option<String>,
+    pub requester: Option<String>,
 }
 pub struct Download {
     pub bytes: Vec<u8>,
@@ -35,6 +39,7 @@ pub struct Prepared {
     pub originals: Vec<Original>,
     pub manifest: Value,
     pub root: String,
+    profile: context::Profile,
 }
 fn refused(message: impl Into<String>) -> Error {
     Error::new("accountant_export_refused", message)
@@ -129,6 +134,7 @@ pub fn prepare(tx: &Transaction<'_>, slug: &str, input: &Input) -> Result<Prepar
         return Err(refused("export confirmation required"));
     }
     let period = Period::new(&input.period_start, &input.period_end)?;
+    let context = context::Context::resolve(input)?;
     if slug.is_empty()
         || !slug
             .bytes()
@@ -387,19 +393,39 @@ pub fn prepare(tx: &Transaction<'_>, slug: &str, input: &Input) -> Result<Prepar
     );
     paths.insert("readableDocumentsDir".into(), json!("documents-readable"));
     paths.insert("readme".into(), json!("README.txt"));
-    files.insert("README.txt".into(),format!("Rentemester — revisor-eksportpakke\n\nPeriode: {}..{}\nGenereret (deterministisk, udledt af periodeslut — ikke et reelt ur-tidspunkt): {}T23:59:59.000Z\n\nLokal overdragelsespakke uden adgang til virksomhedens kørende data.\nJSON og CSV findes i machine-readable/. Originaler findes i documents-readable/. Manifestet angiver SHA-256 og byteantal for hver fil.\nEksporten ændrer ingen posteringer. Audit-loggen indeholder revisionssporet før denne eksport; eksporthandlingen registreres efter pakningen.\n\nBegrænsning: Rust-buildets fulde release-/regelkorpus-proveniens er endnu ikke tilgængelig; provenance er null. Skemaets migrationsidentiteter følger med. Pakken er ikke en myndighedseksport eller en signeret backup.\n",period.start,period.end,period.end).into_bytes());
-    let root = format!(
-        "revisor-eksport-{}_{}_{}T235959Z",
-        period.start,
-        period.end,
-        period.end.replace('-', "")
+    let legacy_readme = format!(
+        "Rentemester — revisor-eksportpakke\n\nPeriode: {}..{}\nGenereret (deterministisk, udledt af periodeslut — ikke et reelt ur-tidspunkt): {}T23:59:59.000Z\n\nLokal overdragelsespakke uden adgang til virksomhedens kørende data.\nJSON og CSV findes i machine-readable/. Originaler findes i documents-readable/. Manifestet angiver SHA-256 og byteantal for hver fil.\nEksporten ændrer ingen posteringer. Audit-loggen indeholder revisionssporet før denne eksport; eksporthandlingen registreres efter pakningen.\n\nBegrænsning: Rust-buildets fulde release-/regelkorpus-proveniens er endnu ikke tilgængelig; provenance er null. Skemaets migrationsidentiteter følger med. Pakken er ikke en myndighedseksport eller en signeret backup.\n",
+        period.start, period.end, period.end
     );
-    let manifest = json!({"manifestVersion":2,"provenance":null,"packageType":"accountant_handoff_export","generatedAt":format!("{}T23:59:59.000Z",period.end),"generatedAtExplicit":false,"requestedAt":null,"deadlineAt":null,"requester":null,"periodStart":period.start,"periodEnd":period.end,"sourceCompanyRootName":slug,"appliedRules":["DK-BOOKKEEPING-AUTHORITY-EXPORT-001"],"machineReadableFormat":"json+csv","files":paths,"counts":{"journalEntries":journal.len(),"bankTransactions":bank.len(),"bankJournalReconciliationLinks":links.len(),"documents":documents.len(),"auditLog":audit.len(),"exceptions":exceptions.len(),"accounts":accounts.len(),"companies":companies.len(),"schemaMigrations":migrations.len(),"copiedReadableDocuments":originals.len()},"handoffModel":"local_export_package","accessModel":"no_runtime_access","outOfScope":["hosted_multi_user_access","role_based_write_access","real_time_collaboration"],"limitations":["native_release_provenance_unavailable"]});
+    files.insert(
+        "README.txt".into(),
+        context
+            .readme(&period.start, &period.end, legacy_readme)
+            .into_bytes(),
+    );
+    let root = context.root(&period.start, &period.end);
+    let mut manifest = json!({"manifestVersion":2,"provenance":null,"packageType":context.profile.package_type(),"generatedAt":context.generated_at,"generatedAtExplicit":context.requested_at.is_some(),"requestedAt":context.requested_at,"deadlineAt":context.deadline_at,"requester":context.requester,"periodStart":period.start,"periodEnd":period.end,"sourceCompanyRootName":slug,"appliedRules":["DK-BOOKKEEPING-AUTHORITY-EXPORT-001"],"machineReadableFormat":"json+csv","files":paths,"counts":{"journalEntries":journal.len(),"bankTransactions":bank.len(),"bankJournalReconciliationLinks":links.len(),"documents":documents.len(),"auditLog":audit.len(),"exceptions":exceptions.len(),"accounts":accounts.len(),"companies":companies.len(),"schemaMigrations":migrations.len(),"copiedReadableDocuments":originals.len()},"handoffModel":"local_export_package","accessModel":"no_runtime_access","outOfScope":["hosted_multi_user_access","role_based_write_access","real_time_collaboration"],"limitations":["native_release_provenance_unavailable"]});
+    if context.profile == context::Profile::Authority {
+        let object = manifest.as_object_mut().unwrap();
+        for key in ["handoffModel", "accessModel", "outOfScope"] {
+            object.remove(key);
+        }
+    }
+    if context.profile == context::Profile::Authority
+        || context.requested_at.is_some()
+        || context.requester.is_some()
+    {
+        manifest["limitations"]
+            .as_array_mut()
+            .unwrap()
+            .push(json!("requestedAt_requires_rfc3339_explicit_timezone"));
+    }
     Ok(Prepared {
         files,
         originals,
         manifest,
         root,
+        profile: context.profile,
     })
 }
 pub fn finish(
@@ -432,7 +458,13 @@ pub fn finish(
         .map(|(path, bytes)| (format!("{}/{path}", prepared.root), bytes))
         .collect();
     let bytes = tar(files)?;
-    tx.execute("INSERT INTO audit_log(event_type,entity_type,entity_id,message,actor) VALUES('accountant_handoff_export','company','1',?1,?2)",params![format!("Exported accountant_handoff_export for {}..{} to {}",prepared.manifest["periodStart"].as_str().unwrap(),prepared.manifest["periodEnd"].as_str().unwrap(),prepared.root),format!("user:{actor}")]).map_err(invalid)?;
+    let package_type = prepared.profile.package_type();
+    let requester = prepared.manifest["requester"]
+        .as_str()
+        .filter(|r| !r.is_empty())
+        .map(|r| format!(" for {r}"))
+        .unwrap_or_default();
+    tx.execute("INSERT INTO audit_log(event_type,entity_type,entity_id,message,actor) VALUES(?1,'company','1',?2,?3)",params![package_type,format!("Exported {package_type} for {}..{} to {}{requester}",prepared.manifest["periodStart"].as_str().unwrap(),prepared.manifest["periodEnd"].as_str().unwrap(),prepared.root),format!("user:{actor}")]).map_err(invalid)?;
     Ok(Download {
         bytes,
         journal_entry_count: prepared.manifest["counts"]["journalEntries"]
@@ -566,6 +598,145 @@ mod tests {
         result
     }
     #[test]
+    fn default_profile_keeps_legacy_readme_manifest_and_root() {
+        let (_c, mut ledger, _) = fixture();
+        let tx = ledger
+            .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
+            .unwrap();
+        let mut input = Input {
+            period_start: "2026-07-01".into(),
+            period_end: "2026-07-31".into(),
+            confirm: true,
+            ..Input::default()
+        };
+        let before = tx.total_changes();
+        let default = prepare(&tx, "synthetic", &input).unwrap();
+        assert_eq!(
+            default.root,
+            "revisor-eksport-2026-07-01_2026-07-31_20260731T235959Z"
+        );
+        assert_eq!(
+            format!("{:x}", Sha256::digest(&default.files["README.txt"])),
+            "37f5480b0ac5ae3e30fc5773911d5c77ebefd57ecd5f8fbc987f1de157557ea9"
+        );
+        assert_eq!(default.manifest["generatedAtExplicit"], false);
+        for key in ["requestedAt", "deadlineAt", "requester", "provenance"] {
+            assert!(default.manifest[key].is_null());
+        }
+        assert_eq!(
+            default.manifest["limitations"],
+            json!(["native_release_provenance_unavailable"])
+        );
+        input.package_profile = Some("accountant_handoff".into());
+        let explicit = prepare(&tx, "synthetic", &input).unwrap();
+        assert_eq!(default.manifest, explicit.manifest);
+        assert_eq!(default.files, explicit.files);
+        assert_eq!(default.root, explicit.root);
+        assert_eq!(tx.total_changes(), before);
+    }
+    #[test]
+    fn authority_context_original_integrity_and_profile_audit_share_one_pipeline() {
+        let (_c, mut ledger, original) = fixture();
+        let tx = ledger
+            .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
+            .unwrap();
+        let input = Input {
+            period_start: "2026-07-01".into(),
+            period_end: "2026-07-31".into(),
+            confirm: true,
+            package_profile: Some("authority".into()),
+            requested_at: Some("2024-02-01T01:02:03.987654+01:00".into()),
+            requester: Some("  Synthetic authority  ".into()),
+        };
+        let before = tx.total_changes();
+        let prepared = prepare(&tx, "synthetic", &input).unwrap();
+        assert_eq!(
+            prepared.root,
+            "myndigheds-eksport-2026-07-01_2026-07-31_20240201T000203Z"
+        );
+        assert_eq!(prepared.manifest["packageType"], "authority_export");
+        assert_eq!(prepared.manifest["requestedAt"], "2024-02-01T00:02:03.987Z");
+        assert_eq!(prepared.manifest["deadlineAt"], "2024-02-29T00:02:03.987Z");
+        assert_eq!(prepared.manifest["generatedAtExplicit"], true);
+        assert_eq!(prepared.manifest["requester"], "  Synthetic authority  ");
+        assert!(prepared.manifest.get("handoffModel").is_none());
+        let readme = std::str::from_utf8(&prepared.files["README.txt"]).unwrap();
+        assert!(readme.starts_with("Rentemester — myndighedseksportpakke"));
+        assert!(readme.contains("Genereret: 2024-02-01T00:02:03.987Z"));
+        assert!(!readme.contains("Pakken er ikke en myndighedseksport"));
+        assert!(
+            finish(
+                &tx,
+                prepared,
+                vec![b"tampered original".to_vec()],
+                "synthetic"
+            )
+            .is_err()
+        );
+        assert_eq!(tx.total_changes(), before);
+        let prepared = prepare(&tx, "synthetic", &input).unwrap();
+        let root = prepared.root.clone();
+        let archive = finish(&tx, prepared, vec![original.clone()], "synthetic").unwrap();
+        let files = entries(&archive.bytes);
+        let manifest: Value =
+            serde_json::from_slice(&files[&format!("{root}/manifest.json")]).unwrap();
+        let copied = manifest["copiedDocuments"][0]["exportedPath"]
+            .as_str()
+            .unwrap();
+        assert_eq!(files[&format!("{root}/{copied}")], original);
+        assert_eq!(tx.query_row("SELECT count(*) FROM audit_log WHERE event_type='authority_export' AND actor='user:synthetic'",[],|r|r.get::<_,i64>(0)).unwrap(),1);
+        assert_eq!(
+            tx.query_row(
+                "SELECT count(*) FROM audit_log WHERE event_type='accountant_handoff_export'",
+                [],
+                |r| r.get::<_, i64>(0)
+            )
+            .unwrap(),
+            0
+        );
+        let message: String = tx
+            .query_row(
+                "SELECT message FROM audit_log WHERE event_type='authority_export'",
+                [],
+                |r| r.get(0),
+            )
+            .unwrap();
+        assert!(message.starts_with("Exported authority_export for "));
+        assert!(message.ends_with(" for   Synthetic authority  "));
+        assert_eq!(
+            tx.query_row("SELECT count(*) FROM journal_entries", [], |r| r
+                .get::<_, i64>(0))
+                .unwrap(),
+            2
+        );
+    }
+    #[test]
+    fn invalid_context_profile_and_requester_refuse_before_export_audit() {
+        let (_c, mut ledger, _) = fixture();
+        let tx = ledger
+            .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
+            .unwrap();
+        let before = tx.total_changes();
+        let mut input = Input {
+            period_start: "2026-07-01".into(),
+            period_end: "2026-07-31".into(),
+            confirm: true,
+            ..Input::default()
+        };
+        input.requested_at = Some("2026-02-30T00:00:00Z".into());
+        assert!(prepare(&tx, "synthetic", &input).is_err());
+        input.requested_at = None;
+        input.package_profile = Some("unknown".into());
+        assert!(prepare(&tx, "synthetic", &input).is_err());
+        input.package_profile = None;
+        for requester in ["invalid\nrequester".to_string(), "x".repeat(257)] {
+            input.requester = Some(requester);
+            assert!(prepare(&tx, "synthetic", &input).is_err());
+        }
+        assert_eq!(tx.total_changes(), before);
+        assert!(serde_json::from_value::<Input>(json!({"periodStart":"2026-07-01","periodEnd":"2026-07-31","confirm":true,"unknown":true})).is_err());
+    }
+    #[test]
     fn complete_archive_hashes_csv_original_and_audit_without_journal_effects() {
         let (_c, mut l, original) = fixture();
         // Invoice date includes the selected original; unrelated company records cannot enter this DB.
@@ -573,6 +744,7 @@ mod tests {
             period_start: "2026-07-01".into(),
             period_end: "2026-07-31".into(),
             confirm: true,
+            ..Input::default()
         };
         let tx = l
             .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
@@ -632,6 +804,7 @@ mod tests {
             period_start: "2026-07-01".into(),
             period_end: "2026-07-31".into(),
             confirm: true,
+            ..Input::default()
         };
         let tx = l
             .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
@@ -651,6 +824,7 @@ mod tests {
             period_start: "2026-02-30".into(),
             period_end: "2026-07-31".into(),
             confirm: true,
+            ..Input::default()
         };
         assert!(prepare(&tx, "synthetic", &bad).is_err());
         bad.period_start = "2026-07-01".into();
