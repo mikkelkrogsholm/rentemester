@@ -65,21 +65,22 @@ async fn public_discovery_without_workspace_is_inert_and_never_live() {
     assert_eq!(response.headers()["cache-control"], "no-store");
     let about: Value = serde_json::from_slice(&response.bytes().await.unwrap()).unwrap();
     assert_eq!(about["workspaceConnected"], false);
-    let response = client
-        .get(format!(
-            "{base}/api/agent-workflows/supplier-payable-handling"
-        ))
-        .send()
-        .await
-        .unwrap();
-    let workflow: Value = serde_json::from_slice(&response.bytes().await.unwrap()).unwrap();
-    assert_eq!(workflow["workflow"]["live"], false);
-    assert!(
-        !workflow["workflow"]["unresolvedOperations"]
-            .as_array()
-            .unwrap()
-            .is_empty()
-    );
+    for id in ["supplier-payable-handling", "bank-reconciliation-batch"] {
+        let response = client
+            .get(format!("{base}/api/agent-workflows/{id}"))
+            .send()
+            .await
+            .unwrap();
+        assert_eq!(response.status(), 200);
+        let workflow: Value = serde_json::from_slice(&response.bytes().await.unwrap()).unwrap();
+        assert_eq!(workflow["workflow"]["live"], false);
+        assert!(
+            !workflow["workflow"]["unresolvedOperations"]
+                .as_array()
+                .unwrap()
+                .is_empty()
+        );
+    }
     for path in [
         "agent-capabilities?limit=0",
         "agent-capabilities?limit=1&limit=2",

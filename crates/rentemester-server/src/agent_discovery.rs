@@ -97,10 +97,12 @@ async fn handle(State(connected): State<bool>, request: Request) -> Response {
             }
         }
     };
-    let mut result = result;
+    response(StatusCode::OK, resolve(result, connected))
+}
+fn resolve(mut result: Value, connected: bool) -> Value {
     result["workspaceConnected"] = json!(connected);
-    // These are the three actual registrations in product_http::router. The
-    // integration probe asserts they refuse anonymous requests rather than 404.
+    // Only concrete registrations from product_http::router are attested.
+    // Accounting requests still require their ordinary current authority.
     if let Some(steps) = result
         .pointer_mut("/workflow/steps")
         .and_then(Value::as_array_mut)
@@ -114,6 +116,28 @@ async fn handle(State(connected): State<bool>, request: Request) -> Response {
                     (operation["method"].as_str(), operation["pattern"].as_str()),
                     (Some("GET" | "POST"), Some("/api/companies/:slug/payables"))
                         | (Some("POST"), Some("/api/companies/:slug/payables/:id/pay"))
+                        | (
+                            Some("GET"),
+                            Some(
+                                "/api/companies/:slug/bank-accounts"
+                                    | "/api/companies/:slug/bank"
+                                    | "/api/companies/:slug/bank/match-suggestions"
+                                    | "/api/companies/:slug/reviewed-bank"
+                                    | "/api/companies/:slug/journal"
+                                    | "/api/companies/:slug/bookkeeping-batch"
+                                    | "/api/companies/:slug/bookkeeping-batch/runs"
+                                    | "/api/companies/:slug/bookkeeping-batch/runs/:runId"
+                            )
+                        )
+                        | (
+                            Some("POST"),
+                            Some(
+                                "/api/companies/:slug/bank/import"
+                                    | "/api/companies/:slug/bookkeeping-batch/persist"
+                                    | "/api/companies/:slug/bookkeeping-batch/approve"
+                                    | "/api/companies/:slug/bookkeeping-batch/apply"
+                            )
+                        )
                 );
                 operation["resolved"] = json!(connected && registered);
                 operation["reason"] = if connected && registered {
@@ -127,8 +151,13 @@ async fn handle(State(connected): State<bool>, request: Request) -> Response {
             .as_array()
             .unwrap()
             .iter()
-            .filter(|s| s["operation"]["resolved"] != true)
-            .map(|s| s["operation"]["id"].clone())
+            .flat_map(|step| {
+                ["operation", "uncertainOutcomeReadBack"]
+                    .into_iter()
+                    .filter_map(move |key| step.get(key))
+            })
+            .filter(|operation| operation["resolved"] != true)
+            .map(|operation| operation["id"].clone())
             .collect();
         result["workflow"]["live"] = json!(unresolved.is_empty());
         result["workflow"]["unresolvedOperations"] = json!(unresolved);
@@ -136,5 +165,46 @@ async fn handle(State(connected): State<bool>, request: Request) -> Response {
             "HTTP registration availability only; resolve aliases against tools/list or remote --help. Every accounting request still requires current company authority and confirmation."
         );
     }
-    response(StatusCode::OK, result)
+    result
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn bank_and_supplier_workflows_resolve_only_on_connected_registered_routes() {
+        for id in ["supplier-payable-handling", "bank-reconciliation-batch"] {
+            let description = rentemester_engine::agent_discovery::describe(id).unwrap();
+            let connected = resolve(description.clone(), true);
+            assert_eq!(connected["workflow"]["live"], true);
+            assert_eq!(connected["workflow"]["unresolvedOperations"], json!([]));
+            let disconnected = resolve(description, false);
+            assert_eq!(disconnected["workflow"]["live"], false);
+            assert!(
+                !disconnected["workflow"]["unresolvedOperations"]
+                    .as_array()
+                    .unwrap()
+                    .is_empty()
+            );
+            for step in disconnected["workflow"]["steps"].as_array().unwrap() {
+                assert_eq!(step["operation"]["resolved"], false);
+            }
+        }
+    }
+    #[test]
+    fn unknown_operation_or_recovery_route_never_advertises_a_live_workflow() {
+        for key in ["operation", "uncertainOutcomeReadBack"] {
+            let mut description =
+                rentemester_engine::agent_discovery::describe("supplier-payable-handling").unwrap();
+            description["workflow"]["steps"][0][key] = json!({"surface":"http","id":"not-registered","method":"POST","pattern":"/api/companies/:slug/not-registered"});
+            let resolved = resolve(description, true);
+            assert_eq!(resolved["workflow"]["live"], false);
+            assert!(
+                resolved["workflow"]["unresolvedOperations"]
+                    .as_array()
+                    .unwrap()
+                    .contains(&json!("not-registered"))
+            );
+        }
+    }
 }
