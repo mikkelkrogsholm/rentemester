@@ -165,6 +165,8 @@ fn actual_interest_registration_post_backdated_principal_correction_receipt_audi
     );
     let audit = crate::audit_invoice::verify(&tx).unwrap();
     assert_eq!(audit["ok"], true, "{audit}");
+    let close_assurance = crate::periods::audit::verify(&tx).unwrap();
+    assert!(close_assurance.is_empty(), "{close_assurance:?}");
     tx.commit().unwrap();
     let tx = db.transaction().unwrap();
     assert_eq!(

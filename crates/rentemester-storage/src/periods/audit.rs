@@ -27,7 +27,6 @@ pub(crate) fn verify(tx: &Transaction<'_>) -> Result<Vec<Value>, Error> {
     for table in [
         "direct_bank_purchase_payable_corrections",
         "invoice_bad_debt_writeoffs",
-        "invoice_interest_claims",
         "imported_receivable_headers",
     ] {
         let evidence = rows(tx, &format!("SELECT id FROM {table} LIMIT 1"), &[])?;

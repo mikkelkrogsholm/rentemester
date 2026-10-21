@@ -2,6 +2,7 @@
 //! This is not schema adoption, fresh initialization, or transport authorization.
 //! Never open other regular descriptors for owned database inodes in this process.
 mod invoice_compensation;
+mod invoice_interest;
 pub mod legacy_adoption;
 mod audit_verify;
 mod audit_log;

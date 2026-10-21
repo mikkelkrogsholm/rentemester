@@ -1,13 +1,13 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "Group120 complete compensation calculate/register/post, original-currency principal and DKK claim receipt across server/sharedweb/CLI/MCP, full audit and restart accepted",
-  "code_revision": "8bbb7bae plus root application/host/server/schema/aggregate/acceptance integration",
+  "current_increment": "Group121 DKK interest calculation/registration/posting, effective dated principal correction and claim receipt across native server/sharedweb with CLI/MCP read/refusal parity, full audit and restart accepted",
+  "code_revision": "209b4627 plus root app/host/server authority, period assurance and proof integration",
   "spec_revision": "sha256:bc98636be4a972407adce0f817a76bb9d4bb7200cb292a70965e75ab62fae250",
-  "state": "Group120 completes commercial compensation as separate pure assessment, confirmed registration without journal, explicit-account DKK posting, ordinary invoice-currency principal settlement and actual DKK compensation receipt. Supports DKK and foreign invoice principal without mixing units. Current human MFA permissions, revocation, trusted Danish date, physical invoice/payment originals, backup lock and closed-period gates retain authority; no service write parity or automatic email/retry claimed. Exact optional native schema extension preserves historical migrations and all compensation journal evidence while admitting foreign invoice identity. Pure reminder read remains deferred/query-only capable. Existing aggregate foreign receipt audit now uses actual application currency and immutable totals.fxRateToDkk. Unit DKK/EUR lifecycle validates full invoice audit and period assurance. Actual normal-MFA DKK web/EUR CLI+MCP flow verifies strict refusals, reader/revoked rights across adapters, exact current backup lock, nine journal effects/five bank rows/two invoices, principal and claims fully cleared, originals unchanged, five full audit components green, exact status across HTTP/CLI/MCP and restart, signed new backup independently verified. Source-free restore of new compensation extension and actual private-buyer web refusal are not qualified by this run; private-buyer policy tested synthetically in unit coverage. Full remaining accounting/foreign-currency/lifecycle/restore matrix, interest/corrections and other missing native writes, transfer/release/install/platform/discovery/SBOM/promotion/repro/remoteCI, TypeScript retirement and final installed desktop GUI remain open. Whole goal/epic672 and prior acceptance preserved.",
+  "state": "Group121 completes the source-defined DKK interest flow: exact integer simple interest segmented by dated principal/rate changes; optional statutory-table or explicit manual reference rate; separate no-journal registration and explicit-account posting; causal server-derived correction; actual principal and claim bank receipts. Calculation and correction share source-aware windows; historical asOf source semantics retained. Previously lawful corrections remain valid after a later effective refund lowers current gross overclaim. Primitive dated History avoids principal/claims recursion; origin/correction/receipt claims, grouped historical cash, certain/possible/ambiguous original-account capacity and saved causal plans retain evidence. Current human MFA read/draft/post permissions, current revocation, trusted Danish date, original invoice/bank sources, backup and closed-period gates remain. Native tool count251. Targeted motor9, integrated application1/storage4, new concrete period assurance1 and close/reopen regression1, SDK2/MCP1/registry1/web8, webbuild and strict8crate alltarget Clippy pass. Actual normal-MFA web calculate/register/post/backdated500principal/correction0.69/remainingprincipal/claimreceipt1.78 against claim2.47 completes exactly7journals4bank2JSON-PDForiginals. Full five-component audit clean, HTTP/CLI/MCP exact calculation/correction/status/original read parity and write refusals, reader/revoked/backup/confirm/duplicate no-effects, exact fresh-MFA restart and independently verified signed export. No claim of positive CLI/MCP interest mutation in this actual run, paid/ambiguous actual refusal, foreign-interest contract, source-free restore or installed GUI. Paid/ambiguous and historical credit/refund cases have storage tests. Full foreign-interest requirement remains unresolved and required; source bad-debt write/principal integration remains next. All remaining accounting/foreign/lifecycle/restore, transfer/release/install/platform/discovery/SBOM/promotion/repro/remoteCI, TypeScript retirement and final desktop gates remain. Whole goal/GDD/epic672/prior acceptance preserved.",
   "issues_closed": [],
   "next": [
-    "Complete next native accounting write flow: source-aware dated-principal interest calculation/registration/posting and causal corrections, with existing claims/payment/audit integration. Preserve unresolved foreign-interest currency/valuation contract, full remaining matrix and all transfer/release/retirement gates. Final installed desktop GUI remains last; no unlock probes.",
+    "Integrate source-defined bad-debt writeoff and validated principal/carrying/status/claims/VAT for DKK and foreign invoice, then complete bank receipts/audit/restart. Preserve unresolved foreign-interest currency/valuation requirement and all remaining original mission gates. No source recovery-of-already-written-off-debt feature exists; do not introduce one as rewrite prerequisite. Final installed desktop GUI remains last.",
     "Installed desktop acceptance is explicitly deferred to the very end by the user. Preserve prepared Group100 profile; collect remaining native automation, closure, recovery and packaging checks for final installed acceptance without requesting screen unlock during development.",
     "J03/R50 and remaining R54 scope: only still-supported operation closure/recovery, nonempty scheduler handoff, hostile/older clone and post-cutover rollback requirements. Group99 qualifies managed installed J06 flow, not every R54 acceptance item.",
     "Signed distribution/update/cutover evidence must match actual full Rust replacement; retain all existing completion gates and TypeScript retirement gate.",
@@ -5704,6 +5704,475 @@
       "source_free_restore_of_compensation_extension": false,
       "service_write_parity": false,
       "installed_desktop": false
+    },
+    "native_invoice_interest121": {
+      "path": "/tmp/rentemester-rust-reports/native-invoice-interest121.json",
+      "sha256": "9caef3b5771f01dbfe6cf8ee67f47e712aabcb578b2c2c0a2b8149a3c7716051",
+      "status": "passed",
+      "source_revision": "209b4627f406af26e96091bc751bcaef82b2da82 plus root integration",
+      "artifacts": {
+        "server_binary": "0ae44fa53101b65c40e44eeab9b3328fb1c1ebb7f56fedadbe0af2b47e972b91",
+        "cli_binary": "5a9fccc0b662733a40baeb57baff2da52b41f4bf3f7c5541ce9830c1bc525858",
+        "mcp_binary": "669e052c47e68ad3cf90ec67a13ef5f19b6571f1b7900a1d4cb4c318b2bc9dab"
+      },
+      "helper_sha256": {
+        "runnerSha256": "1c6813bd84eba5c1c43a3af683ce35fd5744e8a5245067abc373306cb27792e3",
+        "backupLockHelperSha256": "6eb82b8201dc05973c4f62a3098ce6223dfa427b2332465018e929acfe1e2e0b",
+        "backupLockMailInboxHelperSha256": "b2d9b6d088a4336e62c9102edb58833e2645ed15b73761c9cebb681e2ccc8327",
+        "backupRemoteHelperSha256": "6c21682bee9cf25f55dd7c3140b1814c46bebc0acca557a900ccc7392fd2bb6c",
+        "backupGovernanceHelperSha256": "2ea63a1bfb52cc3b26659e6bd1a29155a948ebc3b4c6a45b4b0976ef179f71fe",
+        "backupRegistrationHelperSha256": "a7eaee25de256108ceeba15ad3404165ca12699fe7ba0690a538a63e63748199",
+        "invoiceInterestHelperSha256": "0f07822a1191beefceafdd0e1106c83f3b06dbb03eeb66bcfb0b446159f1adb6"
+      },
+      "scope": {
+        "qualified": true,
+        "signedBackup": {
+          "sha256": "01b7fcfbf2e0c1a685e7c36cd043cbf2935cdb7cbf79f44c1f2df6d88281e485",
+          "bytes": 4377703,
+          "independentlyVerified": false
+        },
+        "invoice": {
+          "id": 1,
+          "number": "2026-0001",
+          "currency": "DKK"
+        },
+        "stages": [
+          {
+            "name": "calculated",
+            "fingerprint": "a44b979c15aa38febe14dc5bff090e575793e7cf334cf0cdd3a32a95f2629640"
+          },
+          {
+            "name": "registered-without-journal",
+            "fingerprint": "b950c752f2a27afed42bca841b7600c3b91b481d3ce40f866f3523e932224f81"
+          },
+          {
+            "name": "interest-posted",
+            "fingerprint": "e4d20582a2c3099e75e338059b939b69e0aa5906031aa3ad25561974d56e2deb"
+          },
+          {
+            "name": "effective-dated-partial-payment",
+            "fingerprint": "1fa65951997ddf6df2f0006ec11e02675a9e2b82e553258efd0d0fa50a2ade80"
+          },
+          {
+            "name": "correction-posted",
+            "fingerprint": "b57b3836cd7587e7cd67338f52e369eaa53331c2720946bfa53e0d66211c1d1d"
+          },
+          {
+            "name": "principal-paid-interest-open",
+            "fingerprint": "7b18d9bec27f2f0278d3b0f98a66b2b7283a0712a6b2e9af700f8c21771aa8b5"
+          },
+          {
+            "name": "principal-and-interest-paid",
+            "fingerprint": "6931ea1f3b29cfb54524a7ac56128f4fdac4e144a1dbff3f5c15f0adb146d416"
+          }
+        ],
+        "refusals": [
+          {
+            "label": "Current reader cannot register",
+            "status": 403,
+            "code": "access_denied",
+            "canonicalFingerprint": "9e7829aaf01b1aca03d44942384c0770fc0efdce302d44d12e36fbe667037ecc"
+          },
+          {
+            "label": "Revoked calculation",
+            "status": 403,
+            "code": "access_denied",
+            "canonicalFingerprint": "9e7829aaf01b1aca03d44942384c0770fc0efdce302d44d12e36fbe667037ecc"
+          },
+          {
+            "label": "Missing inner registration confirmation",
+            "status": 422,
+            "code": "interest_refused",
+            "canonicalFingerprint": "9e7829aaf01b1aca03d44942384c0770fc0efdce302d44d12e36fbe667037ecc"
+          },
+          {
+            "label": "Duplicate interest registration",
+            "status": 422,
+            "code": "interest_refused",
+            "canonicalFingerprint": "32344cb0419b07416619bc604437d90f805f8329a72d31813f11bcfc3d90116a"
+          },
+          {
+            "label": "Missing interest posting confirmation",
+            "status": 422,
+            "code": "interest_refused",
+            "canonicalFingerprint": "32344cb0419b07416619bc604437d90f805f8329a72d31813f11bcfc3d90116a"
+          },
+          {
+            "label": "Current backup lock on interest",
+            "status": 422,
+            "code": "backup_overdue",
+            "canonicalFingerprint": "32344cb0419b07416619bc604437d90f805f8329a72d31813f11bcfc3d90116a"
+          },
+          {
+            "label": "Missing correction confirmation",
+            "status": 422,
+            "code": "interest_refused",
+            "canonicalFingerprint": "d1aa9fc4e100c1bab6a32503c3f639c2c1de70845fb5becc17bca2b61159f3d1"
+          },
+          {
+            "label": "Duplicate post",
+            "status": 422,
+            "code": "interest_refused",
+            "canonicalFingerprint": "3958cf31060833f1f82ca145c911ed3dba10d2f70fb23184af028b83135ec80a"
+          },
+          {
+            "label": "Duplicate post-correction",
+            "status": 422,
+            "code": "interest_refused",
+            "canonicalFingerprint": "3958cf31060833f1f82ca145c911ed3dba10d2f70fb23184af028b83135ec80a"
+          }
+        ],
+        "permissions": {
+          "currentReaderGrant": true,
+          "draftWriteDeniedAcrossHttpCliMcp": true,
+          "currentRevocationAcrossHttpCliMcp": true,
+          "noCompanyAuditOrFinancialEffects": true
+        },
+        "backup": {
+          "refusal": {
+            "status": 422,
+            "code": "backup_overdue"
+          },
+          "exactArtifactSha256": "ba71ed70d138599757cc4d9b47baf5292fb895997471231cced792cbafe50dc0",
+          "parkedOnlyOwnedRetainedArtifact": true,
+          "exactBytesRestoredBeforePosting": true
+        },
+        "terminalCalcs": {
+          "interest": {
+            "accruedInterestAmount": 0,
+            "annualInterestRatePercent": 10,
+            "asOfDate": "2026-10-20",
+            "claimableDays": 0,
+            "claims": [
+              {
+                "annualInterestRatePercent": 10,
+                "claimDate": "2026-10-20",
+                "id": 1,
+                "interestAmount": 2.47,
+                "postedJournalEntryId": 3,
+                "postedJournalEntryNo": "2026-00003",
+                "referenceRatePercent": 2,
+                "referenceRateSource": "manual-override"
+              }
+            ],
+            "effectiveDueDate": "2026-10-11",
+            "interestFromDate": "2026-10-20",
+            "invoiceDocumentId": 1,
+            "invoiceNumber": "2026-0001",
+            "ok": true,
+            "overClaimedInterest": 0.69,
+            "overdueDays": 9,
+            "principalCurrency": "DKK",
+            "principalOpenBalance": 500,
+            "priorClaimedInterest": 2.47,
+            "referenceRatePercent": 2,
+            "referenceRateSource": "manual-override",
+            "totalInterestToDate": 1.78,
+            "warnings": []
+          },
+          "ok": true
+        },
+        "terminalClaims": {
+          "claims": {
+            "ok": true,
+            "reminderClaims": {
+              "accounts": [
+                {
+                  "accountNo": "1210",
+                  "name": "Synthetic invoice receivable",
+                  "normalBalance": "debit",
+                  "type": "asset"
+                },
+                {
+                  "accountNo": "1230",
+                  "name": "Synthetic interest receivable",
+                  "normalBalance": "debit",
+                  "type": "asset"
+                },
+                {
+                  "accountNo": "1711",
+                  "name": "Synthetic lock bank",
+                  "normalBalance": "debit",
+                  "type": "asset"
+                },
+                {
+                  "accountNo": "3210",
+                  "name": "Synthetic revenue",
+                  "normalBalance": "credit",
+                  "type": "income"
+                },
+                {
+                  "accountNo": "3230",
+                  "name": "Synthetic interest income",
+                  "normalBalance": "credit",
+                  "type": "income"
+                }
+              ],
+              "asOfDate": "2026-10-21",
+              "claimCurrency": "DKK",
+              "claimOpenBalance": 0,
+              "claimPayments": [
+                {
+                  "amount": 1.78,
+                  "bankTransactionId": 4,
+                  "claimPaymentId": 1,
+                  "journalEntryId": 7,
+                  "paymentDate": "2026-10-21"
+                }
+              ],
+              "compensations": [],
+              "delivery": {
+                "available": false,
+                "note": "Native registration and accounting perform no email send; previous delivery is not established",
+                "priorDeliveryStatus": "unavailable",
+                "sentByThisFlow": false
+              },
+              "dueDate": "2026-10-11",
+              "incomingBankTransactions": [
+                {
+                  "amount": 7.25,
+                  "bankAccountNo": "1711",
+                  "date": "2026-01-02",
+                  "id": 1,
+                  "reference": "SYNTHETIC-BACKUP-LOCK-111",
+                  "sourceHash": "15936b5995ce53c8e637871e6b5e7deb140f7336dfa67ad4edb60a88d4935668",
+                  "text": "Synthetic historical lock activity",
+                  "transactionHash": "84c6c8f116b378f072475f81c6207fb1b36ab1ca07746a55caa594cebecad74a"
+                }
+              ],
+              "interestClaims": [
+                {
+                  "amountDkk": 2.47,
+                  "claimDate": "2026-10-20",
+                  "claimId": 1,
+                  "journalEntryId": 3
+                }
+              ],
+              "interestCorrections": [
+                {
+                  "amountDkk": 0.69,
+                  "correctionDate": "2026-10-21",
+                  "correctionId": 1,
+                  "journalEntryId": 5
+                }
+              ],
+              "invoiceDocumentId": 1,
+              "invoiceNumber": "2026-0001",
+              "ledgerBackedClaimBalance": 0,
+              "originalReceivableAccountNo": "1210",
+              "pendingUnpostedCompensation": false,
+              "pendingUnpostedInterest": false,
+              "pendingUnpostedReminders": false,
+              "principalCurrency": "DKK",
+              "principalOpenBalance": 0,
+              "receivableBalances": [
+                {
+                  "accountNo": "1230",
+                  "amountDkk": 0
+                }
+              ],
+              "registeredClaimBalanceDkk": 0,
+              "reminders": [],
+              "rules": {
+                "maximumFeeAmount": 100,
+                "maximumReminders": 3,
+                "minimumDaysBetweenReminders": 10,
+                "ruleId": "DK-INVOICE-REMINDER-FEE-001"
+              },
+              "settlementAvailable": false,
+              "totalClaimPayments": 1.78,
+              "totalCompensationDkk": 0,
+              "totalInterestCorrectionsDkk": 0.69,
+              "totalInterestDkk": 2.47,
+              "totalReminderFees": 0
+            }
+          },
+          "correction": {
+            "interestCorrection": {
+              "alreadyCorrected": 0.69,
+              "ambiguousInterestReceivable": 0,
+              "canPost": false,
+              "claimOverclaims": [
+                {
+                  "claimDate": "2026-10-20",
+                  "claimId": 1,
+                  "journalEntryId": 3,
+                  "overClaimedAmount": 0.69
+                }
+              ],
+              "hasProposal": false,
+              "invoiceDocumentId": 1,
+              "invoiceNumber": "2026-0001",
+              "lawfulInterest": 1.78,
+              "ok": true,
+              "outstandingClaimBalance": 0,
+              "overClaimedAmount": 0,
+              "possibleOutstandingInterestReceivable": 0,
+              "postedInterest": 2.47,
+              "principalCurrency": "DKK",
+              "proposedLines": [],
+              "reason": "No over-claimed interest remains",
+              "requiresRefund": false,
+              "throughDate": "2026-10-20"
+            },
+            "ok": true
+          }
+        },
+        "fullAudit": {
+          "audit": {
+            "available": true,
+            "components": [
+              {
+                "available": true,
+                "checked": {
+                  "archivePostings": 0,
+                  "archiveYears": 0,
+                  "auditRows": 43,
+                  "entries": 7,
+                  "historicalEntries": 0,
+                  "journalReceipts": 1,
+                  "journalSequences": 2,
+                  "lines": 15,
+                  "openingBalances": 0,
+                  "reversals": 0
+                },
+                "errors": [],
+                "name": "ledger",
+                "ok": true
+              },
+              {
+                "available": true,
+                "checked": {
+                  "appendOnlyLinks": 0,
+                  "bankRows": 4,
+                  "corrections": 0,
+                  "directLinks": 3,
+                  "directPurchasePayableCorrections": 0
+                },
+                "errors": [],
+                "name": "bank",
+                "ok": true
+              },
+              {
+                "available": true,
+                "checked": {
+                  "credit_note_postings": 0,
+                  "imported_receivable_events": 0,
+                  "imported_receivable_headers": 0,
+                  "invoice_bad_debt_writeoffs": 0,
+                  "invoice_claim_payments": 1,
+                  "invoice_compensation_claims": 0,
+                  "invoice_compensation_postings": 0,
+                  "invoice_interest_claims": 1,
+                  "invoice_interest_corrections": 1,
+                  "invoice_interest_postings": 1,
+                  "invoice_payments": 2,
+                  "invoice_refunds": 0,
+                  "invoice_reminders": 0,
+                  "invoices": 1,
+                  "issued_invoice_postings": 1
+                },
+                "errors": [],
+                "name": "invoices",
+                "ok": true
+              },
+              {
+                "available": true,
+                "checked": {
+                  "bankTransactions": 4,
+                  "documents": 2,
+                  "namespace": 1
+                },
+                "errors": [],
+                "name": "originals",
+                "ok": true
+              },
+              {
+                "available": true,
+                "checked": {
+                  "schema": 1,
+                  "sqliteIntegrity": 1
+                },
+                "errors": [],
+                "name": "physical_schema",
+                "ok": true
+              }
+            ],
+            "entries": 7,
+            "errors": [],
+            "format": "rentemester-native-audit-verification/1",
+            "ok": true,
+            "slug": "synthetic"
+          },
+          "ok": true
+        },
+        "expectedFinalJournalCount": 7,
+        "accountingFingerprint": "6e453990b3a45872ef43094ea3a0ecd8d5c3bbcc41f1cf89a9e8f25f95993ab6",
+        "originalSha256": {
+          "1:original": "ab532139e497fbd29b507a04cb34010f4fc9a54ecf8f77dea10b70fcc6a58873",
+          "1:pdf": "39f7f759fd67ae3736f55edb9c4ecb2bafec0f03377eaa48002f8e7d354465b8"
+        },
+        "bankOriginalSha256": {
+          "15936b5995ce53c8e637871e6b5e7deb140f7336dfa67ad4edb60a88d4935668.txt": "15936b5995ce53c8e637871e6b5e7deb140f7336dfa67ad4edb60a88d4935668",
+          "19b364bc94cac4f01eb0860d86216d977e398b2f3d0c7ed845ca39eade5579a8.txt": "19b364bc94cac4f01eb0860d86216d977e398b2f3d0c7ed845ca39eade5579a8"
+        },
+        "exactHttpCliMcpReadsAndWriteRefusals": true,
+        "actualWebRegistrationPostingCorrectionAndClaimReceipt": true,
+        "actualBackdatedPartialPayment": true,
+        "paidOrAmbiguousNegativeActualQualified": false,
+        "foreignInterestActualQualified": false,
+        "fullForeignInterestRequirementRemoved": false,
+        "sourceFreeRestoreQualified": false,
+        "installedNativeQualified": false,
+        "realMailOrProviderEffectsQualified": false
+      },
+      "restart": {
+        "qualified": true,
+        "exactNormalMfaRestartState": true,
+        "exactOriginalBytesAfterRestart": true,
+        "fullAudit119GreenAfterRestart": true,
+        "accountingFingerprint": "6e453990b3a45872ef43094ea3a0ecd8d5c3bbcc41f1cf89a9e8f25f95993ab6",
+        "foreignInterestActualQualified": false,
+        "sourceFreeRestoreQualified": false,
+        "installedNativeQualified": false
+      },
+      "signed_backup": {
+        "sha256": "01b7fcfbf2e0c1a685e7c36cd043cbf2935cdb7cbf79f44c1f2df6d88281e485",
+        "bytes": 4377703,
+        "verified": true,
+        "sourceFreeRestoreQualified": false
+      },
+      "primary_counts": {
+        "documents": 2,
+        "bank_transactions": 4,
+        "journal_entries": 7
+      },
+      "target_counts": {
+        "documents": 1,
+        "bank_transactions": 1,
+        "journal_entries": 0
+      },
+      "tests": {
+        "engine9": "/tmp/rm121-engine-tests-fixed.log",
+        "engineClippy": "/tmp/rm121-engine-clippy-fixed.log",
+        "client2": "/tmp/rm121-client-tests.log",
+        "integratedApp1Storage4": "/tmp/rm121-integrated-interest-tests.log",
+        "closeAssurance1": "/tmp/rm121-close-assurance-test.log",
+        "periodRegression1": "/tmp/rm121-period-regressions.log",
+        "mcp1": "/tmp/rm121-mcp-tests.log",
+        "registry251tools1": "/tmp/rm121-registry-test.log",
+        "web8": "/tmp/rm121-web-tests.log",
+        "webBuild": "/tmp/rm121-web-build.log",
+        "lint": "/tmp/rm121-lint.log"
+      },
+      "source_aware_engine9": "/tmp/rm121-engine-tests-fixed.log",
+      "strict8crate_alltarget_clippy": "/tmp/rm121-clippy.log",
+      "final_normal3bin_build": "/tmp/rm121-build.log",
+      "positive_cli_mcp_interest_mutation_actual": false,
+      "paid_or_ambiguous_refusal_actual": false,
+      "foreign_interest": false,
+      "source_free_restore": false,
+      "installed_desktop": false
     }
   },
   "verified_history": [
@@ -7052,9 +7521,10 @@
     {
       "delivery": "Group121 source-aware invoice interest and causal corrections",
       "owner": "root integrated pure engine from native_catalogue106; storage integration mapped by adoption_company89",
-      "status": "IN_PROGRESS whole flow. Pure DKK motor integrated; storage/application/HTTP/CLI/MCP/web and actual acceptance not implemented yet. Full foreign-interest contract remains unresolved and required.",
-      "acceptance": "Nine pure-engine tests passed /tmp/rm121-engine-tests-fixed.log; exact rounding/date events/statutory halfyear segmentation/registered anchors/backdated payment correction/previous valid correction after later effective refund/historical asOf source behavior. Initial test expected extra interest2.06 corrected to1.37: lawful total3.42 minus net prior2.05. Strict all-target engine Clippy passed /tmp/rm121-engine-clippy-fixed.log. No claim of account capacity or booking authority.",
-      "next": "Validated effective-dated principal History, origin/correction/receipt claims, conservative original-account capacity and causal historic plans, distinct calc/register/post/correction transports and shared UI, complete financial flow and restart. Preserve current foreign principal/compensation, audit and period gates; avoid principal_open→validated_claims recursion."
+      "status": "COMPLETE finite Group121 DKK scopes above; entire mission remains active and full foreign-interest requirement is unresolved. Installed desktop GUI last.",
+      "acceptance": "Targeted evidence plus actual web whole financial flow, exact HTTP/CLI/MCP reads/refusals, current roles/backup/date/confirm/duplicate gates, original bytes, five-component audit, exact normal-MFA restart and independent signed export. Positive CLI/MCP mutations, paid/ambiguous actual refusals, foreign-interest, source-free restore and GUI not claimed by this actual run.",
+      "next": "Validated effective-dated principal History, origin/correction/receipt claims, conservative original-account capacity and causal historic plans, distinct calc/register/post/correction transports and shared UI, complete financial flow and restart. Preserve current foreign principal/compensation, audit and period gates; avoid principal_open→validated_claims recursion.",
+      "contract": "/tmp/rm121-interest-contract.md"
     }
   ],
   "integrated_pending_browser": [
@@ -7274,6 +7744,12 @@
       "code_revision": "c4ccc134 plus recorded root aggregate/interfaces/proof integration and fixture corrections",
       "spec_revision": "sha256:bc98636be4a972407adce0f817a76bb9d4bb7200cb292a70965e75ab62fae250",
       "state": "Group119 adds readonly audit_verify through native storage/application/host/server/SDK/CLI/sharedweb and MCP (243tools). Five mandatory deterministic components: ledger structure/hash/reversals/sequences/audit/native receipts/historical archive+opening; direct/legacy/native bank links/correction plans/exact movement and payable correction evidence; all persisted invoice/payment/refund/credit/reminder/compensation/interest/bad-debt/imported-receivable families; all registered physical documents including unposted/issued JSON+PDF/credit, every bank original including unmatched, closed history; current canonical schema and SQLite integrity. Transport ok is distinct from accounting ok/availability; no missing component or unavailable checker becomes green. Current human/service CompanyRead and quota/revocation fences preserved; no caller path/actor/figures or automatic repair. Populated synthetic domain/tamper tests plus actual119 normal-MFA post/reversal two-company flow compare exact human HTTP/CLI/MCP reports, primary service parity, real reader grant/read/revoke403/restore, actual web clean/failed results, changed unposted document and unmatched bank originals then exact restoration, unchanged accounting/company audit and exact reports after restart. Imported original schedule JSON is absent from existing persistence: validates stored header/event identities and amounts but does not claim original schedule rehash. Existing period-close unsupported-family guards retained. Full remaining accounting/foreign-currency/lifecycle/restore matrix, required missing native write flows, transfer/release/install/platform/discovery/SBOM/promotion/repro/remoteCI, TypeScript retirement and final installed desktop GUI remain open. Whole goal/epic672 and prior acceptance preserved."
+    },
+    {
+      "current_increment": "Group120 complete compensation calculate/register/post, original-currency principal and DKK claim receipt across server/sharedweb/CLI/MCP, full audit and restart accepted",
+      "code_revision": "8bbb7bae plus root application/host/server/schema/aggregate/acceptance integration",
+      "spec_revision": "sha256:bc98636be4a972407adce0f817a76bb9d4bb7200cb292a70965e75ab62fae250",
+      "state": "Group120 completes commercial compensation as separate pure assessment, confirmed registration without journal, explicit-account DKK posting, ordinary invoice-currency principal settlement and actual DKK compensation receipt. Supports DKK and foreign invoice principal without mixing units. Current human MFA permissions, revocation, trusted Danish date, physical invoice/payment originals, backup lock and closed-period gates retain authority; no service write parity or automatic email/retry claimed. Exact optional native schema extension preserves historical migrations and all compensation journal evidence while admitting foreign invoice identity. Pure reminder read remains deferred/query-only capable. Existing aggregate foreign receipt audit now uses actual application currency and immutable totals.fxRateToDkk. Unit DKK/EUR lifecycle validates full invoice audit and period assurance. Actual normal-MFA DKK web/EUR CLI+MCP flow verifies strict refusals, reader/revoked rights across adapters, exact current backup lock, nine journal effects/five bank rows/two invoices, principal and claims fully cleared, originals unchanged, five full audit components green, exact status across HTTP/CLI/MCP and restart, signed new backup independently verified. Source-free restore of new compensation extension and actual private-buyer web refusal are not qualified by this run; private-buyer policy tested synthetically in unit coverage. Full remaining accounting/foreign-currency/lifecycle/restore matrix, interest/corrections and other missing native writes, transfer/release/install/platform/discovery/SBOM/promotion/repro/remoteCI, TypeScript retirement and final installed desktop GUI remain open. Whole goal/epic672 and prior acceptance preserved."
     }
   ]
 }

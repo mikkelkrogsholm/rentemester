@@ -7,6 +7,14 @@ starter ikke TypeScript-backenden og sender ikke forespørgsler videre til den.
 
 ## Aktuel Rust-levering
 
+[Renter og kausale rettelser](rust-invoice-interest.md) fungerer nu i DKK gennem
+server og fælles web-UI: separat beregning, registrering og bogføring,
+tilbagedateret delbetaling, konkret korrektion og faktisk renteindbetaling.
+Prøven med almindelig MFA, aktuelle rettigheder, backup-lås, præcis CLI/MCP-
+genlæsning og afvisninger, fuld regnskabskontrol, genstart og uafhængig
+verificering af signeret backup består. Renter på valutafakturaer og de øvrige
+resterende leverancer er fortsat åbne; læs vejledningens afgrænsning.
+
 [Kompensationskrav](rust-invoice-compensation.md) har nu særskilt beregning,
 registrering og bogføring i Rust med fælles web-UI, CLI og MCP. Hovedstol i
 fakturavaluta og kompensationskrav i DKK behandles hver for sig, også ved
@@ -17,7 +25,7 @@ med fuld pagineringsmetadata gennem web, HTTP, CLI og MCP. Aktuelle menneske-
 og servicekontorettigheder håndhæves; opslag efter bogføring/tilbageførsel,
 læserrevokation og normal-MFA-genstart er verificeret på syntetiske data.
 Den særskilte [regnskabskontrol](rust-audit-verify.md) er nu tilgængelig gennem
-web, HTTP, CLI `remote audit-verify` og MCP `audit_verify` (246 værktøjer).
+web, HTTP, CLI `remote audit-verify` og MCP `audit_verify` (251 værktøjer).
 Journal, bank, fakturagrundlag, beskyttede originaler samt schema/SQLite har
 hver sit resultat. Manglende kontrol bliver ikke vist som et rent regnskab.
 En almindelig MFA-prøve med bogføring/tilbageførsel, to virksomheder, aktuelle
