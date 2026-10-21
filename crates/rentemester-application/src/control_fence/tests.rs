@@ -516,3 +516,27 @@ fn durable_receipt_replay_is_below_current_authorization_fence() {
         1
     );
 }
+
+#[test]
+fn control_owned_metadata_commits_but_company_changes_are_rolled_back() {
+    let dir = tempfile::tempdir().unwrap();
+    let mut c = Connection::open(dir.path().join("control.sqlite")).unwrap();
+    control(&c);
+    let mut l = Connection::open(dir.path().join("company.sqlite")).unwrap();
+    company(&l);
+    let insert = |tx: &Transaction<'_>| {
+        tx.execute("INSERT INTO workspace_audit(event_type,entity_type,entity_id,actor) VALUES('synthetic_metadata','synthetic','synthetic','user:u')", []).map_err(|_| error("synthetic_sql"))?;
+        Ok::<(), Error>(())
+    };
+    execute_authorized_both(&mut c, &mut l, None, true, |_| Ok("u".into()), |control, _, _| insert(control)).unwrap();
+    let count = |db: &Connection| db.query_row("SELECT count(*) FROM workspace_audit WHERE event_type='synthetic_metadata'", [], |row| row.get::<_, i64>(0)).unwrap();
+    assert_eq!(count(&c), 1);
+    let failure = execute_authorized_both(&mut c, &mut l, None, true, |_| Ok("u".into()), |control, ledger, _| {
+        insert(control)?;
+        effect(ledger)?;
+        Ok(())
+    }).unwrap_err();
+    assert_eq!(failure.error.code, "transaction_escaped");
+    assert_eq!(count(&c), 1);
+    assert_eq!(l.query_row("SELECT count(*) FROM companion", [], |row| row.get::<_, i64>(0)).unwrap(), 0);
+}

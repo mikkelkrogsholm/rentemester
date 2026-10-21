@@ -121,6 +121,7 @@ pub fn execute<T>(
         false,
         &rentemester_runtime::auth::SystemClock,
         false,
+        false,
         |_| {
             Ok(ResolvedHuman {
                 workspace: principal.workspace.to_owned(),
@@ -204,6 +205,25 @@ pub(crate) fn execute_cookie_both<T>(
     permission: Permission, readonly: bool, backup_recovery: bool,
     apply: impl FnOnce(&Transaction<'_>, &Transaction<'_>, &str) -> Result<T,Error>,
 ) -> Result<Committed<T>,Failure> {
+    execute_cookie_mode(control, company, authorization, selection, permission, readonly, backup_recovery, false, apply)
+}
+/// Control-owned metadata may change control only; the company remains held and unchanged.
+#[allow(clippy::too_many_arguments)]
+pub(crate) fn execute_cookie_control<T>(
+    control: &mut Connection, company: &mut Connection,
+    authorization: CookieAuthorization<'_>, selection: CompanySelection<'_>,
+    permission: Permission, readonly: bool, backup_recovery: bool,
+    apply: impl FnOnce(&Transaction<'_>, &Transaction<'_>, &str) -> Result<T,Error>,
+) -> Result<Committed<T>,Failure> {
+    execute_cookie_mode(control, company, authorization, selection, permission, readonly, backup_recovery, true, apply)
+}
+#[allow(clippy::too_many_arguments)]
+fn execute_cookie_mode<T>(
+    control: &mut Connection, company: &mut Connection,
+    authorization: CookieAuthorization<'_>, selection: CompanySelection<'_>,
+    permission: Permission, readonly: bool, backup_recovery: bool, control_owned: bool,
+    apply: impl FnOnce(&Transaction<'_>, &Transaction<'_>, &str) -> Result<T,Error>,
+) -> Result<Committed<T>,Failure> {
     let CookieAuthorization {
         cookie,
         clock,
@@ -220,6 +240,7 @@ pub(crate) fn execute_cookie_both<T>(
         readonly,
         clock,
         backup_recovery,
+        control_owned,
         |tx| {
             let now = clock
                 .now_unix_ms()
@@ -244,6 +265,7 @@ fn execute_resolved<T>(
     readonly: bool,
     clock: &dyn rentemester_runtime::auth::Clock,
     backup_recovery: bool,
+    control_owned: bool,
     resolve: impl FnOnce(&Transaction<'_>) -> Result<ResolvedHuman, Error>,
     apply: impl FnOnce(&Transaction<'_>, &Transaction<'_>, &str) -> Result<T, Error>,
 ) -> Result<Committed<T>, Failure> {
@@ -254,6 +276,7 @@ fn execute_resolved<T>(
         control,
         company,
         bookkeeping.then_some(BackupCheck { workspace:selection.workspace, slug:selection.slug, clock }),
+        control_owned && !readonly,
         |control_tx| {
             let principal = resolve(control_tx)?;
             if !readonly
@@ -353,16 +376,17 @@ pub(crate) fn execute_authorized<T>(
     authorize: impl FnOnce(&Transaction<'_>) -> Result<String, Error>,
     apply: impl FnOnce(&Transaction<'_>, &str) -> Result<T, Error>,
 ) -> Result<Committed<T>, Failure> {
-    execute_authorized_both(control,company,None,authorize,|_,tx,actor|apply(tx,actor))
+    execute_authorized_both(control,company,None,false,authorize,|_,tx,actor|apply(tx,actor))
 }
 pub(crate) struct BackupCheck<'a> {pub workspace:&'a str,pub slug:&'a str,pub clock:&'a dyn rentemester_runtime::auth::Clock}
 pub(crate) fn execute_authorized_with_backup<T>(
     control:&mut Connection,company:&mut Connection,check:Option<BackupCheck<'_>>,
     authorize:impl FnOnce(&Transaction<'_>)->Result<String,Error>,
     apply:impl FnOnce(&Transaction<'_>,&str)->Result<T,Error>,
-)->Result<Committed<T>,Failure>{execute_authorized_both(control,company,check,authorize,|_,tx,actor|apply(tx,actor))}
+)->Result<Committed<T>,Failure>{execute_authorized_both(control,company,check,false,authorize,|_,tx,actor|apply(tx,actor))}
 fn execute_authorized_both<T>(
     control:&mut Connection,company:&mut Connection,check:Option<BackupCheck<'_>>,
+    control_owned: bool,
     authorize:impl FnOnce(&Transaction<'_>)->Result<String,Error>,
     apply:impl FnOnce(&Transaction<'_>,&Transaction<'_>,&str)->Result<T,Error>,
 )->Result<Committed<T>,Failure>{
@@ -408,13 +432,15 @@ fn execute_authorized_both<T>(
         });
     }
     let changes_before = control_tx.total_changes();
+    let company_changes_before = company_tx.total_changes();
     let result = (|| {
         if let Some(check)=check {crate::backup_status::require_write(&control_tx,&company_tx,check.workspace,check.slug,check.clock)?;}
         apply(&control_tx, &company_tx, &subject)
     })();
     if company_tx.is_autocommit()
         || control_tx.is_autocommit()
-        || control_tx.total_changes() != changes_before
+        || (!control_owned && control_tx.total_changes() != changes_before)
+        || (control_owned && company_tx.total_changes() != company_changes_before)
     {
         let _ = company_tx.rollback();
         let _ = control_tx.rollback();
@@ -449,7 +475,17 @@ fn execute_authorized_both<T>(
     }
     #[cfg(test)]
     checkpoint("postcommit");
-    Ok(finish_committed(value, control_tx))
+    if control_owned {
+        control_tx.commit().map_err(|_| Failure {
+            stage: FailureStage::OutcomeUnknown,
+            error: error("commit_outcome_unknown"),
+            control_reusable: false,
+            company_reusable: true,
+        })?;
+        Ok(Committed { value, control_reusable: true })
+    } else {
+        Ok(finish_committed(value, control_tx))
+    }
 }
 fn finish_committed<T>(value: T, control: Transaction<'_>) -> Committed<T> {
     Committed {

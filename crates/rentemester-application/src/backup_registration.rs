@@ -98,7 +98,7 @@ pub fn execute(
     let slug = context.selection.slug;
     let clock = context.clock;
     let readonly = !matches!(action, Action::Apply(_));
-    control_fence::execute_cookie_both(
+    control_fence::execute_cookie_control(
         control,
         company,
         CookieAuthorization {

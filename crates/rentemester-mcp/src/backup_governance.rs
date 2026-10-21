@@ -23,30 +23,32 @@ pub async fn call(api: &ApiClient, args: Value) -> Result<Result<Value, Error>, 
 #[cfg(test)]
 mod tests {
     use super::*;
-    #[tokio::test]
-    async fn exact_scope_service_refusal_and_readonly_registry() {
-        let api =
-            ApiClient::with_service_key("http://127.0.0.1:9", true, "synthetic-service".into())
-                .unwrap();
-        assert!(matches!(
-            call(&api, json!({"company":"synthetic"})).await.unwrap(),
-            Err(Error::InvalidInput(_))
-        ));
-        for field in [
-            "asOf",
-            "actor",
-            "operationId",
-            "body",
-            "confirm",
-            "serviceKey",
-        ] {
-            let mut input = json!({"company":"synthetic"});
-            input[field] = json!("forged");
-            assert!(call(&api, input).await.is_err())
-        }
-        let tool = tools().remove(0);
-        assert_eq!(tool["name"], "system_backup_governance");
-        assert_eq!(tool["annotations"]["readOnlyHint"], true);
-        assert_eq!(tool["inputSchema"]["additionalProperties"], false);
+    #[test]
+    fn exact_scope_service_refusal_and_readonly_registry() {
+        tokio::runtime::Runtime::new().unwrap().block_on(async {
+            let api =
+                ApiClient::with_service_key("http://127.0.0.1:9", true, "synthetic-service".into())
+                    .unwrap();
+            assert!(matches!(
+                call(&api, json!({"company":"synthetic"})).await.unwrap(),
+                Err(Error::InvalidInput(_))
+            ));
+            for field in [
+                "asOf",
+                "actor",
+                "operationId",
+                "body",
+                "confirm",
+                "serviceKey",
+            ] {
+                let mut input = json!({"company":"synthetic"});
+                input[field] = json!("forged");
+                assert!(call(&api, input).await.is_err())
+            }
+            let tool = tools().remove(0);
+            assert_eq!(tool["name"], "system_backup_governance");
+            assert_eq!(tool["annotations"]["readOnlyHint"], true);
+            assert_eq!(tool["inputSchema"]["additionalProperties"], false);
+        });
     }
 }

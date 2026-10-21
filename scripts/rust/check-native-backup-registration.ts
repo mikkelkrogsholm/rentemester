@@ -93,7 +93,9 @@ export function createBackupRegistrationProof(page: Page, base: string, work: st
       await remounted.getByRole("button", { name: "Hent registreringens resultat", exact: true }).click();
       const reconciled = await readback; need(reconciled.ok() && isDeepStrictEqual((await reconciled.json()).operation, added), "Reload must reconcile the same accepted operation");
       await remounted.getByRole("button", { name: "Hent registrerede destinationer", exact: true }).click();
-      await remounted.getByText(label, { exact: true }).first().waitFor();
+      const registered = remounted.getByRole("combobox", { name: "Registreret destination", exact: true });
+      await registered.waitFor();
+      need(await registered.inputValue() === actualDestination, "Accepted SSH registration must be selected");
       need(browserPosts === 1, "Lost reply/remount must not automatically POST again");
       const current = await parity(added); need(current.destinations.length === 1 && current.destinations[0].destinationId === actualDestination, "SSH registration not visible in current state");
       const declaration = { operationId: randomUUID(), destinationId: actualDestination, backupId, note: "Synthetic owner declares transfer; no SSH request or external evidence", confirm: true };

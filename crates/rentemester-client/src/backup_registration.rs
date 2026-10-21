@@ -130,12 +130,11 @@ fn input(
         "operatorTargetId",
         "note",
     ] {
-        if let Some(text) = value[field].as_str() {
-            if text.chars().any(char::is_control)
-                || (["label", "location", "attestedBy"].contains(&field) && text.trim().is_empty())
-            {
-                return Err(invalid());
-            }
+        if let Some(text) = value[field].as_str()
+            && (text.chars().any(char::is_control)
+                || (["label", "location", "attestedBy"].contains(&field) && text.trim().is_empty()))
+        {
+            return Err(invalid());
         }
     }
     if value["operatorTargetId"].as_str().is_some_and(|s| !id(s))

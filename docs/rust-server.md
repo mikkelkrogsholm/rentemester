@@ -23,8 +23,11 @@ TLS-protokolfixture gennem web, CLI og MCP. Ingen virkelig Google-konto eller
 offsite-drift er dermed kvalificeret. Den samlede virksomhedsspecifikke backupvisning
 sammenholder lokal friskhed og lås med placerings- og eksterne kvitteringer for
 præcis samme arkiv; en nyere backup overtager ikke en ældre kvittering.
-Destinationsadministration og øvrig health/audit-paritet er fortsat åbne dele
-af omskrivningen.
+Ejeren kan desuden registrere egne opbevaringssteder, notere eksplicit
+uverificerede overførsler og fjerne aktive registreringer med bevaret historik.
+Alle fem destinationstyper er metadata; serverens fysiske mål og credentials
+forbliver operatørstyrede. Øvrig health/audit-paritet, uafhængig fuld gendannelse
+af den nye registreringshistorik og de samlede releasegates er fortsat åbne.
 
 Den fælles bilagsindbakke kører nu gennem Rust-server, web, CLI og MCP.
 Originalen kan visiteres til en eksplicit virksomhed og afleveres til dens

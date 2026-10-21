@@ -106,33 +106,35 @@ pub async fn call(
 #[cfg(test)]
 mod tests {
     use super::*;
-    #[tokio::test]
-    async fn exact_public_tool_scope_and_human_only() {
-        assert_eq!(tools().len(), 5);
-        let api =
-            ApiClient::with_service_key("http://127.0.0.1:9", true, "synthetic-service".into())
-                .unwrap();
-        assert!(matches!(
-            call(
-                &api,
-                "system_backup_destination_list",
-                json!({"company":"synthetic"})
-            )
-            .await
-            .unwrap(),
-            Err(Error::InvalidInput(_))
-        ));
-        for field in ["actor", "asOf", "path", "body", "confirm"] {
-            let mut args = json!({"company":"synthetic"});
-            args[field] = json!("forged");
-            assert!(
-                call(&api, "system_backup_destination_list", args)
-                    .await
-                    .is_err()
-            )
-        }
-        let t = tools();
-        assert_eq!(t[0]["annotations"]["readOnlyHint"], true);
-        assert_eq!(t[2]["annotations"]["readOnlyHint"], false);
+    #[test]
+    fn exact_public_tool_scope_and_human_only() {
+        tokio::runtime::Runtime::new().unwrap().block_on(async {
+            assert_eq!(tools().len(), 5);
+            let api =
+                ApiClient::with_service_key("http://127.0.0.1:9", true, "synthetic-service".into())
+                    .unwrap();
+            assert!(matches!(
+                call(
+                    &api,
+                    "system_backup_destination_list",
+                    json!({"company":"synthetic"})
+                )
+                .await
+                .unwrap(),
+                Err(Error::InvalidInput(_))
+            ));
+            for field in ["actor", "asOf", "path", "body", "confirm"] {
+                let mut args = json!({"company":"synthetic"});
+                args[field] = json!("forged");
+                assert!(
+                    call(&api, "system_backup_destination_list", args)
+                        .await
+                        .is_err()
+                )
+            }
+            let t = tools();
+            assert_eq!(t[0]["annotations"]["readOnlyHint"], true);
+            assert_eq!(t[2]["annotations"]["readOnlyHint"], false);
+        });
     }
 }

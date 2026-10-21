@@ -404,3 +404,65 @@ med normal server- og menneskelig cookieopsætning. MCP bruger
 virksomhedsadministrators rettigheder og samme serverberegning. Klienterne kan
 ikke indsætte et historisk `asOf`, en provideradresse eller en selvangivet
 kvittering. Serverstier, token og privat signeringsmateriale udleveres ikke.
+
+## Ejeren registrerer egne opbevaringssteder
+
+Panelet **Registrerede backupdestinationer** i virksomhedens integritetsvisning
+lader en aktuel virksomhedsadministrator registrere navn, type og beskrivelse
+samt eksplicitte erklæringer om region, uafhængighed og IT-sikkerhed. Alle fem
+typer understøttes: lokal mappe, Dropbox, Google Drive, SSH og andet.
+Placeringens tekst er inert metadata. Serveren åbner ikke adressen, udfører
+ikke SSH og skriver ikke til en brugerangivet sti.
+
+En registrering kan henvise til et eksisterende operatørgodkendt servermål med
+samme type. Henvisningen er metadata; kopiering foretages fortsat særskilt i
+panelet til serverens konfigurerede mål. Operatøren styrer mapper, rettigheder,
+providertoken og mappebindinger. En ejerregistrering ændrer ikke disse forhold.
+
+Efter selv at have overført en backup kan ejeren vælge **Notér ekstern
+overførsel**. Valget sker blandt virksomhedens faktisk genlæste og
+signaturverificerede, lokalt gemte arkiver. Serveren udleder arkivets SHA256,
+størrelse og oprindelige tidspunkt; klienten kan ikke indsætte opdigtede
+arkivoplysninger. Erklæringen gemmes altid med `verified: false`,
+`verifyMethod: "declared"` og `remoteSyncVerified: false`. Den tæller ikke som
+verificeret lokal placering eller ekstern bytekontrol i den samlede backupstatus.
+
+**Fjern destinationsregistrering** fjerner kun registreringen fra aktivt valg.
+Backupfiler, operatørkonfiguration og registreringens historik bevares. De samme
+oplysninger kan fortsat læses i historikken efter genstart. Gendannede
+registreringer og erklæringer er fortsat inerte oplysninger; en ny erklæring
+kræver et brugbart arkiv hos den aktuelle instans. Historiske oplysninger
+installerer hverken legitimationsoplysninger eller fysisk transportautoritet.
+
+Hver ændring har et kontrol-id gemt før POST. Ved mistet svar genoptages
+forløbet med **Hent registreringens resultat**; genåbning sender ingen automatisk
+ændring. Et fuldført id med samme intent giver den oprindelige kvittering.
+Et ændret intent eller en anden virksomhed med samme id afvises. Et manglende
+resultat kan stadig være under behandling. Brugeren kan gennemgå en gentagelse
+med samme id eller bevare det gamle id og frigive formularen; bevarede id'er
+kan genåbnes og afstemmes manuelt.
+
+HTTP bruger `GET` og `POST /api/companies/{slug}/backup-registrations` samt
+`GET /api/companies/{slug}/backup-registrations/operations/{operationId}`.
+POST accepterer en præcis, højst 16 KiB stor tagged request med `action` lig
+`add`, `remove` eller `declare`, kontrol-id og `confirm: true`. Aktuel
+menneskelig administratoradgang kontrolleres også ved replay. Ved bogføringslås
+kan ejeren stadig vedligeholde backupoplysninger; flytningens skrivehegn gælder.
+
+CLI bruger `remote backup-registrations`, `backup-add-destination`,
+`backup-remove-destination`, `backup-confirm-placement` og
+`backup-registration-operation` med normal `--company`, server og MFA-cookie.
+Skrivekommandoerne kræver `--confirm` og præcis JSON på stdin; SDK'et indsætter
+den faste handling, så JSON må ikke indeholde `action`. MCP bruger
+`system_backup_destination_list`, `system_backup_destination_add`,
+`system_backup_destination_remove`, `system_backup_confirm_placement` og
+`backup_registration_operation`. De tre skriveværktøjer kræver
+`{company, body, confirm:true}`; `body` er samme JSON uden `action`.
+
+Et add-input indeholder `operationId`, `destinationId`, `confirm:true`, `label`,
+`kind`, `location`, `attestedBy`, `inEeaOrEu` og `nonRelatedParty`. Supplerende
+felter er `regionCountry`, `regionNote`, `itSecurityMeetsStandards`,
+`itSecurityNote` og `operatorTargetId`; de kan være null. Remove kræver
+`operationId`, `destinationId`, `confirm:true`. Declare kræver desuden
+`backupId` og valgfrit `note`. Actor og tidspunkt fastsættes af serveren;
+klientoplysninger kan ikke erstatte autorisation eller verifikation.
