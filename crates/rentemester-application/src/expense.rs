@@ -10,6 +10,7 @@ pub use rentemester_storage::expense::Input;
 use rusqlite::Connection;
 use serde_json::Value;
 pub enum Action<'a> {
+    Original(rentemester_storage::payable_original::Action<'a>),
     Options(i64),
     Payables { as_of: &'a str, status: &'a str },
     Register(&'a rentemester_storage::payables::Register),
@@ -24,6 +25,13 @@ pub fn execute(
     action: Action<'_>,
 ) -> Result<Committed<Value>, Failure> {
     let permission = match action {
+        Action::Original(command) => {
+            if crate::payable_original::mutation(command) {
+                Permission::CompanyLedgerPost
+            } else {
+                Permission::CompanyRead
+            }
+        }
         Action::Options(_) => Permission::CompanyDocumentsRead,
         Action::Payables { .. } => Permission::CompanyRead,
         Action::Post(_) | Action::Register(_) | Action::Pay(_, _) => Permission::CompanyLedgerPost,
@@ -41,6 +49,14 @@ pub fn execute(
         context.selection,
         permission,
         |tx, subject| match action {
+            Action::Original(command) => crate::payable_original::authorized(
+                tx,
+                guard,
+                command,
+                subject,
+                rentemester_storage::idempotency::PrincipalKind::User,
+                clock,
+            ),
             Action::Options(id) => rentemester_storage::expense::options(tx, slug, id),
             Action::Payables { as_of, status } => {
                 rentemester_storage::payables::list(tx, slug, as_of, status)
@@ -108,6 +124,17 @@ pub fn execute_service(
     use crate::service_company::{self, OperationResult};
     use rentemester_storage::{documents, idempotency::PrincipalKind, payables};
     let (permission, mutation) = match action {
+        Action::Original(command) => {
+            let mutation = crate::payable_original::mutation(command);
+            (
+                if mutation {
+                    Permission::CompanyLedgerPost
+                } else {
+                    Permission::CompanyRead
+                },
+                mutation,
+            )
+        }
         Action::Options(_) => (Permission::CompanyDocumentsRead, false),
         Action::Payables { .. } => (Permission::CompanyRead, false),
         Action::Register(_) | Action::Pay(_, _) => (Permission::CompanyLedgerPost, true),
@@ -131,6 +158,14 @@ pub fn execute_service(
         mutation,
         |tx, subject, _| {
             let result = match action {
+                Action::Original(command) => crate::payable_original::authorized(
+                    tx,
+                    guard,
+                    command,
+                    subject,
+                    PrincipalKind::ServiceAccount,
+                    clock,
+                )?,
                 Action::Options(id) => rentemester_storage::expense::options(tx, slug, id)?,
                 Action::Payables { as_of, status } => payables::list(tx, slug, as_of, status)?,
                 Action::Register(_) | Action::Pay(_, _) => {

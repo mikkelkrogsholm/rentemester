@@ -274,6 +274,32 @@ fn register_inner(
     proof: Option<&crate::direct_bank_payable_correction::PurchaseProof>,
     principal: PrincipalKind,
 ) -> Result<Value, Error> {
+    register_result(tx, input, actor, latest, proof, principal).map(|(value, _)| value)
+}
+pub(crate) fn register_original(
+    tx: &Transaction<'_>,
+    input: &Register,
+    actor: &str,
+    latest: Date,
+    principal: PrincipalKind,
+) -> Result<Value, Error> {
+    let (mut value, posted) = register_result(tx, input, actor, latest, None, principal)?;
+    value["entryHash"] = posted["entryHash"].clone();
+    let mut rules = vec![json!("DK-PAYABLE-001")];
+    if let Some(native) = posted["appliedRules"].as_array() {
+        rules.extend(native.iter().cloned());
+    }
+    value["appliedRules"] = json!(rules);
+    Ok(value)
+}
+fn register_result(
+    tx: &Transaction<'_>,
+    input: &Register,
+    actor: &str,
+    latest: Date,
+    proof: Option<&crate::direct_bank_payable_correction::PurchaseProof>,
+    principal: PrincipalKind,
+) -> Result<(Value, Value), Error> {
     crate::journal_post::require_current(tx)?;
     let PreparedBill {
         journal,
@@ -286,9 +312,10 @@ fn register_inner(
     let result = post(tx, &journal, actor, latest, principal)?;
     let id:i64=tx.query_row("INSERT INTO payables(document_id,vendor_id,supplier_name,bill_no,bill_date,due_date,gross_amount,net_amount,vat_amount,currency,journal_entry_id,note) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,'DKK',?10,?11) RETURNING id",params![input.document_id,input.vendor_id,supplier,invoice,input.bill_date,input.due_date,wire(&gross)?.as_f64(),wire(&gross.subtract(&vat))?.as_f64(),wire(&vat)?.as_f64(),result["entryId"].as_i64(),input.note],|r|r.get(0)).map_err(invalid)?;
     audit(tx, "payable_register", id, actor, principal)?;
-    Ok(
+    Ok((
         json!({"payableId":id,"documentId":input.document_id,"supplierName":supplier,"billNo":invoice,"grossAmount":wire(&gross)?,"netAmount":wire(&gross.subtract(&vat))?,"vatAmount":wire(&vat)?,"dueDate":input.due_date,"entryId":result["entryId"],"entryNo":result["entryNo"]}),
-    )
+        result,
+    ))
 }
 
 pub fn document_id(tx: &Transaction<'_>, id: i64) -> Result<i64, Error> {
@@ -494,12 +521,11 @@ fn pay_inner(
         json!({"paymentId":payment,"journalEntryId":result["entryId"],"payableId":id,"openBalance":wire(&open.subtract(&amount))?}),
     )
 }
-pub fn list(tx: &Transaction<'_>, slug: &str, as_of: &str, status: &str) -> Result<Value, Error> {
+pub(crate) fn dated_rows(tx: &Transaction<'_>, as_of: &str, status: &str) -> Result<Value, Error> {
     Date::parse(as_of)?;
     if !["open", "paid", "overdue", "all"].contains(&status) {
         return Err(refused("invalid payable status filter"));
     }
-    let mut base = crate::sales::context(tx, slug, as_of, None)?;
     let mut q=tx.prepare("SELECT id,document_id,bill_no,bill_date,due_date,supplier_name,vendor_id,gross_amount FROM payables WHERE bill_date<=?1 ORDER BY due_date,id").map_err(invalid)?;
     let mut result = q.query([as_of]).map_err(invalid)?;
     let mut rows = vec![];
@@ -538,19 +564,22 @@ pub fn list(tx: &Transaction<'_>, slug: &str, as_of: &str, status: &str) -> Resu
         }
         rows.push(json!({"payableId":id,"documentId":r.get::<_,i64>(1).map_err(invalid)?,"billNo":r.get::<_,Option<String>>(2).map_err(invalid)?,"billDate":r.get::<_,String>(3).map_err(invalid)?,"dueDate":due,"supplierName":r.get::<_,Option<String>>(5).map_err(invalid)?,"vendorId":r.get::<_,Option<i64>>(6).map_err(invalid)?,"grossAmount":wire(&original.gross)?,"currency":"DKK","paidAmount":wire(&paid)?,"openBalance":wire(&open)?,"status":if closed{"paid"}else{"open"},"isOverdue":days>0,"overdueDays":days,"agingBucket":if days==0{"not-due"}else if days<=30{"0-30"}else if days<=60{"31-60"}else if days<=90{"61-90"}else{"90+"}}));
     }
+    Ok(
+        json!({"asOfDate":as_of,"status":status,"count":rows.len(),"rows":rows,"totalOpenBalance":wire(&total)?,"overdueOpenBalance":wire(&overdue)?,"notYetDueOpenBalance":wire(&total.subtract(&overdue))?}),
+    )
+}
+pub fn list(tx: &Transaction<'_>, slug: &str, as_of: &str, status: &str) -> Result<Value, Error> {
+    let financial = dated_rows(tx, as_of, status)?;
+    let mut base = crate::sales::context(tx, slug, as_of, None)?;
+    for (key, value) in financial.as_object().expect("dated rows object") {
+        base[key] = value.clone();
+    }
     let mut q=tx.prepare("SELECT d.id,d.document_no,d.invoice_no,d.invoice_date,d.supplier_name,d.amount_inc_vat,d.vat_amount,d.currency FROM documents d WHERE d.document_type IN ('purchase_sale','cash_register_receipt') AND d.currency='DKK' AND NOT EXISTS(SELECT 1 FROM payables p WHERE p.document_id=d.id) AND NOT EXISTS(SELECT 1 FROM journal_entries j WHERE j.document_id=d.id) ORDER BY d.invoice_date DESC,d.id DESC LIMIT 200").map_err(invalid)?;
     let docs=q.query_map([],|r|Ok(json!({"id":r.get::<_,i64>(0)?,"documentNo":r.get::<_,Option<String>>(1)?,"invoiceNo":r.get::<_,Option<String>>(2)?,"invoiceDate":r.get::<_,Option<String>>(3)?,"supplierName":r.get::<_,Option<String>>(4)?,"amountIncVat":r.get::<_,Option<f64>>(5)?,"vatAmount":r.get::<_,Option<f64>>(6)?,"currency":r.get::<_,String>(7)?}))).map_err(invalid)?.collect::<Result<Vec<_>,_>>().map_err(invalid)?;
     let mut q=tx.prepare("SELECT account_no,name,default_vat_code FROM accounts WHERE type='expense' AND active=1 ORDER BY account_no").map_err(invalid)?;
     let accounts=q.query_map([],|r|Ok(json!({"accountNo":r.get::<_,String>(0)?,"name":r.get::<_,String>(1)?,"defaultVatCode":r.get::<_,Option<String>>(2)?}))).map_err(invalid)?.collect::<Result<Vec<_>,_>>().map_err(invalid)?;
     let vendors = crate::sales::contacts(tx, slug, as_of)?["vendors"].clone();
     for (key, value) in [
-        ("asOfDate", json!(as_of)),
-        ("status", json!(status)),
-        ("count", json!(rows.len())),
-        ("rows", json!(rows)),
-        ("totalOpenBalance", wire(&total)?),
-        ("overdueOpenBalance", wire(&overdue)?),
-        ("notYetDueOpenBalance", wire(&total.subtract(&overdue))?),
         ("unregisteredDocuments", json!(docs)),
         (
             "directBankCorrectionCandidates",

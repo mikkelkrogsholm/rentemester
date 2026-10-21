@@ -51,6 +51,7 @@ pub mod bank;
 pub mod bank_original;
 
 pub mod expense;
+pub mod payable_original;
 
 pub mod company_setup;
 

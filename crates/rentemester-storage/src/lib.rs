@@ -545,6 +545,7 @@ pub mod bank_queries;
 
 pub mod expense;
 pub mod payables;
+pub mod payable_original;
 pub mod periods;
 
 pub mod company_setup;

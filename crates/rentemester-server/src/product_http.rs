@@ -56,6 +56,7 @@ mod annual_report;
 mod annual_exports;
 mod obligations;
 mod payables;
+mod payable_original;
 mod periods;
 mod portable_backup;
 mod backup_destinations;
@@ -111,6 +112,9 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
         pdf_workers: Arc::new(Semaphore::new(4)),
     };
     Router::new()
+        .route("/api/companies/{slug}/payables/original/list", get(payable_original::handle))
+        .route("/api/companies/{slug}/payables/original/register", post(payable_original::handle))
+        .route("/api/companies/{slug}/payables/original/pay", post(payable_original::handle))
         .route(
             "/api/companies/{slug}/bank/original/suggestions",
             get(bank_original::handle),
