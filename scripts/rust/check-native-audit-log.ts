@@ -50,7 +50,7 @@ export function createAuditLogProof(page: Page, base: string, work: string, nonA
       && typeof row.entityType === "string" && (row.entityId === null || typeof row.entityId === "string") && typeof row.message === "string" && Number.isFinite(auditTime(row.createdAt)), "Audit row identity/text/timestamp malformed");
     for (let index = 1; index < value.rows.length; index++) {
       const previous = value.rows[index - 1], row = value.rows[index];
-      need(auditTime(previous.createdAt) > auditTime(row.createdAt) || previous.createdAt === row.createdAt && previous.id > row.id, "Audit stable descending timestamp/id order differs");
+      need(previous.createdAt > row.createdAt || previous.createdAt === row.createdAt && previous.id > row.id, "Audit stable descending timestamp/id order differs");
     }
     need(value.hasMore ? value.nextOffset === value.offset + value.count : !("nextOffset" in value), "Audit pagination cursor contract differs");
   }
@@ -93,7 +93,8 @@ export function createAuditLogProof(page: Page, base: string, work: string, nonA
       const body = { confirm: true, input: { format: "rentemester-manual-journal-reversal/1", expectedRuleVersion: before.journal.nativePosting.ruleVersion, idempotencyKey: "synthetic-audit-reversal-118", request: { entryId: String(original.id), transactionDate: today, reason: "Synthetic audit inspection reversal" } } };
       const response = await page.request.post(base + prefix + "manual-journal-reversal", { headers: { origin: base }, data: body }); need(response.ok(), "One normal human audit reversal refused");
       const reversal = await response.json(); need(reversal.ok === true && reversal.originalEntryId === original.id && reversal.receipt?.replayed === false, "Actual reversal receipt differs");
-      baseline = await books(); need(baseline.journal.entries.length === 2 && baseline.trial.balanced && isDeepStrictEqual(before.bank, baseline.bank), "Exactly one append-only balanced reversal required");
+      baseline = await books(); need(baseline.journal.entries.length === 2 && baseline.trial.balanced, "Exactly one append-only balanced reversal required");
+      need(isDeepStrictEqual(before.bank.transactions, baseline.bank.transactions) && isDeepStrictEqual(before.bank.accounts, baseline.bank.accounts), "Reversal must preserve imported bank transactions and account metadata");
       all = await parity({ limit: 5000 }); shape(all); need(all.hasMore === false && all.total === all.rows.length, "All synthetic rows must fit explicit supported page without truncation");
       const posted = all.rows.find((row: any) => row.eventType === "journal_post" && row.entityId === String(original.id));
       const reversed = all.rows.find((row: any) => row.eventType === "journal_reverse" && row.entityId === String(reversal.entryId));

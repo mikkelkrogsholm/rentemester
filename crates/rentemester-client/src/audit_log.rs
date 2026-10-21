@@ -165,7 +165,7 @@ fn response(value: Value, company: &str, query: &AuditLogQuery) -> Result<Value,
         return Err(fail());
     }
     for row in rows {
-        if !row["id"].as_i64().is_some_and(|n| n > 0)
+        if row["id"].as_i64().is_none_or(|n| n <= 0)
             || !["eventType", "entityType", "message", "actor", "createdAt"]
                 .iter()
                 .all(|f| row[*f].is_string())

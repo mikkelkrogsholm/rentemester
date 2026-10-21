@@ -7,6 +7,12 @@ starter ikke TypeScript-backenden og sender ikke forespørgsler videre til den.
 
 ## Aktuel Rust-levering
 
+Virksomhedens [revisionshistorik](rust-audit-log.md) kan nu filtreres og læses
+med fuld pagineringsmetadata gennem web, HTTP, CLI og MCP. Aktuelle menneske-
+og servicekontorettigheder håndhæves; opslag efter bogføring/tilbageførsel,
+læserrevokation og normal-MFA-genstart er verificeret på syntetiske data.
+Fuld regnskabsmæssig `audit_verify` er fortsat et separat resterende forløb.
+
 Signeret gendannelse på en frisk instans bevarer nu også backupregistreringer,
 uverificerede erklæringer og fjernelseshistorik. Prøven fjerner den oprindelige
 testinstans og private nøgle først og verificerer begge virksomheders data via

@@ -155,10 +155,10 @@ impl Query {
         let upper = nonempty(&self.to_date)
             .map(|s| bound(s, true))
             .transpose()?;
-        if let (Some(l), Some(u)) = (lower, upper) {
-            if l.instant > u.instant || (u.exclusive && l.instant == u.instant) {
-                return Err(invalid());
-            }
+        if let (Some(l), Some(u)) = (lower, upper)
+            && (l.instant > u.instant || (u.exclusive && l.instant == u.instant))
+        {
+            return Err(invalid());
         }
         Ok(())
     }
@@ -179,17 +179,20 @@ pub fn read(tx: &Transaction<'_>, slug: &str, query: &Query) -> Result<Value, Er
     let event = nonempty(&query.event_type_like).map(|v| format!("%{}%", v.to_lowercase()));
     let actor = nonempty(&query.actor_like).map(|v| format!("%{}%", v.to_lowercase()));
     let filters = "WHERE (?1 IS NULL OR julianday(created_at) >= julianday(?1)) AND (?2 IS NULL OR (CASE WHEN ?3 THEN julianday(created_at) < julianday(?2) ELSE julianday(created_at) <= julianday(?2) END)) AND (?4 IS NULL OR LOWER(event_type) LIKE ?4) AND (?5 IS NULL OR LOWER(actor) LIKE ?5)";
-    let total: u64 = tx
+    let total: i64 = tx
         .query_row(
             &format!("SELECT COUNT(*) FROM audit_log {filters}"),
             params![from, until, exclusive, event, actor],
             |row| row.get(0),
         )
         .map_err(unavailable)?;
+    let total = u64::try_from(total).map_err(|_| invalid())?;
     let limit = query.limit.unwrap_or(500);
     let offset = query.offset.unwrap_or(0);
+    let sql_limit = i64::try_from(limit).map_err(|_| invalid())?;
+    let sql_offset = i64::try_from(offset).map_err(|_| invalid())?;
     let mut statement = tx.prepare(&format!("SELECT id,event_type,entity_type,entity_id,message,actor,created_at FROM audit_log {filters} ORDER BY created_at DESC,id DESC LIMIT ?6 OFFSET ?7")).map_err(unavailable)?;
-    let rows = statement.query_map(params![from,until,exclusive,event,actor,limit,offset], |row| Ok(json!({
+    let rows = statement.query_map(params![from,until,exclusive,event,actor,sql_limit,sql_offset], |row| Ok(json!({
         "id":row.get::<_,i64>(0)?, "eventType":row.get::<_,String>(1)?, "entityType":row.get::<_,String>(2)?, "entityId":row.get::<_,Option<String>>(3)?, "message":row.get::<_,String>(4)?, "actor":row.get::<_,String>(5)?, "createdAt":row.get::<_,String>(6)?
     }))).map_err(unavailable)?.collect::<Result<Vec<_>,_>>().map_err(unavailable)?;
     let count = rows.len() as u64;

@@ -37,6 +37,7 @@ mod gdpr;
 mod dimensions;
 mod exceptions;
 mod mileage;
+mod audit_log;
 mod integrity;
 mod multi_year;
 mod annual_report;
@@ -436,6 +437,7 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
         .route("/api/companies/{slug}/vat", get(vat::read))
         .route("/api/companies/{slug}/vat/export", get(vat::read))
         .route("/api/companies/{slug}/integrity", get(integrity::read))
+        .route("/api/companies/{slug}/audit-log", get(audit_log::handle))
         .route("/api/companies/{slug}/journal", get(archive_reports::read))
         .route("/api/companies/{slug}/trial-balance", get(archive_reports::read))
         .route("/api/companies/{slug}/income-statement", get(archive_reports::read))

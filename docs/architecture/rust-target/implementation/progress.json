@@ -1,13 +1,13 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "Group117 source-free signed workspace recovery of backup metadata and two-company business data, fresh owner MFA and HTTP/CLI/MCP restart accepted",
-  "code_revision": "144a4026 plus recorded root recovery runner integration",
+  "current_increment": "Group118 company audit history after posting/reversal through shared web, HTTP/CLI/MCP, current human/service authorization and restart accepted",
+  "code_revision": "75f02efe plus recorded root host/server/web/runner integration and SQL integer binding correction",
   "spec_revision": "sha256:bc98636be4a972407adce0f817a76bb9d4bb7200cb292a70965e75ab62fae250",
-  "state": "Group117 completes source-free fresh-device recovery of the newly added backup and registration metadata. Final authenticated signed export contains exact original add/declaration/removal history plus two-company business/original bytes. Source workspace/private signer/managed/provider copies and source browser contexts/credential files are removed before independent public-key verification and restore into a fresh root with new signing/cookie/MFA keys and new normally verified MFA owner. Supported journal/bank/trial/balance/document reads and original bytes match through HTTP/CLI/MCP before and after target restart; original registration receipts retain actor/time while declarations remain unverified. Fresh target has no retained backup inventory/operator targets, zero current placement/remote qualification, and source remote receipt GET returns null without provider configuration or extra provider I/O. Typed registration history is validated before portable export/restore publication; malformed and forged histories refuse atomically, legacy no-registration archives remain compatible. Entire mission/epic672 and all earlier acceptance remain intact/open; remaining health/audit, full accounting/lifecycle/transfer, signed release/platform and TypeScript retirement gates still required. Installed desktop acceptance remains explicitly last; no unlock requests.",
+  "state": "Group118 completes bounded company audit history inspection across shared web, HTTP, SDK, CLI remote audit-log-list and MCP audit_log_list (242 tools). Current CompanyRead human and scoped-service fences retain current membership/session/key revocation, namespace admission and service quota semantics. Parameterized SQL COUNT/page share a transaction, AND actor/event LIKE and normalized UTC date bounds, stable stored created_at DESC/id DESC, complete total/count/limit/offset/hasMore/nextOffset and exact unmodified actor/time/entity/message text. Default500 max5000, safe offset, bounded query and explicit 8MiB successful-page refusal with no truncation; smaller page preserves exact messages. Dates use SQLite native timestamp precision. UI explicit reads/filter submission/resetoffset and paging uses submitted filters; failures clear old rows. Actual118 performs one synthetic human reversal after an existing human posting then verifies exact post/reverse history, all rows/paging/filters/web/HTTP/CLI/MCP/service parity, malformed and ambiguous auth refusal, normal reader grant/read/revoke403/restore, unchanged books by inspection and exact normal-MFA restart. Root corrected bundled SQLite i64 binding/reads rather than changing the public safe nonnegative numeric contract. Seven storage/application +threeSDK +CLIone +MCPtwo +HTTPparserone +242toolregistry and two UI tests, webbuild/lint, strict7cratealltargetClippy and finalnative3binary build accepted. Independent final binary/web/helper/runner/process cleanup checks pass. Entire mission/epic672 and prior evidence remain open/intact; full audit_verify is not journal hash integrity or audit listing. Company physical/schema health, broader full accounting/lifecycle/transfer/release/platform/TypeScript retirement and final installed desktop GUI gates remain required.",
   "issues_closed": [],
   "next": [
-    "Complete remaining native health/filesystem/schema/audit verify/list parity and the required full accounting/lifecycle matrix, followed by remaining transfer/release/platform gates, truthful discovery and trusted Rust release/SBOM/promotion/repro/remoteCI. Group117 source-free new backup metadata recovery is accepted; do not repeat unchanged accepted backup flows or retire TypeScript before full replacement acceptance.",
+    "Complete full native audit_verify and supported period readiness against existing journal/evidence/bank/reversal/invoice/sequence/audit-completeness invariants, including replacement of diagnosed blanket not-ported blockers with actual source-evidence validation. Compose truthful physical/schema health from admitted namespace/schema checks, then remaining full accounting/lifecycle matrix and transfer/release/platform/discovery/SBOM/promotion/repro/remoteCI gates. Group117 source-free recovery and Group118 audit history inspection are accepted; do not repeat unchanged accepted flows or retire TypeScript before full accepted replacement.",
     "Installed desktop acceptance is explicitly deferred to the very end by the user. Preserve prepared Group100 profile; collect remaining native automation, closure, recovery and packaging checks for final installed acceptance without requesting screen unlock during development.",
     "J03/R50 and remaining R54 scope: only still-supported operation closure/recovery, nonempty scheduler handoff, hostile/older clone and post-cutover rollback requirements. Group99 qualifies managed installed J06 flow, not every R54 acceptance item.",
     "Signed distribution/update/cutover evidence must match actual full Rust replacement; retain all existing completion gates and TypeScript retirement gate.",
@@ -4581,6 +4581,91 @@
       "actual_ssh": false,
       "offsite": false,
       "installed_desktop": false
+    },
+    "native_audit_log118": {
+      "path": "/tmp/rentemester-rust-reports/native-audit-log118b.json",
+      "sha256": "5a32d06be258829e085668b9071ef28596b273aa00da49e72df97f3d985fe8f1",
+      "status": "passed",
+      "source_revision": "75f02efe6794b3d6870a0942f5c06f3a0f35afc0 plus recorded root integration",
+      "artifacts": {
+        "server_binary": "2740cfef0e0b66a1df16f605de6a69a35989a27429535020b6ef8a7f9e69129d",
+        "cli_binary": "1c274a553e20b2d455b1f4d0b78d5eed68384cb986ca140755f760e7fff7d3c7",
+        "mcp_binary": "9209ca58049975e2a870bcd99d1176e067dae8d324b9c892882a8d350e83c1f9"
+      },
+      "helper_sha256": {
+        "runnerSha256": "191c604dcfcf2f739b61b5bb1b88df21fa24aa212b63fad4ad46a63891601bee",
+        "backupLockHelperSha256": "6eb82b8201dc05973c4f62a3098ce6223dfa427b2332465018e929acfe1e2e0b",
+        "backupLockMailInboxHelperSha256": "b2d9b6d088a4336e62c9102edb58833e2645ed15b73761c9cebb681e2ccc8327",
+        "backupRemoteHelperSha256": "6c21682bee9cf25f55dd7c3140b1814c46bebc0acca557a900ccc7392fd2bb6c",
+        "backupGovernanceHelperSha256": "2ea63a1bfb52cc3b26659e6bd1a29155a948ebc3b4c6a45b4b0976ef179f71fe",
+        "backupRegistrationHelperSha256": "a7eaee25de256108ceeba15ad3404165ca12699fe7ba0690a538a63e63748199",
+        "auditLogHelperSha256": "75c379704ff1a65cbf41d26cc06f6a115c1b4f01d9d5b01942aa9518c4cfc91a"
+      },
+      "scope": {
+        "qualified": true,
+        "expectedFinalJournalCount": 2,
+        "postAuditId": 10,
+        "reversalAuditId": 16,
+        "originalEntryId": 1,
+        "reversalEntryId": 2,
+        "auditFingerprint": "31d983555b8337e43e7d884a24c2189c665fe536850b91f274a5324d046cee48",
+        "accountingFingerprint": "50ce86809d749d44baf4294df59819c11fb40a363991b7425746605dedd1d982",
+        "allRowsExactHttpCliMcp": true,
+        "completeOffsetPagination": true,
+        "exactActorTimeTypeEntityMessage": true,
+        "dateActorTypeAndWildcardFilters": true,
+        "serviceReadParity": true,
+        "malformedQueryRefused": true,
+        "ambiguousAuthorityRefused": true,
+        "currentReaderAllowedThenRevoked": true,
+        "readSideAccountingUnchanged": true,
+        "web": {
+          "actualWebPaging": true,
+          "unsavedFiltersDoNotAffectPaging": true,
+          "submittedFiltersResetOffset": true,
+          "exactAuditTextVisible": true
+        }
+      },
+      "restart": {
+        "sameAuditAfterNormalMfaRestart": true,
+        "expectedFinalJournalCount": 2,
+        "auditFingerprint": "31d983555b8337e43e7d884a24c2189c665fe536850b91f274a5324d046cee48",
+        "accountingFingerprint": "50ce86809d749d44baf4294df59819c11fb40a363991b7425746605dedd1d982",
+        "httpCliMcpAndServiceParity": true,
+        "readSideAccountingUnchanged": true,
+        "web": {
+          "actualWebPaging": true,
+          "unsavedFiltersDoNotAffectPaging": true,
+          "submittedFiltersResetOffset": true,
+          "exactAuditTextVisible": true
+        }
+      },
+      "primary_counts": {
+        "documents": 0,
+        "bank_transactions": 1,
+        "journal_entries": 2
+      },
+      "target_counts": {
+        "documents": 1,
+        "bank_transactions": 1,
+        "journal_entries": 0
+      },
+      "tests": {
+        "storage_application": "/tmp/rm118-audit-tests-fixed2.log:7pass",
+        "sdk": "/tmp/rm118-sdk-tests.log:3pass",
+        "cli": "/tmp/rm118-cli-tests.log:1pass",
+        "mcp": "/tmp/rm118-mcp-tests.log:2pass",
+        "server": "/tmp/rm118-server-tests.log:1pass",
+        "registry": "/tmp/rm118-registry-test.log:242tools/1pass",
+        "web": "/tmp/rm118-web-tests.log:2pass",
+        "web_build": "/tmp/rm118-web-build.log:passed",
+        "lint": "/tmp/rm118-lint.log:passed",
+        "clippy": "/tmp/rm118-clippy-fixed2.log:7crates/alltargets passed",
+        "build": "/tmp/rm118-build.log:passed"
+      },
+      "full_audit_verification": false,
+      "filesystem_schema_health": false,
+      "installed_desktop": false
     }
   },
   "verified_history": [
@@ -5907,6 +5992,12 @@
       "owner": "root runner/auth/restore/actual; isolated storage-codec and proof workers",
       "status": "COMPLETE finite Group117; signed source-free restore with new owner/MFA, exact supported HTTP/CLI/MCP reads and restart accepted. Entire mission remains open; installed desktop final only.",
       "acceptance": "Remove source authority/copies, independently verify signed archive, restore fresh instance/new owner, preserve original business/history and reject imported live backup/provider authority."
+    },
+    {
+      "delivery": "Group118 company audit history inspection after posting/reversal",
+      "owner": "root host/server/sharedweb/runner/actual; isolated storage-application/client/proof workers",
+      "status": "COMPLETE finite Group118; exact human/service web/HTTP/CLI/MCP inspection, reader revocation and normal-MFA restart accepted. Entire mission remains open; installed desktop final only.",
+      "acceptance": "One actual synthetic post/reverse, exact immutable audit actor/time/text, complete stable offset pages and bounded filters, current auth/quotas, no readside financial mutation, persisted history after restart. Not full audit_verify."
     }
   ],
   "integrated_pending_browser": [
@@ -6108,6 +6199,12 @@
       "code_revision": "2ae27a26 + recorded Group116 root integration/control-owned fence correction in this commit",
       "spec_revision": "sha256:bc98636be4a972407adce0f817a76bb9d4bb7200cb292a70965e75ab62fae250",
       "state": "Group116 completes inert owner destination registration/list/remove/declaration with exact operation reconciliation. Current human CompanyAdmin authorizes before reads/replay/files; actor/time server-derived, normal transfer write fence retained and overduebackup recovery maintenance allowed. All five kinds supported, location never dereferenced and optional operator target is same-kind approved reference only. Any new declaration derives SHA/size/createdAt from actual protected signed current-company/currentinstance retained inventory; declared/verifiedfalse cannot enter115qualifiedcopy counts. Immutable canonical intent/scope operation receipts, no destinationID reuse after tombstone, full inert history retained through restore boundary. Actual116 normalMFA webSSHadd lostacceptedreply/remount/manualsameGET/noautoPOST; HTTP/CLI/MCP list/op parity, CLIdeclare/MCP exactreplay, conflictingintent refusal, currentnonadmin403s, MCPremove/CLIexactreplay, original3receipt history after freshMFArestart. Physical backup files/operator configs/qualifiedinventory/books unchanged and noextraDriveGETs (14 total reused114-115flow). App tests exposed wrong company-owned transactionhelper; root added dedicated control-owned metadata path that forbids companychanges and commitscontrol after unchangedcompany transaction. Existingadapters remainstrictdefault; sixfence regressiontests and readonlytargetedreview pass. Sevenapp/storage, fiveSDK, CLIone/MCPone+standalonegovernancetest,241registry, web2tests/typebuild/lint, native3binarybuild and strict7crateall-targetClippy pass. Finalartifact/5helper/runner hashes independentlymatched and ownedprocess/profilecleanup verified. Entiremission/epic672/prior evidence preserved; realSSH/externaltransfer/Google/offsite, actualsourcefree recovery ofnewmetadata, fullhealthaudit, broaderaccounting/transfer/release/platform andTSretirement remainopen. Installeddesktop acceptance remains explicitly last; no unlockrequests or extra perfectionround."
+    },
+    {
+      "current_increment": "Group117 source-free signed workspace recovery of backup metadata and two-company business data, fresh owner MFA and HTTP/CLI/MCP restart accepted",
+      "code_revision": "144a4026 plus recorded root recovery runner integration",
+      "spec_revision": "sha256:bc98636be4a972407adce0f817a76bb9d4bb7200cb292a70965e75ab62fae250",
+      "state": "Group117 completes source-free fresh-device recovery of the newly added backup and registration metadata. Final authenticated signed export contains exact original add/declaration/removal history plus two-company business/original bytes. Source workspace/private signer/managed/provider copies and source browser contexts/credential files are removed before independent public-key verification and restore into a fresh root with new signing/cookie/MFA keys and new normally verified MFA owner. Supported journal/bank/trial/balance/document reads and original bytes match through HTTP/CLI/MCP before and after target restart; original registration receipts retain actor/time while declarations remain unverified. Fresh target has no retained backup inventory/operator targets, zero current placement/remote qualification, and source remote receipt GET returns null without provider configuration or extra provider I/O. Typed registration history is validated before portable export/restore publication; malformed and forged histories refuse atomically, legacy no-registration archives remain compatible. Entire mission/epic672 and all earlier acceptance remain intact/open; remaining health/audit, full accounting/lifecycle/transfer, signed release/platform and TypeScript retirement gates still required. Installed desktop acceptance remains explicitly last; no unlock requests."
     }
   ]
 }
