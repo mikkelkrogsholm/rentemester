@@ -155,6 +155,9 @@ pub fn run(args: &[String]) -> Result<Value, Failure> {
                 "--fiscal-year",
                 "--import-id",
                 "--attempt-id",
+                "--file",
+                "--plan-hash",
+                "--idempotency-key",
                 "--scope",
                 "--company-slugs-json",
                 "--group-profile-id",
@@ -233,6 +236,7 @@ pub fn run(args: &[String]) -> Result<Value, Failure> {
         }
     }
     let command = command.ok_or_else(|| invalid("expected remote command; see remote --help"))?;
+    if flags.keys().any(|key|["--file","--plan-hash","--idempotency-key"].contains(key))&&!matches!(command,"dinero-import-plan"|"dinero-import-apply"){return Err(invalid("local source and reviewed hash/key selectors are only allowed on Dinero plan/apply"));}
     if command=="audit-verify" { return crate::audit_verify::run(&flags,allow_http,confirmed,preview_reviewed); }
     if command=="audit-log-list" { return crate::audit_log::run(&flags,allow_http,confirmed,preview_reviewed); }
     if flags.keys().any(|key| ["--offset","--from-date","--to-date","--event-type-like","--actor-like"].contains(key)) { return Err(invalid("audit filters are only valid for audit-log-list")); }

@@ -1,5 +1,6 @@
 //! Latest-year Dinero transport. All parsing, review hashes and attestation stay server-side.
 use crate::{ApiClient, Error, MAX_RESPONSE, company_path, domain::object};
+use base64::{Engine as _, engine::general_purpose::STANDARD};
 use reqwest::Method;
 use serde_json::{Value, json};
 pub const MAX_DINERO_IMPORT_BODY: usize = 35 * 1024 * 1024;
@@ -186,17 +187,15 @@ impl ApiClient {
             bytes.extend_from_slice(&chunk);
         }
         if status.is_success() && original {
-            if response
+            let mime = response
                 .headers()
                 .get("content-type")
                 .and_then(|h| h.to_str().ok())
-                != Some("application/json")
-            {
+                .ok_or(Error::Protocol)?;
+            if !matches!(mime, "application/json" | "application/zip") {
                 return Err(Error::Protocol);
             }
-            return Ok(
-                json!({"ok":true,"original":{"contentType":"application/json","bytes":bytes}}),
-            );
+            return Ok(json!({"ok":true,"original":{"contentType":mime,"bytes":bytes}}));
         }
         let value: Value = serde_json::from_slice(&bytes).map_err(|_| Error::Protocol)?;
         if value["ok"] == false && value["code"].as_str().is_some_and(|s| !s.is_empty()) {
@@ -269,4 +268,128 @@ fn valid_date(value: &str) -> bool {
         time::Date::from_calendar_date(y, m, value[8..].parse::<u8>().ok()?).ok()
     })();
     parsed.is_some()
+}
+
+impl ApiClient {
+    /// Build only the source transport: native parsing and accounting remain on
+    /// the server. Explicit reviewed hash/key are preserved without planning.
+    pub fn dinero_import_source_body(
+        file_name: &str,
+        source: &[u8],
+        review: Option<(&str, &str)>,
+    ) -> Result<Vec<u8>, Error> {
+        if source.is_empty()
+            || source.len() > MAX_DINERO_ORIGINAL
+            || file_name.is_empty()
+            || file_name.len() > 255
+            || file_name.contains(['/', '\\'])
+            || file_name.chars().any(char::is_control)
+            || !(file_name.to_ascii_lowercase().ends_with(".zip")
+                || file_name.to_ascii_lowercase().ends_with(".json"))
+        {
+            return Err(Error::InvalidInput(
+                "safe JSON/ZIP filename and original at most25MiB required",
+            ));
+        }
+        let mut body = json!({"fileName":file_name,"contentBase64":STANDARD.encode(source)});
+        if let Some((plan_hash, key)) = review {
+            body["planHash"] = json!(plan_hash);
+            body["idempotencyKey"] = json!(key);
+            body["confirm"] = json!(true);
+        }
+        let bytes = serde_json::to_vec(&body).map_err(|_| Error::Protocol)?;
+        source_shape(&bytes, review.is_some())?;
+        if bytes.len() > MAX_DINERO_IMPORT_BODY {
+            return Err(Error::InvalidInput("native35MiB source body required"));
+        }
+        Ok(bytes)
+    }
+}
+#[cfg(test)]
+mod container_tests {
+    use super::*;
+    #[test]
+    fn exact_source_wrapper_keeps_zip_bytes_and_explicit_review_authority() {
+        let raw = b"PK\x03\x04exact synthetic raw ZIP";
+        let body = ApiClient::dinero_import_source_body("source.zip", raw, None).unwrap();
+        let value: Value = serde_json::from_slice(&body).unwrap();
+        assert_eq!(
+            STANDARD
+                .decode(value["contentBase64"].as_str().unwrap())
+                .unwrap(),
+            raw
+        );
+        assert!(value.get("confirm").is_none());
+        let hash = "a".repeat(64);
+        let body = ApiClient::dinero_import_source_body(
+            "source.zip",
+            raw,
+            Some((&hash, "caller reviewed key")),
+        )
+        .unwrap();
+        let value: Value = serde_json::from_slice(&body).unwrap();
+        assert_eq!(value["planHash"], hash);
+        assert_eq!(value["idempotencyKey"], "caller reviewed key");
+        assert_eq!(value["confirm"], true);
+        for name in [
+            "/private/source.zip",
+            "../source.json",
+            "C:\\source.zip",
+            "source.pdf",
+        ] {
+            assert!(ApiClient::dinero_import_source_body(name, raw, None).is_err());
+        }
+        assert!(
+            ApiClient::dinero_import_source_body("source.zip", raw, Some((&hash, ""))).is_err()
+        );
+    }
+    #[tokio::test]
+    async fn original_transport_preserves_truthful_zip_or_json_and_refuses_other_mimes() {
+        use std::{
+            io::{Read, Write},
+            net::TcpListener,
+            thread,
+        };
+        for mime in [
+            "application/json",
+            "application/zip",
+            "application/octet-stream",
+        ] {
+            let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+            let origin = format!("http://{}", listener.local_addr().unwrap());
+            let task = thread::spawn(move || {
+                let (mut connection, _) = listener.accept().unwrap();
+                connection
+                    .set_read_timeout(Some(std::time::Duration::from_secs(3)))
+                    .unwrap();
+                let mut request = vec![];
+                while !request.ends_with(b"\r\n\r\n") {
+                    let mut byte = [0];
+                    assert_eq!(connection.read(&mut byte).unwrap(), 1);
+                    request.push(byte[0]);
+                }
+                let bytes = b"PK\x03\x04exact-original";
+                write!(connection,"HTTP/1.1 200 OK\r\nContent-Type:{mime}\r\nContent-Length:{}\r\nConnection:close\r\n\r\n",bytes.len()).unwrap();
+                connection.write_all(bytes).unwrap();
+                request
+            });
+            let api = ApiClient::new(&origin, true, None).unwrap();
+            let result = api.dinero_import_original("synthetic", 17).await;
+            if mime == "application/octet-stream" {
+                assert_eq!(result.unwrap_err(), Error::Protocol);
+            } else {
+                let value = result.unwrap();
+                assert_eq!(value["original"]["contentType"], mime);
+                assert_eq!(
+                    value["original"]["bytes"],
+                    json!(b"PK\x03\x04exact-original")
+                );
+            }
+            assert!(
+                task.join().unwrap().starts_with(
+                    b"GET /api/companies/synthetic/imports/dinero/17/original HTTP/1.1"
+                )
+            );
+        }
+    }
 }
