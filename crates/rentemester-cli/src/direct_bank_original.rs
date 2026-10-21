@@ -69,7 +69,7 @@ pub fn execute(args: &[String]) -> Output {
             cursor += 1;
             continue;
         }
-        if ![
+        let allowed = [
             "--server",
             "--company",
             "--cookie-file",
@@ -84,7 +84,7 @@ pub fn execute(args: &[String]) -> Output {
             "--note",
         ]
         .contains(&key)
-            && !(apply
+            || (apply
                 && [
                     "--plan-hash",
                     "--reason",
@@ -92,8 +92,8 @@ pub fn execute(args: &[String]) -> Output {
                     "--principal",
                     "--confirm",
                 ]
-                .contains(&key))
-        {
+                .contains(&key));
+        if !allowed {
             return failure(
                 &format!("Unknown/duplicate direct-payable flag {key}"),
                 false,
