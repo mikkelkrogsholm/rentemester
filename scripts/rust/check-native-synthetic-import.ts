@@ -14,7 +14,7 @@ export function createSyntheticImportProof(page: Page, base: string, work: strin
  const content='\uFEFF# cutOverDate: 2025-07-01\r\n# note: Synthetic shifted non-VAT original opening\r\nsection,accountNo,name,debit,credit\r\naccount,1717,Synthetic imported bank,,\r\naccount,1177,Synthetic historical debtors,,\r\naccount,8777,Synthetic opening equity,,\r\nopening,1717,,150000,\r\nopening,1177,,40000,\r\nopening,8777,,,190000\r\n';
  const source={sourceSystem:'synthetic-csv',content},csvPath=join(work,'synthetic-original127.csv'),cookiePath=join(work,'synthetic-import-owner.cookie');
  const original=Buffer.from('Synthetic first expense original127\nSupplies DKK250 including declared source VAT50. Owner is not VAT registered.\n');
- let stable:any,fullAudit:any,done=false;
+ let stable:any,fullAudit:any,done=false,accepted=false;
  async function cookies(fresh:boolean){const all=await page.context().cookies(base);need(all.some(c=>c.httpOnly),'Normal MFA owner cookie');writeFileSync(cookiePath,all.map(c=>`${c.name}=${c.value}`).join('; ')+'\n',{mode:0o600,flag:fresh?'wx':'w'});}
  async function get(resource:string){const r=await page.request.get(base+prefix+resource);need(r.ok(),`Synthetic GET ${resource} HTTP${r.status()}`);return r.json();}
  async function post(resource:string,data:any,who=page,global=false){const r=await who.request.post(base+(global?'':prefix)+resource,{headers:{origin:base},data});const v=await r.json();need(r.ok()&&v.ok===true,`Synthetic POST ${resource} HTTP${r.status()}: ${JSON.stringify(v)}`);return v;}
@@ -32,7 +32,7 @@ export function createSyntheticImportProof(page: Page, base: string, work: strin
   need(r.status===0,'MCP terminal status');const reply=r.stdout.trim().split('\n').map(v=>JSON.parse(v)).find(v=>v.id===2);
   need(!reply?.error&&reply?.result?.isError===false&&reply.result.structuredContent?.data?.ok===true,`MCP ${operation} refused: ${JSON.stringify(reply)}`);return reply.result.structuredContent.data;
  }
- async function snapshot(){return {profile:await get('company'),accounts:await get('accounts'),opening:await get('opening-balance'),journal:await get('journal?year=2026&source=live'),trial:await get('trial-balance?year=2026&source=live'),income:await get('income-statement?year=2026&source=live'),balance:await get('balance?year=2026&source=live'),bank:await get('bank'),documents:await get('documents'),audit:await get('audit-log?limit=5000')};}
+ async function snapshot(){const year=accepted?'?year=2026&source=live':'';return {profile:await get('company'),accounts:await get('accounts'),opening:await get('opening-balance'),journal:await get('journal'+year),trial:await get('trial-balance'+year),income:await get('income-statement'+year),balance:await get('balance'+year),bank:await get('bank'),documents:await get('documents'),audit:await get('audit-log?limit=5000')};}
  async function originalRead(id:number){const r=await page.request.get(base+prefix+'documents/'+id+'/original');need(r.ok()&&isDeepStrictEqual(await r.body(),original),'Retained expense original differs');}
  return {async run(){
   await cookies(true);writeFileSync(csvPath,content,{mode:0o600,flag:'wx'});
@@ -46,7 +46,7 @@ export function createSyntheticImportProof(page: Page, base: string, work: strin
   const mcpPlan=client('mcp','opening_balance_plan',source);need(isDeepStrictEqual(mcpPlan,planned),'CLI/MCP source plan parity');
   const body={input:source,planHash:planned.plan.planHash,idempotencyKey:'synthetic-csv-j02-original127',confirm:true};
   const denied=await memberPage.request.post(base+prefix+'opening-balance/apply',{headers:{origin:base},data:body});need(denied.status()===403,'Reviewer source apply refused');need(isDeepStrictEqual(await snapshot(),before),'Denied source apply changed company');
-  const receipt=client('cli','opening-balance-apply',body,true,true);need(receipt.openingBalance.sourceBasis.kind==='synthetic_csv','Retained explicit source kind');
+  const receipt=client('cli','opening-balance-apply',body,true,true);need(receipt.openingBalance.sourceBasis.kind==='synthetic_csv','Retained explicit source kind');accepted=true;
   const once=await snapshot();const sourceEvent=once.audit.rows.find((r:any)=>r.eventType==='native_opening_balance');need(sourceEvent&&JSON.parse(sourceEvent.message).binding.syntheticSource.content===content,'Exact BOM/CRLF original retained in immutable opening audit');const replay=client('mcp','opening_balance_apply',body,true);need(replay.idempotency.replayed===true,'Deliberate exact-key replay');
   const afterReplay=await snapshot();need(isDeepStrictEqual({...afterReplay,audit:once.audit},once),'Replay changed financial effects');need(afterReplay.audit.total===once.audit.total+1,'Replay adds one audit event');
   const duplicate=await page.request.post(base+prefix+'opening-balance/apply',{headers:{origin:base},data:{...body,idempotencyKey:'synthetic-csv-j02-new-key127'}});need(duplicate.status()===422,'New key cannot duplicate opening');
