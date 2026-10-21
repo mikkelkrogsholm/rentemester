@@ -95,6 +95,7 @@ pub struct RestoreRequest {
 }
 
 pub struct Backend {
+    local_identity: Option<crate::local_runtime::Identity>,
     pub(crate) owner: Mutex<Owner>,
     pub(crate) document_scanner: Option<rentemester_runtime::document_scanner::HttpJsonScanner>,
     pub(crate) invoice_extractor: Option<rentemester_runtime::invoice_extractor::HttpJsonExtractor>,
@@ -382,7 +383,20 @@ impl Backend {
             None
         };
         let setup_pending = std::sync::atomic::AtomicBool::new(setup.is_some());
+        let local_identity = if config.runtime_profile
+            == rentemester_runtime::namespace::NamespaceProfile::LocalUserMacos
+        {
+            Some(crate::local_runtime::Identity {
+                config: path.to_owned(),
+                root: config.root.clone(),
+                workspace: config.workspace.clone(),
+                uid: config.broker_uid,
+            })
+        } else {
+            None
+        };
         Ok(Arc::new(Self {
+            local_identity,
             owner: Mutex::new(owner),
             document_scanner,
             invoice_extractor,
@@ -455,6 +469,13 @@ impl Backend {
             clock: &SystemClock,
             audit_key_version: 1,
         }
+    }
+    pub(crate) fn local_runtime_identity(
+        &self,
+    ) -> Result<&crate::local_runtime::Identity, &'static str> {
+        self.local_identity
+            .as_ref()
+            .ok_or("Local runtime socket requires an admitted local-user-macos backend")
     }
     pub fn identity(
         self: &Arc<Self>,

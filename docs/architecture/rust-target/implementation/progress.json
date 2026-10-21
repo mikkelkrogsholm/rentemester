@@ -7781,6 +7781,36 @@
       "owned_processes_stopped": true,
       "both_new_worktrees_removed": true,
       "worktree_recovery": ".git/rentemester-recovery/archived137.json"
+    },
+    "local_runtime138": {
+      "issue": 716,
+      "status": "INTEGRATING_local_cli_same_rust_owner",
+      "contract": "/tmp/rm138-contract.md",
+      "base": "33b36543",
+      "actual_qualified": false,
+      "fixture": "Same existing normalMFA runner using short private home profile for platform UDS limit. One retained synthetic original and CLI100DKKpost/replay, private descriptor/peerUID/currentauth, TCPsameprojection, competingowner refusal, noTCPfallback/currentrevoke/restart/cleanup. No secondengine/newharness/GUIprobes.",
+      "expected_sql": {
+        "documents": 1,
+        "bank_transactions": 0,
+        "journal_entries": 1,
+        "journal_lines": 2
+      },
+      "remaining": "Integrated source/focused/static/actual acceptance pending. Full R44 original actorpolicy/locallegacyselector/env/defaultlauncher/envelope parity remains; this transport/join does not close fullissue or wholeepic.",
+      "core_commit": "e3290894",
+      "clients_commit": "33ed033f",
+      "core_focused_passed": 5,
+      "client_focused_passed": 10,
+      "core_logs": [
+        "/tmp/rm138-peer.log",
+        "/tmp/rm138-lifecycle.log"
+      ],
+      "client_log": "/tmp/rm138-clients.log",
+      "development_correction": "One new SDK mock cookie lacked mandatory SameSite=Lax and was isolated/corrected in mock only; final local3 and normal TCP auth4 passed. CLI help hit existing json macro recursion threshold; existing transport description extended instead, no limit/lint/policy weakening; CLI3 passed. No actual runtime attempt started on failed fixtures.",
+      "strict_clippy": "/tmp/rm138-clippy.log",
+      "strict_clippy_passed": true,
+      "strict_clippy_scope": "Changed server/client/CLI and shared MCP integration, all targets",
+      "normal_build": "/tmp/rm138-normal-build.log",
+      "normal_build_pending": true
     }
   },
   "verified_history": [

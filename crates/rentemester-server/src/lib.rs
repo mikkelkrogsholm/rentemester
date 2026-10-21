@@ -117,11 +117,50 @@ impl Operation {
 }
 
 type RequestHandler = Box<dyn Fn(ResetRequest) -> Result<(), Failure> + Send + Sync>;
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+enum RatePeer {
+    Ip(IpAddr),
+    Unix(u32),
+}
+/// OS-observed local transport fact. It is never a session or company grant.
+#[cfg(unix)]
+#[derive(Clone, Copy)]
+pub struct UnixPeer(Option<u32>);
+#[cfg(unix)]
+impl
+    axum::extract::connect_info::Connected<
+        axum::serve::IncomingStream<'_, tokio::net::UnixListener>,
+    > for UnixPeer
+{
+    fn connect_info(stream: axum::serve::IncomingStream<'_, tokio::net::UnixListener>) -> Self {
+        Self(stream.io().peer_cred().ok().map(|c| c.uid()))
+    }
+}
+#[cfg(unix)]
+#[derive(Clone, Copy)]
+struct VerifiedUnixPeer(u32);
+/// Same-user transport admission only; all ordinary HTTP/authentication gates remain.
+#[cfg(unix)]
+pub fn admit_unix_peer(router: Router, owner_uid: u32) -> Router {
+    router.layer(axum::middleware::from_fn(
+        move |mut request: Request, next: axum::middleware::Next| async move {
+            let observed = request
+                .extensions()
+                .get::<ConnectInfo<UnixPeer>>()
+                .and_then(|p| p.0.0);
+            if observed != Some(owner_uid) {
+                return refused(StatusCode::FORBIDDEN);
+            }
+            request.extensions_mut().insert(VerifiedUnixPeer(owner_uid));
+            next.run(request).await
+        },
+    ))
+}
 struct StateData {
     origin: String,
     authority: String,
     links: RecoveryLinks,
-    rate: Mutex<HashMap<(IpAddr, Operation), (Instant, u8)>>,
+    rate: Mutex<HashMap<(RatePeer, Operation), (Instant, u8)>>,
     recovery: Option<RecoveryHandlers>,
     auth: Option<auth_http::AuthHandlers>,
     workers: Arc<Semaphore>,
@@ -309,7 +348,11 @@ impl StateData {
     fn allow_at(&self, peer: IpAddr, now: Instant) -> bool {
         self.allow_route_at(peer, Operation::Request, now)
     }
+    #[cfg(test)]
     fn allow_route_at(&self, peer: IpAddr, operation: Operation, now: Instant) -> bool {
+        self.allow_peer_route_at(RatePeer::Ip(canonical_ip(peer)), operation, now)
+    }
+    fn allow_peer_route_at(&self, peer: RatePeer, operation: Operation, now: Instant) -> bool {
         let operation = if operation == Operation::ServiceLifecycleList {
             Operation::ServiceLifecycle
         } else {
@@ -319,7 +362,7 @@ impl StateData {
             return false;
         };
         keys.retain(|(_, op), (start, _)| now.duration_since(*start) < op.rate().0);
-        let peer = (canonical_ip(peer), operation);
+        let peer = (peer, operation);
         if !keys.contains_key(&peer) && keys.len() >= MAX_KEYS {
             return false;
         }
@@ -439,10 +482,22 @@ fn admission_for(
     {
         return Err(StatusCode::UNSUPPORTED_MEDIA_TYPE);
     }
-    let Some(peer) = request.extensions().get::<ConnectInfo<SocketAddr>>() else {
-        return Err(StatusCode::FORBIDDEN);
-    };
-    if !state.allow_route_at(peer.0.ip(), operation, Instant::now()) {
+    #[cfg(unix)]
+    let local = request
+        .extensions()
+        .get::<VerifiedUnixPeer>()
+        .map(|p| RatePeer::Unix(p.0));
+    #[cfg(not(unix))]
+    let local: Option<RatePeer> = None;
+    let peer = local
+        .or_else(|| {
+            request
+                .extensions()
+                .get::<ConnectInfo<SocketAddr>>()
+                .map(|p| RatePeer::Ip(canonical_ip(p.0.ip())))
+        })
+        .ok_or(StatusCode::FORBIDDEN)?;
+    if !state.allow_peer_route_at(peer, operation, Instant::now()) {
         return Err(StatusCode::TOO_MANY_REQUESTS);
     }
     Ok(())
@@ -611,3 +666,7 @@ async fn body_bytes(request: Request) -> Result<Zeroizing<Vec<u8>>, StatusCode> 
         Err(_) => Err(StatusCode::REQUEST_TIMEOUT),
     }
 }
+
+#[cfg(all(test, unix))]
+#[path = "local_runtime/peer_tests.rs"]
+mod local_peer_tests;

@@ -67,6 +67,8 @@ pub use domain::{
     Confirmation, DomainMutation, MAX_DOMAIN_BODY, domain_body_schema, invoice_body_schema,
 };
 pub use receivables::{ReceivablesMutation, receivables_body_schema};
+mod local_runtime;
+pub use local_runtime::LocalRuntime;
 mod credentials;
 pub use credentials::{read_cookie_file, read_service_key_file};
 
@@ -180,13 +182,21 @@ impl ApiClient {
         {
             return Err(Error::InvalidInput("invalid Cookie header"));
         }
-        let http = Client::builder()
+        let local = local_runtime::process_endpoint(server)?;
+        Self::construct(base, cookie, local.as_deref())
+    }
+    fn construct(base: Url, cookie: Option<String>, socket: Option<&std::path::Path>) -> Result<Self, Error> {
+        let mut builder = Client::builder()
             .redirect(reqwest::redirect::Policy::none())
             .retry(reqwest::retry::never())
             .no_proxy()
             .connect_timeout(Duration::from_secs(10))
-            .timeout(Duration::from_secs(30))
-            .build()
+            .timeout(Duration::from_secs(30));
+        #[cfg(unix)]
+        if let Some(socket) = socket { builder = builder.unix_socket(socket); }
+        #[cfg(not(unix))]
+        if socket.is_some() { return Err(Error::InvalidInput("local Unix transport is unavailable on this platform")); }
+        let http = builder.build()
             .map_err(|_| Error::Transport)?;
         let origin = base.origin().ascii_serialization();
         Ok(Self {

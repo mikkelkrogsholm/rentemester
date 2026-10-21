@@ -399,6 +399,8 @@ impl Managed {
             .arg(web)
             .arg("--config")
             .arg(config)
+            .arg("--local-runtime-dir")
+            .arg(&input.profile)
             .stdin(Stdio::null())
             .stdout(Stdio::piped())
             .stderr(Stdio::piped());

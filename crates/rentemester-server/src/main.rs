@@ -10,6 +10,7 @@ mod document_pdf;
 mod hosted_worker;
 mod imap_transport;
 mod mail_worker;
+mod local_runtime;
 mod portable_backup_cli;
 mod product_http;
 mod report_export;
@@ -50,6 +51,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut listen: SocketAddr = "127.0.0.1:4319".parse()?;
     let mut web = PathBuf::from("app/dist");
     let mut config = None;
+    let mut local_runtime_dir = None;
     let mut create = false;
     let mut public_origin: Option<String> = None;
     let mut restore_archive = None;
@@ -74,6 +76,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     args.next().ok_or("--config requires a path")?,
                 ))
             }
+            "--local-runtime-dir" => local_runtime_dir = Some(PathBuf::from(args.next().ok_or("--local-runtime-dir requires private profile")?)),
             "--create" => create = true,
             "--adopt-legacy" => adopt_legacy = Some(PathBuf::from(args.next().ok_or("--adopt-legacy requires source workspace")?)),
             "--legacy-source-stopped" => legacy_source_stopped = true,
@@ -115,6 +118,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 println!("Hosted generation: --scheduled-worker --scheduled-service-key-stdin --config PRIVATE.json (ordinary reopen only; transient stdin service key, no saved cookie/key; 32 candidates every 30 seconds; normal Copenhagen today only, no catch-up)");
                 println!("Schema upgrade: --upgrade-mail-schema --config PRIVATE.json (exclusive stopped server; admits only exact v30→v31 or current, preserves business data; ordinary startup never upgrades)");
                 println!("Mailbox intake: --mail-worker --mail-service-key-stdin --config PRIVATE.json (ordinary reopen only; current service key from stdin, explicitly granted mailbox configuration; credentials excluded from backups). When both workers are enabled, one stdin key is shared in memory.");
+                println!("--local-runtime-dir PRIVATE_PROFILE enables a same-user private UNIX socket beside the admitted local-user-macos config; normal authentication remains required.");
                 println!("Build the cockpit first: cd app && bun run build");
                 println!("Without --config, serve the cockpit and health endpoint only.");
                 println!(
@@ -139,6 +143,21 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             }
             _ => return Err(format!("unknown option: {arg}").into()),
         }
+    }
+    if let Some(profile) = &local_runtime_dir {
+        if adopt_legacy.is_some()
+            || upgrade_mail_schema
+            || verify_archive.is_some()
+            || restore_archive.is_some()
+        {
+            return Err("Local runtime socket requires ordinary create/reopen mode".into());
+        }
+        local_runtime::preflight(
+            profile,
+            config
+                .as_deref()
+                .ok_or("Local runtime socket requires --config")?,
+        )?;
     }
     if let Some(source) = adopt_legacy {
         if create || upgrade_mail_schema || restore_archive.is_some() || verify_archive.is_some()
@@ -260,14 +279,32 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .transpose()
         .map_err(|_| "invalid identity HTTP configuration")?;
     let app = cockpit_router(web, identity, native.clone());
+    let mut shutdown = shutdown::Shutdown::new()?;
+    let mut local = if let Some(profile) = &local_runtime_dir {
+        Some(
+            local_runtime::Runtime::bind(
+                profile,
+                native
+                    .as_ref()
+                    .ok_or("Local runtime socket requires configured workspace")?
+                    .local_runtime_identity()?,
+                &origin,
+            )
+            .await?,
+        )
+    } else {
+        None
+    };
+    let unix_listener = local.as_mut().map(|r| r.take_listener()).transpose()?;
+    let unix_uid = native
+        .as_ref()
+        .and_then(|b| b.local_runtime_identity().ok())
+        .map(|i| i.uid);
     println!("Rentemester Rust: http://{}", listener.local_addr()?);
     println!(
         "Cockpit served directly by Rust. Native workspace connected: {}",
         native.is_some()
     );
-    // Register handlers before starting workers or accepting requests. Failure must
-    // not leave an apparently healthy process without its shutdown contract.
-    let mut shutdown = shutdown::Shutdown::new()?;
     let mut worker = if scheduled_worker {
         Some(hosted_worker::Worker::start(native.as_ref().ok_or("scheduled worker requires workspace")?.clone()))
     } else { None };
@@ -276,22 +313,68 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     } else { None };
     let mail_stop = mail.as_mut().and_then(|worker| worker.take_stop_signal());
     let scheduled_stop = worker.as_mut().and_then(|worker| worker.take_stop_signal());
-    let served = axum::serve(
-        listener,
-        app.into_make_service_with_connect_info::<SocketAddr>(),
-    )
-    .with_graceful_shutdown(async move {
-        shutdown.wait().await;
-        // Stop admitting worker passes immediately while HTTP requests drain.
-        // In-flight external operations finish with their existing durable
-        // outcome rules; shutdown never retries or aborts a blocking operation.
-        if let Some(stop) = mail_stop { let _ = stop.send(()); }
-        if let Some(stop) = scheduled_stop { let _ = stop.send(()); }
-    })
-    .await;
-    tokio::join!(async { if let Some(mail)=mail { mail.stop().await; } },
-                 async { if let Some(worker)=worker { worker.stop().await; } });
-    served?;
+    let (stop, stopped) = tokio::sync::watch::channel(false);
+    let tcp_stop = stop.clone();
+    let tcp_stopped = stopped.clone();
+    let unix_app = app.clone();
+    let unix_stop = stop.clone();
+    let unix_stopped = stopped.clone();
+    let tcp = async move {
+        let result = axum::serve(
+            listener,
+            app.into_make_service_with_connect_info::<SocketAddr>(),
+        )
+        .with_graceful_shutdown(local_runtime::stopped(tcp_stopped))
+        .await;
+        let _ = tcp_stop.send(true);
+        result
+    };
+    let unix = async move {
+        if let Some(listener) = unix_listener {
+            let router = rentemester_server::admit_unix_peer(
+                unix_app,
+                unix_uid.ok_or_else(|| std::io::Error::other("Missing admitted local UID"))?,
+            );
+            let result = axum::serve(
+                listener,
+                router.into_make_service_with_connect_info::<rentemester_server::UnixPeer>(),
+            )
+            .with_graceful_shutdown(local_runtime::stopped(unix_stopped))
+            .await;
+            let _ = unix_stop.send(true);
+            result
+        } else {
+            Ok(())
+        }
+    };
+    let control = async move {
+        tokio::select! {_=shutdown.wait()=>{},_=local_runtime::stopped(stopped)=>{}}
+        let _ = stop.send(true);
+        if let Some(stop) = mail_stop {
+            let _ = stop.send(());
+        }
+        if let Some(stop) = scheduled_stop {
+            let _ = stop.send(());
+        }
+    };
+    let (tcp_result, unix_result, ()) = tokio::join!(tcp, unix, control);
+    tokio::join!(
+        async {
+            if let Some(mail) = mail {
+                mail.stop().await;
+            }
+        },
+        async {
+            if let Some(worker) = worker {
+                worker.stop().await;
+            }
+        }
+    );
+    if let Some(local) = local.as_mut() {
+        local.cleanup()?;
+    }
+    tcp_result?;
+    unix_result?;
     Ok(())
 }
 
