@@ -633,3 +633,5 @@ pub mod manual_post_recovery;
 pub mod backup_remote;
 
 pub mod backup_governance;
+
+pub mod backup_registration;
