@@ -14,10 +14,12 @@ use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
 use std::collections::{BTreeMap, BTreeSet};
 mod history;
+mod receipts;
 pub use history::{
     OriginalRef, VerifiedImport, originals, read_imports, validate_history, verify_original,
 };
 pub(crate) use history::{accepted_header_ids, accepted_journal_ids};
+pub use receipts::{receipt_publications, supporting_originals};
 #[cfg(test)]
 mod tests;
 pub const PACKAGE: &str = "rentemester-dinero-source/1";
@@ -61,6 +63,8 @@ pub(super) struct Binding {
     pub parsed: Value,
     pub archive: Option<Value>,
     pub context: Value,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub receipt_plan: Option<Value>,
 }
 #[derive(Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -85,6 +89,8 @@ pub(super) struct Attestation {
     pub actor: String,
     pub accepted_at: String,
     pub archive_import_ids: Vec<i64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub supporting_receipts: Option<Vec<receipts::Proof>>,
 }
 #[derive(Clone)]
 pub struct ClosedSource {
@@ -94,6 +100,7 @@ pub struct ClosedSource {
 }
 #[derive(Clone)]
 pub struct Decoded {
+    pub files: Vec<SourceFile>,
     pub source: SourceFacts,
     pub parsed: ParsedImport,
     pub archive: Option<ClosedSource>,
@@ -184,6 +191,7 @@ pub fn decode_source(bytes: &[u8]) -> Result<Decoded, Error> {
         None
     };
     Ok(Decoded {
+        files,
         source: SourceFacts {
             path: format!("documents/originals/{digest}.json"),
             sha256: digest,
@@ -334,6 +342,12 @@ pub fn prepare(tx: &Transaction<'_>, decoded: &Decoded, latest: Date) -> Result<
             }
         }
     }
+    let receipt_plan = policy::receipts::plan(&decoded.files, parsed)?;
+    let receipt_plan = if receipt_plan.receipts.is_empty() {
+        None
+    } else {
+        Some(serde_json::to_value(receipt_plan).map_err(invalid)?)
+    };
     let binding = Binding {
         format: CONTRACT.into(),
         source: source.clone(),
@@ -343,6 +357,7 @@ pub fn prepare(tx: &Transaction<'_>, decoded: &Decoded, latest: Date) -> Result<
             .as_ref()
             .map(|a| json!({"source":a.source,"parsed":a.parsed})),
         context: current,
+        receipt_plan,
     };
     let plan_hash = hash(&binding)?;
     let mut summary_counts = counts(parsed);
@@ -649,8 +664,18 @@ pub fn apply_with_archives(
             |r| r.get(0),
         )
         .map_err(invalid)?;
-    let receipt = json!({"ok":true,"attemptId":next_attempt,"sourceSha256":p.binding.source.sha256,"sourceSizeBytes":p.binding.source.size_bytes,"parserContract":CONTRACT,"cutOverDate":parsed.cut_over_date,"controlDate":parsed.control_date,"acceptedAt":at,"counts":p.review["counts"],"journalCount":journals.len(),"firstHistoricalEntryId":journals.first().map(|j|j.id),"lastHistoricalEntryId":journals.last().map(|j|j.id),"openingBalance":opening,"archiveImportIds":archive_import_ids,"sourceAssurance":"retained-native"});
+    let mut receipt = json!({"ok":true,"attemptId":next_attempt,"sourceSha256":p.binding.source.sha256,"sourceSizeBytes":p.binding.source.size_bytes,"parserContract":CONTRACT,"cutOverDate":parsed.cut_over_date,"controlDate":parsed.control_date,"acceptedAt":at,"counts":p.review["counts"],"journalCount":journals.len(),"firstHistoricalEntryId":journals.first().map(|j|j.id),"lastHistoricalEntryId":journals.last().map(|j|j.id),"openingBalance":opening,"archiveImportIds":archive_import_ids,"sourceAssurance":"retained-native"});
+    let supporting_receipts = if p.binding.receipt_plan.is_some() {
+        let proofs = receipts::register(tx, p, &journals, &at, &actor)?;
+        receipt["supportingDocuments"] = receipts::summary(&proofs);
+        Some(proofs)
+    } else {
+        None
+    };
     let (attempt_id, source_id, inventory_id) = source_records(tx, p, &receipt, &actor, &at)?;
+    let supporting_receipts = supporting_receipts
+        .map(|proofs| receipts::link_provenance(tx, p, attempt_id, inventory_id, proofs, &at))
+        .transpose()?;
     if attempt_id != next_attempt {
         return Err(refused("attempt identity changed"));
     }
@@ -675,6 +700,7 @@ pub fn apply_with_archives(
         actor: actor.clone(),
         accepted_at: at.clone(),
         archive_import_ids,
+        supporting_receipts,
     };
     tx.execute("INSERT INTO audit_log(event_type,entity_type,entity_id,message,actor,created_at)VALUES(?1,'dinero_import',?2,?3,?4,?5)",params![EVENT,attempt_id.to_string(),serde_json::to_string(&event).map_err(invalid)?,actor,at]).map_err(invalid)?;
     validate_history(tx)?;

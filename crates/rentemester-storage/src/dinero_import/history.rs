@@ -462,6 +462,7 @@ fn checked(db: &Connection) -> Result<Checked, Error> {
         {
             return Err(refused("accepted import receipt differs"));
         }
+        receipts::validate_event(db, &e)?;
         imports.push(e);
     }
     let mut q=db.prepare("SELECT id FROM dinero_import_attempts WHERE parser_contract LIKE 'rentemester-native-dinero/%' AND outcome='accepted' ORDER BY id").map_err(invalid)?;
@@ -507,6 +508,13 @@ pub fn verify_original(
         .find(|e| e.attempt_id == reference.attempt_id)
         .ok_or_else(|| refused("native import original not found"))?;
     let decoded = decode_source(bytes)?;
+    if let Some(plan) = &e.binding.receipt_plan
+        && serde_json::to_value(policy::receipts::plan(&decoded.files, &decoded.parsed)?)
+            .map_err(invalid)?
+            != *plan
+    {
+        return Err(refused("physical source receipt plan differs"));
+    }
     let archive = decoded
         .archive
         .as_ref()

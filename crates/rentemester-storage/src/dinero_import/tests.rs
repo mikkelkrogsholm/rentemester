@@ -568,3 +568,261 @@ fn imported_and_native_invoices_reconcile_same_configured_debtor_at_each_cutoff(
     assert!(crate::periods::verify_sources(&tx).unwrap().is_empty());
     tx.commit().unwrap();
 }
+fn receipt_source(entries: &[(&str, &[u8])]) -> Vec<u8> {
+    let mut v: Value = serde_json::from_slice(&source("24500,000000", false)).unwrap();
+    for (path, bytes) in entries {
+        v["files"]
+            .as_array_mut()
+            .unwrap()
+            .push(json!({"path":path,"contentBase64":STANDARD.encode(bytes)}));
+    }
+    serde_json::to_vec(&v).unwrap()
+}
+#[test]
+fn supporting_receipts_register_link_tasks_retain_original_identity_and_history() {
+    let (_control, mut db) = db();
+    let bytes = receipt_source(&[
+        (
+            "2025/Bilag/2025-Bilag-1.pdf",
+            b"%PDF-1.4\nSynthetic booked original\n",
+        ),
+        (
+            "2025/Faktura/2025-Faktura-2.pdf",
+            b"%PDF-1.4\nSynthetic external invoice original\n",
+        ),
+        (
+            "Ikke-bogførte-bilag/loose.pdf",
+            b"%PDF-1.4\nSynthetic unbooked original\n",
+        ),
+    ]);
+    let decoded = decode_source(&bytes).unwrap();
+    let pubs = receipt_publications(&db, &decoded).unwrap();
+    assert_eq!(pubs.len(), 3);
+    assert_eq!(pubs[0].path, "2025-Bilag-1.pdf");
+    let tx = db
+        .transaction_with_behavior(TransactionBehavior::Immediate)
+        .unwrap();
+    let receipt = install(&tx, &bytes);
+    assert_eq!(
+        receipt["supportingDocuments"],
+        json!({"registered":3,"duplicates":0,"linked":2,"unbooked":1})
+    );
+    assert_eq!(snapshot(&tx)["journal_entries"], 4);
+    assert_eq!(snapshot(&tx)["documents"], 3);
+    let linked: i64 = tx
+        .query_row("SELECT count(*) FROM import_document_links", [], |r| {
+            r.get(0)
+        })
+        .unwrap();
+    assert_eq!(linked, 2);
+    let provenance: i64 = tx
+        .query_row(
+            "SELECT count(*) FROM dinero_import_document_links",
+            [],
+            |r| r.get(0),
+        )
+        .unwrap();
+    assert_eq!(provenance, 3);
+    let unchanged: i64 = tx
+        .query_row(
+            "SELECT count(*) FROM journal_entries WHERE document_id IS NOT NULL",
+            [],
+            |r| r.get(0),
+        )
+        .unwrap();
+    assert_eq!(unchanged, 0);
+    assert!(crate::journal_hash::verify(&tx).unwrap().ok);
+    let rows: Vec<(String, String, String, String)> = tx
+        .prepare(
+            "SELECT document_type,source,retain_until,original_filename FROM documents ORDER BY id",
+        )
+        .unwrap()
+        .query_map([], |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?, r.get(3)?)))
+        .unwrap()
+        .collect::<Result<_, _>>()
+        .unwrap();
+    assert_eq!(
+        rows[0],
+        (
+            "cash_register_receipt".into(),
+            "dinero-import-bilag".into(),
+            "2031-12-31".into(),
+            "2025-Bilag-1.pdf".into()
+        )
+    );
+    assert_eq!(rows[1].0, "issued_invoice_pdf");
+    assert_eq!(supporting_originals(&tx).unwrap().len(), 3);
+    verify_sources(&tx, &bytes);
+    let task: i64 = tx
+        .query_row(
+            "SELECT id FROM exceptions WHERE type='IMPORTED_RECEIPT_NOT_BOOKED'",
+            [],
+            |r| r.get(0),
+        )
+        .unwrap();
+    crate::exceptions::resolve(
+        &tx,
+        task,
+        &crate::exceptions::Resolve {
+            note: Some("Synthetic reviewed loose receipt".into()),
+        },
+        "synthetic",
+    )
+    .unwrap();
+    validate_history(&tx).unwrap();
+    tx.commit().unwrap();
+    assert!(receipt_publications(&db, &decoded).unwrap().is_empty());
+    verify_sources(&db, &bytes);
+}
+#[test]
+fn duplicate_original_reuses_metadata_but_preserves_all_paths_and_voucher_links() {
+    let (_c, mut db) = db();
+    let same = b"%PDF-1.4\nSynthetic shared exact original\n";
+    let bytes = receipt_source(&[
+        ("2025/Bilag/a-Bilag-1.pdf", same),
+        ("2025/Faktura/b-Faktura-2.pdf", same),
+        ("Ikke-bogførte-bilag/loose.pdf", same),
+        ("Ikke-bogførte-bilag/second.pdf", same),
+    ]);
+    let decoded = decode_source(&bytes).unwrap();
+    assert_eq!(receipt_publications(&db, &decoded).unwrap().len(), 1);
+    let tx = db
+        .transaction_with_behavior(TransactionBehavior::Immediate)
+        .unwrap();
+    let result = install(&tx, &bytes);
+    assert_eq!(
+        result["supportingDocuments"],
+        json!({"registered":1,"duplicates":3,"linked":2,"unbooked":2})
+    );
+    assert_eq!(snapshot(&tx)["documents"], 1);
+    assert_eq!(
+        tx.query_row(
+            "SELECT count(*) FROM dinero_import_document_links",
+            [],
+            |r| r.get::<_, i64>(0)
+        )
+        .unwrap(),
+        4
+    );
+    assert_eq!(
+        tx.query_row("SELECT count(*) FROM import_document_links", [], |r| r
+            .get::<_, i64>(0))
+            .unwrap(),
+        2
+    );
+    assert_eq!(
+        tx.query_row(
+            "SELECT count(*) FROM exceptions WHERE type='IMPORTED_RECEIPT_NOT_BOOKED'",
+            [],
+            |r| r.get::<_, i64>(0)
+        )
+        .unwrap(),
+        1
+    );
+    verify_sources(&tx, &bytes);
+    tx.commit().unwrap();
+}
+#[test]
+fn receipt_preflight_and_new_byte_validation_refuse_without_committed_effects() {
+    for entry in [
+        ("2025/Bilag/x-Bilag-999.pdf", b"%PDF-1.4\n".as_slice()),
+        ("2025/Bilag/x-Bilag-1.exe", b"MZfake".as_slice()),
+        ("2025/Bilag/x-Bilag-1.pdf", b"bad PDF bytes".as_slice()),
+    ] {
+        let (_c, mut db) = db();
+        let before = snapshot(&db);
+        let bytes = receipt_source(&[entry]);
+        let tx = db
+            .transaction_with_behavior(TransactionBehavior::Immediate)
+            .unwrap();
+        let decoded = decode_source(&bytes).unwrap();
+        match prepare(&tx, &decoded, latest()) {
+            Err(_) => {}
+            Ok(p) => {
+                assert!(apply(&tx, &p, &input(&p), latest(), "synthetic", NOW).is_err());
+            }
+        }
+        tx.rollback().unwrap();
+        assert_eq!(snapshot(&db), before);
+    }
+}
+#[test]
+fn supporting_receipt_transaction_rollback_restores_all_financial_and_document_rows() {
+    let (_c, mut db) = db();
+    let bytes = receipt_source(&[
+        (
+            "2025/Bilag/x-Bilag-1.pdf",
+            b"%PDF-1.4\nSynthetic rollback original\n",
+        ),
+        (
+            "Ikke-bogførte-bilag/x.pdf",
+            b"%PDF-1.4\nSynthetic loose rollback original\n",
+        ),
+    ]);
+    let before = snapshot(&db);
+    let tx = db
+        .transaction_with_behavior(TransactionBehavior::Immediate)
+        .unwrap();
+    install(&tx, &bytes);
+    tx.rollback().unwrap();
+    assert_eq!(snapshot(&db), before);
+    assert_eq!(
+        db.query_row("SELECT count(*) FROM import_document_links", [], |r| r
+            .get::<_, i64>(0))
+            .unwrap(),
+        0
+    );
+    assert_eq!(
+        db.query_row(
+            "SELECT count(*) FROM exceptions WHERE type='IMPORTED_RECEIPT_NOT_BOOKED'",
+            [],
+            |r| r.get::<_, i64>(0)
+        )
+        .unwrap(),
+        0
+    );
+}
+#[test]
+fn retained_receipt_history_rejects_changed_metadata_link_or_unclaimed_provenance() {
+    for mutation in 0..3 {
+        let (_c, mut db) = db();
+        let bytes = receipt_source(&[(
+            "2025/Bilag/x-Bilag-1.pdf",
+            b"%PDF-1.4\nSynthetic immutable original\n",
+        )]);
+        let tx = db
+            .transaction_with_behavior(TransactionBehavior::Immediate)
+            .unwrap();
+        install(&tx, &bytes);
+        match mutation {
+            0 => {
+                tx.execute("UPDATE documents SET payload_json='{}'", [])
+                    .unwrap();
+            }
+            1 => {
+                tx.execute_batch("DROP TRIGGER import_document_links_no_update")
+                    .unwrap();
+                tx.execute("UPDATE import_document_links SET voucher_ref='2'", [])
+                    .unwrap();
+            }
+            _ => {
+                let v: Value = serde_json::from_str(
+                    &tx.query_row(
+                        "SELECT message FROM audit_log WHERE event_type=?1",
+                        [EVENT],
+                        |r| r.get::<_, String>(0),
+                    )
+                    .unwrap(),
+                )
+                .unwrap();
+                let id = v["supportingReceipts"][0]["provenanceId"].as_i64().unwrap();
+                tx.execute_batch("DROP TRIGGER dinero_import_document_links_no_delete")
+                    .unwrap();
+                tx.execute("DELETE FROM dinero_import_document_links WHERE id=?1", [id])
+                    .unwrap();
+            }
+        }
+        assert!(validate_history(&tx).is_err(), "{mutation}");
+        tx.rollback().unwrap();
+    }
+}
