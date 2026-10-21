@@ -166,7 +166,8 @@ pub fn list() -> Value {
     tools.extend(crate::assets::tools());
     tools.extend(crate::accruals::tools());
     tools.extend(crate::budget::tools());
-    tools.extend(crate::bank_matches::tools());
+    tools.extend(crate::bank_matches::tools().into_iter().filter(|tool|tool["name"]!="bank_suggest_matches"));
+    tools.extend(crate::bank_original::tools());
     tools.extend(crate::bank_queries::tools());
     tools.extend(crate::bank_import::tools());
     tools.extend(crate::bank_accounts_original::tools());
@@ -259,6 +260,7 @@ pub async fn call(api: &ApiClient, name: &str, args: Value) -> Result<Value, &'s
     if !args.is_object() {
         return Err("expected arguments object");
     }
+    if matches!(name,"bank_suggest_matches"|"bank_reconciliation_correction_plan"|"bank_reconciliation_correction_apply") {return crate::bank_original::call(api,name,args).await;}
     if name=="bank_account_update" {return crate::bank_accounts_original::call(api,args).await;}
     if name=="bank_import" {return crate::bank_import::call(api,args).await;}
     if matches!(name,"bank_list"|"reconcile_bank"|"bank_account_list") {return crate::bank_queries::call(api,name,args).await;}
@@ -334,7 +336,7 @@ pub async fn call(api: &ApiClient, name: &str, args: Value) -> Result<Value, &'s
         name if crate::hosted_recurring::accepts(name)=>crate::hosted_recurring::call(api,name,args).await?,
         name if crate::scheduled_recurring::accepts(name)=>crate::scheduled_recurring::call(api,name,args).await?,
         name if crate::recurring_invoices::accepts(name) => crate::recurring_invoices::call(api,name,args).await?,
-        "bank_reconciliation_correction_plan" | "bank_reconciliation_correction" => {
+        "bank_reconciliation_correction" => {
             // Correlation only: return the original supported caller key on uncertain outcome.
             // Never mutate the request or trigger replay.
             if name=="bank_reconciliation_correction" {

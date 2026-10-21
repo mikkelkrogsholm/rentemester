@@ -506,3 +506,6 @@ pub use bank_import::bank_import_file_body;
 
 mod bank_accounts_original;
 pub use bank_accounts_original::{BankAccountOriginalMutation,bank_account_original_schema};
+
+mod bank_original;
+pub use bank_original::{BankOriginalMutation,bank_original_body_schema};

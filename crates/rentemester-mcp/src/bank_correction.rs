@@ -4,23 +4,14 @@ use rentemester_client::{ApiClient, Error, MAX_BANK_CORRECTION_BODY, bank_correc
 use serde::Deserialize;
 use serde_json::{Value, json};
 pub fn tools() -> Vec<Value> {
-    let id = json!({"type":"integer","minimum":1,"maximum":9007199254740991u64});
     let mut body = native_body(bank_correction_body_schema());
     body["maxLength"] = json!(MAX_BANK_CORRECTION_BODY);
-    vec![
-        tool(
-            "bank_reconciliation_correction_plan",
-            "Read full source-defined nested correction plan for current bank reconciliation, actual reversal child and independently posted replacement; CompanyRead. Invalid prerequisite HTTP422; no state/accounting effects. Preserve all history, hashes, original/replacement proof and planHash; never derive proof locally.",
-            json!({"type":"object","required":["company","bankTransactionId","replacementJournalEntryId"],"properties":{"company":company_schema(),"bankTransactionId":id,"replacementJournalEntryId":id},"additionalProperties":false}),
-            true,
-        ),
-        tool(
-            "bank_reconciliation_correction",
-            "Append canonical evidence correction only; actual reversal/replacement accounting must already exist. CompanyLedgerPost; current principal/source/original/archive checks. Exact native 16KiB body with caller-supported idempotencyKey and inner/outer confirm:true. Raw reason/key preserved, never generated/trimmed. No automatic retries. On outcome_unknown inspect canonical bank/history first and preserve exact body/key; only explicit same-principal action can recover durable receipt. Changed payload/key/stale proof refuse. Returns full correction/idempotent/receipt; creates no journals/payments.",
-            json!({"type":"object","required":["company","body","confirm"],"properties":{"company":company_schema(),"body":body,"confirm":{"const":true}},"additionalProperties":false}),
-            false,
-        ),
-    ]
+    vec![tool(
+        "bank_reconciliation_correction",
+        "Append canonical evidence correction only; actual reversal/replacement accounting must already exist. CompanyLedgerPost; current principal/source/original/archive checks. Exact native 16KiB body with caller-supported idempotencyKey and inner/outer confirm:true. Raw reason/key preserved, never generated/trimmed. No automatic retries. On outcome_unknown inspect canonical bank/history first and preserve exact body/key; only explicit same-principal action can recover durable receipt. Changed payload/key/stale proof refuse. Returns full correction/idempotent/receipt; creates no journals/payments.",
+        json!({"type":"object","required":["company","body","confirm"],"properties":{"company":company_schema(),"body":body,"confirm":{"const":true}},"additionalProperties":false}),
+        false,
+    )]
 }
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
