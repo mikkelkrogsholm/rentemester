@@ -7,12 +7,17 @@ starter ikke TypeScript-backenden og sender ikke forespørgsler videre til den.
 
 ## Aktuel Rust-levering
 
+[Kompensationskrav](rust-invoice-compensation.md) har nu særskilt beregning,
+registrering og bogføring i Rust med fælles web-UI, CLI og MCP. Hovedstol i
+fakturavaluta og kompensationskrav i DKK behandles hver for sig, også ved
+bankbetaling. Forløbet kræver en aktuel menneskelig MFA-session.
+
 Virksomhedens [revisionshistorik](rust-audit-log.md) kan nu filtreres og læses
 med fuld pagineringsmetadata gennem web, HTTP, CLI og MCP. Aktuelle menneske-
 og servicekontorettigheder håndhæves; opslag efter bogføring/tilbageførsel,
 læserrevokation og normal-MFA-genstart er verificeret på syntetiske data.
 Den særskilte [regnskabskontrol](rust-audit-verify.md) er nu tilgængelig gennem
-web, HTTP, CLI `remote audit-verify` og MCP `audit_verify` (243 værktøjer).
+web, HTTP, CLI `remote audit-verify` og MCP `audit_verify` (246 værktøjer).
 Journal, bank, fakturagrundlag, beskyttede originaler samt schema/SQLite har
 hver sit resultat. Manglende kontrol bliver ikke vist som et rent regnskab.
 En almindelig MFA-prøve med bogføring/tilbageførsel, to virksomheder, aktuelle

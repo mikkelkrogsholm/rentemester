@@ -89,7 +89,19 @@ fn invoice(tx: &Transaction<'_>, id: i64) -> Result<Invoice, Error> {
     })
 }
 fn existing(tx: &Transaction<'_>, id: i64) -> Result<Value, Error> {
-    let row:Option<(i64,String,Money,Option<i64>,Option<String>,Option<String>,Option<i64>,Option<i64>,Option<i64>,bool)>=tx.query_row("SELECT c.id,c.claim_date,c.amount_dkk,p.journal_entry_id,j.entry_no,j.status,j.document_id,j.source_bank_transaction_id,j.reversal_of_entry_id,EXISTS(SELECT 1 FROM journal_entries r WHERE r.reversal_of_entry_id=j.id) FROM invoice_compensation_claims c LEFT JOIN invoice_compensation_postings p ON p.compensation_claim_id=c.id LEFT JOIN journal_entries j ON j.id=p.journal_entry_id WHERE c.invoice_document_id=?1",[id],|r|Ok((r.get(0)?,r.get(1)?,legacy_money(r.get_ref(2)?).map_err(|_|rusqlite::Error::InvalidQuery)?,r.get(3)?,r.get(4)?,r.get(5)?,r.get(6)?,r.get(7)?,r.get(8)?,r.get(9)?))).optional().map_err(invalid)?;
+    type ExistingClaim = (
+        i64,
+        String,
+        Money,
+        Option<i64>,
+        Option<String>,
+        Option<String>,
+        Option<i64>,
+        Option<i64>,
+        Option<i64>,
+        bool,
+    );
+    let row:Option<ExistingClaim>=tx.query_row("SELECT c.id,c.claim_date,c.amount_dkk,p.journal_entry_id,j.entry_no,j.status,j.document_id,j.source_bank_transaction_id,j.reversal_of_entry_id,EXISTS(SELECT 1 FROM journal_entries r WHERE r.reversal_of_entry_id=j.id) FROM invoice_compensation_claims c LEFT JOIN invoice_compensation_postings p ON p.compensation_claim_id=c.id LEFT JOIN journal_entries j ON j.id=p.journal_entry_id WHERE c.invoice_document_id=?1",[id],|r|Ok((r.get(0)?,r.get(1)?,legacy_money(r.get_ref(2)?).map_err(|_|rusqlite::Error::InvalidQuery)?,r.get(3)?,r.get(4)?,r.get(5)?,r.get(6)?,r.get(7)?,r.get(8)?,r.get(9)?))).optional().map_err(invalid)?;
     let Some((claim, date, amount, journal, no, status, doc, bank, reversal, reversed)) = row
     else {
         return Ok(

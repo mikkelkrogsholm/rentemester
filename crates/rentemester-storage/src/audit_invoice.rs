@@ -203,7 +203,7 @@ fn posted_invoice(tx: &Transaction<'_>, d: &Value, p: &Value) -> Result<(), Erro
         require(
             money(&j["amount_foreign"])? == original.gross
                 && money(&j["amount_dkk"])? == projection.gross
-                && j["fx_rate_to_dkk"] == payload["fxRateToDkk"],
+                && j["fx_rate_to_dkk"] == payload["totals"]["fxRateToDkk"],
             "frozen invoice FX metadata differs",
         )?;
     }
@@ -634,7 +634,7 @@ fn cash(
                 &[&text(&j["registration_datetime"])?],
             )?;
             let actual = effects(&lines(tx, jid)?)?;
-            let signed_dkk = if currency == "DKK" {
+            let signed_dkk = if first["currency"] == "DKK" {
                 total.clone()
             } else {
                 money(&b["amount_dkk"])?
@@ -664,7 +664,7 @@ fn cash(
             matching[0]
         };
         require(bank_account != debtor, "bank ledger is invoice receivable")?;
-        let bank_dkk = if currency == "DKK" {
+        let bank_dkk = if first["currency"] == "DKK" {
             total.clone()
         } else {
             let signed = money(&b["amount_dkk"])?;
@@ -701,7 +701,7 @@ fn cash(
                 Money::default()
             },
         );
-        if currency != "DKK" {
+        if first["currency"] != "DKK" {
             let difference = if refund {
                 principal.subtract(&bank_dkk)
             } else {

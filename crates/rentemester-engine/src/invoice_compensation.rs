@@ -128,7 +128,7 @@ mod tests {
         }
         for buyer in [
             json!({"name":"Business sounding name"}),
-            json!({"vatOrCvr":"private person"}),
+            json!({"vatOrCvr":"private-person"}),
             json!({"eanNumber":"123"}),
             json!({"publicRecipient":"true"}),
         ] {

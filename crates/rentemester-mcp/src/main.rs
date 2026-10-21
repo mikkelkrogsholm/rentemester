@@ -1,8 +1,8 @@
-mod invoice_compensation;
 //! Bounded MCP 2025-11-25 stdio adapter. Wire references:
 //! https://modelcontextprotocol.io/specification/2025-11-25/basic/transports
 //! https://modelcontextprotocol.io/specification/2025-11-25/basic/lifecycle
 //! https://modelcontextprotocol.io/specification/2025-11-25/server/tools
+mod invoice_compensation;
 mod audit_verify;
 mod audit_log;
 mod bank_matches;

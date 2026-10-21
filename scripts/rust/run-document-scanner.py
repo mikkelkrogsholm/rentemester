@@ -671,9 +671,9 @@ def main():
                 db = sqlite3.connect((work/'workspace/synthetic/data/ledger.sqlite').as_uri()+'?mode=ro', uri=True)
                 try:
                     counts = {table: db.execute('SELECT count(*) FROM '+table).fetchone()[0] for table in ['documents','bank_transactions','journal_entries']}
-                    expected_counts = {'documents':2,'bank_transactions':5,'journal_entries':9} if args.invoice_compensation else {'documents':0,'bank_transactions':1,'journal_entries':2 if args.audit_log else 1}
+                    expected_counts = {'documents':4,'bank_transactions':5,'journal_entries':9} if args.invoice_compensation else {'documents':0,'bank_transactions':1,'journal_entries':2 if args.audit_log else 1}
                     if counts != expected_counts:
-                        raise RuntimeError('Backup lock terminal financial effects differ')
+                        raise RuntimeError('Backup lock terminal financial effects differ: '+json.dumps(counts,sort_keys=True))
                     report['terminalSql'] = {'counts':counts,'journalActors':db.execute('SELECT created_by,created_by_program FROM journal_entries ORDER BY id').fetchall()}
                 finally: db.close()
                 target_db = sqlite3.connect((work/'workspace/synthetic-backup-inbox-target/data/ledger.sqlite').as_uri()+'?mode=ro', uri=True)

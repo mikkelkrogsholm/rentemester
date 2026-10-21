@@ -524,7 +524,7 @@ fn require_compensation_audit(tx: &Transaction<'_>, event: &str, id: i64) -> Res
     Ok(())
 }
 pub fn read(tx: &Transaction<'_>, id: i64, as_of: &str) -> Result<Value, Error> {
-    crate::journal_post::require_current(tx)?;
+    crate::journal_preview::require_current(tx)?;
     let i = invoice(tx, id)?;
     let c = validated_claims(tx, id)?;
     let open = principal(tx, id, &i)?;
@@ -1021,6 +1021,10 @@ mod tests {
             assert_eq!(final_report["ledgerBackedClaimBalance"], json!(0.0));
             assert_eq!(final_report["settlementAvailable"], false);
             assert!(audit_evidence(&tx).unwrap().is_empty());
+            let invoice_audit = crate::audit_invoice::verify(&tx).unwrap();
+            assert_eq!(invoice_audit["ok"], true, "{invoice_audit}");
+            let close_audit = crate::periods::audit::verify(&tx).unwrap();
+            assert!(close_audit.is_empty(), "{close_audit:?}");
             tx.commit().unwrap();
             let tx = db.transaction().unwrap();
             assert_eq!(read(&tx, id, "2026-01-07").unwrap(), final_report);

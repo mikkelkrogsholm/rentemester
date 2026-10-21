@@ -1,6 +1,7 @@
 //! Private physical ownership under explicit Linux-broker or macOS-local profiles.
 //! This is not schema adoption, fresh initialization, or transport authorization.
 //! Never open other regular descriptors for owned database inodes in this process.
+mod invoice_compensation;
 pub mod legacy_adoption;
 mod audit_verify;
 mod audit_log;

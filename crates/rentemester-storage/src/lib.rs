@@ -1,4 +1,6 @@
 //! Source-read-only reports/rehearsals and caller-owned transactional primitives.
+pub mod invoice_compensation;
+pub(crate) mod invoice_compensation_schema;
 pub mod audit_verify;
 pub mod audit_ledger;
 pub mod audit_bank;

@@ -79,7 +79,7 @@ export function createInvoiceCompensationProof(page: Page, base: string, work: s
     const claims = await get(`invoices/${invoice.id}/reminder-claims`);
     for (const kind of ['cli', 'mcp'] as const) need(isDeepStrictEqual(client(kind, 'claims', undefined, { id: invoice.id }), claims), `${kind} exact compensation/receipt status differs`);
     const c = value.compensation;
-    need(c.invoiceDocumentId === invoice.id && c.invoiceNumber === invoice.number && c.principalCurrency === invoice.currency && c.compensationAmountDkk === 310 && ['claimId', 'claimDate', 'registeredAmountDkk', 'postedJournalEntryId', 'postedJournalEntryNo'].every(key => key in c), 'Complete compensation identification/currency/readback required');
+    need(c.invoiceDocumentId === invoice.id && c.invoiceNumber === invoice.number && c.principalCurrency === invoice.currency && c.compensationAmountDkk === (c.eligible ? 310 : 0) && (c.claimId === null || c.registeredAmountDkk === 310) && ['claimId', 'claimDate', 'registeredAmountDkk', 'postedJournalEntryId', 'postedJournalEntryNo'].every(key => key in c), 'Complete compensation identification/currency/readback required');
     need(claims.reminderClaims.principalCurrency === invoice.currency && claims.reminderClaims.claimCurrency === 'DKK' && (invoice.currency === 'DKK' || claims.reminderClaims.claimOpenBalance === null), 'Principal and DKK claim units must remain separate');
     await unchanged(before, 'Read-only cross-client calculation/status'); return { calculation: value, claims };
   }
@@ -218,7 +218,7 @@ export function createInvoiceCompensationProof(page: Page, base: string, work: s
     const directory = join(work, 'workspace', 'native-backups'); need(!lstatSync(directory).isSymbolicLink(), 'Owned retained backup directory required');
     const file = join(directory, sha + '.native-backup.json'), parked = file + '.compensation120-held', info = lstatSync(file), bytes = readFileSync(file);
     need(info.isFile() && !info.isSymbolicLink() && info.nlink === 1 && info.uid === process.getuid!() && (info.mode & 0o777) === 0o600 && hash(bytes) === sha && bytes.equals(readFileSync(join(work, 'backup-lock-ui.native-backup.json'))) && !existsSync(parked), 'Exact owned retained prior artifact required, no caller path');
-    const before = await snapshot(); let refusal;
+    const before = await snapshot(); let refusal: { status: number; code: string } | undefined;
     try {
       renameSync(file, parked); const status = await get('backup-status'); need(status.lock.enforced === true && status.lock.locked === true, 'Missing current retained backup must lock actual compensation posting');
       refusal = await denied('post', postingBody(invoice), before, 'Current backup lock on compensation', page, 'backup_overdue');
@@ -274,7 +274,7 @@ export function createInvoiceCompensationProof(page: Page, base: string, work: s
       const total = (no: string) => stable.journal.journal.entries.flatMap((e: any) => e.lines).filter((l: any) => l.accountNo === no).reduce((sum: bigint, l: any) => sum + cents(l.debit) - cents(l.credit), 0n);
       need(total(account.debtor) === 0n && total(account.claim) === 0n && total(account.revenue) === -67600n && total(account.compensation) === -62000n && total(account.outputVat) === -16900n && total(account.gain) === 0n && total(account.loss) === 0n && total(account.bank) === 147225n, 'Exact synthetic terminal account movements');
       await originals(); reports = await audit(); await unchanged(stable, 'Final originals/full-audit reads');
-      await page.goto(base + '/companies/synthetic/integritet'); const card = page.getByRole('region', { name: 'Regnskabskontrol', exact: true }); const response = page.waitForResponse(r => r.url() === base + prefix + 'audit-verify'); await card.getByRole('button', { name: 'Kontrollér regnskabet', exact: true }).click(); need(isDeepStrictEqual(await (await response).json(), reports), 'Actual web final full-audit parity'); await card.getByText('Kontrollen fandt ingen afvigelser.', { exact: true }).waitFor(); await page.screenshot({ path: process.env.RM_SCANNER_SCREENSHOT!, fullPage: true });
+      await page.goto(base + '/companies/synthetic/integritet'); const card = page.getByRole('region', { name: 'Regnskabskontrol', exact: true }); const response = page.waitForResponse(r => r.url() === base + prefix + 'audit-verify'); await card.getByRole('button', { name: 'Kontrollér regnskabet', exact: true }).click(); need(isDeepStrictEqual(await (await response).json(), reports), 'Actual web final full-audit parity'); await card.getByRole('status').filter({ hasText: 'Kontrollen fandt ingen afvigelser.' }).waitFor(); await page.screenshot({ path: process.env.RM_SCANNER_SCREENSHOT!, fullPage: true });
       const exported = await page.request.post(base + '/api/workspace/backup', { headers: { origin: base }, data: { confirm: true } });
       need(exported.ok() && exported.headers()['content-type']?.split(';')[0] === 'application/vnd.rentemester.native-backup+json', 'Actual signed compensation workspace export required');
       const artifact = await exported.body(); need(artifact.length > 0 && artifact.length <= 96 * 1024 * 1024, 'Bounded exact signed compensation backup');

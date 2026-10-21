@@ -19,6 +19,7 @@ fn error() -> Error {
 /// Exact base OR exact base+known extension. Unknown extra objects always refuse.
 pub(crate) fn validate(db: &Connection, base: &[SchemaObject]) -> Result<bool, Error> {
     let actual = crate::native_fx_roles::strip_schema(db, &schema(db)?)?;
+    let actual = crate::invoice_compensation_schema::strip_schema(db, &actual)?;
     if actual == base {
         return Ok(false);
     }
