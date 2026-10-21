@@ -652,3 +652,5 @@ pub mod audit_log;
 pub mod migration_open_items;
 
 pub mod synthetic_import;
+
+pub mod journal_history;

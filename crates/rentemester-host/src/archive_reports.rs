@@ -2,6 +2,22 @@
 use super::*;
 use rentemester_application::archive_reports::{self as app, Action, Request};
 impl Owner {
+    pub fn journal_history(
+        &mut self,
+        cookie: &VerifiedCookie,
+        clock: &dyn Clock,
+        query: rentemester_storage::journal_history::Query,
+    ) -> Result<
+        Attempt<
+            Result<Committed<serde_json::Value>, rentemester_application::control_fence::Failure>,
+        >,
+        OwnerError,
+    > {
+        self.document_action(cookie, clock, |c, l, g, context| {
+            app::execute(c, l, g, context, Action::JournalHistory(query))
+        })
+    }
+
     pub fn archive_reports_service(
         &mut self,
         key: &ServiceKey,

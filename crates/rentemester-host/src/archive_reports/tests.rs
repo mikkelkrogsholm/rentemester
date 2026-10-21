@@ -409,3 +409,53 @@ fn current_chart_company_permission_and_physical_source_never_fall_back() {
     }
     assert_eq!(changes(&owner), before);
 }
+
+#[test]
+fn journal_history_reuses_current_authority_and_physical_source_barrier() {
+    let (_dir, mut owner, _cookies, proof, uid) = setup();
+    let file = install(&mut owner, &proof);
+    let before = changes(&owner);
+    let history = owner
+        .journal_history(
+            &proof,
+            &Fixed(NOW),
+            rentemester_storage::journal_history::Query {
+                all: true,
+                ..Default::default()
+            },
+        )
+        .unwrap()
+        .outcome
+        .unwrap()
+        .value;
+    // The imported archive is verified but never fabricated as native headers.
+    assert_eq!(history["entries"], json!([]));
+    assert_eq!(history["total"], 0);
+    assert_eq!(changes(&owner), before);
+    owner.held.0.as_mut().unwrap().control.as_mut().unwrap().execute_batch("INSERT INTO rm_company_membership_events(user_id,company_slug,event_type,company_role,actor)VALUES('u','a','revoke',NULL,'user:u');").unwrap();
+    let before = changes(&owner);
+    let refusal = owner
+        .journal_history(&proof, &Fixed(NOW), Default::default())
+        .unwrap()
+        .outcome
+        .unwrap_err();
+    assert_eq!(refusal.error.code, "access_denied");
+    assert_eq!(changes(&owner), before);
+    owner.held.0.as_mut().unwrap().control.as_mut().unwrap().execute_batch("INSERT INTO rm_company_membership_events(user_id,company_slug,event_type,company_role,actor)VALUES('u','a','grant','owner','user:u');").unwrap();
+    let path = owner.root.join("a").join(file.relative_path());
+    let root = owner.root.clone();
+    drop(owner);
+    let mut bytes = std::fs::read(&path).unwrap();
+    bytes[0] = b'!';
+    std::fs::write(&path, bytes).unwrap();
+    let mut owner =
+        Owner::open_with_profile(&root, uid, "w", "a", NamespaceProfile::LocalUserMacos).unwrap();
+    let before = changes(&owner);
+    let refusal = owner
+        .journal_history(&proof, &Fixed(NOW), Default::default())
+        .unwrap()
+        .outcome
+        .unwrap_err();
+    assert_eq!(refusal.error.code, "report_source_unavailable");
+    assert_eq!(changes(&owner), before);
+}

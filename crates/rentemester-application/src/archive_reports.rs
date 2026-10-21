@@ -19,6 +19,7 @@ pub struct Request<'a> {
 }
 pub enum Action<'a> {
     Read(Request<'a>),
+    JournalHistory(rentemester_storage::journal_history::Query),
     FiscalYears { today: &'a str },
 }
 fn invalid() -> Error {
@@ -159,9 +160,13 @@ pub(crate) fn read_authorized(
         return Err(unavailable());
     }
     let verified = crate::archive_import::verify_physical(tx, guard)?;
+    if let Action::JournalHistory(query) = &action {
+        return rentemester_storage::journal_history::read(tx, query);
+    }
     let today = match &action {
         Action::Read(request) => request.today,
         Action::FiscalYears { today } => today,
+        Action::JournalHistory(_) => unreachable!(),
     };
     let years = inventory(tx, &verified, today)?;
     let Action::Read(request) = action else {
