@@ -1,13 +1,13 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "Group126 folder/raw-ZIP intake integrated with original-source retention; focused tests and strict Clippy pass, final build/actual qualification pending",
+  "current_increment": "Group127 original import remainder: safe unused-chart reconciliation, synthetic CSV adapter and core open-item resolution",
   "code_revision": "a4ca47e5 +394c37c0 plus pending main raw-ZIP source/physical/backup integration",
   "spec_revision": "sha256:bc98636be4a972407adce0f817a76bb9d4bb7200cb292a70965e75ab62fae250",
-  "state": "Group125 supporting-original journey remains qualified (800be133dc410b1bfb86ad0134caf5df9f9e74ec3bf4a91bcc5c85f4eef5de8c). Group126 now implements source-supported direct folder and rawZIP selection through existing React UI, explicit CLI --file snapshots and one shared Rust container adapter/accounting engine. ZIP original hash/bytes distinctcanonicalinventory, backward-compatible JSON acceptance, exact originals/MIME and native signed-backup retention integrated. Seven adapter,10 web,19 storage,two runtime,two SDK,five CLI and one route tests pass, strict nine-crate Clippy and webbuild pass. Final normal3bin build and whole rawZIPUI/CLI/MCP/folder-preview/replay/audit/restart next; no whole126 acceptance yet. Remaining originalR27/report/open-item/import and every fullGDD/epic672 mission gate remain; installed desktop GUI allersidst.",
+  "state": "Group126 raw ZIP journey passed real existing web, HTTP, compiled CLI/MCP, exact raw source retrieval, same-key replay, full audit, signed backup verification and fresh-MFA restart. Report b49a2743f01b7c78376229408cdec72608e48b90e24ba093b4ea12492e232752 independently verified with owned processes and runtime cleaned. Actual folder preview qualified; actual folder apply, source-free restore and installed desktop remain unqualified. Preserve accepted124/125 and every original mission gate. Current finite Group127 closes original R27 unused-chart reconciliation, registered synthetic-csv input and bounded core migration-open-item functions. GitHub #701 remains the only active child; installed desktop GUI allersidst.",
   "issues_closed": [],
   "next": [
-    "Resume current live actual126 session26800/report, never restart fromobservationtimeout. Keep bin/web/runner/helper/sourceZIP fixtures pinned untilterminal +independent /tmp/rm126-independent-verification.py. Then use /tmp/rm127-r27-completion-scout.md for precise originalremainder. Preservequalified125 andeverymissiongate; installedGUIlast.",
+    "Implement original R27 remainder from /tmp/rm127-r27-completion-scout.md in three existing isolated worktrees. Integrate and qualify the shared imported-owner journey; preserve exact126 evidence and no duplicate builds. Related native invoice portfolio subset regression stays visible for report-owner scope. No Billy/e-conomic parser invention; installed GUI last.",
     "Installed desktop acceptance is explicitly deferred to the very end by the user. Preserve prepared Group100 profile; collect remaining native automation, closure, recovery and packaging checks for final installed acceptance without requesting screen unlock during development.",
     "J03/R50 and remaining R54 scope: only still-supported operation closure/recovery, nonempty scheduler handoff, hostile/older clone and post-cutover rollback requirements. Group99 qualifies managed installed J06 flow, not every R54 acceptance item.",
     "Signed distribution/update/cutover evidence must match actual full Rust replacement; retain all existing completion gates and TypeScript retirement gate.",
@@ -6911,7 +6911,7 @@
       "next_container_scout": "/tmp/rm126-container-scout.md"
     },
     "native_dinero_containers126": {
-      "status": "final normal three-bin build passed; actual qualification running",
+      "status": "passed; independently verified after process cleanup",
       "adapter7": "/tmp/rm126-engine-container-tests-final.log",
       "web10": "/tmp/rm126-web-tests.log",
       "storage19": "/tmp/rm126-storage-tests.log",
@@ -6922,8 +6922,7 @@
       "strict_clippy": "/tmp/rm126-integrated-clippy.log",
       "web_build": "/tmp/rm126-web-build.log",
       "final_normal_three_bin_build": "/tmp/rm126-final-build.log",
-      "planned_actual_report": "/tmp/rentemester-rust-reports/native-dinero-import126.json",
-      "whole_flow_qualified": false,
+      "whole_flow_qualified": true,
       "actual_folder_apply_qualified": false,
       "source_free_restore_qualified": false,
       "installed_desktop_qualified": false,
@@ -6933,7 +6932,10 @@
         "deflate"
       ],
       "zip_metadata_bound": "raw25MiB input; ZIP9 library has no separate central metadata allocation bound; decodedfiles/counts checked separately",
-      "live_exec_session": 26800
+      "actual_report": "/tmp/rentemester-rust-reports/native-dinero-import126.json",
+      "actual_report_sha256": "b49a2743f01b7c78376229408cdec72608e48b90e24ba093b4ea12492e232752",
+      "independent_verification": "/tmp/rm126-independent-verification.log",
+      "actual_folder_preview_qualified": true
     }
   },
   "verified_history": [

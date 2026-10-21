@@ -97,9 +97,13 @@ forsøger ikke automatisk igen. Hvis kilden ændres mellem gennemgang og
 bekræftelse, afvises planen. Den eksisterende stdin-JSON-kontrakt fungerer
 fortsat, når `--file` ikke er angivet.
 
-Mappe- og ZIP-udvidelsens integrerede tests består; den samlede rå-ZIP-prøve
-registreres som `native_dinero_containers126`, når den er kvalificeret. Den
-færdige bilagsprøve ovenfor gælder JSON-inputtet før denne udvidelse.
+Mappe- og ZIP-udvidelsens integrerede tests og samlede rå-ZIP-prøve består.
+Web, HTTP og kompileret CLI/MCP bevarer den præcise ZIP-original gennem
+bogføring, gentagelse med samme nøgle, fuld audit, signeret backupkontrol og
+genstart. Rapportens hash og den uafhængige kontrol er registreret som
+`native_dinero_containers126` i fremdriftsfilen. Den faktiske mappevælger er
+kvalificeret til gennemgang; en samlet bogføring fra mappevælgeren,
+gendannelse uden kildeprofil og installeret desktopaccept er ikke kvalificeret.
 
 ## Verifikationsgrænse
 
