@@ -380,10 +380,10 @@ pub fn correction(h: &History) -> Result<CorrectionProposal, Error> {
     for c in &h.corrections {
         corrected.add(&c.amount);
     }
-    if corrected.0 > gross.0 {
-        return Err(refused("prior corrections exceed lawful aggregate ceiling"));
-    }
-    let over = gross.subtract(&corrected);
+    // A later principal refund can reduce today's gross ceiling below a
+    // previously lawful correction. Storage validates historical causal plans;
+    // the current mathematical proposal only clamps the remaining amount.
+    let over = nonnegative(gross.subtract(&corrected));
     Ok(CorrectionProposal {
         has_proposal: positive(&over),
         posted_interest: posted,

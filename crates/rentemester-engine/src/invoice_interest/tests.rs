@@ -204,7 +204,7 @@ fn invalid_history_foreign_unknown_table_and_manual_warning() {
         id: 1,
         correction_date: d("2025-01-12"),
         amount: m("1"),
-        journal_id: 200,
+        journal_id: 101,
     });
     assert!(correction(&h).is_err());
     h = history();
@@ -240,4 +240,45 @@ fn invalid_history_foreign_unknown_table_and_manual_warning() {
         )
         .is_err()
     );
+}
+
+#[test]
+fn later_effective_refund_does_not_invalidate_a_previous_lawful_correction() {
+    let mut h = history();
+    h.claims.push(claim(1, "2025-01-11", "2.74", true));
+    h.events
+        .push(event(EventKind::Payment, 1, "2025-01-06", "500"));
+    assert_eq!(correction(&h).unwrap().over_claimed_amount, m("0.69"));
+    h.corrections.push(InterestCorrection {
+        id: 1,
+        correction_date: d("2025-01-12"),
+        amount: m("0.69"),
+        journal_id: 200,
+    });
+    // A subsequently discovered refund is effective within the original window.
+    // Its immutable admission/proof is storage's responsibility.
+    h.events
+        .push(event(EventKind::Refund, 1, "2025-01-08", "500"));
+    let proposal = correction(&h).unwrap();
+    assert_eq!(proposal.lawful_interest, m("2.47"));
+    assert_eq!(proposal.already_corrected, m("0.69"));
+    assert_eq!(proposal.over_claimed_amount, m("0"));
+    assert!(!proposal.has_proposal);
+    assert_eq!(proposal.claim_overclaims[0].over_claimed_amount, m("0.27"));
+}
+#[test]
+fn historical_query_uses_later_claims_rate_but_not_its_billed_amount() {
+    let mut h = history();
+    let mut later = claim(1, "2025-01-21", "10.96", true);
+    later.reference_basis_points = 1200;
+    later.annual_basis_points = 2000;
+    h.claims.push(later);
+    // TS includes all claims, clamps their windows to asOf, and only counts
+    // actually billed claims dated <= asOf. It does not filter future anchors.
+    let c = calc(&h, "2025-01-11");
+    assert_eq!(c.total_interest_to_date, m("5.48"));
+    assert_eq!(c.prior_claimed_interest, m("0"));
+    assert_eq!(c.claimable_days, 0);
+    assert_eq!(c.interest_from_date, d("2025-01-11"));
+    assert_eq!(c.accrued_interest_amount, m("0"));
 }
