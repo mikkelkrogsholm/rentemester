@@ -434,6 +434,13 @@ pub fn execute(
                         .map(|k| service(ct, k, context.clock, &context.selection))
                         .transpose()?,
                 };
+                crate::backup_status::require_write(
+                    ct,
+                    lt,
+                    context.selection.workspace,
+                    context.selection.slug,
+                    context.clock,
+                )?;
                 guard.write_imap_config(&envelope).map_err(|_| refused())?;
                 audit(
                     lt,
@@ -444,11 +451,25 @@ pub fn execute(
                 )?;
             }
             Action::DeleteConfig => {
+                crate::backup_status::require_write(
+                    ct,
+                    lt,
+                    context.selection.workspace,
+                    context.selection.slug,
+                    context.clock,
+                )?;
                 guard.remove_imap_config().map_err(|_| refused())?;
                 audit(lt, "native_mail_config_deleted", json!({}), &subject, &at)?;
             }
             Action::Alias(alias) => {
                 let alias = normalize_alias(alias)?;
+                crate::backup_status::require_write(
+                    ct,
+                    lt,
+                    context.selection.workspace,
+                    context.selection.slug,
+                    context.clock,
+                )?;
                 lt.execute("UPDATE companies SET mail_alias=?1 WHERE id=1", [&alias])
                     .map_err(|_| refused())?;
                 audit(
@@ -517,6 +538,7 @@ fn prepare_inner(
                 return Err(denied());
             }
         }
+        crate::backup_status::require_write(ct, lt, s.workspace, s.slug, clock)?;
         let status = config.status();
         let cursor = store::cursor(ct, s.slug, &g.epoch, &status.mailbox)?.map(
             |(uid_validity, last_uid)| imap::Cursor {
@@ -524,7 +546,6 @@ fn prepare_inner(
                 last_uid,
             },
         );
-        let _ = clock;
         Ok(Admission {
             workspace: s.workspace.into(),
             company: s.slug.into(),
