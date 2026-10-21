@@ -1,15 +1,15 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "Group145 original direct-bank purchase/payable correction CLI/MCP with dated effects, restart and signed source-free restore accepted",
-  "code_revision": "e517e6f366807d5ba7100c1c27078cb7bbb24595",
+  "current_increment": "Group146 original supplier payable registration/list/partial-full payment and current receipts accepted",
+  "code_revision": "c2c9caacffd977b34869a0665853e426d77f8fce",
   "spec_revision": "sha256:bc98636be4a972407adce0f817a76bb9d4bb7200cb292a70965e75ab62fae250",
-  "state": "Group145 ACCEPTED original bank direct-payable-plan/apply flags and flat MCP direct_bank_purchase_payable_correction_plan/apply. Additive strict16KiB original HTTP endpoints reuse same source-bound native fullplan/composite writer, native human routes/wire/keyed payload unchanged. Original plan current CompanyRead; apply current CompanyLedgerPost human and explicitly scoped service. CLI expectedPrincipal assertion is checked inside current fence before replay/write; no caller identity in MCP. Original flat result preserves full correction plus native idempotency receipt; logical correction.idempotent remains false on keyed replay while idempotency.replayed is true. Actual kind/subject bound in receipt, direct correction row and typed144 nested bank correction provenance. No new engine/schema/dependencies; mixed source/storage refusals remain typed non200. Backend4/client6 focused PASS (one local compile shadowing corrected before runtime); integrated7crate all-target strict Clippy and normal3binary build PASS after equivalent CLI allowed-flag predicate simplification. Actual existing normal-MFA fixture now uses passive web source/plan review then original CLI FIRST atomic apply, original CLI/MCP plus unchanged nativeHTTP same-key replay, conflict/source/date/financial proof, fresh-MFA restart and signed independently verified source-free restore to fresh normal owner. Original native web first-positive was not retested; accepted58 web proof preserved and native regression retained. Independent terminal SQL/source verification proves1document1bank4journals11lines1payable1payment1composite1nestedcorrection, exact immutable original/mirror/invoice/bank dates and amounts/current relation/current-principal provenance, source/binary/helper/web pins and successful owned cleanup. Both worker snapshots verified and worktrees removed. Full epic/open original parity/release/cutover/TypeScript retirement/final installed desktop scope remains intact.",
+  "state": "Group146 ACCEPTED original payable register/list/pay CLI and flat MCP payable_register/payable_list/payable_pay over one existing Rust writer and dated reader. Original filters, sort, exact Money totals and asOf/asOfDate precedence; original default UTC date retained. Current human/service grants, physical document and selected bank source before optional principal-bound durable receipts; first native mutation admission remains inside existing receipt closure. Registration and payment rule evidence retained, native routes and wire unchanged. Focused client6/backend5 PASS; fixture role version/session errors were isolated and corrected without weakening controls. Integrated7crate strict all-target Clippy and normal3binary build PASS; equivalent date predicate simplification only. Actual normal-MFA required scanner service original MCP keyed registration, exact HTTP/CLI/MCP filtered lists, creditor role remap, keyed partial50 and original CLI final75: one expense100/VAT25, original creditor3101, no replacement3102 postings, exact source bank balance125, duplicate bill/payment refusal. Physical selected CSV tamper refuses known receipt; restore has no financial effects. Normal owner MFA restart retains exact registration/partial receipts and historical partial openBalance75 after current full settlement; service revoked in held scan cannot publish, revoked original receipt/list calls refused after restart without rescan. Independent SQL/source verification and binary/helper/web pins/cleanup pass. First actual run failed only helper using Copenhagen portfolio date for UTC-default fixture; retained one-bill/no-payment profile isolated read-only, same product binaries passed corrected UTC fixture. Both worker snapshots preserve all nonignored work and worktrees removed. Full epic and original other-domain/actor/env/company-path/default launcher/release/cutover/TypeScript retirement/final installed desktop remain OPEN. Historical TypeScript raw-company receipt migration compatibility is not qualified.",
   "issues_closed": [
     701
   ],
   "next": [
-    "R44/R45 next original supplier-payable lifecycle: payable register/list/pay and MCP payable_register/list/pay. Existing shared engine/native dated reader and service_purchase101 fixture; source original supplier/vendor/bill-date/min-overdue filters and principal-scoped keyed registration/payment receipts are required, not names alone. Preserve native source/date/creditor/bank controls and exact current rights/replay/restart. Then original invoice list/find/status/overdue; actor/env/company-path/default launcher/exact CLI profile error and broader full scope remain open.",
+    "R44/R45 next original invoice query lifecycle: invoice list/find/status/overdue and flat MCP equivalents. Preserve original actual current-history asOf semantics explicitly, open versus overdue flag, exact filters/sorts/amount precedence and native currency/source/claim validation; shared native principal/claim readers and unchanged existing web routes. Actor/env/company-path/default launcher/exact profile errors, broader parity, historical TypeScript receipt migration, release/cutover/retirement/final installed desktop remain OPEN.",
     "Installed desktop acceptance is explicitly deferred to the very end by the user. Preserve prepared Group100 profile; collect remaining native automation, closure, recovery and packaging checks for final installed acceptance without requesting screen unlock during development.",
     "J03/R50 and remaining R54 scope: only still-supported operation closure/recovery, nonempty scheduler handoff, hostile/older clone and post-cutover rollback requirements. Group99 qualifies managed installed J06 flow, not every R54 acceptance item.",
     "Signed distribution/update/cutover evidence must match actual full Rust replacement; retain all existing completion gates and TypeScript retirement gate.",
@@ -8166,6 +8166,57 @@
       "worker_worktrees_removed": true,
       "worktree_recovery": ".git/rentemester-recovery/archived145.json",
       "remaining": "R44/R45 next original supplier-payable lifecycle: payable register/list/pay and MCP payable_register/list/pay. Existing shared engine/native dated reader and service_purchase101 fixture; source original supplier/vendor/bill-date/min-overdue filters and principal-scoped keyed registration/payment receipts are required, not names alone. Preserve native source/date/creditor/bank controls and exact current rights/replay/restart. Then original invoice list/find/status/overdue; actor/env/company-path/default launcher/exact CLI profile error and broader full scope remain open. Full release/cutover/TypeScript retirement/final installed desktop remain OPEN."
+    },
+    "payable_original146": {
+      "issue": 717,
+      "status": "ACCEPTED146_original_supplier_payable_lifecycle",
+      "source_revision": "c2c9caacffd977b34869a0665853e426d77f8fce",
+      "backend_worker_commit": "9dac80c07e1c78b857321f998f770b5157dc6d14",
+      "backend_integrated": "cdcbe160",
+      "clients_worker_commit": "aef01839",
+      "clients_integrated": "40b4457c",
+      "helper_commit": "a321d79e",
+      "equivalent_clippy_fix": "293d0f66",
+      "helper_utc_fix": "c2c9caac",
+      "contract": "/tmp/rm146-payable-original-contract.md",
+      "report": "/tmp/rentemester-rust-reports/payable-original146b.json",
+      "report_sha256": "fd3ddc890c829ff12d0a75e942dd5dbe92ee64b38dab4e8b154e1a0e092e8bab",
+      "terminal_exit": 0,
+      "independent_verification": "/tmp/rm146-independent.log",
+      "focused_backend_checks": 5,
+      "focused_client_checks": 6,
+      "focused_logs": [
+        "/tmp/rm146-storage-retry.log",
+        "/tmp/rm146-native-human.log",
+        "/tmp/rm146-native-service.log",
+        "/tmp/rm146-application-retry.log",
+        "/tmp/rm146-server.log",
+        "/tmp/rm146-clients.log"
+      ],
+      "strict_clippy": "/tmp/rm146-integrated-clippy-final.log",
+      "normal_build": "/tmp/rm146-normal-build.log",
+      "actual_positive_service_write": true,
+      "normal_mfa_restart": true,
+      "filtered_list_client_parity": true,
+      "keyed_register_partial_pay_receipts": true,
+      "current_source_and_revocation_refused": true,
+      "native_routes_wire_unchanged": true,
+      "historical_typescript_receipt_migration_qualified": false,
+      "terminal_counts": {
+        "documents": 1,
+        "document_scan_evidence": 1,
+        "payables": 1,
+        "payable_payments": 2,
+        "bank_transactions": 2,
+        "journal_entries": 3
+      },
+      "owned_runtime_cleaned": true,
+      "owned_processes_stopped": true,
+      "failed_fixture_report": "/tmp/rentemester-rust-reports/payable-original146.json",
+      "isolated_utc_proof": "/tmp/rm146-isolated-date.json",
+      "worker_worktrees_removed": true,
+      "worktree_recovery": ".git/rentemester-recovery/archived146.json",
+      "remaining": "R44/R45 next original invoice query lifecycle: invoice list/find/status/overdue and flat MCP equivalents. Preserve original actual current-history asOf semantics explicitly, open versus overdue flag, exact filters/sorts/amount precedence and native currency/source/claim validation; shared native principal/claim readers and unchanged existing web routes. Actor/env/company-path/default launcher/exact profile errors, broader parity, historical TypeScript receipt migration, release/cutover/retirement/final installed desktop remain OPEN."
     }
   },
   "verified_history": [
@@ -9795,6 +9846,12 @@
       "code_revision": "97feb31f69260912d9aa2856c8eee83fa96b0f90",
       "spec_revision": "sha256:bc98636be4a972407adce0f817a76bb9d4bb7200cb292a70965e75ab62fae250",
       "state": "Group144 ACCEPTED original CLI suggestions/link/correction-plan/correction-apply and canonical flat MCP suggestion/correction plan/apply. Four original HTTP adapters reuse native scorer, full source-bound native link/correction plans and single accounting engine. Existing v1 human audit remains strict; versioned compatibility claims preserve original method/source/absent note and authenticated human/service kind+subject. Expected CLI principal is assertion only against current identity before write/replay. New link resolves only selected open unmatched tasks; natural replay has no new audit/resolution/posting. Original correction preserves raw key/reason and principal-bound durable receipt, with source and current access validation before replay. Backend4/client6 focused PASS; seven-crate all-target strict Clippy and normal server/CLI/MCP builds PASS. Actual normal-MFA original multi-client whole bank journey PASS, including original account lifecycle/import/query/React read, real journal link/reversal/replacement, forged principal/schema/confirmation refusals, same-key replay/current revocation/tampered selected original refusal and fresh-MFA restart. Independent terminal SQL verifies one native link/one correction, exact versioned provenance, exactly selected unmatched resolution,3bank/3journal/6lines/0docs and2CSV originals; hashes pin sources/binaries/helpers/web and successful runtime/processes cleaned. First144 run failed only helper audit-equality expectation after explicit replay; retained isolated all-nonaudit-table hash comparison and source contract prove the required idempotency_replay audit. Helper now requires exactly this receipt/current-actor/program audit and unchanged accounting/prior history; corrected144b uses identical Rust bytes. Both worker snapshots verified and worktrees removed; equivalent predicate Clippy adaptation recorded. Full original scope and prior evidence preserved. Next original direct-payable correction adapters using existing engine/fixture. Actor/env/company-path/default-launcher and exact original CLI profile error, broader parity/discovery/release/cutover/TypeScript retirement/final installed desktop remain OPEN."
+    },
+    {
+      "current_increment": "Group145 original direct-bank purchase/payable correction CLI/MCP with dated effects, restart and signed source-free restore accepted",
+      "code_revision": "e517e6f366807d5ba7100c1c27078cb7bbb24595",
+      "spec_revision": "sha256:bc98636be4a972407adce0f817a76bb9d4bb7200cb292a70965e75ab62fae250",
+      "state": "Group145 ACCEPTED original bank direct-payable-plan/apply flags and flat MCP direct_bank_purchase_payable_correction_plan/apply. Additive strict16KiB original HTTP endpoints reuse same source-bound native fullplan/composite writer, native human routes/wire/keyed payload unchanged. Original plan current CompanyRead; apply current CompanyLedgerPost human and explicitly scoped service. CLI expectedPrincipal assertion is checked inside current fence before replay/write; no caller identity in MCP. Original flat result preserves full correction plus native idempotency receipt; logical correction.idempotent remains false on keyed replay while idempotency.replayed is true. Actual kind/subject bound in receipt, direct correction row and typed144 nested bank correction provenance. No new engine/schema/dependencies; mixed source/storage refusals remain typed non200. Backend4/client6 focused PASS (one local compile shadowing corrected before runtime); integrated7crate all-target strict Clippy and normal3binary build PASS after equivalent CLI allowed-flag predicate simplification. Actual existing normal-MFA fixture now uses passive web source/plan review then original CLI FIRST atomic apply, original CLI/MCP plus unchanged nativeHTTP same-key replay, conflict/source/date/financial proof, fresh-MFA restart and signed independently verified source-free restore to fresh normal owner. Original native web first-positive was not retested; accepted58 web proof preserved and native regression retained. Independent terminal SQL/source verification proves1document1bank4journals11lines1payable1payment1composite1nestedcorrection, exact immutable original/mirror/invoice/bank dates and amounts/current relation/current-principal provenance, source/binary/helper/web pins and successful owned cleanup. Both worker snapshots verified and worktrees removed. Full epic/open original parity/release/cutover/TypeScript retirement/final installed desktop scope remains intact."
     }
   ],
   "scope_clarifications": [
