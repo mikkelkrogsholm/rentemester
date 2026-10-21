@@ -204,6 +204,27 @@ pub fn validate_reversal(
     result.required_rules = required;
     Ok(result)
 }
+/// Pure advisory policy for a source-verified import. Only the internal storage
+/// import writer can establish the required immutable physical provenance.
+/// This function grants no authorization and normal manual admission stays strict.
+pub fn validate_historical_import(
+    request: &ManualJournal,
+    facts: &JournalFacts,
+    rules: &ManualJournalRules,
+    expected_version: &str,
+) -> Result<Validation, Error> {
+    if request.created_by_program.as_deref() != Some("rentemester-import-postings")
+        || request.document_id.is_some()
+        || request.source_bank_transaction_id.is_some()
+        || request.currency.as_str() != "DKK"
+    {
+        return Err(Error::new(
+            "invalid_context",
+            "historical import needs the derived DKK source adapter context",
+        ));
+    }
+    validate_policy(request, facts, rules, expected_version, true, true)
+}
 fn validate_policy(
     request: &ManualJournal,
     facts: &JournalFacts,
@@ -597,6 +618,10 @@ mod reversal_tests {
             manual.errors.iter().map(|e| e.code).collect::<Vec<_>>(),
             vec!["reserved_program", "vat_base_required", "document_required"]
         );
+        let imported =
+            validate_historical_import(&request, &facts, &rules, rules.version()).unwrap();
+        assert!(imported.ok);
+        assert!(imported.required_rules.contains(&journal_rules::DOCUMENT));
         let reversal = validate_reversal(
             &request,
             &facts,

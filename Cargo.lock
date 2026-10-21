@@ -6934,6 +6934,7 @@ version = "0.2.0"
 dependencies = [
  "mail-parser",
  "num-bigint 0.5.1",
+ "ryu-js",
  "serde",
  "serde_json",
  "sha2 0.10.9",

@@ -92,3 +92,6 @@ pub mod portfolio;
 pub mod agent_discovery;
 
 pub mod backup_policy;
+
+pub mod dinero_import;
+pub mod imported_receivables;
