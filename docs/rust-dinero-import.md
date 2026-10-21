@@ -154,5 +154,17 @@ inklusive BOM og linjeskift, bevares i åbningsposteringens uforanderlige
 auditdokumentation og den signerede databasebackup. Kontotilpasning,
 åbningspostering og kildebevis gemmes atomisk med den eksisterende Rust-motor.
 Den almindelige webvisning viser også denne bogførte åbningsbalance.
-Målrettede tests består; den samlede importerede ejerprøve er endnu ikke
-kvalificeret.
+Den samlede importerede ejerprøve består gennem normal MFA, kompileret CLI
+og MCP, første udgift i det eksisterende web-UI, forskudt regnskabsår og
+korrekt blokering af periodelukning ved manglende historisk dokumentation.
+Fuld audit, signeret backupkontrol og genstart består også. Den uafhængige
+kontrol er registreret som `native_synthetic_import127` i fremdriftsfilen.
+Gendannelse uden kildeprofil og installeret desktopaccept er ikke
+kvalificeret for denne udvidelse.
+
+
+Billy-parser er fortsat ikke en del af den registrerede oprindelige baseline.
+De eksisterende ønsker [#328](https://github.com/mikkelkrogsholm/rentemester/issues/328),
+[#329](https://github.com/mikkelkrogsholm/rentemester/issues/329) og
+[#330](https://github.com/mikkelkrogsholm/rentemester/issues/330) står fortsat
+åbne. Denne omskrivning lukker dem ikke eller opfinder en ny Billy-import.
