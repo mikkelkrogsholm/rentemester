@@ -1,15 +1,15 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "Group146 original supplier payable registration/list/partial-full payment and current receipts accepted",
-  "code_revision": "c2c9caacffd977b34869a0665853e426d77f8fce",
+  "current_increment": "Group147 original invoice list/find/status/overdue current-history and currency-safe query family accepted",
+  "code_revision": "4d898ed0f4b4a777f399010bc204b06b8cbd3180",
   "spec_revision": "sha256:bc98636be4a972407adce0f817a76bb9d4bb7200cb292a70965e75ab62fae250",
-  "state": "Group146 ACCEPTED original payable register/list/pay CLI and flat MCP payable_register/payable_list/payable_pay over one existing Rust writer and dated reader. Original filters, sort, exact Money totals and asOf/asOfDate precedence; original default UTC date retained. Current human/service grants, physical document and selected bank source before optional principal-bound durable receipts; first native mutation admission remains inside existing receipt closure. Registration and payment rule evidence retained, native routes and wire unchanged. Focused client6/backend5 PASS; fixture role version/session errors were isolated and corrected without weakening controls. Integrated7crate strict all-target Clippy and normal3binary build PASS; equivalent date predicate simplification only. Actual normal-MFA required scanner service original MCP keyed registration, exact HTTP/CLI/MCP filtered lists, creditor role remap, keyed partial50 and original CLI final75: one expense100/VAT25, original creditor3101, no replacement3102 postings, exact source bank balance125, duplicate bill/payment refusal. Physical selected CSV tamper refuses known receipt; restore has no financial effects. Normal owner MFA restart retains exact registration/partial receipts and historical partial openBalance75 after current full settlement; service revoked in held scan cannot publish, revoked original receipt/list calls refused after restart without rescan. Independent SQL/source verification and binary/helper/web pins/cleanup pass. First actual run failed only helper using Copenhagen portfolio date for UTC-default fixture; retained one-bill/no-payment profile isolated read-only, same product binaries passed corrected UTC fixture. Both worker snapshots preserve all nonignored work and worktrees removed. Full epic and original other-domain/actor/env/company-path/default launcher/release/cutover/TypeScript retirement/final installed desktop remain OPEN. Historical TypeScript raw-company receipt migration compatibility is not qualified.",
+  "state": "Group147 ACCEPTED original invoice list/find/status/overdue CLI and flat MCP through additive read-only HTTP and the shared native sales projection. All fiscal years, source filters/amount precedence/exact invoice-number matching/sort, issued-unposted safe reads, original current-history asOf-aging-only semantics and trusted Copenhagen default preserved. Full status histories reuse native principal/FX/credit/refund/loss/claim evidence. Original positive principal status open with separate overdue flag; foreign principal and DKK claims never mixed (null combined claim with explicit units/separate DKK claim balance). PEPPOL exposes only safe source summary; physical bank assurance verifies actual non-null references while retaining journal proof for valid unbanked history. Native web wire and writers unchanged. Client6/backend6 named cases, integrated7crate strict all-target Clippy and normal3binary build PASS. Three fixture assertion/access mistakes isolated and corrected without product-control changes; one zero-selected exact invocation excluded. Existing normal-MFA bad-debt130 run passed initial/partial original reads then exposed native sales HTTP UTC-day versus Copenhagen-day bug at remaining DKK settlement. Fixed4d898ed0 reuses trusted posting_time for both human/service, targeted server all-target strict/build PASS. Broad fixture was not repeated. Retained8journal ledger snapshot hash verified; exact source-bank date override refusal isolated (not a claim of reaching calendar future-date admission). Continued same authenticated synthetic fixture: current Copenhagen imported bank-day payment and separate compensation receipt accepted once, terminal original HTTP/CLI/MCP matrix/current history/amount precedence/foreign units and persisted-MFA-cookie restart PASS, plus full audit/VAT/signed backup. Fresh MFA baseline restart and prior130 evidence retained; no fresh MFA after final continuation restart claimed. Independent SQL proves4documents4bank10journals2invoice-payments3losses1claim-payment, old8journals/lines unchanged, physical originals and artifact/helper/web pins match. Owned processes stopped; before-ledger snapshot and completed failed/resumed fixture intentionally retained, not claimed cleaned. Both worker snapshots hash verified and worktrees removed. Full epic remains OPEN; original mutations, actor/env/company-path/default launcher/exact errors, discovery, migration and release/cutover/TypeScript retirement/final installed desktop retain original scope.",
   "issues_closed": [
     701
   ],
   "next": [
-    "R44/R45 next original invoice query lifecycle: invoice list/find/status/overdue and flat MCP equivalents. Preserve original actual current-history asOf semantics explicitly, open versus overdue flag, exact filters/sorts/amount precedence and native currency/source/claim validation; shared native principal/claim readers and unchanged existing web routes. Actor/env/company-path/default launcher/exact profile errors, broader parity, historical TypeScript receipt migration, release/cutover/retirement/final installed desktop remain OPEN.",
+    "R44/R45 next original invoice issuance→posting→bank settlement→credit note→refund→147 status lifecycle via original CLI --input/ID-or-number and MCP structured payload. Reuse native sales/settlement/credit/refund writers, preserve supplied totals/customer terms and immutable artifacts; general configured revenue account/explicit choice, no hardcoded company chart. apply-payment is a real native domain gap (optional existing journal, not an alias to bank settlement); repair-posting, claim wrappers/calculations and full original parity remain OPEN, together with actor/env/company-path/default launcher/errors, historical receipt migration, release/cutover/retirement/final installed desktop.",
     "Installed desktop acceptance is explicitly deferred to the very end by the user. Preserve prepared Group100 profile; collect remaining native automation, closure, recovery and packaging checks for final installed acceptance without requesting screen unlock during development.",
     "J03/R50 and remaining R54 scope: only still-supported operation closure/recovery, nonempty scheduler handoff, hostile/older clone and post-cutover rollback requirements. Group99 qualifies managed installed J06 flow, not every R54 acceptance item.",
     "Signed distribution/update/cutover evidence must match actual full Rust replacement; retain all existing completion gates and TypeScript retirement gate.",
@@ -8217,6 +8217,76 @@
       "worker_worktrees_removed": true,
       "worktree_recovery": ".git/rentemester-recovery/archived146.json",
       "remaining": "R44/R45 next original invoice query lifecycle: invoice list/find/status/overdue and flat MCP equivalents. Preserve original actual current-history asOf semantics explicitly, open versus overdue flag, exact filters/sorts/amount precedence and native currency/source/claim validation; shared native principal/claim readers and unchanged existing web routes. Actor/env/company-path/default launcher/exact profile errors, broader parity, historical TypeScript receipt migration, release/cutover/retirement/final installed desktop remain OPEN."
+    },
+    "invoice_original147": {
+      "issue": 717,
+      "status": "ACCEPTED147_original_invoice_query_family",
+      "source_revision": "4d898ed0f4b4a777f399010bc204b06b8cbd3180",
+      "backend_worker_commit": "ed8ffe67",
+      "backend_integrated": "1da42d3a",
+      "clients_worker_commit": "7b8daa50",
+      "clients_integrated": "00d8b4f6",
+      "helper_commit": "77f4cc29",
+      "contract": "/tmp/rm147-invoice-original-contract.md",
+      "report": "/tmp/rentemester-rust-reports/invoice-original147-continuation-fixed.json",
+      "report_sha256": "709fc70303d5831796973f52acdff1c736d547d8d579121b28032b66280bbb91",
+      "terminal_exit": 0,
+      "independent_verification": "/tmp/rm147-independent-continuation.log",
+      "native_sales_date_fix": "4d898ed0",
+      "date_fix_clippy": "/tmp/rm147-date-fix-clippy.log",
+      "date_fix_build": "/tmp/rm147-date-fix-build.log",
+      "initial_failed_full_report": "/tmp/rentemester-rust-reports/invoice-original147.json",
+      "initial_continuation_predicate_failure": "/tmp/rentemester-rust-reports/invoice-original147-continuation.json",
+      "isolated_source_bank_date_refusal": "/tmp/rm147-future-isolated-fixed.json",
+      "focused_backend_checks": 6,
+      "focused_client_checks": 6,
+      "focused_logs": [
+        "/tmp/rm147-storage.log",
+        "/tmp/rm147-storage-filter-final.log",
+        "/tmp/rm147-app-final.log",
+        "/tmp/rm147-http.log",
+        "/tmp/rm147-native-sales.log",
+        "/tmp/rm147-clients.log"
+      ],
+      "failed_fixture_logs": [
+        "/tmp/rm147-storage.log",
+        "/tmp/rm147-storage-filter-retry.log",
+        "/tmp/rm147-app.log"
+      ],
+      "zero_selected_invocation_counted_as_pass": false,
+      "strict_clippy": "/tmp/rm147-integrated-clippy.log",
+      "normal_build": "/tmp/rm147-normal-build.log",
+      "original_current_history_aging_only": true,
+      "original_default_copenhagen_date": true,
+      "all_years_and_unposted_qualified": "Focused storage/application; actual runtime DKK/EUR within same current year",
+      "actual_positive_query_lifecycle": true,
+      "actual_mutations": "Retained native HTTP/web/CLI/MCP bad-debt130 writers; original issue/post/settlement/credit/refund wrappers not claimed",
+      "normal_mfa_baseline_restart": true,
+      "authenticated_persisted_mfa_cookie_restart": true,
+      "fresh_mfa_after_final_restart_claimed": false,
+      "filtered_list_client_parity": true,
+      "current_source_and_revocation_refused": "Focused source-tamper/user/service revocation; actual original revoked member read and exact physical originals",
+      "safe_peppol_summary": true,
+      "foreign_principal_and_dkk_claims_separate": true,
+      "native_web_wire_unchanged": true,
+      "signed_backup_verified": true,
+      "failure_ledger_snapshot": {
+        "path": "/tmp/rentemester-rust-reports/invoice-original147-continuation.before.sqlite",
+        "sha256": "eec954e56524c4153884a3b52d741e35c2ff50d7cead15dc447a51f02b2e2391"
+      },
+      "terminal_counts": {
+        "documents": 4,
+        "bank_transactions": 4,
+        "journal_entries": 10,
+        "invoice_payments": 2,
+        "invoice_bad_debt_writeoffs": 3,
+        "invoice_claim_payments": 1
+      },
+      "owned_runtime_cleaned": false,
+      "owned_processes_stopped": true,
+      "worker_worktrees_removed": true,
+      "worktree_recovery": ".git/rentemester-recovery/archived147.json",
+      "remaining": "R44/R45 next original invoice issuance→posting→bank settlement→credit note→refund→147 status lifecycle via original CLI --input/ID-or-number and MCP structured payload. Reuse native sales/settlement/credit/refund writers, preserve supplied totals/customer terms and immutable artifacts; general configured revenue account/explicit choice, no hardcoded company chart. apply-payment is a real native domain gap (optional existing journal, not an alias to bank settlement); repair-posting, claim wrappers/calculations and full original parity remain OPEN, together with actor/env/company-path/default launcher/errors, historical receipt migration, release/cutover/retirement/final installed desktop."
     }
   },
   "verified_history": [
@@ -9852,6 +9922,12 @@
       "code_revision": "e517e6f366807d5ba7100c1c27078cb7bbb24595",
       "spec_revision": "sha256:bc98636be4a972407adce0f817a76bb9d4bb7200cb292a70965e75ab62fae250",
       "state": "Group145 ACCEPTED original bank direct-payable-plan/apply flags and flat MCP direct_bank_purchase_payable_correction_plan/apply. Additive strict16KiB original HTTP endpoints reuse same source-bound native fullplan/composite writer, native human routes/wire/keyed payload unchanged. Original plan current CompanyRead; apply current CompanyLedgerPost human and explicitly scoped service. CLI expectedPrincipal assertion is checked inside current fence before replay/write; no caller identity in MCP. Original flat result preserves full correction plus native idempotency receipt; logical correction.idempotent remains false on keyed replay while idempotency.replayed is true. Actual kind/subject bound in receipt, direct correction row and typed144 nested bank correction provenance. No new engine/schema/dependencies; mixed source/storage refusals remain typed non200. Backend4/client6 focused PASS (one local compile shadowing corrected before runtime); integrated7crate all-target strict Clippy and normal3binary build PASS after equivalent CLI allowed-flag predicate simplification. Actual existing normal-MFA fixture now uses passive web source/plan review then original CLI FIRST atomic apply, original CLI/MCP plus unchanged nativeHTTP same-key replay, conflict/source/date/financial proof, fresh-MFA restart and signed independently verified source-free restore to fresh normal owner. Original native web first-positive was not retested; accepted58 web proof preserved and native regression retained. Independent terminal SQL/source verification proves1document1bank4journals11lines1payable1payment1composite1nestedcorrection, exact immutable original/mirror/invoice/bank dates and amounts/current relation/current-principal provenance, source/binary/helper/web pins and successful owned cleanup. Both worker snapshots verified and worktrees removed. Full epic/open original parity/release/cutover/TypeScript retirement/final installed desktop scope remains intact."
+    },
+    {
+      "current_increment": "Group146 original supplier payable registration/list/partial-full payment and current receipts accepted",
+      "code_revision": "c2c9caacffd977b34869a0665853e426d77f8fce",
+      "spec_revision": "sha256:bc98636be4a972407adce0f817a76bb9d4bb7200cb292a70965e75ab62fae250",
+      "state": "Group146 ACCEPTED original payable register/list/pay CLI and flat MCP payable_register/payable_list/payable_pay over one existing Rust writer and dated reader. Original filters, sort, exact Money totals and asOf/asOfDate precedence; original default UTC date retained. Current human/service grants, physical document and selected bank source before optional principal-bound durable receipts; first native mutation admission remains inside existing receipt closure. Registration and payment rule evidence retained, native routes and wire unchanged. Focused client6/backend5 PASS; fixture role version/session errors were isolated and corrected without weakening controls. Integrated7crate strict all-target Clippy and normal3binary build PASS; equivalent date predicate simplification only. Actual normal-MFA required scanner service original MCP keyed registration, exact HTTP/CLI/MCP filtered lists, creditor role remap, keyed partial50 and original CLI final75: one expense100/VAT25, original creditor3101, no replacement3102 postings, exact source bank balance125, duplicate bill/payment refusal. Physical selected CSV tamper refuses known receipt; restore has no financial effects. Normal owner MFA restart retains exact registration/partial receipts and historical partial openBalance75 after current full settlement; service revoked in held scan cannot publish, revoked original receipt/list calls refused after restart without rescan. Independent SQL/source verification and binary/helper/web pins/cleanup pass. First actual run failed only helper using Copenhagen portfolio date for UTC-default fixture; retained one-bill/no-payment profile isolated read-only, same product binaries passed corrected UTC fixture. Both worker snapshots preserve all nonignored work and worktrees removed. Full epic and original other-domain/actor/env/company-path/default launcher/release/cutover/TypeScript retirement/final installed desktop remain OPEN. Historical TypeScript raw-company receipt migration compatibility is not qualified."
     }
   ],
   "scope_clarifications": [
