@@ -464,9 +464,9 @@ pub fn register_and_post(
 }
 
 #[cfg(test)]
-mod tests {
+pub(crate) mod tests {
     use super::*;
-    pub(super) fn fixture() -> rusqlite::Connection {
+    pub(crate) fn fixture() -> rusqlite::Connection {
         fixture_with(
             json!({"issueDate":"2026-10-18","buyer":{"name":"Synthetic Buyer","address":"Synthetic Street 2","vatOrCvr":"DK12345678"},"lines":[{"description":"Synthetic service","quantity":1,"unitPriceExVat":1000}]}),
             false,
