@@ -10,6 +10,7 @@ export function createBankQueriesProof(page: Page, base: string, work: string, m
   const prefix = '/api/companies/synthetic/', ownerFile = join(work, 'bank-owner.cookie'), memberFile = join(work, 'bank-member.cookie');
   let step = 'setup', today = '', old = '', complete = false, stable: any, selected: any, originalId = 0, replacementId = 0, reversalId = 0;
   let sources: { sha256: string; bytesBase64: string }[] = [];
+  const importReceipts: any[] = [];
   const need = (v: unknown, message: string) => { if (!v) { const error = Error(message); error.name = 'BankQueries_' + step + '_' + message.replace(/[^A-Za-z0-9_]/g, '_').slice(0, 80); throw error; } };
   const hash = (v: Buffer | string) => createHash('sha256').update(v).digest('hex');
   const query = (v: Record<string, any>) => new URLSearchParams(Object.entries(v).map(([k, value]) => [k, String(value)])).toString();
@@ -17,7 +18,7 @@ export function createBankQueriesProof(page: Page, base: string, work: string, m
   async function post(path: string, data: unknown) { const r = await page.request.post(base + path, { headers: { origin: base }, data }); const v = await r.json(); need(r.ok() && v.ok !== false, 'Setup_' + path); return v; }
   async function cookie(actor: Page, file: string) { rmSync(file, { force: true }); writeFileSync(file, (await actor.context().cookies(base)).map(c => `${c.name}=${c.value}`).join('; '), { mode: 0o600, flag: 'wx' }); }
   function cli(name: string, args: Record<string, any> = {}, file = ownerFile, denied = false, human = false) {
-    const commands: Record<string, string[]> = { list: ['bank', 'list'], report: ['reconcile', 'bank'], accounts: ['bank-account', 'list'] };
+    const commands: Record<string, string[]> = { list: ['bank', 'list'], report: ['reconcile', 'bank'], accounts: ['bank-account', 'list'], import: ['bank', 'import'] };
     const flags: Record<string, string> = { textMatch: 'text-match', includeInactive: 'include-inactive' };
     const r = spawnSync(join(work, 'rentemester-rust'), [...commands[name], '--server', base, '--allow-loopback-http', '--cookie-file', file, '--company', 'synthetic', ...(human ? [] : ['--json']), ...Object.entries(args).flatMap(([key, v]) => ['--' + (flags[key] ?? key), String(v)])], { encoding: 'utf8', timeout: 45000, maxBuffer: 16 * 1024 * 1024 });
     need(!r.error && r.status === (denied ? 1 : 0), 'Original_CLI_exit');
@@ -25,7 +26,7 @@ export function createBankQueriesProof(page: Page, base: string, work: string, m
     return human ? r.stdout : JSON.parse(r.stdout);
   }
   function mcp(name: string, args: Record<string, any> = {}, file = ownerFile, denied = false, schemaError = false) {
-    const names: Record<string, string> = { list: 'bank_list', report: 'reconcile_bank', accounts: 'bank_account_list' };
+    const names: Record<string, string> = { list: 'bank_list', report: 'reconcile_bank', accounts: 'bank_account_list', import: 'bank_import' };
     const wire = [{ jsonrpc: '2.0', id: 1, method: 'initialize', params: { protocolVersion: '2025-11-25', capabilities: {}, clientInfo: { name: 'synthetic-bank-queries141', version: '1' } } }, { jsonrpc: '2.0', method: 'notifications/initialized' }, { jsonrpc: '2.0', id: 2, method: 'tools/call', params: { name: names[name], arguments: { company: 'synthetic', ...args } } }].map(v => JSON.stringify(v)).join('\n') + '\n';
     const r = spawnSync(join(work, 'rentemester-mcp'), ['--server', base, '--allow-loopback-http', '--cookie-file', file], { input: wire, encoding: 'utf8', timeout: 45000, maxBuffer: 16 * 1024 * 1024 });
     const secret = readFileSync(file, 'utf8').trim(); need(!r.error && r.status === 0 && !r.stdout.includes(secret) && !r.stderr.includes(secret), 'MCP_transport_privacy');
@@ -74,7 +75,25 @@ export function createBankQueriesProof(page: Page, base: string, work: string, m
         { account: 'synthetic-query-dkk', csvContent: `transaction_date,text,amount,currency,reference\n${old},Synthetic old query141,7.25,DKK,OLD141\n${today},Synthetic current query141,24.14,DKK,CURRENT141\n` },
         { account: 'synthetic-query-eur', csvContent: `transaction_date,text,amount,currency,reference,amount_dkk,fx_rate_to_dkk\n${today},Synthetic FX query141,10.00,EUR,FX141,75.00,7.5\n` },
       ];
-      for (const data of csvs) { const v = await post(prefix + 'bank/import', { ...data, confirm: true }); need(v.import.sourceFileHash === hash(data.csvContent), 'Actual_source_import_hash'); sources.push({ sha256: v.import.sourceFileHash, bytesBase64: Buffer.from(data.csvContent).toString('base64') }); }
+      step = 'original_bank_import';
+      const files = csvs.map((data, i) => { const file = join(work, `bank-import142-${i}.csv`); writeFileSync(file, data.csvContent, { mode: 0o600, flag: 'wx' }); return file; });
+      const unconfirmed = mcp('import', { csvPath: join(work, 'absent142.csv') }, ownerFile, true);
+      need(unconfirmed.code === 'CONFIRM_REQUIRED', 'Import_confirmation_before_file_access');
+      for (const [i, data] of csvs.entries()) {
+        const receipt = i === 0 ? cli('import', { file: files[i], account: '  ' + data.account + '  ' }) : flattened(mcp('import', { ...data, confirm: true }));
+        need(receipt.ok && receipt.imported === (i === 0 ? 2 : 1) && receipt.skippedDuplicates === 0 && receipt.exceptionsCreated === receipt.imported && receipt.bankAccountSlug === data.account && receipt.sourceFileHash === hash(data.csvContent) && Array.isArray(receipt.errors) && receipt.errors.length === 0, 'Original_import_exact_counts_and_source');
+        const duplicate = i === 0 ? flattened(mcp('import', { csvPath: files[i], csvContent: 'ignored inline payload', account: data.account, confirm: true })) : cli('import', { file: files[i], account: data.account });
+        need(duplicate.ok && duplicate.imported === 0 && duplicate.skippedDuplicates === receipt.imported && duplicate.sourceFileHash === receipt.sourceFileHash && duplicate.exceptionsCreated === 0, 'Original_import_duplicate_no_rows_or_exceptions');
+        importReceipts.push({ receipt, duplicate }); sources.push({ sha256: receipt.sourceFileHash, bytesBase64: Buffer.from(data.csvContent).toString('base64') });
+      }
+      const missing = mcp('import', { csvPath: join(work, 'absent142.csv'), csvContent: csvs[0].csvContent, confirm: true }, ownerFile, true);
+      need(missing.ok === false, 'Missing_selected_file_does_not_fall_back_inline');
+      const refusedResponse = await page.request.post(base + prefix + 'bank/import-original', { headers: { origin: base }, data: { ...csvs[0], account: 'missing-import142', confirm: true } });
+      const refusedImport = await refusedResponse.json();
+      need(refusedResponse.status() === 200 && refusedImport.ok === false && refusedImport.data === undefined && refusedImport.errors.length > 0, 'Original_import_business_refusal');
+      need(isDeepStrictEqual(mcp('import', { ...csvs[0], account: 'missing-import142', confirm: true }, ownerFile, true), refusedImport), 'Original_import_MCP_business_errors');
+      need(isDeepStrictEqual(cli('import', { file: files[0], account: 'missing-import142' }, ownerFile, true), flattened(refusedImport)), 'Original_import_CLI_business_errors');
+      for (const file of files) rmSync(file);
       const rows = (await canonical('list')).data.rows, row = rows.find((r: any) => r.reference === 'CURRENT141'), fx = rows.find((r: any) => r.reference === 'FX141'); need(row && fx, 'Actual_imported_row_ids'); selected = { bankId: row.id, fxAccountId: fx.bankAccountId };
       async function journal(text: string, equity: string, key: string) { return post(prefix + 'manual-journal', { confirm: true, input: { format: 'rentemester-manual-journal-post/1', expectedRuleVersion: (await get(prefix + 'journal')).journal.nativePosting.ruleVersion, idempotencyKey: key, request: { transactionDate: today, text, currency: 'DKK', lines: [{ accountNo: '1741', debitAmount: '24.14', creditAmount: '0.00' }, { accountNo: equity, debitAmount: '0.00', creditAmount: '24.14' }] } } }); }
       step = 'real_link_reversal_correction';
@@ -105,7 +124,7 @@ export function createBankQueriesProof(page: Page, base: string, work: string, m
       const file = join(work, 'workspace/synthetic/bank/processed', sources[1].sha256 + '.txt'), bytes = readFileSync(file); writeFileSync(file, Buffer.from('Synthetic corrupt source141\n'));
       try { const r = await page.request.get(base + endpoint('list')); need(!r.ok(), 'Unmatched_original_corruption_refused'); mcp('list', {}, ownerFile, true); cli('list', {}, ownerFile, true); } finally { writeFileSync(file, bytes); }
       await sourceFiles(); await unchanged(); complete = true;
-      return { qualified: true, ordinaryMfa: true, originalBankQueryQualified: true, reversedChainRefused: true, sourceCorruptionRefused: true, currentRevocationRefused: true, sources, today, old, selected, originalId, replacementId, reversalId, projections: proof, accountingFingerprint: hash(JSON.stringify(stable)), installedNativeQualified: false, sourceFreeRestoreQualified: false };
+      return { qualified: true, ordinaryMfa: true, originalBankQueryQualified: true, originalBankImportQualified: true, importReceipts, reversedChainRefused: true, sourceCorruptionRefused: true, currentRevocationRefused: true, sources, today, old, selected, originalId, replacementId, reversalId, projections: proof, accountingFingerprint: hash(JSON.stringify(stable)), installedNativeQualified: false, sourceFreeRestoreQualified: false };
     },
     async reopen() { need(complete, 'Completed_fixture'); await cookie(page, ownerFile); await unchanged(); const proof = await projections(); rmSync(ownerFile); rmSync(memberFile); return { qualified: true, ordinaryMfa: true, exactNormalMfaRestartState: true, projections: proof, accountingFingerprint: hash(JSON.stringify(stable)), installedNativeQualified: false, sourceFreeRestoreQualified: false }; },
   };

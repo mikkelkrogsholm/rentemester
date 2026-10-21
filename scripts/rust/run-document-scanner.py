@@ -802,7 +802,7 @@ db.close();process.stdout.write(JSON.stringify(out));"""
                     raise RuntimeError('Standalone report browser controller failed')
                 report.update(status='passed',currentAction='complete',installedNativeQualified=False,sourceFreeRestoreQualified=False)
                 if args.bank_queries:
-                    report.update(workflow='original_bank_queries_reconciliation',bankQueriesQualified=True,bankQueriesRestartQualified=True)
+                    report.update(workflow='original_bank_import_queries_reconciliation',bankQueriesQualified=True,bankQueriesRestartQualified=True,bankOriginalImportQualified=report['results']['service-run'].get('originalBankImportQualified', False))
                 elif (args.local_runtime_join or args.local_runtime_mcp):
                     report.update(workflow='local_mcp_same_rust_owner_unix_socket' if args.local_runtime_mcp else 'local_cli_same_rust_owner_unix_socket',localRuntimeQualified=True,localRuntimeRestartQualified=True,localRuntimeMcpQualified=args.local_runtime_mcp)
                 elif args.saft_artifact:
