@@ -393,3 +393,219 @@ fn self_supersession_is_refused_without_changing_approved_context_or_events() {
         before
     );
 }
+
+#[derive(Default)]
+struct RejectingScopes {
+    calls: Vec<Vec<String>>,
+}
+impl crate::backup_status::CompanyScopes for RejectingScopes {
+    fn require(
+        &mut self,
+        _control: &rusqlite::Transaction<'_>,
+        _clock: &dyn Clock,
+        slugs: &[String],
+    ) -> Result<(), rentemester_engine::Error> {
+        self.calls.push(slugs.to_vec());
+        Err(error("backup_locked"))
+    }
+}
+#[test]
+fn backup_scope_follows_authority_and_source_visibility_before_any_knowledge_effect() {
+    let (_d, mut c, cookies, p, cat) = fixture();
+    let input = proposal(json!("Synthetic guarded context"), "2026-01-01");
+    let mut backup = RejectingScopes::default();
+    let before = c.total_changes();
+    let failure = execute_scoped(
+        &mut c,
+        &cookies,
+        &Fixed,
+        &p,
+        &cat,
+        "a",
+        Action::Propose(&input),
+        &mut backup,
+    )
+    .unwrap_err();
+    assert_eq!(failure.error.code, "backup_locked");
+    assert_eq!(backup.calls, vec![vec!["a".to_owned()]]);
+    assert_eq!(c.total_changes(), before);
+    let created = execute(
+        &mut c,
+        &cookies,
+        &Fixed,
+        &p,
+        &cat,
+        "a",
+        Action::Propose(&input),
+    )
+    .unwrap();
+    let id = created["assertion"]["assertionId"]
+        .as_str()
+        .unwrap()
+        .to_owned();
+    let before = c.total_changes();
+    let review = Review {
+        assertion_id: id.clone(),
+        decision: "approved".into(),
+        reason: None,
+    };
+    assert_eq!(
+        execute_scoped(
+            &mut c,
+            &cookies,
+            &Fixed,
+            &p,
+            &cat,
+            "a",
+            Action::Review(&review),
+            &mut backup
+        )
+        .unwrap_err()
+        .error
+        .code,
+        "backup_locked"
+    );
+    assert_eq!(c.total_changes(), before);
+    execute(
+        &mut c,
+        &cookies,
+        &Fixed,
+        &p,
+        &cat,
+        "a",
+        Action::Review(&review),
+    )
+    .unwrap();
+    let before = c.total_changes();
+    let replacement = Supersede {
+        assertion_id: id,
+        replacement: proposal(json!("Synthetic replacement"), "2026-01-01"),
+    };
+    assert_eq!(
+        execute_scoped(
+            &mut c,
+            &cookies,
+            &Fixed,
+            &p,
+            &cat,
+            "a",
+            Action::Supersede(&replacement),
+            &mut backup
+        )
+        .unwrap_err()
+        .error
+        .code,
+        "backup_locked"
+    );
+    assert_eq!(c.total_changes(), before);
+    let calls = backup.calls.len();
+    execute_scoped(
+        &mut c,
+        &cookies,
+        &Fixed,
+        &p,
+        &cat,
+        "a",
+        Action::Read {
+            as_of: None,
+            include_proposed: true,
+        },
+        &mut backup,
+    )
+    .unwrap();
+    assert_eq!(backup.calls.len(), calls);
+    let foreign = execute(
+        &mut c,
+        &cookies,
+        &Fixed,
+        &p,
+        &cat,
+        "b",
+        Action::Propose(&input),
+    )
+    .unwrap();
+    let foreign_id = foreign["assertion"]["assertionId"]
+        .as_str()
+        .unwrap()
+        .to_owned();
+    let rejected = Review {
+        assertion_id: foreign_id.clone(),
+        decision: "rejected".into(),
+        reason: None,
+    };
+    assert_eq!(
+        execute_scoped(
+            &mut c,
+            &cookies,
+            &Fixed,
+            &p,
+            &cat,
+            "a",
+            Action::Review(&rejected),
+            &mut backup
+        )
+        .unwrap_err()
+        .error
+        .code,
+        "knowledge_not_found"
+    );
+    let foreign_replacement = Supersede {
+        assertion_id: foreign_id,
+        replacement: proposal(json!("Wrong company replacement"), "2026-01-01"),
+    };
+    assert_eq!(
+        execute_scoped(
+            &mut c,
+            &cookies,
+            &Fixed,
+            &p,
+            &cat,
+            "a",
+            Action::Supersede(&foreign_replacement),
+            &mut backup
+        )
+        .unwrap_err()
+        .error
+        .code,
+        "knowledge_not_found"
+    );
+    assert_eq!(backup.calls.len(), calls);
+    let mut hidden = proposal(json!("Hidden source"), "2026-01-01");
+    hidden.source.kind = "corporate_record".into();
+    hidden.source.r#ref = "missing-record".into();
+    assert_eq!(
+        execute_scoped(
+            &mut c,
+            &cookies,
+            &Fixed,
+            &p,
+            &cat,
+            "a",
+            Action::Propose(&hidden),
+            &mut backup
+        )
+        .unwrap_err()
+        .error
+        .code,
+        "knowledge_source_unavailable"
+    );
+    assert_eq!(backup.calls.len(), calls);
+    c.execute_batch("INSERT INTO rm_company_membership_events(user_id,company_slug,event_type,company_role,actor) VALUES('u','a','grant','reader','user:u')").unwrap();
+    assert_eq!(
+        execute_scoped(
+            &mut c,
+            &cookies,
+            &Fixed,
+            &p,
+            &cat,
+            "a",
+            Action::Propose(&input),
+            &mut backup
+        )
+        .unwrap_err()
+        .error
+        .code,
+        "access_denied"
+    );
+    assert_eq!(backup.calls.len(), calls);
+}

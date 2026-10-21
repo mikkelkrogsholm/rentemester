@@ -18,7 +18,8 @@ pub enum Action<'a> {
     Review(&'a Review),
     Supersede(&'a Supersede),
 }
-pub fn execute(
+#[allow(clippy::too_many_arguments)]
+pub fn execute_scoped(
     db: &mut Connection,
     cookies: &CookieVerifier,
     clock: &dyn Clock,
@@ -26,6 +27,7 @@ pub fn execute(
     catalog: &Catalog,
     slug: &str,
     action: Action<'_>,
+    backup: &mut dyn crate::backup_status::CompanyScopes,
 ) -> Result<Value, Failure> {
     crate::control_fence::connection_ready(db).map_err(|e| failure(e, false))?;
     if !cookies.accepts_session(proof) || proof.workspace() != catalog.workspace {
@@ -79,6 +81,19 @@ pub fn execute(
         {
             return Err(error("access_denied"));
         }
+        // Rejected reviews and supersessions still target an existing
+        // company-scoped assertion. Establish its visibility before exposing
+        // the selected company's backup fence; approved review does this in
+        // the source lookup below.
+        match &action {
+            Action::Review(i) if i.decision != "approved" => {
+                storage::inspect(&tx, slug, &i.assertion_id)?;
+            }
+            Action::Supersede(i) => {
+                storage::inspect(&tx, slug, &i.assertion_id)?;
+            }
+            _ => {}
+        }
         let source = match &action {
             Action::Propose(i) => Some((i.source.kind.clone(), i.source.r#ref.clone())),
             Action::Supersede(i) => Some((
@@ -116,6 +131,9 @@ pub fn execute(
                 &writable,
             )
             .map_err(|_| error("knowledge_source_unavailable"))?;
+        }
+        if write {
+            backup.require(&tx, clock, &[slug.to_owned()])?;
         }
         let id = if matches!(action, Action::Propose(_) | Action::Supersede(_)) {
             format!(
@@ -157,6 +175,27 @@ pub fn execute(
             Err(failure(e, reusable))
         }
     }
+}
+#[cfg(test)]
+pub(crate) fn execute(
+    db: &mut Connection,
+    cookies: &CookieVerifier,
+    clock: &dyn Clock,
+    proof: &VerifiedCookie,
+    catalog: &Catalog,
+    slug: &str,
+    action: Action<'_>,
+) -> Result<Value, Failure> {
+    execute_scoped(
+        db,
+        cookies,
+        clock,
+        proof,
+        catalog,
+        slug,
+        action,
+        &mut crate::backup_status::UnlockedTestScopes,
+    )
 }
 #[cfg(test)]
 mod tests;

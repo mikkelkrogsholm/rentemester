@@ -299,3 +299,149 @@ fn sensitive_corporate_and_party_references_recheck_current_source_visibility() 
         .is_err()
     );
 }
+
+#[derive(Default)]
+struct RejectingScopes {
+    calls: Vec<Vec<String>>,
+}
+impl crate::backup_status::CompanyScopes for RejectingScopes {
+    fn require(
+        &mut self,
+        _control: &rusqlite::Transaction<'_>,
+        _clock: &dyn Clock,
+        slugs: &[String],
+    ) -> Result<(), rentemester_engine::Error> {
+        self.calls.push(slugs.to_vec());
+        Err(error("backup_locked"))
+    }
+}
+#[test]
+fn ownership_proposal_review_apply_fence_affected_companies_only_after_full_authority() {
+    let (_d, mut c, cookies, p, cat) = fixture();
+    let v = reviewer(&c, &cookies);
+    let i = input("guarded-ownership");
+    let mut backup = RejectingScopes::default();
+    let before = c.total_changes();
+    assert_eq!(
+        execute_scoped(
+            &mut c,
+            &cookies,
+            &Fixed,
+            &p,
+            &cat,
+            "a",
+            Action::Propose(&i),
+            &mut backup
+        )
+        .unwrap_err()
+        .error
+        .code,
+        "backup_locked"
+    );
+    assert_eq!(backup.calls, vec![vec!["a".to_owned(), "b".to_owned()]]);
+    assert_eq!(c.total_changes(), before);
+    let proposed = execute(&mut c, &cookies, &Fixed, &p, &cat, "a", Action::Propose(&i)).unwrap();
+    let review = Review {
+        snapshot_id: "guarded-ownership".into(),
+        decision: "approved".into(),
+    };
+    let before = c.total_changes();
+    assert_eq!(
+        execute_scoped(
+            &mut c,
+            &cookies,
+            &Fixed,
+            &v,
+            &cat,
+            "a",
+            Action::Review(&review),
+            &mut backup
+        )
+        .unwrap_err()
+        .error
+        .code,
+        "backup_locked"
+    );
+    assert_eq!(c.total_changes(), before);
+    execute(
+        &mut c,
+        &cookies,
+        &Fixed,
+        &v,
+        &cat,
+        "a",
+        Action::Review(&review),
+    )
+    .unwrap();
+    let apply = Apply {
+        snapshot_id: "guarded-ownership".into(),
+        snapshot_hash: proposed["snapshot"]["snapshotHash"]
+            .as_str()
+            .unwrap()
+            .into(),
+        diff_hash: proposed["snapshot"]["diffHash"].as_str().unwrap().into(),
+    };
+    let before = c.total_changes();
+    assert_eq!(
+        execute_scoped(
+            &mut c,
+            &cookies,
+            &Fixed,
+            &v,
+            &cat,
+            "a",
+            Action::Apply(&apply),
+            &mut backup
+        )
+        .unwrap_err()
+        .error
+        .code,
+        "backup_locked"
+    );
+    assert_eq!(c.total_changes(), before);
+    let calls = backup.calls.len();
+    execute_scoped(
+        &mut c,
+        &cookies,
+        &Fixed,
+        &p,
+        &cat,
+        "a",
+        Action::Read("2026-01-01"),
+        &mut backup,
+    )
+    .unwrap();
+    execute_scoped(
+        &mut c,
+        &cookies,
+        &Fixed,
+        &p,
+        &cat,
+        "a",
+        Action::History {
+            snapshot_id: None,
+            as_of: None,
+        },
+        &mut backup,
+    )
+    .unwrap();
+    assert_eq!(backup.calls.len(), calls);
+    c.execute_batch("INSERT INTO rm_company_membership_events(user_id,company_slug,event_type,actor) VALUES('u','b','revoke','user:u')").unwrap();
+    assert_ne!(
+        execute_scoped(
+            &mut c,
+            &cookies,
+            &Fixed,
+            &p,
+            &cat,
+            "a",
+            Action::Propose(&i),
+            &mut backup
+        )
+        .unwrap_err()
+        .error
+        .code,
+        "backup_locked"
+    );
+    assert_eq!(backup.calls.len(), calls);
+}

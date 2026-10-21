@@ -21,7 +21,8 @@ pub enum Action<'a> {
     Review(&'a Review),
     Apply(&'a Apply),
 }
-pub fn execute(
+#[allow(clippy::too_many_arguments)]
+pub fn execute_scoped(
     db: &mut Connection,
     cookies: &CookieVerifier,
     clock: &dyn Clock,
@@ -29,6 +30,7 @@ pub fn execute(
     catalog: &Catalog,
     slug: &str,
     action: Action<'_>,
+    backup: &mut dyn crate::backup_status::CompanyScopes,
 ) -> Result<Value, Failure> {
     crate::control_fence::connection_ready(db).map_err(|e| failure(e, false))?;
     if !cookies.accepts_session(proof) || proof.workspace() != catalog.workspace {
@@ -144,6 +146,8 @@ pub fn execute(
             Action::Propose(input) => {
                 let facts = storage::normalized(&input.facts)?;
                 require_write(&tx, &facts, &scopes)?;
+                let mut affected = BTreeSet::from([slug.to_owned()]);
+                affected.extend(facts.iter().flat_map(Fact::companies));
                 // The returned diff includes prior observations for these
                 // endpoints, so producing it must not disclose hidden sources.
                 for (_, old) in storage::approved(&tx)? {
@@ -156,11 +160,15 @@ pub fn execute(
                 if let Some(raw_id) = &input.snapshot_id {
                     let id = rentemester_engine::company_knowledge::text(raw_id, 80)?;
                     match storage::load(&tx, &id) {
-                        Ok(old) => require_write(&tx, &old.facts, &scopes)?,
+                        Ok(old) => {
+                            require_write(&tx, &old.facts, &scopes)?;
+                            affected.extend(old.facts.iter().flat_map(Fact::companies));
+                        }
                         Err(e) if e.code == "ownership_not_found" => {}
                         Err(e) => return Err(e),
                     }
                 }
+                backup.require(&tx, clock, &affected.into_iter().collect::<Vec<_>>())?;
                 let generated = format!(
                     "ownership-{}",
                     rentemester_runtime::auth::new_token()
@@ -174,11 +182,17 @@ pub fn execute(
             Action::Review(input) => {
                 let s = storage::load(&tx, &input.snapshot_id)?;
                 require_write(&tx, &s.facts, &scopes)?;
+                let mut affected = BTreeSet::from([slug.to_owned()]);
+                affected.extend(s.facts.iter().flat_map(Fact::companies));
+                backup.require(&tx, clock, &affected.into_iter().collect::<Vec<_>>())?;
                 Ok(json!({"snapshot":storage::review(&tx,input,&actor,pid,&stamp)?}))
             }
             Action::Apply(input) => {
                 let s = storage::load(&tx, &input.snapshot_id)?;
                 require_write(&tx, &s.facts, &scopes)?;
+                let mut affected = BTreeSet::from([slug.to_owned()]);
+                affected.extend(s.facts.iter().flat_map(Fact::companies));
+                backup.require(&tx, clock, &affected.into_iter().collect::<Vec<_>>())?;
                 storage::apply(&tx, input, &actor, pid, &stamp)
             }
         }
@@ -269,6 +283,27 @@ fn read_graph(
         }
     }
     Ok(storage::graph(&at, &all, &visible))
+}
+#[cfg(test)]
+pub(crate) fn execute(
+    db: &mut Connection,
+    cookies: &CookieVerifier,
+    clock: &dyn Clock,
+    proof: &VerifiedCookie,
+    catalog: &Catalog,
+    slug: &str,
+    action: Action<'_>,
+) -> Result<Value, Failure> {
+    execute_scoped(
+        db,
+        cookies,
+        clock,
+        proof,
+        catalog,
+        slug,
+        action,
+        &mut crate::backup_status::UnlockedTestScopes,
+    )
 }
 #[cfg(test)]
 mod tests;

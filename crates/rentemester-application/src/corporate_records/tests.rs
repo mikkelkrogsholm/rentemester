@@ -327,3 +327,239 @@ fn corporate_knowledge_source_is_rechecked_inside_current_control_scope() {
         .is_err()
     );
 }
+
+#[derive(Default)]
+struct RejectingScopes {
+    calls: Vec<Vec<String>>,
+}
+impl crate::backup_status::CompanyScopes for RejectingScopes {
+    fn require(
+        &mut self,
+        _control: &rusqlite::Transaction<'_>,
+        _clock: &dyn Clock,
+        slugs: &[String],
+    ) -> Result<(), rentemester_engine::Error> {
+        self.calls.push(slugs.to_vec());
+        Err(error("backup_locked"))
+    }
+}
+#[test]
+fn shared_corporate_metadata_requires_all_existing_and_new_company_scopes_after_full_auth() {
+    let (_d, mut c, cookies, p, cat) = fixture();
+    let mut backup = RejectingScopes::default();
+    let mut input = ingest("record-scoped");
+    input.links = Some(vec![storage::Link {
+        r#type: "company".into(),
+        id: " b ".into(),
+    }]);
+    let before = c.total_changes();
+    assert_eq!(
+        execute_scoped(
+            &mut c,
+            &cookies,
+            &Fixed,
+            &p,
+            &cat,
+            "a",
+            Action::Ingest(&input, b"Synthetic shared source"),
+            &mut backup
+        )
+        .unwrap_err()
+        .error
+        .code,
+        "backup_locked"
+    );
+    assert_eq!(backup.calls, vec![vec!["a".to_owned(), "b".to_owned()]]);
+    assert_eq!(c.total_changes(), before);
+    execute(
+        &mut c,
+        &cookies,
+        &Fixed,
+        &p,
+        &cat,
+        "a",
+        Action::Ingest(&input, b"Synthetic shared source"),
+    )
+    .unwrap();
+    let enrich = Enrich {
+        record_id: None,
+        assertion: "Synthetic rejected assertion".into(),
+    };
+    let before = c.total_changes();
+    assert_eq!(
+        execute_scoped(
+            &mut c,
+            &cookies,
+            &Fixed,
+            &p,
+            &cat,
+            "b",
+            Action::Enrich("record-scoped", &enrich),
+            &mut backup
+        )
+        .unwrap_err()
+        .error
+        .code,
+        "backup_locked"
+    );
+    assert_eq!(
+        backup.calls.last().unwrap(),
+        &vec!["a".to_owned(), "b".to_owned()]
+    );
+    assert_eq!(c.total_changes(), before);
+    // Existing-record ingest aliases cannot evade its original A+B scope.
+    let alias = ingest(" record-scoped ");
+    assert_eq!(
+        execute_scoped(
+            &mut c,
+            &cookies,
+            &Fixed,
+            &p,
+            &cat,
+            "b",
+            Action::Ingest(&alias, b"Synthetic shared source"),
+            &mut backup
+        )
+        .unwrap_err()
+        .error
+        .code,
+        "backup_locked"
+    );
+    assert_eq!(
+        backup.calls.last().unwrap(),
+        &vec!["a".to_owned(), "b".to_owned()]
+    );
+    let calls = backup.calls.len();
+    execute_scoped(
+        &mut c,
+        &cookies,
+        &Fixed,
+        &p,
+        &cat,
+        "b",
+        Action::Inspect("record-scoped"),
+        &mut backup,
+    )
+    .unwrap();
+    execute_scoped(
+        &mut c,
+        &cookies,
+        &Fixed,
+        &p,
+        &cat,
+        "b",
+        Action::Download("record-scoped"),
+        &mut backup,
+    )
+    .unwrap();
+    execute_scoped(
+        &mut c,
+        &cookies,
+        &Fixed,
+        &p,
+        &cat,
+        "b",
+        Action::List {
+            cursor: 0,
+            limit: 25,
+        },
+        &mut backup,
+    )
+    .unwrap();
+    assert_eq!(backup.calls.len(), calls);
+    c.execute_batch("INSERT INTO rm_company_membership_events(user_id,company_slug,event_type,actor) VALUES('u','a','revoke','user:u')").unwrap();
+    assert_ne!(
+        execute_scoped(
+            &mut c,
+            &cookies,
+            &Fixed,
+            &p,
+            &cat,
+            "b",
+            Action::Enrich("record-scoped", &enrich),
+            &mut backup
+        )
+        .unwrap_err()
+        .error
+        .code,
+        "backup_locked"
+    );
+    assert_eq!(backup.calls.len(), calls);
+}
+#[test]
+fn new_company_links_are_guarded_but_read_only_supersession_sources_are_not() {
+    let (_d, mut c, cookies, p, cat) = fixture();
+    let a = ingest("record-a-guard");
+    let b = ingest("record-b-source");
+    execute(
+        &mut c,
+        &cookies,
+        &Fixed,
+        &p,
+        &cat,
+        "a",
+        Action::Ingest(&a, b"Synthetic source A"),
+    )
+    .unwrap();
+    execute(
+        &mut c,
+        &cookies,
+        &Fixed,
+        &p,
+        &cat,
+        "b",
+        Action::Ingest(&b, b"Synthetic source B"),
+    )
+    .unwrap();
+    let mut backup = RejectingScopes::default();
+    let before = c.total_changes();
+    let link = LinkInput {
+        record_id: None,
+        r#type: "company".into(),
+        id: "b".into(),
+    };
+    assert_eq!(
+        execute_scoped(
+            &mut c,
+            &cookies,
+            &Fixed,
+            &p,
+            &cat,
+            "a",
+            Action::Link("record-a-guard", &link),
+            &mut backup
+        )
+        .unwrap_err()
+        .error
+        .code,
+        "backup_locked"
+    );
+    assert_eq!(
+        backup.calls.last().unwrap(),
+        &vec!["a".to_owned(), "b".to_owned()]
+    );
+    assert_eq!(c.total_changes(), before);
+    let replacement = Supersede {
+        record_id: None,
+        replacement_record_id: "record-b-source".into(),
+        reason: "Synthetic replacement reference".into(),
+    };
+    assert_eq!(
+        execute_scoped(
+            &mut c,
+            &cookies,
+            &Fixed,
+            &p,
+            &cat,
+            "a",
+            Action::Supersede("record-a-guard", &replacement),
+            &mut backup
+        )
+        .unwrap_err()
+        .error
+        .code,
+        "backup_locked"
+    );
+    assert_eq!(backup.calls.last().unwrap(), &vec!["a".to_owned()]);
+    assert_eq!(c.total_changes(), before);
+}

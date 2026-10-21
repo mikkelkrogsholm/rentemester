@@ -18,7 +18,8 @@ pub enum Action<'a> {
     Enrich(&'a str, &'a Enrich),
     Supersede(&'a str, &'a Supersede),
 }
-pub fn execute(
+#[allow(clippy::too_many_arguments)]
+pub fn execute_scoped(
     db: &mut Connection,
     cookies: &CookieVerifier,
     clock: &dyn Clock,
@@ -26,6 +27,7 @@ pub fn execute(
     catalog: &Catalog,
     slug: &str,
     action: Action<'_>,
+    backup: &mut dyn crate::backup_status::CompanyScopes,
 ) -> Result<Value, Failure> {
     crate::control_fence::connection_ready(db).map_err(|e| failure(e, false))?;
     if !cookies.accepts_session(proof) || proof.workspace() != catalog.workspace {
@@ -96,10 +98,12 @@ pub fn execute(
                 Ok(json!({"bytes":bytes,"sha256":storage::hash(&bytes)}))
             }
             Action::Ingest(input, bytes) => {
+                let mut affected = std::collections::BTreeSet::from([slug.to_owned()]);
                 if let Some(raw_id) = &input.record_id {
                     let id = rentemester_engine::company_knowledge::trim(raw_id);
                     if storage::exists(&tx, id)? {
                         require_write(&tx, id, &visible, &writable)?;
+                        affected.extend(storage::scopes(&tx, id)?);
                     }
                 }
                 let mut links = input.links.clone().unwrap_or_default();
@@ -112,7 +116,13 @@ pub fn execute(
                 });
                 for link in &links {
                     authorize_link(link, &visible, &writable)?;
+                    if link.r#type == "company" {
+                        affected.insert(
+                            rentemester_engine::company_knowledge::trim(&link.id).to_owned(),
+                        );
+                    }
                 }
+                backup.require(&tx, clock, &affected.into_iter().collect::<Vec<_>>())?;
                 let generated = format!(
                     "record-{}",
                     rentemester_runtime::auth::new_token()
@@ -130,17 +140,33 @@ pub fn execute(
                     id: input.id.clone(),
                 };
                 authorize_link(&link, &visible, &writable)?;
+                let mut affected = storage::scopes(&tx, id)?;
+                affected.insert(slug.to_owned());
+                if link.r#type == "company" {
+                    affected
+                        .insert(rentemester_engine::company_knowledge::trim(&link.id).to_owned());
+                }
+                backup.require(&tx, clock, &affected.into_iter().collect::<Vec<_>>())?;
                 storage::link(&tx, id, &link, &actor, &stamp).map(|r| json!({"record":r}))
             }
             Action::Enrich(id, input) => {
                 require_write(&tx, id, &visible, &writable)?;
                 check_id(id, input.record_id.as_deref())?;
+                let mut affected = storage::scopes(&tx, id)?;
+                affected.insert(slug.to_owned());
+                backup.require(&tx, clock, &affected.into_iter().collect::<Vec<_>>())?;
                 storage::enrich(&tx, id, input, &actor, &stamp)
             }
             Action::Supersede(id, input) => {
                 require_write(&tx, id, &visible, &writable)?;
                 check_id(id, input.record_id.as_deref())?;
                 require_write(&tx, &input.replacement_record_id, &visible, &writable)?;
+                // The replacement is read-only evidence; only the old record's
+                // metadata is appended. Keep authorization, without locking an
+                // unrelated company merely because it supplies a source.
+                let mut affected = storage::scopes(&tx, id)?;
+                affected.insert(slug.to_owned());
+                backup.require(&tx, clock, &affected.into_iter().collect::<Vec<_>>())?;
                 storage::supersede(&tx, id, input, &actor, &stamp)
             }
         }
@@ -204,6 +230,27 @@ fn require_write(
         return Err(error("access_denied"));
     }
     Ok(())
+}
+#[cfg(test)]
+pub(crate) fn execute(
+    db: &mut Connection,
+    cookies: &CookieVerifier,
+    clock: &dyn Clock,
+    proof: &VerifiedCookie,
+    catalog: &Catalog,
+    slug: &str,
+    action: Action<'_>,
+) -> Result<Value, Failure> {
+    execute_scoped(
+        db,
+        cookies,
+        clock,
+        proof,
+        catalog,
+        slug,
+        action,
+        &mut crate::backup_status::UnlockedTestScopes,
+    )
 }
 #[cfg(test)]
 mod tests;
