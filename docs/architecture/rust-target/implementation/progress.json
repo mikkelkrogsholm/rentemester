@@ -1,15 +1,15 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "Group133 original R32/#703 company dashboard JSON mapping after accepted132 dated reports",
-  "code_revision": "066c7563cbf8fb8cc9d21ac6f6137a4f84e90fc5",
+  "current_increment": "Group134 original MCP portfolio_overview report compatibility after accepted dashboardJSON133",
+  "code_revision": "f4193c18ae88ba9fb57814906fb49bed11a45730",
   "spec_revision": "sha256:bc98636be4a972407adce0f817a76bb9d4bb7200cb292a70965e75ab62fae250",
-  "state": "Group133 integrating original company dashboard JSON over one current-authorized Rust source transaction: datedprincipal and DKKcarrying totals, preservedoriginalfields/currentclaims-PEPPOL, unmatchedbank/tasks/VAT/audit and currentadminbackup. Storage3 plus application source/rights/noeffects1 and HTTPselector1 passed; strict/integratednormalMFA/restart pending. Accepted132/131/130/129/128/63/76 retained. Whole epic/TSretirement/packaging/cutover/finalinstalleddesktop remain OPEN.",
+  "state": "Group133 accepted atf4193c18: original company dashboardJSON fields, realinvoice125historical/current75plus125total200, currentclaims/PEPPOL metadata, sourceoriginals and currentbank/tasks/VAT/audit; readerCompanyRead with withheldadminbackup and retainedsessionrevocation pass. CLI/MCPbackingportfolio equalscanonicalHTTP atbothdates. ExactnormalMFArestart exceptfreshbackupcheckedAt, fullaudit3, independentSQL3journals8lines4docs2bank, pinnedartifacts and ownedcleanup PASS firstactualrun. Storage3/application1/HTTP1, strict4crateClippy and normalbins pass. Newworker worktree snapshotted/removed after verifiedintegration and scopedrootPEPPOLwire correction. Accepted132/131/130/129/128/63/76 retained. BoundedR01reportmap found missing original MCPportfolio_overview name; next134 bind originalname/wire compatibility with explicitserver selection while globalR44localworkspace/launcher/transport remainsOPEN. No missingCSV/PDF/staticHTML format identified in boundedfamilies; not wholeR32completion proof. Full epic/TSretirement/packaging/cutover/finalinstalleddesktop remainOPEN.",
   "issues_closed": [
     701
   ],
   "next": [
-    "Group133 map original GET /api/companies/:slug/dashboard?asOf onto shared current-source Rust projections. Reuse existing invoice/VAT/bank/exceptions/audit/backup readers; no second engine or newfeatures. Preserve scoped backup/admin authority truthfully. Next R31 originaltax/iXBRL; do not repeat accepted132/131/130 unchanged.",
+    "Group134 restore original MCPportfolio_overview name/contract through same Rustportfolio reader, inspect original workspace?/asOf? schema and envelope before binding. Preserve explicitserver/currentauth/source policy; full localworkspace/launcher and allglobalR44compatibility remainrequired, no fakealiasclaim for unsupportedselectors. Then R31annual/tax/iXBRL and remainingwholemission. Retain accepted133/132 unchanged without reruns.",
     "Installed desktop acceptance is explicitly deferred to the very end by the user. Preserve prepared Group100 profile; collect remaining native automation, closure, recovery and packaging checks for final installed acceptance without requesting screen unlock during development.",
     "J03/R50 and remaining R54 scope: only still-supported operation closure/recovery, nonempty scheduler handoff, hostile/older clone and post-cutover rollback requirements. Group99 qualifies managed installed J06 flow, not every R54 acceptance item.",
     "Signed distribution/update/cutover evidence must match actual full Rust replacement; retain all existing completion gates and TypeScript retirement gate.",
@@ -7378,7 +7378,7 @@
     },
     "dashboard_json133": {
       "issue": 703,
-      "status": "integrating_actual_acceptance_pending",
+      "status": "PASS first actual ordinaryMFA datedinvoice/partialreceipt/source/currentrights/adminbackup/noeffects/normalMFArestart",
       "worker_commit": "afd54b6388d90f408659b872e2d2b11b1140fe29",
       "contract": "/tmp/rm133-contract.md",
       "focused_tests": {
@@ -7401,8 +7401,135 @@
       },
       "preflight_correction": "Two invoice issuances retain4documents (JSON+PDF each), not2; expectedcounts corrected from actualsource beforefirstruntime",
       "scope": "Original GET dashboard?asOf JSON field names; canonical datedprincipal excludes futureinvoices, unknown due staysunknown, DKKcarrying totals avoidcurrency mixing. Currentclaims/PEPPOL/tasks/audit/localbackup explicitlylabelled; reader backup details null+company.admin. Importedreceivables separate, unavailablehistoricalnativefigures null, neverfakezero. No newengine/UI/CLI/MCP. NativePEPPOL prepared aliasqueued, acknowledgementtimestamp retained from verifiednativehistory/legacy metadata; existingdeliverydecisions unchanged.",
-      "actual_qualified": false,
-      "installed_desktop_qualified": false
+      "actual_qualified": true,
+      "installed_desktop_qualified": false,
+      "integration_revision": "f4193c18ae88ba9fb57814906fb49bed11a45730",
+      "strict_clippy": "/tmp/rm133-clippy.log",
+      "normal_build": "/tmp/rm133-normal-build.log",
+      "actual_report": "/tmp/rentemester-rust-reports/dashboard-json133.json",
+      "actual_sha256": "dd5fd334bbbf3308c16863684bd891c782a5e2aec7848ad30b83424724051842",
+      "actual_exit_code": 0,
+      "actual_first_run_passed": true,
+      "independent_verifier": "/tmp/rm133-independent-verification.py",
+      "independent_log": "/tmp/rm133-independent-verification.log",
+      "terminal_sql": {
+        "counts": {
+          "documents": 4,
+          "bank_transactions": 2,
+          "journal_entries": 3,
+          "journal_lines": 8
+        },
+        "headers": [
+          [
+            3,
+            "2026-00003",
+            "2026-10-20",
+            "posted",
+            null
+          ],
+          [
+            2,
+            "2026-00002",
+            "2026-10-19",
+            "posted",
+            null
+          ],
+          [
+            1,
+            "2026-00001",
+            "2026-10-01",
+            "posted",
+            null
+          ]
+        ],
+        "journalActors": [
+          [
+            "user:fdtlUCZbAeIo0GfwTb8hw2cVEUAUg_Jgtr5yhY9q2qY",
+            "rentemester-rust"
+          ],
+          [
+            "user:fdtlUCZbAeIo0GfwTb8hw2cVEUAUg_Jgtr5yhY9q2qY",
+            "rentemester-rust"
+          ],
+          [
+            "user:fdtlUCZbAeIo0GfwTb8hw2cVEUAUg_Jgtr5yhY9q2qY",
+            "rentemester-rust"
+          ]
+        ]
+      },
+      "artifacts": {
+        "server_binary": "09d771ebab8ef54737276d4c19cf61a4d90cc087d8717e41f9c06759dbf0bf34",
+        "cli_binary": "0b6927f8984ebf1a5485d6ff1765df93fe96e99f75783a18490dce46ed7837b8",
+        "mcp_binary": "b39908f5172db2c75d5a8156b3b1aaef4a1ef707759c0068d56dbaef2847dfc5"
+      },
+      "runner_sha256": "daf56f5e027e0b443259544d876a23910bc7eb293900ea8869850ef021bbe562",
+      "helper_sha256": "156e5b2003763915e94e831e3395e01cc9b04e834ee1b430cc29e31a79f04b0c",
+      "normal_restart": "Exact company books/dashboard projections/originals; only actual trusted backup.checkedAt observation timestamp normalized, no accounting/identity/provider fields removed",
+      "worktree_recovery": ".git/rentemester-recovery/archived133.json",
+      "worker_worktree_removed": true,
+      "root_peppol_wire_delta": "/tmp/rm133-root-peppol-wire.patch",
+      "root_peppol_scope": "Original acknowledgedAt derived from verified native delivered history/legacy metadata; prepared has existing queued provider event and maps to original queued alias; no delivery/permission/write changes. Non-null delivery paths retain existing74domain evidence, not a newactualprovider claim.",
+      "source_free_restore_qualified": false
+    },
+    "r32_original_report_surface_map": {
+      "scope": "Bounded R01 original report/read families; source mapping and retained accepted evidence, not a full mission completion audit",
+      "baseline": "docs/architecture/rust-target/implementation/baseline/inventory.json",
+      "mapped": [
+        {
+          "original": "journal list / journal_list, dates/status/pages",
+          "rust": "journal_history /journal/entries",
+          "evidence": "journal_history131"
+        },
+        {
+          "original": "report trial-balance/profit-loss/balance arbitrarydates",
+          "rust": "dated_reports /reports/{report}",
+          "evidence": "dated_reports132"
+        },
+        {
+          "original": "journal/trial-balance/income-statement/balance selectedyear/source/account",
+          "rust": "archive_reports",
+          "evidence": "platform63_archive_reports"
+        },
+        {
+          "original": "4CSV exports journal/trial-balance/income-statement/balance and3statementPDF",
+          "rust": "report_export /{report}/export",
+          "evidence": "platform63_archive_reports"
+        },
+        {
+          "original": "overview?year&asOf",
+          "rust": "archive_reports Resource::Overview",
+          "evidence": "verified_journeys Group5; platform63_archive_reports"
+        },
+        {
+          "original": "multi-year",
+          "rust": "product_http/multi_year.rs storage/multi_year.rs",
+          "evidence": "platform20_combined; verified_journeys"
+        },
+        {
+          "original": "HTTPportfolio / cashflow?year",
+          "rust": "portfolio_cashflow; nativeportfolio/cashflow clients",
+          "evidence": "group76; native_imported_portfolio128; dated_invoice_fx_loss130"
+        },
+        {
+          "original": "CLI staticdashboard HTML --out/as-of/open",
+          "rust": "dashboard_artifact/dashboard_html /dashboard/export",
+          "evidence": "static_dashboard_html129; dated_invoice_fx_loss130"
+        },
+        {
+          "original": "HTTP dashboard?asOf JSON",
+          "rust": "dashboard_json /dashboard",
+          "evidence": "dashboard_json133"
+        }
+      ],
+      "pending": [
+        {
+          "original": "MCP portfolio_overview(workspace?,asOf?)",
+          "finding": "Original name not implemented; current portfolio tool explicitlynotalias. Accepted native replacement alone doesnotprove originalcontract. Bind name/wire/disposition in134; retain localworkspace/launcher/fulltransport compatibility in globalR44."
+        }
+      ],
+      "excluded_owned_elsewhere": "R31 annual/tax/iXBRL; otherdomainreports; globalR44transport/envelope/local-launcher requirements remain required",
+      "no_additional_missing_export_format_found": true,
+      "r32_complete": false
     }
   },
   "verified_history": [
