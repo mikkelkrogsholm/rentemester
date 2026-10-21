@@ -4,12 +4,12 @@
   "current_increment": "Group135 R31 closed annual year -> exact tax preparation -> deterministic iXBRL and original CLI/MCP",
   "code_revision": "f4193c18ae88ba9fb57814906fb49bed11a45730",
   "spec_revision": "sha256:bc98636be4a972407adce0f817a76bb9d4bb7200cb292a70965e75ab62fae250",
-  "state": "Group135 core/client delivery integrated with root current-authority HTTP; focused tests passed. Integrated strict compilation and normalMFA annual->tax->iXBRL/restart acceptance pending. Sole issue706 integrating. Full R31 remaining export/J04 requirements, R32 localworkspace/R44, whole epic and final desktop remain open.",
+  "state": "Group135 ACCEPTED annual->tax->deterministic iXBRL original clients, real MFA/restart, XML20facts/contexts/units/equity independently parsed, exact representation881.25/89.06/970.31, current reader/revocation, sourceaudit2 and unchanged SQL2docs0bank2journals6lines. Unknownform remains explicit review (no fabricated ApS tax); positiveApS focused tests passed. Next R31 original authority export requestedAt/requester/deadline context missing from native accountant archive. Existing SAF-T23/24 evidence retained without rerun. Full R31/J04, R44/local launcher, epic and finaldesktop remain OPEN.",
   "issues_closed": [
     701
   ],
   "next": [
-    "Proceed R31 #706 annual preparation -> tax -> deterministic iXBRL using existing annual reader/fixtures; retain unfinished R32 original local workspace/default launcher requirements for R44, without closing #703 prematurely.",
+    "R31 #706 next necessary flow: original authority export profile/requestedAt/requester/four-week manifest context and original CLI/MCP mapping, reuse accepted accountant archive machinery; retain SAF-T platform23/platform24 and accepted annual135 without unchanged reruns.",
     "Installed desktop acceptance is explicitly deferred to the very end by the user. Preserve prepared Group100 profile; collect remaining native automation, closure, recovery and packaging checks for final installed acceptance without requesting screen unlock during development.",
     "J03/R50 and remaining R54 scope: only still-supported operation closure/recovery, nonempty scheduler handoff, hostile/older clone and post-cutover rollback requirements. Group99 qualifies managed installed J06 flow, not every R54 acceptance item.",
     "Signed distribution/update/cutover evidence must match actual full Rust replacement; retain all existing completion gates and TypeScript retirement gate.",
@@ -7591,9 +7591,9 @@
     },
     "annual_exports135": {
       "issue": 706,
-      "status": "integrated_focused_passed_actual_pending",
+      "status": "ACCEPTED_annual_tax_ixbrl",
       "contract": "/tmp/rm135-contract.md",
-      "actual_qualified": false,
+      "actual_qualified": true,
       "known_remaining": "Global R44 original local workspace/default launcher and complete failure-field parity still required, R31 full SAF-T/authority/context exports and J04, whole epic and final installeddesktop retained. Supplied invalid calendar/order is business exit1/errors[] with no invented financial values; missing flags remains usage2.",
       "fixture": "Existing runner/annual-client helper; two real synthetic originals, income1000 and representation118.75+VAT6.25; exact result881.25/addback89.06/taxable970.31, unknownform taxnull+review. PositiveApS22% focused synthetic test; no SQLidentity/profile seeds.",
       "workers": [
@@ -7613,7 +7613,26 @@
       "strict_clippy": "/tmp/rm135-clippy.log",
       "strict_clippy_passed": true,
       "normal_build": "/tmp/rm135-normal-build.log",
-      "normal_build_pending": true
+      "normal_build_pending": false,
+      "source_revision": "6454cd13",
+      "report": "/tmp/rentemester-rust-reports/annual-exports135.json",
+      "report_sha256": "332dcb5696f746d258ae76a215eb5345f40cd4f3465b3142885cd857cf95cdf9",
+      "independent_verification": "/tmp/rm135-independent-verification.log",
+      "independent_xml_parsing": true,
+      "actual_first_run_passed": true,
+      "normal_build_passed": true,
+      "terminal_exit": 0,
+      "restart_qualified": true,
+      "terminal_sql": {
+        "documents": 2,
+        "bank_transactions": 0,
+        "journal_entries": 2,
+        "journal_lines": 6
+      },
+      "worktree_recovery": ".git/rentemester-recovery/archived135.json",
+      "both_new_worktrees_removed": true,
+      "positive_ApS_tax_actual_qualified": false,
+      "positive_ApS_tax_focused_qualified": true
     }
   },
   "verified_history": [
