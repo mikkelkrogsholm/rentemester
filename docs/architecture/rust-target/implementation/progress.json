@@ -8485,6 +8485,25 @@
     "policy": "docs/development-workflow.md",
     "current_issue": 701,
     "progress_file_role": "evidence and resume facts only; GitHub labels are authoritative for task state",
-    "product_acceptance_unchanged": true
+    "product_acceptance_unchanged": true,
+    "ci": {
+      "status": "published and actual issue-event trigger verified",
+      "pull_request": "https://github.com/mikkelkrogsholm/rentemester/pull/728",
+      "default_branch_commit": "72d80e17abd7e064dcf1a08c933d41e0f781a0fa",
+      "default_branch_run": "https://github.com/mikkelkrogsholm/rentemester/actions/runs/39575219413",
+      "automatic_issue_event_run": "https://github.com/mikkelkrogsholm/rentemester/actions/runs/39575296716",
+      "events": [
+        "pull_request",
+        "managed issues changes",
+        "relevant main publication push",
+        "workflow_dispatch"
+      ],
+      "permissions": [
+        "contents:read",
+        "issues:read"
+      ],
+      "rewrites_issue_status_automatically": false,
+      "product_acceptance_unchanged": true
+    }
   }
 }

@@ -69,11 +69,19 @@ det enkelte worktrees Git-metadata og bliver ikke et ekstra opgaveboard.
 Hooks har ingen netværksafhængighed. Installation bevarer eksisterende
 Graphify-hooks og afviser synligt at overskrive andre hooks.
 
-Den versionsstyrede CI-kontrol kører de hurtige workflowtests og kontrollerer
-issue-referencer i nye relevante commits. Historiske commits fra før
-indførelsen omskrives ikke. CI-filen træder i kraft i GitHub, når den er
-publiceret på den relevante gren; lokal installation af hooks kræver ikke
-et push af den ufærdige Rust-omskrivning.
+CI-kontrollen er publiceret på `main` gennem
+[PR #728](https://github.com/mikkelkrogsholm/rentemester/pull/728).
+På pull requests kører den de hurtige workflowtests og kontrollerer
+issue-referencer i nye relevante commits; historiske commits omskrives ikke.
+Et særskilt job med læserettigheder kontrollerer alle 56 aktuelle GitHub-
+statusser ved relevante issueændringer, pull requests, publicering og manuel
+workflow-start. Urelaterede issue-events springer statusopslaget over.
+
+Både [publiceringskørslen](https://github.com/mikkelkrogsholm/rentemester/actions/runs/39575219413)
+og en [faktisk automatisk issue-kørsel](https://github.com/mikkelkrogsholm/rentemester/actions/runs/39575296716)
+består. En almindelig redigering af epic'en udløste den sidste prøve.
+Automatikken validerer og rapporterer; den omskriver ikke labels eller lukker
+issues. Lokale hooks kræver fortsat installation i hver clone.
 
 Hooks kan omgås med Git, og GitHub-labels kan ændres manuelt. Den samlede
 GitHub-kontrol finder dublerede statusser, open/done-modstrid, manglende

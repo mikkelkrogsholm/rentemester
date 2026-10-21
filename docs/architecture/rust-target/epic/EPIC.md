@@ -244,3 +244,12 @@ workflow checker validates status exclusivity, open/closed consistency and
 work-in-progress limit against GitHub. These checks do not replace the lead's
 judgment or independently prove a cited test report. The implementation
 progress file stores evidence/recovery facts, not a second work queue.
+
+## Published workflow automation
+
+PR #728 published the workflow and original issue map on the default branch
+at `72d80e17abd7e064dcf1a08c933d41e0f781a0fa`. All six PR checks passed.
+The publication push and a real epic edit both produced successful workflow
+runs (39575219413 and 39575296716). Current managed issue states are checked
+automatically with read-only permissions on relevant issue changes and PRs.
+No original product acceptance gate is closed by this infrastructure result.
