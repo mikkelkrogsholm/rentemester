@@ -4,7 +4,7 @@
   "current_increment": "Group134 original MCP portfolio_overview report compatibility after accepted dashboardJSON133",
   "code_revision": "f4193c18ae88ba9fb57814906fb49bed11a45730",
   "spec_revision": "sha256:bc98636be4a972407adce0f817a76bb9d4bb7200cb292a70965e75ab62fae250",
-  "state": "Group133 accepted atf4193c18: original company dashboardJSON fields, realinvoice125historical/current75plus125total200, currentclaims/PEPPOL metadata, sourceoriginals and currentbank/tasks/VAT/audit; readerCompanyRead with withheldadminbackup and retainedsessionrevocation pass. CLI/MCPbackingportfolio equalscanonicalHTTP atbothdates. ExactnormalMFArestart exceptfreshbackupcheckedAt, fullaudit3, independentSQL3journals8lines4docs2bank, pinnedartifacts and ownedcleanup PASS firstactualrun. Storage3/application1/HTTP1, strict4crateClippy and normalbins pass. Newworker worktree snapshotted/removed after verifiedintegration and scopedrootPEPPOLwire correction. Accepted132/131/130/129/128/63/76 retained. BoundedR01reportmap found missing original MCPportfolio_overview name; next134 bind originalname/wire compatibility with explicitserver selection while globalR44localworkspace/launcher/transport remainsOPEN. No missingCSV/PDF/staticHTML format identified in boundedfamilies; not wholeR32completion proof. Full epic/TSretirement/packaging/cutover/finalinstalleddesktop remainOPEN.",
+  "state": "Group134 integrating original connectedserver MCPportfolio_overview name/DTO/errors[] over shared current-authorized Rustworkspace source loop. No aggregate/consolidation; originalrow fields use canonical datedDKKprincipal/currentadminbackup/VAT/audit/tasks. Corestorage2/host2/application1 and SDK3/MCP4 passed; HTTP/strict/actualMFArestart pending. GlobalR44 filesystem workspace/env/defaultlauncher and allothertransport compatibility remainOPEN explicitly; nonemptyMCPworkspacepath definitivelyrefuses beforeHTTP/no localopen. Accepted133/132/131/130/129/128/63/76 retained. Full epic/TSretirement/distribution/cutover/finalinstalleddesktop remainOPEN.",
   "issues_closed": [
     701
   ],
@@ -7530,6 +7530,44 @@
       "excluded_owned_elsewhere": "R31 annual/tax/iXBRL; otherdomainreports; globalR44transport/envelope/local-launcher requirements remain required",
       "no_additional_missing_export_format_found": true,
       "r32_complete": false
+    },
+    "portfolio_overview134": {
+      "issue": 703,
+      "status": "integrating_actual_acceptance_pending",
+      "core_commit": "fc78fa696aa3690a6ed2cfd9b43d7102e9d00ab0",
+      "clients_commit": "f1fb7519",
+      "contract": "/tmp/rm134-contract.md",
+      "focused_tests": {
+        "storage": {
+          "passed": 2,
+          "log": "/tmp/rm134-storage.log"
+        },
+        "host": {
+          "passed": 2,
+          "log": "/tmp/rm134-host.log"
+        },
+        "application": {
+          "passed": 1,
+          "log": "/tmp/rm134-app.log"
+        },
+        "sdk_mcp": {
+          "passed": 7,
+          "log": "/tmp/rm134-clients.log"
+        },
+        "http": {
+          "passed": 1,
+          "log": "/tmp/rm134-http-tests.log"
+        }
+      },
+      "scope": "Originaltoolname+serverboundDTO{asOf,companyCount,companies}/errors[]; safe visible-only rows and no crosscompanysum. DefaultasOfUTC, currentmetadataCopenhagen. OriginalVATnonregistered/errornullsentinel and actualdeadline; currentreaderbackupnulls. Schemaformat/null/unknownkeys protocolinvalidparams, realcalendar and unsupportedfilesystem selector businesserrors beforeHTTP. Safe admitted domainerror may be row; physical/schema/hash/control/backup/rollback/restore/authority failures wholefail. SameRustsource engine, no newUI/CLI/domainmath.",
+      "known_remaining": "Full originalworkspacefilesystem/RENTEMESTER_WORKSPACE local/defaultlauncher and otherglobalR44envelopes/service capabilities stillrequired; pathselection isexplicitrefusal, notsilentlyignored or falselyqualified.",
+      "fixture_strategy": "Reuse133data setup only; new134HTTP/MCP/legacyenvelope/readeradmin/revocation projections, no unchanged133wholeacceptancererun. NormalMFA/restart/fullsourceaudit/independentSQL artifactpins.",
+      "actual_qualified": false,
+      "installed_desktop_qualified": false,
+      "filesystem_workspace_selection_qualified": false,
+      "focused_passed": 13,
+      "strict_clippy": "/tmp/rm134-clippy.log",
+      "development_corrections": "Two host compile defects (leftover closure invocation and private journal-hash access) corrected directly before passing focused host tests; original nonregistered/error VAT null sentinel corrected from source and changed storage projection tests rerun. No runtime fixture failures or weakened guards."
     }
   },
   "verified_history": [

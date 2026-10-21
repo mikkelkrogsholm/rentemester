@@ -21,6 +21,11 @@ pub struct Authorized {
     pub group_supported: bool,
 }
 impl Authorized {
+    /// Current subject proved under the held control authorization barrier.
+    pub fn subject(&self) -> &str {
+        &self.subject
+    }
+
     pub fn selection(&self) -> Selection {
         Selection {
             companies: self.companies.clone(),

@@ -7,7 +7,7 @@ use rentemester_application::{
 use rentemester_engine::Error;
 use rentemester_runtime::auth::CookieVerifier;
 use rusqlite::TransactionBehavior;
-use serde_json::Value;
+use serde_json::{Value, json};
 
 fn unavailable(_: impl std::fmt::Display) -> Error {
     Error::new(
@@ -24,7 +24,19 @@ impl Owner {
         proof: &VerifiedCookie,
         as_of: &str,
     ) -> AuthAttempt<Value> {
-        self.financial_overview(cookies, clock, proof, as_of, None)
+        self.financial_overview(cookies, clock, proof, as_of, None, None)
+    }
+
+    pub fn portfolio_overview(
+        &mut self,
+        cookies: &CookieVerifier,
+        clock: &dyn Clock,
+        proof: &VerifiedCookie,
+        as_of: &str,
+        today: &str,
+    ) -> AuthAttempt<Value> {
+        rentemester_engine::fiscal_year::Date::parse(today).map_err(|_| OwnerError::Context)?;
+        self.financial_overview(cookies, clock, proof, as_of, None, Some(today))
     }
 
     pub fn cashflow(
@@ -36,7 +48,7 @@ impl Owner {
         today: &str,
         year: Option<&str>,
     ) -> AuthAttempt<Value> {
-        self.financial_overview(cookies, clock, proof, today, Some((slug, year)))
+        self.financial_overview(cookies, clock, proof, today, Some((slug, year)), None)
     }
 
     fn financial_overview(
@@ -46,6 +58,7 @@ impl Owner {
         proof: &VerifiedCookie,
         as_of: &str,
         cashflow: Option<(&str, Option<&str>)>,
+        overview_today: Option<&str>,
     ) -> AuthAttempt<Value> {
         let catalog = self.catalog()?;
         self.admit_auth(cookies.workspace())?;
@@ -88,7 +101,7 @@ impl Owner {
                     .transaction_with_behavior(TransactionBehavior::Deferred)
                     .map_err(unavailable)?;
                 let changes = read.total_changes();
-                let source = (|| {
+                let assured = (|| {
                     if !rentemester_application::periods::verify_sources(&read, &mut slots.guard)?
                         .is_empty()
                     {
@@ -98,24 +111,80 @@ impl Owner {
                         &read,
                         &mut slots.guard,
                     )?;
+                    if overview_today.is_some() {
+                        rentemester_storage::portfolio_overview::require_integrity(&read)?;
+                    }
+                    Ok(())
+                })();
+                let source_assured = assured.is_ok();
+                let source = assured.and_then(|()| {
+                    if let Some(today) = overview_today {
+                        let dashboard =
+                            rentemester_application::dashboard_json::compose_authorized(
+                                &tx,
+                                &read,
+                                rentemester_application::control_fence::CompanySelection {
+                                    workspace: &catalog.workspace,
+                                    slug,
+                                    registered: true,
+                                    archived: false,
+                                },
+                                auth.subject(),
+                                clock,
+                                as_of,
+                                today,
+                            )?;
+                        return rentemester_storage::portfolio_overview::row(&dashboard);
+                    }
                     match cashflow {
                         Some((_, year)) => {
                             rentemester_storage::cashflow::read(&read, slug, as_of, year)
                         }
                         None => rentemester_storage::portfolio::company(&read, slug, as_of),
                     }
-                })();
+                });
                 let unchanged = read.total_changes() == changes;
                 read.rollback().map_err(unavailable)?;
                 if !unchanged {
                     return Err(unavailable("readonly source changed data"));
                 }
-                sources.push(source?);
+                let source = match source {
+                    Ok(value) => value,
+                    Err(error)
+                        if overview_today.is_some()
+                            && source_assured
+                            && !matches!(
+                                error.code,
+                                "access_denied"
+                                    | "invalid_control"
+                                    | "dashboard_source_unavailable"
+                                    | "backup_status_unavailable"
+                                    | "backup_state_unavailable"
+                                    | "backup_inventory_unavailable"
+                                    | "invalid_credentials"
+                                    | "control_busy_or_unavailable"
+                            ) =>
+                    {
+                        let name = &catalog
+                            .companies
+                            .iter()
+                            .find(|c| c.slug == *slug)
+                            .ok_or_else(|| unavailable("visible company catalog differs"))?
+                            .name;
+                        json!({"slug":slug,"name":name,"ok":false,"error":"company source unavailable","code":error.code})
+                    }
+                    Err(error) => return Err(error),
+                };
+                sources.push(source);
             }
             if app::authorize_portfolio(&tx, cookies, clock, proof, &catalog, as_of)? != auth
                 || tx.total_changes() != before
             {
                 return Err(unavailable("current authority changed"));
+            }
+            if overview_today.is_some() {
+                sources.sort_by(|a, b| a["slug"].as_str().cmp(&b["slug"].as_str()));
+                return Ok(json!({"asOf":as_of,"companyCount":sources.len(),"companies":sources}));
             }
             if cashflow.is_some() {
                 sources
@@ -154,3 +223,6 @@ impl Owner {
         Ok(Attempt { outcome, retired })
     }
 }
+
+#[cfg(all(test, target_os = "macos"))]
+mod tests;

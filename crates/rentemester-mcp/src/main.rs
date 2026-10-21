@@ -2,6 +2,7 @@
 //! https://modelcontextprotocol.io/specification/2025-11-25/basic/transports
 //! https://modelcontextprotocol.io/specification/2025-11-25/basic/lifecycle
 //! https://modelcontextprotocol.io/specification/2025-11-25/server/tools
+mod portfolio_overview;
 mod journal_history;
 mod dashboard_artifact;
 mod invoice_bad_debt;

@@ -85,6 +85,7 @@ fn json_preserves_read_effects_current_access_admin_backup_and_physical_evidence
     assert_eq!(first["company"]["name"], "Synthetic HTML <company>");
     assert_eq!(first["backup"]["available"], false);
     for field in [
+        "backupDue",
         "backupsFound",
         "latestBackupAt",
         "daysSinceLatestBackup",
@@ -135,6 +136,7 @@ fn json_preserves_read_effects_current_access_admin_backup_and_physical_evidence
     .value;
     assert_eq!(owner["backup"]["available"], true);
     assert_eq!(owner["backup"]["backupsFound"], 0);
+    assert!(owner["backup"]["backupDue"].is_boolean());
     assert!(owner["backup"]["latestBackupAt"].is_null());
     assert_eq!(owner["backup"]["scope"], "local-retained-snapshots");
     assert_eq!(before, (control.total_changes(), company.total_changes()));

@@ -5,8 +5,8 @@ use crate::{
     documents::Context,
 };
 use rentemester_engine::Error;
-use rentemester_runtime::namespace::NamespaceGuard;
-use rusqlite::Connection;
+use rentemester_runtime::{auth::Clock, namespace::NamespaceGuard};
+use rusqlite::{Connection, Transaction};
 use serde_json::{Value, json};
 pub fn read(
     control: &mut Connection,
@@ -16,8 +16,12 @@ pub fn read(
     as_of: &str,
     today: &str,
 ) -> Result<Committed<Value>, Failure> {
-    let workspace = context.selection.workspace;
-    let slug = context.selection.slug;
+    let selection = crate::control_fence::CompanySelection {
+        workspace: context.selection.workspace,
+        slug: context.selection.slug,
+        registered: context.selection.registered,
+        archived: context.selection.archived,
+    };
     let clock = context.clock;
     control_fence::execute_cookie_both(
         control,
@@ -39,26 +43,38 @@ pub fn read(
                 ));
             }
             crate::archive_import::verify_physical(company, guard)?;
-            let mut snapshot =
-                rentemester_storage::dashboard_json::read(company, slug, as_of, today)?;
-            let role =
-                rentemester_storage::control_access::observe_company_role(control, subject, slug)?;
-            let admin = role
-                .map(|r| serde_json::from_value::<CompanyRole>(Value::String(r)))
-                .transpose()
-                .map_err(|_| Error::new("invalid_control", "Invalid company role"))?
-                .is_some_and(|r| company_role_allows(r, Permission::CompanyAdmin));
-            snapshot["backup"] = if admin {
-                let status =
-                    crate::backup_status::data(control, company, workspace, slug, clock, true)?;
-                let b = &status["backup"];
-                json!({"backupsFound":b["backupsFound"],"latestBackupAt":b["latestBackupAt"],"daysSinceLatestBackup":b["daysSinceLatestBackup"],"hasActivitySinceBackup":b["hasActivitySinceBackup"],"available":true,"scope":b["scope"],"checkedAt":b["checkedAt"],"errors":b["errors"],"basis":"current_state","remoteSyncVerified":false})
-            } else {
-                json!({"backupsFound":null,"latestBackupAt":null,"daysSinceLatestBackup":null,"hasActivitySinceBackup":null,"available":false,"requiredPermission":"company.admin","scope":"local-retained-snapshots","checkedAt":null,"errors":[],"basis":"current_state"})
-            };
-            Ok(snapshot)
+            compose_authorized(control, company, selection, subject, clock, as_of, today)
         },
     )
+}
+/// Compose only after current CompanyRead authority and physical-source checks
+/// have succeeded on these same held control/company transactions.
+pub fn compose_authorized(
+    control: &Transaction<'_>,
+    company: &Transaction<'_>,
+    selection: crate::control_fence::CompanySelection<'_>,
+    subject: &str,
+    clock: &dyn Clock,
+    as_of: &str,
+    today: &str,
+) -> Result<Value, Error> {
+    let workspace = selection.workspace;
+    let slug = selection.slug;
+    let mut snapshot = rentemester_storage::dashboard_json::read(company, slug, as_of, today)?;
+    let role = rentemester_storage::control_access::observe_company_role(control, subject, slug)?;
+    let admin = role
+        .map(|r| serde_json::from_value::<CompanyRole>(Value::String(r)))
+        .transpose()
+        .map_err(|_| Error::new("invalid_control", "Invalid company role"))?
+        .is_some_and(|r| company_role_allows(r, Permission::CompanyAdmin));
+    snapshot["backup"] = if admin {
+        let status = crate::backup_status::data(control, company, workspace, slug, clock, true)?;
+        let b = &status["backup"];
+        json!({"backupDue":b["backupDue"],"backupsFound":b["backupsFound"],"latestBackupAt":b["latestBackupAt"],"daysSinceLatestBackup":b["daysSinceLatestBackup"],"hasActivitySinceBackup":b["hasActivitySinceBackup"],"available":true,"scope":b["scope"],"checkedAt":b["checkedAt"],"errors":b["errors"],"basis":"current_state","remoteSyncVerified":false})
+    } else {
+        json!({"backupDue":null,"backupsFound":null,"latestBackupAt":null,"daysSinceLatestBackup":null,"hasActivitySinceBackup":null,"available":false,"requiredPermission":"company.admin","scope":"local-retained-snapshots","checkedAt":null,"errors":[],"basis":"current_state"})
+    };
+    Ok(snapshot)
 }
 #[cfg(all(test, target_os = "macos"))]
 mod tests;

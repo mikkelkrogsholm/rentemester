@@ -658,3 +658,5 @@ pub mod journal_history;
 pub mod dated_reports;
 
 pub mod dashboard_json;
+
+pub mod portfolio_overview;

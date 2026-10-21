@@ -17,6 +17,7 @@ mod dashboard_artifact;
 mod dashboard_json;
 mod cfo_analytics;
 mod portfolio_cashflow;
+mod portfolio_overview;
 mod saft;
 mod company_knowledge;
 mod workspace_inbox;
@@ -134,6 +135,7 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
         .route("/api/companies/{slug}/archive-import/{importId}/original",get(archive_import::handle))
         .route("/api/cfo-analytics",get(cfo_analytics::handle))
         .route("/api/portfolio",get(portfolio_cashflow::portfolio))
+        .route("/api/portfolio/overview",get(portfolio_overview::read))
         .route("/api/companies/{slug}/cashflow",get(portfolio_cashflow::cashflow))
         .route("/api/companies/{slug}/payables/direct-bank-correction/plan", post(payable_correction::handle))
         .route("/api/companies/{slug}/payables/direct-bank-correction/apply", post(payable_correction::handle))
