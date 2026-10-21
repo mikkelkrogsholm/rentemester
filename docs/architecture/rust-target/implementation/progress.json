@@ -1,15 +1,15 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "Group141 original bank list, reconciliation report and account list through shared Rust server/CLI/MCP accepted",
-  "code_revision": "bad20c5bf816d67377d7956a3e5b3aac529896a8",
+  "current_increment": "Group142 original bank import file/inline/duplicate/error receipts through shared Rust server/CLI/MCP accepted",
+  "code_revision": "71fbe50cf799ad8eb66f40c290795b3e0aba5c2b",
   "spec_revision": "sha256:bc98636be4a972407adce0f817a76bb9d4bb7200cb292a70965e75ab62fae250",
-  "state": "Group141 ACCEPTED original all-year bank queries/report/accounts via shared Rust server, original CLI and MCP names. Canonical filters/account/page metadata and original monetary units match exactly; three real rows across two years/two accounts include EUR10 versus DKK75. Real original journal/link/reversal requires typed422 refusal until reviewed correction to independently posted replacement. Current membership revocation and unmatched physical CSV corruption refuse; normal-MFA restart preserves exact query/report/account/book state. Independent terminal SQL confirms3bank/3journal/6lines/0docs, two exact original CSV hashes, corrected canonical relation and owner posting audit. First actual failed only helper503 expectation; retained-state GET proved existing422 mapping without financial writes, corrected assertion and one141b pass. Worker focused12checks, integrated strict6crate all-target Clippy and normal three-binary build retained. Worker snapshots/removal verified; successful runtime fully stopped/cleaned, failed fixture retained privately with manifest. All prior acceptance/full original scope preserved. Next original bank import bindings/receipts; actor/path/env/defaultlauncher, broader discovery, release/cutover/TS retirement and final installed desktop remain OPEN.",
+  "state": "Group142 ACCEPTED original CLI bank import --file and MCP bank_import csvPath/csvContent through same native Rust parser/import/source/audit transaction. Caller-local bounded raw bytes become canonicalbase64; nonempty path wins without inline fallback, MCP confirmation precedes file IO. Server-owned original receipts omit unset account/profile, expose original unmatched-only exceptions count while native receipt unchanged; trimmed account IDs/slugs supported. Only three explicit confirmed/reusable business-error codes map to legacy envelope; access/source/storage/unknown outcomes remain typed. Five backend and six client focused tests PASS; integrated strict6crate all-targetClippy and normal3binary build PASS. One actual ordinary-MFA shared-bank fixture PASS first try: CLIfile and MCPinline, cross-client exactduplicates with zero newrows/exceptions, suppliedpath precedence, missingconfirm refusal, unknownaccount exactserver/MCP/CLIerrors, original money/query/link/reversal/correction/currentrevocation/unmatched-source/restart all retained. Independent terminal SQL/source/hash/cleanup proof PASS. Both integrated workers snapshotted/verified/removed. Prior141and all full-goal evidence preserved. Unknown CLI profile retains safe native invalid-input error rather than exact legacy business wording; this exact-message gap and all actor/env/path/defaultlauncher scope remain explicit. Next bank-account create/update/payment-profile/deactivate/reactivate parity. Full epic/release/cutover/TS retirement/final installed desktop remain OPEN.",
   "issues_closed": [
     701
   ],
   "next": [
-    "R44/R45 original bank import journey: reuse Rust parser/import engine for original bank import CLI and bank_import MCP local-file/inline/confirmation/receipt parity, source/account/profile/duplicate and restart controls. Source scout complete and finite contract /tmp/rm142-bank-import-contract.md. Bank account writes and actor/env/company-path/defaultlauncher scopes remain required separately.",
+    "R44/R45 next necessary bank-account flow: original CLI add/update and original MCP update, full server-owned receipts, stable account identity/payment profile, safe historical ledger/currency constraints and deactivate/reactivate/import refusal. Read-only source scout /tmp/rm143-bank-account-notes.md; resolve current native CompanyAdmin/master-data permission mapping without broadening ledger/service rights. No extra MCP create/delete alias. Actor/env/path/defaultlauncher and exact CLI unknown-profile message remain required separately.",
     "Installed desktop acceptance is explicitly deferred to the very end by the user. Preserve prepared Group100 profile; collect remaining native automation, closure, recovery and packaging checks for final installed acceptance without requesting screen unlock during development.",
     "J03/R50 and remaining R54 scope: only still-supported operation closure/recovery, nonempty scheduler handoff, hostile/older clone and post-cutover rollback requirements. Group99 qualifies managed installed J06 flow, not every R54 acceptance item.",
     "Signed distribution/update/cutover evidence must match actual full Rust replacement; retain all existing completion gates and TypeScript retirement gate.",
@@ -7962,6 +7962,48 @@
       "isolated_status_correction": "/tmp/rm141-reversal-isolated.json",
       "failed_fixture_retained_manifest": "/tmp/rentemester-rust-reports/bank-queries141-retained-manifest.json",
       "remaining": "Original bank import/account mutations and all original actor/env/path/default selection, broader discovery/release/cutover/TS retirement/final installed desktop. Full epic remains OPEN."
+    },
+    "bank_import142": {
+      "issue": 717,
+      "status": "ACCEPTED142_original_bank_import",
+      "source_revision": "71fbe50cf799ad8eb66f40c290795b3e0aba5c2b",
+      "backend_worker_commit": "519f52ab",
+      "backend_integrated": "71fbe50c",
+      "clients_worker_commit": "80e335a9",
+      "clients_integrated": "e28da352",
+      "helper_commit": "0095caf2",
+      "contract": "/tmp/rm142-bank-import-contract.md",
+      "report": "/tmp/rentemester-rust-reports/bank-import142.json",
+      "report_sha256": "2c7ffad24152f57372dbb0adffa7b48de8097f7522f42955e61d75dc741d744b",
+      "actual_first_run_passed": true,
+      "terminal_exit": 0,
+      "independent_verification": "/tmp/rm142-independent-verification.log",
+      "focused_backend_checks": 5,
+      "focused_client_checks": 6,
+      "focused_logs": [
+        "/tmp/rm142-storage.log",
+        "/tmp/rm142-application.log",
+        "/tmp/rm142-http.log",
+        "/tmp/rm142-clients.log"
+      ],
+      "strict_clippy": "/tmp/rm142-integrated-clippy.log",
+      "normal_build": "/tmp/rm142-normal-build.log",
+      "source_import_count_distinction": "Focused same balance-gap fixture original2unmatched vs unchanged native3includingcontinuity; original nullablefields omitted; duplicate0",
+      "terminal_counts": {
+        "documents": 0,
+        "bank_transactions": 3,
+        "journal_entries": 3,
+        "journal_lines": 6
+      },
+      "raw_file_inline_path_precedence_and_duplicate_receipts": true,
+      "exact_known_account_business_refusal": true,
+      "native_import_dto_and_parser_unchanged": true,
+      "normal_mfa_restart_and_source_current_authority": true,
+      "owned_runtime_cleaned": true,
+      "owned_processes_stopped": true,
+      "worker_worktrees_removed": true,
+      "worktree_recovery": ".git/rentemester-recovery/archived142.json",
+      "remaining": "Original bank-account mutations, actor/env/path/default selection and exact unknown CLI profile message; full broader discovery/release/cutover/TS retirement/final installed desktop. Whole epic OPEN."
     }
   },
   "verified_history": [
@@ -9567,6 +9609,12 @@
       "code_revision": "f4e4202bced71eff331a235c00935e42b82e34ae",
       "spec_revision": "sha256:bc98636be4a972407adce0f817a76bb9d4bb7200cb292a70965e75ab62fae250",
       "state": "Group140 ACCEPTED source-verified bank-reconciliation-batch discovery: actual13steps/12routepatterns, independent human approval, exact persisted plan/hash/runKey/status/replay recovery, current source/control/refusal boundaries. Public HTTP/CLI/MCP description/hash/pagination equality, actual aliases/registered protected routes and exact zero financial effects independently PASS. Financial engine unchanged in140; accepted57/58 atomic batch execution remains retained. Full original bank query/filter/alias/envelope/actor/default selection parity, broader discovery, release/cutover/TS retirement and final installed desktop remain OPEN."
+    },
+    {
+      "current_increment": "Group141 original bank list, reconciliation report and account list through shared Rust server/CLI/MCP accepted",
+      "code_revision": "bad20c5bf816d67377d7956a3e5b3aac529896a8",
+      "spec_revision": "sha256:bc98636be4a972407adce0f817a76bb9d4bb7200cb292a70965e75ab62fae250",
+      "state": "Group141 ACCEPTED original all-year bank queries/report/accounts via shared Rust server, original CLI and MCP names. Canonical filters/account/page metadata and original monetary units match exactly; three real rows across two years/two accounts include EUR10 versus DKK75. Real original journal/link/reversal requires typed422 refusal until reviewed correction to independently posted replacement. Current membership revocation and unmatched physical CSV corruption refuse; normal-MFA restart preserves exact query/report/account/book state. Independent terminal SQL confirms3bank/3journal/6lines/0docs, two exact original CSV hashes, corrected canonical relation and owner posting audit. First actual failed only helper503 expectation; retained-state GET proved existing422 mapping without financial writes, corrected assertion and one141b pass. Worker focused12checks, integrated strict6crate all-target Clippy and normal three-binary build retained. Worker snapshots/removal verified; successful runtime fully stopped/cleaned, failed fixture retained privately with manifest. All prior acceptance/full original scope preserved. Next original bank import bindings/receipts; actor/path/env/defaultlauncher, broader discovery, release/cutover/TS retirement and final installed desktop remain OPEN."
     }
   ],
   "scope_clarifications": [
