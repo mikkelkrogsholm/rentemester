@@ -772,7 +772,7 @@ def main():
                 target_db = sqlite3.connect((work/'workspace/synthetic-backup-inbox-target/data/ledger.sqlite').as_uri()+'?mode=ro', uri=True)
                 try:
                     target_counts = {table: target_db.execute('SELECT count(*) FROM '+table).fetchone()[0] for table in ['documents','bank_transactions','journal_entries']}
-                    if target_counts != ({'documents':1,'bank_transactions':1,'journal_entries':4} if args.dinero_import else {'documents':1,'bank_transactions':1,'journal_entries':0}):
+                    if target_counts != ({'documents':4,'bank_transactions':1,'journal_entries':4} if args.dinero_import else {'documents':1,'bank_transactions':1,'journal_entries':0}):
                         raise RuntimeError('Backup inbox target terminal effects differ')
                     report['targetTerminalSql'] = {'company':'synthetic-backup-inbox-target','counts':target_counts}
                 finally: target_db.close()

@@ -107,7 +107,11 @@ fn duplicate_content_keeps_every_path_and_does_not_validate_new_byte_magic() {
     ];
     let r = plan(&files, &parsed()).unwrap();
     assert_eq!(r.receipts.len(), 3);
-    assert!(r.receipts.iter().all(|r| r.sha256 == r.receipts[0].sha256));
+    assert!(
+        r.receipts
+            .iter()
+            .all(|receipt| receipt.sha256 == r.receipts[0].sha256)
+    );
     assert_eq!(r.receipts[0].size_bytes, 24);
     assert_ne!(r.receipts[0].source_path, r.receipts[1].source_path);
     assert_eq!(r.receipts[2].voucher_ref, None);

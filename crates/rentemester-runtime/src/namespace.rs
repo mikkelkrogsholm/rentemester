@@ -47,12 +47,31 @@ mod linux;
 #[cfg(any(target_os = "linux", target_os = "macos"))]
 pub use linux::NamespaceGuard;
 
+/// Opaque ownership of an original created by this publication attempt.
+/// A reused original never produces a rollback token.
+#[cfg_attr(not(any(target_os = "linux", target_os = "macos")), allow(dead_code))]
+pub struct PublishedDocument {
+    path: String,
+    hash: String,
+    device: u64,
+    inode: u64,
+}
+
 #[cfg(not(any(target_os = "linux", target_os = "macos")))]
 pub struct NamespaceGuard {
     _private: (),
 }
 #[cfg(not(any(target_os = "linux", target_os = "macos")))]
 impl NamespaceGuard {
+    pub fn publish_document_tracked(
+        &mut self,
+        _: &crate::document::Prepared,
+    ) -> Result<(String, Option<PublishedDocument>), NamespaceError> {
+        Err(NamespaceError::Unsupported)
+    }
+    pub fn rollback_document(&mut self, _: PublishedDocument) -> Result<(), NamespaceError> {
+        Err(NamespaceError::Unsupported)
+    }
     pub fn read_imap_config(&mut self) -> Result<Option<Vec<u8>>, NamespaceError> {
         Err(NamespaceError::Unsupported)
     }

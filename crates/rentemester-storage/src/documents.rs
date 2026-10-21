@@ -321,7 +321,7 @@ mod tests {
         }
         let mut journals = vec![];
         for document in [Some(docs[0]), None, Some(docs[1]), None] {
-            let request=serde_json::from_value(json!({"transactionDate":"2026-10-18","text":"Synthetic association journal","currency":"DKK","documentId":document,"lines":[{"accountNo":"2100","debitAmount":"10.00"},{"accountNo":"5100","creditAmount":"10.00"}]})).unwrap();
+            let request=serde_json::from_value(json!({"transactionDate":"2026-10-18","text":"Synthetic association journal","currency":"DKK","documentId":document.map(|id|id.to_string()),"lines":[{"accountNo":"2100","debitAmount":"10.00"},{"accountNo":"5100","creditAmount":"10.00"}]})).unwrap();
             let result = crate::journal_post::post(
                 &tx,
                 &request,

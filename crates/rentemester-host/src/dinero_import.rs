@@ -46,5 +46,33 @@ pub(crate) fn validate_archive_sources(
             })?;
         rentemester_storage::dinero_import::verify_original(db, &reference, entry.bytes())?;
     }
+    for reference in rentemester_storage::dinero_import::supporting_originals(db)? {
+        let path = format!("{slug}/{}", reference.path);
+        let _entry = artifact
+            .entries()
+            .iter()
+            .find(|e| {
+                e.path() == path
+                    && matches!(e.kind(),EntryKind::DocumentOriginal{company}if company==slug)
+            })
+            .ok_or_else(|| {
+                rentemester_engine::Error::new(
+                    "dinero_source_unavailable",
+                    "Signed archive Dinero supporting original missing",
+                )
+            })?;
+        // VerifiedArtifact has already authenticated the exact manifest bytes.
+        if !artifact
+            .manifest()
+            .inventory
+            .iter()
+            .any(|e| e.path == path && e.sha256 == reference.hash)
+        {
+            return Err(rentemester_engine::Error::new(
+                "dinero_source_unavailable",
+                "Signed archive Dinero supporting original differs",
+            ));
+        }
+    }
     Ok(())
 }

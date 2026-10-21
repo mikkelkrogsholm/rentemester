@@ -1,5 +1,6 @@
 //! Content-addressed originals under the protected broker root. No database inode opens.
 use super::{DIRECTORY, Error, NamespaceGuard, walk};
+use crate::namespace::PublishedDocument;
 use rustix::fs::{
     AtFlags, FileType, Mode, OFlags, RenameFlags, fstat, mkdirat, openat, renameat_with, statat,
     unlinkat,
@@ -164,6 +165,32 @@ impl NamespaceGuard {
     pub fn publish_document(&mut self, input: &crate::document::Prepared) -> Result<String, Error> {
         self.publish_original(input, false)
     }
+    pub fn publish_document_tracked(
+        &mut self,
+        input: &crate::document::Prepared,
+    ) -> Result<(String, Option<PublishedDocument>), Error> {
+        self.publish_original_tracked(input, false)
+    }
+    /// Remove only the same inode created by this attempt, after a known rollback.
+    #[allow(clippy::unnecessary_cast)] // Native stat integer widths differ across supported hosts.
+    pub fn rollback_document(&mut self, owned: PublishedDocument) -> Result<(), Error> {
+        let directory = self.original_directory(false, false)?;
+        let name = owned
+            .path
+            .strip_prefix("documents/originals/")
+            .ok_or(Error::Invalid)?;
+        if name.contains('/') || !name.starts_with(&format!("{}.", owned.hash)) {
+            return Err(Error::Invalid);
+        }
+        let current =
+            statat(&directory, name, AtFlags::SYMLINK_NOFOLLOW).map_err(|_| Error::Changed)?;
+        if current.st_dev as u64 != owned.device || current.st_ino as u64 != owned.inode {
+            return Err(Error::Changed);
+        }
+        self.read_original(&directory, name, &owned.hash)?;
+        unlinkat(&directory, name, AtFlags::empty()).map_err(|_| Error::Invalid)?;
+        directory.sync_all().map_err(|_| Error::Invalid)
+    }
     pub fn publish_bank_statement(&mut self, content: &str) -> Result<String, Error> {
         self.publish_bank_statement_bytes(content.as_bytes())
     }
@@ -177,6 +204,15 @@ impl NamespaceGuard {
         input: &crate::document::Prepared,
         bank: bool,
     ) -> Result<String, Error> {
+        self.publish_original_tracked(input, bank)
+            .map(|(path, _)| path)
+    }
+    #[allow(clippy::unnecessary_cast)] // Native stat integer widths differ across supported hosts.
+    fn publish_original_tracked(
+        &mut self,
+        input: &crate::document::Prepared,
+        bank: bool,
+    ) -> Result<(String, Option<PublishedDocument>), Error> {
         let directory = self.original_directory(true, bank)?;
         let path = if bank {
             format!("bank/processed/{}.txt", input.hash())
@@ -187,13 +223,14 @@ impl NamespaceGuard {
         match statat(&directory, name, AtFlags::SYMLINK_NOFOLLOW) {
             Ok(_) => {
                 self.read_original(&directory, name, input.hash())?;
-                return Ok(path);
+                return Ok((path, None));
             }
             Err(rustix::io::Errno::NOENT) => {}
             Err(_) => return Err(Error::Invalid),
         }
         let nonce = crate::auth::new_token().map_err(|_| Error::Invalid)?;
         let temporary = format!(".upload-{}", nonce.as_str());
+        let mut owned = None;
         let result = (|| {
             let mut file = File::from(
                 openat(
@@ -210,6 +247,7 @@ impl NamespaceGuard {
             );
             file.write_all(input.bytes()).map_err(|_| Error::Invalid)?;
             file.sync_all().map_err(|_| Error::Invalid)?;
+            let identity = fstat(&file).map_err(|_| Error::Invalid)?;
             drop(file);
             match renameat_with(
                 &directory,
@@ -218,7 +256,14 @@ impl NamespaceGuard {
                 name,
                 RenameFlags::NOREPLACE,
             ) {
-                Ok(()) => {}
+                Ok(()) => {
+                    owned = Some(PublishedDocument {
+                        path: path.clone(),
+                        hash: input.hash().into(),
+                        device: identity.st_dev as u64,
+                        inode: identity.st_ino as u64,
+                    });
+                }
                 Err(rustix::io::Errno::EXIST) => {
                     self.read_original(&directory, name, input.hash())?;
                 }
@@ -228,7 +273,22 @@ impl NamespaceGuard {
             Ok(path.clone())
         })();
         let _ = unlinkat(&directory, temporary.as_str(), AtFlags::empty());
-        result
+        match result {
+            Ok(path) => Ok((path, owned)),
+            Err(error) => {
+                // A failed directory sync still owns the successfully renamed inode.
+                if let Some(created) = owned {
+                    let same = statat(&directory, name, AtFlags::SYMLINK_NOFOLLOW).is_ok_and(|s| {
+                        s.st_dev as u64 == created.device && s.st_ino as u64 == created.inode
+                    });
+                    if same {
+                        let _ = unlinkat(&directory, name, AtFlags::empty());
+                        let _ = directory.sync_all();
+                    }
+                }
+                Err(error)
+            }
+        }
     }
     /// Read only the content-addressed archive admitted by bank import.
     pub fn read_bank_statement(&mut self, hash: &str) -> Result<Vec<u8>, Error> {
@@ -260,5 +320,95 @@ impl NamespaceGuard {
         }
         let directory = self.original_directory(false, false)?;
         self.read_original(&directory, name, hash)
+    }
+}
+
+#[cfg(all(test, target_os = "macos"))]
+mod tests {
+    use super::*;
+    #[test]
+    #[ignore = "qualified local-account subprocess selected by parent"]
+    fn tracked_child() {
+        let root = std::path::PathBuf::from(std::env::var("RM_TRACKED_ROOT").unwrap());
+        let uid =
+            libproc::proc_pid::pidinfo::<libproc::bsd_info::BSDInfo>(std::process::id() as i32, 0)
+                .unwrap()
+                .pbi_uid;
+        let mut guard = NamespaceGuard::create_fresh_with_profile(
+            &root,
+            uid,
+            "w",
+            "a",
+            "Synthetic",
+            "2026-01-01",
+            crate::namespace::NamespaceProfile::LocalUserMacos,
+        )
+        .unwrap();
+        let original = crate::document::Prepared::new(
+            "receipt.pdf".into(),
+            b"%PDF-1.4\nSynthetic receipt125\n".to_vec(),
+        )
+        .unwrap();
+        let (path, token) = guard.publish_document_tracked(&original).unwrap();
+        let token = token.expect("new inode owned");
+        let (same, reused) = guard.publish_document_tracked(&original).unwrap();
+        assert_eq!(path, same);
+        assert!(reused.is_none(), "reused bytes never become rollback-owned");
+        assert_eq!(
+            guard.read_document(&path, original.hash()).unwrap(),
+            original.bytes()
+        );
+        guard.rollback_document(token).unwrap();
+        assert!(!root.join("a").join(&path).exists());
+        let (_, old_token) = guard.publish_document_tracked(&original).unwrap();
+        let replacement = root.join("replacement.pdf");
+        std::fs::write(&replacement, original.bytes()).unwrap();
+        std::fs::rename(&replacement, root.join("a").join(&path)).unwrap();
+        assert_eq!(
+            guard.rollback_document(old_token.unwrap()),
+            Err(Error::Changed)
+        );
+        assert_eq!(
+            guard.read_document(&path, original.hash()).unwrap(),
+            original.bytes()
+        );
+        assert!(
+            guard
+                .publish_document_tracked(&original)
+                .unwrap()
+                .1
+                .is_none()
+        );
+        println!("TRACKED_ORIGINAL_ROLLBACK_QUALIFIED");
+    }
+    #[test]
+    fn tracked_publication_cleans_only_owned_inode_and_preserves_reused_or_replaced_original() {
+        let base = tempfile::tempdir().unwrap();
+        let root = base
+            .path()
+            .canonicalize()
+            .unwrap()
+            .join("tracked-workspace");
+        let output = std::process::Command::new("/bin/sh")
+            .args(["-c", "umask 077; exec \"$@\"", "tracked-test"])
+            .arg(std::env::current_exe().unwrap())
+            .args([
+                "--ignored",
+                "--exact",
+                "namespace::linux::documents::tests::tracked_child",
+                "--nocapture",
+            ])
+            .env("RM_TRACKED_ROOT", &root)
+            .output()
+            .unwrap();
+        assert!(
+            output.status.success(),
+            "{}{}",
+            String::from_utf8_lossy(&output.stdout),
+            String::from_utf8_lossy(&output.stderr)
+        );
+        assert!(
+            String::from_utf8_lossy(&output.stdout).contains("TRACKED_ORIGINAL_ROLLBACK_QUALIFIED")
+        );
     }
 }

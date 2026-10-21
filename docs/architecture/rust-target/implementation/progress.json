@@ -1,13 +1,13 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "Group124 source-bound live-year Dinero import qualified through existing web, HTTP, CLI/MCP, replay, audit and restart; Group125 supporting document registration and links next",
-  "code_revision": "d5253acd plus qualified source-bound Dinero writer/assurance and actual proof changes",
+  "current_increment": "Group125 source-bound supporting Dinero documents integrated; focused tests and strict Clippy pass, whole actual acceptance pending",
+  "code_revision": "3d91cada plus pending root supporting-original publication/assurance, fixture and trusted-date fixes",
   "spec_revision": "sha256:bc98636be4a972407adce0f817a76bb9d4bb7200cb292a70965e75ab62fae250",
-  "state": "Group124 latest-year DKK Dinero opening, historical vouchers, source controls, accepted provenance and imported receivables are qualified through existing web, HTTP, compiled CLI/MCP, exact-key replay, full five-part audit and fresh-MFA restart. Actual124e passed and independent pinned-artifact/process/profile verification passed; report SHA256 9340542e6f0b71dd2a2c31961ef47cfa8a3f4bb6b813d7e55f38453947cbfe04. Eleven storage tests, five schedule tests, six opening tests, reviewed close1, route1 and nine-crate strict Clippy pass. Earlier failed harness runs preserved with diagnosed selector/canonical-refusal/replay-audit corrections. CI PR728 published; main and real issue-edited automatic runs pass. Next original R27 boundary: supporting originals, additive voucher links and unbooked exceptions. Remaining original containers/import/open-item/report variants and every epic672/GDD completion gate stay open. One Rust engine/server, shared React/Tauri UI; installed desktop GUI last.",
+  "state": "Group124 live-year Dinero opening/history/source controls/imported receivables qualified through web, HTTP, compiled CLI/MCP, exact-key replay, full audit and restart with independently verified actual124e evidence. Group125 supporting PDF/image registration, additive exact voucher links and unbooked exception lifecycle implemented; six engine, two document projection,17 integrated storage and real owned-file rollback tests plus nine-crate strict Clippy pass. Final normal three-bin build and whole synthetic supporting-document journey next. CI PR728 published and automatic main/real issue-change runs green. Remaining original import containers/open-item/report variants and every epic672/GDD gate stay open; shared Rust engine/server and React/Tauri UI, installed desktop GUI last.",
   "issues_closed": [],
   "next": [
-    "Finish original R27 supporting originals, additive exact voucher links and unbooked receipt exceptions using ready independent source-only planner/projection commits; then remaining originally supported containers/import/open-item/report variants. Group124 source-bound opening/history/schedule actual acceptance is complete; do not repeat or reimplement it. Preserve all original mission gates and installed GUI last.",
+    "Resume existing actual125 session6074/report; do not start another run or mutate pinned binaries/web/runner/helpers before independent qualification. After success finish remaining originally supported containers/import/open-item/report variants. Preserve all original mission gates and installed GUI last.",
     "Installed desktop acceptance is explicitly deferred to the very end by the user. Preserve prepared Group100 profile; collect remaining native automation, closure, recovery and packaging checks for final installed acceptance without requesting screen unlock during development.",
     "J03/R50 and remaining R54 scope: only still-supported operation closure/recovery, nonempty scheduler handoff, hostile/older clone and post-cutover rollback requirements. Group99 qualifies managed installed J06 flow, not every R54 acceptance item.",
     "Signed distribution/update/cutover evidence must match actual full Rust replacement; retain all existing completion gates and TypeScript retirement gate.",
@@ -6892,6 +6892,20 @@
       "replay_validator_preflight": "/tmp/rm124-replay-preflight.json",
       "report_sha256": "9340542e6f0b71dd2a2c31961ef47cfa8a3f4bb6b813d7e55f38453947cbfe04",
       "independent_verification": "/tmp/rm124-independent-verification.log"
+    },
+    "native_dinero_supporting125": {
+      "status": "final three-bin build passed; actual qualification running",
+      "engine6": "/tmp/rm125-engine-tests.log",
+      "document_projection2": "/tmp/rm125-documents-tests.log",
+      "storage17": "/tmp/rm125-integrated-storage-tests.log",
+      "runtime_owned_inode_rollback": "/tmp/rm125-runtime-tests.log",
+      "strict_clippy": "/tmp/rm125-integrated-clippy.log",
+      "normal_three_bin_build": "/tmp/rm125-final-build.log",
+      "planned_actual_report": "/tmp/rentemester-rust-reports/native-dinero-import125.json",
+      "whole_flow_qualified": false,
+      "source_free_restore_qualified": false,
+      "installed_desktop_qualified": false,
+      "live_exec_session": 6074
     }
   },
   "verified_history": [

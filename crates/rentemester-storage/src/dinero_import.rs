@@ -252,6 +252,7 @@ pub fn prepare(tx: &Transaction<'_>, decoded: &Decoded, latest: Date) -> Result<
     crate::validate(tx)?;
     validate_history(tx)?;
     let mut current = context(tx)?;
+    current["receiptDate"] = json!(latest.to_string());
     let mut blockers = vec![];
     if let Some(archive) = &decoded.archive {
         let plan = crate::archive_import::prepare(tx, &archive.source, &archive.parsed)?;

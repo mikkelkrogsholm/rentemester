@@ -826,3 +826,35 @@ fn retained_receipt_history_rejects_changed_metadata_link_or_unclaimed_provenanc
         tx.rollback().unwrap();
     }
 }
+
+#[test]
+fn receipt_retention_and_number_follow_trusted_danish_day_across_utc_year_boundary() {
+    let (_control, mut db) = db();
+    let bytes = receipt_source(&[(
+        "2025/Bilag/2025-Bilag-1.pdf",
+        b"%PDF-1.4\nSynthetic year boundary\n",
+    )]);
+    let decoded = decode_source(&bytes).unwrap();
+    let date = Date::parse("2027-01-01").unwrap();
+    let tx = db
+        .transaction_with_behavior(TransactionBehavior::Immediate)
+        .unwrap();
+    let prepared = prepare(&tx, &decoded, date).unwrap();
+    apply(
+        &tx,
+        &prepared,
+        &input(&prepared),
+        date,
+        "synthetic",
+        1_798_759_800_000,
+    )
+    .unwrap();
+    let (number, retention): (String, String) = tx
+        .query_row("SELECT document_no,retain_until FROM documents", [], |r| {
+            Ok((r.get(0)?, r.get(1)?))
+        })
+        .unwrap();
+    assert!(number.starts_with("DOC-2027-"), "{number}");
+    assert_eq!(retention, "2032-12-31");
+    verify_sources(&tx, &bytes);
+}

@@ -29,6 +29,23 @@ kildefilens betalings- og kreditnotahændelser på deres datoer. Importen
 udsteder eller sender ikke fakturaerne på ny. Dokumenthash i ledsagefilen er
 kildens erklæring; bevarelse af pakken autentificerer ikke eksterne bilag.
 
+## Medfølgende bilag
+
+Importen medtager det seneste kildeårs PDF-, PNG- og JPEG-filer under
+`<år>/Bilag/` og `<år>/Faktura/`. Filnavnets præcise bilagsnummer skal findes
+i kildeposteringerne. Bilagene kobles til de importerede posteringer og vises
+på den eksisterende bilagsside. Posteringernes indhold og hash ændres ikke.
+Fakturaoriginaler genudstedes ikke.
+
+Filer under `Ikke-bogførte-bilag/` bevares med en opgave til gennemgang i
+undtagelseslisten. Identiske bytes genbruger et eksisterende dokument, mens
+hver kildesti fortsat har sit eget proveniensspor. Ukendte bilagsnumre og
+ikke-understøttede bogførte filtyper afvises før importen.
+
+Denne udvidelse består de målrettede tests; den samlede appprøve er endnu
+ikke kvalificeret. Den tidligere kvalificerede prøve nedenfor gælder importen
+før denne bilagsudvidelse.
+
 ## HTTP, CLI og MCP
 
 Alle stier nedenfor ligger under `/api/companies/{slug}/`:
@@ -71,5 +88,5 @@ projektets fremdriftsfil. Prøven omfatter signeret backupkontrol, men ikke
 gendannelse uden kildeprofil eller installeret desktopaccept.
 
 Denne leverance afslutter ikke alle oprindeligt aftalte importvarianter,
-bilagskoblinger, rapportintegrationer eller afklaring af migrerede åbne poster.
+rapportintegrationer eller afklaring af migrerede åbne poster.
 Den installerede desktopapps manuelle prøve udføres til sidst.

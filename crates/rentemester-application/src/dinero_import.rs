@@ -5,7 +5,10 @@ use crate::{
     documents::Context,
 };
 use rentemester_engine::{Error, fiscal_year::Date};
-use rentemester_runtime::{document::Prepared, namespace::NamespaceGuard};
+use rentemester_runtime::{
+    document::Prepared,
+    namespace::{NamespaceGuard, PublishedDocument},
+};
 use rentemester_storage::{
     dinero_import as store,
     idempotency::{self, Operation, Outcome, PrincipalKind},
@@ -31,6 +34,23 @@ fn unavailable() -> Error {
         "Dinero source original unavailable or retained assurance differs",
     )
 }
+fn publish(
+    guard: &mut NamespaceGuard,
+    file: &Prepared,
+    expected: &str,
+    owned: &mut Vec<PublishedDocument>,
+) -> Result<(), Error> {
+    let (path, token) = guard
+        .publish_document_tracked(file)
+        .map_err(|_| unavailable())?;
+    if let Some(token) = token {
+        owned.push(token);
+    }
+    if path != expected {
+        return Err(unavailable());
+    }
+    Ok(())
+}
 /// Checks immutable accepted source facts and exact retained bytes, including receipt replays.
 pub fn verify_physical(
     db: &Connection,
@@ -43,6 +63,11 @@ pub fn verify_physical(
             .read_document(&reference.path, &reference.sha256)
             .map_err(|_| unavailable())?;
         verified.push(store::verify_original(db, &reference, &bytes)?);
+    }
+    for reference in store::supporting_originals(db)? {
+        guard
+            .read_document(&reference.path, &reference.hash)
+            .map_err(|_| unavailable())?;
     }
     Ok(verified)
 }
@@ -62,7 +87,8 @@ pub fn execute(
     let clock = context.clock;
     // CompanyAdmin is a financial operation here: the normal fence performs current
     // authorization, transfer exclusion and the current financial-backup check.
-    control_fence::execute_cookie_subject_mode(
+    let mut owned = vec![];
+    let result = control_fence::execute_cookie_subject_mode(
         control,
         company,
         CookieAuthorization {
@@ -171,10 +197,21 @@ pub fn execute(
                                         ));
                                     }
                                     // These generated paths are independently content-bound, never caller paths.
-                                    let path =
-                                        guard.publish_document(file).map_err(|_| unavailable())?;
-                                    if path != decoded.source.path {
-                                        return Err(unavailable());
+                                    let receipts = store::receipt_publications(tx, &decoded)?
+                                        .into_iter()
+                                        .map(|source| {
+                                            Prepared::new(source.path, source.bytes)
+                                                .map_err(|_| unavailable())
+                                        })
+                                        .collect::<Result<Vec<_>, _>>()?;
+                                    publish(guard, file, &decoded.source.path, &mut owned)?;
+                                    for receipt in &receipts {
+                                        publish(
+                                            guard,
+                                            receipt,
+                                            &receipt.relative_path(),
+                                            &mut owned,
+                                        )?;
                                     }
                                     if let Some(archive) = &decoded.archive {
                                         let document = Prepared::new(
@@ -189,13 +226,12 @@ pub fn execute(
                                         {
                                             return Err(unavailable());
                                         }
-                                        if guard
-                                            .publish_document(&document)
-                                            .map_err(|_| unavailable())?
-                                            != archive.source.path
-                                        {
-                                            return Err(unavailable());
-                                        }
+                                        publish(
+                                            guard,
+                                            &document,
+                                            &archive.source.path,
+                                            &mut owned,
+                                        )?;
                                     }
                                     store::apply_with_archives(
                                         tx,
@@ -229,5 +265,24 @@ pub fn execute(
                 }
             }
         },
-    )
+    );
+    if result
+        .as_ref()
+        .is_err_and(|failure| failure.stage == control_fence::FailureStage::NotCommitted)
+        && company.is_autocommit()
+    {
+        let mut cleanup_failed = false;
+        for token in owned.into_iter().rev() {
+            if guard.rollback_document(token).is_err() {
+                cleanup_failed = true;
+            }
+        }
+        if cleanup_failed {
+            return result.map_err(|mut failure| {
+                failure.error = Error::new("dinero_original_cleanup_failed", "Import rolled back but an owned original could not be cleaned; inspect retained files before retrying");
+                failure
+            });
+        }
+    }
+    result
 }

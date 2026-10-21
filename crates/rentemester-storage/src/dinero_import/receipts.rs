@@ -66,6 +66,7 @@ fn new_document(
     bytes: &[u8],
     at: &str,
     actor: &str,
+    today: &str,
 ) -> Result<i64, Error> {
     // The application validates/publishes through runtime Prepared. Recheck its
     // deterministic byte contract here before any source-only metadata insert.
@@ -88,7 +89,6 @@ fn new_document(
         ));
     }
     let (cvr,month,strategy):(Option<String>,i32,String)=tx.query_row("SELECT cvr,fiscal_year_start_month,fiscal_year_label_strategy FROM companies WHERE id=1",[],|r|Ok((r.get(0)?,r.get(1)?,r.get(2)?))).map_err(invalid)?;
-    let today = &at[..10];
     let label = fiscal_year::for_date(
         Date::parse(today)?,
         StartMonth::new(month)?,
@@ -137,7 +137,16 @@ pub(super) fn register(
         let old = existing(tx, &r.sha256)?;
         let id = match old {
             Some(id) => id,
-            None => new_document(tx, r, bytes, at, actor)?,
+            None => new_document(
+                tx,
+                r,
+                bytes,
+                at,
+                actor,
+                p.binding.context["receiptDate"]
+                    .as_str()
+                    .ok_or_else(|| refused("trusted receipt date missing"))?,
+            )?,
         };
         let doc = document(tx, id)?;
         let mut link_id = None;
@@ -302,7 +311,9 @@ pub(super) fn validate_event(db: &Connection, e: &Attestation) -> Result<(), Err
                 .as_u64()
                 .ok_or_else(|| refused("source fiscal retention basis unavailable"))?;
             let retention = rentemester_engine::calendar::retention_deadline(
-                &e.accepted_at[..10],
+                e.binding.context["receiptDate"]
+                    .as_str()
+                    .ok_or_else(|| refused("trusted receipt date missing"))?,
                 u32::try_from(month).map_err(invalid)?,
             )?;
             if p.document["retainUntil"] != retention {
