@@ -4,12 +4,12 @@
   "current_increment": "Group134 original MCP portfolio_overview report compatibility after accepted dashboardJSON133",
   "code_revision": "f4193c18ae88ba9fb57814906fb49bed11a45730",
   "spec_revision": "sha256:bc98636be4a972407adce0f817a76bb9d4bb7200cb292a70965e75ab62fae250",
-  "state": "Group134 integrating original connectedserver MCPportfolio_overview name/DTO/errors[] over shared current-authorized Rustworkspace source loop. No aggregate/consolidation; originalrow fields use canonical datedDKKprincipal/currentadminbackup/VAT/audit/tasks. Corestorage2/host2/application1 and SDK3/MCP4 passed; HTTP/strict/actualMFArestart pending. GlobalR44 filesystem workspace/env/defaultlauncher and allothertransport compatibility remainOPEN explicitly; nonemptyMCPworkspacepath definitivelyrefuses beforeHTTP/no localopen. Accepted133/132/131/130/129/128/63/76 retained. Full epic/TSretirement/distribution/cutover/finalinstalleddesktop remainOPEN.",
+  "state": "Group134 ACCEPTED: original server-bound MCP portfolio_overview DTO/errors[], current permissions, dated principal, normal MFA/restart, audit and independent SQL passed. Original filesystem workspace/local-default launcher and wider R44 parity remain OPEN. Next necessary whole flow: R31 annual report, tax and iXBRL (#706); preserve all prior acceptance and full epic scope.",
   "issues_closed": [
     701
   ],
   "next": [
-    "Group134 restore original MCPportfolio_overview name/contract through same Rustportfolio reader, inspect original workspace?/asOf? schema and envelope before binding. Preserve explicitserver/currentauth/source policy; full localworkspace/launcher and allglobalR44compatibility remainrequired, no fakealiasclaim for unsupportedselectors. Then R31annual/tax/iXBRL and remainingwholemission. Retain accepted133/132 unchanged without reruns.",
+    "Proceed R31 #706 annual preparation -> tax -> deterministic iXBRL using existing annual reader/fixtures; retain unfinished R32 original local workspace/default launcher requirements for R44, without closing #703 prematurely.",
     "Installed desktop acceptance is explicitly deferred to the very end by the user. Preserve prepared Group100 profile; collect remaining native automation, closure, recovery and packaging checks for final installed acceptance without requesting screen unlock during development.",
     "J03/R50 and remaining R54 scope: only still-supported operation closure/recovery, nonempty scheduler handoff, hostile/older clone and post-cutover rollback requirements. Group99 qualifies managed installed J06 flow, not every R54 acceptance item.",
     "Signed distribution/update/cutover evidence must match actual full Rust replacement; retain all existing completion gates and TypeScript retirement gate.",
@@ -7533,7 +7533,7 @@
     },
     "portfolio_overview134": {
       "issue": 703,
-      "status": "integrating_actual_acceptance_pending",
+      "status": "ACCEPTED_connected_server_original_tool",
       "core_commit": "fc78fa696aa3690a6ed2cfd9b43d7102e9d00ab0",
       "clients_commit": "f1fb7519",
       "contract": "/tmp/rm134-contract.md",
@@ -7562,12 +7562,27 @@
       "scope": "Originaltoolname+serverboundDTO{asOf,companyCount,companies}/errors[]; safe visible-only rows and no crosscompanysum. DefaultasOfUTC, currentmetadataCopenhagen. OriginalVATnonregistered/errornullsentinel and actualdeadline; currentreaderbackupnulls. Schemaformat/null/unknownkeys protocolinvalidparams, realcalendar and unsupportedfilesystem selector businesserrors beforeHTTP. Safe admitted domainerror may be row; physical/schema/hash/control/backup/rollback/restore/authority failures wholefail. SameRustsource engine, no newUI/CLI/domainmath.",
       "known_remaining": "Full originalworkspacefilesystem/RENTEMESTER_WORKSPACE local/defaultlauncher and otherglobalR44envelopes/service capabilities stillrequired; pathselection isexplicitrefusal, notsilentlyignored or falselyqualified.",
       "fixture_strategy": "Reuse133data setup only; new134HTTP/MCP/legacyenvelope/readeradmin/revocation projections, no unchanged133wholeacceptancererun. NormalMFA/restart/fullsourceaudit/independentSQL artifactpins.",
-      "actual_qualified": false,
+      "actual_qualified": true,
       "installed_desktop_qualified": false,
       "filesystem_workspace_selection_qualified": false,
       "focused_passed": 13,
       "strict_clippy": "/tmp/rm134-clippy.log",
-      "development_corrections": "Two host compile defects (leftover closure invocation and private journal-hash access) corrected directly before passing focused host tests; original nonregistered/error VAT null sentinel corrected from source and changed storage projection tests rerun. No runtime fixture failures or weakened guards."
+      "development_corrections": "Two host compile defects (leftover closure invocation and private journal-hash access) corrected directly before passing focused host tests; original nonregistered/error VAT null sentinel corrected from source and changed storage projection tests rerun. No runtime fixture failures or weakened guards.",
+      "source_revision": "d6360c8acb87f6fab1374e41a0e3ed73f0699603",
+      "report": "/tmp/rentemester-rust-reports/portfolio-overview134.json",
+      "report_sha256": "797b30d51e16f3d3a53779d9d57ae987ed58dd6ccf8166baee9e801f740ddbd1",
+      "independent_verification": "/tmp/rm134-independent-verification.log",
+      "terminal_exit": 0,
+      "actual_first_run_passed": true,
+      "restart_qualified": true,
+      "worktree_recovery": ".git/rentemester-recovery/archived134.json",
+      "both_worktrees_removed": true,
+      "terminal_sql": {
+        "documents": 4,
+        "bank_transactions": 2,
+        "journal_entries": 3,
+        "journal_lines": 8
+      }
     }
   },
   "verified_history": [

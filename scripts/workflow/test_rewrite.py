@@ -22,6 +22,10 @@ class Rules(unittest.TestCase):
             w.transition(old, new, 'concrete reason', 'test report')
         w.transition('acceptance', 'developing', 'defect at boundary', None)
         w.transition('done', 'developing', 'regression', None)
+        for old in ('developing', 'acceptance'):
+            w.transition(old, 'backlog', 'remaining launcher dependency; retain accepted report', 'report.json')
+            with self.assertRaises(ValueError):
+                w.transition(old, 'backlog', 'remaining dependency', None)
         for old, new in [('backlog', 'done'), ('ready', 'acceptance'), ('done', 'ready')]:
             with self.assertRaises(ValueError):
                 w.transition(old, new, 'reason', 'evidence')
@@ -67,6 +71,15 @@ class Rules(unittest.TestCase):
 
 
 class MoveTests(unittest.TestCase):
+    def test_parking_retains_open_issue_and_other_labels(self):
+        target = issue(2, 'acceptance')
+        target['labels'].append({'name': 'domain:money'})
+        writes = self.invoke({1: issue(1), 2: target, 3: issue(3)},
+                             ['move', '2', 'backlog', '--reason', 'pending launcher dependency',
+                              '--evidence', 'accepted-report.json'])
+        self.assertIn('accepted-report.json', writes[0][2]['body'])
+        self.assertEqual(writes[1][2], {'labels': ['domain:money', 'flow:backlog'], 'state': 'open'})
+
     def invoke(self, records, args):
         writes = []
         def fake_gh(repo, endpoint, method='GET', payload=None):

@@ -24,6 +24,13 @@ markering med en selvstændig linje `Flow-Blocked: konkret årsag` i issue-body;
 den erstatter ikke status. Fjern markeringen og årsagen, når blokeringen er
 løst. En genåbning eller retur fra accept kræver konkret begrundelse.
 
+Et ufærdigt issue kan parkeres fra developing eller acceptance til backlog,
+når næste nødvendige brugerforløb kræver et andet issue. Det kræver både en
+konkret begrundelse med resterende arbejde og en evidensreference for den
+bevarede leverance. Issuet forbliver åbent med sit fulde scope og tidligere
+evidens. Genoptagelse går gennem ready og developing; parkering er ikke accept
+af hele issuet og ændrer ikke grænsen på ét aktivt underissue.
+
 Højst ét underissue er i developing/integrating/acceptance ad gangen. Epic'ens
 opsamlingsstatus tæller ikke med. Arbejdet i det aktive issue deles i nyttige,
 uafhængige leverancer; det må ikke begrænses til én sekventiel agent.

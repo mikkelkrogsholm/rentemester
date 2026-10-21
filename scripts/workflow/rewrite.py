@@ -65,11 +65,15 @@ def validate_remote(issues, epic):
 def transition(old, new, reason, evidence):
     if not reason.strip():
         raise ValueError('a concrete reason is required')
-    allowed = list(zip(STATES, STATES[1:])) + [('acceptance', 'developing'), ('done', 'developing')]
+    parking = old in {'developing', 'acceptance'} and new == 'backlog'
+    allowed = list(zip(STATES, STATES[1:])) + [('acceptance', 'developing'), ('done', 'developing'),
+                                            ('developing', 'backlog'), ('acceptance', 'backlog')]
     if (old, new) not in allowed:
         raise ValueError(f'unsupported transition {old} -> {new}')
     if new in {'acceptance', 'done'} and not (evidence or '').strip():
         raise ValueError('acceptance/done requires a nonempty evidence reference')
+    if parking and not (evidence or '').strip():
+        raise ValueError('parking unfinished work requires a nonempty evidence reference')
 
 
 def valid_path(value):
