@@ -551,3 +551,135 @@ fn revoked_source_scope_cannot_approve_pending_knowledge_and_unassociated_is_not
         .is_err()
     );
 }
+
+#[test]
+fn backup_fence_covers_shared_party_mutations_after_authorization() {
+    struct Reject {
+        seen: Vec<String>,
+    }
+    impl crate::backup_status::CompanyScopes for Reject {
+        fn require(
+            &mut self,
+            _: &rusqlite::Transaction<'_>,
+            _: &dyn Clock,
+            slugs: &[String],
+        ) -> Result<(), rentemester_engine::Error> {
+            self.seen = slugs.to_vec();
+            Err(rentemester_engine::Error::new(
+                "backup_overdue",
+                "synthetic refusal",
+            ))
+        }
+    }
+    let (_d, mut c, cookies, p, cat) = fixture();
+    let mut reject = Reject { seen: vec![] };
+    let input = create_input("party-synthetic", "Synthetic shared party");
+    let error = execute_scoped(
+        &mut c,
+        &cookies,
+        &Fixed,
+        &p,
+        &cat,
+        "a",
+        Action::Create(&input),
+        &mut reject,
+    )
+    .unwrap_err();
+    assert_eq!(error.error.code, "backup_overdue");
+    assert_eq!(reject.seen, ["a"]);
+    assert_eq!(
+        c.query_row("SELECT count(*) FROM rm_party_events", [], |r| r
+            .get::<_, i64>(0))
+            .unwrap(),
+        0
+    );
+    execute(
+        &mut c,
+        &cookies,
+        &Fixed,
+        &p,
+        &cat,
+        "a",
+        Action::Create(&input),
+    )
+    .unwrap();
+    execute(
+        &mut c,
+        &cookies,
+        &Fixed,
+        &p,
+        &cat,
+        "b",
+        Action::Role(
+            "party-synthetic",
+            &Role {
+                role: "customer".into(),
+                defaults: None,
+            },
+        ),
+    )
+    .unwrap();
+    let before = execute(
+        &mut c,
+        &cookies,
+        &Fixed,
+        &p,
+        &cat,
+        "a",
+        Action::Inspect("party-synthetic"),
+    )
+    .unwrap();
+    let error = execute_scoped(
+        &mut c,
+        &cookies,
+        &Fixed,
+        &p,
+        &cat,
+        "b",
+        Action::Assertion("party-synthetic", &amendment()),
+        &mut reject,
+    )
+    .unwrap_err();
+    assert_eq!(error.error.code, "backup_overdue");
+    assert_eq!(reject.seen, ["a", "b"]);
+    assert_eq!(
+        execute(
+            &mut c,
+            &cookies,
+            &Fixed,
+            &p,
+            &cat,
+            "a",
+            Action::Inspect("party-synthetic")
+        )
+        .unwrap(),
+        before
+    );
+    reject.seen.clear();
+    execute_scoped(
+        &mut c,
+        &cookies,
+        &Fixed,
+        &p,
+        &cat,
+        "a",
+        Action::Inspect("party-synthetic"),
+        &mut reject,
+    )
+    .unwrap();
+    assert!(reject.seen.is_empty());
+    c.execute("INSERT INTO rm_company_membership_events(user_id,company_slug,event_type,actor) VALUES('u','a','revoke','user:u')",[]).unwrap();
+    let error = execute_scoped(
+        &mut c,
+        &cookies,
+        &Fixed,
+        &p,
+        &cat,
+        "b",
+        Action::Assertion("party-synthetic", &amendment()),
+        &mut reject,
+    )
+    .unwrap_err();
+    assert_eq!(error.error.code, "access_denied");
+    assert!(reject.seen.is_empty());
+}

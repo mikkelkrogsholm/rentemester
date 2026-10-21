@@ -1281,6 +1281,7 @@ mod invoice_extraction;
 
 mod portable_backup;
 mod backup_destination;
+mod backup_scopes;
 impl Owner {
     /// Stable admitted company owner; all knowledge effects use its canonical control writer.
     pub fn company_knowledge(
@@ -1292,9 +1293,9 @@ impl Owner {
     ) -> AuthAttempt<serde_json::Value> {
         let catalog = self.catalog()?;
         let slug = self.slug.clone();
-        self.control_auth(cookies.workspace(), |control| {
-            rentemester_application::company_knowledge::execute(
-                control, cookies, clock, proof, &catalog, &slug, action,
+        self.control_company_auth(cookies.workspace(), |control, backup| {
+            rentemester_application::company_knowledge::execute_scoped(
+                control, cookies, clock, proof, &catalog, &slug, action, backup,
             )
         })
     }
@@ -1302,7 +1303,7 @@ impl Owner {
 
 impl Owner{
  /// Current stable company selection anchors a workspace-control party operation.
- pub fn parties(&mut self,cookies:&rentemester_runtime::auth::CookieVerifier,clock:&dyn rentemester_runtime::auth::Clock,proof:&VerifiedCookie,action:rentemester_application::parties::Action<'_>)->AuthAttempt<serde_json::Value>{let catalog=self.catalog()?;let slug=self.slug.clone();self.control_auth(cookies.workspace(),|c|rentemester_application::parties::execute(c,cookies,clock,proof,&catalog,&slug,action))}
+ pub fn parties(&mut self,cookies:&rentemester_runtime::auth::CookieVerifier,clock:&dyn rentemester_runtime::auth::Clock,proof:&VerifiedCookie,action:rentemester_application::parties::Action<'_>)->AuthAttempt<serde_json::Value>{let catalog=self.catalog()?;let slug=self.slug.clone();self.control_company_auth(cookies.workspace(),|c,backup|rentemester_application::parties::execute_scoped(c,cookies,clock,proof,&catalog,&slug,action,backup))}
 }
 
 mod workspace_inbox;

@@ -45,7 +45,8 @@ pub fn company_sets(
     }
     Ok((read, write))
 }
-pub fn execute(
+#[allow(clippy::too_many_arguments)]
+pub fn execute_scoped(
     db: &mut Connection,
     cookies: &CookieVerifier,
     clock: &dyn Clock,
@@ -53,6 +54,7 @@ pub fn execute(
     catalog: &Catalog,
     slug: &str,
     action: Action<'_>,
+    backup: &mut dyn crate::backup_status::CompanyScopes,
 ) -> Result<Value, Failure> {
     crate::control_fence::connection_ready(db).map_err(|e| failure(e, false))?;
     if !cookies.accepts_session(proof) || proof.workspace() != catalog.workspace {
@@ -124,6 +126,7 @@ pub fn execute(
                         return Err(error("party_not_found"));
                     }
                 }
+                backup.require(&tx, clock, &[slug.to_owned()])?;
                 let generated = format!(
                     "party-{}",
                     rentemester_runtime::auth::new_token()
@@ -146,16 +149,23 @@ pub fn execute(
             }
             Action::Role(id, input) => {
                 storage::inspect(&tx, id, &visible)?;
+                backup.require(&tx, clock, &[slug.to_owned()])?;
                 storage::role(&tx, id, slug, input, &actor, &stamp)?;
                 id.into()
             }
             Action::Assertion(id, input) => {
                 authorize_update(&tx, id, &visible, &writable)?;
+                let mut scopes = storage::scopes(&tx, id)?;
+                scopes.insert(slug.to_owned());
+                backup.require(&tx, clock, &scopes.into_iter().collect::<Vec<_>>())?;
                 storage::assertion(&tx, id, input, &actor, &stamp)?;
                 id.into()
             }
             Action::Alias(id, input) => {
                 authorize_update(&tx, id, &visible, &writable)?;
+                let mut scopes = storage::scopes(&tx, id)?;
+                scopes.insert(slug.to_owned());
+                backup.require(&tx, clock, &scopes.into_iter().collect::<Vec<_>>())?;
                 storage::alias(&tx, id, input, &actor, &stamp)?;
                 id.into()
             }
@@ -196,3 +206,25 @@ fn authorize_update(
 }
 #[cfg(test)]
 mod tests;
+
+#[cfg(test)]
+pub(crate) fn execute(
+    db: &mut Connection,
+    cookies: &CookieVerifier,
+    clock: &dyn Clock,
+    proof: &VerifiedCookie,
+    catalog: &Catalog,
+    slug: &str,
+    action: Action<'_>,
+) -> Result<Value, Failure> {
+    execute_scoped(
+        db,
+        cookies,
+        clock,
+        proof,
+        catalog,
+        slug,
+        action,
+        &mut crate::backup_status::UnlockedTestScopes,
+    )
+}

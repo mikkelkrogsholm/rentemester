@@ -36,7 +36,7 @@ pub(crate) fn data(control:&Transaction<'_>,company:&Transaction<'_>,workspace:&
  let required=policy.required_by_ms.map(timestamp).transpose()?;
  Ok(json!({"ok":true,"slug":slug,"backup":{"available":true,"ok":!policy.backup_due && errors.is_empty(),"latestBackupAt":latest.as_ref().map(|s|&s.created_at),"latestBackupId":latest.as_ref().map(|s|&s.archive_sha256),"backupDue":policy.backup_due,"hasActivitySinceBackup":policy.has_activity_since_backup,"daysSinceLatestBackup":policy.days_since_latest_backup,"backupsFound":found,"requiredBy":required,"checkedAt":timestamp(now)?,"evidence":{"timestamps":activity.evidence,"identityChangedSinceBackup":changed},"errors":errors,"scope":"local-retained-snapshots","remoteSyncVerified":false},"lock":{"enforced":settings.enforced,"graceDays":settings.grace_days,"locked":policy.locked,"lockDeadline":deadline,"updatedAt":settings.updated_at,"updatedBy":settings.updated_by}}))
 }
-pub(crate) fn require_write(control:&Transaction<'_>,company:&Transaction<'_>,workspace:&str,slug:&str,clock:&dyn Clock)->Result<(),Error>{
+pub fn require_write(control:&Transaction<'_>,company:&Transaction<'_>,workspace:&str,slug:&str,clock:&dyn Clock)->Result<(),Error>{
  if !rentemester_storage::backup_state::settings(control,company)?.enforced{return Ok(());}
  if data(control,company,workspace,slug,clock,false)?["lock"]["locked"]==true{return Err(Error::new("backup_overdue","Bookkeeping is locked by the explicitly enabled backup policy; create a backup or review the lock setting before a new action"));}
  Ok(())
@@ -48,6 +48,19 @@ pub fn execute(control:&mut Connection,company:&mut Connection,context:Context<'
   if let Action::Configure{enforced,grace_days}=action {rentemester_storage::backup_state::configure(control,company,slug,enforced,grace_days,&format!("user:{subject}"),&timestamp(clock.now_unix_ms().map_err(|_|invalid())?)?)?;}
   data(control,company,workspace,slug,clock,true)
  })
+}
+
+
+/// Trusted host observation of all affected ledgers under the current control writer.
+/// Implementations must use admitted company handles and restore the owner's selection.
+pub trait CompanyScopes {
+    fn require(&mut self, control: &Transaction<'_>, clock: &dyn Clock, slugs: &[String]) -> Result<(), Error>;
+}
+#[cfg(test)]
+pub(crate) struct UnlockedTestScopes;
+#[cfg(test)]
+impl CompanyScopes for UnlockedTestScopes {
+    fn require(&mut self, _: &Transaction<'_>, _: &dyn Clock, _: &[String]) -> Result<(), Error> { Ok(()) }
 }
 
 #[cfg(test)]mod tests;

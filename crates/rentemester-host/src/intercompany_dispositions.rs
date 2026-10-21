@@ -160,8 +160,11 @@ impl Owner {
                     .map_err(unavailable)?;
                 let db = slots.company.as_mut().unwrap();
                 let read = db
-                    .transaction_with_behavior(TransactionBehavior::Deferred)
+                    .transaction_with_behavior(if app::is_write(&action) { TransactionBehavior::Immediate } else { TransactionBehavior::Deferred })
                     .map_err(unavailable)?;
+                if app::is_write(&action) {
+                    rentemester_application::backup_status::require_write(&tx, &read, &self.workspace, slug, clock)?;
+                }
                 // Physical originals and canonical native chain are observations, never period decisions.
                 if !rentemester_application::periods::verify_sources(&read, &mut slots.guard)
                     .map_err(unavailable)?

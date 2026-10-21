@@ -26,8 +26,8 @@ impl Owner {
     ) -> AuthAttempt<Value> {
         let catalog = self.catalog()?;
         let selected = self.slug.clone();
-        let mut attempt = self.control_auth(cookies.workspace(), |db| {
-            app::execute(
+        let mut attempt = self.control_company_auth(cookies.workspace(), |db, backup| {
+            app::execute_scoped(
                 db,
                 cookies,
                 clock,
@@ -35,6 +35,7 @@ impl Owner {
                 &catalog,
                 anchor.unwrap_or(""),
                 action,
+                backup,
             )
         })?;
         if let app::Action::Plan { from, as_of, .. } = action
@@ -160,8 +161,8 @@ impl Owner {
                 Ok(report)
             })();
             self.select_company(&selected)?;
-            let check = self.control_auth(cookies.workspace(), |db| {
-                app::execute(
+            let check = self.control_company_auth(cookies.workspace(), |db, backup| {
+                app::execute_scoped(
                     db,
                     cookies,
                     clock,
@@ -169,6 +170,7 @@ impl Owner {
                     &catalog,
                     anchor.unwrap_or(""),
                     action,
+                    backup,
                 )
             })?;
             match check.outcome {

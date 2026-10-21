@@ -36,8 +36,8 @@ impl Owner {
                 Err(_) => return Ok(report),
             }
         }
-        self.control_auth(cookies.workspace(), |c| {
-            app::execute(
+        self.control_company_auth(cookies.workspace(), |c, backup| {
+            app::execute_scoped(
                 c,
                 cookies,
                 clock,
@@ -46,6 +46,7 @@ impl Owner {
                 anchor,
                 action,
                 fresh.as_ref(),
+                backup,
             )
         })
     }

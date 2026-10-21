@@ -19,8 +19,8 @@ impl Owner {
         } else {
             None
         };
-        let mut attempt = self.control_auth(cookies.workspace(), |c| {
-            app::execute(
+        let mut attempt = self.control_company_auth(cookies.workspace(), |c, backup| {
+            app::execute_scoped(
                 c,
                 cookies,
                 clock,
@@ -28,6 +28,7 @@ impl Owner {
                 &catalog,
                 anchor.unwrap_or(""),
                 action,
+                backup,
             )
         })?;
         if let (Some(date), Ok(v)) = (date, &mut attempt.outcome) {

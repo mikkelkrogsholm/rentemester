@@ -1,13 +1,13 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "Group111 financial backup status→explicit lock→human/service refusal→verified artifact→one posting/restart accepted through web/HTTP/CLI/MCP; direct-control legacy gate parity remains open",
-  "code_revision": "45d362cde32e5250cd13a4c2ea8d1df7d9086423 + Group111 financial gate integration in this commit",
+  "current_increment": "Group112 control metadata backup lock→six HTTP/CLI/MCP refusals→qualified backup→accepted knowledge/restart verified; affected-company group/ownership/parties gates integrated; mail/inbox next",
+  "code_revision": "c17ef731 + Group112 host/scopes/parties integration in this commit",
   "spec_revision": "sha256:bc98636be4a972407adce0f817a76bb9d4bb7200cb292a70965e75ab62fae250",
-  "state": "Group111 delivers company-authorized backup status and explicit opt-in financial lock over native server/shared web/client/CLI/MCP. Status independently rereads retained signed bytes with separately trusted producer publickey stored in protected inventory; metadata binds keyhash/wirehash/size/time/companyUUID and activityIDs. Missing/tampered files never qualify; pre-restore inventory/settings do not activate in restoredinstance. Pure weekly policy preserved; append-only activity identity comparison closes same-second registration timestamp loss. Defaultoff/grace0; nativegrace0..365; config appendedcompanyaudit with current authenticated actor and restoreboundary. Current auth then held control/company writer before human core/service/precharged/hostedrecurring/openingbalance/partylink effects. Reads/plans/backup/lockconfig/recovery exempt; new SMTP reservation/pre-handoff gated, already admitted terminal/reconcile narrowly exempt. Typed internal both-transaction adapter preserves rollback/unknown/reuse guards. Actual111b normalMFA imports one old bankrow, webenableslock, HTTP/CLI/MCP human+service posting refusal and read availability, explicit CLI/MCP policywrites whilelocked, actualweb signedbackup/offlineSQLiteverification, missing/tamperfiles relock without effects/exactrestoration, one7.25journal with exact receipt replay/restart; terminal0documents/1bank/1journal and ownedcleanup. Artifact/helper/runner identity matched independently; no SQLidentityseeds/provider/GUI. Six policy tests incl subsecondidentity, targetedbackup suites, new humanlock/recovery and SMTPmidflightenable tests pass; broad application regression90pass8ignored had one duplicateauditfixture failure, repairedfixture and affectedcasepass. MCP selectedstdio found stale225count, baselineupdated233 actualtools and affectedcasepass. Guardedbuild/webbuild/strict8crate all-targetClippy pass; readonlyscope review no blockers. Full direct-control metadata/group/ownership/corporate/knowledge/parties/workspace/mailintake legacy mutation gates still NOT integrated, actual SMTPdispatch/keyrotation/newsourcefreerestore/offsite/installedGUI unqualified. Full health/audit/governance/provider/destinationadmin/discoverycoverage/R53release/CIremote/migration/TSretirement remain OPEN, fullmission/epic672 preserved; GUI still finalonly.",
+  "state": "Group112 integrates mandatory affected-company backup observations for company knowledge, corporate records, ownership, parties, intercompany mappings/manifests, consolidation profiles, eliminations and intercompany dispositions. Authorization and complete affected-scope permission checks precede backup observations; scoped protected company handles are observed under held control writer and restored before returning. Existing source-only scopes remain read-only; replacement mutations include old and new affected company unions. Rollback/selection restoration failure retires owner rather than allowing unsafe reuse. Unfenced application wrappers exist only in unit tests. Seven targeted backup tests pass; full application regression passes101tests/8ignored/0failures. Native server/CLI/MCP build and strict6crate all-target Clippy pass. Actual112 normalMFA proves valid companyknowledge+corporaterecord ingest refused across HTTP/CLI/MCP (sixrequests), exact metadata/books unchanged, current qualifiedbackup unlocks same knowledge proposal, exact one proposedassertion/zero corporate records persists restart with fullclient readparity. Prior financial/refusal/filetamper/replay flow also passes, terminal0documents/1bank/1journal; privateprocess/profilecleanup independently verified and all3binary/helper/runner hashes match report. No actualmulti-company/parties/SMTP/keyrotation/GUI claim. Prior accepted111 financial flow and all full mission gates preserved. Mail intake and workspace inbox mutation gate parity, actual multi-company host proof, provider/backup governance/discovery/release/platform/TS retirement remain open; installed desktop tests deferred to the very end.",
   "issues_closed": [],
   "next": [
-    "Complete remaining native lock parity in control-only company knowledge/corporate/ownership/group/intercompany/elimination changes and mail/parties/workspaceinbox using current scoped company observations, without blocking reads/recovery or already admitted provider outcomes. Financial111 user flow accepted; do not repeat it unchanged. Then actual keyrotation/restore policy activation as required, external GoogleDrive exact-object verification/declarations/destinationadministration/full backup health/audit/governance, truthful shared discoverycoverage and trusted Rust release/SBOM/supplychain/promotion/reproducibility/CIremote. No TSretirement before full accepted replacement.",
+    "Close mail-intake/workspace-inbox backup lock seams with explicit target-company scope and admitted-provider recovery preserved; see /tmp/rm112-next-mail-seams.md. Group112 metadata flow accepted; do not repeat unchanged. Continue required keyrotation/restore qualifications, external GoogleDrive exact-object verification/declarations/destination administration/full backup health/audit/governance, truthful discoverycoverage and trusted Rust release/SBOM/promotion/reproducibility/remote CI; no TS retirement before accepted full replacement.",
     "Installed desktop acceptance is explicitly deferred to the very end by the user. Preserve prepared Group100 profile; collect remaining native automation, closure, recovery and packaging checks for final installed acceptance without requesting screen unlock during development.",
     "J03/R50 and remaining R54 scope: only still-supported operation closure/recovery, nonempty scheduler handoff, hostile/older clone and post-cutover rollback requirements. Group99 qualifies managed installed J06 flow, not every R54 acceptance item.",
     "Signed distribution/update/cutover evidence must match actual full Rust replacement; retain all existing completion gates and TypeScript retirement gate.",
@@ -4139,6 +4139,40 @@
         "never-backed requiredBy follows checkedAt; normalize only after asserting this dynamiccontract",
         "Clippy linebreak/testmoduleorder fixes only after successful actualproof"
       ]
+    },
+    "native_backup_lock112": {
+      "path": "/tmp/rentemester-rust-reports/native-backup-lock112.json",
+      "sha256": "daf90aac72cbc81a8f98bc0aed6ef4842883c790a32982399a2273549988f01b",
+      "status": "passed",
+      "source_revision": "c17ef7314a07bb5e22473bef3d1753ab1cdfb1b8 plus Group112 recorded integration",
+      "helper_sha256": "423476661dd58cd1cdc44bdfc06fadd00b05d1c06f6e64dcf23a5235dc4de1d6",
+      "runner_sha256": "593bb80f6a326364dd7a9a2042b6c1a3c4197057c07ce226b9ce78621937e5fb",
+      "artifacts": {
+        "server_binary": "3e80d6c8476f2b360a35a48438bea3d97f4114793e9c9687c56050f7edf4d355",
+        "cli_binary": "05e335867c707c562a607d03dec1d0244b113f48357be1738bb8cb786f4a382c",
+        "mcp_binary": "d4e440984d68de52935bf14ab27cee13b8192eb3f4e1026e5edc834a93fa7214"
+      },
+      "financial_counts": {
+        "documents": 0,
+        "bank_transactions": 1,
+        "journal_entries": 1
+      },
+      "scope": [
+        "normal MFA, web reviewed lock and qualified backup",
+        "company knowledge and corporate ingest six HTTP/CLI/MCP refusals, exact canonical metadata/books unchanged",
+        "same valid knowledge proposal succeeds after backup; one proposed assertion/zero corporate records, full CLI/MCP read parity and normal restart",
+        "financial human/service refusal, file missing/tamper, exact one journal receipt replay",
+        "owned process/profile cleanup, all binary/helper/runner hashes independently matched"
+      ],
+      "unit_tests": "/tmp/rm112-application-tests.log:101passed/8ignored/0failed; /tmp/rm112-backup-tests-fixed.log:7passed",
+      "clippy": "/tmp/rm112-clippy.log:6selectedcrates/all-targets/-Dwarnings passed",
+      "actual_multi_company": false,
+      "actual_parties": false,
+      "actual_mail_intake": false,
+      "actual_smtp": false,
+      "key_rotation": false,
+      "installed_desktop": false,
+      "offsite": false
     }
   },
   "verified_history": [
@@ -5429,6 +5463,12 @@
       "acceptance": "Read status → explicitly enable lock → overdue bookkeeping refuses without effects → create retained signed backup → freshness lock clears → bookkeeping succeeds across server/web/CLI/MCP and service/jobs, persists restart; offsite proof separate.",
       "evidence": "native_backup_lock111 plus preserved native_backup_retention110",
       "remaining": "Control-only metadata/group/parties/inbox/mailintake gates; actual SMTP/keyrotation/restore qualifications as relevant, then full backup-governance/provider/discovery/release scope."
+    },
+    {
+      "delivery": "Group112 affected-company control metadata backup lock",
+      "status": "COMPLETE finite integrated metadata flow; full mail/inbox/provider/whole mission remains open",
+      "evidence": "native_backup_lock112",
+      "remaining": "mail-intake/workspace-inbox mutation lock parity; actual multi-company integration not qualified by single-company proof; all existing full-goal release/desktop/TS retirement gates preserved"
     }
   ],
   "integrated_pending_browser": [

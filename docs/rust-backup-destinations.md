@@ -228,3 +228,36 @@ syntetiske drift blev ryddet op. SMTP-afslutning under ny lås og
 sekundpræcision er særskilt dækket af unit-tests. Den faktiske prøve kvalificerer
 ikke ny nøgle efter rotation, SMTP, kontrolbaserede metadata, source-free
 restore, ekstern backup eller installeret desktop.
+
+## Ændringer i fælles virksomhedsdata (Group112)
+
+Backupspærren kontrolleres også før nye ændringer i virksomhedsviden,
+selskabsdokumenter, ejerforhold, parter, mellemregningsopsætning,
+konsolideringsprofiler, elimineringer og mellemregningsdispositioner.
+Fælles objekter kontrollerer alle berørte virksomheder. En erstatning tager
+både tidligere og nye virksomhedstilknytninger med; en kilde, der kun læses,
+bliver ikke en ekstra skrivevirksomhed.
+
+De aktuelle rettigheder til hele ændringen kontrolleres først. Serveren holder
+workspace-kontroltransaktionen, åbner de berørte virksomheders beskyttede
+ledger-forbindelser efter tur og genopretter den oprindelige virksomhed før
+svaret. En fejl under rollback eller genoprettelse gør ejeren ubrugelig frem
+for at tillade usikker genbrug. Læsning, planer og eksisterende recovery beholder
+deres kontrakter.
+
+Mailindtag og workspace-indbakke mangler endnu deres tilsvarende integration.
+En allerede accepteret ekstern handling skal stadig kunne registrere sit udfald;
+en ny lås må ikke efterlade en faktisk udført handling uden kvittering.
+
+Den faktiske Group112-prøve består med normal MFA: gyldige forslag til
+virksomhedsviden og indlæsning af selskabsdokumenter afvises gennem HTTP, CLI og
+MCP, mens låsen er aktiv. Alle seks afvisninger efterlader både metadata og
+regnskab uændrede. Efter en verificeret backup lykkes det samme vidensforslag;
+præcis ét forslag og nul afviste selskabsdokumenter genfindes gennem klienterne
+efter genstart. De finansielle slutantal er fortsat nul bilag, én banktransaktion
+og én journalpost. Rapport:
+`/tmp/rentemester-rust-reports/native-backup-lock112.json`, SHA-256
+`daf90aac72cbc81a8f98bc0aed6ef4842883c790a32982399a2273549988f01b`.
+Alle 101 applikationstests består med otte særskilte hjælpetests ignoreret;
+bygning og streng kodekontrol består. Prøven beviser ikke faktisk flerfirmadrift,
+parter, mailindtag, SMTP, nøglerotation, ekstern backup eller installeret desktop.

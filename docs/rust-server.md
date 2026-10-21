@@ -3160,3 +3160,14 @@ og afgrænset TypeScript/lint består. Første serverprocesprøve havde en forke
 relativ webfixture; den er rettet til en selvstændig midlertidig fixture og
 består. Dette beviser det beskrevne købsforløb, ikke fuld native discovery,
 backupdestinationer, CI-release, installeret GUI eller TypeScript-udfasning.
+
+### Backupspærre ved fælles virksomhedsdata (Group112)
+
+De kontrolbaserede ændringer i virksomhedsviden, selskabsdokumenter, ejerforhold,
+parter og koncernopsætning bruger nu samme backupregel som bogføringen.
+Alle faktisk berørte virksomheder kontrolleres efter fuld autorisation og før
+effekter. Serverens beskyttede virksomhedsforbindelse gendannes efter kontrollen;
+fejl ved rollback eller gendannelse pensionerer ejeren. Se
+[backupvejledningen](rust-backup-destinations.md) for scope og resterende mail-/
+indbakkeintegration. Den afsluttende installerede desktopprøve er fortsat udskudt
+til allersidst.
