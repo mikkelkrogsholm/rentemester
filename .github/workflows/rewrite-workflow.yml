@@ -1,0 +1,17 @@
+name: Rust issue workflow
+on:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  offline-controls:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Test workflow controls offline
+        run: python3 -m unittest discover -s scripts/workflow -p 'test_*.py' -v
+      - name: Check managed Rust PR commit issue references
+        run: python3 scripts/workflow/rewrite.py check-pr "$GITHUB_EVENT_PATH"
