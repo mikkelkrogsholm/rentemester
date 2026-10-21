@@ -166,7 +166,7 @@ pub fn apply(
         idempotency_key: input.idempotency_key.clone(),
         confirm: true,
     };
-    let mut result = opening_balance::apply_synthetic(
+    let result = opening_balance::apply_synthetic(
         tx,
         &command,
         verified,
@@ -175,9 +175,6 @@ pub fn apply(
         now_ms,
         &input.input,
     )?;
-    result["sourceSystem"] = json!(parser::SYSTEM);
-    result["sourcePlanHash"] = json!(input.plan_hash);
-    result["chart"] = serde_json::to_value(changes).map_err(|_| refused("chart unavailable"))?;
     Ok(result)
 }
 

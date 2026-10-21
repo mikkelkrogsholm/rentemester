@@ -47,6 +47,8 @@ fn exact_csv_readonly_review_atomic_reconciliation_common_opening_and_reopen() {
     assert_eq!(before, tx.total_changes());
     let result = post(&tx, &cmd).unwrap();
     assert_eq!(result["ok"], true);
+    crate::receipt_reconciliation::verify_result(&tx, "opening_balance_post", &result)
+        .expect("source opening uses the exact shared audit/restore receipt contract");
     assert_eq!(result["openingBalance"]["journalEntryNo"], "2024-25-00001");
     assert_eq!(
         result["openingBalance"]["sourceBasis"]["kind"],

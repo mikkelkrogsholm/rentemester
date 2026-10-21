@@ -7,7 +7,7 @@
   "state": "Group126 raw ZIP journey remains independently qualified. Group127 integrates safe unused-chart source reconciliation, the original synthetic-csv parser through the same chart/opening engine, and core migration-open-item application/read functions. Parser4, chart25+helper1, migration3, synthetic-storage3, opening6, SDK1, CLI1, HTTP2 and web12 targeted checks pass; integrated Dinero25 regression, strict nine-crate Clippy, webbuild and normal three-bin build also pass. Original-source CSV bytes are retained in immutable opening provenance; old absent-field opening/JSON history compatibility preserved. Full imported-owner J02 acceptance is pending; every original mission gate remains. Only GitHub #701 active; installed desktop GUI allersidst.",
   "issues_closed": [],
   "next": [
-    "Run current pinned normal-MFA synthetic imported-owner acceptance with --synthetic-import --backup-lock. Binaries, web, runner and helper are final and must remain pinned through terminal plus /tmp/rm127-independent-verification.py. Verify exact source, first web non-VAT expense, shifted report/period historical blocker, client replay, signed backup and fresh MFA restart. Do not repeat qualified126 wholesale. Installed GUI last.",
+    "Finish final receipt-corrected normal three-bin build, pin artifacts, and run actual127e. This is the last diagnosed shared receipt integration defect, not permission for polishing. Complete original #701 acceptance and continue existing R32/#706 imported/native invoice portfolio subset regression; installed GUI last.",
     "Installed desktop acceptance is explicitly deferred to the very end by the user. Preserve prepared Group100 profile; collect remaining native automation, closure, recovery and packaging checks for final installed acceptance without requesting screen unlock during development.",
     "J03/R50 and remaining R54 scope: only still-supported operation closure/recovery, nonempty scheduler handoff, hostile/older clone and post-cutover rollback requirements. Group99 qualifies managed installed J06 flow, not every R54 acceptance item.",
     "Signed distribution/update/cutover evidence must match actual full Rust replacement; retain all existing completion gates and TypeScript retirement gate.",
@@ -6938,12 +6938,12 @@
       "actual_folder_preview_qualified": true
     },
     "native_synthetic_import127": {
-      "status": "normal-MFA whole imported-owner qualification running; first pre-import year-selection assertion corrected",
+      "status": "diagnosed shared receipt contract mismatch fixed; isolated source receipt and module tests plus strict Clippy pass; final rebuild pending",
       "parser4": "/tmp/rm127-parser-tests.log",
       "chart25": "/tmp/rm127-chart-tests-final.log",
       "chart_helper1": "/tmp/rm127-chart-helper.log",
       "migration3": "/tmp/rm127-migration-final.log",
-      "synthetic_storage3": "/tmp/rm127-synthetic-storage-final.log",
+      "synthetic_storage3": "/tmp/rm127-synthetic-receipt-final.log",
       "opening_regression": "/tmp/rm127-opening-regression.log",
       "sdk1": "/tmp/rm127-client-source.log",
       "cli1": "/tmp/rm127-cli-source.log",
@@ -6961,13 +6961,28 @@
       "fixture_repairs": "Nominal journal bank identifier must be a string; impossible second posted journal for one bank reference removed while preserving existing unique index/reuse refusal. Hostile audit fixture drops/restores update trigger before immutable-provenance tamper check. No production guard weakened.",
       "http2": "/tmp/rm127-http-source-final.log",
       "dinero_integrated25": "/tmp/rm127-dinero-integrated.log",
-      "strict_clippy": "/tmp/rm127-strict-clippy-complete.log",
-      "normal_three_bin_build": "/tmp/rm127-normal-three-bin-build.log",
-      "planned_actual_report": "/tmp/rentemester-rust-reports/native-synthetic-import127b.json",
-      "live_exec_session": 42037,
+      "strict_clippy": "/tmp/rm127-receipt-clippy.log",
+      "normal_three_bin_build": "/tmp/rm127-receipt-normal-build.log",
+      "planned_actual_report": "/tmp/rentemester-rust-reports/native-synthetic-import127e.json",
       "first_actual_failure": {
         "report": "/tmp/rentemester-rust-reports/native-synthetic-import127.json",
         "diagnosis": "Harness selected year2026 before any opening created that source label. Native cockpit correctly refused unknown live fiscal year. Snapshot uses default current year until accepted opening, then explicit2026. No product guard changed. Owned runtime/process cleanup verified."
+      },
+      "documentation_toggle_preflight": "/tmp/rm127-documentation-toggle-preflight.log",
+      "second_actual_failure": {
+        "report": "/tmp/rentemester-rust-reports/native-synthetic-import127b.json",
+        "diagnosis": "Source import, exact provenance, keyed replay and duplicate refusal passed. Web helper waited for collapsed details text without opening documentation summary; now clicks summary. Isolated UI test requires visible source documentation after real click. Product code and accounting guards unchanged. Owned cleanup verified."
+      },
+      "original_route_preflight": "/tmp/rm127-original-route-preflight.log",
+      "third_actual_failure": {
+        "report": "/tmp/rentemester-rust-reports/native-synthetic-import127c.json",
+        "diagnosis": "Actual source import/replay, first web non-VAT expense, shifted reports and nonwaivable historical period-close refusal passed. Test requested /documents/{id}/original instead of canonical SDK/server /documents/{id}/file. Route and remaining response contracts independently checked against existing source. Product artifacts unchanged; owned cleanup verified."
+      },
+      "automatic_issue_state_ci": "https://github.com/mikkelkrogsholm/rentemester/actions/runs/39592557760",
+      "receipt_contract_regression": "/tmp/rm127-receipt-contract-isolated.log",
+      "fourth_actual_failure": {
+        "report": "/tmp/rentemester-rust-reports/native-synthetic-import127d.json",
+        "diagnosis": "Real integration defect: CSV adapter appended sourceSystem/sourcePlanHash/chart to durable opening_balance_post result, violating receipt_reconciliation::verify_result exact shared shape. Removed extras; retained exact source remains in immutable opening binding. Added direct existing audit/restore receipt validator regression. Existing validator and accounting guards unchanged. Owned cleanup verified."
       }
     }
   },
