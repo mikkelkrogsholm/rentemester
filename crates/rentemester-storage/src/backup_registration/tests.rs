@@ -139,7 +139,9 @@ fn unknown_fields_control_characters_missing_explicit_flags_and_forged_facts_ref
 fn portable_history_source() -> (rusqlite::Connection, Vec<Receipt>) {
     let mut source = connection();
     source.execute("INSERT INTO user(id,name,email,emailVerified,createdAt,updatedAt)VALUES('old-owner','Synthetic historical','old@example.invalid',1,'2026-01-01','2026-01-01')",[]).unwrap();
-    let tx = source.transaction().unwrap();
+    let tx = source
+        .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
+        .unwrap();
     let registered = add("ssh", 17);
     let first = apply(&tx, "a", &registered, "user:old-owner", AT, None).unwrap();
     let request = Request::Declare {
@@ -168,7 +170,9 @@ fn portable_history_source() -> (rusqlite::Connection, Vec<Receipt>) {
 #[test]
 fn portable_codec_restores_exact_add_declare_remove_receipts_without_authentication_authority() {
     let (mut source, expected) = portable_history_source();
-    let tx = source.transaction().unwrap();
+    let tx = source
+        .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
+        .unwrap();
     let exported = crate::portable_backup::export_control(&tx).unwrap();
     tx.rollback().unwrap();
     let mut restored = rusqlite::Connection::open_in_memory().unwrap();
@@ -218,13 +222,17 @@ fn portable_codec_restores_exact_add_declare_remove_receipts_without_authenticat
 fn portable_export_refuses_a_malformed_known_registration_event() {
     let mut source = connection();
     source.execute("INSERT INTO workspace_audit(event_type,entity_type,entity_id,actor)VALUES('native_backup_registration','backup_registration_operation','{}','user:synthetic')",[]).unwrap();
-    let tx = source.transaction().unwrap();
+    let tx = source
+        .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
+        .unwrap();
     assert!(crate::portable_backup::export_control(&tx).is_err());
 }
 #[test]
 fn forged_registration_archive_rolls_back_all_imported_audit_and_restore_boundary() {
     let (mut source, _) = portable_history_source();
-    let tx = source.transaction().unwrap();
+    let tx = source
+        .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
+        .unwrap();
     let exported = crate::portable_backup::export_control(&tx).unwrap();
     tx.rollback().unwrap();
     let mut codec: Value = serde_json::from_slice(&exported.bytes).unwrap();
@@ -262,7 +270,9 @@ fn forged_registration_archive_rolls_back_all_imported_audit_and_restore_boundar
 fn legacy_portable_audit_without_registrations_still_restores() {
     let mut source = connection();
     source.execute("INSERT INTO workspace_audit(event_type,entity_type,entity_id,actor)VALUES('synthetic_legacy_event','company','a','user:historical')",[]).unwrap();
-    let tx = source.transaction().unwrap();
+    let tx = source
+        .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
+        .unwrap();
     let exported = crate::portable_backup::export_control(&tx).unwrap();
     tx.rollback().unwrap();
     let mut restored = rusqlite::Connection::open_in_memory().unwrap();
