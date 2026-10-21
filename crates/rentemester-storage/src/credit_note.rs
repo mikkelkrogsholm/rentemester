@@ -397,6 +397,23 @@ pub fn register_and_post(
     subject: &str,
     latest: Date,
 ) -> Result<Value, Error> {
+    register_and_post_with_principal(
+        tx,
+        prepared,
+        file,
+        subject,
+        latest,
+        crate::idempotency::PrincipalKind::User,
+    )
+}
+pub fn register_and_post_with_principal(
+    tx: &Transaction<'_>,
+    prepared: Prepared,
+    file: Artifact<'_>,
+    subject: &str,
+    latest: Date,
+    principal: crate::idempotency::PrincipalKind,
+) -> Result<Value, Error> {
     let Prepared {
         payload,
         lines,
@@ -450,14 +467,17 @@ pub fn register_and_post(
         latest,
         crate::journal_post::Actor {
             subject: &format!("user:{subject}"),
-            program: "rentemester-rust",
+            program: match principal {
+                crate::idempotency::PrincipalKind::User => "rentemester-rust",
+                crate::idempotency::PrincipalKind::ServiceAccount => "service-principal",
+            },
         },
     )?;
     if result["ok"] != true {
         return Err(refused(result["errors"].to_string()));
     }
     tx.execute("INSERT INTO credit_note_postings(credit_note_document_id,original_invoice_document_id,journal_entry_id,receivable_account_id,booked_gross_dkk) VALUES(?1,?2,?3,?4,?5)",params![id,original_id,result["entryId"].as_i64(),debtor_id,wire(&gross)?.as_f64()]).map_err(invalid)?;
-    tx.execute("INSERT INTO audit_log(event_type,entity_type,entity_id,message,actor) VALUES('credit_note_issue','document',?1,?2,?3)",params![id.to_string(),format!("Issued credit note {} for {}: {}",payload["creditNoteNumber"].as_str().unwrap(),payload["originalInvoiceNumber"].as_str().unwrap(),payload["reason"].as_str().unwrap()),format!("user:{subject}")]).map_err(invalid)?;
+    tx.execute("INSERT INTO audit_log(event_type,entity_type,entity_id,message,actor) VALUES('credit_note_issue','document',?1,?2,?3)",params![id.to_string(),format!("Issued credit note {} for {}: {}",payload["creditNoteNumber"].as_str().unwrap(),payload["originalInvoiceNumber"].as_str().unwrap(),payload["reason"].as_str().unwrap()),format!("{}:{subject}",match principal {crate::idempotency::PrincipalKind::User=>"user",crate::idempotency::PrincipalKind::ServiceAccount=>"service_account"})]).map_err(invalid)?;
     Ok(
         json!({"documentId":id,"creditNoteNumber":payload["creditNoteNumber"],"originalInvoiceNumber":payload["originalInvoiceNumber"],"journalEntryId":result["entryId"],"journalEntryNo":result["entryNo"]}),
     )

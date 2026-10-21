@@ -10,6 +10,7 @@ use rentemester_storage::sales::{self, Artifact, Customer, Post};
 use rusqlite::Connection;
 use serde_json::Value;
 pub enum Action<'a> {
+    Lifecycle(rentemester_storage::invoice_lifecycle::Kind, &'a Value),
     Original(
         rentemester_storage::invoice_original::Kind,
         &'a rentemester_storage::invoice_original::Query,
@@ -99,6 +100,7 @@ pub fn execute(
         year,
     } = request;
     let permission = match action {
+        Action::Lifecycle(kind, _) => crate::invoice_lifecycle::permission(kind),
         Action::Contacts | Action::List | Action::Original(..) => Permission::CompanyRead,
         Action::DeleteCustomer(_, _)
         | Action::DeleteVendor(_, _)
@@ -124,9 +126,25 @@ pub fn execute(
         },
         context.selection,
         permission,
-        matches!(action, Action::Preview(_)),
+        matches!(
+            action,
+            Action::Preview(_)
+                | Action::Lifecycle(rentemester_storage::invoice_lifecycle::Kind::Render, _)
+        ),
         |tx, actor| {
             Ok(match action {
+                Action::Lifecycle(kind, body) => Output::Json(crate::invoice_lifecycle::apply(
+                    tx,
+                    guard,
+                    kind,
+                    body,
+                    crate::invoice_lifecycle::Context {
+                        slug,
+                        subject: actor,
+                        principal: rentemester_storage::idempotency::PrincipalKind::User,
+                        clock,
+                    },
+                )?),
                 Action::Original(kind, query) => Output::Json(crate::invoice_original::authorized(
                     tx, guard, kind, query, clock,
                 )?),
@@ -291,11 +309,17 @@ pub fn execute_service(
         year,
     } = request;
     let (permission, mutation) = match action {
+        Action::Lifecycle(kind, _) => (
+            crate::invoice_lifecycle::permission(kind),
+            !matches!(kind, rentemester_storage::invoice_lifecycle::Kind::Render),
+        ),
         Action::Contacts | Action::List | Action::Original(..) => (Permission::CompanyRead, false),
         Action::Customers(_) => (Permission::CompanyMasterData, true),
         Action::Preview(_) => (Permission::CompanyDraftWrite, false),
         Action::Issue(_) => (Permission::CompanyDraftWrite, true),
-        Action::Post(_) | Action::Settle(_) => (Permission::CompanyLedgerPost, true),
+        Action::Post(_) | Action::Settle(_) | Action::Credit(_) | Action::Refund(_) => {
+            (Permission::CompanyLedgerPost, true)
+        }
         Action::Pdf(_) => (Permission::CompanyDocumentsRead, false),
         _ => {
             return Err(service_company::initial(Error::new(
@@ -314,6 +338,18 @@ pub fn execute_service(
         mutation,
         |tx, subject, _| {
             let output = match action {
+                Action::Lifecycle(kind, body) => Output::Json(crate::invoice_lifecycle::apply(
+                    tx,
+                    guard,
+                    kind,
+                    body,
+                    crate::invoice_lifecycle::Context {
+                        slug,
+                        subject,
+                        principal: PrincipalKind::ServiceAccount,
+                        clock,
+                    },
+                )?),
                 Action::Original(kind, query) => Output::Json(crate::invoice_original::authorized(
                     tx, guard, kind, query, clock,
                 )?),
@@ -353,6 +389,34 @@ pub fn execute_service(
                     verify_invoice(tx, guard, input.invoice_document_id)?;
                     Output::Json(
                         rentemester_storage::invoice_settlement::settle_with_principal(
+                            tx,
+                            input,
+                            subject,
+                            Date::parse(today)?,
+                            PrincipalKind::ServiceAccount,
+                        )?,
+                    )
+                }
+                Action::Credit(input) => {
+                    let latest = rentemester_runtime::posting_time::latest_date(
+                        clock.now_unix_ms().map_err(|_| evidence_error())?,
+                        45,
+                    )
+                    .map_err(|_| evidence_error())?;
+                    Output::Json(crate::invoice_lifecycle::credit(
+                        tx,
+                        guard,
+                        input,
+                        now,
+                        subject,
+                        Date::parse(&latest)?,
+                        PrincipalKind::ServiceAccount,
+                    )?)
+                }
+                Action::Refund(input) => {
+                    verify_invoice(tx, guard, input.invoice_document_id)?;
+                    Output::Json(
+                        rentemester_storage::invoice_settlement::refund_with_principal(
                             tx,
                             input,
                             subject,

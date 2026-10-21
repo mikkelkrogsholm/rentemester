@@ -47,6 +47,21 @@ pub fn refund(
     subject: &str,
     latest: Date,
 ) -> Result<Value, Error> {
+    refund_with_principal(
+        tx,
+        input,
+        subject,
+        latest,
+        crate::idempotency::PrincipalKind::User,
+    )
+}
+pub fn refund_with_principal(
+    tx: &Transaction<'_>,
+    input: &RefundInput,
+    subject: &str,
+    latest: Date,
+    principal: crate::idempotency::PrincipalKind,
+) -> Result<Value, Error> {
     let input = Input {
         invoice_document_id: input.invoice_document_id,
         bank_transaction_id: input.bank_transaction_id,
@@ -55,14 +70,7 @@ pub fn refund(
         amount: input.amount.clone(),
         confirm: input.confirm,
     };
-    transfer(
-        tx,
-        &input,
-        subject,
-        latest,
-        true,
-        crate::idempotency::PrincipalKind::User,
-    )
+    transfer(tx, &input, subject, latest, true, principal)
 }
 pub fn settle(
     tx: &Transaction<'_>,
@@ -391,7 +399,7 @@ fn transfer(
     }
     if refund {
         let id:i64=tx.query_row("INSERT INTO invoice_refunds(invoice_document_id,bank_transaction_id,journal_entry_id,refund_date,amount,currency,note) VALUES(?1,?2,?3,?4,?5,?7,?6) RETURNING id",params![id,bank_id,result["entryId"].as_i64(),date,wire(&amount)?.as_f64(),format!("Customer refund from transaction {bank_id}"),currency],|r|r.get(0)).map_err(invalid)?;
-        tx.execute("INSERT INTO audit_log(event_type,entity_type,entity_id,message,actor) VALUES('invoice_refund_apply','invoice_refund',?1,?2,?3)",params![id.to_string(),format!("Applied refund {} to invoice {no}",amount.decimal()),format!("user:{subject}")]).map_err(invalid)?;
+        tx.execute("INSERT INTO audit_log(event_type,entity_type,entity_id,message,actor) VALUES('invoice_refund_apply','invoice_refund',?1,?2,?3)",params![id.to_string(),format!("Applied refund {} to invoice {no}",amount.decimal()),format!("{}:{subject}",match principal_kind {crate::idempotency::PrincipalKind::User=>"user",crate::idempotency::PrincipalKind::ServiceAccount=>"service_account"})]).map_err(invalid)?;
         return Ok(
             json!({"entryId":result["entryId"],"refundId":id,"invoiceNumber":no,"remainingCreditBalance":wire(&available.subtract(&amount))?,"currency":currency,"principalAmountDkk":wire(&principal)?,"bankAmountDkk":wire(&bank_dkk)?,"realizedFxAmountDkk":wire(&difference)?}),
         );

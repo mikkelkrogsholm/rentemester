@@ -73,6 +73,7 @@ mod direct_bank_original;
 mod document_party_links;
 mod sales;
 mod invoice_original;
+mod invoice_lifecycle;
 mod invoice_email;
 mod supplier_commitments;
 mod vat;
@@ -113,6 +114,13 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
         pdf_workers: Arc::new(Semaphore::new(4)),
     };
     Router::new()
+        .route("/api/companies/{slug}/invoices/original/issue",post(invoice_lifecycle::handle))
+        .route("/api/companies/{slug}/invoices/original/create",post(invoice_lifecycle::handle))
+        .route("/api/companies/{slug}/invoices/original/render",post(invoice_lifecycle::handle))
+        .route("/api/companies/{slug}/invoices/original/post",post(invoice_lifecycle::handle))
+        .route("/api/companies/{slug}/invoices/original/settle-bank",post(invoice_lifecycle::handle))
+        .route("/api/companies/{slug}/invoices/original/credit-note",post(invoice_lifecycle::handle))
+        .route("/api/companies/{slug}/invoices/original/refund-bank",post(invoice_lifecycle::handle))
         .route("/api/companies/{slug}/invoices/original/list", get(invoice_original::handle))
         .route("/api/companies/{slug}/invoices/original/find", get(invoice_original::handle))
         .route("/api/companies/{slug}/invoices/original/status", get(invoice_original::handle))

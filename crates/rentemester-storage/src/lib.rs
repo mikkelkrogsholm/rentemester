@@ -667,3 +667,5 @@ pub mod dashboard_json;
 pub mod portfolio_overview;
 
 pub mod annual_exports;
+
+pub mod invoice_lifecycle;
