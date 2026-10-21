@@ -664,3 +664,6 @@ pub fn post_correction(
 }
 #[cfg(test)]
 mod tests;
+
+#[cfg(test)]
+mod refusals;

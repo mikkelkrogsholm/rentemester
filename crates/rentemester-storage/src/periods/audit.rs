@@ -26,7 +26,6 @@ pub(crate) fn verify(tx: &Transaction<'_>) -> Result<Vec<Value>, Error> {
     }
     for table in [
         "direct_bank_purchase_payable_corrections",
-        "invoice_bad_debt_writeoffs",
         "imported_receivable_headers",
     ] {
         let evidence = rows(tx, &format!("SELECT id FROM {table} LIMIT 1"), &[])?;
@@ -36,6 +35,17 @@ pub(crate) fn verify(tx: &Transaction<'_>) -> Result<Vec<Value>, Error> {
     }
     crate::archive_import::validate_history(tx)?;
     crate::opening_balance::validate_history(tx)?;
+    for source in rows(
+        tx,
+        "SELECT DISTINCT invoice_document_id AS id FROM invoice_bad_debt_writeoffs",
+        &[],
+    )? {
+        let id = source["id"]
+            .as_i64()
+            .ok_or_else(|| invalid("bad-debt invoice reference"))?;
+        crate::invoice_bad_debt::history(tx, id)?;
+        crate::reminder_claims::principal_open(tx, id)?;
+    }
     errors.extend(crate::reminder_claims::audit_evidence(tx)?);
     errors.extend(super::bank_audit::verify(tx)?);
     for link in rows(

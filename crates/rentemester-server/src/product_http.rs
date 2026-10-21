@@ -40,6 +40,7 @@ mod mileage;
 mod audit_verify;
 mod invoice_compensation;
 mod invoice_interest;
+mod invoice_bad_debt;
 mod audit_log;
 mod integrity;
 mod multi_year;
@@ -450,6 +451,7 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
         .route("/api/companies/{slug}/invoices/interest/post", post(invoice_interest::handle))
         .route("/api/companies/{slug}/invoices/interest/correction", post(invoice_interest::handle))
         .route("/api/companies/{slug}/invoices/interest/post-correction", post(invoice_interest::handle))
+        .route("/api/companies/{slug}/invoices/bad-debt/write-off", post(invoice_bad_debt::handle))
         .route("/api/companies/{slug}/journal", get(archive_reports::read))
         .route("/api/companies/{slug}/trial-balance", get(archive_reports::read))
         .route("/api/companies/{slug}/income-statement", get(archive_reports::read))

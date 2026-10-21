@@ -2,8 +2,9 @@
 
 DKK-forløbet er verificeret gennem Rust-serveren og det fælles web-UI med
 almindeligt login og MFA, genstart og uafhængig kontrol af en signeret backup.
-CLI og MCP er med i præcis genlæsning og afvisninger. Renter på valutafakturaer og den
-samlede omskrivnings øvrige leverancer er fortsat åbne som beskrevet nedenfor.
+CLI og MCP er med i præcis genlæsning og afvisninger. Valutafakturaer har en
+korrigeret afvisningskontrakt for renter. Den samlede omskrivnings øvrige
+leverancer er fortsat åbne som beskrevet nedenfor.
 
 ## Brugerforløb
 
@@ -40,11 +41,13 @@ rente. En gammel gyldig korrektion bliver ikke ugyldig, fordi en senere
 registreret refundering øger den lovlige rente og sænker nutidens overkrav.
 Den historiske plan kontrolleres i sin oprindelige kausale sammenhæng.
 
-Den første beregningsdel er DKK. Rente på en udenlandsk hovedstol kræver stadig
-en eksplicit valuta-, kurs- og korrektionskontrakt. Den manglende kontrakt må
-ikke erstattes af at kalde et beløb i fakturavaluta DKK eller blot fjerne
-schemaets DKK-krav. Eksisterende valutafakturaers hovedstol og DKK-kompensation
-bevarer deres særskilte forløb. Fuld valutaparitet er fortsat en del af målet.
+Rentehandlingerne understøtter DKK, ligesom kildens bogføringsregel.
+På valutafakturaer afvises alle fem rentehandlinger eksplicit med
+`unsupported_foreign_interest`, så et beløb i fakturavaluta ikke fejlagtigt
+vises som DKK. Det er en [dokumenteret kontraktrettelse](architecture/rust-target/implementation/known-contract-corrections.md).
+Eksisterende valutafakturaers hovedstol og DKK-kompensation bevarer deres
+særskilte forløb. Ny positiv rente på valutafakturaer er en særskilt fremtidig
+produktfunktion; den opfindes ikke som forudsætning for omskrivningen.
 
 ## HTTP, CLI og MCP
 
@@ -108,4 +111,4 @@ særskilt kvalificeret via det faktiske webforløb. Kildeuafhængig gendannelse,
 servicekontoskrivninger og installeret desktop-GUI er heller ikke kvalificeret
 af denne prøve. Den eksisterende bad-debt-grænse afviser stadig et ikke
 understøttet principalgrundlag eksplicit; den ignorerer ingen nedskrivning.
-Fuld understøttelse af renter på valutafakturaer er fortsat et uløst krav, og desktopaccept udføres sidst.
+Den korrigerede valutaafvisning er dokumenteret særskilt; desktopaccept udføres sidst.

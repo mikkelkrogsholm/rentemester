@@ -7,13 +7,21 @@ starter ikke TypeScript-backenden og sender ikke forespørgsler videre til den.
 
 ## Aktuel Rust-levering
 
+[Konstateret tab](rust-invoice-bad-debt.md) fungerer nu på DKK- og valutafakturaer
+gennem web, CLI og MCP. Delvise tab, resterende hovedstol, separate krav og
+faktiske indbetalinger bevarer korrekt DKK-værdi og moms. Prøven med mistet
+svar uden automatisk gentagelse, aktuelle rettigheder, backup-lås, fuld
+regnskabskontrol, nyt MFA-login efter genstart og uafhængigt verificeret
+signeret backup består på syntetiske data.
+
 [Renter og kausale rettelser](rust-invoice-interest.md) fungerer nu i DKK gennem
 server og fælles web-UI: separat beregning, registrering og bogføring,
 tilbagedateret delbetaling, konkret korrektion og faktisk renteindbetaling.
 Prøven med almindelig MFA, aktuelle rettigheder, backup-lås, præcis CLI/MCP-
 genlæsning og afvisninger, fuld regnskabskontrol, genstart og uafhængig
-verificering af signeret backup består. Renter på valutafakturaer og de øvrige
-resterende leverancer er fortsat åbne; læs vejledningens afgrænsning.
+verificering af signeret backup består. Renter på valutafakturaer har en
+dokumenteret afvisningskontrakt som i kildens bogføringsregel; den øvrige
+omskrivning er fortsat åben. Læs vejledningens afgrænsning.
 
 [Kompensationskrav](rust-invoice-compensation.md) har nu særskilt beregning,
 registrering og bogføring i Rust med fælles web-UI, CLI og MCP. Hovedstol i
@@ -25,7 +33,7 @@ med fuld pagineringsmetadata gennem web, HTTP, CLI og MCP. Aktuelle menneske-
 og servicekontorettigheder håndhæves; opslag efter bogføring/tilbageførsel,
 læserrevokation og normal-MFA-genstart er verificeret på syntetiske data.
 Den særskilte [regnskabskontrol](rust-audit-verify.md) er nu tilgængelig gennem
-web, HTTP, CLI `remote audit-verify` og MCP `audit_verify` (251 værktøjer).
+web, HTTP, CLI `remote audit-verify` og MCP `audit_verify` (252 værktøjer).
 Journal, bank, fakturagrundlag, beskyttede originaler samt schema/SQLite har
 hver sit resultat. Manglende kontrol bliver ikke vist som et rent regnskab.
 En almindelig MFA-prøve med bogføring/tilbageførsel, to virksomheder, aktuelle

@@ -1,6 +1,7 @@
 //! Shared use-case policy. Trusted adapters own authentication and current source observations.
 pub mod invoice_compensation;
 pub mod invoice_interest;
+pub mod invoice_bad_debt;
 pub mod audit_verify;
 pub mod bank_matches;
 pub mod cvr;

@@ -67,7 +67,7 @@ fn validate(bytes: &[u8], confirmed: bool) -> Result<(), Error> {
         || !date(&i.write_off_date)
         || !account(&i.expense_account_no)
         || !i.confirm
-        || !i.note.as_ref().is_none_or(|s| s.len() <= 4096)
+        || i.note.as_ref().is_some_and(|s| s.len() > 4096)
         || !i
             .gross_amount
             .as_ref()

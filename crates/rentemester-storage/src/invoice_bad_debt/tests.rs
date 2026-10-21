@@ -118,6 +118,35 @@ fn audit(tx: &Transaction<'_>) {
             .unwrap()
             .is_empty()
     );
+    let assurance = crate::periods::audit::verify(tx).unwrap();
+    assert!(assurance.is_empty(), "{assurance:?}");
+}
+#[test]
+fn canonical_claim_status_supplies_only_available_loss_expense_accounts() {
+    let (mut db, id) = fixture("DKK");
+    let tx = db.transaction().unwrap();
+    let available = |tx: &Transaction<'_>| {
+        crate::reminder_claims::read(tx, id, "2026-01-21").unwrap()["accounts"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|a| {
+                a["accountNo"] == "E" && a["type"] == "expense" && a["normalBalance"] == "debit"
+            })
+    };
+    assert!(available(&tx));
+    tx.execute(
+        "UPDATE accounts SET allow_direct_posting=0 WHERE account_no='E'",
+        [],
+    )
+    .unwrap();
+    assert!(!available(&tx));
+    tx.execute(
+        "UPDATE accounts SET allow_direct_posting=1,active=0 WHERE account_no='E'",
+        [],
+    )
+    .unwrap();
+    assert!(!available(&tx));
 }
 #[test]
 fn dkk_writeoff_then_remaining_principal_claim_receipt_vat_audit_and_reopen() {

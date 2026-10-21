@@ -3,6 +3,7 @@
 //! Never open other regular descriptors for owned database inodes in this process.
 mod invoice_compensation;
 mod invoice_interest;
+mod invoice_bad_debt;
 pub mod legacy_adoption;
 mod audit_verify;
 mod audit_log;

@@ -15,7 +15,7 @@ pub(crate) fn load(tx: &Transaction<'_>, id: i64) -> Result<Loaded, Error> {
     if currency != "DKK" {
         return Err(Error::new(
             "unsupported_foreign_interest",
-            "foreign-interest currency/conversion contract is not implemented",
+            "interest actions require a DKK invoice",
         ));
     }
     let p: Value = serde_json::from_str(&raw).map_err(invalid)?;
