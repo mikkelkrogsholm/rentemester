@@ -119,3 +119,40 @@ gendannelse uden kildeprofil eller installeret desktopaccept.
 Denne leverance afslutter ikke alle oprindeligt aftalte importvarianter,
 rapportintegrationer eller afklaring af migrerede åbne poster.
 Den installerede desktopapps manuelle prøve udføres til sidst.
+
+
+## Det eksisterende syntetiske CSV-format
+
+Rust-serveren læser også det oprindelige `synthetic-csv`-format gennem
+åbningsbalancens eksisterende plan- og apply-ruter. Beløb i CSV-filen er hele
+øre, fx `150000` for 1.500,00 kr. Formatet har ingen CSV-citering:
+
+```csv
+# cutOverDate: 2025-07-01
+section,accountNo,name,debit,credit
+account,A,Eksempel på aktiv,,
+account,E,Eksempel på egenkapital,,
+opening,A,,150000,
+opening,E,,,150000
+```
+
+Klassificér kontiene eksplicit i den almindelige kontoplan først. CSV-formatet
+angiver kun nummer og navn; serveren gætter ikke kontotype eller momskode.
+Navne kan tilpasses før første postering. Konti med posteringer beskyttes.
+
+`remote opening-balance-plan --file PATH` sender den præcise UTF-8-fil til
+serverens gennemgang. Bogføring kræver
+`remote opening-balance-apply --file PATH --plan-hash HASH --idempotency-key KEY --confirm`
+samt de sædvanlige server-, cookie- og virksomhedsflag. Der udføres ingen
+implicit planlægning eller automatisk gentagelse. Den samme serverkontrakt er
+tilgængelig via `opening_balance_plan` og `opening_balance_apply` i MCP:
+input er `{sourceSystem:"synthetic-csv",content:"..."}`, og apply pakker dette
+som `{input,planHash,idempotencyKey,confirm:true}`.
+
+Kilden må højst være 48 KiB og JSON-anmodningen 64 KiB. Præcise UTF-8-bytes,
+inklusive BOM og linjeskift, bevares i åbningsposteringens uforanderlige
+auditdokumentation og den signerede databasebackup. Kontotilpasning,
+åbningspostering og kildebevis gemmes atomisk med den eksisterende Rust-motor.
+Den almindelige webvisning viser også denne bogførte åbningsbalance.
+Målrettede tests består; den samlede importerede ejerprøve er endnu ikke
+kvalificeret.

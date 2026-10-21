@@ -33,7 +33,7 @@ fn post(
 }
 fn post_linked(tx: &Transaction<'_>, kind: &str, amount: &str, bank_id: Option<i64>) -> i64 {
     let receivable = kind == "receivable" || kind == "recognize_payable";
-    let input=serde_json::from_value(json!({"transactionDate":"2026-04-01","text":"Synthetic settlement","currency":"DKK","sourceBankTransactionId":bank_id,"lines":[{"accountNo":"5510","debitAmount":if receivable {amount}else{"0.00"},"creditAmount":if receivable {"0.00"}else{amount}},{"accountNo":if kind=="payable" || kind=="recognize_payable"{"6800"}else{"5520"},"debitAmount":if receivable{"0.00"}else{amount},"creditAmount":if receivable{amount}else{"0.00"}}]})).unwrap();
+    let input=serde_json::from_value(json!({"transactionDate":"2026-04-01","text":"Synthetic settlement","currency":"DKK","sourceBankTransactionId":bank_id.map(|id|id.to_string()),"lines":[{"accountNo":"5510","debitAmount":if receivable {amount}else{"0.00"},"creditAmount":if receivable {"0.00"}else{amount}},{"accountNo":if kind=="payable" || kind=="recognize_payable"{"6800"}else{"5520"},"debitAmount":if receivable{"0.00"}else{amount},"creditAmount":if receivable{amount}else{"0.00"}}]})).unwrap();
     let result = journal_post::post(
         tx,
         &input,
@@ -127,7 +127,6 @@ fn invalid_direction_overapplication_reused_evidence_and_dates_have_no_effect() 
     let payable = post(&tx, "reverse_receivable", "6.00", None);
     let linked = post(&tx, "receivable", "6.00", Some((2, "6.00", None)));
     let mismatch = post(&tx, "receivable", "6.00", Some((3, "6.00", Some("5.00"))));
-    let same_bank = post_linked(&tx, "receivable", "6.00", Some(1));
     for bad in [
         input(1, payable, "6.00", None),
         input(1, 999, "6.00", None),
@@ -148,7 +147,7 @@ fn invalid_direction_overapplication_reused_evidence_and_dates_have_no_effect() 
     for bad in [
         input(1, j, "6.00", None),
         input(1, excess, "5.00", None),
-        input(1, same_bank, "6.00", Some(1)),
+        input(1, j, "6.00", Some(1)),
     ] {
         let before = snapshot(&tx);
         let err = apply(&tx, &bad).unwrap_err();

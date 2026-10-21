@@ -114,7 +114,7 @@ async function auditPhase(action){
  if(action==='audit-reopen'){await ownerPage.context().clearCookies();await login(ownerPage,owner);return auditProof.reopen();}
  return auditProof.run();
 }
-let servicePurchase,serviceRunResult,backupRecovery,compensationProof,interestProof,badDebtProof,dineroProof;
+let servicePurchase,serviceRunResult,backupRecovery,compensationProof,interestProof,badDebtProof,dineroProof,syntheticProof;
 async function compensationPhase(action){
  step=action;diagnosticPage=ownerPage;
  if(!compensationProof){const module=await import(process.env.RM_INVOICE_COMPENSATION_HELPER);need(typeof module.createInvoiceCompensationProof==='function','pinned compensation proof factory required');compensationProof=module.createInvoiceCompensationProof(ownerPage,base,work,memberPage,serviceRunResult);}
@@ -132,6 +132,12 @@ async function badDebtPhase(action){
  if(!badDebtProof){const module=await import(process.env.RM_INVOICE_BAD_DEBT_HELPER);need(typeof module.createInvoiceBadDebtProof==='function','pinned bad-debt proof factory required');badDebtProof=module.createInvoiceBadDebtProof(ownerPage,base,work,memberPage,serviceRunResult);}
  if(action==='bad-debt-reopen'){await ownerPage.context().clearCookies();await login(ownerPage,owner);return badDebtProof.reopen();}
  return badDebtProof.run();
+}
+async function syntheticPhase(action){
+ step=action;diagnosticPage=ownerPage;
+ if(!syntheticProof){const module=await import(process.env.RM_SYNTHETIC_IMPORT_HELPER);syntheticProof=module.createSyntheticImportProof(ownerPage,base,work,memberPage);}
+ if(action==='synthetic-reopen'){await ownerPage.context().clearCookies();await login(ownerPage,owner);return syntheticProof.reopen();}
+ return syntheticProof.run();
 }
 async function dineroPhase(action){
  step=action;diagnosticPage=ownerPage;
@@ -153,7 +159,7 @@ async function servicePhase(action){
  if(action==='service-reopen'){await ownerPage.context().clearCookies();await login(ownerPage,owner);return servicePurchase.reopen();}
  const result=await servicePurchase[{'service-run':'run','service-hold-begin':'holdBegin','service-revoke':'revoke','service-hold-finish':'holdFinish'}[action]]();if(action==='service-run')serviceRunResult=result;return result;
 }
-for await(const line of createInterface({input:process.stdin,crlfDelay:Infinity})){try{const action=JSON.parse(line);let value;if(action.startsWith('dinero-')){try{value=await dineroPhase(action);}catch(error){detail=String(error.message).slice(0,1200);throw error;}}else if(action.startsWith('bad-debt-')){try{value=await badDebtPhase(action);}catch(error){detail=String(error.message).slice(0,1200);throw error;}}else if(action.startsWith('interest-')){try{value=await interestPhase(action);}catch(error){detail=String(error.message).slice(0,1200);throw error;}}else if(action.startsWith('compensation-')){try{value=await compensationPhase(action);}catch(error){detail=String(error.message).slice(0,1200);throw error;}}else if(action.startsWith('verification-')){try{value=await verificationPhase(action);}catch(error){detail=String(error.message).slice(0,1200);throw error;}}else if(action.startsWith('audit-')){try{value=await auditPhase(action);}catch(error){detail=String(error.message).slice(0,200);throw error;}}else if(action.startsWith('backup-recovery-')){try{value=await backupRecoveryPhase(action);}catch(error){detail=String(error.message).slice(0,200);throw error;}}else if(action.startsWith('service-'))value=await servicePhase(action);else if(action==='authenticate')value=await authenticate();else if(action==='historical')value=await historical();else if(action==='clean')value=await clean();else if(action==='negatives')value=await negatives();else if(action==='unauthorized')value=await unauthorized();else if(action==='hold-begin')value=await holdBegin();else if(action==='revoke')value=await revoke();else if(action==='hold-finish')value=await holdFinish();else if(action==='clients')value=await clients();else if(action==='reopen')value=await reopen();else if(['archive-source','archive-restarted','archive-restored'].includes(action))value=await archive(action.slice(8));else if(action==='restored')value=await restored();else if(action==='restored-reopen')value=await restoredReopen();else if(action==='finish'){await browser?.close();emit({ok:true,value:{finished:true}});break;}else throw Error('unknown phase');emit({ok:true,value});}catch(error){let pageState=null;try{pageState=await Promise.race([diagnosticPage?.evaluate(()=>({pathname:location.pathname,headings:[...document.querySelectorAll('h1,h2,h3,h4')].map(e=>e.textContent.slice(0,100)),buttons:[...document.querySelectorAll('button')].map(e=>e.textContent.slice(0,100)),alerts:[...document.querySelectorAll('[role=alert]')].map(e=>e.textContent.slice(0,300))})),new Promise(resolve=>setTimeout(()=>resolve(null),2000))]);}catch{}emit({ok:false,step,detail,errorType:error?.name,trace,pageState});await Promise.race([browser?.close().catch(()=>{}),new Promise(resolve=>setTimeout(resolve,2000))]);process.exitCode=1;break;}}
+for await(const line of createInterface({input:process.stdin,crlfDelay:Infinity})){try{const action=JSON.parse(line);let value;if(action.startsWith('synthetic-')){try{value=await syntheticPhase(action);}catch(error){detail=String(error.message).slice(0,1200);throw error;}}else if(action.startsWith('dinero-')){try{value=await dineroPhase(action);}catch(error){detail=String(error.message).slice(0,1200);throw error;}}else if(action.startsWith('bad-debt-')){try{value=await badDebtPhase(action);}catch(error){detail=String(error.message).slice(0,1200);throw error;}}else if(action.startsWith('interest-')){try{value=await interestPhase(action);}catch(error){detail=String(error.message).slice(0,1200);throw error;}}else if(action.startsWith('compensation-')){try{value=await compensationPhase(action);}catch(error){detail=String(error.message).slice(0,1200);throw error;}}else if(action.startsWith('verification-')){try{value=await verificationPhase(action);}catch(error){detail=String(error.message).slice(0,1200);throw error;}}else if(action.startsWith('audit-')){try{value=await auditPhase(action);}catch(error){detail=String(error.message).slice(0,200);throw error;}}else if(action.startsWith('backup-recovery-')){try{value=await backupRecoveryPhase(action);}catch(error){detail=String(error.message).slice(0,200);throw error;}}else if(action.startsWith('service-'))value=await servicePhase(action);else if(action==='authenticate')value=await authenticate();else if(action==='historical')value=await historical();else if(action==='clean')value=await clean();else if(action==='negatives')value=await negatives();else if(action==='unauthorized')value=await unauthorized();else if(action==='hold-begin')value=await holdBegin();else if(action==='revoke')value=await revoke();else if(action==='hold-finish')value=await holdFinish();else if(action==='clients')value=await clients();else if(action==='reopen')value=await reopen();else if(['archive-source','archive-restarted','archive-restored'].includes(action))value=await archive(action.slice(8));else if(action==='restored')value=await restored();else if(action==='restored-reopen')value=await restoredReopen();else if(action==='finish'){await browser?.close();emit({ok:true,value:{finished:true}});break;}else throw Error('unknown phase');emit({ok:true,value});}catch(error){let pageState=null;try{pageState=await Promise.race([diagnosticPage?.evaluate(()=>({pathname:location.pathname,headings:[...document.querySelectorAll('h1,h2,h3,h4')].map(e=>e.textContent.slice(0,100)),buttons:[...document.querySelectorAll('button')].map(e=>e.textContent.slice(0,100)),alerts:[...document.querySelectorAll('[role=alert]')].map(e=>e.textContent.slice(0,300))})),new Promise(resolve=>setTimeout(()=>resolve(null),2000))]);}catch{}emit({ok:false,step,detail,errorType:error?.name,trace,pageState});await Promise.race([browser?.close().catch(()=>{}),new Promise(resolve=>setTimeout(resolve,2000))]);process.exitCode=1;break;}}
 
 '''
 
@@ -183,7 +189,10 @@ def main():
     parser.add_argument('--invoice-interest', action='store_true', help='Actual DKK dated interest registration, posting, causal correction, receipts, full audit and fresh MFA restart; foreign interest remains unqualified')
     parser.add_argument('--invoice-bad-debt', action='store_true', help='Actual DKK/foreign established-loss UI/CLI/MCP writes, original principal and claims, VAT/full audit, fresh MFA restart; no independent legal-loss proof')
     parser.add_argument('--dinero-import', action='store_true', help='Reviewed latest-year Dinero import and imported receivables through web/CLI/MCP, exact original, full audit and fresh MFA restart')
+    parser.add_argument('--synthetic-import', action='store_true', help='Original synthetic CSV through shared chart/opening engine, nonVAT shifted-year owner, clients/expense/report/backup/restart')
     args = parser.parse_args()
+    if args.synthetic_import and (not args.backup_lock or args.dinero_import or args.invoice_bad_debt or args.invoice_interest or args.invoice_compensation or args.audit_log or args.audit_verify or args.remote_backup or args.backup_recovery or args.backup_destinations or args.service_purchase):
+        parser.error('--synthetic-import requires --backup-lock and excludes other proof extensions')
     if args.dinero_import and (not args.backup_lock or args.invoice_bad_debt or args.invoice_interest or args.invoice_compensation or args.audit_log or args.audit_verify or args.remote_backup or args.backup_recovery or args.backup_destinations or args.service_purchase):
         parser.error('--dinero-import requires --backup-lock and excludes other proof extensions')
     if args.invoice_bad_debt and (not args.backup_lock or args.invoice_interest or args.invoice_compensation or args.audit_log or args.audit_verify or args.remote_backup or args.backup_recovery or args.backup_destinations or args.service_purchase):
@@ -626,7 +635,7 @@ def main():
             start(create=True)
             script = work / 'browser.mjs'
             script.write_text(BROWSER)
-            controller = subprocess.Popen(['/opt/homebrew/bin/bun', str(script)], cwd=REPO, env={**os.environ, 'RM_DINERO_IMPORT_HELPER': str(REPO / 'scripts/rust/check-native-dinero-import.ts'), 'RM_INVOICE_BAD_DEBT_HELPER': str(REPO / 'scripts/rust/check-native-invoice-bad-debt.ts'), 'RM_INVOICE_INTEREST_HELPER': str(REPO / 'scripts/rust/check-native-invoice-interest.ts'), 'RM_INVOICE_COMPENSATION_HELPER': str(REPO / 'scripts/rust/check-native-invoice-compensation.ts'), 'RM_NATIVE_BACKUP_DESTINATION_PROOF':'1' if args.backup_destinations else '0', 'RM_NATIVE_REMOTE_BACKUP_PROOF':'1' if args.remote_backup else '0', 'RM_AUDIT_VERIFY_HELPER': str(REPO / 'scripts/rust/check-native-audit-verify.ts'), 'RM_AUDIT_HELPER': str(REPO / 'scripts/rust/check-native-audit-log.ts'), 'RM_BACKUP_RECOVERY_HELPER': str(REPO / 'scripts/rust/check-native-backup-recovery.ts'), 'RM_SERVICE_PURCHASE_HELPER': str(REPO / ('scripts/rust/check-native-backup-lock.ts' if args.backup_lock else 'scripts/rust/check-native-service-purchase.ts')), 'RM_SCANNER_PROOF_FACTORY': 'createBackupLockProof' if args.backup_lock else 'createServicePurchaseProof', 'RM_SCANNER_BASE': origin, 'RM_SCANNER_WORK': str(work), 'RM_SCANNER_SCREENSHOT': str(args.evidence.with_suffix('.png')), 'RM_SCANNER_PLAYWRIGHT': str((REPO / 'node_modules/@playwright/test/index.mjs').resolve(strict=True))}, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True, bufsize=1, start_new_session=True)
+            controller = subprocess.Popen(['/opt/homebrew/bin/bun', str(script)], cwd=REPO, env={**os.environ, 'RM_SYNTHETIC_IMPORT_HELPER': str(REPO / 'scripts/rust/check-native-synthetic-import.ts'), 'RM_DINERO_IMPORT_HELPER': str(REPO / 'scripts/rust/check-native-dinero-import.ts'), 'RM_INVOICE_BAD_DEBT_HELPER': str(REPO / 'scripts/rust/check-native-invoice-bad-debt.ts'), 'RM_INVOICE_INTEREST_HELPER': str(REPO / 'scripts/rust/check-native-invoice-interest.ts'), 'RM_INVOICE_COMPENSATION_HELPER': str(REPO / 'scripts/rust/check-native-invoice-compensation.ts'), 'RM_NATIVE_BACKUP_DESTINATION_PROOF':'1' if args.backup_destinations else '0', 'RM_NATIVE_REMOTE_BACKUP_PROOF':'1' if args.remote_backup else '0', 'RM_AUDIT_VERIFY_HELPER': str(REPO / 'scripts/rust/check-native-audit-verify.ts'), 'RM_AUDIT_HELPER': str(REPO / 'scripts/rust/check-native-audit-log.ts'), 'RM_BACKUP_RECOVERY_HELPER': str(REPO / 'scripts/rust/check-native-backup-recovery.ts'), 'RM_SERVICE_PURCHASE_HELPER': str(REPO / ('scripts/rust/check-native-backup-lock.ts' if args.backup_lock else 'scripts/rust/check-native-service-purchase.ts')), 'RM_SCANNER_PROOF_FACTORY': 'createBackupLockProof' if args.backup_lock else 'createServicePurchaseProof', 'RM_SCANNER_BASE': origin, 'RM_SCANNER_WORK': str(work), 'RM_SCANNER_SCREENSHOT': str(args.evidence.with_suffix('.png')), 'RM_SCANNER_PLAYWRIGHT': str((REPO / 'node_modules/@playwright/test/index.mjs').resolve(strict=True))}, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True, bufsize=1, start_new_session=True)
             report['browserControllerPid'] = controller.pid
             phase('authenticate')
             if args.backup_lock:
@@ -662,6 +671,9 @@ def main():
                 if args.dinero_import:
                     proof_helpers.append(REPO / 'scripts/rust/check-native-dinero-import.ts')
                     report['dineroImportHelperSha256'] = digest(proof_helpers[-1])
+                if args.synthetic_import:
+                    proof_helpers.append(REPO / 'scripts/rust/check-native-synthetic-import.ts')
+                    report['syntheticImportHelperSha256'] = digest(proof_helpers[-1])
                 helper_hashes = {str(path): digest(path) for path in proof_helpers}
                 phase('service-run')
                 if any(digest(path) != helper_hashes[str(path)] for path in proof_helpers):
@@ -695,6 +707,14 @@ def main():
                     phase('bad-debt-reopen', 300)
                     if any(digest(path) != helper_hashes[str(path)] for path in proof_helpers):
                         raise RuntimeError('Bad-debt proof helper changed during restart')
+                if args.synthetic_import:
+                    phase('synthetic-run', 600)
+                    if any(digest(path) != helper_hashes[str(path)] for path in proof_helpers):
+                        raise RuntimeError('Synthetic proof helper changed during execution')
+                    stop(); write_config(); start()
+                    phase('synthetic-reopen', 300)
+                    if any(digest(path) != helper_hashes[str(path)] for path in proof_helpers):
+                        raise RuntimeError('Synthetic proof helper changed during restart')
                 if args.dinero_import:
                     phase('dinero-run', 600)
                     if any(digest(path) != helper_hashes[str(path)] for path in proof_helpers):
@@ -750,6 +770,17 @@ def main():
                         raise RuntimeError('Independent signed bad-debt backup/schema verification refused')
                     report['invoiceBadDebtSignedBackup'] = {'sha256':receipt['sha256'],'bytes':receipt['bytes'],'verified':True,'sourceFreeRestoreQualified':False}
                     save()
+                if args.synthetic_import:
+                    progress('operator:independent-signed-synthetic-backup-verification')
+                    archive = work / 'synthetic-source.native-backup.json'
+                    receipt = report['results']['synthetic-run']['signedBackup']
+                    if not owned() or archive.is_symlink() or not archive.is_file() or digest(archive) != receipt['sha256'] or archive.stat().st_size != receipt['bytes']:
+                        raise RuntimeError('Exact owned signed synthetic backup changed')
+                    verified = subprocess.run([str(pinned['server_binary']), '--verify-backup', str(archive), '--trusted-backup-key', str(work / 'trusted.pub')], cwd=REPO, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=60)
+                    if verified.returncode != 0:
+                        raise RuntimeError('Independent signed synthetic backup/schema verification refused')
+                    report['syntheticImportSignedBackup'] = {'sha256':receipt['sha256'],'bytes':receipt['bytes'],'verified':True,'sourceFreeRestoreQualified':False}
+                    save()
                 if args.dinero_import:
                     progress('operator:independent-signed-dinero-backup-verification')
                     archive = work / 'dinero-source.native-backup.json'
@@ -769,6 +800,25 @@ def main():
                         raise RuntimeError('Backup lock terminal financial effects differ: '+json.dumps(counts,sort_keys=True))
                     report['terminalSql'] = {'counts':counts,'journalActors':db.execute('SELECT created_by,created_by_program FROM journal_entries ORDER BY id').fetchall()}
                 finally: db.close()
+                if args.synthetic_import:
+                    imported_db = sqlite3.connect((work/'workspace/synthetic-csv-j02/data/ledger.sqlite').as_uri()+'?mode=ro', uri=True)
+                    try:
+                        imported_counts = {table: imported_db.execute('SELECT count(*) FROM '+table).fetchone()[0] for table in ['documents','bank_transactions','journal_entries']}
+                        if imported_counts != {'documents':1,'bank_transactions':1,'journal_entries':2}:
+                            raise RuntimeError('Synthetic imported-owner financial effects differ')
+                        proofs = imported_db.execute("SELECT message FROM audit_log WHERE event_type='native_opening_balance'").fetchall()
+                        if len(proofs) != 1 or imported_db.execute('SELECT count(*) FROM opening_balances').fetchone()[0] != 1:
+                            raise RuntimeError('Synthetic source opening duplicated or missing')
+                        proof = json.loads(proofs[0][0])
+                        raw = proof['binding']['syntheticSource']['content'].encode('utf8')
+                        if hashlib.sha256(raw).hexdigest() != report['results']['synthetic-run']['sourceSha256'] or proof['record']['sourceBasis']['kind'] != 'synthetic_csv':
+                            raise RuntimeError('Exact retained CSV source provenance differs')
+                        if imported_db.execute('SELECT count(*) FROM journal_lines WHERE vat_code IS NOT NULL').fetchone()[0] != 0:
+                            raise RuntimeError('Non-VAT imported owner gained VAT postings')
+                        if imported_db.execute("SELECT count(*) FROM accounting_periods WHERE status='closed'").fetchone()[0] != 0:
+                            raise RuntimeError('Historical evidence blocker was bypassed')
+                        report['syntheticImportTerminalSql'] = {'company':'synthetic-csv-j02','counts':imported_counts,'exactSourceSha256':hashlib.sha256(raw).hexdigest(),'openingCount':1,'vatLineCount':0,'closedPeriodCount':0}
+                    finally: imported_db.close()
                 target_db = sqlite3.connect((work/'workspace/synthetic-backup-inbox-target/data/ledger.sqlite').as_uri()+'?mode=ro', uri=True)
                 try:
                     target_counts = {table: target_db.execute('SELECT count(*) FROM '+table).fetchone()[0] for table in ['documents','bank_transactions','journal_entries']}
@@ -856,6 +906,12 @@ def main():
                     if not actual.get('qualified') or not reopened.get('qualified') or not reopened.get('exactNormalMfaRestartState') or not reopened.get('fullAudit119GreenAfterRestart') or actual['accountingFingerprint'] != reopened['accountingFingerprint']:
                         raise RuntimeError('Bad-debt whole-flow or exact restart not qualified')
                     report.update(workflow='invoice_bad_debt_dkk_foreign_full_flow',invoiceBadDebtQualified=True,invoiceBadDebtRestartQualified=True,invoiceBadDebtFullAudit119Qualified=True,invoiceBadDebtSourceFreeRestoreQualified=False,invoiceBadDebtForeignActualQualified=True,independentLossEstablishmentQualified=False,recoveryFeatureQualified=False,foreignInterestQualified=False,installedNativeQualified=False)
+                if args.synthetic_import:
+                    actual = report['results']['synthetic-run']
+                    reopened = report['results']['synthetic-reopen']
+                    if not actual.get('qualified') or not reopened.get('qualified') or not reopened.get('exactNormalMfaRestartState') or actual['accountingFingerprint'] != reopened['accountingFingerprint']:
+                        raise RuntimeError('Synthetic whole-flow or exact restart not qualified')
+                    report.update(workflow='synthetic_csv_shifted_nonvat_import_owner',syntheticImportQualified=True,syntheticImportRestartQualified=True,syntheticImportSourceFreeRestoreQualified=False,installedNativeQualified=False)
                 if args.dinero_import:
                     actual = report['results']['dinero-run']
                     reopened = report['results']['dinero-reopen']

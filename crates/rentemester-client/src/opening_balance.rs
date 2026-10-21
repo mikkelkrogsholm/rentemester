@@ -14,6 +14,11 @@ pub fn opening_balance_body_schema(apply: bool) -> Value {
         json!({"cutOverDate":{"type":"string","pattern":"^[0-9]{4}-[0-9]{2}-[0-9]{2}$","description":"Explicit human cutover, server validates calendar/horizon/periods; no inferred archive boundary"},"lines":{"type":"array","minItems":2,"items":line},"note":{"type":["string","null"],"description":"Optional note, server limit4096 UTF8 bytes"},"sourceArchiveImportIds":{"type":"array","maxItems":32,"uniqueItems":true,"items":{"type":"integer","minimum":1,"maximum":9007199254740991u64},"description":"Optional explicit proof citations only; never copy or infer amounts"}}),
         &["cutOverDate", "lines"],
     );
+    let source = object(
+        json!({"sourceSystem":{"const":"synthetic-csv"},"content":{"type":"string","minLength":1,"description":"Exact original UTF-8 synthetic CSV, max48KiB; integer source amounts are øre. Server parses and reviews existing unclassified chart without guessing types."}}),
+        &["sourceSystem", "content"],
+    );
+    let input = json!({"oneOf":[input,source]});
     if apply {
         object(
             json!({"input":input,"planHash":{"type":"string","minLength":64,"maxLength":64,"pattern":"^[0-9a-f]{64}$","description":"Exact reviewed server planHash"},"idempotencyKey":{"type":"string","minLength":1,"description":"Caller original key, preserve exact input/hash/key after an unknown outcome; no automatic retry"},"confirm":{"const":true}}),
@@ -45,10 +50,32 @@ struct Input {
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 struct Apply {
-    input: Input,
+    input: PlanInput,
     plan_hash: String,
     idempotency_key: String,
     confirm: bool,
+}
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct SourceInput {
+    source_system: String,
+    content: String,
+}
+#[derive(Deserialize)]
+#[serde(untagged)]
+enum PlanInput {
+    Opening(Input),
+    Synthetic(SourceInput),
+}
+fn plan_shape(input: &PlanInput) -> bool {
+    match input {
+        PlanInput::Opening(i) => input_shape(i),
+        PlanInput::Synthetic(i) => {
+            i.source_system == "synthetic-csv"
+                && !i.content.is_empty()
+                && i.content.len() <= 48 * 1024
+        }
+    }
 }
 fn optional_amount<'de, D: serde::Deserializer<'de>>(d: D) -> Result<Option<String>, D::Error> {
     String::deserialize(d).map(Some)
@@ -81,7 +108,7 @@ fn shape(bytes: &[u8], apply: bool) -> Result<(), Error> {
     }
     let valid = if apply {
         let i: Apply = serde_json::from_slice(bytes).map_err(|_| invalid())?;
-        input_shape(&i.input)
+        plan_shape(&i.input)
             && i.confirm
             && !i.idempotency_key.is_empty()
             && i.plan_hash.len() == 64
@@ -89,8 +116,8 @@ fn shape(bytes: &[u8], apply: bool) -> Result<(), Error> {
                 .bytes()
                 .all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b))
     } else {
-        let i: Input = serde_json::from_slice(bytes).map_err(|_| invalid())?;
-        input_shape(&i)
+        let i: PlanInput = serde_json::from_slice(bytes).map_err(|_| invalid())?;
+        plan_shape(&i)
     };
     if valid { Ok(()) } else { Err(invalid()) }
 }
@@ -191,5 +218,25 @@ impl ApiClient {
                 status: status.as_u16(),
             })
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn synthetic_source_envelopes_preserve_exact_content_and_reject_authority_fields() {
+        let source = json!({"sourceSystem":"synthetic-csv","content":"\u{feff}# cutOverDate: 2024-07-01\r\nsection,accountNo,name,debit,credit\r\n"});
+        assert!(shape(&serde_json::to_vec(&source).unwrap(), false).is_ok());
+        let mut invalid = source.clone();
+        invalid["actor"] = json!("user:caller");
+        assert!(shape(&serde_json::to_vec(&invalid).unwrap(), false).is_err());
+        let mut apply = json!({"input":source,"planHash":"a".repeat(64),"idempotencyKey":"original-source-key","confirm":true});
+        assert!(shape(&serde_json::to_vec(&apply).unwrap(), true).is_ok());
+        apply["confirm"] = json!(false);
+        assert!(shape(&serde_json::to_vec(&apply).unwrap(), true).is_err());
+        apply["confirm"] = json!(true);
+        apply["input"]["sourceSystem"] = json!("unsupported-system");
+        assert!(shape(&serde_json::to_vec(&apply).unwrap(), true).is_err());
     }
 }

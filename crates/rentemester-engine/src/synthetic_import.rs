@@ -88,10 +88,10 @@ pub fn parse(bytes: &[u8]) -> Result<Source, Error> {
         }
         if let Some(body) = line.strip_prefix('#') {
             let body = trim(body);
-            if let Some((key, value)) = body.split_once(':') {
-                if !key.is_empty() {
-                    headers.insert(trim(key).to_lowercase(), trim(value).to_owned());
-                }
+            if let Some((key, value)) = body.split_once(':')
+                && !key.is_empty()
+            {
+                headers.insert(trim(key).to_lowercase(), trim(value).to_owned());
             }
             continue;
         }

@@ -6,6 +6,8 @@ enum Input {
     Read,
     Plan(Box<Plan>),
     Apply(Box<Apply>),
+    SyntheticPlan(Box<rentemester_storage::synthetic_import::Input>),
+    SyntheticApply(Box<rentemester_storage::synthetic_import::Apply>),
 }
 fn parse_plan(bytes: &[u8]) -> Result<Plan, ()> {
     serde_json::from_slice(bytes).map_err(|_| ())
@@ -16,6 +18,27 @@ fn parse_apply(bytes: &[u8], header: Option<&str>) -> Result<Apply, ()> {
         return Err(());
     }
     Ok(input)
+}
+fn parse_plan_input(bytes: &[u8]) -> Result<Input, ()> {
+    parse_plan(bytes)
+        .map(|v| Input::Plan(Box::new(v)))
+        .or_else(|()| {
+            serde_json::from_slice(bytes)
+                .map(|v| Input::SyntheticPlan(Box::new(v)))
+                .map_err(|_| ())
+        })
+}
+fn parse_apply_input(bytes: &[u8], header: Option<&str>) -> Result<Input, ()> {
+    parse_apply(bytes, header)
+        .map(|v| Input::Apply(Box::new(v)))
+        .or_else(|()| {
+            let v: rentemester_storage::synthetic_import::Apply =
+                serde_json::from_slice(bytes).map_err(|_| ())?;
+            if !v.confirm || header.is_some_and(|h| h != v.idempotency_key) {
+                return Err(());
+            }
+            Ok(Input::SyntheticApply(Box::new(v)))
+        })
 }
 pub(super) async fn handle(State(state): State<Product>, request: Request) -> Response {
     let apply = request.uri().path().ends_with("/apply");
@@ -59,16 +82,13 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
         let Ok(bytes) = to_bytes(request.into_body(), 64 * 1024).await else {
             return refused(StatusCode::PAYLOAD_TOO_LARGE, "opening_balance_invalid");
         };
-        if apply {
-            match parse_apply(&bytes, header.as_deref()) {
-                Ok(v) => Input::Apply(Box::new(v)),
-                Err(()) => return refused(StatusCode::BAD_REQUEST, "opening_balance_invalid"),
-            }
+        match if apply {
+            parse_apply_input(&bytes, header.as_deref())
         } else {
-            match parse_plan(&bytes) {
-                Ok(v) => Input::Plan(Box::new(v)),
-                Err(()) => return refused(StatusCode::BAD_REQUEST, "opening_balance_invalid"),
-            }
+            parse_plan_input(&bytes)
+        } {
+            Ok(input) => input,
+            Err(()) => return refused(StatusCode::BAD_REQUEST, "opening_balance_invalid"),
         }
     } else {
         if method != axum::http::Method::GET || request.headers().contains_key("transfer-encoding")
@@ -93,6 +113,8 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
             Input::Read => Action::Read,
             Input::Plan(i) => Action::Plan(i),
             Input::Apply(i) => Action::Apply(i),
+            Input::SyntheticPlan(i) => Action::SyntheticPlan(i),
+            Input::SyntheticApply(i) => Action::SyntheticApply(i),
         };
         owner
             .opening_balance(&cookie, &SystemClock, action)
@@ -183,5 +205,35 @@ mod tests {
             )
             .is_err()
         );
+    }
+}
+
+#[cfg(test)]
+mod synthetic_tests {
+    use super::*;
+    #[test]
+    fn source_envelopes_cannot_override_actor_or_confirmation_or_header_key() {
+        let raw = r##"{"sourceSystem":"synthetic-csv","content":"# cutOverDate: 2025-07-01\r\n"}"##;
+        assert!(matches!(
+            parse_plan_input(raw.as_bytes()),
+            Ok(Input::SyntheticPlan(_))
+        ));
+        assert!(
+            parse_plan_input(
+                raw.replace("\"content\":", "\"actor\":\"user:caller\",\"content\":")
+                    .as_bytes()
+            )
+            .is_err()
+        );
+        let body = format!(
+            r#"{{"input":{raw},"planHash":"{}","idempotencyKey":"source-key","confirm":true}}"#,
+            "a".repeat(64)
+        );
+        assert!(matches!(
+            parse_apply_input(body.as_bytes(), Some("source-key")),
+            Ok(Input::SyntheticApply(_))
+        ));
+        assert!(parse_apply_input(body.as_bytes(), Some("changed-key")).is_err());
+        assert!(parse_apply_input(body.replace("true", "false").as_bytes(), None).is_err());
     }
 }

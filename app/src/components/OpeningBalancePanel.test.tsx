@@ -102,3 +102,11 @@ test("reopened uncertainty refuses changed input instead of creating a replaceme
 test("confirmed receipt with unavailable readback stays pending and a different singleton cannot enable replay", async () => {
   const apply = setup(); vi.spyOn(openingBalanceApi, "read").mockImplementation(async () => { if (saved) throw new ApiError("forbidden", "Synthetic readback refused", 403); return { ok: true, openingBalance: null, errors: [] }; }); mount(); const dialog = await review(); await confirm(dialog); await screen.findByText("Synthetic readback refused"); expect(apply).toHaveBeenCalledTimes(1); expect(screen.queryByRole("region", { name: "Bogført åbningsbalance" })).toBeNull(); expect(within(dialog).getByRole("button", { name: "Hent oprindelig kvittering / prøv samme anmodning" })).toBeDisabled(); vi.spyOn(openingBalanceApi, "read").mockResolvedValue({ ok: true, openingBalance: { ...record(), planHash: "e".repeat(64) }, errors: [] }); await userEvent.click(within(dialog).getByRole("button", { name: "Kontrollér aktuel åbningsbalance" })); await screen.findByText("Den aktuelle åbningsbalance tilhører en anden plan. Forsøget kan ikke gentages her."); expect(within(dialog).getByRole("button", { name: "Hent oprindelig kvittering / prøv samme anmodning" })).toBeDisabled(); expect(apply).toHaveBeenCalledTimes(1);
 });
+
+
+test("imported synthetic CSV opening uses the same read-only recorded-opening view", async () => {
+  const apply = setup(); saved = { ...record(), sourceBasis: { kind: "synthetic_csv", currency: "DKK", sourceArchives: [] } }; mount();
+  await screen.findByRole("region", { name: "Bogført åbningsbalance" });
+  expect(screen.getByText("CSV-kilden er bevaret i åbningsposteringens auditdokumentation.")).toBeInTheDocument();
+  expect(screen.queryByLabelText("Skæringsdato")).toBeNull(); expect(apply).not.toHaveBeenCalled();
+});

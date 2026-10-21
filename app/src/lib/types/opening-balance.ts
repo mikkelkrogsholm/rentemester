@@ -5,7 +5,7 @@ export type OpeningInput = {
   sourceArchiveImportIds: number[];
 };
 export type OpeningSourceBasis = {
-  kind: "operator_supplied";
+  kind: "operator_supplied" | "synthetic_csv";
   currency: string;
   sourceArchives: Array<{ importId: number; sourceHash: string; parserContract: string; declaredCurrency: string }>;
 };

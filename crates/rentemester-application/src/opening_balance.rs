@@ -23,6 +23,8 @@ pub enum Action<'a> {
     Read,
     Plan(&'a Input),
     Apply(&'a Apply),
+    SyntheticPlan(&'a rentemester_storage::synthetic_import::Input),
+    SyntheticApply(&'a rentemester_storage::synthetic_import::Apply),
 }
 fn unavailable() -> Error {
     Error::new(
@@ -37,14 +39,18 @@ pub fn execute(
     context: Context<'_>,
     action: Action<'_>,
 ) -> Result<Committed<Value>, Failure> {
-    let readonly = !matches!(action, Action::Apply(_));
+    let readonly = !matches!(action, Action::Apply(_) | Action::SyntheticApply(_));
     let cookie = context.cookie;
     let clock = context.clock;
     let selection = context.selection;
     control_fence::execute_authorized_with_backup(
         control,
         company,
-        (!readonly).then_some(control_fence::BackupCheck{workspace:selection.workspace,slug:selection.slug,clock}),
+        (!readonly).then_some(control_fence::BackupCheck {
+            workspace: selection.workspace,
+            slug: selection.slug,
+            clock,
+        }),
         |tx| {
             let denied = || {
                 Error::new(
@@ -170,6 +176,71 @@ pub fn execute(
                         ));
                     }
                     Ok(result)
+                }
+                Action::SyntheticPlan(input) => {
+                    let result = rentemester_storage::synthetic_import::prepare(
+                        tx, input, &verified, latest,
+                    )?;
+                    if tx.total_changes() != before {
+                        return Err(Error::new(
+                            "readonly_operation_changed_data",
+                            "Synthetic source review changed data",
+                        ));
+                    }
+                    Ok(result)
+                }
+                Action::SyntheticApply(input) => {
+                    if !input.confirm {
+                        return Err(Error::new(
+                            "opening_balance_invalid",
+                            "Explicit confirmation required",
+                        ));
+                    }
+                    idempotency::validate_key(&input.idempotency_key)?;
+                    let encoded = serde_json::to_string(&input.input).map_err(|_| unavailable())?;
+                    let payload = json!({"syntheticSourceSha256":rentemester_storage::intercompany::sha(&encoded),"planHash":input.plan_hash,"confirm":input.confirm});
+                    let actor = format!("user:{subject}");
+                    match idempotency::execute(
+                        tx,
+                        idempotency::Input {
+                            key: &input.idempotency_key,
+                            operation: Operation::OpeningBalancePost,
+                            principal_kind: PrincipalKind::User,
+                            subject,
+                            payload: &payload,
+                            created_by: &actor,
+                            created_by_program: store::PROGRAM,
+                            now_ms: now,
+                        },
+                        |tx| {
+                            rentemester_storage::synthetic_import::apply(
+                                tx,
+                                input,
+                                &verified,
+                                latest,
+                                rentemester_storage::journal_post::Actor {
+                                    subject: &actor,
+                                    program: store::PROGRAM,
+                                },
+                                now,
+                            )
+                        },
+                    )
+                    .map_err(|f| f.error)?
+                    {
+                        Outcome::Accepted {
+                            mut result,
+                            receipt,
+                        } => {
+                            result["idempotency"] =
+                                serde_json::to_value(receipt).map_err(|_| unavailable())?;
+                            Ok(result)
+                        }
+                        Outcome::Refused { code } => Err(Error::new(
+                            code,
+                            "Source request key refused; read canonical opening and journal before another action",
+                        )),
+                    }
                 }
                 Action::Apply(input) => {
                     if !input.confirm {

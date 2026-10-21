@@ -35,6 +35,8 @@ struct Binding {
     accounts: Vec<Value>,
     rule_version: String,
     facts: Value,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    synthetic_source: Option<crate::synthetic_import::Input>,
 }
 #[derive(Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -109,7 +111,7 @@ pub fn prepare(
     verified: &[VerifiedArchive],
     latest: Date,
 ) -> Result<Prepared, Error> {
-    prepare_mode(tx, input, verified, latest, false)
+    prepare_mode(tx, input, verified, latest, false, None)
 }
 fn prepare_mode(
     tx: &Transaction<'_>,
@@ -117,6 +119,7 @@ fn prepare_mode(
     verified: &[VerifiedArchive],
     latest: Date,
     source_import: bool,
+    synthetic_source: Option<&crate::synthetic_import::Input>,
 ) -> Result<Prepared, Error> {
     crate::journal_preview::require_current(tx)?;
     input.validate()?;
@@ -180,7 +183,12 @@ fn prepare_mode(
     let binding = Binding {
         input: input.clone(),
         source_basis: SourceBasis {
-            kind: "operator_supplied".into(),
+            kind: if synthetic_source.is_some() {
+                "synthetic_csv"
+            } else {
+                "operator_supplied"
+            }
+            .into(),
             currency: currency.into(),
             source_archives: citations(tx, &input.source_archive_import_ids)?,
         },
@@ -203,6 +211,7 @@ fn prepare_mode(
         accounts,
         rule_version,
         facts: serde_json::to_value(&facts).map_err(sql)?,
+        synthetic_source: synthetic_source.cloned(),
     };
     Ok(Prepared {
         hash: hash(&binding)?,
@@ -220,7 +229,7 @@ pub(crate) fn prepare_import(
     latest: Date,
     _admitted: &crate::dinero_import::AdmittedVoucher,
 ) -> Result<Prepared, Error> {
-    prepare_mode(tx, input, verified, latest, true)
+    prepare_mode(tx, input, verified, latest, true, None)
 }
 /// Fresh-key domain callback only. The authorized adapter owns durable keyed receipts and commit.
 pub fn apply(
@@ -231,7 +240,7 @@ pub fn apply(
     actor: Actor<'_>,
     now_ms: i64,
 ) -> Result<Value, Error> {
-    apply_mode(tx, input, verified, latest, actor, now_ms, None)
+    apply_mode(tx, input, verified, latest, actor, now_ms, None, None)
 }
 pub(crate) fn apply_import(
     tx: &Transaction<'_>,
@@ -242,8 +251,18 @@ pub(crate) fn apply_import(
     now_ms: i64,
     admitted: &crate::dinero_import::AdmittedVoucher,
 ) -> Result<Value, Error> {
-    apply_mode(tx, input, verified, latest, actor, now_ms, Some(admitted))
+    apply_mode(
+        tx,
+        input,
+        verified,
+        latest,
+        actor,
+        now_ms,
+        Some(admitted),
+        None,
+    )
 }
+#[allow(clippy::too_many_arguments)]
 fn apply_mode(
     tx: &Transaction<'_>,
     input: &Apply,
@@ -252,6 +271,7 @@ fn apply_mode(
     actor: Actor<'_>,
     now_ms: i64,
     admitted: Option<&crate::dinero_import::AdmittedVoucher>,
+    synthetic_source: Option<&crate::synthetic_import::Input>,
 ) -> Result<Value, Error> {
     journal_post::require_current(tx)?;
     crate::idempotency::validate_key(&input.idempotency_key)?;
@@ -264,7 +284,14 @@ fn apply_mode(
             "explicit current human opening confirmation required",
         ));
     }
-    let prepared = prepare_mode(tx, &input.input, verified, latest, admitted.is_some())?;
+    let prepared = prepare_mode(
+        tx,
+        &input.input,
+        verified,
+        latest,
+        admitted.is_some(),
+        synthetic_source,
+    )?;
     if input.plan_hash != prepared.hash {
         return Err(refused("opening plan changed; review a fresh plan"));
     }
@@ -363,13 +390,21 @@ pub fn validate_history(db: &Connection) -> Result<Option<VerifiedOpening>, Erro
         || r.plan_hash != hash(&e.binding)?
         || r.source_basis != e.binding.source_basis
         || r.cut_over_date != e.binding.input.cut_over_date
-        || r.source_basis.kind != "operator_supplied"
+        || r.source_basis.kind
+            != if e.binding.synthetic_source.is_some() {
+                "synthetic_csv"
+            } else {
+                "operator_supplied"
+            }
         || r.source_basis.source_archives
             != citations(db, &e.binding.input.source_archive_import_ids)?
     {
         return Err(refused("opening canonical retained provenance differs"));
     }
     e.binding.input.validate()?;
+    if let Some(source) = &e.binding.synthetic_source {
+        crate::synthetic_import::verify_opening(source, &e.binding.input)?;
+    }
     if e.binding.company["currency"] != r.source_basis.currency {
         return Err(refused("opening original currency binding differs"));
     }
@@ -530,4 +565,38 @@ pub fn require_report_range(db: &Connection, from: &str, to: &str) -> Result<Val
 }
 pub fn require_report_as_of(db: &Connection, as_of: &str) -> Result<Value, Error> {
     report_basis(db, None, as_of)
+}
+
+/// Same reviewed opening policy, with exact synthetic CSV retained in the immutable event.
+pub(crate) fn prepare_synthetic(
+    tx: &Transaction<'_>,
+    input: &Input,
+    verified: &[VerifiedArchive],
+    latest: Date,
+    source: &crate::synthetic_import::Input,
+) -> Result<Prepared, Error> {
+    crate::synthetic_import::verify_opening(source, input)?;
+    prepare_mode(tx, input, verified, latest, false, Some(source))
+}
+#[allow(clippy::too_many_arguments)]
+pub(crate) fn apply_synthetic(
+    tx: &Transaction<'_>,
+    input: &Apply,
+    verified: &[VerifiedArchive],
+    latest: Date,
+    actor: Actor<'_>,
+    now_ms: i64,
+    source: &crate::synthetic_import::Input,
+) -> Result<Value, Error> {
+    crate::synthetic_import::verify_opening(source, &input.input)?;
+    apply_mode(
+        tx,
+        input,
+        verified,
+        latest,
+        actor,
+        now_ms,
+        None,
+        Some(source),
+    )
 }
