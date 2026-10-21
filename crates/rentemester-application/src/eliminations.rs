@@ -62,10 +62,11 @@ pub fn prepare(
         action,
         None,
         Mode::Prepare,
+        None,
     )
 }
 #[allow(clippy::too_many_arguments)]
-pub fn execute(
+pub fn execute_scoped(
     db: &mut Connection,
     cookies: &CookieVerifier,
     clock: &dyn Clock,
@@ -74,6 +75,7 @@ pub fn execute(
     anchor: Option<&str>,
     action: Action<'_>,
     fresh: Option<&Value>,
+    backup: &mut dyn crate::backup_status::CompanyScopes,
 ) -> Result<Value, Failure> {
     run(
         db,
@@ -85,6 +87,7 @@ pub fn execute(
         action,
         fresh,
         Mode::Execute,
+        Some(backup),
     )
 }
 #[allow(clippy::too_many_arguments)]
@@ -98,6 +101,7 @@ fn run(
     action: Action<'_>,
     fresh: Option<&Value>,
     mode: Mode,
+    backup: Option<&mut dyn crate::backup_status::CompanyScopes>,
 ) -> Result<Value, Failure> {
     crate::control_fence::connection_ready(db).map_err(|e| failure(e, false))?;
     if !cookies.accepts_session(proof) || proof.workspace() != catalog.workspace {
@@ -200,7 +204,10 @@ fn run(
             .0;
         let mappings = rentemester_storage::intercompany::states(&tx, &manifest)?;
         let mapping = mappings.get(&input.mapping_id).ok_or_else(refused)?;
-        let endpoints = old.map_or_else(|| mapping.mapping.companies(), |s| s.payload.companies());
+        let mut endpoints = mapping.mapping.companies();
+        if let Some(previous) = old {
+            endpoints.extend(previous.payload.companies());
+        }
         if !endpoints.is_subset(if mutation { &admins } else { &visible }) {
             return Err(error("access_denied"));
         }
@@ -256,6 +263,13 @@ fn run(
             Action::Reverse(_) => "reversed",
             _ => return Err(refused()),
         };
+        endpoints.extend(payload.companies());
+        if !endpoints.is_subset(&admins) {
+            return Err(error("access_denied"));
+        }
+        backup
+            .ok_or_else(|| error("backup_observation_required"))?
+            .require(&tx, clock, &endpoints.into_iter().collect::<Vec<_>>())?;
         store::append(&tx, &payload, kind, &actor, &at)
     })();
     match result {
@@ -276,4 +290,29 @@ fn run(
             Err(failure(e, reusable))
         }
     }
+}
+
+#[cfg(test)]
+#[allow(clippy::too_many_arguments)]
+pub fn execute(
+    db: &mut Connection,
+    cookies: &CookieVerifier,
+    clock: &dyn Clock,
+    proof: &VerifiedCookie,
+    catalog: &Catalog,
+    anchor: Option<&str>,
+    action: Action<'_>,
+    fresh: Option<&Value>,
+) -> Result<Value, Failure> {
+    execute_scoped(
+        db,
+        cookies,
+        clock,
+        proof,
+        catalog,
+        anchor,
+        action,
+        fresh,
+        &mut crate::backup_status::UnlockedTestScopes,
+    )
 }

@@ -39,7 +39,8 @@ pub enum Action<'a> {
     Approve(&'a Exact),
     Revoke(&'a Id),
 }
-pub fn execute(
+#[allow(clippy::too_many_arguments)]
+pub fn execute_scoped(
     db: &mut Connection,
     cookies: &CookieVerifier,
     clock: &dyn Clock,
@@ -47,6 +48,7 @@ pub fn execute(
     catalog: &Catalog,
     slug: &str,
     action: Action<'_>,
+    backup: &mut dyn crate::backup_status::CompanyScopes,
 ) -> Result<Value, Failure> {
     crate::control_fence::connection_ready(db).map_err(|e| failure(e, false))?;
     if !cookies.accepts_session(proof) || proof.workspace() != catalog.workspace {
@@ -141,16 +143,38 @@ pub fn execute(
                     .clone()
                     .normalize(&manifest.as_ref().ok_or_else(refused)?.0)?;
                 require(&p)?;
+                let mut refs = p.companies(&manifest.as_ref().unwrap().0)?;
+                if let Some(previous) = states.get(&p.id) {
+                    require(&previous.profile)?;
+                    refs.extend(previous.profile.companies(&manifest.as_ref().unwrap().0)?);
+                }
+                backup.require(&tx, clock, &refs.into_iter().collect::<Vec<_>>())?;
                 store::propose(&tx, &manifest.as_ref().unwrap().0, &p, &actor, &at)
             }
             Action::Approve(exact) => {
                 let s = states.get(&exact.profile_id).ok_or_else(refused)?;
                 require(&s.profile)?;
+                backup.require(
+                    &tx,
+                    clock,
+                    &s.profile
+                        .companies(&manifest.as_ref().unwrap().0)?
+                        .into_iter()
+                        .collect::<Vec<_>>(),
+                )?;
                 store::approve(&tx, s, &exact.profile_hash, &actor, &at)
             }
             Action::Revoke(id) => {
                 let s = states.get(&id.profile_id).ok_or_else(refused)?;
                 require(&s.profile)?;
+                backup.require(
+                    &tx,
+                    clock,
+                    &s.profile
+                        .companies(&manifest.as_ref().unwrap().0)?
+                        .into_iter()
+                        .collect::<Vec<_>>(),
+                )?;
                 store::revoke(&tx, s, &actor, &at)
             }
             Action::Current(d) | Action::Available(d) => {
@@ -283,4 +307,26 @@ pub fn execute(
             Err(failure(e, reusable))
         }
     }
+}
+
+#[cfg(test)]
+pub fn execute(
+    db: &mut Connection,
+    cookies: &CookieVerifier,
+    clock: &dyn Clock,
+    proof: &VerifiedCookie,
+    catalog: &Catalog,
+    slug: &str,
+    action: Action<'_>,
+) -> Result<Value, Failure> {
+    execute_scoped(
+        db,
+        cookies,
+        clock,
+        proof,
+        catalog,
+        slug,
+        action,
+        &mut crate::backup_status::UnlockedTestScopes,
+    )
 }
