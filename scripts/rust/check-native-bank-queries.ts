@@ -12,6 +12,7 @@ export function createBankQueriesProof(page: Page, base: string, work: string, m
   let sources: { sha256: string; bytesBase64: string }[] = [];
   const importReceipts: any[] = [];
   const accountLifecycle: any = { created: [], updated: [] };
+  const matchingProof: any = {}; let correctionInput: any;
   const need = (v: unknown, message: string) => { if (!v) { const error = Error(message); error.name = 'BankQueries_' + step + '_' + message.replace(/[^A-Za-z0-9_]/g, '_').slice(0, 80); throw error; } };
   const hash = (v: Buffer | string) => createHash('sha256').update(v).digest('hex');
   const query = (v: Record<string, any>) => new URLSearchParams(Object.entries(v).map(([k, value]) => [k, String(value)])).toString();
@@ -19,15 +20,15 @@ export function createBankQueriesProof(page: Page, base: string, work: string, m
   async function post(path: string, data: unknown) { const r = await page.request.post(base + path, { headers: { origin: base }, data }); const v = await r.json(); need(r.ok() && v.ok !== false, 'Setup_' + path); return v; }
   async function cookie(actor: Page, file: string) { rmSync(file, { force: true }); writeFileSync(file, (await actor.context().cookies(base)).map(c => `${c.name}=${c.value}`).join('; '), { mode: 0o600, flag: 'wx' }); }
   function cli(name: string, args: Record<string, any> = {}, file = ownerFile, denied = false, human = false) {
-    const commands: Record<string, string[]> = { list: ['bank', 'list'], report: ['reconcile', 'bank'], accounts: ['bank-account', 'list'], import: ['bank', 'import'], accountAdd: ['bank-account', 'add'], accountUpdate: ['bank-account', 'update'] };
-    const flags: Record<string, string> = { textMatch: 'text-match', includeInactive: 'include-inactive', bankName: 'bank-name', registrationNo: 'registration-no', accountNo: 'account-no', accountOwner: 'account-owner', customerNo: 'customer-no', ledgerAccountNo: 'ledger-account' };
+    const commands: Record<string, string[]> = { list: ['bank', 'list'], report: ['reconcile', 'bank'], accounts: ['bank-account', 'list'], import: ['bank', 'import'], accountAdd: ['bank-account', 'add'], accountUpdate: ['bank-account', 'update'], matches: ['bank', 'suggest-matches'], link: ['bank', 'link-journal'], correctionPlan: ['bank', 'correction-plan'], correct: ['bank', 'correction-apply'] };
+    const flags: Record<string, string> = { textMatch: 'text-match', includeInactive: 'include-inactive', bankName: 'bank-name', registrationNo: 'registration-no', accountNo: 'account-no', accountOwner: 'account-owner', customerNo: 'customer-no', ledgerAccountNo: 'ledger-account', bankTransactionId: 'bank-transaction-id', journalEntryId: 'journal-entry-id', matchMethod: 'match-method', sourceReference: 'source-reference', replacementJournalEntryId: 'replacement-journal-entry-id', expectedReconciliationId: 'expected-reconciliation-id', planHash: 'plan-hash', idempotencyKey: 'idempotency-key' };
     const r = spawnSync(join(work, 'rentemester-rust'), [...commands[name], '--server', base, '--allow-loopback-http', '--cookie-file', file, '--company', 'synthetic', ...(human ? [] : ['--json']), ...Object.entries(args).flatMap(([key, v]) => ['--' + (flags[key] ?? key), String(v)])], { encoding: 'utf8', timeout: 45000, maxBuffer: 16 * 1024 * 1024 });
     need(!r.error && r.status === (denied ? 1 : 0), 'Original_CLI_exit');
     const secret = readFileSync(file, 'utf8').trim(); need(secret && !r.stdout.includes(secret) && !r.stderr.includes(secret), 'CLI_session_privacy');
     return human ? r.stdout : JSON.parse(r.stdout);
   }
   function mcp(name: string, args: Record<string, any> = {}, file = ownerFile, denied = false, schemaError = false) {
-    const names: Record<string, string> = { list: 'bank_list', report: 'reconcile_bank', accounts: 'bank_account_list', import: 'bank_import', accountUpdate: 'bank_account_update' };
+    const names: Record<string, string> = { list: 'bank_list', report: 'reconcile_bank', accounts: 'bank_account_list', import: 'bank_import', accountUpdate: 'bank_account_update', matches: 'bank_suggest_matches', correctionPlan: 'bank_reconciliation_correction_plan', correct: 'bank_reconciliation_correction_apply' };
     const wire = [{ jsonrpc: '2.0', id: 1, method: 'initialize', params: { protocolVersion: '2025-11-25', capabilities: {}, clientInfo: { name: 'synthetic-bank-queries141', version: '1' } } }, { jsonrpc: '2.0', method: 'notifications/initialized' }, { jsonrpc: '2.0', id: 2, method: 'tools/call', params: { name: names[name], arguments: { company: 'synthetic', ...args } } }].map(v => JSON.stringify(v)).join('\n') + '\n';
     const r = spawnSync(join(work, 'rentemester-mcp'), ['--server', base, '--allow-loopback-http', '--cookie-file', file], { input: wire, encoding: 'utf8', timeout: 45000, maxBuffer: 16 * 1024 * 1024 });
     const secret = readFileSync(file, 'utf8').trim(); need(!r.error && r.status === 0 && !r.stdout.includes(secret) && !r.stderr.includes(secret), 'MCP_transport_privacy');
@@ -38,6 +39,9 @@ export function createBankQueriesProof(page: Page, base: string, work: string, m
     if (denied) need(v.errors.length > 0 && v.data === undefined, 'No_refused_data');
     return v;
   }
+  const originalEndpoint = (kind: string) => prefix + 'bank/original/' + ({ matches: 'suggestions', correctionPlan: 'correction-plan', correct: 'correction-apply' } as Record<string, string>)[kind];
+  async function originalRead(kind: string, args: Record<string, any> = {}) { return get(originalEndpoint(kind) + '?' + query(args)); }
+  const cliCorrection = (principal: string) => ({ ...Object.fromEntries(Object.entries(correctionInput).filter(([k]) => k !== 'confirm')), principal, confirm: 'yes' });
   const endpoint = (kind: string) => prefix + 'bank/' + ({ list: 'transactions', report: 'reconciliation', accounts: 'accounts' } as Record<string, string>)[kind];
   async function canonical(kind: string, args: Record<string, any> = {}, actor = page) { return get(endpoint(kind) + '?' + query(args), actor); }
   const flattened = (v: any) => ({ ok: v.ok, ...(v.data ?? {}), errors: v.errors, ...(v.appliedRules ? { appliedRules: v.appliedRules } : {}), ...(v.code ? { code: v.code } : {}) });
@@ -121,11 +125,18 @@ export function createBankQueriesProof(page: Page, base: string, work: string, m
       accountLifecycle.reactivated = reactivated;
       await page.goto(base + '/companies/synthetic/bankkonti'); await page.getByRole('heading', { name: 'Bankkonti', exact: true }).waitFor(); await page.getByText('Synthetic browser143', { exact: true }).waitFor(); accountLifecycle.sharedReactReadQualified = true;
       const rows = (await canonical('list')).data.rows, row = rows.find((r: any) => r.reference === 'CURRENT141'), fx = rows.find((r: any) => r.reference === 'FX141'); need(row && fx, 'Actual_imported_row_ids'); selected = { bankId: row.id, fxAccountId: fx.bankAccountId };
+      step = 'original_bank_suggestions';
+      for (const args of [{}, { bankTransactionId: row.id, max: 1 }]) {
+        const canonical = await originalRead('matches', args); need(canonical.ok && canonical.data.rows.length === (args.bankTransactionId ? 1 : 3), 'Original_match_rows_scope');
+        need(isDeepStrictEqual(mcp('matches', args), canonical) && isDeepStrictEqual(cli('matches', args), flattened(canonical)), 'Original_suggestions_exact_parity'); matchingProof.suggestions ??= []; matchingProof.suggestions.push(canonical);
+      }
       async function journal(text: string, equity: string, key: string) { return post(prefix + 'manual-journal', { confirm: true, input: { format: 'rentemester-manual-journal-post/1', expectedRuleVersion: (await get(prefix + 'journal')).journal.nativePosting.ruleVersion, idempotencyKey: key, request: { transactionDate: today, text, currency: 'DKK', lines: [{ accountNo: '1741', debitAmount: '24.14', creditAmount: '0.00' }, { accountNo: equity, debitAmount: '0.00', creditAmount: '24.14' }] } } }); }
       step = 'real_link_reversal_correction';
       originalId = (await journal('Synthetic query original141', '8741', 'synthetic-query141-original')).entryId;
       const plans = (await get(prefix + `bank/reconciliation-candidates?bankTransactionId=${row.id}`)).reconciliationCandidates.plans, plan = plans.find((p: any) => p.journalEntryId === originalId); need(plan, 'Existing_link_plan');
-      const initial = await post(prefix + 'bank/reconciliation-link', { bankTransactionId: row.id, journalEntryId: originalId, planHash: plan.planHash, note: 'Synthetic reviewed query original', confirm: true });
+      const linkArgs = { bankTransactionId: row.id, journalEntryId: originalId, matchMethod: 'source-reference', sourceReference: 'synthetic:original-link144', confirm: 'yes' };
+      const initial = cli('link', linkArgs); need(initial.ok && initial.idempotent === false && initial.journalEntryId === originalId && initial.bankTransactionId === row.id && initial.bankAmount === 24.14 && initial.journalBankMovement === 24.14, 'Original_link_receipt_no_posting');
+      const linkReplay = cli('link', linkArgs); need(linkReplay.ok && linkReplay.idempotent === true && linkReplay.journalEntryId === originalId, 'Original_link_natural_key_no_duplicate'); matchingProof.link = initial; matchingProof.linkReplay = linkReplay; matchingProof.reviewedNativePlan = plan;
       need((await canonical('list', { status: 'matched' })).data.rows.some((r: any) => r.journalEntryId === originalId), 'Initial_real_match');
       replacementId = (await journal('Synthetic query replacement141', '8742', 'synthetic-query141-replacement')).entryId;
       const reversal = await post(prefix + 'manual-journal-reversal', { confirm: true, input: { format: 'rentemester-manual-journal-reversal/1', expectedRuleVersion: (await get(prefix + 'journal')).journal.nativePosting.ruleVersion, idempotencyKey: 'synthetic-query141-reversal', request: { entryId: String(originalId), transactionDate: today, reason: 'Synthetic query reversed original' } } }); reversalId = reversal.entryId;
@@ -135,8 +146,16 @@ export function createBankQueriesProof(page: Page, base: string, work: string, m
       const reversedBody = await reversedResponse.json();
       need(reversedResponse.status() === 422 && reversedBody.ok === false && reversedBody.code === 'bank_query_sources_unavailable', 'Reversed_native_chain_requires_correction');
       mcp('list', {}, ownerFile, true); cli('list', {}, ownerFile, true);
-      const correction = (await get(prefix + `bank/reconciliation-correction-plan?bankTransactionId=${row.id}&replacementJournalEntryId=${replacementId}`)).plan.plan;
-      await post(prefix + 'bank/reconciliation-correction', { bankTransactionId: row.id, replacementJournalEntryId: replacementId, expectedReconciliationId: initial.reconciliation.reconciliationId, planHash: correction.planHash, reason: 'Synthetic independently posted replacement', idempotencyKey: 'synthetic-query141-correction', confirm: true });
+      const planArgs = { bankTransactionId: row.id, replacementJournalEntryId: replacementId }, canonicalPlan = await originalRead('correctionPlan', planArgs), correction = canonicalPlan.data.plan;
+      need(isDeepStrictEqual(mcp('correctionPlan', planArgs), canonicalPlan) && isDeepStrictEqual(cli('correctionPlan', planArgs), flattened(canonicalPlan)), 'Original_correction_plan_exact_full_proof');
+      correctionInput = { ...planArgs, expectedReconciliationId: correction.reconciliationId, planHash: correction.planHash, reason: 'Synthetic independently posted replacement', idempotencyKey: 'synthetic-query141-correction', confirm: true };
+      const forged = await page.request.post(base + originalEndpoint('correct'), { headers: { origin: base }, data: { ...correctionInput, expectedPrincipal: { kind: 'user', subjectId: 'forged-original144' } } }); need(forged.status() === 403, 'Original_principal_assertion_not_authority');
+      mcp('correct', { ...correctionInput, principal: 'forged-original144' }, ownerFile, false, true);
+      mcp('correct', { ...correctionInput, confirm: false }, ownerFile, true);
+      const applied = mcp('correct', correctionInput); need(applied.data.idempotent === false && applied.data.effect === 'correction_evidence_only_no_posting', 'Original_flat_MCP_correction');
+      const ownerId = (await get('/api/me')).user.id, replay = cli('correct', cliCorrection('user:' + ownerId)); need(replay.ok && replay.idempotent === true && replay.id === applied.data.id && replay.receipt.replayed === true, 'Original_CLI_keyed_replay');
+      const replayResponse = await page.request.post(base + originalEndpoint('correct'), { headers: { origin: base }, data: correctionInput }); const replayCanonical = await replayResponse.json(); need(replayResponse.ok() && isDeepStrictEqual(replay, flattened(replayCanonical)), 'Original_correction_replay_receipt_exact');
+      matchingProof.correctionPlan = canonicalPlan; matchingProof.correction = applied; matchingProof.correctionReplay = replayCanonical; matchingProof.principalAssertionRefused = true;
       stable = await books(); const proof = await projections();
       step = 'refusals';
       for (const [kind, args] of [['list', { from: '2026-02-30' }], ['list', { account: 'missing-query141' }], ['report', { from: today, to: old }]] as [string, Record<string, any>][]) {
@@ -150,10 +169,13 @@ export function createBankQueriesProof(page: Page, base: string, work: string, m
       need((await member.request.patch(base + prefix + 'bank-accounts/' + firstAccount.slug, { headers: { origin: base }, data: { confirm: true, bankName: 'Refused browser143' } })).status() === 403, 'Current_revoked_browser_account_mutation');
       step = 'physical_source_refusal';
       const file = join(work, 'workspace/synthetic/bank/processed', sources[1].sha256 + '.txt'), bytes = readFileSync(file); writeFileSync(file, Buffer.from('Synthetic corrupt source141\n'));
-      try { const r = await page.request.get(base + endpoint('list')); need(!r.ok(), 'Unmatched_original_corruption_refused'); mcp('list', {}, ownerFile, true); cli('list', {}, ownerFile, true); } finally { writeFileSync(file, bytes); }
+      try { const r = await page.request.get(base + endpoint('list')); need(!r.ok(), 'Unmatched_original_corruption_refused'); mcp('list', {}, ownerFile, true); cli('list', {}, ownerFile, true);
+        const linked = join(work, 'workspace/synthetic/bank/processed', sources[0].sha256 + '.txt'), linkedBytes = readFileSync(linked); writeFileSync(linked, Buffer.from('Synthetic corrupt linked source144\n'));
+        try { mcp('correct', correctionInput, ownerFile, true); matchingProof.receiptReplaySourceRefused = true; } finally { writeFileSync(linked, linkedBytes); }
+      } finally { writeFileSync(file, bytes); }
       await sourceFiles(); await unchanged(); complete = true;
-      return { qualified: true, ordinaryMfa: true, originalBankQueryQualified: true, originalBankImportQualified: true, importReceipts, originalBankAccountQualified: true, accountLifecycle, reversedChainRefused: true, sourceCorruptionRefused: true, currentRevocationRefused: true, sources, today, old, selected, originalId, replacementId, reversalId, projections: proof, accountingFingerprint: hash(JSON.stringify(stable)), installedNativeQualified: false, sourceFreeRestoreQualified: false };
+      return { qualified: true, ordinaryMfa: true, originalBankQueryQualified: true, originalBankImportQualified: true, importReceipts, originalBankAccountQualified: true, accountLifecycle, originalBankMatchingQualified: true, matchingProof, reversedChainRefused: true, sourceCorruptionRefused: true, currentRevocationRefused: true, sources, today, old, selected, originalId, replacementId, reversalId, projections: proof, accountingFingerprint: hash(JSON.stringify(stable)), installedNativeQualified: false, sourceFreeRestoreQualified: false };
     },
-    async reopen() { need(complete, 'Completed_fixture'); await cookie(page, ownerFile); await unchanged(); const proof = await projections(); rmSync(ownerFile); rmSync(memberFile); return { qualified: true, ordinaryMfa: true, exactNormalMfaRestartState: true, projections: proof, accountingFingerprint: hash(JSON.stringify(stable)), installedNativeQualified: false, sourceFreeRestoreQualified: false }; },
+    async reopen() { need(complete, 'Completed_fixture'); await cookie(page, ownerFile); await unchanged(); const proof = await projections(); const replay = mcp('correct', correctionInput); need(isDeepStrictEqual(replay, matchingProof.correctionReplay), 'Original_correction_durable_replay_fresh_MFA'); await unchanged(); rmSync(ownerFile); rmSync(memberFile); return { qualified: true, ordinaryMfa: true, exactNormalMfaRestartState: true, originalMatchingRestartQualified: true, correctionReplay: replay, projections: proof, accountingFingerprint: hash(JSON.stringify(stable)), installedNativeQualified: false, sourceFreeRestoreQualified: false }; },
   };
 }

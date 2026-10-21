@@ -737,6 +737,14 @@ def main():
                         account_audits = db.execute("SELECT event_type,entity_type,entity_id,actor FROM audit_log WHERE event_type IN ('bank_account_add','bank_account_update') ORDER BY id").fetchall()
                         if len(query_accounts) != 2 or [a[0] for a in account_audits] != ['bank_account_add']*2 + ['bank_account_update']*4:
                             raise RuntimeError('Original bank account lifecycle exact account/audit effects differ')
+                        original_links = db.execute('SELECT id,bank_transaction_id,journal_entry_id,match_method,source_reference,note,created_by,created_by_program FROM bank_journal_reconciliation_links ORDER BY id').fetchall()
+                        original_corrections = db.execute('SELECT id,bank_transaction_id,supersedes_reconciliation_id,superseded_journal_entry_id,replacement_journal_entry_id,principal_kind,principal_subject_id,plan_hash FROM bank_reconciliation_correction_events ORDER BY id').fetchall()
+                        original_matching_audits = db.execute("SELECT event_type,message,actor FROM audit_log WHERE event_type IN ('bank_journal_reconciliation_link','bank_reconciliation_corrected') ORDER BY id").fetchall()
+                        if len(original_links) != 1 or len(original_corrections) != 1 or [a[0] for a in original_matching_audits] != ['bank_journal_reconciliation_link','bank_reconciliation_corrected']:
+                            raise RuntimeError('Original bank matching/replay exact source-only effects differ')
+                        report['terminalSql'].update(originalLinks=original_links,originalCorrections=original_corrections,originalMatchingAudits=original_matching_audits)
+                        report['terminalSql']['unmatchedExceptions'] = db.execute("SELECT id,related_bank_transaction_id,status FROM exceptions WHERE type='UNMATCHED_BANK_TRANSACTION' ORDER BY id").fetchall()
+                        report['terminalSql']['exceptionResolutionAudits'] = db.execute("SELECT event_type,entity_id,actor FROM audit_log WHERE event_type='exception_resolve' ORDER BY id").fetchall()
                         report['terminalSql'].update(bankRows=query_bank_rows,reconciliations=query_links,postingAudits=query_posts,originals=query_sources,bankAccounts=query_accounts,bankAccountAudits=account_audits)
                     if (args.local_runtime_join or args.local_runtime_mcp):
                         local_post_rows = db.execute("SELECT event_type,actor FROM audit_log WHERE event_type IN ('journal_post','journal_reverse') ORDER BY id").fetchall()
@@ -806,7 +814,7 @@ db.close();process.stdout.write(JSON.stringify(out));"""
                     raise RuntimeError('Standalone report browser controller failed')
                 report.update(status='passed',currentAction='complete',installedNativeQualified=False,sourceFreeRestoreQualified=False)
                 if args.bank_queries:
-                    report.update(workflow='original_bank_account_import_queries_reconciliation',bankQueriesQualified=True,bankQueriesRestartQualified=True,bankOriginalImportQualified=report['results']['service-run'].get('originalBankImportQualified', False),bankOriginalAccountQualified=report['results']['service-run'].get('originalBankAccountQualified', False))
+                    report.update(workflow='original_bank_matching_account_import_queries_reconciliation',bankQueriesQualified=True,bankQueriesRestartQualified=True,bankOriginalImportQualified=report['results']['service-run'].get('originalBankImportQualified', False),bankOriginalAccountQualified=report['results']['service-run'].get('originalBankAccountQualified', False),bankOriginalMatchingQualified=report['results']['service-run'].get('originalBankMatchingQualified', False),bankOriginalMatchingRestartQualified=report['results']['service-reopen'].get('originalMatchingRestartQualified', False))
                 elif (args.local_runtime_join or args.local_runtime_mcp):
                     report.update(workflow='local_mcp_same_rust_owner_unix_socket' if args.local_runtime_mcp else 'local_cli_same_rust_owner_unix_socket',localRuntimeQualified=True,localRuntimeRestartQualified=True,localRuntimeMcpQualified=args.local_runtime_mcp)
                 elif args.saft_artifact:
