@@ -6938,7 +6938,7 @@
       "actual_folder_preview_qualified": true
     },
     "native_synthetic_import127": {
-      "status": "integrated targeted tests, strict Clippy, web build and normal binaries passed; whole imported-owner journey pending",
+      "status": "normal-MFA whole imported-owner qualification running; first pre-import year-selection assertion corrected",
       "parser4": "/tmp/rm127-parser-tests.log",
       "chart25": "/tmp/rm127-chart-tests-final.log",
       "chart_helper1": "/tmp/rm127-chart-helper.log",
@@ -6963,7 +6963,12 @@
       "dinero_integrated25": "/tmp/rm127-dinero-integrated.log",
       "strict_clippy": "/tmp/rm127-strict-clippy-complete.log",
       "normal_three_bin_build": "/tmp/rm127-normal-three-bin-build.log",
-      "planned_actual_report": "/tmp/rentemester-rust-reports/native-synthetic-import127.json"
+      "planned_actual_report": "/tmp/rentemester-rust-reports/native-synthetic-import127b.json",
+      "live_exec_session": 42037,
+      "first_actual_failure": {
+        "report": "/tmp/rentemester-rust-reports/native-synthetic-import127.json",
+        "diagnosis": "Harness selected year2026 before any opening created that source label. Native cockpit correctly refused unknown live fiscal year. Snapshot uses default current year until accepted opening, then explicit2026. No product guard changed. Owned runtime/process cleanup verified."
+      }
     }
   },
   "verified_history": [
