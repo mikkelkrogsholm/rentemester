@@ -111,10 +111,10 @@ pub fn read(
     let company = crate::company_setup::profile(tx)?;
     crate::opening_balance::validate_history(tx)?;
     let native_basis = crate::opening_balance::require_report_as_of(tx, as_of);
-    if let Err(error) = &native_basis {
-        if error.code != "archive_report_unsupported" {
-            return Err(error.clone());
-        }
+    if let Err(error) = &native_basis
+        && error.code != "archive_report_unsupported"
+    {
+        return Err(error.clone());
     }
     let invoice = if native_basis.is_ok() {
         Some(crate::portfolio::dated_invoices(tx, as_of)?)

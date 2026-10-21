@@ -907,6 +907,19 @@ impl Owner {
             rentemester_application::dashboard::read(c, l, context, today, year, as_of)
         })
     }
+    pub fn dashboard_artifact(
+        &mut self,
+        cookie: &VerifiedCookie,
+        clock: &dyn Clock,
+        request: rentemester_application::dashboard_artifact::Request<'_>,
+    ) -> Result<
+        Attempt<Result<Committed<rentemester_application::dashboard_artifact::Export>, rentemester_application::control_fence::Failure>>,
+        OwnerError,
+    > {
+        self.document_action(cookie, clock, |control, company, guard, context| {
+            rentemester_application::dashboard_artifact::read(control, company, guard, context, request)
+        })
+    }
     pub fn reviewed_bookkeeping(
         &mut self,
         cookie: &VerifiedCookie,

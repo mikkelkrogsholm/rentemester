@@ -11,6 +11,7 @@ mod archive_import;
 mod dinero_import;
 mod opening_balance;
 mod archive_reports;
+mod dashboard_artifact;
 mod cfo_analytics;
 mod portfolio_cashflow;
 mod saft;
@@ -251,6 +252,7 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
         .route("/api/companies/{slug}/invoices/reminders/post",post(reminder_claims::handle))
         .route("/api/companies/{slug}/invoices/claims/settle",post(reminder_claims::handle))
         .route("/api/companies/{slug}/overview", get(archive_reports::read))
+        .route("/api/companies/{slug}/dashboard/export", get(dashboard_artifact::read))
         .route(
             "/api/companies/{slug}/mileage",
             get(mileage::handle).post(mileage::handle),

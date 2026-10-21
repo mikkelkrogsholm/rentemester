@@ -1,15 +1,15 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "Group128 imported-company native invoice portfolio subset; original R27/#701 closed on accepted evidence",
-  "code_revision": "561d1ae0",
+  "current_increment": "Group129 original R32/#703 standalone HTML dashboard through shared Rust snapshot, renderer, HTTP, SDK, CLI and MCP",
+  "code_revision": "c91e0ab9",
   "spec_revision": "sha256:bc98636be4a972407adce0f817a76bb9d4bb7200cb292a70965e75ab62fae250",
-  "state": "Group128 imported-company native invoice portfolio flow passed actual ordinary MFA through web/HTTP/CLI/MCP, exact normal restart, originals, audit, signed backup and SQL effects; independently verified report80bbf72e5b42cc70199adcdab75f9befe51c75c8144faecfe46da592893096f5. No further portfolio perfection. GitHub reconciliation corrected stale issue mapping: R32 is #703; #706 is R31 annual/tax. Prior128 commits/labels used706; retain history and attach accepted milestone to703. Next necessary R32 static dashboard HTML, preserve whole R31 tax/iXBRL scope separately. Whole epic active; installed desktop last.",
+  "state": "Group128 actual native/imported portfolio milestone accepted and independently verified; source/evidence preserved. Group129 renderer, snapshot and SDK/CLI/MCP worker deliveries integrated. All12 original dashboard sections retained; exact calendar-month liquidity horizon, dated native invoice rows, historical VAT selection, monthly budget and accrual schedules reuse canonical readers. Main application/host/HTTP adapter current-read authorization, privileged backup subsection, physical-source rejection and no-effects test passed; HTTP selector test passed. Strict eight-crate all-target Clippy passed after one syntax-style correction. Normal server/CLI/MCP binaries built successfully from integrated source. Full actual ordinary-MFA HTML/client/restart evidence remains pending; do not claim R32 complete. R31/#706 annual iXBRL/tax preserved separately; dated FX/bad-debt invoice parity remains explicit. Manual installed desktop last; whole epic active.",
   "issues_closed": [
     701
   ],
   "next": [
-    "Reconcile GitHub: return incomplete R31/#706 to backlog with retained evidence, activate actual R32/#703 for necessary static HTML dashboard artifact, using /tmp/rm129-dashboard-contract.md. Preserve annual iXBRL/tax under original R31/#706; no silent format removal.",
+    "Commit integrated129; normal server/CLI/MCP binaries are built. Next use existing normal-MFA runtime for bounded HTML HTTP/CLI/MCP/download/no-effects/restart acceptance. Do not repeat accepted128 whole import fixture. Keep actual R32/#703 active, R31/#706 backlog. Remaining required tax/iXBRL belongs R31; dated FX/bad-debt report parity and original interface mapping remain, no silent export removal.",
     "Installed desktop acceptance is explicitly deferred to the very end by the user. Preserve prepared Group100 profile; collect remaining native automation, closure, recovery and packaging checks for final installed acceptance without requesting screen unlock during development.",
     "J03/R50 and remaining R54 scope: only still-supported operation closure/recovery, nonempty scheduler handoff, hostile/older clone and post-cutover rollback requirements. Group99 qualifies managed installed J06 flow, not every R54 acceptance item.",
     "Signed distribution/update/cutover evidence must match actual full Rust replacement; retain all existing completion gates and TypeScript retirement gate.",
@@ -7033,7 +7033,78 @@
       "original_issue": 703,
       "historical_work_packet_issue": 706,
       "artifact_lease": "released after terminal process0, exact artifact/hash/process/cleanup verification",
-      "runner_current_action_note": "Runner retains final operator verification action after successful extension; verified against runner source, passed flag and cleanup, no extra run needed."
+      "runner_current_action_note": "Runner retains final operator verification action after successful extension; verified against runner source, passed flag and cleanup, no extra run needed.",
+      "acceptance_comment": "https://github.com/mikkelkrogsholm/rentemester/issues/703#issuecomment-6316259374"
+    },
+    "static_dashboard_html129": {
+      "status": "Integrated focused checks, strict eight-crate all-target Clippy and normal three-bin build passed; actual normal-MFA export acceptance pending",
+      "original_issue": 703,
+      "baseline_revision": "c91e0ab9",
+      "worker_sources": [
+        "69b49dd5",
+        "3c67f081",
+        "aa174579"
+      ],
+      "integrations": [
+        "5a909cc1",
+        "57c97e15",
+        "c91e0ab9"
+      ],
+      "renderer_tests": {
+        "passed": 4,
+        "source": "69b49dd5"
+      },
+      "storage_tests": {
+        "dashboard_passed": 4,
+        "portfolio_passed": 6,
+        "existing_commitments_passed": 7,
+        "calendar_passed": 1,
+        "logs": [
+          "/tmp/rm129-snapshot-cargo-captured.log",
+          "/tmp/rm129-snapshot-calendar-cargo.log"
+        ]
+      },
+      "transport_tests": {
+        "sdk_passed": 3,
+        "cli_passed": 2,
+        "mcp_dashboard_passed": 1,
+        "mcp_report_reads_passed": 1,
+        "source": "3c67f081"
+      },
+      "application_current_access_physical_source_read_effects": "/tmp/rm129-application-final.log",
+      "server_selectors": "/tmp/rm129-server.log",
+      "strict_clippy": "/tmp/rm129-clippy-final.log",
+      "actual_mfa_export_qualified": false,
+      "normal_mfa_restart_qualified": false,
+      "installed_desktop_qualified": false,
+      "remaining": [
+        "Actual ordinary MFA HTTP/CLI/MCP HTML/download/no effects/normal restart acceptance",
+        "Tax unavailable until original R31 is ported",
+        "Dated foreign-currency/bad-debt invoice projection remains explicitly unavailable",
+        "Original report endpoint/static artifact mapping and broader R32 acceptance still required"
+      ],
+      "worktree_recovery": ".git/rentemester-recovery/archived129.json",
+      "integrated_worker_worktrees_removed": true,
+      "main_integration_files_sha256": {
+        "crates/rentemester-application/src/dashboard_artifact.rs": "2a6b4df3e6e51ffed4f34885d91d708811cc12b3cb090ea7dac8df90533559a9",
+        "crates/rentemester-application/src/lib.rs": "bd3aa0d3cfb9967d702f095ee933126e21b8a5cea897268f481223ba894761cf",
+        "crates/rentemester-host/src/lib.rs": "00996fd8f488e9578ce74d9b00baaa5f69d2278da6df36f0436b195327d7f855",
+        "crates/rentemester-server/src/product_http.rs": "23cfaf384a80d0fc884ceff7bc892fe95833a3bbafb741934986a66e962c4001",
+        "crates/rentemester-server/src/product_http/dashboard_artifact.rs": "f6c5ef775649effc386a6df14159d0d9c5fcae740578c8224dd84266d3d1bfac",
+        "crates/rentemester-storage/src/dashboard_artifact.rs": "6d017ce2659af071e3456a490d31c9db973db6a4598f06a2dcbd69e2b7251002"
+      },
+      "normal_three_bin_build": "/tmp/rm129-normal-build.log",
+      "normal_binary_sha256": {
+        "rentemester-server": "07b8351a005509068660c5fdbfac94527675d4669535f5ddf37ce2e90e14d04d",
+        "rentemester-rust": "bec27b24a376ece370ddcb8449a6a7fc59516b419043528ef2a6ce4b08537eb2",
+        "rentemester-mcp": "a159e80462588e92fa0abd3a0a782fe20634c099ca8042fdd9ae8830f895ddd3"
+      }
+    },
+    "workflow_automatic_latest129": {
+      "url": "https://github.com/mikkelkrogsholm/rentemester/actions/runs/39602293533",
+      "event": "issues",
+      "status": "completed",
+      "conclusion": "success"
     }
   },
   "verified_history": [
