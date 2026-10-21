@@ -184,18 +184,7 @@ fn transfer(
         ));
     }
     let id = input.invoice_document_id;
-    let adjusted: bool = tx
-        .query_row(
-            "SELECT EXISTS(SELECT 1 FROM invoice_bad_debt_writeoffs WHERE invoice_document_id=?1)",
-            [id],
-            |r| r.get(0),
-        )
-        .map_err(invalid)?;
-    if adjusted {
-        return Err(refused(
-            "invoices with bad-debt adjustments require their settlement flow to be ported first",
-        ));
-    }
+    let written = crate::invoice_bad_debt::history(tx, id)?;
 
     let (no,invoice_date,debtor_id,debtor,gross_dkk,invoice_currency,payload):(String,String,i64,String,Money,String,String)=tx.query_row("SELECT d.invoice_no,d.invoice_date,p.receivable_account_id,a.account_no,p.booked_gross_dkk,d.currency,d.payload_json FROM documents d JOIN issued_invoice_postings p ON p.invoice_document_id=d.id JOIN journal_entries j ON j.id=p.journal_entry_id JOIN accounts a ON a.id=p.receivable_account_id WHERE d.id=?1 AND d.document_type='issued_invoice' AND j.status='posted' AND j.document_id=d.id AND j.transaction_date=d.invoice_date AND j.source_bank_transaction_id IS NULL AND NOT EXISTS(SELECT 1 FROM journal_entries reversal WHERE reversal.reversal_of_entry_id=j.id)",[id],|r|Ok((r.get(0)?,r.get(1)?,r.get(2)?,r.get(3)?,legacy_money(r.get_ref(4)?).map_err(|_|rusqlite::Error::InvalidQuery)?,r.get(5)?,r.get(6)?))).optional().map_err(invalid)?.ok_or_else(||refused("active posted invoice required before settlement"))?;
     if bank == debtor || date < invoice_date {
@@ -220,6 +209,7 @@ fn transfer(
         .subtract(&crate::credit_note::credited(tx, id)?)
         .subtract(&paid);
     open.add(&refunded);
+    open = open.subtract(&written.gross);
     let available = if refund {
         Money::default().subtract(&open)
     } else {
@@ -247,13 +237,20 @@ fn transfer(
         .subtract(&crate::invoice_fx::credited_dkk(tx, id)?)
         .subtract(&basis(&paid)?);
     expected.add(&basis(&refunded)?);
+    if !written.entries.is_empty() {
+        expected = crate::invoice_bad_debt::adjusted_carrying(tx, id, debtor_id)?;
+    }
     if carrying != expected {
         return Err(refused(
             "invoice outstanding principal does not match its booked receivable; review the linked entries",
         ));
     }
     let before = if refund { &refunded } else { &paid };
-    let principal = crate::invoice_fx::portion(&gross, &gross_dkk, before, &amount)?;
+    let principal = if currency != "DKK" && !written.entries.is_empty() && !refund {
+        crate::invoice_fx::portion(&open, &carrying, &Money::default(), &amount)?
+    } else {
+        crate::invoice_fx::portion(&gross, &gross_dkk, before, &amount)?
+    };
     let (bank_dkk, bank_fx) = if currency == "DKK" {
         (amount.clone(), None)
     } else {

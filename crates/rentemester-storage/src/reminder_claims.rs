@@ -64,18 +64,7 @@ fn audit(
     Ok(())
 }
 fn unsupported(tx: &Transaction<'_>, id: i64) -> Result<(), Error> {
-    let yes: bool = tx
-        .query_row(
-            "SELECT EXISTS(SELECT 1 FROM invoice_bad_debt_writeoffs WHERE invoice_document_id=?1)",
-            [id],
-            |r| r.get(0),
-        )
-        .map_err(invalid)?;
-    if yes {
-        return Err(refused(
-            "bad-debt claims require their native evidence flow",
-        ));
-    }
+    crate::invoice_bad_debt::history(tx, id)?;
     Ok(())
 }
 struct Invoice {
@@ -490,6 +479,7 @@ pub fn validated_claims(tx: &Transaction<'_>, id: i64) -> Result<Claims, Error> 
     Ok(c)
 }
 fn principal(tx: &Transaction<'_>, id: i64, i: &Invoice) -> Result<Money, Error> {
+    let written = crate::invoice_bad_debt::history(tx, id)?;
     let paid = crate::invoice_fx::movements(tx, id, &i.currency, false)?;
     let refunded = crate::invoice_fx::movements(tx, id, &i.currency, true)?;
     let mut open = i
@@ -497,6 +487,7 @@ fn principal(tx: &Transaction<'_>, id: i64, i: &Invoice) -> Result<Money, Error>
         .subtract(&crate::credit_note::credited(tx, id)?)
         .subtract(&paid);
     open.add(&refunded);
+    open = open.subtract(&written.gross);
     let basis = |amount: &Money| {
         if *amount == Money::default() {
             Ok(Money::default())
@@ -516,6 +507,9 @@ fn principal(tx: &Transaction<'_>, id: i64, i: &Invoice) -> Result<Money, Error>
             |r| r.get(0),
         )
         .map_err(invalid)?;
+    if !written.entries.is_empty() {
+        expected = crate::invoice_bad_debt::adjusted_carrying(tx, id, debtor_id)?;
+    }
     if crate::invoice_settlement::principal_carrying(tx, id, debtor_id)? != expected {
         return Err(refused(
             "invoice principal differs from current canonical carrying; review linked journal evidence",
@@ -539,7 +533,7 @@ pub fn required_banks(tx: &Transaction<'_>, id: i64) -> Result<Vec<i64>, Error> 
 }
 /// Recheck persisted reminder workflows for period assurance without changing them.
 pub fn audit_evidence(tx: &Transaction<'_>) -> Result<Vec<Value>, Error> {
-    let mut q = tx.prepare("SELECT invoice_document_id FROM invoice_reminders UNION SELECT invoice_document_id FROM invoice_compensation_claims UNION SELECT invoice_document_id FROM invoice_interest_claims UNION SELECT invoice_document_id FROM invoice_interest_corrections UNION SELECT invoice_document_id FROM invoice_claim_payments").map_err(invalid)?;
+    let mut q = tx.prepare("SELECT invoice_document_id FROM invoice_reminders UNION SELECT invoice_document_id FROM invoice_compensation_claims UNION SELECT invoice_document_id FROM invoice_interest_claims UNION SELECT invoice_document_id FROM invoice_interest_corrections UNION SELECT invoice_document_id FROM invoice_claim_payments UNION SELECT invoice_document_id FROM invoice_bad_debt_writeoffs").map_err(invalid)?;
     let invoices = q
         .query_map([], |row| row.get::<_, i64>(0))
         .map_err(invalid)?
@@ -602,6 +596,14 @@ pub fn audit_evidence(tx: &Transaction<'_>) -> Result<Vec<Value>, Error> {
                     correction["correctionId"].as_i64().unwrap(),
                 )?;
             }
+            for writeoff in crate::invoice_bad_debt::history(tx, id)?.entries {
+                require_interest_audit(
+                    tx,
+                    "invoice_bad_debt_writeoff",
+                    "invoice_bad_debt_writeoff",
+                    writeoff["writeOffId"].as_i64().unwrap(),
+                )?;
+            }
             for payment in &claims.payments {
                 require_audit(
                     tx,
@@ -649,6 +651,7 @@ pub fn read(tx: &Transaction<'_>, id: i64, as_of: &str) -> Result<Value, Error> 
     crate::journal_preview::require_current(tx)?;
     let i = invoice(tx, id)?;
     let c = validated_claims(tx, id)?;
+    let written = crate::invoice_bad_debt::history(tx, id)?;
     let open = principal(tx, id, &i)?;
     let claim_open = if i.currency == "DKK" {
         let mut total = open.clone();
@@ -666,7 +669,7 @@ pub fn read(tx: &Transaction<'_>, id: i64, as_of: &str) -> Result<Value, Error> 
     let mut q=tx.prepare("SELECT b.id,b.transaction_date,b.text,b.amount,b.reference,a.ledger_account_no,b.source_file_hash,b.transaction_hash FROM bank_transactions b JOIN bank_accounts a ON a.id=b.bank_account_id WHERE b.amount>0 AND b.currency='DKK' AND a.active=1 AND NOT EXISTS(SELECT 1 FROM journal_entries j WHERE j.source_bank_transaction_id=b.id) AND NOT EXISTS(SELECT 1 FROM bank_journal_reconciliations r WHERE r.bank_transaction_id=b.id) ORDER BY b.transaction_date,b.id").map_err(invalid)?;
     let banks=q.query_map([],|r|Ok(json!({"id":r.get::<_,i64>(0)?,"date":r.get::<_,String>(1)?,"text":r.get::<_,String>(2)?,"amount":r.get::<_,f64>(3)?,"reference":r.get::<_,Option<String>>(4)?,"bankAccountNo":r.get::<_,Option<String>>(5)?,"sourceHash":r.get::<_,Option<String>>(6)?,"transactionHash":r.get::<_,Option<String>>(7)?}))).map_err(invalid)?.collect::<Result<Vec<_>,_>>().map_err(invalid)?;
     Ok(
-        json!({"invoiceDocumentId":id,"invoiceNumber":i.no,"asOfDate":as_of,"dueDate":i.due,"originalReceivableAccountNo":i.debtor,"principalOpenBalance":wire(&open)?,"principalCurrency":i.currency,"claimCurrency":"DKK","claimOpenBalance":claim_open,"totalReminderFees":wire(&c.reminder_total)?,"totalCompensationDkk":wire(&c.compensation_total)?,"totalInterestDkk":wire(&c.interest_total)?,"totalInterestCorrectionsDkk":wire(&c.interest_corrections_total)?,"pendingUnpostedInterest":c.pending_interest,"interestClaims":c.interest_claims,"interestCorrections":c.interest_corrections,"registeredClaimBalanceDkk":wire(&c.registered.subtract(&c.paid))?,"pendingUnpostedCompensation":c.pending_compensation,"compensations":c.compensations,"totalClaimPayments":wire(&c.paid)?,"ledgerBackedClaimBalance":wire(&ledger)?,"pendingUnpostedReminders":c.pending_reminders,"reminders":c.reminders,"claimPayments":c.payments,"receivableBalances":c.balances.iter().map(|(a,v)|Ok(json!({"accountNo":a,"amountDkk":wire(v)?}))).collect::<Result<Vec<Value>,Error>>()?,"accounts":accounts,"incomingBankTransactions":banks,"rules":{"ruleId":engine::REGISTER_RULE,"maximumFeeAmount":100,"maximumReminders":3,"minimumDaysBetweenReminders":10},"delivery":{"available":false,"sentByThisFlow":false,"priorDeliveryStatus":"unavailable","note":"Native registration and accounting perform no email send; previous delivery is not established"},"settlementAvailable":open==Money::default()&&!c.pending&&ledger!=Money::default()}),
+        json!({"invoiceDocumentId":id,"invoiceNumber":i.no,"asOfDate":as_of,"dueDate":i.due,"originalReceivableAccountNo":i.debtor,"principalOpenBalance":wire(&open)?,"principalCurrency":i.currency,"badDebtWriteOffs":written.entries,"totalBadDebtWrittenOff":wire(&written.gross)?,"totalBadDebtWrittenOffDkk":wire(&written.gross_dkk)?,"claimCurrency":"DKK","claimOpenBalance":claim_open,"totalReminderFees":wire(&c.reminder_total)?,"totalCompensationDkk":wire(&c.compensation_total)?,"totalInterestDkk":wire(&c.interest_total)?,"totalInterestCorrectionsDkk":wire(&c.interest_corrections_total)?,"pendingUnpostedInterest":c.pending_interest,"interestClaims":c.interest_claims,"interestCorrections":c.interest_corrections,"registeredClaimBalanceDkk":wire(&c.registered.subtract(&c.paid))?,"pendingUnpostedCompensation":c.pending_compensation,"compensations":c.compensations,"totalClaimPayments":wire(&c.paid)?,"ledgerBackedClaimBalance":wire(&ledger)?,"pendingUnpostedReminders":c.pending_reminders,"reminders":c.reminders,"claimPayments":c.payments,"receivableBalances":c.balances.iter().map(|(a,v)|Ok(json!({"accountNo":a,"amountDkk":wire(v)?}))).collect::<Result<Vec<Value>,Error>>()?,"accounts":accounts,"incomingBankTransactions":banks,"rules":{"ruleId":engine::REGISTER_RULE,"maximumFeeAmount":100,"maximumReminders":3,"minimumDaysBetweenReminders":10},"delivery":{"available":false,"sentByThisFlow":false,"priorDeliveryStatus":"unavailable","note":"Native registration and accounting perform no email send; previous delivery is not established"},"settlementAvailable":open==Money::default()&&!c.pending&&ledger!=Money::default()}),
     )
 }
 pub fn register(tx: &Transaction<'_>, input: &Register, actor: &str) -> Result<Value, Error> {

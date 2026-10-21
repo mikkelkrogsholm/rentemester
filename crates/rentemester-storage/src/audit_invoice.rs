@@ -470,6 +470,13 @@ fn legacy_foreign_relief(
     )? {
         open = open.subtract(&positive(&r["amount"])?);
     }
+    for r in rows(
+        tx,
+        "SELECT amount FROM invoice_refunds WHERE invoice_document_id=?1 AND journal_entry_id<?2",
+        &[&invoice, &journal],
+    )? {
+        open.add(&positive(&r["amount"])?);
+    }
     let mut carrying = Money::default();
     for l in rows(
         tx,
@@ -574,10 +581,12 @@ fn cash(
                     "principal movement currency differs from invoice",
                 )?;
                 let before = if refund { &refunded } else { &paid };
+                let prior_writeoff:bool=tx.query_row("SELECT EXISTS(SELECT 1 FROM invoice_bad_debt_writeoffs WHERE invoice_document_id=?1 AND journal_entry_id<?2)",rusqlite::params![id,jid],|r|r.get(0)).map_err(invalid)?;
                 let relief = if currency == "DKK" {
                     amount.clone()
-                } else if j["created_by_program"] == "rentemester-rust"
-                    || j["created_by_program"] == "service-principal"
+                } else if !prior_writeoff
+                    && (j["created_by_program"] == "rentemester-rust"
+                        || j["created_by_program"] == "service-principal")
                 {
                     crate::invoice_fx::portion(&gross, &frozen, before, &amount)?
                 } else {
@@ -1040,6 +1049,20 @@ pub(crate) fn interest_correction_effects(
         out.insert(no, credit.subtract(&debit));
     }
     Ok(out)
+}
+/// Authenticate retained bad-debt rows without requiring today's account roles.
+pub(crate) fn bad_debt_evidence(tx: &Transaction<'_>, id: i64) -> Result<(), Error> {
+    let row = one(
+        tx,
+        "SELECT * FROM invoice_bad_debt_writeoffs WHERE id=?1",
+        id,
+    )?;
+    bad_debt(tx, &row)
+}
+/// Adjusted native foreign receipts follow the source's remaining actual
+/// carrying allocation, while invoices without writeoffs keep native FX basis.
+pub(crate) fn adjusted_principal_evidence(tx: &Transaction<'_>, id: i64) -> Result<(), Error> {
+    interest_principal_evidence(tx, id)
 }
 /// Exact historical grouped principal/claim applications reuse audit119 cash proof.
 pub(crate) fn interest_cash_evidence(tx: &Transaction<'_>, id: i64) -> Result<(), Error> {
