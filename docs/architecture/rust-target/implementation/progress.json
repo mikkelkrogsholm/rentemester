@@ -1,13 +1,13 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "Group116 owner backup registrations, explicitly unverified external-transfer declarations, tombstones and exact reconciliation through web/HTTP/CLI/MCP/restart accepted",
-  "code_revision": "2ae27a26 + recorded Group116 root integration/control-owned fence correction in this commit",
+  "current_increment": "Group117 source-free signed workspace recovery of backup metadata and two-company business data, fresh owner MFA and HTTP/CLI/MCP restart accepted",
+  "code_revision": "144a4026 plus recorded root recovery runner integration",
   "spec_revision": "sha256:bc98636be4a972407adce0f817a76bb9d4bb7200cb292a70965e75ab62fae250",
-  "state": "Group116 completes inert owner destination registration/list/remove/declaration with exact operation reconciliation. Current human CompanyAdmin authorizes before reads/replay/files; actor/time server-derived, normal transfer write fence retained and overduebackup recovery maintenance allowed. All five kinds supported, location never dereferenced and optional operator target is same-kind approved reference only. Any new declaration derives SHA/size/createdAt from actual protected signed current-company/currentinstance retained inventory; declared/verifiedfalse cannot enter115qualifiedcopy counts. Immutable canonical intent/scope operation receipts, no destinationID reuse after tombstone, full inert history retained through restore boundary. Actual116 normalMFA webSSHadd lostacceptedreply/remount/manualsameGET/noautoPOST; HTTP/CLI/MCP list/op parity, CLIdeclare/MCP exactreplay, conflictingintent refusal, currentnonadmin403s, MCPremove/CLIexactreplay, original3receipt history after freshMFArestart. Physical backup files/operator configs/qualifiedinventory/books unchanged and noextraDriveGETs (14 total reused114-115flow). App tests exposed wrong company-owned transactionhelper; root added dedicated control-owned metadata path that forbids companychanges and commitscontrol after unchangedcompany transaction. Existingadapters remainstrictdefault; sixfence regressiontests and readonlytargetedreview pass. Sevenapp/storage, fiveSDK, CLIone/MCPone+standalonegovernancetest,241registry, web2tests/typebuild/lint, native3binarybuild and strict7crateall-targetClippy pass. Finalartifact/5helper/runner hashes independentlymatched and ownedprocess/profilecleanup verified. Entiremission/epic672/prior evidence preserved; realSSH/externaltransfer/Google/offsite, actualsourcefree recovery ofnewmetadata, fullhealthaudit, broaderaccounting/transfer/release/platform andTSretirement remainopen. Installeddesktop acceptance remains explicitly last; no unlockrequests or extra perfectionround.",
+  "state": "Group117 completes source-free fresh-device recovery of the newly added backup and registration metadata. Final authenticated signed export contains exact original add/declaration/removal history plus two-company business/original bytes. Source workspace/private signer/managed/provider copies and source browser contexts/credential files are removed before independent public-key verification and restore into a fresh root with new signing/cookie/MFA keys and new normally verified MFA owner. Supported journal/bank/trial/balance/document reads and original bytes match through HTTP/CLI/MCP before and after target restart; original registration receipts retain actor/time while declarations remain unverified. Fresh target has no retained backup inventory/operator targets, zero current placement/remote qualification, and source remote receipt GET returns null without provider configuration or extra provider I/O. Typed registration history is validated before portable export/restore publication; malformed and forged histories refuse atomically, legacy no-registration archives remain compatible. Entire mission/epic672 and all earlier acceptance remain intact/open; remaining health/audit, full accounting/lifecycle/transfer, signed release/platform and TypeScript retirement gates still required. Installed desktop acceptance remains explicitly last; no unlock requests.",
   "issues_closed": [],
   "next": [
-    "Qualify remaining required R33/J05 source-free recovery of the newly added backup/registration metadata using existing signed backup/independent verification/fresh-owner MFA restore helpers; preserve historical declarations as inert and exclude source-local/remote receipts from new-instance verified claims. Complete remaining health/audit and required full accounting/parity/release/transfer/platform gates, truthful discovery and trusted Rust release/SBOM/promotion/repro/remoteCI. No unchanged116repeat or TS retirement before full accepted replacement.",
+    "Complete remaining native health/filesystem/schema/audit verify/list parity and the required full accounting/lifecycle matrix, followed by remaining transfer/release/platform gates, truthful discovery and trusted Rust release/SBOM/promotion/repro/remoteCI. Group117 source-free new backup metadata recovery is accepted; do not repeat unchanged accepted backup flows or retire TypeScript before full replacement acceptance.",
     "Installed desktop acceptance is explicitly deferred to the very end by the user. Preserve prepared Group100 profile; collect remaining native automation, closure, recovery and packaging checks for final installed acceptance without requesting screen unlock during development.",
     "J03/R50 and remaining R54 scope: only still-supported operation closure/recovery, nonempty scheduler handoff, hostile/older clone and post-cutover rollback requirements. Group99 qualifies managed installed J06 flow, not every R54 acceptance item.",
     "Signed distribution/update/cutover evidence must match actual full Rust replacement; retain all existing completion gates and TypeScript retirement gate.",
@@ -4485,6 +4485,102 @@
       "offsite": false,
       "source_free_registration_restore": false,
       "installed_desktop": false
+    },
+    "native_backup_recovery117": {
+      "path": "/tmp/rentemester-rust-reports/native-backup-recovery117.json",
+      "sha256": "867ddf15431122f98130147fbb5a524dfd19f0aabcd9ab7c97487ca04a61324b",
+      "status": "passed",
+      "source_revision": "144a4026dac21febd39289a894620bbb20524f2d plus recorded root integration",
+      "artifacts": {
+        "server_binary": "b82326427815d09208bcd8199ff30dbf54539d0732ac9d611e4f7c1f3bf1a07d",
+        "cli_binary": "de2d7771487ecc655ee5ad1a2f0330df8416aa2c982a53ea93973db3171298f1",
+        "mcp_binary": "b19f67e21df7026ec12cdc653d31d26493f682ecca8459ae308073bc4180b56d"
+      },
+      "helper_sha256": {
+        "runnerSha256": "c8cead848753d4add6505c8ee8fbeb8e8364e8c8a4f3312795e99a4be90f4269",
+        "backupLockHelperSha256": "6eb82b8201dc05973c4f62a3098ce6223dfa427b2332465018e929acfe1e2e0b",
+        "backupLockMailInboxHelperSha256": "b2d9b6d088a4336e62c9102edb58833e2645ed15b73761c9cebb681e2ccc8327",
+        "backupRemoteHelperSha256": "6c21682bee9cf25f55dd7c3140b1814c46bebc0acca557a900ccc7392fd2bb6c",
+        "backupGovernanceHelperSha256": "2ea63a1bfb52cc3b26659e6bd1a29155a948ebc3b4c6a45b4b0976ef179f71fe",
+        "backupRegistrationHelperSha256": "a7eaee25de256108ceeba15ad3404165ca12699fe7ba0690a538a63e63748199",
+        "backupRecoveryHelperSha256": "245dccc4db619b75c6b2c30c153cab6c9e9ea9416b3be1aba77d1667b7bdf955"
+      },
+      "source_capture": {
+        "sourceCaptured": true,
+        "supportedBusinessFingerprint": "aeeb130a4788b94b4c10714646a8bf49ec54e2309bcce977a760b45825621875",
+        "registrationHistoryFingerprint": "f075e15b380d8ae9b27428e4371a2cb1c4cf75c9333b13152cb80478132ea505",
+        "operationEnvelopesFingerprint": "d8aaa5f4b1ae008e3f9a54ed7eb39013796abe0985c3f826f3959794a4c34629",
+        "originalSha256s": [
+          "e11bb1dca12e748f058b9924341e3d94b845ed21a50c487282db43bd22e4bbcd"
+        ],
+        "readOnlySourceCapture": true,
+        "archiveSha256": "ae965b4853bfd329aa4f5fba870f16dfbe40eccca14d9b24baab7b3c220e48c0",
+        "archiveBytes": 4361350
+      },
+      "restored": {
+        "distinctNormalMfaOwner": true,
+        "supportedBusinessReadsExact": true,
+        "businessFingerprint": "aeeb130a4788b94b4c10714646a8bf49ec54e2309bcce977a760b45825621875",
+        "registrationHistoryFingerprint": "f075e15b380d8ae9b27428e4371a2cb1c4cf75c9333b13152cb80478132ea505",
+        "originalBytesFingerprints": [
+          {
+            "documentId": 1,
+            "sha256": "e11bb1dca12e748f058b9924341e3d94b845ed21a50c487282db43bd22e4bbcd"
+          }
+        ],
+        "exactThreeOriginalRegistrationReceipts": true,
+        "currentRetainedBackupInventoryEmpty": true,
+        "operatorTargetsEmpty": true,
+        "declarationsRemainUnverified": true,
+        "governanceDoesNotBorrowSourceEvidence": true,
+        "sourceRemoteReceiptInactive": true,
+        "httpCliMcpReadParity": true,
+        "sourceFreeRestoredReadQualified": true
+      },
+      "restart": {
+        "distinctNormalMfaOwner": true,
+        "supportedBusinessReadsExact": true,
+        "businessFingerprint": "aeeb130a4788b94b4c10714646a8bf49ec54e2309bcce977a760b45825621875",
+        "registrationHistoryFingerprint": "f075e15b380d8ae9b27428e4371a2cb1c4cf75c9333b13152cb80478132ea505",
+        "originalBytesFingerprints": [
+          {
+            "documentId": 1,
+            "sha256": "e11bb1dca12e748f058b9924341e3d94b845ed21a50c487282db43bd22e4bbcd"
+          }
+        ],
+        "exactThreeOriginalRegistrationReceipts": true,
+        "currentRetainedBackupInventoryEmpty": true,
+        "operatorTargetsEmpty": true,
+        "declarationsRemainUnverified": true,
+        "governanceDoesNotBorrowSourceEvidence": true,
+        "sourceRemoteReceiptInactive": true,
+        "httpCliMcpReadParity": true,
+        "restoredNormalMfaRestartQualified": true
+      },
+      "provider_get_count": 14,
+      "primary_counts": {
+        "documents": 0,
+        "bank_transactions": 1,
+        "journal_entries": 1
+      },
+      "target_counts": {
+        "company": "synthetic-backup-inbox-target",
+        "counts": {
+          "documents": 1,
+          "bank_transactions": 1,
+          "journal_entries": 0
+        }
+      },
+      "tests": {
+        "registration_codec": "/tmp/rm117-codec-tests-fixed.log:7pass",
+        "portable_regression": "/tmp/rm117-portable-tests.log",
+        "clippy": "/tmp/rm117-clippy.log",
+        "build": "/tmp/rm117-build.log"
+      },
+      "actual_google_account": false,
+      "actual_ssh": false,
+      "offsite": false,
+      "installed_desktop": false
     }
   },
   "verified_history": [
@@ -5805,6 +5901,12 @@
       "owner": "root host/server/shared-web/fence correction/actual; isolated storage-app/client/proof workers",
       "status": "COMPLETE finite Group116; normalMFA/privateTLS registration/lostreply/exactclients/unverifieddeclaration/remove/history/restart accepted. Entiremission open; sourcefree newmetadata recovery and desktop GUI remain required.",
       "acceptance": "Owner registers all-supported inert metadata (actualSSH), selects real retainedarchive for declaredtransfer, exactoperation replay/conflict/currentauth/removal preservehistory/files and never create verifiedcopy claims; existingfences retain defaultstrictness."
+    },
+    {
+      "delivery": "Group117 source-free recovery of backup metadata and two-company business data",
+      "owner": "root runner/auth/restore/actual; isolated storage-codec and proof workers",
+      "status": "COMPLETE finite Group117; signed source-free restore with new owner/MFA, exact supported HTTP/CLI/MCP reads and restart accepted. Entire mission remains open; installed desktop final only.",
+      "acceptance": "Remove source authority/copies, independently verify signed archive, restore fresh instance/new owner, preserve original business/history and reject imported live backup/provider authority."
     }
   ],
   "integrated_pending_browser": [
@@ -6000,6 +6102,12 @@
       "code_revision": "2500c0d5 + recorded Group115 root host/server/shared-web integration in this commit",
       "spec_revision": "sha256:bc98636be4a972407adce0f817a76bb9d4bb7200cb292a70965e75ab62fae250",
       "state": "Group115 completes the required current-company aggregate backup view without new provider calls or writes. Same current human CompanyAdmin/control+company read fence and qualified retained inventory/freshness/lock reused. Active post-restore placement and typed remote receipts join exact latest archive SHA/size/createdAt and placement operation; current public destination declarations only, no paths/keys. Unknown destination/future/unrelated archive excluded, malformed matching evidence failsclosed, retained qualification errors prevent external-copy flag. Historical observations remain dated and declarations/recovery are not independently verified. Web explicitread, HTTP/CLI/MCP current snapshot parity; new signed actualweb backup has newSHA and cannot borrow older placement/remote records, survives normalMFArestart. Six app/storage tests, six client/CLI/MCP tests, web2tests, webbuild/lint, native3binarybuild, strict7crate all-targetClippy and actual115 pass; MCPdiscovery236 separately checked. Actual115 retains114 privateTLS14GET remote/lostreply/revocation/restart flow while adds governance beforeplacement/threeexactremote receipts/newer independentlyverified signeddownload/newlatest afterrestart, no extraDriveGETs or accounting effects. PrimaryA0docs/1bank/1journal; B1doc/1bank/0journal. Final artifact/4helper/runner hashes independentlymatched, ownedprocess/profilecleanup verified. Entiremission/epic672/prior accepted evidence preserved and allcompletiongates remainopen. No actualGoogleaccount/offsite/fullhealth-audit/destination administration/remote-receipt sourcefree restore/GUI claim. Next necessary destination administration and health/audit/parity/release/transfer/recovery/TS retirement; installeddesktop GUI remains explicitly last, no unlockrequest."
+    },
+    {
+      "current_increment": "Group116 owner backup registrations, explicitly unverified external-transfer declarations, tombstones and exact reconciliation through web/HTTP/CLI/MCP/restart accepted",
+      "code_revision": "2ae27a26 + recorded Group116 root integration/control-owned fence correction in this commit",
+      "spec_revision": "sha256:bc98636be4a972407adce0f817a76bb9d4bb7200cb292a70965e75ab62fae250",
+      "state": "Group116 completes inert owner destination registration/list/remove/declaration with exact operation reconciliation. Current human CompanyAdmin authorizes before reads/replay/files; actor/time server-derived, normal transfer write fence retained and overduebackup recovery maintenance allowed. All five kinds supported, location never dereferenced and optional operator target is same-kind approved reference only. Any new declaration derives SHA/size/createdAt from actual protected signed current-company/currentinstance retained inventory; declared/verifiedfalse cannot enter115qualifiedcopy counts. Immutable canonical intent/scope operation receipts, no destinationID reuse after tombstone, full inert history retained through restore boundary. Actual116 normalMFA webSSHadd lostacceptedreply/remount/manualsameGET/noautoPOST; HTTP/CLI/MCP list/op parity, CLIdeclare/MCP exactreplay, conflictingintent refusal, currentnonadmin403s, MCPremove/CLIexactreplay, original3receipt history after freshMFArestart. Physical backup files/operator configs/qualifiedinventory/books unchanged and noextraDriveGETs (14 total reused114-115flow). App tests exposed wrong company-owned transactionhelper; root added dedicated control-owned metadata path that forbids companychanges and commitscontrol after unchangedcompany transaction. Existingadapters remainstrictdefault; sixfence regressiontests and readonlytargetedreview pass. Sevenapp/storage, fiveSDK, CLIone/MCPone+standalonegovernancetest,241registry, web2tests/typebuild/lint, native3binarybuild and strict7crateall-targetClippy pass. Finalartifact/5helper/runner hashes independentlymatched and ownedprocess/profilecleanup verified. Entiremission/epic672/prior evidence preserved; realSSH/externaltransfer/Google/offsite, actualsourcefree recovery ofnewmetadata, fullhealthaudit, broaderaccounting/transfer/release/platform andTSretirement remainopen. Installeddesktop acceptance remains explicitly last; no unlockrequests or extra perfectionround."
     }
   ]
 }

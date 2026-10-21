@@ -101,13 +101,22 @@ async function reopen(){step='fresh-mfa-source-restart-no-rescan';await ownerPag
 async function archive(name){step='explicit-signed-originals-and-scan-evidence-'+name;const r=await ownerPage.request.post(base+'/api/workspace/backup',{headers:{origin:base},data:{confirm:true}});need(r.status()===200&&r.headers()['content-type']==='application/vnd.rentemester.native-backup+json','real scanner evidence signed coverage');const bytes=await r.body();need(bytes.length>0&&bytes.length<=96*1024*1024,'bounded full signed snapshot');writeFileSync(join(work,'scanner-'+name+'.native-backup.json'),bytes,{mode:0o600,flag:'wx'});await assertStable();return{sha256:hash(bytes),bytes:bytes.length,documents};}
 async function restored(){step='source-free-fresh-owner-normal-verification-mfa-no-scanner-config';ownerPage=await newPage();freshOwner={email:'restored@example.invalid',password:'synthetic-restored-password-789',codes:[]};await ownerPage.goto((await mail('verification',freshOwner.email)).actionUrl);need((await enroll(ownerPage,freshOwner)).user.id!==ownerId,'restored history is not imported current identity');await assertStable();return{sourceFreeRestoreQualified:true,historicalEvidenceWithoutCredentialsOrRescan:true};}
 async function restoredReopen(){step='restored-owner-fresh-mfa-reopen-exact-proof';await ownerPage.context().clearCookies();await login(ownerPage,freshOwner);await assertStable();return{restoredTargetReopenQualified:true};}
-let servicePurchase;
+let servicePurchase,serviceRunResult,backupRecovery;
+async function backupRecoveryPhase(action){
+ step=action;
+ if(!backupRecovery){const module=await import(process.env.RM_BACKUP_RECOVERY_HELPER);backupRecovery=module.createBackupRecoveryProof(base,work);}
+ if(action==='backup-recovery-capture'){const result=await backupRecovery.capture(ownerPage,ownerId,serviceRunResult.remoteBackup);const response=await ownerPage.request.post(base+'/api/workspace/backup',{headers:{origin:base},data:{confirm:true}});need(response.status()===200&&response.headers()['content-type']==='application/vnd.rentemester.native-backup+json','final recovery signed export');const bytes=await response.body();need(bytes.length>0&&bytes.length<=96*1024*1024,'bounded recovery archive');writeFileSync(join(work,'scanner-source.native-backup.json'),bytes,{mode:0o600,flag:'wx'});return{...result,archiveSha256:hash(bytes),archiveBytes:bytes.length};}
+ if(action==='backup-recovery-detach'){await Promise.all(browser.contexts().map(context=>context.close()));servicePurchase=null;serviceRunResult=null;owner.codes=[];member.codes=[];return{sourceBrowserContextsClosed:true};}
+ if(action==='backup-recovery-restored'){ownerPage=await newPage();freshOwner={email:'restored@example.invalid',password:'synthetic-restored-password-789',codes:[]};await ownerPage.goto((await mail('verification',freshOwner.email)).actionUrl);const me=await enroll(ownerPage,freshOwner);return backupRecovery.restored(ownerPage,me.user.id);}
+ if(action==='backup-recovery-reopen'){await ownerPage.context().clearCookies();const me=await login(ownerPage,freshOwner);return backupRecovery.reopen(ownerPage,me.user.id);}
+ throw Error('Unknown recovery phase');
+}
 async function servicePhase(action){
  if(!servicePurchase){const module=await import(process.env.RM_SERVICE_PURCHASE_HELPER);const factory=module[process.env.RM_SCANNER_PROOF_FACTORY||'createServicePurchaseProof'];need(typeof factory==='function','configured proof factory required');servicePurchase=await factory(ownerPage,base,work,memberPage);}
  if(action==='service-reopen'){await ownerPage.context().clearCookies();await login(ownerPage,owner);return servicePurchase.reopen();}
- return servicePurchase[{'service-run':'run','service-hold-begin':'holdBegin','service-revoke':'revoke','service-hold-finish':'holdFinish'}[action]]();
+ const result=await servicePurchase[{'service-run':'run','service-hold-begin':'holdBegin','service-revoke':'revoke','service-hold-finish':'holdFinish'}[action]]();if(action==='service-run')serviceRunResult=result;return result;
 }
-for await(const line of createInterface({input:process.stdin,crlfDelay:Infinity})){try{const action=JSON.parse(line);let value;if(action.startsWith('service-'))value=await servicePhase(action);else if(action==='authenticate')value=await authenticate();else if(action==='historical')value=await historical();else if(action==='clean')value=await clean();else if(action==='negatives')value=await negatives();else if(action==='unauthorized')value=await unauthorized();else if(action==='hold-begin')value=await holdBegin();else if(action==='revoke')value=await revoke();else if(action==='hold-finish')value=await holdFinish();else if(action==='clients')value=await clients();else if(action==='reopen')value=await reopen();else if(['archive-source','archive-restarted','archive-restored'].includes(action))value=await archive(action.slice(8));else if(action==='restored')value=await restored();else if(action==='restored-reopen')value=await restoredReopen();else if(action==='finish'){await browser?.close();emit({ok:true,value:{finished:true}});break;}else throw Error('unknown phase');emit({ok:true,value});}catch(error){let pageState=null;try{pageState=await Promise.race([diagnosticPage?.evaluate(()=>({pathname:location.pathname,headings:[...document.querySelectorAll('h1,h2,h3,h4')].map(e=>e.textContent.slice(0,100)),buttons:[...document.querySelectorAll('button')].map(e=>e.textContent.slice(0,100)),alerts:[...document.querySelectorAll('[role=alert]')].map(e=>e.textContent.slice(0,300))})),new Promise(resolve=>setTimeout(()=>resolve(null),2000))]);}catch{}emit({ok:false,step,detail,errorType:error?.name,trace,pageState});await Promise.race([browser?.close().catch(()=>{}),new Promise(resolve=>setTimeout(resolve,2000))]);process.exitCode=1;break;}}
+for await(const line of createInterface({input:process.stdin,crlfDelay:Infinity})){try{const action=JSON.parse(line);let value;if(action.startsWith('backup-recovery-')){try{value=await backupRecoveryPhase(action);}catch(error){detail=String(error.message).slice(0,200);throw error;}}else if(action.startsWith('service-'))value=await servicePhase(action);else if(action==='authenticate')value=await authenticate();else if(action==='historical')value=await historical();else if(action==='clean')value=await clean();else if(action==='negatives')value=await negatives();else if(action==='unauthorized')value=await unauthorized();else if(action==='hold-begin')value=await holdBegin();else if(action==='revoke')value=await revoke();else if(action==='hold-finish')value=await holdFinish();else if(action==='clients')value=await clients();else if(action==='reopen')value=await reopen();else if(['archive-source','archive-restarted','archive-restored'].includes(action))value=await archive(action.slice(8));else if(action==='restored')value=await restored();else if(action==='restored-reopen')value=await restoredReopen();else if(action==='finish'){await browser?.close();emit({ok:true,value:{finished:true}});break;}else throw Error('unknown phase');emit({ok:true,value});}catch(error){let pageState=null;try{pageState=await Promise.race([diagnosticPage?.evaluate(()=>({pathname:location.pathname,headings:[...document.querySelectorAll('h1,h2,h3,h4')].map(e=>e.textContent.slice(0,100)),buttons:[...document.querySelectorAll('button')].map(e=>e.textContent.slice(0,100)),alerts:[...document.querySelectorAll('[role=alert]')].map(e=>e.textContent.slice(0,300))})),new Promise(resolve=>setTimeout(()=>resolve(null),2000))]);}catch{}emit({ok:false,step,detail,errorType:error?.name,trace,pageState});await Promise.race([browser?.close().catch(()=>{}),new Promise(resolve=>setTimeout(resolve,2000))]);process.exitCode=1;break;}}
 
 '''
 
@@ -130,7 +139,10 @@ def main():
     parser.add_argument('--service-purchase', action='store_true', help='Focused service scanned-original→payable→bank payment/revocation/restart proof')
     parser.add_argument('--backup-lock', action='store_true', help='Normal MFA financial backup lock → qualified artifact → unlock/single posting/restart proof')
     parser.add_argument('--remote-backup', action='store_true', help='Extend backup-lock with private TLS Drive metadata/media verification; fixture copy is not app upload')
+    parser.add_argument('--backup-recovery', action='store_true', help='Continue remote-backup proof through source-free fresh-owner restore and restart')
     args = parser.parse_args()
+    if args.backup_recovery and not args.remote_backup:
+        parser.error('--backup-recovery requires --remote-backup')
     if args.remote_backup and not args.backup_lock:
         parser.error('--remote-backup requires --backup-lock')
     if args.backup_lock and (args.service_purchase or args.backup_destinations):
@@ -559,7 +571,7 @@ def main():
             start(create=True)
             script = work / 'browser.mjs'
             script.write_text(BROWSER)
-            controller = subprocess.Popen(['/opt/homebrew/bin/bun', str(script)], cwd=REPO, env={**os.environ, 'RM_NATIVE_BACKUP_DESTINATION_PROOF':'1' if args.backup_destinations else '0', 'RM_NATIVE_REMOTE_BACKUP_PROOF':'1' if args.remote_backup else '0', 'RM_SERVICE_PURCHASE_HELPER': str(REPO / ('scripts/rust/check-native-backup-lock.ts' if args.backup_lock else 'scripts/rust/check-native-service-purchase.ts')), 'RM_SCANNER_PROOF_FACTORY': 'createBackupLockProof' if args.backup_lock else 'createServicePurchaseProof', 'RM_SCANNER_BASE': origin, 'RM_SCANNER_WORK': str(work), 'RM_SCANNER_SCREENSHOT': str(args.evidence.with_suffix('.png')), 'RM_SCANNER_PLAYWRIGHT': str((REPO / 'node_modules/@playwright/test/index.mjs').resolve(strict=True))}, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True, bufsize=1, start_new_session=True)
+            controller = subprocess.Popen(['/opt/homebrew/bin/bun', str(script)], cwd=REPO, env={**os.environ, 'RM_NATIVE_BACKUP_DESTINATION_PROOF':'1' if args.backup_destinations else '0', 'RM_NATIVE_REMOTE_BACKUP_PROOF':'1' if args.remote_backup else '0', 'RM_BACKUP_RECOVERY_HELPER': str(REPO / 'scripts/rust/check-native-backup-recovery.ts'), 'RM_SERVICE_PURCHASE_HELPER': str(REPO / ('scripts/rust/check-native-backup-lock.ts' if args.backup_lock else 'scripts/rust/check-native-service-purchase.ts')), 'RM_SCANNER_PROOF_FACTORY': 'createBackupLockProof' if args.backup_lock else 'createServicePurchaseProof', 'RM_SCANNER_BASE': origin, 'RM_SCANNER_WORK': str(work), 'RM_SCANNER_SCREENSHOT': str(args.evidence.with_suffix('.png')), 'RM_SCANNER_PLAYWRIGHT': str((REPO / 'node_modules/@playwright/test/index.mjs').resolve(strict=True))}, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True, bufsize=1, start_new_session=True)
             report['browserControllerPid'] = controller.pid
             phase('authenticate')
             if args.backup_lock:
@@ -574,6 +586,9 @@ def main():
                 report['backupGovernanceHelperSha256'] = digest(proof_helpers[3])
                 proof_helpers.append(REPO / 'scripts/rust/check-native-backup-registration.ts')
                 report['backupRegistrationHelperSha256'] = digest(proof_helpers[4])
+                if args.backup_recovery:
+                    proof_helpers.append(REPO / 'scripts/rust/check-native-backup-recovery.ts')
+                    report['backupRecoveryHelperSha256'] = digest(proof_helpers[-1])
                 helper_hashes = {str(path): digest(path) for path in proof_helpers}
                 phase('service-run')
                 if any(digest(path) != helper_hashes[str(path)] for path in proof_helpers):
@@ -583,11 +598,10 @@ def main():
                 phase('service-reopen')
                 if any(digest(path) != helper_hashes[str(path)] for path in proof_helpers):
                     raise RuntimeError('Backup proof imported helper changed during restart verification')
-                phase('finish', 20)
-                controller.stdin.close(); controller.wait(timeout=10)
-                if controller.returncode != 0:
-                    raise RuntimeError('Backup lock controller nonzero terminal')
-                controller = None; stop()
+                if args.backup_recovery:
+                    phase('backup-recovery-capture')
+                    phase('backup-recovery-detach')
+                stop()
                 db = sqlite3.connect((work/'workspace/synthetic/data/ledger.sqlite').as_uri()+'?mode=ro', uri=True)
                 try:
                     counts = {table: db.execute('SELECT count(*) FROM '+table).fetchone()[0] for table in ['documents','bank_transactions','journal_entries']}
@@ -602,6 +616,64 @@ def main():
                         raise RuntimeError('Backup inbox target terminal effects differ')
                     report['targetTerminalSql'] = {'company':'synthetic-backup-inbox-target','counts':target_counts}
                 finally: target_db.close()
+                if args.backup_recovery:
+                    source = work / 'workspace'
+                    if not owned() or source.is_symlink() or not source.is_dir():
+                        raise RuntimeError('Exact owned source required before source-free removal')
+                    # These are this harness's synthetic source copies, never user data.
+                    shutil.rmtree(source)
+                    (work / 'signing.der').unlink()
+                    destination = work / 'backup-destination'
+                    if destination.is_symlink() or not destination.is_dir():
+                        raise RuntimeError('Exact owned synthetic destination required')
+                    shutil.rmtree(destination)
+                    for name in ['drive-remote-object.native-backup.json', 'drive-object.json']:
+                        (work / name).unlink()
+                    (work / 'backup-lock-service.key').unlink()
+                    for old_archive in work.glob('*.native-backup.json'):
+                        if old_archive.name != 'scanner-source.native-backup.json':
+                            if old_archive.is_symlink() or not old_archive.is_file():
+                                raise RuntimeError('Unexpected synthetic archive file')
+                            old_archive.unlink()
+                    for credential in work.glob('*.cookie'):
+                        if credential.is_symlink() or not credential.is_file():
+                            raise RuntimeError('Unexpected source credential file')
+                        credential.unlink()
+                    archive = work / 'scanner-source.native-backup.json'
+                    captured = report['results']['backup-recovery-capture']
+                    if digest(archive) != captured['archiveSha256'] or archive.stat().st_size != captured['archiveBytes']:
+                        raise RuntimeError('Captured final recovery archive changed')
+                    wire = json.loads(archive.read_bytes())
+                    payloads = [base64.b64decode(entry['bytesBase64'], validate=True) for entry in wire['entries']]
+                    payloads.append(base64.b64decode(wire['manifestBase64'], validate=True))
+                    source_secrets = [scanner_token, drive_token, bearer, config['authMail']['idempotencySecret'], config['cookieKey'], config['mfaKey']]
+                    if any(secret.encode() in raw for raw in payloads for secret in source_secrets):
+                        raise RuntimeError('Private operator credential found in signed recovery archive')
+                    report['sourceOperatorCredentialsAbsentFromArchive'] = True
+                    progress('operator:source-free-independent-verification')
+                    verified = subprocess.run([str(pinned['server_binary']), '--verify-backup', str(archive), '--trusted-backup-key', str(work / 'trusted.pub')], cwd=REPO, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=60)
+                    if verified.returncode != 0:
+                        raise RuntimeError('Source-free independent trusted-key verification refused')
+                    # New runtime credentials and signer, separate from historical evidence.
+                    subprocess.run(['/opt/homebrew/bin/bun', '-e', "const c=require('node:crypto'),f=require('node:fs'),k=c.generateKeyPairSync('ed25519'),s=k.privateKey.export({format:'der',type:'pkcs8'}).subarray(-32),p=k.publicKey.export({format:'der',type:'spki'}).subarray(-32);f.writeFileSync(process.argv[1],Buffer.concat([Buffer.from('3051020101300506032b657004220420','hex'),s,Buffer.from('812100','hex'),p]),{mode:0o600});f.writeFileSync(process.argv[2],p,{mode:0o600});", str(work / 'target-signing.der'), str(work / 'target-trusted.pub')], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                    for name in ['documentScanner', 'backupDestinations', 'backupRemoteVerification']:
+                        config.pop(name, None)
+                    config.update({'root': str(work / 'restored'), 'backupSigningKeyFile': str(work / 'target-signing.der'), 'cookieKey': key(), 'mfaKey': key(), 'restoreActor': 'system:synthetic-installer', 'firstOwner': {'actor': 'system:synthetic-installer', 'email': 'restored@example.invalid', 'name': 'Synthetic Restored Owner', 'password': 'synthetic-restored-password-789'}})
+                    write_config(); start(restore=True)
+                    phase('backup-recovery-restored')
+                    stop(); config.pop('firstOwner'); config.pop('restoreActor')
+                    write_config(); start()
+                    phase('backup-recovery-reopen')
+                    if any(digest(path) != helper_hashes[str(path)] for path in proof_helpers):
+                        raise RuntimeError('Backup proof helper changed during source-free recovery')
+                    if source.exists() or (work / 'signing.der').exists() or destination.exists() or (work / 'drive-remote-object.native-backup.json').exists():
+                        raise RuntimeError('Source authority or backup copies unexpectedly recreated')
+                    report.update(sourceFreeRestoreQualified=True,sourceWorkspaceAndPrivateSignerRemoved=True,sourceManagedAndProviderCopiesRemoved=True,restoredNewOwnerAndFreshMfaRestartQualified=True)
+                phase('finish', 20)
+                controller.stdin.close(); controller.wait(timeout=10)
+                if controller.returncode != 0:
+                    raise RuntimeError('Backup lock controller nonzero terminal')
+                controller = None; stop()
                 with gateway_lock:
                     if errors or provider_requests:
                         raise RuntimeError('Backup lock proof must not call scanner/provider')

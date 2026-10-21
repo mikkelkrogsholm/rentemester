@@ -466,3 +466,27 @@ felter er `regionCountry`, `regionNote`, `itSecurityMeetsStandards`,
 `operationId`, `destinationId`, `confirm:true`. Declare kræver desuden
 `backupId` og valgfrit `note`. Actor og tidspunkt fastsættes af serveren;
 klientoplysninger kan ikke erstatte autorisation eller verifikation.
+
+
+## Gendannelse uden den oprindelige instans
+
+Den native gendannelsesprøve omfatter nu den nye backuphistorik. En sidste
+signeret workspacebackup verificeres med en separat offentlig nøgle, efter at
+kildens datamappe, private signeringsnøgle, opbevaringskopier og testsessioner
+er fjernet. En frisk instans får nye signerings-, cookie- og MFA-nøgler og en
+ny ejer, der bekræfter sin mail og opretter MFA gennem det almindelige web-UI.
+
+Begge syntetiske virksomheders posteringer, bankdata, saldobalance, balance,
+bilagsmetadata og originalfiler bevares. Registrering, erklæring og fjernelse
+kan fortsat læses med de oprindelige aktører, tidspunkter og kvitteringer via
+HTTP, CLI og MCP, også efter genstart. Erklæringer er fortsat uverificerede.
+
+Den nye instans overtager ingen lokalt opbevaret backupfil eller aktiv
+operatørdestination. Den samlede backupstatus låner ingen placerings- eller
+fjernkontrol fra kildens historik, og opslag af kildens fjernkvittering giver
+intet aktivt resultat. Prøven kontakter ingen rigtig Google- eller SSH-konto.
+Den installerede desktopapp testes separat til sidst.
+
+Portable export og restore validerer den typede registreringshistorik før
+publicering. Beskadiget kendt historik eller en manipuleret kvittering afvises
+uden delvis indlæsning; ældre backups uden registreringshistorik understøttes.

@@ -7,6 +7,13 @@ starter ikke TypeScript-backenden og sender ikke forespørgsler videre til den.
 
 ## Aktuel Rust-levering
 
+Signeret gendannelse på en frisk instans bevarer nu også backupregistreringer,
+uverificerede erklæringer og fjernelseshistorik. Prøven fjerner den oprindelige
+testinstans og private nøgle først og verificerer begge virksomheders data via
+HTTP, CLI og MCP med ny MFA-ejer og genstart. Gammel backup- eller
+providerautoritet bliver ikke aktiv på den nye instans. Se
+[gengivelsen af forløbet](rust-backup-destinations.md#gendannelse-uden-den-oprindelige-instans).
+
 Virksomhedens backupstatus og frivillige finansielle bogføringslås fungerer nu
 på tværs af web, HTTP, CLI og MCP samt servicekonti. Faktisk normal-MFA-prøve
 med mistede/ændrede filer, frisk backup, én postering og genstart består.
