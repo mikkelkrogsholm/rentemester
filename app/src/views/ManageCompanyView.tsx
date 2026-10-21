@@ -1,3 +1,4 @@
+import { DineroImportPanel } from "../components/DineroImportPanel";
 import { OpeningBalancePanel } from "../components/OpeningBalancePanel";
 import { useOptionalAuth } from "../lib/auth-context";
 import { useMutationOutcome } from "../lib/useMutationOutcome";
@@ -185,6 +186,7 @@ function ManageForm({
         </div>
       </form>
 
+      <DineroImportPanel slug={company.slug} />
       <ProfileCard slug={company.slug} initial={settings} />
 
       <CvrCard slug={company.slug} initial={settings} />

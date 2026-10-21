@@ -1,0 +1,10 @@
+import { afterEach, expect, test, vi } from "bun:test";
+import { screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { renderAt } from "../test/render";
+import { dineroImportApi } from "../lib/api/dinero-import";
+import { ImportedReceivablesPanel } from "./ImportedReceivablesPanel";
+afterEach(()=>vi.restoreAllMocks());
+const row={source:"imported" as const,externalInvoiceId:"EXT-PAID",customerName:"Synthetic",invoiceDate:"2025-01-01",dueDate:null,grossAmount:30000,paidAmount:30000,openBalance:0,controlAccountNo:"5500",sourceRecognitionRef:"opening",sourceDocumentHash:"a".repeat(64),scheduleHash:"b".repeat(64),archiveBoundary:"external"};
+test("settled external invoices remain visible and have no native actions",async()=>{const read=vi.spyOn(dineroImportApi,"receivables").mockResolvedValue({ok:true,asOfDate:"2025-12-31",boundary:"external source only",count:1,totalOpen:0,rows:[row],errors:[]});renderAt(<ImportedReceivablesPanel slug="synthetic"/>);await screen.findByText("EXT-PAID");expect(screen.queryByRole("button",{name:/Bogfør|Send|Afstem/})).toBeNull();await userEvent.clear(screen.getByLabelText("Opgørelsesdato for importerede tilgodehavender"));await userEvent.type(screen.getByLabelText("Opgørelsesdato for importerede tilgodehavender"),"2025-06-01");await userEvent.click(screen.getByRole("button",{name:"Opdatér importerede tilgodehavender"}));expect(read.mock.calls.at(-1)?.[1]).toBe("2025-06-01");});
+test("read error never becomes zero balance or empty success",async()=>{vi.spyOn(dineroImportApi,"receivables").mockRejectedValue(new Error("source unavailable"));renderAt(<ImportedReceivablesPanel slug="synthetic"/>);await screen.findByRole("alert");expect(screen.queryByText("Ingen importerede fakturaer på opgørelsesdatoen.")).toBeNull();expect(screen.queryByText(/åbent/)).toBeNull();});

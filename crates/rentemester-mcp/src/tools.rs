@@ -149,6 +149,7 @@ pub fn list() -> Value {
     tools.extend(crate::service_principals::tools());
     tools.extend(crate::opening_balance::tools());
     tools.extend(crate::archive_import::tools());
+    tools.extend(crate::dinero_import::tools());
     tools.extend(crate::cfo_analytics::tools());
     tools.extend(crate::contact_import::tools());
     tools.extend(crate::intercompany_dispositions::tools());
@@ -303,6 +304,7 @@ pub async fn call(api: &ApiClient, name: &str, args: Value) -> Result<Value, &'s
         name if crate::assets::accepts(name) => crate::assets::call(api,name,args).await?,
         name if crate::service_principals::accepts(name)=>crate::service_principals::call(api,name,args).await?,
         name if crate::opening_balance::accepts(name)=>crate::opening_balance::call(api,name,args).await?,
+        name if crate::dinero_import::accepts(name)=>crate::dinero_import::call(api,name,args).await?,
         name if crate::archive_import::accepts(name)=>crate::archive_import::call(api,name,args).await?,
         "vat_oss_report"=>crate::oss_report::call(api,args).await?,
         name if crate::eu_sales::accepts(name)=>crate::eu_sales::call(api,name,args).await?,

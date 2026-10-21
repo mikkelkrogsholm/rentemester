@@ -1,3 +1,4 @@
+import { ImportedReceivablesPanel } from "../components/ImportedReceivablesPanel";
 import { NativeInvoiceEmail } from "../components/NativeInvoiceEmail";
 import { NativeInvoicePost } from "../components/NativeInvoicePost";
 import { NativeReminderClaims } from "../components/NativeReminderClaims";
@@ -173,6 +174,7 @@ export function InvoicesView({ detail = false }: { detail?: boolean } = {}) {
         description={`${inv.company.name} · ${currency} · Regnskabsår ${inv.selectedYear}`}
         actions={detail ? <ButtonLink className="btn secondary" to={listReturnTo(slug, "fakturaer", params.get("returnTo"), inv.selectedYear)}>Tilbage til fakturaer</ButtonLink> : !inv.archived && can("company.draft.write") ? <ButtonLink className="btn" to={workflowTo(slug, "fakturaer", "ny", params, inv.selectedYear)}>Udsted faktura</ButtonLink> : undefined} />
 
+      {!detail&&<ImportedReceivablesPanel slug={slug} />}
       {publicNotice&&<Banner kind="warning">{publicNotice}</Banner>}
       {inv.nativeSales&&!inv.archived&&can("company.external-send")&&<div className="card">
         <h2>E-faktura</h2>

@@ -2199,3 +2199,6 @@ fn service_file_mcp_context_and_mutually_exclusive_flags() {
         assert!(!String::from_utf8_lossy(&output.stderr).contains("synthetic-private-service"));
     }
 }
+
+#[path="stdio/dinero_import.rs"]
+mod dinero_import;

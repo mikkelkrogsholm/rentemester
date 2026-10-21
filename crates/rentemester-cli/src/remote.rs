@@ -78,6 +78,8 @@ pub fn run(args: &[String]) -> Result<Value, Failure> {
         help["reportReads"]=json!({"usage":"journal/trial-balance/income-statement/balance/overview --company SLUG [--year LABEL] [--source live|archive]; --account only journal. report-export --company SLUG --report journal|trial-balance|income-statement|balance --format csv|pdf [--year LABEL] [--source live|archive] [--account journalonly]. Read-only, explicit server/cookie. Server owns source selection and unavailable states. Preserve exact decimal strings. Exports return data {ok,contentType,bytes}, max96MiB; no files/client calculations. Omitted source uses server live-first selection; explicit archive never falls back."});
         help["openingBalance"]=crate::opening_balance::help();
         help["commands"].as_array_mut().unwrap().extend(crate::opening_balance::COMMANDS.map(|s|json!(s)));
+        help["dineroImport"]=crate::dinero_import::help();
+        help["commands"].as_array_mut().unwrap().extend(crate::dinero_import::COMMANDS.map(|s|json!(s)));
         help["archiveImport"]=crate::archive_import::help();
         help["commands"].as_array_mut().unwrap().extend(crate::archive_import::COMMANDS.map(|s|json!(s)));
         help["ossReport"]=crate::oss_report::help();
@@ -152,6 +154,7 @@ pub fn run(args: &[String]) -> Result<Value, Failure> {
                 "--format",
                 "--fiscal-year",
                 "--import-id",
+                "--attempt-id",
                 "--scope",
                 "--company-slugs-json",
                 "--group-profile-id",
@@ -298,6 +301,8 @@ pub fn run(args: &[String]) -> Result<Value, Failure> {
     if crate::cfo_analytics::accepts(command){return crate::cfo_analytics::run(command,&flags,allow_http,confirmed,preview_reviewed);}
     if flags.keys().any(|k|["--scope","--company-slugs-json","--group-profile-id","--party","--currency","--aggregate"].contains(k)){return Err(invalid("CFO selectors allowed only on cfo-analytics"));}
     if crate::opening_balance::accepts(command){return crate::opening_balance::run(command,&flags,allow_http,confirmed,preview_reviewed);}
+    if crate::dinero_import::accepts(command){return crate::dinero_import::run(command,&flags,allow_http,confirmed,preview_reviewed);}
+    if flags.contains_key("--attempt-id"){return Err(invalid("attempt selector allowed only on dinero-import-original"));}
     if crate::archive_import::accepts(command){return crate::archive_import::run(command,&flags,allow_http,confirmed,preview_reviewed);}
     if flags.keys().any(|k|["--fiscal-year","--import-id"].contains(k)){return Err(invalid("archive selectors allowed only on archive commands"));}
     if command=="create-company" {return crate::company_creation::run(&flags,allow_http,confirmed,preview_reviewed);}

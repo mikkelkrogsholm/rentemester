@@ -317,3 +317,5 @@ mod archive_import;
 mod opening_balance;
 
 mod portfolio_cashflow;
+
+mod dinero_import;

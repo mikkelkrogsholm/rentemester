@@ -59,6 +59,7 @@ export type ConfirmDialogProps = {
   /** Canonical resource scope for operations reachable through equivalent routes. */
   operationScope?: string;
   closeOnConfirm?: boolean;
+  confirmDisabled?: boolean;
 };
 
 /** Shape of the API error the cockpit's `api.ts` throws. */
@@ -79,6 +80,7 @@ export function ConfirmDialog({
   operationKey = "",
   operationScope,
   closeOnConfirm = true,
+  confirmDisabled = false,
 }: ConfirmDialogProps) {
   const [note, setNote] = useState(noteInitialValue ?? "");
   const [busy, setBusy] = useState(false);
@@ -101,7 +103,7 @@ export function ConfirmDialog({
     if (dirty) setCheckingDiscard(true); else onClose();
   }
   async function handleConfirm() {
-    if (attempted.current || outcome.isBlocked()) return;
+    if (confirmDisabled || attempted.current || outcome.isBlocked()) return;
     if (noteInputType === "email" && noteRef.current && !noteRef.current.reportValidity()) return;
     attempted.current = true;
     setBusy(true);
@@ -173,7 +175,7 @@ export function ConfirmDialog({
             type="button"
             className={`btn${confirmKind === "danger" ? " danger" : ""}`}
             onClick={handleConfirm}
-            disabled={busy || uncertain}
+            disabled={busy || uncertain || confirmDisabled}
           >
             {busy ? "Arbejder…" : confirmLabel}
           </Button>
