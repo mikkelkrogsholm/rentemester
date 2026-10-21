@@ -1,15 +1,15 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "Group140 R45 discover the existing native bank/bookkeeping batch journey",
-  "code_revision": "f4e4202bced71eff331a235c00935e42b82e34ae",
+  "current_increment": "Group141 original bank list, reconciliation report and account list through shared Rust server/CLI/MCP accepted",
+  "code_revision": "bad20c5bf816d67377d7956a3e5b3aac529896a8",
   "spec_revision": "sha256:bc98636be4a972407adce0f817a76bb9d4bb7200cb292a70965e75ab62fae250",
-  "state": "Group140 ACCEPTED source-verified bank-reconciliation-batch discovery: actual13steps/12routepatterns, independent human approval, exact persisted plan/hash/runKey/status/replay recovery, current source/control/refusal boundaries. Public HTTP/CLI/MCP description/hash/pagination equality, actual aliases/registered protected routes and exact zero financial effects independently PASS. Financial engine unchanged in140; accepted57/58 atomic batch execution remains retained. Full original bank query/filter/alias/envelope/actor/default selection parity, broader discovery, release/cutover/TS retirement and final installed desktop remain OPEN.",
+  "state": "Group141 ACCEPTED original all-year bank queries/report/accounts via shared Rust server, original CLI and MCP names. Canonical filters/account/page metadata and original monetary units match exactly; three real rows across two years/two accounts include EUR10 versus DKK75. Real original journal/link/reversal requires typed422 refusal until reviewed correction to independently posted replacement. Current membership revocation and unmatched physical CSV corruption refuse; normal-MFA restart preserves exact query/report/account/book state. Independent terminal SQL confirms3bank/3journal/6lines/0docs, two exact original CSV hashes, corrected canonical relation and owner posting audit. First actual failed only helper503 expectation; retained-state GET proved existing422 mapping without financial writes, corrected assertion and one141b pass. Worker focused12checks, integrated strict6crate all-target Clippy and normal three-binary build retained. Worker snapshots/removal verified; successful runtime fully stopped/cleaned, failed fixture retained privately with manifest. All prior acceptance/full original scope preserved. Next original bank import bindings/receipts; actor/path/env/defaultlauncher, broader discovery, release/cutover/TS retirement and final installed desktop remain OPEN.",
   "issues_closed": [
     701
   ],
   "next": [
-    "R44/R45 same bank journey: implement shared server bank_list/reconcile_bank/bank_account_list query/report parity (all years, original-unit money, filters/account/pagination/envelopes) and existing CLI/MCP bindings. Preserve native browser year/DKK projection and correct reversal demotion; do not reproduce original view-membership-after-reversal bug. Source notes /tmp/rm141-bank-query-notes.md. Explicit original import filesystem/actor/env/company-path scope remains required separately.",
+    "R44/R45 original bank import journey: reuse Rust parser/import engine for original bank import CLI and bank_import MCP local-file/inline/confirmation/receipt parity, source/account/profile/duplicate and restart controls. Source scout complete and finite contract /tmp/rm142-bank-import-contract.md. Bank account writes and actor/env/company-path/defaultlauncher scopes remain required separately.",
     "Installed desktop acceptance is explicitly deferred to the very end by the user. Preserve prepared Group100 profile; collect remaining native automation, closure, recovery and packaging checks for final installed acceptance without requesting screen unlock during development.",
     "J03/R50 and remaining R54 scope: only still-supported operation closure/recovery, nonempty scheduler handoff, hostile/older clone and post-cutover rollback requirements. Group99 qualifies managed installed J06 flow, not every R54 acceptance item.",
     "Signed distribution/update/cutover evidence must match actual full Rust replacement; retain all existing completion gates and TypeScript retirement gate.",
@@ -7928,6 +7928,40 @@
       "worker_worktree_removed": true,
       "worktree_recovery": ".git/rentemester-recovery/archived140.json",
       "remaining": "Original bank read/report/accountlist/import filters/names/inputs/envelopes and actor/path/env/defaultlauncher; remaining domain discovery and full epic release/cutover/TSretirement/final installed desktop. No new financial execution qualification claimed by metadata-only140."
+    },
+    "bank_queries141": {
+      "issue": 717,
+      "status": "ACCEPTED141_original_bank_queries",
+      "source_revision": "bad20c5bf816d67377d7956a3e5b3aac529896a8",
+      "backend_commit": "8f349e64",
+      "clients_commit": "22fade49",
+      "helper_commit": "bad20c5b",
+      "report": "/tmp/rentemester-rust-reports/bank-queries141b.json",
+      "report_sha256": "5c1aa09091d786c09ffc7e772d6b2587006b785b8f558fa0f885f5325ebb6c82",
+      "terminal_exit": 0,
+      "independent_verification": "/tmp/rm141-independent-verification.log",
+      "focused_backend_checks": 5,
+      "focused_client_checks": 7,
+      "strict_clippy": "/tmp/rm141-integrated-clippy.log",
+      "normal_build": "/tmp/rm141-normal-build.log",
+      "unchanged_rust_artifacts_reused_after_helper_fix": true,
+      "terminal_counts": {
+        "documents": 0,
+        "bank_transactions": 3,
+        "journal_entries": 3,
+        "journal_lines": 6
+      },
+      "original_currency_and_cross_year_filters": true,
+      "corrected_relation_and_reversal_refusal": true,
+      "current_revocation_and_unmatched_source_refusal": true,
+      "normal_mfa_restart_exact": true,
+      "owned_runtime_cleaned": true,
+      "worker_worktrees_removed": true,
+      "worktree_recovery": ".git/rentemester-recovery/archived141.json",
+      "failed_first_report": "/tmp/rentemester-rust-reports/bank-queries141.json",
+      "isolated_status_correction": "/tmp/rm141-reversal-isolated.json",
+      "failed_fixture_retained_manifest": "/tmp/rentemester-rust-reports/bank-queries141-retained-manifest.json",
+      "remaining": "Original bank import/account mutations and all original actor/env/path/default selection, broader discovery/release/cutover/TS retirement/final installed desktop. Full epic remains OPEN."
     }
   },
   "verified_history": [
@@ -9527,6 +9561,12 @@
       "code_revision": "1ca1e318 plus root confirmed app/host/server, all-invoice period assurance and corrected foreign-interest refusal integration",
       "spec_revision": "sha256:bc98636be4a972407adce0f817a76bb9d4bb7200cb292a70965e75ab62fae250",
       "state": "Group122 completes source-defined established bad-debt writeoff for DKK and foreign invoices, exact partial/full/cumulative VAT splits, remaining actual DKK carrying and later bank FX/principal receipts, with separate claims retained and paid. Current human MFA/bogføringsret, invoice/credit/bank originals, current role/revocation, backup/date/period and explicit confirmation remain. Native catalogue252. Actual normal-MFA sharedweb accepted-loss/dropped-reply/manual canonical reconciliation blocks repeat, second deliberate CLI partial loss and MCP remaining EUR loss all succeed. DKK two312.50 losses leave625principal plus310 compensation; actual625+310 receipts clear both. EUR125 frozen929.01, payment50.05 with375.38 actual cash/371.98relief leaves74.95 and557.03carrying; loss557.03 splits445.62expense/111.41VAT. Exactly10journals/4bank/4distinctJSON-PDFdocuments, VATpayable199.39; all5auditcomponents clean, HTTP/CLI/MCP exact status/originals, freshMFA restart and independent signed export verified. All-invoice period assurance validates even no-claim loss invoices; librarytests cover cumulative VAT, laterforeignreceipts, closures/refusals and sourcehistory. Original R01/R19/frozen source require explicit corrected foreign-interest refusal rather than a new positive foreign-interest feature; five-action/no-effects test passes. No legal loss establishment, source-free restore of this new flow, recovered written-off debt, service write or installed GUI claimed. Full original rewrite/GDD/epic672 remains active: remaining imported-receivable/control and supported lifecycle/recovery, release/install/transfer/platform and TypeScript retirement gates; installed desktop acceptance last."
+    },
+    {
+      "current_increment": "Group140 R45 discover the existing native bank/bookkeeping batch journey",
+      "code_revision": "f4e4202bced71eff331a235c00935e42b82e34ae",
+      "spec_revision": "sha256:bc98636be4a972407adce0f817a76bb9d4bb7200cb292a70965e75ab62fae250",
+      "state": "Group140 ACCEPTED source-verified bank-reconciliation-batch discovery: actual13steps/12routepatterns, independent human approval, exact persisted plan/hash/runKey/status/replay recovery, current source/control/refusal boundaries. Public HTTP/CLI/MCP description/hash/pagination equality, actual aliases/registered protected routes and exact zero financial effects independently PASS. Financial engine unchanged in140; accepted57/58 atomic batch execution remains retained. Full original bank query/filter/alias/envelope/actor/default selection parity, broader discovery, release/cutover/TS retirement and final installed desktop remain OPEN."
     }
   ],
   "scope_clarifications": [
