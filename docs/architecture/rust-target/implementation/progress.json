@@ -4,12 +4,12 @@
   "current_increment": "Group130 original R32/#703 dated FX/loss invoice visibility using shared authenticated principal/carrying",
   "code_revision": "07a963ad",
   "spec_revision": "sha256:bc98636be4a972407adce0f817a76bb9d4bb7200cb292a70965e75ab62fae250",
-  "state": "Group129 actual HTML artifact and exact normal-MFA restart remain accepted. Group130 shared invoice FX/loss principal implementation integrated from57763b02 as07a963ad: explicit original currency and actual DKK carrying, dated payment/credit/loss/refund selection, claims separate, no blanket suppression by future/unrelated loss, minimal existing unposted DKK compatibility and imported/base-currency boundaries retained. Focused portfolio8 and integrated HTML4 pass; strict storage all-target Clippy passes. Normal server/CLI/MCP build passed; extended existing ordinary-MFA bad-debt/FX runtime proof pending. Fixture-only first-run errors diagnosed in isolation (Immediate tx, exact pretty hash, source-forbidden credit-after-loss); supported credit-before-loss and separate no-loss refund case pass, no validator weakened. Whole R32 and epic remain open; tax/iXBRL R31 preserved, installed desktop last.",
+  "state": "Focused core8, HTML4, strict Clippy and normal binaries pass. First actual failed solely on invented portfolio amount UI locator; existing UI displays invoice count. Corrected isolated expectation; exact API/HTML amount assertions retained. One justified rerun pending. Whole R32 and epic remain open; original scope retained. No build rerun needed because only proof expectation changed.",
   "issues_closed": [
     701
   ],
   "next": [
-    "Complete normal three-bin build and actual dated FX/loss portfolio/HTML HTTP/React/CLI/MCP at issue/yesterday/today on existing real DKK/EUR bad-debt fixture, exact normal MFA restart and preserved full audit/signed backup. Reuse scripts/rust/run-document-scanner.py --backup-lock --invoice-bad-debt, extended check-native-invoice-bad-debt.ts. Do not repeat129/128 unchanged journeys. Then original R32 interface/format mapping and R31 tax/iXBRL remain; no whole issue closure on this subset.",
+    "Finish dated FX/loss actual using corrected existing-card expectation and unchanged bins; then R32 journal-history compatibility, arbitrary-period report selectors, dashboard JSON mapping; original R31 tax/iXBRL remains. No whole issue closure on a subset.",
     "Installed desktop acceptance is explicitly deferred to the very end by the user. Preserve prepared Group100 profile; collect remaining native automation, closure, recovery and packaging checks for final installed acceptance without requesting screen unlock during development.",
     "J03/R50 and remaining R54 scope: only still-supported operation closure/recovery, nonempty scheduler handoff, hostile/older clone and post-cutover rollback requirements. Group99 qualifies managed installed J06 flow, not every R54 acceptance item.",
     "Signed distribution/update/cutover evidence must match actual full Rust replacement; retain all existing completion gates and TypeScript retirement gate.",
@@ -7119,7 +7119,7 @@
       "conclusion": "success"
     },
     "dated_invoice_fx_loss130": {
-      "status": "Focused core8, integrated HTML4, strict storage all-target Clippy and normal three-bin build passed; actual runtime pending",
+      "status": "Focused core8, HTML4, strict Clippy and normal binaries pass. First actual failed solely on invented portfolio amount UI locator; existing UI displays invoice count. Corrected isolated expectation; exact API/HTML amount assertions retained. One justified rerun pending.",
       "issue": 703,
       "worker_source": "57763b02",
       "integration": "07a963ad",
@@ -7128,21 +7128,30 @@
       "strict_clippy": "/tmp/rm130-clippy.log",
       "normal_three_bin_build": "/tmp/rm130-normal-build.log",
       "proof_helper": "scripts/rust/check-native-invoice-bad-debt.ts",
-      "planned_actual_report": "/tmp/rentemester-rust-reports/dated-fx-loss130.json",
+      "planned_actual_report": "/tmp/rentemester-rust-reports/dated-fx-loss130b.json",
       "actual_mfa_qualified": false,
       "normal_restart_qualified": false,
       "installed_desktop_qualified": false,
       "fixture_strategy_change": "Exact writer bytes and mandatory Immediate restored; schema permits credit before loss, not after, so one separate no-loss EUR refund fixture avoids invalid combined lifecycle. Isolated corrected tests passed before one final focused group. Accounting source validation retained.",
       "worktree_recovery": ".git/rentemester-recovery/archived130.json",
       "next_after_acceptance": [
-        "Original R32 mapping and complete report parity audit",
-        "Original R31/#706 annual tax and iXBRL; no silent format removal",
+        "R32 journal-history compatibility: exact CLI bare snake_case and MCP journal_list date/status/page wire",
+        "R32 arbitrary-period report selectors and explicit dashboard JSON compatibility mapping",
+        "R31/#706 annual tax and iXBRL",
         "Manual installed desktop allersidst"
       ],
       "normal_binary_sha256": {
         "rentemester-server": "5d061def7d2e1556acc5026d279fd0a4ee4851a17714cb38ac7d240d20698ece",
         "rentemester-rust": "4c61dec3793121b3feff0022b5a9f4313346139c7280b6c91df3073aedfb3ed9",
         "rentemester-mcp": "a159e80462588e92fa0abd3a0a782fe20634c099ca8042fdd9ae8830f895ddd3"
+      },
+      "first_actual_failure": {
+        "report": "/tmp/rentemester-rust-reports/dated-fx-loss130.json",
+        "sha256": "c9de5a03a0ee08bbea43917df16aa567e40a38f2f8e55765cd1c11d035621f4f",
+        "source": "9c269899cbff3027df672f48437c0a4805841914",
+        "terminal_exit": 1,
+        "owned_cleanup": true,
+        "diagnosis": "NativePortfolioOverview dl includes count but no invoice-total display. HTTP historical totals and first HTML/CLI report passed; failure was only the newly invented UI amount locator. Remove that nonexistent-field expectation, retain exact count and canonical amount assertions. No product change or accounting/access weakening."
       }
     }
   },
