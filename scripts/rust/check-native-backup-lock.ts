@@ -1,3 +1,4 @@
+import { createBackupRemoteProof } from "./check-native-backup-remote";
 import { createBackupMailInboxProof } from "./check-native-backup-mail-inbox";
 import { request, type APIRequestContext, type Page } from "@playwright/test";
 import { spawnSync } from "node:child_process";
@@ -7,7 +8,7 @@ import { join } from "node:path";
 import { isDeepStrictEqual } from "node:util";
 
 /** Actual synthetic financial lock→verified backup→one posting, using ordinary MFA. */
-export async function createBackupLockProof(page: Page, base: string, work: string) {
+export async function createBackupLockProof(page: Page, base: string, work: string, secondOwnerPage?: Page) {
   const prefix = "/api/companies/synthetic/", cookieFile = join(work, "backup-lock-owner.cookie"), keyFile = join(work, "backup-lock-service.key");
   const hash = (bytes: Buffer) => createHash("sha256").update(bytes).digest("hex");
   const need = (value: unknown, label: string) => { if (!value) throw Error(label); };
@@ -125,6 +126,7 @@ export async function createBackupLockProof(page: Page, base: string, work: stri
     if (clients) for (const kind of ["cli", "mcp"] as const) { results[kind] = client(kind, "post_journal", posting, principal, false); await unchanged(expected); }
     return results;
   }
+  const remoteProof = process.env.RM_NATIVE_REMOTE_BACKUP_PROOF === "1" ? createBackupRemoteProof(page, base, work, secondOwnerPage) : null;
   async function run() {
     need(!started, "Backup lock proof executes once"); started = true;
     need(Date.parse(today) - Date.parse(historical) >= 10 * 86400000, "Current-year historical activity needs at least ten days; never manipulate the server clock");
@@ -220,10 +222,11 @@ export async function createBackupLockProof(page: Page, base: string, work: stri
       && entry.lines.some((line: any) => line.accountNo === "1711" && line.debit === 7.25 && line.credit === 0)
       && entry.lines.some((line: any) => line.accountNo === "8711" && line.credit === 7.25 && line.debit === 0), "Exact balanced accepted journal readback");
     for (const kind of ["cli", "mcp"] as const) { const replay = client(kind, "post_journal", posting); need(replay.entryId === accepted.entryId && replay.entryHash === accepted.entryHash && replay.receipt?.replayed, `${kind} same receipt without duplicate`); await unchanged(stable); }
+    const remoteBackup = await remoteProof?.run();
     complete = true;
     await page.getByRole("button", { name: "Hent backupstatus", exact: true }).click();
     await page.screenshot({ path: process.env.RM_SCANNER_SCREENSHOT!, fullPage: true });
-    return { serviceAccountId: serviceId, credentialId, historicalDate: historical, bankSourceSha256: hash(bytes), before, locked, refusals, unlocked,
+    return { ...(remoteBackup ? { remoteBackup } : {}), serviceAccountId: serviceId, credentialId, historicalDate: historical, bankSourceSha256: hash(bytes), before, locked, refusals, unlocked,
       artifact: { sha256: archiveSha256, bytes: artifact.length, independentlyVerified: true, uiDownloadComplete: true },
       missingCurrentFileLocked: missingStatus.lock.locked, tamperedCurrentFileLocked: tamperedStatus.lock.locked, lockedServiceReadsQualified: true,
       exactArtifactRestored: true, accepted, canonical: stable, financialCoreAndServiceQualified: true, cliMcpPolicyWritesQualified: true,
@@ -245,8 +248,9 @@ export async function createBackupLockProof(page: Page, base: string, work: stri
     await unchanged(stable); await unchangedMetadata(stableMetadata, stable); await metadataParity(stableMetadata);
     need(stableMetadata.knowledge.history[0].assertionId === acceptedKnowledge.assertion.assertionId, "Accepted metadata identity retained across normal MFA restart");
     const inboxReopen = await mailInboxProof.reopen();
+    const remoteBackupReopen = await remoteProof?.reopen();
     await service!.dispose();
-    return { inboxReopen, twoCompanyInboxTargetGateQualified: true, humanMailAliasGateQualified: true, normalMfaRestartQualified: true, exactAcceptedReceiptSurvives: true, currentQualifiedArtifactUnlocks: true, metadataRestartQualified: true, canonicalMetadata: stableMetadata, canonical: stable };
+    return { ...(remoteBackupReopen ? { remoteBackupReopen } : {}), inboxReopen, twoCompanyInboxTargetGateQualified: true, humanMailAliasGateQualified: true, normalMfaRestartQualified: true, exactAcceptedReceiptSurvives: true, currentQualifiedArtifactUnlocks: true, metadataRestartQualified: true, canonicalMetadata: stableMetadata, canonical: stable };
   }
   return { run, reopen };
 }

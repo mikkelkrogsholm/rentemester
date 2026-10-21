@@ -30,6 +30,7 @@ import subprocess
 import threading
 import time
 import uuid
+from urllib.parse import urlsplit, parse_qs
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[2]
@@ -102,7 +103,7 @@ async function restored(){step='source-free-fresh-owner-normal-verification-mfa-
 async function restoredReopen(){step='restored-owner-fresh-mfa-reopen-exact-proof';await ownerPage.context().clearCookies();await login(ownerPage,freshOwner);await assertStable();return{restoredTargetReopenQualified:true};}
 let servicePurchase;
 async function servicePhase(action){
- if(!servicePurchase){const module=await import(process.env.RM_SERVICE_PURCHASE_HELPER);const factory=module[process.env.RM_SCANNER_PROOF_FACTORY||'createServicePurchaseProof'];need(typeof factory==='function','configured proof factory required');servicePurchase=await factory(ownerPage,base,work);}
+ if(!servicePurchase){const module=await import(process.env.RM_SERVICE_PURCHASE_HELPER);const factory=module[process.env.RM_SCANNER_PROOF_FACTORY||'createServicePurchaseProof'];need(typeof factory==='function','configured proof factory required');servicePurchase=await factory(ownerPage,base,work,memberPage);}
  if(action==='service-reopen'){await ownerPage.context().clearCookies();await login(ownerPage,owner);return servicePurchase.reopen();}
  return servicePurchase[{'service-run':'run','service-hold-begin':'holdBegin','service-revoke':'revoke','service-hold-finish':'holdFinish'}[action]]();
 }
@@ -128,7 +129,10 @@ def main():
     parser.add_argument('--backup-destinations', action='store_true', help='Add normal web placement and CLI/MCP readback of a signed backup to the service-purchase proof')
     parser.add_argument('--service-purchase', action='store_true', help='Focused service scanned-original→payable→bank payment/revocation/restart proof')
     parser.add_argument('--backup-lock', action='store_true', help='Normal MFA financial backup lock → qualified artifact → unlock/single posting/restart proof')
+    parser.add_argument('--remote-backup', action='store_true', help='Extend backup-lock with private TLS Drive metadata/media verification; fixture copy is not app upload')
     args = parser.parse_args()
+    if args.remote_backup and not args.backup_lock:
+        parser.error('--remote-backup requires --backup-lock')
     if args.backup_lock and (args.service_purchase or args.backup_destinations):
         parser.error('--backup-lock is mutually exclusive with --service-purchase/--backup-destinations')
     if args.backup_destinations and not args.service_purchase:
@@ -146,6 +150,8 @@ def main():
     servers = []
     gateway_rows, gateway_requests, errors = {}, [], []
     provider_requests = []
+    drive_requests = []
+    drive_token = secrets.token_urlsafe(32)
     scanner_token = secrets.token_urlsafe(32)
     held_received, held_release = threading.Event(), threading.Event()
     gateway_lock = threading.Lock()
@@ -180,6 +186,54 @@ def main():
         class Gateway(http.server.BaseHTTPRequestHandler):
             def log_message(self, *_args):
                 pass
+
+            def do_GET(self):
+                try:
+                    parsed = urlsplit(self.path)
+                    match = re.fullmatch(r'/drive/v3/files/(synthetic_[a-z_]+)', parsed.path)
+                    if not args.remote_backup or not match or self.headers.get('authorization') != 'Bearer ' + drive_token:
+                        raise ValueError('Private Drive request authority/path refused')
+                    object_id = match[1]
+                    if object_id not in ('synthetic_good', 'synthetic_wrong_parent', 'synthetic_wrong_hash', 'synthetic_oversized', 'synthetic_missing', 'synthetic_held'):
+                        raise ValueError('Unexpected Drive object')
+                    query = parse_qs(parsed.query)
+                    media = query == {'alt': ['media'], 'supportsAllDrives': ['true']}
+                    if not media and query != {'fields': ['id,name,parents,size,sha256Checksum,trashed'], 'supportsAllDrives': ['true']}:
+                        raise ValueError('Exact Drive GET query required')
+                    descriptor = json.loads((work / 'drive-object.json').read_text())
+                    raw = (work / 'drive-remote-object.native-backup.json').read_bytes()
+                    if len(raw) != descriptor['size'] or hashlib.sha256(raw).hexdigest() != descriptor['sha256']:
+                        raise ValueError('Independent owned remote object changed')
+                    with gateway_lock:
+                        drive_requests.append({'objectId': object_id, 'kind': 'media' if media else 'metadata'})
+                        pending = work / 'drive-trace.pending'
+                        pending.write_text(json.dumps(drive_requests))
+                        pending.replace(work / 'drive-trace.json')
+                    if object_id == 'synthetic_held' and not media:
+                        (work / 'drive-held-received').write_text('held\n')
+                        deadline = time.monotonic() + 12
+                        while not (work / 'drive-held-release').exists():
+                            if time.monotonic() >= deadline:
+                                raise ValueError('Explicit held Drive release deadline')
+                            time.sleep(0.02)
+                    if object_id == 'synthetic_missing':
+                        self.send_response(404)
+                        self.send_header('content-length', '0')
+                        self.end_headers()
+                        return
+                    payload = {'id': object_id, 'name': descriptor['fileName'], 'parents': ['synthetic-wrong-folder' if object_id == 'synthetic_wrong_parent' else descriptor['folderId']], 'size': str(len(raw)), 'sha256Checksum': descriptor['sha256'], 'trashed': False}
+                    media_bytes = bytes([raw[0] ^ 1]) + raw[1:] if object_id == 'synthetic_wrong_hash' else raw
+                    data = (raw + b'x' if object_id == 'synthetic_oversized' else media_bytes) if media else json.dumps(payload).encode()
+                    self.send_response(200)
+                    self.send_header('content-type', 'application/octet-stream' if media else 'application/json')
+                    self.send_header('content-length', str(len(data)))
+                    self.end_headers()
+                    self.wfile.write(data)
+                except (BrokenPipeError, ConnectionResetError, ssl.SSLEOFError):
+                    pass
+                except Exception:
+                    errors.append('private-drive-contract-refusal')
+                    self.send_error(400)
 
             def do_POST(self):
                 if self.path == '/scan':
@@ -359,6 +413,8 @@ def main():
                 raise RuntimeError('Browser assertion failed at ' + value.get('step', action))
             with gateway_lock:
                 report['providerRequestTrace'] = list(provider_requests)
+                if args.remote_backup:
+                    report['driveGetTrace'] = list(drive_requests)
                 report['privateGatewayErrors'] = list(errors)
             report['actions'].append({'action': action, 'status': 'complete'})
             report['results'][action] = value['value']
@@ -492,13 +548,18 @@ def main():
             if args.backup_destinations:
                 (work / 'offsite').mkdir(mode=0o700)
                 config['backupDestinations']=[{'id':'synthetic-destination','label':'Synthetic folder','kind':'local-folder','directory':str(work/'offsite'),'nonRelatedParty':False,'inEeaOrEu':False,'country':'DK','meetsRecognisedStandards':False,'attestedBy':'Synthetic operator','attestedAt':'2026-01-01T00:00:00Z'}]
+            if args.remote_backup:
+                (work / 'backup-destination').mkdir(mode=0o700)
+                (work / 'drive-trace.json').write_text('[]')
+                config['backupDestinations'] = [{'id':'synthetic-drive','label':'Synthetic Drive fixture','kind':'google-drive','directory':str(work/'backup-destination'),'nonRelatedParty':False,'inEeaOrEu':False,'country':'DK','meetsRecognisedStandards':False,'attestedBy':'Synthetic operator','attestedAt':'2026-01-01T00:00:00Z'}]
+                config['backupRemoteVerification'] = {'provider':'google-drive','url':f'https://127.0.0.1:{mail_port}/drive/v3','bearerToken':drive_token,'trustedCaFile':str(ca),'destinations':[{'destinationId':'synthetic-drive','folderId':'synthetic-drive-folder'}]}
             if not args.service_purchase and not args.backup_lock:
                 invalid_config_checks()
             write_config()
             start(create=True)
             script = work / 'browser.mjs'
             script.write_text(BROWSER)
-            controller = subprocess.Popen(['/opt/homebrew/bin/bun', str(script)], cwd=REPO, env={**os.environ, 'RM_NATIVE_BACKUP_DESTINATION_PROOF':'1' if args.backup_destinations else '0', 'RM_SERVICE_PURCHASE_HELPER': str(REPO / ('scripts/rust/check-native-backup-lock.ts' if args.backup_lock else 'scripts/rust/check-native-service-purchase.ts')), 'RM_SCANNER_PROOF_FACTORY': 'createBackupLockProof' if args.backup_lock else 'createServicePurchaseProof', 'RM_SCANNER_BASE': origin, 'RM_SCANNER_WORK': str(work), 'RM_SCANNER_SCREENSHOT': str(args.evidence.with_suffix('.png')), 'RM_SCANNER_PLAYWRIGHT': str((REPO / 'node_modules/@playwright/test/index.mjs').resolve(strict=True))}, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True, bufsize=1, start_new_session=True)
+            controller = subprocess.Popen(['/opt/homebrew/bin/bun', str(script)], cwd=REPO, env={**os.environ, 'RM_NATIVE_BACKUP_DESTINATION_PROOF':'1' if args.backup_destinations else '0', 'RM_NATIVE_REMOTE_BACKUP_PROOF':'1' if args.remote_backup else '0', 'RM_SERVICE_PURCHASE_HELPER': str(REPO / ('scripts/rust/check-native-backup-lock.ts' if args.backup_lock else 'scripts/rust/check-native-service-purchase.ts')), 'RM_SCANNER_PROOF_FACTORY': 'createBackupLockProof' if args.backup_lock else 'createServicePurchaseProof', 'RM_SCANNER_BASE': origin, 'RM_SCANNER_WORK': str(work), 'RM_SCANNER_SCREENSHOT': str(args.evidence.with_suffix('.png')), 'RM_SCANNER_PLAYWRIGHT': str((REPO / 'node_modules/@playwright/test/index.mjs').resolve(strict=True))}, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True, bufsize=1, start_new_session=True)
             report['browserControllerPid'] = controller.pid
             phase('authenticate')
             if args.backup_lock:
@@ -506,6 +567,9 @@ def main():
                 report['backupLockHelperSha256'] = digest(REPO / 'scripts/rust/check-native-backup-lock.ts')
                 proof_helpers = [REPO / 'scripts/rust/check-native-backup-lock.ts', REPO / 'scripts/rust/check-native-backup-mail-inbox.ts']
                 report['backupLockMailInboxHelperSha256'] = digest(proof_helpers[1])
+                # Static imports execute even when the optional extension is disabled.
+                proof_helpers.append(REPO / 'scripts/rust/check-native-backup-remote.ts')
+                report['backupRemoteHelperSha256'] = digest(proof_helpers[2])
                 helper_hashes = {str(path): digest(path) for path in proof_helpers}
                 phase('service-run')
                 if any(digest(path) != helper_hashes[str(path)] for path in proof_helpers):
@@ -538,6 +602,11 @@ def main():
                     if errors or provider_requests:
                         raise RuntimeError('Backup lock proof must not call scanner/provider')
                 report.update(status='passed',currentAction='complete',financialBackupLockQualified=True,normalMfaRestartQualified=True,currentFileMissingAndTamperQualified=True,directControlMetadataGateQualified=True,directControlMetadataScope=['company-knowledge','corporate-record-ingest'],metadataRestartQualified=True,twoCompanyInboxTargetGateQualified=True,humanMailAliasGateQualified=True,multiCompanyMetadataGateQualified=False,partiesGateQualified=False,mailIntakeConfigurationGateQualified=False,smtpDispatchGateQualified=False,keyRotationQualified=False)
+                if args.remote_backup:
+                    expected_drive = [{'objectId':obj,'kind':kind} for obj,kinds in [('synthetic_good',['metadata','media']),('synthetic_wrong_parent',['metadata']),('synthetic_wrong_hash',['metadata','media']),('synthetic_oversized',['metadata','media']),('synthetic_missing',['metadata']),('synthetic_held',['metadata','media']),('synthetic_good',['metadata','media']),('synthetic_good',['metadata','media'])] for kind in kinds]
+                    if drive_requests != expected_drive:
+                        raise RuntimeError('Drive GET trace differs: skipped work or unexpected retries')
+                    report.update(remoteBackupVerificationQualified=True,driveGetTrace=list(drive_requests),fixtureCopyByHarness=True,actualGoogleAccountQualified=False,offsiteQualified=False,installedNativeQualified=False)
                 save()
                 print('PASS: normal MFA financial backup lock, human/service HTTP/CLI/MCP refusal, metadata refusal/recovery, two-company inbox/alias gate and exact handoff, UI verified artifact, missing/tamper lock, single posting and restart; '+str(args.evidence))
                 return
@@ -710,6 +779,8 @@ def main():
         except BaseException as error:
             with gateway_lock:
                 report['providerRequestTrace'] = list(provider_requests)
+                if args.remote_backup:
+                    report['driveGetTrace'] = list(drive_requests)
                 report['privateGatewayErrors'] = list(errors)
             report['status'] = 'failed'
             report['failureType'] = type(error).__name__
