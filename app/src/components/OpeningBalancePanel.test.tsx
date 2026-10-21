@@ -107,6 +107,7 @@ test("confirmed receipt with unavailable readback stays pending and a different 
 test("imported synthetic CSV opening uses the same read-only recorded-opening view", async () => {
   const apply = setup(); saved = { ...record(), sourceBasis: { kind: "synthetic_csv", currency: "DKK", sourceArchives: [] } }; mount();
   await screen.findByRole("region", { name: "Bogført åbningsbalance" });
-  expect(screen.getByText("CSV-kilden er bevaret i åbningsposteringens auditdokumentation.")).toBeInTheDocument();
+  await userEvent.click(screen.getByText("Åbningsbalancens dokumentation", { exact: true }));
+  expect(screen.getByText("CSV-kilden er bevaret i åbningsposteringens auditdokumentation.")).toBeVisible();
   expect(screen.queryByLabelText("Skæringsdato")).toBeNull(); expect(apply).not.toHaveBeenCalled();
 });
