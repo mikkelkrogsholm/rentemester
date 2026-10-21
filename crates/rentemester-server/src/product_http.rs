@@ -72,6 +72,7 @@ mod payable_correction;
 mod direct_bank_original;
 mod document_party_links;
 mod sales;
+mod invoice_original;
 mod invoice_email;
 mod supplier_commitments;
 mod vat;
@@ -112,6 +113,10 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
         pdf_workers: Arc::new(Semaphore::new(4)),
     };
     Router::new()
+        .route("/api/companies/{slug}/invoices/original/list", get(invoice_original::handle))
+        .route("/api/companies/{slug}/invoices/original/find", get(invoice_original::handle))
+        .route("/api/companies/{slug}/invoices/original/status", get(invoice_original::handle))
+        .route("/api/companies/{slug}/invoices/original/overdue", get(invoice_original::handle))
         .route("/api/companies/{slug}/payables/original/list", get(payable_original::handle))
         .route("/api/companies/{slug}/payables/original/register", post(payable_original::handle))
         .route("/api/companies/{slug}/payables/original/pay", post(payable_original::handle))

@@ -822,6 +822,54 @@ fn receivable_dkk(
         Ok(valuation.gross)
     }
 }
+/// Shared current original-currency counters and frozen DKK carrying; no date cutoff.
+pub(crate) struct InvoiceProjection {
+    pub paid: Money,
+    pub credited: Money,
+    pub refunds: Money,
+    pub open: Money,
+    pub creditable: Money,
+    pub gross_dkk: Money,
+    pub open_dkk: Money,
+    pub creditable_dkk: Money,
+    pub written: crate::invoice_bad_debt::History,
+}
+pub(crate) fn project_invoice(
+    tx: &Transaction<'_>,
+    id: i64,
+    payload: &Value,
+    gross: &Money,
+) -> Result<InvoiceProjection, Error> {
+    let currency = payload["currency"].as_str().unwrap_or("DKK");
+    let written = crate::invoice_bad_debt::history(tx, id)?;
+    let paid = crate::invoice_fx::movements(tx, id, currency, false)?;
+    let credited = crate::credit_note::credited(tx, id)?;
+    let creditable = gross.subtract(&credited);
+    let refunds = crate::invoice_settlement::refunded(tx, id)?;
+    let mut open = creditable.subtract(&paid);
+    open.add(&refunds);
+    open = open.subtract(&written.gross);
+    let valuation = rentemester_engine::sales_fx::project(payload)?;
+    let open_dkk = receivable_dkk(tx, id, payload, &open)?;
+    let credited_dkk = if currency == "DKK" {
+        credited.clone()
+    } else {
+        crate::invoice_fx::credited_dkk(tx, id)?
+    };
+    let creditable_dkk = valuation.gross.subtract(&credited_dkk);
+    let gross_dkk = valuation.gross;
+    Ok(InvoiceProjection {
+        paid,
+        credited,
+        refunds,
+        open,
+        creditable,
+        gross_dkk,
+        open_dkk,
+        creditable_dkk,
+        written,
+    })
+}
 pub fn list(
     tx: &Transaction<'_>,
     slug: &str,
@@ -846,24 +894,18 @@ pub fn list(
         let payload: Value = serde_json::from_str(&payload).map_err(invalid)?;
         validate_foreign_buyer(&payload)?;
         let gross = legacy_money(r.get_ref(5).map_err(invalid)?)?;
-        let currency = payload["currency"].as_str().unwrap_or("DKK");
-        let written = crate::invoice_bad_debt::history(tx, id)?;
-        let paid = crate::invoice_fx::movements(tx, id, currency, false)?;
-        let credited = crate::credit_note::credited(tx, id)?;
-        let creditable = gross.subtract(&credited);
-        let refunds = crate::invoice_settlement::refunded(tx, id)?;
-        let mut open = creditable.subtract(&paid);
-        open.add(&refunds);
-        open = open.subtract(&written.gross);
-        let valuation = rentemester_engine::sales_fx::project(&payload)?;
-        let open_dkk = receivable_dkk(tx, id, &payload, &open)?;
-        let credited_dkk = if currency == "DKK" {
-            credited.clone()
-        } else {
-            crate::invoice_fx::credited_dkk(tx, id)?
-        };
-        let creditable_dkk = valuation.gross.subtract(&credited_dkk);
-        total.add(&valuation.gross);
+        let InvoiceProjection {
+            paid,
+            credited,
+            refunds,
+            open,
+            creditable,
+            gross_dkk,
+            open_dkk,
+            creditable_dkk,
+            written,
+        } = project_invoice(tx, id, &payload, &gross)?;
+        total.add(&gross_dkk);
         open_total.add(&open_dkk);
         let due = payload["dueDate"].as_str();
         let overdue = due
@@ -879,7 +921,7 @@ pub fn list(
         if overdue > 0 && !open.is_negative() && open != Money::default() {
             overdue_count += 1;
         }
-        rows.push(json!({"documentId":id,"badDebtWriteOffs":written.entries,"totalBadDebtWrittenOff":wire(&written.gross)?,"totalBadDebtWrittenOffDkk":wire(&written.gross_dkk)?,"invoiceType":payload["invoiceType"],"invoiceNo":r.get::<_,String>(1).map_err(invalid)?,"invoiceDate":r.get::<_,String>(2).map_err(invalid)?,"customerName":r.get::<_,Option<String>>(3).map_err(invalid)?,"customerEmail":null,"customerId":payload["customerId"],"buyerEanNumber":sales_invoice::recipient_ean(payload["buyer"]["eanNumber"].as_str()).ok().flatten(),"buyerPublicRecipient":payload["buyer"]["publicRecipient"]==true || sales_invoice::recipient_ean(payload["buyer"]["eanNumber"].as_str()).ok().flatten().is_some(),"peppolStatus":crate::public_einvoice::get(tx,id)?,"lastEmailedAt":null,"lastReminderAt":null,"lastReminderSequence":0,"grossAmount":wire(&gross)?,"openBalance":wire(&open)?,"grossAmountDkk":wire(&valuation.gross)?,"openBalanceDkk":wire(&open_dkk)?,"creditableBalanceDkk":wire(&creditable_dkk)?,"fxRateToDkk":payload["totals"]["fxRateToDkk"],"currency":r.get::<_,String>(4).map_err(invalid)?,"creditableBalance":wire(&creditable)?,"status":if open.is_negative(){"overpaid"}else if open==Money::default(){if written.gross!=Money::default(){"written_off"}else if refunds!=Money::default(){"refunded"}else if credited==gross && paid==Money::default(){"credited"}else{"paid"}}else if overdue>0{"overdue"}else{"open"},"effectiveDueDate":due,"overdueDays":overdue,"posted":r.get::<_,Option<i64>>(7).map_err(invalid)?.is_some()}));
+        rows.push(json!({"documentId":id,"badDebtWriteOffs":written.entries,"totalBadDebtWrittenOff":wire(&written.gross)?,"totalBadDebtWrittenOffDkk":wire(&written.gross_dkk)?,"invoiceType":payload["invoiceType"],"invoiceNo":r.get::<_,String>(1).map_err(invalid)?,"invoiceDate":r.get::<_,String>(2).map_err(invalid)?,"customerName":r.get::<_,Option<String>>(3).map_err(invalid)?,"customerEmail":null,"customerId":payload["customerId"],"buyerEanNumber":sales_invoice::recipient_ean(payload["buyer"]["eanNumber"].as_str()).ok().flatten(),"buyerPublicRecipient":payload["buyer"]["publicRecipient"]==true || sales_invoice::recipient_ean(payload["buyer"]["eanNumber"].as_str()).ok().flatten().is_some(),"peppolStatus":crate::public_einvoice::get(tx,id)?,"lastEmailedAt":null,"lastReminderAt":null,"lastReminderSequence":0,"grossAmount":wire(&gross)?,"openBalance":wire(&open)?,"grossAmountDkk":wire(&gross_dkk)?,"openBalanceDkk":wire(&open_dkk)?,"creditableBalanceDkk":wire(&creditable_dkk)?,"fxRateToDkk":payload["totals"]["fxRateToDkk"],"currency":r.get::<_,String>(4).map_err(invalid)?,"creditableBalance":wire(&creditable)?,"status":if open.is_negative(){"overpaid"}else if open==Money::default(){if written.gross!=Money::default(){"written_off"}else if refunds!=Money::default(){"refunded"}else if credited==gross && paid==Money::default(){"credited"}else{"paid"}}else if overdue>0{"overdue"}else{"open"},"effectiveDueDate":due,"overdueDays":overdue,"posted":r.get::<_,Option<i64>>(7).map_err(invalid)?.is_some()}));
     }
     base["invoices"] = json!(rows);
     base["totalGross"] = wire(&total)?;

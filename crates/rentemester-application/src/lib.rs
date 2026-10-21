@@ -56,6 +56,7 @@ pub mod payable_original;
 pub mod company_setup;
 
 pub mod sales;
+pub mod invoice_original;
 
 pub mod periods;
 

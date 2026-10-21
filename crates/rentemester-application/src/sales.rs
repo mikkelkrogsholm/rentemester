@@ -10,6 +10,10 @@ use rentemester_storage::sales::{self, Artifact, Customer, Post};
 use rusqlite::Connection;
 use serde_json::Value;
 pub enum Action<'a> {
+    Original(
+        rentemester_storage::invoice_original::Kind,
+        &'a rentemester_storage::invoice_original::Query,
+    ),
     Contacts,
     DeleteCustomer(i64, bool),
     DeleteVendor(i64, bool),
@@ -95,7 +99,7 @@ pub fn execute(
         year,
     } = request;
     let permission = match action {
-        Action::Contacts | Action::List => Permission::CompanyRead,
+        Action::Contacts | Action::List | Action::Original(..) => Permission::CompanyRead,
         Action::DeleteCustomer(_, _)
         | Action::DeleteVendor(_, _)
         | Action::Customers(_)
@@ -123,6 +127,9 @@ pub fn execute(
         matches!(action, Action::Preview(_)),
         |tx, actor| {
             Ok(match action {
+                Action::Original(kind, query) => Output::Json(crate::invoice_original::authorized(
+                    tx, guard, kind, query, clock,
+                )?),
                 Action::Contacts => Output::Json(sales::contacts(tx, slug, today)?),
                 Action::DeleteCustomer(id, confirm) => Output::Json(
                     rentemester_storage::contact_delete::delete(tx, id, false, confirm, actor)?,
@@ -284,7 +291,7 @@ pub fn execute_service(
         year,
     } = request;
     let (permission, mutation) = match action {
-        Action::Contacts | Action::List => (Permission::CompanyRead, false),
+        Action::Contacts | Action::List | Action::Original(..) => (Permission::CompanyRead, false),
         Action::Customers(_) => (Permission::CompanyMasterData, true),
         Action::Preview(_) => (Permission::CompanyDraftWrite, false),
         Action::Issue(_) => (Permission::CompanyDraftWrite, true),
@@ -298,6 +305,7 @@ pub fn execute_service(
         }
     };
     let slug = context.selection.slug;
+    let clock = context.clock;
     service_company::execute_operation(
         control,
         company,
@@ -306,6 +314,9 @@ pub fn execute_service(
         mutation,
         |tx, subject, _| {
             let output = match action {
+                Action::Original(kind, query) => Output::Json(crate::invoice_original::authorized(
+                    tx, guard, kind, query, clock,
+                )?),
                 Action::Contacts => Output::Json(sales::contacts(tx, slug, today)?),
                 Action::Customers(input) => Output::Json(sales::create_customer_with_principal(
                     tx,
