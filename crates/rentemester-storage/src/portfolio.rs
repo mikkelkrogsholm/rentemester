@@ -160,3 +160,8 @@ pub fn company(tx: &Transaction<'_>, slug: &str, as_of: &str) -> Result<Value, E
     );
     Ok(card)
 }
+
+/// Canonical native invoice projection with explicit payment/credit/refund cutoff.
+pub(crate) fn dated_invoices(tx: &Transaction<'_>, as_of: &str) -> Result<Value, Error> {
+    invoices::snapshot(tx, as_of)
+}

@@ -222,3 +222,49 @@ pub fn read(
     base["vatReportWarnings"] = base["warnings"].take();
     Ok(base)
 }
+
+/// Earliest active, unreported calendar VAT period through the selected date.
+/// Uses the same journal-line projection and effective state as the VAT report.
+pub(crate) fn dashboard_period(tx: &Transaction<'_>, as_of: &str) -> Result<Value, Error> {
+    let date = vat_period::date(as_of)?;
+    let cadence: Option<String> = tx
+        .query_row(
+            "SELECT vat_period_type FROM companies WHERE id=1",
+            [],
+            |r| r.get(0),
+        )
+        .map_err(invalid)?;
+    let Some(cadence) = cadence else {
+        return Ok(json!({"vatRegistered":false}));
+    };
+    let projected = lines(tx)?;
+    let mut windows = BTreeMap::new();
+    for (day, _) in &projected {
+        if day.as_str() <= as_of {
+            let window = vat_period::window(day, &cadence)?;
+            windows.insert(window.start.clone(), window);
+        }
+    }
+    let mut selected = None;
+    for window in windows.into_values() {
+        if status(tx, &window.start, &window.end)? != "reported" {
+            selected = Some(window);
+            break;
+        }
+    }
+    let outstanding = selected.is_some();
+    let window = match selected {
+        Some(w) => w,
+        None => vat_period::window(as_of, &cadence)?,
+    };
+    let mut report = range(tx, &window.start, &window.end)?;
+    report["vatRegistered"] = json!(true);
+    report["hasUnreportedActivity"] = json!(outstanding);
+    report["periodStart"] = json!(window.start);
+    report["periodEnd"] = json!(window.end);
+    report["periodLabel"] = json!(window.label);
+    report["deadline"] = json!(window.deadline);
+    report["daysRemaining"] = json!((vat_period::date(&window.deadline)? - date).whole_days());
+    report["periodStatus"] = json!(status(tx, &window.start, &window.end)?);
+    Ok(report)
+}

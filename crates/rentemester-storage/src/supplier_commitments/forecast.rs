@@ -176,11 +176,25 @@ pub(super) fn build(
     start: &str,
     occurrences: &[Value],
 ) -> Result<Value, Error> {
+    build_horizon(tx, slug, start, occurrences, false)
+}
+pub(super) fn build_horizon(
+    tx: &Transaction<'_>,
+    slug: &str,
+    start: &str,
+    occurrences: &[Value],
+    monthly: bool,
+) -> Result<Value, Error> {
     let company = crate::company_setup::profile(tx)?;
     let currency = company["currency"]
         .as_str()
         .ok_or_else(|| refused("company currency unavailable"))?;
-    let end = add_days(start, 90)?;
+    let intervals = intervals(start, monthly)?;
+    let end = intervals
+        .last()
+        .ok_or_else(|| refused("forecast horizon missing"))?
+        .1
+        .clone();
     let mut included =
         vec!["Godkendte umatchede DKK-forpligtelser i DKK-virksomheder.".to_string()];
     let mut excluded=vec!["Ikke-registrerede forpligtelser, løn, selskabsskat og eksterne betalinger er ikke fuldt dækket.".into(),"Daterede reviewede budget-/scenarie-/intercompany-antagelser er endnu ikke tilgængelige i native prognose.".into(),"Tilgodehavender bruger native aktuelle saldi; historisk betalingsstatus er ikke rekonstrueret.".into(),"Månedsbudgetter vises kun som udateret information og påvirker aldrig likviditet.".into(),"Tilgodehavender uden dokumenteret forfaldsdato er udeladt; forfaldne kilder flyttes ikke til en opfundet betalingsdato.".into()];
@@ -253,9 +267,7 @@ pub(super) fn build(
     let mut lowest = cash.clone();
     let mut periods = vec![];
     let mut seen_budget = BTreeSet::new();
-    for index in 0..13 {
-        let from = add_days(start, index * 7)?;
-        let to = add_days(&from, 6)?;
+    for (index, (from, to)) in intervals.into_iter().enumerate() {
         let opening_week = cash.clone();
         let mut sums: BTreeMap<&str, Money> = [
             "receivables",
@@ -317,12 +329,80 @@ pub(super) fn build(
             c.add(&movement.subtract(&sums["scenarios"]));
         }
         let mut week = json!({"weekStart":from,"openingCash":opening_week.as_ref().map(wire).transpose()?,"closingCash":cash.as_ref().map(wire).transpose()?,"scenarioClosingCash":scenario.as_ref().map(wire).transpose()?,"sources":sources,"excluded":omitted});
+        if monthly {
+            week["periodStart"] = json!(from);
+            week["periodEnd"] = json!(to);
+            week.as_object_mut().unwrap().remove("weekStart");
+        }
         for (k, v) in sums {
             week[k] = wire(&v)?;
         }
         periods.push(week);
     }
     Ok(
-        json!({"ok":true,"startDate":start,"currency":currency,"openingCash":opening.as_ref().map(wire).transpose()?,"openingCashBasis":if opening.is_some(){"confirmed_bank_ledger"}else{"unavailable"},"lowestPoint":lowest.as_ref().map(wire).transpose()?,"periods":periods,"completeness":{"status":"incomplete","included":included,"excluded":excluded},"errors":[],"appliedRules":["native-liquidity-13-week-v1"]}),
+        json!({"ok":true,"startDate":start,"currency":currency,"openingCash":opening.as_ref().map(wire).transpose()?,"openingCashBasis":if opening.is_some(){"confirmed_bank_ledger"}else{"unavailable"},"lowestPoint":lowest.as_ref().map(wire).transpose()?,"periods":periods,"completeness":{"status":"incomplete","included":included,"excluded":excluded},"errors":[],"appliedRules":[if monthly {"native-liquidity-3-calendar-month-v1"}else{"native-liquidity-13-week-v1"}]}),
     )
+}
+
+pub(super) fn intervals(start: &str, monthly: bool) -> Result<Vec<(String, String)>, Error> {
+    let date = rentemester_engine::vat_period::date(start)?;
+    if !monthly {
+        return (0..13)
+            .map(|index| {
+                let from = add_days(start, index * 7)?;
+                Ok((from.clone(), add_days(&from, 6)?))
+            })
+            .collect();
+    }
+    if date.day() != 1 {
+        return Err(refused(
+            "calendar forecast must start on first day of month",
+        ));
+    }
+    let mut year = date.year();
+    let mut month = date.month() as u8;
+    let mut out = vec![];
+    for _ in 0..3 {
+        let from = format!("{year:04}-{month:02}-01");
+        if month == 12 {
+            year += 1;
+            month = 1;
+        } else {
+            month += 1;
+        }
+        let next = format!("{year:04}-{month:02}-01");
+        let to = add_days(&next, -1)?;
+        out.push((from, to));
+    }
+    Ok(out)
+}
+
+#[cfg(test)]
+mod calendar_tests {
+    use super::*;
+    #[test]
+    fn calendar_intervals_include_day92_and_leap_february_without_changing_weekly_mode() {
+        let mut control = rusqlite::Connection::open_in_memory().unwrap();
+        let mut db = rusqlite::Connection::open_in_memory().unwrap();
+        crate::fresh::initialize_empty_pair(&mut control, &mut db, "Synthetic Calendar Forecast")
+            .unwrap();
+        db.execute_batch("INSERT INTO accounts(account_no,name,type,normal_balance) VALUES('B','Synthetic bank','asset','debit'); INSERT INTO bank_accounts(slug,name,ledger_account_no,currency) VALUES('synthetic','Synthetic bank','B','DKK');").unwrap();
+        let tx = db.transaction().unwrap();
+        let occurrences = vec![
+            json!({"commitmentId":"synthetic-end","date":"2026-09-30","amount":7.03,"currency":"DKK"}),
+        ];
+        let monthly = build_horizon(&tx, "synthetic", "2026-07-01", &occurrences, true).unwrap();
+        assert_eq!(monthly["periods"].as_array().unwrap().len(), 3);
+        assert_eq!(monthly["periods"][2]["periodEnd"], "2026-09-30");
+        assert_eq!(monthly["periods"][2]["closingCash"], -7.03);
+        assert_eq!(monthly["lowestPoint"], -7.03);
+        let weekly = build(&tx, "synthetic", "2026-07-01", &occurrences).unwrap();
+        assert_eq!(weekly["periods"].as_array().unwrap().len(), 13);
+        assert_eq!(weekly["periods"][12]["closingCash"], 0.0);
+        assert_eq!(
+            intervals("2028-01-01", true).unwrap()[1],
+            ("2028-02-01".into(), "2028-02-29".into())
+        );
+        assert!(intervals("2026-07-02", true).is_err());
+    }
 }

@@ -338,6 +338,22 @@ pub fn matches(tx: &Transaction<'_>) -> Result<Vec<Value>, Error> {
     Ok(out)
 }
 pub fn list(tx: &Transaction<'_>, slug: &str, start: &str) -> Result<Value, Error> {
+    list_horizon(tx, slug, start, false)
+}
+/// Same canonical flow projection, reduced over three complete calendar months.
+pub(crate) fn dashboard_forecast(
+    tx: &Transaction<'_>,
+    slug: &str,
+    start: &str,
+) -> Result<Value, Error> {
+    Ok(list_horizon(tx, slug, start, true)?["forecast"].take())
+}
+fn list_horizon(
+    tx: &Transaction<'_>,
+    slug: &str,
+    start: &str,
+    monthly: bool,
+) -> Result<Value, Error> {
     Date::parse(start)?;
     crate::validate(tx)?;
     let history = rows(
@@ -351,7 +367,11 @@ pub fn list(tx: &Transaction<'_>, slug: &str, start: &str) -> Result<Value, Erro
     let mut commitments = vec![];
     let mut occurrences = vec![];
     let matched = matches(tx)?;
-    let until = add_days(start, 90)?;
+    let until = forecast::intervals(start, monthly)?
+        .last()
+        .ok_or_else(|| refused("forecast horizon missing"))?
+        .1
+        .clone();
     let alert_end = add_days(start, 30)?;
     let mut alerts = vec![];
     for row in approvals {
@@ -406,7 +426,11 @@ pub fn list(tx: &Transaction<'_>, slug: &str, start: &str) -> Result<Value, Erro
             }
         }
     }
-    let forecast = forecast::build(tx, slug, start, &occurrences)?;
+    let forecast = if monthly {
+        forecast::build_horizon(tx, slug, start, &occurrences, true)?
+    } else {
+        forecast::build(tx, slug, start, &occurrences)?
+    };
     let vendors = crate::sales::contacts(tx, slug, start)?["vendors"].clone();
     let docs = crate::documents::list(tx, slug)?;
     let unique_documents: std::collections::BTreeMap<i64, Value> = docs["documents"]
