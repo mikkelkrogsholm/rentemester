@@ -6,6 +6,7 @@ mod bank_matches;
 mod cvr;
 mod backup_remote;
 mod backup_governance;
+mod backup_registration;
 mod eu_sales;
 mod oss_report;
 mod reminder_claims;

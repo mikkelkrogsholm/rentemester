@@ -6,6 +6,8 @@ mod backup_destinations;
 mod backup_remote;
 mod backup_status;
 mod backup_governance;
+mod backup_registration;
+pub use backup_registration::{BackupRegistrationMutation,MAX_BACKUP_REGISTRATION_BODY,backup_registration_body_schema};
 pub use backup_status::{backup_lock_body_schema,MAX_BACKUP_LOCK_BODY};
 mod bank_matches;
 mod cvr;
