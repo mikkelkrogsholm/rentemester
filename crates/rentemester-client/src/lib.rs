@@ -518,3 +518,6 @@ pub use payable_original::{PayableOriginalMutation,PayableOriginalQuery,payable_
 
 mod invoice_original;
 pub use invoice_original::{InvoiceOriginalKind,InvoiceOriginalQuery,invoice_original_schema};
+
+mod invoice_lifecycle;
+pub use invoice_lifecycle::{InvoiceLifecycleKind,invoice_lifecycle_schema,validate_invoice_lifecycle};

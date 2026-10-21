@@ -2,6 +2,7 @@
 //! https://modelcontextprotocol.io/specification/2025-11-25/basic/transports
 //! https://modelcontextprotocol.io/specification/2025-11-25/basic/lifecycle
 //! https://modelcontextprotocol.io/specification/2025-11-25/server/tools
+mod invoice_lifecycle;
 mod invoice_original;
 mod payable_original;
 mod direct_bank_original;

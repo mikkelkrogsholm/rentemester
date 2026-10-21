@@ -1,3 +1,4 @@
+mod invoice_lifecycle;
 mod invoice_original;
 mod payable_original;
 mod direct_bank_original;
@@ -80,7 +81,7 @@ fn run(args: Vec<String>) -> Result<serde_json::Value, (u8, Error)> {
     }
     if args == ["--help"] {
         return Ok(json!({"ok":true,"localBinding":"Existing migrated commands may select --local-profile ABS_PRIVATE_PROFILE instead of --server/--allow-loopback-http. Join only: same server via private Unix socket with normal cookie/service authentication. No actor, legacy path, environment-default or launcher parity claim.","commands":[
-            {"name":"bank list|reconcile bank|invoice list|invoice find|invoice status|invoice overdue|payable register|payable list|payable pay|bank direct-payable-plan|bank direct-payable-apply|bank suggest-matches|bank link-journal|bank correction-plan|bank correction-apply|bank-account list|bank-account add|bank-account update|bank import --file PATH","usage":"bank list --help","scope":"original canonical bank reads and reconciliation, unpaged CLI output"},
+            {"name":"bank list|reconcile bank|invoice issue|invoice create|invoice render|invoice post|invoice settle-bank|invoice credit-note|invoice refund-bank|invoice list|invoice find|invoice status|invoice overdue|payable register|payable list|payable pay|bank direct-payable-plan|bank direct-payable-apply|bank suggest-matches|bank link-journal|bank correction-plan|bank correction-apply|bank-account list|bank-account add|bank-account update|bank import --file PATH","usage":"bank list --help","scope":"original canonical bank reads and reconciliation, unpaged CLI output"},
             {"name":"system export-saft","usage":"system export-saft --help","scope":"one audited SAF-T export and verified fresh local package"},
             {"name":"system export-authority|export-accountant","usage":"system export-authority --help","scope":"one audited export and verified fresh local handover package"},
             {"name":"report annual|tax","usage":"report annual --help; report tax --help","scope":"closed-year preparation and verified optional XHTML; no submission"},
@@ -297,6 +298,7 @@ fn run(args: Vec<String>) -> Result<serde_json::Value, (u8, Error)> {
 }
 fn main() -> ExitCode {
     let args=match local_binding::prepare(std::env::args().skip(1).collect()) {Ok(args)=>args,Err((code,error))=>{println!("{}",json!({"ok":false,"code":error.code,"errors":[error.message]}));return ExitCode::from(code);}};
+    if invoice_lifecycle::accepts(&args) {let output=invoice_lifecycle::execute(&args);print!("{}",output.stdout);eprint!("{}",output.stderr);return ExitCode::from(output.exit);}
     if invoice_original::accepts(&args) {let output=invoice_original::execute(&args);print!("{}",output.stdout);eprint!("{}",output.stderr);return ExitCode::from(output.exit);}
     if payable_original::accepts(&args) {let output=payable_original::execute(&args);print!("{}",output.stdout);eprint!("{}",output.stderr);return ExitCode::from(output.exit);}
     if direct_bank_original::accepts(&args) {let output=direct_bank_original::execute(&args);print!("{}",output.stdout);eprint!("{}",output.stderr);return ExitCode::from(output.exit);}
