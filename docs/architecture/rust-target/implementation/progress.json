@@ -1,15 +1,15 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "Group132 original R32/#703 arbitrary-date financial report compatibility",
-  "code_revision": "17e8debf",
+  "current_increment": "Group133 original R32/#703 company dashboard JSON mapping after accepted132 dated reports",
+  "code_revision": "066c7563cbf8fb8cc9d21ac6f6137a4f84e90fc5",
   "spec_revision": "sha256:bc98636be4a972407adce0f817a76bb9d4bb7200cb292a70965e75ab62fae250",
-  "state": "Group132 integrating original dated3CLI and flatHTTP reports through one shared Rust exact engine: core3+host1 and SDK3+CLI4 pass; focusedHTTP/strict/integrated ordinaryMFA/restart acceptance pending. Accepted131 journal history,130 dated FX loss,129staticHTML,128importedportfolio,63exports,76cashflow remain retained. Original datedcommands were CLI-only: no new datedUI/export/MCP features on critical path. Whole epic/TSretirement/packaging/cutover/final installeddesktop remain OPEN.",
+  "state": "Group132 accepted at066c7563: original three dated CLI reports and authorized sharedRust HTTP pass ordinaryMFA/currentrevocation/noeffects/exactnormalMFArestart, sourceoriginals/full audit4 and independent terminalSQL4journals8lines2docs0bank. All six actual numeric report outputs equal original pure readers on stopped owned synthetic ledger. Twelvefocused tests and strict6changedcrate Clippy/normalbins pass; both newworker worktrees recovered andremoved. Accepted131/130/129/128/63/76 retained. Next133 missing original company dashboard JSON mapping, then R31tax/iXBRL. Full epic/TSretirement/packaging/cutover/finalinstalleddesktop remain OPEN.",
   "issues_closed": [
     701
   ],
   "next": [
-    "Complete132 original report trial-balance/profit-loss --from/--to and balance --as-of through authorized source-verified Rustserver: original numericJSON/human streams/0-1-2, readnoeffects, source originals, currentrevocation, exact normalMFArestart and original pure-reader differential on owned synthetic ledger. Existing year/web/CSV/PDF/MCP retained unchanged; original arbitrarydates were CLI-only, no new export selectors needed. Then missing original dashboardJSONmapping and R31tax/iXBRL. Do not rerun accepted131/130 unchanged.",
+    "Group133 map original GET /api/companies/:slug/dashboard?asOf onto shared current-source Rust projections. Reuse existing invoice/VAT/bank/exceptions/audit/backup readers; no second engine or newfeatures. Preserve scoped backup/admin authority truthfully. Next R31 originaltax/iXBRL; do not repeat accepted132/131/130 unchanged.",
     "Installed desktop acceptance is explicitly deferred to the very end by the user. Preserve prepared Group100 profile; collect remaining native automation, closure, recovery and packaging checks for final installed acceptance without requesting screen unlock during development.",
     "J03/R50 and remaining R54 scope: only still-supported operation closure/recovery, nonempty scheduler handoff, hostile/older clone and post-cutover rollback requirements. Group99 qualifies managed installed J06 flow, not every R54 acceptance item.",
     "Signed distribution/update/cutover evidence must match actual full Rust replacement; retain all existing completion gates and TypeScript retirement gate.",
@@ -7274,16 +7274,107 @@
       "source_free_restore_qualified": false
     },
     "dated_reports132": {
-      "status": "integrating_acceptance_pending",
+      "status": "PASS integrated original three datedCLI/HTTP reports, sources/authority/noeffects/normalMFArestart and originalpure-reader differential",
       "worker_core_commit": "781a60578b1f94a80951de454fa8fad6efc14879",
       "worker_clients_commit": "fa517635b8dad8461efc5db1d0aa21b611f0c1bc",
       "focused_core_host": "/tmp/rm132-dated-core-tests.log; /tmp/rm132-dated-host-tests.log",
       "focused_clients": "/tmp/rm132-client-tests.log",
-      "focused_passed": 11,
+      "focused_passed": 12,
       "contract": "/tmp/rm132-contract.md",
       "original_scope": "Original three dated CLI commands only; shared authorizedHTTP adapter; no new date-selected web/export/MCP features",
       "fixture_correction": "Two storage scenarios found same required original-document omission; isolated shared post helper corrected; accounting/source guards unchanged; isolated cases and final3tests passed",
-      "manual_desktop": "Deferred until end; no unlock probes"
+      "manual_desktop": "Deferred until end; no unlock probes",
+      "actual_qualified": true,
+      "installed_desktop_qualified": false,
+      "integration_revision": "066c7563cbf8fb8cc9d21ac6f6137a4f84e90fc5",
+      "http_test": "/tmp/rm132-http-bin-tests.log",
+      "lib_filter_note": "Initial server --lib selected zero tests; corrected to actual --bin rentemester-server where product_http lives; actual1PASS",
+      "strict_clippy": "/tmp/rm132-clippy.log",
+      "normal_build": "/tmp/rm132-normal-build.log",
+      "actual_report": "/tmp/rentemester-rust-reports/dated-reports132.json",
+      "actual_sha256": "f697c47cdb4f6b4d685339d27e54e0be12c911efef4ff1297ea76eda84e4885b",
+      "actual_exit_code": 0,
+      "actual_first_run_passed": true,
+      "independent_verifier": "/tmp/rm132-independent-verification.py",
+      "independent_log": "/tmp/rm132-independent-verification.log",
+      "original_reference": {
+        "qualified": true,
+        "cases": 6,
+        "sources": {
+          "src/core/financial-statements.ts": "510ff01e7f0de2fdbe85533a22dcdc7b0ef9e6efc5a29512fbd0785a68f79d69",
+          "src/core/account-classification.ts": "674fe9269cf53ac109c2f31c0ad844d8d54961d193a80f0c89171e98a7ba4f31",
+          "src/core/dates.ts": "77fea21b9b2b3b1f2ebf55b9a092fc6e1cb133780635c710dff1a01f01fe0e2e",
+          "src/core/money.ts": "e013c3ca23bb2391105aa2f1e2f307dcdaaf85bec60159e5d63b39aa7e7c3bf8"
+        },
+        "stoppedOwnedSyntheticLedgerOnly": true
+      },
+      "terminal_sql": {
+        "counts": {
+          "documents": 2,
+          "bank_transactions": 0,
+          "journal_entries": 4,
+          "journal_lines": 8
+        },
+        "headers": [
+          [
+            4,
+            "2026-00003",
+            "2026-10-20",
+            "reversed",
+            2
+          ],
+          [
+            3,
+            "2026-00002",
+            "2026-10-19",
+            "posted",
+            null
+          ],
+          [
+            2,
+            "2026-00001",
+            "2026-10-19",
+            "posted",
+            null
+          ],
+          [
+            1,
+            "2025-00001",
+            "2025-12-31",
+            "posted",
+            null
+          ]
+        ],
+        "journalActors": [
+          [
+            "user:p91fRfxikAAxQSWb-2NnbZl_gHKZYV_8x_LUTPQxXg4",
+            "rentemester-rust"
+          ],
+          [
+            "user:p91fRfxikAAxQSWb-2NnbZl_gHKZYV_8x_LUTPQxXg4",
+            "rentemester-rust"
+          ],
+          [
+            "user:p91fRfxikAAxQSWb-2NnbZl_gHKZYV_8x_LUTPQxXg4",
+            "rentemester-rust"
+          ],
+          [
+            "user:p91fRfxikAAxQSWb-2NnbZl_gHKZYV_8x_LUTPQxXg4",
+            "rentemester-rust"
+          ]
+        ]
+      },
+      "artifacts": {
+        "server_binary": "11e28f2565d94f8970c848c92395198dfb344379f1cd7796767ac2fc32a8e82c",
+        "cli_binary": "b514084ef0300fe7c0bb1638dd4db46d88ec6485650ef752cc0cd612097892f3",
+        "mcp_binary": "b39908f5172db2c75d5a8156b3b1aaef4a1ef707759c0068d56dbaef2847dfc5"
+      },
+      "runner_sha256": "bee39e7ad269c0b6de015a046904fda4f3032d8a64765c5fc3eedb08f886fb01",
+      "helper_sha256": "330d3ff179e06e2a2976fd93b2e977ad2dc965bf010a35fb128a3ca64ac0bb08",
+      "worktree_recovery": ".git/rentemester-recovery/archived132.json",
+      "both_new_worktrees_removed": true,
+      "source_free_restore_qualified": false,
+      "scope_limit": "Restores ORIGINAL arbitrary-date CLI; existing fiscal-year web/exports and nativeMCP unchanged, not newdatedfeatures; globalR44/localCLIlauncher and fullR32 stillopen"
     }
   },
   "verified_history": [
