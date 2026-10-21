@@ -86,7 +86,9 @@ export function createBankQueriesProof(page: Page, base: string, work: string, m
       const reversal = await post(prefix + 'manual-journal-reversal', { confirm: true, input: { format: 'rentemester-manual-journal-reversal/1', expectedRuleVersion: (await get(prefix + 'journal')).journal.nativePosting.ruleVersion, idempotencyKey: 'synthetic-query141-reversal', request: { entryId: String(originalId), transactionDate: today, reason: 'Synthetic query reversed original' } } }); reversalId = reversal.entryId;
       // The existing accounting audit barrier refuses an uncorrected native link
       // after reversal. Do not replace this refusal with misleading successful rows.
-      need((await page.request.get(base + endpoint('list'))).status() === 503, 'Reversed_native_chain_requires_correction');
+      const reversedResponse = await page.request.get(base + endpoint('list'));
+      const reversedBody = await reversedResponse.json();
+      need(reversedResponse.status() === 422 && reversedBody.ok === false && reversedBody.code === 'bank_query_sources_unavailable', 'Reversed_native_chain_requires_correction');
       mcp('list', {}, ownerFile, true); cli('list', {}, ownerFile, true);
       const correction = (await get(prefix + `bank/reconciliation-correction-plan?bankTransactionId=${row.id}&replacementJournalEntryId=${replacementId}`)).plan.plan;
       await post(prefix + 'bank/reconciliation-correction', { bankTransactionId: row.id, replacementJournalEntryId: replacementId, expectedReconciliationId: initial.reconciliation.reconciliationId, planHash: correction.planHash, reason: 'Synthetic independently posted replacement', idempotencyKey: 'synthetic-query141-correction', confirm: true });
