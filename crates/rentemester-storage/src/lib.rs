@@ -647,3 +647,5 @@ pub mod backup_governance;
 pub mod backup_registration;
 
 pub mod audit_log;
+
+pub mod migration_open_items;
