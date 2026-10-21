@@ -463,3 +463,6 @@ pub use invoice_compensation::{InvoiceCompensationOperation,MAX_INVOICE_COMPENSA
 
 mod invoice_interest;
 pub use invoice_interest::{InvoiceInterestOperation,MAX_INVOICE_INTEREST_BODY,invoice_interest_body_schema};
+
+mod invoice_bad_debt;
+pub use invoice_bad_debt::{MAX_INVOICE_BAD_DEBT_BODY,invoice_bad_debt_body_schema};

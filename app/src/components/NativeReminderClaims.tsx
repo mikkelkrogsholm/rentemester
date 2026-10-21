@@ -3,6 +3,7 @@ import { api } from "../lib/api";
 import { formatKroner, parseDanishAmount } from "../lib/format";
 import { useAsync } from "../lib/useAsync";
 import { useCapabilities } from "../lib/useCapabilities";
+import { NativeInvoiceBadDebt } from "./NativeInvoiceBadDebt";
 import { NativeInvoiceInterest } from "./NativeInvoiceInterest";
 import { NativeInvoiceCompensation } from "./NativeInvoiceCompensation";
 import { ConfirmDialog } from "./ConfirmDialog";
@@ -30,6 +31,7 @@ export function NativeReminderClaims({slug,id,onChanged,onClose}:{slug:string;id
    <ul>{status.reminders.map(r=><li key={r.reminderId}>{r.reminderDate}: {formatKroner(r.feeAmount,"DKK")} — {r.journalEntryId===null?"Ikke bogført":`Bogført i postering ${r.journalEntryId}`}</li>)}</ul>
    <ul>{status.claimPayments.map(p=><li key={p.claimPaymentId}>Indbetaling {p.paymentDate}: {formatKroner(p.amount,"DKK")} · bankpost {p.bankTransactionId} · postering {p.journalEntryId}</li>)}</ul>
    <p>Eksisterende regel {status.rules.ruleId}: højst {status.rules.maximumFeeAmount} kr., højst {status.rules.maximumReminders} gebyrer og mindst {status.rules.minimumDaysBetweenReminders} dage mellem registreringer. Serveren kontrollerer forfald og aktuelle saldi igen.</p>
+   <NativeInvoiceBadDebt key={`bad-debt:${slug}:${id}`} slug={slug} id={id} status={status} onChanged={refresh}/>
    <NativeInvoiceInterest key={`interest:${slug}:${id}`} slug={slug} id={id} asOfDate={status.asOfDate} principalCurrency={status.principalCurrency} accounts={status.accounts} onChanged={refresh}/>
    <NativeInvoiceCompensation key={`${slug}:${id}`} slug={slug} id={id} asOfDate={status.asOfDate} accounts={status.accounts} onChanged={refresh}/>
    {can("company.draft.write")&&<div>

@@ -61,6 +61,8 @@ pub fn run(args: &[String]) -> Result<Value, Failure> {
         help["backupRemoteVerification"]=crate::backup_remote::help();
         help["backupGovernance"]=crate::backup_governance::help();
         help["backupRegistrations"]=crate::backup_registration::help();
+        help["invoiceBadDebt"]=crate::invoice_bad_debt::help();
+        help["commands"].as_array_mut().unwrap().extend(crate::invoice_bad_debt::COMMANDS.map(|s|json!(s)));
         help["invoiceInterest"]=crate::invoice_interest::help();
         help["commands"].as_array_mut().unwrap().extend(crate::invoice_interest::COMMANDS.map(|s|json!(s)));
         help["invoiceCompensation"]=crate::invoice_compensation::help();
@@ -301,6 +303,7 @@ pub fn run(args: &[String]) -> Result<Value, Failure> {
     if command=="create-company" {return crate::company_creation::run(&flags,allow_http,confirmed,preview_reviewed);}
     if command=="workspace-backup"{return crate::portable_backup::run(&flags,allow_http,confirmed,preview_reviewed);}
     if command=="saft-export"{return crate::saft::run(&flags,allow_http,confirmed,preview_reviewed);}
+    if crate::invoice_bad_debt::accepts(command){return crate::invoice_bad_debt::run(command,&flags,allow_http,confirmed,preview_reviewed);}
     if crate::invoice_interest::accepts(command){return crate::invoice_interest::run(command,&flags,allow_http,confirmed,preview_reviewed);}
     if crate::invoice_compensation::accepts(command){return crate::invoice_compensation::run(command,&flags,allow_http,confirmed,preview_reviewed);}
     if crate::reminder_claims::accepts(command){return crate::reminder_claims::run(command,&flags,allow_http,confirmed,preview_reviewed);}
