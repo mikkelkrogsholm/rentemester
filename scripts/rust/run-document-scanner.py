@@ -682,7 +682,8 @@ def main():
                 source_web = {str(path.relative_to(args.web_dir)):digest(path) for path in sorted(args.web_dir.rglob('*')) if path.is_file()}
                 if source_web != report['webFiles']:
                     raise RuntimeError('Journal history web artifacts changed')
-                phase('finish',20); controller.wait(timeout=20)
+                phase('finish',20)
+                controller.stdin.close(); controller.wait(timeout=20)
                 if controller.returncode != 0:
                     raise RuntimeError('Journal history browser controller failed')
                 report.update(status='passed',currentAction='complete',workflow='original_journal_history_read_parity',journalHistoryQualified=True,journalHistoryRestartQualified=True,installedNativeQualified=False,sourceFreeRestoreQualified=False)

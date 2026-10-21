@@ -4,7 +4,7 @@
   "current_increment": "Group131 original R32/#703 journal-history CLI/MCP compatibility, current-source HTTP/shared reader",
   "code_revision": "5c329021",
   "spec_revision": "sha256:bc98636be4a972407adce0f817a76bb9d4bb7200cb292a70965e75ab62fae250",
-  "state": "Group130 accepted actualMFA/restart/originals/audit10/signedbackup and independent cleanup retained at22829c5b. Group131 source-backed original journal-history core/clients/HTTP integrated f28eec5b/554ca8e3/5c329021:14 focused tests and seven changed-crate all-target strictClippy pass. Mechanical parser typealias fixed sole Clippy error without behavior change. Three completed worktrees preserved in verified Git snapshots then removed. Normal3bins build PASS; standalone minimal ordinaryMFA/read-refusal/noeffects/restart proof pending. Remaining original R32 date selectors/dashboardJSON and R31 tax/iXBRL retained; whole epic and installed desktop last remain OPEN.",
+  "state": "Integrated14 focused tests/strict sevencrates/normalbins PASS. First actual all product+restart+SQL checks passed but harness exit failed on omitted stdin.close. Exact existing close pattern fixed, isolated EOF exit0 proved; one justified rerun pending. No Rust changes or rebuild. Accepted130/129/128/63/76 retained. Original R32 arbitrarydates/dashboardJSON and R31tax/iXBRL remain; full mission OPEN.",
   "issues_closed": [
     701
   ],
@@ -7191,7 +7191,7 @@
     },
     "journal_history131": {
       "issue": 703,
-      "status": "Integrated core/clients/HTTP; focused storage3,host1,client3,CLI3,MCP3,HTTP1 PASS; strict seven changed-crate all-target Clippy PASS after mechanical parser type alias; normal three-bin build PASS; actual MFA proof pending",
+      "status": "Integrated14 focused tests/strict sevencrates/normalbins PASS. First actual all product+restart+SQL checks passed but harness exit failed on omitted stdin.close. Exact existing close pattern fixed, isolated EOF exit0 proved; one justified rerun pending. No Rust changes or rebuild.",
       "base": "22829c5b",
       "resume": "/tmp/rm131-live-state.json",
       "storage_host_owner": "/root/dashboard_html129",
@@ -7234,7 +7234,7 @@
       "clippy_correction": "Named Parsed alias for CLI parse result; no behavior or test expectation changed.",
       "normal_build_log": "/tmp/rm131-normal-build.log",
       "normal_build_qualified": true,
-      "planned_actual": "/tmp/rentemester-rust-reports/journal-history131.json",
+      "planned_actual": "/tmp/rentemester-rust-reports/journal-history131b.json",
       "actual_helper": "scripts/rust/check-native-journal-history.ts",
       "actual_runner": "scripts/rust/run-document-scanner.py --journal-history",
       "worktree_recovery": ".git/rentemester-recovery/archived131.json",
@@ -7245,6 +7245,18 @@
         "rentemester-server": "7b43711f43e7146e23b48005a4e6e28c2ffa3f42479174ca608fcf8a51ef5662",
         "rentemester-rust": "0c11690911c6d2cdfd8788431ef204fa5475ef957d0feec70c53f1cdf3e59671",
         "rentemester-mcp": "000e17c7ddc04a073ddafb8009f791bc2ab85dda0e3c1497252d0f38ed6d1fe1"
+      },
+      "first_actual_attempt": {
+        "source": "e37d8af0bd752168f81361b27c62275da15ef796",
+        "report": "/tmp/rentemester-rust-reports/journal-history131.json",
+        "sha256": "17377e9c1bfd5003a602d27f8acb377c901c1f45da1659d4277b2fab8179d565",
+        "exit": 1,
+        "product_phase_passed": true,
+        "normal_mfa_restart_passed": true,
+        "independent_terminal_sql_passed": true,
+        "owned_cleanup": true,
+        "failure": "All product/restart/SQL/finish-ack checks passed; runner omitted controller.stdin.close before wait, leaving Bun readline input open. Existing branches already close stdin. One-line correction, isolated sameBun readline EOF exit0 within3s; no product or accounting assertion changed.",
+        "isolated_proof": "/tmp/rm131-isolated-controller-eof.log"
       }
     }
   },
