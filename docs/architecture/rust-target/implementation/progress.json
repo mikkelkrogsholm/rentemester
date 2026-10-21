@@ -7784,10 +7784,10 @@
     },
     "local_runtime138": {
       "issue": 716,
-      "status": "DEVELOPING_actual_helper_correction",
+      "status": "ACCEPTED138B_local_cli_same_rust_owner",
       "contract": "/tmp/rm138-contract.md",
       "base": "33b36543",
-      "actual_qualified": false,
+      "actual_qualified": true,
       "fixture": "Same existing normalMFA runner using short private home profile for platform UDS limit. One retained synthetic original and CLI100DKKpost/replay, private descriptor/peerUID/currentauth, TCPsameprojection, competingowner refusal, noTCPfallback/currentrevoke/restart/cleanup. No secondengine/newharness/GUIprobes.",
       "expected_sql": {
         "documents": 1,
@@ -7795,7 +7795,7 @@
         "journal_entries": 1,
         "journal_lines": 2
       },
-      "remaining": "Integrated source/focused/static/actual acceptance pending. Full R44 original actorpolicy/locallegacyselector/env/defaultlauncher/envelope parity remains; this transport/join does not close fullissue or wholeepic.",
+      "remaining": "Local MCP explicit-profile join is next. Full R44 original actorpolicy/legacyselector/env/defaultlauncher/peroperation envelopes still required, plus whole-epic release/cutover/TSretirement and final installed desktop. Desktop source forwards local socket flag, but no new installed desktop acceptance claimed.",
       "core_commit": "e3290894",
       "clients_commit": "33ed033f",
       "core_focused_passed": 5,
@@ -7819,7 +7819,31 @@
       "parser_correction_isolated": "/tmp/rm138-confirm-flag-isolated.log",
       "observability_isolated": "/tmp/rm138-observability-isolated.log",
       "retry_reason": "One justified138b actual after isolated diagnosed helper argument correction; reuse unchanged Rust binaries/focused/Clippy/build evidence. No authority/accounting/source gate changes.",
-      "failed_focused_fixture_preservation": "/tmp/rentemester-rust-reports/local-runtime138-development/recovery.json"
+      "failed_focused_fixture_preservation": "/tmp/rentemester-rust-reports/local-runtime138-development/recovery.json",
+      "report": "/tmp/rentemester-rust-reports/local-runtime138b.json",
+      "report_sha256": "1cba348df36ce6908e3e932875dd713d570416fce1057ab6a41c081957c78349",
+      "source_revision": "7211a1120f51f2c6cb652337e7a2451299475325",
+      "terminal_exit": 0,
+      "actual_first_run_passed": false,
+      "independent_verification": "/tmp/rm138b-independent-verification.log",
+      "normal_local_cli_logins": 3,
+      "restart_qualified": true,
+      "terminal_sql": {
+        "documents": 1,
+        "bank_transactions": 0,
+        "journal_entries": 1,
+        "journal_lines": 2
+      },
+      "authenticated_post_audits": 1,
+      "explicit_replay_same_entry": true,
+      "competing_owner_refused": true,
+      "no_tcp_fallback": true,
+      "owned_runtime_cleaned": true,
+      "owned_processes_stopped": true,
+      "local_runtime_endpoints_retired": true,
+      "both_new_worktrees_removed": true,
+      "worktree_recovery": ".git/rentemester-recovery/archived138.json",
+      "isolated_prelude_recovery": "/tmp/rentemester-rust-reports/local-runtime138-development/isolated-prelude-recovery.json"
     }
   },
   "verified_history": [
