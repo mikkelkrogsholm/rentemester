@@ -512,3 +512,6 @@ pub use bank_original::{BankOriginalMutation,bank_original_body_schema};
 
 mod direct_bank_original;
 pub use direct_bank_original::direct_bank_original_schema;
+
+mod payable_original;
+pub use payable_original::{PayableOriginalMutation,PayableOriginalQuery,payable_original_body_schema};
