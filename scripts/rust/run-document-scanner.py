@@ -699,8 +699,8 @@ def main():
                     if args.authority_export:
                         export_rows = db.execute("SELECT event_type,actor FROM audit_log WHERE event_type IN ('authority_export','accountant_handoff_export') ORDER BY id").fetchall()
                         export_counts = {kind:sum(row[0] == kind for row in export_rows) for kind in ['authority_export','accountant_handoff_export']}
-                        identity = report['results']['authenticate']
-                        if export_counts != {'authority_export':7,'accountant_handoff_export':4} or sum(row[1] == 'user:'+identity['ownerId'] for row in export_rows) != 10 or sum(row[1] == 'user:'+identity['memberId'] for row in export_rows) != 1:
+                        handover_identities = report['results']['authenticate']
+                        if export_counts != {'authority_export':7,'accountant_handoff_export':4} or sum(row[1] == 'user:'+handover_identities['ownerId'] for row in export_rows) != 10 or sum(row[1] == 'user:'+handover_identities['memberId'] for row in export_rows) != 1:
                             raise RuntimeError('Authority handover exact export audit effects differ')
                         report['terminalSql']['exportAudits'] = {'counts':export_counts,'rows':export_rows}
 

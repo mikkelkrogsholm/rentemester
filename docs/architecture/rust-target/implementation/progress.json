@@ -4,7 +4,7 @@
   "current_increment": "Group136 R31 original authority/accountant handover request context and clients",
   "code_revision": "f4193c18ae88ba9fb57814906fb49bed11a45730",
   "spec_revision": "sha256:bc98636be4a972407adce0f817a76bb9d4bb7200cb292a70965e75ab62fae250",
-  "state": "Group136 core+clients integrated with same CompanyExport/NamespaceGuard pipeline, correctrecipient endpoints and existing-harness actualproof. Focused context/default/source/audit and8client tests pass. Integrated strict compile then normalMFA/client/localfile/source/audit/restart acceptance pending. #706 soleactive integrating; annual135/SAFT/J04 accepted evidence retained. FullR31, globalR44/TSretirement/release/finaldesktop remainOPEN.",
+  "state": "Group136 actual product/context/source/CLI/MCP/restart and independent terminal SQL all passed, but harness finalization failed after audit identity variable shadowed owned-directory identity. Exact isolated reproduction/fix passed; all failed-workspace data/raw proof files preserved and verified owned temp cleaned. One final actual136b planned with unchanged Rust binaries. Sole706 acceptance, no136 qualification yet; fullscope retained.",
   "issues_closed": [
     701
   ],
@@ -7636,7 +7636,7 @@
     },
     "authority_export136": {
       "issue": 706,
-      "status": "integrated_focused_passed_actual_pending",
+      "status": "product_and_restart_passed_finalization_fix_retest_pending",
       "contract": "/tmp/rm136-contract.md",
       "actual_qualified": false,
       "fixture": "Existing standalone runner/accountant helper; one synthetic retained original+real posting, source files/hash/context/deadline/local CLI/MCP packages, exact audit-only effects, normalMFArestart. No new harness.",
@@ -7663,10 +7663,16 @@
       "strict_clippy": "/tmp/rm136-clippy.log",
       "strict_clippy_passed": true,
       "normal_build": "/tmp/rm136-normal-build.log",
-      "normal_build_pending": true,
+      "normal_build_pending": false,
       "root_clippy_corrections": "/tmp/rm136-root-clippy.patch",
       "isolated_changed_mcp_test": "/tmp/rm136-mcp-isolated.log",
-      "root_corrections": "Two Clippy diagnostics corrected directly: collapse equivalent nestedSDKconditional; consume/assert received byte count in lost-response mock. Changed lost-response test isolated1 PASS; final7crate all-target strictClippy PASS. No disabled lints or weakened archive/source/authority checks."
+      "root_corrections": "Two Clippy diagnostics corrected directly: collapse equivalent nestedSDKconditional; consume/assert received byte count in lost-response mock. Changed lost-response test isolated1 PASS; final7crate all-target strictClippy PASS. No disabled lints or weakened archive/source/authority checks.",
+      "first_actual_report": "/tmp/rentemester-rust-reports/authority-export136.json",
+      "first_actual_failure": "All product/source/authority/CLI/MCP/restart/SQL checks passed. New terminal export audit block shadowed owned-directory identity with user IDs, causing final namespace gate and automated cleanup refusal. No accounting/source failure.",
+      "ownership_fix": "Rename audit-only variable to handover_identities; exact old/fixed AST block reproduces failure and proves inode/uid gate retained. /tmp/rm136-ownership-isolated.log PASS.",
+      "failed_fixture_preservation": "/tmp/rentemester-rust-reports/authority-export136-finalization/recovery.json",
+      "retry_reason": "One justified actual rerun after isolated diagnosed finalization correction; reuse unchanged Rust binaries/focused/Clippy evidence, no Rust rebuild.",
+      "normal_build_passed": true
     }
   },
   "verified_history": [
