@@ -12,6 +12,7 @@ use serde_json::{Value, json};
 use std::collections::{BTreeMap, BTreeSet};
 mod csv;
 mod postings;
+pub mod receipts;
 #[cfg(test)]
 mod tests;
 pub const CONTRACT: &str = "rentemester-dinero-latest-year/1";
