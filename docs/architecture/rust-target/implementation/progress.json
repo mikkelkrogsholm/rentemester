@@ -1,15 +1,15 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "Group136 R31 original authority/accountant handover request context and clients",
-  "code_revision": "f4193c18ae88ba9fb57814906fb49bed11a45730",
+  "current_increment": "Group139 R45 existing MCP tools join the shared local Rust runtime",
+  "code_revision": "78a68e96bbb20a286bfd05de179c528fdbd44258",
   "spec_revision": "sha256:bc98636be4a972407adce0f817a76bb9d4bb7200cb292a70965e75ab62fae250",
-  "state": "Group136B ACCEPTED original authority/accountant request-context local handover through shared Rust package engine: original CLI/MCP, exact normalizedtimestamp/+28days/recipient/source files/all hashes, confirmation/source tamper/currentrevoke refusal, normalMFArestart, independent tarparser, unchanged journal1/doc1/bank0/lines2 and exactly11authenticated audit effects. Harness finalization identity shadow diagnosed/isolated/fixed; failed workspace/proofs preserved, final run and cleanup passed. Next R31 original SAF-T CLI/local output + original supplied/periodend timestamp semantics; accepted nativeSAFT23/24 and annual135 retained. FullR31/R44/provenance/release/TSretirement/finaldesktop remainOPEN.",
+  "state": "Group139 ACCEPTED existing MCP tools join same local Rust owner via explicit private profile and normal credentials. Actual normalMFA source-backed100DKKpost, explicit replay, exact TCP report/original parity, current revoked read/write refusal, no TCP fallback, single writer refusal and normal MFA restart all pass; independent exact SQL/audit/source/hash/pins/cleanup PASS. Accepted138 CLI remains retained. Full original CLI/MCP discovery/actor/env/defaultlauncher/per-operation scope and release/cutover/TypeScript retirement/final installed desktop remain open.",
   "issues_closed": [
     701
   ],
   "next": [
-    "R31 #706 restore original system export-saft --from --to --out [--generated-at] with verified local package from existing nativeSAFT engine. Distinguish native trusted_runtime_clock default, original CLI period_end default and caller_supplied timestamp honestly, all selectedserver-side. No originalSAFTMCPname exists; retain native saft_export. Reuse nativeSAFT23/24/136writer evidence, no new engine/harness.",
+    "Complete remaining original R44/R45 client surface in coherent batches: source-defined aliases/envelopes, actor and workspace/default-launcher selection, accurate discovery/workflow coverage. Reconcile actual native registry and preserved original surface before selecting the next necessary whole journey; do not rerun accepted139/138.",
     "Installed desktop acceptance is explicitly deferred to the very end by the user. Preserve prepared Group100 profile; collect remaining native automation, closure, recovery and packaging checks for final installed acceptance without requesting screen unlock during development.",
     "J03/R50 and remaining R54 scope: only still-supported operation closure/recovery, nonempty scheduler handoff, hostile/older clone and post-cutover rollback requirements. Group99 qualifies managed installed J06 flow, not every R54 acceptance item.",
     "Signed distribution/update/cutover evidence must match actual full Rust replacement; retain all existing completion gates and TypeScript retirement gate.",
@@ -7795,7 +7795,7 @@
         "journal_entries": 1,
         "journal_lines": 2
       },
-      "remaining": "Local MCP explicit-profile join is next. Full R44 original actorpolicy/legacyselector/env/defaultlauncher/peroperation envelopes still required, plus whole-epic release/cutover/TSretirement and final installed desktop. Desktop source forwards local socket flag, but no new installed desktop acceptance claimed.",
+      "remaining": "Explicit local MCP join qualified by139. Full R44 original actorpolicy/legacyselector/env/defaultlauncher/peroperation envelopes still required, plus whole-epic release/cutover/TSretirement and final installed desktop. Desktop forwards local socket flag; no new installed desktop acceptance claimed.",
       "core_commit": "e3290894",
       "clients_commit": "33ed033f",
       "core_focused_passed": 5,
@@ -7844,6 +7844,45 @@
       "both_new_worktrees_removed": true,
       "worktree_recovery": ".git/rentemester-recovery/archived138.json",
       "isolated_prelude_recovery": "/tmp/rentemester-rust-reports/local-runtime138-development/isolated-prelude-recovery.json"
+    },
+    "local_runtime139": {
+      "issue": 717,
+      "status": "ACCEPTED139_local_mcp_same_rust_owner",
+      "contract": "/tmp/rm139-contract.md",
+      "base": "1d3a20e3",
+      "actual_qualified": true,
+      "reuse": "Accepted138 server/SDK/CLI owner transport and normal auth; same existing fixture with MCP adapter, no new engine or test framework.",
+      "remaining": "Full original R45 discovery/annotations/workflow/errors/actor/per-operation MCP-only and CLI-only contracts and fullR44 legacy selectors/defaultlauncher still open; whole epic release/cutover/TSretirement and final installed desktop retained.",
+      "worker_commit": "3d70ccd2",
+      "integrated_commit": "78a68e96",
+      "helper_commit": "6d817099",
+      "focused_passed": 4,
+      "focused_log": "/tmp/rm139-mcp.log",
+      "strict_clippy": "/tmp/rm139-mcp-clippy.log",
+      "normal_build": "/tmp/rm139-mcp-build.log",
+      "source_revision": "78a68e96bbb20a286bfd05de179c528fdbd44258",
+      "report": "/tmp/rentemester-rust-reports/local-runtime139.json",
+      "report_sha256": "9701a6c8f04fc697d44590e06c20279568868a8fbe025d10e41f34e132a85da3",
+      "terminal_exit": 0,
+      "actual_first_run_passed": true,
+      "independent_verification": "/tmp/rm139-independent-verification.log",
+      "terminal_sql": {
+        "documents": 1,
+        "bank_transactions": 0,
+        "journal_entries": 1,
+        "journal_lines": 2
+      },
+      "authenticated_post_audits": 1,
+      "explicit_replay_same_entry": true,
+      "normal_local_cli_logins": 3,
+      "rpc_text_structured_agreement": true,
+      "restart_qualified": true,
+      "no_tcp_fallback": true,
+      "owned_runtime_cleaned": true,
+      "owned_processes_stopped": true,
+      "local_runtime_endpoints_retired": true,
+      "worker_worktree_removed": true,
+      "worktree_recovery": ".git/rentemester-recovery/archived139.json"
     }
   },
   "verified_history": [
@@ -9461,7 +9500,7 @@
   "workflow": {
     "task_state_authority": "https://github.com/mikkelkrogsholm/rentemester/issues/672",
     "policy": "docs/development-workflow.md",
-    "current_issue": 701,
+    "current_issue": 717,
     "progress_file_role": "evidence and resume facts only; GitHub labels are authoritative for task state",
     "product_acceptance_unchanged": true,
     "ci": {
