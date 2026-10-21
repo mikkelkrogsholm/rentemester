@@ -95,3 +95,5 @@ pub mod backup_policy;
 
 pub mod dinero_import;
 pub mod imported_receivables;
+
+pub mod synthetic_import;
