@@ -74,7 +74,7 @@ pub fn run(args: &[String]) -> Result<Value, Failure> {
         help["documentPdf"]=json!({"usage":"parse-document --company SLUG --id ID --confirm; document-parse-status --company SLUG --id ID; document-parsed-text --company SLUG --id ID [--cursor OFFSET] [--limit 1..10]; parse-pending-documents --company SLUG --confirm [--cursor ID] [--limit 1..100]. Explicit --server/--cookie-file required. Text default10 pages, pending default100 documents, cursor default0. No stdin, local parsing, OCR, metadata/accounting inference, keys or retries. Server owns source/evidence integrity and upload/read authority; inspect status after an uncertain parse outcome."});
         help["commands"].as_array_mut().unwrap().extend(["parse-document","document-parse-status","document-parsed-text","parse-pending-documents"].map(|s|json!(s)));
         help["service_principals"]=crate::service_principals::help();
-        help["commands"].as_array_mut().unwrap().extend([json!("overview"),json!("report-export")]);
+        help["commands"].as_array_mut().unwrap().extend([json!("overview"),json!("report-export"),json!("dashboard")]);
         help["reportReads"]=json!({"usage":"journal/trial-balance/income-statement/balance/overview --company SLUG [--year LABEL] [--source live|archive]; --account only journal. report-export --company SLUG --report journal|trial-balance|income-statement|balance --format csv|pdf [--year LABEL] [--source live|archive] [--account journalonly]. Read-only, explicit server/cookie. Server owns source selection and unavailable states. Preserve exact decimal strings. Exports return data {ok,contentType,bytes}, max96MiB; no files/client calculations. Omitted source uses server live-first selection; explicit archive never falls back."});
         help["openingBalance"]=crate::opening_balance::help();
         help["commands"].as_array_mut().unwrap().extend(crate::opening_balance::COMMANDS.map(|s|json!(s)));
@@ -109,6 +109,7 @@ pub fn run(args: &[String]) -> Result<Value, Failure> {
         help["invoiceEmail"]=crate::invoice_email::help();
         help["hosted_recurring"]=crate::hosted_recurring::help();
         help["scheduledRecurring"]=crate::scheduled_recurring::help();
+        help["dashboard"]=json!("dashboard --company SLUG --out PATH [--as-of YYYY-MM-DD] [--open]; explicit server/cookie required. Writes exact server HTML atomically; opened means opener attempted after write. Default date server UTC today. No provider or accounting effects.");
         help["backupStatus"]=json!("backup-status --company SLUG reads verified local-retained snapshot freshness/lock; backup-lock --company SLUG --confirm reads exact stdin JSON {confirm:true,enforced:boolean,graceDays:integer0..365}, max4KiB. Current human CompanyAdmin cookie required. No time/actor/path or automatic retry; unknown outcome requires explicit backup-status read. No cloud/restore compliance claim.");
         help["backupDestinations"]=json!("backup-destinations lists operator-configured local/synced directories. place-backup --destination-id ID --operation-id stable-id --confirm generates one signed workspace snapshot and publishes without overwrite; all-company admin human cookie required. verify-backup-placement uses same selectors read-only and rereads bytes/signature; reconcile lost replies with it, never auto-retry placement. Private paths/keys cannot be supplied. Sync-folder readback does not verify cloud delivery; attestations are human declarations. No freshness or booking-lock inference.");
         help["agentDiscovery"] = json!("Public read-only metadata: remote about; remote agent-capabilities [--query TEXT] [--cursor 0] [--limit 10]; remote agent-workflow --id supplier-payable-handling. Explicit --server always required; optional private credentials, --allow-loopback-http for local test. Query<=200 characters,cursor<=1000000,limit1..50. Partial catalogue, not full backend parity. Description never authorizes or confirms execution; reconcile uncertain payable writes instead of automatic retry.");
@@ -120,10 +121,12 @@ pub fn run(args: &[String]) -> Result<Value, Failure> {
     let mut command = None;
     let mut allow_http = false;
     let mut confirmed = false;
+    let mut open = false;
     let mut preview_reviewed = false;
     let mut cursor = 0;
     while cursor < args.len() {
         let arg = args[cursor].as_str();
+        if arg == "--open" { if open { return Err(invalid("duplicate --open")); } open=true; cursor+=1; continue; }
         if arg == "--confirm" || arg == "--preview-reviewed" {
             let target = if arg == "--confirm" {
                 &mut confirmed
@@ -195,6 +198,7 @@ pub fn run(args: &[String]) -> Result<Value, Failure> {
                 "--party-id",
                 "--source-id",
                 "--output",
+                "--out",
                 "--record-id",
                 "--snapshot-id",
                 "--profile-id",
@@ -236,6 +240,8 @@ pub fn run(args: &[String]) -> Result<Value, Failure> {
         }
     }
     let command = command.ok_or_else(|| invalid("expected remote command; see remote --help"))?;
+    if command == "dashboard" { return crate::dashboard_artifact::run(&flags,allow_http,confirmed,preview_reviewed,open); }
+    if open || flags.contains_key("--out") { return Err(invalid("out/open only allowed on dashboard")); }
     if flags.keys().any(|key|["--file","--plan-hash","--idempotency-key"].contains(key))&&!matches!(command,"dinero-import-plan"|"dinero-import-apply"|"opening-balance-plan"|"opening-balance-apply"){return Err(invalid("local source and reviewed hash/key selectors are only allowed on Dinero or opening-balance plan/apply"));}
     if command=="audit-verify" { return crate::audit_verify::run(&flags,allow_http,confirmed,preview_reviewed); }
     if command=="audit-log-list" { return crate::audit_log::run(&flags,allow_http,confirmed,preview_reviewed); }

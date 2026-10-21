@@ -1,6 +1,6 @@
 use serde_json::{Value, json};
 
-const EXPECTED_NATIVE_TOOLS: usize = 252;
+const EXPECTED_NATIVE_TOOLS: usize = 258;
 
 #[test]
 fn pdf_tools_require_confirmation_and_keep_reads_bounded() {
@@ -2202,3 +2202,6 @@ fn service_file_mcp_context_and_mutually_exclusive_flags() {
 
 #[path="stdio/dinero_import.rs"]
 mod dinero_import;
+
+#[path="stdio/dashboard_artifact.rs"]
+mod dashboard_artifact;

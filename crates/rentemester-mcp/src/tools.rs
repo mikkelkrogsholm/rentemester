@@ -137,6 +137,7 @@ pub fn list() -> Value {
     tools.extend(crate::commitments::tools());
     tools.extend(crate::annual_reports::tools());
     tools.extend(crate::portfolio_cashflow::tools());
+    tools.extend(crate::dashboard_artifact::tools());
     tools.extend(crate::eu_sales::tools());
     tools.extend(crate::oss_report::tools());
     tools.extend(crate::reviewed_bookkeeping::tools());
@@ -258,6 +259,7 @@ pub async fn call(api: &ApiClient, name: &str, args: Value) -> Result<Value, &'s
     }
     let mut idempotency = None;
     let outcome = match name {
+        "dashboard_export" => crate::dashboard_artifact::call(api,args).await?,
         "meta_about" => {
             if !args.as_object().unwrap().is_empty() { return Err("unexpected about arguments"); }
             api.agent_about().await.map(|mut value| { value["toolCount"] = json!(list()["tools"].as_array().unwrap().len()); value })

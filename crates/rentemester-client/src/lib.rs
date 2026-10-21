@@ -469,3 +469,6 @@ pub use invoice_bad_debt::{MAX_INVOICE_BAD_DEBT_BODY,invoice_bad_debt_body_schem
 
 mod dinero_import;
 pub use dinero_import::{MAX_DINERO_IMPORT_BODY,MAX_DINERO_ORIGINAL,dinero_import_body_schema};
+
+mod dashboard_artifact;
+pub use dashboard_artifact::{MAX_DASHBOARD_BYTES,DASHBOARD_CONTENT_TYPE};

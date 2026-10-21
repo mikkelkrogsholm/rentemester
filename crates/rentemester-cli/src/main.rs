@@ -1,3 +1,4 @@
+mod dashboard_artifact;
 mod invoice_bad_debt;
 mod invoice_interest;
 mod invoice_compensation;
@@ -59,11 +60,13 @@ fn run(args: Vec<String>) -> Result<serde_json::Value, (u8, Error)> {
         }
         return Err((2,Error::new("invalid_input","expected documents extract-invoice|invoice-extraction; see documents --help")));
     }
+    if args.first().map(String::as_str) == Some("dashboard") { return remote::run(&args); }
     if args.first().map(String::as_str) == Some("remote") {
         return remote::run(&args[1..]);
     }
     if args == ["--help"] {
         return Ok(json!({"ok":true,"commands":[
+            {"name":"dashboard","usage":"dashboard --server ORIGIN --cookie-file PATH --company SLUG --out FILE.html [--as-of YYYY-MM-DD] [--open]","scope":"authenticated server HTML, atomic local output"},
             {"name":"remote","usage":"remote --help","scope":"explicit authenticated Rust HTTP server; no local fallback"},
             {"name":"documents","usage":"documents --help","scope":"registered-PDF invoice extraction or retained evidence; explicit remote server/session"},
             {"name":"validate-journal","usage":"validate-journal --company PATH < request.json","scope":"experimental source-backed advisory manual validation; no writer authority"},

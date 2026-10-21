@@ -10,7 +10,7 @@ fn reports_preserve_source_exact_money_and_export_bytes() {
         ],
     ));
     let tools = rows[1]["result"]["tools"].as_array().unwrap();
-    assert_eq!(tools.len(), 225);
+    assert_eq!(tools.len(), EXPECTED_NATIVE_TOOLS);
     for name in [
         "journal",
         "trial_balance",
