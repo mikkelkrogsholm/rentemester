@@ -101,6 +101,12 @@ async function reopen(){step='fresh-mfa-source-restart-no-rescan';await ownerPag
 async function archive(name){step='explicit-signed-originals-and-scan-evidence-'+name;const r=await ownerPage.request.post(base+'/api/workspace/backup',{headers:{origin:base},data:{confirm:true}});need(r.status()===200&&r.headers()['content-type']==='application/vnd.rentemester.native-backup+json','real scanner evidence signed coverage');const bytes=await r.body();need(bytes.length>0&&bytes.length<=96*1024*1024,'bounded full signed snapshot');writeFileSync(join(work,'scanner-'+name+'.native-backup.json'),bytes,{mode:0o600,flag:'wx'});await assertStable();return{sha256:hash(bytes),bytes:bytes.length,documents};}
 async function restored(){step='source-free-fresh-owner-normal-verification-mfa-no-scanner-config';ownerPage=await newPage();freshOwner={email:'restored@example.invalid',password:'synthetic-restored-password-789',codes:[]};await ownerPage.goto((await mail('verification',freshOwner.email)).actionUrl);need((await enroll(ownerPage,freshOwner)).user.id!==ownerId,'restored history is not imported current identity');await assertStable();return{sourceFreeRestoreQualified:true,historicalEvidenceWithoutCredentialsOrRescan:true};}
 async function restoredReopen(){step='restored-owner-fresh-mfa-reopen-exact-proof';await ownerPage.context().clearCookies();await login(ownerPage,freshOwner);await assertStable();return{restoredTargetReopenQualified:true};}
+let verificationProof;
+async function verificationPhase(action){
+ step=action;
+ if(!verificationProof){const module=await import(process.env.RM_AUDIT_VERIFY_HELPER);verificationProof=module.createAuditVerifyProof(ownerPage,base,work,memberPage);}
+ return action==='verification-reopen'?verificationProof.reopen():verificationProof.run();
+}
 let auditProof;
 async function auditPhase(action){
  step=action;
@@ -123,7 +129,7 @@ async function servicePhase(action){
  if(action==='service-reopen'){await ownerPage.context().clearCookies();await login(ownerPage,owner);return servicePurchase.reopen();}
  const result=await servicePurchase[{'service-run':'run','service-hold-begin':'holdBegin','service-revoke':'revoke','service-hold-finish':'holdFinish'}[action]]();if(action==='service-run')serviceRunResult=result;return result;
 }
-for await(const line of createInterface({input:process.stdin,crlfDelay:Infinity})){try{const action=JSON.parse(line);let value;if(action.startsWith('audit-')){try{value=await auditPhase(action);}catch(error){detail=String(error.message).slice(0,200);throw error;}}else if(action.startsWith('backup-recovery-')){try{value=await backupRecoveryPhase(action);}catch(error){detail=String(error.message).slice(0,200);throw error;}}else if(action.startsWith('service-'))value=await servicePhase(action);else if(action==='authenticate')value=await authenticate();else if(action==='historical')value=await historical();else if(action==='clean')value=await clean();else if(action==='negatives')value=await negatives();else if(action==='unauthorized')value=await unauthorized();else if(action==='hold-begin')value=await holdBegin();else if(action==='revoke')value=await revoke();else if(action==='hold-finish')value=await holdFinish();else if(action==='clients')value=await clients();else if(action==='reopen')value=await reopen();else if(['archive-source','archive-restarted','archive-restored'].includes(action))value=await archive(action.slice(8));else if(action==='restored')value=await restored();else if(action==='restored-reopen')value=await restoredReopen();else if(action==='finish'){await browser?.close();emit({ok:true,value:{finished:true}});break;}else throw Error('unknown phase');emit({ok:true,value});}catch(error){let pageState=null;try{pageState=await Promise.race([diagnosticPage?.evaluate(()=>({pathname:location.pathname,headings:[...document.querySelectorAll('h1,h2,h3,h4')].map(e=>e.textContent.slice(0,100)),buttons:[...document.querySelectorAll('button')].map(e=>e.textContent.slice(0,100)),alerts:[...document.querySelectorAll('[role=alert]')].map(e=>e.textContent.slice(0,300))})),new Promise(resolve=>setTimeout(()=>resolve(null),2000))]);}catch{}emit({ok:false,step,detail,errorType:error?.name,trace,pageState});await Promise.race([browser?.close().catch(()=>{}),new Promise(resolve=>setTimeout(resolve,2000))]);process.exitCode=1;break;}}
+for await(const line of createInterface({input:process.stdin,crlfDelay:Infinity})){try{const action=JSON.parse(line);let value;if(action.startsWith('verification-')){try{value=await verificationPhase(action);}catch(error){detail=String(error.message).slice(0,1200);throw error;}}else if(action.startsWith('audit-')){try{value=await auditPhase(action);}catch(error){detail=String(error.message).slice(0,200);throw error;}}else if(action.startsWith('backup-recovery-')){try{value=await backupRecoveryPhase(action);}catch(error){detail=String(error.message).slice(0,200);throw error;}}else if(action.startsWith('service-'))value=await servicePhase(action);else if(action==='authenticate')value=await authenticate();else if(action==='historical')value=await historical();else if(action==='clean')value=await clean();else if(action==='negatives')value=await negatives();else if(action==='unauthorized')value=await unauthorized();else if(action==='hold-begin')value=await holdBegin();else if(action==='revoke')value=await revoke();else if(action==='hold-finish')value=await holdFinish();else if(action==='clients')value=await clients();else if(action==='reopen')value=await reopen();else if(['archive-source','archive-restarted','archive-restored'].includes(action))value=await archive(action.slice(8));else if(action==='restored')value=await restored();else if(action==='restored-reopen')value=await restoredReopen();else if(action==='finish'){await browser?.close();emit({ok:true,value:{finished:true}});break;}else throw Error('unknown phase');emit({ok:true,value});}catch(error){let pageState=null;try{pageState=await Promise.race([diagnosticPage?.evaluate(()=>({pathname:location.pathname,headings:[...document.querySelectorAll('h1,h2,h3,h4')].map(e=>e.textContent.slice(0,100)),buttons:[...document.querySelectorAll('button')].map(e=>e.textContent.slice(0,100)),alerts:[...document.querySelectorAll('[role=alert]')].map(e=>e.textContent.slice(0,300))})),new Promise(resolve=>setTimeout(()=>resolve(null),2000))]);}catch{}emit({ok:false,step,detail,errorType:error?.name,trace,pageState});await Promise.race([browser?.close().catch(()=>{}),new Promise(resolve=>setTimeout(resolve,2000))]);process.exitCode=1;break;}}
 
 '''
 
@@ -148,7 +154,10 @@ def main():
     parser.add_argument('--remote-backup', action='store_true', help='Extend backup-lock with private TLS Drive metadata/media verification; fixture copy is not app upload')
     parser.add_argument('--backup-recovery', action='store_true', help='Continue remote-backup proof through source-free fresh-owner restore and restart')
     parser.add_argument('--audit-log', action='store_true', help='Continue backup-lock single-post proof with one reversal and audit web/HTTP/CLI/MCP inspection, current revocation and restart')
+    parser.add_argument('--audit-verify', action='store_true', help='Read-only complete accounting verification, cross-client parity, originals tamper, current revocation and restart')
     args = parser.parse_args()
+    if args.audit_verify and not args.audit_log:
+        parser.error('--audit-verify requires --audit-log')
     if args.audit_log and (not args.backup_lock or args.remote_backup):
         parser.error('--audit-log requires --backup-lock and excludes --remote-backup')
     if args.backup_recovery and not args.remote_backup:
@@ -581,7 +590,7 @@ def main():
             start(create=True)
             script = work / 'browser.mjs'
             script.write_text(BROWSER)
-            controller = subprocess.Popen(['/opt/homebrew/bin/bun', str(script)], cwd=REPO, env={**os.environ, 'RM_NATIVE_BACKUP_DESTINATION_PROOF':'1' if args.backup_destinations else '0', 'RM_NATIVE_REMOTE_BACKUP_PROOF':'1' if args.remote_backup else '0', 'RM_AUDIT_HELPER': str(REPO / 'scripts/rust/check-native-audit-log.ts'), 'RM_BACKUP_RECOVERY_HELPER': str(REPO / 'scripts/rust/check-native-backup-recovery.ts'), 'RM_SERVICE_PURCHASE_HELPER': str(REPO / ('scripts/rust/check-native-backup-lock.ts' if args.backup_lock else 'scripts/rust/check-native-service-purchase.ts')), 'RM_SCANNER_PROOF_FACTORY': 'createBackupLockProof' if args.backup_lock else 'createServicePurchaseProof', 'RM_SCANNER_BASE': origin, 'RM_SCANNER_WORK': str(work), 'RM_SCANNER_SCREENSHOT': str(args.evidence.with_suffix('.png')), 'RM_SCANNER_PLAYWRIGHT': str((REPO / 'node_modules/@playwright/test/index.mjs').resolve(strict=True))}, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True, bufsize=1, start_new_session=True)
+            controller = subprocess.Popen(['/opt/homebrew/bin/bun', str(script)], cwd=REPO, env={**os.environ, 'RM_NATIVE_BACKUP_DESTINATION_PROOF':'1' if args.backup_destinations else '0', 'RM_NATIVE_REMOTE_BACKUP_PROOF':'1' if args.remote_backup else '0', 'RM_AUDIT_VERIFY_HELPER': str(REPO / 'scripts/rust/check-native-audit-verify.ts'), 'RM_AUDIT_HELPER': str(REPO / 'scripts/rust/check-native-audit-log.ts'), 'RM_BACKUP_RECOVERY_HELPER': str(REPO / 'scripts/rust/check-native-backup-recovery.ts'), 'RM_SERVICE_PURCHASE_HELPER': str(REPO / ('scripts/rust/check-native-backup-lock.ts' if args.backup_lock else 'scripts/rust/check-native-service-purchase.ts')), 'RM_SCANNER_PROOF_FACTORY': 'createBackupLockProof' if args.backup_lock else 'createServicePurchaseProof', 'RM_SCANNER_BASE': origin, 'RM_SCANNER_WORK': str(work), 'RM_SCANNER_SCREENSHOT': str(args.evidence.with_suffix('.png')), 'RM_SCANNER_PLAYWRIGHT': str((REPO / 'node_modules/@playwright/test/index.mjs').resolve(strict=True))}, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True, bufsize=1, start_new_session=True)
             report['browserControllerPid'] = controller.pid
             phase('authenticate')
             if args.backup_lock:
@@ -602,6 +611,9 @@ def main():
                 if args.audit_log:
                     proof_helpers.append(REPO / 'scripts/rust/check-native-audit-log.ts')
                     report['auditLogHelperSha256'] = digest(proof_helpers[-1])
+                if args.audit_verify:
+                    proof_helpers.append(REPO / 'scripts/rust/check-native-audit-verify.ts')
+                    report['auditVerifyHelperSha256'] = digest(proof_helpers[-1])
                 helper_hashes = {str(path): digest(path) for path in proof_helpers}
                 phase('service-run')
                 if any(digest(path) != helper_hashes[str(path)] for path in proof_helpers):
@@ -613,8 +625,12 @@ def main():
                     raise RuntimeError('Backup proof imported helper changed during restart verification')
                 if args.audit_log:
                     phase('audit-run')
+                    if args.audit_verify:
+                        phase('verification-run')
                     stop(); write_config(); start()
                     phase('audit-reopen')
+                    if args.audit_verify:
+                        phase('verification-reopen')
                     if any(digest(path) != helper_hashes[str(path)] for path in proof_helpers):
                         raise RuntimeError('Audit proof helper changed during execution or restart')
                 if args.backup_recovery:
@@ -699,6 +715,8 @@ def main():
                 report.update(status='passed',currentAction='complete',financialBackupLockQualified=True,normalMfaRestartQualified=True,currentFileMissingAndTamperQualified=True,directControlMetadataGateQualified=True,directControlMetadataScope=['company-knowledge','corporate-record-ingest'],metadataRestartQualified=True,twoCompanyInboxTargetGateQualified=True,humanMailAliasGateQualified=True,multiCompanyMetadataGateQualified=False,partiesGateQualified=False,mailIntakeConfigurationGateQualified=False,smtpDispatchGateQualified=False,keyRotationQualified=False)
                 if args.audit_log:
                     report.update(auditLogQualified=True,auditLogRestartQualified=True,auditLogFullVerificationQualified=False)
+                if args.audit_verify:
+                    report.update(auditVerifyQualified=True,auditVerifyRestartQualified=True)
                 if args.remote_backup:
                     expected_drive = [{'objectId':obj,'kind':kind} for obj,kinds in [('synthetic_good',['metadata','media']),('synthetic_wrong_parent',['metadata']),('synthetic_wrong_hash',['metadata','media']),('synthetic_oversized',['metadata','media']),('synthetic_missing',['metadata']),('synthetic_held',['metadata','media']),('synthetic_good',['metadata','media']),('synthetic_good',['metadata','media'])] for kind in kinds]
                     if drive_requests != expected_drive:

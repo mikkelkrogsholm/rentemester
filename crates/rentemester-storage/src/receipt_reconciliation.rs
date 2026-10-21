@@ -218,7 +218,7 @@ fn source(db: &Connection, id: i64, bs: &[Boundary]) -> Result<Source, Error> {
         boundary,
     })
 }
-fn verify_result(db: &Connection, operation: &str, result: &Value) -> Result<(), Error> {
+pub(crate) fn verify_result(db: &Connection, operation: &str, result: &Value) -> Result<(), Error> {
     if operation == "opening_balance_post" {
         let opening = crate::opening_balance::validate_history(db)
             .map_err(|_| refused())?

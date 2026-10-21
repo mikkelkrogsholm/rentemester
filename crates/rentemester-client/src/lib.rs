@@ -5,6 +5,7 @@ mod agent_discovery;
 mod backup_destinations;
 mod backup_remote;
 mod backup_status;
+mod audit_verify;
 mod audit_log;
 pub use audit_log::{AuditLogQuery,audit_log_query_schema};
 mod backup_governance;

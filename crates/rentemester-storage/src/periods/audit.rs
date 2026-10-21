@@ -4,7 +4,7 @@ use crate::{invalid, legacy_money};
 use rentemester_engine::{Error, money::Money};
 use rusqlite::Transaction;
 use serde_json::{Value, json};
-pub(super) fn verify(tx: &Transaction<'_>) -> Result<Vec<Value>, Error> {
+pub(crate) fn verify(tx: &Transaction<'_>) -> Result<Vec<Value>, Error> {
     let mut errors = structural(tx, true)?;
     for (code, sql) in [
         (

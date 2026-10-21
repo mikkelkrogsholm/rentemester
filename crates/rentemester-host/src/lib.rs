@@ -2,6 +2,7 @@
 //! This is not schema adoption, fresh initialization, or transport authorization.
 //! Never open other regular descriptors for owned database inodes in this process.
 pub mod legacy_adoption;
+mod audit_verify;
 mod audit_log;
 mod eu_sales;
 mod service_sales;

@@ -1,6 +1,6 @@
 //! Reviewed period locks. All lifecycle changes append evidence on the admitted writer.
-mod audit;
-mod bank_audit;
+pub(crate) mod audit;
+pub(crate) mod bank_audit;
 mod readiness;
 use crate::invalid;
 pub use readiness::compute;

@@ -135,12 +135,13 @@ fn exact_audit(
     actor: &str,
     message: &str,
 ) -> Result<(), Error> {
+    let bank_text = bank.to_string();
     let found = audits
         .iter()
         .filter(|a| {
             a["event_type"] == event
                 && a["entity_type"] == "bank_transaction"
-                && a["entity_id"] == bank.to_string()
+                && a["entity_id"] == bank_text
                 && a["actor"] == actor
                 && a["message"] == message
         })
@@ -152,9 +153,10 @@ fn exact_audit(
     check(used.insert(id(found[0], "id")?), "bank audit proof reused")
 }
 fn native_correction(audits: &[Value], bank: i64, hash: &str) -> bool {
+    let bank_text = bank.to_string();
     audits.iter().any(|a| {
         a["event_type"] == "bank_reconciliation_corrected"
-            && a["entity_id"] == bank.to_string()
+            && a["entity_id"] == bank_text
             && a["message"]
                 .as_str()
                 .and_then(|s| serde_json::from_str::<Value>(s).ok())
@@ -457,12 +459,13 @@ pub fn verify(tx: &Transaction<'_>) -> Result<Value, Error> {
                 let legacy = format!(
                     "Corrected direct-bank purchase into payable {payable} and settled it on {date}"
                 );
+                let bank_text = bank.to_string();
                 let matching = audits
                     .iter()
                     .filter(|a| {
                         a["event_type"] == "direct_bank_purchase_payable_corrected"
                             && a["entity_type"] == "bank_transaction"
-                            && a["entity_id"] == bank.to_string()
+                            && a["entity_id"] == bank_text
                             && ((a["message"] == native && a["actor"] == actor)
                                 || (a["message"] == legacy
                                     && a["actor"]
@@ -576,10 +579,11 @@ mod tests {
                 "{:x}",
                 Sha256::digest(crate::intercompany_dispositions::canonical(&plan).as_bytes())
             );
-            tx.execute("INSERT INTO bank_reconciliation_correction_events(bank_transaction_id,supersedes_kind,supersedes_id,supersedes_reconciliation_id,superseded_journal_entry_id,replacement_journal_entry_id,bank_account_no,bank_amount_dkk,replacement_journal_hash,plan_hash,reason,actor,principal_kind,principal_subject_id,created_at)VALUES(1,'append-only',1,'append-only:1',?1,?2,'B',12.34,?3,?4,'Synthetic reviewed correction','user:synthetic','user','synthetic','2026-04-01T12:00:00Z')",rusqlite::params![old,replacement,new.hash,hash]).unwrap();
+            tx.execute("INSERT INTO bank_reconciliation_correction_events(bank_transaction_id,supersedes_kind,supersedes_id,supersedes_reconciliation_id,superseded_journal_entry_id,replacement_journal_entry_id,bank_account_no,bank_amount_dkk,replacement_journal_hash,plan_hash,reason,actor,principal_kind,principal_subject_id,created_at)VALUES(1,'append-only',1,'append-only:1',?1,?2,'B',12.34,?3,?4,'Synthetic reviewed correction','user:synthetic','user','synthetic','2026-04-01T12:00:00.000Z')",rusqlite::params![old,replacement,new.hash,hash]).unwrap();
             tx.execute("INSERT INTO audit_log(event_type,entity_type,entity_id,message,actor)VALUES('bank_reconciliation_corrected','bank_transaction','1',?1,'user:synthetic via bank-reconciliation-correction')",[format!("Superseded reconciliation append-only:1 with journal {}",new.no)]).unwrap();
         }
-        assert_eq!(verify(&tx).unwrap()["ok"], true);
+        let result = verify(&tx).unwrap();
+        assert_eq!(result["ok"], true, "{result}");
         tx.commit().unwrap();
         d
     }
@@ -759,7 +763,9 @@ mod tests {
     #[test]
     fn nullable_historical_bank_account_source_identity_and_fallback_are_not_lost() {
         let mut db = fresh();
-        let tx = db.transaction().unwrap();
+        let tx = db
+            .transaction_with_behavior(TransactionBehavior::Immediate)
+            .unwrap();
         imported(&tx, false);
         bank::verify_audit_source(&tx, 1, CSV.as_bytes()).unwrap();
         assert!(bank::verify_source(&tx, 1, CSV.as_bytes()).is_err());
@@ -772,7 +778,9 @@ mod tests {
         let decoded = rentemester_engine::bank::decode_bytes(bytes, Some("danske-bank")).unwrap();
         let parsed =
             rentemester_engine::bank::parse_with_profile(&decoded, Some("danske-bank")).unwrap();
-        let tx = db.transaction().unwrap();
+        let tx = db
+            .transaction_with_behavior(TransactionBehavior::Immediate)
+            .unwrap();
         crate::bank::import_bytes(
             &tx,
             bytes,

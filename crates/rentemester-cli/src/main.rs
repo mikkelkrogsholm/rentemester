@@ -1,3 +1,4 @@
+mod audit_verify;
 mod audit_log;
 mod bank_matches;
 mod cvr;

@@ -1411,11 +1411,13 @@ mod tests {
     fn native_credit_writer_with_actual_snapshot_hash_and_counter_tamper() {
         let mut db = crate::credit_note::tests::fixture();
         {
-            let tx = db.transaction().unwrap();
+            let tx = db
+                .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
+                .unwrap();
             let input:crate::credit_note::Input=serde_json::from_value(json!({"invoiceDocumentId":1,"issueDate":"2026-10-18","reason":"Synthetic credit","grossAmount":125,"confirm":true})).unwrap();
             let prepared =
                 crate::credit_note::prepare(&tx, &input, "2026-10-18T12:00:00Z").unwrap();
-            let raw = serde_json::to_string(&prepared.payload).unwrap();
+            let raw = serde_json::to_string_pretty(&prepared.payload).unwrap();
             let hash = crate::invoice_email::sha(raw.as_bytes());
             crate::credit_note::register_and_post(
                 &tx,

@@ -1,4 +1,8 @@
 //! Source-read-only reports/rehearsals and caller-owned transactional primitives.
+pub mod audit_verify;
+pub mod audit_ledger;
+pub mod audit_bank;
+pub mod audit_invoice;
 pub mod backup_inventory;
 pub mod backup_state;
 pub mod vies;

@@ -8,7 +8,7 @@ et tidligere resultat.
 
 Hver række viser det oprindelige id, tidspunkt, aktør, hændelse, reference og
 besked. Beskeder vises som almindelig tekst. Listen ændrer ingen posteringer.
-Den er en historikvisning; fuld `audit_verify` er fortsat en særskilt portering.
+Den er en historikvisning; den særskilte [regnskabskontrol](rust-audit-verify.md) sammenholder de registrerede regnskabskilder og originalfiler.
 
 ## HTTP, CLI og MCP
 

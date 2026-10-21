@@ -2,6 +2,7 @@
 //! https://modelcontextprotocol.io/specification/2025-11-25/basic/transports
 //! https://modelcontextprotocol.io/specification/2025-11-25/basic/lifecycle
 //! https://modelcontextprotocol.io/specification/2025-11-25/server/tools
+mod audit_verify;
 mod audit_log;
 mod bank_matches;
 mod cvr;

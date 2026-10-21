@@ -11,7 +11,15 @@ Virksomhedens [revisionshistorik](rust-audit-log.md) kan nu filtreres og læses
 med fuld pagineringsmetadata gennem web, HTTP, CLI og MCP. Aktuelle menneske-
 og servicekontorettigheder håndhæves; opslag efter bogføring/tilbageførsel,
 læserrevokation og normal-MFA-genstart er verificeret på syntetiske data.
-Fuld regnskabsmæssig `audit_verify` er fortsat et separat resterende forløb.
+Den særskilte [regnskabskontrol](rust-audit-verify.md) er nu tilgængelig gennem
+web, HTTP, CLI `remote audit-verify` og MCP `audit_verify` (243 værktøjer).
+Journal, bank, fakturagrundlag, beskyttede originaler samt schema/SQLite har
+hver sit resultat. Manglende kontrol bliver ikke vist som et rent regnskab.
+En almindelig MFA-prøve med bogføring/tilbageførsel, to virksomheder, aktuelle
+menneske-/servicerettigheder, webvisning, ændrede ubogførte bilags- og bankoriginaler
+og genstart er verificeret på syntetiske data. Læs vejledningens kildebegrænsninger;
+hele den resterende regnskabs-, valuta-, lifecycle- og restorematrix, manglende
+native skriveforløb og endelig desktopaccept er fortsat åbne.
 
 Signeret gendannelse på en frisk instans bevarer nu også backupregistreringer,
 uverificerede erklæringer og fjernelseshistorik. Prøven fjerner den oprindelige

@@ -13,6 +13,7 @@ import { useAsync } from "../lib/useAsync";
 import type { CompanyIntegrity } from "../lib/types";
 import { ErrorState, Loading } from "../components/Feedback";
 import { useOptionalAuth } from "../lib/auth-context";
+import { NativeAuditVerify } from "../components/NativeAuditVerify";
 import { NativeAuditLog } from "../components/NativeAuditLog";
 import { NativeBackupCard } from "../components/NativeBackupCard";
 import { NativeBackupRegistrations } from "../components/NativeBackupRegistrations";
@@ -62,7 +63,7 @@ export function IntegrityView() {
 
       </PageHeader>
 
-      {auth?.backend === "rust" && <><NativeAuditLog key={`audit:${slug}`} slug={slug} /><NativeBackupCard /><NativeBackupStatus key={slug} slug={slug} /><NativeBackupGovernance key={`governance:${slug}`} slug={slug} /><NativeBackupRegistrations key={`registrations:${slug}`} slug={slug} /></>}
+      {auth?.backend === "rust" && <><NativeAuditVerify key={`verify:${slug}`} slug={slug} /><NativeAuditLog key={`audit:${slug}`} slug={slug} /><NativeBackupCard /><NativeBackupStatus key={slug} slug={slug} /><NativeBackupGovernance key={`governance:${slug}`} slug={slug} /><NativeBackupRegistrations key={`registrations:${slug}`} slug={slug} /></>}
 
       {chainFailed && (
         <div className="callout danger">

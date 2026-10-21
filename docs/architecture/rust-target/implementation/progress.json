@@ -1,13 +1,13 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "Group118 company audit history after posting/reversal through shared web, HTTP/CLI/MCP, current human/service authorization and restart accepted",
-  "code_revision": "75f02efe plus recorded root host/server/web/runner integration and SQL integer binding correction",
+  "current_increment": "Group119 aggregate accounting verification across server/sharedweb/CLI/MCP with current access, protected original tamper and restart accepted",
+  "code_revision": "c4ccc134 plus recorded root aggregate/interfaces/proof integration and fixture corrections",
   "spec_revision": "sha256:bc98636be4a972407adce0f817a76bb9d4bb7200cb292a70965e75ab62fae250",
-  "state": "Group118 completes bounded company audit history inspection across shared web, HTTP, SDK, CLI remote audit-log-list and MCP audit_log_list (242 tools). Current CompanyRead human and scoped-service fences retain current membership/session/key revocation, namespace admission and service quota semantics. Parameterized SQL COUNT/page share a transaction, AND actor/event LIKE and normalized UTC date bounds, stable stored created_at DESC/id DESC, complete total/count/limit/offset/hasMore/nextOffset and exact unmodified actor/time/entity/message text. Default500 max5000, safe offset, bounded query and explicit 8MiB successful-page refusal with no truncation; smaller page preserves exact messages. Dates use SQLite native timestamp precision. UI explicit reads/filter submission/resetoffset and paging uses submitted filters; failures clear old rows. Actual118 performs one synthetic human reversal after an existing human posting then verifies exact post/reverse history, all rows/paging/filters/web/HTTP/CLI/MCP/service parity, malformed and ambiguous auth refusal, normal reader grant/read/revoke403/restore, unchanged books by inspection and exact normal-MFA restart. Root corrected bundled SQLite i64 binding/reads rather than changing the public safe nonnegative numeric contract. Seven storage/application +threeSDK +CLIone +MCPtwo +HTTPparserone +242toolregistry and two UI tests, webbuild/lint, strict7cratealltargetClippy and finalnative3binary build accepted. Independent final binary/web/helper/runner/process cleanup checks pass. Entire mission/epic672 and prior evidence remain open/intact; full audit_verify is not journal hash integrity or audit listing. Company physical/schema health, broader full accounting/lifecycle/transfer/release/platform/TypeScript retirement and final installed desktop GUI gates remain required.",
+  "state": "Group119 adds readonly audit_verify through native storage/application/host/server/SDK/CLI/sharedweb and MCP (243tools). Five mandatory deterministic components: ledger structure/hash/reversals/sequences/audit/native receipts/historical archive+opening; direct/legacy/native bank links/correction plans/exact movement and payable correction evidence; all persisted invoice/payment/refund/credit/reminder/compensation/interest/bad-debt/imported-receivable families; all registered physical documents including unposted/issued JSON+PDF/credit, every bank original including unmatched, closed history; current canonical schema and SQLite integrity. Transport ok is distinct from accounting ok/availability; no missing component or unavailable checker becomes green. Current human/service CompanyRead and quota/revocation fences preserved; no caller path/actor/figures or automatic repair. Populated synthetic domain/tamper tests plus actual119 normal-MFA post/reversal two-company flow compare exact human HTTP/CLI/MCP reports, primary service parity, real reader grant/read/revoke403/restore, actual web clean/failed results, changed unposted document and unmatched bank originals then exact restoration, unchanged accounting/company audit and exact reports after restart. Imported original schedule JSON is absent from existing persistence: validates stored header/event identities and amounts but does not claim original schedule rehash. Existing period-close unsupported-family guards retained. Full remaining accounting/foreign-currency/lifecycle/restore matrix, required missing native write flows, transfer/release/install/platform/discovery/SBOM/promotion/repro/remoteCI, TypeScript retirement and final installed desktop GUI remain open. Whole goal/epic672 and prior acceptance preserved.",
   "issues_closed": [],
   "next": [
-    "Complete full native audit_verify and supported period readiness against existing journal/evidence/bank/reversal/invoice/sequence/audit-completeness invariants, including replacement of diagnosed blanket not-ported blockers with actual source-evidence validation. Compose truthful physical/schema health from admitted namespace/schema checks, then remaining full accounting/lifecycle matrix and transfer/release/platform/discovery/SBOM/promotion/repro/remoteCI gates. Group117 source-free recovery and Group118 audit history inspection are accepted; do not repeat unchanged accepted flows or retire TypeScript before full accepted replacement.",
+    "Complete remaining native accounting write flows and source-compatible supported period readiness; replace close-only unsupported-family blockers only when their complete native writes and evidence checks are verified. Qualify full populated accounting/foreign-currency/lifecycle and scope-matched post-restore verification matrix, then transfer/release/install/platform/discovery/SBOM/promotion/repro/remoteCI and TypeScript retirement gates. Group119 readonly audit observation is accepted for recorded scopes; do not confuse it with all remaining writes or final desktop acceptance.",
     "Installed desktop acceptance is explicitly deferred to the very end by the user. Preserve prepared Group100 profile; collect remaining native automation, closure, recovery and packaging checks for final installed acceptance without requesting screen unlock during development.",
     "J03/R50 and remaining R54 scope: only still-supported operation closure/recovery, nonempty scheduler handoff, hostile/older clone and post-cutover rollback requirements. Group99 qualifies managed installed J06 flow, not every R54 acceptance item.",
     "Signed distribution/update/cutover evidence must match actual full Rust replacement; retain all existing completion gates and TypeScript retirement gate.",
@@ -4666,6 +4666,442 @@
       "full_audit_verification": false,
       "filesystem_schema_health": false,
       "installed_desktop": false
+    },
+    "native_audit_verify119": {
+      "path": "/tmp/rentemester-rust-reports/native-audit-verify119.json",
+      "sha256": "2cdd20f5482466ba0b0618c90bd358c1e09594cc20e2c74c903c45c4ea7ed1b6",
+      "status": "passed",
+      "source_revision": "c4ccc134d48dd6071444eca9863533ee7efa4471 plus recorded root integration",
+      "artifacts": {
+        "server_binary": "d6e53928b586d654296633fc31ee888a2bcdc4f6bf6681344ec7ad06ffa8ae6a",
+        "cli_binary": "bb80ae00f81426a65ecad9f2f74f9bd4bbbb800554a58318aad4ffa1b9b484a5",
+        "mcp_binary": "bba1fb0e589b97f495dfce2331c6be084a661459fe9f093526055e03108514f9"
+      },
+      "helper_sha256": {
+        "runnerSha256": "f854561df7aba9c0ac932b219ef6c85959c91bd90cc8c64734ab14c1c33e74ad",
+        "backupLockHelperSha256": "6eb82b8201dc05973c4f62a3098ce6223dfa427b2332465018e929acfe1e2e0b",
+        "backupLockMailInboxHelperSha256": "b2d9b6d088a4336e62c9102edb58833e2645ed15b73761c9cebb681e2ccc8327",
+        "backupRemoteHelperSha256": "6c21682bee9cf25f55dd7c3140b1814c46bebc0acca557a900ccc7392fd2bb6c",
+        "backupGovernanceHelperSha256": "2ea63a1bfb52cc3b26659e6bd1a29155a948ebc3b4c6a45b4b0976ef179f71fe",
+        "backupRegistrationHelperSha256": "a7eaee25de256108ceeba15ad3404165ca12699fe7ba0690a538a63e63748199",
+        "auditLogHelperSha256": "75c379704ff1a65cbf41d26cc06f6a115c1b4f01d9d5b01942aa9518c4cfc91a",
+        "auditVerifyHelperSha256": "28ca558488c2b0a4ff4115a7b6ec750780d25f0cff8e4628447c290b66183530"
+      },
+      "scope": {
+        "qualified": true,
+        "reports": {
+          "synthetic": {
+            "audit": {
+              "available": true,
+              "components": [
+                {
+                  "available": true,
+                  "checked": {
+                    "archivePostings": 0,
+                    "archiveYears": 0,
+                    "auditRows": 17,
+                    "entries": 2,
+                    "historicalEntries": 0,
+                    "journalReceipts": 2,
+                    "journalSequences": 1,
+                    "lines": 4,
+                    "openingBalances": 0,
+                    "reversals": 1
+                  },
+                  "errors": [],
+                  "name": "ledger",
+                  "ok": true
+                },
+                {
+                  "available": true,
+                  "checked": {
+                    "appendOnlyLinks": 0,
+                    "bankRows": 1,
+                    "corrections": 0,
+                    "directLinks": 0,
+                    "directPurchasePayableCorrections": 0
+                  },
+                  "errors": [],
+                  "name": "bank",
+                  "ok": true
+                },
+                {
+                  "available": true,
+                  "checked": {
+                    "credit_note_postings": 0,
+                    "imported_receivable_events": 0,
+                    "imported_receivable_headers": 0,
+                    "invoice_bad_debt_writeoffs": 0,
+                    "invoice_claim_payments": 0,
+                    "invoice_compensation_claims": 0,
+                    "invoice_compensation_postings": 0,
+                    "invoice_interest_claims": 0,
+                    "invoice_interest_corrections": 0,
+                    "invoice_interest_postings": 0,
+                    "invoice_payments": 0,
+                    "invoice_refunds": 0,
+                    "invoice_reminders": 0,
+                    "invoices": 0,
+                    "issued_invoice_postings": 0
+                  },
+                  "errors": [],
+                  "name": "invoices",
+                  "ok": true
+                },
+                {
+                  "available": true,
+                  "checked": {
+                    "bankTransactions": 1,
+                    "documents": 0,
+                    "namespace": 1
+                  },
+                  "errors": [],
+                  "name": "originals",
+                  "ok": true
+                },
+                {
+                  "available": true,
+                  "checked": {
+                    "schema": 1,
+                    "sqliteIntegrity": 1
+                  },
+                  "errors": [],
+                  "name": "physical_schema",
+                  "ok": true
+                }
+              ],
+              "entries": 2,
+              "errors": [],
+              "format": "rentemester-native-audit-verification/1",
+              "ok": true,
+              "slug": "synthetic"
+            },
+            "ok": true
+          },
+          "synthetic-backup-inbox-target": {
+            "audit": {
+              "available": true,
+              "components": [
+                {
+                  "available": true,
+                  "checked": {
+                    "archivePostings": 0,
+                    "archiveYears": 0,
+                    "auditRows": 7,
+                    "entries": 0,
+                    "historicalEntries": 0,
+                    "journalReceipts": 0,
+                    "journalSequences": 0,
+                    "lines": 0,
+                    "openingBalances": 0,
+                    "reversals": 0
+                  },
+                  "errors": [],
+                  "name": "ledger",
+                  "ok": true
+                },
+                {
+                  "available": true,
+                  "checked": {
+                    "appendOnlyLinks": 0,
+                    "bankRows": 1,
+                    "corrections": 0,
+                    "directLinks": 0,
+                    "directPurchasePayableCorrections": 0
+                  },
+                  "errors": [],
+                  "name": "bank",
+                  "ok": true
+                },
+                {
+                  "available": true,
+                  "checked": {
+                    "credit_note_postings": 0,
+                    "imported_receivable_events": 0,
+                    "imported_receivable_headers": 0,
+                    "invoice_bad_debt_writeoffs": 0,
+                    "invoice_claim_payments": 0,
+                    "invoice_compensation_claims": 0,
+                    "invoice_compensation_postings": 0,
+                    "invoice_interest_claims": 0,
+                    "invoice_interest_corrections": 0,
+                    "invoice_interest_postings": 0,
+                    "invoice_payments": 0,
+                    "invoice_refunds": 0,
+                    "invoice_reminders": 0,
+                    "invoices": 0,
+                    "issued_invoice_postings": 0
+                  },
+                  "errors": [],
+                  "name": "invoices",
+                  "ok": true
+                },
+                {
+                  "available": true,
+                  "checked": {
+                    "bankTransactions": 1,
+                    "documents": 1,
+                    "namespace": 1
+                  },
+                  "errors": [],
+                  "name": "originals",
+                  "ok": true
+                },
+                {
+                  "available": true,
+                  "checked": {
+                    "schema": 1,
+                    "sqliteIntegrity": 1
+                  },
+                  "errors": [],
+                  "name": "physical_schema",
+                  "ok": true
+                }
+              ],
+              "entries": 0,
+              "errors": [],
+              "format": "rentemester-native-audit-verification/1",
+              "ok": true,
+              "slug": "synthetic-backup-inbox-target"
+            },
+            "ok": true
+          }
+        },
+        "failedOriginal": {
+          "audit": {
+            "available": true,
+            "components": [
+              {
+                "available": true,
+                "checked": {
+                  "archivePostings": 0,
+                  "archiveYears": 0,
+                  "auditRows": 7,
+                  "entries": 0,
+                  "historicalEntries": 0,
+                  "journalReceipts": 0,
+                  "journalSequences": 0,
+                  "lines": 0,
+                  "openingBalances": 0,
+                  "reversals": 0
+                },
+                "errors": [],
+                "name": "ledger",
+                "ok": true
+              },
+              {
+                "available": true,
+                "checked": {
+                  "appendOnlyLinks": 0,
+                  "bankRows": 1,
+                  "corrections": 0,
+                  "directLinks": 0,
+                  "directPurchasePayableCorrections": 0
+                },
+                "errors": [],
+                "name": "bank",
+                "ok": true
+              },
+              {
+                "available": true,
+                "checked": {
+                  "credit_note_postings": 0,
+                  "imported_receivable_events": 0,
+                  "imported_receivable_headers": 0,
+                  "invoice_bad_debt_writeoffs": 0,
+                  "invoice_claim_payments": 0,
+                  "invoice_compensation_claims": 0,
+                  "invoice_compensation_postings": 0,
+                  "invoice_interest_claims": 0,
+                  "invoice_interest_corrections": 0,
+                  "invoice_interest_postings": 0,
+                  "invoice_payments": 0,
+                  "invoice_refunds": 0,
+                  "invoice_reminders": 0,
+                  "invoices": 0,
+                  "issued_invoice_postings": 0
+                },
+                "errors": [],
+                "name": "invoices",
+                "ok": true
+              },
+              {
+                "available": true,
+                "checked": {
+                  "bankTransactions": 1,
+                  "documents": 1,
+                  "namespace": 1
+                },
+                "errors": [
+                  {
+                    "documentId": 1,
+                    "error": "original unavailable or integrity mismatch"
+                  }
+                ],
+                "name": "originals",
+                "ok": false
+              },
+              {
+                "available": true,
+                "checked": {
+                  "schema": 1,
+                  "sqliteIntegrity": 1
+                },
+                "errors": [],
+                "name": "physical_schema",
+                "ok": true
+              }
+            ],
+            "entries": 0,
+            "errors": [
+              "originals: {\"documentId\":1,\"error\":\"original unavailable or integrity mismatch\"}"
+            ],
+            "format": "rentemester-native-audit-verification/1",
+            "ok": false,
+            "slug": "synthetic-backup-inbox-target"
+          },
+          "ok": true
+        },
+        "failedBankOriginal": {
+          "audit": {
+            "available": true,
+            "components": [
+              {
+                "available": true,
+                "checked": {
+                  "archivePostings": 0,
+                  "archiveYears": 0,
+                  "auditRows": 7,
+                  "entries": 0,
+                  "historicalEntries": 0,
+                  "journalReceipts": 0,
+                  "journalSequences": 0,
+                  "lines": 0,
+                  "openingBalances": 0,
+                  "reversals": 0
+                },
+                "errors": [],
+                "name": "ledger",
+                "ok": true
+              },
+              {
+                "available": true,
+                "checked": {
+                  "appendOnlyLinks": 0,
+                  "bankRows": 1,
+                  "corrections": 0,
+                  "directLinks": 0,
+                  "directPurchasePayableCorrections": 0
+                },
+                "errors": [],
+                "name": "bank",
+                "ok": true
+              },
+              {
+                "available": true,
+                "checked": {
+                  "credit_note_postings": 0,
+                  "imported_receivable_events": 0,
+                  "imported_receivable_headers": 0,
+                  "invoice_bad_debt_writeoffs": 0,
+                  "invoice_claim_payments": 0,
+                  "invoice_compensation_claims": 0,
+                  "invoice_compensation_postings": 0,
+                  "invoice_interest_claims": 0,
+                  "invoice_interest_corrections": 0,
+                  "invoice_interest_postings": 0,
+                  "invoice_payments": 0,
+                  "invoice_refunds": 0,
+                  "invoice_reminders": 0,
+                  "invoices": 0,
+                  "issued_invoice_postings": 0
+                },
+                "errors": [],
+                "name": "invoices",
+                "ok": true
+              },
+              {
+                "available": true,
+                "checked": {
+                  "bankTransactions": 1,
+                  "documents": 1,
+                  "namespace": 1
+                },
+                "errors": [
+                  {
+                    "bankTransactionId": 1,
+                    "error": "bank original unavailable or integrity mismatch"
+                  }
+                ],
+                "name": "originals",
+                "ok": false
+              },
+              {
+                "available": true,
+                "checked": {
+                  "schema": 1,
+                  "sqliteIntegrity": 1
+                },
+                "errors": [],
+                "name": "physical_schema",
+                "ok": true
+              }
+            ],
+            "entries": 0,
+            "errors": [
+              "originals: {\"bankTransactionId\":1,\"error\":\"bank original unavailable or integrity mismatch\"}"
+            ],
+            "format": "rentemester-native-audit-verification/1",
+            "ok": false,
+            "slug": "synthetic-backup-inbox-target"
+          },
+          "ok": true
+        },
+        "unmatchedBankOriginalTamperDetectedAndRestored": true,
+        "accountingFingerprint": "e3cc410e97fa9a9e7b6859fb5b7ea5f5e20bdebfd26ac248672b7236cef79758",
+        "originalSha256": "e11bb1dca12e748f058b9924341e3d94b845ed21a50c487282db43bd22e4bbcd",
+        "completeHumanCliMcpParity": true,
+        "serviceParity": true,
+        "currentReaderRevocation": true,
+        "webCleanAndFailed": true,
+        "unpostedOriginalTamperDetectedAndRestored": true,
+        "accountingAndAuditUnchanged": true
+      },
+      "restart": {
+        "exactReportsAfterNormalMfaRestart": true,
+        "completeHumanCliMcpAndServiceParity": true,
+        "accountingAndAuditUnchanged": true,
+        "accountingFingerprint": "e3cc410e97fa9a9e7b6859fb5b7ea5f5e20bdebfd26ac248672b7236cef79758"
+      },
+      "primary_counts": {
+        "documents": 0,
+        "bank_transactions": 1,
+        "journal_entries": 2
+      },
+      "target_counts": {
+        "documents": 1,
+        "bank_transactions": 1,
+        "journal_entries": 0
+      },
+      "tests": {
+        "storage": "/tmp/rm119-audit-storage-fixed4.log:40pass; credit fixture hash correction /tmp/rm119-credit-test-fixed.log:1pass",
+        "application": "/tmp/rm119-audit-tests-fixed3.log:7pass",
+        "periods": "/tmp/rm119-period-regressions.log:5pass",
+        "sdk": "/tmp/rm119-sdk-tests-fixed.log:1pass",
+        "cli": "/tmp/rm119-cli-tests.log:1pass",
+        "mcp": "/tmp/rm119-mcp-tests.log:1pass",
+        "registry": "/tmp/rm119-registry-test.log:243tools/1pass",
+        "web": "/tmp/rm119-web-tests.log:2pass",
+        "web_build": "/tmp/rm119-web-build.log:passed",
+        "lint": "/tmp/rm119-lint.log:passed",
+        "clippy": "/tmp/rm119-clippy-fixed.log:7crates/alltargets passed",
+        "build": "/tmp/rm119-build.log:passed"
+      },
+      "original_imported_schedule_rehashed": false,
+      "full_foreign_lifecycle_matrix": false,
+      "post_restore_aggregate_test": false,
+      "period_close_restrictions_removed": false,
+      "installed_desktop": false
     }
   },
   "verified_history": [
@@ -5998,6 +6434,12 @@
       "owner": "root host/server/sharedweb/runner/actual; isolated storage-application/client/proof workers",
       "status": "COMPLETE finite Group118; exact human/service web/HTTP/CLI/MCP inspection, reader revocation and normal-MFA restart accepted. Entire mission remains open; installed desktop final only.",
       "acceptance": "One actual synthetic post/reverse, exact immutable audit actor/time/text, complete stable offset pages and bounded filters, current auth/quotas, no readside financial mutation, persisted history after restart. Not full audit_verify."
+    },
+    {
+      "delivery": "Group119 readonly aggregate accounting verification",
+      "owner": "root interfaces/web/proof/integration; isolated ledger/bank/invoice writers",
+      "status": "COMPLETE finite Group119 recorded scopes; entire mission remains active; installed desktop GUI last.",
+      "acceptance": "Populated evidence and tamper unit tests; actual synthetic normal-MFA two-company post/reverse, exact reports across HTTP/CLI/MCP/service, current reader revoke, web clean/failure, unposted document and unmatched bank original tamper/restoration and normal restart, unchanged books/audit. Source schedule JSON limitation and full remaining matrix retained."
     }
   ],
   "integrated_pending_browser": [
@@ -6205,6 +6647,12 @@
       "code_revision": "144a4026 plus recorded root recovery runner integration",
       "spec_revision": "sha256:bc98636be4a972407adce0f817a76bb9d4bb7200cb292a70965e75ab62fae250",
       "state": "Group117 completes source-free fresh-device recovery of the newly added backup and registration metadata. Final authenticated signed export contains exact original add/declaration/removal history plus two-company business/original bytes. Source workspace/private signer/managed/provider copies and source browser contexts/credential files are removed before independent public-key verification and restore into a fresh root with new signing/cookie/MFA keys and new normally verified MFA owner. Supported journal/bank/trial/balance/document reads and original bytes match through HTTP/CLI/MCP before and after target restart; original registration receipts retain actor/time while declarations remain unverified. Fresh target has no retained backup inventory/operator targets, zero current placement/remote qualification, and source remote receipt GET returns null without provider configuration or extra provider I/O. Typed registration history is validated before portable export/restore publication; malformed and forged histories refuse atomically, legacy no-registration archives remain compatible. Entire mission/epic672 and all earlier acceptance remain intact/open; remaining health/audit, full accounting/lifecycle/transfer, signed release/platform and TypeScript retirement gates still required. Installed desktop acceptance remains explicitly last; no unlock requests."
+    },
+    {
+      "current_increment": "Group118 company audit history after posting/reversal through shared web, HTTP/CLI/MCP, current human/service authorization and restart accepted",
+      "code_revision": "75f02efe plus recorded root host/server/web/runner integration and SQL integer binding correction",
+      "spec_revision": "sha256:bc98636be4a972407adce0f817a76bb9d4bb7200cb292a70965e75ab62fae250",
+      "state": "Group118 completes bounded company audit history inspection across shared web, HTTP, SDK, CLI remote audit-log-list and MCP audit_log_list (242 tools). Current CompanyRead human and scoped-service fences retain current membership/session/key revocation, namespace admission and service quota semantics. Parameterized SQL COUNT/page share a transaction, AND actor/event LIKE and normalized UTC date bounds, stable stored created_at DESC/id DESC, complete total/count/limit/offset/hasMore/nextOffset and exact unmodified actor/time/entity/message text. Default500 max5000, safe offset, bounded query and explicit 8MiB successful-page refusal with no truncation; smaller page preserves exact messages. Dates use SQLite native timestamp precision. UI explicit reads/filter submission/resetoffset and paging uses submitted filters; failures clear old rows. Actual118 performs one synthetic human reversal after an existing human posting then verifies exact post/reverse history, all rows/paging/filters/web/HTTP/CLI/MCP/service parity, malformed and ambiguous auth refusal, normal reader grant/read/revoke403/restore, unchanged books by inspection and exact normal-MFA restart. Root corrected bundled SQLite i64 binding/reads rather than changing the public safe nonnegative numeric contract. Seven storage/application +threeSDK +CLIone +MCPtwo +HTTPparserone +242toolregistry and two UI tests, webbuild/lint, strict7cratealltargetClippy and finalnative3binary build accepted. Independent final binary/web/helper/runner/process cleanup checks pass. Entire mission/epic672 and prior evidence remain open/intact; full audit_verify is not journal hash integrity or audit listing. Company physical/schema health, broader full accounting/lifecycle/transfer/release/platform/TypeScript retirement and final installed desktop GUI gates remain required."
     }
   ]
 }
