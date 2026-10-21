@@ -39,7 +39,9 @@ fn audits(tx: &Transaction<'_>, kind: &str, supported: bool) -> Result<Vec<Audit
         }
         let value: Value = serde_json::from_str(&raw_message).map_err(invalid)?;
         check(
-            value.as_object().is_some_and(|v| v.len() == 3),
+            value
+                .as_object()
+                .is_some_and(|v| v.len() == 3 || v.len() == 4 && v.contains_key("compatibility")),
             "native bank audit envelope differs",
         )?;
         out.push(Audit {
@@ -122,12 +124,8 @@ fn verify_mode(tx: &Transaction<'_>, supported: bool) -> Result<Vec<Value>, Erro
                 "native link stored proof differs",
             )?;
             let audit = matching(&link_audits, bank_id, hash)?;
-            check(
-                audit.actor == actor
-                    && audit.value
-                        == json!({"plan":facts,"note":note,"effect":"link_only_no_posting"}),
-                "link current facts, actor, note or accounting effect differ from original audit proof",
-            )?;
+            check(audit.actor == actor, "link audit actor differs")?;
+            crate::bank_original::verify_link_audit(&facts, &note, &actor, &audit.value)?;
             check(used.insert(audit.id), "bank audit reused across links")?;
             Ok::<(), Error>(())
         })();
@@ -169,7 +167,7 @@ fn verify_mode(tx: &Transaction<'_>, supported: bool) -> Result<Vec<Value>, Erro
             let principal_kind: String = r.get(13).map_err(invalid)?;
             let subject: String = r.get(14).map_err(invalid)?;
             check(
-                principal_kind == "user"
+                matches!(principal_kind.as_str(), "user" | "service-account")
                     && !subject.trim().is_empty()
                     && actor == format!("user:{subject}")
                     && !reason.is_empty()
@@ -216,11 +214,14 @@ fn verify_mode(tx: &Transaction<'_>, supported: bool) -> Result<Vec<Value>, Erro
                 "correction persisted movement, source, replacement or full historical plan hash differs",
             )?;
             let audit = matching(&correction_audits, bank_id, &hash)?;
-            check(
-                audit.actor == actor
-                    && audit.value
-                        == json!({"plan":plan,"reason":reason,"effect":"correction_evidence_only_no_posting"}),
-                "correction original proof/current lines/reversal/source/history/effect differ",
+            check(audit.actor == actor, "correction audit actor differs")?;
+            crate::bank_original::verify_correction_audit(
+                plan,
+                &reason,
+                &actor,
+                &principal_kind,
+                &subject,
+                &audit.value,
             )?;
             check(
                 used.insert(audit.id),

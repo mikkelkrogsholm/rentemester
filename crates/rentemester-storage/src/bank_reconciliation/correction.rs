@@ -303,6 +303,25 @@ pub fn apply(
     subject: &str,
     now_ms: i64,
 ) -> Result<Value, Error> {
+    apply_mode(tx, input, subject, now_ms, PrincipalKind::User, false)
+}
+pub(crate) fn apply_original(
+    tx: &Transaction<'_>,
+    input: &Apply,
+    subject: &str,
+    now_ms: i64,
+    kind: PrincipalKind,
+) -> Result<Value, Error> {
+    apply_mode(tx, input, subject, now_ms, kind, true)
+}
+fn apply_mode(
+    tx: &Transaction<'_>,
+    input: &Apply,
+    subject: &str,
+    now_ms: i64,
+    kind: PrincipalKind,
+    compatibility: bool,
+) -> Result<Value, Error> {
     crate::journal_post::require_current(tx)?;
     if !input.confirm
         || input.reason.trim().is_empty()
@@ -317,7 +336,7 @@ pub fn apply(
         ReceiptInput {
             key: &input.idempotency_key,
             operation: Operation::BankReconciliationCorrectionApply,
-            principal_kind: PrincipalKind::User,
+            principal_kind: kind,
             subject,
             payload: &payload,
             created_by: &by,
@@ -325,7 +344,7 @@ pub fn apply(
             now_ms,
         },
         |tx| {
-            apply_reviewed(
+            apply_reviewed_mode(
                 tx,
                 &ReviewedCorrection {
                     bank_transaction_id: input.bank_transaction_id,
@@ -335,6 +354,8 @@ pub fn apply(
                     reason: &input.reason,
                 },
                 subject,
+                kind,
+                compatibility,
             )
         },
     )
@@ -364,6 +385,15 @@ pub(crate) fn apply_reviewed(
     input: &ReviewedCorrection<'_>,
     subject: &str,
 ) -> Result<Value, Error> {
+    apply_reviewed_mode(tx, input, subject, PrincipalKind::User, false)
+}
+fn apply_reviewed_mode(
+    tx: &Transaction<'_>,
+    input: &ReviewedCorrection<'_>,
+    subject: &str,
+    kind: PrincipalKind,
+    compatibility: bool,
+) -> Result<Value, Error> {
     crate::journal_post::require_current(tx)?;
     if input.reason.trim().is_empty() || input.reason.trim().chars().count() > 1000 {
         return Err(refused("explicit reason required"));
@@ -385,14 +415,18 @@ pub(crate) fn apply_reviewed(
             "reviewed correction proof changed; inspect a new plan",
         ));
     }
-    let (kind, id) = input
+    let (link_kind, id) = input
         .expected_reconciliation_id
         .split_once(':')
         .ok_or_else(|| refused("invalid reconciliation identity"))?;
     let id: i64 = id.parse().map_err(invalid)?;
-    tx.execute("INSERT INTO bank_reconciliation_correction_events(bank_transaction_id,supersedes_kind,supersedes_id,supersedes_reconciliation_id,superseded_journal_entry_id,replacement_journal_entry_id,bank_account_no,bank_amount_dkk,replacement_journal_hash,plan_hash,reason,actor,principal_kind,principal_subject_id,created_at)VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,'user',?13,strftime('%Y-%m-%dT%H:%M:%fZ','now'))",params![input.bank_transaction_id,kind,id,input.expected_reconciliation_id,plan["currentJournalEntryId"].as_i64(),input.replacement_journal_entry_id,plan["bankAccountNo"].as_str(),crate::journal_post::money(&Money::parse(&plan["bankAmountDkk"].to_string())?)?,plan["replacementJournalHash"].as_str(),input.plan_hash,input.reason.trim(),by,subject]).map_err(invalid)?;
+    tx.execute("INSERT INTO bank_reconciliation_correction_events(bank_transaction_id,supersedes_kind,supersedes_id,supersedes_reconciliation_id,superseded_journal_entry_id,replacement_journal_entry_id,bank_account_no,bank_amount_dkk,replacement_journal_hash,plan_hash,reason,actor,principal_kind,principal_subject_id,created_at)VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,strftime('%Y-%m-%dT%H:%M:%fZ','now'))",params![input.bank_transaction_id,link_kind,id,input.expected_reconciliation_id,plan["currentJournalEntryId"].as_i64(),input.replacement_journal_entry_id,plan["bankAccountNo"].as_str(),crate::journal_post::money(&Money::parse(&plan["bankAmountDkk"].to_string())?)?,plan["replacementJournalHash"].as_str(),input.plan_hash,input.reason.trim(),by,crate::bank_original::principal_name(kind),subject]).map_err(invalid)?;
     let id = tx.last_insert_rowid();
-    tx.execute("INSERT INTO audit_log(event_type,entity_type,entity_id,message,actor)VALUES('bank_reconciliation_corrected','bank_transaction',?1,?2,?3)",params![input.bank_transaction_id.to_string(),json!({"plan":plan,"reason":input.reason.trim(),"effect":"correction_evidence_only_no_posting"}).to_string(),by]).map_err(invalid)?;
+    let mut audit = json!({"plan":plan,"reason":input.reason.trim(),"effect":"correction_evidence_only_no_posting"});
+    if compatibility {
+        audit["compatibility"] = crate::bank_original::correction_claims(kind, subject);
+    }
+    tx.execute("INSERT INTO audit_log(event_type,entity_type,entity_id,message,actor)VALUES('bank_reconciliation_corrected','bank_transaction',?1,?2,?3)",params![input.bank_transaction_id.to_string(),audit.to_string(),by]).map_err(invalid)?;
     Ok(
         json!({"ok":true,"id":id,"reconciliationId":format!("correction:{id}"),"planHash":input.plan_hash,"idempotent":false,"effect":"correction_evidence_only_no_posting","errors":[]}),
     )

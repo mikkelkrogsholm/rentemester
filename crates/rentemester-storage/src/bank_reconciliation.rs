@@ -236,7 +236,7 @@ pub fn document_id(tx: &Transaction<'_>, journal: i64) -> Result<Option<i64>, Er
     )
     .map_err(invalid)
 }
-fn journal_plan(
+pub(crate) fn journal_plan(
     tx: &Transaction<'_>,
     bank_id: i64,
     journal: i64,
@@ -363,6 +363,14 @@ pub struct Apply {
     pub confirm: bool,
 }
 pub fn apply(tx: &Transaction<'_>, input: &Apply, actor: &str) -> Result<Value, Error> {
+    apply_claimed(tx, input, actor, None)
+}
+pub(crate) fn apply_claimed(
+    tx: &Transaction<'_>,
+    input: &Apply,
+    actor: &str,
+    claims: Option<Value>,
+) -> Result<Value, Error> {
     crate::journal_post::require_current(tx)?;
     if !input.confirm || input.note.trim().is_empty() || input.note.trim().len() > 1000 {
         return Err(refused(
@@ -378,7 +386,12 @@ pub fn apply(tx: &Transaction<'_>, input: &Apply, actor: &str) -> Result<Value, 
     let by = format!("user:{actor}");
     tx.execute("INSERT INTO bank_journal_reconciliation_links(bank_transaction_id,journal_entry_id,match_method,source_reference,note,created_by,created_by_program)VALUES(?1,?2,'manual-review',?3,?4,?5,'rentemester-native-bank-link')",params![input.bank_transaction_id,input.journal_entry_id,format!("native-plan:{}",input.plan_hash),input.note.trim(),by]).map_err(invalid)?;
     let id = tx.last_insert_rowid();
-    tx.execute("INSERT INTO audit_log(event_type,entity_type,entity_id,message,actor)VALUES('bank_journal_reconciliation_link','bank_transaction',?1,?2,?3)",params![input.bank_transaction_id.to_string(),json!({"plan":planned,"note":input.note.trim(),"effect":"link_only_no_posting"}).to_string(),by]).map_err(invalid)?;
+    let mut audit =
+        json!({"plan":planned,"note":input.note.trim(),"effect":"link_only_no_posting"});
+    if let Some(claims) = claims {
+        audit["compatibility"] = claims;
+    }
+    tx.execute("INSERT INTO audit_log(event_type,entity_type,entity_id,message,actor)VALUES('bank_journal_reconciliation_link','bank_transaction',?1,?2,?3)",params![input.bank_transaction_id.to_string(),audit.to_string(),by]).map_err(invalid)?;
     Ok(
         json!({"id":id,"reconciliationId":format!("append-only:{id}"),"journalEntryId":input.journal_entry_id,"journalEntryNo":planned["journalEntryNo"],"effect":"link_only_no_posting"}),
     )

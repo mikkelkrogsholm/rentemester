@@ -48,6 +48,7 @@ pub mod document_pdf;
 pub mod invoice_extraction;
 
 pub mod bank;
+pub mod bank_original;
 
 pub mod expense;
 

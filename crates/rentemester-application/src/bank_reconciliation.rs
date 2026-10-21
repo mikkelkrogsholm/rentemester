@@ -96,7 +96,7 @@ pub fn execute(
     )
 }
 
-fn verify_journal_original(
+pub(crate) fn verify_journal_original(
     tx: &rusqlite::Transaction<'_>,
     guard: &mut NamespaceGuard,
     journal: i64,

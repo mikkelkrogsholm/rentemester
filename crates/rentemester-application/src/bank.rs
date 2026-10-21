@@ -12,6 +12,7 @@ pub use rentemester_storage::bank_queries::{AccountsQuery, ListQuery, ReportQuer
 use rusqlite::Connection;
 use serde_json::Value;
 pub enum Action<'a> {
+    Original(rentemester_storage::bank_original::Action<'a>),
     Accounts,
     Transactions(&'a ListQuery),
     Reconciliation(&'a ReportQuery),
@@ -57,6 +58,7 @@ pub fn execute(
     action: Action<'_>,
 ) -> Result<Committed<Value>, Failure> {
     let permission = match action {
+        Action::Original(command) => crate::bank_original::permission(command),
         Action::Accounts
         | Action::Read { .. }
         | Action::Transactions(_)
@@ -80,6 +82,14 @@ pub fn execute(
         context.selection,
         permission,
         |tx, subject| match action {
+            Action::Original(command) => crate::bank_original::read_authorized(
+                tx,
+                guard,
+                command,
+                subject,
+                rentemester_storage::idempotency::PrincipalKind::User,
+                context.clock,
+            ),
             Action::Transactions(_) | Action::Reconciliation(_) | Action::AccountList(_) => {
                 query_authorized(tx, guard, &action)
             }
@@ -207,7 +217,12 @@ pub fn execute_service(
     action: Action<'_>,
 ) -> Result<crate::service_company::ServiceResult<Value>, crate::service_company::ServiceFailure> {
     use crate::service_company::{self, OperationResult};
+    let clock = context.clock;
     let (permission, mutation) = match action {
+        Action::Original(command) => (
+            crate::bank_original::permission(command),
+            crate::bank_original::mutation(command),
+        ),
         Action::Accounts
         | Action::Read { .. }
         | Action::Transactions(_)
@@ -240,6 +255,14 @@ pub fn execute_service(
         mutation,
         |tx, subject, _| {
             let result = match action {
+                Action::Original(command) => crate::bank_original::read_authorized(
+                    tx,
+                    guard,
+                    command,
+                    subject,
+                    rentemester_storage::idempotency::PrincipalKind::ServiceAccount,
+                    clock,
+                )?,
                 Action::Transactions(_) | Action::Reconciliation(_) | Action::AccountList(_) => {
                     query_authorized(tx, guard, &action)?
                 }
@@ -312,6 +335,19 @@ fn query_authorized(
     guard: &mut NamespaceGuard,
     action: &Action<'_>,
 ) -> Result<Value, Error> {
+    verify_query_sources(tx, guard)?;
+    match action {
+        Action::Transactions(query) => rentemester_storage::bank_queries::list(tx, query),
+        Action::Reconciliation(query) => rentemester_storage::bank_queries::report(tx, query),
+        Action::AccountList(query) => rentemester_storage::bank_queries::accounts(tx, query),
+        _ => unreachable!("only original bank query actions admitted"),
+    }
+}
+
+pub(crate) fn verify_query_sources(
+    tx: &rusqlite::Transaction<'_>,
+    guard: &mut NamespaceGuard,
+) -> Result<(), Error> {
     let unavailable = || {
         Error::new(
             "bank_query_sources_unavailable",
@@ -339,12 +375,7 @@ fn query_authorized(
         rentemester_storage::bank_reconciliation::verify_audit_source(tx, id, &bytes)
             .map_err(|_| unavailable())?;
     }
-    match action {
-        Action::Transactions(query) => rentemester_storage::bank_queries::list(tx, query),
-        Action::Reconciliation(query) => rentemester_storage::bank_queries::report(tx, query),
-        Action::AccountList(query) => rentemester_storage::bank_queries::accounts(tx, query),
-        _ => unreachable!("only original bank query actions admitted"),
-    }
+    Ok(())
 }
 
 /// Reclassify only known pure parser refusals; never storage/source/fence errors.

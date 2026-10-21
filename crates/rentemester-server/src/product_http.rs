@@ -31,6 +31,7 @@ mod reminder_claims;
 mod accruals;
 mod assets;
 mod bank;
+mod bank_original;
 mod bank_accounts_original;
 mod bank_matches;
 mod cvr;
@@ -109,6 +110,22 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
         pdf_workers: Arc::new(Semaphore::new(4)),
     };
     Router::new()
+        .route(
+            "/api/companies/{slug}/bank/original/suggestions",
+            get(bank_original::handle),
+        )
+        .route(
+            "/api/companies/{slug}/bank/original/correction-plan",
+            get(bank_original::handle),
+        )
+        .route(
+            "/api/companies/{slug}/bank/original/link-journal",
+            post(bank_original::handle),
+        )
+        .route(
+            "/api/companies/{slug}/bank/original/correction-apply",
+            post(bank_original::handle),
+        )
         .route("/api/companies/{slug}/backup-registrations",get(backup_registration::handle).post(backup_registration::handle))
         .route("/api/companies/{slug}/backup-registrations/operations/{operation}",get(backup_registration::handle))
         .route("/api/companies/{slug}/backup-governance",get(backup_governance::handle))
