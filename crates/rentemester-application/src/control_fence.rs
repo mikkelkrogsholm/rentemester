@@ -119,6 +119,8 @@ pub fn execute<T>(
         selection,
         permission,
         false,
+        &rentemester_runtime::auth::SystemClock,
+        false,
         |_| {
             Ok(ResolvedHuman {
                 workspace: principal.workspace.to_owned(),
@@ -126,7 +128,7 @@ pub fn execute<T>(
                 session_id: principal.session_id.to_owned(),
             })
         },
-        |tx, _| apply(tx),
+        |_, tx, _| apply(tx),
     )
 }
 struct ResolvedHuman {
@@ -177,6 +179,10 @@ pub fn execute_cookie_subject<T>(
         apply,
     )
 }
+/// Completion/reconciliation of an already admitted external action must remain recordable.
+pub(crate) fn execute_cookie_recovery<T>(control:&mut Connection,company:&mut Connection,authorization:CookieAuthorization<'_>,selection:CompanySelection<'_>,permission:Permission,apply:impl FnOnce(&Transaction<'_>,&str)->Result<T,Error>)->Result<Committed<T>,Failure>{
+    execute_cookie_both(control,company,authorization,selection,permission,false,true,|_,tx,actor|apply(tx,actor))
+}
 #[allow(clippy::too_many_arguments)]
 pub(crate) fn execute_cookie_subject_mode<T>(
     control: &mut Connection,
@@ -187,6 +193,17 @@ pub(crate) fn execute_cookie_subject_mode<T>(
     readonly: bool,
     apply: impl FnOnce(&Transaction<'_>, &str) -> Result<T, Error>,
 ) -> Result<Committed<T>, Failure> {
+    execute_cookie_both(control, company, authorization, selection, permission, readonly, false,
+        |_, tx, actor| apply(tx, actor))
+}
+/// Internal typed recovery/status adapters may inspect both held transactions.
+#[allow(clippy::too_many_arguments)]
+pub(crate) fn execute_cookie_both<T>(
+    control: &mut Connection, company: &mut Connection,
+    authorization: CookieAuthorization<'_>, selection: CompanySelection<'_>,
+    permission: Permission, readonly: bool, backup_recovery: bool,
+    apply: impl FnOnce(&Transaction<'_>, &Transaction<'_>, &str) -> Result<T,Error>,
+) -> Result<Committed<T>,Failure> {
     let CookieAuthorization {
         cookie,
         clock,
@@ -201,6 +218,8 @@ pub(crate) fn execute_cookie_subject_mode<T>(
         selection,
         permission,
         readonly,
+        clock,
+        backup_recovery,
         |tx| {
             let now = clock
                 .now_unix_ms()
@@ -223,12 +242,18 @@ fn execute_resolved<T>(
     selection: CompanySelection<'_>,
     permission: Permission,
     readonly: bool,
+    clock: &dyn rentemester_runtime::auth::Clock,
+    backup_recovery: bool,
     resolve: impl FnOnce(&Transaction<'_>) -> Result<ResolvedHuman, Error>,
-    apply: impl FnOnce(&Transaction<'_>, &str) -> Result<T, Error>,
+    apply: impl FnOnce(&Transaction<'_>, &Transaction<'_>, &str) -> Result<T, Error>,
 ) -> Result<Committed<T>, Failure> {
-    execute_authorized(
+    let bookkeeping = !readonly && !backup_recovery && !matches!(permission,
+        Permission::CompanyRead | Permission::CompanyDocumentsRead | Permission::CompanyExport |
+        Permission::CompanyKnowledgeRead | Permission::CompanyOwnershipRead);
+    execute_authorized_both(
         control,
         company,
+        bookkeeping.then_some(BackupCheck { workspace:selection.workspace, slug:selection.slug, clock }),
         |control_tx| {
             let principal = resolve(control_tx)?;
             if !readonly
@@ -311,9 +336,9 @@ fn execute_resolved<T>(
             }
             Ok(principal.subject)
         },
-        |tx, actor| {
+        |control, tx, actor| {
             let before = tx.total_changes();
-            let result = apply(tx, actor)?;
+            let result = apply(control, tx, actor)?;
             if readonly && tx.total_changes() != before {
                 return Err(error("readonly_operation_changed_data"));
             }
@@ -328,6 +353,19 @@ pub(crate) fn execute_authorized<T>(
     authorize: impl FnOnce(&Transaction<'_>) -> Result<String, Error>,
     apply: impl FnOnce(&Transaction<'_>, &str) -> Result<T, Error>,
 ) -> Result<Committed<T>, Failure> {
+    execute_authorized_both(control,company,None,authorize,|_,tx,actor|apply(tx,actor))
+}
+pub(crate) struct BackupCheck<'a> {pub workspace:&'a str,pub slug:&'a str,pub clock:&'a dyn rentemester_runtime::auth::Clock}
+pub(crate) fn execute_authorized_with_backup<T>(
+    control:&mut Connection,company:&mut Connection,check:Option<BackupCheck<'_>>,
+    authorize:impl FnOnce(&Transaction<'_>)->Result<String,Error>,
+    apply:impl FnOnce(&Transaction<'_>,&str)->Result<T,Error>,
+)->Result<Committed<T>,Failure>{execute_authorized_both(control,company,check,authorize,|_,tx,actor|apply(tx,actor))}
+fn execute_authorized_both<T>(
+    control:&mut Connection,company:&mut Connection,check:Option<BackupCheck<'_>>,
+    authorize:impl FnOnce(&Transaction<'_>)->Result<String,Error>,
+    apply:impl FnOnce(&Transaction<'_>,&Transaction<'_>,&str)->Result<T,Error>,
+)->Result<Committed<T>,Failure>{
     connection_ready(control).map_err(initial)?;
     connection_ready(company).map_err(initial)?;
     let control_tx = control
@@ -370,7 +408,10 @@ pub(crate) fn execute_authorized<T>(
         });
     }
     let changes_before = control_tx.total_changes();
-    let result = apply(&company_tx, &subject);
+    let result = (|| {
+        if let Some(check)=check {crate::backup_status::require_write(&control_tx,&company_tx,check.workspace,check.slug,check.clock)?;}
+        apply(&control_tx, &company_tx, &subject)
+    })();
     if company_tx.is_autocommit()
         || control_tx.is_autocommit()
         || control_tx.total_changes() != changes_before

@@ -7,6 +7,12 @@ starter ikke TypeScript-backenden og sender ikke forespørgsler videre til den.
 
 ## Aktuel Rust-levering
 
+Virksomhedens backupstatus og frivillige finansielle bogføringslås fungerer nu
+på tværs af web, HTTP, CLI og MCP samt servicekonti. Faktisk normal-MFA-prøve
+med mistede/ændrede filer, frisk backup, én postering og genstart består.
+Kontrolbaserede metadata- og indbakkeruter mangler endnu fuld låseparitet;
+se [backupkontrakten](rust-backup-destinations.md).
+
 Konfigureret backupplacering og genlæsning af samme signerede arkiv fungerer nu
 gennem server, web, CLI og MCP med genstart. Se [opsætning og afgrænsning](rust-backup-destinations.md).
 Det er en lokal/synkroniseret mappekopi; ekstern cloudverifikation og friskhed

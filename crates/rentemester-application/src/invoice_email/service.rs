@@ -60,12 +60,11 @@ pub fn reconcile_service(
 ) -> Result<ServiceResult<Value>, ServiceFailure> {
     input.validate().map_err(invalid)?;
     let clock = context.clock;
-    service_company::execute_operation(
+    service_company::execute_recovery(
         control,
         company,
         context,
         Permission::CompanyExternalSend,
-        true,
         |tx, subject, _| {
             let delivery = store::get(tx, &input.message_id)?.ok_or_else(store::refused)?;
             verify(tx, guard, &delivery.source)?;
@@ -185,7 +184,7 @@ fn execute_service(
         Handoff::Refused => "refused",
         Handoff::Unknown => "unknown",
     };
-    precharged::continue_operation(control, company, context(&ctx), &permit, |tx, subject| {
+    precharged::continue_recovery(control, company, context(&ctx), &permit, |tx, subject| {
         verify(tx, guard, &source)?;
         Ok(json!({"delivery":store::terminal_with_principal(tx, &source.message_id, &expected_hash, outcome, subject, &at(ctx.clock)?, PrincipalKind::ServiceAccount)?.row(false)}))
     }).map_err(ambiguous)

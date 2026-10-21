@@ -1,13 +1,13 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "Group110 prerequisite: actual signed native backup retention and trusted persistent inventory qualified; pure weekly/opt-in lock policy implemented, full status/lock integration still active",
-  "code_revision": "87ff9180279a8c128127b92a75c743b9006f48e7 + Group110 retained inventory integration in this commit",
-  "spec_revision": "sha256:6214f924f01514968951d6f0aaa67bd5c23d43e56d50c69ac0481fee59c6dad6",
-  "state": "Group110 removes a concrete prerequisite for complete backup-status/optional-bookkeeping-lock flow. Successful native whole-workspace backup now retains exact signed wire at fixed protected workspace/native-backups/<fullSHA>.native-backup.json before download response and appends trusted native_backup_created workspace audit inside held current-human control transaction. Private700directory/600singlelink regularfiles, protected ancestor/ACL/nofollow validation, exclusive temp/fsync/no-replace and signature/inventory/workspace/hash reread reuse109 filesystem contract. No operator destination or client path authority needed. Metadata binds wirehash/size/publicsigningkeyhash/createdtime plus every company slug/ledgerUUID/signed snapshot hash, no credentials or active grants. Retention-attempt and auditcommit failure remain OutcomeUnknown without deleting landed data. Backup cache is excluded from portable archive, no recursive files. Inventory query ignores source-local receipts before latest native_portable_restore boundary; history retained without claiming source files exist on new instance. Pure engine policy integrated worker a6bd91a4 as87ff9180: exact >7day freshness, activity-sensitive due, neverbacked due/earliestactivity lock anchor, optin and grace, noactivity no lock, typed validated instants/overflow. Five policy and two inventory tests pass; defaulttime parsing feature enabled after diagnosed compile error without new lockfile changes. Initial actual harness shadowed digest function with local variable and failed before runtime creation; renamed archive_digest. Actual110b normal owner MFA servicepurchase/web signed placement/client parity/duplicate/tamper/revocation/restart flow passes and independently verifies two retained signed SQLite archives after all servers stop; exact private files/inventory persisted and accounting counts unchanged. Owned cleanup true. Guarded server/CLI/MCP build plus eight-crate all-target strictClippy pass, readonly material review no blockers, root AST updated. No GUI/unlock. Full status display, settings, current-file qualification and write fence through human/service/jobs NOT implemented yet; native integrity backup unknown and no lock enforced remain truthful. Next complete that whole flow then remaining cloud/destination/governance/health-audit, R53 release/parity/migration/recovery/TS retirement and final installed GUI; full mission/epic672 remain OPEN.",
+  "current_increment": "Group111 financial backup status→explicit lock→human/service refusal→verified artifact→one posting/restart accepted through web/HTTP/CLI/MCP; direct-control legacy gate parity remains open",
+  "code_revision": "45d362cde32e5250cd13a4c2ea8d1df7d9086423 + Group111 financial gate integration in this commit",
+  "spec_revision": "sha256:bc98636be4a972407adce0f817a76bb9d4bb7200cb292a70965e75ab62fae250",
+  "state": "Group111 delivers company-authorized backup status and explicit opt-in financial lock over native server/shared web/client/CLI/MCP. Status independently rereads retained signed bytes with separately trusted producer publickey stored in protected inventory; metadata binds keyhash/wirehash/size/time/companyUUID and activityIDs. Missing/tampered files never qualify; pre-restore inventory/settings do not activate in restoredinstance. Pure weekly policy preserved; append-only activity identity comparison closes same-second registration timestamp loss. Defaultoff/grace0; nativegrace0..365; config appendedcompanyaudit with current authenticated actor and restoreboundary. Current auth then held control/company writer before human core/service/precharged/hostedrecurring/openingbalance/partylink effects. Reads/plans/backup/lockconfig/recovery exempt; new SMTP reservation/pre-handoff gated, already admitted terminal/reconcile narrowly exempt. Typed internal both-transaction adapter preserves rollback/unknown/reuse guards. Actual111b normalMFA imports one old bankrow, webenableslock, HTTP/CLI/MCP human+service posting refusal and read availability, explicit CLI/MCP policywrites whilelocked, actualweb signedbackup/offlineSQLiteverification, missing/tamperfiles relock without effects/exactrestoration, one7.25journal with exact receipt replay/restart; terminal0documents/1bank/1journal and ownedcleanup. Artifact/helper/runner identity matched independently; no SQLidentityseeds/provider/GUI. Six policy tests incl subsecondidentity, targetedbackup suites, new humanlock/recovery and SMTPmidflightenable tests pass; broad application regression90pass8ignored had one duplicateauditfixture failure, repairedfixture and affectedcasepass. MCP selectedstdio found stale225count, baselineupdated233 actualtools and affectedcasepass. Guardedbuild/webbuild/strict8crate all-targetClippy pass; readonlyscope review no blockers. Full direct-control metadata/group/ownership/corporate/knowledge/parties/workspace/mailintake legacy mutation gates still NOT integrated, actual SMTPdispatch/keyrotation/newsourcefreerestore/offsite/installedGUI unqualified. Full health/audit/governance/provider/destinationadmin/discoverycoverage/R53release/CIremote/migration/TSretirement remain OPEN, fullmission/epic672 preserved; GUI still finalonly.",
   "issues_closed": [],
   "next": [
-    "Complete same native backup user flow: company-authorized backup status/integrity, explicit opt-in lock settings, shared human/service/job write fence before effects, overdue refusal, trusted retained backup creation and unlocked resumed booking, with current retained-file qualification and restore/key-rotation behavior. Preserve legacy no-new-activity rule, >7day freshness and separate offsite placement. Then Google Drive API exact-object remote verification/declarations/destination administration/full backup health/audit, truthful discovery coverage, Rust supplychain/SBOM/trusted candidate/promotion/reproducibility and CIremote evidence. No TS retirement before full accepted replacement.",
+    "Complete remaining native lock parity in control-only company knowledge/corporate/ownership/group/intercompany/elimination changes and mail/parties/workspaceinbox using current scoped company observations, without blocking reads/recovery or already admitted provider outcomes. Financial111 user flow accepted; do not repeat it unchanged. Then actual keyrotation/restore policy activation as required, external GoogleDrive exact-object verification/declarations/destinationadministration/full backup health/audit/governance, truthful shared discoverycoverage and trusted Rust release/SBOM/supplychain/promotion/reproducibility/CIremote. No TSretirement before full accepted replacement.",
     "Installed desktop acceptance is explicitly deferred to the very end by the user. Preserve prepared Group100 profile; collect remaining native automation, closure, recovery and packaging checks for final installed acceptance without requesting screen unlock during development.",
     "J03/R50 and remaining R54 scope: only still-supported operation closure/recovery, nonempty scheduler handoff, hostile/older clone and post-cutover rollback requirements. Group99 qualifies managed installed J06 flow, not every R54 acceptance item.",
     "Signed distribution/update/cutover evidence must match actual full Rust replacement; retain all existing completion gates and TypeScript retirement gate.",
@@ -22,10 +22,10 @@
   ],
   "all_goal_requirements_complete": false,
   "previous_verified_increment": {
-    "current_increment": "Group109 configured local/synced backup destination publication and exact signed readback through server/web/CLI/MCP with restart accepted",
-    "code_revision": "57f87e45b3a669bc056fb8eea368fdde37314a82",
-    "spec_revision": "sha256:da730e2b1d632ad570e50773bdcdae0f738edd039d61f40cd0d4c37a2745a6f0",
-    "state": "Group109 completes configured local/synced-directory signed backup placement and exact readback through native server/shared web/origin-bound client/CLI/MCP. Operator config only, max16 strict IDs/private protected outside-workspace directories and signer required, no client path/archive/key authority; kind labels do not prove remote synchronization. Current human WorkspaceManage plus CompanyAdmin for every company including archived rechecked under held control transaction before filesystem effect. Exclusive private temp/fsync/no-replace publication, descriptor-pinned nofollow/single-link/owner/mode/ACL validation, signed exact inventory/workspace/hash reread; append-only audit derives current actor. Existing operation refuses overwrite; uncertain publication/audit retains landed bytes and requires same-ID GET reconciliation. UI persists pending ID keyed stable workspace before POST, submission fence, explicit readback after reload/lost reply, no automatic retry; missing audit blocks next backup. Actual normal owner/MFA proof passes web placement, HTTP/CLI/MCP whole response parity, independent signed plus SQLite verification, duplicate unchanged archive, tamper/anonymous refusal, unchanged journals/bank/trial balance, same pending ID after web reload and exact archive/audit after server restart. Own runtime/process cleanup true. Runtime2tests and application1 current-auth/revocation test, four UI tests24assertions including lost reply, strict seven-crate Clippy/all-targets, guarded build, web build and helper types/lint pass. Early own test fixtures violated protected directory/journalmode rules, repaired fixtures without weaker product guards; real browser found missing explicit selector accessible name, fixed before successful109c. No actual crash-in-publication, source-free restore of this landed file, remote cloud sync, legal attestation verification, freshness/lock, complete backup parity, clean packaged release or installed GUI claim. Google Drive API verification, declared external transfer, destination administration and status/health/audit remain required. Full mission/epic672 and all completion gates OPEN; user defers every remaining installed desktop GUI test to the very end, no unlock requests."
+    "current_increment": "Group110 prerequisite: actual signed native backup retention and trusted persistent inventory qualified; pure weekly/opt-in lock policy implemented, full status/lock integration still active",
+    "code_revision": "bff3514ea40a5fc7e45884020359615ebcd1a465",
+    "spec_revision": "sha256:6214f924f01514968951d6f0aaa67bd5c23d43e56d50c69ac0481fee59c6dad6",
+    "state": "Group110 removes a concrete prerequisite for complete backup-status/optional-bookkeeping-lock flow. Successful native whole-workspace backup now retains exact signed wire at fixed protected workspace/native-backups/<fullSHA>.native-backup.json before download response and appends trusted native_backup_created workspace audit inside held current-human control transaction. Private700directory/600singlelink regularfiles, protected ancestor/ACL/nofollow validation, exclusive temp/fsync/no-replace and signature/inventory/workspace/hash reread reuse109 filesystem contract. No operator destination or client path authority needed. Metadata binds wirehash/size/publicsigningkeyhash/createdtime plus every company slug/ledgerUUID/signed snapshot hash, no credentials or active grants. Retention-attempt and auditcommit failure remain OutcomeUnknown without deleting landed data. Backup cache is excluded from portable archive, no recursive files. Inventory query ignores source-local receipts before latest native_portable_restore boundary; history retained without claiming source files exist on new instance. Pure engine policy integrated worker a6bd91a4 as87ff9180: exact >7day freshness, activity-sensitive due, neverbacked due/earliestactivity lock anchor, optin and grace, noactivity no lock, typed validated instants/overflow. Five policy and two inventory tests pass; defaulttime parsing feature enabled after diagnosed compile error without new lockfile changes. Initial actual harness shadowed digest function with local variable and failed before runtime creation; renamed archive_digest. Actual110b normal owner MFA servicepurchase/web signed placement/client parity/duplicate/tamper/revocation/restart flow passes and independently verifies two retained signed SQLite archives after all servers stop; exact private files/inventory persisted and accounting counts unchanged. Owned cleanup true. Guarded server/CLI/MCP build plus eight-crate all-target strictClippy pass, readonly material review no blockers, root AST updated. No GUI/unlock. Full status display, settings, current-file qualification and write fence through human/service/jobs NOT implemented yet; native integrity backup unknown and no lock enforced remain truthful. Next complete that whole flow then remaining cloud/destination/governance/health-audit, R53 release/parity/migration/recovery/TS retirement and final installed GUI; full mission/epic672 remain OPEN."
   },
   "evidence": {
     "combined_browser_log": "/tmp/rm-platform5-combined.log",
@@ -4078,6 +4078,67 @@
         "enable time parsing feature required by strict RFC3339 inventory validation",
         "rename Python local digest variable; initial harness failed before profile/server creation"
       ]
+    },
+    "native_backup_lock111": {
+      "path": "/tmp/rentemester-rust-reports/native-backup-lock111b.json",
+      "sha256": "63c53f87c8a1248753b6fb0100b24a0ad5681f1ecb49fd6174fe0320b69f49f9",
+      "status": "passed",
+      "source_revision": "45d362cde32e5250cd13a4c2ea8d1df7d9086423 plus recorded Group111 integration",
+      "helper_sha256": "573922b2f2aa4b162b821bae1fbc9120308d462bd1135d02a5e52f0bd9f927be",
+      "runner_sha256": "a7c32fb4fa38f49c4936bfe36e5d2ebd609df0e98cb7ccff4f438145376461fc",
+      "artifacts": {
+        "server_binary": "1a7c05dc51134c65198e3c6f5b1c77db743d3202759e97ae6293c690f9b436b7",
+        "cli_binary": "05e335867c707c562a607d03dec1d0244b113f48357be1738bb8cb786f4a382c",
+        "mcp_binary": "839b64d6731a41942068b06a8ea6a6634df0a08522e4de4cceb9bec4c715deea"
+      },
+      "financial_counts": {
+        "documents": 0,
+        "bank_transactions": 1,
+        "journal_entries": 1
+      },
+      "backup_artifact": {
+        "sha256": "141c57ea2b561ab57588f14ffd026a765198f8f19a0c4218089b58ad5efaff14",
+        "bytes": 2174776,
+        "independentlyVerified": true,
+        "uiDownloadComplete": true
+      },
+      "scope": [
+        "normal owner/MFA, historical CSV activity without SQL/time seeds",
+        "actual web reviewed lock settings",
+        "explicit CLI and MCP policy changes while locked",
+        "human and service HTTP/CLI/MCP refusal before accounting changes",
+        "locked service reads remain available",
+        "actual web backup plus independent signed inventory/SQLite verification",
+        "missing or changed current artifact cannot unlock; exact file restoration",
+        "one7.25DKK balanced journal and exact receipt replay after fresh MFA/restart",
+        "owned process/profile cleanup"
+      ],
+      "tests": {
+        "policy": "/tmp/rm111-policy-final.log:6pass including same-second identity",
+        "storage": "/tmp/rm111-storage-tests.log:11targetedpass before final identity field extension; strictClippycompilesfinaltests",
+        "backup_selected": "/tmp/rm111-backup-tests-final.log:new app3/client1/CLI and client safetycases pass; old MCP225toolcount failure repaired separately",
+        "application_regression": "/tmp/rm111-application-regression.log:90pass8ignored1duplicatefixturefailure; /tmp/rm111-fence-fixture-fixed.log affectedcase1pass after repair",
+        "mcp_discovery": "/tmp/rm111-mcp-fixture-fixed.log:1pass updated actual233tool baseline",
+        "ui": "isolated client worker6pass30assertions including reviewed writes and droppedreply acrossremount; integratedwebbuildpass",
+        "web_build": "/tmp/rm111-web-build.log:design types buildpass",
+        "build": "/tmp/rm111-build.log:server CLI MCPpass",
+        "clippy": "/tmp/rm111-clippy-complete.log:eight selectedcrates all-targets -Dwarnings pass",
+        "helper_types": "/tmp/rm111-helper-types-complete.log:pass",
+        "helper_lint": "/tmp/rm111-helper-lint-complete.log:pass"
+      },
+      "limits": [
+        "financialcore and service actual only; directcontrolmetadata/mailintake fulllegacygates pending",
+        "SMTPdeadline/enabling duringhandoff unit only, actualSMTPfalse",
+        "keyrotation and restored-instance activation boundary not new actual qualification",
+        "sourcefree restore/offsite/installed desktop/rebuiltLinuxpackage/cleanrelease notqualified"
+      ],
+      "diagnosed_fixes": [
+        "syntheticcookie fixture now obeys existing strictRFC3339 and12hour session limit; no productauth weakening",
+        "minimal fencefixture gained audit table; duplicate old case uses same complete fixture schema",
+        "old MCPstdio225-tool staticcount updated shared233baseline; no count-as-full-parity claim",
+        "never-backed requiredBy follows checkedAt; normalize only after asserting this dynamiccontract",
+        "Clippy linebreak/testmoduleorder fixes only after successful actualproof"
+      ]
     }
   },
   "verified_history": [
@@ -5364,9 +5425,10 @@
     {
       "delivery": "Group110→111 complete backup status and optional bookkeeping lock",
       "owner": "root common contract, retention integration and actual proof; isolated native_catalogue106 pure policy (integrated87ff9180); readonly container_contract104 legacy and admission map",
-      "status": "Prerequisite retention/inventory and pure policy accepted. Full user flow ACTIVE: status/settings/current-file qualification and shared human/service/jobs enforcement still required. No lock yet enabled.",
+      "status": "FINANCIAL USER FLOW QUALIFIED111b through web/HTTP/CLI/MCP/human+service, including reviewed policy mutations whilelocked, actual artifact recovery and one posting/restart. Full control-only legacygate parity remains ACTIVE, not complete.",
       "acceptance": "Read status → explicitly enable lock → overdue bookkeeping refuses without effects → create retained signed backup → freshness lock clears → bookkeeping succeeds across server/web/CLI/MCP and service/jobs, persists restart; offsite proof separate.",
-      "evidence": "native_backup_retention110; pure policy five tests and inventory two tests; actual two retained artifacts after restart independently verified."
+      "evidence": "native_backup_lock111 plus preserved native_backup_retention110",
+      "remaining": "Control-only metadata/group/parties/inbox/mailintake gates; actual SMTP/keyrotation/restore qualifications as relevant, then full backup-governance/provider/discovery/release scope."
     }
   ],
   "integrated_pending_browser": [
@@ -5538,6 +5600,12 @@
       "code_revision": "57f87e45b3a669bc056fb8eea368fdde37314a82",
       "spec_revision": "sha256:da730e2b1d632ad570e50773bdcdae0f738edd039d61f40cd0d4c37a2745a6f0",
       "state": "Group109 completes configured local/synced-directory signed backup placement and exact readback through native server/shared web/origin-bound client/CLI/MCP. Operator config only, max16 strict IDs/private protected outside-workspace directories and signer required, no client path/archive/key authority; kind labels do not prove remote synchronization. Current human WorkspaceManage plus CompanyAdmin for every company including archived rechecked under held control transaction before filesystem effect. Exclusive private temp/fsync/no-replace publication, descriptor-pinned nofollow/single-link/owner/mode/ACL validation, signed exact inventory/workspace/hash reread; append-only audit derives current actor. Existing operation refuses overwrite; uncertain publication/audit retains landed bytes and requires same-ID GET reconciliation. UI persists pending ID keyed stable workspace before POST, submission fence, explicit readback after reload/lost reply, no automatic retry; missing audit blocks next backup. Actual normal owner/MFA proof passes web placement, HTTP/CLI/MCP whole response parity, independent signed plus SQLite verification, duplicate unchanged archive, tamper/anonymous refusal, unchanged journals/bank/trial balance, same pending ID after web reload and exact archive/audit after server restart. Own runtime/process cleanup true. Runtime2tests and application1 current-auth/revocation test, four UI tests24assertions including lost reply, strict seven-crate Clippy/all-targets, guarded build, web build and helper types/lint pass. Early own test fixtures violated protected directory/journalmode rules, repaired fixtures without weaker product guards; real browser found missing explicit selector accessible name, fixed before successful109c. No actual crash-in-publication, source-free restore of this landed file, remote cloud sync, legal attestation verification, freshness/lock, complete backup parity, clean packaged release or installed GUI claim. Google Drive API verification, declared external transfer, destination administration and status/health/audit remain required. Full mission/epic672 and all completion gates OPEN; user defers every remaining installed desktop GUI test to the very end, no unlock requests."
+    },
+    {
+      "current_increment": "Group110 prerequisite: actual signed native backup retention and trusted persistent inventory qualified; pure weekly/opt-in lock policy implemented, full status/lock integration still active",
+      "code_revision": "bff3514ea40a5fc7e45884020359615ebcd1a465",
+      "spec_revision": "sha256:6214f924f01514968951d6f0aaa67bd5c23d43e56d50c69ac0481fee59c6dad6",
+      "state": "Group110 removes a concrete prerequisite for complete backup-status/optional-bookkeeping-lock flow. Successful native whole-workspace backup now retains exact signed wire at fixed protected workspace/native-backups/<fullSHA>.native-backup.json before download response and appends trusted native_backup_created workspace audit inside held current-human control transaction. Private700directory/600singlelink regularfiles, protected ancestor/ACL/nofollow validation, exclusive temp/fsync/no-replace and signature/inventory/workspace/hash reread reuse109 filesystem contract. No operator destination or client path authority needed. Metadata binds wirehash/size/publicsigningkeyhash/createdtime plus every company slug/ledgerUUID/signed snapshot hash, no credentials or active grants. Retention-attempt and auditcommit failure remain OutcomeUnknown without deleting landed data. Backup cache is excluded from portable archive, no recursive files. Inventory query ignores source-local receipts before latest native_portable_restore boundary; history retained without claiming source files exist on new instance. Pure engine policy integrated worker a6bd91a4 as87ff9180: exact >7day freshness, activity-sensitive due, neverbacked due/earliestactivity lock anchor, optin and grace, noactivity no lock, typed validated instants/overflow. Five policy and two inventory tests pass; defaulttime parsing feature enabled after diagnosed compile error without new lockfile changes. Initial actual harness shadowed digest function with local variable and failed before runtime creation; renamed archive_digest. Actual110b normal owner MFA servicepurchase/web signed placement/client parity/duplicate/tamper/revocation/restart flow passes and independently verifies two retained signed SQLite archives after all servers stop; exact private files/inventory persisted and accounting counts unchanged. Owned cleanup true. Guarded server/CLI/MCP build plus eight-crate all-target strictClippy pass, readonly material review no blockers, root AST updated. No GUI/unlock. Full status display, settings, current-file qualification and write fence through human/service/jobs NOT implemented yet; native integrity backup unknown and no lock enforced remain truthful. Next complete that whole flow then remaining cloud/destination/governance/health-audit, R53 release/parity/migration/recovery/TS retirement and final installed GUI; full mission/epic672 remain OPEN."
     }
   ]
 }

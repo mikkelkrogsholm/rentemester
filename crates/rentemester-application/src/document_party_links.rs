@@ -81,9 +81,10 @@ pub fn execute(
 ) -> Result<Committed<Value>, Failure> {
     let snapshot = RefCell::new(None);
     let write = matches!(action, Action::Apply(_) | Action::Supersede(_));
-    control_fence::execute_authorized(
+    control_fence::execute_authorized_with_backup(
         control,
         company,
+        write.then_some(control_fence::BackupCheck{workspace:context.selection.workspace,slug:context.selection.slug,clock:context.clock}),
         |tx| {
             let subject = authorize(tx, &context, write)?;
             let input = match action {

@@ -56,6 +56,11 @@ pub(crate) fn continue_operation<T>(
     permit: &Permit,
     apply: impl FnOnce(&Transaction<'_>, &str) -> Result<T, Error>,
 ) -> Result<ServiceResult<T>, ServiceFailure> {
+    continue_mode(control,company,context,permit,true,apply)
+}
+/// Only record/reconcile an already admitted provider action; no new handoff.
+pub(crate) fn continue_recovery<T>(control:&mut Connection,company:&mut Connection,context:Context<'_>,permit:&Permit,apply:impl FnOnce(&Transaction<'_>,&str)->Result<T,Error>)->Result<ServiceResult<T>,ServiceFailure>{continue_mode(control,company,context,permit,false,apply)}
+fn continue_mode<T>(control:&mut Connection,company:&mut Connection,context:Context<'_>,permit:&Permit,check_backup:bool,apply:impl FnOnce(&Transaction<'_>,&str)->Result<T,Error>)->Result<ServiceResult<T>,ServiceFailure>{
     let failure = |error: Error, reusable| ServiceFailure {
         usage: UsageStage::Committed,
         business: BusinessStage::NotAttempted,
@@ -88,9 +93,10 @@ pub(crate) fn continue_operation<T>(
         },
     };
     let mut attempted = false;
-    let done = control_fence::execute_authorized(
+    let done = control_fence::execute_authorized_with_backup(
         control,
         company,
+        check_backup.then_some(control_fence::BackupCheck{workspace:s.workspace,slug:s.slug,clock:context.clock}),
         |tx| {
             rentemester_storage::workspace_transfer::require_business_write(tx)?;
             let observed = service_context::observe(

@@ -157,7 +157,7 @@ pub fn reconcile(
     i: &Reconcile,
 ) -> Result<Committed<Value>, Failure> {
     i.validate().map_err(fail)?;
-    control_fence::execute_cookie_subject(
+    control_fence::execute_cookie_recovery(
         control,
         company,
         authorization(&context),
@@ -302,7 +302,7 @@ fn execute(
         Handoff::Refused => "refused",
         Handoff::Unknown => "unknown",
     };
-    let terminal = control_fence::execute_cookie_subject(
+    let terminal = control_fence::execute_cookie_recovery(
         control,
         company,
         authorization(&context),

@@ -72,13 +72,66 @@ bevares, men inventarlæsningen tæller kun snapshots registreret efter den nye
 instans' `native_portable_restore`-grænse. En kildekvittering beviser derfor ikke,
 at en fil eksisterer hos den gendannede instans.
 
-Friskhedsberegningen findes som en ren Rust-regel med den eksisterende
-syvdagesgrænse og eksplicit låsevalg. Den er endnu ikke koblet til
-integritetsvisningen eller til bogføringens transaktioner: backupstatus er
-fortsat ukendt dér, og ingen ny lås håndhæves endnu. Næste integration skal
-kontrollere det aktuelle opbevarede arkiv, anvende rettigheder og forbinde
-status, valg og afvisning gennem alle klienter og baggrundsjob. En download
-eller lokal kvittering bliver ikke i sig selv et udsagn om ekstern backup.
+## Backupstatus og frivillig bogføringslås
+
+Integritetsvisningen kan nu vise den aktuelle virksomheds lokale backupstatus.
+Panelet **Backupstatus og bogføringslås** henter status eksplicit og lader en
+aktuel virksomhedsadministrator gennemgå og bekræfte et låsevalg. Standard er
+slået fra med nul ekstra fristdage. Den native kontrakt accepterer 0–365 ekstra
+dage. Et uafklaret svar blokerer endnu en ændring, indtil brugeren manuelt har
+hentet og kontrolleret status; der sendes ingen automatisk gentagelse.
+
+Status tæller kun arkiver, som stadig kan genlæses fra den faste private mappe
+og verificeres med den offentlige nøgle fra producentens separate, beskyttede
+inventarkvittering. Nye kvitteringer gemmer den offentlige nøgles bytes og hash;
+ingen privat nøgle eksporteres. Ældre kvitteringer uden separat nøgle kan ikke
+kvalificere et arkiv alene. Manglende eller ændrede filer bliver ikke til en
+brugbar backup. Status viser fejlene og bruger kun faktisk verificerede arkiver.
+Låsekontrollen undersøger nyeste brugbare arkiv uden at genlæse alle ældre
+arkiver ved hver bogføring; den eksplicitte status læser hele inventaret.
+
+Aktivitet bygger på journalregistrering, bilagsindlæsning og bankdatoer. Rene
+datoer vurderes ved dagens afslutning for seneste aktivitet og ved dagens start
+for første aktivitet. De signerede snapshots bindes også til de inkluderede
+rækkers identiteter, så en ny række ikke overses på grund af sekundpræcision.
+Uden ny aktivitet siden backup opstår intet nyt forfald. Med ny aktivitet bliver
+backup forfalden efter mere end syv dage. Uden nogen backup er aktivitet straks
+forfalden, men låsens frist regnes fra første aktivitet plus syv dage og ekstra
+frist. Låsen aktiveres kun, når brugeren har valgt den, backup er forfalden og
+låsefristen er nået. Et nyt kvalificeret arkiv fjerner det aktuelle forfald.
+
+Den fælles kontrol ligger efter aktuel autorisation og under begge
+transaktionslåse før nye regnskabseffekter. Den dækker almindelig menneskelig
+bogføring, servicekonti, leverandør-/salgs- og bankoperationer, åbningsbalance,
+bilagspartsknytning samt den hostede fakturagenerering. Nye mailreservationer og
+kontrollen før SMTP-aflevering bruger også låsen. Afslutning og afklaring af en
+allerede påbegyndt aflevering kan fortsat registrere det faktiske udfald.
+Læsninger, planer, backup, låseindstillinger og afklaring af eksisterende
+kvitteringer er tilgængelige. Adgangskontrol gælder fortsat for dem.
+
+Denne integration dækker endnu ikke samtlige tidligere mutationsgates:
+kontrolbaserede virksomhedsoplysninger, selskabsdokumenter, ejerforhold,
+koncern-/mellemregningsændringer og dele af mail-/workspace-indbakken mangler
+fortsat tilsvarende integration. Der er ingen påstand om fuld låseparitet.
+Disse restforløb skal afsluttes, før hele Rust-omskrivningen kan godkendes.
+
+Låsevalg ligger som append-only virksomhedsaudit med serverafledt bruger og
+en binding til den aktuelle gendannelsesgrænse. Historiske valg bliver ikke
+aktive i en ny gendannet instans; en aktuel administrator skal vælge på ny.
+Nøglerotation er ikke i sig selv en tilbagekaldelse af tidligere betroede
+producentnøgler i inventaret. Et historisk arkiv kræver stadig de eksakte
+verificerede bytes; den aktuelle signeringsnøgle bruges til nye arkiver.
+
+Native HTTP bruger `GET /api/companies/{slug}/backup-status` og
+`POST /api/companies/{slug}/backup-lock` med præcis
+`{"confirm":true,"enforced":true,"graceDays":0}`. Status kræver aktuel
+`CompanyAdmin`; integritetsoversigten kan vise status til en aktuel
+virksomhedslæser. CLI er `remote backup-status --company SLUG` og
+`remote backup-lock --company SLUG --confirm` med samme JSON på stdin, normal
+serveradresse og privat cookiefil. MCP bruger `backup_status` med `company`
+og `backup_lock` med `company`, `body` som JSON-streng samt `confirm: true`.
+Ingen af disse klienter kan levere actor, nøgle, sti eller selvvalgt tidspunkt.
+Den stærkere autorisation til backup af hele workspacet gælder fortsat.
 
 ## Brugerforløbet
 
@@ -143,10 +196,12 @@ acceptprøve fremprovokerer ikke et procesnedbrud under publicering.
 
 Dette forløb kvalificerer ikke ekstern cloudkopi, fuld gendannelse af det netop
 placerede arkiv eller installeret desktop. Google Drive API-verifikation,
-erklæret ekstern overførsel, brugeradministration af destinationer, friskhed,
-backupstatus/-audit og eksplicit aktiveret bogføringslås er fortsat dele af den
-samlede backup-paritet. `freshnessEvaluated` og `automaticBackupLock` er derfor
-`false`. Desktopprøven er efter brugerens valg udskudt til allersidst.
+erklæret ekstern overførsel, brugeradministration af destinationer og fuld
+backup-governance/-audit er fortsat åbne dele af pariteten. Group111 forbinder
+virksomhedens friskhed og finansielle lås; destinationernes separate liste
+beregner stadig ingen samlet compliance og beholder `freshnessEvaluated: false`
+og `automaticBackupLock: false`. Desktopprøven er efter brugerens valg udskudt
+til allersidst.
 
 Group110 kvalificerer den lokale opbevaring i det faktiske normale MFA-forløb:
 to signerede snapshots med private filer, eksakte hashes og vedvarende
@@ -157,4 +212,19 @@ bogføringsforløb består stadig. Rapport:
 `69c448aa2c7a8b878fabb905f5b0f7a73a449408083674185a37dac399b11c59`.
 Fem rene regeltests og to inventartests består; grænsen efter gendannelse er
 dækket af inventartesten, ikke af et nyt faktisk source-free restore-forløb.
-Status- og låseintegrationen er fortsat uafsluttet.
+Den fulde tværgående låseparitet er fortsat uafsluttet; Group111 forbinder det finansielle forløb som beskrevet ovenfor.
+
+Group111 kvalificerer nu det finansielle forløb med normal MFA: historisk
+bankimport, faktisk webaktivering af låsen, afvisning uden regnskabseffekter via
+menneskelig HTTP/CLI/MCP og servicekonto, læsning mens låst, særskilt bekræftede
+låseændringer gennem både CLI og MCP mens låst, faktisk webbackup,
+uafhængig signatur-/SQLite-verifikation, ophævet lås og præcis én postering med
+samme kvittering efter genstart. Midlertidigt manglende og ændrede arkivbytes
+afvistes, og præcis original fil blev genoprettet i testens `finally`-blokke.
+Rapport: `/tmp/rentemester-rust-reports/native-backup-lock111b.json`, SHA-256
+`63c53f87c8a1248753b6fb0100b24a0ad5681f1ecb49fd6174fe0320b69f49f9`.
+Der var til slut én banktransaktion, én journalpost og nul bilag, og den ejede
+syntetiske drift blev ryddet op. SMTP-afslutning under ny lås og
+sekundpræcision er særskilt dækket af unit-tests. Den faktiske prøve kvalificerer
+ikke ny nøgle efter rotation, SMTP, kontrolbaserede metadata, source-free
+restore, ekstern backup eller installeret desktop.

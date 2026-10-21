@@ -36,9 +36,9 @@ export async function createBackupLockProof(page: Page, base: string, work: stri
     const input = kind === "cli" ? body === undefined ? "" : JSON.stringify(body) : [
       { jsonrpc: "2.0", id: 1, method: "initialize", params: { protocolVersion: "2025-11-25", capabilities: {}, clientInfo: { name: "synthetic-backup-lock", version: "1" } } },
       { jsonrpc: "2.0", method: "notifications/initialized" },
-      { jsonrpc: "2.0", id: 2, method: "tools/call", params: { name: command, arguments: { company: "synthetic", ...(body === undefined ? {} : { envelope: JSON.stringify(body) }) } } },
+      { jsonrpc: "2.0", id: 2, method: "tools/call", params: { name: command, arguments: { company: "synthetic", ...(body === undefined ? {} : command === "backup_lock" ? { body: JSON.stringify(body), confirm: true } : { envelope: JSON.stringify(body) }) } } },
     ].map(value => JSON.stringify(value)).join("\n") + "\n";
-    const argv = kind === "cli" ? ["remote", command.replaceAll("_", "-"), ...common, "--company", "synthetic"] : common;
+    const argv = kind === "cli" ? ["remote", command.replaceAll("_", "-"), ...common, "--company", "synthetic", ...(command === "backup_lock" ? ["--confirm"] : [])] : common;
     const result = spawnSync(join(work, kind === "cli" ? "rentemester-rust" : "rentemester-mcp"), argv, { input, encoding: "utf8", timeout: 45000, maxBuffer: 16 * 1024 * 1024 });
     need(!result.error && (!key || !result.stdout.includes(key) && !result.stderr.includes(key)), `${kind} process/credential safety`);
     if (kind === "cli") {
@@ -59,7 +59,12 @@ export async function createBackupLockProof(page: Page, base: string, work: stri
   }
   async function unchanged(expected: any) { need(isDeepStrictEqual(await books(), expected), "Lock refusal changed canonical financial state"); }
   function normalizedStatus(value: any) {
-    const copy = structuredClone(value); delete copy.backup?.checkedAt; return copy;
+    const copy = structuredClone(value);
+    if (!copy.backup.latestBackupId && copy.backup.backupDue) {
+      need(copy.backup.requiredBy === copy.backup.checkedAt, "Never-backed freshness is due at each observation time");
+      delete copy.backup.requiredBy;
+    }
+    delete copy.backup.checkedAt; return copy;
   }
   async function status(locked: boolean) {
     const value = await human("backup-status");
@@ -113,6 +118,11 @@ export async function createBackupLockProof(page: Page, base: string, work: stri
     await page.getByRole("button", { name: "Gem bogføringslås", exact: true }).click();
     need((await changed).ok(), "Explicit web policy change succeeds");
     const locked = await status(true); need(locked.lock.enforced && locked.lock.graceDays === 0, "Persisted explicit lock policy");
+    for (const kind of ["cli", "mcp"] as const) {
+      const configured = client(kind, "backup_lock", { confirm: true, enforced: true, graceDays: 0 });
+      need(configured.lock.enforced && configured.lock.locked && configured.lock.graceDays === 0, `${kind} reviewed policy write remains available while locked`);
+      await unchanged(baseline);
+    }
     const refusals = { human: await refused("human", baseline), service: await refused("service", baseline) };
     const serviceLockedRead = await service.get(base + prefix + "journal");
     need(serviceLockedRead.ok() && isDeepStrictEqual((await serviceLockedRead.json()).journal, baseline.journal), "Locked service accounting reads remain available");
@@ -157,7 +167,7 @@ export async function createBackupLockProof(page: Page, base: string, work: stri
     return { serviceAccountId: serviceId, credentialId, historicalDate: historical, bankSourceSha256: hash(bytes), before, locked, refusals, unlocked,
       artifact: { sha256: archiveSha256, bytes: artifact.length, independentlyVerified: true, uiDownloadComplete: true },
       missingCurrentFileLocked: missingStatus.lock.locked, tamperedCurrentFileLocked: tamperedStatus.lock.locked, lockedServiceReadsQualified: true,
-      exactArtifactRestored: true, accepted, canonical: stable, financialCoreAndServiceQualified: true,
+      exactArtifactRestored: true, accepted, canonical: stable, financialCoreAndServiceQualified: true, cliMcpPolicyWritesQualified: true,
       directControlMetadataGateQualified: false, smtpDispatchGateQualified: false, keyRotationQualified: false, installedNativeQualified: false, offsiteQualified: false };
   }
   async function reopen() {

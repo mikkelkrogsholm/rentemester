@@ -89,6 +89,7 @@ pub mod reminder_claims;
 
 pub mod portable_backup;
 pub mod backup_destination;
+pub mod backup_status;
 
 pub mod workspace_inbox;
 

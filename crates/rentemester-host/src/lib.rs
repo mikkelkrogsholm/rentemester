@@ -694,6 +694,9 @@ impl Owner {
             rentemester_application::periods::execute(c, l, g, context, action, today)
         })
     }
+    pub fn backup_status(&mut self,cookie:&VerifiedCookie,clock:&dyn Clock,action:rentemester_application::backup_status::Action)->Result<Attempt<Result<Committed<serde_json::Value>,rentemester_application::control_fence::Failure>>,OwnerError>{
+        self.document_action(cookie,clock,|c,l,_,context|rentemester_application::backup_status::execute(c,l,context,action))
+    }
     pub fn integrity(
         &mut self,
         cookie: &VerifiedCookie,

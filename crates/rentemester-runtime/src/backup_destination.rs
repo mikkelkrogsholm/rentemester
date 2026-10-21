@@ -434,3 +434,16 @@ mod tests {
         );
     }
 }
+
+/// Qualify a fixed cache file from an admitted control connection's filename.
+/// No caller-provided root, remote locator, or embedded archive key is accepted.
+#[cfg(any(target_os="linux", target_os="macos"))]
+pub fn verify_retained(control_path:&std::path::Path,operation:&str,trusted:&TrustedPublicKey,workspace:&str)->Result<Value,&'static str>{
+    if control_path.file_name().and_then(|v|v.to_str())!=Some("workspace-control.sqlite") || control_path.parent().and_then(|v|v.file_name()).and_then(|v|v.to_str())!=Some(".rentemester") {return Err("backup_retained_namespace_unavailable");}
+    let root=control_path.parent().and_then(|v|v.parent()).ok_or("backup_retained_namespace_unavailable")?;
+    let uid=rustix::process::geteuid().as_raw();
+    let config=Config{id:"native-local-backups".into(),label:"Local retained snapshots".into(),kind:"local-folder".into(),directory:root.join("native-backups"),non_related_party:false,in_eea_or_eu:false,country:"ZZ".into(),meets_recognised_standards:false,attested_by:"system:local-retention".into(),attested_at:"1970-01-01T00:00:00Z".into()};
+    verify(&config,uid,operation,trusted,workspace)
+}
+#[cfg(not(any(target_os="linux", target_os="macos")))]
+pub fn verify_retained(_: &std::path::Path,_:&str,_:&TrustedPublicKey,_:&str)->Result<Value,&'static str>{Err("backup_destination_unsupported_platform")}

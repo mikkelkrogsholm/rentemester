@@ -41,9 +41,10 @@ pub fn execute(
     let cookie = context.cookie;
     let clock = context.clock;
     let selection = context.selection;
-    control_fence::execute_authorized(
+    control_fence::execute_authorized_with_backup(
         control,
         company,
+        (!readonly).then_some(control_fence::BackupCheck{workspace:selection.workspace,slug:selection.slug,clock}),
         |tx| {
             let denied = || {
                 Error::new(

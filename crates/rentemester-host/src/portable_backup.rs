@@ -182,6 +182,7 @@ impl Owner {
             )?;
             let mut entries = vec![];
             let mut companies = vec![];
+            let mut activity_ids = std::collections::BTreeMap::new();
             add(
                 &mut entries,
                 artifact::Snapshot {
@@ -275,6 +276,12 @@ impl Owner {
                     &c.slug,
                     &facts.uuid,
                 )?;
+                let ids:[i64;3]=[
+                    db.query_row("SELECT COALESCE(MAX(id),0) FROM journal_entries",[],|r|r.get(0)).map_err(error)?,
+                    db.query_row("SELECT COALESCE(MAX(id),0) FROM documents",[],|r|r.get(0)).map_err(error)?,
+                    db.query_row("SELECT COALESCE(MAX(id),0) FROM bank_transactions",[],|r|r.get(0)).map_err(error)?,
+                ];
+                activity_ids.insert(c.slug.clone(),ids);
                 companies.push(artifact::Company {
                     slug: c.slug.clone(),
                     ledger_uuid: facts.uuid,
@@ -390,14 +397,14 @@ impl Owner {
                     artifact::EntryKind::CompanyLedger { company: slug } if slug == &company.slug))
                     .ok_or_else(||error("retained snapshot ledger inventory missing"))?;
                 Ok(rentemester_storage::backup_inventory::Company { slug: company.slug.clone(),
-                    ledger_uuid: company.ledger_uuid.clone(), snapshot_sha256: entry.sha256.clone() })
+                    ledger_uuid: company.ledger_uuid.clone(), snapshot_sha256: entry.sha256.clone(), activity_max_ids:activity_ids.get(&company.slug).copied() })
             }).collect::<Result<Vec<_>,rentemester_engine::Error>>()?;
             let current = rentemester_storage::cookie_session::resolve(&tx, proof.token(), now,
                 rentemester_storage::cookie_session::SessionRequirement::Current)?;
             rentemester_storage::backup_inventory::append(&tx,
                 &rentemester_storage::backup_inventory::Snapshot { version:1,
                     workspace_id:self.workspace.clone(), archive_sha256:rentemester_runtime::backup_keys::digest(&wire),
-                    archive_size_bytes:wire.len() as u64, signing_public_key_sha256:manifest.signing_public_key_sha256.clone(),
+                    archive_size_bytes:wire.len() as u64, signing_public_key_sha256:manifest.signing_public_key_sha256.clone(), signing_public_key:Some(key.public_key_bytes().to_vec()),
                     created_at:manifest.context.created_at.clone(), created_at_ms:now, companies },
                 &format!("user:{}",current.subject))?;
             Ok(wire)

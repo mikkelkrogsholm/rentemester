@@ -12,7 +12,8 @@ pub fn read(
     context: Context<'_>,
 ) -> Result<Committed<Value>, Failure> {
     let slug = context.selection.slug;
-    control_fence::execute_cookie(
+    let workspace=context.selection.workspace;let clock=context.clock;
+    control_fence::execute_cookie_both(
         control,
         company,
         CookieAuthorization {
@@ -21,8 +22,12 @@ pub fn read(
             requirement: SessionRequirement::Current,
         },
         context.selection,
-        Permission::CompanyRead,
-        |tx| rentemester_storage::integrity::read(tx, slug),
+        Permission::CompanyRead, true, true,
+        |control,tx,_| {
+            let mut value=rentemester_storage::integrity::read(tx,slug)?;
+            if let Ok(status)=crate::backup_status::data(control,tx,workspace,slug,clock,true) {value["backup"]=status["backup"].clone();value["backupLock"]=status["lock"].clone();}
+            Ok(value)
+        },
     )
 }
 #[cfg(test)]

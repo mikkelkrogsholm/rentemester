@@ -213,9 +213,10 @@ pub fn execute(
     } = context;
     let proof = RefCell::new(None);
     let times = RefCell::new(None);
-    control_fence::execute_authorized(
+    control_fence::execute_authorized_with_backup(
         control,
         company,
+        (!matches!(action,Action::Plan(_))).then_some(control_fence::BackupCheck{workspace:selection.workspace,slug:selection.slug,clock}),
         |tx| {
             if !matches!(action,Action::Plan(_)){rentemester_storage::workspace_transfer::require_business_write(tx)?;}
             if cookie.workspace() != selection.workspace {
@@ -471,9 +472,10 @@ pub fn dispatch(
     let fresh = RefCell::new(None);
     let times = RefCell::new(None);
     let mut attempted = false;
-    let result = control_fence::execute_authorized(
+    let result = control_fence::execute_authorized_with_backup(
         control,
         company,
+        Some(control_fence::BackupCheck{workspace:selection.workspace,slug:selection.slug,clock}),
         |tx| {rentemester_storage::workspace_transfer::require_business_write(tx)?;
             let o = observed(tx, key, clock, &selection)?;
             if !o.same_credential(&charged) {

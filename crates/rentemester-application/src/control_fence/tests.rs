@@ -3,7 +3,7 @@ use rusqlite::params;
 use serde_json::{Value, json};
 use std::path::Path;
 fn company(db: &Connection) {
-    db.execute_batch("PRAGMA foreign_keys=ON;PRAGMA synchronous=FULL;CREATE TABLE sequences(kind TEXT,scope TEXT,value INTEGER,PRIMARY KEY(kind,scope));CREATE TABLE companion(n INTEGER PRIMARY KEY CHECK(n>0));").unwrap();
+    db.execute_batch("PRAGMA foreign_keys=ON;PRAGMA synchronous=FULL;CREATE TABLE sequences(kind TEXT,scope TEXT,value INTEGER,PRIMARY KEY(kind,scope));CREATE TABLE companion(n INTEGER PRIMARY KEY CHECK(n>0));CREATE TABLE audit_log(id INTEGER PRIMARY KEY,event_type TEXT,entity_type TEXT,entity_id TEXT,message TEXT,actor TEXT,created_at TEXT DEFAULT CURRENT_TIMESTAMP);").unwrap();
 }
 fn control(db: &Connection) {
     db.execute_batch("PRAGMA foreign_keys=ON;PRAGMA synchronous=FULL;")
@@ -457,7 +457,7 @@ fn durable_receipt_replay_is_below_current_authorization_fence() {
         let v: Value = serde_json::from_str(raw).unwrap();
         l.execute_batch(v["sql"].as_str().unwrap()).unwrap();
     }
-    l.execute_batch("CREATE TABLE audit_log(id INTEGER PRIMARY KEY,event_type TEXT,entity_type TEXT,entity_id TEXT,message TEXT,actor TEXT,created_at TEXT DEFAULT CURRENT_TIMESTAMP)").unwrap();
+    l.execute_batch("CREATE TABLE IF NOT EXISTS audit_log(id INTEGER PRIMARY KEY,event_type TEXT,entity_type TEXT,entity_id TEXT,message TEXT,actor TEXT,created_at TEXT DEFAULT CURRENT_TIMESTAMP)").unwrap();
     let payload = json!({"amount":"100.00"});
     for replay in [false, true] {
         let committed = execute(

@@ -1,4 +1,5 @@
 //! Thin browser adapter over the same owner used for authentication.
+mod backup_status;
 mod manual_post_recovery;
 mod service_company;
 mod eu_sales;
@@ -92,6 +93,8 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
         pdf_workers: Arc::new(Semaphore::new(4)),
     };
     Router::new()
+        .route("/api/companies/{slug}/backup-status",get(backup_status::handle))
+        .route("/api/companies/{slug}/backup-lock",post(backup_status::handle))
         .route("/api/workspace/backup-destinations",get(backup_destinations::handle))
         .route("/api/workspace/backup-destinations/{id}/place",post(backup_destinations::handle))
         .route("/api/workspace/backup-destinations/{id}/placements/{operation}",get(backup_destinations::handle))

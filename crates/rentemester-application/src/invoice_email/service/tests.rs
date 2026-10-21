@@ -413,3 +413,13 @@ fn service_mail_lost_post_handoff_authority_never_returns_safe_failure() {
     assert_eq!(failure.error.code, "invalid_credentials");
     assert_eq!(store::rows(&f.company).unwrap()[0]["state"], "unknown");
 }
+
+#[test]
+fn backup_lock_enabled_during_smtp_still_records_actual_outcome(){
+ let mut f=fixture("owner");
+ f.company.execute_batch("INSERT INTO bank_accounts(id,slug,name,currency,ledger_account_no)VALUES(1,'synthetic-old','Synthetic old bank','DKK','R');INSERT INTO bank_transactions(transaction_date,text,amount,currency,bank_account_id)VALUES('2025-01-01','Synthetic historical bank',1,'DKK',1)").unwrap();
+ let path=f.paths()[1].clone();let mut transport=Fake::new(&f,Handoff::Accepted);
+ transport.after_send=Some(Box::new(move||{let db=Connection::open(&path).unwrap();let settings=json!({"version":1,"enforced":true,"graceDays":0,"restoreBoundary":0,"updatedAt":"2026-01-01T00:00:00Z","updatedBy":"user:u"});db.execute("INSERT INTO audit_log(event_type,entity_type,entity_id,message,actor)VALUES('native_backup_lock','backup_lock','a',?,'user:u')",[settings.to_string()]).unwrap();}));
+ let result=f.send("buyer@example.invalid",&mut transport).unwrap();assert_eq!(transport.calls,1);assert_eq!(result.result["delivery"]["state"],"accepted");
+ let result=f.send("other@example.invalid",&mut transport).err().unwrap();assert_eq!(result.error.code,"backup_overdue");assert_eq!(transport.calls,1);
+}

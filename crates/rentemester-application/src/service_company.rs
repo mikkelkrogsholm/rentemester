@@ -242,6 +242,13 @@ pub(crate) fn execute_operation<T>(
     mutation: bool,
     apply: impl FnOnce(&Transaction<'_>, &str, &mut Option<Value>) -> Result<OperationResult<T>, Error>,
 ) -> Result<ServiceResult<T>, ServiceFailure> {
+    execute_operation_mode(control,company,context,permission,mutation,false,apply)
+}
+pub(crate) fn execute_recovery<T>(control:&mut Connection,company:&mut Connection,context:Context<'_>,permission:Permission,apply:impl FnOnce(&Transaction<'_>,&str,&mut Option<Value>)->Result<OperationResult<T>,Error>)->Result<ServiceResult<T>,ServiceFailure>{
+    execute_operation_mode(control,company,context,permission,true,true,apply)
+}
+#[allow(clippy::too_many_arguments)]
+fn execute_operation_mode<T>(control:&mut Connection,company:&mut Connection,context:Context<'_>,permission:Permission,mutation:bool,backup_recovery:bool,apply:impl FnOnce(&Transaction<'_>,&str,&mut Option<Value>)->Result<OperationResult<T>,Error>)->Result<ServiceResult<T>,ServiceFailure>{
     control_fence::connection_ready(control).map_err(initial)?;
     control_fence::connection_ready(company).map_err(initial)?;
     let Context {
@@ -331,9 +338,10 @@ pub(crate) fn execute_operation<T>(
     checkpoint("usage-committed");
     let mut rejection = None;
     let mut attempted = false;
-    let done = control_fence::execute_authorized(
+    let done = control_fence::execute_authorized_with_backup(
         control,
         company,
+        (mutation && !backup_recovery).then_some(control_fence::BackupCheck{workspace:selection.workspace,slug:selection.slug,clock}),
         |tx| {
             if mutation {
                 rentemester_storage::workspace_transfer::require_business_write(tx)?;

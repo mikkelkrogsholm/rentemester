@@ -84,6 +84,11 @@ pub fn evaluate(
     enforced: bool,
     grace_days: u32,
 ) -> Result<Status, Error> {
+    evaluate_observed(now_ms,latest_backup_ms,latest_activity_ms,earliest_activity_ms,enforced,grace_days,false)
+}
+/// A host can additionally prove new append-only activity identities even when
+/// coarse source timestamps fall in the same second as the stored snapshot.
+pub fn evaluate_observed(now_ms:i64,latest_backup_ms:Option<i64>,latest_activity_ms:Option<i64>,earliest_activity_ms:Option<i64>,enforced:bool,grace_days:u32,activity_changed:bool)->Result<Status,Error>{
     date(now_ms)?;
     for timestamp in [latest_backup_ms, latest_activity_ms, earliest_activity_ms]
         .into_iter()
@@ -100,7 +105,7 @@ pub fn evaluate(
     let grace_ms = i64::from(grace_days)
         .checked_mul(DAY_MS)
         .ok_or_else(|| invalid("backup grace interval overflow"))?;
-    let has_activity_since_backup = latest_activity_ms
+    let has_activity_since_backup = activity_changed || latest_activity_ms
         .is_some_and(|activity| latest_backup_ms.is_none_or(|backup| activity > backup));
     let elapsed_ms = latest_backup_ms.map(|backup| now_ms - backup);
     let backup_due =
@@ -225,3 +230,5 @@ mod tests {
         assert!(evaluate(-MAX_DATE_MS, None, None, None, false, 0).is_ok());
     }
 }
+
+#[cfg(test)]mod activity_identity_tests{use super::*;#[test]fn same_second_identity_change_cannot_suppress_weekly_backup(){let backup=1767225600500;let latest=1767225600000;let now=backup+8*DAY_MS;assert!(!evaluate(now,Some(backup),Some(latest),Some(latest),true,0).unwrap().backup_due);let observed=evaluate_observed(now,Some(backup),Some(latest),Some(latest),true,0,true).unwrap();assert!(observed.backup_due&&observed.locked&&observed.has_activity_since_backup);}}
