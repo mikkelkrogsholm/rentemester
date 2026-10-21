@@ -127,6 +127,7 @@ fn plan_is_readonly_and_native_acceptance_couples_four_journals_control_schedule
             .all(|r| r["source"] == "imported")
     );
     verify_sources(&tx, &bytes);
+    assert!(crate::periods::verify_sources(&tx).unwrap().is_empty());
     assert!(crate::journal_hash::verify(&tx).unwrap().ok);
     tx.commit().unwrap();
     // Storage-level duplicate acceptance is refused. Durable exact-key replay is
@@ -394,4 +395,176 @@ fn chart_only_plan_discloses_missing_opening_and_never_invents_historical_postin
     );
     assert_eq!(snapshot(&tx), before);
     tx.rollback().unwrap();
+}
+fn change_file(package: &mut Value, path: &str, change: impl FnOnce(String) -> String) {
+    let file = package["files"]
+        .as_array_mut()
+        .unwrap()
+        .iter_mut()
+        .find(|f| f["path"] == path)
+        .unwrap();
+    let old = String::from_utf8(
+        STANDARD
+            .decode(file["contentBase64"].as_str().unwrap())
+            .unwrap(),
+    )
+    .unwrap();
+    file["contentBase64"] = json!(STANDARD.encode(change(old)));
+}
+#[test]
+fn explicit_source_vat_opening_is_auditable_without_relaxing_normal_manual_vat() {
+    let (_control, mut db) = db();
+    let mut package: Value = serde_json::from_slice(&source("24500,000000", false)).unwrap();
+    change_file(&mut package, "2025/Kontoplan.csv", |text| {
+        text.replace(
+            "60010;Overført resultat fra tidligere år;Passiv;;-30000,00",
+            "60010;Overført resultat fra tidligere år;Passiv;;-29500,00",
+        ) + "64000;Synthetic source output VAT;Passiv;;-500,00\n"
+    });
+    change_file(&mut package, "2025/Posteringer.csv", |text| {
+        text.replace("60010;Overført resultat fra tidligere år;2025-01-01;0;;Primobeholdning;;-30000,000000;-30000,000000","60010;Overført resultat fra tidligere år;2025-01-01;0;;Primobeholdning;;-29500,000000;-29500,000000")+"64000;Synthetic source output VAT;2025-01-01;0;;Primobeholdning;;-500,000000;-500,000000\n"
+    });
+    let bytes = serde_json::to_vec(&package).unwrap();
+    let tx = db
+        .transaction_with_behavior(TransactionBehavior::Immediate)
+        .unwrap();
+    install(&tx, &bytes);
+    let vat:f64=tx.query_row("SELECT SUM(l.credit_amount-l.debit_amount) FROM journal_lines l JOIN accounts a ON a.id=l.account_id WHERE a.account_no='64000'",[],|r|r.get(0)).unwrap();
+    assert_eq!(vat, 500.0);
+    verify_sources(&tx, &bytes);
+    assert!(crate::periods::verify_sources(&tx).unwrap().is_empty());
+    let request=serde_json::from_value(json!({"transactionDate":"2025-03-22","text":"Synthetic uncoded manual VAT refusal","currency":"DKK","lines":[{"accountNo":"64000","debitAmount":"1.00"},{"accountNo":"5510","creditAmount":"1.00"}]})).unwrap();
+    let before = snapshot(&tx);
+    let result = crate::journal_post::post(
+        &tx,
+        &request,
+        &crate::journal_preview::manual_journal_rule_version().unwrap(),
+        latest(),
+        crate::journal_post::Actor {
+            subject: "synthetic",
+            program: "rentemester-rust",
+        },
+    )
+    .unwrap();
+    assert_eq!(result["ok"], false);
+    assert!(
+        result["errors"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|e| e.as_str().is_some_and(|s| s.to_lowercase().contains("vat")))
+    );
+    assert_eq!(snapshot(&tx), before);
+    tx.commit().unwrap();
+}
+fn configured_debtor_balance(tx: &Transaction<'_>, date: &str) -> f64 {
+    tx.query_row("SELECT COALESCE(SUM(l.debit_amount-l.credit_amount),0) FROM journal_lines l JOIN journal_entries j ON j.id=l.journal_entry_id JOIN accounts a ON a.id=l.account_id JOIN account_role_mappings m ON m.account_no=a.account_no AND m.role='debtors' AND m.status='confirmed' WHERE j.transaction_date<=?1",[date],|r|r.get(0)).unwrap()
+}
+#[test]
+fn imported_and_native_invoices_reconcile_same_configured_debtor_at_each_cutoff() {
+    let (_control, mut db) = db();
+    let bytes = source("24500,000000", false);
+    let tx = db
+        .transaction_with_behavior(TransactionBehavior::Immediate)
+        .unwrap();
+    install(&tx, &bytes);
+    // Metadata only: every financial effect below uses the actual source,
+    // statement-import and native invoice writers.
+    tx.execute_batch("UPDATE companies SET address='Synthetic Street 124',cvr='87654321',vat_period_type='quarter';INSERT INTO accounts(account_no,name,type,normal_balance)VALUES('5400','Synthetic creditors','liability','credit'),('64000','Synthetic output VAT','vat','credit');").unwrap();
+    for (role, account) in [
+        ("bank", "5510"),
+        ("debtors", "5520"),
+        ("creditors", "5400"),
+        ("output_vat", "64000"),
+    ] {
+        crate::company_setup::confirm_role(
+            &tx,
+            &crate::company_setup::Role {
+                role: role.into(),
+                account_no: account.into(),
+                confirm: true,
+            },
+            "synthetic",
+        )
+        .unwrap();
+    }
+    crate::bank::create_account(&tx,&serde_json::from_value(json!({"name":"Synthetic independent source bank","slug":"synthetic-source-bank","currency":"DKK","ledgerAccountNo":"5510"})).unwrap(),"synthetic").unwrap();
+    let csv = "date;text;amount;currency;reference;saldo\n2025-03-05;Synthetic independent source payment;30000;DKK;source-opening-payment;30000\n";
+    crate::bank::import(
+        &tx,
+        csv,
+        &rentemester_engine::bank::parse(csv).unwrap(),
+        Some("synthetic-source-bank"),
+        "synthetic",
+        "2026-10-21T12:00:00Z",
+        "synthetic",
+    )
+    .unwrap();
+    let customer=crate::sales::create_customer(&tx,&serde_json::from_value(json!({"name":"Synthetic native buyer","address":"Synthetic Street 125","vatOrCvr":"DK11223344","paymentTermsDays":1})).unwrap(),"synthetic").unwrap();
+    let input=serde_json::from_value(json!({"issueDate":"2025-03-22","dueDate":"2025-03-23","currency":"DKK","customerId":customer["id"],"lines":[{"description":"Synthetic native service","quantity":1,"unitPriceExVat":1000}]})).unwrap();
+    let payload = crate::sales::prepare(&tx, &input, "2025-03-22T12:00:00Z", true).unwrap();
+    let original_hash = crate::invoice_email::sha(&serde_json::to_vec_pretty(&payload).unwrap());
+    let pdf_hash = crate::invoice_email::sha(b"Synthetic native combined-control PDF");
+    let issued = crate::sales::register(
+        &tx,
+        &payload,
+        crate::sales::Artifact {
+            filename: "synthetic-combined.json",
+            path: "synthetic-combined.json",
+            hash: &original_hash,
+            mime: "application/json",
+        },
+        crate::sales::Artifact {
+            filename: "synthetic-combined.pdf",
+            path: "synthetic-combined.pdf",
+            hash: &pdf_hash,
+            mime: "application/pdf",
+        },
+        "synthetic",
+    )
+    .unwrap();
+    let id = issued["documentId"].as_i64().unwrap();
+    crate::sales::post(
+        &tx,
+        &crate::sales::Post {
+            invoice_document_id: id,
+            revenue_account_no: "1000".into(),
+            confirm: true,
+        },
+        "synthetic",
+        latest(),
+    )
+    .unwrap();
+    for (date, expected, native) in [
+        ("2025-03-21", 24500.0, 0.0),
+        ("2025-03-22", 25750.0, 1250.0),
+    ] {
+        let imported = crate::imported_receivables::read(&tx, date).unwrap();
+        assert_eq!(imported["totalOpen"].as_f64(), Some(24500.0));
+        assert_eq!(configured_debtor_balance(&tx, date), expected);
+        assert_eq!(expected, 24500.0 + native);
+        let actual_native:f64=tx.query_row("SELECT COALESCE(SUM(p.booked_gross_dkk),0) FROM issued_invoice_postings p JOIN documents d ON d.id=p.invoice_document_id JOIN accounts a ON a.id=p.receivable_account_id WHERE d.invoice_date<=?1 AND a.account_no='5520'",[date],|r|r.get(0)).unwrap();
+        assert_eq!(actual_native, native);
+        let packet = crate::periods::compute(&tx, "2025-01-01", date, Ok(vec![])).unwrap();
+        let control = packet["items"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|i| i["code"] == "DKK_CONTROL_ACCOUNTS")
+            .unwrap();
+        assert_eq!(control["status"], "passed", "{packet}");
+        assert_eq!(control["count"], 0);
+        assert_eq!(control["evidence"], json!([]));
+        // Passing DKK control is deliberately narrower than a green close
+        // packet: unmatched statement rows and other blockers remain visible.
+        assert!(
+            packet["items"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .any(|i| i["status"] == "blocked" || i["status"] == "warning")
+        );
+    }
+    assert!(crate::periods::verify_sources(&tx).unwrap().is_empty());
+    tx.commit().unwrap();
 }
