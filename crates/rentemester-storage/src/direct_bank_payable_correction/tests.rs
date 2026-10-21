@@ -25,7 +25,7 @@ fn fixture(bank_date: &str, mixed: bool) -> Connection {
     let tx = db
         .transaction_with_behavior(TransactionBehavior::Immediate)
         .unwrap();
-    tx.execute_batch("UPDATE companies SET vat_period_type='quarter' WHERE id=1;INSERT INTO accounts(account_no,name,type,normal_balance)VALUES('A','Synthetic bank','asset','debit'),('X','Synthetic expense','expense','debit'),('V','Synthetic VAT','vat','debit'),('C','Synthetic creditor','liability','credit');INSERT INTO account_role_mappings(role,account_no,status,version,confirmed_by)VALUES('bank','A','confirmed',1,'synthetic'),('input_vat','V','confirmed',1,'synthetic'),('creditors','C','confirmed',1,'synthetic');INSERT INTO bank_accounts(slug,name,ledger_account_no)VALUES('synthetic','Synthetic bank','A');").unwrap();
+    tx.execute_batch("UPDATE companies SET cvr='87654321',vat_period_type='quarter' WHERE id=1;INSERT INTO accounts(account_no,name,type,normal_balance)VALUES('A','Synthetic bank','asset','debit'),('X','Synthetic expense','expense','debit'),('V','Synthetic VAT','vat','debit'),('C','Synthetic creditor','liability','credit'),('R','Synthetic debtor','asset','debit');INSERT INTO account_role_mappings(role,account_no,status,version,confirmed_by)VALUES('bank','A','confirmed',1,'synthetic'),('input_vat','V','confirmed',1,'synthetic'),('creditors','C','confirmed',1,'synthetic'),('debtors','R','confirmed',1,'synthetic');INSERT INTO bank_accounts(slug,name,ledger_account_no)VALUES('synthetic','Synthetic bank','A');").unwrap();
     let mut value = json!({"source":"synthetic-correction","documentType":"purchase_sale","issueDate":"2026-06-16","invoiceNo":"SYN-58","deliveryDescription":"Synthetic supplies","amountIncVat":125,"vatAmount":25,"currency":"DKK","sender":{"name":"Synthetic supplier","address":"Synthetic1","vatOrCvr":"DK12345678"},"recipient":{"name":"Synthetic buyer","address":"Synthetic2","vatOrCvr":"DK87654321"}});
     if mixed {
         value["amountIncVat"] = json!(509);
@@ -48,7 +48,7 @@ fn fixture(bank_date: &str, mixed: bool) -> Connection {
     )
     .unwrap();
     let csv = format!(
-        "date;text;amount\n{bank_date};Synthetic SYN-58;-{}\n",
+        "date;text;amount;saldo\n{bank_date};Synthetic SYN-58;-{0};-{0}\n",
         if mixed { 509 } else { 125 }
     );
     crate::bank::import(
@@ -104,6 +104,16 @@ fn reviewed(tx: &Transaction<'_>) -> ApplyInput {
 fn count(db: &Connection, table: &str) -> i64 {
     db.query_row(&format!("SELECT count(*) FROM {table}"), [], |r| r.get(0))
         .unwrap()
+}
+fn period_sources(tx: &Transaction<'_>) {
+    let before = tx.total_changes();
+    let errors = crate::periods::verify_sources(tx).unwrap();
+    assert!(errors.is_empty(), "{errors:?}");
+    assert_eq!(
+        tx.total_changes(),
+        before,
+        "period assurance must be read-only"
+    );
 }
 fn untouched(db: &Connection) {
     assert_eq!(count(db, "journal_entries"), 1);
@@ -201,6 +211,7 @@ fn same_and_cross_period_mixed_vat_preserve_balances_and_exact_replay() {
             "author"
         );
         assert_eq!(count(&tx, "journal_entries"), 4);
+        period_sources(&tx);
         tx.commit().unwrap();
         validate_backup(&db).unwrap();
     }
@@ -365,9 +376,143 @@ fn file_snapshot_reopen_keeps_linked_history_and_typed_validation() {
     let tx = db
         .transaction_with_behavior(TransactionBehavior::Immediate)
         .unwrap();
+    period_sources(&tx);
     let out = apply(&tx, &i, "author", latest(), NOW + 1).unwrap();
     assert_eq!(out["correction"], expected["correction"]);
     assert_eq!(out["idempotency"]["replayed"], true);
     tx.commit().unwrap();
     assert_eq!(count(&db, "journal_entries"), 4);
+}
+
+#[test]
+fn reviewed_period_close_and_reopen_retain_direct_correction_and_journal_history() {
+    let mut db = fixture("2026-07-02", true);
+    let tx = db
+        .transaction_with_behavior(TransactionBehavior::Immediate)
+        .unwrap();
+    let reviewed_input = reviewed(&tx);
+    let correction = apply(&tx, &reviewed_input, "author", latest(), NOW).unwrap();
+    period_sources(&tx);
+    // Physical-original verification belongs to the host. This storage test
+    // supplies its successful result and exercises the real accounting controls.
+    let packet = crate::periods::compute(&tx, "2026-07-01", "2026-09-30", Ok(vec![])).unwrap();
+    assert_eq!(packet["blockers"], 0, "{packet}");
+    let journal = rows(&tx, "SELECT * FROM journal_entries ORDER BY id", []).unwrap();
+    let lines = rows(&tx, "SELECT * FROM journal_lines ORDER BY id", []).unwrap();
+    let retained = rows(
+        &tx,
+        "SELECT * FROM direct_bank_purchase_payable_corrections ORDER BY id",
+        [],
+    )
+    .unwrap();
+    let review = crate::periods::review(&tx, &packet, "author").unwrap();
+    let input: crate::periods::Close = serde_json::from_value(json!({
+        "periodStart":"2026-07-01", "periodEnd":"2026-09-30", "kind":"vat_period",
+        "packetHash":packet["hash"], "reviewId":review["id"], "confirm":true
+    }))
+    .unwrap();
+    assert_eq!(
+        crate::periods::close(&tx, &input, &packet, "author", "2026-10-19").unwrap()["status"],
+        "closed"
+    );
+    assert_eq!(
+        crate::periods::list(&tx, "synthetic").unwrap()["periods"][0]["effectiveStatus"],
+        "closed"
+    );
+    let locked = crate::periods::compute(&tx, "2026-07-01", "2026-09-30", Ok(vec![])).unwrap();
+    let reopen: crate::periods::Reopen = serde_json::from_value(json!({
+        "periodStart":"2026-07-01", "periodEnd":"2026-09-30", "kind":"vat_period",
+        "reason":"Synthetic additional reviewed evidence", "confirm":true
+    }))
+    .unwrap();
+    crate::periods::reopen(&tx, &reopen, &locked, "author").unwrap();
+    assert_eq!(
+        crate::periods::list(&tx, "synthetic").unwrap()["periods"][0]["effectiveStatus"],
+        "open"
+    );
+    assert_eq!(
+        rows(&tx, "SELECT * FROM journal_entries ORDER BY id", []).unwrap(),
+        journal
+    );
+    assert_eq!(
+        rows(&tx, "SELECT * FROM journal_lines ORDER BY id", []).unwrap(),
+        lines
+    );
+    assert_eq!(
+        rows(
+            &tx,
+            "SELECT * FROM direct_bank_purchase_payable_corrections ORDER BY id",
+            []
+        )
+        .unwrap(),
+        retained
+    );
+    assert_eq!(
+        apply(&tx, &reviewed_input, "author", latest(), NOW + 1).unwrap()["correction"],
+        correction["correction"]
+    );
+    period_sources(&tx);
+    tx.commit().unwrap();
+}
+
+#[test]
+fn period_close_refuses_tampered_retained_direct_correction_without_financial_effects() {
+    let mut db = fixture("2026-07-02", true);
+    let tx = db
+        .transaction_with_behavior(TransactionBehavior::Immediate)
+        .unwrap();
+    apply(&tx, &reviewed(&tx), "author", latest(), NOW).unwrap();
+    period_sources(&tx);
+    let packet = crate::periods::compute(&tx, "2026-07-01", "2026-09-30", Ok(vec![])).unwrap();
+    assert_eq!(packet["blockers"], 0, "{packet}");
+    let review = crate::periods::review(&tx, &packet, "author").unwrap();
+    tx.commit().unwrap();
+    // Synthetic corruption only; restore the exact trigger DDL so an absent
+    // schema guard cannot substitute for validation of retained correction facts.
+    let triggers = db
+        .prepare("SELECT name,sql FROM sqlite_schema WHERE type='trigger' ORDER BY name")
+        .unwrap()
+        .query_map([], |r| Ok((r.get::<_, String>(0)?, r.get::<_, String>(1)?)))
+        .unwrap()
+        .collect::<Result<Vec<_>, _>>()
+        .unwrap();
+    for (name, _) in &triggers {
+        db.execute_batch(&format!("DROP TRIGGER \"{name}\";"))
+            .unwrap();
+    }
+    db.execute(
+        "UPDATE direct_bank_purchase_payable_corrections SET original_journal_hash=?1",
+        ["f".repeat(64)],
+    )
+    .unwrap();
+    for (_, ddl) in triggers {
+        db.execute_batch(&ddl).unwrap();
+    }
+    let tx = db
+        .transaction_with_behavior(TransactionBehavior::Immediate)
+        .unwrap();
+    let before = tx.total_changes();
+    let result = crate::periods::verify_sources(&tx);
+    assert!(
+        result.is_err() || !result.unwrap().is_empty(),
+        "corrupt correction passed period assurance"
+    );
+    let current = crate::periods::compute(&tx, "2026-07-01", "2026-09-30", Ok(vec![])).unwrap();
+    assert!(
+        current["items"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|item| item["code"] == "LEDGER_AUDIT_CHAIN"
+                && (item["status"] == "blocked" || item["status"] == "unavailable"))
+    );
+    let input: crate::periods::Close = serde_json::from_value(json!({
+        "periodStart":"2026-07-01", "periodEnd":"2026-09-30", "kind":"vat_period",
+        "packetHash":packet["hash"], "reviewId":review["id"], "confirm":true
+    }))
+    .unwrap();
+    assert!(crate::periods::close(&tx, &input, &current, "author", "2026-10-19").is_err());
+    assert_eq!(count(&tx, "journal_entries"), 4);
+    assert_eq!(count(&tx, "accounting_periods"), 0);
+    assert_eq!(tx.total_changes(), before);
 }
