@@ -109,6 +109,15 @@ pub fn prepare(
     verified: &[VerifiedArchive],
     latest: Date,
 ) -> Result<Prepared, Error> {
+    prepare_mode(tx, input, verified, latest, false)
+}
+fn prepare_mode(
+    tx: &Transaction<'_>,
+    input: &Input,
+    verified: &[VerifiedArchive],
+    latest: Date,
+    source_import: bool,
+) -> Result<Prepared, Error> {
     crate::journal_preview::require_current(tx)?;
     input.validate()?;
     archive_import::read(tx, verified, None)?;
@@ -121,7 +130,14 @@ pub fn prepare(
     let rules = crate::journal_preview::compiled_rules()?;
     let rule_version = rules.version().to_owned();
     let facts = crate::journal_preview::collect_facts(tx, &request, latest)?;
-    let validation = manual_journal::validate(&request, &facts, &rules, &rule_version)?;
+    let validation = if source_import {
+        let mut value = serde_json::to_value(&request).map_err(sql)?;
+        value["createdByProgram"] = json!("rentemester-import-postings");
+        let source_request = serde_json::from_value(value).map_err(sql)?;
+        manual_journal::validate_historical_import(&source_request, &facts, &rules, &rule_version)?
+    } else {
+        manual_journal::validate(&request, &facts, &rules, &rule_version)?
+    };
     let mut blockers: Vec<String> = validation
         .errors
         .iter()
@@ -197,6 +213,15 @@ pub fn prepare(
         credit: validation.total_credit,
     })
 }
+pub(crate) fn prepare_import(
+    tx: &Transaction<'_>,
+    input: &Input,
+    verified: &[VerifiedArchive],
+    latest: Date,
+    _admitted: &crate::dinero_import::AdmittedVoucher,
+) -> Result<Prepared, Error> {
+    prepare_mode(tx, input, verified, latest, true)
+}
 /// Fresh-key domain callback only. The authorized adapter owns durable keyed receipts and commit.
 pub fn apply(
     tx: &Transaction<'_>,
@@ -205,6 +230,28 @@ pub fn apply(
     latest: Date,
     actor: Actor<'_>,
     now_ms: i64,
+) -> Result<Value, Error> {
+    apply_mode(tx, input, verified, latest, actor, now_ms, None)
+}
+pub(crate) fn apply_import(
+    tx: &Transaction<'_>,
+    input: &Apply,
+    verified: &[VerifiedArchive],
+    latest: Date,
+    actor: Actor<'_>,
+    now_ms: i64,
+    admitted: &crate::dinero_import::AdmittedVoucher,
+) -> Result<Value, Error> {
+    apply_mode(tx, input, verified, latest, actor, now_ms, Some(admitted))
+}
+fn apply_mode(
+    tx: &Transaction<'_>,
+    input: &Apply,
+    verified: &[VerifiedArchive],
+    latest: Date,
+    actor: Actor<'_>,
+    now_ms: i64,
+    admitted: Option<&crate::dinero_import::AdmittedVoucher>,
 ) -> Result<Value, Error> {
     journal_post::require_current(tx)?;
     crate::idempotency::validate_key(&input.idempotency_key)?;
@@ -217,7 +264,7 @@ pub fn apply(
             "explicit current human opening confirmation required",
         ));
     }
-    let prepared = prepare(tx, &input.input, verified, latest)?;
+    let prepared = prepare_mode(tx, &input.input, verified, latest, admitted.is_some())?;
     if input.plan_hash != prepared.hash {
         return Err(refused("opening plan changed; review a fresh plan"));
     }
@@ -227,16 +274,20 @@ pub fn apply(
     let request = input
         .input
         .request(&prepared.binding.source_basis.currency)?;
-    let posted = journal_post::post(
-        tx,
-        &request,
-        &prepared.binding.rule_version,
-        latest,
-        Actor {
-            subject: actor.subject,
-            program: PROGRAM,
-        },
-    )?;
+    let posted = if let Some(admitted) = admitted {
+        journal_post::post_import_opening(tx, &request, latest, actor.subject, admitted)?
+    } else {
+        journal_post::post(
+            tx,
+            &request,
+            &prepared.binding.rule_version,
+            latest,
+            Actor {
+                subject: actor.subject,
+                program: PROGRAM,
+            },
+        )?
+    };
     if posted["ok"] != true {
         return Err(refused("opening journal was refused; abort transaction"));
     }

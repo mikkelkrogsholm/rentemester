@@ -4,6 +4,7 @@
 mod invoice_compensation;
 mod invoice_interest;
 mod invoice_bad_debt;
+mod dinero_import;
 pub mod legacy_adoption;
 mod audit_verify;
 mod audit_log;

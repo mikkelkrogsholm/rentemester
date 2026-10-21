@@ -268,6 +268,7 @@ impl Owner {
                 let facts = store::company(db)?;
                 super::invoice_email::validate_live_sources(db, &mut slots.guard)?;
                 super::archive_import::validate_live_sources(db, &mut slots.guard)?;
+                super::dinero_import::validate_live_sources(db, &mut slots.guard)?;
                 super::invoice_extraction::validate_live_sources(db, &mut slots.guard)?;
                 store::validate_inbox_company(&tx, db, &c.slug)?;
                 super::intercompany_dispositions::validate_historical_company(
@@ -276,12 +277,23 @@ impl Owner {
                     &c.slug,
                     &facts.uuid,
                 )?;
-                let ids:[i64;3]=[
-                    db.query_row("SELECT COALESCE(MAX(id),0) FROM journal_entries",[],|r|r.get(0)).map_err(error)?,
-                    db.query_row("SELECT COALESCE(MAX(id),0) FROM documents",[],|r|r.get(0)).map_err(error)?,
-                    db.query_row("SELECT COALESCE(MAX(id),0) FROM bank_transactions",[],|r|r.get(0)).map_err(error)?,
+                let ids: [i64; 3] = [
+                    db.query_row("SELECT COALESCE(MAX(id),0) FROM journal_entries", [], |r| {
+                        r.get(0)
+                    })
+                    .map_err(error)?,
+                    db.query_row("SELECT COALESCE(MAX(id),0) FROM documents", [], |r| {
+                        r.get(0)
+                    })
+                    .map_err(error)?,
+                    db.query_row(
+                        "SELECT COALESCE(MAX(id),0) FROM bank_transactions",
+                        [],
+                        |r| r.get(0),
+                    )
+                    .map_err(error)?,
                 ];
-                activity_ids.insert(c.slug.clone(),ids);
+                activity_ids.insert(c.slug.clone(), ids);
                 companies.push(artifact::Company {
                     slug: c.slug.clone(),
                     ledger_uuid: facts.uuid,
@@ -385,33 +397,72 @@ impl Owner {
                 },
             };
             let wire = artifact::create(context, entries, key).map_err(error)?;
-            let trusted = artifact::TrustedPublicKey::from_bytes(&key.public_key_bytes()).map_err(error)?;
+            let trusted =
+                artifact::TrustedPublicKey::from_bytes(&key.public_key_bytes()).map_err(error)?;
             let verified = artifact::verify(&wire, &trusted).map_err(error)?;
             // Retention is independent of a successful browser/download reply.
             // Any failure from this point can have left a complete immutable file.
             retention_attempted = true;
-            slots.guard.retain_backup(&wire, &trusted, &self.workspace).map_err(error)?;
+            slots
+                .guard
+                .retain_backup(&wire, &trusted, &self.workspace)
+                .map_err(error)?;
             let manifest = verified.manifest();
-            let companies = manifest.context.companies.iter().map(|company| {
-                let entry = manifest.inventory.iter().find(|entry| matches!(&entry.kind,
-                    artifact::EntryKind::CompanyLedger { company: slug } if slug == &company.slug))
-                    .ok_or_else(||error("retained snapshot ledger inventory missing"))?;
-                Ok(rentemester_storage::backup_inventory::Company { slug: company.slug.clone(),
-                    ledger_uuid: company.ledger_uuid.clone(), snapshot_sha256: entry.sha256.clone(), activity_max_ids:activity_ids.get(&company.slug).copied() })
-            }).collect::<Result<Vec<_>,rentemester_engine::Error>>()?;
-            let current = rentemester_storage::cookie_session::resolve(&tx, proof.token(), now,
-                rentemester_storage::cookie_session::SessionRequirement::Current)?;
-            rentemester_storage::backup_inventory::append(&tx,
-                &rentemester_storage::backup_inventory::Snapshot { version:1,
-                    workspace_id:self.workspace.clone(), archive_sha256:rentemester_runtime::backup_keys::digest(&wire),
-                    archive_size_bytes:wire.len() as u64, signing_public_key_sha256:manifest.signing_public_key_sha256.clone(), signing_public_key:Some(key.public_key_bytes().to_vec()),
-                    created_at:manifest.context.created_at.clone(), created_at_ms:now, companies },
-                &format!("user:{}",current.subject))?;
+            let companies = manifest
+                .context
+                .companies
+                .iter()
+                .map(|company| {
+                    let entry = manifest
+                        .inventory
+                        .iter()
+                        .find(|entry| {
+                            matches!(&entry.kind,
+                    artifact::EntryKind::CompanyLedger { company: slug } if slug == &company.slug)
+                        })
+                        .ok_or_else(|| error("retained snapshot ledger inventory missing"))?;
+                    Ok(rentemester_storage::backup_inventory::Company {
+                        slug: company.slug.clone(),
+                        ledger_uuid: company.ledger_uuid.clone(),
+                        snapshot_sha256: entry.sha256.clone(),
+                        activity_max_ids: activity_ids.get(&company.slug).copied(),
+                    })
+                })
+                .collect::<Result<Vec<_>, rentemester_engine::Error>>()?;
+            let current = rentemester_storage::cookie_session::resolve(
+                &tx,
+                proof.token(),
+                now,
+                rentemester_storage::cookie_session::SessionRequirement::Current,
+            )?;
+            rentemester_storage::backup_inventory::append(
+                &tx,
+                &rentemester_storage::backup_inventory::Snapshot {
+                    version: 1,
+                    workspace_id: self.workspace.clone(),
+                    archive_sha256: rentemester_runtime::backup_keys::digest(&wire),
+                    archive_size_bytes: wire.len() as u64,
+                    signing_public_key_sha256: manifest.signing_public_key_sha256.clone(),
+                    signing_public_key: Some(key.public_key_bytes().to_vec()),
+                    created_at: manifest.context.created_at.clone(),
+                    created_at_ms: now,
+                    companies,
+                },
+                &format!("user:{}", current.subject),
+            )?;
             Ok(wire)
         })();
         let rollback = if outcome.is_ok() {
-            match tx.commit() { Ok(()) => true, Err(_) => { outcome = Err(error("retained backup inventory commit outcome unknown")); false } }
-        } else { tx.rollback().is_ok() };
+            match tx.commit() {
+                Ok(()) => true,
+                Err(_) => {
+                    outcome = Err(error("retained backup inventory commit outcome unknown"));
+                    false
+                }
+            }
+        } else {
+            tx.rollback().is_ok()
+        };
         // Maintenance may pin archived companies. Restore the caller's ordinary
         // active selection on success AND failure before returning a reusable owner.
         let restored = switch(
@@ -436,7 +487,11 @@ impl Owner {
         };
         Ok(Attempt {
             outcome: outcome.map_err(|error| Failure {
-                stage: if retention_attempted { FailureStage::OutcomeUnknown } else { FailureStage::NotCommitted },
+                stage: if retention_attempted {
+                    FailureStage::OutcomeUnknown
+                } else {
+                    FailureStage::NotCommitted
+                },
                 error,
                 connection_reusable: !retired,
             }),
@@ -780,6 +835,7 @@ fn validate(a: &artifact::VerifiedArtifact) -> Result<(), rentemester_engine::Er
         }
         super::invoice_email::validate_archive_sources(&db, a, &c.slug)?;
         super::archive_import::validate_archive_sources(&db, a, &c.slug)?;
+        super::dinero_import::validate_archive_sources(&db, a, &c.slug)?;
         super::invoice_extraction::validate_archive_sources(&db, a, &c.slug)?;
         for hash in facts.bank_hashes {
             if !paths.contains_key(format!("{}/bank/processed/{hash}.txt", c.slug).as_str()) {

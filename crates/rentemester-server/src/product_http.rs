@@ -8,6 +8,7 @@ mod eu_sales;
 mod oss_report;
 mod public_einvoice;
 mod archive_import;
+mod dinero_import;
 mod opening_balance;
 mod archive_reports;
 mod cfo_analytics;
@@ -118,6 +119,11 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
         .route("/api/companies/{slug}/opening-balance/plan",post(opening_balance::handle))
         .route("/api/companies/{slug}/opening-balance/apply",post(opening_balance::handle))
         .route("/api/companies/{slug}/archive-import/plan",post(archive_import::handle))
+        .route("/api/companies/{slug}/imports/dinero/plan",post(dinero_import::handle))
+        .route("/api/companies/{slug}/imports/dinero/apply",post(dinero_import::handle))
+        .route("/api/companies/{slug}/imports/dinero",get(dinero_import::handle))
+        .route("/api/companies/{slug}/imports/dinero/{attemptId}/original",get(dinero_import::handle))
+        .route("/api/companies/{slug}/invoices/imported-receivables",get(dinero_import::handle))
         .route("/api/companies/{slug}/archive-import/apply",post(archive_import::handle))
         .route("/api/companies/{slug}/archives",get(archive_import::handle))
         .route("/api/companies/{slug}/archives/{fiscalYear}",get(archive_import::handle))

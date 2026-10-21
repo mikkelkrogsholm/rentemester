@@ -149,11 +149,89 @@ pub(super) fn execute(
     actor: Actor<'_>,
     reversal: Option<&Reversal>,
 ) -> Result<Value, Error> {
+    execute_mode(
+        tx,
+        request,
+        expected_version,
+        latest,
+        actor,
+        reversal,
+        false,
+    )
+}
+/// Only a source import can construct this admission token. Normal manual
+/// requests cannot select the historical evidence exception or its marker.
+pub(crate) fn post_historical_import(
+    tx: &Transaction<'_>,
+    request: &ManualJournal,
+    latest: Date,
+    subject: &str,
+    _admitted: &crate::dinero_import::AdmittedVoucher,
+) -> Result<Value, Error> {
+    execute_mode(
+        tx,
+        request,
+        &journal_preview::manual_journal_rule_version()?,
+        latest,
+        Actor {
+            subject,
+            program: "rentemester-import-postings",
+        },
+        None,
+        true,
+    )
+}
+pub(crate) fn post_import_opening(
+    tx: &Transaction<'_>,
+    request: &ManualJournal,
+    latest: Date,
+    subject: &str,
+    _admitted: &crate::dinero_import::AdmittedVoucher,
+) -> Result<Value, Error> {
+    if request.created_by_program.is_some()
+        || request.document_id.is_some()
+        || request.source_bank_transaction_id.is_some()
+    {
+        return Err(failed("invalid source opening context"));
+    }
+    execute_mode(
+        tx,
+        request,
+        &journal_preview::manual_journal_rule_version()?,
+        latest,
+        Actor {
+            subject,
+            program: crate::opening_balance::PROGRAM,
+        },
+        None,
+        true,
+    )
+}
+fn execute_mode(
+    tx: &Transaction<'_>,
+    request: &ManualJournal,
+    expected_version: &str,
+    latest: Date,
+    actor: Actor<'_>,
+    reversal: Option<&Reversal>,
+    historical: bool,
+) -> Result<Value, Error> {
     require_current(tx)?;
     crate::opening_balance::require_posting_date(tx, request.transaction_date)?;
     let rules = journal_preview::compiled_rules()?;
     let facts = journal_preview::collect_facts(tx, request, latest)?;
     let mut validation = match reversal {
+        None if historical => {
+            let mut value = serde_json::to_value(request).map_err(failed)?;
+            value["createdByProgram"] = json!("rentemester-import-postings");
+            let source_request = serde_json::from_value(value).map_err(failed)?;
+            manual_journal::validate_historical_import(
+                &source_request,
+                &facts,
+                &rules,
+                expected_version,
+            )?
+        }
         None => manual_journal::validate(request, &facts, &rules, expected_version)?,
         Some(original) => manual_journal::validate_reversal(
             request,
@@ -227,11 +305,11 @@ pub(super) fn execute(
             }).collect::<Result<Vec<String>,Error>>()?}),
         );
     }
-    if (request.created_by_program.is_some() && reversal.is_none())
+    if (request.created_by_program.is_some() && reversal.is_none() && !historical)
         || trim(actor.subject).is_empty()
         || actor.subject.len() > 512
         || trim(actor.program).is_empty()
-        || trim(actor.program) == "rentemester-import-postings"
+        || (trim(actor.program) == "rentemester-import-postings" && !historical)
         || actor.program.len() > 256
     {
         return Err(Error::new(

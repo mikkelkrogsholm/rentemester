@@ -1,5 +1,7 @@
 //! Source-read-only reports/rehearsals and caller-owned transactional primitives.
 pub mod invoice_bad_debt;
+pub mod dinero_import;
+pub mod imported_receivables;
 pub mod invoice_interest;
 pub mod invoice_compensation;
 pub(crate) mod invoice_compensation_schema;

@@ -13,6 +13,7 @@ const RETENTION_MS: i64 = 30 * 86_400_000;
 pub enum Operation {
     OpeningBalancePost,
     ClosedHistoryArchiveImport,
+    DineroImport,
     JournalPost,
     JournalReverse,
     ExpenseBook,
@@ -26,6 +27,7 @@ impl Operation {
         match self {
             Self::OpeningBalancePost => "opening_balance_post",
             Self::ClosedHistoryArchiveImport => "closed_history_archive_import",
+            Self::DineroImport => "dinero_import",
             Self::JournalPost => "journal_post",
             Self::JournalReverse => "journal_reverse",
             Self::ExpenseBook => "expense_book",

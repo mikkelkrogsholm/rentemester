@@ -387,6 +387,17 @@ fn bad_debt(tx: &Transaction<'_>, row: &Value) -> Result<(), Error> {
         "bad debt exact frozen DKK journal amounts differ",
     )
 }
+pub(crate) fn imported_rows(tx: &Transaction<'_>) -> Result<Vec<Value>, Error> {
+    let headers = rows(
+        tx,
+        "SELECT * FROM imported_receivable_headers ORDER BY invoice_date,id",
+        &[],
+    )?;
+    for header in &headers {
+        imported(tx, header)?;
+    }
+    Ok(headers)
+}
 fn imported(tx: &Transaction<'_>, h: &Value) -> Result<(), Error> {
     let id = number(&h["id"])?;
     let gross = positive(&h["gross_amount"])?;

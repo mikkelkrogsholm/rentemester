@@ -1,13 +1,13 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "Group123 existing direct-bank purchase-to-payable correction now qualified for period assurance and reviewed close/reopen",
-  "code_revision": "959f6c6a plus root existing-validator period wiring",
+  "current_increment": "Group124 source-bound live-year Dinero import qualified through existing web, HTTP, CLI/MCP, replay, audit and restart; Group125 supporting document registration and links next",
+  "code_revision": "d5253acd plus qualified source-bound Dinero writer/assurance and actual proof changes",
   "spec_revision": "sha256:bc98636be4a972407adce0f817a76bb9d4bb7200cb292a70965e75ab62fae250",
-  "state": "Group123 removes only obsolete direct-bank-correction period blanket after wiring existing retained-history validate_backup into canonical period assurance. Nine direct correction tests pass: actual process death/rollback/concurrent replay, same/cross-period mixed VAT, file reopen, reviewed Q3 close/reopen preserving all journal entries/lines/correction rows, tampered retained journal hash refusal without effects. General reviewed close/reopen regression1 and strict storage lib/tests Clippy pass. This increment is storage/library period evidence, not a new normal-MFA actual-close claim; Group58 prior whole-flow actual acceptance and Group122 actual DKK/foreign bad-debt web/CLI/MCP/restart/signed-backup acceptance remain retained. Newest accepted whole-flow report /tmp/rentemester-rust-reports/native-invoice-bad-debt122b.json SHA256 ed95e3e46fbc842a405c57bf4e9101c09068a124518be3ce820f9b38c01a65fb. Imported receivables remain correctly blocked pending source-authoritative Dinero latest-year opening/history/import-attempt/schedule and combined control proof, an explicit R19/R27 source-parity gap. Full original rewrite/GDD/epic672 remains active; remaining supported lifecycle/recovery, transfer/release/install/platform/CLI-MCP/TypeScript retirement and final installed desktop gates remain. Desktop GUI last; no unlock probes. Original corrected foreign-interest refusal and no invented recovery feature preserved.",
+  "state": "Group124 latest-year DKK Dinero opening, historical vouchers, source controls, accepted provenance and imported receivables are qualified through existing web, HTTP, compiled CLI/MCP, exact-key replay, full five-part audit and fresh-MFA restart. Actual124e passed and independent pinned-artifact/process/profile verification passed; report SHA256 9340542e6f0b71dd2a2c31961ef47cfa8a3f4bb6b813d7e55f38453947cbfe04. Eleven storage tests, five schedule tests, six opening tests, reviewed close1, route1 and nine-crate strict Clippy pass. Earlier failed harness runs preserved with diagnosed selector/canonical-refusal/replay-audit corrections. CI PR728 published; main and real issue-edited automatic runs pass. Next original R27 boundary: supporting originals, additive voucher links and unbooked exceptions. Remaining original containers/import/open-item/report variants and every epic672/GDD completion gate stay open. One Rust engine/server, shared React/Tauri UI; installed desktop GUI last.",
   "issues_closed": [],
   "next": [
-    "Port complete source-defined latest-year Dinero import with authoritative opening/history journal, source control balances, accepted provenance attempt and imported-receivable schedule atomically; add exact as-of reads and native/imported control reconciliation. Reuse closed-history/archive and opening mechanisms without pretending archive-only import already supports live year. Scout /tmp/rm124-imported-receivables-scout.md records original R19/R27 and source seams. Keep all original mission gates and installed desktop GUI last.",
+    "Finish original R27 supporting originals, additive exact voucher links and unbooked receipt exceptions using ready independent source-only planner/projection commits; then remaining originally supported containers/import/open-item/report variants. Group124 source-bound opening/history/schedule actual acceptance is complete; do not repeat or reimplement it. Preserve all original mission gates and installed GUI last.",
     "Installed desktop acceptance is explicitly deferred to the very end by the user. Preserve prepared Group100 profile; collect remaining native automation, closure, recovery and packaging checks for final installed acceptance without requesting screen unlock during development.",
     "J03/R50 and remaining R54 scope: only still-supported operation closure/recovery, nonempty scheduler handoff, hostile/older clone and post-cutover rollback requirements. Group99 qualifies managed installed J06 flow, not every R54 acceptance item.",
     "Signed distribution/update/cutover evidence must match actual full Rust replacement; retain all existing completion gates and TypeScript retirement gate.",
@@ -6866,6 +6866,32 @@
       "worker_cleanup": "/tmp/rm123-finished-worktree.json",
       "normal_mfa_actual_period_close_qualified": false,
       "scope": "Existing source-backed correction validator plus canonical period assurance, reviewed close/reopen and source tamper fail-closed; no new operation or source gate bypass."
+    },
+    "native_dinero_import124": {
+      "status": "qualified bounded live-year import; remaining original R27 scope open",
+      "latest_report": "/tmp/rentemester-rust-reports/native-dinero-import124e.json",
+      "failed_reports": [
+        "/tmp/rentemester-rust-reports/native-dinero-import124.json",
+        "/tmp/rentemester-rust-reports/native-dinero-import124b.json",
+        "/tmp/rentemester-rust-reports/native-dinero-import124c.json",
+        "/tmp/rentemester-rust-reports/native-dinero-import124d.json"
+      ],
+      "storage11": "/tmp/rm124-storage-tests-expanded.log",
+      "schedule5": "/tmp/rm124-integrated-schedule.log",
+      "opening6": "/tmp/rm124-integrated-opening.log",
+      "period1": "/tmp/rm124-integrated-period.log",
+      "server1": "/tmp/rm124-integrated-server.log",
+      "strict_clippy": "/tmp/rm124-integrated-clippy-repaired.log",
+      "final_normal_three_bin_build": "/tmp/rm124-final-build.log",
+      "canonical_403_preflight8": "/tmp/rm124-refusal-preflight.json",
+      "actual_snapshot_selector_preflight": "/tmp/rm124-selector-preflight.json",
+      "next_original_receipt_boundary": "/tmp/rm124-next-receipt-journey.md",
+      "whole_flow_qualified": true,
+      "source_free_restore_qualified": false,
+      "installed_desktop_qualified": false,
+      "replay_validator_preflight": "/tmp/rm124-replay-preflight.json",
+      "report_sha256": "9340542e6f0b71dd2a2c31961ef47cfa8a3f4bb6b813d7e55f38453947cbfe04",
+      "independent_verification": "/tmp/rm124-independent-verification.log"
     }
   },
   "verified_history": [

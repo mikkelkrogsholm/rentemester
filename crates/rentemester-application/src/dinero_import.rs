@@ -76,7 +76,7 @@ pub fn execute(
         |tx, subject| {
             let verified = verify_physical(tx, guard)?;
             // Earlier closed-year archive sources are part of live acceptance assurance.
-            crate::archive_import::verify_physical(tx, guard)?;
+            let verified_archives = crate::archive_import::verify_physical(tx, guard)?;
             match action {
                 Action::List => store::read_imports(tx, &verified).map(Output::Json),
                 Action::ImportedReceivables(as_of) => {
@@ -197,7 +197,15 @@ pub fn execute(
                                             return Err(unavailable());
                                         }
                                     }
-                                    store::apply(tx, &prepared, input, latest, subject, now)
+                                    store::apply_with_archives(
+                                        tx,
+                                        &prepared,
+                                        input,
+                                        latest,
+                                        subject,
+                                        now,
+                                        &verified_archives,
+                                    )
                                 },
                             )
                             .map_err(|f| f.error)?

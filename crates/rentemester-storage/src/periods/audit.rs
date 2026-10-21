@@ -6,6 +6,7 @@ use rusqlite::Transaction;
 use serde_json::{Value, json};
 pub(crate) fn verify(tx: &Transaction<'_>) -> Result<Vec<Value>, Error> {
     let mut errors = structural(tx, true)?;
+    let supported_imports = crate::dinero_import::accepted_journal_ids(tx)?;
     for (code, sql) in [
         (
             "MISSING_JOURNAL_AUDIT",
@@ -21,19 +22,24 @@ pub(crate) fn verify(tx: &Transaction<'_>) -> Result<Vec<Value>, Error> {
         ),
     ] {
         for value in rows(tx, sql, &[])? {
+            if code == "UNSUPPORTED_HISTORICAL_PROVENANCE"
+                && value["id"]
+                    .as_i64()
+                    .is_some_and(|id| supported_imports.contains(&id))
+            {
+                continue;
+            }
             errors.push(json!({"code":code,"source":value}));
         }
     }
-    if !rows(
-        tx,
-        "SELECT id FROM imported_receivable_headers LIMIT 1",
-        &[],
-    )?
-    .is_empty()
-    {
-        errors.push(
-            json!({"code":"AUDIT_WORKFLOW_NOT_PORTED","source":"imported_receivable_headers"}),
-        );
+    let supported_headers = crate::dinero_import::accepted_header_ids(tx)?;
+    for header in rows(tx, "SELECT id FROM imported_receivable_headers", &[])? {
+        if !header["id"]
+            .as_i64()
+            .is_some_and(|id| supported_headers.contains(&id))
+        {
+            errors.push(json!({"code":"AUDIT_WORKFLOW_NOT_PORTED","source":"imported_receivable_headers","id":header["id"]}));
+        }
     }
     crate::archive_import::validate_history(tx)?;
     crate::opening_balance::validate_history(tx)?;

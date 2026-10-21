@@ -161,6 +161,9 @@ fn evidence_mode(
     if let Err(error) = crate::archive_import::verify_physical(tx, guard) {
         result.push(json!({"source":"closed-history-archive","error":error.message}));
     }
+    if let Err(error) = crate::dinero_import::verify_physical(tx, guard) {
+        result.push(json!({"source":"dinero-import","error":error.message}));
+    }
     Ok(result)
 }
 pub fn execute(

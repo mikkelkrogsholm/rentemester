@@ -2,6 +2,7 @@
 pub mod invoice_compensation;
 pub mod invoice_interest;
 pub mod invoice_bad_debt;
+pub mod dinero_import;
 pub mod audit_verify;
 pub mod bank_matches;
 pub mod cvr;

@@ -376,6 +376,11 @@ pub fn company(db: &Connection) -> Result<Company, Error> {
         .into_iter()
         .map(|source| (source.path, source.sha256))
         .collect::<Vec<_>>();
+    originals.extend(
+        crate::dinero_import::originals(db)?
+            .into_iter()
+            .map(|s| (s.path, s.sha256)),
+    );
     let mut q = db
         .prepare("SELECT stored_path,sha256_hash FROM documents ORDER BY id")
         .map_err(sql)?;

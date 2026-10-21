@@ -110,17 +110,27 @@ fn dkk_controls(tx: &Transaction<'_>, end: &str) -> Result<Vec<Value>, Error> {
         }
         Money::default()
     };
-    // Imported open items require their provenance/valuation port; do not infer them from totals.
-    if !rows(
-        tx,
-        "SELECT id FROM imported_receivable_headers LIMIT 1",
-        &[],
-    )?
-    .is_empty()
-    {
-        return Err(refused(
-            "historical import control evidence is not ported for native period close",
-        ));
+    let supported = crate::dinero_import::accepted_header_ids(tx)?;
+    for header in rows(tx, "SELECT id FROM imported_receivable_headers", &[])? {
+        if !header["id"]
+            .as_i64()
+            .is_some_and(|id| supported.contains(&id))
+        {
+            return Err(refused(
+                "legacy imported schedule original is unavailable for native close assurance",
+            ));
+        }
+    }
+    let imported = crate::imported_receivables::balances(tx, end)?;
+    for (account, amount) in imported {
+        if account != source["debtors"].0 && amount != Money::default() {
+            return Err(refused(
+                "imported receivable control differs from configured debtor account",
+            ));
+        }
+        if account == source["debtors"].0 {
+            source.get_mut("debtors").unwrap().1.add(&amount);
+        }
     }
     let invoices = rows(
         tx,

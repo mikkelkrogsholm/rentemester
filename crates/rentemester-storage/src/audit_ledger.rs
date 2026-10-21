@@ -230,6 +230,10 @@ pub fn verify(tx: &Transaction<'_>) -> Result<Value, Error> {
     }
     for (code, result) in [
         (
+            "INVALID_NATIVE_DINERO_HISTORY",
+            crate::dinero_import::validate_history(tx),
+        ),
+        (
             "INVALID_CLOSED_HISTORY",
             crate::archive_import::validate_history(tx),
         ),

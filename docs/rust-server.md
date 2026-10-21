@@ -7,6 +7,10 @@ starter ikke TypeScript-backenden og sender ikke forespørgsler videre til den.
 
 ## Aktuel Rust-levering
 
+[Dinero-import og importerede tilgodehavender](rust-dinero-import.md) har nu
+en fælles kildepakke, gennemgang og atomisk bogføring i Rust. Se vejledningen
+for format, adgang, gentagelser og resterende importvarianter.
+
 [Konstateret tab](rust-invoice-bad-debt.md) fungerer nu på DKK- og valutafakturaer
 gennem web, CLI og MCP. Delvise tab, resterende hovedstol, separate krav og
 faktiske indbetalinger bevarer korrekt DKK-værdi og moms. Prøven med mistet
@@ -33,7 +37,7 @@ med fuld pagineringsmetadata gennem web, HTTP, CLI og MCP. Aktuelle menneske-
 og servicekontorettigheder håndhæves; opslag efter bogføring/tilbageførsel,
 læserrevokation og normal-MFA-genstart er verificeret på syntetiske data.
 Den særskilte [regnskabskontrol](rust-audit-verify.md) er nu tilgængelig gennem
-web, HTTP, CLI `remote audit-verify` og MCP `audit_verify` (252 værktøjer).
+web, HTTP, CLI `remote audit-verify` og MCP `audit_verify` (257 værktøjer).
 Journal, bank, fakturagrundlag, beskyttede originaler samt schema/SQLite har
 hver sit resultat. Manglende kontrol bliver ikke vist som et rent regnskab.
 En almindelig MFA-prøve med bogføring/tilbageførsel, to virksomheder, aktuelle
