@@ -126,9 +126,18 @@ pub fn create_account(
 fn company(tx: &Transaction<'_>) -> Result<Value, Error> {
     tx.query_row("SELECT name,cvr,country,currency FROM companies WHERE id=1",[],|r|Ok(json!({"name":r.get::<_,String>(0)?,"cvr":r.get::<_,Option<String>>(1)?,"country":r.get::<_,String>(2)?,"currency":r.get::<_,String>(3)?}))).map_err(sql)
 }
+pub(crate) fn account_row(r: &rusqlite::Row<'_>) -> rusqlite::Result<Value> {
+    Ok(
+        json!({"id":r.get::<_,i64>(0)?,"slug":r.get::<_,String>(1)?,"name":r.get::<_,String>(2)?,"bankName":r.get::<_,Option<String>>(3)?,"registrationNo":r.get::<_,Option<String>>(4)?,"accountNo":r.get::<_,Option<String>>(5)?,"iban":r.get::<_,Option<String>>(6)?,"bic":r.get::<_,Option<String>>(7)?,"accountOwner":r.get::<_,Option<String>>(8)?,"customerNo":r.get::<_,Option<String>>(9)?,"currency":r.get::<_,String>(10)?,"ledgerAccountNo":r.get::<_,Option<String>>(11)?,"active":r.get::<_,i64>(12)?==1,"createdAt":r.get::<_,String>(13)?}),
+    )
+}
 pub fn accounts(tx: &Transaction<'_>, slug: &str) -> Result<Value, Error> {
     let mut q=tx.prepare("SELECT id,slug,name,bank_name,registration_no,account_no,iban,bic,account_owner,customer_no,currency,ledger_account_no,active,created_at FROM bank_accounts ORDER BY id").map_err(sql)?;
-    let rows=q.query_map([],|r|Ok(json!({"id":r.get::<_,i64>(0)?,"slug":r.get::<_,String>(1)?,"name":r.get::<_,String>(2)?,"bankName":r.get::<_,Option<String>>(3)?,"registrationNo":r.get::<_,Option<String>>(4)?,"accountNo":r.get::<_,Option<String>>(5)?,"iban":r.get::<_,Option<String>>(6)?,"bic":r.get::<_,Option<String>>(7)?,"accountOwner":r.get::<_,Option<String>>(8)?,"customerNo":r.get::<_,Option<String>>(9)?,"currency":r.get::<_,String>(10)?,"ledgerAccountNo":r.get::<_,Option<String>>(11)?,"active":r.get::<_,i64>(12)?==1,"createdAt":r.get::<_,String>(13)?}))).map_err(sql)?.collect::<Result<Vec<_>,_>>().map_err(sql)?;
+    let rows = q
+        .query_map([], account_row)
+        .map_err(sql)?
+        .collect::<Result<Vec<_>, _>>()
+        .map_err(sql)?;
     Ok(
         json!({"slug":slug,"company":company(tx)?,"accounts":rows,"profiles":rentemester_engine::bank::profiles()}),
     )

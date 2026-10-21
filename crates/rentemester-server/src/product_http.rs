@@ -31,6 +31,7 @@ mod reminder_claims;
 mod accruals;
 mod assets;
 mod bank;
+mod bank_accounts_original;
 mod bank_matches;
 mod cvr;
 mod bank_reconciliation;
@@ -439,6 +440,9 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
         )
         .route("/api/companies/{slug}/bank/import", post(bank::handle))
         .route("/api/companies/{slug}/bank/import-original", post(bank::handle))
+        .route("/api/companies/{slug}/bank/accounts-original/create", post(bank_accounts_original::handle))
+        .route("/api/companies/{slug}/bank/accounts-original/update", post(bank_accounts_original::handle))
+        .route("/api/companies/{slug}/bank-accounts/{account}", axum::routing::patch(bank_accounts_original::handle))
         .route("/api/companies/{slug}/documents", get(documents::list))
         .route("/api/companies/{slug}/documents/{id}/invoice-extraction",get(invoice_extraction::handle))
         .route("/api/companies/{slug}/documents/{id}/extract-invoice",post(invoice_extraction::handle))

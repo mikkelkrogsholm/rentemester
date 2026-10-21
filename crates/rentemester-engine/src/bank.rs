@@ -21,6 +21,21 @@ pub fn match_token_character(value: char) -> bool {
                 | GeneralCategory::OtherNumber
         )
 }
+/// Original bank-account slug syntax; native account creation keeps its own
+/// established transliteration. NFD removes only the source combining range.
+pub fn original_account_slug(value: &str) -> String {
+    use unicode_normalization::UnicodeNormalization;
+    value
+        .trim()
+        .to_lowercase()
+        .nfd()
+        .filter(|c| !('\u{0300}'..='\u{036f}').contains(c))
+        .collect::<String>()
+        .split(|c: char| !c.is_ascii_alphanumeric())
+        .filter(|s| !s.is_empty())
+        .collect::<Vec<_>>()
+        .join("-")
+}
 pub struct Row {
     pub date: String,
     pub booking_date: Option<String>,

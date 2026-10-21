@@ -7,6 +7,7 @@ use crate::{
 use rentemester_engine::Error;
 use rentemester_runtime::namespace::NamespaceGuard;
 pub use rentemester_storage::bank::AccountInput;
+pub use rentemester_storage::bank_accounts_original::Patch as AccountPatch;
 pub use rentemester_storage::bank_queries::{AccountsQuery, ListQuery, ReportQuery};
 use rusqlite::Connection;
 use serde_json::Value;
@@ -20,6 +21,15 @@ pub enum Action<'a> {
         year: Option<&'a str>,
     },
     Create(&'a AccountInput),
+    CreateOriginal(&'a AccountInput),
+    UpdateOriginal {
+        account: &'a str,
+        patch: &'a AccountPatch,
+    },
+    UpdateBrowser {
+        account: &'a str,
+        patch: &'a AccountPatch,
+    },
     ImportOriginal {
         content: &'a [u8],
         account: Option<&'a str>,
@@ -52,7 +62,8 @@ pub fn execute(
         | Action::Transactions(_)
         | Action::Reconciliation(_)
         | Action::AccountList(_) => Permission::CompanyRead,
-        Action::Create(_) => Permission::CompanyAdmin,
+        Action::Create(_) | Action::UpdateBrowser { .. } => Permission::CompanyAdmin,
+        Action::CreateOriginal(_) | Action::UpdateOriginal { .. } => Permission::CompanyMasterData,
         Action::Import { .. } | Action::ImportBytes { .. } | Action::ImportOriginal { .. } => {
             Permission::CompanyLedgerPost
         }
@@ -74,6 +85,33 @@ pub fn execute(
             }
             Action::Accounts => rentemester_storage::bank::accounts(tx, slug),
             Action::Read { today, year } => rentemester_storage::bank::read(tx, slug, today, year),
+            Action::CreateOriginal(input) => rentemester_storage::bank_accounts_original::create(
+                tx,
+                input,
+                subject,
+                rentemester_storage::idempotency::PrincipalKind::User,
+            )
+            .map(|o| o.original()),
+            Action::UpdateOriginal { account, patch } => {
+                rentemester_storage::bank_accounts_original::update(
+                    tx,
+                    account,
+                    patch,
+                    subject,
+                    rentemester_storage::idempotency::PrincipalKind::User,
+                )
+                .map(|o| o.original())
+            }
+            Action::UpdateBrowser { account, patch } => {
+                rentemester_storage::bank_accounts_original::update(
+                    tx,
+                    account,
+                    patch,
+                    subject,
+                    rentemester_storage::idempotency::PrincipalKind::User,
+                )?
+                .browser()
+            }
             Action::Create(input) => rentemester_storage::bank::create_account(tx, input, subject),
             Action::Import {
                 content,
@@ -159,7 +197,8 @@ fn import_with_principal(
     )
 }
 
-/// Deliberate service banking slice; account administration and text import stay human-only.
+/// Deliberate service banking slice; original master data uses its explicit right.
+/// Native administration and text import stay human-only.
 pub fn execute_service(
     control: &mut Connection,
     company: &mut Connection,
@@ -174,6 +213,9 @@ pub fn execute_service(
         | Action::Transactions(_)
         | Action::Reconciliation(_)
         | Action::AccountList(_) => (Permission::CompanyRead, false),
+        Action::CreateOriginal(_) | Action::UpdateOriginal { .. } => {
+            (Permission::CompanyMasterData, true)
+        }
         Action::ImportBytes { .. } | Action::ImportOriginal { .. } => {
             (Permission::CompanyLedgerPost, true)
         }
@@ -204,6 +246,25 @@ pub fn execute_service(
                 Action::Accounts => rentemester_storage::bank::accounts(tx, slug)?,
                 Action::Read { today, year } => {
                     rentemester_storage::bank::read(tx, slug, today, year)?
+                }
+                Action::CreateOriginal(input) => {
+                    rentemester_storage::bank_accounts_original::create(
+                        tx,
+                        input,
+                        subject,
+                        rentemester_storage::idempotency::PrincipalKind::ServiceAccount,
+                    )?
+                    .original()
+                }
+                Action::UpdateOriginal { account, patch } => {
+                    rentemester_storage::bank_accounts_original::update(
+                        tx,
+                        account,
+                        patch,
+                        subject,
+                        rentemester_storage::idempotency::PrincipalKind::ServiceAccount,
+                    )?
+                    .original()
                 }
                 Action::ImportOriginal {
                     content,
@@ -330,3 +391,7 @@ mod original_tests;
 #[cfg(test)]
 #[path = "bank/query_tests.rs"]
 mod query_tests;
+
+#[cfg(test)]
+#[path = "bank/account_tests.rs"]
+mod account_tests;
