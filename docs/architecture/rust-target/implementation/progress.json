@@ -2,14 +2,14 @@
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
   "current_increment": "Group128 imported-company native invoice portfolio subset; original R27/#701 closed on accepted evidence",
-  "code_revision": "6cd9b9a5",
+  "code_revision": "561d1ae0",
   "spec_revision": "sha256:bc98636be4a972407adce0f817a76bb9d4bb7200cb292a70965e75ab62fae250",
-  "state": "Original R27/#701 closed flow:done with acceptance comment6315462026 and accepted60/62/124/125/126/127 proof. Group128 integrates real imported-company native invoice subset in storage, exact native-only aggregation and Danish API/web boundary. Storage6, engine4, UI9, integrated10, strict engine/storage Clippy, normal three-bin build and webbuild pass. First actual completed import/restart then correctly refused native invoice because test omitted seller address; fixture corrected at6cd9b9a5 using explicit company profile. Focused128b safely interrupted before known pre-import year-selection fixture mistake; corrected conditional source-year snapshot and bounded contract preflight pending before128c; do not repeat full accepted import negatives. Existing R32 remains incomplete: static HTML dashboard, annual iXBRL/tax and original mapping remain. Whole mission active; installed GUI allersidst.",
+  "state": "Group128 imported-company native invoice portfolio flow passed actual ordinary MFA through web/HTTP/CLI/MCP, exact normal restart, originals, audit, signed backup and SQL effects; independently verified report80bbf72e5b42cc70199adcdab75f9befe51c75c8144faecfe46da592893096f5. No further portfolio perfection. GitHub reconciliation corrected stale issue mapping: R32 is #703; #706 is R31 annual/tax. Prior128 commits/labels used706; retain history and attach accepted milestone to703. Next necessary R32 static dashboard HTML, preserve whole R31 tax/iXBRL scope separately. Whole epic active; installed desktop last.",
   "issues_closed": [
     701
   ],
   "next": [
-    "Complete focused actual128c and independent artifact/SQL/backup/restart verification. When accepted, stop this subset and continue necessary static HTML dashboard artifact under existing R32/#706; contract /tmp/rm129-dashboard-contract.md. Preserve iXBRL/tax and all original formats as explicit remainders; do not close whole R32 on portfolio subset.",
+    "Reconcile GitHub: return incomplete R31/#706 to backlog with retained evidence, activate actual R32/#703 for necessary static HTML dashboard artifact, using /tmp/rm129-dashboard-contract.md. Preserve annual iXBRL/tax under original R31/#706; no silent format removal.",
     "Installed desktop acceptance is explicitly deferred to the very end by the user. Preserve prepared Group100 profile; collect remaining native automation, closure, recovery and packaging checks for final installed acceptance without requesting screen unlock during development.",
     "J03/R50 and remaining R54 scope: only still-supported operation closure/recovery, nonempty scheduler handoff, hostile/older clone and post-cutover rollback requirements. Group99 qualifies managed installed J06 flow, not every R54 acceptance item.",
     "Signed distribution/update/cutover evidence must match actual full Rust replacement; retain all existing completion gates and TypeScript retirement gate.",
@@ -6997,8 +6997,8 @@
       "issue_acceptance_comment": "https://github.com/mikkelkrogsholm/rentemester/issues/701#issuecomment-6315462026"
     },
     "native_imported_portfolio128": {
-      "status": "targeted product checks passed; focused actual proof pending after diagnosed fixture correction",
-      "source_revision": "6cd9b9a5",
+      "status": "passed actual integrated flow and independent verification",
+      "source_revision": "561d1ae0",
       "worker_sources": [
         "a22e4120",
         "fab32343"
@@ -7020,13 +7020,20 @@
       },
       "planned_actual_report": "/tmp/rentemester-rust-reports/native-imported-portfolio128c.json",
       "independent_verifier": "/tmp/rm128-independent-verification.py",
-      "whole_flow_qualified": false,
+      "whole_flow_qualified": true,
       "source_free_restore_qualified": false,
       "installed_desktop_qualified": false,
       "second_actual_interrupted": {
         "report": "/tmp/rentemester-rust-reports/native-imported-portfolio128b.json",
         "diagnosis": "Main spotted fixed year2025 selected before source import existed; interrupted exact owned runner with SIGINT, terminal130 and owned cleanup verified. Uses default journal/trial year until sourceReceipt then explicit2025. Preserve raw report; status running is stale after interruption, not a live handle. Bounded read-only exact-contract preflight before rerun."
-      }
+      },
+      "actual_report": "/tmp/rentemester-rust-reports/native-imported-portfolio128c.json",
+      "report_sha256": "80bbf72e5b42cc70199adcdab75f9befe51c75c8144faecfe46da592893096f5",
+      "independent_verification_log": "/tmp/rm128-independent-verification.log",
+      "original_issue": 703,
+      "historical_work_packet_issue": 706,
+      "artifact_lease": "released after terminal process0, exact artifact/hash/process/cleanup verification",
+      "runner_current_action_note": "Runner retains final operator verification action after successful extension; verified against runner source, passed flag and cleanup, no extra run needed."
     }
   },
   "verified_history": [
