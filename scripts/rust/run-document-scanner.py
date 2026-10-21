@@ -745,6 +745,7 @@ def main():
                         report['terminalSql'].update(originalLinks=original_links,originalCorrections=original_corrections,originalMatchingAudits=original_matching_audits)
                         report['terminalSql']['unmatchedExceptions'] = db.execute("SELECT id,related_bank_transaction_id,status FROM exceptions WHERE type='UNMATCHED_BANK_TRANSACTION' ORDER BY id").fetchall()
                         report['terminalSql']['exceptionResolutionAudits'] = db.execute("SELECT event_type,entity_id,actor FROM audit_log WHERE event_type='exception_resolve' ORDER BY id").fetchall()
+                        report['terminalSql']['correctionReceiptAudits'] = db.execute("SELECT event_type,entity_id,actor FROM audit_log WHERE message LIKE '%bank_reconciliation_correction_apply' ORDER BY id").fetchall()
                         report['terminalSql'].update(bankRows=query_bank_rows,reconciliations=query_links,postingAudits=query_posts,originals=query_sources,bankAccounts=query_accounts,bankAccountAudits=account_audits)
                     if (args.local_runtime_join or args.local_runtime_mcp):
                         local_post_rows = db.execute("SELECT event_type,actor FROM audit_log WHERE event_type IN ('journal_post','journal_reverse') ORDER BY id").fetchall()
