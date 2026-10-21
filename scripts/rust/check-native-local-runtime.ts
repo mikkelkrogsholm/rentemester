@@ -6,8 +6,8 @@ import { join } from 'node:path';
 import { isDeepStrictEqual } from 'node:util';
 
 type User = { email: string; password: string; codes: string[] };
-/** One existing owner, normal MFA, one source-backed post through the local CLI. */
-export function createLocalRuntimeProof(page: Page, base: string, work: string, member: Page, users: { owner: User; member: User }) {
+/** One existing owner, normal MFA, one source-backed post through a selected local adapter. */
+export function createLocalRuntimeProof(page: Page, base: string, work: string, member: Page, users: { owner: User; member: User }, adapter: 'cli' | 'mcp' = 'cli') {
   const prefix = '/api/companies/synthetic/', cli = join(work, 'rentemester-rust');
   const ownerFile = join(work, 'uds-owner.cookie'), memberFile = join(work, 'uds-member.cookie');
   let proofStep = 'prelude';
@@ -23,8 +23,33 @@ export function createLocalRuntimeProof(page: Page, base: string, work: string, 
     for (const user of [users.owner, users.member]) need(!r.stdout.includes(user.password) && !r.stderr.includes(user.password), 'No password in CLI output');
     return JSON.parse(r.stdout);
   }
-  function local(command: string, file = ownerFile, body?: any, expected = 0, extra: string[] = []) {
-    return invoke(['remote', command, '--local-profile', work, '--cookie-file', file, '--company', 'synthetic', ...extra], body === undefined ? '' : JSON.stringify(body), expected);
+  function invokeMcp(args: string[], input = '', expected = 0) {
+    const r = spawnSync(join(work, 'rentemester-mcp'), args, { input, encoding: 'utf8', timeout: 45000, maxBuffer: 16 * 1024 * 1024 });
+    need(!r.error && r.status === expected, 'MCP process expected exit ' + expected);
+    for (const user of [users.owner, users.member]) need(!r.stdout.includes(user.password) && !r.stderr.includes(user.password), 'No password in MCP output');
+    for (const file of [ownerFile, memberFile]) if (existsSync(file)) {
+      const secret = readFileSync(file, 'utf8').trim();
+      need(secret.length > 0 && !r.stdout.includes(secret) && !r.stderr.includes(secret), 'No session in MCP output');
+    }
+    return r;
+  }
+  function local(command: string, file = ownerFile, body?: any, expected = 0) {
+    if (adapter === 'cli') return invoke(['remote', command, '--local-profile', work, '--cookie-file', file, '--company', 'synthetic'], body === undefined ? '' : JSON.stringify(body), expected);
+    const names: Record<string, string> = { journal: 'journal', 'trial-balance': 'trial_balance', 'post-journal': 'post_journal' };
+    need(names[command], 'Existing MCP tool mapping');
+    const wire = [
+      { jsonrpc: '2.0', id: 1, method: 'initialize', params: { protocolVersion: '2025-11-25', capabilities: {}, clientInfo: { name: 'synthetic-local-runtime139', version: '1' } } },
+      { jsonrpc: '2.0', method: 'notifications/initialized' },
+      { jsonrpc: '2.0', id: 2, method: 'tools/call', params: { name: names[command], arguments: { company: 'synthetic', ...(body === undefined ? {} : { envelope: JSON.stringify(body) }) } } },
+    ].map(v => JSON.stringify(v)).join('\n') + '\n';
+    const r = invokeMcp(['--local-profile', work, '--cookie-file', file], wire);
+    const responses = r.stdout.trim().split('\n').map(v => JSON.parse(v));
+    need(responses.find(v => v.id === 1)?.result?.protocolVersion === '2025-11-25', 'MCP initialized negotiated protocol');
+    const call = responses.find(v => v.id === 2), value = call?.result?.structuredContent;
+    need(!call?.error && value && call.result.isError === (expected !== 0) && value.ok === (expected === 0), 'MCP transport and business result distinction');
+    need(isDeepStrictEqual(JSON.parse(call.result.content[0].text), value), 'MCP text and structured content agree');
+    if (expected !== 0) need(typeof value.error?.code === 'string' && typeof value.error?.message === 'string', 'MCP refusal retains typed error');
+    return value;
   }
   function login(user: User, file: string) {
     proofStep = user === users.owner ? 'owner_login' : 'member_login';
@@ -46,10 +71,10 @@ export function createLocalRuntimeProof(page: Page, base: string, work: string, 
   async function projections() {
     proofStep = 'projection';
     const runtime = descriptor(), trial = local('trial-balance'), journal = local('journal');
-    need(trial.ok && journal.ok && isDeepStrictEqual(trial.data.trialBalance, (await get(prefix + 'trial-balance')).trialBalance) && isDeepStrictEqual(journal.data.journal, (await get(prefix + 'journal')).journal), 'UDS CLI and browser/TCP exact canonical projections');
+    need(trial.ok && journal.ok && isDeepStrictEqual(trial.data.trialBalance, (await get(prefix + 'trial-balance')).trialBalance) && isDeepStrictEqual(journal.data.journal, (await get(prefix + 'journal')).journal), 'Selected UDS adapter and browser/TCP exact canonical projections');
     const originalRead = await page.request.get(base + prefix + 'documents/' + documentId + '/file'); need(originalRead.ok() && (await originalRead.body()).equals(original), 'Retained exact original');
-    const legacy = invoke(['journal', 'list', '--local-profile', work, '--cookie-file', ownerFile, '--company', 'synthetic', '--json']);
-    need(Array.isArray(legacy) && legacy.length === 1 && legacy[0].status === 'posted', 'Global local binding covers original dedicated parser');
+    const legacy = adapter === 'mcp' ? null : invoke(['journal', 'list', '--local-profile', work, '--cookie-file', ownerFile, '--company', 'synthetic', '--json']);
+    need(adapter === 'mcp' || (Array.isArray(legacy) && legacy.length === 1 && legacy[0].status === 'posted'), 'Global local binding covers original dedicated parser');
     await unchanged(); return { runtime, trial: trial.data.trialBalance, journal: journal.data.journal, originalSha256: hash(original), dedicatedJournal: legacy };
   }
   return {
@@ -62,7 +87,7 @@ export function createLocalRuntimeProof(page: Page, base: string, work: string, 
       const today = (await get('/api/portfolio')).portfolio.asOf;
       for (const [accountNo, type, normalBalance] of [['1738', 'asset', 'debit'], ['3738', 'income', 'credit']]) await post(prefix + 'accounts', { accountNo, name: 'Synthetic local CLI ' + accountNo, type, normalBalance });
       const uploaded = await post(prefix + 'documents/ingest', { confirm: true, fileName: 'synthetic-local-cli.txt', fileBase64: original.toString('base64'), metadata: { source: 'Synthetic local CLI', documentType: 'cash_register_receipt', issueDate: today } }); documentId = uploaded.document.id;
-      posting = { confirm: true, input: { format: 'rentemester-manual-journal-post/1', expectedRuleVersion: (await get(prefix + 'journal')).journal.nativePosting.ruleVersion, idempotencyKey: 'synthetic-local-runtime138', request: { transactionDate: today, text: 'Synthetic local CLI posting', currency: 'DKK', documentId: String(documentId), lines: [{ accountNo: '1738', debitAmount: '100.00', creditAmount: '0.00' }, { accountNo: '3738', debitAmount: '0.00', creditAmount: '100.00' }] } } };
+      posting = { confirm: true, input: { format: 'rentemester-manual-journal-post/1', expectedRuleVersion: (await get(prefix + 'journal')).journal.nativePosting.ruleVersion, idempotencyKey: 'synthetic-local-runtime-' + adapter, request: { transactionDate: today, text: 'Synthetic local CLI posting', currency: 'DKK', documentId: String(documentId), lines: [{ accountNo: '1738', debitAmount: '100.00', creditAmount: '0.00' }, { accountNo: '3738', debitAmount: '0.00', creditAmount: '100.00' }] } } };
       proofStep = 'posting';
       const posted = local('post-journal', ownerFile, posting, 0); need(posted.ok && posted.data.ok, 'One local source-backed posting');
       proofStep = 'posting_replay';
@@ -72,22 +97,33 @@ export function createLocalRuntimeProof(page: Page, base: string, work: string, 
       proofStep = 'revocation';
       const memberId = (await get('/api/me', member)).user.id; await post('/api/workspace/members/company', { userId: memberId, action: 'revoke', companySlug: 'synthetic' });
       need(local('journal', memberFile, undefined, 1).ok === false, 'Local retained-session revocation');
-      need(local('post-journal', memberFile, { ...posting, input: { ...posting.input, idempotencyKey: 'synthetic-local-runtime138-refused' } }, 1).ok === false, 'Local revoked mutation refuses');
+      need(local('post-journal', memberFile, { ...posting, input: { ...posting.input, idempotencyKey: 'synthetic-local-runtime-' + adapter + '-refused' } }, 1).ok === false, 'Local revoked mutation refuses');
       proofStep = 'negative_binding';
-      invoke(['remote', 'health', '--local-profile', work, '--server', base], '', 2);
-      const absent = join(work, 'missing-profile'); invoke(['remote', 'health', '--local-profile', absent], '', 2);
-      invoke(['remote', '--help', '--local-profile', absent]);
+      const binding = (profile: string, expected = 2, extra: string[] = []) => adapter === 'mcp'
+        ? invokeMcp(['--local-profile', profile, '--cookie-file', ownerFile, ...extra], '', expected)
+        : invoke(['remote', 'health', '--local-profile', profile, ...extra], '', expected);
+      binding(work, 2, ['--server', base]);
+      const absent = join(work, 'missing-profile'); binding(absent);
+      if (adapter === 'mcp') {
+        need(invokeMcp(['--help']).stdout.includes('--local-profile'), 'Pure local MCP help without credentials');
+        invokeMcp(['--help', '--local-profile', absent], '', 2);
+      } else invoke(['remote', '--help', '--local-profile', absent]);
       const record = join(work, 'r.json'); chmodSync(record, 0o644);
-      try { invoke(['remote', 'health', '--local-profile', work], '', 2); } finally { chmodSync(record, 0o600); }
+      try { binding(work); } finally { chmodSync(record, 0o600); }
       const socket = join(work, 'r.sock'), held = join(work, 'r-held.sock'); renameSync(socket, held);
-      try { invoke(['remote', 'health', '--local-profile', work], '', 2); need((await page.request.get(base + '/api/health')).ok(), 'TCP still available while UDS deliberately absent; no fallback'); } finally { renameSync(held, socket); }
+      try { binding(work); need((await page.request.get(base + '/api/health')).ok(), 'TCP still available while UDS deliberately absent; no fallback'); } finally { renameSync(held, socket); }
       await unchanged(); const fullAudit = await get(prefix + 'audit-verify'); need(fullAudit.audit?.available && fullAudit.audit.ok && fullAudit.audit.entries === 1 && fullAudit.audit.components.length === 5 && fullAudit.audit.components.every((c: any) => c.available && c.ok), 'Complete accounting/source audit'); completed = true;
-      return { qualified: true, ordinaryMfa: true, normalLocalCliLogins: logins, oneSharedOwner: true, competingOwnerRefused: true, sourceBackedLocalPost: true, replaySameEntry: true, currentRevocationRefused: true, unsafeBindingRefused: true, noTcpFallback: true, cliExitLeavesServerRunning: true, projections: proof, fullAudit, postingReceipt: posted.data, accountingFingerprint: hash(JSON.stringify(stable)), installedNativeQualified: false, sourceFreeRestoreQualified: false };
+      return { adapter, qualified: true, rpcTextStructuredAgreement: adapter === 'mcp', ordinaryMfa: true, normalLocalCliLogins: logins, oneSharedOwner: true, competingOwnerRefused: true, sourceBackedLocalPost: true, replaySameEntry: true, currentRevocationRefused: true, unsafeBindingRefused: true, noTcpFallback: true, adapterExitLeavesServerRunning: true, cliExitLeavesServerRunning: adapter === 'cli', projections: proof, fullAudit, postingReceipt: posted.data, accountingFingerprint: hash(JSON.stringify(stable)), installedNativeQualified: false, sourceFreeRestoreQualified: false };
     },
     async reopen() {
       need(completed, 'Completed local CLI setup'); rmSync(ownerFile); login(users.owner, ownerFile); await unchanged(); const proof = await projections();
       const descriptorFilesPresent = existsSync(join(work, 'r.json')) && existsSync(join(work, 'r.sock')); need(descriptorFilesPresent, 'Normal restart republished local endpoint');
-      rmSync(ownerFile); rmSync(memberFile); return { qualified: true, ordinaryMfa: true, normalLocalCliLogins: logins, exactNormalMfaRestartState: true, projections: proof, accountingFingerprint: hash(JSON.stringify(stable)), installedNativeQualified: false, sourceFreeRestoreQualified: false };
+      rmSync(ownerFile); rmSync(memberFile); return { adapter, qualified: true, rpcTextStructuredAgreement: adapter === 'mcp', ordinaryMfa: true, normalLocalCliLogins: logins, exactNormalMfaRestartState: true, projections: proof, accountingFingerprint: hash(JSON.stringify(stable)), installedNativeQualified: false, sourceFreeRestoreQualified: false };
     },
   };
+}
+
+/** Reuse the same accounting fixture with the existing MCP RPC tools. */
+export function createLocalRuntimeMcpProof(page: Page, base: string, work: string, member: Page, users: { owner: User; member: User }) {
+  return createLocalRuntimeProof(page, base, work, member, users, 'mcp');
 }

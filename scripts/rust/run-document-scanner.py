@@ -161,7 +161,7 @@ async function backupRecoveryPhase(action){
  throw Error('Unknown recovery phase');
 }
 async function servicePhase(action){
- if(!servicePurchase){const module=await import(process.env.RM_SERVICE_PURCHASE_HELPER);const factory=module[process.env.RM_SCANNER_PROOF_FACTORY||'createServicePurchaseProof'];need(typeof factory==='function','configured proof factory required');servicePurchase=await factory(ownerPage,base,work,memberPage,process.env.RM_SCANNER_PROOF_FACTORY==='createLocalRuntimeProof'?{owner,member}:undefined);}
+ if(!servicePurchase){const module=await import(process.env.RM_SERVICE_PURCHASE_HELPER);const factory=module[process.env.RM_SCANNER_PROOF_FACTORY||'createServicePurchaseProof'];need(typeof factory==='function','configured proof factory required');servicePurchase=await factory(ownerPage,base,work,memberPage,['createLocalRuntimeProof','createLocalRuntimeMcpProof'].includes(process.env.RM_SCANNER_PROOF_FACTORY)?{owner,member}:undefined);}
  if(action==='service-reopen'){await ownerPage.context().clearCookies();await login(ownerPage,owner);return servicePurchase.reopen();}
  const result=await servicePurchase[{'service-run':'run','service-hold-begin':'holdBegin','service-revoke':'revoke','service-hold-finish':'holdFinish'}[action]]();if(action==='service-run')serviceRunResult=result;return result;
 }
@@ -205,8 +205,11 @@ def main():
     parser.add_argument('--authority-export', action='store_true', help='Standalone confirmed authority/accountant request-context package, original CLI/MCP/localfiles and normal MFA restart')
     parser.add_argument('--saft-artifact', action='store_true', help='Original SAF-T CLI local package and timestamp modes through shared Rust server, normal MFA and restart')
     parser.add_argument('--local-runtime-join', action='store_true', help='Local CLI normal MFA and one source-backed posting through same private UDS Rust owner, current authority/restart/cleanup')
+    parser.add_argument('--local-runtime-mcp', action='store_true', help='Existing MCP tools join the same private Rust UDS owner with normal credentials, posting/replay/revocation/restart')
     args = parser.parse_args()
-    if args.local_runtime_join and any(value for key,value in vars(args).items() if isinstance(value,bool) and key != 'local_runtime_join'):
+    if args.local_runtime_join and args.local_runtime_mcp:
+        parser.error('Choose exactly one local adapter')
+    if (args.local_runtime_join or args.local_runtime_mcp) and any(value for key,value in vars(args).items() if isinstance(value,bool) and key not in {'local_runtime_join','local_runtime_mcp'}):
         parser.error('--local-runtime-join is standalone and excludes other extensions')
     if args.saft_artifact and any(value for key,value in vars(args).items() if isinstance(value,bool) and key != 'saft_artifact'):
         parser.error('--saft-artifact is standalone and excludes other extensions')
@@ -251,8 +254,8 @@ def main():
     if os.uname().sysname != 'Darwin' or os.getuid() == 0 or os.getuid() != os.geteuid():
         parser.error('Ordinary macOS fixture owner required')
     os.umask(0o077)
-    parent = (Path.home() if args.local_runtime_join else Path.home() / 'Library/Application Support').resolve(strict=True)
-    fixture_prefix = '.rm138-' if args.local_runtime_join else PREFIX
+    parent = (Path.home() if (args.local_runtime_join or args.local_runtime_mcp) else Path.home() / 'Library/Application Support').resolve(strict=True)
+    fixture_prefix = '.rm139-' if args.local_runtime_mcp else '.rm138-' if (args.local_runtime_join or args.local_runtime_mcp) else PREFIX
     work = parent / (fixture_prefix + uuid.uuid4().hex)
     identity = None
     child = controller = None
@@ -434,7 +437,7 @@ def main():
                 raise RuntimeError('Exact owned child must stop before reopen')
             progress('operator:restore' if restore else 'operator:start')
             argv = [str(pinned['server_binary']), '--config', str(work / 'server.json'), '--web-dir', str(web), '--listen', f'127.0.0.1:{backend_port}', '--origin', origin]
-            if args.local_runtime_join:
+            if (args.local_runtime_join or args.local_runtime_mcp):
                 argv += ['--local-runtime-dir', str(work)]
             if create:
                 argv.append('--create')
@@ -665,18 +668,18 @@ def main():
                 (work / 'drive-trace.json').write_text('[]')
                 config['backupDestinations'] = [{'id':'synthetic-drive','label':'Synthetic Drive fixture','kind':'google-drive','directory':str(work/'backup-destination'),'nonRelatedParty':False,'inEeaOrEu':False,'country':'DK','meetsRecognisedStandards':False,'attestedBy':'Synthetic operator','attestedAt':'2026-01-01T00:00:00Z'}]
                 config['backupRemoteVerification'] = {'provider':'google-drive','url':f'https://127.0.0.1:{mail_port}/drive/v3','bearerToken':drive_token,'trustedCaFile':str(ca),'destinations':[{'destinationId':'synthetic-drive','folderId':'synthetic-drive-folder'}]}
-            if not args.service_purchase and not args.backup_lock and not args.journal_history and not args.dated_reports and not args.dashboard_json and not args.portfolio_overview and not args.annual_exports and not args.authority_export and not args.saft_artifact and not args.local_runtime_join:
+            if not args.service_purchase and not args.backup_lock and not args.journal_history and not args.dated_reports and not args.dashboard_json and not args.portfolio_overview and not args.annual_exports and not args.authority_export and not args.saft_artifact and not (args.local_runtime_join or args.local_runtime_mcp):
                 invalid_config_checks()
             write_config()
             start(create=True)
             script = work / 'browser.mjs'
             script.write_text(BROWSER)
-            controller = subprocess.Popen(['/opt/homebrew/bin/bun', str(script)], cwd=REPO, env={**os.environ, 'RM_IMPORTED_PORTFOLIO_HELPER': str(REPO / 'scripts/rust/check-native-imported-portfolio.ts'), 'RM_SYNTHETIC_IMPORT_HELPER': str(REPO / 'scripts/rust/check-native-synthetic-import.ts'), 'RM_DINERO_IMPORT_HELPER': str(REPO / 'scripts/rust/check-native-dinero-import.ts'), 'RM_INVOICE_BAD_DEBT_HELPER': str(REPO / 'scripts/rust/check-native-invoice-bad-debt.ts'), 'RM_INVOICE_INTEREST_HELPER': str(REPO / 'scripts/rust/check-native-invoice-interest.ts'), 'RM_INVOICE_COMPENSATION_HELPER': str(REPO / 'scripts/rust/check-native-invoice-compensation.ts'), 'RM_NATIVE_BACKUP_DESTINATION_PROOF':'1' if args.backup_destinations else '0', 'RM_NATIVE_REMOTE_BACKUP_PROOF':'1' if args.remote_backup else '0', 'RM_AUDIT_VERIFY_HELPER': str(REPO / 'scripts/rust/check-native-audit-verify.ts'), 'RM_AUDIT_HELPER': str(REPO / 'scripts/rust/check-native-audit-log.ts'), 'RM_BACKUP_RECOVERY_HELPER': str(REPO / 'scripts/rust/check-native-backup-recovery.ts'), 'RM_SERVICE_PURCHASE_HELPER': str(REPO / ('scripts/rust/check-native-local-runtime.ts' if args.local_runtime_join else 'scripts/rust/check-native-saft.ts' if args.saft_artifact else 'scripts/rust/check-native-accountant.ts' if args.authority_export else 'scripts/rust/check-native-annual-clients.ts' if args.annual_exports else 'scripts/rust/check-native-dashboard-json.ts' if args.dashboard_json or args.portfolio_overview else 'scripts/rust/check-native-dated-reports.ts' if args.dated_reports else 'scripts/rust/check-native-journal-history.ts' if args.journal_history else 'scripts/rust/check-native-backup-lock.ts' if args.backup_lock else 'scripts/rust/check-native-service-purchase.ts')), 'RM_SCANNER_PROOF_FACTORY': 'createLocalRuntimeProof' if args.local_runtime_join else 'createSaftArtifactProof' if args.saft_artifact else 'createAuthorityExportProof' if args.authority_export else 'createAnnualExportsProof' if args.annual_exports else 'createPortfolioOverviewProof' if args.portfolio_overview else 'createDashboardJsonProof' if args.dashboard_json else 'createDatedReportsProof' if args.dated_reports else 'createJournalHistoryProof' if args.journal_history else 'createBackupLockProof' if args.backup_lock else 'createServicePurchaseProof', 'RM_SCANNER_BASE': origin, 'RM_SCANNER_WORK': str(work), 'RM_SCANNER_SCREENSHOT': str(args.evidence.with_suffix('.png')), 'RM_SCANNER_PLAYWRIGHT': str((REPO / 'node_modules/@playwright/test/index.mjs').resolve(strict=True))}, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True, bufsize=1, start_new_session=True)
+            controller = subprocess.Popen(['/opt/homebrew/bin/bun', str(script)], cwd=REPO, env={**os.environ, 'RM_IMPORTED_PORTFOLIO_HELPER': str(REPO / 'scripts/rust/check-native-imported-portfolio.ts'), 'RM_SYNTHETIC_IMPORT_HELPER': str(REPO / 'scripts/rust/check-native-synthetic-import.ts'), 'RM_DINERO_IMPORT_HELPER': str(REPO / 'scripts/rust/check-native-dinero-import.ts'), 'RM_INVOICE_BAD_DEBT_HELPER': str(REPO / 'scripts/rust/check-native-invoice-bad-debt.ts'), 'RM_INVOICE_INTEREST_HELPER': str(REPO / 'scripts/rust/check-native-invoice-interest.ts'), 'RM_INVOICE_COMPENSATION_HELPER': str(REPO / 'scripts/rust/check-native-invoice-compensation.ts'), 'RM_NATIVE_BACKUP_DESTINATION_PROOF':'1' if args.backup_destinations else '0', 'RM_NATIVE_REMOTE_BACKUP_PROOF':'1' if args.remote_backup else '0', 'RM_AUDIT_VERIFY_HELPER': str(REPO / 'scripts/rust/check-native-audit-verify.ts'), 'RM_AUDIT_HELPER': str(REPO / 'scripts/rust/check-native-audit-log.ts'), 'RM_BACKUP_RECOVERY_HELPER': str(REPO / 'scripts/rust/check-native-backup-recovery.ts'), 'RM_SERVICE_PURCHASE_HELPER': str(REPO / ('scripts/rust/check-native-local-runtime.ts' if (args.local_runtime_join or args.local_runtime_mcp) else 'scripts/rust/check-native-saft.ts' if args.saft_artifact else 'scripts/rust/check-native-accountant.ts' if args.authority_export else 'scripts/rust/check-native-annual-clients.ts' if args.annual_exports else 'scripts/rust/check-native-dashboard-json.ts' if args.dashboard_json or args.portfolio_overview else 'scripts/rust/check-native-dated-reports.ts' if args.dated_reports else 'scripts/rust/check-native-journal-history.ts' if args.journal_history else 'scripts/rust/check-native-backup-lock.ts' if args.backup_lock else 'scripts/rust/check-native-service-purchase.ts')), 'RM_SCANNER_PROOF_FACTORY': 'createLocalRuntimeMcpProof' if args.local_runtime_mcp else 'createLocalRuntimeProof' if (args.local_runtime_join or args.local_runtime_mcp) else 'createSaftArtifactProof' if args.saft_artifact else 'createAuthorityExportProof' if args.authority_export else 'createAnnualExportsProof' if args.annual_exports else 'createPortfolioOverviewProof' if args.portfolio_overview else 'createDashboardJsonProof' if args.dashboard_json else 'createDatedReportsProof' if args.dated_reports else 'createJournalHistoryProof' if args.journal_history else 'createBackupLockProof' if args.backup_lock else 'createServicePurchaseProof', 'RM_SCANNER_BASE': origin, 'RM_SCANNER_WORK': str(work), 'RM_SCANNER_SCREENSHOT': str(args.evidence.with_suffix('.png')), 'RM_SCANNER_PLAYWRIGHT': str((REPO / 'node_modules/@playwright/test/index.mjs').resolve(strict=True))}, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True, bufsize=1, start_new_session=True)
             report['browserControllerPid'] = controller.pid
             phase('authenticate')
-            if args.journal_history or args.dated_reports or args.dashboard_json or args.portfolio_overview or args.annual_exports or args.authority_export or args.saft_artifact or args.local_runtime_join:
-                helper = REPO / ('scripts/rust/check-native-local-runtime.ts' if args.local_runtime_join else 'scripts/rust/check-native-saft.ts' if args.saft_artifact else 'scripts/rust/check-native-accountant.ts' if args.authority_export else 'scripts/rust/check-native-annual-clients.ts' if args.annual_exports else 'scripts/rust/check-native-dashboard-json.ts' if args.dashboard_json or args.portfolio_overview else 'scripts/rust/check-native-dated-reports.ts' if args.dated_reports else 'scripts/rust/check-native-journal-history.ts')
-                helper_key = 'localRuntimeHelperSha256' if args.local_runtime_join else 'saftArtifactHelperSha256' if args.saft_artifact else 'authorityExportHelperSha256' if args.authority_export else 'annualExportsHelperSha256' if args.annual_exports else 'portfolioOverviewHelperSha256' if args.portfolio_overview else 'dashboardJsonHelperSha256' if args.dashboard_json else 'datedReportsHelperSha256' if args.dated_reports else 'journalHistoryHelperSha256'
+            if args.journal_history or args.dated_reports or args.dashboard_json or args.portfolio_overview or args.annual_exports or args.authority_export or args.saft_artifact or (args.local_runtime_join or args.local_runtime_mcp):
+                helper = REPO / ('scripts/rust/check-native-local-runtime.ts' if (args.local_runtime_join or args.local_runtime_mcp) else 'scripts/rust/check-native-saft.ts' if args.saft_artifact else 'scripts/rust/check-native-accountant.ts' if args.authority_export else 'scripts/rust/check-native-annual-clients.ts' if args.annual_exports else 'scripts/rust/check-native-dashboard-json.ts' if args.dashboard_json or args.portfolio_overview else 'scripts/rust/check-native-dated-reports.ts' if args.dated_reports else 'scripts/rust/check-native-journal-history.ts')
+                helper_key = 'localRuntimeMcpHelperSha256' if args.local_runtime_mcp else 'localRuntimeHelperSha256' if (args.local_runtime_join or args.local_runtime_mcp) else 'saftArtifactHelperSha256' if args.saft_artifact else 'authorityExportHelperSha256' if args.authority_export else 'annualExportsHelperSha256' if args.annual_exports else 'portfolioOverviewHelperSha256' if args.portfolio_overview else 'dashboardJsonHelperSha256' if args.dashboard_json else 'datedReportsHelperSha256' if args.dated_reports else 'journalHistoryHelperSha256'
                 report[helper_key] = digest(helper)
                 reference_files = [REPO / ('src/core/' + name + '.ts') for name in ['saft-export','tar']] if args.saft_artifact else [REPO / ('src/core/' + name + '.ts') for name in ['authority-export','tar']] if args.authority_export else [REPO / ('src/core/' + name + '.ts') for name in ['tax-return','ixbrl','annual-report']] if args.annual_exports else [REPO / ('src/core/' + name + '.ts') for name in ['financial-statements','account-classification','dates','money']] if args.dated_reports else []
                 reference_hashes = {str(path.relative_to(REPO)):digest(path) for path in reference_files}
@@ -684,7 +687,7 @@ def main():
                 if digest(helper) != report[helper_key]:
                     raise RuntimeError('Standalone report helper changed during execution')
                 stop()
-                if args.local_runtime_join and any(os.path.lexists(work/name) for name in ['r.json','r.sock']):
+                if (args.local_runtime_join or args.local_runtime_mcp) and any(os.path.lexists(work/name) for name in ['r.json','r.sock']):
                     raise RuntimeError('Owned local runtime endpoints not retired on normal stop')
                 config.pop('firstOwner'); write_config(); start()
                 phase('service-reopen')
@@ -699,16 +702,16 @@ def main():
                 try:
                     db.execute('PRAGMA query_only=ON')
                     counts = {table:db.execute('SELECT COUNT(*) FROM '+table).fetchone()[0] for table in ['documents','bank_transactions','journal_entries','journal_lines']}
-                    expected_counts = {'documents':1,'bank_transactions':0,'journal_entries':1,'journal_lines':2} if args.authority_export or args.saft_artifact or args.local_runtime_join else {'documents':2,'bank_transactions':0,'journal_entries':2,'journal_lines':6} if args.annual_exports else {'documents':4,'bank_transactions':2,'journal_entries':3,'journal_lines':8} if args.dashboard_json or args.portfolio_overview else {'documents':2,'bank_transactions':0,'journal_entries':4,'journal_lines':8} if args.dated_reports else {'documents':0,'bank_transactions':0,'journal_entries':3,'journal_lines':6}
+                    expected_counts = {'documents':1,'bank_transactions':0,'journal_entries':1,'journal_lines':2} if args.authority_export or args.saft_artifact or (args.local_runtime_join or args.local_runtime_mcp) else {'documents':2,'bank_transactions':0,'journal_entries':2,'journal_lines':6} if args.annual_exports else {'documents':4,'bank_transactions':2,'journal_entries':3,'journal_lines':8} if args.dashboard_json or args.portfolio_overview else {'documents':2,'bank_transactions':0,'journal_entries':4,'journal_lines':8} if args.dated_reports else {'documents':0,'bank_transactions':0,'journal_entries':3,'journal_lines':6}
                     if counts != expected_counts:
                         raise RuntimeError('Standalone report independent terminal effects differ')
                     rows = db.execute('SELECT id,entry_no,transaction_date,status,reversal_of_entry_id FROM journal_entries ORDER BY id DESC').fetchall()
                     expected_status = ['reversed','posted','posted','posted'] if args.dated_reports else ['reversed','posted','posted']
-                    correction_valid = all(row[3] == 'posted' and row[4] is None for row in rows) if args.dashboard_json or args.portfolio_overview or args.annual_exports or args.authority_export or args.saft_artifact or args.local_runtime_join else [row[3] for row in rows] == expected_status and rows[0][4] == rows[2][0] and all(row[4] is None for row in rows[1:])
+                    correction_valid = all(row[3] == 'posted' and row[4] is None for row in rows) if args.dashboard_json or args.portfolio_overview or args.annual_exports or args.authority_export or args.saft_artifact or (args.local_runtime_join or args.local_runtime_mcp) else [row[3] for row in rows] == expected_status and rows[0][4] == rows[2][0] and all(row[4] is None for row in rows[1:])
                     if not correction_valid:
                         raise RuntimeError('Standalone report stored correction status/link differs')
                     report['terminalSql'] = {'counts':counts,'headers':rows,'journalActors':db.execute('SELECT created_by,created_by_program FROM journal_entries ORDER BY id').fetchall()}
-                    if args.local_runtime_join:
+                    if (args.local_runtime_join or args.local_runtime_mcp):
                         local_post_rows = db.execute("SELECT event_type,actor FROM audit_log WHERE event_type IN ('journal_post','journal_reverse') ORDER BY id").fetchall()
                         local_owner_id = report['results']['authenticate']['ownerId']
                         if len(local_post_rows) != 1 or local_post_rows[0][0] != 'journal_post' or not local_post_rows[0][1].startswith('user:'+local_owner_id+' via '):
@@ -761,7 +764,7 @@ db.close();process.stdout.write(JSON.stringify(out));"""
                     if json.loads(oracle.stdout) != actual['projections'] or any(digest(path) != reference_hashes[str(path.relative_to(REPO))] for path in reference_files):
                         raise RuntimeError('Original dated numeric report reference differs')
                     report['originalReadOnlyReference'] = {'qualified':True,'cases':len(actual['projections']),'sources':reference_hashes,'stoppedOwnedSyntheticLedgerOnly':True}
-                if args.annual_exports or args.authority_export or args.saft_artifact or args.local_runtime_join:
+                if args.annual_exports or args.authority_export or args.saft_artifact or (args.local_runtime_join or args.local_runtime_mcp):
                     if any(digest(path) != reference_hashes[str(path.relative_to(REPO))] for path in reference_files):
                         raise RuntimeError('Original annual export source changed during proof')
                     report['originalSourceHashes'] = reference_hashes
@@ -775,8 +778,8 @@ db.close();process.stdout.write(JSON.stringify(out));"""
                 if controller.returncode != 0:
                     raise RuntimeError('Standalone report browser controller failed')
                 report.update(status='passed',currentAction='complete',installedNativeQualified=False,sourceFreeRestoreQualified=False)
-                if args.local_runtime_join:
-                    report.update(workflow='local_cli_same_rust_owner_unix_socket',localRuntimeQualified=True,localRuntimeRestartQualified=True)
+                if (args.local_runtime_join or args.local_runtime_mcp):
+                    report.update(workflow='local_mcp_same_rust_owner_unix_socket' if args.local_runtime_mcp else 'local_cli_same_rust_owner_unix_socket',localRuntimeQualified=True,localRuntimeRestartQualified=True,localRuntimeMcpQualified=args.local_runtime_mcp)
                 elif args.saft_artifact:
                     report.update(workflow='original_saft_cli_local_package_timing',saftArtifactQualified=True,saftArtifactRestartQualified=True)
                 elif args.authority_export:
@@ -1341,7 +1344,7 @@ db.close();process.stdout.write(JSON.stringify(out));"""
                 server.shutdown()
                 server.server_close()
             report['ownedProcessesStopped'] = child is None and (controller is None or controller.poll() is not None)
-            if owned() and args.local_runtime_join and report['status'] == 'failed':
+            if owned() and (args.local_runtime_join or args.local_runtime_mcp) and report['status'] == 'failed':
                 # Retain the stopped, private synthetic fixture for targeted diagnosis.
                 # This prevents repeating MFA merely to recover an assertion's source.
                 report['ownedRuntimeCleaned'] = False
