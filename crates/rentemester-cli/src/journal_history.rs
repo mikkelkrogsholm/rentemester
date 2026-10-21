@@ -15,7 +15,9 @@ fn invalid() -> (u8, Error) {
 pub fn help() -> Value {
     json!({"ok":true,"usage":"journal list [--json] --server ORIGIN --cookie-file PATH --company SLUG [--allow-loopback-http]","output":"Bare snake_case array with all 12 original stored journal header fields, descending ID, all native fiscal years in one admitted read snapshot. Null DKK header amounts and original posted/reversed status are preserved. No archive merge or local fallback.","humanOutput":"Danish journal details use server-owned amountDkk or bookedDebitTotal; no local line aggregation.","exitCodes":{"0":"success","1":"server/transport/protocol refusal","2":"usage"}})
 }
-fn parse(args: &[String]) -> Result<(BTreeMap<&str, &str>, bool, bool), (u8, Error)> {
+type Parsed<'a> = (BTreeMap<&'a str, &'a str>, bool, bool);
+
+fn parse(args: &[String]) -> Result<Parsed<'_>, (u8, Error)> {
     let mut flags = BTreeMap::new();
     let (mut json, mut http) = (false, false);
     let mut cursor = 0;

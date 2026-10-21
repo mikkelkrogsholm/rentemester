@@ -2,9 +2,9 @@
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
   "current_increment": "Group131 original R32/#703 journal-history CLI/MCP compatibility, current-source HTTP/shared reader",
-  "code_revision": "07a963ad",
+  "code_revision": "5c329021",
   "spec_revision": "sha256:bc98636be4a972407adce0f817a76bb9d4bb7200cb292a70965e75ab62fae250",
-  "state": "Group130 accepted at22829c5b: actual ordinaryMFA dated original-currency/DKK reports, exact React/HTML/HTTP/CLI/MCP and normal restart, fullaudit10, originals, three bank source files/four bank rows, signedbackup and cleanup independently verified. Existing129/128/63/76 evidence retained. Group131 core/clients/HTTP implemented independently in three isolated worktrees from22829c5b; compile/tests/integration pending. First shared Cargo slot assigned core. Original report date selectors and dashboard JSON mapping remain, R31 tax/iXBRL preserved, whole epic and installed desktop last remain OPEN.",
+  "state": "Group130 accepted actualMFA/restart/originals/audit10/signedbackup and independent cleanup retained at22829c5b. Group131 source-backed original journal-history core/clients/HTTP integrated f28eec5b/554ca8e3/5c329021:14 focused tests and seven changed-crate all-target strictClippy pass. Mechanical parser typealias fixed sole Clippy error without behavior change. Three completed worktrees preserved in verified Git snapshots then removed. Normal3bins build PASS; standalone minimal ordinaryMFA/read-refusal/noeffects/restart proof pending. Remaining original R32 date selectors/dashboardJSON and R31 tax/iXBRL retained; whole epic and installed desktop last remain OPEN.",
   "issues_closed": [
     701
   ],
@@ -7191,7 +7191,7 @@
     },
     "journal_history131": {
       "issue": 703,
-      "status": "Isolated core, clients and main HTTP code implemented; tests/integration/actual proof pending",
+      "status": "Integrated core/clients/HTTP; focused storage3,host1,client3,CLI3,MCP3,HTTP1 PASS; strict seven changed-crate all-target Clippy PASS after mechanical parser type alias; normal three-bin build PASS; actual MFA proof pending",
       "base": "22829c5b",
       "resume": "/tmp/rm131-live-state.json",
       "storage_host_owner": "/root/dashboard_html129",
@@ -7199,7 +7199,53 @@
       "http_proof_owner": "/root",
       "scope": "Original12fields, native all years, stored status, idDESC, inclusive date/filter/page, original CLI JSON bare snake and human canonical amount fallback; read current-authorized physical sources only",
       "actual_qualified": false,
-      "installed_desktop_qualified": false
+      "installed_desktop_qualified": false,
+      "worker_sources": {
+        "core": "7554dd5f",
+        "clients": "423b0de4",
+        "http_proof": "76999f49"
+      },
+      "integrations": {
+        "core": "f28eec5b",
+        "clients": "554ca8e3",
+        "http_proof": "5c329021"
+      },
+      "focused_tests": {
+        "storage": {
+          "passed": 3,
+          "log": "/tmp/rm131-journal-core-tests.log"
+        },
+        "host": {
+          "passed": 1,
+          "log": "/tmp/rm131-journal-host-tests.log"
+        },
+        "sdk_cli_mcp": {
+          "passed": 9,
+          "scope": "journal_history --lib --bins on three crates",
+          "worker_reported_terminal": "/tmp/rm131-clients-tests-worker-reported.txt"
+        },
+        "http": {
+          "passed": 1,
+          "log": "/tmp/rm131-http-tests.log"
+        }
+      },
+      "strict_clippy": "/tmp/rm131-clippy-corrected.log",
+      "strict_clippy_qualified": true,
+      "clippy_correction": "Named Parsed alias for CLI parse result; no behavior or test expectation changed.",
+      "normal_build_log": "/tmp/rm131-normal-build.log",
+      "normal_build_qualified": true,
+      "planned_actual": "/tmp/rentemester-rust-reports/journal-history131.json",
+      "actual_helper": "scripts/rust/check-native-journal-history.ts",
+      "actual_runner": "scripts/rust/run-document-scanner.py --journal-history",
+      "worktree_recovery": ".git/rentemester-recovery/archived131.json",
+      "worktrees_removed": true,
+      "proof_preflight": "Readonly concrete request/envelope/selector/header/count/MFA/cleanup source preflight clear; not runtime qualification.",
+      "compatibility_boundary": "Original12 data headers, CLI bare snake JSON and human formatter, MCP paged data retained. Native transport/schema/refusal envelopes and local launcher compatibility remain global R44 acceptance; this subset does not complete R44 or full R32.",
+      "normal_binary_sha256": {
+        "rentemester-server": "7b43711f43e7146e23b48005a4e6e28c2ffa3f42479174ca608fcf8a51ef5662",
+        "rentemester-rust": "0c11690911c6d2cdfd8788431ef204fa5475ef957d0feec70c53f1cdf3e59671",
+        "rentemester-mcp": "000e17c7ddc04a073ddafb8009f791bc2ab85dda0e3c1497252d0f38ed6d1fe1"
+      }
     }
   },
   "verified_history": [
