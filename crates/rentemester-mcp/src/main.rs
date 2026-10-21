@@ -2,6 +2,7 @@
 //! https://modelcontextprotocol.io/specification/2025-11-25/basic/transports
 //! https://modelcontextprotocol.io/specification/2025-11-25/basic/lifecycle
 //! https://modelcontextprotocol.io/specification/2025-11-25/server/tools
+mod bank_accounts_original;
 mod bank_import;
 mod bank_queries;
 mod handoff_export;
