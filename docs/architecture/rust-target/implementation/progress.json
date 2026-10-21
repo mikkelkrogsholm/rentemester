@@ -7784,7 +7784,7 @@
     },
     "local_runtime138": {
       "issue": 716,
-      "status": "INTEGRATING_local_cli_same_rust_owner",
+      "status": "DEVELOPING_actual_helper_correction",
       "contract": "/tmp/rm138-contract.md",
       "base": "33b36543",
       "actual_qualified": false,
@@ -7810,7 +7810,16 @@
       "strict_clippy_passed": true,
       "strict_clippy_scope": "Changed server/client/CLI and shared MCP integration, all targets",
       "normal_build": "/tmp/rm138-normal-build.log",
-      "normal_build_pending": true
+      "normal_build_pending": false,
+      "normal_build_passed": true,
+      "first_actual_report": "/tmp/rentemester-rust-reports/local-runtime138.json",
+      "first_actual_passed": false,
+      "first_actual_failure": "Service assertion lost its message in generic browser sanitization. Source diagnosis found helper passed unsupported --confirm flag to remote post-journal; that command requires confirm:true inside JSON instead. Exact isolated CLI proves flag rejects before credential read/HTTP. Removed only unsupported flag; retained body confirmation/idempotency. Added static safe error-stage names and stopped private fixture retention on failure.",
+      "prelude_isolated": "/tmp/rm138-prelude.log",
+      "parser_correction_isolated": "/tmp/rm138-confirm-flag-isolated.log",
+      "observability_isolated": "/tmp/rm138-observability-isolated.log",
+      "retry_reason": "One justified138b actual after isolated diagnosed helper argument correction; reuse unchanged Rust binaries/focused/Clippy/build evidence. No authority/accounting/source gate changes.",
+      "failed_focused_fixture_preservation": "/tmp/rentemester-rust-reports/local-runtime138-development/recovery.json"
     }
   },
   "verified_history": [

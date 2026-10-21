@@ -1341,7 +1341,12 @@ db.close();process.stdout.write(JSON.stringify(out));"""
                 server.shutdown()
                 server.server_close()
             report['ownedProcessesStopped'] = child is None and (controller is None or controller.poll() is not None)
-            if owned():
+            if owned() and args.local_runtime_join and report['status'] == 'failed':
+                # Retain the stopped, private synthetic fixture for targeted diagnosis.
+                # This prevents repeating MFA merely to recover an assertion's source.
+                report['ownedRuntimeCleaned'] = False
+                report['ownedRuntimeRetainedForDiagnosis'] = True
+            elif owned():
                 shutil.rmtree(work)
                 report['ownedRuntimeCleaned'] = True
             else:
