@@ -5,29 +5,8 @@ use rentemester_engine::{Error, money::Money};
 use rusqlite::Transaction;
 use serde_json::{Value, json};
 pub(super) fn verify(tx: &Transaction<'_>) -> Result<Vec<Value>, Error> {
-    let mut errors = crate::journal_hash::verify(tx)?
-        .errors
-        .into_iter()
-        .map(|error| json!({"error":error}))
-        .collect::<Vec<_>>();
-    errors.extend(rows(tx, "PRAGMA foreign_key_check", &[])?);
+    let mut errors = structural(tx, true)?;
     for (code, sql) in [
-        (
-            "INVALID_JOURNAL_LINE",
-            "SELECT id FROM journal_lines WHERE debit_amount<0 OR credit_amount<0 OR (debit_amount=0 AND credit_amount=0) OR (debit_amount>0 AND credit_amount>0)",
-        ),
-        (
-            "INVALID_REVERSAL_STATUS",
-            "SELECT id FROM journal_entries WHERE (status='posted' AND reversal_of_entry_id IS NOT NULL) OR (status='reversed' AND reversal_of_entry_id IS NULL) OR status NOT IN ('posted','reversed')",
-        ),
-        (
-            "INVALID_REVERSAL_TARGET",
-            "SELECT r.id FROM journal_entries r LEFT JOIN journal_entries o ON o.id=r.reversal_of_entry_id WHERE r.reversal_of_entry_id IS NOT NULL AND (o.id IS NULL OR o.id>=r.id OR o.status!='posted' OR o.reversal_of_entry_id IS NOT NULL OR r.document_id IS NOT o.document_id OR r.source_bank_transaction_id IS NOT o.source_bank_transaction_id OR r.currency IS NOT o.currency OR r.amount_foreign IS NOT o.amount_foreign OR r.amount_dkk IS NOT o.amount_dkk OR r.fx_rate_to_dkk IS NOT o.fx_rate_to_dkk)",
-        ),
-        (
-            "MULTIPLE_REVERSALS",
-            "SELECT reversal_of_entry_id AS id FROM journal_entries WHERE reversal_of_entry_id IS NOT NULL GROUP BY reversal_of_entry_id HAVING count(*)>1",
-        ),
         (
             "MISSING_JOURNAL_AUDIT",
             "SELECT j.id FROM journal_entries j WHERE NOT EXISTS(SELECT 1 FROM audit_log a WHERE a.entity_type='journal_entry' AND a.entity_id=CAST(j.id AS TEXT))",
@@ -87,6 +66,41 @@ pub(super) fn verify(tx: &Transaction<'_>) -> Result<Vec<Value>, Error> {
         }
         if expected != actual {
             errors.push(json!({"code":"BANK_LEDGER_SOURCE_MISMATCH","bankTransactionId":link["bank_transaction_id"]}));
+        }
+    }
+    Ok(errors)
+}
+pub(crate) fn structural(tx: &Transaction<'_>, exact_metadata: bool) -> Result<Vec<Value>, Error> {
+    let mut errors = crate::journal_hash::verify(tx)?
+        .errors
+        .into_iter()
+        .map(|error| json!({"error":error}))
+        .collect::<Vec<_>>();
+    errors.extend(rows(tx, "PRAGMA foreign_key_check", &[])?);
+    for (code, sql) in [
+        (
+            "INVALID_JOURNAL_LINE",
+            "SELECT id FROM journal_lines WHERE debit_amount<0 OR credit_amount<0 OR (debit_amount=0 AND credit_amount=0) OR (debit_amount>0 AND credit_amount>0)",
+        ),
+        (
+            "INVALID_REVERSAL_STATUS",
+            "SELECT id FROM journal_entries WHERE (status='posted' AND reversal_of_entry_id IS NOT NULL) OR (status='reversed' AND reversal_of_entry_id IS NULL) OR status NOT IN ('posted','reversed')",
+        ),
+        (
+            "INVALID_REVERSAL_TARGET",
+            if exact_metadata {
+                "SELECT r.id FROM journal_entries r LEFT JOIN journal_entries o ON o.id=r.reversal_of_entry_id WHERE r.reversal_of_entry_id IS NOT NULL AND (o.id IS NULL OR o.id>=r.id OR o.status!='posted' OR o.reversal_of_entry_id IS NOT NULL OR r.document_id IS NOT o.document_id OR r.source_bank_transaction_id IS NOT o.source_bank_transaction_id OR r.currency IS NOT o.currency OR r.amount_foreign IS NOT o.amount_foreign OR r.amount_dkk IS NOT o.amount_dkk OR r.fx_rate_to_dkk IS NOT o.fx_rate_to_dkk)"
+            } else {
+                "SELECT r.id FROM journal_entries r LEFT JOIN journal_entries o ON o.id=r.reversal_of_entry_id WHERE r.reversal_of_entry_id IS NOT NULL AND (o.id IS NULL OR o.id>=r.id OR o.status!='posted' OR o.reversal_of_entry_id IS NOT NULL)"
+            },
+        ),
+        (
+            "MULTIPLE_REVERSALS",
+            "SELECT reversal_of_entry_id AS id FROM journal_entries WHERE reversal_of_entry_id IS NOT NULL GROUP BY reversal_of_entry_id HAVING count(*)>1",
+        ),
+    ] {
+        for value in rows(tx, sql, &[])? {
+            errors.push(json!({"code":code,"source":value}));
         }
     }
     let mut q = tx
@@ -153,7 +167,7 @@ pub(super) fn verify(tx: &Transaction<'_>) -> Result<Vec<Value>, Error> {
     }
     Ok(errors)
 }
-pub(super) fn log_integrity(tx: &Transaction<'_>) -> Result<Vec<Value>, Error> {
+pub(crate) fn log_integrity(tx: &Transaction<'_>) -> Result<Vec<Value>, Error> {
     let (count, min, max): (i64, Option<i64>, Option<i64>) = tx
         .query_row("SELECT count(*),min(id),max(id) FROM audit_log", [], |r| {
             Ok((r.get(0)?, r.get(1)?, r.get(2)?))
