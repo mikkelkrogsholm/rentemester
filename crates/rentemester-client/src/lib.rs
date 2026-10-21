@@ -509,3 +509,6 @@ pub use bank_accounts_original::{BankAccountOriginalMutation,bank_account_origin
 
 mod bank_original;
 pub use bank_original::{BankOriginalMutation,bank_original_body_schema};
+
+mod direct_bank_original;
+pub use direct_bank_original::direct_bank_original_schema;

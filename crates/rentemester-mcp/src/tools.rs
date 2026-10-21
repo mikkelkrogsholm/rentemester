@@ -168,6 +168,7 @@ pub fn list() -> Value {
     tools.extend(crate::budget::tools());
     tools.extend(crate::bank_matches::tools().into_iter().filter(|tool|tool["name"]!="bank_suggest_matches"));
     tools.extend(crate::bank_original::tools());
+    tools.extend(crate::direct_bank_original::tools());
     tools.extend(crate::bank_queries::tools());
     tools.extend(crate::bank_import::tools());
     tools.extend(crate::bank_accounts_original::tools());
@@ -260,6 +261,7 @@ pub async fn call(api: &ApiClient, name: &str, args: Value) -> Result<Value, &'s
     if !args.is_object() {
         return Err("expected arguments object");
     }
+    if matches!(name,"direct_bank_purchase_payable_correction_plan"|"direct_bank_purchase_payable_correction_apply") {return crate::direct_bank_original::call(api,name,args).await;}
     if matches!(name,"bank_suggest_matches"|"bank_reconciliation_correction_plan"|"bank_reconciliation_correction_apply") {return crate::bank_original::call(api,name,args).await;}
     if name=="bank_account_update" {return crate::bank_accounts_original::call(api,args).await;}
     if name=="bank_import" {return crate::bank_import::call(api,args).await;}
