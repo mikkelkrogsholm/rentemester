@@ -28,6 +28,9 @@ struct Bank {
     hash: String,
 }
 fn bank(tx: &Transaction<'_>, id_value: i64) -> Result<Bank, Error> {
+    bank_mode(tx, id_value, false)
+}
+fn bank_mode(tx: &Transaction<'_>, id_value: i64, historical: bool) -> Result<Bank, Error> {
     id(id_value)?;
     let mut q=tx.prepare("SELECT b.transaction_date,b.booking_date,b.text,b.amount,b.currency,b.reference,b.amount_dkk,b.fx_rate_to_dkk,b.balance_after,b.source_file_hash,b.transaction_hash,a.id,a.ledger_account_no,a.active,c.type FROM bank_transactions b JOIN bank_accounts a ON a.id=b.bank_account_id JOIN accounts c ON c.account_no=a.ledger_account_no WHERE b.id=?1").map_err(invalid)?;
     let mut rows = q.query([id_value]).map_err(invalid)?;
@@ -35,7 +38,7 @@ fn bank(tx: &Transaction<'_>, id_value: i64) -> Result<Bank, Error> {
         .next()
         .map_err(invalid)?
         .ok_or_else(|| refused("bank row and explicit mapped account required"))?;
-    if r.get::<_, i64>(13).map_err(invalid)? != 1
+    if (!historical && r.get::<_, i64>(13).map_err(invalid)? != 1)
         || r.get::<_, String>(14).map_err(invalid)? != "asset"
     {
         return Err(refused("active mapped bank asset required"));
@@ -93,19 +96,55 @@ pub fn source_hash(tx: &Transaction<'_>, bank_id: i64) -> Result<String, Error> 
 /// Prove current row identity and values against the exact archived import, including duplicate ordinal.
 pub fn verify_source(tx: &Transaction<'_>, bank_id: i64, bytes: &[u8]) -> Result<(), Error> {
     let bank = bank(tx, bank_id)?;
-    if format!("{:x}", Sha256::digest(bytes)) != bank.source {
+    verify_captured_source(
+        tx,
+        bank_id,
+        &bank.row,
+        Some(bank.account),
+        &bank.source,
+        &bank.hash,
+        bytes,
+    )
+}
+fn verify_captured_source(
+    tx: &Transaction<'_>,
+    bank_id: i64,
+    stored: &Row,
+    account: Option<i64>,
+    source: &str,
+    expected_hash: &str,
+    bytes: &[u8],
+) -> Result<(), Error> {
+    let profile = crate::bank::source_profile(tx, bank_id)?;
+    verify_captured_profile(
+        stored,
+        account,
+        source,
+        expected_hash,
+        bytes,
+        profile.as_deref(),
+    )
+}
+fn verify_captured_profile(
+    stored: &Row,
+    account: Option<i64>,
+    source: &str,
+    expected_hash: &str,
+    bytes: &[u8],
+    profile: Option<&str>,
+) -> Result<(), Error> {
+    if format!("{:x}", Sha256::digest(bytes)) != source {
         return Err(refused("bank statement original hash mismatch"));
     }
     let mut occurrences = HashMap::new();
-    let profile = crate::bank::source_profile(tx, bank_id)?;
-    let content = rentemester_engine::bank::decode_bytes(bytes, profile.as_deref())?;
-    for row in rentemester_engine::bank::parse_with_profile(&content, profile.as_deref())? {
-        let first = fingerprint(&row, Some(bank.account), 0)?;
+    let content = rentemester_engine::bank::decode_bytes(bytes, profile)?;
+    for row in rentemester_engine::bank::parse_with_profile(&content, profile)? {
+        let first = fingerprint(&row, account, 0)?;
         let count = occurrences.entry(first).or_insert(0);
-        let hash = fingerprint(&row, Some(bank.account), *count)?;
-        if hash == bank.hash
-            && fingerprint(&bank.row, Some(bank.account), *count)? == hash
-            && row.balance_after == bank.row.balance_after
+        let hash = fingerprint(&row, account, *count)?;
+        if hash == expected_hash
+            && fingerprint(stored, account, *count)? == hash
+            && row.balance_after == stored.balance_after
         {
             return Ok(());
         }
@@ -115,6 +154,66 @@ pub fn verify_source(tx: &Transaction<'_>, bank_id: i64, bytes: &[u8]) -> Result
         "current bank row no longer matches its archived statement; review source evidence",
     ))
 }
+/// Historical read-only source verification. Mapping/activity is not admission
+/// authority: the original nullable bank-account identity remains fingerprinted.
+pub fn verify_audit_source(tx: &Transaction<'_>, bank_id: i64, bytes: &[u8]) -> Result<(), Error> {
+    let mut q=tx.prepare("SELECT transaction_date,booking_date,text,amount,currency,reference,amount_dkk,fx_rate_to_dkk,balance_after,source_file_hash,transaction_hash,bank_account_id FROM bank_transactions WHERE id=?1").map_err(invalid)?;
+    let mut rows = q.query([bank_id]).map_err(invalid)?;
+    let r = rows
+        .next()
+        .map_err(invalid)?
+        .ok_or_else(|| refused("bank source row missing"))?;
+    let optional = |i| match r.get_ref(i).map_err(invalid)? {
+        ValueRef::Null => Ok(None),
+        v => signed_money(v).map(Some),
+    };
+    let rate = match r.get_ref(7).map_err(invalid)? {
+        ValueRef::Null => None,
+        ValueRef::Real(v) if v.is_finite() => {
+            Some(FxRate::parse(ryu_js::Buffer::new().format_finite(v))?)
+        }
+        ValueRef::Integer(v) => Some(FxRate::parse(&v.to_string())?),
+        _ => return Err(refused("unsupported historical FX evidence")),
+    };
+    let stored = Row {
+        date: r.get(0).map_err(invalid)?,
+        booking_date: r.get(1).map_err(invalid)?,
+        text: r.get(2).map_err(invalid)?,
+        amount: signed_money(r.get_ref(3).map_err(invalid)?)?,
+        currency: r.get(4).map_err(invalid)?,
+        reference: r.get(5).map_err(invalid)?,
+        amount_dkk: optional(6)?,
+        rate,
+        balance_after: optional(8)?,
+        profile: None,
+        counterparty_name: None,
+        counterparty_account: None,
+        message: None,
+        archive_reference: None,
+        customer_reference: None,
+        raw: None,
+    };
+    let source: String = r.get(9).map_err(invalid)?;
+    let hash: String = r.get(10).map_err(invalid)?;
+    let account: Option<i64> = r.get(11).map_err(invalid)?;
+    let profile = crate::bank::source_profile(tx, bank_id)?;
+    let legacy_batch:bool=tx.query_row("SELECT EXISTS(SELECT 1 FROM audit_log a JOIN bank_transactions b ON a.entity_id=b.import_batch_id WHERE b.id=?1 AND a.event_type='bank_import' AND a.entity_type='bank_transaction_batch' AND a.message LIKE 'Imported % bank transactions from %; skipped % duplicates')",[bank_id],|r|r.get(0)).map_err(invalid)?;
+    if profile.is_none() && legacy_batch {
+        // TS did not retain the selected parser name. Accept only an existing
+        // supported interpretation that reproduces the complete frozen row hash
+        // and duplicate ordinal; this never chooses a new accounting value.
+        for selected in [None, Some("danske-bank")] {
+            if verify_captured_profile(&stored, account, &source, &hash, bytes, selected).is_ok() {
+                return Ok(());
+            }
+        }
+        return Err(refused(
+            "legacy bank original does not reproduce its frozen row under supported parsers",
+        ));
+    }
+    verify_captured_profile(&stored, account, &source, &hash, bytes, profile.as_deref())
+}
+
 fn amount(bank: &Bank) -> Result<Money, Error> {
     let value = if bank.row.currency == "DKK" {
         bank.row.amount.clone()
@@ -170,8 +269,23 @@ pub(crate) fn persisted_journal_facts(
     bank_id: i64,
     journal: i64,
 ) -> Result<Value, Error> {
+    persisted_facts_mode(tx, bank_id, journal, false)
+}
+pub(crate) fn persisted_audit_journal_facts(
+    tx: &Transaction<'_>,
+    bank_id: i64,
+    journal: i64,
+) -> Result<Value, Error> {
+    persisted_facts_mode(tx, bank_id, journal, true)
+}
+fn persisted_facts_mode(
+    tx: &Transaction<'_>,
+    bank_id: i64,
+    journal: i64,
+    historical: bool,
+) -> Result<Value, Error> {
     id(journal)?;
-    let bank = bank(tx, bank_id)?;
+    let bank = bank_mode(tx, bank_id, historical)?;
     let target = amount(&bank)?;
     type JournalProof = (
         String,

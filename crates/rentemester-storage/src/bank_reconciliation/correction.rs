@@ -150,6 +150,35 @@ pub(crate) fn persisted_plan_facts(
     replacement: i64,
     history: Value,
 ) -> Result<Value, Error> {
+    persisted_facts_mode(
+        tx,
+        bank_id,
+        reconciliation,
+        old,
+        replacement,
+        history,
+        false,
+    )
+}
+pub(crate) fn persisted_audit_plan_facts(
+    tx: &Transaction<'_>,
+    bank_id: i64,
+    reconciliation: &str,
+    old: i64,
+    replacement: i64,
+    history: Value,
+) -> Result<Value, Error> {
+    persisted_facts_mode(tx, bank_id, reconciliation, old, replacement, history, true)
+}
+fn persisted_facts_mode(
+    tx: &Transaction<'_>,
+    bank_id: i64,
+    reconciliation: &str,
+    old: i64,
+    replacement: i64,
+    history: Value,
+    historical: bool,
+) -> Result<Value, Error> {
     let old_no: String = tx
         .query_row(
             "SELECT entry_no FROM journal_entries WHERE id=?1",
@@ -157,14 +186,19 @@ pub(crate) fn persisted_plan_facts(
             |r| r.get(0),
         )
         .map_err(invalid)?;
-    let replacement_plan = super::persisted_journal_facts(tx, bank_id, replacement)?;
-    plan_facts(
+    let replacement_plan = if historical {
+        super::persisted_audit_journal_facts(tx, bank_id, replacement)?
+    } else {
+        super::persisted_journal_facts(tx, bank_id, replacement)?
+    };
+    plan_facts_mode(
         tx,
         bank_id,
         replacement,
         (reconciliation.into(), old, old_no),
         replacement_plan,
         history,
+        historical,
     )
 }
 fn plan_facts(
@@ -175,13 +209,32 @@ fn plan_facts(
     replacement_plan: Value,
     history: Value,
 ) -> Result<Value, Error> {
+    plan_facts_mode(
+        tx,
+        bank_id,
+        replacement,
+        current,
+        replacement_plan,
+        history,
+        false,
+    )
+}
+fn plan_facts_mode(
+    tx: &Transaction<'_>,
+    bank_id: i64,
+    replacement: i64,
+    current: (String, i64, String),
+    replacement_plan: Value,
+    history: Value,
+    historical: bool,
+) -> Result<Value, Error> {
     let (reconciliation, old, old_no) = current;
     if old == replacement {
         return Err(refused("replacement must differ from original"));
     }
     let (reversal_id, reversal_no, reversal_hash, old_hash) = reversal(tx, old)?;
     // Both original and replacement must move this same mapped bank by the statement amount.
-    let bank = bank(tx, bank_id)?;
+    let bank = super::bank_mode(tx, bank_id, historical)?;
     let target = amount(&bank)?;
     let mut old_movement = Money::default();
     let mut q=tx.prepare("SELECT l.debit_amount,l.credit_amount FROM journal_lines l JOIN accounts a ON a.id=l.account_id WHERE l.journal_entry_id=?1 AND a.account_no=?2 ORDER BY l.id").map_err(invalid)?;

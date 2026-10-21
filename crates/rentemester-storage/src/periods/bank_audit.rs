@@ -18,7 +18,7 @@ struct Audit {
     actor: String,
     value: Value,
 }
-fn audits(tx: &Transaction<'_>, kind: &str) -> Result<Vec<Audit>, Error> {
+fn audits(tx: &Transaction<'_>, kind: &str, supported: bool) -> Result<Vec<Audit>, Error> {
     let mut q=tx.prepare("SELECT id,entity_type,entity_id,actor,message FROM audit_log WHERE event_type=?1 ORDER BY id").map_err(invalid)?;
     let mut rows = q.query([kind]).map_err(invalid)?;
     let mut out = vec![];
@@ -32,8 +32,12 @@ fn audits(tx: &Transaction<'_>, kind: &str) -> Result<Vec<Audit>, Error> {
                 && raw == bank.to_string(),
             "bank audit identity differs",
         )?;
-        let value: Value =
-            serde_json::from_str(&r.get::<_, String>(4).map_err(invalid)?).map_err(invalid)?;
+        let raw_message = r.get::<_, String>(4).map_err(invalid)?;
+        // Full audit separately reconstructs every legacy plain-text proof.
+        if supported && !raw_message.trim_start().starts_with('{') {
+            continue;
+        }
+        let value: Value = serde_json::from_str(&raw_message).map_err(invalid)?;
         check(
             value.as_object().is_some_and(|v| v.len() == 3),
             "native bank audit envelope differs",
@@ -64,9 +68,17 @@ fn problem(code: &str, id: i64, error: Error) -> Value {
 /// Empty is passed. Corruption is nonempty evidence (or Err/unavailable), never
 /// silently omitted. Every persisted native row and native audit is accounted for.
 pub(super) fn verify(tx: &Transaction<'_>) -> Result<Vec<Value>, Error> {
+    verify_mode(tx, false)
+}
+/// Full audit supplies legacy relational/provenance checks separately. Native
+/// JSON proofs still receive all original exact-plan/orphan checks.
+pub(crate) fn verify_supported(tx: &Transaction<'_>) -> Result<Vec<Value>, Error> {
+    verify_mode(tx, true)
+}
+fn verify_mode(tx: &Transaction<'_>, supported: bool) -> Result<Vec<Value>, Error> {
     crate::validate(tx)?;
-    let link_audits = audits(tx, "bank_journal_reconciliation_link")?;
-    let correction_audits = audits(tx, "bank_reconciliation_corrected")?;
+    let link_audits = audits(tx, "bank_journal_reconciliation_link", supported)?;
+    let correction_audits = audits(tx, "bank_reconciliation_corrected", supported)?;
     let mut errors = vec![];
     let mut used = BTreeSet::new();
     let mut banks = BTreeSet::new();
@@ -83,6 +95,9 @@ pub(super) fn verify(tx: &Transaction<'_>) -> Result<Vec<Value>, Error> {
             let note: Option<String> = r.get(5).map_err(invalid)?;
             let actor: String = r.get(6).map_err(invalid)?;
             let program: String = r.get(7).map_err(invalid)?;
+            if supported && program != "rentemester-native-bank-link" {
+                return Ok(());
+            }
             check(
                 method == "manual-review"
                     && program == "rentemester-native-bank-link"
@@ -94,7 +109,11 @@ pub(super) fn verify(tx: &Transaction<'_>) -> Result<Vec<Value>, Error> {
                 !note.is_empty() && note == note.trim() && note.len() <= 1000,
                 "native link reason differs",
             )?;
-            let facts = bank::persisted_journal_facts(tx, bank_id, journal)?;
+            let facts = if supported {
+                bank::persisted_audit_journal_facts(tx, bank_id, journal)?
+            } else {
+                bank::persisted_journal_facts(tx, bank_id, journal)?
+            };
             let hash = facts["planHash"]
                 .as_str()
                 .ok_or_else(|| refusal("link facts hash unavailable"))?;
@@ -138,6 +157,13 @@ pub(super) fn verify(tx: &Transaction<'_>) -> Result<Vec<Value>, Error> {
             let amount = crate::bank::signed_money(r.get_ref(8).map_err(invalid)?)?;
             let replacement_hash: String = r.get(9).map_err(invalid)?;
             let hash: String = r.get(10).map_err(invalid)?;
+            if supported
+                && !correction_audits
+                    .iter()
+                    .any(|a| a.bank == bank_id && a.value["plan"]["planHash"] == hash)
+            {
+                return Ok(());
+            }
             let reason: String = r.get(11).map_err(invalid)?;
             let actor: String = r.get(12).map_err(invalid)?;
             let principal_kind: String = r.get(13).map_err(invalid)?;
@@ -161,14 +187,25 @@ pub(super) fn verify(tx: &Transaction<'_>) -> Result<Vec<Value>, Error> {
                 .filter(|e| e["kind"] != "correction" || e["id"].as_i64().is_some_and(|n| n < id))
                 .cloned()
                 .collect::<Vec<_>>();
-            let facts = bank::correction::persisted_plan_facts(
-                tx,
-                bank_id,
-                &reconciliation,
-                old,
-                replacement,
-                json!(prefix),
-            )?;
+            let facts = if supported {
+                bank::correction::persisted_audit_plan_facts(
+                    tx,
+                    bank_id,
+                    &reconciliation,
+                    old,
+                    replacement,
+                    json!(prefix),
+                )?
+            } else {
+                bank::correction::persisted_plan_facts(
+                    tx,
+                    bank_id,
+                    &reconciliation,
+                    old,
+                    replacement,
+                    json!(prefix),
+                )?
+            };
             let plan = &facts["plan"];
             check(
                 plan["planHash"] == hash

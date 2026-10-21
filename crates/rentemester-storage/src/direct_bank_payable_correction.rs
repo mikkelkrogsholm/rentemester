@@ -533,6 +533,11 @@ pub fn candidates(tx: &Transaction<'_>) -> Result<Value, Error> {
     }
     Ok(json!(out))
 }
+/// Audit a single retained correction with the same immutable-reference checks
+/// as portable backup validation, without stopping at an earlier damaged row.
+pub(crate) fn validate_audit_row(db: &Connection, row: &Value) -> Result<(), Error> {
+    row_result(db, row, true).map(|_| ())
+}
 pub fn validate_backup(db: &Connection) -> Result<(), Error> {
     for row in rows(
         db,
