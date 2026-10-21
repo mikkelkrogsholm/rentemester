@@ -864,6 +864,8 @@ db.close();process.stdout.write(JSON.stringify(out));"""
                 if args.invoice_bad_debt:
                     proof_helpers.append(REPO / 'scripts/rust/check-native-invoice-bad-debt.ts')
                     report['invoiceBadDebtHelperSha256'] = digest(proof_helpers[-1])
+                    proof_helpers.append(REPO / 'scripts/rust/check-native-invoice-original.ts')
+                    report['invoiceOriginalHelperSha256'] = digest(proof_helpers[-1])
                 if args.dinero_import:
                     proof_helpers.append(REPO / 'scripts/rust/check-native-dinero-import.ts')
                     report['dineroImportHelperSha256'] = digest(proof_helpers[-1])
@@ -1006,6 +1008,10 @@ db.close();process.stdout.write(JSON.stringify(out));"""
                     if counts != expected_counts:
                         raise RuntimeError('Backup lock terminal financial effects differ: '+json.dumps(counts,sort_keys=True))
                     report['terminalSql'] = {'counts':counts,'journalActors':db.execute('SELECT created_by,created_by_program FROM journal_entries ORDER BY id').fetchall()}
+                    if args.invoice_bad_debt:
+                        db.row_factory = sqlite3.Row
+                        for table in ['documents','issued_invoice_postings','invoice_payments','invoice_bad_debt_writeoffs','invoice_compensation_claims','invoice_claim_payments','journal_entries','journal_lines']:
+                            report['terminalSql'][table] = [dict(row) for row in db.execute('SELECT * FROM '+table+' ORDER BY '+('invoice_document_id' if table == 'issued_invoice_postings' else 'id'))]
                 finally: db.close()
                 if args.synthetic_import:
                     imported_db = sqlite3.connect((work/'workspace/synthetic-csv-j02/data/ledger.sqlite').as_uri()+'?mode=ro', uri=True)
@@ -1112,6 +1118,10 @@ db.close();process.stdout.write(JSON.stringify(out));"""
                     reopened = report['results']['bad-debt-reopen']
                     if not actual.get('qualified') or not reopened.get('qualified') or not reopened.get('exactNormalMfaRestartState') or not reopened.get('fullAudit119GreenAfterRestart') or actual['accountingFingerprint'] != reopened['accountingFingerprint']:
                         raise RuntimeError('Bad-debt whole-flow or exact restart not qualified')
+                    if not actual.get('originalInvoiceQueriesQualified') or not reopened.get('originalInvoiceQueriesQualified'):
+                        raise RuntimeError('Original invoice query family or restart not qualified')
+                    report['originalInvoiceQueriesQualified'] = True
+                    report['originalInvoiceQueriesRestartQualified'] = True
                     report.update(workflow='invoice_bad_debt_dkk_foreign_full_flow',invoiceBadDebtQualified=True,invoiceBadDebtRestartQualified=True,invoiceBadDebtFullAudit119Qualified=True,invoiceBadDebtSourceFreeRestoreQualified=False,invoiceBadDebtForeignActualQualified=True,independentLossEstablishmentQualified=False,recoveryFeatureQualified=False,foreignInterestQualified=False,installedNativeQualified=False)
                 if args.synthetic_import:
                     actual = report['results']['synthetic-run']
@@ -1393,7 +1403,7 @@ db.close();process.stdout.write(JSON.stringify(out));"""
                 server.shutdown()
                 server.server_close()
             report['ownedProcessesStopped'] = child is None and (controller is None or controller.poll() is not None)
-            if owned() and (args.bank_queries or args.local_runtime_join or args.local_runtime_mcp or args.service_purchase) and report['status'] == 'failed':
+            if owned() and (args.bank_queries or args.local_runtime_join or args.local_runtime_mcp or args.service_purchase or args.invoice_bad_debt) and report['status'] == 'failed':
                 # Retain the stopped, private synthetic fixture for targeted diagnosis.
                 # This prevents repeating MFA merely to recover an assertion's source.
                 report['ownedRuntimeCleaned'] = False
