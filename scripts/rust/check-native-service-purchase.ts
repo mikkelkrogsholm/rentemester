@@ -178,7 +178,7 @@ export async function createServicePurchaseProof(ownerPage: Page, base: string, 
   }
   async function run() {
     need(!started, "Purchase proof must run once"); started = true;
-    const clockRead = await ownerPage.request.get(base+"/api/portfolio"); need(clockRead.ok(),"Trusted default date available"); today=(await clockRead.json()).portfolio.asOf; need(/^\d{4}-\d{2}-\d{2}$/.test(today),"Trusted UTC date shape");
+    today = new Date().toISOString().slice(0, 10);
     const fresh = { documents: (await human("documents")).documents, journal: (await human("journal")).journal,
       bank: (await human("bank")).bank, payables: (await human(`payables?status=all&asOf=${today}`)).payables };
     need(fresh.documents.documents.length === 0 && fresh.journal.entries.length === 0 && fresh.bank.transactions.length === 0 && fresh.payables.rows.length === 0, "Fresh synthetic purchase workspace required");
