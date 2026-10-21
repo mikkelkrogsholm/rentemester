@@ -459,3 +459,76 @@ fn journal_history_reuses_current_authority_and_physical_source_barrier() {
     assert_eq!(refusal.error.code, "report_source_unavailable");
     assert_eq!(changes(&owner), before);
 }
+
+#[test]
+fn dated_report_business_errors_remain_behind_current_authority_and_source_assurance() {
+    use rentemester_storage::dated_reports::{Input, Kind};
+    let (_dir, mut owner, _cookies, proof, uid) = setup();
+    let input = || Input {
+        kind: Kind::Balance,
+        from: None,
+        to: None,
+        as_of: Some("2026-01-01".into()),
+    };
+    let before = changes(&owner);
+    let empty = owner
+        .dated_report(&proof, &Fixed(NOW), input())
+        .unwrap()
+        .outcome
+        .unwrap()
+        .value;
+    assert_eq!(empty["ok"], true);
+    assert_eq!(empty["totalAssets"], 0);
+    assert_eq!(changes(&owner), before);
+    let file = install(&mut owner, &proof);
+    let invalid = || Input {
+        kind: Kind::Balance,
+        from: None,
+        to: None,
+        as_of: Some("2026-02-30".into()),
+    };
+    let before = changes(&owner);
+    let refused = owner
+        .dated_report(&proof, &Fixed(NOW), invalid())
+        .unwrap()
+        .outcome
+        .unwrap()
+        .value;
+    assert_eq!(refused["ok"], false);
+    assert_eq!(refused["errors"], json!(["asOfDate must be YYYY-MM-DD"]));
+    assert_eq!(changes(&owner), before);
+    owner.held.0.as_mut().unwrap().control.as_mut().unwrap().execute_batch("INSERT INTO rm_company_membership_events(user_id,company_slug,event_type,company_role,actor)VALUES('u','a','revoke',NULL,'user:u');").unwrap();
+    let before = changes(&owner);
+    assert_eq!(
+        owner
+            .dated_report(&proof, &Fixed(NOW), invalid())
+            .unwrap()
+            .outcome
+            .unwrap_err()
+            .error
+            .code,
+        "access_denied"
+    );
+    assert_eq!(changes(&owner), before);
+    owner.held.0.as_mut().unwrap().control.as_mut().unwrap().execute_batch("INSERT INTO rm_company_membership_events(user_id,company_slug,event_type,company_role,actor)VALUES('u','a','grant','owner','user:u');").unwrap();
+    let path = owner.root.join("a").join(file.relative_path());
+    let root = owner.root.clone();
+    drop(owner);
+    let mut bytes = std::fs::read(&path).unwrap();
+    bytes[0] = b'!';
+    std::fs::write(&path, bytes).unwrap();
+    let mut owner =
+        Owner::open_with_profile(&root, uid, "w", "a", NamespaceProfile::LocalUserMacos).unwrap();
+    let before = changes(&owner);
+    assert_eq!(
+        owner
+            .dated_report(&proof, &Fixed(NOW), invalid())
+            .unwrap()
+            .outcome
+            .unwrap_err()
+            .error
+            .code,
+        "report_source_unavailable"
+    );
+    assert_eq!(changes(&owner), before);
+}

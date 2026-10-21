@@ -4,12 +4,12 @@
   "current_increment": "Group132 original R32/#703 arbitrary-date financial report compatibility",
   "code_revision": "17e8debf",
   "spec_revision": "sha256:bc98636be4a972407adce0f817a76bb9d4bb7200cb292a70965e75ab62fae250",
-  "state": "Group131 accepted at17e8debf: current ordinaryMFA HTTP/CLI/MCP original journal-history data, CLI bare snake JSON/human, storedstatus, nativecrossyear dates, pagination, revokedreader refusal and exactnormalMFArestart PASS. Independent fullaudit3/SQL3journals6lines/zero docs-bank/pinnedartifacts/readnoeffects/ownedcleanup PASS. Fourteenfocused tests, strict7changedcrate Clippy and normalbins remain green; verified recoverysnapshots preserve allthree removed worktrees. Firstactual had only controllerstdinEOFfinish timeout after allproductphases passed; isolated correction and one rerun pass. Accepted130/129/128/63/76 retained. Next132 original arbitrary-period reports and safeoriginalCLIwire/human contracts; legacydashboardJSONmapping and R31tax/iXBRL remain. Full epic/TypeScriptretirement/packaging/cutover/finalinstalleddesktop remain OPEN.",
+  "state": "Group132 integrating original dated3CLI and flatHTTP reports through one shared Rust exact engine: core3+host1 and SDK3+CLI4 pass; focusedHTTP/strict/integrated ordinaryMFA/restart acceptance pending. Accepted131 journal history,130 dated FX loss,129staticHTML,128importedportfolio,63exports,76cashflow remain retained. Original datedcommands were CLI-only: no new datedUI/export/MCP features on critical path. Whole epic/TSretirement/packaging/cutover/final installeddesktop remain OPEN.",
   "issues_closed": [
     701
   ],
   "next": [
-    "Group132 restore original report trial-balance/profit-loss --from/--to and balance --as-of through server-owned shared exactreducers, inclusive dates/cumulativebalance/openingguards and originalflatnumericJSON/human/0-1-2 behavior with exact roundtrip or explicit precision refusal. Keep experimental exactwire distinct and currentweb/year/archive behavior. Preserve existingCSV/PDF formats with requesteddate labels. Readonly prep /tmp/rm132-preparation.json; main must bind interfacecontract before isolatedparallel dispatch. Then legacydashboardJSONmapping and originalR31tax/iXBRL. Do not rerun accepted131/130 unchanged.",
+    "Complete132 original report trial-balance/profit-loss --from/--to and balance --as-of through authorized source-verified Rustserver: original numericJSON/human streams/0-1-2, readnoeffects, source originals, currentrevocation, exact normalMFArestart and original pure-reader differential on owned synthetic ledger. Existing year/web/CSV/PDF/MCP retained unchanged; original arbitrarydates were CLI-only, no new export selectors needed. Then missing original dashboardJSONmapping and R31tax/iXBRL. Do not rerun accepted131/130 unchanged.",
     "Installed desktop acceptance is explicitly deferred to the very end by the user. Preserve prepared Group100 profile; collect remaining native automation, closure, recovery and packaging checks for final installed acceptance without requesting screen unlock during development.",
     "J03/R50 and remaining R54 scope: only still-supported operation closure/recovery, nonempty scheduler handoff, hostile/older clone and post-cutover rollback requirements. Group99 qualifies managed installed J06 flow, not every R54 acceptance item.",
     "Signed distribution/update/cutover evidence must match actual full Rust replacement; retain all existing completion gates and TypeScript retirement gate.",
@@ -7272,6 +7272,18 @@
         "journal_lines": 6
       },
       "source_free_restore_qualified": false
+    },
+    "dated_reports132": {
+      "status": "integrating_acceptance_pending",
+      "worker_core_commit": "781a60578b1f94a80951de454fa8fad6efc14879",
+      "worker_clients_commit": "fa517635b8dad8461efc5db1d0aa21b611f0c1bc",
+      "focused_core_host": "/tmp/rm132-dated-core-tests.log; /tmp/rm132-dated-host-tests.log",
+      "focused_clients": "/tmp/rm132-client-tests.log",
+      "focused_passed": 11,
+      "contract": "/tmp/rm132-contract.md",
+      "original_scope": "Original three dated CLI commands only; shared authorizedHTTP adapter; no new date-selected web/export/MCP features",
+      "fixture_correction": "Two storage scenarios found same required original-document omission; isolated shared post helper corrected; accounting/source guards unchanged; isolated cases and final3tests passed",
+      "manual_desktop": "Deferred until end; no unlock probes"
     }
   },
   "verified_history": [

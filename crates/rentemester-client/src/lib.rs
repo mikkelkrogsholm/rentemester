@@ -475,3 +475,5 @@ pub use dashboard_artifact::{MAX_DASHBOARD_BYTES,DASHBOARD_CONTENT_TYPE};
 
 mod journal_history;
 pub use journal_history::{JournalHistoryQuery,journal_history_query_schema};
+
+mod dated_reports;

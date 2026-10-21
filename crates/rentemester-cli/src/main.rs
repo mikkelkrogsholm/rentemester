@@ -1,3 +1,4 @@
+mod dated_reports;
 mod journal_history;
 mod dashboard_artifact;
 mod invoice_bad_debt;
@@ -68,6 +69,7 @@ fn run(args: Vec<String>) -> Result<serde_json::Value, (u8, Error)> {
     }
     if args == ["--help"] {
         return Ok(json!({"ok":true,"commands":[
+            {"name":"report trial-balance|profit-loss|balance","usage":"report --help","scope":"original dated numeric reports; explicit authenticated server, human/JSON streams"},
             {"name":"journal list","usage":"journal list --help","scope":"explicit authenticated native journal headers; JSON or Danish details"},
             {"name":"dashboard","usage":"dashboard --server ORIGIN --cookie-file PATH --company SLUG --out FILE.html [--as-of YYYY-MM-DD] [--open]","scope":"authenticated server HTML, atomic local output"},
             {"name":"remote","usage":"remote --help","scope":"explicit authenticated Rust HTTP server; no local fallback"},
@@ -279,7 +281,13 @@ fn run(args: Vec<String>) -> Result<serde_json::Value, (u8, Error)> {
     Ok(json!({"ok":true,"format":"rentemester-trial-balance/1","data":report}))
 }
 fn main() -> ExitCode {
-    match run(std::env::args().skip(1).collect()) {
+    let args:Vec<String>=std::env::args().skip(1).collect();
+    if args.first().map(String::as_str)==Some("report") {
+        let output=dated_reports::execute(&args[1..]);
+        print!("{}",output.stdout);eprint!("{}",output.stderr);
+        return ExitCode::from(output.exit);
+    }
+    match run(args) {
         Ok(value) => {
             if let Some(text)=value.as_str() {println!("{text}");} else {println!("{value}");}
             if value.get("ok").and_then(serde_json::Value::as_bool) == Some(false) {

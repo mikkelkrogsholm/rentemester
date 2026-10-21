@@ -654,3 +654,5 @@ pub mod migration_open_items;
 pub mod synthetic_import;
 
 pub mod journal_history;
+
+pub mod dated_reports;
