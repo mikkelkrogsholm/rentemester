@@ -114,7 +114,13 @@ async function auditPhase(action){
  if(action==='audit-reopen'){await ownerPage.context().clearCookies();await login(ownerPage,owner);return auditProof.reopen();}
  return auditProof.run();
 }
-let servicePurchase,serviceRunResult,backupRecovery;
+let servicePurchase,serviceRunResult,backupRecovery,compensationProof;
+async function compensationPhase(action){
+ step=action;diagnosticPage=ownerPage;
+ if(!compensationProof){const module=await import(process.env.RM_INVOICE_COMPENSATION_HELPER);need(typeof module.createInvoiceCompensationProof==='function','pinned compensation proof factory required');compensationProof=module.createInvoiceCompensationProof(ownerPage,base,work,memberPage,serviceRunResult);}
+ if(action==='compensation-reopen'){await ownerPage.context().clearCookies();await login(ownerPage,owner);return compensationProof.reopen();}
+ return compensationProof.run();
+}
 async function backupRecoveryPhase(action){
  step=action;
  if(!backupRecovery){const module=await import(process.env.RM_BACKUP_RECOVERY_HELPER);backupRecovery=module.createBackupRecoveryProof(base,work);}
@@ -129,7 +135,7 @@ async function servicePhase(action){
  if(action==='service-reopen'){await ownerPage.context().clearCookies();await login(ownerPage,owner);return servicePurchase.reopen();}
  const result=await servicePurchase[{'service-run':'run','service-hold-begin':'holdBegin','service-revoke':'revoke','service-hold-finish':'holdFinish'}[action]]();if(action==='service-run')serviceRunResult=result;return result;
 }
-for await(const line of createInterface({input:process.stdin,crlfDelay:Infinity})){try{const action=JSON.parse(line);let value;if(action.startsWith('verification-')){try{value=await verificationPhase(action);}catch(error){detail=String(error.message).slice(0,1200);throw error;}}else if(action.startsWith('audit-')){try{value=await auditPhase(action);}catch(error){detail=String(error.message).slice(0,200);throw error;}}else if(action.startsWith('backup-recovery-')){try{value=await backupRecoveryPhase(action);}catch(error){detail=String(error.message).slice(0,200);throw error;}}else if(action.startsWith('service-'))value=await servicePhase(action);else if(action==='authenticate')value=await authenticate();else if(action==='historical')value=await historical();else if(action==='clean')value=await clean();else if(action==='negatives')value=await negatives();else if(action==='unauthorized')value=await unauthorized();else if(action==='hold-begin')value=await holdBegin();else if(action==='revoke')value=await revoke();else if(action==='hold-finish')value=await holdFinish();else if(action==='clients')value=await clients();else if(action==='reopen')value=await reopen();else if(['archive-source','archive-restarted','archive-restored'].includes(action))value=await archive(action.slice(8));else if(action==='restored')value=await restored();else if(action==='restored-reopen')value=await restoredReopen();else if(action==='finish'){await browser?.close();emit({ok:true,value:{finished:true}});break;}else throw Error('unknown phase');emit({ok:true,value});}catch(error){let pageState=null;try{pageState=await Promise.race([diagnosticPage?.evaluate(()=>({pathname:location.pathname,headings:[...document.querySelectorAll('h1,h2,h3,h4')].map(e=>e.textContent.slice(0,100)),buttons:[...document.querySelectorAll('button')].map(e=>e.textContent.slice(0,100)),alerts:[...document.querySelectorAll('[role=alert]')].map(e=>e.textContent.slice(0,300))})),new Promise(resolve=>setTimeout(()=>resolve(null),2000))]);}catch{}emit({ok:false,step,detail,errorType:error?.name,trace,pageState});await Promise.race([browser?.close().catch(()=>{}),new Promise(resolve=>setTimeout(resolve,2000))]);process.exitCode=1;break;}}
+for await(const line of createInterface({input:process.stdin,crlfDelay:Infinity})){try{const action=JSON.parse(line);let value;if(action.startsWith('compensation-')){try{value=await compensationPhase(action);}catch(error){detail=String(error.message).slice(0,1200);throw error;}}else if(action.startsWith('verification-')){try{value=await verificationPhase(action);}catch(error){detail=String(error.message).slice(0,1200);throw error;}}else if(action.startsWith('audit-')){try{value=await auditPhase(action);}catch(error){detail=String(error.message).slice(0,200);throw error;}}else if(action.startsWith('backup-recovery-')){try{value=await backupRecoveryPhase(action);}catch(error){detail=String(error.message).slice(0,200);throw error;}}else if(action.startsWith('service-'))value=await servicePhase(action);else if(action==='authenticate')value=await authenticate();else if(action==='historical')value=await historical();else if(action==='clean')value=await clean();else if(action==='negatives')value=await negatives();else if(action==='unauthorized')value=await unauthorized();else if(action==='hold-begin')value=await holdBegin();else if(action==='revoke')value=await revoke();else if(action==='hold-finish')value=await holdFinish();else if(action==='clients')value=await clients();else if(action==='reopen')value=await reopen();else if(['archive-source','archive-restarted','archive-restored'].includes(action))value=await archive(action.slice(8));else if(action==='restored')value=await restored();else if(action==='restored-reopen')value=await restoredReopen();else if(action==='finish'){await browser?.close();emit({ok:true,value:{finished:true}});break;}else throw Error('unknown phase');emit({ok:true,value});}catch(error){let pageState=null;try{pageState=await Promise.race([diagnosticPage?.evaluate(()=>({pathname:location.pathname,headings:[...document.querySelectorAll('h1,h2,h3,h4')].map(e=>e.textContent.slice(0,100)),buttons:[...document.querySelectorAll('button')].map(e=>e.textContent.slice(0,100)),alerts:[...document.querySelectorAll('[role=alert]')].map(e=>e.textContent.slice(0,300))})),new Promise(resolve=>setTimeout(()=>resolve(null),2000))]);}catch{}emit({ok:false,step,detail,errorType:error?.name,trace,pageState});await Promise.race([browser?.close().catch(()=>{}),new Promise(resolve=>setTimeout(resolve,2000))]);process.exitCode=1;break;}}
 
 '''
 
@@ -155,7 +161,10 @@ def main():
     parser.add_argument('--backup-recovery', action='store_true', help='Continue remote-backup proof through source-free fresh-owner restore and restart')
     parser.add_argument('--audit-log', action='store_true', help='Continue backup-lock single-post proof with one reversal and audit web/HTTP/CLI/MCP inspection, current revocation and restart')
     parser.add_argument('--audit-verify', action='store_true', help='Read-only complete accounting verification, cross-client parity, originals tamper, current revocation and restart')
+    parser.add_argument('--invoice-compensation', action='store_true', help='Continue backup-lock through actual DKK/EUR compensation calculate/register/post/principal/claim receipt, exact full audit and normal MFA restart')
     args = parser.parse_args()
+    if args.invoice_compensation and (not args.backup_lock or args.audit_log or args.remote_backup):
+        parser.error('--invoice-compensation requires --backup-lock and excludes --audit-log/--remote-backup')
     if args.audit_verify and not args.audit_log:
         parser.error('--audit-verify requires --audit-log')
     if args.audit_log and (not args.backup_lock or args.remote_backup):
@@ -590,7 +599,7 @@ def main():
             start(create=True)
             script = work / 'browser.mjs'
             script.write_text(BROWSER)
-            controller = subprocess.Popen(['/opt/homebrew/bin/bun', str(script)], cwd=REPO, env={**os.environ, 'RM_NATIVE_BACKUP_DESTINATION_PROOF':'1' if args.backup_destinations else '0', 'RM_NATIVE_REMOTE_BACKUP_PROOF':'1' if args.remote_backup else '0', 'RM_AUDIT_VERIFY_HELPER': str(REPO / 'scripts/rust/check-native-audit-verify.ts'), 'RM_AUDIT_HELPER': str(REPO / 'scripts/rust/check-native-audit-log.ts'), 'RM_BACKUP_RECOVERY_HELPER': str(REPO / 'scripts/rust/check-native-backup-recovery.ts'), 'RM_SERVICE_PURCHASE_HELPER': str(REPO / ('scripts/rust/check-native-backup-lock.ts' if args.backup_lock else 'scripts/rust/check-native-service-purchase.ts')), 'RM_SCANNER_PROOF_FACTORY': 'createBackupLockProof' if args.backup_lock else 'createServicePurchaseProof', 'RM_SCANNER_BASE': origin, 'RM_SCANNER_WORK': str(work), 'RM_SCANNER_SCREENSHOT': str(args.evidence.with_suffix('.png')), 'RM_SCANNER_PLAYWRIGHT': str((REPO / 'node_modules/@playwright/test/index.mjs').resolve(strict=True))}, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True, bufsize=1, start_new_session=True)
+            controller = subprocess.Popen(['/opt/homebrew/bin/bun', str(script)], cwd=REPO, env={**os.environ, 'RM_INVOICE_COMPENSATION_HELPER': str(REPO / 'scripts/rust/check-native-invoice-compensation.ts'), 'RM_NATIVE_BACKUP_DESTINATION_PROOF':'1' if args.backup_destinations else '0', 'RM_NATIVE_REMOTE_BACKUP_PROOF':'1' if args.remote_backup else '0', 'RM_AUDIT_VERIFY_HELPER': str(REPO / 'scripts/rust/check-native-audit-verify.ts'), 'RM_AUDIT_HELPER': str(REPO / 'scripts/rust/check-native-audit-log.ts'), 'RM_BACKUP_RECOVERY_HELPER': str(REPO / 'scripts/rust/check-native-backup-recovery.ts'), 'RM_SERVICE_PURCHASE_HELPER': str(REPO / ('scripts/rust/check-native-backup-lock.ts' if args.backup_lock else 'scripts/rust/check-native-service-purchase.ts')), 'RM_SCANNER_PROOF_FACTORY': 'createBackupLockProof' if args.backup_lock else 'createServicePurchaseProof', 'RM_SCANNER_BASE': origin, 'RM_SCANNER_WORK': str(work), 'RM_SCANNER_SCREENSHOT': str(args.evidence.with_suffix('.png')), 'RM_SCANNER_PLAYWRIGHT': str((REPO / 'node_modules/@playwright/test/index.mjs').resolve(strict=True))}, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True, bufsize=1, start_new_session=True)
             report['browserControllerPid'] = controller.pid
             phase('authenticate')
             if args.backup_lock:
@@ -614,6 +623,9 @@ def main():
                 if args.audit_verify:
                     proof_helpers.append(REPO / 'scripts/rust/check-native-audit-verify.ts')
                     report['auditVerifyHelperSha256'] = digest(proof_helpers[-1])
+                if args.invoice_compensation:
+                    proof_helpers.append(REPO / 'scripts/rust/check-native-invoice-compensation.ts')
+                    report['invoiceCompensationHelperSha256'] = digest(proof_helpers[-1])
                 helper_hashes = {str(path): digest(path) for path in proof_helpers}
                 phase('service-run')
                 if any(digest(path) != helper_hashes[str(path)] for path in proof_helpers):
@@ -623,6 +635,14 @@ def main():
                 phase('service-reopen')
                 if any(digest(path) != helper_hashes[str(path)] for path in proof_helpers):
                     raise RuntimeError('Backup proof imported helper changed during restart verification')
+                if args.invoice_compensation:
+                    phase('compensation-run', 600)
+                    if any(digest(path) != helper_hashes[str(path)] for path in proof_helpers):
+                        raise RuntimeError('Compensation proof helper changed during actual execution')
+                    stop(); write_config(); start()
+                    phase('compensation-reopen', 300)
+                    if any(digest(path) != helper_hashes[str(path)] for path in proof_helpers):
+                        raise RuntimeError('Compensation proof helper changed during restart')
                 if args.audit_log:
                     phase('audit-run')
                     if args.audit_verify:
@@ -637,10 +657,22 @@ def main():
                     phase('backup-recovery-capture')
                     phase('backup-recovery-detach')
                 stop()
+                if args.invoice_compensation:
+                    progress('operator:independent-signed-compensation-backup-verification')
+                    archive = work / 'compensation-source.native-backup.json'
+                    receipt = report['results']['compensation-run']['signedBackup']
+                    if not owned() or archive.is_symlink() or not archive.is_file() or digest(archive) != receipt['sha256'] or archive.stat().st_size != receipt['bytes']:
+                        raise RuntimeError('Exact owned signed compensation backup changed')
+                    verified = subprocess.run([str(pinned['server_binary']), '--verify-backup', str(archive), '--trusted-backup-key', str(work / 'trusted.pub')], cwd=REPO, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=60)
+                    if verified.returncode != 0:
+                        raise RuntimeError('Independent signed compensation backup/schema verification refused')
+                    report['invoiceCompensationSignedBackup'] = {'sha256':receipt['sha256'],'bytes':receipt['bytes'],'verified':True,'sourceFreeRestoreQualified':False}
+                    save()
                 db = sqlite3.connect((work/'workspace/synthetic/data/ledger.sqlite').as_uri()+'?mode=ro', uri=True)
                 try:
                     counts = {table: db.execute('SELECT count(*) FROM '+table).fetchone()[0] for table in ['documents','bank_transactions','journal_entries']}
-                    if counts != {'documents':0,'bank_transactions':1,'journal_entries':2 if args.audit_log else 1}:
+                    expected_counts = {'documents':2,'bank_transactions':5,'journal_entries':9} if args.invoice_compensation else {'documents':0,'bank_transactions':1,'journal_entries':2 if args.audit_log else 1}
+                    if counts != expected_counts:
                         raise RuntimeError('Backup lock terminal financial effects differ')
                     report['terminalSql'] = {'counts':counts,'journalActors':db.execute('SELECT created_by,created_by_program FROM journal_entries ORDER BY id').fetchall()}
                 finally: db.close()
@@ -713,6 +745,12 @@ def main():
                     if errors or provider_requests:
                         raise RuntimeError('Backup lock proof must not call scanner/provider')
                 report.update(status='passed',currentAction='complete',financialBackupLockQualified=True,normalMfaRestartQualified=True,currentFileMissingAndTamperQualified=True,directControlMetadataGateQualified=True,directControlMetadataScope=['company-knowledge','corporate-record-ingest'],metadataRestartQualified=True,twoCompanyInboxTargetGateQualified=True,humanMailAliasGateQualified=True,multiCompanyMetadataGateQualified=False,partiesGateQualified=False,mailIntakeConfigurationGateQualified=False,smtpDispatchGateQualified=False,keyRotationQualified=False)
+                if args.invoice_compensation:
+                    actual = report['results']['compensation-run']
+                    reopened = report['results']['compensation-reopen']
+                    if not actual.get('qualified') or not reopened.get('qualified') or not reopened.get('exactNormalMfaRestartState') or not reopened.get('fullAudit119GreenAfterRestart') or actual['accountingFingerprint'] != reopened['accountingFingerprint']:
+                        raise RuntimeError('Compensation whole-flow or exact restart not qualified')
+                    report.update(workflow='invoice_compensation_dkk_eur_full_flow',invoiceCompensationQualified=True,invoiceCompensationRestartQualified=True,invoiceCompensationFullAudit119Qualified=True,invoiceCompensationSourceFreeRestoreQualified=False,invoiceCompensationPrivateBuyerActualQualified=False)
                 if args.audit_log:
                     report.update(auditLogQualified=True,auditLogRestartQualified=True,auditLogFullVerificationQualified=False)
                 if args.audit_verify:
@@ -731,6 +769,9 @@ def main():
                         raise RuntimeError('Destination registration/history or restart parity not qualified')
                     report.update(backupRegistrationQualified=True,backupGovernanceQualified=True,remoteBackupVerificationQualified=True,driveGetTrace=list(drive_requests),fixtureCopyByHarness=True,actualGoogleAccountQualified=False,offsiteQualified=False,installedNativeQualified=False)
                 save()
+                if args.invoice_compensation:
+                    print('PASS: normal MFA DKK/EUR compensation calculation, separate registration/posting, principal and DKK claim receipts, exact adapters/full audit119 and restart; '+str(args.evidence))
+                    return
                 print('PASS: normal MFA financial backup lock, human/service HTTP/CLI/MCP refusal, metadata refusal/recovery, two-company inbox/alias gate and exact handoff, UI verified artifact, missing/tamper lock, single posting and restart; '+str(args.evidence))
                 return
             if args.service_purchase:
