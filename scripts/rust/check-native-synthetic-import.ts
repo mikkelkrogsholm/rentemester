@@ -33,7 +33,7 @@ export function createSyntheticImportProof(page: Page, base: string, work: strin
   need(!reply?.error&&reply?.result?.isError===false&&reply.result.structuredContent?.data?.ok===true,`MCP ${operation} refused: ${JSON.stringify(reply)}`);return reply.result.structuredContent.data;
  }
  async function snapshot(){const year=accepted?'?year=2026&source=live':'';return {profile:await get('company'),accounts:await get('accounts'),opening:await get('opening-balance'),journal:await get('journal'+year),trial:await get('trial-balance'+year),income:await get('income-statement'+year),balance:await get('balance'+year),bank:await get('bank'),documents:await get('documents'),audit:await get('audit-log?limit=5000')};}
- async function originalRead(id:number){const r=await page.request.get(base+prefix+'documents/'+id+'/original');need(r.ok()&&isDeepStrictEqual(await r.body(),original),'Retained expense original differs');}
+ async function originalRead(id:number){const r=await page.request.get(base+prefix+'documents/'+id+'/file');need(r.ok(),`Retained expense original HTTP${r.status()}`);need(isDeepStrictEqual(await r.body(),original),'Retained expense original bytes differ');}
  return {async run(){
   await cookies(true);writeFileSync(csvPath,content,{mode:0o600,flag:'wx'});
   await post('/api/companies',{name:'Synthetic imported owner 127',slug:company,fiscalYearStartMonth:'7',fiscalYearLabelStrategy:'end-year',vatPeriodType:null},page,true);
