@@ -1,3 +1,4 @@
+mod journal_history;
 mod dashboard_artifact;
 mod invoice_bad_debt;
 mod invoice_interest;
@@ -48,6 +49,7 @@ mod commitments;
 mod receivables;
 mod remote;
 fn run(args: Vec<String>) -> Result<serde_json::Value, (u8, Error)> {
+    if args.first().map(String::as_str) == Some("journal") && args.get(1).map(String::as_str) == Some("list") { return journal_history::run(&args[2..]); }
     if args.first().map(String::as_str) == Some("documents") {
         if args.len() == 1 || args == ["documents", "--help"] {
             return Ok(invoice_extraction::help());
@@ -66,6 +68,7 @@ fn run(args: Vec<String>) -> Result<serde_json::Value, (u8, Error)> {
     }
     if args == ["--help"] {
         return Ok(json!({"ok":true,"commands":[
+            {"name":"journal list","usage":"journal list --help","scope":"explicit authenticated native journal headers; JSON or Danish details"},
             {"name":"dashboard","usage":"dashboard --server ORIGIN --cookie-file PATH --company SLUG --out FILE.html [--as-of YYYY-MM-DD] [--open]","scope":"authenticated server HTML, atomic local output"},
             {"name":"remote","usage":"remote --help","scope":"explicit authenticated Rust HTTP server; no local fallback"},
             {"name":"documents","usage":"documents --help","scope":"registered-PDF invoice extraction or retained evidence; explicit remote server/session"},
@@ -278,7 +281,7 @@ fn run(args: Vec<String>) -> Result<serde_json::Value, (u8, Error)> {
 fn main() -> ExitCode {
     match run(std::env::args().skip(1).collect()) {
         Ok(value) => {
-            println!("{value}");
+            if let Some(text)=value.as_str() {println!("{text}");} else {println!("{value}");}
             if value.get("ok").and_then(serde_json::Value::as_bool) == Some(false) {
                 ExitCode::from(1)
             } else {

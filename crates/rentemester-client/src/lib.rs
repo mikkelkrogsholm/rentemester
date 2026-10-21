@@ -472,3 +472,6 @@ pub use dinero_import::{MAX_DINERO_IMPORT_BODY,MAX_DINERO_ORIGINAL,dinero_import
 
 mod dashboard_artifact;
 pub use dashboard_artifact::{MAX_DASHBOARD_BYTES,DASHBOARD_CONTENT_TYPE};
+
+mod journal_history;
+pub use journal_history::{JournalHistoryQuery,journal_history_query_schema};

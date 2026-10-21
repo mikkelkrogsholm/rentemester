@@ -190,6 +190,7 @@ pub fn list() -> Value {
     tools.extend(crate::backup_remote::tools());
     tools.extend(crate::backup_governance::tools());
     tools.extend(crate::backup_registration::tools());
+    tools.extend(crate::journal_history::tools());
     tools.extend(crate::audit_log::tools());
     tools.extend(crate::audit_verify::tools());
     json!({"tools":tools})
@@ -337,6 +338,7 @@ pub async fn call(api: &ApiClient, name: &str, args: Value) -> Result<Value, &'s
         name if crate::reviewed_bookkeeping::accepts(name) => crate::reviewed_bookkeeping::call(api,name,args).await?,
         name @ ("backup_destinations"|"place_backup"|"verify_backup_placement") => crate::portable_backup::destination_call(api,name,args).await?,
         "audit_verify" => crate::audit_verify::call(api,args).await?,
+        "journal_list" => crate::journal_history::call(api,args).await?,
         "audit_log_list" => crate::audit_log::call(api,args).await?,
         name if crate::backup_registration::accepts(name) => crate::backup_registration::call(api,name,args).await?,
         "system_backup_governance" => crate::backup_governance::call(api,args).await?,
