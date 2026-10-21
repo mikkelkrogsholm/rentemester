@@ -11,6 +11,7 @@ use serde::Serialize;
 use serde_json::{Value, json};
 use std::collections::{BTreeMap, BTreeSet};
 mod csv;
+pub mod containers;
 mod postings;
 pub mod receipts;
 #[cfg(test)]
