@@ -113,7 +113,7 @@ class H(http.server.BaseHTTPRequestHandler):
    if kind=='media-redirect':code,headers,data=307,{'location':'/drive/v3/files/clean?alt=media'},b''
   self.send_response(code);self.send_header('content-type','application/octet-stream' if media else 'application/json')
   for k,v in headers.items():self.send_header(k,v)
-  if kind not in ['stream-large-meta','media-long']:self.send_header('content-length',str(len(data)))
+  if kind!='stream-large-meta' and not (kind=='media-long' and media):self.send_header('content-length',str(len(data)))
   self.send_header('connection','close');self.end_headers()
   try:self.wfile.write(data)
   except (BrokenPipeError,ConnectionResetError,ssl.SSLError):pass

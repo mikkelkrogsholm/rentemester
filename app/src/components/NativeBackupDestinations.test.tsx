@@ -30,3 +30,20 @@ test("lost placement reply persists exact operation and reload performs only exp
  await userEvent.click(screen.getByRole("button",{name:"Klargør næste backup"}));
  expect(localStorage.getItem("rentemester-backup-placement:synthetic-workspace")).toBeNull();
 });
+
+test("provider removal keeps a remembered remote operation reachable from the destinations panel", async () => {
+ localStorage.clear();
+ const intent={operationId:"synthetic-remote-114",placementOperationId:"synthetic-placement-114",remoteObjectId:"synthetic_drive_object"};
+ localStorage.setItem("rentemester-remote-backup:synthetic-workspace:synthetic-drive",JSON.stringify(intent));
+ const mock=vi.fn(async(input:string|URL,init?:RequestInit)=>{
+  expect(init?.method).not.toBe("POST");
+  if(String(input)==="/api/workspace/backup-destinations")return Response.json({ok:true,workspaceId:"synthetic-workspace",destinations:[{id:"synthetic-drive",label:"Synthetic Drive",kind:"google-drive",offsiteAttested:false}],remoteVerificationDestinations:[]});
+  expect(String(input)).toContain(`/remote-verifications/${intent.operationId}`);
+  return Response.json({ok:true,verification:{...intent,destinationId:"synthetic-drive",archiveSha256:"a".repeat(64),archiveSizeBytes:123,observedAt:"2026-10-21T00:00:00Z",remoteSyncVerified:true}});
+ });stubGlobal("fetch",mock);renderAt(<NativeBackupDestinations/>);
+ await userEvent.click(screen.getByRole("button",{name:"Vis backupdestinationer"}));
+ await screen.findByText(/Ny Drive-kontrol er deaktiveret/);
+ await userEvent.click(screen.getByRole("button",{name:"Hent fjernkopiens kvittering"}));
+ await screen.findByText(/Serveren verificerede fjernkopiens bytes/);
+ expect(mock).toHaveBeenCalledTimes(2);
+});

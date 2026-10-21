@@ -92,10 +92,28 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
                     operation: &operation,
                 }
             };
-            Ok(owner
+            let listing = destination.is_empty();
+            let outcome = owner
                 .backup_destination(&runtime, &cookie, action)
                 .map_err(|_| ())?
-                .outcome)
+                .outcome;
+            Ok(outcome.map(|mut value| {
+                if listing {
+                    value["remoteVerificationDestinations"] = json!(
+                        state
+                            .native
+                            .backup_remote
+                            .as_ref()
+                            .map(|p| p
+                                .bindings
+                                .iter()
+                                .map(|b| b.destination_id.as_str())
+                                .collect::<Vec<_>>())
+                            .unwrap_or_default()
+                    );
+                }
+                value
+            }))
         },
     )
     .await;

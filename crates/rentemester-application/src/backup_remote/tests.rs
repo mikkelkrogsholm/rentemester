@@ -197,7 +197,7 @@ fn ready(f: &Fixture) -> Prepared {
     )
     .unwrap()
     {
-        Preparation::Ready(value) => value,
+        Preparation::Ready(value) => *value,
         Preparation::Complete(_) => panic!("fresh operation expected"),
     }
 }

@@ -43,6 +43,7 @@ mod payables;
 mod periods;
 mod portable_backup;
 mod backup_destinations;
+mod backup_remote;
 mod workspace_transfer;
 mod restored_receipts;
 mod recurring_invoices;
@@ -96,6 +97,8 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
         .route("/api/companies/{slug}/backup-status",get(backup_status::handle))
         .route("/api/companies/{slug}/backup-lock",post(backup_status::handle))
         .route("/api/workspace/backup-destinations",get(backup_destinations::handle))
+        .route("/api/workspace/backup-destinations/{id}/remote-verifications",post(backup_remote::handle))
+        .route("/api/workspace/backup-destinations/{id}/remote-verifications/{operation}",get(backup_remote::handle))
         .route("/api/workspace/backup-destinations/{id}/place",post(backup_destinations::handle))
         .route("/api/workspace/backup-destinations/{id}/placements/{operation}",get(backup_destinations::handle))
         .route("/api/companies/{slug}/vies/validate",post(eu_sales::handle))

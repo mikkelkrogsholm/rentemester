@@ -15,8 +15,13 @@ se [backupkontrakten](rust-backup-destinations.md).
 
 Konfigureret backupplacering og genlæsning af samme signerede arkiv fungerer nu
 gennem server, web, CLI og MCP med genstart. Se [opsætning og afgrænsning](rust-backup-destinations.md).
-Det er en lokal/synkroniseret mappekopi; ekstern cloudverifikation og friskhed
-er fortsat åbne dele af backup-pariteten.
+Placeringen er en lokal/synkroniseret mappekopi. Den valgfrie Drive-kontrol
+kan derefter kontrollere metadata og genlæse den eksterne fils præcise bytes
+med operatørens token og mappebinding. Kvitteringer, mistet svar, aktuelle
+rettigheder før/efter netværkskald og genstart er afprøvet med en privat
+TLS-protokolfixture gennem web, CLI og MCP. Ingen virkelig Google-konto eller
+offsite-drift er dermed kvalificeret. Samlet backupstatus, destinationsadministration
+og øvrig governance/health/audit-paritet er fortsat åbne dele af omskrivningen.
 
 Den fælles bilagsindbakke kører nu gennem Rust-server, web, CLI og MCP.
 Originalen kan visiteres til en eksplicit virksomhed og afleveres til dens

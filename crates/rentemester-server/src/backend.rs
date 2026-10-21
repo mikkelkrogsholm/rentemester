@@ -43,6 +43,8 @@ struct Config {
     #[serde(default)]
     backup_destinations: Vec<rentemester_runtime::backup_destination::Config>,
     #[serde(default)]
+    backup_remote_verification: Option<crate::backup_remote::Config>,
+    #[serde(default)]
     transfer_trusted_key_file: Option<PathBuf>,
     #[serde(default)]
     restore_actor: Option<String>,
@@ -103,6 +105,7 @@ pub struct Backend {
     pub(crate) backup_signer: Option<rentemester_runtime::backup_artifact::SigningKey>,
     pub(crate) backup_destinations: Vec<rentemester_runtime::backup_destination::Config>,
     pub(crate) backup_destination_uid: u32,
+    pub(crate) backup_remote: Option<crate::backup_remote::Provider>,
     pub(crate) transfer_trusted_key: Option<rentemester_runtime::backup_artifact::TrustedPublicKey>,
     pub(crate) imap_transport: rentemester_runtime::imap::OperatorConfig,
     pub(crate) mail_executor: Option<Arc<rentemester_runtime::service_key::ServiceKey>>,
@@ -247,6 +250,7 @@ impl Backend {
             if !destination_ids.insert(&destination.id) { return Err("duplicate backup destination".into()); }
             destination.validate(&config.root,config.broker_uid)?;
         }
+        let backup_remote = crate::backup_remote::build(config.backup_remote_verification.as_ref(), &config.backup_destinations)?;
         let transfer_trusted_key = config.transfer_trusted_key_file.as_deref()
             .map(rentemester_runtime::backup_keys::trusted_key).transpose()?;
         let mut owner = if let Some(request) = restore {
@@ -390,6 +394,7 @@ impl Backend {
             backup_signer,
             backup_destinations: config.backup_destinations.clone(),
             backup_destination_uid: config.broker_uid,
+            backup_remote,
             transfer_trusted_key,
             scheduled_executor: None,
             mail_executor: None,

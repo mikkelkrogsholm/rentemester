@@ -2,6 +2,7 @@
 mod agent_discovery;
 mod auth_delivery;
 mod backend;
+mod backup_remote;
 mod document_scanner;
 mod invoice_extractor;
 mod legacy_adoption_cli;

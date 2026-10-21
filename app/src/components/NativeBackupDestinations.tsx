@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
 import { ApiError, request } from "../lib/api/_shared";
 import { Button } from "./ui";
+import { hasRememberedRemoteVerification, NativeBackupRemote } from "./NativeBackupRemote";
 
 type Destination = { id:string;label:string;offsiteAttested:boolean;kind:string };
 type Pending = { destinationId:string;operationId:string };
@@ -10,9 +11,10 @@ function remembered(workspace:string):Pending|null {try{const v=JSON.parse(local
 export function NativeBackupDestinations(){
  const [destinations,setDestinations]=useState<Destination[]|null>(null),[selected,setSelected]=useState("");
  const [pending,setPending]=useState<Pending|null>(null),[placement,setPlacement]=useState<Placement|null>(null);
+ const [remoteDestinations,setRemoteDestinations]=useState<string[]>([]);
  const [workspace,setWorkspace]=useState(""); const sending=useRef(false);
  const [confirmed,setConfirmed]=useState(false),[busy,setBusy]=useState(false),[error,setError]=useState("");
- async function load(){setBusy(true);setError("");try{const r=await request<{workspaceId:string;destinations:Destination[]}>("/api/workspace/backup-destinations");setDestinations(r.destinations);setWorkspace(r.workspaceId);const prior=remembered(r.workspaceId);setPending(prior);setSelected(prior?.destinationId??r.destinations[0]?.id??"");}catch(e){setError(e instanceof Error?e.message:"Destinationerne kunne ikke hentes.");}finally{setBusy(false);}}
+ async function load(){setBusy(true);setError("");try{const r=await request<{workspaceId:string;destinations:Destination[];remoteVerificationDestinations?:string[]}>("/api/workspace/backup-destinations");setDestinations(r.destinations);setRemoteDestinations(r.remoteVerificationDestinations??[]);setWorkspace(r.workspaceId);const prior=remembered(r.workspaceId);setPending(prior);setSelected(prior?.destinationId??r.destinations[0]?.id??"");}catch(e){setError(e instanceof Error?e.message:"Destinationerne kunne ikke hentes.");}finally{setBusy(false);}}
  async function run(verify:boolean){
   if(sending.current||busy||(!verify&&(!confirmed||!selected||pending)))return;
   const operation=verify?pending:{destinationId:selected,operationId:crypto.randomUUID()};if(!operation)return;
@@ -38,6 +40,7 @@ export function NativeBackupDestinations(){
   </>)}
   {pending&&<><p>Placering: {pending.operationId}</p><Button type="button" disabled={busy} onClick={()=>void run(true)}>Kontrollér placeringen</Button></>}
   {placement&&<><p role="status">Backupfilen er genlæst og dens signatur kontrolleret ({placement.archiveSizeBytes} bytes). SHA256: {placement.archiveSha256}. Gendannelse og synkronisering til skyen er ikke verificeret her.</p>{!placement.auditRecorded&&<p role="alert">Filen findes, men placeringskvitteringen mangler i auditloggen. Kontakt administratoren før næste placering.</p>}{placement.auditRecorded&&<Button type="button" disabled={busy} onClick={next}>Klargør næste backup</Button>}</>}
+  {workspace&&(remoteDestinations.includes(selected)||hasRememberedRemoteVerification(workspace,selected))&&<NativeBackupRemote key={`${workspace}:${selected}`} workspace={workspace} destination={selected} enabled={remoteDestinations.includes(selected)} placementOperationId={placement?.verified&&placement.auditRecorded?pending?.operationId??"":""}/> }
   {error&&<p role="alert">{error}</p>}
  </section>;
 }

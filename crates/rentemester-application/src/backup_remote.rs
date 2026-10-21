@@ -28,7 +28,7 @@ pub struct Runtime<'a> {
 }
 pub enum Preparation {
     Complete(Value),
-    Ready(Prepared),
+    Ready(Box<Prepared>),
 }
 /// Only `prepare` constructs this capability. No filesystem path, credential or caller-supplied proof escapes.
 pub struct Prepared {
@@ -221,14 +221,14 @@ pub fn prepare(
             return Ok(Preparation::Complete(value));
         }
         let (local_receipt, expected) = local(tx, catalog, runtime, request)?;
-        Ok(Preparation::Ready(Prepared {
+        Ok(Preparation::Ready(Box::new(Prepared {
             expected,
             request: request.clone(),
             local_receipt,
             workspace: catalog.workspace.clone(),
             actor,
             restore_boundary: store::boundary(tx)?,
-        }))
+        })))
     })
 }
 pub fn finish(

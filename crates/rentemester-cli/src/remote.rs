@@ -30,7 +30,6 @@ pub fn run(args: &[String]) -> Result<Value, Failure> {
             "invoicePdf":"invoice-pdf --company SLUG --id POSITIVE_DOCUMENT_ID reads the immutable issued original via its current authenticated documents-read permission. No stdin body or --confirm. Output data.pdf is {contentType:application/pdf,bytes:[exact byte integers]}; creates no local files.",
             "receivables":crate::receivables::help(),
             "reviewedBookkeeping":crate::reviewed_bookkeeping::help(),
-            "backupRemoteVerification":crate::backup_remote::help(),
             "workspaceBackup":"workspace-backup --confirm; explicit server/cookie-file, no stdin body or company/year/id/body/path/key selectors. Sends exact {confirm:true} once; returns data.backup {contentType,bytes} with max96MiB exact native artifact bytes. No local file writes, archive verification/restore claim or automatic retry. Independent operator verify/restore remains server CLI.",
             "saftExport":"saft-export --company SLUG --confirm with exact stdin {periodStart,periodEnd,confirm:true}, max4096 bytes. Audited bounded custom v3 XML tar download returned as JSON {export:{contentType,bytes}}, no local files/official validation/submission or automatic retries.",
             "reminderClaims":"invoice-reminder-claims --company SLUG --id ID; register-invoice-reminder/post-invoice-reminder/settle-invoice-claims --company SLUG --confirm with exact16KiB stdin body. Separate registration/posting, incoming DKK claim receipts after principal. No email/automatic reminders/keys/retries; canonical read first after unknown write.",
@@ -59,6 +58,7 @@ pub fn run(args: &[String]) -> Result<Value, Failure> {
         help["publicEInvoice"]=crate::public_einvoice::help();
         help["commands"].as_array_mut().unwrap().extend(crate::public_einvoice::COMMANDS.map(|s|json!(s)));
         help["bilagsmail"] = crate::bilagsmail::help();
+        help["backupRemoteVerification"]=crate::backup_remote::help();
         help["invoiceExtraction"]=crate::invoice_extraction::help();
         help["commands"].as_array_mut().unwrap().extend(crate::invoice_extraction::COMMANDS.map(|s|json!(s)));
         help["documentPdf"]=json!({"usage":"parse-document --company SLUG --id ID --confirm; document-parse-status --company SLUG --id ID; document-parsed-text --company SLUG --id ID [--cursor OFFSET] [--limit 1..10]; parse-pending-documents --company SLUG --confirm [--cursor ID] [--limit 1..100]. Explicit --server/--cookie-file required. Text default10 pages, pending default100 documents, cursor default0. No stdin, local parsing, OCR, metadata/accounting inference, keys or retries. Server owns source/evidence integrity and upload/read authority; inspect status after an uncertain parse outcome."});

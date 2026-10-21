@@ -298,3 +298,77 @@ Artefakter, begge hjælpefiler og runner er hashkontrolleret mod rapporten,
 og den ejede syntetiske drift er stoppet og fjernet. Rigtig IMAP, mailopsætning,
 SMTP, nøglerotation, ekstern backup og installeret desktop kvalificeres ikke af
 prøven; mailaflæsningernes låse-/afslutningskontrakt er dækket af unit-tests.
+
+
+## Kontrollér en kopi i Google Drive
+
+En destination med `kind: "google-drive"` kan desuden bindes til én konkret
+Drive-mappe. Operatøren tilføjer følgende til serverkonfigurationen og opbevarer
+filen privat sammen med serverens øvrige hemmeligheder:
+
+```json
+{
+  "backupRemoteVerification": {
+    "provider": "google-drive",
+    "bearerToken": "<operatorens-adgangstoken>",
+    "timeoutMs": 15000,
+    "destinations": [{
+      "destinationId": "company-backup",
+      "folderId": "<Drive-mappens-id>"
+    }]
+  }
+}
+```
+
+Destinationen skal allerede være defineret i `backupDestinations`; dens lokale
+mappe og signeringsnøgle er fortsat nødvendige. Tokenet skal give læseadgang til
+den kopierede fil. Produktet uploader ingen fil og fornyer ikke tokenet. Kopiér
+først det signerede arkiv til den angivne Drive-mappe gennem den valgte eksterne
+kopierings- eller synkroniseringsmekanisme. Bevar arkivets filnavn.
+
+Webpanelet **Kontrollér kopien i Google Drive** vises for de konfigurerede
+bindinger. Efter en verificeret lokal placering indtaster brugeren Drive-filens
+id og bekræfter kontrollen. Serveren bruger Googles faste HTTPS-endpoint,
+kontrollerer fil-id, navn, præcis overordnet mappe, størrelse og SHA-256, og
+henter derefter filens bytes for selv at beregne hash og størrelse. Omdirigering,
+forkert mappe, ændrede bytes, slettede filer og overskridelse af størrelses- eller
+tidsgrænser giver ingen verificeret kvittering. Klienterne kan ikke vælge URL,
+mappe, token, serversti eller en selvangivet verifikation.
+
+Aktuel menneskelig administratoradgang til hele workspacet og alle dets
+virksomheder kræves både før læsningen og før kvitteringen gemmes. Serveren
+holder ingen workspace-lås under netværkskaldet. Servicekonti kan ikke udføre
+kontrollen. Kvitteringen indeholder `remoteSyncVerified: true`, de verificerede
+arkivbindinger og det oprindelige observationstidspunkt. Den beviser den
+udførte bytekontrol; den beviser ikke fortsat tilgængelighed, geografisk
+opbevaring, leverandøruafhængighed eller øvrige opbevaringserklæringer.
+
+HTTP-kontrakten er:
+
+- `POST /api/workspace/backup-destinations/{destinationId}/remote-verifications`
+  med præcis `{operationId, placementOperationId, remoteObjectId, confirm:true}`.
+- `GET /api/workspace/backup-destinations/{destinationId}/remote-verifications/{operationId}`
+  returnerer den gemte kvittering eller `verification: null`.
+
+CLI bruger `remote verify-backup-remote --destination ID --operation ID
+--placement-operation ID --remote-object ID --confirm` og
+`remote backup-remote-verification --destination ID --operation ID` med samme
+server- og menneskelige cookieopsætning som de øvrige remote-kommandoer. MCP
+bruger `verify_backup_remote` og `backup_remote_verification` med de tilsvarende
+camelCase-felter. Et fuldført operation-id med samme intent giver den oprindelige
+kvittering uden ny Drive-læsning; ændret intent afvises. Et nyt id anmoder om en
+ny observation.
+
+Ved mistet svar gemmer webpanelet kontrol-id og intent lokalt og tilbyder en
+manuel kvitteringslæsning. Genåbning sender ingen automatisk POST. Manglende
+kvittering kan også betyde, at den første kontrol stadig kører. Brugeren kan
+bekræfte et forsøg med samme id eller eksplicit bevare det gamle kontrol-id i
+lokal historik og rette fil-id til en ny kontrol. Tidligere id'er kan genåbnes
+og afstemmes. Fjernes provideropsætningen, forbliver gemte kontroller læsbare;
+nye Drive-kontroller deaktiveres. Kvitteringslæsningen kræver fortsat aktuelle
+rettigheder, men hverken token, signeringsnøgle eller tilgængelig lokal arkivfil.
+
+Der bruges ingen vilkårlig provider-URL i produktion. Til isolerede syntetiske
+protokolprøver findes en operatørkonfigureret privat CA og et bogstaveligt
+HTTPS-loopback-endpoint. En bestået sådan prøve kvalificerer protokollen og
+brugerforløbet; den kvalificerer ikke en virkelig Google-konto eller offsite-drift.

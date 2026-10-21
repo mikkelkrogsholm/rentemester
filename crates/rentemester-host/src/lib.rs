@@ -1281,6 +1281,7 @@ mod invoice_extraction;
 
 mod portable_backup;
 mod backup_destination;
+mod backup_remote;
 mod backup_scopes;
 impl Owner {
     /// Stable admitted company owner; all knowledge effects use its canonical control writer.
