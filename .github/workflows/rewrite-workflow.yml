@@ -1,0 +1,65 @@
+name: Rust issue workflow
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/rewrite-workflow.yml'
+      - 'scripts/workflow/**'
+      - 'docs/architecture/rust-target/epic/github-map.json'
+  issues:
+    types: [opened, edited, labeled, unlabeled, reopened, closed, deleted, transferred]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: read
+
+concurrency:
+  group: rewrite-workflow-${{ github.event_name == 'issues' && 'issue-state' || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  offline-controls:
+    name: Rust workflow controls
+    if: github.event_name != 'issues'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Test workflow controls offline
+        run: python3 -m unittest discover -s scripts/workflow -p 'test_*.py' -v
+      - name: Check managed Rust PR commit issue references
+        if: github.event_name == 'pull_request'
+        run: python3 scripts/workflow/rewrite.py check-pr "$GITHUB_EVENT_PATH"
+
+  issue-state:
+    name: Rust issue states
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          persist-credentials: false
+      - name: Select managed issue events
+        id: scope
+        run: |
+          python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+          event = json.loads(Path(os.environ['GITHUB_EVENT_PATH']).read_text())
+          mapping = json.loads(Path('docs/architecture/rust-target/epic/github-map.json').read_text())
+          numbers = {v['number'] for v in mapping.values()}
+          relevant = 'issue' not in event or event['issue']['number'] in numbers
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
+              output.write('managed=' + str(relevant).lower() + '\n')
+          PY
+      - name: Validate all current managed issue states
+        if: steps.scope.outputs.managed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 scripts/workflow/rewrite.py check-remote --include-epic
