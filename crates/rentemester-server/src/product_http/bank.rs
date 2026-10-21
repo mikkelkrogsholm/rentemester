@@ -51,6 +51,7 @@ enum Command {
     Read(Option<String>),
     Create(AccountInput),
     Import(OriginalImport),
+    ImportLegacy(OriginalImport),
 }
 pub(super) async fn handle(State(state): State<Product>, request: Request) -> Response {
     let company_slug = request
@@ -61,6 +62,7 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
         .unwrap_or("")
         .to_owned();
     let mutation = request.method() == axum::http::Method::POST;
+    let legacy_import = request.uri().path().ends_with("/bank/import-original");
     let credential = if super::service_company::requested(&request) {
         match super::service_company::proof(&state, &request, mutation) {
             Ok(key) => Credential::Service(key),
@@ -109,7 +111,7 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
         let Ok(bytes) = to_bytes(request.into_body(), 35 * 1024 * 1024).await else {
             return refused(StatusCode::PAYLOAD_TOO_LARGE, "upload_too_large");
         };
-        if path.ends_with("/bank/import") {
+        if path.ends_with("/bank/import") || legacy_import {
             let Ok(input) = serde_json::from_slice::<Import>(&bytes) else {
                 return refused(StatusCode::BAD_REQUEST, "invalid_input");
             };
@@ -119,7 +121,11 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
             let Ok(input) = original(input) else {
                 return refused(StatusCode::BAD_REQUEST, "invalid_input");
             };
-            Command::Import(input)
+            if legacy_import {
+                Command::ImportLegacy(input)
+            } else {
+                Command::Import(input)
+            }
         } else {
             let Ok(input) = serde_json::from_slice(&bytes) else {
                 return refused(StatusCode::BAD_REQUEST, "invalid_input");
@@ -142,7 +148,7 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
         Command::Accounts => "bankAccounts",
         Command::Read(_) => "bank",
         Command::Create(_) => "bankAccount",
-        Command::Import(_) => "import",
+        Command::Import(_) | Command::ImportLegacy(_) => "import",
     };
     let result = tokio::task::spawn_blocking(move || {
         let _permit = permit;
@@ -156,6 +162,12 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
                 year: year.as_deref(),
             },
             Command::Create(input) => Action::Create(input),
+            Command::ImportLegacy(input) => Action::ImportOriginal {
+                content: &input.bytes,
+                account: input.account.as_deref(),
+                profile: input.profile.as_deref(),
+                now: &timestamp,
+            },
             Command::Import(input) => Action::ImportBytes {
                 content: &input.bytes,
                 account: input.account.as_deref(),
@@ -167,15 +179,24 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
         match credential {
             Credential::Human(cookie) => {
                 let attempt = owner.bank(&cookie, &SystemClock, action).map_err(|_| ())?;
-                Ok::<_, ()>(super::documents::outcome(attempt).map(|value| (value, None)))
+                let value = if legacy_import {
+                    original_outcome(attempt)
+                } else {
+                    super::documents::outcome(attempt)
+                };
+                Ok::<_, ()>(value.map(|value| (value, None)))
             }
             Credential::Service(key) => {
                 let attempt = owner
                     .bank_service(&key, &SystemClock, action)
                     .map_err(|_| ())?;
-                Ok::<_, ()>(match attempt.outcome {
-                    Ok(value) => Ok((value.result, Some((value.usage, value.business)))),
-                    Err(f) => Err(Box::new(super::service_company::failure(f))),
+                Ok::<_, ()>(if legacy_import {
+                    original_service_outcome(attempt).map(|value| (value, None))
+                } else {
+                    match attempt.outcome {
+                        Ok(value) => Ok((value.result, Some((value.usage, value.business)))),
+                        Err(f) => Err(Box::new(super::service_company::failure(f))),
+                    }
                 })
             }
         }
@@ -183,7 +204,11 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
     .await;
     match result {
         Ok(Ok(Ok((value, stages)))) => {
-            let mut body = json!({"ok":true,key:value});
+            let mut body = if legacy_import {
+                value
+            } else {
+                json!({"ok":true,key:value})
+            };
             if let Some((usage, business)) = stages {
                 body["usage"] = json!(usage);
                 body["business"] = json!(business);
@@ -192,6 +217,64 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
         }
         Ok(Ok(Err(response))) => *response,
         _ => refused(StatusCode::SERVICE_UNAVAILABLE, "outcome_unconfirmed"),
+    }
+}
+
+/// Only deliberately classified ordinary validation failures are legacy business
+/// refusals. Generic bank_refused, source/auth/fence/rollback errors stay typed.
+fn original_business(error: &rentemester_engine::Error) -> Option<Value> {
+    match error.code {
+        "bank_import_invalid_csv" | "bank_import_account_inactive" => {
+            Some(json!({"ok":false,"errors":[error.message]}))
+        }
+        "bank_import_account_not_found" => {
+            Some(json!({"ok":false,"code":"NOT_FOUND","errors":[error.message]}))
+        }
+        _ => None,
+    }
+}
+fn original_outcome(
+    attempt: rentemester_host::Attempt<
+        Result<
+            rentemester_application::control_fence::Committed<Value>,
+            rentemester_application::control_fence::Failure,
+        >,
+    >,
+) -> Result<Value, Box<Response>> {
+    if let Err(f) = &attempt.outcome
+        && !attempt.retired
+        && f.stage == FailureStage::NotCommitted
+        && f.control_reusable
+        && f.company_reusable
+        && let Some(value) = original_business(&f.error)
+    {
+        return Ok(value);
+    }
+    super::documents::outcome(attempt)
+}
+fn original_service_outcome(
+    attempt: rentemester_host::Attempt<
+        Result<
+            rentemester_application::service_company::ServiceResult<Value>,
+            rentemester_application::service_company::ServiceFailure,
+        >,
+    >,
+) -> Result<Value, Box<Response>> {
+    use rentemester_application::service_company::{BusinessStage, UsageStage};
+    match attempt.outcome {
+        Ok(value) => Ok(value.result),
+        Err(f) => {
+            if !attempt.retired
+                && f.business == BusinessStage::NotCommitted
+                && f.usage != UsageStage::OutcomeUnknown
+                && f.control_reusable
+                && f.company_reusable
+                && let Some(value) = original_business(&f.error)
+            {
+                return Ok(value);
+            }
+            Err(Box::new(super::service_company::failure(f)))
+        }
     }
 }
 
@@ -366,6 +449,116 @@ pub(super) async fn query_handle(State(state): State<Product>, request: Request)
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn original_import_business_mapping_never_hides_fences_source_or_uncertain_outcomes() {
+        use rentemester_application::{
+            control_fence::{Failure, FailureStage},
+            service_company::{BusinessStage, ServiceFailure, UsageStage},
+        };
+        use rentemester_engine::Error;
+        let human = |code, stage, reusable, retired| rentemester_host::Attempt {
+            outcome: Err(Failure {
+                stage,
+                error: Error::new(code, "synthetic refusal"),
+                control_reusable: reusable,
+                company_reusable: reusable,
+            }),
+            retired,
+        };
+        for code in [
+            "bank_import_invalid_csv",
+            "bank_import_account_not_found",
+            "bank_import_account_inactive",
+        ] {
+            let value =
+                original_outcome(human(code, FailureStage::NotCommitted, true, false)).unwrap();
+            assert_eq!(value["ok"], false);
+            assert!(value.get("data").is_none());
+            if code == "bank_import_account_not_found" {
+                assert_eq!(value["code"], "NOT_FOUND");
+            }
+            assert!(
+                original_outcome(human(code, FailureStage::OutcomeUnknown, true, false)).is_err()
+            );
+            assert!(
+                original_outcome(human(code, FailureStage::NotCommitted, false, false)).is_err()
+            );
+            assert!(original_outcome(human(code, FailureStage::NotCommitted, true, true)).is_err());
+        }
+        for code in [
+            "access_denied",
+            "invalid_credentials",
+            "bank_original_unavailable",
+            "bank_refused",
+            "transaction_required",
+            "outcome_unknown",
+            "invalid_input",
+        ] {
+            assert_ne!(
+                original_outcome(human(code, FailureStage::NotCommitted, true, false))
+                    .unwrap_err()
+                    .status(),
+                StatusCode::OK
+            );
+        }
+        let service = |code, usage, business, reusable| rentemester_host::Attempt {
+            outcome: Err(ServiceFailure {
+                usage,
+                business,
+                error: Error::new(code, "synthetic refusal"),
+                control_reusable: reusable,
+                company_reusable: reusable,
+                rejection: None,
+            }),
+            retired: false,
+        };
+        assert_eq!(
+            original_service_outcome(service(
+                "bank_import_invalid_csv",
+                UsageStage::Committed,
+                BusinessStage::NotCommitted,
+                true
+            ))
+            .unwrap()["ok"],
+            false
+        );
+        assert!(
+            original_service_outcome(service(
+                "bank_import_invalid_csv",
+                UsageStage::OutcomeUnknown,
+                BusinessStage::NotCommitted,
+                true
+            ))
+            .is_err()
+        );
+        assert!(
+            original_service_outcome(service(
+                "bank_import_invalid_csv",
+                UsageStage::Committed,
+                BusinessStage::OutcomeUnknown,
+                true
+            ))
+            .is_err()
+        );
+        assert!(
+            original_service_outcome(service(
+                "bank_import_invalid_csv",
+                UsageStage::Committed,
+                BusinessStage::NotCommitted,
+                false
+            ))
+            .is_err()
+        );
+        assert!(
+            original_service_outcome(service(
+                "bank_original_unavailable",
+                UsageStage::Committed,
+                BusinessStage::NotCommitted,
+                true
+            ))
+            .is_err()
+        );
+    }
     #[test]
     fn original_bank_query_protocol_is_exact_and_business_validation_stays_server_owned() {
         let QueryCommand::Transactions(q)=parse_query("/bank/transactions","account=+foreign+&amount=-1.005&textMatch=+SHARED+&from=2026-02-30&limit=1&offset=9007199254740991").unwrap() else {panic!()};

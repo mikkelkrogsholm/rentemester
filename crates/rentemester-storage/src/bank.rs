@@ -193,14 +193,56 @@ pub(crate) fn fingerprint(
     );
     Ok(format!("{:x}", Sha256::digest(wire.as_bytes())))
 }
+fn lookup_import_account(
+    tx: &Transaction<'_>,
+    key: &str,
+    numeric: Option<i64>,
+) -> Result<Option<(i64, String, i64)>, Error> {
+    tx.query_row("SELECT id,slug,active FROM bank_accounts WHERE id=?1 OR slug=?2 ORDER BY (id=?1) DESC LIMIT 1",params![numeric,key],|r|Ok((r.get(0)?,r.get(1)?,r.get(2)?))).optional().map_err(sql)
+}
 fn resolve_import_account(
     tx: &Transaction<'_>,
     account: Option<&str>,
 ) -> Result<Option<(i64, String, i64)>, Error> {
-    account.filter(|s|!s.trim().is_empty()).map(|s|{
-        let row:Option<(i64,String,i64)>=tx.query_row("SELECT id,slug,active FROM bank_accounts WHERE id=?1 OR slug=?2 ORDER BY (id=?1) DESC LIMIT 1",params![s.parse::<i64>().ok(),s],|r|Ok((r.get(0)?,r.get(1)?,r.get(2)?))).optional().map_err(sql)?;
-        let row=row.ok_or_else(||fail("unknown bank account"))?;if row.2!=1{return Err(fail("bank account is inactive"));}Ok(row)
-    }).transpose()
+    account
+        .filter(|s| !s.trim().is_empty())
+        .map(|s| {
+            let row = lookup_import_account(tx, s, s.parse::<i64>().ok())?
+                .ok_or_else(|| fail("unknown bank account"))?;
+            if row.2 != 1 {
+                return Err(fail("bank account is inactive"));
+            }
+            Ok(row)
+        })
+        .transpose()
+}
+/// Compatibility input resolution is explicit: trimmed exact slug or positive id,
+/// omitted/blank stays unassigned. Ordinary refusals precede source publication.
+pub fn validate_original_import_account(
+    tx: &Transaction<'_>,
+    account: Option<&str>,
+) -> Result<(), Error> {
+    let Some(raw) = account.filter(|s| !s.trim().is_empty()) else {
+        return Ok(());
+    };
+    let key = raw.trim();
+    let numeric = key.parse::<i64>().ok().filter(|n| *n > 0);
+    let row = lookup_import_account(tx, key, numeric)?.ok_or_else(|| {
+        Error::new(
+            "bank_import_account_not_found",
+            format!("bank account '{raw}' does not exist"),
+        )
+    })?;
+    if row.2 != 1 {
+        return Err(Error::new(
+            "bank_import_account_inactive",
+            format!(
+                "bank account '{}' is inactive and cannot receive imports",
+                row.1
+            ),
+        ));
+    }
+    Ok(())
 }
 /// Validate the selected account before publishing a physical statement original.
 pub fn validate_import_account(tx: &Transaction<'_>, account: Option<&str>) -> Result<(), Error> {
@@ -326,6 +368,40 @@ pub fn import_bytes_with_principal(
     archive: &str,
     principal: crate::idempotency::PrincipalKind,
 ) -> Result<Value, Error> {
+    import_bytes_with_receipt(
+        tx, content, rows, account, actor, now, archive, principal, false,
+    )
+}
+/// Original receipt uses the same importer and transaction-local unmatched sync count.
+#[allow(clippy::too_many_arguments)]
+pub fn import_original_bytes_with_principal(
+    tx: &Transaction<'_>,
+    content: &[u8],
+    rows: &[Row],
+    account: Option<&str>,
+    actor: &str,
+    now: &str,
+    archive: &str,
+    principal: crate::idempotency::PrincipalKind,
+) -> Result<Value, Error> {
+    let account = account.map(str::trim).filter(|s| !s.is_empty());
+    validate_original_import_account(tx, account)?;
+    import_bytes_with_receipt(
+        tx, content, rows, account, actor, now, archive, principal, true,
+    )
+}
+#[allow(clippy::too_many_arguments)]
+fn import_bytes_with_receipt(
+    tx: &Transaction<'_>,
+    content: &[u8],
+    rows: &[Row],
+    account: Option<&str>,
+    actor: &str,
+    now: &str,
+    archive: &str,
+    principal: crate::idempotency::PrincipalKind,
+    original_receipt: bool,
+) -> Result<Value, Error> {
     crate::journal_post::require_current(tx)?;
     let resolved = resolve_import_account(tx, account)?;
     let account_id = resolved.as_ref().map(|r| r.0);
@@ -428,12 +504,19 @@ pub fn import_bytes_with_principal(
     }
     let continuity = verify_balance_continuity(tx, &fresh)?;
     let unmatched = crate::unmatched_bank::sync(tx)?;
-    let mut result = json!({"importBatchId":batch,"sourceFileHash":source_hash,"bankAccountId":account_id,"imported":imported,"skippedDuplicates":skipped.len(),"skippedDuplicateRows":skipped,"bankAccountSlug":resolved.map(|r|r.1),"profile":rows.first().and_then(|row|row.profile.as_deref()),"balanceWarnings":continuity.warnings,"exceptionsCreated":continuity.created + unmatched});
+    let mut result = json!({"importBatchId":batch,"sourceFileHash":source_hash,"bankAccountId":account_id,"imported":imported,"skippedDuplicates":skipped.len(),"skippedDuplicateRows":skipped,"bankAccountSlug":resolved.map(|r|r.1),"profile":rows.first().and_then(|row|row.profile.as_deref()),"balanceWarnings":continuity.warnings,"exceptionsCreated":if original_receipt {unmatched}else{continuity.created + unmatched}});
     if let Some(first) = continuity.first {
         result["firstBalance"] = json!(crate::journal_post::money(&first)?);
     }
     if let Some(last) = continuity.last {
         result["lastBalance"] = json!(crate::journal_post::money(&last)?);
+    }
+    if original_receipt {
+        for key in ["bankAccountId", "bankAccountSlug", "profile"] {
+            if result[key].is_null() {
+                result.as_object_mut().expect("receipt object").remove(key);
+            }
+        }
     }
     Ok(result)
 }
@@ -981,3 +1064,7 @@ mod profile_tests;
 
 #[cfg(test)]
 mod byte_tests;
+
+#[cfg(test)]
+#[path = "bank/original_tests.rs"]
+mod original_tests;

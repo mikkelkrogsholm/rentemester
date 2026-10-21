@@ -20,6 +20,12 @@ pub enum Action<'a> {
         year: Option<&'a str>,
     },
     Create(&'a AccountInput),
+    ImportOriginal {
+        content: &'a [u8],
+        account: Option<&'a str>,
+        profile: Option<&'a str>,
+        now: &'a str,
+    },
     ImportBytes {
         content: &'a [u8],
         account: Option<&'a str>,
@@ -47,7 +53,9 @@ pub fn execute(
         | Action::Reconciliation(_)
         | Action::AccountList(_) => Permission::CompanyRead,
         Action::Create(_) => Permission::CompanyAdmin,
-        Action::Import { .. } | Action::ImportBytes { .. } => Permission::CompanyLedgerPost,
+        Action::Import { .. } | Action::ImportBytes { .. } | Action::ImportOriginal { .. } => {
+            Permission::CompanyLedgerPost
+        }
     };
     let slug = context.selection.slug;
     control_fence::execute_cookie_subject(
@@ -80,6 +88,21 @@ pub fn execute(
                 profile,
                 subject,
                 now,
+            ),
+            Action::ImportOriginal {
+                content,
+                account,
+                profile,
+                now,
+            } => import_original(
+                tx,
+                guard,
+                content,
+                account,
+                profile,
+                subject,
+                now,
+                rentemester_storage::idempotency::PrincipalKind::User,
             ),
             Action::ImportBytes {
                 content,
@@ -151,7 +174,9 @@ pub fn execute_service(
         | Action::Transactions(_)
         | Action::Reconciliation(_)
         | Action::AccountList(_) => (Permission::CompanyRead, false),
-        Action::ImportBytes { .. } => (Permission::CompanyLedgerPost, true),
+        Action::ImportBytes { .. } | Action::ImportOriginal { .. } => {
+            (Permission::CompanyLedgerPost, true)
+        }
         _ => {
             // This branch has not observed or touched either connection. Do not
             // retire the owner or imply an unknown outcome for an unsupported action.
@@ -180,6 +205,21 @@ pub fn execute_service(
                 Action::Read { today, year } => {
                     rentemester_storage::bank::read(tx, slug, today, year)?
                 }
+                Action::ImportOriginal {
+                    content,
+                    account,
+                    profile,
+                    now,
+                } => import_original(
+                    tx,
+                    guard,
+                    content,
+                    account,
+                    profile,
+                    subject,
+                    now,
+                    rentemester_storage::idempotency::PrincipalKind::ServiceAccount,
+                )?,
                 Action::ImportBytes {
                     content,
                     account,
@@ -245,6 +285,48 @@ fn query_authorized(
         _ => unreachable!("only original bank query actions admitted"),
     }
 }
+
+/// Reclassify only known pure parser refusals; never storage/source/fence errors.
+fn original_parser_error(error: Error) -> Error {
+    match error.code {
+        "invalid_bank_csv" | "invalid_input" | "invalid_currency" | "invalid_rate" => {
+            Error::new("bank_import_invalid_csv", error.message)
+        }
+        _ => error,
+    }
+}
+#[allow(clippy::too_many_arguments)]
+fn import_original(
+    tx: &rusqlite::Transaction<'_>,
+    guard: &mut NamespaceGuard,
+    bytes: &[u8],
+    account: Option<&str>,
+    profile: Option<&str>,
+    actor: &str,
+    now: &str,
+    principal: rentemester_storage::idempotency::PrincipalKind,
+) -> Result<Value, Error> {
+    rentemester_storage::bank::validate_original_import_account(tx, account)?;
+    let account = account.map(str::trim).filter(|s| !s.is_empty());
+    let content =
+        rentemester_engine::bank::decode_bytes(bytes, profile).map_err(original_parser_error)?;
+    let rows = rentemester_engine::bank::parse_with_profile(&content, profile)
+        .map_err(original_parser_error)?;
+    let archive = guard.publish_bank_statement_bytes(bytes).map_err(|_| {
+        Error::new(
+            "bank_original_unavailable",
+            "bank statement original could not be preserved",
+        )
+    })?;
+    let receipt = rentemester_storage::bank::import_original_bytes_with_principal(
+        tx, bytes, &rows, account, actor, now, &archive, principal,
+    )?;
+    Ok(serde_json::json!({"ok":true,"data":receipt,"errors":[]}))
+}
+#[cfg(test)]
+#[path = "bank/original_tests.rs"]
+mod original_tests;
+
 #[cfg(test)]
 #[path = "bank/query_tests.rs"]
 mod query_tests;

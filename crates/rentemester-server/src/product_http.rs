@@ -438,6 +438,7 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
             get(bank::handle).post(bank::handle),
         )
         .route("/api/companies/{slug}/bank/import", post(bank::handle))
+        .route("/api/companies/{slug}/bank/import-original", post(bank::handle))
         .route("/api/companies/{slug}/documents", get(documents::list))
         .route("/api/companies/{slug}/documents/{id}/invoice-extraction",get(invoice_extraction::handle))
         .route("/api/companies/{slug}/documents/{id}/extract-invoice",post(invoice_extraction::handle))
