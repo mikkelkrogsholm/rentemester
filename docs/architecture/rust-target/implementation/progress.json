@@ -1,13 +1,13 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "Group125 source-bound supporting Dinero documents integrated; focused tests and strict Clippy pass, whole actual acceptance pending",
-  "code_revision": "3d91cada plus pending root supporting-original publication/assurance, fixture and trusted-date fixes",
+  "current_increment": "Group125 supporting Dinero originals, additive links and unbooked exceptions qualified through existing web/HTTP/CLI/MCP/replay/full audit/restart;126 folder/ZIP input next",
+  "code_revision": "ad048d24",
   "spec_revision": "sha256:bc98636be4a972407adce0f817a76bb9d4bb7200cb292a70965e75ab62fae250",
-  "state": "Group124 live-year Dinero opening/history/source controls/imported receivables qualified through web, HTTP, compiled CLI/MCP, exact-key replay, full audit and restart with independently verified actual124e evidence. Group125 supporting PDF/image registration, additive exact voucher links and unbooked exception lifecycle implemented; six engine, two document projection,17 integrated storage and real owned-file rollback tests plus nine-crate strict Clippy pass. Final normal three-bin build and whole synthetic supporting-document journey next. CI PR728 published and automatic main/real issue-change runs green. Remaining original import containers/open-item/report variants and every epic672/GDD gate stay open; shared Rust engine/server and React/Tauri UI, installed desktop GUI last.",
+  "state": "Group125 supporting Dinero documents qualified by real normal-MFA existing web, HTTP and compiled CLI/MCP: three exact original PDFs, two additive source voucher journal links, one unbooked exception, same-key replay without repeated financial effects, current access, missing-backup refusal, raw-source and supporting-PDF physical tamper refusal/restoration, full five-part audit, signed backup verification and fresh-MFA restart. Independent pinned-artifact/process/profile verification PASS; reportSHA256 800be133dc410b1bfb86ad0134caf5df9f9e74ec3bf4a91bcc5c85f4eef5de8c. Six engine/two projection/17 storage/real runtime rollback tests and strict nine-crate Clippy pass. Group124 acceptance preserved. Next original R27 gap: direct folder/ZIP input with truthful raw-container retention. Every original epic672/GDD gate and remaining import/open-item/report scope stay open; one shared Rust engine/server and React/Tauri UI, installed desktop GUI last.",
   "issues_closed": [],
   "next": [
-    "Resume existing actual125 session6074/report; do not start another run or mutate pinned binaries/web/runner/helpers before independent qualification. After success finish remaining originally supported containers/import/open-item/report variants. Preserve all original mission gates and installed GUI last.",
+    "Original126 boundary: select actual Dinero folder or raw ZIP -> existing server review/apply -> supporting originals/external records -> exact retained source and restart. Follow /tmp/rm126-container-contract.md and /tmp/rm126-container-scout.md. Preserve ZIP raw bytes/hash distinctcanonicalinventory, current JSON compatibility, one engine, original remainder and installed GUI last. Do not repeat accepted124/125 unchanged.",
     "Installed desktop acceptance is explicitly deferred to the very end by the user. Preserve prepared Group100 profile; collect remaining native automation, closure, recovery and packaging checks for final installed acceptance without requesting screen unlock during development.",
     "J03/R50 and remaining R54 scope: only still-supported operation closure/recovery, nonempty scheduler handoff, hostile/older clone and post-cutover rollback requirements. Group99 qualifies managed installed J06 flow, not every R54 acceptance item.",
     "Signed distribution/update/cutover evidence must match actual full Rust replacement; retain all existing completion gates and TypeScript retirement gate.",
@@ -6894,7 +6894,7 @@
       "independent_verification": "/tmp/rm124-independent-verification.log"
     },
     "native_dinero_supporting125": {
-      "status": "final three-bin build passed; actual qualification running",
+      "status": "qualified bounded supporting-document journey; remaining R27 open",
       "engine6": "/tmp/rm125-engine-tests.log",
       "document_projection2": "/tmp/rm125-documents-tests.log",
       "storage17": "/tmp/rm125-integrated-storage-tests.log",
@@ -6902,10 +6902,13 @@
       "strict_clippy": "/tmp/rm125-integrated-clippy.log",
       "normal_three_bin_build": "/tmp/rm125-final-build.log",
       "planned_actual_report": "/tmp/rentemester-rust-reports/native-dinero-import125.json",
-      "whole_flow_qualified": false,
+      "whole_flow_qualified": true,
       "source_free_restore_qualified": false,
       "installed_desktop_qualified": false,
-      "live_exec_session": 6074
+      "report": "/tmp/rentemester-rust-reports/native-dinero-import125.json",
+      "report_sha256": "800be133dc410b1bfb86ad0134caf5df9f9e74ec3bf4a91bcc5c85f4eef5de8c",
+      "independent_verification": "/tmp/rm125-independent-verification.log",
+      "next_container_scout": "/tmp/rm126-container-scout.md"
     }
   },
   "verified_history": [

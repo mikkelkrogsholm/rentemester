@@ -42,9 +42,12 @@ undtagelseslisten. Identiske bytes genbruger et eksisterende dokument, mens
 hver kildesti fortsat har sit eget proveniensspor. Ukendte bilagsnumre og
 ikke-understøttede bogførte filtyper afvises før importen.
 
-Denne udvidelse består de målrettede tests; den samlede appprøve er endnu
-ikke kvalificeret. Den tidligere kvalificerede prøve nedenfor gælder importen
-før denne bilagsudvidelse.
+Bilagsudvidelsen består den samlede prøve gennem web, HTTP og kompileret
+CLI/MCP, med præcise originaler, bilagskoblinger, undtagelse, gentagelse med
+samme nøgle, fysisk ændringskontrol, fuld audit, signeret backupkontrol og
+genstart. Evidensen er registreret som `native_dinero_supporting125` i
+fremdriftsfilen. Gendannelse uden kildeprofil og installeret desktopaccept
+er endnu ikke kvalificeret for denne udvidelse.
 
 ## HTTP, CLI og MCP
 
