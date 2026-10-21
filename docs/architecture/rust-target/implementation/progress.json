@@ -7708,8 +7708,7 @@
       ],
       "annual_tax_ixbrl_retained": "annual_exports135",
       "j04_retained": "platform11_combined annual blockers/placeholders/reopen; existing recorded external filing receipt/replay/conflict/reopen/late-post controls; preparation is not submission",
-      "pending_original_saft": "system export-saft original local directory/flatmetadata and optionalgenerated-at; no originalSAFTMCPtool found in src/mcp. Native remote saft-export/saft_export already qualified.",
-      "timestamp_contract": "Existing native omitted mode trusted_runtime_clock unchanged. OriginalCLI omittedgenerated-at derives periodEndT23:59:59.000Z; supplied value UTCmilliseconds/explicit=true. Server-owned selection must label period_end/caller_supplied/trusted_runtime_clock honestly, not pretend caller time is trustedwallclock.",
+      "timestamp_contract": "Accepted137: server selects honest period_end/caller_supplied metadata; native omitted mode uses trusted_runtime_clock. Timestamp choice does not replace runtime authorization clock. Accidental JS impossible-date/localtimezone normalization not reproduced; full R44 compatibility remains open.",
       "release_dependency": "Native release/rule corpus provenance remains explicitnull/unavailable until actual release evidence; all original R31context/manifest and fullmission acceptance remains required.",
       "original_sources": [
         "src/core/saft-export.ts:84",
@@ -7721,11 +7720,12 @@
         "crates/rentemester-storage/src/saft.rs:304",
         "crates/rentemester-client/src/saft.rs:20"
       ],
-      "full_r31_complete": false
+      "full_r31_complete": false,
+      "original_saft": "saft_artifact137 accepted; original system export-saft local directory/flatmetadata, period-end default and caller-supplied explicit-zone RFC3339 UTC-millisecond timestamp; native HTTP/CLI/MCP trusted clock unchanged. Original SAF-T MCP alias does not exist."
     },
     "saft_artifact137": {
       "issue": 706,
-      "status": "INTEGRATING_original_saft_cli_package_timing",
+      "status": "ACCEPTED137_original_saft_cli_package_timing",
       "contract": "/tmp/rm137-contract.md",
       "core_commit": "b4dc2fde",
       "clients_commit": "db68c57b",
@@ -7737,7 +7737,7 @@
         "/tmp/rm137-default.log"
       ],
       "client_log": "/tmp/rm137-clients.log",
-      "actual_qualified": false,
+      "actual_qualified": true,
       "fixture": "Existing normal MFA runner, one retained synthetic source and 100 DKK posting; original local CLI/default+caller timestamp and nativeHTTP/CLI/MCP trusted clock; refusals/source/authority/audit/restart. No old fullSAFT/privacy rerun.",
       "expected_sql": {
         "documents": 1,
@@ -7753,7 +7753,34 @@
         "authority_export136",
         "annual_exports135"
       ],
-      "remaining": "Integrated strict/build/runtime acceptance pending. Full R31 release provenance and globalR44 filesystem/defaultlauncher/envelope parity, full mission scope and final installed desktop remain open."
+      "remaining": "Global R44 full CLI/localworkspace/defaultlauncher/transport-envelope parity; R31 native release/rule provenance remains explicitnull/unavailable until actual release evidence. Whole epic/final installeddesktop unqualified.",
+      "strict_clippy": "/tmp/rm137-clippy.log",
+      "strict_clippy_passed": true,
+      "normal_build": "/tmp/rm137-normal-build.log",
+      "normal_build_passed": true,
+      "source_revision": "b026a97a279648c14f288952c6c8e2dbaf238241",
+      "report": "/tmp/rentemester-rust-reports/saft-artifact137.json",
+      "report_sha256": "ecf1b1d7943269f60a37a4508e8f03248b66c758877ec8be161e466c58d778a3",
+      "terminal_exit": 0,
+      "actual_first_run_passed": true,
+      "independent_verification": "/tmp/rm137-independent-verification.log",
+      "independent_tar_xml_manifest_hash_verification": true,
+      "restart_qualified": true,
+      "terminal_sql": {
+        "documents": 1,
+        "bank_transactions": 0,
+        "journal_entries": 1,
+        "journal_lines": 2
+      },
+      "export_audits": 15,
+      "authenticated_export_actors": {
+        "owner": 14,
+        "reader": 1
+      },
+      "owned_runtime_cleaned": true,
+      "owned_processes_stopped": true,
+      "both_new_worktrees_removed": true,
+      "worktree_recovery": ".git/rentemester-recovery/archived137.json"
     }
   },
   "verified_history": [
