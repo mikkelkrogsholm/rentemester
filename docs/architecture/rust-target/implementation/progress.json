@@ -4,7 +4,7 @@
   "current_increment": "Group133 original R32/#703 company dashboard JSON mapping after accepted132 dated reports",
   "code_revision": "066c7563cbf8fb8cc9d21ac6f6137a4f84e90fc5",
   "spec_revision": "sha256:bc98636be4a972407adce0f817a76bb9d4bb7200cb292a70965e75ab62fae250",
-  "state": "Group132 accepted at066c7563: original three dated CLI reports and authorized sharedRust HTTP pass ordinaryMFA/currentrevocation/noeffects/exactnormalMFArestart, sourceoriginals/full audit4 and independent terminalSQL4journals8lines2docs0bank. All six actual numeric report outputs equal original pure readers on stopped owned synthetic ledger. Twelvefocused tests and strict6changedcrate Clippy/normalbins pass; both newworker worktrees recovered andremoved. Accepted131/130/129/128/63/76 retained. Next133 missing original company dashboard JSON mapping, then R31tax/iXBRL. Full epic/TSretirement/packaging/cutover/finalinstalleddesktop remain OPEN.",
+  "state": "Group133 integrating original company dashboard JSON over one current-authorized Rust source transaction: datedprincipal and DKKcarrying totals, preservedoriginalfields/currentclaims-PEPPOL, unmatchedbank/tasks/VAT/audit and currentadminbackup. Storage3 plus application source/rights/noeffects1 and HTTPselector1 passed; strict/integratednormalMFA/restart pending. Accepted132/131/130/129/128/63/76 retained. Whole epic/TSretirement/packaging/cutover/finalinstalleddesktop remain OPEN.",
   "issues_closed": [
     701
   ],
@@ -7375,6 +7375,34 @@
       "both_new_worktrees_removed": true,
       "source_free_restore_qualified": false,
       "scope_limit": "Restores ORIGINAL arbitrary-date CLI; existing fiscal-year web/exports and nativeMCP unchanged, not newdatedfeatures; globalR44/localCLIlauncher and fullR32 stillopen"
+    },
+    "dashboard_json133": {
+      "issue": 703,
+      "status": "integrating_actual_acceptance_pending",
+      "worker_commit": "afd54b6388d90f408659b872e2d2b11b1140fe29",
+      "contract": "/tmp/rm133-contract.md",
+      "focused_tests": {
+        "storage": {
+          "passed": 3,
+          "logs": [
+            "/tmp/rm133-dashboard-json-storage.log",
+            "/tmp/rm133-dashboard-json-isolated.log"
+          ],
+          "note": "Initial3group2PASS; complexcase expected1exception but canonicalbankimport adds automatic unmatchedtask plus explicittask=>2. Diagnosedfixtureexpectationcorrected, isolatedcomplexcasePASS, unchangedother2notrerun."
+        },
+        "application": {
+          "passed": 1,
+          "log": "/tmp/rm133-dashboard-json-application.log"
+        },
+        "http": {
+          "passed": 1,
+          "log": "/tmp/rm133-http-tests.log"
+        }
+      },
+      "preflight_correction": "Two invoice issuances retain4documents (JSON+PDF each), not2; expectedcounts corrected from actualsource beforefirstruntime",
+      "scope": "Original GET dashboard?asOf JSON field names; canonical datedprincipal excludes futureinvoices, unknown due staysunknown, DKKcarrying totals avoidcurrency mixing. Currentclaims/PEPPOL/tasks/audit/localbackup explicitlylabelled; reader backup details null+company.admin. Importedreceivables separate, unavailablehistoricalnativefigures null, neverfakezero. No newengine/UI/CLI/MCP. NativePEPPOL prepared aliasqueued, acknowledgementtimestamp retained from verifiednativehistory/legacy metadata; existingdeliverydecisions unchanged.",
+      "actual_qualified": false,
+      "installed_desktop_qualified": false
     }
   },
   "verified_history": [

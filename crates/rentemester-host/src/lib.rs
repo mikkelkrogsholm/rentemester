@@ -1397,3 +1397,5 @@ mod manual_post_recovery;
 
 mod service_bank;
 mod service_expense;
+
+mod dashboard_json;

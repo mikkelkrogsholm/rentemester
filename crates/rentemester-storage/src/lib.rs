@@ -656,3 +656,5 @@ pub mod synthetic_import;
 pub mod journal_history;
 
 pub mod dated_reports;
+
+pub mod dashboard_json;
