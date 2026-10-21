@@ -4,12 +4,12 @@
   "current_increment": "Group136 R31 original authority/accountant handover request context and clients",
   "code_revision": "f4193c18ae88ba9fb57814906fb49bed11a45730",
   "spec_revision": "sha256:bc98636be4a972407adce0f817a76bb9d4bb7200cb292a70965e75ab62fae250",
-  "state": "Group136 actual product/context/source/CLI/MCP/restart and independent terminal SQL all passed, but harness finalization failed after audit identity variable shadowed owned-directory identity. Exact isolated reproduction/fix passed; all failed-workspace data/raw proof files preserved and verified owned temp cleaned. One final actual136b planned with unchanged Rust binaries. Sole706 acceptance, no136 qualification yet; fullscope retained.",
+  "state": "Group136B ACCEPTED original authority/accountant request-context local handover through shared Rust package engine: original CLI/MCP, exact normalizedtimestamp/+28days/recipient/source files/all hashes, confirmation/source tamper/currentrevoke refusal, normalMFArestart, independent tarparser, unchanged journal1/doc1/bank0/lines2 and exactly11authenticated audit effects. Harness finalization identity shadow diagnosed/isolated/fixed; failed workspace/proofs preserved, final run and cleanup passed. Next R31 original SAF-T CLI/local output + original supplied/periodend timestamp semantics; accepted nativeSAFT23/24 and annual135 retained. FullR31/R44/provenance/release/TSretirement/finaldesktop remainOPEN.",
   "issues_closed": [
     701
   ],
   "next": [
-    "R31 #706 next necessary flow: original authority export profile/requestedAt/requester/four-week manifest context and original CLI/MCP mapping, reuse accepted accountant archive machinery; retain SAF-T platform23/platform24 and accepted annual135 without unchanged reruns.",
+    "R31 #706 restore original system export-saft --from --to --out [--generated-at] with verified local package from existing nativeSAFT engine. Distinguish native trusted_runtime_clock default, original CLI period_end default and caller_supplied timestamp honestly, all selectedserver-side. No originalSAFTMCPname exists; retain native saft_export. Reuse nativeSAFT23/24/136writer evidence, no new engine/harness.",
     "Installed desktop acceptance is explicitly deferred to the very end by the user. Preserve prepared Group100 profile; collect remaining native automation, closure, recovery and packaging checks for final installed acceptance without requesting screen unlock during development.",
     "J03/R50 and remaining R54 scope: only still-supported operation closure/recovery, nonempty scheduler handoff, hostile/older clone and post-cutover rollback requirements. Group99 qualifies managed installed J06 flow, not every R54 acceptance item.",
     "Signed distribution/update/cutover evidence must match actual full Rust replacement; retain all existing completion gates and TypeScript retirement gate.",
@@ -7636,9 +7636,9 @@
     },
     "authority_export136": {
       "issue": 706,
-      "status": "product_and_restart_passed_finalization_fix_retest_pending",
+      "status": "ACCEPTED136B_authority_accountant_handover",
       "contract": "/tmp/rm136-contract.md",
-      "actual_qualified": false,
+      "actual_qualified": true,
       "fixture": "Existing standalone runner/accountant helper; one synthetic retained original+real posting, source files/hash/context/deadline/local CLI/MCP packages, exact audit-only effects, normalMFArestart. No new harness.",
       "core_logs": [
         "/tmp/rm136-storage.log",
@@ -7672,7 +7672,56 @@
       "ownership_fix": "Rename audit-only variable to handover_identities; exact old/fixed AST block reproduces failure and proves inode/uid gate retained. /tmp/rm136-ownership-isolated.log PASS.",
       "failed_fixture_preservation": "/tmp/rentemester-rust-reports/authority-export136-finalization/recovery.json",
       "retry_reason": "One justified actual rerun after isolated diagnosed finalization correction; reuse unchanged Rust binaries/focused/Clippy evidence, no Rust rebuild.",
-      "normal_build_passed": true
+      "normal_build_passed": true,
+      "report": "/tmp/rentemester-rust-reports/authority-export136b.json",
+      "report_sha256": "e65e2a7d063fe2d531c67bd0fe44e19a5e597cf2bbedcc2f534d28eb85501148",
+      "source_revision": "e96c2ba4248da76b4ebcf763f9f5f9b95a2e3ea9",
+      "terminal_exit": 0,
+      "independent_verification": "/tmp/rm136b-independent-verification.log",
+      "independent_tar_manifest_hash_verification": true,
+      "restart_qualified": true,
+      "actual_first_run_passed": false,
+      "actual_functionality_first_run_passed": true,
+      "actual_rerun_reason": "First actual all functionality/restart/SQL passed but new harness variable shadow failed final owned namespace check. Exact isolated correction passed; one justified136b run passed complete with unchanged Rust binaries.",
+      "terminal_sql": {
+        "documents": 1,
+        "bank_transactions": 0,
+        "journal_entries": 1,
+        "journal_lines": 2
+      },
+      "export_audit_counts": {
+        "authority_export": 7,
+        "accountant_handoff_export": 4
+      },
+      "authenticated_export_audits": 11,
+      "owned_runtime_cleaned": true,
+      "owned_processes_stopped": true,
+      "both_new_worktrees_removed": true,
+      "worktree_recovery": ".git/rentemester-recovery/archived136.json"
+    },
+    "r31_original_export_surface_map": {
+      "authority_and_accountant": "authority_export136 accepted136b; originalCLI authority/accountant + system_export_authority MCP request/context verified",
+      "native_saft_retained": [
+        "platform23_saft",
+        "platform23_combined",
+        "platform24_saft_privacy"
+      ],
+      "annual_tax_ixbrl_retained": "annual_exports135",
+      "j04_retained": "platform11_combined annual blockers/placeholders/reopen; existing recorded external filing receipt/replay/conflict/reopen/late-post controls; preparation is not submission",
+      "pending_original_saft": "system export-saft original local directory/flatmetadata and optionalgenerated-at; no originalSAFTMCPtool found in src/mcp. Native remote saft-export/saft_export already qualified.",
+      "timestamp_contract": "Existing native omitted mode trusted_runtime_clock unchanged. OriginalCLI omittedgenerated-at derives periodEndT23:59:59.000Z; supplied value UTCmilliseconds/explicit=true. Server-owned selection must label period_end/caller_supplied/trusted_runtime_clock honestly, not pretend caller time is trustedwallclock.",
+      "release_dependency": "Native release/rule corpus provenance remains explicitnull/unavailable until actual release evidence; all original R31context/manifest and fullmission acceptance remains required.",
+      "original_sources": [
+        "src/core/saft-export.ts:84",
+        "src/core/saft-export.ts:687",
+        "src/cli/system.ts:573"
+      ],
+      "native_sources": [
+        "crates/rentemester-application/src/saft.rs:48",
+        "crates/rentemester-storage/src/saft.rs:304",
+        "crates/rentemester-client/src/saft.rs:20"
+      ],
+      "full_r31_complete": false
     }
   },
   "verified_history": [
