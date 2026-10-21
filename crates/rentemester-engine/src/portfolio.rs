@@ -77,8 +77,18 @@ pub fn render(workspace: &str, as_of: &str, companies: &[Value]) -> Result<Value
     totals["openInvoiceTotal"] = sum(companies, "openInvoiceTotal")?;
     totals["netVatPayable"] = sum(companies, "netVatPayable")?;
     let rollup = json!({"resultat":sum(companies,"resultat")?,"omsaetning":sum(companies,"omsaetning")?,"liquidity":sum(companies,"actualBankBalance")?,"vatPayable":sum(companies,"netVatPayable")?,"openTaskCount":count(companies,"openTaskCount")?,"bankBalanceComplete":known_bank==companies.len(),"knownBankCompanyCount":known_bank,"unknownBankCompanyCount":companies.len()-known_bank});
+    let mut limitations = vec![
+        "Porteføljen summerer de synlige virksomheders egne DKK-tal; mellemregninger og koncernelimineringer er ikke foretaget.",
+        "Opgaver viser nuværende åben status for kilder frem til skæringsdatoen, ikke en rekonstrueret historisk opgavestatus.",
+    ];
+    if companies.iter().any(|card| {
+        card["availability"]["invoices"]["reason"]
+            == "native_invoices_only_imported_receivables_separate"
+    }) {
+        limitations.push("Fakturatal og fakturabeløb omfatter kun fakturaer udstedt i Rentemester; importerede tilgodehavender følges særskilt og indgår ikke i disse summer.");
+    }
     Ok(
-        json!({"ok":true,"portfolio":{"workspace":workspace,"asOf":as_of,"companyCount":companies.len(),"currency":"DKK","scope":"portfolio","companyScope":"active_accessible_companies","consolidated":false,"companies":companies,"rollup":rollup,"totals":totals,"limitations":["Porteføljen summerer de synlige virksomheders egne DKK-tal; mellemregninger og koncernelimineringer er ikke foretaget.","Opgaver viser nuværende åben status for kilder frem til skæringsdatoen, ikke en rekonstrueret historisk opgavestatus."]}}),
+        json!({"ok":true,"portfolio":{"workspace":workspace,"asOf":as_of,"companyCount":companies.len(),"currency":"DKK","scope":"portfolio","companyScope":"active_accessible_companies","consolidated":false,"companies":companies,"rollup":rollup,"totals":totals,"limitations":limitations}}),
     )
 }
 #[cfg(test)]
@@ -117,6 +127,44 @@ mod tests {
         assert!(response["portfolio"]["rollup"]["resultat"].is_null());
         assert_eq!(response["portfolio"]["rollup"]["liquidity"], 0.0);
         assert_eq!(response["portfolio"]["rollup"]["bankBalanceComplete"], true);
+    }
+    #[test]
+    fn imported_company_native_invoice_subset_rolls_up_with_explicit_boundary() {
+        let mut imported = card("imported", json!(10), json!(0));
+        imported["openInvoiceCount"] = json!(1);
+        imported["overdueInvoiceCount"] = json!(1);
+        imported["openInvoiceTotal"] = json!(125);
+        imported["availability"] = json!({"invoices":{"status":"partial","reason":"native_invoices_only_imported_receivables_separate"}});
+        let mut native = card("native", json!(20), json!(0));
+        native["openInvoiceCount"] = json!(2);
+        native["openInvoiceTotal"] = json!(250);
+        let response = render("synthetic", "2026-10-20", &[imported, native]).unwrap();
+        let portfolio = &response["portfolio"];
+        assert_eq!(portfolio["totals"]["openInvoiceCount"], 3);
+        assert_eq!(portfolio["totals"]["overdueInvoiceCount"], 1);
+        assert_eq!(portfolio["totals"]["openInvoiceTotal"], 375.0);
+        assert_eq!(portfolio["companies"][0]["openInvoiceTotal"], 125);
+        let limitations = portfolio["limitations"].as_array().unwrap();
+        assert_eq!(limitations.len(), 3);
+        assert!(
+            limitations[2]
+                .as_str()
+                .unwrap()
+                .contains("importerede tilgodehavender følges særskilt")
+        );
+        let native_only = render(
+            "synthetic",
+            "2026-10-20",
+            &[card("native", json!(0), json!(0))],
+        )
+        .unwrap();
+        assert_eq!(
+            native_only["portfolio"]["limitations"]
+                .as_array()
+                .unwrap()
+                .len(),
+            2
+        );
     }
     #[test]
     fn different_scope_sources_refuse() {

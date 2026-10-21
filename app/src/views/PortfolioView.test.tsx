@@ -115,3 +115,16 @@ test("native portfolio displays canonical cards and unknown aggregate without cl
  expect(screen.getByText(/Samlet banksaldo er ikke tilgængelig/)).toBeInTheDocument();
  expect(screen.getByText(/ikke et konsolideret koncernregnskab/)).toBeInTheDocument();
 });
+
+
+test("native imported company explains the invoice subset without hiding native invoice count",async()=>{
+ const auth=await import("../lib/auth-context");vi.spyOn(auth,"useOptionalAuth").mockReturnValue({backend:"rust",loading:false,hosted:false,session:null,currentSessionId:null,context:null,refresh:async()=>{},clear:()=>{}});
+ const card={...summary(),name:"Synthetic Imported Company",currency:"DKK",openInvoiceCount:1,availability:{invoices:{status:"partial",reason:"native_invoices_only_imported_receivables_separate"}},audit:{status:"verified",scope:"journal_hash_chain",entriesChecked:1},limitations:[]};
+ mockFetch({"GET /api/portfolio":{portfolio:{workspace:"synthetic",asOf:"2025-10-01",companyCount:1,companies:[card],rollup:{resultat:0,liquidity:0,vatPayable:0,openTaskCount:0,bankBalanceComplete:true,knownBankCompanyCount:1,unknownBankCompanyCount:0},totals:{}}}});
+ renderAt(<PortfolioView/>);
+ const company=await screen.findByRole("article",{name:"Synthetic Imported Company"});
+ expect(within(company).getByText("Fakturatal omfatter kun fakturaer udstedt i Rentemester. Importerede tilgodehavender følges særskilt.")).toBeInTheDocument();
+ const invoiceLabel=within(company).getByText("Åbne fakturaer",{exact:true});
+ expect(invoiceLabel.nextElementSibling).toHaveTextContent("1");
+ expect(within(company).queryByText("Oplysningerne kræver yderligere dokumentation.")).not.toBeInTheDocument();
+});

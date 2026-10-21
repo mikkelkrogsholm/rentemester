@@ -115,6 +115,7 @@ function availabilityMessage(reason:string){
  const messages:Record<string,string>={
   native_history_begins_at_explicit_cutover:"Tallene dækker kun perioden fra den dokumenterede overgang til Rentemester.",
   archive_or_cutover_basis_unavailable:"Det historiske regnskabsgrundlag er ikke tilgængeligt for denne dato.",
+  native_invoices_only_imported_receivables_separate:"Fakturatal omfatter kun fakturaer udstedt i Rentemester. Importerede tilgodehavender følges særskilt.",
   unvalued_or_adjusted_receivable:"Tilgodehavenderne kræver afklaring af værdiansættelse eller korrektioner.",
   vat_reconciliation_errors:"Momsgrundlaget skal afstemmes, før beløbet kan anvendes til angivelse.",
   none:"Der mangler et kontoudtog med dokumenteret saldo.",
