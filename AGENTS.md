@@ -1,3 +1,38 @@
+## Bindende styring af Rust-omskrivningen
+
+Målet er hele Rust-omskrivningen i epic #672. Én fælles Rust-motor og server
+betjener web, desktop med lokal server og desktop med ekstern server.
+Desktop er Rust/Tauri med det eksisterende React-UI; byg ikke parallelle
+bogføringsmotorer eller separate desktopskærme. Den manuelle installerede
+desktopaccept udføres til allersidst. Bed ikke om skærmoplåsning undervejs.
+
+- GitHub-issues er autoritative for opgavestatus. Brug præcis én `flow:`-status
+  fra [arbejdsgangen](docs/development-workflow.md). `progress.json` gemmer
+  evidens og genoptagelse, aldrig en konkurrerende kø. Bevar hele oprindeligt
+  aftalte scope og allerede verificeret arbejde.
+- Hovedagenten ejer prioritering, fælles kontrakter, integration og accept.
+  Underagenter får afgrænsede leverancer med issue, filansvar, afhængigheder og
+  færdigkriterium. De må ikke delegere videre eller lukke hovedissuet.
+- Hav højst ét fælles brugerforløb aktivt. Udvikl dets uafhængige dele parallelt
+  med nyttige underagenter i isolerede worktrees; fælles checkout er read-only
+  for underagenter. Overhold plads- og worktreegrænserne nedenfor.
+- Hver opgave skal opfylde et konkret acceptkriterium eller fjerne en påvist
+  blokering. Valgfri polish, spekulativ hardening og nye features parkeres;
+  de må ikke udvide omskrivningens kritiske vej.
+- Kør hurtige målrettede tests først og samlet accept ved færdige forløb.
+  Gentag kun ved ændret kode, konkret fejl eller ny viden. Kontrollér en defekt
+  tests forventning isoleret, før endnu en dyr samlet prøve startes.
+- Når accept består, integrér og fortsæt til næste nødvendige forløb.
+  Ingen ekstra perfektioneringsrunde. En testfejl må ikke løses ved at svække
+  det aftalte brugerresultat eller en nødvendig regnskabs-/adgangskontrol.
+- Før skrivning/commit skal checkouts have en afgrænset arbejdspakke til
+  hooks. Workers afleverer kode og konkrete testresultater; hovedagenten
+  vurderer den integrerede accept. Manglende bevis er ikke færdig.
+- Ved genoptagelse afstemmes faktiske GitHub-statusser, Git-ændringer og levende
+  processer før ny dispatch. Gentag ikke allerede udførte effekter.
+- Status til brugeren beskriver færdige brugerforløb, konkret restarbejde og
+  faktiske blokeringer. Interne test-/agenttællere erstatter ikke fremdrift.
+
 ## Artefaktformat
 
 Brug kun flade filer som projekt- og arbejdsleverancer. Opret ikke Excel-,

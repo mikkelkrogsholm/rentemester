@@ -8479,5 +8479,12 @@
       "record": "docs/architecture/rust-target/implementation/known-contract-corrections.md",
       "new_test_status": "written, pending compiler lease after122 worker"
     }
-  ]
+  ],
+  "workflow": {
+    "task_state_authority": "https://github.com/mikkelkrogsholm/rentemester/issues/672",
+    "policy": "docs/development-workflow.md",
+    "current_issue": 701,
+    "progress_file_role": "evidence and resume facts only; GitHub labels are authoritative for task state",
+    "product_acceptance_unchanged": true
+  }
 }

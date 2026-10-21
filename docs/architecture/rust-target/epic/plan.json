@@ -1,13 +1,13 @@
 {
   "format": "rentemester-migration-plan/1",
   "epic_id": "RM-RUST",
-  "title": "EPIC: Rust-platform for Rentemester — server, web og lokal/remote GPUI-desktop",
+  "title": "EPIC: Rust-platform for Rentemester — server, web og lokal/remote Rust-desktop med fælles web-UI",
   "repository": "mikkelkrogsholm/rentemester",
   "created": "2026-10-17",
   "status": "reviewed-for-publication",
   "base_code_commit": "0bbe82bcf0cafd73e2326152740cb06b90222405",
   "base_architecture_revision": "sha256:a0c699bcb80ddd55c1ac9de4e8dd51e9972460f46ca682d37bbc91c9c4ea9d5e",
-  "mandate": "Plan and review locally, fix findings in loops, then create GitHub epic and issues. This is not authority to execute implementation or live migrations.",
+  "mandate": "Complete the user-authorized Rust rewrite under epic #672. Use one shared Rust server/engine and existing React UI in browser and Rust/Tauri desktop. Live production cutover remains separately gated. GitHub flow labels govern task state; original scope and acceptance remain binding.",
   "phases": {
     "P0": "Inventory and binding design decisions",
     "P1": "Rust foundation and first read-only vertical slice",
@@ -19,7 +19,7 @@
   },
   "global_acceptance": [
     "One shared Rust accounting engine with a versioned API for web, local desktop and remote desktop.",
-    "Retain React; use qualified GPUI for native UI; core local accounting needs no separately installed Bun/Node/Docker.",
+    "Retain React; embed the existing React UI in the qualified Rust/Tauri desktop host; core local accounting needs no separately installed Bun/Node/Docker.",
     "One runtime owns each writable workspace; legal entities keep separate ledgers and evidence.",
     "No company-specific code/defaults; synthetic checked-in test data only.",
     "Existing correctness/security/backup/release obligations remain binding; known defects require explicit corrected contracts.",
@@ -224,7 +224,7 @@
     },
     {
       "id": "R06",
-      "title": "Qualify GPUI Kit, accessibility and target-platform feasibility",
+      "title": "Qualify Rust desktop host, embedded UI and target-platform feasibility",
       "phase": "P0",
       "component": "component.desktop",
       "depends_on": [
@@ -1723,7 +1723,7 @@
     },
     {
       "id": "R47",
-      "title": "Build the GPUI local shell and managed backend lifecycle",
+      "title": "Build the Rust desktop host and managed backend lifecycle",
       "phase": "P5",
       "component": "component.desktop",
       "depends_on": [
@@ -1759,7 +1759,7 @@
     },
     {
       "id": "R48",
-      "title": "Build GPUI read workflows, reports and evidence inspection",
+      "title": "Deliver shared desktop read workflows, reports and evidence inspection",
       "phase": "P5",
       "component": "component.desktop",
       "depends_on": [
@@ -1795,7 +1795,7 @@
     },
     {
       "id": "R49",
-      "title": "Build GPUI bookkeeping, review and administration workflows",
+      "title": "Deliver shared desktop bookkeeping, review and administration workflows",
       "phase": "P5",
       "component": "component.desktop",
       "depends_on": [
@@ -2188,5 +2188,6 @@
       "when": "Close app/sleep/change timezone or DST, then restart; revoke/cancel a queued task.",
       "then": "Documented catch-up/skip and dispatch-authority policy, last/next/missed/pause/error visible, no implied unattended local service."
     }
-  ]
+  ],
+  "presentation_override": "docs/architecture/rust-target/DESKTOP-UI-DECISION.md; user-approved shared UI supersedes GPUI presentation requirements, preserving every non-presentation acceptance gate"
 }

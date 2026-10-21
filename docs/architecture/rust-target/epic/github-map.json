@@ -3,7 +3,7 @@
     "number": 672,
     "id": 5898450839,
     "url": "https://github.com/mikkelkrogsholm/rentemester/issues/672",
-    "title": "EPIC: Rust-platform for Rentemester \u2014 server, web og lokal/remote GPUI-desktop",
+    "title": "EPIC: Rust-platform for Rentemester — server, web og lokal/remote Rust-desktop med fælles web-UI",
     "native_parent_linked": false
   },
   "R01": {
@@ -45,7 +45,7 @@
     "number": 678,
     "id": 5898454311,
     "url": "https://github.com/mikkelkrogsholm/rentemester/issues/678",
-    "title": "[Rust R06] Qualify GPUI Kit, accessibility and target-platform feasibility",
+    "title": "[Rust R06] Qualify Rust desktop host, embedded UI and target-platform feasibility",
     "native_parent_linked": true
   },
   "R07": {
@@ -332,21 +332,21 @@
     "number": 719,
     "id": 5898478687,
     "url": "https://github.com/mikkelkrogsholm/rentemester/issues/719",
-    "title": "[Rust R47] Build the GPUI local shell and managed backend lifecycle",
+    "title": "[Rust R47] Build the Rust desktop host and managed backend lifecycle",
     "native_parent_linked": true
   },
   "R48": {
     "number": 720,
     "id": 5898479163,
     "url": "https://github.com/mikkelkrogsholm/rentemester/issues/720",
-    "title": "[Rust R48] Build GPUI read workflows, reports and evidence inspection",
+    "title": "[Rust R48] Deliver shared desktop read workflows, reports and evidence inspection",
     "native_parent_linked": true
   },
   "R49": {
     "number": 721,
     "id": 5898479630,
     "url": "https://github.com/mikkelkrogsholm/rentemester/issues/721",
-    "title": "[Rust R49] Build GPUI bookkeeping, review and administration workflows",
+    "title": "[Rust R49] Deliver shared desktop bookkeeping, review and administration workflows",
     "native_parent_linked": true
   },
   "R50": {

@@ -215,3 +215,32 @@ No deadlines, effort estimates, unsupported platform claims, external approvals 
 ## Dependency interpretation
 
 Edges are completion prerequisites. Contract-driven scaffolding/prototypes may begin earlier with explicit stable interfaces; no dependent acceptance is claimed before prerequisites pass. Readiness is checked per bounded implementation package, not for an entire phase at once.
+
+## Authoritative execution state
+
+GitHub issues are the single task-state authority. Each child has exactly one
+`flow:backlog`, `flow:ready`, `flow:developing`, `flow:integrating`,
+`flow:acceptance` or `flow:done` label. The normal path follows that order;
+acceptance returns to developing only for a concrete defect. `flow:blocked`
+is an orthogonal marker and requires `Flow-Blocked: <concrete cause>` in the
+issue body. A completed issue is closed and has `flow:done` with applicable
+revision-bound evidence; worker completion is not whole-issue acceptance.
+
+Only one child issue is the active shared user journey at a time. The lead
+owns scope, common contracts, integration and acceptance; independent worker
+parts use isolated worktrees with non-overlapping file ownership. Existing
+partial implementations/evidence remain valid in their recorded scope even
+when the parent issue waits in backlog for its remaining acceptance. No
+blanket issue closure is implied by initializing these labels.
+
+Current focus: #701, complete source-authoritative Dinero import and its
+remaining original evidence/document workflows. All other original children
+remain queued without discarding existing work. Installed desktop GUI
+acceptance is explicitly deferred until all preceding implementation and
+headless checks are complete; no repeated screen-unlock requests.
+
+Hooks enforce work-packet scope and commit issue references locally. The
+workflow checker validates status exclusivity, open/closed consistency and
+work-in-progress limit against GitHub. These checks do not replace the lead's
+judgment or independently prove a cited test report. The implementation
+progress file stores evidence/recovery facts, not a second work queue.
