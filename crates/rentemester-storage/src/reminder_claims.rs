@@ -1,4 +1,4 @@
-//! Native reminder-only claims. Current immutable relations, account effects and bank facts are rechecked.
+//! Native reminder and compensation claims. Current immutable relations, account effects and bank facts are rechecked.
 use crate::{invalid, legacy_money};
 use rentemester_engine::{
     Error,
@@ -64,10 +64,10 @@ fn audit(
     Ok(())
 }
 fn unsupported(tx: &Transaction<'_>, id: i64) -> Result<(), Error> {
-    let yes:bool=tx.query_row("SELECT EXISTS(SELECT 1 FROM invoice_interest_claims WHERE invoice_document_id=?1 UNION ALL SELECT 1 FROM invoice_compensation_claims WHERE invoice_document_id=?1 UNION ALL SELECT 1 FROM invoice_interest_corrections WHERE invoice_document_id=?1 UNION ALL SELECT 1 FROM invoice_bad_debt_writeoffs WHERE invoice_document_id=?1)",[id],|r|r.get(0)).map_err(invalid)?;
+    let yes:bool=tx.query_row("SELECT EXISTS(SELECT 1 FROM invoice_interest_claims WHERE invoice_document_id=?1 UNION ALL SELECT 1 FROM invoice_interest_corrections WHERE invoice_document_id=?1 UNION ALL SELECT 1 FROM invoice_bad_debt_writeoffs WHERE invoice_document_id=?1)",[id],|r|r.get(0)).map_err(invalid)?;
     if yes {
         return Err(refused(
-            "interest/compensation/correction/bad-debt claims require their native evidence flow; reminder-only operation unavailable",
+            "interest/correction/bad-debt claims require their native evidence flow",
         ));
     }
     Ok(())
@@ -78,14 +78,27 @@ struct Invoice {
     due: String,
     debtor: String,
     gross: Money,
+    gross_dkk: Money,
+    currency: String,
 }
 fn invoice(tx: &Transaction<'_>, id: i64) -> Result<Invoice, Error> {
     positive(id)?;
     unsupported(tx, id)?;
-    let row:Option<(String,String,String,String,Money)>=tx.query_row("SELECT d.invoice_no,d.invoice_date,d.payload_json,a.account_no,p.booked_gross_dkk FROM documents d JOIN issued_invoice_postings p ON p.invoice_document_id=d.id JOIN journal_entries j ON j.id=p.journal_entry_id JOIN accounts a ON a.id=p.receivable_account_id WHERE d.id=?1 AND d.document_type='issued_invoice' AND d.currency='DKK' AND j.status='posted' AND j.document_id=d.id AND j.transaction_date=d.invoice_date AND j.source_bank_transaction_id IS NULL AND NOT EXISTS(SELECT 1 FROM journal_entries reversal WHERE reversal.reversal_of_entry_id=j.id)",[id],|r|Ok((r.get(0)?,r.get(1)?,r.get(2)?,r.get(3)?,legacy_money(r.get_ref(4)?).map_err(|_|rusqlite::Error::InvalidQuery)?))).optional().map_err(invalid)?;
-    let (no, date, payload, debtor, gross) =
-        row.ok_or_else(|| refused("active ledger-posted DKK issued invoice required"))?;
+    let row:Option<(String,String,String,String,Money,String)>=tx.query_row("SELECT d.invoice_no,d.invoice_date,d.payload_json,a.account_no,p.booked_gross_dkk,d.currency FROM documents d JOIN issued_invoice_postings p ON p.invoice_document_id=d.id JOIN journal_entries j ON j.id=p.journal_entry_id JOIN accounts a ON a.id=p.receivable_account_id WHERE d.id=?1 AND d.document_type='issued_invoice' AND j.status='posted' AND j.document_id=d.id AND j.transaction_date=d.invoice_date AND j.source_bank_transaction_id IS NULL AND NOT EXISTS(SELECT 1 FROM journal_entries reversal WHERE reversal.reversal_of_entry_id=j.id)",[id],|r|Ok((r.get(0)?,r.get(1)?,r.get(2)?,r.get(3)?,legacy_money(r.get_ref(4)?).map_err(|_|rusqlite::Error::InvalidQuery)?,r.get(5)?))).optional().map_err(invalid)?;
+    let (no, date, payload, debtor, gross_dkk, currency) =
+        row.ok_or_else(|| refused("active ledger-posted issued invoice required"))?;
     let p: Value = serde_json::from_str(&payload).map_err(invalid)?;
+    if p["currency"] != currency
+        || p["invoiceNumber"] != no
+        || p["issueDate"] != date
+        || crate::invoice_fx::projection(&p)?.gross != gross_dkk
+    {
+        return Err(refused(
+            "invoice frozen currency/carrying differs from immutable snapshot",
+        ));
+    }
+    Currency::parse(&currency)?;
+    let gross = rentemester_engine::sales_invoice::project(&p)?.gross;
     let due = engine::effective_due_date(&date, p["dueDate"].as_str())?;
     Date::parse(&due)?;
     Ok(Invoice {
@@ -94,6 +107,8 @@ fn invoice(tx: &Transaction<'_>, id: i64) -> Result<Invoice, Error> {
         due,
         debtor,
         gross,
+        gross_dkk,
+        currency,
     })
 }
 #[derive(Clone)]
@@ -193,6 +208,11 @@ pub struct Claims {
     pub journals: BTreeSet<i64>,
     pub balances: BTreeMap<String, Money>,
     pub registered: Money,
+    pub reminder_total: Money,
+    pub compensation_total: Money,
+    pub compensations: Vec<Value>,
+    pub pending_reminders: bool,
+    pub pending_compensation: bool,
     pub paid: Money,
     pub reminders: Vec<Value>,
     pub payments: Vec<Value>,
@@ -213,7 +233,12 @@ pub fn validated_claims(tx: &Transaction<'_>, id: i64) -> Result<Claims, Error> 
             return Err(refused("DKK reminder evidence required"));
         }
         let journal: Option<i64> = r.get(5).map_err(invalid)?;
+        Date::parse(&date)?;
+        if fee.is_negative() || fee == Money::default() {
+            return Err(refused("positive reminder amount required"));
+        }
         c.registered.add(&fee);
+        c.reminder_total.add(&fee);
         c.reminders.push(json!({"reminderId":reminder,"reminderDate":date,"feeAmount":wire(&fee)?,"note":r.get::<_,Option<String>>(4).map_err(invalid)?,"journalEntryId":journal}));
         if let Some(j) = journal {
             let posted: String = r.get(6).map_err(invalid)?;
@@ -224,7 +249,52 @@ pub fn validated_claims(tx: &Transaction<'_>, id: i64) -> Result<Claims, Error> 
             events.push((j, false, fee, posted, None));
         } else {
             c.pending = true;
+            c.pending_reminders = true;
         }
+    }
+    let mut q = tx.prepare("SELECT c.id,c.claim_date,c.amount_dkk,p.journal_entry_id,j.transaction_date FROM invoice_compensation_claims c LEFT JOIN invoice_compensation_postings p ON p.compensation_claim_id=c.id LEFT JOIN journal_entries j ON j.id=p.journal_entry_id WHERE c.invoice_document_id=?1 ORDER BY c.id").map_err(invalid)?;
+    let mut rs = q.query([id]).map_err(invalid)?;
+    while let Some(r) = rs.next().map_err(invalid)? {
+        if !c.compensations.is_empty() {
+            return Err(refused("one compensation claim per invoice required"));
+        }
+        let original = invoice(tx, id)?;
+        let claim: i64 = r.get(0).map_err(invalid)?;
+        let date: String = r.get(1).map_err(invalid)?;
+        Date::parse(&date)?;
+        if date <= original.due || date.as_str() < "2013-03-01" {
+            return Err(refused(
+                "compensation registered date is outside eligible overdue period",
+            ));
+        }
+        let amount = legacy_money(r.get_ref(2).map_err(invalid)?)?;
+        if amount.is_negative()
+            || amount == Money::default()
+            || Money::parse("310")?.subtract(&amount).is_negative()
+        {
+            return Err(refused(
+                "compensation amount outside supported frozen policy",
+            ));
+        }
+        let journal: Option<i64> = r.get(3).map_err(invalid)?;
+        c.registered.add(&amount);
+        c.compensation_total.add(&amount);
+        c.compensations.push(json!({"claimId":claim,"claimDate":date,"amountDkk":wire(&amount)?,"journalEntryId":journal}));
+        if let Some(j) = journal {
+            let posted: String = r.get(4).map_err(invalid)?;
+            if posted < date {
+                return Err(refused("compensation posting predates registered claim"));
+            }
+            active(tx, j, id, None, &posted)?;
+            events.push((j, false, amount, posted, None));
+        } else {
+            c.pending = true;
+            c.pending_compensation = true;
+        }
+    }
+    let orphan: bool = tx.query_row("SELECT EXISTS(SELECT 1 FROM invoice_compensation_postings p LEFT JOIN invoice_compensation_claims c ON c.id=p.compensation_claim_id JOIN journal_entries j ON j.id=p.journal_entry_id WHERE j.document_id=?1 AND (c.id IS NULL OR c.invoice_document_id<>?1))",[id],|r|r.get(0)).map_err(invalid)?;
+    if orphan {
+        return Err(refused("compensation posting invoice ownership differs"));
     }
     let mut q=tx.prepare("SELECT id,amount,payment_date,bank_transaction_id,journal_entry_id,currency FROM invoice_claim_payments WHERE invoice_document_id=?1 ORDER BY journal_entry_id,id").map_err(invalid)?;
     let mut rs = q.query([id]).map_err(invalid)?;
@@ -242,6 +312,14 @@ pub fn validated_claims(tx: &Transaction<'_>, id: i64) -> Result<Claims, Error> 
     events.sort_by_key(|e| e.0);
     let mut latest_claim = String::new();
     for (j, payment, amount, date, bank_id) in events {
+        if !c.journals.insert(j) {
+            return Err(refused("claim journal has duplicate owners"));
+        }
+        let owners: i64 = tx.query_row("SELECT count(*) FROM (SELECT journal_entry_id FROM invoice_reminder_postings UNION ALL SELECT journal_entry_id FROM invoice_compensation_postings UNION ALL SELECT journal_entry_id FROM invoice_claim_payments UNION ALL SELECT journal_entry_id FROM issued_invoice_postings UNION ALL SELECT journal_entry_id FROM invoice_payments UNION ALL SELECT journal_entry_id FROM invoice_refunds UNION ALL SELECT journal_entry_id FROM credit_note_postings UNION ALL SELECT journal_entry_id FROM invoice_interest_postings UNION ALL SELECT journal_entry_id FROM invoice_interest_corrections UNION ALL SELECT journal_entry_id FROM invoice_bad_debt_writeoffs UNION ALL SELECT journal_entry_id FROM payables UNION ALL SELECT journal_entry_id FROM payable_payments UNION ALL SELECT journal_entry_id FROM opening_balances) WHERE journal_entry_id=?1",[j],|r|r.get(0)).map_err(invalid)?;
+        if owners != 1 {
+            return Err(refused("claim journal has reused or missing ownership"));
+        }
+        Date::parse(&date)?;
         let effects = lines(tx, j)?;
         if !payment {
             let mut debit = Money::default();
@@ -262,13 +340,13 @@ pub fn validated_claims(tx: &Transaction<'_>, id: i64) -> Result<Claims, Error> 
                     credit.add(&e.credit);
                 } else {
                     return Err(refused(
-                        "reminder posting must debit receivable assets and credit income without other effects",
+                        "claim posting must debit receivable assets and credit income without other effects",
                     ));
                 }
             }
             if debit != amount || credit != amount {
                 return Err(refused(
-                    "reminder journal amount differs from registered fee",
+                    "claim journal amount differs from registered amount",
                 ));
             }
             latest_claim = latest_claim.max(date);
@@ -326,23 +404,25 @@ pub fn validated_claims(tx: &Transaction<'_>, id: i64) -> Result<Claims, Error> 
     Ok(c)
 }
 fn principal(tx: &Transaction<'_>, id: i64, i: &Invoice) -> Result<Money, Error> {
-    let mut paid = Money::default();
-    let mut q=tx.prepare("SELECT p.amount,p.currency,j.status,EXISTS(SELECT 1 FROM journal_entries r WHERE r.reversal_of_entry_id=j.id) FROM invoice_payments p LEFT JOIN journal_entries j ON j.id=p.journal_entry_id WHERE p.invoice_document_id=?1").map_err(invalid)?;
-    let mut rs = q.query([id]).map_err(invalid)?;
-    while let Some(r) = rs.next().map_err(invalid)? {
-        if r.get::<_, String>(1).map_err(invalid)? != "DKK"
-            || r.get::<_, String>(2).map_err(invalid)? != "posted"
-            || r.get::<_, bool>(3).map_err(invalid)?
-        {
-            return Err(refused("principal receipt evidence requires resolution"));
-        }
-        paid.add(&legacy_money(r.get_ref(0).map_err(invalid)?)?);
-    }
+    let paid = crate::invoice_fx::movements(tx, id, &i.currency, false)?;
+    let refunded = crate::invoice_fx::movements(tx, id, &i.currency, true)?;
     let mut open = i
         .gross
         .subtract(&crate::credit_note::credited(tx, id)?)
         .subtract(&paid);
-    open.add(&crate::invoice_settlement::refunded(tx, id)?);
+    open.add(&refunded);
+    let basis = |amount: &Money| {
+        if *amount == Money::default() {
+            Ok(Money::default())
+        } else {
+            crate::invoice_fx::portion(&i.gross, &i.gross_dkk, &Money::default(), amount)
+        }
+    };
+    let mut expected = i
+        .gross_dkk
+        .subtract(&crate::invoice_fx::credited_dkk(tx, id)?)
+        .subtract(&basis(&paid)?);
+    expected.add(&basis(&refunded)?);
     let debtor_id: i64 = tx
         .query_row(
             "SELECT id FROM accounts WHERE account_no=?1",
@@ -350,12 +430,19 @@ fn principal(tx: &Transaction<'_>, id: i64, i: &Invoice) -> Result<Money, Error>
             |r| r.get(0),
         )
         .map_err(invalid)?;
-    if crate::invoice_settlement::principal_carrying(tx, id, debtor_id)? != open {
+    if crate::invoice_settlement::principal_carrying(tx, id, debtor_id)? != expected {
         return Err(refused(
             "invoice principal differs from current canonical carrying; review linked journal evidence",
         ));
     }
     Ok(open)
+}
+/// Current collectible principal in original invoice currency, with frozen DKK carrying proof.
+/// Read-only: calculation does not require a writable transaction or grant mutation authority.
+pub fn principal_open(tx: &Transaction<'_>, id: i64) -> Result<(Money, String), Error> {
+    crate::journal_preview::require_current(tx)?;
+    let invoice = invoice(tx, id)?;
+    Ok((principal(tx, id, &invoice)?, invoice.currency))
 }
 pub fn required_banks(tx: &Transaction<'_>, id: i64) -> Result<Vec<i64>, Error> {
     let mut q=tx.prepare("SELECT bank_transaction_id FROM invoice_payments WHERE invoice_document_id=?1 UNION SELECT bank_transaction_id FROM invoice_refunds WHERE invoice_document_id=?1 UNION SELECT bank_transaction_id FROM invoice_claim_payments WHERE invoice_document_id=?1").map_err(invalid)?;
@@ -366,7 +453,7 @@ pub fn required_banks(tx: &Transaction<'_>, id: i64) -> Result<Vec<i64>, Error> 
 }
 /// Recheck persisted reminder workflows for period assurance without changing them.
 pub fn audit_evidence(tx: &Transaction<'_>) -> Result<Vec<Value>, Error> {
-    let mut q = tx.prepare("SELECT invoice_document_id FROM invoice_reminders UNION SELECT invoice_document_id FROM invoice_claim_payments").map_err(invalid)?;
+    let mut q = tx.prepare("SELECT invoice_document_id FROM invoice_reminders UNION SELECT invoice_document_id FROM invoice_compensation_claims UNION SELECT invoice_document_id FROM invoice_claim_payments").map_err(invalid)?;
     let invoices = q
         .query_map([], |row| row.get::<_, i64>(0))
         .map_err(invalid)?
@@ -397,6 +484,14 @@ pub fn audit_evidence(tx: &Transaction<'_>) -> Result<Vec<Value>, Error> {
                     )?;
                 }
             }
+            for claim in &claims.compensations {
+                for event in ["invoice_compensation_register", "invoice_compensation_post"] {
+                    if event.ends_with("post") && claim["journalEntryId"].is_null() {
+                        continue;
+                    }
+                    require_compensation_audit(tx, event, claim["claimId"].as_i64().unwrap())?;
+                }
+            }
             for payment in &claims.payments {
                 require_audit(
                     tx,
@@ -419,14 +514,27 @@ fn require_audit(tx: &Transaction<'_>, event: &str, id: i64) -> Result<(), Error
     }
     Ok(())
 }
+fn require_compensation_audit(tx: &Transaction<'_>, event: &str, id: i64) -> Result<(), Error> {
+    let (count, valid):(i64,i64)=tx.query_row("SELECT count(*),COALESCE(sum(actor LIKE 'user:%' AND length(trim(substr(actor,6)))>0),0) FROM audit_log WHERE event_type=?1 AND entity_type='invoice_compensation_claim' AND entity_id=?2",params![event,id.to_string()],|r|Ok((r.get(0)?,r.get(1)?))).map_err(invalid)?;
+    if count != 1 || valid != 1 {
+        return Err(refused(
+            "unique compensation workflow audit evidence required",
+        ));
+    }
+    Ok(())
+}
 pub fn read(tx: &Transaction<'_>, id: i64, as_of: &str) -> Result<Value, Error> {
     crate::journal_post::require_current(tx)?;
     let i = invoice(tx, id)?;
     let c = validated_claims(tx, id)?;
     let open = principal(tx, id, &i)?;
-    let mut claim_open = open.clone();
-    claim_open.add(&c.registered);
-    claim_open = claim_open.subtract(&c.paid);
+    let claim_open = if i.currency == "DKK" {
+        let mut total = open.clone();
+        total.add(&c.registered);
+        wire(&total.subtract(&c.paid))?
+    } else {
+        Value::Null
+    };
     let mut ledger = Money::default();
     for v in c.balances.values() {
         ledger.add(v);
@@ -436,7 +544,7 @@ pub fn read(tx: &Transaction<'_>, id: i64, as_of: &str) -> Result<Value, Error> 
     let mut q=tx.prepare("SELECT b.id,b.transaction_date,b.text,b.amount,b.reference,a.ledger_account_no,b.source_file_hash,b.transaction_hash FROM bank_transactions b JOIN bank_accounts a ON a.id=b.bank_account_id WHERE b.amount>0 AND b.currency='DKK' AND a.active=1 AND NOT EXISTS(SELECT 1 FROM journal_entries j WHERE j.source_bank_transaction_id=b.id) AND NOT EXISTS(SELECT 1 FROM bank_journal_reconciliations r WHERE r.bank_transaction_id=b.id) ORDER BY b.transaction_date,b.id").map_err(invalid)?;
     let banks=q.query_map([],|r|Ok(json!({"id":r.get::<_,i64>(0)?,"date":r.get::<_,String>(1)?,"text":r.get::<_,String>(2)?,"amount":r.get::<_,f64>(3)?,"reference":r.get::<_,Option<String>>(4)?,"bankAccountNo":r.get::<_,Option<String>>(5)?,"sourceHash":r.get::<_,Option<String>>(6)?,"transactionHash":r.get::<_,Option<String>>(7)?}))).map_err(invalid)?.collect::<Result<Vec<_>,_>>().map_err(invalid)?;
     Ok(
-        json!({"invoiceDocumentId":id,"invoiceNumber":i.no,"asOfDate":as_of,"dueDate":i.due,"originalReceivableAccountNo":i.debtor,"principalOpenBalance":wire(&open)?,"claimOpenBalance":wire(&claim_open)?,"totalReminderFees":wire(&c.registered)?,"totalClaimPayments":wire(&c.paid)?,"ledgerBackedClaimBalance":wire(&ledger)?,"pendingUnpostedReminders":c.pending,"reminders":c.reminders,"claimPayments":c.payments,"receivableBalances":c.balances.iter().map(|(a,v)|Ok(json!({"accountNo":a,"amountDkk":wire(v)?}))).collect::<Result<Vec<Value>,Error>>()?,"accounts":accounts,"incomingBankTransactions":banks,"rules":{"ruleId":engine::REGISTER_RULE,"maximumFeeAmount":100,"maximumReminders":3,"minimumDaysBetweenReminders":10},"delivery":{"available":false,"sentByThisFlow":false,"priorDeliveryStatus":"unavailable","note":"Native registration and accounting perform no email send; previous delivery is not established"},"settlementAvailable":open==Money::default()&&!c.pending&&ledger!=Money::default()}),
+        json!({"invoiceDocumentId":id,"invoiceNumber":i.no,"asOfDate":as_of,"dueDate":i.due,"originalReceivableAccountNo":i.debtor,"principalOpenBalance":wire(&open)?,"principalCurrency":i.currency,"claimCurrency":"DKK","claimOpenBalance":claim_open,"totalReminderFees":wire(&c.reminder_total)?,"totalCompensationDkk":wire(&c.compensation_total)?,"registeredClaimBalanceDkk":wire(&c.registered.subtract(&c.paid))?,"pendingUnpostedCompensation":c.pending_compensation,"compensations":c.compensations,"totalClaimPayments":wire(&c.paid)?,"ledgerBackedClaimBalance":wire(&ledger)?,"pendingUnpostedReminders":c.pending_reminders,"reminders":c.reminders,"claimPayments":c.payments,"receivableBalances":c.balances.iter().map(|(a,v)|Ok(json!({"accountNo":a,"amountDkk":wire(v)?}))).collect::<Result<Vec<Value>,Error>>()?,"accounts":accounts,"incomingBankTransactions":banks,"rules":{"ruleId":engine::REGISTER_RULE,"maximumFeeAmount":100,"maximumReminders":3,"minimumDaysBetweenReminders":10},"delivery":{"available":false,"sentByThisFlow":false,"priorDeliveryStatus":"unavailable","note":"Native registration and accounting perform no email send; previous delivery is not established"},"settlementAvailable":open==Money::default()&&!c.pending&&ledger!=Money::default()}),
     )
 }
 pub fn register(tx: &Transaction<'_>, input: &Register, actor: &str) -> Result<Value, Error> {
@@ -447,6 +555,11 @@ pub fn register(tx: &Transaction<'_>, input: &Register, actor: &str) -> Result<V
         ));
     }
     let i = invoice(tx, input.invoice_document_id)?;
+    if i.currency != "DKK" {
+        return Err(refused(
+            "DKK invoice required for reminder registration/posting",
+        ));
+    }
     let c = validated_claims(tx, input.invoice_document_id)?;
     let open = principal(tx, input.invoice_document_id, &i)?;
     let dates = c
@@ -535,6 +648,11 @@ pub fn post(tx: &Transaction<'_>, input: &Post, actor: &str, latest: Date) -> Re
     }
     positive(input.reminder_id)?;
     let i = invoice(tx, input.invoice_document_id)?;
+    if i.currency != "DKK" {
+        return Err(refused(
+            "DKK invoice required for reminder registration/posting",
+        ));
+    }
     let c = validated_claims(tx, input.invoice_document_id)?;
     let r = c
         .reminders
@@ -645,7 +763,7 @@ pub fn settle(
     if date < i.date.as_str() {
         return Err(refused("claim receipt cannot precede invoice"));
     }
-    for r in &c.reminders {
+    for r in c.reminders.iter().chain(&c.compensations) {
         let posted: Option<String> = tx
             .query_row(
                 "SELECT transaction_date FROM journal_entries WHERE id=?1",
@@ -718,6 +836,9 @@ pub fn settle(
 mod tests {
     use super::*;
     fn fixture() -> (rusqlite::Connection, i64) {
+        fixture_currency("DKK")
+    }
+    fn fixture_currency(currency: &str) -> (rusqlite::Connection, i64) {
         let mut control = rusqlite::Connection::open_in_memory().unwrap();
         let mut db = rusqlite::Connection::open_in_memory().unwrap();
         crate::fresh::initialize_empty_pair(&mut control, &mut db, "Synthetic reminder seller")
@@ -727,15 +848,21 @@ mod tests {
             .unwrap();
         tx.execute_batch("UPDATE companies SET address='Synthetic Road 1',cvr='12345678',vat_period_type='quarter';INSERT INTO accounts(account_no,name,type,normal_balance)VALUES('R','Synthetic debtor','asset','debit'),('R2','Other debtor','asset','debit'),('S','Synthetic sales','income','credit'),('F','Synthetic claim fees','income','credit'),('V','Synthetic VAT','vat','credit'),('A','Synthetic bank','asset','debit');INSERT INTO account_role_mappings(role,account_no,version,confirmed_by)VALUES('debtors','R',1,'synthetic'),('output_vat','V',1,'synthetic');INSERT INTO bank_accounts(slug,name,ledger_account_no)VALUES('reminder-synthetic','Synthetic reminder bank','A');").unwrap();
         let customer=crate::sales::create_customer(&tx,&serde_json::from_value(json!({"name":"Synthetic reminder buyer","address":"Synthetic Road 2","vatOrCvr":"DK87654321","paymentTermsDays":1})).unwrap(),"synthetic").unwrap();
-        let input=serde_json::from_value(json!({"issueDate":"2026-01-01","dueDate":"2026-01-02","customerId":customer["id"],"lines":[{"description":"Synthetic reminder service","quantity":1,"unitPriceExVat":80}]})).unwrap();
+        let input=serde_json::from_value(json!({"issueDate":"2026-01-01","dueDate":"2026-01-02","currency":currency,"fxRateToDkk":if currency=="DKK"{1.0}else{7.46},"customerId":customer["id"],"lines":[{"description":"Synthetic reminder service","quantity":1,"unitPriceExVat":80}]})).unwrap();
         let payload = crate::sales::prepare(&tx, &input, "2026-01-01T12:00:00Z", true).unwrap();
+        use sha2::{Digest, Sha256};
+        let json_hash = format!(
+            "{:x}",
+            Sha256::digest(serde_json::to_vec_pretty(&payload).unwrap())
+        );
+        let pdf_hash = format!("{:x}", Sha256::digest(b"synthetic compensation PDF"));
         let artifact = |mime| crate::sales::Artifact {
             filename: "synthetic",
             path: "synthetic",
             hash: if mime == "application/json" {
-                "synthetic-json"
+                &json_hash
             } else {
-                "synthetic-pdf"
+                &pdf_hash
             },
             mime,
         };
@@ -771,6 +898,21 @@ mod tests {
             "synthetic",
         )
         .unwrap();
+        if currency != "DKK" {
+            tx.execute("INSERT INTO bank_accounts(slug,name,ledger_account_no,currency) VALUES('synthetic-eur','Synthetic EUR bank','A','EUR')",[]).unwrap();
+            let csv = "date;text;amount;currency;reference;amount_dkk;fx_rate_to_dkk\n2026-01-05;Synthetic foreign principal;100;EUR;foreign-principal;746;7.46\n";
+            let rows = rentemester_engine::bank::parse(csv).unwrap();
+            crate::bank::import(
+                &tx,
+                csv,
+                &rows,
+                Some("synthetic-eur"),
+                "synthetic",
+                "2026-01-07T12:00:00Z",
+                "synthetic",
+            )
+            .unwrap();
+        }
         tx.commit().unwrap();
         (db, id)
     }
@@ -792,6 +934,144 @@ mod tests {
             json!({"invoiceDocumentId":id,"bankTransactionId":bank,"confirm":true}),
         )
         .unwrap()
+    }
+    fn compensation_register(tx: &Transaction<'_>, id: i64) -> Value {
+        crate::invoice_compensation::register(tx,&serde_json::from_value(json!({"invoiceDocumentId":id,"asOfDate":"2026-01-03","compensationAmountDkk":50,"confirm":true})).unwrap(),"synthetic").unwrap()
+    }
+    fn compensation_post(tx: &Transaction<'_>, id: i64) -> Value {
+        crate::invoice_compensation::post(tx,&serde_json::from_value(json!({"invoiceDocumentId":id,"receivableAccountNo":"R","compensationIncomeAccountNo":"F","confirm":true})).unwrap(),"synthetic",Date::parse("2026-01-07").unwrap()).unwrap()
+    }
+    #[test]
+    fn compensation_dkk_and_foreign_principal_then_actual_dkk_claim_receipts() {
+        for currency in ["DKK", "EUR"] {
+            let (mut db, id) = fixture_currency(currency);
+            // Principal calculation must work with a truly read-only transaction.
+            db.pragma_update(None, "query_only", true).unwrap();
+            {
+                let tx = db.transaction().unwrap();
+                let (amount, unit) = principal_open(&tx, id).unwrap();
+                assert_eq!(amount, Money::parse("100").unwrap());
+                assert_eq!(unit, currency);
+            }
+            db.pragma_update(None, "query_only", false).unwrap();
+            let tx = db
+                .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
+                .unwrap();
+            let before: i64 = tx
+                .query_row("SELECT count(*) FROM journal_entries", [], |r| r.get(0))
+                .unwrap();
+            compensation_register(&tx, id);
+            assert_eq!(
+                tx.query_row("SELECT count(*) FROM journal_entries", [], |r| r
+                    .get::<_, i64>(0))
+                    .unwrap(),
+                before
+            );
+            assert_eq!(
+                principal_open(&tx, id).unwrap().0,
+                Money::parse("100").unwrap()
+            );
+            let pending = read(&tx, id, "2026-01-07").unwrap();
+            assert_eq!(pending["pendingUnpostedCompensation"], true);
+            assert_eq!(pending["pendingUnpostedReminders"], false);
+            compensation_post(&tx, id);
+            let posted = read(&tx, id, "2026-01-07").unwrap();
+            assert_eq!(posted["principalCurrency"], currency);
+            assert_eq!(posted["claimCurrency"], "DKK");
+            assert_eq!(posted["totalReminderFees"], json!(0.0));
+            assert_eq!(posted["totalCompensationDkk"], json!(50.0));
+            assert_eq!(posted["ledgerBackedClaimBalance"], json!(50.0));
+            assert_eq!(
+                posted["claimOpenBalance"],
+                if currency == "DKK" {
+                    json!(150.0)
+                } else {
+                    Value::Null
+                }
+            );
+            let latest = Date::parse("2026-01-07").unwrap();
+            assert!(
+                settle(
+                    &tx,
+                    &settle_input(&tx, id, "reminder-part"),
+                    "synthetic",
+                    latest
+                )
+                .is_err()
+            );
+            let reference = if currency == "DKK" {
+                "reminder-principal"
+            } else {
+                "foreign-principal"
+            };
+            crate::invoice_settlement::settle(&tx,&serde_json::from_value(json!({"invoiceDocumentId":id,"bankTransactionReference":reference,"confirm":true})).unwrap(),"synthetic",latest).unwrap();
+            assert_eq!(principal_open(&tx, id).unwrap().0, Money::default());
+            let part = settle_input(&tx, id, "reminder-part");
+            settle(&tx, &part, "synthetic", latest).unwrap();
+            assert!(settle(&tx, &part, "synthetic", latest).is_err());
+            settle(
+                &tx,
+                &settle_input(&tx, id, "reminder-final"),
+                "synthetic",
+                latest,
+            )
+            .unwrap();
+            let final_report = read(&tx, id, "2026-01-07").unwrap();
+            assert_eq!(final_report["registeredClaimBalanceDkk"], json!(0.0));
+            assert_eq!(final_report["ledgerBackedClaimBalance"], json!(0.0));
+            assert_eq!(final_report["settlementAvailable"], false);
+            assert!(audit_evidence(&tx).unwrap().is_empty());
+            tx.commit().unwrap();
+            let tx = db.transaction().unwrap();
+            assert_eq!(read(&tx, id, "2026-01-07").unwrap(), final_report);
+        }
+    }
+    #[test]
+    fn compensation_tampered_amount_and_reused_journal_are_refused() {
+        let (mut db, id) = fixture();
+        let tx = db
+            .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
+            .unwrap();
+        compensation_register(&tx, id);
+        compensation_post(&tx, id);
+        let reminder = register(&tx, &reg(id), "synthetic").unwrap()["reminderId"]
+            .as_i64()
+            .unwrap();
+        let triggers:Vec<String>=tx.prepare("SELECT name FROM sqlite_master WHERE type='trigger' AND tbl_name='invoice_compensation_claims'").unwrap().query_map([],|r|r.get(0)).unwrap().collect::<Result<_,_>>().unwrap();
+        for trigger in triggers {
+            tx.execute_batch(&format!(
+                "DROP TRIGGER \"{}\"",
+                trigger.replace('"', "\"\"")
+            ))
+            .unwrap();
+        }
+        tx.execute(
+            "UPDATE invoice_compensation_claims SET amount_dkk=51 WHERE invoice_document_id=?1",
+            [id],
+        )
+        .unwrap();
+        assert!(validated_claims(&tx, id).is_err());
+        tx.execute(
+            "UPDATE invoice_compensation_claims SET amount_dkk=50 WHERE invoice_document_id=?1",
+            [id],
+        )
+        .unwrap();
+        let claim_journal:i64=tx.query_row("SELECT p.journal_entry_id FROM invoice_compensation_postings p JOIN invoice_compensation_claims c ON c.id=p.compensation_claim_id WHERE c.invoice_document_id=?1",[id],|r|r.get(0)).unwrap();
+        // A second family must never give a claim journal a second owner/exclusion.
+        let triggers:Vec<String>=tx.prepare("SELECT name FROM sqlite_master WHERE type='trigger' AND tbl_name='invoice_reminder_postings'").unwrap().query_map([],|r|r.get(0)).unwrap().collect::<Result<_,_>>().unwrap();
+        for trigger in triggers {
+            tx.execute_batch(&format!(
+                "DROP TRIGGER \"{}\"",
+                trigger.replace('"', "\"\"")
+            ))
+            .unwrap();
+        }
+        tx.execute(
+            "INSERT INTO invoice_reminder_postings(reminder_id,journal_entry_id)VALUES(?1,?2)",
+            params![reminder, claim_journal],
+        )
+        .unwrap();
+        assert!(validated_claims(&tx, id).is_err());
     }
     #[test]
     fn complete_register_separate_post_principal_then_partial_claim_receipts() {
