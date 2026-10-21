@@ -127,7 +127,8 @@ async function restored(){step='source-free-normal-new-owner';ownerPage=await ne
 async function restoredReopen(){step='target-normal-mfa-reopen';await ownerPage.context().clearCookies();await login(ownerPage,freshOwner);await unchanged();return{restoredTargetReopenQualified:true};}
 let clientPhase=0;
 async function clientReads(){step='canonical-http-cli-mcp-dated-reports';const before=await snapshot(),file=join(realpathSync(work),`portfolio-client-${++clientPhase}.cookie`);writeFileSync(file,(await ownerPage.context().cookies(base)).map(c=>`${c.name}=${c.value}`).join('; '),{mode:0o600,flag:'wx'});const common=['--server',base,'--cookie-file',file,'--allow-loopback-http'];try{for(const [command,args,flags,canonical]of [['portfolio',{asOf:early},['--as-of',early],await portfolio(ownerPage,early)],['portfolio',{asOf:late},['--as-of',late],await portfolio(ownerPage,late)],...await Promise.all(slugs.map(async slug=>['cashflow',{company:slug,year:slug===slugs[0]?'2025':'2025/26'},['--company',slug,'--year',slug===slugs[0]?'2025':'2025/26'],await flow(slug)]))]){const cli=spawnSync(join(work,'rentemester-rust'),['remote',command,...common,...flags],{encoding:'utf8',timeout:45000,maxBuffer:32*1024*1024});let c;try{c=JSON.parse(cli.stdout);}catch{}detail={command,args,client:'cli',status:cli.status,error:cli.error?.code,canonical,response:c};proof(!cli.error&&cli.status===0&&c?.ok===true&&isDeepStrictEqual(c.data,canonical),'full CLI canonical portfolio/cashflow equality');const input=[{jsonrpc:'2.0',id:1,method:'initialize',params:{protocolVersion:'2025-11-25',capabilities:{},clientInfo:{name:'synthetic-portfolio-cashflow',version:'1'}}},{jsonrpc:'2.0',method:'notifications/initialized'},{jsonrpc:'2.0',id:2,method:'tools/call',params:{name:command,arguments:args}}].map(JSON.stringify).join('\n')+'\n';const rpc=spawnSync(join(work,'rentemester-mcp'),common,{input,encoding:'utf8',timeout:45000,maxBuffer:32*1024*1024});let m;try{m=rpc.stdout.trim().split('\n').map(JSON.parse).find(v=>v.id===2)?.result;}catch{}detail={command,args,client:'mcp',status:rpc.status,error:rpc.error?.code,canonical,response:m};proof(!rpc.error&&rpc.status===0&&!m?.isError&&m?.structuredContent?.ok===true&&isDeepStrictEqual(m.structuredContent.data,canonical),'full MCP canonical portfolio/cashflow equality');}need(isDeepStrictEqual(await snapshot(),before),'read clients no financial or source mutation');return{httpCliMcpCanonicalEquality:true,queries:4,readOnly:true};}finally{unlinkSync(file);}}
-for await(const line of createInterface({input:process.stdin,crlfDelay:Infinity})){try{const action=JSON.parse(line);let value;if(action==='authenticate')value=await authenticate();else if(action==='setup')value=await setup();else if(action==='sources')value=await sources();else if(action==='initial-reports')value=await initialReports();else if(action==='complete-reports')value=await completeReports();else if(action==='rights')value=await rights();else if(action==='freeze')value=await freeze();else if(action==='reopen')value=await reopen();else if(action==='restored')value=await restored();else if(action==='restored-reopen')value=await restoredReopen();else if(action.startsWith('client-reads'))value=await clientReads();else if(action.startsWith('archive-'))value=await archive(action.slice(8));else if(action==='finish'){await browser?.close();emit({ok:true,value:{finished:true}});break;}else throw Error('unknown phase');emit({ok:true,value});}catch(error){let pageState;try{pageState=await Promise.race([diagnosticPage?.evaluate(()=>{const authentication=Boolean(document.querySelector('input[type=password]'))||/Recovery codes|Opsætningsnøgle/.test(document.body.innerText);return{path:location.pathname,authentication,headings:[...document.querySelectorAll('h1,h2,h3')].map(n=>n.textContent),body:authentication?'[authentication details omitted]':document.body.innerText.slice(0,12000)};}),new Promise(resolve=>setTimeout(()=>resolve({unavailable:true}),2000))]);}catch{}if(ownerId&&diagnosticPage&&pageState?.authentication===false)await diagnosticPage.screenshot({path:process.env.RM_PORTFOLIO76_SCREENSHOT,fullPage:true,timeout:2000}).catch(()=>{});emit({ok:false,step,detail,pageState,errorType:error?.name,errorMessage:String(error?.message).slice(0,1200),trace});await browser?.close().catch(()=>{});process.exitCode=1;break;}}
+async function dashboardReads(action){step=action;const before=await snapshot();const {checkNativeDashboardArtifact}=await import(process.env.RM_DASHBOARD129_HELPER);const result=await checkNativeDashboardArtifact(ownerPage,memberPage,base,work,action);need(isDeepStrictEqual(before,await snapshot()),'Dashboard HTML reads preserve canonical books and sources');return{...result,readOnly:true};}
+for await(const line of createInterface({input:process.stdin,crlfDelay:Infinity})){try{const action=JSON.parse(line);let value;if(action==='authenticate')value=await authenticate();else if(action==='setup')value=await setup();else if(action==='sources')value=await sources();else if(action==='initial-reports')value=await initialReports();else if(action==='complete-reports')value=await completeReports();else if(action==='rights')value=await rights();else if(action==='freeze')value=await freeze();else if(action==='reopen')value=await reopen();else if(action==='restored')value=await restored();else if(action==='restored-reopen')value=await restoredReopen();else if(action.startsWith('dashboard-reads'))value=await dashboardReads(action);else if(action.startsWith('client-reads'))value=await clientReads();else if(action.startsWith('archive-'))value=await archive(action.slice(8));else if(action==='finish'){await browser?.close();emit({ok:true,value:{finished:true}});break;}else throw Error('unknown phase');emit({ok:true,value});}catch(error){let pageState;try{pageState=await Promise.race([diagnosticPage?.evaluate(()=>{const authentication=Boolean(document.querySelector('input[type=password]'))||/Recovery codes|Opsætningsnøgle/.test(document.body.innerText);return{path:location.pathname,authentication,headings:[...document.querySelectorAll('h1,h2,h3')].map(n=>n.textContent),body:authentication?'[authentication details omitted]':document.body.innerText.slice(0,12000)};}),new Promise(resolve=>setTimeout(()=>resolve({unavailable:true}),2000))]);}catch{}if(ownerId&&diagnosticPage&&pageState?.authentication===false)await diagnosticPage.screenshot({path:process.env.RM_PORTFOLIO76_SCREENSHOT,fullPage:true,timeout:2000}).catch(()=>{});emit({ok:false,step,detail,pageState,errorType:error?.name,errorMessage:String(error?.message).slice(0,1200),trace});await browser?.close().catch(()=>{});process.exitCode=1;break;}}
 '''
 
 def digest(path):
@@ -144,6 +145,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     for option in ['server-binary', 'web-dir', 'cli-binary', 'mcp-binary', 'evidence']:
         parser.add_argument('--' + option, required=True, type=Path)
+    parser.add_argument('--dashboard-artifact', action='store_true', help='Include standalone HTML HTTP/headless browser/CLI/MCP reads and normal restart using the existing R32 books')
     args = parser.parse_args()
     if args.evidence.exists() or args.evidence.with_suffix('.png').exists():
         parser.error('New evidence and screenshot paths required')
@@ -164,6 +166,11 @@ def main():
         raise RuntimeError('Distinct owned ports required')
     origin = f'http://127.0.0.1:{backend_port}'
     report = {'status':'running','sourceRevision':subprocess.check_output(['git','rev-parse','HEAD'],cwd=REPO,text=True).strip(),'runnerSha256':digest(Path(__file__)),'browserHelperSha256':hashlib.sha256(BROWSER.encode()).hexdigest(),'canonicalOrigin':origin,'noOfflineIdentitySeeds':True,'ordinaryMacOsUser':True,'ownedProfile':str(work),'externalMailDelivered':False,'workflow':'explicit_portfolio_cashflow_overview','installedNativeQualified':False,'portfolioCashflowActualQualified':False,'sourceFreeRestoreQualified':False,'screenshot':str(args.evidence.with_suffix('.png')),'actions':[],'results':{}}
+    if args.dashboard_artifact:
+        report['dashboardArtifactHelperSha256'] = digest(REPO / 'scripts/rust/check-native-dashboard-artifact.ts')
+        report['dashboardArtifactQualified'] = False
+        report['dashboardArtifactRestartQualified'] = False
+        report['dashboardArtifactSourceFreeRestoreQualified'] = False
     args.evidence.parent.mkdir(parents=True, exist_ok=True)
     with args.evidence.open('x') as evidence:
         def save():
@@ -296,6 +303,8 @@ def main():
             save()
 
         def phase(action, timeout=300):
+            if args.dashboard_artifact and digest(REPO / 'scripts/rust/check-native-dashboard-artifact.ts') != report['dashboardArtifactHelperSha256']:
+                raise RuntimeError('Pinned dashboard HTML proof helper changed')
             progress('browser:' + action)
             controller.stdin.write(json.dumps(action) + '\n')
             controller.stdin.flush()
@@ -466,7 +475,7 @@ def main():
             start(create=True)
             script = work / 'browser.mjs'
             script.write_text(BROWSER)
-            controller = subprocess.Popen(['/opt/homebrew/bin/bun', str(script)], cwd=REPO, env={**os.environ, 'RM_PORTFOLIO76_BASE': origin, 'RM_PORTFOLIO76_WORK': str(work), 'RM_PORTFOLIO76_SCREENSHOT': str(args.evidence.with_suffix('.png')), 'RM_PORTFOLIO76_PLAYWRIGHT': str((REPO / 'node_modules/@playwright/test/index.mjs').resolve(strict=True))}, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True, bufsize=1, start_new_session=True)
+            controller = subprocess.Popen(['/opt/homebrew/bin/bun', str(script)], cwd=REPO, env={**os.environ, 'RM_DASHBOARD129_HELPER': str(REPO / 'scripts/rust/check-native-dashboard-artifact.ts'), 'RM_PORTFOLIO76_BASE': origin, 'RM_PORTFOLIO76_WORK': str(work), 'RM_PORTFOLIO76_SCREENSHOT': str(args.evidence.with_suffix('.png')), 'RM_PORTFOLIO76_PLAYWRIGHT': str((REPO / 'node_modules/@playwright/test/index.mjs').resolve(strict=True))}, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True, bufsize=1, start_new_session=True)
             report['browserControllerPid'] = controller.pid
             phase('authenticate')
             phase('setup')
@@ -477,6 +486,8 @@ def main():
             phase('freeze')
             phase('client-reads-source')
             phase('archive-source')
+            if args.dashboard_artifact:
+                phase('dashboard-reads-source')
             original = inspect_snapshot('source', work/'trusted.pub')
             stop()
             config.pop('firstOwner')
@@ -484,6 +495,13 @@ def main():
             start()
             phase('reopen')
             phase('client-reads-restarted')
+            if args.dashboard_artifact:
+                phase('dashboard-reads-restarted')
+                first = report['results']['dashboard-reads-source']
+                reopened = report['results']['dashboard-reads-restarted']
+                if not first.get('qualified') or not reopened.get('qualified') or not first.get('readOnly') or not reopened.get('readOnly') or first['normalizedHtmlSha256'] != reopened['normalizedHtmlSha256']:
+                    raise RuntimeError('Dashboard HTML exact normalized restart state differs')
+                report.update(dashboardArtifactQualified=True, dashboardArtifactRestartQualified=True)
             phase('archive-restarted')
             preserved(original, inspect_snapshot('restarted', work/'trusted.pub'))
             stop()
