@@ -198,8 +198,8 @@ def main():
     parser.add_argument('--synthetic-import', action='store_true', help='Original synthetic CSV through shared chart/opening engine, nonVAT shifted-year owner, clients/expense/report/backup/restart')
     parser.add_argument('--imported-portfolio', action='store_true', help='After Dinero import, issue/post a native invoice and verify explicit native-only portfolio through web/HTTP/CLI/MCP and restart')
     args = parser.parse_args()
-    if args.imported_portfolio and not args.dinero_import:
-        parser.error('--imported-portfolio requires --dinero-import')
+    if args.imported_portfolio and (not args.backup_lock or args.dinero_import or args.synthetic_import or args.invoice_bad_debt or args.invoice_interest or args.invoice_compensation or args.audit_log or args.audit_verify or args.remote_backup or args.backup_recovery or args.backup_destinations or args.service_purchase):
+        parser.error('--imported-portfolio requires --backup-lock and excludes other proof extensions')
     if args.synthetic_import and (not args.backup_lock or args.dinero_import or args.invoice_bad_debt or args.invoice_interest or args.invoice_compensation or args.audit_log or args.audit_verify or args.remote_backup or args.backup_recovery or args.backup_destinations or args.service_purchase):
         parser.error('--synthetic-import requires --backup-lock and excludes other proof extensions')
     if args.dinero_import and (not args.backup_lock or args.invoice_bad_debt or args.invoice_interest or args.invoice_compensation or args.audit_log or args.audit_verify or args.remote_backup or args.backup_recovery or args.backup_destinations or args.service_purchase):

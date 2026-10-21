@@ -5,7 +5,7 @@ import { join } from 'node:path';
 import { isDeepStrictEqual } from 'node:util';
 import type { Page } from '@playwright/test';
 
-/** Runs only after the real Dinero import proof has completed its own restart. */
+/** Focused real source import → native invoice → portfolio; prior import refusal/replay evidence is retained separately. */
 export function createImportedPortfolioProof(page: Page, base: string, work: string, prior: any) {
   const company = prior?.inboxUnlocked?.target;
   const need = (v: unknown, m: string) => { if (!v) throw Error(m); };
@@ -15,15 +15,17 @@ export function createImportedPortfolioProof(page: Page, base: string, work: str
   const early = '2025-03-21', late = '2025-04-20';
   const hash = (v: Buffer | string) => createHash('sha256').update(v).digest('hex');
   const fingerprint = (v: unknown) => hash(JSON.stringify(v));
-  let started = false, stable: any, report: any, issued: any;
+  let started = false, stable: any, report: any, issued: any, sourceReceipt: any;
+  const zip = readFileSync(new URL('../../crates/rentemester-storage/src/dinero_import/fixtures/source126-deflated.zip', import.meta.url));
+  need(hash(zip) === 'aadd8ceb22d3daf40928d1e2930d3e54a53119677a7060fdca6b31ab8c13e265', 'Exact accepted synthetic ZIP source');
   const originals = new Map<string, string>();
   async function get(path: string) {
     const r = await page.request.get(base + path);
     need(r.ok(), `Imported portfolio GET ${path} HTTP${r.status()}`);
     return r.json();
   }
-  async function post(resource: string, data: any) {
-    const r = await page.request.post(base + prefix + resource, { headers: { origin: base }, data });
+  async function post(resource: string, data: any, method = 'POST') {
+    const r = await page.request.fetch(base + prefix + resource, { method, headers: { origin: base }, data });
     const value = await r.json();
     need(r.ok() && value.ok === true, `Imported portfolio POST ${resource} HTTP${r.status()}: ${JSON.stringify(value)}`);
     return value;
@@ -85,6 +87,10 @@ export function createImportedPortfolioProof(page: Page, base: string, work: str
     await card.getByText(/importerede tilgodehavender/i).first().waitFor();
     await page.screenshot({ path: process.env.RM_SCANNER_SCREENSHOT!, fullPage: true });
   }
+  async function sourceOriginal() {
+    const r = await page.request.get(base + prefix + 'imports/dinero/' + sourceReceipt.attemptId + '/original');
+    need(r.ok() && r.headers()['content-type']?.split(';')[0] === 'application/zip' && (await r.body()).equals(zip), 'Exact retained source ZIP before/after restart');
+  }
   async function originalFiles() {
     for (const path of ['documents/' + issued.documentId + '/file', 'invoices/' + issued.documentId + '/pdf']) {
       const r = await page.request.get(base + prefix + path);
@@ -103,11 +109,21 @@ export function createImportedPortfolioProof(page: Page, base: string, work: str
   return {
     async run() {
       need(!started, 'Imported portfolio executes once'); started = true;
+      const fresh = await snapshot();
+      need(fresh.journal.journal.entries.length === 0 && fresh.documents.documents.documents.length === 1, 'Fresh source target before real import');
+      const source = { fileName: 'synthetic-imported-portfolio128.zip', contentBase64: zip.toString('base64') };
+      const plan = (await post('imports/dinero/plan', source)).dineroImport;
+      need(plan.status === 'ready' && plan.counts.historicalVouchers === 3 && plan.counts.importedInvoices === 2 && plan.controls.length === 1 && plan.controls[0].reconciles === true, 'Reviewed real source plan and debtor control');
+      need(isDeepStrictEqual(await snapshot(), fresh), 'Source planning has no effects');
+      sourceReceipt = (await post('imports/dinero/apply', { ...source, planHash: plan.planHash, idempotencyKey: 'synthetic-imported-portfolio128-source', confirm: true })).dineroImport;
+      need(Number.isSafeInteger(sourceReceipt.attemptId) && sourceReceipt.attemptId > 0, 'Real import accepted');
+      await sourceOriginal();
       const importedBefore = (await snapshot()).imported;
       need(importedBefore.importedReceivables.totalOpen === 24500 && importedBefore.importedReceivables.count === 2, 'Exact historical schedule before native issuance');
       const before = await snapshot();
       await projection(late, 0, 0, 0);
       need(isDeepStrictEqual(await snapshot(), before), 'Imported-only report reads have no ledger effects');
+      await post('company', { cvr: '87654321', address: 'Synthetic Native Portfolio Street', postalCode: '1000', city: 'Synthetic City', vatPeriodType: 'quarter', paymentTermsDays: 14 }, 'PATCH');
       await post('accounts', { accountNo: '4200', name: 'Synthetic native output VAT', type: 'vat', normalBalance: 'credit' });
       for (const [role, accountNo] of [['debtors', '5520'], ['output_vat', '4200']]) await post('account-roles', { role, accountNo, confirm: true });
       const customer = (await post('customers', { name: 'Synthetic Native Portfolio Buyer', address: 'Synthetic Buyer Street', vatOrCvr: 'DK11223344', paymentTermsDays: 14, defaultCurrency: 'DKK' })).customer;
@@ -118,19 +134,19 @@ export function createImportedPortfolioProof(page: Page, base: string, work: str
       stable = await snapshot();
       need(isDeepStrictEqual(stable.imported, importedBefore), 'Native invoice cannot alter historical imported schedule');
       const zero = await projection(early, 0, 0, 0), current = await projection(late, 1, 125, 1);
-      await ui(current); await originalFiles(); const fullAudit = await audit();
+      await ui(current); await originalFiles(); await sourceOriginal(); const fullAudit = await audit();
       need(isDeepStrictEqual(await snapshot(), stable), 'All portfolio and original/audit reads preserve company books');
       const r = await page.request.post(base + '/api/workspace/backup', { headers: { origin: base }, data: { confirm: true } });
       need(r.ok() && r.headers()['content-type']?.split(';')[0] === 'application/vnd.rentemester.native-backup+json', 'Signed combined import/native backup');
       const bytes = await r.body(); writeFileSync(join(work, 'imported-portfolio.native-backup.json'), bytes, { mode: 0o600, flag: 'wx' });
-      report = { qualified: true, company, accountingFingerprint: fingerprint(stable), historicalTotal: 24500, nativeTotal: 125, zero, current, fullAudit, originals: Object.fromEntries(originals), signedBackup: { sha256: hash(bytes), bytes: bytes.length }, installedNativeQualified: false, sourceFreeRestoreQualified: false };
+      report = { qualified: true, company, sourceReceipt, rawZipSha256: hash(zip), accountingFingerprint: fingerprint(stable), historicalTotal: 24500, nativeTotal: 125, zero, current, fullAudit, originals: Object.fromEntries(originals), signedBackup: { sha256: hash(bytes), bytes: bytes.length }, installedNativeQualified: false, sourceFreeRestoreQualified: false };
       return report;
     },
     async reopen() {
       need(report, 'Completed native portfolio flow');
       need(isDeepStrictEqual(await snapshot(), stable), 'Exact normal MFA restart state');
       need(isDeepStrictEqual(await projection(early, 0, 0, 0), report.zero) && isDeepStrictEqual(await projection(late, 1, 125, 1), report.current), 'Exact dated projections after restart');
-      await originalFiles(); await audit();
+      await originalFiles(); await sourceOriginal(); await audit();
       need(isDeepStrictEqual(await snapshot(), stable), 'Restart reports preserve financial state');
       return { qualified: true, exactNormalMfaRestartState: true, accountingFingerprint: fingerprint(stable), exactOriginalsAfterRestart: true };
     },
