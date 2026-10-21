@@ -133,3 +133,5 @@ pub mod backup_remote;
 pub mod backup_governance;
 
 pub mod backup_registration;
+
+pub mod audit_log;
