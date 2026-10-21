@@ -197,7 +197,10 @@ def main():
     parser.add_argument('--dinero-import', action='store_true', help='Reviewed latest-year Dinero import and imported receivables through web/CLI/MCP, exact original, full audit and fresh MFA restart')
     parser.add_argument('--synthetic-import', action='store_true', help='Original synthetic CSV through shared chart/opening engine, nonVAT shifted-year owner, clients/expense/report/backup/restart')
     parser.add_argument('--imported-portfolio', action='store_true', help='After Dinero import, issue/post a native invoice and verify explicit native-only portfolio through web/HTTP/CLI/MCP and restart')
+    parser.add_argument('--journal-history', action='store_true', help='Standalone original journal CLI/MCP headers/date/status/page, ordinary MFA/read refusal/noeffects and restart')
     args = parser.parse_args()
+    if args.journal_history and any(value for key, value in vars(args).items() if isinstance(value, bool) and key != 'journal_history'):
+        parser.error('--journal-history is a standalone proof and excludes other extensions')
     if args.imported_portfolio and (not args.backup_lock or args.dinero_import or args.synthetic_import or args.invoice_bad_debt or args.invoice_interest or args.invoice_compensation or args.audit_log or args.audit_verify or args.remote_backup or args.backup_recovery or args.backup_destinations or args.service_purchase):
         parser.error('--imported-portfolio requires --backup-lock and excludes other proof extensions')
     if args.synthetic_import and (not args.backup_lock or args.dinero_import or args.invoice_bad_debt or args.invoice_interest or args.invoice_compensation or args.audit_log or args.audit_verify or args.remote_backup or args.backup_recovery or args.backup_destinations or args.service_purchase):
@@ -638,15 +641,53 @@ def main():
                 (work / 'drive-trace.json').write_text('[]')
                 config['backupDestinations'] = [{'id':'synthetic-drive','label':'Synthetic Drive fixture','kind':'google-drive','directory':str(work/'backup-destination'),'nonRelatedParty':False,'inEeaOrEu':False,'country':'DK','meetsRecognisedStandards':False,'attestedBy':'Synthetic operator','attestedAt':'2026-01-01T00:00:00Z'}]
                 config['backupRemoteVerification'] = {'provider':'google-drive','url':f'https://127.0.0.1:{mail_port}/drive/v3','bearerToken':drive_token,'trustedCaFile':str(ca),'destinations':[{'destinationId':'synthetic-drive','folderId':'synthetic-drive-folder'}]}
-            if not args.service_purchase and not args.backup_lock:
+            if not args.service_purchase and not args.backup_lock and not args.journal_history:
                 invalid_config_checks()
             write_config()
             start(create=True)
             script = work / 'browser.mjs'
             script.write_text(BROWSER)
-            controller = subprocess.Popen(['/opt/homebrew/bin/bun', str(script)], cwd=REPO, env={**os.environ, 'RM_IMPORTED_PORTFOLIO_HELPER': str(REPO / 'scripts/rust/check-native-imported-portfolio.ts'), 'RM_SYNTHETIC_IMPORT_HELPER': str(REPO / 'scripts/rust/check-native-synthetic-import.ts'), 'RM_DINERO_IMPORT_HELPER': str(REPO / 'scripts/rust/check-native-dinero-import.ts'), 'RM_INVOICE_BAD_DEBT_HELPER': str(REPO / 'scripts/rust/check-native-invoice-bad-debt.ts'), 'RM_INVOICE_INTEREST_HELPER': str(REPO / 'scripts/rust/check-native-invoice-interest.ts'), 'RM_INVOICE_COMPENSATION_HELPER': str(REPO / 'scripts/rust/check-native-invoice-compensation.ts'), 'RM_NATIVE_BACKUP_DESTINATION_PROOF':'1' if args.backup_destinations else '0', 'RM_NATIVE_REMOTE_BACKUP_PROOF':'1' if args.remote_backup else '0', 'RM_AUDIT_VERIFY_HELPER': str(REPO / 'scripts/rust/check-native-audit-verify.ts'), 'RM_AUDIT_HELPER': str(REPO / 'scripts/rust/check-native-audit-log.ts'), 'RM_BACKUP_RECOVERY_HELPER': str(REPO / 'scripts/rust/check-native-backup-recovery.ts'), 'RM_SERVICE_PURCHASE_HELPER': str(REPO / ('scripts/rust/check-native-backup-lock.ts' if args.backup_lock else 'scripts/rust/check-native-service-purchase.ts')), 'RM_SCANNER_PROOF_FACTORY': 'createBackupLockProof' if args.backup_lock else 'createServicePurchaseProof', 'RM_SCANNER_BASE': origin, 'RM_SCANNER_WORK': str(work), 'RM_SCANNER_SCREENSHOT': str(args.evidence.with_suffix('.png')), 'RM_SCANNER_PLAYWRIGHT': str((REPO / 'node_modules/@playwright/test/index.mjs').resolve(strict=True))}, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True, bufsize=1, start_new_session=True)
+            controller = subprocess.Popen(['/opt/homebrew/bin/bun', str(script)], cwd=REPO, env={**os.environ, 'RM_IMPORTED_PORTFOLIO_HELPER': str(REPO / 'scripts/rust/check-native-imported-portfolio.ts'), 'RM_SYNTHETIC_IMPORT_HELPER': str(REPO / 'scripts/rust/check-native-synthetic-import.ts'), 'RM_DINERO_IMPORT_HELPER': str(REPO / 'scripts/rust/check-native-dinero-import.ts'), 'RM_INVOICE_BAD_DEBT_HELPER': str(REPO / 'scripts/rust/check-native-invoice-bad-debt.ts'), 'RM_INVOICE_INTEREST_HELPER': str(REPO / 'scripts/rust/check-native-invoice-interest.ts'), 'RM_INVOICE_COMPENSATION_HELPER': str(REPO / 'scripts/rust/check-native-invoice-compensation.ts'), 'RM_NATIVE_BACKUP_DESTINATION_PROOF':'1' if args.backup_destinations else '0', 'RM_NATIVE_REMOTE_BACKUP_PROOF':'1' if args.remote_backup else '0', 'RM_AUDIT_VERIFY_HELPER': str(REPO / 'scripts/rust/check-native-audit-verify.ts'), 'RM_AUDIT_HELPER': str(REPO / 'scripts/rust/check-native-audit-log.ts'), 'RM_BACKUP_RECOVERY_HELPER': str(REPO / 'scripts/rust/check-native-backup-recovery.ts'), 'RM_SERVICE_PURCHASE_HELPER': str(REPO / ('scripts/rust/check-native-journal-history.ts' if args.journal_history else 'scripts/rust/check-native-backup-lock.ts' if args.backup_lock else 'scripts/rust/check-native-service-purchase.ts')), 'RM_SCANNER_PROOF_FACTORY': 'createJournalHistoryProof' if args.journal_history else 'createBackupLockProof' if args.backup_lock else 'createServicePurchaseProof', 'RM_SCANNER_BASE': origin, 'RM_SCANNER_WORK': str(work), 'RM_SCANNER_SCREENSHOT': str(args.evidence.with_suffix('.png')), 'RM_SCANNER_PLAYWRIGHT': str((REPO / 'node_modules/@playwright/test/index.mjs').resolve(strict=True))}, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True, bufsize=1, start_new_session=True)
             report['browserControllerPid'] = controller.pid
             phase('authenticate')
+            if args.journal_history:
+                helper = REPO / 'scripts/rust/check-native-journal-history.ts'
+                report['journalHistoryHelperSha256'] = digest(helper)
+                phase('service-run')
+                if digest(helper) != report['journalHistoryHelperSha256']:
+                    raise RuntimeError('Journal history helper changed during execution')
+                stop(); config.pop('firstOwner'); write_config(); start()
+                phase('service-reopen')
+                actual, reopened = report['results']['service-run'], report['results']['service-reopen']
+                if not actual.get('qualified') or not reopened.get('qualified') or not reopened.get('exactNormalMfaRestartState') or actual['accountingFingerprint'] != reopened['accountingFingerprint']:
+                    raise RuntimeError('Journal history exact ordinary-MFA restart not qualified')
+                stop()
+                ledger = work / 'workspace/synthetic/data/ledger.sqlite'
+                if not owned() or ledger.is_symlink() or not ledger.is_file():
+                    raise RuntimeError('Owned journal history ledger missing')
+                db = sqlite3.connect(ledger.as_uri()+'?mode=ro', uri=True)
+                try:
+                    db.execute('PRAGMA query_only=ON')
+                    counts = {table:db.execute('SELECT COUNT(*) FROM '+table).fetchone()[0] for table in ['documents','bank_transactions','journal_entries','journal_lines']}
+                    if counts != {'documents':0,'bank_transactions':0,'journal_entries':3,'journal_lines':6}:
+                        raise RuntimeError('Journal history independent terminal effects differ')
+                    rows = db.execute('SELECT id,entry_no,transaction_date,status,reversal_of_entry_id FROM journal_entries ORDER BY id DESC').fetchall()
+                    if [row[3] for row in rows] != ['reversed','posted','posted'] or rows[0][4] != rows[2][0] or rows[1][4] is not None or rows[2][4] is not None:
+                        raise RuntimeError('Journal history stored correction status/link differs')
+                    report['terminalSql'] = {'counts':counts,'headers':rows,'journalActors':db.execute('SELECT created_by,created_by_program FROM journal_entries ORDER BY id').fetchall()}
+                finally:
+                    db.close()
+                if digest(helper) != report['journalHistoryHelperSha256'] or any(digest(path) != report['artifacts'][name] or digest(getattr(args,name)) != report['artifacts'][name] for name,path in pinned.items()):
+                    raise RuntimeError('Journal history pinned helper or binaries changed')
+                source_web = {str(path.relative_to(args.web_dir)):digest(path) for path in sorted(args.web_dir.rglob('*')) if path.is_file()}
+                if source_web != report['webFiles']:
+                    raise RuntimeError('Journal history web artifacts changed')
+                phase('finish',20); controller.wait(timeout=20)
+                if controller.returncode != 0:
+                    raise RuntimeError('Journal history browser controller failed')
+                report.update(status='passed',currentAction='complete',workflow='original_journal_history_read_parity',journalHistoryQualified=True,journalHistoryRestartQualified=True,installedNativeQualified=False,sourceFreeRestoreQualified=False)
+                save()
+                return
             if args.backup_lock:
                 report['workflow'] = 'financial_backup_lock_qualified_artifact_unlock'
                 report['backupLockHelperSha256'] = digest(REPO / 'scripts/rust/check-native-backup-lock.ts')

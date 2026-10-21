@@ -11,6 +11,7 @@ mod archive_import;
 mod dinero_import;
 mod opening_balance;
 mod archive_reports;
+mod journal_history;
 mod dashboard_artifact;
 mod cfo_analytics;
 mod portfolio_cashflow;
@@ -461,6 +462,7 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
         .route("/api/companies/{slug}/invoices/interest/post-correction", post(invoice_interest::handle))
         .route("/api/companies/{slug}/invoices/bad-debt/write-off", post(invoice_bad_debt::handle))
         .route("/api/companies/{slug}/journal", get(archive_reports::read))
+        .route("/api/companies/{slug}/journal/entries", get(journal_history::handle))
         .route("/api/companies/{slug}/trial-balance", get(archive_reports::read))
         .route("/api/companies/{slug}/income-statement", get(archive_reports::read))
         .route("/api/companies/{slug}/balance", get(archive_reports::read))
