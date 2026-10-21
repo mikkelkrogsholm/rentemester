@@ -299,6 +299,72 @@ fn archive(db: &Connection, e: &Attestation) -> Result<(), Error> {
     }
     Ok(())
 }
+fn chart_reconciliation(db: &Connection, e: &Attestation) -> Result<(), Error> {
+    let Some(plan) = &e.binding.chart_plan else {
+        // Earlier accepted contracts did not retain a reviewed chart delta.
+        if !e.receipt["chartReconciliation"].is_null() {
+            return Err(refused("chart receipt has no bound review"));
+        }
+        return Ok(());
+    };
+    let chart = e.binding.parsed["chart"]
+        .as_array()
+        .ok_or_else(|| refused("source chart unavailable"))?;
+    let sources = chart
+        .iter()
+        .map(|a| {
+            Ok(source_chart::SourceAccount {
+                account_no: a["accountNo"]
+                    .as_str()
+                    .ok_or_else(|| refused("source account unavailable"))?
+                    .into(),
+                name: a["name"]
+                    .as_str()
+                    .ok_or_else(|| refused("source name unavailable"))?
+                    .into(),
+                kind: Some(
+                    a["kind"]
+                        .as_str()
+                        .ok_or_else(|| refused("source classification unavailable"))?
+                        .into(),
+                ),
+                normal_balance: Some(
+                    a["normalBalance"]
+                        .as_str()
+                        .ok_or_else(|| refused("source normal balance unavailable"))?
+                        .into(),
+                ),
+                default_vat_code: Some(match &a["defaultVatCode"] {
+                    Value::Null => None,
+                    Value::String(s) => Some(s.clone()),
+                    _ => return Err(refused("source VAT unavailable")),
+                }),
+            })
+        })
+        .collect::<Result<Vec<_>, Error>>()?;
+    let rows = e.binding.context["accounts"]
+        .as_array()
+        .ok_or_else(|| refused("original chart unavailable"))?;
+    let expected = source_chart::at_context(
+        db,
+        &sources,
+        rows,
+        e.binding.context["head"][0].as_i64().unwrap_or(0),
+    )?;
+    if &expected != plan
+        || plan.iter().any(|c| c.conflict.is_some())
+        || e.receipt["chartReconciliation"] != serde_json::to_value(plan).map_err(invalid)?
+    {
+        return Err(refused("accepted chart reconciliation differs"));
+    }
+    for change in plan.iter().filter(|c| c.action == "update") {
+        let count:i64=db.query_row("SELECT COUNT(*) FROM audit_log WHERE event_type='account_source_reclassified' AND entity_type='account' AND entity_id=?1 AND message=?2 AND actor=?3 AND created_at=?4", params![change.account_no,serde_json::to_string(change).map_err(invalid)?,e.actor,e.accepted_at],|r|r.get(0)).map_err(invalid)?;
+        if count == 0 {
+            return Err(refused("accepted chart reclassification audit missing"));
+        }
+    }
+    Ok(())
+}
 fn checked(db: &Connection) -> Result<Checked, Error> {
     crate::journal_preview::require_current(db)?;
     let ledger_uuid: String = db
@@ -467,6 +533,7 @@ fn checked(db: &Connection) -> Result<Checked, Error> {
         {
             return Err(refused("accepted import receipt differs"));
         }
+        chart_reconciliation(db, &e)?;
         receipts::validate_event(db, &e)?;
         imports.push(e);
     }

@@ -1,6 +1,7 @@
 //! Reviewed native source acceptance. All ledger, provenance and external records
 //! commit together; retained bytes are independently admitted by the application.
 pub use crate::archive_import::{EntryFacts, SourceFacts};
+use crate::company_setup::source_chart;
 use crate::{invalid, journal_post, opening_balance};
 use base64::{Engine as _, engine::general_purpose::STANDARD};
 use rentemester_engine::{
@@ -67,6 +68,8 @@ pub(super) struct Binding {
     pub receipt_plan: Option<Value>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub source_kind: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub chart_plan: Option<Vec<source_chart::Change>>,
 }
 #[derive(Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -296,19 +299,12 @@ pub fn prepare(tx: &Transaction<'_>, decoded: &Decoded, latest: Date) -> Result<
     if !parsed.opening_lines.is_empty() && current["head"] != Value::Null {
         blockers.push("live journal is not empty; source opening/history overlap requires explicit reconciliation".into());
     }
-    for account in &parsed.chart {
-        if let Some(old) = current["accounts"]
-            .as_array()
-            .and_then(|a| a.iter().find(|r| r[0] == account.account_no))
-            && (old[2] != account.kind
-                || old[3] != account.normal_balance
-                || old[4] != json!(account.default_vat_code)
-                || old[5] != 1
-                || old[6] != 1)
-        {
+    let chart_plan = source_chart::prepare(tx, &source_accounts(parsed))?;
+    for change in &chart_plan {
+        if let Some(conflict) = &change.conflict {
             blockers.push(format!(
-                "source account {} conflicts with current chart; resolve explicitly",
-                account.account_no
+                "source account {} conflicts with current chart: {conflict}",
+                change.account_no
             ));
         }
     }
@@ -383,12 +379,13 @@ pub fn prepare(tx: &Transaction<'_>, decoded: &Decoded, latest: Date) -> Result<
         context: current,
         receipt_plan,
         source_kind: source.path.ends_with(".zip").then(|| "zip".into()),
+        chart_plan: Some(chart_plan),
     };
     let plan_hash = hash(&binding)?;
     let mut summary_counts = counts(parsed);
     summary_counts["archiveYears"] =
         json!(decoded.archive.as_ref().map_or(0, |a| a.parsed.years.len()));
-    let review = json!({"sourceKind":if binding.source_kind.is_some(){"zip"}else{"json"},"status":if blockers.is_empty(){"ready"}else{"blocked"},"planHash":plan_hash,"source":source,"latestYear":parsed.latest_year,"cutOverDate":parsed.cut_over_date,"controlDate":parsed.control_date,"counts":summary_counts,"controls":controls,"blockers":blockers,"warnings":parsed.notices,"existingAttemptId":existing});
+    let review = json!({"sourceKind":if binding.source_kind.is_some(){"zip"}else{"json"},"status":if blockers.is_empty(){"ready"}else{"blocked"},"planHash":plan_hash,"source":source,"latestYear":parsed.latest_year,"cutOverDate":parsed.cut_over_date,"controlDate":parsed.control_date,"counts":summary_counts,"controls":controls,"blockers":blockers,"warnings":parsed.notices,"existingAttemptId":existing,"chartReconciliation":binding.chart_plan});
     Ok(Prepared {
         binding,
         decoded: decoded.clone(),
@@ -397,29 +394,20 @@ pub fn prepare(tx: &Transaction<'_>, decoded: &Decoded, latest: Date) -> Result<
         review,
     })
 }
-fn install_chart(tx: &Transaction<'_>, parsed: &ParsedImport, subject: &str) -> Result<(), Error> {
-    for a in &parsed.chart {
-        let exists: bool = tx
-            .query_row(
-                "SELECT EXISTS(SELECT 1 FROM accounts WHERE account_no=?1)",
-                [&a.account_no],
-                |r| r.get(0),
-            )
-            .map_err(invalid)?;
-        if !exists {
-            crate::company_setup::create_account(
-                tx,
-                &crate::company_setup::Account {
-                    account_no: a.account_no.clone(),
-                    name: a.name.clone(),
-                    r#type: a.kind.clone(),
-                    normal_balance: a.normal_balance.clone(),
-                    default_vat_code: a.default_vat_code.clone(),
-                },
-                subject,
-            )?;
-        }
-    }
+fn source_accounts(parsed: &ParsedImport) -> Vec<source_chart::SourceAccount> {
+    parsed
+        .chart
+        .iter()
+        .map(|a| source_chart::SourceAccount {
+            account_no: a.account_no.clone(),
+            name: a.name.clone(),
+            kind: Some(a.kind.clone()),
+            normal_balance: Some(a.normal_balance.clone()),
+            default_vat_code: Some(a.default_vat_code.clone()),
+        })
+        .collect()
+}
+fn install_chart(tx: &Transaction<'_>, parsed: &ParsedImport, _subject: &str) -> Result<(), Error> {
     for p in &parsed.role_proposals {
         tx.execute("INSERT INTO account_role_proposals(role,account_no,source) SELECT ?1,?2,?3 WHERE NOT EXISTS(SELECT 1 FROM account_role_proposals WHERE role=?1 AND account_no=?2 AND source=?3)",params![p.role,p.account_no,p.source]).map_err(invalid)?;
     }
@@ -599,6 +587,16 @@ pub fn apply_with_archives(
             &source.bytes,
         )?);
     }
+    source_chart::apply(
+        tx,
+        &source_accounts(parsed),
+        p.binding
+            .chart_plan
+            .as_deref()
+            .ok_or_else(|| refused("reviewed chart unavailable"))?,
+        subject,
+        &at,
+    )?;
     install_chart(tx, parsed, subject)?;
     let opening = if let Some(date) = parsed.cut_over_date {
         let input_open = opening_balance::Input {
@@ -690,6 +688,8 @@ pub fn apply_with_archives(
         )
         .map_err(invalid)?;
     let mut receipt = json!({"ok":true,"attemptId":next_attempt,"sourceSha256":p.binding.source.sha256,"sourceSizeBytes":p.binding.source.size_bytes,"parserContract":CONTRACT,"cutOverDate":parsed.cut_over_date,"controlDate":parsed.control_date,"acceptedAt":at,"counts":p.review["counts"],"journalCount":journals.len(),"firstHistoricalEntryId":journals.first().map(|j|j.id),"lastHistoricalEntryId":journals.last().map(|j|j.id),"openingBalance":opening,"archiveImportIds":archive_import_ids,"sourceAssurance":"retained-native"});
+    receipt["chartReconciliation"] =
+        serde_json::to_value(&p.binding.chart_plan).map_err(invalid)?;
     let supporting_receipts = if p.binding.receipt_plan.is_some() {
         let proofs = receipts::register(tx, p, &journals, &at, &actor)?;
         receipt["supportingDocuments"] = receipts::summary(&proofs);

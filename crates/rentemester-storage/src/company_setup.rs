@@ -3,6 +3,7 @@ use rentemester_engine::{Error, journal_rules::VAT_CODES};
 use rusqlite::{OptionalExtension, Transaction, params};
 use serde::Deserialize;
 use serde_json::{Value, json};
+pub mod source_chart;
 const ROLES: [(&str, &str, &str); 8] = [
     ("bank", "asset", "debit"),
     ("debtors", "asset", "debit"),

@@ -929,3 +929,278 @@ fn new_json_intake_refuses_drive_roots_and_case_collisions_without_financial_eff
         tx.rollback().unwrap();
     }
 }
+
+fn chart_source() -> Vec<u8> {
+    let mut package: Value = serde_json::from_slice(&source("24500,000000", false)).unwrap();
+    package["files"].as_array_mut().unwrap().retain(|f| {
+        matches!(
+            f["path"].as_str(),
+            Some("Firmaoplysninger.csv" | "2025/Kontoplan.csv")
+        )
+    });
+    serde_json::to_vec(&package).unwrap()
+}
+fn seed_wrong_account(tx: &Transaction<'_>) {
+    crate::company_setup::create_account(
+        tx,
+        &crate::company_setup::Account {
+            account_no: "1000".into(),
+            name: "Synthetic old definition".into(),
+            r#type: "asset".into(),
+            normal_balance: "debit".into(),
+            default_vat_code: Some("DK_PURCHASE_25".into()),
+        },
+        "synthetic",
+    )
+    .unwrap();
+}
+#[test]
+fn unused_chart_reclassification_is_reviewed_atomic_audited_and_source_verifiable() {
+    let (_control, mut db) = db();
+    let bytes = source("24500,000000", false);
+    let tx = db
+        .transaction_with_behavior(TransactionBehavior::Immediate)
+        .unwrap();
+    seed_wrong_account(&tx);
+    let before = snapshot(&tx);
+    let p = prepare(&tx, &decode_source(&bytes).unwrap(), latest()).unwrap();
+    let change = &p.review()["chartReconciliation"][0];
+    assert_eq!(change["action"], "update");
+    assert_eq!(change["before"]["kind"], "asset");
+    assert_eq!(change["before"]["defaultVatCode"], "DK_PURCHASE_25");
+    assert_eq!(change["after"]["kind"], "income");
+    assert_eq!(change["after"]["defaultVatCode"], Value::Null);
+    assert_eq!(snapshot(&tx), before);
+    let receipt = apply(&tx, &p, &input(&p), latest(), "synthetic", NOW).unwrap();
+    assert_eq!(receipt["chartReconciliation"][0], *change);
+    let current:Value=tx.query_row("SELECT name,type,normal_balance,default_vat_code FROM accounts WHERE account_no='1000'",[],|r|Ok(json!([r.get::<_,String>(0)?,r.get::<_,String>(1)?,r.get::<_,String>(2)?,r.get::<_,Option<String>>(3)?]))).unwrap();
+    assert_eq!(
+        current,
+        json!(["Synthetic sales", "income", "credit", null])
+    );
+    verify_sources(&tx, &bytes);
+    tx.rollback().unwrap();
+    assert_eq!(snapshot(&db)["accounts"], 0);
+    assert_eq!(snapshot(&db)["audit_log"], 0);
+}
+#[test]
+fn chart_only_apply_commits_master_and_chart_without_inventing_journals() {
+    let (_control, mut db) = db();
+    let bytes = chart_source();
+    let tx = db
+        .transaction_with_behavior(TransactionBehavior::Immediate)
+        .unwrap();
+    seed_wrong_account(&tx);
+    let receipt = install(&tx, &bytes);
+    assert_eq!(receipt["journalCount"], 0);
+    assert_eq!(receipt["openingBalance"], Value::Null);
+    assert_eq!(snapshot(&tx)["journal_entries"], 0);
+    assert_eq!(snapshot(&tx)["accounts"], 4);
+    let cvr: String = tx
+        .query_row("SELECT cvr FROM companies WHERE id=1", [], |r| r.get(0))
+        .unwrap();
+    assert_eq!(cvr, "87654321");
+    tx.commit().unwrap();
+    verify_sources(&db, &bytes);
+    let tx = db
+        .transaction_with_behavior(TransactionBehavior::Immediate)
+        .unwrap();
+    let read = read_imports(
+        &tx,
+        &[verify_original(&tx, &originals(&tx).unwrap()[0], &bytes).unwrap()],
+    )
+    .unwrap();
+    assert!(read.to_string().contains("chartReconciliation"));
+    tx.rollback().unwrap();
+    corrupt(
+        &db,
+        "audit_log",
+        "DELETE FROM audit_log WHERE event_type='account_source_reclassified'",
+    );
+    assert!(validate_history(&db).is_err());
+}
+#[test]
+fn used_account_name_conflict_and_policy_refusals_preserve_every_effect() {
+    let (_control, mut db) = db();
+    let tx = db
+        .transaction_with_behavior(TransactionBehavior::Immediate)
+        .unwrap();
+    install(&tx, &source("24500,000000", false));
+    // A different retained chart-only source has no overlapping opening/history.
+    let mut package: Value = serde_json::from_slice(&chart_source()).unwrap();
+    change_file(&mut package, "2025/Kontoplan.csv", |s| {
+        s.replace("Synthetic sales", "Changed source name")
+    });
+    let bytes = serde_json::to_vec(&package).unwrap();
+    let p = prepare(&tx, &decode_source(&bytes).unwrap(), latest()).unwrap();
+    assert_eq!(p.review()["status"], "blocked");
+    assert_eq!(p.review()["chartReconciliation"][0]["action"], "conflict");
+    assert!(
+        p.review()["chartReconciliation"][0]["journalLines"]
+            .as_i64()
+            .unwrap()
+            > 0
+    );
+    let before = snapshot(&tx);
+    let changes = tx.total_changes();
+    assert!(apply(&tx, &p, &input(&p), latest(), "synthetic", NOW).is_err());
+    assert_eq!(snapshot(&tx), before);
+    assert_eq!(tx.total_changes(), changes);
+    tx.rollback().unwrap();
+    for policy in ["active=0", "allow_direct_posting=0"] {
+        let tx = db
+            .transaction_with_behavior(TransactionBehavior::Immediate)
+            .unwrap();
+        seed_wrong_account(&tx);
+        tx.execute(
+            &format!("UPDATE accounts SET {policy} WHERE account_no='1000'"),
+            [],
+        )
+        .unwrap();
+        let p = prepare(&tx, &decode_source(&chart_source()).unwrap(), latest()).unwrap();
+        assert_eq!(p.review()["status"], "blocked");
+        assert!(apply(&tx, &p, &input(&p), latest(), "synthetic", NOW).is_err());
+        tx.rollback().unwrap();
+    }
+}
+#[test]
+fn source_chart_omitted_fields_preserve_live_and_explicit_null_clears_vat() {
+    let (_control, mut db) = db();
+    let tx = db
+        .transaction_with_behavior(TransactionBehavior::Immediate)
+        .unwrap();
+    seed_wrong_account(&tx);
+    let mut source = source_chart::SourceAccount {
+        account_no: "1000".into(),
+        name: "  ".into(),
+        kind: None,
+        normal_balance: None,
+        default_vat_code: None,
+    };
+    let unchanged = source_chart::prepare(&tx, &[source.clone()]).unwrap();
+    assert_eq!(unchanged[0].action, "unchanged");
+    assert_eq!(
+        unchanged[0].after.default_vat_code.as_deref(),
+        Some("DK_PURCHASE_25")
+    );
+    source.default_vat_code = Some(None);
+    let reviewed = source_chart::prepare(&tx, &[source.clone()]).unwrap();
+    assert_eq!(reviewed[0].action, "update");
+    source_chart::apply(
+        &tx,
+        &[source.clone()],
+        &reviewed,
+        "synthetic",
+        "2026-10-21T00:00:00.000Z",
+    )
+    .unwrap();
+    assert!(
+        source_chart::apply(
+            &tx,
+            &[source.clone()],
+            &reviewed,
+            "synthetic",
+            "2026-10-21T00:00:00.000Z"
+        )
+        .is_err()
+    );
+    source.account_no = "missing".into();
+    assert!(source_chart::prepare(&tx, &[source]).is_err());
+    tx.rollback().unwrap();
+}
+
+#[test]
+fn accepted_history_without_optional_chart_review_remains_verifiable() {
+    let (_control, mut db) = db();
+    let bytes = source("24500,000000", false);
+    let tx = db
+        .transaction_with_behavior(TransactionBehavior::Immediate)
+        .unwrap();
+    install(&tx, &bytes);
+    tx.commit().unwrap();
+    let (id, body): (i64, String) = db
+        .query_row(
+            "SELECT id,message FROM audit_log WHERE event_type='native_dinero_import'",
+            [],
+            |r| Ok((r.get(0)?, r.get(1)?)),
+        )
+        .unwrap();
+    let mut event: Attestation = serde_json::from_str(&body).unwrap();
+    event.binding.chart_plan = None;
+    event
+        .receipt
+        .as_object_mut()
+        .unwrap()
+        .remove("chartReconciliation");
+    event.plan_hash = hash(&event.binding).unwrap();
+    // Reconstruct the exact pre-extension format and its existing result digest.
+    let body = serde_json::to_string(&event).unwrap().replace("'", "''");
+    corrupt(
+        &db,
+        "audit_log",
+        &format!("UPDATE audit_log SET message='{body}' WHERE id={id}"),
+    );
+    corrupt(
+        &db,
+        "dinero_import_attempts",
+        &format!(
+            "UPDATE dinero_import_attempts SET result_sha256='{}'",
+            hash(&event.receipt).unwrap()
+        ),
+    );
+    verify_sources(&db, &bytes);
+}
+
+#[test]
+fn changed_role_or_journal_head_invalidates_review_before_chart_updates() {
+    for role in [true, false] {
+        let (_control, mut db) = db();
+        let tx = db
+            .transaction_with_behavior(TransactionBehavior::Immediate)
+            .unwrap();
+        let decoded = decode_source(&chart_source()).unwrap();
+        let accounts = source_accounts(&decoded.parsed);
+        let chart = source_chart::prepare(&tx, &accounts).unwrap();
+        source_chart::apply(
+            &tx,
+            &accounts,
+            &chart,
+            "synthetic",
+            "2026-10-21T00:00:00.000Z",
+        )
+        .unwrap();
+        let p = prepare(&tx, &decoded, latest()).unwrap();
+        if role {
+            crate::company_setup::confirm_role(
+                &tx,
+                &crate::company_setup::Role {
+                    role: "bank".into(),
+                    account_no: "5510".into(),
+                    confirm: true,
+                },
+                "synthetic",
+            )
+            .unwrap();
+        } else {
+            let request=serde_json::from_value(json!({"transactionDate":"2025-03-20","text":"Synthetic new head","currency":"DKK","lines":[{"accountNo":"5510","debitAmount":"10.00"},{"accountNo":"60010","creditAmount":"10.00"}]})).unwrap();
+            let result = journal_post::post(
+                &tx,
+                &request,
+                &crate::journal_preview::manual_journal_rule_version().unwrap(),
+                latest(),
+                journal_post::Actor {
+                    subject: "synthetic",
+                    program: "rentemester-rust",
+                },
+            )
+            .unwrap();
+            assert_eq!(result["ok"], true, "{result}");
+        }
+        let before = snapshot(&tx);
+        let changes = tx.total_changes();
+        assert!(apply(&tx, &p, &input(&p), latest(), "synthetic", NOW).is_err());
+        assert_eq!(snapshot(&tx), before);
+        assert_eq!(tx.total_changes(), changes);
+        tx.rollback().unwrap();
+    }
+}
