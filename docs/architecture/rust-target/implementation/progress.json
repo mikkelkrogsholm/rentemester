@@ -1,15 +1,15 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "Group131 original R32/#703 journal-history CLI/MCP compatibility, current-source HTTP/shared reader",
-  "code_revision": "5c329021",
+  "current_increment": "Group132 original R32/#703 arbitrary-date financial report compatibility",
+  "code_revision": "17e8debf",
   "spec_revision": "sha256:bc98636be4a972407adce0f817a76bb9d4bb7200cb292a70965e75ab62fae250",
-  "state": "Integrated14 focused tests/strict sevencrates/normalbins PASS. First actual all product+restart+SQL checks passed but harness exit failed on omitted stdin.close. Exact existing close pattern fixed, isolated EOF exit0 proved; one justified rerun pending. No Rust changes or rebuild. Accepted130/129/128/63/76 retained. Original R32 arbitrarydates/dashboardJSON and R31tax/iXBRL remain; full mission OPEN.",
+  "state": "Group131 accepted at17e8debf: current ordinaryMFA HTTP/CLI/MCP original journal-history data, CLI bare snake JSON/human, storedstatus, nativecrossyear dates, pagination, revokedreader refusal and exactnormalMFArestart PASS. Independent fullaudit3/SQL3journals6lines/zero docs-bank/pinnedartifacts/readnoeffects/ownedcleanup PASS. Fourteenfocused tests, strict7changedcrate Clippy and normalbins remain green; verified recoverysnapshots preserve allthree removed worktrees. Firstactual had only controllerstdinEOFfinish timeout after allproductphases passed; isolated correction and one rerun pass. Accepted130/129/128/63/76 retained. Next132 original arbitrary-period reports and safeoriginalCLIwire/human contracts; legacydashboardJSONmapping and R31tax/iXBRL remain. Full epic/TypeScriptretirement/packaging/cutover/finalinstalleddesktop remain OPEN.",
   "issues_closed": [
     701
   ],
   "next": [
-    "Integrate and qualify original journal list bare snake_case/human and MCP journal_list date/status/page through one shared current-source HTTP reader. Reuse minimal normalMFA branch in existing run-document-scanner, two native posts plus reversal across years, exact readonly values/revocation/restart and independent SQL. No repeat unchanged FX/debt/archive journeys. Then arbitrary-period report selectors/dashboard JSON mapping and original R31 tax/iXBRL.",
+    "Group132 restore original report trial-balance/profit-loss --from/--to and balance --as-of through server-owned shared exactreducers, inclusive dates/cumulativebalance/openingguards and originalflatnumericJSON/human/0-1-2 behavior with exact roundtrip or explicit precision refusal. Keep experimental exactwire distinct and currentweb/year/archive behavior. Preserve existingCSV/PDF formats with requesteddate labels. Readonly prep /tmp/rm132-preparation.json; main must bind interfacecontract before isolatedparallel dispatch. Then legacydashboardJSONmapping and originalR31tax/iXBRL. Do not rerun accepted131/130 unchanged.",
     "Installed desktop acceptance is explicitly deferred to the very end by the user. Preserve prepared Group100 profile; collect remaining native automation, closure, recovery and packaging checks for final installed acceptance without requesting screen unlock during development.",
     "J03/R50 and remaining R54 scope: only still-supported operation closure/recovery, nonempty scheduler handoff, hostile/older clone and post-cutover rollback requirements. Group99 qualifies managed installed J06 flow, not every R54 acceptance item.",
     "Signed distribution/update/cutover evidence must match actual full Rust replacement; retain all existing completion gates and TypeScript retirement gate.",
@@ -7191,14 +7191,14 @@
     },
     "journal_history131": {
       "issue": 703,
-      "status": "Integrated14 focused tests/strict sevencrates/normalbins PASS. First actual all product+restart+SQL checks passed but harness exit failed on omitted stdin.close. Exact existing close pattern fixed, isolated EOF exit0 proved; one justified rerun pending. No Rust changes or rebuild.",
+      "status": "PASS integrated original journal-history data through ordinaryMFA HTTP/CLI/MCP, exact original CLI JSON/human, dates/storedstatus/pages and normalMFA restart; currentrevocation/noeffects/fullaudit3/independentSQL/pinnedartifacts/cleanup PASS",
       "base": "22829c5b",
       "resume": "/tmp/rm131-live-state.json",
       "storage_host_owner": "/root/dashboard_html129",
       "sdk_cli_mcp_owner": "/root/dashboard_clients129",
       "http_proof_owner": "/root",
       "scope": "Original12fields, native all years, stored status, idDESC, inclusive date/filter/page, original CLI JSON bare snake and human canonical amount fallback; read current-authorized physical sources only",
-      "actual_qualified": false,
+      "actual_qualified": true,
       "installed_desktop_qualified": false,
       "worker_sources": {
         "core": "7554dd5f",
@@ -7257,7 +7257,21 @@
         "owned_cleanup": true,
         "failure": "All product/restart/SQL/finish-ack checks passed; runner omitted controller.stdin.close before wait, leaving Bun readline input open. Existing branches already close stdin. One-line correction, isolated sameBun readline EOF exit0 within3s; no product or accounting assertion changed.",
         "isolated_proof": "/tmp/rm131-isolated-controller-eof.log"
-      }
+      },
+      "actual_report": "/tmp/rentemester-rust-reports/journal-history131b.json",
+      "actual_report_sha256": "3f75232f25223d9c8b9644f1b0003e17bc674af20bbaa953c15aae96b1aa65ba",
+      "actual_source_revision": "17e8debfb3fbcacfc309065e5ef8514300835206",
+      "normal_restart_qualified": true,
+      "independent_verification": "/tmp/rm131-independent-verification.log",
+      "owned_cleanup": true,
+      "full_audit_entries": 3,
+      "terminal_counts": {
+        "documents": 0,
+        "bank_transactions": 0,
+        "journal_entries": 3,
+        "journal_lines": 6
+      },
+      "source_free_restore_qualified": false
     }
   },
   "verified_history": [
