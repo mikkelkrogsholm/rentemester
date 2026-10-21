@@ -68,6 +68,7 @@ mod hosted_recurring;
 mod reviewed_bookkeeping;
 mod bookkeeping_batch;
 mod payable_correction;
+mod direct_bank_original;
 mod document_party_links;
 mod sales;
 mod invoice_email;
@@ -156,6 +157,8 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
         .route("/api/portfolio",get(portfolio_cashflow::portfolio))
         .route("/api/portfolio/overview",get(portfolio_overview::read))
         .route("/api/companies/{slug}/cashflow",get(portfolio_cashflow::cashflow))
+        .route("/api/companies/{slug}/bank/original/direct-payable-plan", post(direct_bank_original::handle))
+        .route("/api/companies/{slug}/bank/original/direct-payable-apply", post(direct_bank_original::handle))
         .route("/api/companies/{slug}/payables/direct-bank-correction/plan", post(payable_correction::handle))
         .route("/api/companies/{slug}/payables/direct-bank-correction/apply", post(payable_correction::handle))
         .route("/api/group-eliminations", get(eliminations::overview))

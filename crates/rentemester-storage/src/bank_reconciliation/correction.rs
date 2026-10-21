@@ -387,6 +387,14 @@ pub(crate) fn apply_reviewed(
 ) -> Result<Value, Error> {
     apply_reviewed_mode(tx, input, subject, PrincipalKind::User, false)
 }
+pub(crate) fn apply_reviewed_original(
+    tx: &Transaction<'_>,
+    input: &ReviewedCorrection<'_>,
+    subject: &str,
+    kind: PrincipalKind,
+) -> Result<Value, Error> {
+    apply_reviewed_mode(tx, input, subject, kind, true)
+}
 fn apply_reviewed_mode(
     tx: &Transaction<'_>,
     input: &ReviewedCorrection<'_>,

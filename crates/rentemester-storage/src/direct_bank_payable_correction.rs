@@ -373,6 +373,8 @@ fn execute(
     i: &ApplyInput,
     subject: &str,
     latest: Date,
+    kind: PrincipalKind,
+    original_mode: bool,
 ) -> Result<Value, Error> {
     let old = rows(
         tx,
@@ -434,20 +436,21 @@ fn execute(
     tests::checkpoint(3)?;
     let settlement = get_id(&payment, "journalEntryId")?;
     let bp = bank_correction::plan(tx, i.bank_transaction_id, settlement)?;
-    bank_correction::apply_reviewed(
-        tx,
-        &bank_correction::ReviewedCorrection {
-            bank_transaction_id: i.bank_transaction_id,
-            replacement_journal_entry_id: settlement,
-            expected_reconciliation_id: &proof.reconciliation,
-            plan_hash: string(&bp["plan"], "planHash")?,
-            reason: &i.reason,
-        },
-        subject,
-    )?;
+    let reviewed = bank_correction::ReviewedCorrection {
+        bank_transaction_id: i.bank_transaction_id,
+        replacement_journal_entry_id: settlement,
+        expected_reconciliation_id: &proof.reconciliation,
+        plan_hash: string(&bp["plan"], "planHash")?,
+        reason: &i.reason,
+    };
+    if original_mode {
+        bank_correction::apply_reviewed_original(tx, &reviewed, subject, kind)?;
+    } else {
+        bank_correction::apply_reviewed(tx, &reviewed, subject)?;
+    }
     #[cfg(test)]
     tests::checkpoint(4)?;
-    tx.execute("INSERT INTO direct_bank_purchase_payable_corrections(document_id,bank_transaction_id,original_journal_entry_id,reversal_journal_entry_id,payable_id,payment_id,settlement_journal_entry_id,document_hash,original_journal_hash,plan_hash,reason,actor,principal_kind,principal_subject_id,created_at)VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,'user',?13,strftime('%Y-%m-%dT%H:%M:%fZ','now'))",params![i.document_id,i.bank_transaction_id,proof.original,proof.reversal,get_id(&payable,"payableId")?,get_id(&payment,"paymentId")?,settlement,current["documentHash"].as_str(),proof.original_hash,i.plan_hash,crate::journal_post::trim(&i.reason),by,subject]).map_err(sql)?;
+    tx.execute("INSERT INTO direct_bank_purchase_payable_corrections(document_id,bank_transaction_id,original_journal_entry_id,reversal_journal_entry_id,payable_id,payment_id,settlement_journal_entry_id,document_hash,original_journal_hash,plan_hash,reason,actor,principal_kind,principal_subject_id,created_at)VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,strftime('%Y-%m-%dT%H:%M:%fZ','now'))",params![i.document_id,i.bank_transaction_id,proof.original,proof.reversal,get_id(&payable,"payableId")?,get_id(&payment,"paymentId")?,settlement,current["documentHash"].as_str(),proof.original_hash,i.plan_hash,crate::journal_post::trim(&i.reason),by,crate::bank_original::principal_name(kind),subject]).map_err(sql)?;
     let id = tx.last_insert_rowid();
     tx.execute("INSERT INTO audit_log(event_type,entity_type,entity_id,message,actor)VALUES('direct_bank_purchase_payable_corrected','bank_transaction',?1,?2,?3)",params![i.bank_transaction_id.to_string(),format!("Corrected direct-bank purchase into payable {} and settled on {}",get_id(&payable,"payableId")?,string(&bank,"transaction_date")?),by]).map_err(sql)?;
     #[cfg(test)]
@@ -469,13 +472,37 @@ pub fn apply(
     latest: Date,
     now_ms: i64,
 ) -> Result<Value, Error> {
+    apply_mode(tx, i, subject, latest, now_ms, PrincipalKind::User, false)
+}
+/// Original authenticated route; native human wrapper and its wire stay unchanged.
+pub fn apply_original(
+    tx: &Transaction<'_>,
+    i: &ApplyInput,
+    subject: &str,
+    latest: Date,
+    now_ms: i64,
+    kind: PrincipalKind,
+) -> Result<Value, Error> {
+    apply_mode(tx, i, subject, latest, now_ms, kind, true)
+}
+fn apply_mode(
+    tx: &Transaction<'_>,
+    i: &ApplyInput,
+    subject: &str,
+    latest: Date,
+    now_ms: i64,
+    kind: PrincipalKind,
+    original_mode: bool,
+) -> Result<Value, Error> {
     crate::journal_post::require_current(tx)?;
     i.validate()?;
     let mut payload = serde_json::to_value(i).map_err(|_| fail("INVALID_REQUEST"))?;
     payload.as_object_mut().unwrap().remove("idempotencyKey");
     payload.as_object_mut().unwrap().remove("confirm");
     let Some(key) = &i.idempotency_key else {
-        return Ok(json!({"ok":true,"correction":execute(tx,i,subject,latest)?}));
+        return Ok(
+            json!({"ok":true,"correction":execute(tx,i,subject,latest,kind,original_mode)?}),
+        );
     };
     let by = format!("user:{subject}");
     match idempotency::execute(
@@ -483,14 +510,14 @@ pub fn apply(
         idempotency::Input {
             key,
             operation: Operation::DirectBankPurchasePayableCorrectionApply,
-            principal_kind: PrincipalKind::User,
+            principal_kind: kind,
             subject,
             payload: &payload,
             created_by: &by,
             created_by_program: "direct-bank-purchase-payable-correction",
             now_ms,
         },
-        |tx| execute(tx, i, subject, latest),
+        |tx| execute(tx, i, subject, latest, kind, original_mode),
     )
     .map_err(|f| f.error)?
     {

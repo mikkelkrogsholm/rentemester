@@ -185,6 +185,10 @@ fn same_and_cross_period_mixed_vat_preserve_balances_and_exact_replay() {
         let replay = apply(&tx, &i, "author", latest(), NOW + 1).unwrap();
         assert_eq!(replay["idempotency"]["replayed"], true);
         assert_eq!(replay["correction"], out["correction"]);
+        let original_replay =
+            apply_original(&tx, &i, "author", latest(), NOW + 1, PrincipalKind::User).unwrap();
+        assert_eq!(original_replay["correction"], out["correction"]);
+        assert_eq!(original_replay["idempotency"]["replayed"], true);
         let mut conflict: ApplyInput =
             serde_json::from_value(serde_json::to_value(&i).unwrap()).unwrap();
         conflict.note = Some("Changed accepted request".into());
@@ -515,4 +519,82 @@ fn period_close_refuses_tampered_retained_direct_correction_without_financial_ef
     assert_eq!(count(&tx, "journal_entries"), 4);
     assert_eq!(count(&tx, "accounting_periods"), 0);
     assert_eq!(tx.total_changes(), before);
+}
+
+#[test]
+fn original_service_direct_correction_binds_nested_proof_and_exact_keyed_replay() {
+    let mut db = fixture("2026-07-02", false);
+    let tx = db
+        .transaction_with_behavior(TransactionBehavior::Immediate)
+        .unwrap();
+    let input = reviewed(&tx);
+    let first = apply_original(
+        &tx,
+        &input,
+        "service_synthetic",
+        latest(),
+        NOW,
+        PrincipalKind::ServiceAccount,
+    )
+    .unwrap();
+    assert_eq!(
+        first["correction"]["sourcePrincipal"],
+        json!({"kind":"service-account","subjectId":"service_synthetic"})
+    );
+    assert_eq!(first["idempotency"]["replayed"], false);
+    let nested: (String, String) = tx
+        .query_row(
+            "SELECT principal_kind,principal_subject_id FROM bank_reconciliation_correction_events",
+            [],
+            |r| Ok((r.get(0)?, r.get(1)?)),
+        )
+        .unwrap();
+    assert_eq!(
+        nested,
+        ("service-account".into(), "service_synthetic".into())
+    );
+    let message: String = tx
+        .query_row(
+            "SELECT message FROM audit_log WHERE event_type='bank_reconciliation_corrected'",
+            [],
+            |r| r.get(0),
+        )
+        .unwrap();
+    let claims: Value = serde_json::from_str(&message).unwrap();
+    assert_eq!(
+        claims["compatibility"],
+        json!({"schemaVersion":"rentemester-original-bank-correction/1","principalKind":"service-account","principalSubjectId":"service_synthetic"})
+    );
+    period_sources(&tx);
+    let again = apply_original(
+        &tx,
+        &input,
+        "service_synthetic",
+        latest(),
+        NOW + 1,
+        PrincipalKind::ServiceAccount,
+    )
+    .unwrap();
+    assert_eq!(first["correction"], again["correction"]);
+    assert_eq!(again["idempotency"]["replayed"], true);
+    assert_eq!(count(&tx, "journal_entries"), 4);
+    assert_eq!(count(&tx, "payables"), 1);
+    assert_eq!(count(&tx, "payable_payments"), 1);
+    assert_eq!(count(&tx, "bank_reconciliation_correction_events"), 1);
+    let mut changed = reviewed_input(&input);
+    changed.reason = format!(" {}", input.reason);
+    assert!(
+        apply_original(
+            &tx,
+            &changed,
+            "service_synthetic",
+            latest(),
+            NOW + 2,
+            PrincipalKind::ServiceAccount
+        )
+        .is_err()
+    );
+}
+fn reviewed_input(i: &ApplyInput) -> ApplyInput {
+    serde_json::from_value(serde_json::to_value(i).unwrap()).unwrap()
 }
