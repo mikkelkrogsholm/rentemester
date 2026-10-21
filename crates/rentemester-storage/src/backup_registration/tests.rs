@@ -135,3 +135,149 @@ fn unknown_fields_control_characters_missing_explicit_flags_and_forged_facts_ref
             .is_err()
     );
 }
+
+fn portable_history_source() -> (rusqlite::Connection, Vec<Receipt>) {
+    let mut source = connection();
+    source.execute("INSERT INTO user(id,name,email,emailVerified,createdAt,updatedAt)VALUES('old-owner','Synthetic historical','old@example.invalid',1,'2026-01-01','2026-01-01')",[]).unwrap();
+    let tx = source.transaction().unwrap();
+    let registered = add("ssh", 17);
+    let first = apply(&tx, "a", &registered, "user:old-owner", AT, None).unwrap();
+    let request = Request::Declare {
+        operation_id: "synthetic-portable-declare".into(),
+        destination_id: registered.destination_id().into(),
+        backup_id: "a".repeat(64),
+        note: Some("Historical unverified transfer declaration".into()),
+        confirm: true,
+    };
+    let backup = ProtectedBackup {
+        backup_id: "a".repeat(64),
+        archive_sha256: "a".repeat(64),
+        archive_size_bytes: 123,
+        backup_created_at: "2026-01-01T00:00:00.000Z".into(),
+    };
+    let second = apply(&tx, "a", &request, "user:old-owner", AT, Some(&backup)).unwrap();
+    let removed = Request::Remove {
+        operation_id: "synthetic-portable-remove".into(),
+        destination_id: registered.destination_id().into(),
+        confirm: true,
+    };
+    let third = apply(&tx, "a", &removed, "user:old-owner", AT, None).unwrap();
+    tx.commit().unwrap();
+    (source, vec![first, second, third])
+}
+#[test]
+fn portable_codec_restores_exact_add_declare_remove_receipts_without_authentication_authority() {
+    let (mut source, expected) = portable_history_source();
+    let tx = source.transaction().unwrap();
+    let exported = crate::portable_backup::export_control(&tx).unwrap();
+    tx.rollback().unwrap();
+    let mut restored = rusqlite::Connection::open_in_memory().unwrap();
+    crate::portable_backup::initialize_control(&mut restored, &exported.bytes, &"b".repeat(64))
+        .unwrap();
+    for table in [
+        "user",
+        "session",
+        "account",
+        "twoFactor",
+        "rm_workspace_user_access_events",
+        "rm_company_membership_events",
+        "apikey",
+    ] {
+        assert_eq!(
+            restored
+                .query_row(&format!("SELECT count(*) FROM {table}"), [], |r| r
+                    .get::<_, i64>(0))
+                .unwrap(),
+            0
+        );
+    }
+    let tx = restored.transaction().unwrap();
+    validate_history(&tx).unwrap();
+    let (destinations, history) = list(&tx, "a").unwrap();
+    assert!(destinations.is_empty());
+    assert_eq!(history, expected);
+    for original in &expected {
+        assert_eq!(
+            inspect(&tx, "a", &original.operation_id).unwrap().as_ref(),
+            Some(original)
+        );
+    }
+    assert_eq!(history[1].result["verified"], false);
+    assert_eq!(history[1].result["remoteSyncVerified"], false);
+    assert_eq!(
+        tx.query_row(
+            "SELECT count(*) FROM workspace_audit WHERE event_type='native_portable_restore'",
+            [],
+            |r| r.get::<_, i64>(0)
+        )
+        .unwrap(),
+        1
+    );
+}
+#[test]
+fn portable_export_refuses_a_malformed_known_registration_event() {
+    let mut source = connection();
+    source.execute("INSERT INTO workspace_audit(event_type,entity_type,entity_id,actor)VALUES('native_backup_registration','backup_registration_operation','{}','user:synthetic')",[]).unwrap();
+    let tx = source.transaction().unwrap();
+    assert!(crate::portable_backup::export_control(&tx).is_err());
+}
+#[test]
+fn forged_registration_archive_rolls_back_all_imported_audit_and_restore_boundary() {
+    let (mut source, _) = portable_history_source();
+    let tx = source.transaction().unwrap();
+    let exported = crate::portable_backup::export_control(&tx).unwrap();
+    tx.rollback().unwrap();
+    let mut codec: Value = serde_json::from_slice(&exported.bytes).unwrap();
+    let audit = &mut codec["tables"]["workspace_audit"];
+    let column = audit["columns"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .position(|v| v == "entity_id")
+        .unwrap();
+    let row = &mut audit["rows"][0][column];
+    let mut event: Value = serde_json::from_str(row["value"].as_str().unwrap()).unwrap();
+    // Preserve a valid transport codec and tamper the registration's immutable receipt.
+    event["receipt"]["result"]["location"] = json!("forged inert destination");
+    row["value"] = json!(event.to_string());
+    let mut restored = rusqlite::Connection::open_in_memory().unwrap();
+    assert!(
+        crate::portable_backup::initialize_control(
+            &mut restored,
+            &serde_json::to_vec(&codec).unwrap(),
+            &"c".repeat(64)
+        )
+        .is_err()
+    );
+    assert!(restored.is_autocommit());
+    assert_eq!(
+        restored
+            .query_row("SELECT count(*) FROM workspace_audit", [], |r| r
+                .get::<_, i64>(0))
+            .unwrap(),
+        0
+    );
+}
+#[test]
+fn legacy_portable_audit_without_registrations_still_restores() {
+    let mut source = connection();
+    source.execute("INSERT INTO workspace_audit(event_type,entity_type,entity_id,actor)VALUES('synthetic_legacy_event','company','a','user:historical')",[]).unwrap();
+    let tx = source.transaction().unwrap();
+    let exported = crate::portable_backup::export_control(&tx).unwrap();
+    tx.rollback().unwrap();
+    let mut restored = rusqlite::Connection::open_in_memory().unwrap();
+    crate::portable_backup::initialize_control(&mut restored, &exported.bytes, &"d".repeat(64))
+        .unwrap();
+    let tx = restored.transaction().unwrap();
+    validate_history(&tx).unwrap();
+    assert!(list(&tx, "a").unwrap().1.is_empty());
+    assert_eq!(
+        tx.query_row(
+            "SELECT count(*) FROM workspace_audit WHERE event_type='synthetic_legacy_event'",
+            [],
+            |r| r.get::<_, i64>(0)
+        )
+        .unwrap(),
+        1
+    );
+}

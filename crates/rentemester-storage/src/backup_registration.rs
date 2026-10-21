@@ -367,6 +367,12 @@ fn events(tx: &Transaction<'_>) -> Result<Vec<Event>, Error> {
     }
     Ok(events)
 }
+/// Validate inert registration history before portable export or publication.
+/// Historical receipts remain metadata; this never qualifies files or remote copies.
+pub(crate) fn validate_history(tx: &Transaction<'_>) -> Result<(), Error> {
+    events(tx).map(|_| ())
+}
+
 pub fn replay(
     tx: &Transaction<'_>,
     slug: &str,

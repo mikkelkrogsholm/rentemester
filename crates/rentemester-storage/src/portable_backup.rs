@@ -131,7 +131,8 @@ pub struct Control {
     pub unsupported: Vec<(&'static str, u64)>,
 }
 pub fn export_control(tx: &Transaction<'_>) -> Result<Control, Error> {
- crate::workspace_transfer::current(tx)?;
+    crate::backup_registration::validate_history(tx)?;
+    crate::workspace_transfer::current(tx)?;
     crate::workspace_members::writer(tx)?;
     let mut unsupported = vec![];
     for (section, tables) in UNSUPPORTED {
@@ -242,6 +243,7 @@ pub(crate) fn initialize_audit_business(tx: &Transaction<'_>, bytes: &[u8]) -> R
         return Err(refused("unsupported business codec"));
     }
     insert_tables(tx, &b, &AUDIT_TABLES)?;
+    crate::backup_registration::validate_history(tx)?;
     crate::workspace_transfer::current(tx)?;
     Ok(())
 }
@@ -370,7 +372,10 @@ pub fn company(db: &Connection) -> Result<Company, Error> {
             |r| r.get(0),
         )
         .map_err(sql)?;
-    let mut originals = crate::archive_import::originals(db)?.into_iter().map(|source|(source.path,source.sha256)).collect::<Vec<_>>();
+    let mut originals = crate::archive_import::originals(db)?
+        .into_iter()
+        .map(|source| (source.path, source.sha256))
+        .collect::<Vec<_>>();
     let mut q = db
         .prepare("SELECT stored_path,sha256_hash FROM documents ORDER BY id")
         .map_err(sql)?;
