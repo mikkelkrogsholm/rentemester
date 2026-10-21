@@ -1,12 +1,16 @@
 {
+  "description": "Rentemester focus reminder at session start, resume and compaction; advisory context only.",
   "hooks": {
-    "PreToolUse": [
+    "SessionStart": [
       {
-        "matcher": "Bash",
+        "matcher": "^(startup|resume|clear|compact|fork)$",
         "hooks": [
           {
             "type": "command",
-            "command": "graphify hook-check"
+            "command": "/bin/sh \"$(git rev-parse --show-toplevel)/.codex/hooks/focus.sh\"",
+            "timeout": 3,
+            "additionalContextLimit": 3500,
+            "statusMessage": "Genindlæser fokus på Rust-omskrivningen"
           }
         ]
       }
