@@ -61,6 +61,8 @@ pub fn run(args: &[String]) -> Result<Value, Failure> {
         help["backupRemoteVerification"]=crate::backup_remote::help();
         help["backupGovernance"]=crate::backup_governance::help();
         help["backupRegistrations"]=crate::backup_registration::help();
+        help["invoiceCompensation"]=crate::invoice_compensation::help();
+        help["commands"].as_array_mut().unwrap().extend(crate::invoice_compensation::COMMANDS.map(|s|json!(s)));
         help["auditVerify"]=crate::audit_verify::help();
         help["auditLog"]=crate::audit_log::help();
         help["invoiceExtraction"]=crate::invoice_extraction::help();
@@ -297,6 +299,7 @@ pub fn run(args: &[String]) -> Result<Value, Failure> {
     if command=="create-company" {return crate::company_creation::run(&flags,allow_http,confirmed,preview_reviewed);}
     if command=="workspace-backup"{return crate::portable_backup::run(&flags,allow_http,confirmed,preview_reviewed);}
     if command=="saft-export"{return crate::saft::run(&flags,allow_http,confirmed,preview_reviewed);}
+    if crate::invoice_compensation::accepts(command){return crate::invoice_compensation::run(command,&flags,allow_http,confirmed,preview_reviewed);}
     if crate::reminder_claims::accepts(command){return crate::reminder_claims::run(command,&flags,allow_http,confirmed,preview_reviewed);}
     if crate::company_setup::accepts(command){return crate::company_setup::run(command,&flags,allow_http,confirmed,preview_reviewed);}
     if crate::privacy::accepts(command){return crate::privacy::run(command,&flags,allow_http,confirmed,preview_reviewed);}

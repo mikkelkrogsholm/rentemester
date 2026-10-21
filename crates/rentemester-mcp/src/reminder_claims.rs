@@ -17,7 +17,7 @@ pub fn accepts(s: &str) -> bool {
 pub fn tools() -> Vec<Value> {
     let mut out = vec![tool(
         "invoice_reminder_claims",
-        "Current CompanyRead: reminder/principal balances, ledger-backed receivable accounts, prior receipts, server rule limits, exact bank source choices. No email or automatic action; unported interest/compensation/corrections refuse explicitly.",
+        "Current CompanyRead: reminder/principal balances, ledger-backed receivable accounts, prior receipts, server rule limits, exact bank source choices. No email or automatic action; compensation uses separate calculate/register/post steps; unported interest/corrections refuse explicitly.",
         json!({"type":"object","required":["company","id"],"properties":{"company":company_schema(),"id":{"type":"integer","minimum":1,"maximum":9007199254740991u64}},"additionalProperties":false}),
         true,
     )];

@@ -457,3 +457,6 @@ mod public_einvoice;
 pub use public_einvoice::{PublicInvoiceMutation,MAX_PUBLIC_INVOICE_BODY,public_invoice_body_schema};
 
 pub mod portfolio_cashflow;
+
+mod invoice_compensation;
+pub use invoice_compensation::{InvoiceCompensationOperation,MAX_INVOICE_COMPENSATION_BODY,invoice_compensation_body_schema};
