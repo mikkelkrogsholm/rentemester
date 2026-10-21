@@ -179,6 +179,7 @@ pub fn list() -> Value {
     tools.extend(crate::company_setup::tools());
     tools.extend(crate::reminder_claims::tools());
     tools.extend(crate::invoice_compensation::tools());
+    tools.extend(crate::invoice_interest::tools());
     tools.extend(crate::company_creation::tools());
     tools.extend(crate::saft::tools());
     tools.extend(crate::portable_backup::tools());
@@ -273,6 +274,7 @@ pub async fn call(api: &ApiClient, name: &str, args: Value) -> Result<Value, &'s
         }
 
         "create_company" => crate::company_creation::call(api,args).await?,
+        name if crate::invoice_interest::accepts(name) => crate::invoice_interest::call(api,name,args).await?,
         name if crate::invoice_compensation::accepts(name) => crate::invoice_compensation::call(api,name,args).await?,
         name if crate::reminder_claims::accepts(name) => crate::reminder_claims::call(api,name,args).await?,
         name if crate::company_setup::accepts(name) => crate::company_setup::call(api,name,args).await?,

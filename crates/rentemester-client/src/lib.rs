@@ -460,3 +460,6 @@ pub mod portfolio_cashflow;
 
 mod invoice_compensation;
 pub use invoice_compensation::{InvoiceCompensationOperation,MAX_INVOICE_COMPENSATION_BODY,invoice_compensation_body_schema};
+
+mod invoice_interest;
+pub use invoice_interest::{InvoiceInterestOperation,MAX_INVOICE_INTEREST_BODY,invoice_interest_body_schema};

@@ -3,6 +3,7 @@ import { api } from "../lib/api";
 import { formatKroner, parseDanishAmount } from "../lib/format";
 import { useAsync } from "../lib/useAsync";
 import { useCapabilities } from "../lib/useCapabilities";
+import { NativeInvoiceInterest } from "./NativeInvoiceInterest";
 import { NativeInvoiceCompensation } from "./NativeInvoiceCompensation";
 import { ConfirmDialog } from "./ConfirmDialog";
 import { Banner } from "./Feedback";
@@ -19,15 +20,17 @@ export function NativeReminderClaims({slug,id,onChanged,onClose}:{slug:string;id
  const refresh=()=>{read.reload();onChanged();};
  const pending=status?.reminders.filter(r=>r.journalEntryId===null)??[], selected=pending.find(r=>r.reminderId===Number(reminder)), receipt=status?.incomingBankTransactions.find(r=>r.id===Number(bank));
  return <section className="card" aria-label="Rykkergebyrer og krav">
-  <h3>Rykkergebyrer og krav</h3><p className="muted">Registrering, særskilt bogføring og afstemning af en faktisk indbetaling. Der sendes ingen e-mail eller rykker automatisk. Fakturaens hovedstol skal være betalt før indbetaling på gebyrer og kompensationskrav. Hovedstolen vises i fakturaens valuta; gebyrer og kompensation er altid i DKK.</p>
+  <h3>Rykkergebyrer og krav</h3><p className="muted">Registrering, særskilt bogføring og afstemning af en faktisk indbetaling. Der sendes ingen e-mail eller rykker automatisk. Fakturaens hovedstol skal være betalt før indbetaling på gebyrer, kompensation og renter. Hovedstolen vises i fakturaens valuta; gebyrer, kompensation og renter vises særskilt i DKK. Rentekorrektioner reducerer det bogførte krav.</p>
   <Button type="button" variant="secondary" onClick={onClose}>Luk krav</Button>
   {error&&<Banner kind="error">{error}</Banner>}
   {!status&&!error&&<p>Henter aktuelle krav og kildebeviser…</p>}
   {status&&<>
    <p>Faktura {status.invoiceNumber} · hovedstol {status.principalCurrency?formatKroner(status.principalOpenBalance,status.principalCurrency):`${status.principalOpenBalance} (valuta utilgængelig)`} · registrerede gebyrer {formatKroner(status.totalReminderFees,"DKK")} · registreret kompensation {formatKroner(status.totalCompensationDkk ?? 0,"DKK")} · bogført restkrav {formatKroner(status.ledgerBackedClaimBalance,"DKK")}</p>
+   {typeof status.totalInterestDkk==="number"&&<p>Registrerede renter {formatKroner(status.totalInterestDkk,"DKK")} · rentekorrektioner {formatKroner(status.totalInterestCorrectionsDkk,"DKK")}.{status.pendingUnpostedInterest?" Der er rentekrav, som endnu ikke er bogført.":""}</p>}
    <ul>{status.reminders.map(r=><li key={r.reminderId}>{r.reminderDate}: {formatKroner(r.feeAmount,"DKK")} — {r.journalEntryId===null?"Ikke bogført":`Bogført i postering ${r.journalEntryId}`}</li>)}</ul>
    <ul>{status.claimPayments.map(p=><li key={p.claimPaymentId}>Indbetaling {p.paymentDate}: {formatKroner(p.amount,"DKK")} · bankpost {p.bankTransactionId} · postering {p.journalEntryId}</li>)}</ul>
    <p>Eksisterende regel {status.rules.ruleId}: højst {status.rules.maximumFeeAmount} kr., højst {status.rules.maximumReminders} gebyrer og mindst {status.rules.minimumDaysBetweenReminders} dage mellem registreringer. Serveren kontrollerer forfald og aktuelle saldi igen.</p>
+   <NativeInvoiceInterest key={`interest:${slug}:${id}`} slug={slug} id={id} asOfDate={status.asOfDate} principalCurrency={status.principalCurrency} accounts={status.accounts} onChanged={refresh}/>
    <NativeInvoiceCompensation key={`${slug}:${id}`} slug={slug} id={id} asOfDate={status.asOfDate} accounts={status.accounts} onChanged={refresh}/>
    {can("company.draft.write")&&<div>
     <label>Rykkerdato<Input type="date" value={date} onChange={e=>setDate(e.target.value)}/></label>
@@ -44,7 +47,7 @@ export function NativeReminderClaims({slug,id,onChanged,onClose}:{slug:string;id
    {can("company.ledger.post")&&<div>
     <label>Faktisk indbetaling på gebyrkrav<select aria-label="Faktisk indbetaling på gebyrkrav" value={bank} onChange={e=>setBank(e.target.value)}><option value="">Vælg indgående bankpost</option>{status.incomingBankTransactions.map(b=><option key={b.id} value={b.id}>{b.date} · {b.text} · {formatKroner(b.amount,"DKK")} · {b.reference}</option>)}</select></label>
     {receipt&&<p>Bankkonto {receipt.bankAccountNo ?? "Ikke tilgængelig"} · kildehash {receipt.sourceHash ?? "Ikke tilgængelig"} · transaktionshash {receipt.transactionHash ?? "Ikke tilgængelig"}</p>}
-    {!status.settlementAvailable&&<p>Afstem først hovedstolen via fakturaens «Afstem», og bogfør alle registrerede gebyrer og kompensationskrav. Hent derefter opdateret kravstatus.</p>}
+    {!status.settlementAvailable&&<p>Afstem først hovedstolen via fakturaens «Afstem», og bogfør alle registrerede gebyrer, kompensationskrav og renter. Hent derefter opdateret kravstatus.</p>}
     <Button type="button" variant="secondary" onClick={refresh}>Opdatér kravstatus</Button>
     <Button type="button" disabled={!status.settlementAvailable||!receipt?.bankAccountNo||!receipt.sourceHash||!receipt.transactionHash} onClick={()=>setAction("settle")}>Gennemgå indbetaling på gebyrkrav</Button>
    </div>}

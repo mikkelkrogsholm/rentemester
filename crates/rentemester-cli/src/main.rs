@@ -1,3 +1,4 @@
+mod invoice_interest;
 mod invoice_compensation;
 mod audit_verify;
 mod audit_log;
