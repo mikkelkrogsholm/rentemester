@@ -195,9 +195,225 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
     }
 }
 
+/// Original query surface, separate from the fiscal-year browser DTO.
+enum QueryCommand {
+    Transactions(rentemester_application::bank::ListQuery),
+    Reconciliation(rentemester_application::bank::ReportQuery),
+    Accounts(rentemester_application::bank::AccountsQuery),
+}
+impl QueryCommand {
+    fn action(&self) -> Action<'_> {
+        match self {
+            Self::Transactions(q) => Action::Transactions(q),
+            Self::Reconciliation(q) => Action::Reconciliation(q),
+            Self::Accounts(q) => Action::AccountList(q),
+        }
+    }
+}
+fn parse_query(path: &str, raw: &str) -> Result<QueryCommand, ()> {
+    use rentemester_application::bank::{AccountsQuery, ListQuery, ReportQuery};
+    use rentemester_storage::bank_queries::Filters;
+    if raw.len() > 16 * 1024 {
+        return Err(());
+    }
+    let bytes = raw.as_bytes();
+    for (i, b) in bytes.iter().enumerate() {
+        if *b == b'%'
+            && (i + 2 >= bytes.len()
+                || !bytes[i + 1].is_ascii_hexdigit()
+                || !bytes[i + 2].is_ascii_hexdigit())
+        {
+            return Err(());
+        }
+    }
+    let mut fields = std::collections::BTreeMap::new();
+    for (key, value) in url::form_urlencoded::parse(bytes) {
+        if value.len() > 4096
+            || value.chars().any(|c| c.is_control() || c == '\u{fffd}')
+            || fields
+                .insert(key.into_owned(), value.into_owned())
+                .is_some()
+        {
+            return Err(());
+        }
+    }
+    if path.ends_with("/bank/accounts") {
+        let include_inactive = match fields.remove("includeInactive").as_deref() {
+            None | Some("true") => true,
+            Some("false") => false,
+            _ => return Err(()),
+        };
+        return if fields.is_empty() {
+            Ok(QueryCommand::Accounts(AccountsQuery { include_inactive }))
+        } else {
+            Err(())
+        };
+    }
+    let mut query = ListQuery {
+        from: fields.remove("from"),
+        to: fields.remove("to"),
+        filters: Filters {
+            status: fields.remove("status"),
+            text_match: fields.remove("textMatch"),
+            amount: fields.remove("amount"),
+            account: fields.remove("account"),
+        },
+        ..ListQuery::default()
+    };
+    if path.ends_with("/bank/transactions") {
+        for key in ["limit", "offset"] {
+            if let Some(value) = fields.remove(key) {
+                if value.is_empty() || !value.bytes().all(|b| b.is_ascii_digit()) {
+                    return Err(());
+                }
+                let n = value.parse().map_err(|_| ())?;
+                if key == "limit" {
+                    query.limit = Some(n);
+                } else {
+                    query.offset = Some(n);
+                }
+            }
+        }
+        query.validate_shape().map_err(|_| ())?;
+        if !fields.is_empty() {
+            return Err(());
+        }
+        Ok(QueryCommand::Transactions(query))
+    } else if path.ends_with("/bank/reconciliation") {
+        let query = ReportQuery {
+            from: query.from.ok_or(())?,
+            to: query.to.ok_or(())?,
+            filters: query.filters,
+        };
+        query.validate_shape().map_err(|_| ())?;
+        if !fields.is_empty() {
+            return Err(());
+        }
+        Ok(QueryCommand::Reconciliation(query))
+    } else {
+        Err(())
+    }
+}
+pub(super) async fn query_handle(State(state): State<Product>, request: Request) -> Response {
+    let credential = if super::service_company::requested(&request) {
+        match super::service_company::proof(&state, &request, false) {
+            Ok(k) => Credential::Service(k),
+            Err(r) => return *r,
+        }
+    } else {
+        match proof(&state, &request, false) {
+            Ok(c) => Credential::Human(c),
+            Err(r) => return *r,
+        }
+    };
+    if !selected(&state, &request) {
+        return refused(StatusCode::NOT_FOUND, "company_not_found");
+    }
+    if request.method() != axum::http::Method::GET
+        || request.headers().contains_key("content-encoding")
+        || request.headers().contains_key("transfer-encoding")
+        || request.headers().contains_key("idempotency-key")
+        || one(request.headers(), "content-length").is_some_and(|v| v != "0")
+    {
+        return refused(StatusCode::BAD_REQUEST, "invalid_query");
+    }
+    let query = match parse_query(request.uri().path(), request.uri().query().unwrap_or("")) {
+        Ok(q) => q,
+        Err(()) => return refused(StatusCode::BAD_REQUEST, "invalid_query"),
+    };
+    let slug = request
+        .uri()
+        .path()
+        .split('/')
+        .nth(3)
+        .unwrap_or("")
+        .to_owned();
+    if !matches!(to_bytes(request.into_body(),0).await,Ok(b) if b.is_empty()) {
+        return refused(StatusCode::BAD_REQUEST, "body_not_allowed");
+    }
+    let Ok(permit) = state.workers.clone().try_acquire_owned() else {
+        return refused(StatusCode::SERVICE_UNAVAILABLE, "busy");
+    };
+    let result = tokio::task::spawn_blocking(move || {
+        let _permit = permit;
+        let mut owner = state.native.lock_company(&slug).map_err(|_| ())?;
+        Ok::<_, ()>(match credential {
+            Credential::Human(cookie) => {
+                let attempt = owner
+                    .bank(&cookie, &SystemClock, query.action())
+                    .map_err(|_| ())?;
+                super::documents::outcome(attempt)
+            }
+            Credential::Service(key) => {
+                let attempt = owner
+                    .bank_service(&key, &SystemClock, query.action())
+                    .map_err(|_| ())?;
+                match attempt.outcome {
+                    Ok(value) => Ok(value.result),
+                    Err(f) => Err(Box::new(super::service_company::failure(f))),
+                }
+            }
+        })
+    })
+    .await;
+    match result {
+        Ok(Ok(Ok(value))) => response(StatusCode::OK, value),
+        Ok(Ok(Err(r))) => *r,
+        _ => refused(StatusCode::SERVICE_UNAVAILABLE, "outcome_unconfirmed"),
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn original_bank_query_protocol_is_exact_and_business_validation_stays_server_owned() {
+        let QueryCommand::Transactions(q)=parse_query("/bank/transactions","account=+foreign+&amount=-1.005&textMatch=+SHARED+&from=2026-02-30&limit=1&offset=9007199254740991").unwrap() else {panic!()};
+        assert_eq!(q.filters.account.as_deref(), Some(" foreign "));
+        assert_eq!(q.filters.amount.as_deref(), Some("-1.005"));
+        assert_eq!(q.offset, Some(9007199254740991));
+        assert!(parse_query("/bank/transactions", "status=unsupported").is_ok());
+        assert!(parse_query("/bank/reconciliation", "from=2026-05-01&to=2026-04-01").is_ok());
+        for raw in [
+            "limit=0",
+            "limit=5001",
+            "offset=-1",
+            "offset=9007199254740992",
+            "amount=NaN",
+            "amount=inf",
+            "year=2026",
+            "limit=1&limit=2",
+            "textMatch=%zz",
+            "textMatch=%00",
+            "account=%FF",
+        ] {
+            assert!(parse_query("/bank/transactions", raw).is_err(), "{raw}");
+        }
+        for raw in [
+            "from=2026-01-01",
+            "from=2026-01-01&to=2026-12-31&limit=1",
+            "from=&to=2026-12-31",
+        ] {
+            assert!(parse_query("/bank/reconciliation", raw).is_err(), "{raw}");
+        }
+        let QueryCommand::Accounts(q) = parse_query("/bank/accounts", "").unwrap() else {
+            panic!()
+        };
+        assert!(q.include_inactive);
+        let QueryCommand::Accounts(q) =
+            parse_query("/bank/accounts", "includeInactive=false").unwrap()
+        else {
+            panic!()
+        };
+        assert!(!q.include_inactive);
+        for raw in [
+            "includeInactive=1",
+            "includeInactive=true&includeInactive=false",
+            "year=2026",
+        ] {
+            assert!(parse_query("/bank/accounts", raw).is_err());
+        }
+    }
     #[test]
     fn raw_envelope_preserves_bytes_and_refuses_conflicting_or_noncanonical_sources() {
         let bytes = b"Dato;Tekst;Bel\xf8b\r\n01.04.2026;\xe6\xf8\xe5\x80;-1,00\r\n";

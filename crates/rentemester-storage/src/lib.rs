@@ -539,6 +539,7 @@ pub mod cockpit;
 pub mod documents;
 
 pub mod bank;
+pub mod bank_queries;
 
 pub mod expense;
 pub mod payables;

@@ -7,10 +7,14 @@ use crate::{
 use rentemester_engine::Error;
 use rentemester_runtime::namespace::NamespaceGuard;
 pub use rentemester_storage::bank::AccountInput;
+pub use rentemester_storage::bank_queries::{AccountsQuery, ListQuery, ReportQuery};
 use rusqlite::Connection;
 use serde_json::Value;
 pub enum Action<'a> {
     Accounts,
+    Transactions(&'a ListQuery),
+    Reconciliation(&'a ReportQuery),
+    AccountList(&'a AccountsQuery),
     Read {
         today: &'a str,
         year: Option<&'a str>,
@@ -37,7 +41,11 @@ pub fn execute(
     action: Action<'_>,
 ) -> Result<Committed<Value>, Failure> {
     let permission = match action {
-        Action::Accounts | Action::Read { .. } => Permission::CompanyRead,
+        Action::Accounts
+        | Action::Read { .. }
+        | Action::Transactions(_)
+        | Action::Reconciliation(_)
+        | Action::AccountList(_) => Permission::CompanyRead,
         Action::Create(_) => Permission::CompanyAdmin,
         Action::Import { .. } | Action::ImportBytes { .. } => Permission::CompanyLedgerPost,
     };
@@ -53,6 +61,9 @@ pub fn execute(
         context.selection,
         permission,
         |tx, subject| match action {
+            Action::Transactions(_) | Action::Reconciliation(_) | Action::AccountList(_) => {
+                query_authorized(tx, guard, &action)
+            }
             Action::Accounts => rentemester_storage::bank::accounts(tx, slug),
             Action::Read { today, year } => rentemester_storage::bank::read(tx, slug, today, year),
             Action::Create(input) => rentemester_storage::bank::create_account(tx, input, subject),
@@ -135,7 +146,11 @@ pub fn execute_service(
 ) -> Result<crate::service_company::ServiceResult<Value>, crate::service_company::ServiceFailure> {
     use crate::service_company::{self, OperationResult};
     let (permission, mutation) = match action {
-        Action::Accounts | Action::Read { .. } => (Permission::CompanyRead, false),
+        Action::Accounts
+        | Action::Read { .. }
+        | Action::Transactions(_)
+        | Action::Reconciliation(_)
+        | Action::AccountList(_) => (Permission::CompanyRead, false),
         Action::ImportBytes { .. } => (Permission::CompanyLedgerPost, true),
         _ => {
             // This branch has not observed or touched either connection. Do not
@@ -158,6 +173,9 @@ pub fn execute_service(
         mutation,
         |tx, subject, _| {
             let result = match action {
+                Action::Transactions(_) | Action::Reconciliation(_) | Action::AccountList(_) => {
+                    query_authorized(tx, guard, &action)?
+                }
                 Action::Accounts => rentemester_storage::bank::accounts(tx, slug)?,
                 Action::Read { today, year } => {
                     rentemester_storage::bank::read(tx, slug, today, year)?
@@ -186,3 +204,47 @@ pub fn execute_service(
         },
     )
 }
+
+/// Current authority and both database transactions are already held by the caller.
+fn query_authorized(
+    tx: &rusqlite::Transaction<'_>,
+    guard: &mut NamespaceGuard,
+    action: &Action<'_>,
+) -> Result<Value, Error> {
+    let unavailable = || {
+        Error::new(
+            "bank_query_sources_unavailable",
+            "Current bank report sources unavailable or integrity differs",
+        )
+    };
+    if !crate::periods::verify_sources(tx, guard)?.is_empty() {
+        return Err(unavailable());
+    }
+    crate::archive_import::verify_physical(tx, guard)?;
+    // Ordinary period controls cover referenced bank rows. Lists also expose
+    // unmatched imports, whose exact original and captured row must be proved.
+    let mut q = tx
+        .prepare("SELECT id,source_file_hash FROM bank_transactions ORDER BY id")
+        .map_err(|_| unavailable())?;
+    let sources = q
+        .query_map([], |r| Ok((r.get::<_, i64>(0)?, r.get::<_, String>(1)?)))
+        .map_err(|_| unavailable())?
+        .collect::<Result<Vec<_>, _>>()
+        .map_err(|_| unavailable())?;
+    for (id, hash) in sources {
+        let bytes = guard
+            .read_bank_statement(&hash)
+            .map_err(|_| unavailable())?;
+        rentemester_storage::bank_reconciliation::verify_audit_source(tx, id, &bytes)
+            .map_err(|_| unavailable())?;
+    }
+    match action {
+        Action::Transactions(query) => rentemester_storage::bank_queries::list(tx, query),
+        Action::Reconciliation(query) => rentemester_storage::bank_queries::report(tx, query),
+        Action::AccountList(query) => rentemester_storage::bank_queries::accounts(tx, query),
+        _ => unreachable!("only original bank query actions admitted"),
+    }
+}
+#[cfg(test)]
+#[path = "bank/query_tests.rs"]
+mod query_tests;
