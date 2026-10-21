@@ -1,15 +1,15 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "Group129 actual ordinary-MFA static HTML dashboard accepted; next necessary R32/#703 dated FX/loss invoice visibility",
-  "code_revision": "c16568b8",
+  "current_increment": "Group130 original R32/#703 dated FX/loss invoice visibility using shared authenticated principal/carrying",
+  "code_revision": "07a963ad",
   "spec_revision": "sha256:bc98636be4a972407adce0f817a76bb9d4bb7200cb292a70965e75ab62fae250",
-  "state": "Group129 shared Rust HTML dashboard accepted: all12sections, real source-backed invoice totals500/count2, HTTP/headless rendering/CLI atomic local artifact/MCP parity except explicit generation timestamp, current cross-company refusal, exact normal-MFA restart and no read effects passed. Full original two-company R32 journey and independently signed/source-free portfolio recovery passed; independent129 verifier confirms exact binaries/web/runner/helper hashes, normalized restart, all four signed inventories/table/original proofs and terminal owned cleanup. No perfection round. HTML-after-source-free-restore and installed desktop are not claimed. Original R32 still incomplete: supported foreign invoices or any loss writeoff disable dated invoice visibility. Finish that necessary shared projection next, retaining original interface mapping and R31/#706 tax/iXBRL. Whole mission active; manual installed desktop last.",
+  "state": "Group129 actual HTML artifact and exact normal-MFA restart remain accepted. Group130 shared invoice FX/loss principal implementation integrated from57763b02 as07a963ad: explicit original currency and actual DKK carrying, dated payment/credit/loss/refund selection, claims separate, no blanket suppression by future/unrelated loss, minimal existing unposted DKK compatibility and imported/base-currency boundaries retained. Focused portfolio8 and integrated HTML4 pass; strict storage all-target Clippy passes. Normal server/CLI/MCP build passed; extended existing ordinary-MFA bad-debt/FX runtime proof pending. Fixture-only first-run errors diagnosed in isolation (Immediate tx, exact pretty hash, source-forbidden credit-after-loss); supported credit-before-loss and separate no-loss refund case pass, no validator weakened. Whole R32 and epic remain open; tax/iXBRL R31 preserved, installed desktop last.",
   "issues_closed": [
     701
   ],
   "next": [
-    "Finish original R32/#703 invoice visibility with supported FX and established losses: extend shared portfolio::dated_invoices using authenticated original-currency principal and actual DKK receivable carrying at cutoff; explicit currency rows, no mixed-currency totals, no blanket guard for future/unrelated writeoff. Read-only preparation /tmp/rm130-invoice-fx-preparation.md. Reuse posting/audit readers and bounded synthetic fixtures. Do not repeat accepted129 or128 runtime unless changed code requires it. Preserve tax/iXBRL under R31/#706 and original interface mapping; whole R32 remains open.",
+    "Complete normal three-bin build and actual dated FX/loss portfolio/HTML HTTP/React/CLI/MCP at issue/yesterday/today on existing real DKK/EUR bad-debt fixture, exact normal MFA restart and preserved full audit/signed backup. Reuse scripts/rust/run-document-scanner.py --backup-lock --invoice-bad-debt, extended check-native-invoice-bad-debt.ts. Do not repeat129/128 unchanged journeys. Then original R32 interface/format mapping and R31 tax/iXBRL remain; no whole issue closure on this subset.",
     "Installed desktop acceptance is explicitly deferred to the very end by the user. Preserve prepared Group100 profile; collect remaining native automation, closure, recovery and packaging checks for final installed acceptance without requesting screen unlock during development.",
     "J03/R50 and remaining R54 scope: only still-supported operation closure/recovery, nonempty scheduler handoff, hostile/older clone and post-cutover rollback requirements. Group99 qualifies managed installed J06 flow, not every R54 acceptance item.",
     "Signed distribution/update/cutover evidence must match actual full Rust replacement; retain all existing completion gates and TypeScript retirement gate.",
@@ -7117,6 +7117,33 @@
       "event": "issues",
       "status": "completed",
       "conclusion": "success"
+    },
+    "dated_invoice_fx_loss130": {
+      "status": "Focused core8, integrated HTML4, strict storage all-target Clippy and normal three-bin build passed; actual runtime pending",
+      "issue": 703,
+      "worker_source": "57763b02",
+      "integration": "07a963ad",
+      "portfolio_tests": "/tmp/rm130-portfolio-tests-final.log",
+      "dashboard_tests": "/tmp/rm130-dashboard-tests.log",
+      "strict_clippy": "/tmp/rm130-clippy.log",
+      "normal_three_bin_build": "/tmp/rm130-normal-build.log",
+      "proof_helper": "scripts/rust/check-native-invoice-bad-debt.ts",
+      "planned_actual_report": "/tmp/rentemester-rust-reports/dated-fx-loss130.json",
+      "actual_mfa_qualified": false,
+      "normal_restart_qualified": false,
+      "installed_desktop_qualified": false,
+      "fixture_strategy_change": "Exact writer bytes and mandatory Immediate restored; schema permits credit before loss, not after, so one separate no-loss EUR refund fixture avoids invalid combined lifecycle. Isolated corrected tests passed before one final focused group. Accounting source validation retained.",
+      "worktree_recovery": ".git/rentemester-recovery/archived130.json",
+      "next_after_acceptance": [
+        "Original R32 mapping and complete report parity audit",
+        "Original R31/#706 annual tax and iXBRL; no silent format removal",
+        "Manual installed desktop allersidst"
+      ],
+      "normal_binary_sha256": {
+        "rentemester-server": "5d061def7d2e1556acc5026d279fd0a4ee4851a17714cb38ac7d240d20698ece",
+        "rentemester-rust": "4c61dec3793121b3feff0022b5a9f4313346139c7280b6c91df3073aedfb3ed9",
+        "rentemester-mcp": "a159e80462588e92fa0abd3a0a782fe20634c099ca8042fdd9ae8830f895ddd3"
+      }
     }
   },
   "verified_history": [

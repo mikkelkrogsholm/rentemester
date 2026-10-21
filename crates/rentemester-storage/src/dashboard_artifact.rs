@@ -257,25 +257,33 @@ pub fn read(
         "invoices",
         "Åbne fakturaer",
         format!(
-            "Kun fakturaer udstedt i Rentemester til og med {as_of}; betalinger, kreditnotaer og refunderinger afgrænses efter deres dokumenterede dato. Importerede tilgodehavender er særskilte."
+            "Kun fakturaer udstedt i Rentemester til og med {as_of}; betalinger, kreditnotaer, refunderinger og konstaterede tab afgrænses efter deres dokumenterede dato. Fakturasaldo vises i fakturaens valuta. DKK-værdien bygger på bogførte tilgodehavender eller den frosne fakturaværdi, hvis fakturaen endnu ikke er bogført. Importerede tilgodehavender er særskilte."
         ),
     );
     invoices.columns = vec![
         "Kilde".into(),
         "Faktura".into(),
         "Kunde".into(),
-        "Åben saldo".into(),
+        "Åben saldo (fakturavaluta)".into(),
+        "Værdi (DKK)".into(),
         "Forfald".into(),
         "Dage over frist".into(),
     ];
     if let Some(v) = &invoice {
         if let Some(rows) = v["rows"].as_array() {
             for r in rows.iter().take(10) {
+                let currency = r["currency"]
+                    .as_str()
+                    .ok_or_else(|| invalid("invoice currency unavailable"))?;
                 invoices.rows.push(vec![
                     "Rentemester".into(),
                     text(&r["invoiceNo"]),
                     text(&r["buyerName"]),
-                    dkk(&r["openBalance"])?,
+                    format!(
+                        "{} {currency}",
+                        amount(&r["openBalance"])?.decimal().replace('.', ",")
+                    ),
+                    dkk(&r["openBalanceDkk"])?,
                     text(&r["dueDate"]),
                     if r["dueDate"].is_null() {
                         "Ukendt".into()
@@ -291,7 +299,7 @@ pub fn read(
         } else {
             unavailable(
                 &mut invoices,
-                "Dateret opgørelse understøtter endnu ikke alle valutaer eller tabskorrektioner.",
+                "Det daterede fakturagrundlag kunne ikke opgøres sikkert.",
                 "Se fakturaoversigt og korrektionsgrundlag.",
             );
         }
@@ -739,7 +747,9 @@ mod tests {
         let invoices = find(&d, "invoices");
         assert_eq!(invoices.rows.len(), 3);
         assert_eq!(invoices.rows[0][1], "Z-2");
-        assert_eq!(invoices.rows[2][5], "Ukendt");
+        assert_eq!(invoices.rows[2][6], "Ukendt");
+        assert_eq!(invoices.rows[0][3], "100,01 DKK");
+        assert_eq!(invoices.rows[0][4], "100,01 kr.");
         assert!(
             invoices
                 .notes

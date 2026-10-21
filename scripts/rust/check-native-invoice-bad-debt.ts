@@ -29,6 +29,8 @@ export function createInvoiceBadDebtProof(page: Page, base: string, work: string
   const account = { debtor: '1210', claim: '1230', revenue: '3210', compensation: '3230', outputVat: '4210', inputVat: '4220', creditor: '2210', gain: '3220', loss: '6220', expense: '6230', bank: '1711' };
   let today = '', issueDate = '', dueDate = '', previousDate = '', completed = false, started = false;
   let stable: any, reports: any, terminalClaims: any;
+  let projectionSequence = 0;
+  let finalProjections: any;
   const invoices: Invoice[] = [], originalBytes = new Map<string, Buffer>(), bankBytes = new Map<string, Buffer>();
   const steps: Array<{ name: string; fingerprint: string }> = [];
   const refusals: Array<{ label: string; status: number; code: string; canonicalFingerprint: string }> = [];
@@ -199,11 +201,84 @@ export function createInvoiceBadDebtProof(page: Page, base: string, work: string
     need(v.grossAmount===expected.gross&&v.netAmount===expected.net&&v.vatAmount===expected.vat&&v.grossAmountDkk===expected.grossDkk&&v.netAmountDkk===expected.netDkk&&v.vatAmountDkk===expected.vatDkk&&v.remainingPrincipal===expected.remaining&&v.remainingPrincipalDkk===expected.remainingDkk,'Exact original and DKK loss allocation: '+JSON.stringify(v));return v;
   }
   async function stage(invoice:Invoice,name:string){const value=await parity(invoice);steps.push({name:invoice.currency+':'+name,fingerprint:fingerprint(value)});return value.reminderClaims;}
+  async function projections(label: string, cases: Array<{ date: string; count: number; total: number; eur?: number; eurDkk?: number }>, clients = false) {
+    const before = await snapshot(), result: any[] = [];
+    const common = ['--server', base, '--cookie-file', ownerCookie, '--allow-loopback-http'];
+    const normalized = (html: string) => {
+      need((html.match(/<footer><p>Genereret: [^<]+<\/p>/g) || []).length === 1, 'One explicit HTML generation time');
+      return html.replace(/(<footer><p>Genereret: )[^<]+(<\/p>)/, '$1[generatedAt]$2');
+    };
+    function readClient(kind: Kind, resource: 'portfolio' | 'dashboard', date: string) {
+      const out = join(work, `dated-report-${++projectionSequence}.html`);
+      const args = kind === 'cli' ? [resource, ...common, '--as-of', date, ...(resource === 'dashboard' ? ['--company', 'synthetic', '--out', out] : [])] : common;
+      if (kind === 'cli' && resource === 'portfolio') args.unshift('remote');
+      const input = kind === 'mcp' ? [
+        { jsonrpc: '2.0', id: 1, method: 'initialize', params: { protocolVersion: '2025-11-25', capabilities: {}, clientInfo: { name: 'synthetic-dated-fx130', version: '1' } } },
+        { jsonrpc: '2.0', method: 'notifications/initialized' },
+        { jsonrpc: '2.0', id: 2, method: 'tools/call', params: { name: resource === 'dashboard' ? 'dashboard_export' : 'portfolio', arguments: { asOf: date, ...(resource === 'dashboard' ? { company: 'synthetic' } : {}) } } },
+      ].map(v => JSON.stringify(v)).join('\n') + '\n' : '';
+      const r = spawnSync(join(work, kind === 'cli' ? 'rentemester-rust' : 'rentemester-mcp'), args, { input, encoding: 'utf8', timeout: 45000, maxBuffer: 16 * 1024 * 1024 });
+      need(!r.error && r.status === 0 && !r.stdout.includes(readFileSync(ownerCookie, 'utf8').trim()) && !r.stderr.includes(readFileSync(ownerCookie, 'utf8').trim()), `Dated ${kind} ${resource} terminal/privacy contract`);
+      if (kind === 'cli') {
+        const value = JSON.parse(r.stdout); need(value.ok === true, 'Dated CLI success');
+        if (resource === 'portfolio') return value.data;
+        const bytes = readFileSync(out); need(bytes.length === value.bytes && value.asOfDate === date && value.opened === false, 'Atomic dated HTML receipt');
+        return bytes.toString('utf8');
+      }
+      const envelope = r.stdout.trim().split('\n').map(v => JSON.parse(v)).find(v => v.id === 2)?.result;
+      need(envelope?.isError === false && envelope.structuredContent?.ok === true, 'Dated MCP success');
+      const value = envelope.structuredContent.data;
+      if (resource === 'portfolio') return value;
+      need(value.ok === true && value.contentType === 'text/html; charset=utf-8' && value.asOfDate === date, 'Dated MCP exact HTML metadata');
+      return Buffer.from(value.bytes).toString('utf8');
+    }
+    for (const expected of cases) {
+      const response = await page.request.get(base + '/api/portfolio?asOf=' + expected.date);
+      need(response.ok(), 'Actual dated FX/loss portfolio HTTP');
+      const canonical = await response.json(), company = canonical.portfolio.companies.find((c: any) => c.slug === 'synthetic');
+      need(company?.openInvoiceCount === expected.count && company.openInvoiceTotal === expected.total, `Dated FX/loss native principal ${label}/${expected.date}`);
+      need(canonical.portfolio.totals.openInvoiceTotal === expected.total, 'Aggregate uses DKK carrying without claim principal or mixed currencies');
+      let htmlSha256: string | undefined;
+      if (clients) {
+        const download = await page.request.get(base + prefix + 'dashboard/export?format=html&asOf=' + expected.date);
+        need(download.ok() && download.headers()['content-type'] === 'text/html; charset=utf-8', 'Actual dated FX/loss HTML download');
+        const html = await download.text(); htmlSha256 = hash(normalized(html));
+        const rows = await page.evaluate(({ html, invoiceNumber }) => {
+          const doc = new DOMParser().parseFromString(html, 'text/html');
+          const section = doc.querySelector('section[data-section="invoices"]');
+          return [...(section?.querySelectorAll('tbody tr') || [])].map(r => [...r.querySelectorAll('td')].map(c => c.textContent)).find(c => c[1] === invoiceNumber);
+        }, { html, invoiceNumber: invoices.find(i => i.currency === 'EUR')!.number });
+        if (expected.eur !== undefined) {
+          need(rows?.[3] === expected.eur.toFixed(2).replace('.', ',') + ' EUR' && rows[4] === expected.eurDkk!.toFixed(2).replace('.', ',') + ' kr.', 'Original EUR and actual DKK carrying shown in distinct columns');
+        }
+        if (expected.date === previousDate) {
+          await page.goto(base + '/');
+          await page.getByRole('heading', { name: 'Portefølje', exact: true }).waitFor();
+          await page.getByLabel('Pr. dato', { exact: true }).fill(expected.date);
+          const pending = page.waitForResponse(r => { const u = new URL(r.url()); return u.pathname === '/api/portfolio' && u.searchParams.get('asOf') === expected.date; });
+          await page.getByRole('button', { name: 'Hent portefølje igen', exact: true }).click();
+          const shown = await pending;
+          need(shown.ok() && isDeepStrictEqual(await shown.json(), canonical), 'Shared React portfolio uses exact dated FX/loss projection');
+          const card = page.getByRole('article', { name: company.name, exact: true });
+          await card.getByText('Åbne fakturaer', { exact: true }).locator('..').locator('dd').filter({ hasText: String(expected.count) }).waitFor();
+          await card.getByText(new Intl.NumberFormat('da-DK', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(expected.total) + ' kr.', { exact: true }).waitFor();
+        }
+        for (const kind of ['cli', 'mcp'] as const) {
+          need(isDeepStrictEqual(readClient(kind, 'portfolio', expected.date), canonical), 'Actual dated portfolio HTTP/CLI/MCP exact parity');
+          need(hash(normalized(readClient(kind, 'dashboard', expected.date))) === htmlSha256, 'Actual dated HTML HTTP/CLI/MCP equality except explicit generation time');
+        }
+      }
+      result.push({ ...expected, canonicalFingerprint: fingerprint(canonical), ...(htmlSha256 ? { htmlSha256 } : {}) });
+    }
+    await unchanged(before, 'Dated FX/loss portfolio and HTML read-only projection');
+    return { qualified: true, label, readOnly: true, clientsQualified: clients, cases: result };
+  }
   return {
     async run(){
       need(!started,'Bad-debt proof executes once');started=true;await cookies(page,ownerCookie,true);need(memberPage,'Normal MFA member required');await cookies(memberPage!,memberCookie,true);
       const baseline=await snapshot();need(baseline.journal.journal.entries.length===1&&baseline.bank.bank.transactions.length===1&&new Set(baseline.documents.documents.documents.map((v:any)=>v.id)).size===0,'Accepted backup-lock baseline');
       await setup();const[dkk,eur]=invoices;
+      await projections('issued', [{ date: issueDate, count: 2, total: 2179.01 }]);
       const first=await stage(dkk,'separate-compensation-posted');need(first.principalOpenBalance===1250&&first.ledgerBackedClaimBalance===310&&first.badDebtWriteOffs.length===0,'Separate initial principal and compensation');
       const rights=await permissions(dkk),before=await snapshot();
       await denied('writeoff',{...writeBody(dkk,312.5),confirm:false},before,'Missing inner confirmation');
@@ -225,10 +300,12 @@ export function createInvoiceBadDebtProof(page: Page, base: string, work: string
       const foreign=(await post('invoices/settle',{invoiceDocumentId:eur.id,bankTransactionId:bankId('SYN122-EUR-PRINCIPAL'),paymentDate:previousDate,confirm:true})).settlement;
       need(foreign.principalAmountDkk===371.98&&foreign.bankAmountDkk===375.38,'Actual EUR partial cash and carrying relief differ by exact FXgain3.40');
       const eurOpen=await stage(eur,'foreign-principal-part-paid');need(eurOpen.principalOpenBalance===74.95,'Original currency principal before final loss');
+      await projections('foreign-paid-before-loss', [{ date: previousDate, count: 2, total: 1807.03 }, { date: today, count: 2, total: 1182.03 }]);
       const mcp=verifiedWrite(client('mcp','writeoff',writeBody(eur,undefined,'Synthetic reviewed remaining foreign loss 122')),eur,{gross:74.95,net:59.96,vat:14.99,grossDkk:557.03,netDkk:445.62,vatDkk:111.41,remaining:0,remainingDkk:0});
       const eurLost=await stage(eur,'foreign-remainder-written-off');need(eurLost.badDebtWriteOffs.length===1&&eurLost.totalBadDebtWrittenOff===74.95&&eurLost.totalBadDebtWrittenOffDkk===557.03&&eurLost.principalOpenBalance===0,'Foreign original/DKK loss units preserved');
       await post('invoices/settle',{invoiceDocumentId:dkk.id,bankTransactionId:bankId('SYN122-DKK-PRINCIPAL'),paymentDate:today,confirm:true});
       const paid=await stage(dkk,'surviving-principal-paid');need(paid.principalOpenBalance===0&&paid.ledgerBackedClaimBalance===310&&paid.settlementAvailable===true,'Bad-debt relief does not cancel a separate compensation claim');
+      await projections('principal-zero-claim-still-open', [{ date: today, count: 0, total: 0 }]);
       await uiClaimReceipt(dkk,bankId('SYN122-DKK-CLAIM'));
       terminalClaims={};for(const invoice of invoices){const v=await parity(invoice);need(v.reminderClaims.principalOpenBalance===0&&v.reminderClaims.ledgerBackedClaimBalance===0,'Terminal principal and claim zero');terminalClaims[invoice.id]=v;}
       const dc=terminalClaims[dkk.id].reminderClaims,ec=terminalClaims[eur.id].reminderClaims;
@@ -242,9 +319,9 @@ export function createInvoiceBadDebtProof(page: Page, base: string, work: string
       const vat=stable.vat.vat;need(vat.vatRegistered===true&&vat.outputVat===435.8&&vat.outputVatAdjustment===-236.41&&vat.inputVat===0&&vat.payable===199.39&&vat.vatReportErrors.length===0,'Current VAT report separates original output435.80 and bad-debt adjustment236.41');
       await originals();reports=await audit();await unchanged(stable,'Originals and full-audit inspection');
       await page.goto(base+'/companies/synthetic/integritet');const card=page.getByRole('region',{name:'Regnskabskontrol',exact:true});const response=page.waitForResponse(r=>r.url()===base+prefix+'audit-verify');await card.getByRole('button',{name:'Kontrollér regnskabet',exact:true}).click();need(isDeepStrictEqual(await(await response).json(),reports),'Web exact full-audit parity');await card.getByRole('status').filter({hasText:'Kontrollen fandt ingen afvigelser.'}).waitFor();await page.screenshot({path:process.env.RM_SCANNER_SCREENSHOT!,fullPage:true});
-      const exported=await page.request.post(base+'/api/workspace/backup',{headers:{origin:base},data:{confirm:true}});need(exported.ok()&&exported.headers()['content-type']?.split(';')[0]==='application/vnd.rentemester.native-backup+json','Actual signed bad-debt export');const artifact=await exported.body();need(artifact.length>0&&artifact.length<=96*1024*1024,'Bounded signed backup');writeFileSync(join(work,'bad-debt-source.native-backup.json'),artifact,{mode:0o600,flag:'wx'});await unchanged(stable,'Signed export');completed=true;
-      return{qualified:true,signedBackup:{sha256:hash(artifact),bytes:artifact.length,independentlyVerified:false},invoices,writeOffReceipts:[ui,cli,mcp],stages:steps,refusals,permissions:rights,backup,terminalClaims,fullAudit:reports,vatReport:vat,accountingFingerprint:fingerprint(stable),originalSha256:Object.fromEntries([...originalBytes].map(([key,bytes])=>[key,hash(bytes)])),bankOriginalSha256:Object.fromEntries([...bankBytes].map(([key,bytes])=>[key,hash(bytes)])),allThreeWriteChannelsActualQualified:true,twoPartialLossesWereDistinctReviewedIntents:true,lostAcceptedReplyBlockedNoAutomaticRetry:true,exactHttpCliMcpStatusAndOriginals:true,foreignActualCarryingAndVatQualified:true,legalEstablishmentIndependentlyProven:false,recoveryFeatureQualified:false,foreignInterestQualified:false,sourceFreeRestoreQualified:false,installedNativeQualified:false,realMailOrProviderEffectsQualified:false};
+      const exported=await page.request.post(base+'/api/workspace/backup',{headers:{origin:base},data:{confirm:true}});need(exported.ok()&&exported.headers()['content-type']?.split(';')[0]==='application/vnd.rentemester.native-backup+json','Actual signed bad-debt export');const artifact=await exported.body();need(artifact.length>0&&artifact.length<=96*1024*1024,'Bounded signed backup');writeFileSync(join(work,'bad-debt-source.native-backup.json'),artifact,{mode:0o600,flag:'wx'});await unchanged(stable,'Signed export');finalProjections=await projections('terminal-after-signed-backup',[{date:issueDate,count:2,total:2179.01,eur:125,eurDkk:929.01},{date:previousDate,count:2,total:1807.03,eur:74.95,eurDkk:557.03},{date:today,count:0,total:0}],true);completed=true;
+      return{qualified:true,datedInvoiceReports130:finalProjections,signedBackup:{sha256:hash(artifact),bytes:artifact.length,independentlyVerified:false},invoices,writeOffReceipts:[ui,cli,mcp],stages:steps,refusals,permissions:rights,backup,terminalClaims,fullAudit:reports,vatReport:vat,accountingFingerprint:fingerprint(stable),originalSha256:Object.fromEntries([...originalBytes].map(([key,bytes])=>[key,hash(bytes)])),bankOriginalSha256:Object.fromEntries([...bankBytes].map(([key,bytes])=>[key,hash(bytes)])),allThreeWriteChannelsActualQualified:true,twoPartialLossesWereDistinctReviewedIntents:true,lostAcceptedReplyBlockedNoAutomaticRetry:true,exactHttpCliMcpStatusAndOriginals:true,foreignActualCarryingAndVatQualified:true,legalEstablishmentIndependentlyProven:false,recoveryFeatureQualified:false,foreignInterestQualified:false,sourceFreeRestoreQualified:false,installedNativeQualified:false,realMailOrProviderEffectsQualified:false};
     },
-    async reopen(){need(completed,'Completed bad-debt flow required');await cookies(page,ownerCookie,false);for(const invoice of invoices)need(isDeepStrictEqual(await parity(invoice),terminalClaims[invoice.id]),'Normal MFA exact loss/claim restart');need(isDeepStrictEqual(await snapshot(),stable)&&isDeepStrictEqual(await audit(),reports),'Exact books VAT and full-audit after restart');await originals();for(const file of [ownerCookie,memberCookie]){const info=lstatSync(file);need(info.isFile()&&!info.isSymbolicLink(),'Owned cookie cleanup');unlinkSync(file);}return{qualified:true,exactNormalMfaRestartState:true,exactOriginalBytesAfterRestart:true,fullAudit119GreenAfterRestart:true,accountingFingerprint:fingerprint(stable),sourceFreeRestoreQualified:false,installedNativeQualified:false};},
+    async reopen(){need(completed,'Completed bad-debt flow required');await cookies(page,ownerCookie,false);for(const invoice of invoices)need(isDeepStrictEqual(await parity(invoice),terminalClaims[invoice.id]),'Normal MFA exact loss/claim restart');need(isDeepStrictEqual(await snapshot(),stable)&&isDeepStrictEqual(await audit(),reports),'Exact books VAT and full-audit after restart');await originals();const reopenedProjections=await projections('normal-restart',[{date:issueDate,count:2,total:2179.01,eur:125,eurDkk:929.01},{date:previousDate,count:2,total:1807.03,eur:74.95,eurDkk:557.03},{date:today,count:0,total:0}],true);need(isDeepStrictEqual(reopenedProjections.cases,finalProjections.cases),'Exact dated FX/loss portfolio and normalized HTML after normal MFA restart');for(const file of [ownerCookie,memberCookie]){const info=lstatSync(file);need(info.isFile()&&!info.isSymbolicLink(),'Owned cookie cleanup');unlinkSync(file);}return{qualified:true,datedInvoiceReports130:reopenedProjections,exactNormalMfaRestartState:true,exactOriginalBytesAfterRestart:true,fullAudit119GreenAfterRestart:true,accountingFingerprint:fingerprint(stable),sourceFreeRestoreQualified:false,installedNativeQualified:false};},
   };
 }
