@@ -1,11 +1,11 @@
 # Dinero-import på Rust-serveren
 
-Åbn virksomhedens administrationsside, vælg **Dinero-kildepakke**, og angiv
-en særskilt importnøgle. **Gennemgå Dinero-import** viser serverens fortolkning,
+Åbn virksomhedens administrationsside, vælg en **Dinero-eksportmappe** eller
+en rå ZIP-fil under **Dinero-kildepakke**, og angiv en særskilt importnøgle. **Gennemgå Dinero-import** viser serverens fortolkning,
 åbningsposter, historiske bilag og kontrolsaldi. Gennemgå oplysningerne og
 bekræft importen. En kontrolforskel på én øre blokerer bogføringen.
 
-Den aktuelle indlæsning tager en JSON-kildepakke:
+JSON-kildepakker understøttes fortsat:
 
 ```json
 {"format":"rentemester-dinero-source/1","currency":"DKK","files":[{"path":"2025/Kontoplan.csv","contentBase64":"..."}]}
@@ -14,7 +14,12 @@ Den aktuelle indlæsning tager en JSON-kildepakke:
 Medtag de originale CSV-filer med deres relative stier: firmaoplysninger,
 kontoplan, posteringer og saldobalance samt den eventuelle fil
 `Rentemester-modtagerposter-v1.json`. Filernes præcise bytes bevares i pakken.
-Webvisningen pakker endnu ikke en mappe eller ZIP-fil automatisk.
+Mappevælgeren danner denne pakke af filernes præcise bytes og relative stier.
+ZIP-filer sendes uændret til Rust-serveren og bevares med deres egen rå hash,
+størrelse og filinventar. En gendannet JSON-pakke er ikke ZIP-originalen.
+ZIP-input understøtter ukomprimerede og Deflate-komprimerede filer.
+Krypterede arkiver, andre komprimeringsmetoder, ugyldige stier, symlinks,
+kolliderende filnavne og integritetsfejl afvises.
 
 Importen opretter konti og forslag til kontoroller, bogfører det seneste års
 åbning og bilag og gemmer kildeoversigt, accepteret importforsøg og eventuelle
@@ -64,10 +69,10 @@ Alle stier nedenfor ligger under `/api/companies/{slug}/`:
 Plan tager `{fileName,contentBase64}`. Apply tager de samme felter plus
 `planHash`, `idempotencyKey` og `confirm:true`. CLI læser JSON fra stdin;
 MCP modtager JSON-tekst i `body`. Apply kræver også klientens ydre
-bekræftelse. Originalruten returnerer rå `application/json`; CLI og MCP
+bekræftelse. Originalruten returnerer rå `application/json` eller `application/zip`; CLI og MCP
 returnerer indholdstype og præcise bytes i deres sædvanlige svar.
 
-Kildepakken må højst være 25 MiB med 4.096 entydige, sikre relative filstier.
+JSON-pakken eller den rå ZIP-fil må højst være 25 MiB med 4.096 entydige, sikre relative filstier.
 En enkelt udpakket fil må højst være 16 MiB, og den samlede filstørrelse
 højst 18 MiB. Serveren udleder aktør, import-ID, posteringer og kontroller.
 Bogføring kræver aktuel menneskelig MFA, virksomhedsadministrator og en
@@ -78,6 +83,23 @@ status**, og afstem importforsøg, journal og kildeoriginal manuelt. En bevidst
 gentagelse med præcis samme nøgle og indhold kan læse den oprindelige
 kvittering; den kræver fortsat aktuel adgang og intakte kildeoriginaler.
 En ændret nøgle er ikke en sikker gentagelse af et uafklaret forsøg.
+
+## Lokal mappe eller ZIP via CLI
+
+`remote dinero-import-plan --file PATH` læser en lokal eksportmappe eller ZIP
+og viser serverens plan. En mappe pakkes deterministisk; ZIP-originalen ændres
+ikke. Den lokale filsti sendes ikke til serveren.
+
+`remote dinero-import-apply --file PATH --plan-hash HASH --idempotency-key KEY --confirm`
+kræver den allerede gennemgåede plan og en eksplicit nøgle. Angiv desuden de
+sædvanlige server-, cookie- og virksomhedsflag. Klienten planlægger eller
+forsøger ikke automatisk igen. Hvis kilden ændres mellem gennemgang og
+bekræftelse, afvises planen. Den eksisterende stdin-JSON-kontrakt fungerer
+fortsat, når `--file` ikke er angivet.
+
+Mappe- og ZIP-udvidelsens integrerede tests består; den samlede rå-ZIP-prøve
+registreres som `native_dinero_containers126`, når den er kvalificeret. Den
+færdige bilagsprøve ovenfor gælder JSON-inputtet før denne udvidelse.
 
 ## Verifikationsgrænse
 

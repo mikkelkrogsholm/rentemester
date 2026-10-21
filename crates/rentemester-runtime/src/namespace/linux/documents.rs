@@ -58,7 +58,7 @@ impl NamespaceGuard {
                 || if bank {
                     ext != "txt"
                 } else {
-                    !["pdf", "png", "jpg", "jpeg", "txt", "json", "xml"].contains(&ext)
+                    !["pdf", "png", "jpg", "jpeg", "txt", "json", "xml", "zip"].contains(&ext)
                 }
             {
                 return Err(Error::Invalid);
@@ -314,7 +314,8 @@ impl NamespaceGuard {
             .strip_prefix("documents/originals/")
             .ok_or(Error::Invalid)?;
         let (base, extension) = name.split_once('.').ok_or(Error::Invalid)?;
-        if base != hash || !["pdf", "png", "jpg", "jpeg", "txt", "json", "xml"].contains(&extension)
+        if base != hash
+            || !["pdf", "png", "jpg", "jpeg", "txt", "json", "xml", "zip"].contains(&extension)
         {
             return Err(Error::Invalid);
         }

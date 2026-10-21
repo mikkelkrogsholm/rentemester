@@ -858,3 +858,74 @@ fn receipt_retention_and_number_follow_trusted_danish_day_across_utc_year_bounda
     assert_eq!(retention, "2032-12-31");
     verify_sources(&tx, &bytes);
 }
+
+#[test]
+fn raw_zip_stored_and_deflated_keep_original_identity_and_equal_accounting_inventory() {
+    let mut expected = None;
+    for raw in [
+        include_bytes!("fixtures/source126-stored.zip").as_slice(),
+        include_bytes!("fixtures/source126-deflated.zip").as_slice(),
+    ] {
+        let decoded = decode_source(raw).unwrap();
+        assert_eq!(
+            decoded.source.path,
+            format!("documents/originals/{}.zip", sha(raw))
+        );
+        assert_eq!(decoded.source.size_bytes, raw.len() as u64);
+        let packaged = policy::containers::package(&decoded.files).unwrap();
+        let json = decode_source(&packaged).unwrap();
+        assert_ne!(decoded.source.sha256, json.source.sha256);
+        assert_eq!(decoded.source.entries, json.source.entries);
+        let parsed = serde_json::to_value(&decoded.parsed).unwrap();
+        assert_eq!(parsed, serde_json::to_value(&json.parsed).unwrap());
+        if let Some(previous) = &expected {
+            assert_eq!(&parsed, previous);
+        }
+        expected = Some(parsed);
+        let (_control, mut db) = db();
+        let tx = db
+            .transaction_with_behavior(TransactionBehavior::Immediate)
+            .unwrap();
+        let p = prepare(&tx, &decoded, latest()).unwrap();
+        assert_eq!(p.review()["sourceKind"], "zip");
+        let receipt = apply(&tx, &p, &input(&p), latest(), "synthetic", NOW).unwrap();
+        assert_eq!(
+            receipt["supportingDocuments"],
+            json!({"registered":3,"duplicates":0,"linked":2,"unbooked":1})
+        );
+        assert_eq!(snapshot(&tx)["journal_entries"], 4);
+        let original = originals(&tx).unwrap().remove(0);
+        verify_original(&tx, &original, raw).unwrap();
+        assert!(
+            verify_original(&tx, &original, &packaged).is_err(),
+            "a regenerated JSON package is not the original ZIP"
+        );
+        tx.commit().unwrap();
+        verify_sources(&db, raw);
+        assert_eq!(supporting_originals(&db).unwrap().len(), 3);
+    }
+}
+
+#[test]
+fn new_json_intake_refuses_drive_roots_and_case_collisions_without_financial_effects() {
+    let (_control, mut db) = db();
+    for extra in [
+        vec!["C:/unknown.bin"],
+        vec!["2025/Notes.bin", "2025/notes.bin"],
+    ] {
+        let mut value: Value = serde_json::from_slice(&source("24500,000000", false)).unwrap();
+        for path in extra {
+            value["files"].as_array_mut().unwrap().push(
+                json!({"path":path,"contentBase64":STANDARD.encode(b"Synthetic opaque bytes")}),
+            );
+        }
+        let decoded = decode_source(&serde_json::to_vec(&value).unwrap()).unwrap();
+        let tx = db
+            .transaction_with_behavior(TransactionBehavior::Immediate)
+            .unwrap();
+        let before = snapshot(&tx);
+        assert!(prepare(&tx, &decoded, latest()).is_err());
+        assert_eq!(snapshot(&tx), before);
+        tx.rollback().unwrap();
+    }
+}

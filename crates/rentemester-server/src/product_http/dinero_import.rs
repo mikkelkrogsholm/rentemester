@@ -36,8 +36,8 @@ fn file(name: String, encoded: String) -> Result<Prepared, ()> {
     if STANDARD.encode(&bytes) != encoded {
         return Err(());
     }
-    let prepared = Prepared::new(name, bytes).map_err(|_| ())?;
-    if prepared.mime() != "application/json" {
+    let prepared = Prepared::dinero_source(name, bytes).map_err(|_| ())?;
+    if !matches!(prepared.mime(), "application/json" | "application/zip") {
         return Err(());
     }
     Ok(prepared)
@@ -176,11 +176,14 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
                     StatusCode::OK,
                     json!({"ok":true,"importedReceivables":value}),
                 ),
-                Output::Original(bytes) => {
+                Output::Original {
+                    bytes,
+                    content_type,
+                } => {
                     let mut reply = (StatusCode::OK, bytes).into_response();
                     reply.headers_mut().insert(
                         "content-type",
-                        axum::http::HeaderValue::from_static("application/json"),
+                        axum::http::HeaderValue::from_static(content_type),
                     );
                     reply.headers_mut().insert(
                         "cache-control",

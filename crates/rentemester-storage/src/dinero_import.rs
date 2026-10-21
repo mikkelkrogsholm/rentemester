@@ -65,6 +65,8 @@ pub(super) struct Binding {
     pub context: Value,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub receipt_plan: Option<Value>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub source_kind: Option<String>,
 }
 #[derive(Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -125,53 +127,70 @@ pub fn decode_source(bytes: &[u8]) -> Result<Decoded, Error> {
     if bytes.is_empty() || bytes.len() > 25 * 1024 * 1024 {
         return Err(refused("source package exceeds25MiB"));
     }
-    let package: Package =
-        serde_json::from_slice(bytes).map_err(|_| refused("invalid Dinero source package"))?;
-    if package.format != PACKAGE || package.files.is_empty() || package.files.len() > 4096 {
-        return Err(refused("unsupported source package/inventory"));
-    }
+    let zip = bytes.starts_with(b"PK\x03\x04") || bytes.starts_with(b"PK\x05\x06");
     let mut files = vec![];
     let mut entries = vec![];
-    let mut seen = BTreeSet::new();
-    let mut total = 0usize;
-    for file in package.files {
-        let path = &file.path;
-        if path.is_empty()
-            || path.len() > 1024
-            || path.starts_with('/')
-            || path.contains('\\')
-            || path.contains("..")
-            || path.chars().any(char::is_control)
-            || path.split('/').any(|p| p.is_empty() || p == ".")
-            || !seen.insert(path.clone())
-        {
-            return Err(refused("unsafe or duplicate exact source path"));
+    let currency;
+    if zip {
+        let source = policy::containers::decode(bytes, policy::containers::Kind::Zip)?;
+        currency = source.currency;
+        files = source.files;
+        entries = files
+            .iter()
+            .map(|f| EntryFacts {
+                path: f.path.clone(),
+                sha256: sha(&f.bytes),
+                size_bytes: f.bytes.len() as u64,
+            })
+            .collect();
+    } else {
+        let package: Package =
+            serde_json::from_slice(bytes).map_err(|_| refused("invalid Dinero source package"))?;
+        if package.format != PACKAGE || package.files.is_empty() || package.files.len() > 4096 {
+            return Err(refused("unsupported source package/inventory"));
         }
-        let decoded = STANDARD
-            .decode(file.content_base64.as_bytes())
-            .map_err(|_| refused("invalid source base64"))?;
-        total = total
-            .checked_add(decoded.len())
-            .ok_or_else(|| refused("source size overflow"))?;
-        if decoded.len() > 16 * 1024 * 1024
-            || total > 18 * 1024 * 1024
-            || STANDARD.encode(&decoded) != file.content_base64
-        {
-            return Err(refused("noncanonical or oversized source entry"));
+        currency = package.currency.clone();
+        let mut seen = BTreeSet::new();
+        let mut total = 0usize;
+        for file in package.files {
+            let path = &file.path;
+            if path.is_empty()
+                || path.len() > 1024
+                || path.starts_with('/')
+                || path.contains('\\')
+                || path.contains("..")
+                || path.chars().any(char::is_control)
+                || path.split('/').any(|p| p.is_empty() || p == ".")
+                || !seen.insert(path.clone())
+            {
+                return Err(refused("unsafe or duplicate exact source path"));
+            }
+            let decoded = STANDARD
+                .decode(file.content_base64.as_bytes())
+                .map_err(|_| refused("invalid source base64"))?;
+            total = total
+                .checked_add(decoded.len())
+                .ok_or_else(|| refused("source size overflow"))?;
+            if decoded.len() > 16 * 1024 * 1024
+                || total > 18 * 1024 * 1024
+                || STANDARD.encode(&decoded) != file.content_base64
+            {
+                return Err(refused("noncanonical or oversized source entry"));
+            }
+            entries.push(EntryFacts {
+                path: file.path.clone(),
+                sha256: sha(&decoded),
+                size_bytes: decoded.len() as u64,
+            });
+            files.push(SourceFile {
+                path: file.path,
+                bytes: decoded,
+            });
         }
-        entries.push(EntryFacts {
-            path: file.path.clone(),
-            sha256: sha(&decoded),
-            size_bytes: decoded.len() as u64,
-        });
-        files.push(SourceFile {
-            path: file.path,
-            bytes: decoded,
-        });
     }
     entries.sort_by(|a, b| a.path.cmp(&b.path));
     let digest = sha(bytes);
-    let parsed = policy::parse(&files, &package.currency)?;
+    let parsed = policy::parse(&files, &currency)?;
     let csv = files
         .iter()
         .filter(|f| rentemester_engine::archive_import::canonical_path(&f.path).is_ok())
@@ -180,7 +199,7 @@ pub fn decode_source(bytes: &[u8]) -> Result<Decoded, Error> {
         rentemester_engine::archive_import::canonical_path(&f.path)
             .is_ok_and(|(y, _)| y < parsed.latest_year)
     }) {
-        let bytes=serde_json::to_vec(&json!({"format":rentemester_engine::archive_import::PACKAGE,"currency":package.currency,"files":csv.iter().map(|f|json!({"path":f.path,"contentBase64":STANDARD.encode(&f.bytes)})).collect::<Vec<_>>()})).map_err(invalid)?;
+        let bytes=serde_json::to_vec(&json!({"format":rentemester_engine::archive_import::PACKAGE,"currency":currency,"files":csv.iter().map(|f|json!({"path":f.path,"contentBase64":STANDARD.encode(&f.bytes)})).collect::<Vec<_>>()})).map_err(invalid)?;
         let (source, parsed) = crate::archive_import::decode_source(&bytes)?;
         Some(ClosedSource {
             source,
@@ -193,7 +212,10 @@ pub fn decode_source(bytes: &[u8]) -> Result<Decoded, Error> {
     Ok(Decoded {
         files,
         source: SourceFacts {
-            path: format!("documents/originals/{digest}.json"),
+            path: format!(
+                "documents/originals/{digest}.{}",
+                if zip { "zip" } else { "json" }
+            ),
             sha256: digest,
             size_bytes: bytes.len() as u64,
             entries,
@@ -249,6 +271,7 @@ fn counts(parsed: &ParsedImport) -> Value {
 pub fn prepare(tx: &Transaction<'_>, decoded: &Decoded, latest: Date) -> Result<Prepared, Error> {
     let source = &decoded.source;
     let parsed = &decoded.parsed;
+    policy::containers::validate_paths(&decoded.files)?;
     crate::validate(tx)?;
     validate_history(tx)?;
     let mut current = context(tx)?;
@@ -359,12 +382,13 @@ pub fn prepare(tx: &Transaction<'_>, decoded: &Decoded, latest: Date) -> Result<
             .map(|a| json!({"source":a.source,"parsed":a.parsed})),
         context: current,
         receipt_plan,
+        source_kind: source.path.ends_with(".zip").then(|| "zip".into()),
     };
     let plan_hash = hash(&binding)?;
     let mut summary_counts = counts(parsed);
     summary_counts["archiveYears"] =
         json!(decoded.archive.as_ref().map_or(0, |a| a.parsed.years.len()));
-    let review = json!({"status":if blockers.is_empty(){"ready"}else{"blocked"},"planHash":plan_hash,"source":source,"latestYear":parsed.latest_year,"cutOverDate":parsed.cut_over_date,"controlDate":parsed.control_date,"counts":summary_counts,"controls":controls,"blockers":blockers,"warnings":parsed.notices,"existingAttemptId":existing});
+    let review = json!({"sourceKind":if binding.source_kind.is_some(){"zip"}else{"json"},"status":if blockers.is_empty(){"ready"}else{"blocked"},"planHash":plan_hash,"source":source,"latestYear":parsed.latest_year,"cutOverDate":parsed.cut_over_date,"controlDate":parsed.control_date,"counts":summary_counts,"controls":controls,"blockers":blockers,"warnings":parsed.notices,"existingAttemptId":existing});
     Ok(Prepared {
         binding,
         decoded: decoded.clone(),

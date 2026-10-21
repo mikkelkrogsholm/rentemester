@@ -372,7 +372,7 @@ fn entry(entry: &InventoryEntry, ctx: &Context) -> Result<(), Error> {
         EntryKind::DocumentOriginal { company } => original(
             company,
             "documents/originals",
-            &["pdf", "png", "jpg", "jpeg", "txt", "json", "xml"],
+            &["pdf", "png", "jpg", "jpeg", "txt", "json", "xml", "zip"],
         ),
         EntryKind::BankStatement { company } => original(company, "bank/processed", &["txt"]),
         EntryKind::ControlBusiness { section } => {

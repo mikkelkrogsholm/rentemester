@@ -9,6 +9,28 @@ pub struct Prepared {
     mime: &'static str,
 }
 impl Prepared {
+    /// Import-only raw source. Ordinary document ingestion does not admit ZIP.
+    pub fn dinero_source(filename: String, bytes: Vec<u8>) -> Result<Self, &'static str> {
+        if !filename.to_ascii_lowercase().ends_with(".zip") {
+            return Self::new(filename, bytes);
+        }
+        if bytes.is_empty()
+            || bytes.len() > MAX_BYTES
+            || filename.len() > 255
+            || filename.contains(['/', '\\'])
+            || filename.chars().any(char::is_control)
+            || !(bytes.starts_with(b"PK\x03\x04") || bytes.starts_with(b"PK\x05\x06"))
+        {
+            return Err("invalid Dinero ZIP source");
+        }
+        Ok(Self {
+            sha256: format!("{:x}", Sha256::digest(&bytes)),
+            bytes,
+            filename,
+            extension: "zip".into(),
+            mime: "application/zip",
+        })
+    }
     pub fn new(filename: String, bytes: Vec<u8>) -> Result<Self, &'static str> {
         if bytes.is_empty()
             || bytes.len() > MAX_BYTES
@@ -76,6 +98,21 @@ impl Prepared {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn zip_is_an_import_only_original_with_its_own_content_address() {
+        let bytes =
+            b"PK\x03\x04Synthetic ZIP header; full inventory is checked by the import adapter"
+                .to_vec();
+        assert!(Prepared::new("export.zip".into(), bytes.clone()).is_err());
+        let prepared = Prepared::dinero_source("export.ZIP".into(), bytes.clone()).unwrap();
+        assert_eq!(prepared.mime(), "application/zip");
+        assert_eq!(prepared.bytes(), bytes);
+        assert!(prepared.relative_path().ends_with(".zip"));
+        for name in ["../export.zip", "dir/export.zip", "export\n.zip"] {
+            assert!(Prepared::dinero_source(name.into(), bytes.clone()).is_err());
+        }
+        assert!(Prepared::dinero_source("export.zip".into(), b"not a ZIP".to_vec()).is_err());
+    }
     #[test]
     fn original_identity_is_content_bound_and_refuses_paths_or_spoofed_type() {
         let bytes = b"Synthetic receipt\n".to_vec();

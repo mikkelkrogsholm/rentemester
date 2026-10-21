@@ -33,9 +33,14 @@ fn hex(s: &str) -> bool {
 fn id(id: i64) -> bool {
     (1..=9_007_199_254_740_991).contains(&id)
 }
-fn source_shape(source: &SourceFacts) -> Result<(), Error> {
+fn source_shape(source: &SourceFacts, kind: Option<&str>) -> Result<(), Error> {
+    let extension = match kind {
+        None => "json",
+        Some("zip") => "zip",
+        _ => return Err(refused("unsupported accepted source kind")),
+    };
     if !hex(&source.sha256)
-        || source.path != format!("documents/originals/{}.json", source.sha256)
+        || source.path != format!("documents/originals/{}.{extension}", source.sha256)
         || source.size_bytes == 0
         || source.size_bytes > 25 * 1024 * 1024
         || source.entries.is_empty()
@@ -71,7 +76,7 @@ fn source_shape(source: &SourceFacts) -> Result<(), Error> {
 }
 fn provenance(db: &Connection, e: &Attestation) -> Result<(), Error> {
     let source = &e.binding.source;
-    source_shape(source)?;
+    source_shape(source, e.binding.source_kind.as_deref())?;
     let listing = hash(&source.entries)?;
     let count = source.entries.len() as i64;
     let total = source.entries.iter().try_fold(0i64, |n, s| {

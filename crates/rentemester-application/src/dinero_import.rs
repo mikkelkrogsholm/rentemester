@@ -26,7 +26,10 @@ pub enum Action<'a> {
 pub enum Output {
     Json(Value),
     Imported(Value),
-    Original(Vec<u8>),
+    Original {
+        bytes: Vec<u8>,
+        content_type: &'static str,
+    },
 }
 fn unavailable() -> Error {
     Error::new(
@@ -129,13 +132,20 @@ pub fn execute(
                         .read_document(&reference.path, &reference.sha256)
                         .map_err(|_| unavailable())?;
                     store::verify_original(tx, &reference, &bytes)?;
-                    Ok(Output::Original(bytes))
+                    Ok(Output::Original {
+                        bytes,
+                        content_type: if reference.path.ends_with(".zip") {
+                            "application/zip"
+                        } else {
+                            "application/json"
+                        },
+                    })
                 }
                 Action::Plan(file) | Action::Apply(file, _) => {
-                    if file.mime() != "application/json" {
+                    if !matches!(file.mime(), "application/json" | "application/zip") {
                         return Err(Error::new(
                             "dinero_import_invalid",
-                            "Dinero source must be an original JSON package",
+                            "Dinero source must be an original JSON package or ZIP archive",
                         ));
                     }
                     let decoded = store::decode_source(file.bytes())?;
