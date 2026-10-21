@@ -221,6 +221,8 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
             Command::Pdf(id) => Action::Pdf(*id),
         };
         let now = chrono::DateTime::<chrono::Utc>::from(std::time::SystemTime::now());
+        let today = rentemester_runtime::posting_time::latest_date(now.timestamp_millis(), 0)
+            .map_err(|_| ())?;
         match credential {
             Credential::Human(cookie) => {
                 let attempt = owner
@@ -228,7 +230,7 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
                         &cookie,
                         &SystemClock,
                         action,
-                        &now.format("%Y-%m-%d").to_string(),
+                        &today,
                         &now.to_rfc3339(),
                         query.year.as_deref(),
                     )
@@ -242,7 +244,7 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
                         &SystemClock,
                         rentemester_application::sales::Request {
                             action,
-                            today: &now.format("%Y-%m-%d").to_string(),
+                            today: &today,
                             now: &now.to_rfc3339(),
                             year: query.year.as_deref(),
                         },
