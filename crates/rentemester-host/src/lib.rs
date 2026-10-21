@@ -792,6 +792,21 @@ impl Owner {
             rentemester_application::dimensions::execute(c, l, context, action)
         })
     }
+    pub fn annual_export(
+        &mut self,
+        cookie: &VerifiedCookie,
+        clock: &dyn Clock,
+        start: &str,
+        end: &str,
+        kind: &str,
+    ) -> Result<
+        Attempt<Result<Committed<serde_json::Value>, rentemester_application::control_fence::Failure>>,
+        OwnerError,
+    > {
+        self.document_action(cookie, clock, |c, l, _, context| {
+            rentemester_application::annual_exports::read(c, l, context, start, end, kind)
+        })
+    }
     pub fn annual_report(
         &mut self,
         cookie: &VerifiedCookie,

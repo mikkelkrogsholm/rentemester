@@ -201,7 +201,10 @@ def main():
     parser.add_argument('--dated-reports', action='store_true', help='Standalone original three dated CLI financial reports, current authority, originals, no effects and normal MFA restart')
     parser.add_argument('--dashboard-json', action='store_true', help='Standalone original company dashboard JSON, dated invoice/receipt/current metadata, current reader/admin backup rights and restart')
     parser.add_argument('--portfolio-overview', action='store_true', help='Standalone original MCP portfolio_overview name/data/envelope over connected Rustserver, visibility/adminbackup/noeffects/restart; localfilesystem launcher remains separate')
+    parser.add_argument('--annual-exports', action='store_true', help='Standalone closed-year annual to tax and deterministic iXBRL, original clients and normal MFA restart')
     args = parser.parse_args()
+    if args.annual_exports and any(value for key,value in vars(args).items() if isinstance(value,bool) and key != 'annual_exports'):
+        parser.error('--annual-exports is a standalone proof and excludes other extensions')
     if args.portfolio_overview and any(value for key,value in vars(args).items() if isinstance(value,bool) and key != 'portfolio_overview'):
         parser.error('--portfolio-overview is a standalone proof and excludes other extensions')
     if args.dashboard_json and any(value for key, value in vars(args).items() if isinstance(value, bool) and key != 'dashboard_json'):
@@ -650,20 +653,20 @@ def main():
                 (work / 'drive-trace.json').write_text('[]')
                 config['backupDestinations'] = [{'id':'synthetic-drive','label':'Synthetic Drive fixture','kind':'google-drive','directory':str(work/'backup-destination'),'nonRelatedParty':False,'inEeaOrEu':False,'country':'DK','meetsRecognisedStandards':False,'attestedBy':'Synthetic operator','attestedAt':'2026-01-01T00:00:00Z'}]
                 config['backupRemoteVerification'] = {'provider':'google-drive','url':f'https://127.0.0.1:{mail_port}/drive/v3','bearerToken':drive_token,'trustedCaFile':str(ca),'destinations':[{'destinationId':'synthetic-drive','folderId':'synthetic-drive-folder'}]}
-            if not args.service_purchase and not args.backup_lock and not args.journal_history and not args.dated_reports and not args.dashboard_json and not args.portfolio_overview:
+            if not args.service_purchase and not args.backup_lock and not args.journal_history and not args.dated_reports and not args.dashboard_json and not args.portfolio_overview and not args.annual_exports:
                 invalid_config_checks()
             write_config()
             start(create=True)
             script = work / 'browser.mjs'
             script.write_text(BROWSER)
-            controller = subprocess.Popen(['/opt/homebrew/bin/bun', str(script)], cwd=REPO, env={**os.environ, 'RM_IMPORTED_PORTFOLIO_HELPER': str(REPO / 'scripts/rust/check-native-imported-portfolio.ts'), 'RM_SYNTHETIC_IMPORT_HELPER': str(REPO / 'scripts/rust/check-native-synthetic-import.ts'), 'RM_DINERO_IMPORT_HELPER': str(REPO / 'scripts/rust/check-native-dinero-import.ts'), 'RM_INVOICE_BAD_DEBT_HELPER': str(REPO / 'scripts/rust/check-native-invoice-bad-debt.ts'), 'RM_INVOICE_INTEREST_HELPER': str(REPO / 'scripts/rust/check-native-invoice-interest.ts'), 'RM_INVOICE_COMPENSATION_HELPER': str(REPO / 'scripts/rust/check-native-invoice-compensation.ts'), 'RM_NATIVE_BACKUP_DESTINATION_PROOF':'1' if args.backup_destinations else '0', 'RM_NATIVE_REMOTE_BACKUP_PROOF':'1' if args.remote_backup else '0', 'RM_AUDIT_VERIFY_HELPER': str(REPO / 'scripts/rust/check-native-audit-verify.ts'), 'RM_AUDIT_HELPER': str(REPO / 'scripts/rust/check-native-audit-log.ts'), 'RM_BACKUP_RECOVERY_HELPER': str(REPO / 'scripts/rust/check-native-backup-recovery.ts'), 'RM_SERVICE_PURCHASE_HELPER': str(REPO / ('scripts/rust/check-native-dashboard-json.ts' if args.dashboard_json or args.portfolio_overview else 'scripts/rust/check-native-dated-reports.ts' if args.dated_reports else 'scripts/rust/check-native-journal-history.ts' if args.journal_history else 'scripts/rust/check-native-backup-lock.ts' if args.backup_lock else 'scripts/rust/check-native-service-purchase.ts')), 'RM_SCANNER_PROOF_FACTORY': 'createPortfolioOverviewProof' if args.portfolio_overview else 'createDashboardJsonProof' if args.dashboard_json else 'createDatedReportsProof' if args.dated_reports else 'createJournalHistoryProof' if args.journal_history else 'createBackupLockProof' if args.backup_lock else 'createServicePurchaseProof', 'RM_SCANNER_BASE': origin, 'RM_SCANNER_WORK': str(work), 'RM_SCANNER_SCREENSHOT': str(args.evidence.with_suffix('.png')), 'RM_SCANNER_PLAYWRIGHT': str((REPO / 'node_modules/@playwright/test/index.mjs').resolve(strict=True))}, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True, bufsize=1, start_new_session=True)
+            controller = subprocess.Popen(['/opt/homebrew/bin/bun', str(script)], cwd=REPO, env={**os.environ, 'RM_IMPORTED_PORTFOLIO_HELPER': str(REPO / 'scripts/rust/check-native-imported-portfolio.ts'), 'RM_SYNTHETIC_IMPORT_HELPER': str(REPO / 'scripts/rust/check-native-synthetic-import.ts'), 'RM_DINERO_IMPORT_HELPER': str(REPO / 'scripts/rust/check-native-dinero-import.ts'), 'RM_INVOICE_BAD_DEBT_HELPER': str(REPO / 'scripts/rust/check-native-invoice-bad-debt.ts'), 'RM_INVOICE_INTEREST_HELPER': str(REPO / 'scripts/rust/check-native-invoice-interest.ts'), 'RM_INVOICE_COMPENSATION_HELPER': str(REPO / 'scripts/rust/check-native-invoice-compensation.ts'), 'RM_NATIVE_BACKUP_DESTINATION_PROOF':'1' if args.backup_destinations else '0', 'RM_NATIVE_REMOTE_BACKUP_PROOF':'1' if args.remote_backup else '0', 'RM_AUDIT_VERIFY_HELPER': str(REPO / 'scripts/rust/check-native-audit-verify.ts'), 'RM_AUDIT_HELPER': str(REPO / 'scripts/rust/check-native-audit-log.ts'), 'RM_BACKUP_RECOVERY_HELPER': str(REPO / 'scripts/rust/check-native-backup-recovery.ts'), 'RM_SERVICE_PURCHASE_HELPER': str(REPO / ('scripts/rust/check-native-annual-clients.ts' if args.annual_exports else 'scripts/rust/check-native-dashboard-json.ts' if args.dashboard_json or args.portfolio_overview else 'scripts/rust/check-native-dated-reports.ts' if args.dated_reports else 'scripts/rust/check-native-journal-history.ts' if args.journal_history else 'scripts/rust/check-native-backup-lock.ts' if args.backup_lock else 'scripts/rust/check-native-service-purchase.ts')), 'RM_SCANNER_PROOF_FACTORY': 'createAnnualExportsProof' if args.annual_exports else 'createPortfolioOverviewProof' if args.portfolio_overview else 'createDashboardJsonProof' if args.dashboard_json else 'createDatedReportsProof' if args.dated_reports else 'createJournalHistoryProof' if args.journal_history else 'createBackupLockProof' if args.backup_lock else 'createServicePurchaseProof', 'RM_SCANNER_BASE': origin, 'RM_SCANNER_WORK': str(work), 'RM_SCANNER_SCREENSHOT': str(args.evidence.with_suffix('.png')), 'RM_SCANNER_PLAYWRIGHT': str((REPO / 'node_modules/@playwright/test/index.mjs').resolve(strict=True))}, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True, bufsize=1, start_new_session=True)
             report['browserControllerPid'] = controller.pid
             phase('authenticate')
-            if args.journal_history or args.dated_reports or args.dashboard_json or args.portfolio_overview:
-                helper = REPO / ('scripts/rust/check-native-dashboard-json.ts' if args.dashboard_json or args.portfolio_overview else 'scripts/rust/check-native-dated-reports.ts' if args.dated_reports else 'scripts/rust/check-native-journal-history.ts')
-                helper_key = 'portfolioOverviewHelperSha256' if args.portfolio_overview else 'dashboardJsonHelperSha256' if args.dashboard_json else 'datedReportsHelperSha256' if args.dated_reports else 'journalHistoryHelperSha256'
+            if args.journal_history or args.dated_reports or args.dashboard_json or args.portfolio_overview or args.annual_exports:
+                helper = REPO / ('scripts/rust/check-native-annual-clients.ts' if args.annual_exports else 'scripts/rust/check-native-dashboard-json.ts' if args.dashboard_json or args.portfolio_overview else 'scripts/rust/check-native-dated-reports.ts' if args.dated_reports else 'scripts/rust/check-native-journal-history.ts')
+                helper_key = 'annualExportsHelperSha256' if args.annual_exports else 'portfolioOverviewHelperSha256' if args.portfolio_overview else 'dashboardJsonHelperSha256' if args.dashboard_json else 'datedReportsHelperSha256' if args.dated_reports else 'journalHistoryHelperSha256'
                 report[helper_key] = digest(helper)
-                reference_files = [REPO / ('src/core/' + name + '.ts') for name in ['financial-statements','account-classification','dates','money']] if args.dated_reports else []
+                reference_files = [REPO / ('src/core/' + name + '.ts') for name in ['tax-return','ixbrl','annual-report']] if args.annual_exports else [REPO / ('src/core/' + name + '.ts') for name in ['financial-statements','account-classification','dates','money']] if args.dated_reports else []
                 reference_hashes = {str(path.relative_to(REPO)):digest(path) for path in reference_files}
                 phase('service-run')
                 if digest(helper) != report[helper_key]:
@@ -681,12 +684,12 @@ def main():
                 try:
                     db.execute('PRAGMA query_only=ON')
                     counts = {table:db.execute('SELECT COUNT(*) FROM '+table).fetchone()[0] for table in ['documents','bank_transactions','journal_entries','journal_lines']}
-                    expected_counts = {'documents':4,'bank_transactions':2,'journal_entries':3,'journal_lines':8} if args.dashboard_json or args.portfolio_overview else {'documents':2,'bank_transactions':0,'journal_entries':4,'journal_lines':8} if args.dated_reports else {'documents':0,'bank_transactions':0,'journal_entries':3,'journal_lines':6}
+                    expected_counts = {'documents':2,'bank_transactions':0,'journal_entries':2,'journal_lines':6} if args.annual_exports else {'documents':4,'bank_transactions':2,'journal_entries':3,'journal_lines':8} if args.dashboard_json or args.portfolio_overview else {'documents':2,'bank_transactions':0,'journal_entries':4,'journal_lines':8} if args.dated_reports else {'documents':0,'bank_transactions':0,'journal_entries':3,'journal_lines':6}
                     if counts != expected_counts:
                         raise RuntimeError('Standalone report independent terminal effects differ')
                     rows = db.execute('SELECT id,entry_no,transaction_date,status,reversal_of_entry_id FROM journal_entries ORDER BY id DESC').fetchall()
                     expected_status = ['reversed','posted','posted','posted'] if args.dated_reports else ['reversed','posted','posted']
-                    correction_valid = all(row[3] == 'posted' and row[4] is None for row in rows) if args.dashboard_json or args.portfolio_overview else [row[3] for row in rows] == expected_status and rows[0][4] == rows[2][0] and all(row[4] is None for row in rows[1:])
+                    correction_valid = all(row[3] == 'posted' and row[4] is None for row in rows) if args.dashboard_json or args.portfolio_overview or args.annual_exports else [row[3] for row in rows] == expected_status and rows[0][4] == rows[2][0] and all(row[4] is None for row in rows[1:])
                     if not correction_valid:
                         raise RuntimeError('Standalone report stored correction status/link differs')
                     report['terminalSql'] = {'counts':counts,'headers':rows,'journalActors':db.execute('SELECT created_by,created_by_program FROM journal_entries ORDER BY id').fetchall()}
@@ -705,6 +708,10 @@ db.close();process.stdout.write(JSON.stringify(out));"""
                     if json.loads(oracle.stdout) != actual['projections'] or any(digest(path) != reference_hashes[str(path.relative_to(REPO))] for path in reference_files):
                         raise RuntimeError('Original dated numeric report reference differs')
                     report['originalReadOnlyReference'] = {'qualified':True,'cases':len(actual['projections']),'sources':reference_hashes,'stoppedOwnedSyntheticLedgerOnly':True}
+                if args.annual_exports:
+                    if any(digest(path) != reference_hashes[str(path.relative_to(REPO))] for path in reference_files):
+                        raise RuntimeError('Original annual export source changed during proof')
+                    report['originalSourceHashes'] = reference_hashes
                 if digest(helper) != report[helper_key] or any(digest(path) != report['artifacts'][name] or digest(getattr(args,name)) != report['artifacts'][name] for name,path in pinned.items()):
                     raise RuntimeError('Standalone report pinned helper or binaries changed')
                 source_web = {str(path.relative_to(args.web_dir)):digest(path) for path in sorted(args.web_dir.rglob('*')) if path.is_file()}
@@ -715,7 +722,9 @@ db.close();process.stdout.write(JSON.stringify(out));"""
                 if controller.returncode != 0:
                     raise RuntimeError('Standalone report browser controller failed')
                 report.update(status='passed',currentAction='complete',installedNativeQualified=False,sourceFreeRestoreQualified=False)
-                if args.portfolio_overview:
+                if args.annual_exports:
+                    report.update(workflow='annual_tax_ixbrl',annualExportsQualified=True,annualExportsRestartQualified=True)
+                elif args.portfolio_overview:
                     report.update(workflow='original_mcp_portfolio_overview',portfolioOverviewQualified=True,portfolioOverviewRestartQualified=True)
                 elif args.dashboard_json:
                     report.update(workflow='original_company_dashboard_json',dashboardJsonQualified=True,dashboardJsonRestartQualified=True)
@@ -893,7 +902,7 @@ db.close();process.stdout.write(JSON.stringify(out));"""
                 db = sqlite3.connect((work/'workspace/synthetic/data/ledger.sqlite').as_uri()+'?mode=ro', uri=True)
                 try:
                     counts = {table: db.execute('SELECT count(*) FROM '+table).fetchone()[0] for table in ['documents','bank_transactions','journal_entries']}
-                    expected_counts = {'documents':4,'bank_transactions':4,'journal_entries':10} if args.invoice_bad_debt else {'documents':2,'bank_transactions':4,'journal_entries':7} if args.invoice_interest else {'documents':4,'bank_transactions':5,'journal_entries':9} if args.invoice_compensation else {'documents':0,'bank_transactions':1,'journal_entries':2 if args.audit_log else 1}
+                    expected_counts = {'documents':2,'bank_transactions':0,'journal_entries':2,'journal_lines':6} if args.annual_exports else {'documents':4,'bank_transactions':4,'journal_entries':10} if args.invoice_bad_debt else {'documents':2,'bank_transactions':4,'journal_entries':7} if args.invoice_interest else {'documents':4,'bank_transactions':5,'journal_entries':9} if args.invoice_compensation else {'documents':0,'bank_transactions':1,'journal_entries':2 if args.audit_log else 1}
                     if counts != expected_counts:
                         raise RuntimeError('Backup lock terminal financial effects differ: '+json.dumps(counts,sort_keys=True))
                     report['terminalSql'] = {'counts':counts,'journalActors':db.execute('SELECT created_by,created_by_program FROM journal_entries ORDER BY id').fetchall()}

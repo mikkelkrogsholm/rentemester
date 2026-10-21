@@ -99,3 +99,7 @@ pub mod imported_receivables;
 pub mod synthetic_import;
 
 pub mod dashboard_html;
+
+pub mod tax_return;
+
+pub mod ixbrl;

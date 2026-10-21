@@ -38,6 +38,9 @@ pub struct Report {
     pub output_vat_adjustment: Money,
     pub input_vat: Money,
     pub payable: Money,
+    /// Shared canonical base for tax preparation; existing VAT wire stays unchanged.
+    #[serde(skip)]
+    pub representation_purchase_base: Money,
     pub oss_consumer_sales_base: Money,
     pub oss_consumer_sales_entry_count: usize,
     pub rubrikker: Rubrics,
@@ -297,6 +300,7 @@ pub fn build(lines: &[Line]) -> Result<Report, Error> {
         output_vat_adjustment: Money::default().subtract(&relief),
         input_vat: input.clone(),
         payable: payable.clone(),
+        representation_purchase_base: sum(&bases, &["REPRESENTATION_SPECIAL"]),
         oss_consumer_sales_base: sum(&bases, &["OSS_EU_CONSUMER"]),
         oss_consumer_sales_entry_count: oss_entries.len(),
         rubrikker: Rubrics {
@@ -345,6 +349,29 @@ mod tests {
             historical: false,
             exact_sales_vat: None,
         }
+    }
+    #[test]
+    fn tax_representation_base_reuses_classification_without_changing_vat_wire() {
+        let report = build(&[
+            line(
+                1,
+                "expense",
+                Some("REPRESENTATION_SPECIAL"),
+                "0.06",
+                "0",
+                None,
+            ),
+            line(1, "vat", None, "0.01", "0", Some("input")),
+        ])
+        .unwrap();
+        assert!(report.errors.is_empty());
+        assert_eq!(report.representation_purchase_base.decimal(), "0.06");
+        assert!(
+            serde_json::to_value(report)
+                .unwrap()
+                .get("representationPurchaseBase")
+                .is_none()
+        );
     }
     #[test]
     fn oss_counts_distinct_classified_entries_and_keeps_danish_vat_separate() {

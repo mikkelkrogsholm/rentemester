@@ -51,6 +51,7 @@ mod audit_log;
 mod integrity;
 mod multi_year;
 mod annual_report;
+mod annual_exports;
 mod obligations;
 mod payables;
 mod periods;
@@ -241,6 +242,7 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
         .route("/api/companies/{slug}/dimensions/supersede", post(dimensions::handle))
         .route("/api/companies/{slug}/multi-year", get(multi_year::read))
         .route("/api/companies/{slug}/annual-report", get(annual_report::read))
+        .route("/api/companies/{slug}/annual-exports", get(annual_exports::read))
         .route("/api/companies/{slug}/obligations", get(obligations::read))
         .route("/api/companies/{slug}/exceptions", get(exceptions::handle))
         .route(

@@ -1,10 +1,10 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "Group134 original MCP portfolio_overview report compatibility after accepted dashboardJSON133",
+  "current_increment": "Group135 R31 closed annual year -> exact tax preparation -> deterministic iXBRL and original CLI/MCP",
   "code_revision": "f4193c18ae88ba9fb57814906fb49bed11a45730",
   "spec_revision": "sha256:bc98636be4a972407adce0f817a76bb9d4bb7200cb292a70965e75ab62fae250",
-  "state": "Group134 ACCEPTED: original server-bound MCP portfolio_overview DTO/errors[], current permissions, dated principal, normal MFA/restart, audit and independent SQL passed. Original filesystem workspace/local-default launcher and wider R44 parity remain OPEN. Next necessary whole flow: R31 annual report, tax and iXBRL (#706); preserve all prior acceptance and full epic scope.",
+  "state": "Group135 core/client delivery integrated with root current-authority HTTP; focused tests passed. Integrated strict compilation and normalMFA annual->tax->iXBRL/restart acceptance pending. Sole issue706 integrating. Full R31 remaining export/J04 requirements, R32 localworkspace/R44, whole epic and final desktop remain open.",
   "issues_closed": [
     701
   ],
@@ -7519,12 +7519,17 @@
           "original": "HTTP dashboard?asOf JSON",
           "rust": "dashboard_json /dashboard",
           "evidence": "dashboard_json133"
+        },
+        {
+          "original": "MCP portfolio_overview original name/DTO/errors[] with configured server",
+          "rust": "portfolio_overview /api/portfolio/overview",
+          "evidence": "portfolio_overview134"
         }
       ],
       "pending": [
         {
-          "original": "MCP portfolio_overview(workspace?,asOf?)",
-          "finding": "Original name not implemented; current portfolio tool explicitlynotalias. Accepted native replacement alone doesnotprove originalcontract. Bind name/wire/disposition in134; retain localworkspace/launcher/fulltransport compatibility in globalR44."
+          "original": "Original filesystem workspace selection and environment/default local launcher",
+          "finding": "Configured-server portfolio_overview qualified in134. Nonempty filesystem workspace deliberately refuses before HTTP. Full original selector/launcher contract and wider transport parity retained for R44; #703 remains open, parked with evidence."
         }
       ],
       "excluded_owned_elsewhere": "R31 annual/tax/iXBRL; otherdomainreports; globalR44transport/envelope/local-launcher requirements remain required",
@@ -7583,6 +7588,32 @@
         "journal_entries": 3,
         "journal_lines": 8
       }
+    },
+    "annual_exports135": {
+      "issue": 706,
+      "status": "integrated_focused_passed_actual_pending",
+      "contract": "/tmp/rm135-contract.md",
+      "actual_qualified": false,
+      "known_remaining": "Global R44 original local workspace/default launcher and complete failure-field parity still required, R31 full SAF-T/authority/context exports and J04, whole epic and final installeddesktop retained. Supplied invalid calendar/order is business exit1/errors[] with no invented financial values; missing flags remains usage2.",
+      "fixture": "Existing runner/annual-client helper; two real synthetic originals, income1000 and representation118.75+VAT6.25; exact result881.25/addback89.06/taxable970.31, unknownform taxnull+review. PositiveApS22% focused synthetic test; no SQLidentity/profile seeds.",
+      "workers": [
+        "/root/dashboard_html129 core/storage",
+        "/root/dashboard_clients129 SDK/CLI/MCP"
+      ],
+      "main": "application/host/HTTP/current authority and integrated acceptance",
+      "core_commit": "2a003fba",
+      "clients_commit": "72118f4c",
+      "focused_logs": [
+        "/tmp/rm135-tax.log",
+        "/tmp/rm135-ixbrl.log",
+        "/tmp/rm135-storage.log",
+        "/tmp/rm135-clients.log"
+      ],
+      "client_focused_passed": 11,
+      "strict_clippy": "/tmp/rm135-clippy.log",
+      "strict_clippy_passed": true,
+      "normal_build": "/tmp/rm135-normal-build.log",
+      "normal_build_pending": true
     }
   },
   "verified_history": [

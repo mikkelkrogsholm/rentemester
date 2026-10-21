@@ -1,3 +1,4 @@
+mod annual_exports;
 mod dated_reports;
 mod journal_history;
 mod dashboard_artifact;
@@ -69,6 +70,7 @@ fn run(args: Vec<String>) -> Result<serde_json::Value, (u8, Error)> {
     }
     if args == ["--help"] {
         return Ok(json!({"ok":true,"commands":[
+            {"name":"report annual|tax","usage":"report annual --help; report tax --help","scope":"closed-year preparation and verified optional XHTML; no submission"},
             {"name":"report trial-balance|profit-loss|balance","usage":"report --help","scope":"original dated numeric reports; explicit authenticated server, human/JSON streams"},
             {"name":"journal list","usage":"journal list --help","scope":"explicit authenticated native journal headers; JSON or Danish details"},
             {"name":"dashboard","usage":"dashboard --server ORIGIN --cookie-file PATH --company SLUG --out FILE.html [--as-of YYYY-MM-DD] [--open]","scope":"authenticated server HTML, atomic local output"},
@@ -283,7 +285,7 @@ fn run(args: Vec<String>) -> Result<serde_json::Value, (u8, Error)> {
 fn main() -> ExitCode {
     let args:Vec<String>=std::env::args().skip(1).collect();
     if args.first().map(String::as_str)==Some("report") {
-        let output=dated_reports::execute(&args[1..]);
+        let output=if args.get(1).is_some_and(|s|matches!(s.as_str(),"annual"|"tax")) {annual_exports::execute(&args[1..])} else if args==["report","--help"] { dated_reports::Output{stdout:format!("{}\n",serde_json::to_string_pretty(&json!({"dated":dated_reports::help(),"annualTax":annual_exports::help()})).unwrap()),stderr:String::new(),exit:0} } else {dated_reports::execute(&args[1..])};
         print!("{}",output.stdout);eprint!("{}",output.stderr);
         return ExitCode::from(output.exit);
     }

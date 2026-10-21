@@ -82,6 +82,7 @@ pub mod gdpr;
 pub mod supplier_commitments;
 
 pub mod annual_report;
+pub mod annual_exports;
 pub mod obligations;
 
 pub mod bank_reconciliation;
