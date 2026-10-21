@@ -1,4 +1,5 @@
 //! Bounded v3 SAF-T package from one admitted company transaction. Paths are evidence only.
+mod timing;
 use crate::invalid;
 use rentemester_engine::{
     Error,
@@ -11,12 +12,14 @@ use serde::Deserialize;
 use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
 use std::collections::{BTreeMap, BTreeSet};
-#[derive(Deserialize)]
+#[derive(Default, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct Input {
     pub period_start: String,
     pub period_end: String,
     pub confirm: bool,
+    pub generation_mode: Option<String>,
+    pub generated_at: Option<String>,
 }
 pub struct Download {
     pub bytes: Vec<u8>,
@@ -34,6 +37,8 @@ pub struct Prepared {
     pub start: String,
     pub end: String,
     pub generated: String,
+    pub generated_source: &'static str,
+    pub generated_explicit: bool,
 }
 fn rows(tx: &Transaction<'_>, sql: &str, args: &[&dyn ToSql]) -> Result<Vec<Value>, Error> {
     let mut q = tx.prepare(sql).map_err(invalid)?;
@@ -95,7 +100,7 @@ pub fn prepare(
     {
         return Err(refused("invalid company slug"));
     }
-    let generated = saft::timestamp(now_ms)?;
+    let generation = timing::Generation::resolve(input, now_ms)?;
     let chain = crate::journal_hash::verify(tx)?;
     if !chain.ok {
         return Err(refused(
@@ -283,7 +288,9 @@ pub fn prepare(
         slug: slug.into(),
         start: period.start,
         end: period.end,
-        generated,
+        generated: generation.timestamp,
+        generated_source: generation.source,
+        generated_explicit: generation.explicit,
     })
 }
 pub fn finish(tx: &Transaction<'_>, prepared: Prepared, actor: &str) -> Result<Download, Error> {
@@ -291,8 +298,13 @@ pub fn finish(tx: &Transaction<'_>, prepared: Prepared, actor: &str) -> Result<D
     let rendered = saft::render(&p.source, &p.slug, &p.start, &p.end, &p.generated)?;
     let mut files = BTreeMap::new();
     files.insert("saft.xml".to_owned(), rendered.xml.into_bytes());
+    let generated_label = match p.generated_source {
+        "period_end" => "deterministic, derived from period end — not a real wall-clock time",
+        "caller_supplied" => "caller-supplied metadata — not the trusted runtime clock",
+        _ => "trusted runtime clock",
+    };
     let readme = format!(
-        "Rentemester SAF-T export (third deterministic slice)\n\nThis is a bounded, profile-scoped export. It is NOT a complete or generic SAF-T implementation.\nProfile: {}\nAuditFileVersion: 3.0\nPeriod: {}..{}\nGenerated at (trusted runtime clock): {}\n\nIncludes company, chart (including archived accounts), customer/supplier master files, selected ledger and sales/purchase invoices, VAT summary and source document references.\nManifest sourceContext contains registration/actor/rule/hash data, original-document evidence metadata and the audit log before this export. Original bytes are verified but are NOT packaged. No journal is generated.\n\nOut of scope: {}\nNative full release/rule corpus provenance unavailable (manifest provenance:null). This is not an officially validated submission or a backup.\n",
+        "Rentemester SAF-T export (third deterministic slice)\n\nThis is a bounded, profile-scoped export. It is NOT a complete or generic SAF-T implementation.\nProfile: {}\nAuditFileVersion: 3.0\nPeriod: {}..{}\nGenerated at ({generated_label}): {}\n\nIncludes company, chart (including archived accounts), customer/supplier master files, selected ledger and sales/purchase invoices, VAT summary and source document references.\nManifest sourceContext contains registration/actor/rule/hash data, original-document evidence metadata and the audit log before this export. Original bytes are verified but are NOT packaged. No journal is generated.\n\nOut of scope: {}\nNative full release/rule corpus provenance unavailable (manifest provenance:null). This is not an officially validated submission or a backup.\n",
         saft::PROFILE,
         p.start,
         p.end,
@@ -301,7 +313,7 @@ pub fn finish(tx: &Transaction<'_>, prepared: Prepared, actor: &str) -> Result<D
     );
     files.insert("README.txt".into(), readme.into_bytes());
     let outputs:Vec<_>=files.iter().map(|(path,b)|json!({"path":path,"sha256":format!("{:x}",Sha256::digest(b)),"sizeBytes":b.len()})).collect();
-    let manifest = json!({"manifestVersion":2,"provenance":null,"packageType":"saft_export","profileId":saft::PROFILE,"generatedAt":p.generated,"generatedAtExplicit":false,"generatedAtSource":"trusted_runtime_clock","periodStart":p.start,"periodEnd":p.end,"sourceCompanyRootName":p.slug,"appliedRules":[saft::RULE],"files":{"saftXml":"saft.xml","readme":"README.txt"},"counts":{"accounts":p.source.accounts.len(),"journalEntries":p.source.journal.len(),"salesInvoices":p.source.sales.len(),"purchaseInvoices":p.source.purchases.len(),"vatSummaryCodes":rendered.vat_codes,"documentReferences":rendered.document_references,"customers":p.source.customers.len(),"suppliers":p.source.suppliers.len()},"outOfScope":saft::OUT_OF_SCOPE,"outputs":outputs,"sourceContext":{"journalEntries":p.source.journal,"documents":p.documents,"auditLog":p.audit,"trialBalance":p.trial_balance,"journalHashChain":p.chain},"limitations":["native_release_provenance_unavailable","original_bytes_not_packaged","not_official_schema_submission"]});
+    let manifest = json!({"manifestVersion":2,"provenance":null,"packageType":"saft_export","profileId":saft::PROFILE,"generatedAt":p.generated,"generatedAtExplicit":p.generated_explicit,"generatedAtSource":p.generated_source,"periodStart":p.start,"periodEnd":p.end,"sourceCompanyRootName":p.slug,"appliedRules":[saft::RULE],"files":{"saftXml":"saft.xml","readme":"README.txt"},"counts":{"accounts":p.source.accounts.len(),"journalEntries":p.source.journal.len(),"salesInvoices":p.source.sales.len(),"purchaseInvoices":p.source.purchases.len(),"vatSummaryCodes":rendered.vat_codes,"documentReferences":rendered.document_references,"customers":p.source.customers.len(),"suppliers":p.source.suppliers.len()},"outOfScope":saft::OUT_OF_SCOPE,"outputs":outputs,"sourceContext":{"journalEntries":p.source.journal,"documents":p.documents,"auditLog":p.audit,"trialBalance":p.trial_balance,"journalHashChain":p.chain},"limitations":["native_release_provenance_unavailable","original_bytes_not_packaged","not_official_schema_submission"]});
     let mut bytes = serde_json::to_vec_pretty(&manifest).map_err(invalid)?;
     bytes.push(b'\n');
     files.insert("manifest.json".into(), bytes);
@@ -355,6 +367,7 @@ mod tests {
             period_start: "2026-07-01".into(),
             period_end: "2027-06-30".into(),
             confirm: true,
+            ..Input::default()
         }
     }
     fn files(bytes: &[u8]) -> BTreeMap<String, Vec<u8>> {
@@ -377,6 +390,118 @@ mod tests {
             pos += 512 + size.div_ceil(512) * 512;
         }
         map
+    }
+    #[test]
+    fn generation_modes_keep_shared_sources_and_audit_only_accepted_packages() {
+        let (_c, mut ledger) = fixture();
+        let tx = ledger
+            .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
+            .unwrap();
+        let native = prepare(&tx, "synthetic", &input(), 1767225600000).unwrap();
+        let native_xml = saft::render(
+            &native.source,
+            &native.slug,
+            &native.start,
+            &native.end,
+            &native.generated,
+        )
+        .unwrap()
+        .xml;
+        for (mode, supplied, expected, explicit, label) in [
+            (
+                "period_end",
+                None,
+                "2027-06-30T23:59:59.000Z",
+                false,
+                "not a real wall-clock time",
+            ),
+            (
+                "caller_supplied",
+                Some("2026-01-01T01:02:03.987654+02:00"),
+                "2025-12-31T23:02:03.987Z",
+                true,
+                "caller-supplied metadata",
+            ),
+        ] {
+            let mut request = input();
+            request.generation_mode = Some(mode.into());
+            request.generated_at = supplied.map(str::to_owned);
+            let p = prepare(&tx, "synthetic", &request, 1767225600000).unwrap();
+            assert_eq!(p.source.journal, native.source.journal);
+            assert_eq!(p.source.accounts, native.source.accounts);
+            assert_eq!(p.documents, native.documents);
+            assert_eq!(p.trial_balance, native.trial_balance);
+            assert_eq!(p.chain, native.chain);
+            assert_eq!(p.generated, expected);
+            let xml = saft::render(&p.source, &p.slug, &p.start, &p.end, &p.generated)
+                .unwrap()
+                .xml;
+            assert_eq!(
+                xml.replace(expected, "GENERATION_TIMESTAMP"),
+                native_xml.replace(&native.generated, "GENERATION_TIMESTAMP")
+            );
+            let artifact = finish(&tx, p, "synthetic").unwrap();
+            let fs = files(&artifact.bytes);
+            let manifest: Value = serde_json::from_slice(
+                fs.iter()
+                    .find(|(k, _)| k.ends_with("/manifest.json"))
+                    .unwrap()
+                    .1,
+            )
+            .unwrap();
+            assert_eq!(manifest["generatedAt"], expected);
+            assert_eq!(manifest["generatedAtExplicit"], explicit);
+            assert_eq!(manifest["generatedAtSource"], mode);
+            let readme = std::str::from_utf8(
+                fs.iter()
+                    .find(|(k, _)| k.ends_with("/README.txt"))
+                    .unwrap()
+                    .1,
+            )
+            .unwrap();
+            assert!(readme.contains(label));
+            assert!(!readme.contains("Generated at (trusted runtime clock)"));
+        }
+        assert_eq!(
+            tx.query_row("SELECT count(*) FROM journal_entries", [], |r| r
+                .get::<_, i64>(0))
+                .unwrap(),
+            1
+        );
+        assert_eq!(tx.query_row("SELECT count(*) FROM audit_log WHERE event_type='saft_export' AND actor='user:synthetic'",[],|r|r.get::<_,i64>(0)).unwrap(),2);
+    }
+    #[test]
+    fn generation_refusals_happen_before_export_audit_or_source_mutation() {
+        let (_c, mut ledger) = fixture();
+        let tx = ledger
+            .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
+            .unwrap();
+        let before = tx.total_changes();
+        for (mode, supplied) in [
+            (None, Some("2026-01-01T00:00:00Z")),
+            (Some("period_end"), Some("2026-01-01T00:00:00Z")),
+            (Some("caller_supplied"), None),
+            (Some("unknown"), None),
+            (Some("caller_supplied"), Some("2026-02-30T00:00:00Z")),
+        ] {
+            let mut request = input();
+            request.generation_mode = mode.map(str::to_owned);
+            request.generated_at = supplied.map(str::to_owned);
+            assert_eq!(
+                prepare(&tx, "synthetic", &request, 0).err().unwrap().code,
+                "saft_export_refused"
+            );
+        }
+        assert_eq!(tx.total_changes(), before);
+        assert_eq!(
+            tx.query_row(
+                "SELECT count(*) FROM audit_log WHERE event_type='saft_export'",
+                [],
+                |r| r.get::<_, i64>(0)
+            )
+            .unwrap(),
+            0
+        );
     }
     #[test]
     fn erased_master_data_stays_masked_without_rewriting_ledger_or_original_rows() {
@@ -471,6 +596,17 @@ mod tests {
         assert_eq!(m["sourceContext"]["journalHashChain"]["ok"], true);
         assert_eq!(m["sourceContext"]["trialBalance"]["totalDebit"], "100.01");
         assert_eq!(m["generatedAt"], "2026-01-01T00:00:00.000Z");
+        assert_eq!(m["generatedAtSource"], "trusted_runtime_clock");
+        assert_eq!(m["generatedAtExplicit"], false);
+        let readme = fs
+            .iter()
+            .find(|(k, _)| k.ends_with("/README.txt"))
+            .unwrap()
+            .1;
+        assert_eq!(
+            format!("{:x}", Sha256::digest(readme)),
+            "cfcdadecd92b8e13fdcc2db9b77027d0baeba350b14035f66803fb1a205af85d"
+        );
         assert!(
             m["sourceContext"]["auditLog"]
                 .as_array()

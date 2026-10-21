@@ -1,4 +1,5 @@
 mod handoff_export;
+mod saft_artifact;
 mod annual_exports;
 mod dated_reports;
 mod journal_history;
@@ -71,6 +72,7 @@ fn run(args: Vec<String>) -> Result<serde_json::Value, (u8, Error)> {
     }
     if args == ["--help"] {
         return Ok(json!({"ok":true,"commands":[
+            {"name":"system export-saft","usage":"system export-saft --help","scope":"one audited SAF-T export and verified fresh local package"},
             {"name":"system export-authority|export-accountant","usage":"system export-authority --help","scope":"one audited export and verified fresh local handover package"},
             {"name":"report annual|tax","usage":"report annual --help; report tax --help","scope":"closed-year preparation and verified optional XHTML; no submission"},
             {"name":"report trial-balance|profit-loss|balance","usage":"report --help","scope":"original dated numeric reports; explicit authenticated server, human/JSON streams"},
@@ -286,6 +288,7 @@ fn run(args: Vec<String>) -> Result<serde_json::Value, (u8, Error)> {
 }
 fn main() -> ExitCode {
     let args:Vec<String>=std::env::args().skip(1).collect();
+    if args.first().map(String::as_str)==Some("system") && args.get(1).map(String::as_str)==Some("export-saft") {let output=saft_artifact::execute(&args[1..]);print!("{}",output.stdout);eprint!("{}",output.stderr);return ExitCode::from(output.exit);}
     if args.first().map(String::as_str)==Some("system") && args.get(1).is_some_and(|s|matches!(s.as_str(),"export-authority"|"export-accountant")) {let output=handoff_export::execute(&args[1..]);print!("{}",output.stdout);eprint!("{}",output.stderr);return ExitCode::from(output.exit);}
 
     if args.first().map(String::as_str)==Some("report") {

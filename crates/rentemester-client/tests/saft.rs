@@ -74,3 +74,65 @@ async fn malformed_confirmation_scope_or_body_refuses_before_network() {
     let api = ApiClient::new("http://127.0.0.1:9", true, None).unwrap();
     for(company,bytes,confirmed)in[("synthetic",BODY.as_bytes().to_vec(),false),("../escape",BODY.as_bytes().to_vec(),true),("synthetic",br#"{"periodStart":"2026-01-01","periodEnd":"2026-12-31","confirm":true,"generatedAt":"forged"}"#.to_vec(),true),("synthetic",vec![b' ';4097],true)]{assert!(matches!(api.saft_export(company,bytes,confirmed).await,Err(Error::InvalidInput(_))));}
 }
+
+#[tokio::test]
+async fn explicit_generation_modes_forward_exact_bytes_and_server_owns_calendar_validation() {
+    for extra in [
+        serde_json::json!({"generationMode":"period_end"}),
+        serde_json::json!({"generationMode":"caller_supplied","generatedAt":"2027-01-01T00:59:59.123456+01:00"}),
+        serde_json::json!({"generationMode":"caller_supplied","generatedAt":"2026-02-30T12:00:00Z"}),
+    ] {
+        let mut value =
+            serde_json::json!({"periodStart":"2026-01-01","periodEnd":"2026-12-31","confirm":true});
+        value
+            .as_object_mut()
+            .unwrap()
+            .extend(extra.as_object().unwrap().clone());
+        let bytes = serde_json::to_vec(&value).unwrap();
+        let expected = bytes.clone();
+        let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+        let origin = format!("http://{}", listener.local_addr().unwrap());
+        let task = thread::spawn(move || {
+            let (mut s, _) = listener.accept().unwrap();
+            s.set_read_timeout(Some(Duration::from_secs(5))).unwrap();
+            let mut request = vec![];
+            while !request.ends_with(&expected) {
+                let mut b = [0; 4096];
+                let n = s.read(&mut b).unwrap();
+                assert!(n > 0);
+                request.extend(&b[..n]);
+            }
+            s.write_all(b"HTTP/1.1 422 Unprocessable Entity\r\nContent-Length:0\r\nConnection:close\r\n\r\n").unwrap();
+        });
+        let api = ApiClient::new(&origin, true, None).unwrap();
+        assert_eq!(
+            api.saft_export("synthetic", bytes, true).await.unwrap_err(),
+            Error::Refused { status: 422 }
+        );
+        task.join().unwrap();
+    }
+}
+#[tokio::test]
+async fn incompatible_generation_mode_combinations_refuse_before_http() {
+    let api = ApiClient::new("http://127.0.0.1:9", true, None).unwrap();
+    for extra in [
+        serde_json::json!({"generatedAt":"2027-01-01T00:00:00Z"}),
+        serde_json::json!({"generationMode":"period_end","generatedAt":"2027-01-01T00:00:00Z"}),
+        serde_json::json!({"generationMode":"caller_supplied"}),
+        serde_json::json!({"generationMode":"unknown"}),
+        serde_json::json!({"generationMode":null}),
+        serde_json::json!({"generationMode":"caller_supplied","generatedAt":null}),
+    ] {
+        let mut value =
+            serde_json::json!({"periodStart":"2026-01-01","periodEnd":"2026-12-31","confirm":true});
+        value
+            .as_object_mut()
+            .unwrap()
+            .extend(extra.as_object().unwrap().clone());
+        assert!(matches!(
+            api.saft_export("synthetic", serde_json::to_vec(&value).unwrap(), true)
+                .await,
+            Err(Error::InvalidInput(_))
+        ));
+    }
+}

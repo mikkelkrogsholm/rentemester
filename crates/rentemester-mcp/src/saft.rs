@@ -8,7 +8,7 @@ pub fn tools() -> Vec<Value> {
     body["maxLength"] = json!(MAX_SAFT_BODY);
     vec![tool(
         "saft_export",
-        "CompanyExport: explicitly confirmed exact4096-byte native periodStart/periodEnd/confirm:true body once. Returns application/x-tar integer bytes (max256MiB) with existing bounded custom Rentemester v3 XML, README and manifest. Trusted runtime generation clock, full original/hash/audit context; no original bytes, official generic SAF-T validation, filing, keys, local files, journals or automatic retry. Lost response may have committed export audit.",
+        "CompanyExport: explicitly confirmed exact4096-byte native periodStart/periodEnd/confirm:true body once. Returns application/x-tar integer bytes (max256MiB) with existing bounded custom Rentemester v3 XML, README and manifest. Omitted generationMode keeps the trusted runtime clock; period_end has no generatedAt; caller_supplied requires an explicit-zone generatedAt normalized by server. These select metadata only. Full original/hash/audit context; no original bytes, official generic SAF-T validation, filing, keys, local files, journals or automatic retry. Lost response may have committed export audit.",
         json!({"type":"object","required":["company","body","confirm"],"properties":{"company":company_schema(),"body":body,"confirm":{"const":true}},"additionalProperties":false}),
         false,
     )]

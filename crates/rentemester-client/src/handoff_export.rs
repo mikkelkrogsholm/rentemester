@@ -190,11 +190,11 @@ fn archive(bytes: &[u8]) -> Result<BTreeMap<String, &[u8]>, Error> {
     }
     Ok(files)
 }
-fn matches_output(value: &Value, bytes: &[u8]) -> bool {
+pub(crate) fn matches_output(value: &Value, bytes: &[u8]) -> bool {
     value["sizeBytes"].as_u64() == Some(bytes.len() as u64)
         && value["sha256"].as_str() == Some(format!("{:x}", Sha256::digest(bytes)).as_str())
 }
-fn validate_manifest<'a>(files: &'a BTreeMap<String, &'a [u8]>) -> Result<(String, Value), Error> {
+fn validate_manifest(files: &BTreeMap<String, &[u8]>) -> Result<(String, Value), Error> {
     let mut roots = BTreeSet::new();
     for name in files.keys() {
         roots.insert(name.split('/').next().ok_or(Error::Protocol)?);
@@ -332,7 +332,11 @@ fn mkdir(path: &Path, recursive: bool) -> std::io::Result<()> {
 }
 /// Validate every byte/path/hash before filesystem effects; publish only a fresh package root.
 /// The confirmed server export audit may already exist on local failure. Never auto-export again.
-pub fn write_handoff_package(value: &Value, out: &Path) -> Result<Value, Error> {
+pub(crate) fn write_package(
+    value: &Value,
+    out: &Path,
+    validate: impl FnOnce(&BTreeMap<String, &[u8]>) -> Result<(String, Value), Error>,
+) -> Result<(PathBuf, Value), Error> {
     if value["ok"] != true || value["export"]["contentType"] != "application/x-tar" {
         return protocol();
     }
@@ -349,7 +353,7 @@ pub fn write_handoff_package(value: &Value, out: &Path) -> Result<Value, Error> 
         })
         .collect::<Result<Vec<_>, _>>()?;
     let files = archive(&bytes)?;
-    let (root, manifest) = validate_manifest(&files)?;
+    let (root, manifest) = validate(&files)?;
     mkdir(out, true).map_err(|_| Error::InvalidInput("local export parent unavailable"))?;
     let parent = fs::canonicalize(out)
         .map_err(|_| Error::InvalidInput("local export parent unavailable"))?;
@@ -384,6 +388,11 @@ pub fn write_handoff_package(value: &Value, out: &Path) -> Result<Value, Error> 
         let _ = fs::remove_dir_all(&target);
     }
     result?;
+    Ok((target, manifest))
+}
+/// Verified authority/accountant package; preserves the original flat result.
+pub fn write_handoff_package(value: &Value, out: &Path) -> Result<Value, Error> {
+    let (target, manifest) = write_package(value, out, validate_manifest)?;
     let manifest_path: PathBuf = target.join("manifest.json");
     Ok(
         json!({"ok":true,"exportDir":target,"manifestPath":manifest_path,"periodStart":manifest["periodStart"],"periodEnd":manifest["periodEnd"],"generatedAt":manifest["generatedAt"],"deadlineAt":manifest["deadlineAt"],"journalEntryCount":manifest["counts"]["journalEntries"],"bankTransactionCount":manifest["counts"]["bankTransactions"],"documentCount":manifest["counts"]["documents"],"appliedRules":manifest["appliedRules"],"errors":[]}),

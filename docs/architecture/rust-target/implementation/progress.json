@@ -7722,6 +7722,38 @@
         "crates/rentemester-client/src/saft.rs:20"
       ],
       "full_r31_complete": false
+    },
+    "saft_artifact137": {
+      "issue": 706,
+      "status": "INTEGRATING_original_saft_cli_package_timing",
+      "contract": "/tmp/rm137-contract.md",
+      "core_commit": "b4dc2fde",
+      "clients_commit": "db68c57b",
+      "core_focused_passed": 5,
+      "client_focused_passed": 11,
+      "core_logs": [
+        "/tmp/rm137-timing.log",
+        "/tmp/rm137-modes.log",
+        "/tmp/rm137-default.log"
+      ],
+      "client_log": "/tmp/rm137-clients.log",
+      "actual_qualified": false,
+      "fixture": "Existing normal MFA runner, one retained synthetic source and 100 DKK posting; original local CLI/default+caller timestamp and nativeHTTP/CLI/MCP trusted clock; refusals/source/authority/audit/restart. No old fullSAFT/privacy rerun.",
+      "expected_sql": {
+        "documents": 1,
+        "bank_transactions": 0,
+        "journal_entries": 1,
+        "journal_lines": 2
+      },
+      "expected_export_audits": 15,
+      "preserved_evidence": [
+        "platform23_saft",
+        "platform23_combined",
+        "platform24_saft_privacy",
+        "authority_export136",
+        "annual_exports135"
+      ],
+      "remaining": "Integrated strict/build/runtime acceptance pending. Full R31 release provenance and globalR44 filesystem/defaultlauncher/envelope parity, full mission scope and final installed desktop remain open."
     }
   },
   "verified_history": [

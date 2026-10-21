@@ -1,4 +1,4 @@
-//! Audited bounded v3 package download, no local files or official validation claim.
+//! Audited bounded v3 package download; generation choices affect export metadata only.
 use crate::{
     ApiClient, Error, company_path,
     domain::{body, object},
@@ -9,10 +9,16 @@ pub const MAX_SAFT_BODY: usize = 4096;
 pub const MAX_SAFT_PACKAGE: usize = 256 * 1024 * 1024;
 pub fn saft_body_schema() -> Value {
     let date = json!({"type":"string","pattern":"^[0-9]{4}-[0-9]{2}-[0-9]{2}$"});
-    object(
-        json!({"periodStart":date,"periodEnd":date,"confirm":{"const":true}}),
+    let mut schema = object(
+        json!({"periodStart":date,"periodEnd":date,"confirm":{"const":true},"generationMode":{"type":"string","enum":["period_end","caller_supplied"]},"generatedAt":{"type":"string","description":"Explicit-zone timestamp; normalized and calendar-validated by server, only with caller_supplied mode."}}),
         &["periodStart", "periodEnd", "confirm"],
-    )
+    );
+    schema["oneOf"] = json!([
+        {"not":{"anyOf":[{"required":["generationMode"]},{"required":["generatedAt"]}]}},
+        {"required":["generationMode"],"properties":{"generationMode":{"const":"period_end"}},"not":{"required":["generatedAt"]}},
+        {"required":["generationMode","generatedAt"],"properties":{"generationMode":{"const":"caller_supplied"}}}
+    ]);
+    schema
 }
 impl ApiClient {
     /// Exact confirmed native envelope once. Successful response is exact tar integer bytes.
@@ -32,6 +38,20 @@ impl ApiClient {
             return Err(Error::InvalidInput("SAF-T body exceeds4096 bytes"));
         }
         body(&bytes, &saft_body_schema())?;
+        let input: Value = serde_json::from_slice(&bytes)
+            .map_err(|_| Error::InvalidInput("invalid SAF-T body"))?;
+        match (
+            input.get("generationMode").and_then(Value::as_str),
+            input.get("generatedAt"),
+        ) {
+            (None, None) | (Some("period_end"), None) => (),
+            (Some("caller_supplied"), Some(value)) if value.is_string() => (),
+            _ => {
+                return Err(Error::InvalidInput(
+                    "SAF-T generatedAt requires caller_supplied mode; period_end forbids generatedAt",
+                ));
+            }
+        }
         let mut r = self
             .send(
                 Method::POST,
