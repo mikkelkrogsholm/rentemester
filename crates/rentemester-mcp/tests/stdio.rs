@@ -1,6 +1,6 @@
 use serde_json::{Value, json};
 
-const EXPECTED_NATIVE_TOOLS: usize = 235;
+const EXPECTED_NATIVE_TOOLS: usize = 236;
 
 #[test]
 fn pdf_tools_require_confirmation_and_keep_reads_bounded() {

@@ -5,6 +5,7 @@ mod agent_discovery;
 mod backup_destinations;
 mod backup_remote;
 mod backup_status;
+mod backup_governance;
 pub use backup_status::{backup_lock_body_schema,MAX_BACKUP_LOCK_BODY};
 mod bank_matches;
 mod cvr;
