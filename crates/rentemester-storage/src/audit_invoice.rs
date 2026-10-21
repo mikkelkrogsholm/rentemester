@@ -857,6 +857,11 @@ fn correction_capacity(
     Ok(())
 }
 fn correction(tx: &Transaction<'_>, c: &Value) -> Result<Effects, Error> {
+    let effects = correction_structure(tx, c)?;
+    crate::invoice_interest::history::verify_historical_plan(tx, c)?;
+    Ok(effects)
+}
+fn correction_structure(tx: &Transaction<'_>, c: &Value) -> Result<Effects, Error> {
     let jid = number(&c["journal_entry_id"])?;
     let invoice = number(&c["invoice_document_id"])?;
     let amount = positive(&c["amount_dkk"])?;
@@ -882,7 +887,7 @@ fn correction(tx: &Transaction<'_>, c: &Value) -> Result<Effects, Error> {
     let mut sum = Money::default();
     let planned = rows(
         tx,
-        "SELECT p.*,c.invoice_document_id,c.claim_date original_date,a.authorised_ceiling_dkk FROM invoice_interest_correction_plan_claims p LEFT JOIN invoice_interest_claims c ON c.id=p.interest_claim_id LEFT JOIN invoice_interest_correction_authorized_claims a ON a.claim_id=c.id WHERE p.journal_entry_id=?1 ORDER BY p.interest_claim_id",
+        "SELECT p.*,c.invoice_document_id,c.claim_date original_date FROM invoice_interest_correction_plan_claims p LEFT JOIN invoice_interest_claims c ON c.id=p.interest_claim_id WHERE p.journal_entry_id=?1 ORDER BY p.interest_claim_id",
         &[&jid],
     )?;
     require(
@@ -896,7 +901,6 @@ fn correction(tx: &Transaction<'_>, c: &Value) -> Result<Effects, Error> {
             r["invoice_document_id"] == invoice
                 && r["claim_date"] == r["original_date"]
                 && text(&c["correction_date"])? >= text(&r["claim_date"])?
-                && money(&r["authorised_ceiling_dkk"])? == ceiling
                 && !ceiling.subtract(&portion).is_negative(),
             "interest correction claim authority/ceiling differs",
         )?;
@@ -904,8 +908,8 @@ fn correction(tx: &Transaction<'_>, c: &Value) -> Result<Effects, Error> {
         let mut used = Money::default();
         for prior in rows(
             tx,
-            "SELECT p.amount_dkk FROM invoice_interest_correction_plan_claims p JOIN invoice_interest_corrections c ON c.journal_entry_id=p.journal_entry_id WHERE p.interest_claim_id=?1",
-            &[&claim],
+            "SELECT p.amount_dkk FROM invoice_interest_correction_plan_claims p JOIN invoice_interest_corrections c ON c.journal_entry_id=p.journal_entry_id WHERE p.interest_claim_id=?1 AND c.journal_entry_id<=?2",
+            &[&claim, &jid],
         )? {
             used.add(&positive(&prior["amount_dkk"])?);
         }
@@ -968,6 +972,78 @@ fn correction(tx: &Transaction<'_>, c: &Value) -> Result<Effects, Error> {
         "interest correction exact total differs",
     )?;
     Ok(claim_effect)
+}
+/// Primitive invoice/cash/claim structure only. Causal interest history is checked
+/// separately, so loading principal events never recurses through claims/carrying.
+pub(crate) fn interest_principal_evidence(tx: &Transaction<'_>, id: i64) -> Result<(), Error> {
+    let d = one(
+        tx,
+        "SELECT * FROM documents WHERE id=?1 AND document_type='issued_invoice'",
+        id,
+    )?;
+    let p = one(
+        tx,
+        "SELECT * FROM issued_invoice_postings WHERE invoice_document_id=?1",
+        id,
+    )?;
+    posted_invoice(tx, &d, &p)?;
+    let mut errors = vec![];
+    let mut events = claims(tx, id, &mut errors)?;
+    if !errors.is_empty() {
+        return Err(refused(json!(errors).to_string()));
+    }
+    for c in rows(
+        tx,
+        "SELECT * FROM invoice_interest_corrections WHERE invoice_document_id=?1 ORDER BY journal_entry_id",
+        &[&id],
+    )? {
+        require(
+            events
+                .insert(
+                    number(&c["journal_entry_id"])?,
+                    correction_structure(tx, &c)?,
+                )
+                .is_none(),
+            "reused correction journal",
+        )?;
+    }
+    cash(tx, &d, &p, &events)?;
+    crate::credit_note::verify_existing(tx, id)?;
+    for w in rows(
+        tx,
+        "SELECT * FROM invoice_bad_debt_writeoffs WHERE invoice_document_id=?1",
+        &[&id],
+    )? {
+        bad_debt(tx, &w)?;
+    }
+    Ok(())
+}
+pub(crate) fn interest_correction_effects(
+    tx: &Transaction<'_>,
+    id: i64,
+) -> Result<BTreeMap<String, Money>, Error> {
+    let c = one(
+        tx,
+        "SELECT * FROM invoice_interest_corrections WHERE id=?1",
+        id,
+    )?;
+    let effects = correction(tx, &c)?;
+    let mut out = BTreeMap::new();
+    for (account, (debit, credit)) in effects {
+        let no: String = tx
+            .query_row(
+                "SELECT account_no FROM accounts WHERE id=?1",
+                [account],
+                |r| r.get(0),
+            )
+            .map_err(invalid)?;
+        out.insert(no, credit.subtract(&debit));
+    }
+    Ok(out)
+}
+/// Exact historical grouped principal/claim applications reuse audit119 cash proof.
+pub(crate) fn interest_cash_evidence(tx: &Transaction<'_>, id: i64) -> Result<(), Error> {
+    interest_principal_evidence(tx, id)
 }
 /// Every persisted family is scanned; a failed record does not suppress later findings.
 pub fn verify(tx: &Transaction<'_>) -> Result<Value, Error> {

@@ -64,10 +64,16 @@ fn audit(
     Ok(())
 }
 fn unsupported(tx: &Transaction<'_>, id: i64) -> Result<(), Error> {
-    let yes:bool=tx.query_row("SELECT EXISTS(SELECT 1 FROM invoice_interest_claims WHERE invoice_document_id=?1 UNION ALL SELECT 1 FROM invoice_interest_corrections WHERE invoice_document_id=?1 UNION ALL SELECT 1 FROM invoice_bad_debt_writeoffs WHERE invoice_document_id=?1)",[id],|r|r.get(0)).map_err(invalid)?;
+    let yes: bool = tx
+        .query_row(
+            "SELECT EXISTS(SELECT 1 FROM invoice_bad_debt_writeoffs WHERE invoice_document_id=?1)",
+            [id],
+            |r| r.get(0),
+        )
+        .map_err(invalid)?;
     if yes {
         return Err(refused(
-            "interest/correction/bad-debt claims require their native evidence flow",
+            "bad-debt claims require their native evidence flow",
         ));
     }
     Ok(())
@@ -208,6 +214,11 @@ pub struct Claims {
     pub journals: BTreeSet<i64>,
     pub balances: BTreeMap<String, Money>,
     pub registered: Money,
+    pub interest_total: Money,
+    pub interest_corrections_total: Money,
+    pub interest_claims: Vec<Value>,
+    pub interest_corrections: Vec<Value>,
+    pub pending_interest: bool,
     pub reminder_total: Money,
     pub compensation_total: Money,
     pub compensations: Vec<Value>,
@@ -246,7 +257,7 @@ pub fn validated_claims(tx: &Transaction<'_>, id: i64) -> Result<Claims, Error> 
                 return Err(refused("reminder posting predates registered claim"));
             }
             active(tx, j, id, None, &posted)?;
-            events.push((j, false, fee, posted, None));
+            events.push((j, 0u8, fee, posted, None));
         } else {
             c.pending = true;
             c.pending_reminders = true;
@@ -286,7 +297,7 @@ pub fn validated_claims(tx: &Transaction<'_>, id: i64) -> Result<Claims, Error> 
                 return Err(refused("compensation posting predates registered claim"));
             }
             active(tx, j, id, None, &posted)?;
-            events.push((j, false, amount, posted, None));
+            events.push((j, 0u8, amount, posted, None));
         } else {
             c.pending = true;
             c.pending_compensation = true;
@@ -295,6 +306,46 @@ pub fn validated_claims(tx: &Transaction<'_>, id: i64) -> Result<Claims, Error> 
     let orphan: bool = tx.query_row("SELECT EXISTS(SELECT 1 FROM invoice_compensation_postings p LEFT JOIN invoice_compensation_claims c ON c.id=p.compensation_claim_id JOIN journal_entries j ON j.id=p.journal_entry_id WHERE j.document_id=?1 AND (c.id IS NULL OR c.invoice_document_id<>?1))",[id],|r|r.get(0)).map_err(invalid)?;
     if orphan {
         return Err(refused("compensation posting invoice ownership differs"));
+    }
+    let has_interest:bool=tx.query_row("SELECT EXISTS(SELECT 1 FROM invoice_interest_claims WHERE invoice_document_id=?1 UNION ALL SELECT 1 FROM invoice_interest_corrections WHERE invoice_document_id=?1)",[id],|r|r.get(0)).map_err(invalid)?;
+    if has_interest {
+        let loaded = crate::invoice_interest::history::load(tx, id)?;
+        rentemester_engine::invoice_interest::correction(&loaded.history)?;
+        for claim in &loaded.history.claims {
+            c.registered.add(&claim.amount);
+            c.interest_total.add(&claim.amount);
+            c.interest_claims.push(json!({"claimId":claim.id,"claimDate":claim.claim_date,"amountDkk":wire(&claim.amount)?,"journalEntryId":claim.posted_journal_id}));
+            if let Some(j) = claim.posted_journal_id {
+                let posted: String = tx
+                    .query_row(
+                        "SELECT transaction_date FROM journal_entries WHERE id=?1",
+                        [j],
+                        |r| r.get(0),
+                    )
+                    .map_err(invalid)?;
+                if Date::parse(&posted)? < claim.claim_date {
+                    return Err(refused("interest posting predates registered claim"));
+                }
+                active(tx, j, id, None, &posted)?;
+                events.push((j, 0u8, claim.amount.clone(), posted, None));
+            } else {
+                c.pending = true;
+                c.pending_interest = true;
+            }
+        }
+        for correction in &loaded.history.corrections {
+            crate::audit_invoice::interest_correction_effects(tx, correction.id)?;
+            c.interest_corrections_total.add(&correction.amount);
+            c.registered = c.registered.subtract(&correction.amount);
+            c.interest_corrections.push(json!({"correctionId":correction.id,"correctionDate":correction.correction_date,"amountDkk":wire(&correction.amount)?,"journalEntryId":correction.journal_id}));
+            events.push((
+                correction.journal_id,
+                2u8,
+                correction.amount.clone(),
+                correction.correction_date.to_string(),
+                None,
+            ));
+        }
     }
     let mut q=tx.prepare("SELECT id,amount,payment_date,bank_transaction_id,journal_entry_id,currency FROM invoice_claim_payments WHERE invoice_document_id=?1 ORDER BY journal_entry_id,id").map_err(invalid)?;
     let mut rs = q.query([id]).map_err(invalid)?;
@@ -307,21 +358,45 @@ pub fn validated_claims(tx: &Transaction<'_>, id: i64) -> Result<Claims, Error> 
         let bank: i64 = r.get(3).map_err(invalid)?;
         let journal: i64 = r.get(4).map_err(invalid)?;
         c.payments.push(json!({"claimPaymentId":r.get::<_,i64>(0).map_err(invalid)?,"amount":wire(&amount)?,"paymentDate":date,"bankTransactionId":bank,"journalEntryId":journal}));
-        events.push((journal, true, amount, date, Some(bank)));
+        events.push((journal, 1u8, amount, date, Some(bank)));
     }
     events.sort_by_key(|e| e.0);
     let mut latest_claim = String::new();
-    for (j, payment, amount, date, bank_id) in events {
+    for (j, kind, amount, date, bank_id) in events {
         if !c.journals.insert(j) {
             return Err(refused("claim journal has duplicate owners"));
         }
         let owners: i64 = tx.query_row("SELECT count(*) FROM (SELECT journal_entry_id FROM invoice_reminder_postings UNION ALL SELECT journal_entry_id FROM invoice_compensation_postings UNION ALL SELECT journal_entry_id FROM invoice_claim_payments UNION ALL SELECT journal_entry_id FROM issued_invoice_postings UNION ALL SELECT journal_entry_id FROM invoice_payments UNION ALL SELECT journal_entry_id FROM invoice_refunds UNION ALL SELECT journal_entry_id FROM credit_note_postings UNION ALL SELECT journal_entry_id FROM invoice_interest_postings UNION ALL SELECT journal_entry_id FROM invoice_interest_corrections UNION ALL SELECT journal_entry_id FROM invoice_bad_debt_writeoffs UNION ALL SELECT journal_entry_id FROM payables UNION ALL SELECT journal_entry_id FROM payable_payments UNION ALL SELECT journal_entry_id FROM opening_balances) WHERE journal_entry_id=?1",[j],|r|r.get(0)).map_err(invalid)?;
-        if owners != 1 {
+        if owners != 1 && !(kind == 1 && owners == 2) {
             return Err(refused("claim journal has reused or missing ownership"));
         }
         Date::parse(&date)?;
         let effects = lines(tx, j)?;
-        if !payment {
+        if kind == 2 {
+            let mut credits = BTreeMap::<String, Money>::new();
+            let mut debit = Money::default();
+            let mut credit = Money::default();
+            for e in effects {
+                if e.kind == "income" && e.normal == "credit" && e.credit == Money::default() {
+                    debit.add(&e.debit);
+                } else if e.kind == "asset" && e.normal == "debit" && e.debit == Money::default() {
+                    credit.add(&e.credit);
+                    credits.entry(e.account).or_default().add(&e.credit);
+                } else {
+                    return Err(refused("interest correction has unsupported effects"));
+                }
+            }
+            if debit != amount || credit != amount {
+                return Err(refused("interest correction amount differs"));
+            }
+            for (a, v) in credits {
+                let old = c.balances.entry(a).or_default();
+                if old.subtract(&v).is_negative() {
+                    return Err(refused("interest correction exceeds prior account balance"));
+                }
+                *old = old.subtract(&v);
+            }
+        } else if kind == 0 {
             let mut debit = Money::default();
             let mut credit = Money::default();
             for e in effects {
@@ -360,14 +435,22 @@ pub fn validated_claims(tx: &Transaction<'_>, id: i64) -> Result<Claims, Error> 
                     |r| r.get(0),
                 )
                 .map_err(invalid)?;
-            if applications != 1 || journals != 1 {
+            if !(applications == 1 || applications == 2) || journals != 1 {
                 return Err(refused(
                     "bank claim receipt has duplicate/cross-invoice application evidence",
                 ));
             }
+            let grouped = applications == 2;
+            if grouped {
+                crate::audit_invoice::interest_cash_evidence(tx, id)?;
+            }
             let b = bank(tx, bid)?;
             active(tx, j, id, Some(bid), &date)?;
-            if amount != b.amount || date < latest_claim || b.date < latest_claim {
+            if (!grouped && amount != b.amount)
+                || (grouped && b.amount.subtract(&amount).is_negative())
+                || date < latest_claim
+                || b.date < latest_claim
+            {
                 return Err(refused(
                     "claim payment amount/date not supported by prior posted claims and bank evidence",
                 ));
@@ -376,6 +459,9 @@ pub fn validated_claims(tx: &Transaction<'_>, id: i64) -> Result<Claims, Error> 
             let mut credits = BTreeMap::<String, Money>::new();
             let mut debit = Money::default();
             for e in effects {
+                if grouped {
+                    continue;
+                }
                 if e.account == b.account && e.credit == Money::default() {
                     debit.add(&e.debit);
                 } else if e.kind == "asset"
@@ -388,7 +474,7 @@ pub fn validated_claims(tx: &Transaction<'_>, id: i64) -> Result<Claims, Error> 
                     return Err(refused("claim receipt journal has unsupported effects"));
                 }
             }
-            if debit != amount || credits != allocated {
+            if !grouped && (debit != amount || credits != allocated) {
                 return Err(refused(
                     "claim receipt must clear exactly its ledger-backed account allocation",
                 ));
@@ -453,7 +539,7 @@ pub fn required_banks(tx: &Transaction<'_>, id: i64) -> Result<Vec<i64>, Error> 
 }
 /// Recheck persisted reminder workflows for period assurance without changing them.
 pub fn audit_evidence(tx: &Transaction<'_>) -> Result<Vec<Value>, Error> {
-    let mut q = tx.prepare("SELECT invoice_document_id FROM invoice_reminders UNION SELECT invoice_document_id FROM invoice_compensation_claims UNION SELECT invoice_document_id FROM invoice_claim_payments").map_err(invalid)?;
+    let mut q = tx.prepare("SELECT invoice_document_id FROM invoice_reminders UNION SELECT invoice_document_id FROM invoice_compensation_claims UNION SELECT invoice_document_id FROM invoice_interest_claims UNION SELECT invoice_document_id FROM invoice_interest_corrections UNION SELECT invoice_document_id FROM invoice_claim_payments").map_err(invalid)?;
     let invoices = q
         .query_map([], |row| row.get::<_, i64>(0))
         .map_err(invalid)?
@@ -492,6 +578,30 @@ pub fn audit_evidence(tx: &Transaction<'_>) -> Result<Vec<Value>, Error> {
                     require_compensation_audit(tx, event, claim["claimId"].as_i64().unwrap())?;
                 }
             }
+            for claim in &claims.interest_claims {
+                require_interest_audit(
+                    tx,
+                    "invoice_interest_register",
+                    "invoice_interest_claim",
+                    claim["claimId"].as_i64().unwrap(),
+                )?;
+                if !claim["journalEntryId"].is_null() {
+                    require_interest_audit(
+                        tx,
+                        "invoice_interest_post",
+                        "invoice_interest_claim",
+                        claim["claimId"].as_i64().unwrap(),
+                    )?;
+                }
+            }
+            for correction in &claims.interest_corrections {
+                require_interest_audit(
+                    tx,
+                    "invoice_interest_correction",
+                    "invoice_interest_correction",
+                    correction["correctionId"].as_i64().unwrap(),
+                )?;
+            }
             for payment in &claims.payments {
                 require_audit(
                     tx,
@@ -523,6 +633,18 @@ fn require_compensation_audit(tx: &Transaction<'_>, event: &str, id: i64) -> Res
     }
     Ok(())
 }
+fn require_interest_audit(
+    tx: &Transaction<'_>,
+    event: &str,
+    entity: &str,
+    id: i64,
+) -> Result<(), Error> {
+    let (count,valid):(i64,i64)=tx.query_row("SELECT count(*),COALESCE(sum(length(trim(actor))>0),0) FROM audit_log WHERE event_type=?1 AND entity_type=?2 AND entity_id=?3",params![event,entity,id.to_string()],|r|Ok((r.get(0)?,r.get(1)?))).map_err(invalid)?;
+    if count != 1 || valid != 1 {
+        return Err(refused("unique interest workflow audit evidence required"));
+    }
+    Ok(())
+}
 pub fn read(tx: &Transaction<'_>, id: i64, as_of: &str) -> Result<Value, Error> {
     crate::journal_preview::require_current(tx)?;
     let i = invoice(tx, id)?;
@@ -544,7 +666,7 @@ pub fn read(tx: &Transaction<'_>, id: i64, as_of: &str) -> Result<Value, Error> 
     let mut q=tx.prepare("SELECT b.id,b.transaction_date,b.text,b.amount,b.reference,a.ledger_account_no,b.source_file_hash,b.transaction_hash FROM bank_transactions b JOIN bank_accounts a ON a.id=b.bank_account_id WHERE b.amount>0 AND b.currency='DKK' AND a.active=1 AND NOT EXISTS(SELECT 1 FROM journal_entries j WHERE j.source_bank_transaction_id=b.id) AND NOT EXISTS(SELECT 1 FROM bank_journal_reconciliations r WHERE r.bank_transaction_id=b.id) ORDER BY b.transaction_date,b.id").map_err(invalid)?;
     let banks=q.query_map([],|r|Ok(json!({"id":r.get::<_,i64>(0)?,"date":r.get::<_,String>(1)?,"text":r.get::<_,String>(2)?,"amount":r.get::<_,f64>(3)?,"reference":r.get::<_,Option<String>>(4)?,"bankAccountNo":r.get::<_,Option<String>>(5)?,"sourceHash":r.get::<_,Option<String>>(6)?,"transactionHash":r.get::<_,Option<String>>(7)?}))).map_err(invalid)?.collect::<Result<Vec<_>,_>>().map_err(invalid)?;
     Ok(
-        json!({"invoiceDocumentId":id,"invoiceNumber":i.no,"asOfDate":as_of,"dueDate":i.due,"originalReceivableAccountNo":i.debtor,"principalOpenBalance":wire(&open)?,"principalCurrency":i.currency,"claimCurrency":"DKK","claimOpenBalance":claim_open,"totalReminderFees":wire(&c.reminder_total)?,"totalCompensationDkk":wire(&c.compensation_total)?,"registeredClaimBalanceDkk":wire(&c.registered.subtract(&c.paid))?,"pendingUnpostedCompensation":c.pending_compensation,"compensations":c.compensations,"totalClaimPayments":wire(&c.paid)?,"ledgerBackedClaimBalance":wire(&ledger)?,"pendingUnpostedReminders":c.pending_reminders,"reminders":c.reminders,"claimPayments":c.payments,"receivableBalances":c.balances.iter().map(|(a,v)|Ok(json!({"accountNo":a,"amountDkk":wire(v)?}))).collect::<Result<Vec<Value>,Error>>()?,"accounts":accounts,"incomingBankTransactions":banks,"rules":{"ruleId":engine::REGISTER_RULE,"maximumFeeAmount":100,"maximumReminders":3,"minimumDaysBetweenReminders":10},"delivery":{"available":false,"sentByThisFlow":false,"priorDeliveryStatus":"unavailable","note":"Native registration and accounting perform no email send; previous delivery is not established"},"settlementAvailable":open==Money::default()&&!c.pending&&ledger!=Money::default()}),
+        json!({"invoiceDocumentId":id,"invoiceNumber":i.no,"asOfDate":as_of,"dueDate":i.due,"originalReceivableAccountNo":i.debtor,"principalOpenBalance":wire(&open)?,"principalCurrency":i.currency,"claimCurrency":"DKK","claimOpenBalance":claim_open,"totalReminderFees":wire(&c.reminder_total)?,"totalCompensationDkk":wire(&c.compensation_total)?,"totalInterestDkk":wire(&c.interest_total)?,"totalInterestCorrectionsDkk":wire(&c.interest_corrections_total)?,"pendingUnpostedInterest":c.pending_interest,"interestClaims":c.interest_claims,"interestCorrections":c.interest_corrections,"registeredClaimBalanceDkk":wire(&c.registered.subtract(&c.paid))?,"pendingUnpostedCompensation":c.pending_compensation,"compensations":c.compensations,"totalClaimPayments":wire(&c.paid)?,"ledgerBackedClaimBalance":wire(&ledger)?,"pendingUnpostedReminders":c.pending_reminders,"reminders":c.reminders,"claimPayments":c.payments,"receivableBalances":c.balances.iter().map(|(a,v)|Ok(json!({"accountNo":a,"amountDkk":wire(v)?}))).collect::<Result<Vec<Value>,Error>>()?,"accounts":accounts,"incomingBankTransactions":banks,"rules":{"ruleId":engine::REGISTER_RULE,"maximumFeeAmount":100,"maximumReminders":3,"minimumDaysBetweenReminders":10},"delivery":{"available":false,"sentByThisFlow":false,"priorDeliveryStatus":"unavailable","note":"Native registration and accounting perform no email send; previous delivery is not established"},"settlementAvailable":open==Money::default()&&!c.pending&&ledger!=Money::default()}),
     )
 }
 pub fn register(tx: &Transaction<'_>, input: &Register, actor: &str) -> Result<Value, Error> {
@@ -593,7 +715,7 @@ pub fn register(tx: &Transaction<'_>, input: &Register, actor: &str) -> Result<V
         json!({"ok":true,"reminderId":id,"reminderSequence":dates.len()+1,"invoiceDocumentId":input.invoice_document_id,"invoiceNumber":i.no,"reminderDate":input.reminder_date,"feeAmount":wire(&fee)?,"appliedRules":[engine::REGISTER_RULE],"errors":[]}),
     )
 }
-fn post_journal(
+pub(crate) fn post_journal(
     tx: &Transaction<'_>,
     id: i64,
     bank: Option<i64>,
@@ -630,7 +752,12 @@ fn post_journal(
     }
     Ok(r)
 }
-fn line(account: &str, debit: Money, credit: Money, text: &str) -> Result<JournalLine, Error> {
+pub(crate) fn line(
+    account: &str,
+    debit: Money,
+    credit: Money,
+    text: &str,
+) -> Result<JournalLine, Error> {
     Ok(JournalLine {
         account_no: AccountNo::parse(account)?,
         debit_amount: debit,
@@ -763,7 +890,13 @@ pub fn settle(
     if date < i.date.as_str() {
         return Err(refused("claim receipt cannot precede invoice"));
     }
-    for r in c.reminders.iter().chain(&c.compensations) {
+    for r in c
+        .reminders
+        .iter()
+        .chain(&c.compensations)
+        .chain(&c.interest_claims)
+        .chain(&c.interest_corrections)
+    {
         let posted: Option<String> = tx
             .query_row(
                 "SELECT transaction_date FROM journal_entries WHERE id=?1",
