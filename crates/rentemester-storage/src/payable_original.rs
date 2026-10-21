@@ -291,8 +291,8 @@ pub fn list(tx: &Transaction<'_>, query: &Query, today: &str) -> Result<Value, E
         .iter()
         .filter(|r| {
             let date = r["billDate"].as_str().unwrap();
-            !query.from.as_deref().is_some_and(|from| date < from)
-                && !query.to.as_deref().is_some_and(|to| date > to)
+            query.from.as_deref().is_none_or(|from| date >= from)
+                && query.to.as_deref().is_none_or(|to| date <= to)
                 && query
                     .vendor_id
                     .is_none_or(|v| r["vendorId"].as_i64() == Some(v))
