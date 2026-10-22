@@ -527,3 +527,448 @@ fn nonpdf_and_disabled_upload_paths_do_not_start_extraction() {
     assert_eq!(count(&owner, "documents"), 2);
     assert_eq!(count(&owner, "invoice_extraction_attempts"), 0);
 }
+
+fn service(
+    owner: &mut Owner,
+    cookies: &CookieVerifier,
+    proof: &VerifiedCookie,
+    role: &str,
+) -> (ServiceKey, String, String) {
+    let control = owner.held.0.as_mut().unwrap().control.as_mut().unwrap();
+    let issued = rentemester_application::service_lifecycle::execute(
+        control,
+        cookies,
+        &Fixed(NOW),
+        proof,
+        &rentemester_application::service_lifecycle::Operation::Create {
+            display_name: "Synthetic upload service".into(),
+            operation_id: None,
+            expires_in_seconds: None,
+        },
+    )
+    .unwrap();
+    let value: serde_json::Value = serde_json::from_str(issued.as_json()).unwrap();
+    let subject = value["serviceAccountId"].as_str().unwrap().to_owned();
+    let credential = value["credentialId"].as_str().unwrap().to_owned();
+    let key = ServiceKey::new("w", value["secret"].as_str().unwrap()).unwrap();
+    control.execute("INSERT INTO rm_workspace_user_access_events(user_id,event_type,workspace_role,actor)VALUES(?1,'activate','member','user:u')",[&subject]).unwrap();
+    control.execute("INSERT INTO rm_company_membership_events(user_id,company_slug,event_type,company_role,actor)VALUES(?1,'a','grant',?2,'user:u')",[&subject, role]).unwrap();
+    control
+        .execute("UPDATE apikey SET remaining=20 WHERE id=?1", [&credential])
+        .unwrap();
+    (key, subject, credential)
+}
+fn remaining(owner: &Owner, credential: &str) -> i64 {
+    owner
+        .held
+        .0
+        .as_ref()
+        .unwrap()
+        .control
+        .as_ref()
+        .unwrap()
+        .query_row(
+            "SELECT remaining FROM apikey WHERE id=?1",
+            [credential],
+            |r| r.get(0),
+        )
+        .unwrap()
+}
+
+fn service_prepare(owner: &mut Owner, key: &ServiceKey, id: i64) -> Admission {
+    let attempt = owner
+        .prepare_invoice_extraction_service(key, &Fixed(NOW), id, Some(identity()), None)
+        .unwrap();
+    assert!(!attempt.retired);
+    attempt.outcome.unwrap().result
+}
+fn service_finish(
+    owner: &mut Owner,
+    key: &ServiceKey,
+    admission: Admission,
+) -> Result<Value, service_company::ServiceFailure> {
+    let completion = admission.provider_input().map(|_| Completion {
+        identity: identity(),
+        outcome: Ok(output()),
+    });
+    owner
+        .finish_invoice_extraction_service(key, &Fixed(NOW), admission, completion)
+        .unwrap()
+        .outcome
+        .map(|r| r.result)
+}
+#[test]
+fn original_missing_read_is_null_only_after_current_admission_and_native_stays_404() {
+    let (_dir, mut owner, cookies, proof, _uid) = setup();
+    assert_eq!(
+        owner
+            .original_invoice_extraction(&proof, &Fixed(NOW), 999)
+            .unwrap()
+            .outcome
+            .unwrap()
+            .value,
+        json!({"ok":true,"extraction":null})
+    );
+    assert_eq!(
+        owner
+            .invoice_extraction(&proof, &Fixed(NOW), 999)
+            .unwrap()
+            .outcome
+            .err()
+            .unwrap()
+            .error
+            .code,
+        "document_not_found"
+    );
+    let (key, _, credential) = service(&mut owner, &cookies, &proof, "reader");
+    assert_eq!(
+        owner
+            .invoice_extraction_service(&key, &Fixed(NOW), 999)
+            .unwrap()
+            .outcome
+            .unwrap()
+            .result,
+        json!({"ok":true,"extraction":null})
+    );
+    owner
+        .held
+        .0
+        .as_ref()
+        .unwrap()
+        .control
+        .as_ref()
+        .unwrap()
+        .execute("UPDATE apikey SET enabled=0 WHERE id=?1", [&credential])
+        .unwrap();
+    assert_eq!(
+        owner
+            .invoice_extraction_service(&key, &Fixed(NOW), 999)
+            .unwrap()
+            .outcome
+            .err()
+            .unwrap()
+            .error
+            .code,
+        "invalid_credentials"
+    );
+    owner.held.0.as_ref().unwrap().control.as_ref().unwrap().execute_batch("INSERT INTO rm_company_membership_events(user_id,company_slug,event_type,company_role,actor)VALUES('u','a','revoke',NULL,'user:u')").unwrap();
+    assert_eq!(
+        owner
+            .original_invoice_extraction(&proof, &Fixed(NOW), 999)
+            .unwrap()
+            .outcome
+            .err()
+            .unwrap()
+            .error
+            .code,
+        "access_denied"
+    );
+}
+#[test]
+fn service_completed_cache_read_and_typed_actor_charge_once_per_operation() {
+    let (_dir, mut owner, cookies, proof, _uid) = setup();
+    let id = register(&mut owner, &proof);
+    let (key, subject, credential) = service(&mut owner, &cookies, &proof, "bookkeeper");
+    let denied = owner
+        .prepare_invoice_extraction_service(
+            &key,
+            &Fixed(NOW),
+            id,
+            Some(identity()),
+            Some("user:forged"),
+        )
+        .unwrap()
+        .outcome
+        .err()
+        .unwrap();
+    assert_eq!(denied.error.code, "access_denied");
+    assert_eq!(remaining(&owner, &credential), 20);
+    assert_eq!(count(&owner, "invoice_extraction_attempts"), 0);
+    let expected_actor = format!("service_account:{subject}");
+    let admission = owner
+        .prepare_invoice_extraction_service(
+            &key,
+            &Fixed(NOW),
+            id,
+            Some(identity()),
+            Some(&expected_actor),
+        )
+        .unwrap()
+        .outcome
+        .unwrap()
+        .result;
+    assert!(admission.provider_input().is_some());
+    assert_eq!(remaining(&owner, &credential), 19);
+    let value = service_finish(&mut owner, &key, admission).unwrap();
+    assert_eq!(value["extraction"]["status"], "completed");
+    assert_eq!(remaining(&owner, &credential), 19);
+    let cached = service_prepare(&mut owner, &key, id);
+    assert!(cached.provider_input().is_none());
+    assert_eq!(service_finish(&mut owner, &key, cached).unwrap(), value);
+    assert_eq!(remaining(&owner, &credential), 18);
+    assert_eq!(
+        owner
+            .invoice_extraction_service(&key, &Fixed(NOW), id)
+            .unwrap()
+            .outcome
+            .unwrap()
+            .result,
+        value
+    );
+    assert_eq!(remaining(&owner, &credential), 17);
+    assert_eq!(count(&owner, "invoice_extraction_attempts"), 1);
+    assert_eq!(count(&owner, "journal_entries"), 0);
+    let actor: String = owner
+        .held
+        .0
+        .as_ref()
+        .unwrap()
+        .company
+        .as_ref()
+        .unwrap()
+        .query_row(
+            "SELECT initiated_by FROM invoice_extraction_attempts LIMIT 1",
+            [],
+            |r| r.get(0),
+        )
+        .unwrap();
+    assert_eq!(actor, format!("service_account:{subject}"));
+}
+#[test]
+fn service_reader_cannot_write_and_held_provider_revocations_cannot_complete() {
+    for revoke in ["key", "subject", "scope"] {
+        let (_dir, mut owner, cookies, proof, _uid) = setup();
+        let id = register(&mut owner, &proof);
+        let (reader, _, reader_credential) = service(&mut owner, &cookies, &proof, "reader");
+        assert_eq!(
+            owner
+                .prepare_invoice_extraction_service(
+                    &reader,
+                    &Fixed(NOW),
+                    id,
+                    Some(identity()),
+                    None
+                )
+                .unwrap()
+                .outcome
+                .err()
+                .unwrap()
+                .error
+                .code,
+            "access_denied"
+        );
+        assert_eq!(remaining(&owner, &reader_credential), 20);
+        let (key, subject, credential) = service(&mut owner, &cookies, &proof, "bookkeeper");
+        let shared = std::sync::Mutex::new(owner);
+        let admission = service_prepare(&mut shared.lock().unwrap(), &key, id);
+        let entered = std::sync::Barrier::new(2);
+        let release = std::sync::Barrier::new(2);
+        std::thread::scope(|scope| {
+            let provider = scope.spawn(|| {
+                entered.wait();
+                release.wait();
+                output()
+            });
+            entered.wait();
+            {
+                let owner = shared.try_lock().unwrap();
+                let slots = owner.held.0.as_ref().unwrap();
+                assert!(slots.control.as_ref().unwrap().is_autocommit());
+                assert!(slots.company.as_ref().unwrap().is_autocommit());
+                let control = slots.control.as_ref().unwrap();
+                match revoke {
+                    "key" => {
+                        control
+                            .execute("UPDATE apikey SET enabled=0 WHERE id=?1", [&credential])
+                            .unwrap();
+                    }
+                    "subject" => {
+                        // A service is its own explicitly granted principal; its
+                        // creator is historical attribution, not inherited authority.
+                        control.execute("INSERT INTO rm_workspace_user_access_events(user_id,event_type,workspace_role,actor)VALUES(?1,'disable',NULL,'user:u')", [&subject]).unwrap();
+                    }
+                    _ => {
+                        control.execute("INSERT INTO rm_company_membership_events(user_id,company_slug,event_type,company_role,actor)VALUES(?1,'a','revoke',NULL,'user:u')", [&subject]).unwrap();
+                    }
+                }
+            }
+            release.wait();
+            let mut owner = shared.lock().unwrap();
+            let attempt = owner
+                .finish_invoice_extraction_service(
+                    &key,
+                    &Fixed(NOW),
+                    admission,
+                    Some(Completion {
+                        identity: identity(),
+                        outcome: Ok(provider.join().unwrap()),
+                    }),
+                )
+                .unwrap();
+            assert!(attempt.outcome.is_err(), "{revoke}");
+            assert_eq!(remaining(&owner, &credential), 19);
+            assert_eq!(count(&owner, "invoice_extraction_attempts"), 1);
+            assert_eq!(count(&owner, "invoice_extraction_results"), 0);
+            assert_eq!(count(&owner, "invoice_extraction_resolutions"), 0);
+            assert_eq!(count(&owner, "journal_entries"), 0);
+        });
+    }
+}
+#[test]
+fn service_finish_rechecks_context_selected_company_and_physical_source() {
+    for change in ["context", "company", "source"] {
+        let (_dir, mut owner, cookies, proof, _uid) = setup();
+        let id = register(&mut owner, &proof);
+        let (key, _, _) = service(&mut owner, &cookies, &proof, "bookkeeper");
+        let admission = service_prepare(&mut owner, &key, id);
+        match change {
+            "context" => {
+                owner
+                    .held
+                    .0
+                    .as_ref()
+                    .unwrap()
+                    .company
+                    .as_ref()
+                    .unwrap()
+                    .execute("UPDATE companies SET name='Changed buyer' WHERE id=1", [])
+                    .unwrap();
+            }
+            "company" => {
+                owner.select_company("b").unwrap();
+            }
+            _ => {
+                let path: String = owner
+                    .held
+                    .0
+                    .as_ref()
+                    .unwrap()
+                    .company
+                    .as_ref()
+                    .unwrap()
+                    .query_row("SELECT stored_path FROM documents WHERE id=?1", [id], |r| {
+                        r.get(0)
+                    })
+                    .unwrap();
+                std::fs::write(owner.root.join("a").join(path), b"%PDF-1.4 changed").unwrap();
+            }
+        }
+        assert!(
+            service_finish(&mut owner, &key, admission).is_err(),
+            "{change}"
+        );
+        owner.select_company("a").unwrap();
+        assert_eq!(count(&owner, "invoice_extraction_results"), 0);
+        assert_eq!(count(&owner, "journal_entries"), 0);
+    }
+}
+
+fn backup_policy(owner: &mut Owner, slug: &str, enabled: bool) {
+    let original = owner.slug.clone();
+    owner.select_company(slug).unwrap();
+    let slots = owner.held.0.as_mut().unwrap();
+    let ct = slots
+        .control
+        .as_mut()
+        .unwrap()
+        .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
+        .unwrap();
+    let lt = slots
+        .company
+        .as_mut()
+        .unwrap()
+        .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
+        .unwrap();
+    lt.execute_batch("INSERT OR IGNORE INTO accounts(account_no,name,type,normal_balance)VALUES('B','Synthetic bank','asset','debit');INSERT OR IGNORE INTO bank_accounts(id,slug,name,currency,ledger_account_no)VALUES(1,'synthetic','Synthetic','DKK','B');INSERT INTO bank_transactions(transaction_date,text,amount,currency,bank_account_id) SELECT '2025-12-01','Synthetic old activity',1,'DKK',1 WHERE NOT EXISTS(SELECT 1 FROM bank_transactions)").unwrap();
+    rentemester_storage::backup_state::configure(
+        &ct,
+        &lt,
+        slug,
+        enabled,
+        0,
+        "user:u",
+        "2026-01-01T00:00:00.000Z",
+    )
+    .unwrap();
+    lt.commit().unwrap();
+    ct.commit().unwrap();
+    owner.select_company(&original).unwrap();
+}
+
+#[test]
+fn service_backup_is_rechecked_at_finish_and_retired_owner_cannot_complete() {
+    let (_dir, mut owner, cookies, proof, _uid) = setup();
+    let id = register(&mut owner, &proof);
+    let (key, _, credential) = service(&mut owner, &cookies, &proof, "bookkeeper");
+    let admission = service_prepare(&mut owner, &key, id);
+    backup_policy(&mut owner, "a", true);
+    assert_eq!(
+        service_finish(&mut owner, &key, admission)
+            .unwrap_err()
+            .error
+            .code,
+        "backup_overdue"
+    );
+    assert_eq!(remaining(&owner, &credential), 19);
+    assert_eq!(count(&owner, "invoice_extraction_results"), 0);
+    backup_policy(&mut owner, "a", false);
+    let admission = service_prepare(&mut owner, &key, id);
+    assert!(owner.finish(false));
+    assert!(matches!(
+        owner.finish_invoice_extraction_service(&key, &Fixed(NOW), admission, None),
+        Err(OwnerError::Retired)
+    ));
+}
+#[test]
+fn service_cache_still_requires_current_physical_source_and_current_permission() {
+    let (_dir, mut owner, cookies, proof, _uid) = setup();
+    let id = register(&mut owner, &proof);
+    let (key, subject, credential) = service(&mut owner, &cookies, &proof, "bookkeeper");
+    let admission = service_prepare(&mut owner, &key, id);
+    service_finish(&mut owner, &key, admission).unwrap();
+    owner.held.0.as_ref().unwrap().control.as_ref().unwrap().execute(
+        "INSERT INTO rm_company_membership_events(user_id,company_slug,event_type,company_role,actor)VALUES(?1,'a','grant','reader','user:u')", [&subject]).unwrap();
+    assert_eq!(
+        owner
+            .prepare_invoice_extraction_service(&key, &Fixed(NOW), id, Some(identity()), None)
+            .unwrap()
+            .outcome
+            .err()
+            .unwrap()
+            .error
+            .code,
+        "access_denied"
+    );
+    assert_eq!(remaining(&owner, &credential), 19);
+    owner.held.0.as_ref().unwrap().control.as_ref().unwrap().execute(
+        "INSERT INTO rm_company_membership_events(user_id,company_slug,event_type,company_role,actor)VALUES(?1,'a','grant','bookkeeper','user:u')", [&subject]).unwrap();
+    let path: String = owner
+        .held
+        .0
+        .as_ref()
+        .unwrap()
+        .company
+        .as_ref()
+        .unwrap()
+        .query_row("SELECT stored_path FROM documents WHERE id=?1", [id], |r| {
+            r.get(0)
+        })
+        .unwrap();
+    std::fs::write(owner.root.join("a").join(path), b"%PDF-1.4 changed").unwrap();
+    assert!(
+        owner
+            .prepare_invoice_extraction_service(&key, &Fixed(NOW), id, Some(identity()), None)
+            .unwrap()
+            .outcome
+            .is_err()
+    );
+    assert!(
+        owner
+            .invoice_extraction_service(&key, &Fixed(NOW), id)
+            .unwrap()
+            .outcome
+            .is_err()
+    );
+    assert_eq!(count(&owner, "invoice_extraction_attempts"), 1);
+    assert_eq!(count(&owner, "invoice_extraction_results"), 1);
+}
