@@ -63,6 +63,7 @@ fn result(v: &Value, op: Operation, strict: bool) -> bool {
         return strings(&v["errors"])
             && v["errors"].as_array().is_some_and(|a| !a.is_empty())
             && v.get("code").is_none_or(text)
+            && (!strict || text(&v["code"]))
             && v.get("appliedRules").is_none_or(strings)
             && [
                 "entryId",

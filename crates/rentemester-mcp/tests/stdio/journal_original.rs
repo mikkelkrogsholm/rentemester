@@ -168,11 +168,12 @@ fn journal_original_selection_refusals_and_native_codes_rules_preserved() {
         json!({"ok":false,"code":"IDEMPOTENCY_CONFLICT","errors":["Different intent"],"appliedRules":[]}),
         json!({"ok":false,"errors":["date falls in closed period"],"appliedRules":["period-guard"]}),
     ] {
+        let status = if core.get("code").is_some() { "422 Unprocessable Entity" } else { "200 OK" };
         let (envelope, _, _) = invoke(
             "journal_reverse",
             json!({"company":"synthetic","date":"2026-10-22","reason":"Synthetic correction","entryNo":"missing","matchText":"do not fallback","confirm":true,"idempotencyKey":"key"}),
             core.clone(),
-            "422 Unprocessable Entity",
+            status,
         );
         assert_eq!(envelope["errors"], core["errors"]);
         assert_eq!(envelope["appliedRules"], core["appliedRules"]);
@@ -186,6 +187,7 @@ fn journal_original_selection_refusals_and_native_codes_rules_preserved() {
 #[test]
 fn journal_original_malformed_and_authority_responses_redacted_unknown_no_retry() {
     for (status, core, code) in [
+        ("422 Unprocessable Entity", json!({"ok":false,"errors":["Uncoded native refusal"]}), "server_refused"),
         (
             "403 Forbidden",
             json!({"private":"never-print-this"}),
