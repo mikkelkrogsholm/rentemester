@@ -27,6 +27,7 @@ mod journal_history;
 mod journal_original;
 mod local_binding;
 mod original_args;
+mod master_data_original;
 mod original_discovery;
 mod period_original;
 mod exceptions_original;
@@ -314,6 +315,24 @@ fn main() -> ExitCode {
         eprint!("{}", output.stderr);
         return ExitCode::from(output.exit);
     }
+    if args.first().is_some_and(|s| matches!(s.as_str(), "customer" | "vendor")) {
+        if args.len() == 1 || args.get(1).is_some_and(|s| s == "--help") {
+            println!("{}", master_data_original::help());
+            return ExitCode::SUCCESS;
+        }
+        if !master_data_original::accepts(&args) {
+            eprintln!("Unknown master-data command; see --help");
+            return ExitCode::from(2);
+        }
+        if let Err(output) = master_data_original::preflight(&args) {
+            print!("{}", output.stdout); eprint!("{}", output.stderr);
+            return ExitCode::from(output.exit);
+        }
+        if args.iter().any(|s| s == "--help") {
+            println!("{}", master_data_original::help());
+            return ExitCode::SUCCESS;
+        }
+    }
     if args.first().is_some_and(|s| s == "exceptions") {
         if args.len() == 1 || args.iter().any(|s| s == "--help") {
             println!("{}", exceptions_original::help());
@@ -373,6 +392,11 @@ fn main() -> ExitCode {
             return ExitCode::from(code);
         }
     };
+    if master_data_original::accepts(&args) {
+        let output = master_data_original::execute(&args);
+        print!("{}", output.stdout); eprint!("{}", output.stderr);
+        return ExitCode::from(output.exit);
+    }
     if exceptions_original::accepts(&args) {
         let output = exceptions_original::execute(&args);
         print!("{}", output.stdout); eprint!("{}", output.stderr);
