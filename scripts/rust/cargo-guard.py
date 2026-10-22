@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Cargo compiler wrapper and preflight: one cache per repository, >=30 GiB free."""
+"""Cargo compiler wrapper and preflight: independent worker outputs, >=30 GiB free on source and output."""
 import json
 import os
 from pathlib import Path
@@ -14,12 +14,12 @@ ROOT = Path(__file__).resolve().parents[2]
 
 
 def shared_cache(root=ROOT):
-    # Container runners explicitly select their shared mounted build volume.
-    configured = os.environ.get("RENTEMESTER_CARGO_CACHE")
+    # Explicit worker output wins; retain the legacy cache/default for reuse.
+    configured = os.environ.get("CARGO_TARGET_DIR") or os.environ.get("RENTEMESTER_CARGO_CACHE")
     if configured:
         cache = Path(configured)
         if not cache.is_absolute():
-            raise ValueError("RENTEMESTER_CARGO_CACHE must be absolute")
+            raise ValueError("CARGO_TARGET_DIR / RENTEMESTER_CARGO_CACHE must be absolute")
         return cache.resolve()
     common = subprocess.check_output(
         ["git", "-C", str(root), "rev-parse", "--path-format=absolute", "--git-common-dir"],
@@ -42,7 +42,7 @@ def check_space(cache):
         raise ValueError(
             f"{severity}: {available / GIB:.1f} GiB free; at least 30 GiB required. "
             "No compilation started. Remove rebuildable caches first; "
-            "scripts/rust/cargo-guard.py cargo clean cleans only the selected shared cache."
+            "scripts/rust/cargo-guard.py cargo clean cleans only the selected build cache."
         )
     return available
 
@@ -52,9 +52,10 @@ def same_path(value, expected):
 
 
 def prepare_cache(root, cache, compiler_args=()):
+    cache = cache.resolve()
     for key in ("CARGO_TARGET_DIR", "CARGO_BUILD_TARGET_DIR", "CARGO_BUILD_BUILD_DIR"):
         if os.environ.get(key) and not same_path(os.environ[key], cache):
-            raise ValueError(f"{key} must use the shared cache {cache}")
+            raise ValueError(f"{key} must use the selected target {cache}")
     for index, arg in enumerate(compiler_args):
         output = None
         if arg == "--out-dir" and index + 1 < len(compiler_args):
@@ -62,7 +63,7 @@ def prepare_cache(root, cache, compiler_args=()):
         elif arg.startswith("--out-dir="):
             output = arg.split("=", 1)[1]
         if output and not Path(output).resolve().is_relative_to(cache):
-            raise ValueError(f"Refusing separate compiler output {output}; shared cache is {cache}")
+            raise ValueError(f"Refusing separate compiler output {output}; selected target is {cache}")
     cache.mkdir(parents=True, exist_ok=True)
     local = root / "target"
     if os.environ.get("CARGO_TARGET_DIR") or os.environ.get("CARGO_BUILD_TARGET_DIR"):
@@ -81,7 +82,7 @@ def prepare_cache(root, cache, compiler_args=()):
 def main(args):
     cache = shared_cache()
     if args == ["status"]:
-        available = free_bytes(cache)
+        available = min(free_bytes(ROOT), free_bytes(cache))
         print(json.dumps({"cache": str(cache), "freeGiB": round(available / GIB, 2),
                           "minimumFreeGiB": 30, "criticalFreeGiB": 15,
                           "buildAllowed": available >= MIN_FREE}))
@@ -93,8 +94,9 @@ def main(args):
             if arg.startswith("--target-dir="):
                 value = arg.split("=", 1)[1]
             if value and not same_path(value, cache):
-                raise ValueError("--target-dir must use the shared cache")
+                raise ValueError("--target-dir must use the selected target")
         if "clean" not in cargo_args:
+            check_space(ROOT)
             check_space(cache)
         prepare_cache(ROOT, cache)
         env = {**os.environ, "CARGO_TARGET_DIR": str(cache), "CARGO_INCREMENTAL": "0"}
@@ -106,6 +108,7 @@ def main(args):
     if not args:
         raise ValueError("Use status, cargo <arguments>, or invoke through Cargo's rustc-wrapper")
     # Cargo invokes this even for its rustc capability probe, before compilation.
+    check_space(ROOT)
     check_space(cache)
     prepare_cache(ROOT, cache, args[1:])
     os.execvp(args[0], args)

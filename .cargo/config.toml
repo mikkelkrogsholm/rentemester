@@ -1,6 +1,5 @@
 [build]
-# The wrapper shares target/ across linked worktrees and checks available space.
+# The wrapper honors worker targets and checks source/output disk space.
 rustc-wrapper = "scripts/rust/cargo-guard.sh"
 target-dir = "target"
 incremental = false
-jobs = 1
