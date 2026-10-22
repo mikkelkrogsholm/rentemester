@@ -88,7 +88,7 @@ export function createOriginalAssetProof(base: string, work: string, onStep: (na
   }
   function receipt(value: any, op: 'depreciate' | 'write-off', amount: number) {
     exactFields(value, ['ok', 'entryId', 'entryNo', 'entryHash', 'appliedRules', 'errors', ...(op === 'depreciate' ? ['assetId', 'periodIndex', 'periodAmount'] : ['writeOffId', 'cost', 'thresholdDkk'])]);
-    need(value.ok && Number.isSafeInteger(value.entryId) && value.entryId > 0 && Number.isSafeInteger(value.entryNo) && value.entryNo > 0 && /^[a-f0-9]{64}$/.test(value.entryHash) && equal(value.errors, []), 'shared-writer immutable receipt');
+    need(value.ok && Number.isSafeInteger(value.entryId) && value.entryId > 0 && typeof value.entryNo === 'string' && value.entryNo.trim().length > 0 && /^[a-f0-9]{64}$/.test(value.entryHash) && equal(value.errors, []), 'shared-writer immutable receipt');
     need(value.appliedRules.includes(op === 'depreciate' ? 'DK-ASSET-DEPR-001' : 'DK-ASSET-WRITEOFF-001') && value.appliedRules.length > 1, 'exact source and shared rules');
     need((op === 'depreciate' ? value.periodAmount : value.cost) === amount, 'exact integer-ore amount');
     receipts.push(value); return value;
@@ -158,7 +158,10 @@ export function createOriginalAssetProof(base: string, work: string, onStep: (na
     }
     const afterExceptions = await snapshot();
     for (const field of ['journal', 'assets', 'report', 'trial-balance', 'vat', 'bank', 'documents']) need(equal(afterExceptions[field], before[field]), 'exceptions only, no financial mutations');
-    const exceptionRows = afterExceptions['exceptions/original?status=all&includeArchived=true'].rows;
+    const allExceptionRows = afterExceptions['exceptions/original?status=all&includeArchived=true'].rows;
+    const baselineExceptionRows = before['exceptions/original?status=all&includeArchived=true'].rows;
+    const exceptionRows = allExceptionRows.filter((r: any) => ['ASSET_WRITEOFF_ELIGIBILITY_UNCERTAIN', 'ASSET_WRITEOFF_MISSING_DOCUMENTATION'].includes(r.type));
+    need(baselineExceptionRows.length === 2 && allExceptionRows.length === baselineExceptionRows.length + 2 && baselineExceptionRows.every((r: any) => equal(allExceptionRows.find((v: any) => v.id === r.id), r)), 'existing two bank exceptions preserved exactly alongside asset exceptions');
     need(exceptionRows.length === 2 && equal(exceptionRows.map((r: any) => r.type).sort(), ['ASSET_WRITEOFF_ELIGIBILITY_UNCERTAIN', 'ASSET_WRITEOFF_MISSING_DOCUMENTATION'].sort()), 'two durable source exceptions only');
     for (const row of exceptionRows) {
       const isMissing = row.type === 'ASSET_WRITEOFF_MISSING_DOCUMENTATION';
@@ -184,7 +187,7 @@ export function createOriginalAssetProof(base: string, work: string, onStep: (na
     invoke('mcp', 'write-off', { ...over, name: 'Must not create revoked exception', confirm: true }, true, 'refused');
     need(equal(await snapshot(), stable), 'duplicate/account/period/current role/key refusals leave canonical state exact');
     await sourceProof();
-    return { registered, receipts, report, expectedEntries, originals, journals: 5, lines: 10, exceptions: 2, noFinancialWriteReplay: true, actualLimitations: ['Closed-period, threshold edge years, zero slices and physical-integrity refusals require targeted domain fixtures', 'Synthetic gross costs do not infer VAT deduction or legal eligibility'] };
+    return { registered, receipts, report, expectedEntries, originals, journals: 5, lines: 10, assetExceptions: 2, totalExceptions: 4, noFinancialWriteReplay: true, actualLimitations: ['Closed-period, threshold edge years, zero slices and physical-integrity refusals require targeted domain fixtures', 'Synthetic gross costs do not infer VAT deduction or legal eligibility'] };
   }
   async function assertStable(page: Page) {
     owner = page; need(equal(await snapshot(), stable), 'exact source/register/depreciations/writeoffs/exceptions/books after restart/restore/reopen'); await sourceProof(); return { exact: true };

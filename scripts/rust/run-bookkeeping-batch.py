@@ -449,7 +449,7 @@ def main():
                                 if isinstance(value, bytes):
                                     row[field] = {'bytesBase64': base64.b64encode(value).decode(), 'sha256': hashlib.sha256(value).hexdigest()}
                 if args.original_asset:
-                    expected = {'documents': 2, 'assets': 1, 'asset_depreciation_entries': 3, 'asset_writeoffs': 1, 'exceptions': 2, 'journal_entries': 5, 'journal_lines': 10}
+                    expected = {'documents': 2, 'assets': 1, 'asset_depreciation_entries': 3, 'asset_writeoffs': 1, 'exceptions': 4, 'journal_entries': 5, 'journal_lines': 10}
                     if any(len(rows[table]) != count for table, count in expected.items()):
                         raise RuntimeError('Exact asset/source/depreciation/writeoff/exception/journal inventory differs')
                     return rows
