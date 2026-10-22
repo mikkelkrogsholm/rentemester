@@ -1,4 +1,5 @@
 //! Thin browser adapter over the same owner used for authentication.
+mod budget_original;
 mod master_data_original;
 mod backup_status;
 mod backup_governance;
@@ -126,6 +127,11 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
         pdf_workers: Arc::new(Semaphore::new(4)),
     };
     Router::new()
+        .route("/api/companies/{slug}/original/budget/set", post(budget_original::handle))
+        .route("/api/companies/{slug}/original/budget/list", get(budget_original::handle))
+        .route("/api/companies/{slug}/original/budget/vs-actual", get(budget_original::handle))
+        .route("/api/companies/{slug}/original/budget/forecast", get(budget_original::handle))
+        .route("/api/companies/{slug}/original/budget/forecast-13-week", get(budget_original::handle))
         .route("/api/companies/{slug}/asset/original/register", post(asset_original::handle))
         .route("/api/companies/{slug}/asset/original/{id}/depreciate", post(asset_original::handle))
         .route("/api/companies/{slug}/asset/original/write-off", post(asset_original::handle))

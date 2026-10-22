@@ -242,13 +242,21 @@ pub(crate) fn execute_operation<T>(
     mutation: bool,
     apply: impl FnOnce(&Transaction<'_>, &str, &mut Option<Value>) -> Result<OperationResult<T>, Error>,
 ) -> Result<ServiceResult<T>, ServiceFailure> {
-    execute_operation_mode(control,company,context,permission,mutation,false,apply)
+    execute_operation_both(control, company, context, permission, mutation, |_, tx, subject, rejection| apply(tx, subject, rejection))
 }
 pub(crate) fn execute_recovery<T>(control:&mut Connection,company:&mut Connection,context:Context<'_>,permission:Permission,apply:impl FnOnce(&Transaction<'_>,&str,&mut Option<Value>)->Result<OperationResult<T>,Error>)->Result<ServiceResult<T>,ServiceFailure>{
-    execute_operation_mode(control,company,context,permission,true,true,apply)
+    execute_operation_mode(control,company,context,permission,true,true,|_, tx, subject, rejection| apply(tx, subject, rejection))
+}
+/// Same single-charge admission and live recheck, retaining both held transactions.
+pub(crate) fn execute_operation_both<T>(
+    control: &mut Connection, company: &mut Connection, context: Context<'_>,
+    permission: Permission, mutation: bool,
+    apply: impl FnOnce(&Transaction<'_>, &Transaction<'_>, &str, &mut Option<Value>) -> Result<OperationResult<T>, Error>,
+) -> Result<ServiceResult<T>, ServiceFailure> {
+    execute_operation_mode(control, company, context, permission, mutation, false, apply)
 }
 #[allow(clippy::too_many_arguments)]
-fn execute_operation_mode<T>(control:&mut Connection,company:&mut Connection,context:Context<'_>,permission:Permission,mutation:bool,backup_recovery:bool,apply:impl FnOnce(&Transaction<'_>,&str,&mut Option<Value>)->Result<OperationResult<T>,Error>)->Result<ServiceResult<T>,ServiceFailure>{
+fn execute_operation_mode<T>(control:&mut Connection,company:&mut Connection,context:Context<'_>,permission:Permission,mutation:bool,backup_recovery:bool,apply:impl FnOnce(&Transaction<'_>,&Transaction<'_>,&str,&mut Option<Value>)->Result<OperationResult<T>,Error>)->Result<ServiceResult<T>,ServiceFailure>{
     control_fence::connection_ready(control).map_err(initial)?;
     control_fence::connection_ready(company).map_err(initial)?;
     let Context {
@@ -338,7 +346,7 @@ fn execute_operation_mode<T>(control:&mut Connection,company:&mut Connection,con
     checkpoint("usage-committed");
     let mut rejection = None;
     let mut attempted = false;
-    let done = control_fence::execute_authorized_with_backup(
+    let done = control_fence::execute_authorized_both_with_backup(
         control,
         company,
         (mutation && !backup_recovery).then_some(control_fence::BackupCheck{workspace:selection.workspace,slug:selection.slug,clock}),
@@ -357,10 +365,10 @@ fn execute_operation_mode<T>(control:&mut Connection,company:&mut Connection,con
             authorize(tx, &current, &selection, permission)?;
             Ok(current.subject().to_owned())
         },
-        |tx, subject| {
+        |control_tx, tx, subject| {
             attempted = true;
             let before = tx.total_changes();
-            let value = apply(tx, subject, &mut rejection)?;
+            let value = apply(control_tx, tx, subject, &mut rejection)?;
             if !mutation && tx.total_changes() != before {
                 return Err(error("readonly_operation_changed_data"));
             }
@@ -409,3 +417,26 @@ fn checkpoint(point: &str) {
 }
 #[cfg(test)]
 mod tests;
+
+#[cfg(test)]
+mod paired_admission_tests {
+    use super::*;
+    #[test]
+    fn paired_service_keeps_workspace_check_before_callback_or_charge() {
+        let mut control = Connection::open_in_memory().unwrap();
+        let mut company = Connection::open_in_memory().unwrap();
+        let key = ServiceKey::new("other", "synthetic-secret").unwrap();
+        let context = Context {
+            key: &key, clock: &rentemester_runtime::auth::SystemClock,
+            selection: CompanySelection { workspace: "w", slug: "a", registered: true, archived: false },
+            max_future_days: 45,
+        };
+        let failure = execute_operation_both::<Value>(&mut control, &mut company, context, Permission::CompanyRead, false,
+            |_, _, _, _| panic!("unadmitted callback must not run")).err().unwrap();
+        assert_eq!(failure.error.code, "invalid_credentials");
+        assert_eq!(failure.usage, UsageStage::NotCommitted);
+        assert_eq!(failure.business, BusinessStage::NotAttempted);
+        assert_eq!(control.total_changes(), 0);
+        assert_eq!(company.total_changes(), 0);
+    }
+}
