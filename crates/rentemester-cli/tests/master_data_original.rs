@@ -184,3 +184,46 @@ fn master_data_original_actual_exits_global_positions_pipe_human_json_precedence
     }
     std::fs::remove_file(path).unwrap();
 }
+
+#[test]
+fn master_data_original_sdk_schema_usage_is_stderr_before_http() {
+    let dir = tempfile::tempdir().unwrap();
+    let cookie = dir.path().join("cookie");
+    let mut options = std::fs::OpenOptions::new();
+    options.create_new(true).write(true);
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::OpenOptionsExt;
+        options.mode(0o600);
+    }
+    options
+        .open(&cookie)
+        .unwrap()
+        .write_all(b"session=synthetic")
+        .unwrap();
+    let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+    listener.set_nonblocking(true).unwrap();
+    let origin = format!("http://{}", listener.local_addr().unwrap());
+    let out = Command::new(BIN)
+        .args([
+            "vendor",
+            "create",
+            "--name",
+            "Synthetic",
+            "--identifier-kind=unknown",
+            "--json",
+            "--server",
+            &origin,
+            "--allow-loopback-http",
+            "--company",
+            "synthetic",
+            "--cookie-file",
+            cookie.to_str().unwrap(),
+        ])
+        .output()
+        .unwrap();
+    assert_eq!(out.status.code(), Some(2));
+    assert!(out.stdout.is_empty());
+    assert!(!out.stderr.is_empty());
+    assert!(matches!(listener.accept(),Err(e) if e.kind()==std::io::ErrorKind::WouldBlock));
+}

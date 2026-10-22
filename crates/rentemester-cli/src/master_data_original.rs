@@ -222,6 +222,17 @@ fn human(value: &Value, args: &[String]) -> String {
     lines.join("\n")
 }
 fn output(v: Value, json_mode: bool, exit: u8, args: &[String]) -> Output {
+    if exit == 2 {
+        return usage(
+            &v["errors"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .map(|e| e.as_str().unwrap())
+                .collect::<Vec<_>>()
+                .join("\n"),
+        );
+    }
     if json_mode {
         return Output {
             stdout: format!("{}\n", serde_json::to_string_pretty(&v).unwrap()),
