@@ -76,7 +76,7 @@ fn service_checked<T>(
             "PDF_EVIDENCE_TAMPERED",
         )));
     }
-    documents::service_outcome(attempt)
+    super::documents_original::service_outcome(attempt)
 }
 fn prepare_service_outcome(
     attempt: rentemester_host::Attempt<

@@ -15,8 +15,56 @@ struct Context {
     business_use_reason: String,
     confirm: bool,
 }
-pub(super) fn ingest_receipt(receipt: Value, hash: &str) -> Result<Value, Box<Response>> {
+// Original source adapters expose domain errors, never native service metering envelopes.
+pub(super) fn service_outcome<T>(
+    attempt: rentemester_host::Attempt<
+        Result<
+            rentemester_application::service_company::ServiceResult<T>,
+            rentemester_application::service_company::ServiceFailure,
+        >,
+    >,
+) -> Result<T, Box<Response>> {
+    use rentemester_application::service_company::{BusinessStage, UsageStage};
+    match attempt.outcome {
+        Ok(value) => Ok(value.result),
+        Err(f) => {
+            let reply = if f.usage == UsageStage::OutcomeUnknown
+                || f.business == BusinessStage::OutcomeUnknown
+                || !f.control_reusable
+                || !f.company_reusable
+            {
+                refused(StatusCode::SERVICE_UNAVAILABLE, "outcome_unconfirmed")
+            } else if f.error.code == "invalid_credentials" {
+                refused(StatusCode::UNAUTHORIZED, "unauthorized")
+            } else if f.error.code == "access_denied" {
+                refused(StatusCode::FORBIDDEN, "access_denied")
+            } else {
+                let mut value = f.rejection.unwrap_or_else(
+                    || json!({"ok":false,"code":f.error.code,"errors":[f.error.message]}),
+                );
+                if let Some(fields) = value.as_object_mut() {
+                    fields.retain(|key, _| {
+                        ["ok", "code", "errors", "appliedRules"].contains(&key.as_str())
+                    });
+                }
+                if value["code"]
+                    .as_str()
+                    .is_none_or(|code| code.trim().is_empty())
+                {
+                    value["code"] = json!(f.error.code);
+                }
+                response(StatusCode::UNPROCESSABLE_ENTITY, value)
+            };
+            Err(Box::new(reply))
+        }
+    }
+}
+pub(super) fn ingest_receipt(mut receipt: Value, hash: &str) -> Result<Value, Box<Response>> {
     if receipt["ok"] == false {
+        if let Some(fields) = receipt.as_object_mut() {
+            fields
+                .retain(|key, _| ["ok", "code", "errors", "appliedRules"].contains(&key.as_str()));
+        }
         return Ok(receipt);
     }
     let id = receipt["document"]["id"]
@@ -108,7 +156,7 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
                     .documents_original(&cookie, &SystemClock, action)
                     .map_err(|_| refused(StatusCode::SERVICE_UNAVAILABLE, "owner_unavailable"))?,
             ),
-            documents::Credential::Service(key) => documents::service_outcome(
+            documents::Credential::Service(key) => service_outcome(
                 owner
                     .documents_original_service(&key, &SystemClock, action)
                     .map_err(|_| refused(StatusCode::SERVICE_UNAVAILABLE, "owner_unavailable"))?,
@@ -127,5 +175,61 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
                 "document_read_unavailable"
             },
         ),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn documents_original_service_failures_preserve_domain_details_and_redact_authority() {
+        use rentemester_application::service_company::{BusinessStage, ServiceFailure, UsageStage};
+        let runtime = tokio::runtime::Builder::new_multi_thread()
+            .enable_all()
+            .build()
+            .unwrap();
+        for (code, status, expected) in [
+            (
+                "DOCUMENT_ORIGINAL_REFUSED",
+                StatusCode::UNPROCESSABLE_ENTITY,
+                json!({"ok":false,"code":"DOCUMENT_ORIGINAL_REFUSED","errors":["actual immutable evidence conflict"]}),
+            ),
+            (
+                "access_denied",
+                StatusCode::FORBIDDEN,
+                json!({"ok":false,"code":"access_denied","errors":["access_denied"]}),
+            ),
+            (
+                "invalid_credentials",
+                StatusCode::UNAUTHORIZED,
+                json!({"ok":false,"code":"unauthorized","errors":["unauthorized"]}),
+            ),
+        ] {
+            let attempt = rentemester_host::Attempt {
+                retired: false,
+                outcome: Err(ServiceFailure {
+                    usage: UsageStage::Committed,
+                    business: BusinessStage::NotCommitted,
+                    error: rentemester_engine::Error::new(
+                        code,
+                        "actual immutable evidence conflict",
+                    ),
+                    control_reusable: true,
+                    company_reusable: true,
+                    rejection: None,
+                }),
+            };
+            let response = service_outcome::<Value>(attempt).unwrap_err();
+            assert_eq!(response.status(), status);
+            let bytes = runtime
+                .block_on(to_bytes(response.into_body(), 4096))
+                .unwrap();
+            assert_eq!(serde_json::from_slice::<Value>(&bytes).unwrap(), expected);
+        }
+        let value = ingest_receipt(json!({"ok":false,"code":"DOCUMENT_INGEST_BLOCKED","errors":["same immutable original"],"usage":"committed","business":"committed"}), "unused").unwrap();
+        assert_eq!(
+            value,
+            json!({"ok":false,"code":"DOCUMENT_INGEST_BLOCKED","errors":["same immutable original"]})
+        );
     }
 }

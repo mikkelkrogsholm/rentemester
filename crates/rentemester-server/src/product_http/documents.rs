@@ -217,7 +217,11 @@ pub(super) async fn ingest(State(state): State<Product>, request: Request) -> Re
                             "owner_unavailable",
                         )));
                     }
-                    service_outcome(attempt)?
+                    if original_surface {
+                        super::documents_original::service_outcome(attempt)?
+                    } else {
+                        service_outcome(attempt)?
+                    }
                 }
             }
         }; // Release the global Owner mutex and all SQL transactions before provider I/O.
@@ -261,7 +265,11 @@ pub(super) async fn ingest(State(state): State<Product>, request: Request) -> Re
                     .map_err(|_| refused(StatusCode::SERVICE_UNAVAILABLE, "owner_unavailable"))?;
                 let retired = attempt.retired;
                 // Factual service ingestion does not grant human-only automatic extraction authority.
-                let receipt = service_envelope(attempt, None)?;
+                let receipt = if original_surface {
+                    super::documents_original::service_outcome(attempt)?
+                } else {
+                    service_envelope(attempt, None)?
+                };
                 let receipt = if original_surface {
                     super::documents_original::ingest_receipt(receipt, &source_hash)?
                 } else {

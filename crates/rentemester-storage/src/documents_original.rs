@@ -46,7 +46,7 @@ fn subset(old: &Value, new: &Value) -> bool {
         _ => old == new,
     }
 }
-fn eligible(tx: &Transaction<'_>, id: i64) -> Result<String, Error> {
+fn eligible(tx: &Transaction<'_>, id: i64, strict_links: bool) -> Result<String, Error> {
     let row: Option<(String, String, String)> = tx
         .query_row(
             "SELECT status,document_type,payload_json FROM documents WHERE id=?1",
@@ -61,7 +61,7 @@ fn eligible(tx: &Transaction<'_>, id: i64) -> Result<String, Error> {
             "document must be ingested, noninternal and unposted",
         ));
     }
-    let linked: bool = tx.query_row("SELECT EXISTS(SELECT 1 FROM journal_entries WHERE document_id=?1 UNION ALL SELECT 1 FROM import_document_links WHERE document_id=?1 UNION ALL SELECT 1 FROM dinero_import_document_links WHERE document_id=?1 UNION ALL SELECT 1 FROM payables WHERE document_id=?1)", [id], |r|r.get(0)).map_err(sql)?;
+    let linked: bool = tx.query_row("SELECT EXISTS(SELECT 1 FROM journal_entries WHERE document_id=?1 UNION ALL SELECT 1 FROM import_document_links WHERE document_id=?1 AND (?2 OR journal_entry_id IS NOT NULL) UNION ALL SELECT 1 FROM dinero_import_document_links WHERE document_id=?1 AND (?2 OR journal_entry_id IS NOT NULL OR disposition='linked') UNION ALL SELECT 1 FROM payables WHERE document_id=?1)", params![id,strict_links], |r|r.get(0)).map_err(sql)?;
     if linked {
         return Err(refused("document is linked to accounting evidence"));
     }
@@ -128,6 +128,10 @@ fn normalized(metadata: &Metadata) -> Result<Value, Error> {
     let mut value = serde_json::to_value(metadata).map_err(|_| refused("invalid metadata"))?;
     value["documentType"] = json!(metadata.kind());
     value["currency"] = json!(metadata.currency());
+    if let Some(fields) = value.as_object_mut() {
+        fields.remove("sourceBankTransactionId");
+        fields.remove("accountingRationale");
+    }
     if let Some(recipient) = value.get_mut("recipient").and_then(Value::as_object_mut) {
         recipient.retain(|key, _| matches!(key.as_str(), "name" | "address" | "vatOrCvr"));
     }
@@ -154,7 +158,7 @@ pub fn enrich(
     metadata: &Metadata,
     actor: &str,
 ) -> Result<Value, Error> {
-    let original = eligible(tx, id)?;
+    let original = eligible(tx, id, false)?;
     validate_history(tx)?;
     metadata.validate()?;
     if metadata.kind() == "internal_voucher" {
@@ -285,7 +289,7 @@ pub fn company_context(
     reason: &str,
     actor: &str,
 ) -> Result<Value, Error> {
-    let payload = eligible(tx, id)?;
+    let payload = eligible(tx, id, true)?;
     validate_history(tx)?;
     qualifies(tx, id, &payload)?;
     let reference = text(reference)?;
@@ -324,6 +328,28 @@ pub fn company_context(
 /// Semantic validation accepts nonempty immutable histories and rejects mismatched
 /// raw-original hashes, current projections, canonical metadata and company binding.
 pub fn validate_history(db: &Connection) -> Result<(), Error> {
+    for table in ["document_metadata_enrichments", "document_company_contexts"] {
+        let mut query = db
+            .prepare(&format!("SELECT actor,program,created_at FROM {table}"))
+            .map_err(sql)?;
+        let mut rows = query.query([]).map_err(sql)?;
+        while let Some(row) = rows.next().map_err(sql)? {
+            let actor: String = row.get(0).map_err(sql)?;
+            let program: String = row.get(1).map_err(sql)?;
+            let at: String = row.get(2).map_err(sql)?;
+            let stamp = if at.len() == 19 && at.as_bytes()[10] == b' ' {
+                format!("{}T{}.000Z", &at[..10], &at[11..])
+            } else {
+                at
+            };
+            if actor.trim().is_empty()
+                || program.trim().is_empty()
+                || crate::cookie_session::timestamp(&stamp).is_err()
+            {
+                return Err(refused("document history attribution or timestamp invalid"));
+            }
+        }
+    }
     let mut q=db.prepare("SELECT e.document_id,e.original_payload_json,e.original_payload_sha256,e.enriched_metadata_json,e.enriched_metadata_sha256,d.payload_json FROM document_metadata_enrichments e LEFT JOIN documents d ON d.id=e.document_id").map_err(sql)?;
     let mut rows = q.query([]).map_err(sql)?;
     while let Some(r) = rows.next().map_err(sql)? {
