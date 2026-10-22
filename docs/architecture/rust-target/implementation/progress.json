@@ -1,15 +1,15 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "Group161 original MCP journal dryrun/keyedpost/replay/conflict/reversal and exact normal-MFA restart accepted",
-  "code_revision": "d1a0af7c33b2e26f0d428d97f5f936663a147429",
+  "current_increment": "Group162 original five MCP period tools and authorized current-service forced close/open obligations/restart accepted",
+  "code_revision": "8a014d233d6f00b38cb17c220c88f02b784974b9",
   "spec_revision": "sha256:8979030956647a0f03266c50d42786b5d33ab71a59c78528203d223226171e72",
-  "state": "Group161 ACCEPTED: original numeric journal_dry_run/journal_post/journal_reverse source envelopes and explicit optional keys use one common native Rust motor/receipt engine. Real stdio flow proved full dry-run rollback, keyed post/exact replay/conflict, closed-period fresh refusal, reopen and keyed reversal/replay, reclose/reported history/current revoked member refusal and exact normal-MFA restart followed by both receipt replays. Independent stopped-ledger SQL:2journals4lines, sequence2,2receipt/outcomes, no extra documents/bank or exceptions, exact reversal/hash/principal/key metadata and native4 history.34 focused tests, five-package strict and pinned build/actual PASS; SGD done and published. Full original55/672/716/717 remain OPEN; next original MCP period lifecycle/authorized force obligations, full remaining CLI/launcher/release/cutover/TS retirement/final desktop.",
+  "state": "Group162 ACCEPTED: original5 period MCP names/schema/envelopes, current service read/review/force, computed-and-persisted exact native4 review, rawstored list and immutable historical status. Actual ordinaryMFA owner provisioned service; reader reads, reviewer reviews but cannotforce, Ownerforce persists2 explicit waived obligations while original operational exception remainsopen; revokedmembership blocks all5tools. Exact normalMFA/server restart and independent SQL match4periods/8reviews/7decisions/2obligations/2journals4lines/1bank.47 targeted tests, six-package strict and pinned build/actual PASS; SGD done/published. Source review repaired3 real regressions, first before-finance synthetic bank-balance failure retained and fixture corrected without control weakening. Full original55/672/716/717 remainOPEN; next original exception queue CLI/MCP flow, remaining launcher/interfaces/release/cutover/TS retirement/final desktop.",
   "issues_closed": [
     701
   ],
   "next": [
-    "Next necessary R45 original MCP period whole agent flow: readiness/status/list under current company-read, compute-and-persist review, normal close and current authorized service force-close with exact v4 packet and durable waived open-item obligations; preserve CLI159 force refusal, nonwaivable/unavailable blockers and native aliases. Use existing schema/server/engine and finite proof.",
+    "Next necessary original exception review whole journey (#716/#717): native Rust CLI exceptions list/resolve plus original MCP schemas/envelopes, current human/service read/review authority, first-note no-op replay and exact restart/no bookkeeping effects. Reuse existing resolver and effective-period archive classification; source stored-status-after-reopen bug requires explicit compatibility correction, no extra queue/engine.",
     "Original invoice interface inventory now has all31CLI and25MCP bindings, with explicit compatibility corrections documented; do not mistake that family inventory for full product parity. Reconcile remaining original whole-product R44/R45 acceptance from existing epic/issues: actor/env/company-path/default launcher/errors/historical receipts, closure/recovery/automation, signed distribution/update/cutover and TypeScript backend retirement. Continue next necessary whole journey, preserve all accepted evidence/full original scope; installed desktop acceptance last.",
     "Installed desktop acceptance is explicitly deferred to the very end by the user. Preserve prepared Group100 profile; collect remaining native automation, closure, recovery and packaging checks for final installed acceptance without requesting screen unlock during development.",
     "J03/R50 and remaining R54 scope: only still-supported operation closure/recovery, nonempty scheduler handoff, hostile/older clone and post-cutover rollback requirements. Group99 qualifies managed installed J06 flow, not every R54 acceptance item.",
@@ -25,9 +25,9 @@
   ],
   "all_goal_requirements_complete": false,
   "previous_verified_increment": {
-    "name": "Group160 original journal CLI dry-run/post/reverse and actual locked-period correction/restart accepted by lead",
-    "code_revision": "7bac700f1a60cabd72fc936b312624a454cc4867",
-    "evidence_key": "original_journal160"
+    "name": "Group161 original MCP journal dryrun/keyedpost/replay/conflict/reversal and exact normal-MFA restart accepted",
+    "code_revision": "d1a0af7c33b2e26f0d428d97f5f936663a147429",
+    "evidence_key": "original_journal_mcp161"
   },
   "evidence": {
     "combined_browser_log": "/tmp/rm-platform5-combined.log",
@@ -9162,6 +9162,65 @@
       ],
       "report": "/tmp/rentemester-rust-reports/original-journal-mcp161.json",
       "report_sha256": "1a9dacc6f0ae81cff7060a7fa19807565cd42dd12a342bc0d610ed0869257f04"
+    },
+    "original_period_mcp162": {
+      "issue": 717,
+      "status": "ACCEPTED finite original MCP period lifecycle/authorized service force/open obligations; full issue/epic OPEN",
+      "source_revision": "8a014d233d6f00b38cb17c220c88f02b784974b9",
+      "sgd_run": "rust-original-period-mcp162-20261022T160251.188031000",
+      "engine_phase": "done",
+      "sgd_final_acceptance_passed": true,
+      "source_blob_count": 16,
+      "actual_report": "/tmp/rentemester-rust-reports/original-period-mcp162-actual.json",
+      "actual_report_sha256": "6db7233bb462592d90fde666f53c94ec2eb1a6929142bc0a681132f8293e0b1e",
+      "tests": [
+        {
+          "check": "core",
+          "passed": 30,
+          "failed": 0
+        },
+        {
+          "check": "mcp",
+          "passed": 14,
+          "failed": 0
+        },
+        {
+          "check": "cli-regression",
+          "passed": 3,
+          "failed": 0
+        }
+      ],
+      "strict": "storage/client/mcp/application/host/server --all-targets -D warnings",
+      "actual_sql_counts": {
+        "accounting_periods": 4,
+        "period_close_readiness_packets": 7,
+        "period_close_reviews": 8,
+        "period_close_decisions": 7,
+        "period_close_open_items": 2,
+        "exceptions": 1,
+        "bank_transactions": 1,
+        "journal_entries": 2,
+        "journal_lines": 4,
+        "audit_log": 20
+      },
+      "exact_normal_mfa_restart": true,
+      "original_operational_exception_still_open": true,
+      "current_service_role_and_revocation_qualified": true,
+      "late_rollback_after_obligation_unit_qualified": true,
+      "source_reported_force_and_human_prefix_unit_qualified": true,
+      "failed_initial_actual_manifest": "/tmp/rentemester-rust-reports/period-mcp162-failed-initial-manifest.json",
+      "scope_limits": [
+        "Operational bank/exception fixture and independent closing balance are explicitly synthetic; no exception-creation UI or real bank import qualification. No identity/session/grant/control proof seed.",
+        "Reader/reviewer/Owner service paths and membership revocation are actual; zero-block force, fresh forcedreported terminal state, nonwaivable/stale/late rollback and human reserved-prefix provenance use focused storage proof. No new signed-restore or final installed desktop claim.",
+        "Remaining original CLI/MCP families/default launcher/265commands, all55 original issues/release/cutover/rollback/TypeScript retirement/final installed desktop remain open."
+      ],
+      "failures_preserved": [
+        "Two deferred-transaction fixtures repaired to Immediate without weakening current Write guard.",
+        "Source review repaired native-readiness permission regression, fresh force+reported refusal and unreserved-string principal misclassification. Typed provenance now derives from human/service entrypoints.",
+        "Initial actual0journal/0review/0decision fixture lacked independent statement balance and native control correctly refused. Failed report/logs/private runtime preserved; explicit synthetic input fixed once, then whole actual accepted without replaying prior financial effects."
+      ],
+      "report": "/tmp/rentemester-rust-reports/original-period-mcp162.json",
+      "report_sha256": "62d8eaf7a7bb8c60f411beae7136c12e0324a5fe77600f11726bd59d72055488"
     }
   },
   "verified_history": [
@@ -10863,6 +10922,12 @@
       "code_revision": "d1a0af7c33b2e26f0d428d97f5f936663a147429",
       "evidence_key": "original_journal_mcp161",
       "status": "ACCEPTED finite original MCP journal whole journey; entire mission OPEN"
+    },
+    {
+      "increment": "Group162",
+      "code_revision": "8a014d233d6f00b38cb17c220c88f02b784974b9",
+      "evidence_key": "original_period_mcp162",
+      "status": "ACCEPTED finite original MCP period lifecycle; entire mission OPEN"
     }
   ],
   "scope_clarifications": [

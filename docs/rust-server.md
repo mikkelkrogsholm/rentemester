@@ -3617,3 +3617,34 @@ posteringer, fire modsat rettede linjer og to receipts/outcomes.34 målrettede
 tests, strict Clippy og den samlede SGD-accept består. Oprindelige MCP-
 periodealiaser, autoriseret force/obligationsforløb og hele omskrivningens
 øvrige slutkrav er fortsat åbne; manuel installeret desktopaccept ligger sidst.
+
+
+## Oprindelige periodeværktøjer via MCP (Group162)
+
+De fem oprindelige navne `period_close_readiness`, `period_close_status`,
+`period_list`, `period_close_review` og `period_close` er nu accepteret over
+den fælles Rust-server. Readiness/status/list kræver aktuel læseadgang; review
+og normal lukning kræver reviewadgang. Review beregner og gemmer det aktuelle
+native v4-packet i samme operation. Listen bevarer lagret status, nullable
+reference og rækkefølgen period_start DESC/id DESC; historiske reviews ændres
+ikke. Mutationer kræver den oprindelige MCP-bekræftelse før HTTP.
+
+En aktuelt autoriseret service med company.period.force-close kan lukke med
+begrundet waiver af eksplicit waivable blockers. Hver waived kontrol bliver
+en uforanderlig åben obligationspost med præcist review, hash, evidens,
+begrundelse og principal. Oprindelige operationelle undtagelser bliver ikke
+løst af lukningen. Utilgængelig assurance og nonwaivable blockers kan fortsat
+ikke tilsidesættes. Periode, forced_closed-beslutning, obligationsposter og
+audit gemmes atomisk. Principaltypen kommer fra serverens verificerede
+menneske-/serviceindgang; præfikser i et bruger-ID giver ingen ny identitet.
+
+Den faktiske normal-MFA-/serviceprøve består, inklusive aktuelle roller,
+revokation og præcis genstart. Uafhængig SQL bekræfter fire perioder, otte
+reviews, syv beslutninger og to åbne obligationsposter; den oprindelige
+undtagelse står stadig åben.47 målrettede tests, strict Clippy og samlet
+SGD-accept består. Nul blockers, frisk forced-reported-terminaltilstand og
+rollback efter obligationsindsættelse er dækket af fokuserede lagringstests.
+Den operationelle bank-/undtagelsesfixture og slutsaldo er syntetiske input,
+ikke en påstand om import- eller exception-oprettelses-UI. CLI'ens og de
+øvrige native periodeværktøjers force-afvisning bevares. Hele omskrivningen
+og den sidste installerede desktopaccept er fortsat åbne.

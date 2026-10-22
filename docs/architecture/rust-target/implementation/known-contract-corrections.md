@@ -146,3 +146,17 @@ import-/restore-reconciliationkontrol bevares, og historiske nøgler må ikke
 genudstedes. Kodeløse kildeafvisninger kan fortolkes ved HTTP200; HTTP422
 kræver fortsat en gyldig serverkode. Regnskabs- og adgangskontroller svækkes
 ikke for at opnå transportparitet.
+
+
+## Autoriseret oprindelig MCP-force og principaltype (Group162)
+
+Group159s force-afvisning på den oprindelige CLI bevares. Den særskilte
+autentificerede MCP-vej har nu kildeadfærd med levende force-rettighed,
+præcist review og uforanderlige åbne waiver-obligationer. En frisk periode
+kan force-lukkes direkte som reported, mens en eksisterende lukket periodes
+report-overgang fortsat afviser force. Reported forbliver terminal.
+
+Den native v4-packetkontrakt og de eksisterende native readiness-rettigheder
+bevares. En menneskelig subject kan lovligt starte med service-account:, så
+principaltype udledes aldrig af denne tekst. Den sendes typet fra serverens
+verificerede indgang og bevarer hele subject-ID'et i review og audit.
