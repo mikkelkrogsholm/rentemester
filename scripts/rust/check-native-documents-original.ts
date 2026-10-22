@@ -6,19 +6,21 @@ import { join } from 'node:path';
 import { isDeepStrictEqual as equal } from 'node:util';
 
 /** Run once against the existing ordinary-MFA runner. No database writes or financial replay. */
-export function createDocumentsOriginalProof(base: string, work: string, pdf: (stream: string) => Buffer) {
+export function createDocumentsOriginalProof(base: string, work: string, pdf: (stream: string) => Buffer, onStep: (name: string) => void = () => {}) {
   const root = '/api/companies/synthetic/', original = root + 'documents/original';
   const cookie = join(work, 'original-documents.cookie'), key = join(work, 'original-documents.key');
   const transcript: any[] = [], documents: Record<string, any> = {}, evidence: Record<string, any> = {};
   let owner: Page, service: any, stable: any, ran = false;
-  const need = (v: unknown, label: string) => { if (!v) throw Error('Original documents: ' + label); };
+  const need = (v: unknown, label: string) => { if (!v) { const error = Error('Original documents assertion'); Object.assign(error, { originalAssertion: label.split(';')[0].split(' exit ')[0].slice(0, 160) }); throw error; } };
   const hash = (b: Buffer | string) => createHash('sha256').update(b).digest('hex');
   async function http(path: string, data?: any, method = 'POST') {
+    onStep(method + ':' + path);
     const r = data === undefined ? await owner.request.get(base + path) : await owner.request.fetch(base + path, { method, headers: { origin: base }, data });
-    const value = await r.json(); need(r.ok() && value.ok !== false, `${method} ${path} HTTP${r.status()} ${JSON.stringify(value).slice(0, 600)}`); return value;
+    const value = await r.json(); need(r.ok() && value.ok !== false, `${method} ${path} HTTP${r.status()}`); return value;
   }
   const admin = (path: string, data: any) => http('/api/workspace/' + path, data);
   function execute(binary: string, args: string[], input?: string) {
+    onStep(binary + ':' + (binary === 'rentemester-rust' ? args[1] : 'stdio'));
     const r = spawnSync(join(work, binary), args, { input, encoding: 'utf8', timeout: 45000, maxBuffer: 16 * 1024 * 1024 });
     need(!r.error && !r.stdout.includes(service.secret) && !r.stderr.includes(service.secret), 'bounded private client transport'); return r;
   }
@@ -62,6 +64,7 @@ export function createDocumentsOriginalProof(base: string, work: string, pdf: (s
   }
   return {
     async run(page: Page) {
+      onStep('begin');
       need(!ran, 'one effectful run only'); ran = true; owner = page;
       writeFileSync(cookie, (await owner.context().cookies(base)).map(c => c.name + '=' + c.value).join('; '), { mode: 0o600, flag: 'wx' });
       service = await admin('service-principals', { displayName: 'Synthetic original documents165', operationId: randomUUID(), confirm: true });
@@ -69,7 +72,7 @@ export function createDocumentsOriginalProof(base: string, work: string, pdf: (s
       await admin('members/access', { userId: service.serviceAccountId, action: 'set-role', workspaceRole: 'member' });
       const grant = (role: string) => admin('members/company', { userId: service.serviceAccountId, companySlug: 'synthetic', action: 'grant', role });
       await grant('bookkeeper');
-      const before = await http(root + 'journal'); need(before.journal.entries.length === 0, 'fresh journal');
+      const before = await http(root + 'journal'); need(before.journal.journal.entries.length === 0, 'fresh journal');
       await http(root + 'company', { cvr: '87654321', address: 'Synthetic Street 165', postalCode: '1000', city: 'Synthetic City', vatPeriodType: 'quarter' }, 'PATCH');
       const company = (await http(root + 'company')).company;
       for (const account of [{ accountNo: '4865', name: 'Synthetic original expense', type: 'expense', normalBalance: 'debit', defaultVatCode: 'DK_PURCHASE_25' }, { accountNo: '6865', name: 'Synthetic input VAT', type: 'vat', normalBalance: 'debit' }, { accountNo: '7865', name: 'Synthetic creditors', type: 'liability', normalBalance: 'credit' }]) await http(root + 'accounts', account);
@@ -127,7 +130,7 @@ export function createDocumentsOriginalProof(base: string, work: string, pdf: (s
       await lists(); need(equal(await http(root + 'journal'), before), 'all intake/parse/history actions financially inert');
       // Exactly one accepted payable registration; never replay or duplicate this financial request.
       const posted = await http(root + 'payables', { documentId: documents.context.documentId, billDate: metadata.issueDate, dueDate: metadata.issueDate, expenseAccountNo: '4865', vatTreatment: 'standard', vendorId, confirm: true });
-      const journal = (await http(root + 'journal')).journal; need(journal.entries.length === 1 && journal.entries[0].documentId === documents.context.documentId && journal.entries[0].total === 125, 'one factual payable through verified context gate');
+      const journal = (await http(root + 'journal')).journal.journal; need(journal.entries.length === 1 && journal.entries[0].documentId === documents.context.documentId && journal.entries[0].total === 125, 'one factual payable through verified context gate');
       const preRevoke = await snapshot(); await admin('members/company', { userId: service.serviceAccountId, companySlug: 'synthetic', action: 'revoke' });
       rpc('documents_list', { company: 'synthetic' }, 'refused'); rpc('documents_parse', { company: 'synthetic', documentId: documents.enrich.documentId, confirm: true }, 'refused');
       need(equal(await snapshot(), preRevoke), 'revoked service publishes no document/history/parser/accounting effect');
