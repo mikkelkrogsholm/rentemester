@@ -38,6 +38,7 @@ fn evidence_mode(
     guard: &mut NamespaceGuard,
     audit: bool,
 ) -> Result<Vec<Value>, Error> {
+    rentemester_storage::documents_original::validate_history(tx)?;
     let mut result = vec![];
     let mut q = tx
         .prepare("SELECT id,document_type FROM documents ORDER BY id")

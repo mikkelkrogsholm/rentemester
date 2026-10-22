@@ -54,6 +54,19 @@ pub fn register_scanned_with_principal(
     scan: Option<&rentemester_engine::document_scan::ScanEvidence>,
     principal: crate::idempotency::PrincipalKind,
 ) -> Result<Value, Error> {
+    register_original(tx, original, metadata, actor, today, scan, principal, false)
+}
+#[allow(clippy::too_many_arguments)]
+pub fn register_original(
+    tx: &Transaction<'_>,
+    original: Original<'_>,
+    metadata: &Metadata,
+    actor: &str,
+    today: &str,
+    scan: Option<&rentemester_engine::document_scan::ScanEvidence>,
+    principal: crate::idempotency::PrincipalKind,
+    force: bool,
+) -> Result<Value, Error> {
     if let Some(scan) = scan {
         scan.validate()?;
         if scan.sha256 != original.hash {
@@ -86,19 +99,9 @@ pub fn register_scanned_with_principal(
                 .as_ref()
                 .and_then(|p| p.vat_or_cvr.as_deref())
         });
-    if metadata.kind() == "purchase_sale"
-        && let (Some(identifier), Some(invoice), Some(date)) = (
-            identifier,
-            metadata.invoice_no.as_deref(),
-            metadata.issue_date.as_deref(),
-        )
-    {
-        let exists:Option<String>=tx.query_row("SELECT document_no FROM documents WHERE document_type='purchase_sale' AND sender_vat_cvr=?1 AND invoice_no=?2 AND invoice_date=?3",[identifier,invoice,date],|r|r.get(0)).optional().map_err(sql)?;
-        if exists.is_some() {
-            return Err(fail(
-                "supplier invoice identity already registered; human review required",
-            ));
-        }
+    if !force {
+        crate::documents_original::duplicate(tx, 0, metadata)
+            .map_err(|error| fail(error.message))?;
     }
     if metadata.kind() == "internal_voucher" {
         let bank_id = metadata

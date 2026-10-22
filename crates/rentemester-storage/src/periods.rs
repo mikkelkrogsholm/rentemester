@@ -431,6 +431,7 @@ pub fn report<'a>(
 
 /// Read-only canonical accounting sources; physical originals are the caller's separate namespace check.
 pub fn verify_sources(tx: &Transaction<'_>) -> Result<Vec<Value>, Error> {
+    crate::documents_original::validate_history(tx)?;
     audit::verify(tx)
 }
 

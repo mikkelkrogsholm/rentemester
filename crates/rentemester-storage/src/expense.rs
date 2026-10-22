@@ -47,6 +47,7 @@ pub(crate) fn role(tx: &Transaction<'_>, role: &str) -> Result<String, Error> {
     .ok_or_else(|| fail(format!("confirmed account role '{role}' required")))
 }
 pub(crate) fn metadata(tx: &Transaction<'_>, id: i64) -> Result<Metadata, Error> {
+    crate::documents_original::validate_history(tx)?;
     let payload: Option<String> = tx
         .query_row(
             "SELECT payload_json FROM documents WHERE id=?1",
@@ -101,6 +102,7 @@ pub(crate) struct Allocation {
 }
 pub(crate) fn purchase(
     tx: &Transaction<'_>,
+    document_id: i64,
     meta: &Metadata,
     expense: &str,
     requested: Option<&str>,
@@ -188,6 +190,7 @@ pub(crate) fn purchase(
                 .recipient
                 .as_ref()
                 .is_none_or(|p| p.vat_or_cvr.as_ref().is_none_or(|s| s.trim().is_empty()))
+            && !crate::documents_original::valid_context_for_document(tx, document_id, meta)?
         {
             return Err(fail(
                 "invoice-stated recipient identity or hash-bound simplified invoice context required",
@@ -364,6 +367,7 @@ pub(crate) fn prepare(tx: &Transaction<'_>, input: &Input) -> Result<Prepared, E
     }
     let allocated = purchase(
         tx,
+        input.document_id,
         &meta,
         &input.expense_account_no,
         input.vat_treatment.as_deref(),

@@ -100,6 +100,7 @@ pub(super) fn outcome<T>(
     }
 }
 pub(super) async fn ingest(State(state): State<Product>, request: Request) -> Response {
+    let original_surface = request.uri().path().contains("/documents/original/");
     let company_slug = request
         .uri()
         .path()
@@ -135,11 +136,8 @@ pub(super) async fn ingest(State(state): State<Product>, request: Request) -> Re
     if !input.confirm {
         return refused(StatusCode::BAD_REQUEST, "confirmation_required");
     }
-    if input.force || input.vendor_id.is_some() {
-        return response(
-            StatusCode::UNPROCESSABLE_ENTITY,
-            json!({"ok":false,"code":"native_document_review_required","errors":["Forced ingestion and vendor links are not available in this Rust upload yet"]}),
-        );
+    if input.vendor_id.is_some_and(|id| id <= 0) {
+        return refused(StatusCode::BAD_REQUEST, "invalid_input");
     }
     // Keep the request bounded across both effects, but retain the known upload
     // receipt outside the later provider task (even if that task panics).
@@ -173,7 +171,18 @@ pub(super) async fn ingest(State(state): State<Product>, request: Request) -> Re
             match cookie.as_ref() {
                 Credential::Human(cookie) => {
                     let attempt = owner
-                        .prepare_document_ingest(cookie, &SystemClock, file, input.metadata, policy)
+                        .prepare_documents_original(
+                            cookie,
+                            &SystemClock,
+                            file,
+                            input.metadata,
+                            policy,
+                            rentemester_application::documents::OriginalOptions {
+                                vendor_id: input.vendor_id,
+                                force: input.force,
+                                original_api: original_surface,
+                            },
+                        )
                         .map_err(|_| {
                             refused(StatusCode::SERVICE_UNAVAILABLE, "owner_unavailable")
                         })?;
@@ -187,12 +196,17 @@ pub(super) async fn ingest(State(state): State<Product>, request: Request) -> Re
                 }
                 Credential::Service(key) => {
                     let attempt = owner
-                        .prepare_document_ingest_service(
+                        .prepare_documents_original_service(
                             key,
                             &SystemClock,
                             file,
                             input.metadata,
                             policy,
+                            rentemester_application::documents::OriginalOptions {
+                                vendor_id: input.vendor_id,
+                                force: input.force,
+                                original_api: original_surface,
+                            },
                         )
                         .map_err(|_| {
                             refused(StatusCode::SERVICE_UNAVAILABLE, "owner_unavailable")
@@ -207,6 +221,7 @@ pub(super) async fn ingest(State(state): State<Product>, request: Request) -> Re
                 }
             }
         }; // Release the global Owner mutex and all SQL transactions before provider I/O.
+        let source_hash = admission.file().hash().to_owned();
         let scan = match &state.native.document_scanner {
             Some(scanner) => Some(scanner.scan(admission.file()).map_err(|failure| {
                 Box::new(match failure {
@@ -233,7 +248,12 @@ pub(super) async fn ingest(State(state): State<Product>, request: Request) -> Re
                     .map_err(|_| refused(StatusCode::SERVICE_UNAVAILABLE, "owner_unavailable"))?;
                 let retired = attempt.retired;
                 let registered = outcome(attempt)?;
-                Ok((registered.receipt, Some(registered.upload), retired, permit))
+                let receipt = if original_surface {
+                    super::documents_original::ingest_receipt(registered.receipt, &source_hash)?
+                } else {
+                    registered.receipt
+                };
+                Ok((receipt, Some(registered.upload), retired, permit))
             }
             Credential::Service(key) => {
                 let attempt = owner
@@ -241,7 +261,13 @@ pub(super) async fn ingest(State(state): State<Product>, request: Request) -> Re
                     .map_err(|_| refused(StatusCode::SERVICE_UNAVAILABLE, "owner_unavailable"))?;
                 let retired = attempt.retired;
                 // Factual service ingestion does not grant human-only automatic extraction authority.
-                Ok((service_envelope(attempt, None)?, None, retired, permit))
+                let receipt = service_envelope(attempt, None)?;
+                let receipt = if original_surface {
+                    super::documents_original::ingest_receipt(receipt, &source_hash)?
+                } else {
+                    receipt
+                };
+                Ok((receipt, None, retired, permit))
             }
         }
     })

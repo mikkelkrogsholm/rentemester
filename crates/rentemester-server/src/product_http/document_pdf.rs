@@ -24,24 +24,89 @@ fn checked<T>(
 ) -> Result<T, Box<Response>> {
     if let Err(f) = &attempt.outcome
         && f.stage == FailureStage::NotCommitted
-            && matches!(f.error.code, "PDF_EVIDENCE_TAMPERED" | "tampered_result")
-        {
-            return Err(Box::new(refused(
-                StatusCode::CONFLICT,
-                "PDF_EVIDENCE_TAMPERED",
-            )));
+        && matches!(f.error.code, "PDF_EVIDENCE_TAMPERED" | "tampered_result")
+    {
+        return Err(Box::new(refused(
+            StatusCode::CONFLICT,
+            "PDF_EVIDENCE_TAMPERED",
+        )));
     }
-    if attempt.retired {
+    documents::outcome(attempt)
+}
+// Preparatory results are capabilities, not final committed Value receipts.
+fn prepare_outcome(
+    attempt: rentemester_host::Attempt<
+        Result<
+            rentemester_application::control_fence::Committed<
+                rentemester_application::document_pdf::Admission,
+            >,
+            rentemester_application::control_fence::Failure,
+        >,
+    >,
+) -> Result<rentemester_application::document_pdf::Admission, Box<Response>> {
+    if let Err(f) = &attempt.outcome
+        && matches!(f.error.code, "PDF_EVIDENCE_TAMPERED" | "tampered_result")
+    {
+        return Err(Box::new(refused(
+            StatusCode::CONFLICT,
+            "PDF_EVIDENCE_TAMPERED",
+        )));
+    }
+    if attempt.retired || attempt.outcome.as_ref().is_ok_and(|v| !v.control_reusable) {
         return Err(Box::new(refused(
             StatusCode::SERVICE_UNAVAILABLE,
             "owner_unavailable",
         )));
     }
-    documents::outcome(attempt)
+    checked(attempt)
+}
+fn service_checked<T>(
+    attempt: rentemester_host::Attempt<
+        Result<
+            rentemester_application::service_company::ServiceResult<T>,
+            rentemester_application::service_company::ServiceFailure,
+        >,
+    >,
+) -> Result<T, Box<Response>> {
+    if let Err(f) = &attempt.outcome
+        && matches!(f.error.code, "PDF_EVIDENCE_TAMPERED" | "tampered_result")
+    {
+        return Err(Box::new(refused(
+            StatusCode::CONFLICT,
+            "PDF_EVIDENCE_TAMPERED",
+        )));
+    }
+    documents::service_outcome(attempt)
+}
+fn prepare_service_outcome(
+    attempt: rentemester_host::Attempt<
+        Result<
+            rentemester_application::service_company::ServiceResult<
+                rentemester_application::document_pdf::Admission,
+            >,
+            rentemester_application::service_company::ServiceFailure,
+        >,
+    >,
+) -> Result<rentemester_application::document_pdf::Admission, Box<Response>> {
+    if let Err(f) = &attempt.outcome
+        && matches!(f.error.code, "PDF_EVIDENCE_TAMPERED" | "tampered_result")
+    {
+        return Err(Box::new(refused(
+            StatusCode::CONFLICT,
+            "PDF_EVIDENCE_TAMPERED",
+        )));
+    }
+    if attempt.retired || attempt.outcome.as_ref().is_ok_and(|v| !v.control_reusable) {
+        return Err(Box::new(refused(
+            StatusCode::SERVICE_UNAVAILABLE,
+            "owner_unavailable",
+        )));
+    }
+    service_checked(attempt)
 }
 fn one_parse(
     state: &Product,
-    cookie: &VerifiedCookie,
+    cookie: &documents::Credential,
     slug: &str,
     id: i64,
 ) -> Result<Value, Box<Response>> {
@@ -56,11 +121,18 @@ fn one_parse(
             .native
             .lock_company(slug)
             .map_err(|_| refused(StatusCode::SERVICE_UNAVAILABLE, "owner_unavailable"))?;
-        checked(
-            owner
-                .prepare_document_pdf(cookie, &SystemClock, id, parser.identity().clone())
-                .map_err(|_| refused(StatusCode::SERVICE_UNAVAILABLE, "owner_unavailable"))?,
-        )?
+        match cookie {
+            documents::Credential::Human(cookie) => prepare_outcome(
+                owner
+                    .prepare_document_pdf(cookie, &SystemClock, id, parser.identity().clone())
+                    .map_err(|_| refused(StatusCode::SERVICE_UNAVAILABLE, "owner_unavailable"))?,
+            )?,
+            documents::Credential::Service(key) => prepare_service_outcome(
+                owner
+                    .prepare_document_pdf_service(key, &SystemClock, id, parser.identity().clone())
+                    .map_err(|_| refused(StatusCode::SERVICE_UNAVAILABLE, "owner_unavailable"))?,
+            )?,
+        }
     };
     let completion = admission.worker_input().map(|bytes| Completion {
         identity: parser.identity().clone(),
@@ -70,11 +142,18 @@ fn one_parse(
         .native
         .lock_company(slug)
         .map_err(|_| refused(StatusCode::SERVICE_UNAVAILABLE, "owner_unavailable"))?;
-    checked(
-        owner
-            .finish_document_pdf(cookie, &SystemClock, admission, completion)
-            .map_err(|_| refused(StatusCode::SERVICE_UNAVAILABLE, "owner_unavailable"))?,
-    )
+    match cookie {
+        documents::Credential::Human(cookie) => checked(
+            owner
+                .finish_document_pdf(cookie, &SystemClock, admission, completion)
+                .map_err(|_| refused(StatusCode::SERVICE_UNAVAILABLE, "owner_unavailable"))?,
+        ),
+        documents::Credential::Service(key) => service_checked(
+            owner
+                .finish_document_pdf_service(key, &SystemClock, admission, completion)
+                .map_err(|_| refused(StatusCode::SERVICE_UNAVAILABLE, "owner_unavailable"))?,
+        ),
+    }
 }
 enum Input {
     Parse(i64),
@@ -95,7 +174,7 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
     } else {
         None
     };
-    let cookie = match proof(&state, &request, write) {
+    let cookie = match documents::credential(&state, &request, write) {
         Ok(c) => c,
         Err(r) => return *r,
     };
@@ -206,13 +285,13 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
             Input::Parse(id)=>one_parse(&state,&cookie,&slug,id),
             Input::Read(read)=>{
                 let mut owner=state.native.lock_company(&slug).map_err(|_|refused(StatusCode::SERVICE_UNAVAILABLE,"owner_unavailable"))?;
-                checked(owner.document_pdf(&cookie,&SystemClock,read).map_err(|_|refused(StatusCode::SERVICE_UNAVAILABLE,"owner_unavailable"))?)
+                read_authorized(&mut owner,&cookie,read)
             },
             Input::Pending{cursor,limit}=>{
                 let parser=state.native.document_pdf_worker.as_ref().ok_or_else(||Box::new(refused(StatusCode::SERVICE_UNAVAILABLE,"pdf_worker_unavailable")))?;
                 let plan={
                     let mut owner=state.native.lock_company(&slug).map_err(|_|refused(StatusCode::SERVICE_UNAVAILABLE,"owner_unavailable"))?;
-                    checked(owner.document_pdf(&cookie,&SystemClock,Read::Pending{identity:parser.identity().clone(),cursor,limit}).map_err(|_|refused(StatusCode::SERVICE_UNAVAILABLE,"owner_unavailable"))?)?
+                    read_authorized(&mut owner,&cookie,Read::Pending{identity:parser.identity().clone(),cursor,limit})?
                 };
                 let ids=plan["documentIds"].as_array().ok_or_else(||Box::new(refused(StatusCode::SERVICE_UNAVAILABLE,"pdf_plan_unavailable")))?;
                 let mut failed=Vec::new();
@@ -235,5 +314,59 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
                 "pdf_read_unavailable"
             },
         ),
+    }
+}
+
+fn read_authorized(
+    owner: &mut rentemester_host::Owner,
+    credential: &documents::Credential,
+    action: Read,
+) -> Result<Value, Box<Response>> {
+    match credential {
+        documents::Credential::Human(cookie) => checked(
+            owner
+                .document_pdf(cookie, &SystemClock, action)
+                .map_err(|_| refused(StatusCode::SERVICE_UNAVAILABLE, "owner_unavailable"))?,
+        ),
+        documents::Credential::Service(key) => service_checked(
+            owner
+                .document_pdf_service(key, &SystemClock, action)
+                .map_err(|_| refused(StatusCode::SERVICE_UNAVAILABLE, "owner_unavailable"))?,
+        ),
+    }
+}
+
+#[cfg(test)]
+mod documents_original_tests {
+    use super::*;
+    #[test]
+    fn documents_original_retired_preparation_never_releases_admission() {
+        use rentemester_application::control_fence::{Failure, FailureStage};
+        let attempt = rentemester_host::Attempt {
+            retired: true,
+            outcome: Err(Failure {
+                stage: FailureStage::NotCommitted,
+                error: rentemester_engine::Error::new("unavailable", "retired preparation"),
+                control_reusable: false,
+                company_reusable: false,
+            }),
+        };
+        match prepare_outcome(attempt) {
+            Err(response) => assert_eq!(response.status(), StatusCode::SERVICE_UNAVAILABLE),
+            Ok(_) => panic!("retired preparation released a parser capability"),
+        }
+        let attempt = rentemester_host::Attempt {
+            retired: true,
+            outcome: Err(Failure {
+                stage: FailureStage::NotCommitted,
+                error: rentemester_engine::Error::new("PDF_EVIDENCE_TAMPERED", "tampered source"),
+                control_reusable: false,
+                company_reusable: false,
+            }),
+        };
+        match prepare_outcome(attempt) {
+            Err(response) => assert_eq!(response.status(), StatusCode::CONFLICT),
+            Ok(_) => panic!("tampered preparation released a parser capability"),
+        }
     }
 }
