@@ -548,3 +548,6 @@ pub use invoice_extraction_original::original_invoice_extraction_surface_schema;
 
 mod expense_original;
 pub use expense_original::{original_expense_book_schema, validate_original_expense_book};
+
+mod accrual_original;
+pub use accrual_original::{original_accrual_schema, validate_original_accrual, validate_original_accrual_actor};

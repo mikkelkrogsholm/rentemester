@@ -1,3 +1,4 @@
+mod accrual_original;
 mod expense_original;
 mod annual_exports;
 mod audit_log;
@@ -304,6 +305,12 @@ fn main() -> ExitCode {
         eprint!("{}", output.stderr);
         return ExitCode::from(output.exit);
     }
+    if args.first().is_some_and(|s|s=="accrual") {
+        if args==["accrual"] || args==["accrual","--help"] {println!("{}",accrual_original::help());return ExitCode::SUCCESS;}
+        if !accrual_original::accepts(&args) {eprintln!("Unknown accrual command; see accrual --help");return ExitCode::from(2);}
+        if let Err(o)=accrual_original::preflight(&args) {print!("{}",o.stdout);eprint!("{}",o.stderr);return ExitCode::from(o.exit);}
+        if args.iter().any(|s|s=="--help") {println!("{}",accrual_original::help());return ExitCode::SUCCESS;}
+    }
     if args.first().is_some_and(|s| s == "expense") {
         if args == ["expense"] || args == ["expense", "--help"] {
             println!("{}", expense_original::help());
@@ -442,6 +449,10 @@ fn main() -> ExitCode {
             return ExitCode::from(code);
         }
     };
+    if accrual_original::accepts(&args) {
+        let output=accrual_original::execute(&args);
+        print!("{}",output.stdout);eprint!("{}",output.stderr);return ExitCode::from(output.exit);
+    }
     if expense_original::accepts(&args) {
         let output = expense_original::execute(&args);
         print!("{}", output.stdout);

@@ -3,6 +3,7 @@ use serde_json::{Value, json};
 
 pub fn help() -> Value {
     json!({"ok":true,"localBinding":"Existing migrated commands may select --local-profile ABS_PRIVATE_PROFILE instead of --server/--allow-loopback-http. Join only: same server via private Unix socket with normal cookie/service authentication. Bounded company selection supports explicit slug or verified workspace path and RENTEMESTER_COMPANY fallback for migrated company commands only. Identity remains server-owned; no caller-selected actor. Whole-product parity is unfinished and the default launcher is unchanged.","commands":[
+        {"name":"accrual register|recognize|register-report","usage":"accrual --help","scope":"original flat accrual journal writes and exposure report; native remote aliases retained"},
         {"name":"expense vat-preflight|book","usage":"expense --help","scope":"original document-local read/apply VAT evidence and atomic expense booking; six CLI treatments; native aliases under remote"},
         {"name":"customer create|list|validate-vat|cvr-lookup; vendor create|list","usage":"customer create --help; vendor create --help","scope":"original source-flat master data using current shared server writers/providers"},
         {"name":"bank list|reconcile bank|invoice issue|invoice create|invoice render|invoice post|invoice settle-bank|invoice credit-note|invoice refund-bank|invoice apply-payment|invoice repair-posting|invoice list|invoice find|invoice status|invoice overdue|invoice remind|invoice post-reminder|invoice compensation|invoice claim-compensation|invoice post-compensation|invoice interest|invoice claim-interest|invoice post-interest|invoice interest-correction|invoice post-interest-correction|invoice settle-claim-bank|invoice write-off-bad-debt|invoice imported-receivables|invoice validate|payable register|payable list|payable pay|bank direct-payable-plan|bank direct-payable-apply|bank suggest-matches|bank link-journal|bank correction-plan|bank correction-apply|bank-account list|bank-account add|bank-account update|bank import --file PATH","usage":"bank list --help","scope":"original canonical bank reads and reconciliation, unpaged CLI output"},
@@ -143,7 +144,8 @@ fn invalid(message: &str) -> crate::dated_reports::Output {
 fn recognized(root: &str) -> bool {
     matches!(
         root,
-        "customer"
+        "accrual"
+            | "customer"
             | "expense"
             | "vendor"
             | "exceptions"
