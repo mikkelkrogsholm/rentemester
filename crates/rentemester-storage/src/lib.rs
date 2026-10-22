@@ -1,4 +1,5 @@
 //! Source-read-only reports/rehearsals and caller-owned transactional primitives.
+pub mod journal_original;
 pub mod invoice_bad_debt;
 pub mod dinero_import;
 pub mod imported_receivables;

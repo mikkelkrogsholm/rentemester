@@ -557,6 +557,9 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
         .route("/api/companies/{slug}/balance", get(archive_reports::read))
         .route("/api/companies/{slug}/{report}/export", get(read))
         .route("/api/companies/{slug}/fiscal-years", get(archive_reports::read))
+        .route("/api/companies/{slug}/journal/original/post", post(journal_original::handle))
+        .route("/api/companies/{slug}/journal/original/dry-run", post(journal_original::handle))
+        .route("/api/companies/{slug}/journal/original/reverse", post(journal_original::handle))
         .route("/api/companies/{slug}/manual-journal", post(write))
         .route("/api/companies/{slug}/manual-journal/recovery", get(manual_post_recovery::handle).post(manual_post_recovery::handle))
         .route("/api/companies/{slug}/manual-journal-reversal", post(write))
@@ -945,3 +948,5 @@ mod contact_import;
 
 mod eliminations;
 mod consolidation;
+
+mod journal_original;
