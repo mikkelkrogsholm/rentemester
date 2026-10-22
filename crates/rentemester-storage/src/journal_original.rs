@@ -100,22 +100,13 @@ fn selection() -> Error {
 /// Called only inside the very same admitted writer as reverse; never a preflight read.
 pub fn resolve(tx: &Transaction<'_>, selector: &Selector) -> Result<JournalEntryId, Error> {
     journal_post::require_current(tx)?;
-    if let Some(value) = &selector.entry_id {
-        if let Ok(value) = id(value).and_then(|n| n.parse::<i64>().map_err(|_| invalid())) {
-            if value > 0 {
-                let exists: bool = tx
-                    .query_row(
-                        "SELECT EXISTS(SELECT 1 FROM main.journal_entries WHERE id=?1)",
-                        [value],
-                        |r| r.get(0),
-                    )
-                    .map_err(failed)?;
-                if !exists {
-                    return Err(selection());
-                }
-                return Ok(JournalEntryId::from_sqlite(value));
-            }
-        }
+    if let Some(value) = &selector.entry_id
+        && let Ok(value) = id(value).and_then(|n| n.parse::<i64>().map_err(|_| invalid()))
+        && value > 0
+    {
+        // A positive ID is already a resolved selector. Missing IDs are a
+        // business refusal from the native reversal, as in the original CLI.
+        return Ok(JournalEntryId::from_sqlite(value));
     }
     if let Some(number) = selector
         .entry_no
@@ -446,7 +437,7 @@ mod writer_tests {
         tx.rollback().unwrap();
         // A confirmed VAT amount role cannot be bypassed by the source adapter.
         let mut db = fixture();
-        db.execute_batch("INSERT INTO account_role_mappings(role,account_no,version,confirmed_by)VALUES('output_vat','5000',1,'synthetic')").unwrap();
+        db.execute_batch("UPDATE accounts SET type='vat' WHERE account_no='5000'; INSERT INTO account_role_mappings(role,account_no,version,confirmed_by,status)VALUES('output_vat','5000',1,'synthetic','confirmed')").unwrap();
         let before = snapshot(&db);
         let tx = db
             .transaction_with_behavior(TransactionBehavior::Immediate)
@@ -472,6 +463,8 @@ mod writer_tests {
             match_document_id: None,
         };
         assert_eq!(resolve(&tx, &selector).unwrap().value(), 1);
+        selector.entry_id = Some(json!(999));
+        assert_eq!(resolve(&tx, &selector).unwrap().value(), 999);
         selector.entry_id = None;
         assert_eq!(
             resolve(&tx, &selector).unwrap_err().code,
