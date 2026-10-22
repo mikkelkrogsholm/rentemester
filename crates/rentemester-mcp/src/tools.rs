@@ -144,6 +144,7 @@ pub fn list() -> Value {
     tools.extend(crate::eu_sales::tools());
     tools.extend(crate::oss_report::tools());
     tools.extend(crate::reviewed_bookkeeping::tools());
+    tools.extend(crate::documents_original::tools());
     tools.extend(crate::documents::tools());
     tools.extend(crate::document_pdf::tools());
     tools.extend(crate::invoice_extraction::tools());
@@ -269,6 +270,7 @@ pub async fn call(api: &ApiClient, name: &str, args: Value) -> Result<Value, &'s
     if !args.is_object() {
         return Err("expected arguments object");
     }
+    if crate::documents_original::accepts(name) { return crate::documents_original::call(api,name,args).await; }
     if crate::master_data_original::accepts(name) { return crate::master_data_original::call(api,name,args).await; }
     if crate::exceptions::accepts(name) { return crate::exceptions::call(api,name,args).await; }
     if crate::periods::original(name) { return crate::periods::call_original(api,name,args).await; }

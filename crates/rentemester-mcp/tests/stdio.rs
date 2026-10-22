@@ -1,7 +1,7 @@
 use serde_json::{Value, json};
 
-// Existing 299 bindings plus the five original customer/vendor tools.
-const EXPECTED_NATIVE_TOOLS: usize = 304;
+// Existing 304 bindings plus the eight original document tools.
+const EXPECTED_NATIVE_TOOLS: usize = 312;
 
 #[test]
 fn pdf_tools_require_confirmation_and_keep_reads_bounded() {
@@ -2221,3 +2221,6 @@ mod exceptions_original;
 
 #[path="stdio/master_data_original.rs"]
 mod master_data_original;
+
+#[path="stdio/documents_original.rs"]
+mod documents_original;
