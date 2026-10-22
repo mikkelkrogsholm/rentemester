@@ -72,7 +72,7 @@ export function createDocumentsOriginalProof(base: string, work: string, pdf: (s
       await admin('members/access', { userId: service.serviceAccountId, action: 'set-role', workspaceRole: 'member' });
       const grant = (role: string) => admin('members/company', { userId: service.serviceAccountId, companySlug: 'synthetic', action: 'grant', role });
       await grant('bookkeeper');
-      const before = await http(root + 'journal'); need(before.journal.entries.length === 0, 'fresh journal');
+      need((await http(root + 'journal')).journal.entries.length === 0, 'fresh journal');
       await http(root + 'company', { cvr: '87654321', address: 'Synthetic Street 165', postalCode: '1000', city: 'Synthetic City', vatPeriodType: 'quarter' }, 'PATCH');
       const company = (await http(root + 'company')).company;
       for (const account of [{ accountNo: '4865', name: 'Synthetic original expense', type: 'expense', normalBalance: 'debit', defaultVatCode: 'DK_PURCHASE_25' }, { accountNo: '6865', name: 'Synthetic input VAT', type: 'vat', normalBalance: 'debit' }, { accountNo: '7865', name: 'Synthetic creditors', type: 'liability', normalBalance: 'credit' }]) await http(root + 'accounts', account);
@@ -95,6 +95,10 @@ export function createDocumentsOriginalProof(base: string, work: string, pdf: (s
       }
       cli('parse', ['--document-id', '1'], 2, false, true); cli('enrich', ['--document-id', '1', '--metadata', join(work, 'absent.json')], 2, false, true);
       rpc('documents_list', { company: 'synthetic', limit: 5001 }, 'invalid', true); rpc('documents_parsed_text', { company: 'synthetic', documentId: 1, limit: 11 }, 'invalid', true);
+      // Company/account setup changes the journal projection even without entries.
+      // Freeze the full comparison after setup, before any document operation.
+      const before = await http(root + 'journal');
+      need(before.journal.entries.length === 0, 'setup has no journal entries');
       const paths: Record<string, string> = {};
       for (const kind of ['enrich', 'context', 'blank', 'malformed', 'force']) {
         const bytes = kind === 'malformed' ? Buffer.from('%PDF-1.4\nSynthetic malformed original165\n') : pdf(kind === 'blank' ? '' : `BT\n/F1 18 Tf\n72 720 Td\n(Synthetic original165 ${kind}) Tj\nET\n`);
