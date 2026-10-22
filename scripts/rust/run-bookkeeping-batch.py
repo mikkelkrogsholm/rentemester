@@ -103,6 +103,29 @@ def digest(path):
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def verify_restored_resolution_inventory(source, restored, manifest_hash, receipt_high_water):
+    if source.keys() != restored.keys():
+        raise RuntimeError('Restored resolution table inventory differs')
+    for table, rows in source.items():
+        current = restored[table]
+        if table != 'audit_log':
+            if current != rows:
+                raise RuntimeError('Restored resolution table differs: ' + table)
+            continue
+        if len(current) != len(rows) + 1 or current[:len(rows)] != rows:
+            raise RuntimeError('Restored resolution audit prefix or boundary count differs')
+        boundary = dict(current[-1])
+        stamp = boundary.pop('created_at', None)
+        expected = {'id': max((row['id'] for row in rows), default=0) + 1,
+                    'event_type': 'native_restore_receipt_boundary',
+                    'entity_type': 'mutation_idempotency_tombstones',
+                    'entity_id': str(receipt_high_water),
+                    'message': 'Imported receipt high-water mark; archive ' + manifest_hash + '; original keys require manual reconciliation under fresh identities',
+                    'actor': 'system:portable-restore'}
+        if boundary != expected or not isinstance(stamp, str) or not re.fullmatch(r'\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}', stamp):
+            raise RuntimeError('Unexpected restored resolution audit boundary')
+
+
 def free_port():
     with socket.socket() as sock:
         sock.bind(('127.0.0.1', 0))
@@ -476,8 +499,10 @@ def main():
                 report['sourceFreeRestoreQualified'] = restored['sourceFreeRestoreQualified']
                 report['sourceWorkspaceAndPrivateSignerRemoved'] = not source.exists() and not (work / 'signing.der').exists()
             if args.original_document_parties:
-                if inspect_resolution_inventory(Path(config['root']) / 'synthetic/data/ledger.sqlite') != initial_inventory:
-                    raise RuntimeError('Restored resolution history/source/audit inventory differs')
+                restored_inventory = inspect_resolution_inventory(Path(config['root']) / 'synthetic/data/ledger.sqlite')
+                with sqlite3.connect(archive_db.resolve(strict=True).as_uri() + '?mode=ro', uri=True) as archived:
+                    receipt_high_water = archived.execute('SELECT COALESCE(MAX(id),0) FROM mutation_idempotency_tombstones').fetchone()[0]
+                verify_restored_resolution_inventory(initial_inventory, restored_inventory, hashlib.sha256(base64.b64decode(wire['manifestBase64'], validate=True)).hexdigest(), receipt_high_water)
                 report['restoredResolutionInventoryVerified'] = True
                 if len(scanner_requests) != 3:
                     raise RuntimeError('Three actual originals must traverse scanner exactly once')
