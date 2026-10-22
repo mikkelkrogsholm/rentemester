@@ -206,9 +206,9 @@ fn valid_fields(fields: &Value, operation: Operation) -> bool {
                 .as_i64()
                 .is_some_and(|n| (1..=9_007_199_254_740_991).contains(&n)),
             "period" | "usefulLifeMonths" => v.as_u64().is_some_and(|n| (1..=12000).contains(&n)),
-            "cost" => v
-                .as_f64()
-                .is_some_and(|n| n.is_finite() && n > 0.0 && n <= 90_071_992_547_409.91),
+            "cost" => v.as_f64().is_some_and(|n| {
+                n.is_finite() && n > 0.0 && n <= (9_007_199_254_740_991_i64 as f64 / 100.0)
+            }),
             "confirmImmediateWriteOff" => v.is_boolean(),
             "date" | "acquisitionDate" => v
                 .as_str()
@@ -336,7 +336,11 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
         let (parts, body) = reply.into_parts();
         if let Ok(bytes) = to_bytes(body, 16384).await {
             if let Ok(mut value) = serde_json::from_slice::<Value>(&bytes) {
-                value["appliedRules"] = json!(["DK-ASSET-WRITEOFF-001"]);
+                // Only the generic error fallback has the default depreciation
+                // rule; preserve all actual domain/journal refusal evidence.
+                if value["appliedRules"] == json!(["DK-ASSET-DEPR-001"]) {
+                    value["appliedRules"] = json!(["DK-ASSET-WRITEOFF-001"]);
+                }
                 return response(parts.status, value);
             }
         }

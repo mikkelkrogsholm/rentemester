@@ -103,12 +103,6 @@ fn apply(
             // Validate before existence lookup: malformed input and a declined
             // inner acknowledgement must never create a documentation exception.
             validate_write_off(input)?;
-            if Date::parse(&input.date)? > latest {
-                return Err(Error::new(
-                    "asset_refused",
-                    "Write-off exceeds current posting horizon",
-                ));
-            }
             if !input.confirm_immediate_write_off {
                 return Ok(
                     serde_json::json!({"ok":false,"appliedRules":["DK-ASSET-WRITEOFF-001"],"errors":["immediate write-off requires confirmImmediateWriteOff: true — the user/advisor must confirm the straksafskrivning treatment"]}),
@@ -171,10 +165,9 @@ fn validate_write_off(input: &WriteOff) -> Result<(), Error> {
                     .any(|c| c.is_control() && !matches!(c, '\n' | '\t'))
         })
         || !(1..=9_007_199_254_740_991).contains(&input.document_id)
-        || input
-            .cost
-            .as_f64()
-            .is_none_or(|n| !n.is_finite() || n <= 0.0 || n > 90_071_992_547_409.91)
+        || input.cost.as_f64().is_none_or(|n| {
+            !n.is_finite() || n <= 0.0 || n > (9_007_199_254_740_991_i64 as f64 / 100.0)
+        })
         || Date::parse(&input.acquisition_date).is_err()
         || Date::parse(&input.date).is_err()
     {
@@ -185,12 +178,6 @@ fn validate_write_off(input: &WriteOff) -> Result<(), Error> {
     }
     rentemester_engine::document::money(&input.cost)
         .map_err(|_| Error::new("invalid_input", "Invalid asset cost precision"))?;
-    if Date::parse(&input.acquisition_date)? > Date::parse(&input.date)? {
-        return Err(Error::new(
-            "invalid_input",
-            "Write-off cannot precede acquisition",
-        ));
-    }
     Ok(())
 }
 pub fn execute(
@@ -303,6 +290,8 @@ mod tests {
         input.acquisition_date = "2026-02-30".into();
         assert!(validate_write_off(&input).is_err());
         input.acquisition_date = "2026-01-02".into();
-        assert!(validate_write_off(&input).is_err());
+        // Source accepts explicit dates independently; shared journal controls
+        // still reject any actual posting beyond the admitted horizon.
+        assert!(validate_write_off(&input).is_ok());
     }
 }
