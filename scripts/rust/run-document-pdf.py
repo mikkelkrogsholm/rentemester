@@ -73,6 +73,12 @@ async function authenticate(){
 }
 const prefix='/api/companies/synthetic/',hash=b=>createHash('sha256').update(b).digest('hex');
 function pdf(stream){const objects=['<< /Type /Catalog /Pages 2 0 R >>','<< /Type /Pages /Kids [3 0 R] /Count 1 >>','<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 5 0 R >> >> /Contents 4 0 R >>',`<< /Length ${Buffer.byteLength(stream,'ascii')} >>\nstream\n${stream}endstream`,'<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>'];let value='%PDF-1.4\n%\xE2\xE3\xCF\xD3\n';const offsets=[];for(let i=0;i<objects.length;i++){offsets.push(Buffer.byteLength(value,'binary'));value+=`${i+1} 0 obj\n${objects[i]}\nendobj\n`;}const xref=Buffer.byteLength(value,'binary');value+=`xref\n0 ${objects.length+1}\n0000000000 65535 f \n`+offsets.map(n=>String(n).padStart(10,'0')+' 00000 n \n').join('')+`trailer\n<< /Size ${objects.length+1} /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF\n`;return Buffer.from(value,'binary');}
+let originalProof;
+async function originalPhase(action){
+ if(!originalProof){const module=await import(process.env.RM_DOCUMENTS_ORIGINAL_HELPER);originalProof=module.createDocumentsOriginalProof(base,work,pdf);}
+ if(action==='original-run')return originalProof.run(ownerPage);
+ return originalProof.assertStable(ownerPage);
+}
 const fixtures={text:pdf('BT\n/F1 18 Tf\n72 720 Td\n(Synthetic parser evidence) Tj\n0 -28 Td\n(Invoice SYN-001) Tj\nET\n'),blank:pdf(''),malformed:Buffer.from('%PDF-1.4\nSynthetic invalid PDF with no catalog or xref\n')};
 const documents={},parses={};let today,stable,sourceBooks,bank,freshOwner;
 const read=p=>get(ownerPage,p);
@@ -87,15 +93,15 @@ async function verified(kind){const status=await read(path(kind,'parse-status'))
 async function parse(){step='unauthorized-reviewer-parse-refuses-before-worker';const denied=await call(path('blank','parse'),{confirm:true},memberPage);need(denied.status===403&&denied.body?.ok===false,'current reviewer cannot request parse');need((await read(path('blank','parse-status'))).parse===null,'denied parse publishes no evidence');step='explicit-text-parse';const first=await post(path('text','parse'),{confirm:true});need(first.parse.cached===false&&first.parse.status==='ok','first parse is actual fresh native execution');parses.text=await verified('text');need(first.parse.resultHash===parses.text.status.parse.resultHash,'write receipt and read evidence same exact hash');step='explicit-text-cache-read';const cached=await post(path('text','parse'),{confirm:true});need(cached.parse.cached===true&&cached.parse.resultHash===first.parse.resultHash,'cache retains exact verified result');step='explicit-bounded-pending-two-source-pdfs';const pending=await post(prefix+'documents/parse-pending',{confirm:true,cursor:0,limit:100});need(pending.batch.requested===2&&pending.batch.parsed===2&&pending.batch.failed===0&&pending.batch.resume===null,'pending processes only two unparsed PDFs, including cacheable declared failures');for(const kind of['blank','malformed'])parses[kind]=await verified(kind);const empty=await post(prefix+'documents/parse-pending',{confirm:true,cursor:0,limit:100});need(empty.batch.requested===0&&empty.batch.parsed===0&&empty.batch.failed===0,'fully parsed/cacheable sources not pending again');step='read-pagination-and-invalid-upper-bound';const last=await read(path('text','parsed-text')+'?offset=1&limit=10');need(last.pages.length===0&&last.nextOffset===null&&isDeepStrictEqual(last.parse,parses.text.status.parse),'bounded final page selection');const invalid=await call(path('text','parsed-text')+'?offset=0&limit=11');need(invalid.status===400&&invalid.body?.ok===false,'eleven-page request refused');need(isDeepStrictEqual(await books(),sourceBooks),'all explicit parse/cache/read/refusal actions leave books unchanged');return{denied,first,cached,pending,empty,parses,actualZeroWorkerExecutionsQualified:false,zeroWorkerSupervisorUnitCoverageRequired:true};}
 async function book(){step='real-bank-source-before-manual-expense';const csv=`dato;tekst;beløb;valuta;saldo\n${today};Synthetic PDF explicit purchase;-10,00;DKK;-10,00\n`;const imported=await post(prefix+'bank/import',{confirm:true,csvContent:csv,account:'synthetic-pdf-bank'});need(imported.import.imported===1,'real retained bank original imported');bank=(await read(prefix+'bank')).bank.transactions.find(r=>r.text==='Synthetic PDF explicit purchase');need(bank&&bank.amount===-10,'exact independent outgoing bank source');need(isDeepStrictEqual(await books(),sourceBooks),'bank intake still does not post');step='manual-expense-opens-exact-document';await ownerPage.goto(base+'/companies/synthetic/bilag');await ownerPage.getByRole('row').filter({hasText:documents.text.documentNo}).getByRole('link',{name:'Bogfør bilag',exact:true}).click();await ownerPage.getByRole('heading',{name:'Bogfør bilag',exact:true,level:1}).waitFor();step='manual-expense-explicit-account-bank-and-vat';await ownerPage.getByLabel(/^Udgiftskonto/).selectOption('4866');await ownerPage.getByLabel(/^Banktransaktion \(uafstemt, udgående\)/).selectOption(String(bank.id));await ownerPage.getByLabel(/^Moms-behandling/).selectOption('exempt');step='manual-expense-single-explicit-post';const wait=ownerPage.waitForResponse(r=>new URL(r.url()).pathname===prefix+'documents/book-expense'&&r.request().method()==='POST');await ownerPage.getByRole('button',{name:'Bogfør',exact:true}).click();const response=await wait;need(response.status()===200,'reviewed explicit expense accepted');await ownerPage.getByText(/Bilaget blev bogført som journalpost/).waitFor();const after=await books(),entries=after.journal.journal.entries;need(entries.length===1&&entries[0].documentId===documents.text.id&&entries[0].total===10&&entries[0].lines.length===2&&after.income.incomeStatement.totalExpense===10&&after.income.incomeStatement.result===-10,'exact one balanced expense from caller chosen10, no inferred PDF amount');for(const kind of Object.keys(documents))need(isDeepStrictEqual(await verified(kind),parses[kind]),'manual booking preserves parser evidence '+kind);const payment=(await read(prefix+'bank')).bank;need(payment.matchedCount===1&&payment.unmatchedCount===0&&payment.bookedBalance===-10&&payment.actualBalance===-10,'canonical bank relation and independent closing reconcile');stable=await snapshot();await ownerPage.screenshot({path:process.env.RM_PDF_SCREENSHOT,fullPage:true});return{receipt:await response.json(),stable,manualAmountNotExtracted:true};}
 async function snapshot(){const evidence={};for(const kind of Object.keys(documents))evidence[kind]=await verified(kind);return{documents:await read(prefix+'documents'),books:await books(),bank:await read(prefix+'bank'),evidence};}
-async function assertStable(){need(isDeepStrictEqual(await snapshot(),stable),'exact source originals, parser evidence, one expense and ledger UUID survive restart/restore');await originals();}
+async function assertStable(){if(process.env.RM_DOCUMENTS_ORIGINAL_HELPER)return originalPhase('original-stable');need(isDeepStrictEqual(await snapshot(),stable),'exact source originals, parser evidence, one expense and ledger UUID survive restart/restore');await originals();}
 async function client(kind,op,id){const cookie=join(work,'pdf-client.cookie');writeFileSync(cookie,(await ownerPage.context().cookies(base)).map(c=>`${c.name}=${c.value}`).join('; '),{mode:0o600,flag:'wx'});try{const common=['--server',base,'--cookie-file',cookie,'--allow-loopback-http'];const table={'status':['document-parse-status','document_parse_status'],'text':['document-parsed-text','document_parsed_text'],'parse':['parse-document','parse_document'],'pending':['parse-pending-documents','parse_pending_documents']};let argv,input;if(kind==='cli'){argv=['remote',table[op][0],...common,'--company','synthetic',...(op==='pending'?['--cursor','0','--limit','100']:['--id',String(id)]),...(op==='text'?['--cursor','0','--limit','10']:[]),...(['parse','pending'].includes(op)?['--confirm']:[])];}else{argv=common;input=[{jsonrpc:'2.0',id:1,method:'initialize',params:{protocolVersion:'2025-11-25',capabilities:{},clientInfo:{name:'synthetic-pdf-proof',version:'1'}}},{jsonrpc:'2.0',method:'notifications/initialized'},{jsonrpc:'2.0',id:2,method:'tools/call',params:{name:table[op][1],arguments:{company:'synthetic',...(op==='pending'?{cursor:0,limit:100}:{id}),...(op==='text'?{offset:0,limit:10}:{}),...(['parse','pending'].includes(op)?{confirm:true}:{})}}}].map(r=>JSON.stringify(r)).join('\n')+'\n';}const r=spawnSync(join(work,kind==='cli'?'rentemester-rust':'rentemester-mcp'),argv,{input,encoding:'utf8',timeout:45000,maxBuffer:16*1024*1024});need(!r.error&&r.status===0,'native PDF client '+kind+' '+op);const value=kind==='cli'?JSON.parse(r.stdout):r.stdout.trim().split('\n').map(s=>JSON.parse(s)).find(v=>v.id===2)?.result?.structuredContent;need(value?.ok===true&&value.data?.ok===true,'canonical PDF client envelope');return value.data;}finally{unlinkSync(cookie);}}
 async function clients(mutate=false){const proof={};for(const kind of['cli','mcp']){proof[kind]={};for(const item of Object.keys(documents)){need(isDeepStrictEqual(await client(kind,'status',documents[item].id),parses[item].status),'full HTTP/client status parity');need(isDeepStrictEqual(await client(kind,'text',documents[item].id),parses[item].text),'full HTTP/client text parity');}if(mutate){const expected=await post(path('text','parse'),{confirm:true}),actual=await client(kind,'parse',documents.text.id);need(actual.parse.cached===true&&isDeepStrictEqual(actual,expected),'explicit native cached parse canonical parity');const empty=await post(prefix+'documents/parse-pending',{confirm:true,cursor:0,limit:100});need(isDeepStrictEqual(await client(kind,'pending'),empty),'explicit fully resolved native pending parity');proof[kind].cached=actual;}}await assertStable();return{proof,httpCliMcpParity:true};}
 async function tamper(){step='stopped-owned-physical-source-tamper-clear-refusal';const results=[];for(const suffix of['parse-status','parsed-text?offset=0&limit=10']){const r=await call(path('text',suffix));need(r.status===409&&r.body?.ok===false&&r.body.code==='PDF_EVIDENCE_TAMPERED'&&!r.body.parse&&!r.body.pages,'tampered source read refuses verified content with exact integrity code');results.push(r);}const failed=await call(path('text','parse'),{confirm:true});need(failed.status===200&&failed.body?.ok===false&&isDeepStrictEqual(failed.body.errors,['PDF_PARSE_FAILED'])&&failed.body.errorCode==='source_unavailable'&&!failed.body.parse&&!failed.body.pages,'confirmed corrupt-source parse commits only exact source-unavailable failed attempt, never a result');results.push(failed);return{physicalTamperRefused:true,committedSourceFailurePreserved:true,results,sqlEvidenceTamperActualQualified:false};}
-async function reopen(){step='normal-owner-fresh-mfa-reopen-no-parse-post';await ownerPage.context().clearCookies();await login(ownerPage,owner);await assertStable();return{freshMfaRestart:true};}
+async function reopen(){step='normal-owner-fresh-mfa-reopen-no-parse-post';await ownerPage.context().clearCookies();await login(ownerPage,owner);if(!process.env.RM_DOCUMENTS_ORIGINAL_HELPER||originalProof)await assertStable();return{freshMfaRestart:true};}
 async function archive(name){const r=await ownerPage.request.post(base+'/api/workspace/backup',{headers:{origin:base},data:{confirm:true}});need(r.status()===200&&r.headers()['content-type']==='application/vnd.rentemester.native-backup+json','PDF evidence real signed archive');const bytes=await r.body();need(bytes.length>0&&bytes.length<=96*1024*1024,'bounded full PDF inventory');writeFileSync(join(work,'pdf-'+name+'.native-backup.json'),bytes,{mode:0o600,flag:'wx'});await assertStable();return{sha256:hash(bytes),bytes:bytes.length,documents,parses};}
 async function restored(){step='fresh-restored-owner-normal-verification-mfa';ownerPage=await newPage();freshOwner={email:'restored@example.invalid',password:'synthetic-restored-password-789',codes:[]};await ownerPage.goto((await mail('verification',freshOwner.email)).actionUrl);need((await enroll(ownerPage,freshOwner)).user.id!==ownerId,'historical parser actor not imported current authority');await assertStable();return{sourceFreeRestoreQualified:true,parserNotConfigured:true,noParseWriteRequested:true};}
 async function restoredReopen(){await ownerPage.context().clearCookies();await login(ownerPage,freshOwner);await assertStable();return{restoredTargetReopenQualified:true};}
-for await(const line of createInterface({input:process.stdin,crlfDelay:Infinity})){try{const action=JSON.parse(line);let value;if(action==='authenticate')value=await authenticate();else if(action==='setup')value=await setup();else if(action==='upload')value=await upload();else if(action==='parse')value=await parse();else if(action==='book')value=await book();else if(action==='clients')value=await clients(true);else if(action==='client-reads')value=await clients(false);else if(action==='tamper')value=await tamper();else if(action==='reopen')value=await reopen();else if(['archive-source','archive-restarted','archive-restored','archive-reopened'].includes(action))value=await archive(action.slice(8));else if(action==='restored')value=await restored();else if(action==='restored-reopen')value=await restoredReopen();else if(action==='finish'){await browser?.close();emit({ok:true,value:{finished:true}});break;}else throw Error('unknown phase');emit({ok:true,value});}catch(error){let pageState=null;try{pageState=await Promise.race([diagnosticPage?.evaluate(()=>({pathname:location.pathname,headings:[...document.querySelectorAll('h1,h2,h3,h4')].map(e=>e.textContent.slice(0,100)),buttons:[...document.querySelectorAll('button')].map(e=>e.textContent.slice(0,100)),alerts:[...document.querySelectorAll('[role=alert]')].map(e=>e.textContent.slice(0,300))})),new Promise(resolve=>setTimeout(()=>resolve(null),2000))]);}catch{}emit({ok:false,step,detail,errorType:error?.name,trace,pageState});await Promise.race([browser?.close().catch(()=>{}),new Promise(resolve=>setTimeout(resolve,2000))]);process.exitCode=1;break;}}
+for await(const line of createInterface({input:process.stdin,crlfDelay:Infinity})){try{const action=JSON.parse(line);let value;if(action==='authenticate')value=await authenticate();else if(action==='original-run')value=await originalPhase(action);else if(action==='original-stable')value=await originalPhase(action);else if(action==='setup')value=await setup();else if(action==='upload')value=await upload();else if(action==='parse')value=await parse();else if(action==='book')value=await book();else if(action==='clients')value=await clients(true);else if(action==='client-reads')value=await clients(false);else if(action==='tamper')value=await tamper();else if(action==='reopen')value=await reopen();else if(['archive-source','archive-restarted','archive-restored','archive-reopened'].includes(action))value=await archive(action.slice(8));else if(action==='restored')value=await restored();else if(action==='restored-reopen')value=await restoredReopen();else if(action==='finish'){await browser?.close();emit({ok:true,value:{finished:true}});break;}else throw Error('unknown phase');emit({ok:true,value});}catch(error){let pageState=null;try{pageState=await Promise.race([diagnosticPage?.evaluate(()=>({pathname:location.pathname,headings:[...document.querySelectorAll('h1,h2,h3,h4')].map(e=>e.textContent.slice(0,100)),buttons:[...document.querySelectorAll('button')].map(e=>e.textContent.slice(0,100)),alerts:[...document.querySelectorAll('[role=alert]')].map(e=>e.textContent.slice(0,300))})),new Promise(resolve=>setTimeout(()=>resolve(null),2000))]);}catch{}emit({ok:false,step,detail,errorType:error?.name,trace,pageState});await Promise.race([browser?.close().catch(()=>{}),new Promise(resolve=>setTimeout(resolve,2000))]);process.exitCode=1;break;}}
 
 '''
 
@@ -115,6 +121,7 @@ def main():
     for option in ['server-binary', 'web-dir', 'cli-binary', 'mcp-binary', 'evidence']:
         parser.add_argument('--' + option, required=True, type=Path)
     parser.add_argument('--pdf-worker-bundle', required=True, type=Path)
+    parser.add_argument('--original-documents', action='store_true', help='Run the original eight CLI/MCP document journey instead of the default PDF flow')
     args = parser.parse_args()
     if args.evidence.exists() or args.evidence.with_suffix('.png').exists():
         parser.error('New evidence and screenshot paths required')
@@ -130,6 +137,8 @@ def main():
     gateway_rows, gateway_requests, errors = {}, [], []
     gateway_lock = threading.Lock()
     bearer = secrets.token_urlsafe(32)
+    scanner_token = secrets.token_urlsafe(32)
+    scanner_requests = []
     backend_port, mail_port = free_port(), free_port()
     if backend_port == mail_port:
         raise RuntimeError('Distinct owned ports required')
@@ -164,6 +173,24 @@ def main():
             def do_POST(self):
                 try:
                     length = int(self.headers.get('content-length', '0'))
+                    if args.original_documents and self.path == '/scan':
+                        if not 0 < length <= 35 * 1024 * 1024 or self.headers.get('authorization') != 'Bearer ' + scanner_token:
+                            raise ValueError('Private scanner authority/size')
+                        request = json.loads(self.rfile.read(length))
+                        if set(request) != {'sha256', 'mimeType', 'filename', 'bytesBase64'} or not re.fullmatch(r'synthetic-original165-(enrich|context|blank|malformed|force)\.pdf', request['filename']):
+                            raise ValueError('Private original scanner envelope')
+                        raw = base64.b64decode(request['bytesBase64'], validate=True)
+                        if not raw.startswith(b'%PDF-1.4') or request['mimeType'] != 'application/pdf' or request['sha256'] != hashlib.sha256(raw).hexdigest():
+                            raise ValueError('Private scanner exact immutable bytes')
+                        with gateway_lock:
+                            scanner_requests.append({'filename': request['filename'], 'sha256': request['sha256']})
+                        payload = json.dumps({'ok': True, 'scannerId': 'Synthetic Scanner', 'scannerVersion': '165.1', 'evidenceRef': 'synthetic:' + request['sha256']}).encode()
+                        self.send_response(200)
+                        self.send_header('content-type', 'application/json')
+                        self.send_header('content-length', str(len(payload)))
+                        self.end_headers()
+                        self.wfile.write(payload)
+                        return
                     if self.path != '/mail' or not 0 < length <= 32768 or self.headers.get('authorization') != 'Bearer ' + bearer:
                         self.send_error(403)
                         return
@@ -307,7 +334,7 @@ def main():
             if verified.returncode != 0:
                 raise RuntimeError('Independent PDF inventory signature verification refused')
             wire = json.loads(path.read_bytes())
-            secrets_excluded = [bearer, config['authMail']['idempotencySecret'], config['cookieKey'], config['mfaKey']]
+            secrets_excluded = [bearer, config['authMail']['idempotencySecret'], config['cookieKey'], config['mfaKey'], scanner_token]
             for raw in [base64.b64decode(e['bytesBase64'], validate=True) for e in wire['entries']] + [base64.b64decode(wire['manifestBase64'], validate=True)]:
                 if any(secret.encode() in raw for secret in secrets_excluded):
                     raise RuntimeError('Operator secret imported in signed business payload')
@@ -325,13 +352,15 @@ def main():
                 try:
                     db.execute('PRAGMA query_only=ON')
                     result = {}
-                    for table in ['documents', 'document_pdf_parse_results', 'document_pdf_parse_pages', 'document_pdf_parse_attempts', 'audit_log', 'journal_entries', 'journal_lines']:
-                        cursor = db.execute('SELECT * FROM ' + table + ' ORDER BY id')
+                    for table in ['documents', 'document_pdf_parse_results', 'document_pdf_parse_pages', 'document_pdf_parse_attempts', 'audit_log', 'journal_entries', 'journal_lines'] + (['document_metadata_enrichments', 'document_company_contexts', 'payables'] if args.original_documents else []):
+                        cursor = db.execute('SELECT * FROM ' + table + (' ORDER BY document_id' if table in ('document_metadata_enrichments', 'document_company_contexts') else ' ORDER BY id'))
                         result[table] = [dict(zip([c[0] for c in cursor.description], row)) for row in cursor.fetchall()]
                 finally:
                     db.close()
             finally:
                 copy.unlink(missing_ok=True)
+            if args.original_documents:
+                return inspect_original_snapshot(name, receipt, wire, result, trusted)
             if len(result['documents']) != 3 or len(result['document_pdf_parse_results']) != 3 or len(result['journal_entries']) != 1 or len(result['journal_lines']) != 2:
                 raise RuntimeError('Three source PDFs/results and only one explicit balanced expense required')
             docs = {r['id']: r for r in result['documents']}
@@ -368,8 +397,45 @@ def main():
             save()
             return result
 
+        def inspect_original_snapshot(name, receipt, wire, result, trusted):
+            proof = report['results']['original-run']
+            if (len(result['documents']), len(result['document_pdf_parse_results']), len(result['document_metadata_enrichments']), len(result['document_company_contexts']), len(result['payables']), len(result['journal_entries'])) != (5, 5, 1, 1, 1, 1):
+                raise RuntimeError('Original documents requires five originals/parses, both nonempty histories and exactly one payable/posting')
+            docs = {row['id']: row for row in result['documents']}
+            for kind, expected in proof['documents'].items():
+                doc = docs[expected['documentId']]
+                entries = [entry for entry in wire['entries'] if entry['path'] == 'synthetic/' + doc['stored_path']]
+                if len(entries) != 1 or hashlib.sha256(base64.b64decode(entries[0]['bytesBase64'], validate=True)).hexdigest() != expected['sha256'] or doc['sha256_hash'] != expected['sha256']:
+                    raise RuntimeError('Original document source bytes/hash differ')
+                dto = proof['evidence'][kind]['status']['parse']
+                rows = [row for row in result['document_pdf_parse_results'] if row['document_id'] == doc['id']]
+                if len(rows) != 1 or rows[0]['source_sha256_hash'] != doc['sha256_hash'] or rows[0]['result_sha256_hash'] != dto['resultHash'] or hashlib.sha256(rows[0]['result_json'].encode()).hexdigest() != dto['resultHash']:
+                    raise RuntimeError('Original document parser source/result hash differs')
+                for page in proof['evidence'][kind]['text']['pages']:
+                    pages = [row for row in result['document_pdf_parse_pages'] if row['result_id'] == rows[0]['id'] and row['page_number'] == page['pageNumber']]
+                    if len(pages) != 1 or pages[0]['text'] != page['text'] or hashlib.sha256(pages[0]['layout_json'].encode()).hexdigest() != page['layoutHash']:
+                        raise RuntimeError('Original document exact page/layout differs')
+            enrichment = result['document_metadata_enrichments'][0]
+            context = result['document_company_contexts'][0]
+            for column, sha in [('original_payload_json', 'original_payload_sha256'), ('enriched_metadata_json', 'enriched_metadata_sha256')]:
+                if hashlib.sha256(enrichment[column].encode()).hexdigest() != enrichment[sha]:
+                    raise RuntimeError('Enrichment raw/canonical hash differs')
+            if enrichment['document_id'] != proof['documents']['enrich']['documentId'] or docs[enrichment['document_id']]['payload_json'] != enrichment['enriched_metadata_json']:
+                raise RuntimeError('Enrichment current payload/original history linkage differs')
+            if context['document_id'] != proof['documents']['context']['documentId'] or context['document_sha256'] != docs[context['document_id']]['sha256_hash'] or context['payload_sha256'] != hashlib.sha256(docs[context['document_id']]['payload_json'].encode()).hexdigest() or context['company_snapshot_sha256'] != hashlib.sha256(context['company_snapshot_json'].encode()).hexdigest():
+                raise RuntimeError('Company context source/payload/snapshot linkage differs')
+            canonical = lambda value: json.dumps(value, sort_keys=True, separators=(',', ':'), ensure_ascii=False)
+            bound = {'documentHash': context['document_sha256'], 'payloadHash': context['payload_sha256'], 'snapshot': json.loads(context['company_snapshot_json']), 'sourceReference': context['source_reference'], 'businessUseReason': context['business_use_reason']}
+            if context['context_sha256'] != hashlib.sha256(canonical(bound).encode()).hexdigest():
+                raise RuntimeError('Company context canonical binding differs')
+            if not all(row['actor'] and row['program'] for table in ['document_metadata_enrichments', 'document_company_contexts'] for row in result[table]):
+                raise RuntimeError('Immutable history attribution missing')
+            report.setdefault('signedOriginalDocumentsProofs', {})[name] = {'sha256': receipt['sha256'], 'trustedKeySha256': digest(trusted), 'tables': result}
+            save()
+            return result
+
         def preserved(original, newer):
-            for table in ['documents', 'document_pdf_parse_results', 'document_pdf_parse_pages', 'document_pdf_parse_attempts', 'journal_entries', 'journal_lines']:
+            for table in ['documents', 'document_pdf_parse_results', 'document_pdf_parse_pages', 'document_pdf_parse_attempts', 'journal_entries', 'journal_lines'] + (['document_metadata_enrichments', 'document_company_contexts', 'payables'] if args.original_documents else []):
                 if original[table] != newer[table]:
                     raise RuntimeError('Retained PDF/original/attempt/book evidence changed: ' + table)
             retained = {row['id']: row for row in newer['audit_log']}
@@ -398,6 +464,13 @@ def main():
             if not (bundle / 'rentemester-pdf-worker').is_file() or not (bundle / 'pdfium/lib/libpdfium.dylib').is_file():
                 raise RuntimeError('Native worker and sibling pinned macOS PDFium required')
             report['pdfWorkerFiles'] = {str(p.relative_to(bundle)): digest(p) for p in sorted(bundle.rglob('*')) if p.is_file()}
+            if args.original_documents:
+                helper = REPO / 'scripts/rust/check-native-documents-original.ts'
+                helper_copy = work / helper.name
+                shutil.copyfile(helper, helper_copy)
+                report['originalHelperSha256'] = digest(helper_copy)
+                report['sourceFiles'] = {str(path.relative_to(REPO)): digest(path) for folder in ['crates', 'src', 'app/src', 'scripts/rust'] for path in sorted((REPO / folder).rglob('*')) if path.is_file() and path.suffix in ('.rs', '.ts', '.tsx', '.py', '.json', '.toml', '.lock')}
+                report['workflow'] = 'original_documents_eight_cli_eight_mcp_nonempty_histories_one_payable'
             progress('operator:private-auth-gateway-trust-and-backup-signer')
             ca, cert, private = work / 'ca.pem', work / 'tls.pem', work / 'tls.key'
             (work / 'tls.ext').write_text('basicConstraints=critical,CA:FALSE\nkeyUsage=critical,digitalSignature,keyEncipherment\nextendedKeyUsage=serverAuth\nsubjectAltName=DNS:localhost,IP:127.0.0.1\n')
@@ -419,40 +492,52 @@ def main():
             key = lambda: base64.urlsafe_b64encode(secrets.token_bytes(32)).decode().rstrip('=')
             config = {'runtimeProfile': 'local-user-macos', 'root': str(work / 'workspace'), 'brokerUid': os.getuid(), 'workspace': 'synthetic-native-document-pdf', 'companySlug': 'synthetic', 'companyName': 'Synthetic Document PDF Company', 'cookieKey': key(), 'mfaKey': key(), 'operatorActors': ['system:synthetic-installer'], 'accounts': [], 'firstOwner': {'actor': 'system:synthetic-installer', 'email': 'owner@example.invalid', 'name': 'Synthetic Owner', 'password': 'synthetic-owner-password-123'}, 'backupSigningKeyFile': str(work / 'signing.der'), 'authMail': {'endpoint': f'https://127.0.0.1:{mail_port}/mail', 'bearerToken': bearer, 'from': 'auth@example.invalid', 'idempotencySecret': secrets.token_urlsafe(32), 'trustedCaFile': str(ca)}}
             config['documentPdfWorker'] = {'bundleDir': str(bundle)}
+            if args.original_documents:
+                config['documentScanner'] = {'policy': 'required', 'provider': 'http-json-v1', 'url': f'https://127.0.0.1:{mail_port}/scan', 'bearerToken': scanner_token, 'timeoutMs': 10000, 'trustedCaFile': str(ca)}
             write_config()
             start(create=True)
             script = work / 'browser.mjs'
             script.write_text(BROWSER)
-            controller = subprocess.Popen(['/opt/homebrew/bin/bun', str(script)], cwd=REPO, env={**os.environ, 'RM_PDF_BASE': origin, 'RM_PDF_WORK': str(work), 'RM_PDF_SCREENSHOT': str(args.evidence.with_suffix('.png')), 'RM_PDF_PLAYWRIGHT': str((REPO / 'node_modules/@playwright/test/index.mjs').resolve(strict=True))}, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True, bufsize=1, start_new_session=True)
+            controller = subprocess.Popen(['/opt/homebrew/bin/bun', str(script)], cwd=REPO, env={**os.environ, 'RM_PDF_BASE': origin, **({'RM_DOCUMENTS_ORIGINAL_HELPER': str(helper_copy)} if args.original_documents else {}), 'RM_PDF_WORK': str(work), 'RM_PDF_SCREENSHOT': str(args.evidence.with_suffix('.png')), 'RM_PDF_PLAYWRIGHT': str((REPO / 'node_modules/@playwright/test/index.mjs').resolve(strict=True))}, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True, bufsize=1, start_new_session=True)
             report['browserControllerPid'] = controller.pid
-            for action in ['authenticate', 'setup', 'upload', 'parse', 'book', 'clients']:
-                phase(action)
-            # Tamper only an owned physical source while the server is stopped;
-            # never inject business records or alter live SQLite.
-            stop()
-            sha = report['results']['upload']['originals']['text']['sha256']
-            original_path = work / 'workspace/synthetic/documents/originals' / (sha + '.pdf')
-            if not owned() or original_path.is_symlink() or digest(original_path) != sha:
-                raise RuntimeError('Exact owned PDF required for bounded physical tamper')
-            original_bytes = original_path.read_bytes()
-            changed = bytearray(original_bytes)
-            changed[20] ^= 1
-            original_path.write_bytes(changed)
-            config.pop('firstOwner')
-            write_config()
-            try:
-                start()
-                phase('tamper')
-            finally:
+            if args.original_documents:
+                phase('authenticate')
+                # Exact normal MFA restart before any document or business effects.
                 stop()
-                if not owned() or original_path.is_symlink():
-                    raise RuntimeError('Owned physical source changed identity')
-                original_path.write_bytes(original_bytes)
-            if digest(original_path) != sha:
-                raise RuntimeError('Exact PDF repair failed')
-            start()
-            phase('reopen')
-            phase('client-reads')
+                config.pop('firstOwner')
+                write_config()
+                start()
+                phase('reopen')
+                phase('original-run')
+            else:
+                for action in ['authenticate', 'setup', 'upload', 'parse', 'book', 'clients']:
+                    phase(action)
+                # Tamper only an owned physical source while the server is stopped;
+                # never inject business records or alter live SQLite.
+                stop()
+                sha = report['results']['upload']['originals']['text']['sha256']
+                original_path = work / 'workspace/synthetic/documents/originals' / (sha + '.pdf')
+                if not owned() or original_path.is_symlink() or digest(original_path) != sha:
+                    raise RuntimeError('Exact owned PDF required for bounded physical tamper')
+                original_bytes = original_path.read_bytes()
+                changed = bytearray(original_bytes)
+                changed[20] ^= 1
+                original_path.write_bytes(changed)
+                config.pop('firstOwner')
+                write_config()
+                try:
+                    start()
+                    phase('tamper')
+                finally:
+                    stop()
+                    if not owned() or original_path.is_symlink():
+                        raise RuntimeError('Owned physical source changed identity')
+                    original_path.write_bytes(original_bytes)
+                if digest(original_path) != sha:
+                    raise RuntimeError('Exact PDF repair failed')
+                start()
+                phase('reopen')
+                phase('client-reads')
             phase('archive-source')
             original = inspect_snapshot('source', work / 'trusted.pub')
             stop()
@@ -473,6 +558,11 @@ def main():
                 raise RuntimeError('Independent source-free signature verification refused')
             subprocess.run(['/opt/homebrew/bin/bun', '-e', "const c=require('node:crypto'),f=require('node:fs'),k=c.generateKeyPairSync('ed25519'),s=k.privateKey.export({format:'der',type:'pkcs8'}).subarray(-32),p=k.publicKey.export({format:'der',type:'spki'}).subarray(-32);f.writeFileSync(process.argv[1],Buffer.concat([Buffer.from('3051020101300506032b657004220420','hex'),s,Buffer.from('812100','hex'),p]),{mode:0o600});f.writeFileSync(process.argv[2],p,{mode:0o600});", str(work / 'target-signing.der'), str(work / 'target-trusted.pub')], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             config.pop('documentPdfWorker')
+            if args.original_documents:
+                config.pop('documentScanner')
+                report['originalScannerRequests'] = list(scanner_requests)
+                if len(scanner_requests) < 5:
+                    raise RuntimeError('Original documents did not traverse required scanner')
             # No parser is available to restore/reopen: all historical evidence
             # must verify from the signed source without invoking a child.
             shutil.rmtree(bundle)
@@ -480,7 +570,7 @@ def main():
             write_config()
             start(restore=True)
             restored = phase('restored')
-            phase('client-reads')
+            phase('original-stable' if args.original_documents else 'client-reads')
             report['sourceFreeRestoreQualified'] = restored['sourceFreeRestoreQualified']
             report['sourceWorkspaceAndPrivateSignerRemoved'] = not source.exists() and not (work / 'signing.der').exists()
             report['workerBundleRemovedBeforeRestore'] = not bundle.exists()
@@ -506,9 +596,22 @@ def main():
                 if errors:
                     raise RuntimeError('Private gateway protocol error')
                 report['gateway'] = {'https': True, 'trustedCaSha256': digest(ca), 'acceptedMessages': len(gateway_rows), 'requests': list(gateway_requests)}
+            if args.original_documents:
+                if digest(helper_copy) != report['originalHelperSha256'] or digest(REPO / 'scripts/rust/check-native-documents-original.ts') != report['originalHelperSha256']:
+                    raise RuntimeError('Pinned original helper/source changed')
+                if any(digest(REPO / path) != sha for path, sha in report['sourceFiles'].items()):
+                    raise RuntimeError('Original document source equivalence changed')
+                if any(digest(pinned[name]) != sha for name, sha in report['artifacts'].items()) or {str(p.relative_to(web)): digest(p) for p in sorted(web.rglob('*')) if p.is_file()} != report['webFiles']:
+                    raise RuntimeError('Pinned binary/web artifacts changed')
+                if {str(p.relative_to(bundle_source)): digest(p) for p in sorted(bundle_source.rglob('*')) if p.is_file()} != report['pdfWorkerFiles']:
+                    raise RuntimeError('Supplied PDF bundle changed')
+                if scanner_requests != report['originalScannerRequests']:
+                    raise RuntimeError('Historical restore attempted scanner IO')
+                report['originalDocumentsActualQualified'] = True
+                report['finalSourceEquivalenceQualified'] = True
             report.update({'status': 'passed', 'currentAction': 'complete', 'pdfInspectionActualQualified': True, 'existingPdfClientsQualified': True, 'initialAndRestartQualified': True, 'snapshotCoverage': 'signed-source-free-originals-pdf-evidence-restored-and-reopened'})
             save()
-            print('PASS: explicit native PDF parse/cache/manual expense, physical tamper refusal and signed source-free restore; ' + str(args.evidence))
+            print(('PASS: original documents eight CLI/eight MCP, nonempty histories, one payable and signed source-free restore; ' if args.original_documents else 'PASS: explicit native PDF parse/cache/manual expense, physical tamper refusal and signed source-free restore; ') + str(args.evidence))
         except BaseException as error:
             with gateway_lock:
                 report['privateGatewayErrors'] = list(errors)
