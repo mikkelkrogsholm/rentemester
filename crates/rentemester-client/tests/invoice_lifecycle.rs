@@ -240,3 +240,61 @@ async fn apply_payment_preserves_source_fields_business_refusals_and_uncertain_w
     )
     .unwrap();
 }
+
+#[tokio::test]
+async fn repair_posting_exact_flat_wire_receipt_refusals_and_unknown_writes() {
+    let kind = InvoiceLifecycleKind::RepairPosting;
+    let body = json!({"confirm":true,"documentId":7,"invoiceNumber":" fallback INV ","legacyJournalEntryId":19,"reason":" raw reviewed reason ","revenueAccountNo":"reviewed-income"});
+    let receipt = json!({"ok":true,"data":{"invoiceDocumentId":7,"legacyJournalEntryId":19,"replacementJournalEntryId":20,"replacementJournalEntryNo":"J-20","reversalJournalEntryId":21,"reversalJournalEntryNo":"J-21","entryId":20,"entryNo":"J-20","entryHash":"server-hash"},"errors":[],"appliedRules":["source-repair-rule"]});
+    for (status, value) in [
+        (200, receipt),
+        (
+            200,
+            json!({"ok":false,"code":"business","errors":["Legacy journal is not eligible for repair"],"appliedRules":["source-rule"]}),
+        ),
+        (403, json!({"ok":false})),
+        (503, json!({"ok":false})),
+        (200, json!({"unexpected":"reply"})),
+    ] {
+        let (origin, t) = server(status, value.clone());
+        let result = ApiClient::new(&origin, true, None)
+            .unwrap()
+            .invoice_lifecycle("synthetic", kind, body.to_string().into_bytes())
+            .await;
+        if status == 200 && value.get("ok").is_some() {
+            assert_eq!(result.unwrap(), value);
+        } else if status == 403 {
+            assert_eq!(result.unwrap_err(), Error::Refused { status: 403 });
+        } else {
+            assert_eq!(result.unwrap_err(), Error::OutcomeUnknown);
+        }
+        let (header, actual) = t.join().unwrap();
+        assert!(
+            header.starts_with("POST /api/companies/synthetic/invoices/original/repair-posting ")
+        );
+        assert_eq!(actual, body);
+    }
+    let api = ApiClient::new("http://127.0.0.1:9", true, None).unwrap();
+    for (key, replacement) in [
+        ("confirm", Some(json!(false))),
+        ("legacyJournalEntryId", Some(json!(0))),
+        ("legacyJournalEntryId", Some(json!(null))),
+        ("reason", None),
+        ("revenueAccountNo", None),
+        ("actor", Some(json!("forged"))),
+        ("payload", Some(json!({}))),
+        ("idempotencyKey", Some(json!("key"))),
+    ] {
+        let mut invalid = body.clone();
+        if let Some(value) = replacement {
+            invalid[key] = value;
+        } else {
+            invalid.as_object_mut().unwrap().remove(key);
+        }
+        assert!(matches!(
+            api.invoice_lifecycle("synthetic", kind, invalid.to_string().into_bytes())
+                .await,
+            Err(Error::InvalidInput(_))
+        ));
+    }
+}

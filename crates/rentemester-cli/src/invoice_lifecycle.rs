@@ -16,11 +16,12 @@ pub fn accepts(args: &[String]) -> bool {
                     | "credit-note"
                     | "refund-bank"
                     | "apply-payment"
+                    | "repair-posting"
             )
         })
 }
 pub fn help() -> Value {
-    json!({"usage":"invoice issue --input FILE|- [--customer-id ID]; invoice create --issue-date DATE --line 'description|quantity|unitPrice;...' [--vat-rate PERCENT(default25)] [--customer-id ID] [--buyer-name/--buyer-address/--buyer-vat TEXT] [--seller-name/--seller-address/--seller-vat TEXT] [--currency CODE] [--due-date DATE] [--invoice-number NUMBER]; invoice render|post --document-id ID|--invoice-number NUMBER (post requires --revenue-account ACCOUNT); invoice settle-bank|credit-note|refund-bank|apply-payment --input FILE|-", "transport":"Explicit --company SLUG --server ORIGIN or global --local-profile, exactly one --cookie-file PATH/--service-key-file PATH. Optional --json/--allow-loopback-http. Command invocation confirms; no --confirm, key, actor or principal. Bounded256KiB JSON object; no local files written, arithmetic/default account, hash generation or automatic retry. Server computes create totals and validates all issue-supplied totals; render verifies existing immutable PDF."})
+    json!({"usage":"invoice issue --input FILE|- [--customer-id ID]; invoice create --issue-date DATE --line 'description|quantity|unitPrice;...' [--vat-rate PERCENT(default25)] [--customer-id ID] [--buyer-name/--buyer-address/--buyer-vat TEXT] [--seller-name/--seller-address/--seller-vat TEXT] [--currency CODE] [--due-date DATE] [--invoice-number NUMBER]; invoice render|post --document-id ID|--invoice-number NUMBER (post requires --revenue-account ACCOUNT); invoice settle-bank|credit-note|refund-bank|apply-payment --input FILE|-; invoice repair-posting --document-id ID|--invoice-number NUMBER --legacy-journal-entry-id ID --reason TEXT --revenue-account ACCOUNT", "transport":"Explicit --company SLUG --server ORIGIN or global --local-profile, exactly one --cookie-file PATH/--service-key-file PATH. Optional --json/--allow-loopback-http. Command invocation confirms; no --confirm, key, actor or principal. Bounded256KiB JSON object; no local files written, arithmetic/default account, hash generation or automatic retry. Server computes create totals and validates all issue-supplied totals; render verifies existing immutable PDF."})
 }
 fn output(value: Value, json_mode: bool, exit: u8) -> Output {
     if json_mode && exit != 2 {
@@ -108,6 +109,7 @@ pub fn execute(args: &[String]) -> Output {
         "settle-bank" => InvoiceLifecycleKind::SettleBank,
         "credit-note" => InvoiceLifecycleKind::CreditNote,
         "apply-payment" => InvoiceLifecycleKind::ApplyPayment,
+        "repair-posting" => InvoiceLifecycleKind::RepairPosting,
         _ => InvoiceLifecycleKind::RefundBank,
     };
     let mut flags = BTreeMap::new();
@@ -129,6 +131,13 @@ pub fn execute(args: &[String]) -> Output {
             "--currency",
             "--due-date",
             "--invoice-number",
+        ],
+        InvoiceLifecycleKind::RepairPosting => vec![
+            "--document-id",
+            "--invoice-number",
+            "--legacy-journal-entry-id",
+            "--reason",
+            "--revenue-account",
         ],
         InvoiceLifecycleKind::Render => vec!["--document-id", "--invoice-number"],
         InvoiceLifecycleKind::Post => {
@@ -192,7 +201,9 @@ pub fn execute(args: &[String]) -> Output {
     }
     let mut raw_payload = None;
     match kind {
-        InvoiceLifecycleKind::Render | InvoiceLifecycleKind::Post => {
+        InvoiceLifecycleKind::Render
+        | InvoiceLifecycleKind::Post
+        | InvoiceLifecycleKind::RepairPosting => {
             if !flags.contains_key("--document-id")
                 && flags
                     .get("--invoice-number")
@@ -216,6 +227,30 @@ pub fn execute(args: &[String]) -> Output {
             }
             if let Some(text) = flags.get("--invoice-number") {
                 body["invoiceNumber"] = json!(text);
+            }
+            if matches!(kind, InvoiceLifecycleKind::RepairPosting) {
+                let Some(id) = flags
+                    .get("--legacy-journal-entry-id")
+                    .and_then(|s| s.parse::<i64>().ok())
+                    .filter(|n| (1..=9007199254740991).contains(n))
+                else {
+                    return failure("Required positive safe --legacy-journal-entry-id", false, 2);
+                };
+                let Some(reason) = flags
+                    .get("--reason")
+                    .map(|s| s.trim())
+                    .filter(|s| !s.is_empty())
+                else {
+                    return failure("Required --reason TEXT", false, 2);
+                };
+                if flags
+                    .get("--revenue-account")
+                    .is_none_or(|s| s.trim().is_empty())
+                {
+                    return failure("Required explicit --revenue-account ACCOUNT", false, 2);
+                }
+                body["legacyJournalEntryId"] = json!(id);
+                body["reason"] = json!(reason);
             }
             if let Some(text) = flags.get("--revenue-account") {
                 body["revenueAccountNo"] = json!(text);

@@ -356,3 +356,135 @@ fn apply_payment_file_stdin_flat_receipts_business_and_strict_usage() {
         assert!(!out.stderr.is_empty());
     }
 }
+
+#[test]
+fn repair_posting_explicit_flags_flat_source_receipts_business_and_usage_exits() {
+    let f = Fixture::new();
+    let base = [
+        "--document-id",
+        "7",
+        "--invoice-number",
+        " fallback INV ",
+        "--legacy-journal-entry-id",
+        "19",
+        "--reason",
+        " reviewed reason ",
+        "--revenue-account",
+        "reviewed-income",
+        "--json",
+    ];
+    let data = json!({"invoiceDocumentId":7,"legacyJournalEntryId":19,"replacementJournalEntryId":20,"replacementJournalEntryNo":"J-20","reversalJournalEntryId":21,"reversalJournalEntryNo":"J-21","entryId":20,"entryNo":"J-20","entryHash":"server-hash"});
+    for (success, human) in [(true, false), (false, false), (false, true)] {
+        let value = if success {
+            json!({"ok":true,"data":data,"errors":[],"appliedRules":["source-repair-rule"]})
+        } else {
+            json!({"ok":false,"code":"business","errors":["Legacy journal is not eligible for repair"],"appliedRules":["source-rule"]})
+        };
+        let (origin, t) = server(200, value.clone());
+        let out = call(
+            "repair-posting",
+            &origin,
+            &f,
+            if human {
+                &base[..base.len() - 1]
+            } else {
+                &base
+            },
+            None,
+        );
+        assert_eq!(out.status.code(), Some(if success { 0 } else { 1 }));
+        if human {
+            assert!(out.stdout.is_empty());
+            assert!(
+                String::from_utf8_lossy(&out.stderr).contains("Legacy journal is not eligible")
+            );
+        } else {
+            assert!(out.stderr.is_empty());
+            let actual: Value = serde_json::from_slice(&out.stdout).unwrap();
+            if success {
+                let mut expected = data.clone();
+                expected["ok"] = json!(true);
+                expected["errors"] = json!([]);
+                expected["appliedRules"] = json!(["source-repair-rule"]);
+                assert_eq!(actual, expected);
+            } else {
+                assert_eq!(actual, value);
+            }
+        }
+        let (header, body) = t.join().unwrap();
+        assert!(
+            header.starts_with("POST /api/companies/synthetic/invoices/original/repair-posting ")
+        );
+        assert_eq!(
+            body,
+            json!({"confirm":true,"documentId":7,"invoiceNumber":" fallback INV ","legacyJournalEntryId":19,"reason":"reviewed reason","revenueAccountNo":"reviewed-income"})
+        );
+    }
+    for extra in [
+        vec![
+            "--document-id",
+            "7",
+            "--legacy-journal-entry-id",
+            "19",
+            "--reason",
+            "reviewed",
+        ],
+        vec![
+            "--document-id",
+            "7",
+            "--legacy-journal-entry-id",
+            "0",
+            "--reason",
+            "reviewed",
+            "--revenue-account",
+            "income",
+        ],
+        vec![
+            "--document-id",
+            "7",
+            "--legacy-journal-entry-id",
+            "19",
+            "--reason",
+            " ",
+            "--revenue-account",
+            "income",
+        ],
+        vec![
+            "--legacy-journal-entry-id",
+            "19",
+            "--reason",
+            "reviewed",
+            "--revenue-account",
+            "income",
+        ],
+        vec![
+            "--document-id",
+            "7",
+            "--legacy-journal-entry-id",
+            "19",
+            "--reason",
+            "reviewed",
+            "--revenue-account",
+            "income",
+            "--confirm",
+            "yes",
+        ],
+        vec![
+            "--document-id",
+            "7",
+            "--legacy-journal-entry-id",
+            "19",
+            "--reason",
+            "reviewed",
+            "--revenue-account",
+            "income",
+            "--reason",
+            "duplicate",
+        ],
+    ] {
+        let out = call("repair-posting", "http://127.0.0.1:9", &f, &extra, None);
+        assert_eq!(out.status.code(), Some(2));
+        assert!(out.stdout.is_empty());
+        assert!(!out.stderr.is_empty());
+    }
+}

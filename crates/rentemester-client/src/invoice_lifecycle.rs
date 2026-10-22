@@ -12,6 +12,7 @@ pub enum InvoiceLifecycleKind {
     CreditNote,
     RefundBank,
     ApplyPayment,
+    RepairPosting,
 }
 fn object(properties: Value, required: &[&str]) -> Value {
     json!({"type":"object","properties":properties,"required":required,"additionalProperties":false})
@@ -102,6 +103,10 @@ pub fn invoice_lifecycle_schema(kind: InvoiceLifecycleKind) -> Value {
             }
             object(fields, &[])
         }
+        InvoiceLifecycleKind::RepairPosting => object(
+            json!({"documentId":id,"invoiceNumber":{"type":"string"},"legacyJournalEntryId":id,"reason":{"type":"string"},"revenueAccountNo":{"type":"string"}}),
+            &["legacyJournalEntryId", "reason", "revenueAccountNo"],
+        ),
         InvoiceLifecycleKind::ApplyPayment => {
             let mut fields = strings(&[
                 "invoiceNumber",
@@ -179,6 +184,7 @@ impl ApiClient {
             InvoiceLifecycleKind::CreditNote => "credit-note",
             InvoiceLifecycleKind::RefundBank => "refund-bank",
             InvoiceLifecycleKind::ApplyPayment => "apply-payment",
+            InvoiceLifecycleKind::RepairPosting => "repair-posting",
         };
         let path = company_path(company, &format!("invoices/original/{action}"))?;
         let unknown = || {
