@@ -151,3 +151,5 @@ pub mod dashboard_json;
 pub mod invoice_lifecycle;
 
 pub mod invoice_claims_original;
+
+pub mod invoice_bad_debt_original;

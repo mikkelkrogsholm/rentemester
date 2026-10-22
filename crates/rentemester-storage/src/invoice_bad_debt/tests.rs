@@ -370,3 +370,85 @@ fn wrong_accounts_dates_fractional_amount_over_principal_closed_period_and_histo
     .unwrap();
     assert!(history(&tx, id).is_err());
 }
+
+#[test]
+fn original_loss_adapter_uses_number_historical_assertions_and_exact_service_audit() {
+    use crate::{idempotency::PrincipalKind, invoice_bad_debt_original as original};
+    let (mut db, id) = fixture("DKK");
+    let tx = db
+        .transaction_with_behavior(TransactionBehavior::Immediate)
+        .unwrap();
+    let no: String = tx
+        .query_row("SELECT invoice_no FROM documents WHERE id=?1", [id], |r| {
+            r.get(0)
+        })
+        .unwrap();
+    let body = json!({"payload":{"invoiceNumber":no,"writeOffDate":"2026-01-10","grossAmount":250,"expenseAccountNo":"E","receivableAccountNo":"R","vatAccountNo":"V"},"confirm":true});
+    assert_eq!(original::invoice_id(&tx, &body).unwrap(), id);
+    for (k, v) in [("receivableAccountNo", "A"), ("vatAccountNo", "V2")] {
+        let mut wrong = body.clone();
+        wrong["payload"][k] = json!(v);
+        assert_eq!(
+            original::apply(
+                &tx,
+                &wrong,
+                id,
+                "svc:exact",
+                PrincipalKind::ServiceAccount,
+                latest()
+            )
+            .unwrap_err()
+            .code,
+            "invoice_account_mismatch"
+        );
+    }
+    let result = original::apply(
+        &tx,
+        &body,
+        id,
+        "svc:exact",
+        PrincipalKind::ServiceAccount,
+        latest(),
+    )
+    .unwrap();
+    assert_eq!(result["grossAmount"].as_f64(), Some(250.0));
+    assert_eq!(result["netAmount"].as_f64(), Some(200.0));
+    assert_eq!(result["vatAmount"].as_f64(), Some(50.0));
+    assert_eq!(result["openBalance"].as_f64(), Some(1000.0));
+    assert_eq!(result["claimOpenBalance"].as_f64(), Some(1000.0));
+    let wid = result["writeOffId"].as_i64().unwrap();
+    assert!(result["entryId"].as_i64().is_some());
+    crate::audit_invoice::bad_debt_evidence(&tx, wid).unwrap();
+    let audit:(String,String)=tx.query_row("SELECT actor,message FROM audit_log WHERE event_type='invoice_bad_debt_writeoff' AND entity_id=?1",[wid.to_string()],|r|Ok((r.get(0)?,r.get(1)?))).unwrap();
+    assert_eq!(audit.0, "service_account:svc:exact");
+    assert_eq!(
+        crate::reminder_claims::principal::service_subject(&audit.0, &audit.1).unwrap(),
+        "svc:exact"
+    );
+    tx.execute("UPDATE account_role_mappings SET status='superseded' WHERE role='output_vat' AND status='confirmed'",[]).unwrap();
+    tx.execute("INSERT INTO account_role_mappings(role,account_no,status,version,confirmed_by,confirmation_source,confirmed_at)VALUES('output_vat','V2','confirmed',2,'user:synthetic','explicit',datetime('now','+1 second'))",[]).unwrap();
+    assert_eq!(historical_vat_account(&tx, id).unwrap(), "V");
+    assert_eq!(
+        original::apply(
+            &tx,
+            &body,
+            id,
+            "svc:exact",
+            PrincipalKind::ServiceAccount,
+            latest()
+        )
+        .unwrap_err()
+        .code,
+        "invoice_account_mismatch"
+    );
+    let count: i64 = tx
+        .query_row(
+            "SELECT count(*) FROM invoice_bad_debt_writeoffs WHERE invoice_document_id=?1",
+            [id],
+            |r| r.get(0),
+        )
+        .unwrap();
+    assert_eq!(count, 1);
+    tx.execute("INSERT INTO audit_log(event_type,entity_type,entity_id,message,actor)VALUES('invoice_bad_debt_writeoff','invoice_bad_debt_writeoff',?1,'forged','service_account:svc:exact')",[wid.to_string()]).unwrap();
+    assert!(crate::audit_invoice::bad_debt_evidence(&tx, wid).is_err());
+}

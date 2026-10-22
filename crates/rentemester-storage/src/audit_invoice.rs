@@ -355,13 +355,37 @@ fn bad_debt(tx: &Transaction<'_>, row: &Value) -> Result<(), Error> {
         "bad debt source/date/VAT relief/receivable evidence differs",
     )?;
     let jid = number(&row["journal_entry_id"])?;
-    journal(
+    let j = journal(
         tx,
         jid,
         number(&row["invoice_document_id"])?,
         None,
         text(&row["writeoff_date"])?,
     )?;
+    let proofs = rows(
+        tx,
+        "SELECT actor,message FROM audit_log WHERE event_type='invoice_bad_debt_writeoff' AND entity_type='invoice_bad_debt_writeoff' AND entity_id=?1",
+        &[&id.to_string()],
+    )?;
+    if j["created_by_program"] == "service-principal"
+        || proofs.iter().any(|p| {
+            p["actor"]
+                .as_str()
+                .is_some_and(|a| a.starts_with("service_account:"))
+        })
+    {
+        require(proofs.len() == 1, "unique bad-debt service audit required")?;
+        let subject = crate::reminder_claims::principal::service_subject(
+            text(&proofs[0]["actor"])?,
+            text(&proofs[0]["message"])?,
+        )
+        .ok_or_else(|| refused("bad-debt service proof differs"))?;
+        require(
+            j["created_by_program"] == "service-principal"
+                && j["created_by"] == format!("user:{subject}"),
+            "bad-debt service audit/journal principal differs",
+        )?;
+    }
     let mut expense = Money::default();
     let mut output = Money::default();
     let mut receivable = Money::default();

@@ -10,6 +10,7 @@ use rentemester_storage::sales::{self, Artifact, Customer, Post};
 use rusqlite::Connection;
 use serde_json::Value;
 pub enum Action<'a> {
+    OriginalBadDebt(&'a Value),
     OriginalClaims(
         rentemester_storage::invoice_claims_original::Kind,
         &'a Value,
@@ -104,6 +105,7 @@ pub fn execute(
         year,
     } = request;
     let permission = match action {
+        Action::OriginalBadDebt(_) => Permission::CompanyLedgerPost,
         Action::OriginalClaims(kind, _) => crate::invoice_claims_original::permission(kind),
         Action::Lifecycle(kind, _) => crate::invoice_lifecycle::permission(kind),
         Action::Contacts | Action::List | Action::Original(..) => Permission::CompanyRead,
@@ -141,6 +143,19 @@ pub fn execute(
         ),
         |tx, actor| {
             Ok(match action {
+                Action::OriginalBadDebt(body) => {
+                    Output::Json(crate::invoice_bad_debt_original::apply(
+                        tx,
+                        guard,
+                        body,
+                        crate::invoice_lifecycle::Context {
+                            slug,
+                            subject: actor,
+                            principal: rentemester_storage::idempotency::PrincipalKind::User,
+                            clock,
+                        },
+                    )?)
+                }
                 Action::OriginalClaims(kind, body) => {
                     Output::Json(crate::invoice_claims_original::apply(
                         tx,
@@ -331,6 +346,7 @@ pub fn execute_service(
         year,
     } = request;
     let (permission, mutation) = match action {
+        Action::OriginalBadDebt(_) => (Permission::CompanyLedgerPost, true),
         Action::OriginalClaims(kind, _) => (
             crate::invoice_claims_original::permission(kind),
             !kind.readonly(),
@@ -364,6 +380,19 @@ pub fn execute_service(
         mutation,
         |tx, subject, _| {
             let output = match action {
+                Action::OriginalBadDebt(body) => {
+                    Output::Json(crate::invoice_bad_debt_original::apply(
+                        tx,
+                        guard,
+                        body,
+                        crate::invoice_lifecycle::Context {
+                            slug,
+                            subject,
+                            principal: PrincipalKind::ServiceAccount,
+                            clock,
+                        },
+                    )?)
+                }
                 Action::OriginalClaims(kind, body) => {
                     Output::Json(crate::invoice_claims_original::apply(
                         tx,

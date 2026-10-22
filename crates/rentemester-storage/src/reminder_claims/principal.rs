@@ -46,7 +46,7 @@ fn valid_subject(subject: &str) -> bool {
     !subject.trim().is_empty() && subject.len() <= 256 && !subject.chars().any(char::is_control)
 }
 /// A prefix alone is never service evidence. Bind the fixed version/kind and exact subject.
-pub(super) fn service_subject(actor: &str, message: &str) -> Option<String> {
+pub(crate) fn service_subject(actor: &str, message: &str) -> Option<String> {
     let proof: ServiceProof = serde_json::from_str(message).ok()?;
     (proof.schema == SCHEMA
         && proof.principal_kind == "service-account"

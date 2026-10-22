@@ -75,6 +75,7 @@ mod sales;
 mod invoice_original;
 mod invoice_lifecycle;
 mod invoice_claims_original;
+mod invoice_bad_debt_original;
 mod invoice_email;
 mod supplier_commitments;
 mod vat;
@@ -115,6 +116,7 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
         pdf_workers: Arc::new(Semaphore::new(4)),
     };
     Router::new()
+        .route("/api/companies/{slug}/invoices/original/write-off-bad-debt",post(invoice_bad_debt_original::handle))
         .route("/api/companies/{slug}/invoices/original/remind",post(invoice_claims_original::handle))
         .route("/api/companies/{slug}/invoices/original/post-reminder",post(invoice_claims_original::handle))
         .route("/api/companies/{slug}/invoices/original/compensation",post(invoice_claims_original::handle))

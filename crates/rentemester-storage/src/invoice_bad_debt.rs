@@ -140,6 +140,21 @@ pub fn write_off(
     subject: &str,
     latest: Date,
 ) -> Result<Value, Error> {
+    write_off_with_principal(
+        tx,
+        input,
+        subject,
+        latest,
+        crate::idempotency::PrincipalKind::User,
+    )
+}
+pub fn write_off_with_principal(
+    tx: &Transaction<'_>,
+    input: &WriteOff,
+    subject: &str,
+    latest: Date,
+    principal: crate::idempotency::PrincipalKind,
+) -> Result<Value, Error> {
     crate::journal_post::require_current(tx)?;
     if !input.confirm || !(1..=9007199254740991).contains(&input.invoice_document_id) {
         return Err(refused(
@@ -336,14 +351,19 @@ pub fn write_off(
         latest,
         crate::journal_post::Actor {
             subject: &format!("user:{subject}"),
-            program: "rentemester-rust",
+            program: crate::reminder_claims::principal::program(principal),
         },
     )?;
     if result["ok"] != true {
         return Err(refused(result["errors"].to_string()));
     }
     let wid:i64=tx.query_row("INSERT INTO invoice_bad_debt_writeoffs(invoice_document_id,writeoff_date,gross_amount,net_amount,vat_amount,note,journal_entry_id)VALUES(?1,?2,?3,?4,?5,?6,?7)RETURNING id",params![id,input.write_off_date,amount.decimal(),net.decimal(),vat.decimal(),input.note,result["entryId"].as_i64()],|r|r.get(0)).map_err(invalid)?;
-    tx.execute("INSERT INTO audit_log(event_type,entity_type,entity_id,message,actor)VALUES('invoice_bad_debt_writeoff','invoice_bad_debt_writeoff',?1,?2,?3)",params![wid.to_string(),format!("Confirmed established loss on invoice {no}"),format!("user:{subject}")]).map_err(invalid)?;
+    let (actor, message) = crate::reminder_claims::principal::audit(
+        subject,
+        &format!("Confirmed established loss on invoice {no}"),
+        principal,
+    )?;
+    tx.execute("INSERT INTO audit_log(event_type,entity_type,entity_id,message,actor)VALUES('invoice_bad_debt_writeoff','invoice_bad_debt_writeoff',?1,?2,?3)",params![wid.to_string(),message,actor]).map_err(invalid)?;
     history(tx, id)?;
     let (remaining, _) = crate::reminder_claims::principal_open(tx, id)?;
     let remaining_dkk = crate::invoice_settlement::principal_carrying(tx, id, debtor_id)?;
@@ -355,3 +375,17 @@ pub fn write_off(
 }
 #[cfg(test)]
 mod tests;
+
+/// Historical account identity used for original payload assertions.
+pub(crate) fn historical_vat_account(tx: &Transaction<'_>, id: i64) -> Result<String, Error> {
+    let mut q = tx.prepare("SELECT DISTINCT a.account_no FROM issued_invoice_postings p JOIN journal_lines l ON l.journal_entry_id=p.journal_entry_id JOIN accounts a ON a.id=l.account_id WHERE p.invoice_document_id=?1 AND a.type='vat' AND a.normal_balance='credit' AND l.debit_amount=0 AND l.credit_amount>0 AND l.vat_code IS NULL").map_err(invalid)?;
+    let rows = q
+        .query_map([id], |r| r.get::<_, String>(0))
+        .map_err(invalid)?
+        .collect::<Result<Vec<_>, _>>()
+        .map_err(invalid)?;
+    if rows.len() != 1 {
+        return Err(refused("unique historical output VAT account required"));
+    }
+    Ok(rows[0].clone())
+}

@@ -80,6 +80,21 @@ fn positive(raw: &str) -> Result<i64, ()> {
         .ok_or(())
 }
 fn as_of(raw: Option<&str>) -> Result<String, ()> {
+    as_of_with_clock(raw, &SystemClock)
+}
+fn as_of_with_clock(
+    raw: Option<&str>,
+    clock: &dyn rentemester_runtime::auth::Clock,
+) -> Result<String, ()> {
+    if raw.is_none() {
+        let utc = chrono::DateTime::<chrono::Utc>::from_timestamp_millis(
+            clock.now_unix_ms().map_err(|_| ())?,
+        )
+        .ok_or(())?;
+        let date = utc.format("%Y-%m-%d").to_string();
+        Date::parse(&date).map_err(|_| ())?;
+        return Ok(date);
+    }
     let date = raw.and_then(|q| q.strip_prefix("asOf=")).ok_or(())?;
     Date::parse(date).map_err(|_| ())?;
     Ok(date.into())
@@ -253,6 +268,21 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
 mod tests {
     use super::*;
     #[test]
+    fn omitted_schedule_date_is_trusted_utc_today() {
+        struct Fixed;
+        impl rentemester_runtime::auth::Clock for Fixed {
+            fn now_unix_ms(&self) -> Result<i64, rentemester_runtime::auth::AuthError> {
+                Ok(1_761_091_199_000)
+            }
+        }
+        assert_eq!(as_of_with_clock(None, &Fixed).unwrap(), "2025-10-21");
+        assert_eq!(
+            as_of_with_clock(Some("asOf=2025-03-21"), &Fixed).unwrap(),
+            "2025-03-21"
+        );
+        assert!(as_of_with_clock(Some(""), &Fixed).is_err());
+    }
+    #[test]
     fn exact_source_bodies_and_canonical_selectors() {
         let valid = json!({"fileName":"synthetic.json","contentBase64":"e30="});
         assert!(parse(&serde_json::to_vec(&valid).unwrap(), false).is_ok());
@@ -277,7 +307,6 @@ mod tests {
         assert_eq!(positive("7"), Ok(7));
         assert_eq!(as_of(Some("asOf=2025-03-21")).unwrap(), "2025-03-21");
         for query in [
-            None,
             Some(""),
             Some("asOf=2025-02-30"),
             Some("asOf=2025-03-21&asOf=2025-03-22"),
