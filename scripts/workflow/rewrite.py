@@ -106,6 +106,35 @@ def validate_packet(packet, numbers):
     return packet
 
 
+def active_packet(base, numbers):
+    """Read SGD's existing dispatch; do not maintain a second execution record."""
+    dispatch = os.environ.get('SGD_WORK_PACKAGE')
+    if not dispatch:
+        return validate_packet(json.loads(packet_path(base).read_text()), numbers)
+    path = Path(dispatch)
+    if not path.is_absolute():
+        raise ValueError('SGD_WORK_PACKAGE must be absolute')
+    data = json.loads(path.read_text())
+    task = data['task']
+    if os.environ.get('SGD_TASK_ID') != task['id']:
+        raise ValueError('SGD task identity differs from dispatch')
+    phase = os.environ.get('SGD_PHASE')
+    expected = data['worktree'] if phase == 'worker' else os.environ.get('SGD_WORKTREE')
+    if phase not in {'worker', 'integration'} or not expected or Path(expected).resolve() != base.resolve():
+        raise ValueError('SGD phase/worktree differs from dispatch context')
+    if phase == 'integration' and not os.environ.get('SGD_INTEGRATION_BASE'):
+        raise ValueError('SGD integration base required')
+    trailers = '\n'.join(task.get('commit_trailers', []))
+    refs = re.findall(r'^Work-Issue: #([0-9]+)\s*$', trailers, re.M)
+    if len(refs) != 1:
+        raise ValueError('SGD task requires exactly one Work-Issue trailer')
+    return validate_packet({
+        'issue': int(refs[0]), 'owner': 'sgd:' + task['id'],
+        'paths': task['write_paths'], 'acceptance': task['deliverable'],
+        'checks': task['checks'] or data['work']['acceptance'],
+    }, numbers)
+
+
 def staged_paths(base):
     # No rename detection means both deletion and addition are checked, even for renames.
     output = subprocess.check_output(['git', 'diff', '--cached', '--name-only', '--no-renames', '-z'], cwd=base)
@@ -225,7 +254,7 @@ def main(argv=None):
         packet_path(base).write_text(json.dumps(data, indent=2) + '\n')
         print(packet_path(base))
     elif args.command in {'check-staged', 'check-message'}:
-        data = validate_packet(json.loads(packet_path(base).read_text()), numbers)
+        data = active_packet(base, numbers)
         if args.command == 'check-staged':
             check_paths(staged_paths(base), data['paths'])
         else:

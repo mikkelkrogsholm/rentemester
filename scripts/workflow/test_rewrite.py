@@ -1,5 +1,6 @@
 import importlib.util
 import json
+import os
 from pathlib import Path
 import subprocess
 import tempfile
@@ -68,6 +69,39 @@ class Rules(unittest.TestCase):
         for key, value in [('issue', 13), ('owner', ''), ('paths', []), ('checks', []), ('acceptance', '')]:
             with self.assertRaises(ValueError):
                 w.validate_packet({**packet, key: value}, {12})
+
+    def test_sgd_hooks_derive_ownership_and_issue_from_the_current_dispatch(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            dispatch = base / 'dispatch.json'
+            task = dict(id='invoice', write_paths=['crates/client/'],
+                        deliverable='Preserve typed refusal', checks=['client'],
+                        commit_trailers=['Work-Issue: #12'])
+            data = dict(task=task, worktree=str(base), work=dict(acceptance=['flow']))
+            dispatch.write_text(json.dumps(data))
+            env = dict(SGD_WORK_PACKAGE=str(dispatch), SGD_TASK_ID='invoice',
+                       SGD_PHASE='worker', SGD_WORKTREE=str(base))
+            with patch.dict(os.environ, env, clear=True):
+                packet = w.active_packet(base, {12})
+                w.check_paths(['crates/client/error.rs'], packet['paths'])
+                w.check_message('sgd: invoice\n\nWork-Issue: #12', packet['issue'])
+                with self.assertRaises(ValueError):
+                    w.check_paths(['crates/ledger/error.rs'], packet['paths'])
+                for key, value in [('SGD_TASK_ID', 'other'), ('SGD_PHASE', 'other'),
+                                   ('SGD_WORK_PACKAGE', 'relative.json')]:
+                    with patch.dict(os.environ, {key: value}):
+                        with self.assertRaises(ValueError):
+                            w.active_packet(base, {12})
+                with patch.dict(os.environ, {'SGD_PHASE': 'integration',
+                                            'SGD_INTEGRATION_BASE': 'synthetic-base'}):
+                    self.assertEqual(w.active_packet(base, {12})['issue'], 12)
+                with patch.dict(os.environ, {'SGD_PHASE': 'integration'}):
+                    with self.assertRaises(ValueError):
+                        w.active_packet(base, {12})
+                task['commit_trailers'] = ['Work-Issue: #13']
+                dispatch.write_text(json.dumps(data))
+                with self.assertRaises(ValueError):
+                    w.active_packet(base, {12})
 
 
 class MoveTests(unittest.TestCase):
