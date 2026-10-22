@@ -153,7 +153,7 @@ export function createOriginalExpenseProof(base: string, work: string, onStep: (
     for (const [i, original] of [...supplied, ...eu].entries()) {
       const row = bank.find((b: any) => b.text === (i < 2 ? 'SYN-BATCH-' + (i + 1) : 'SYN-168-' + (i === 2 ? 'eu-human' : 'eu-service')));
       need(row && row.amount === -original.gross, 'exact source bank row');
-      const input = { documentId: original.id, bankTransactionId: row.id, expenseAccount: '3000', ...(i < 2 ? {} : { vatTreatment: 'reverse_charge' }), confirm: true, ...(i === 1 ? { idempotencyKey: 'synthetic-expense168-key' } : {}) };
+      const input = { documentId: original.id, bankTransactionId: row.id, expenseAccount: '3000', vatTreatment: i < 2 ? 'standard' : 'reverse_charge', confirm: true, ...(i === 1 ? { idempotencyKey: 'synthetic-expense168-key' } : {}) };
       const receipt = invoke(i === 0 || i === 3 ? 'cli' : 'mcp', 'book', input, i === 1 || i === 3);
       need(receipt.grossAmount === original.gross && receipt.netAmount === original.gross - original.vat && receipt.vatAmount === original.vat, 'source expected expense amounts');
       if (i >= 2) need(receipt.appliedRules.includes('DK-VAT-REVERSE-CHARGE-001'), 'source EU rule code');
@@ -169,7 +169,7 @@ export function createOriginalExpenseProof(base: string, work: string, onStep: (
     stable = await books();
     need(stable.journal.journal.entries.length === 4 && stable.bank.bank.matchedCount === 4 && stable.bank.bank.difference === 0 && stable.bank.bank.bookedBalance === -575, 'exact four atomic journals and bank reconciliation');
     for (const [i, receipt] of receipts.entries()) {
-      const entry = stable.journal.journal.entries.find((e: any) => e.id === receipt.journalEntryId), original = [...supplied, ...eu][i];
+      const entry = stable.journal.journal.entries.find((e: any) => e.id === receipt.entryId), original = [...supplied, ...eu][i];
       const wanted = i < 2 ? [['3000', original.gross - original.vat, 0], ['4700', original.vat, 0], ['1800', 0, original.gross]] : [['3000', 100, 0], ['4700', 25, 0], ['1800', 0, 100], ['4710', 0, 25]];
       need(entry?.documentId === original.id && equal(entry.lines.map((l: any) => [l.accountNo, l.debit, l.credit]).sort(), wanted.sort()), 'exact source VAT/account allocations');
     }
