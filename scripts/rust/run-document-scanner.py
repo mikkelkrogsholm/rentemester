@@ -697,9 +697,11 @@ def main():
                     # packet/decision/waiver/audit controls are seeded or modified.
                     if fixture.execute('SELECT count(*) FROM bank_transactions').fetchone()[0] or fixture.execute('SELECT count(*) FROM exceptions').fetchone()[0]:
                         raise RuntimeError('Synthetic operational fixture namespace must be empty')
-                    fixture.execute("INSERT INTO bank_transactions(id,transaction_date,text,amount,currency,status) VALUES(162,'2001-02-01','Explicit synthetic period operational fixture',1.25,'DKK','imported')")
+                    # Independent synthetic statement closing balance is an input fact,
+                    # never inferred from the ledger. Missing balance must remain a blocker.
+                    fixture.execute("INSERT INTO bank_transactions(id,transaction_date,text,amount,currency,status,balance_after) VALUES(162,'2001-02-01','Explicit synthetic period operational fixture',1.25,'DKK','imported',0)")
                     fixture.execute("INSERT INTO exceptions(id,type,severity,status,related_bank_transaction_id,message,required_action) VALUES(162,'synthetic-period-follow-up','medium','open',162,'Explicit synthetic period force proof only','Owner follow-up remains open')")
-                report['operationalFixture'] = {'synthetic':True,'bankId':162,'exceptionId':162,'exceptionCreationUiQualified':False,'beforePrivateLedgerRestart':True}
+                report['operationalFixture'] = {'synthetic':True,'bankId':162,'exceptionId':162,'exceptionCreationUiQualified':False,'beforePrivateLedgerRestart':True,'independentSyntheticClosingBalance':0}
                 start()
             script = work / 'browser.mjs'
             script.write_text(BROWSER)
