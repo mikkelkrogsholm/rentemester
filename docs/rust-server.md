@@ -3253,8 +3253,7 @@ MCP og HTTP kræver fortsat `confirm:true`. Serveren validerer leverede beløb,
 kundekort, adgang og originale bilag. Ved ukendt udfald skal status og
 bogføring afstemmes før et nyt forsøg; klienterne gentager aldrig automatisk.
 
-De resterende claim-/beregningskommandoer har fortsat åbne oprindelige
-CLI/MCP-kontrakter.
+De øvrige oprindelige fakturafunktioner følges fortsat i epic #672.
 
 
 ### Fakturabetaling uden bankimport og med eksisterende postering (Group149)
@@ -3312,3 +3311,40 @@ Svaret identificerer gammel, ny og modposteret journal samt den nye posterings
 nummer/hash og anvendte regler. Begrundelse og alle identiteter gemmes i audit.
 Gentaget reparation afvises. Ved ukendt udfald skal den kanoniske fakturastatus
 og de konkrete journalidentiteter kontrolleres før videre handling.
+
+
+### Oprindelige rykker-, rente- og kravkommandoer (Group151)
+
+Rust understøtter nu `invoice remind`, `post-reminder`, `compensation`,
+`claim-compensation`, `post-compensation`, `interest`, `claim-interest`,
+`post-interest`, `interest-correction`, `post-interest-correction` og
+`settle-claim-bank`. Brug de almindelige forbindelsesflag og vælg faktura med
+`--document-id` eller `--invoice-number`. Kravbetaling læser det oprindelige
+JSON-payload fra `--input FILE|-`, med faktura- og bank-ID eller præcis reference.
+
+Beregninger er læsninger. Registrering opretter et krav; bogføring er et særskilt
+kald. Udeladt rykkergebyr betyder 100 DKK. Udeladt rykker-ID vælger den tidligste
+registrerede rykker, også hvis den allerede er bogført; i så fald afvises dublet.
+CLI-renter uden `--reference-rate` bruger serverens lovbestemte rentetabel.
+De originale flade MCP-rentekald kræver fortsat et eksplicit `referenceRate`.
+
+Ved bogføring angives `--receivable-account` og den relevante
+`--reminder-income-account`, `--compensation-income-account` eller
+`--interest-income-account`. Der vælges ingen skjult kontoplan. Rentekorrektion
+kræver `--reason`; serveren beregner beløb, oprindelige konti og tilladt dato.
+Udeladt bogføringsdato følger rykkeren, kravet eller korrektionens kausale
+slutdato. Det er ikke automatisk dagens dato.
+
+MCP bruger de oprindelige flade argumenter og `confirm:true` ved ændringer.
+De otte eksisterende værktøjer med `body:string` bevarer deres input og svar;
+inputformerne må ikke blandes. CLI-kaldet bekræfter som de øvrige originale
+fakturakommandoer. Alle handlinger bruger serverens aktuelle rettigheder,
+originalkontrol og fælles regnskabsmotor; klienterne genforsøger ikke automatisk.
+
+Hovedstolen skal være betalt, før en faktisk DKK-bankindbetaling kan afvikle
+krav. Betalingen anvendes på de historisk bogførte kravkonti. Valutahovedstol
+og DKK-kompensation holdes adskilt; kompensationsberegningen angiver
+`principalCurrency` og `compensationAmountDkk`. Valuta-renter afvises fortsat
+med `unsupported_foreign_interest`, uden regnskabseffekter. Disse kendte
+forretningsafvisninger bevarer den maskinlæsbare kode efter sikker rollback;
+ukendt udfald kræver fortsat afstemning før et nyt forsøg.

@@ -1,15 +1,15 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "Group150 original CLI atomic invoice repair, dated mirror and subsequent payment accepted",
-  "code_revision": "6b34f0a3ed2fd2d7b045b3d508f12526945fd88e",
+  "current_increment": "Group151 all11 original overdue claims interfaces, causal correction and full receipt lifecycle accepted",
+  "code_revision": "f27ae2af2949b16eca2f251eaeda76d7fe7b7bd3",
   "spec_revision": "sha256:bc98636be4a972407adce0f817a76bb9d4bb7200cb292a70965e75ab62fae250",
-  "state": "Group150 ACCEPTED original CLI-only repair-posting using narrowly validated native posting/reversal permits and existing source/current-authority/control transaction. Exact locked active unclassified unbanked journal only; no downstream, classified inbound or extra active journal; both dates open. Explicit active income account replaces original hardcoded1000. Canonical replacement on invoice date, mirror on immutable legacy date; ordinary post/reversal guards unchanged, any failure rolls back. Four distinct backend and two client focused cases pass, integrated seven-package strict all-target Clippy and normal three binaries pass. Two diagnosed fixture setup failures retained; impossible invoice_payment insertion removed because existing trigger already rejects its wrong journal effects; that inbound-payment fixture branch is not claimed exercised. Actual retained normal-MFA first run PASS: fresh invoice125 yesterday, incomplete legacy100 today, ordinary post refusal, original CLI atomic repair, repeated repair refusal, bankless payment125, full native audit21/VAT269.39, immutable originals and persisted-auth restart. Independent SQL/hash/source/artifact proof PASS: exactly legacy/replacement/mirror/payment, nine lines, exact mirror and distinct immutable dates, one canonical posting marker and one payment, old rows/files unchanged. All processes stopped; both worker trees integrated/hash-verified/recoverably removed. No new MCP repair tool, new service issuance, actual revocation or fresh MFA claim. Full epic/remaining717 scope remains OPEN.",
+  "state": "Group151 ACCEPTED all11 original reminder/compensation/interest/causal-correction/claim-receipt operations in one whole journey. Shared native writers unchanged in arithmetic/history; typed-principal wrappers retain old human APIs and version/bind service audit subject+journal, fixed non-null bank-source collection includes every actual source. Original CLI flags/flat MCP interfaces, eight strict disjoint native body:string alternatives, source defaults100/310/earliest reminder/statutory omitted CLI rate and exact claim/causal date omissions retained. Explicit compatible accounts and correction reason replace hidden chart defaults/optional reason; no new schema or engine. Client6/principal6/backend3 focused cases PASS; initial zero-selected lib server command corrected to actual binary1, not counted. Equivalent guard/let-chain/shorthand Clippy corrections plus definite-rollback-only original foreign-interest refusal mapping tested2wire cases; final integrated seven-package all-target strict check and normal three binaries PASS. Actual all11 operations first executed successfully: original1000 invoice, reminder100, compensation310, interest2.47, real bank partial500 backdated, causal correction0.69, final principal500, claim receipts100+311.78. Full audit30/VAT469.39 and principal/claims zero. First report stopped only at extra nonexistent claimCurrency field assertion in compensation read; source/native use principalCurrency plus compensationAmountDkk. Immutable failed report/scripts/trace retained. Targeted same-code continuation verified source units without changing code or repeating finance, exact five foreign-interest code refusals, existing native MCP body, current retained member read, immutable originals, signed current-owner export/offline verification and persisted-auth restart. Independent SQL/hash/source/artifact/backup-ledger proof PASS: nine new journals/nineteen lines/two docs/four banks; net revenue800/VAT200/reminder100/comp310/interest1.78/bank1411.78, debt/claims zero; all prior rows/files unchanged. Signed archive includes exact terminal selected-company SQL and independently validates both companies. Existing member remained currently authorized (200); no new membership/service revocation, new credentials or fresh MFA claimed. All processes stopped; three completed worker trees integrated/hash-verified/recoverably removed. Entire epic and remaining717 scope remain OPEN.",
   "issues_closed": [
     701
   ],
   "next": [
-    "R44/R45 remaining original overdue-claims lifecycle: all11 reminder/compensation/interest/causal-correction/claim-payment interfaces as one shared group, reusing accepted native engines120/121. Actor/env/company-path/default launcher/errors, historical receipt migration, remaining recovery/automation, signed release/cutover/TypeScript retirement and final installed desktop remain OPEN; preserve all original epic requirements and prior evidence.",
+    "Finish original invoice family in two grouped journeys:152 original bad-debt + pure validate + imported-receivables contracts;153 both public XML artifacts + PEPPOL preparation + synthetic Digisense delivery/status. Then remaining original whole-product R44/R45 parity including actor/env/company-path/default launcher/errors, historical receipts, recovery/automation, signed release/cutover/TypeScript retirement and final installed desktop. Preserve all original epic requirements and all accepted evidence; no whole717 closure.",
     "Installed desktop acceptance is explicitly deferred to the very end by the user. Preserve prepared Group100 profile; collect remaining native automation, closure, recovery and packaging checks for final installed acceptance without requesting screen unlock during development.",
     "J03/R50 and remaining R54 scope: only still-supported operation closure/recovery, nonempty scheduler handoff, hostile/older clone and post-cutover rollback requirements. Group99 qualifies managed installed J06 flow, not every R54 acceptance item.",
     "Signed distribution/update/cutover evidence must match actual full Rust replacement; retain all existing completion gates and TypeScript retirement gate.",
@@ -8496,6 +8496,123 @@
       ],
       "runner_terminal_label_note": "Pinned orchestration stdout inherited149 wording (apply-repair150/bankless/MCP); actual150 trace and independent verifier prove CLI repair/replacement/mirror/payment. No retrospective script mutation or false inherited-step claim.",
       "remaining": "R44/R45 remaining original overdue-claims lifecycle: all11 reminder/compensation/interest/causal-correction/claim-payment interfaces as one shared group, reusing accepted native engines120/121. Actor/env/company-path/default launcher/errors, historical receipt migration, remaining recovery/automation, signed release/cutover/TypeScript retirement and final installed desktop remain OPEN; preserve all original epic requirements and prior evidence."
+    },
+    "invoice_claims_original151": {
+      "issue": 717,
+      "status": "accepted bounded all11 journey; whole issue OPEN",
+      "source_revision": "f27ae2af2949b16eca2f251eaeda76d7fe7b7bd3",
+      "clients_worker_commit": "890734ca",
+      "clients_integrated": "cbe28575",
+      "principal_worker_commit": "71cfd410",
+      "principal_integrated": "47da725c",
+      "backend_worker_commit": "f35fe51f",
+      "backend_integrated": "b3e73bb9",
+      "helper_commit": "c14301f0",
+      "integration_fix": "f27ae2af",
+      "contract": "/tmp/rm151-claims-contract.md",
+      "report": "/tmp/rentemester-rust-reports/invoice-claims151-continuation.json",
+      "report_sha256": "98ff5a5001125a12069f73174b504296ac8b5f213f19c071868b8dd252e36fe1",
+      "terminal_exit": 0,
+      "independent_verification": "/tmp/rm151-independent.log",
+      "independent_verifier": "/tmp/rm151-independent.py",
+      "independent_verifier_sha256": "5f148276432cc8bd57332ca809190e5eb1d465179805092be19683cd955d63f1",
+      "focused_client_checks": 6,
+      "focused_principal_checks": 6,
+      "focused_backend_checks": 3,
+      "additional_wire_checks": 2,
+      "focused_logs": [
+        "/tmp/rm151-clients.log",
+        "/tmp/rm151-principal-service.log",
+        "/tmp/rm151-principal-human-reminder.log",
+        "/tmp/rm151-principal-human-compensation.log",
+        "/tmp/rm151-principal-human-interest.log",
+        "/tmp/rm151-backend-storage.log",
+        "/tmp/rm151-backend-server.log",
+        "/tmp/rm151-foreign-refusal-wire.log"
+      ],
+      "strict_clippy": "/tmp/rm151-integrated-clippy-accepted.log",
+      "normal_build": "/tmp/rm151-integrated-normal-build.log",
+      "initial_failed_report": {
+        "path": "/tmp/rentemester-rust-reports/invoice-claims151.json",
+        "sha256": "62e57288f1aff44f6af98ffaee15edc3d14cc4de6df742d8eea0337a03d83bb9",
+        "failureType": "RuntimeError",
+        "failureLabel": "Lifecycle run failed; private stderr and mutation trace retained; reconcile before any continuation"
+      },
+      "failure_diagnosis": "Only a helper assertion expected claimCurrency on compensation calculation; original/native calculation expresses units through principalCurrency and compensationAmountDkk. Completed accounting retained; no product control weakened.",
+      "initial_trace_sha256": "7cfe1e3562f51fa0f2930a1ff13e28fbaef79e0c2947dd186edb08e65588dd82",
+      "financial_steps_repeated": false,
+      "same_product_code_continuation": true,
+      "all11_original_operations_actual": true,
+      "native_mcp_body_actual": true,
+      "native_body_alternatives_preserved": 8,
+      "exact_foreign_interest_refusals_actual": 5,
+      "definite_rollback_business_envelope_only": true,
+      "original_role_remap_debtor": "1211",
+      "registered_interest": 2.47,
+      "causal_correction": 0.69,
+      "settled_principal": 1000,
+      "settled_claims": 411.78,
+      "full_native_audit_entries": 30,
+      "total_vat_payable": 469.39,
+      "terminal_counts": {
+        "journal_entries": 30,
+        "journal_lines": 71,
+        "documents": 13,
+        "bank_transactions": 10,
+        "invoice_payments": 8,
+        "invoice_claim_payments": 3
+      },
+      "new_financial_delta": {
+        "journals": 9,
+        "lines": 19,
+        "revenue": 800,
+        "outputVat": 200,
+        "reminderIncome": 100,
+        "compensationIncome": 310,
+        "interestIncome": 1.78,
+        "bank": 1411.78,
+        "debtor": 0,
+        "claimReceivable": 0
+      },
+      "typed_service_claim_audit_version": "rentemester.claim-principal.v1",
+      "signed_backup": {
+        "path": "/Users/mikkelfreltoftkrogsholm/Library/Application Support/Rentemester-Synthetic-Document-Scanner-f0f4bd740b8d432f95dc11448bab2414/claims151-source.native-backup.json",
+        "sha256": "d65a8fb97efe228ca13fc460054cb5be4aa543fb73e6a9004a4ce209084d0474",
+        "bytes": 4532112,
+        "independentlyVerified": true,
+        "trustedKeyPath": "/Users/mikkelfreltoftkrogsholm/Library/Application Support/Rentemester-Synthetic-Document-Scanner-f0f4bd740b8d432f95dc11448bab2414/trusted.pub",
+        "trustedKeySha256": "bc123a10c1e2733ec0a618178ee079c9ba5ff54c9a48cc4bf1c89e0402627f5d",
+        "verification": {
+          "ok": true,
+          "format": "rentemester-native-backup/1",
+          "companies": 2,
+          "scope": "signed_inventory_current_schema_integrity_journal_chain_and_originals"
+        }
+      },
+      "signed_backup_selected_company_sql_exact": true,
+      "member_current_read": {
+        "sessionStatus": 200,
+        "readStatus": 200,
+        "currentMembershipRefused": false,
+        "revocationChangedHere": false
+      },
+      "actual_new_service_creation": false,
+      "actual_new_revocation": false,
+      "fresh_mfa_after_final_restart_claimed": false,
+      "authenticated_persisted_mfa_cookie_restart": true,
+      "before_snapshot": {
+        "path": "/tmp/rentemester-rust-reports/invoice-claims151.before.sqlite",
+        "sha256": "f741668fd123a3f84525bb48477e56919e4c07067629202ff5289c5a838b60cc"
+      },
+      "owned_processes_stopped": true,
+      "owned_runtime_cleaned": false,
+      "worker_worktrees_removed": true,
+      "worktree_recovery": [
+        ".git/rentemester-recovery/archived151-clients.json",
+        ".git/rentemester-recovery/archived151-principals.json",
+        ".git/rentemester-recovery/archived151-core.json"
+      ],
+      "remaining": "Finish original invoice family in two grouped journeys:152 original bad-debt + pure validate + imported-receivables contracts;153 both public XML artifacts + PEPPOL preparation + synthetic Digisense delivery/status. Then remaining original whole-product R44/R45 parity including actor/env/company-path/default launcher/errors, historical receipts, recovery/automation, signed release/cutover/TypeScript retirement and final installed desktop. Preserve all original epic requirements and all accepted evidence; no whole717 closure."
     }
   },
   "verified_history": [
@@ -10149,6 +10266,12 @@
       "code_revision": "a613612f9f02ea4cf308b65083db6a8b4d3ebda7",
       "state": "Group149 ACCEPTED original apply-payment via same native engine: actual CLI bankless partial50 creates one journal/payment, ordinary manual journal75 is classified by original MCP with exact existing identity and no duplicate posting. Original debtor1210 retained after explicit mapping1211; full selected-invoice evidence and global native audit17 pass, revenue100/VAT25 posted once, bank125, no invented bank rows. Same-invoice unresolved journals refuse; unrelated invoice candidate does not impose a new global barrier. Existing DKK candidate proof and native bank/FX paths remain strict. Closed/reported payment classification explicitly refuses until native reopening; bankless FX and supplied FX journals remain unsupported. Client3/backend5 focused checks, integrated seven-package strict Clippy and normal three binaries pass. One retained normal-MFA fixture PASS first run including overpayment/duplicate refusal, immutable originals and persisted-auth restart. Independent SQL/hash/source/artifact verifier PASS; three new journals/seven lines/two NULL-bank payments, old rows/files unchanged, service classification preserves owner-created journal identity. All processes stopped; both completed worker trees integrated/hash-verified/recoverably removed. Full epic and remaining717 scope OPEN; no new service creation, actual revocation or fresh MFA claim.",
       "evidence_key": "invoice_payment149"
+    },
+    {
+      "current_increment": "Group150 original CLI atomic invoice repair, dated mirror and subsequent payment accepted",
+      "code_revision": "6b34f0a3ed2fd2d7b045b3d508f12526945fd88e",
+      "state": "Group150 ACCEPTED original CLI-only repair-posting using narrowly validated native posting/reversal permits and existing source/current-authority/control transaction. Exact locked active unclassified unbanked journal only; no downstream, classified inbound or extra active journal; both dates open. Explicit active income account replaces original hardcoded1000. Canonical replacement on invoice date, mirror on immutable legacy date; ordinary post/reversal guards unchanged, any failure rolls back. Four distinct backend and two client focused cases pass, integrated seven-package strict all-target Clippy and normal three binaries pass. Two diagnosed fixture setup failures retained; impossible invoice_payment insertion removed because existing trigger already rejects its wrong journal effects; that inbound-payment fixture branch is not claimed exercised. Actual retained normal-MFA first run PASS: fresh invoice125 yesterday, incomplete legacy100 today, ordinary post refusal, original CLI atomic repair, repeated repair refusal, bankless payment125, full native audit21/VAT269.39, immutable originals and persisted-auth restart. Independent SQL/hash/source/artifact proof PASS: exactly legacy/replacement/mirror/payment, nine lines, exact mirror and distinct immutable dates, one canonical posting marker and one payment, old rows/files unchanged. All processes stopped; both worker trees integrated/hash-verified/recoverably removed. No new MCP repair tool, new service issuance, actual revocation or fresh MFA claim. Full epic/remaining717 scope remains OPEN.",
+      "evidence_key": "invoice_repair150"
     }
   ],
   "scope_clarifications": [
