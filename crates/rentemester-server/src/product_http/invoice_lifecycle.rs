@@ -4,7 +4,7 @@ use rentemester_storage::invoice_lifecycle::{self as storage, Kind};
 use serde::de::{self, MapAccess, SeqAccess, Visitor};
 use serde::{Deserialize, Deserializer};
 use std::fmt;
-struct Unique(Value);
+pub(super) struct Unique(pub(super) Value);
 impl<'de> Deserialize<'de> for Unique {
     fn deserialize<D: Deserializer<'de>>(d: D) -> Result<Self, D::Error> {
         struct V;

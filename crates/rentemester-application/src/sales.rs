@@ -10,6 +10,10 @@ use rentemester_storage::sales::{self, Artifact, Customer, Post};
 use rusqlite::Connection;
 use serde_json::Value;
 pub enum Action<'a> {
+    OriginalClaims(
+        rentemester_storage::invoice_claims_original::Kind,
+        &'a Value,
+    ),
     Lifecycle(rentemester_storage::invoice_lifecycle::Kind, &'a Value),
     Original(
         rentemester_storage::invoice_original::Kind,
@@ -100,6 +104,7 @@ pub fn execute(
         year,
     } = request;
     let permission = match action {
+        Action::OriginalClaims(kind, _) => crate::invoice_claims_original::permission(kind),
         Action::Lifecycle(kind, _) => crate::invoice_lifecycle::permission(kind),
         Action::Contacts | Action::List | Action::Original(..) => Permission::CompanyRead,
         Action::DeleteCustomer(_, _)
@@ -128,11 +133,28 @@ pub fn execute(
         permission,
         matches!(
             action,
+            Action::OriginalClaims(kind, _) if kind.readonly()
+        ) || matches!(
+            action,
             Action::Preview(_)
                 | Action::Lifecycle(rentemester_storage::invoice_lifecycle::Kind::Render, _)
         ),
         |tx, actor| {
             Ok(match action {
+                Action::OriginalClaims(kind, body) => {
+                    Output::Json(crate::invoice_claims_original::apply(
+                        tx,
+                        guard,
+                        kind,
+                        body,
+                        crate::invoice_lifecycle::Context {
+                            slug,
+                            subject: actor,
+                            principal: rentemester_storage::idempotency::PrincipalKind::User,
+                            clock,
+                        },
+                    )?)
+                }
                 Action::Lifecycle(kind, body) => Output::Json(crate::invoice_lifecycle::apply(
                     tx,
                     guard,
@@ -309,6 +331,10 @@ pub fn execute_service(
         year,
     } = request;
     let (permission, mutation) = match action {
+        Action::OriginalClaims(kind, _) => (
+            crate::invoice_claims_original::permission(kind),
+            !kind.readonly(),
+        ),
         Action::Lifecycle(kind, _) => (
             crate::invoice_lifecycle::permission(kind),
             !matches!(kind, rentemester_storage::invoice_lifecycle::Kind::Render),
@@ -338,6 +364,20 @@ pub fn execute_service(
         mutation,
         |tx, subject, _| {
             let output = match action {
+                Action::OriginalClaims(kind, body) => {
+                    Output::Json(crate::invoice_claims_original::apply(
+                        tx,
+                        guard,
+                        kind,
+                        body,
+                        crate::invoice_lifecycle::Context {
+                            slug,
+                            subject: subject,
+                            principal: PrincipalKind::ServiceAccount,
+                            clock,
+                        },
+                    )?)
+                }
                 Action::Lifecycle(kind, body) => Output::Json(crate::invoice_lifecycle::apply(
                     tx,
                     guard,

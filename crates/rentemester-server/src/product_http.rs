@@ -74,6 +74,7 @@ mod document_party_links;
 mod sales;
 mod invoice_original;
 mod invoice_lifecycle;
+mod invoice_claims_original;
 mod invoice_email;
 mod supplier_commitments;
 mod vat;
@@ -114,6 +115,17 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
         pdf_workers: Arc::new(Semaphore::new(4)),
     };
     Router::new()
+        .route("/api/companies/{slug}/invoices/original/remind",post(invoice_claims_original::handle))
+        .route("/api/companies/{slug}/invoices/original/post-reminder",post(invoice_claims_original::handle))
+        .route("/api/companies/{slug}/invoices/original/compensation",post(invoice_claims_original::handle))
+        .route("/api/companies/{slug}/invoices/original/claim-compensation",post(invoice_claims_original::handle))
+        .route("/api/companies/{slug}/invoices/original/post-compensation",post(invoice_claims_original::handle))
+        .route("/api/companies/{slug}/invoices/original/interest",post(invoice_claims_original::handle))
+        .route("/api/companies/{slug}/invoices/original/claim-interest",post(invoice_claims_original::handle))
+        .route("/api/companies/{slug}/invoices/original/post-interest",post(invoice_claims_original::handle))
+        .route("/api/companies/{slug}/invoices/original/interest-correction",post(invoice_claims_original::handle))
+        .route("/api/companies/{slug}/invoices/original/post-interest-correction",post(invoice_claims_original::handle))
+        .route("/api/companies/{slug}/invoices/original/settle-claim-bank",post(invoice_claims_original::handle))
         .route("/api/companies/{slug}/invoices/original/apply-payment",post(invoice_lifecycle::handle))
         .route("/api/companies/{slug}/invoices/original/repair-posting",post(invoice_lifecycle::handle))
         .route("/api/companies/{slug}/invoices/original/issue",post(invoice_lifecycle::handle))
