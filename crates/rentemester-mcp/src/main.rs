@@ -1,8 +1,8 @@
-mod accrual_original;
 //! Bounded MCP 2025-11-25 stdio adapter. Wire references:
 //! https://modelcontextprotocol.io/specification/2025-11-25/basic/transports
 //! https://modelcontextprotocol.io/specification/2025-11-25/basic/lifecycle
 //! https://modelcontextprotocol.io/specification/2025-11-25/server/tools
+mod accrual_original;
 mod expense_original;
 mod recurring_original;
 mod invoice_claims_original;
