@@ -320,7 +320,7 @@ fn service_key_uses_existing_auth_and_never_infers_actor() {
         assert!(
             request
                 .to_lowercase()
-                .contains("authorization: bearer rm_svc_synthetic_process")
+                .contains("x-rentemester-service-key: rm_svc_synthetic_process")
         );
         assert!(request.ends_with("{\"confirm\":true}"));
         assert!(!request.contains("expectedActor"));
