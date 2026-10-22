@@ -31,6 +31,7 @@ mod accountant;
 mod reminder_claims;
 mod accruals;
 mod accrual_original;
+mod asset_original;
 mod assets;
 mod bank;
 mod bank_original;
@@ -124,6 +125,10 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
         pdf_workers: Arc::new(Semaphore::new(4)),
     };
     Router::new()
+        .route("/api/companies/{slug}/asset/original/register", post(asset_original::handle))
+        .route("/api/companies/{slug}/asset/original/{id}/depreciate", post(asset_original::handle))
+        .route("/api/companies/{slug}/asset/original/write-off", post(asset_original::handle))
+        .route("/api/companies/{slug}/asset/original/register-report", get(asset_original::handle))
         .route("/api/companies/{slug}/accrual/original/register", post(accrual_original::handle))
         .route("/api/companies/{slug}/accrual/original/{id}/recognize", post(accrual_original::handle))
         .route("/api/companies/{slug}/accrual/original/register-report", get(accrual_original::handle))
