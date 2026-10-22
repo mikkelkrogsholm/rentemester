@@ -534,6 +534,8 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
         .route("/api/companies/{slug}/documents", get(documents::list))
         .route("/api/companies/{slug}/documents/{id}/invoice-extraction",get(invoice_extraction::handle))
         .route("/api/companies/{slug}/documents/{id}/extract-invoice",post(invoice_extraction::handle))
+        .route("/api/companies/{slug}/expense/original/vat-preflight/{id}",get(expense_original::handle).post(expense_original::handle))
+        .route("/api/companies/{slug}/expense/original/book",post(expense_original::handle))
         .route("/api/companies/{slug}/documents/original/{id}/invoice-extraction",get(invoice_extraction_original::handle))
         .route("/api/companies/{slug}/documents/original/{id}/extract-invoice",post(invoice_extraction_original::handle))
         .route("/api/companies/{slug}/documents/{id}/parse",post(document_pdf::handle))
@@ -975,3 +977,5 @@ mod consolidation;
 mod journal_original;
 
 mod exceptions_original;
+
+mod expense_original;
