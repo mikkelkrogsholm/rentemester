@@ -102,11 +102,20 @@ pub fn book(
             })?;
             Ok(result)
         }
-        Outcome::Refused { code } => Err(Error::new(
-            code,
-            "Expense request key refused; inspect its retained outcome",
-        )
-        .into()),
+        // The idempotency engine wrote only a diagnostic audit. Commit that
+        // refusal as a definite source result, never a financial mutation.
+        Outcome::Refused { code } => {
+            let message = match code {
+                "IDEMPOTENCY_CONFLICT" => {
+                    "idempotency key was already used with a different validated payload"
+                }
+                "IDEMPOTENCY_OUTCOME_EXPIRED" => {
+                    "idempotency outcome has expired; inspect canonical state and use a new key only for a new operation"
+                }
+                _ => "expense request key refused; inspect its retained outcome",
+            };
+            Ok(json!({"ok":false,"code":code,"errors":[message],"appliedRules":[]}))
+        }
     }
 }
 

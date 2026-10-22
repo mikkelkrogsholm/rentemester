@@ -237,10 +237,17 @@ fn optional_key_replays_typed_atomic_outcome_but_conflicts_and_new_keys_cannot_r
             latest,
             1_792_320_000_002
         )
-        .unwrap_err()
-        .error
-        .code,
+        .unwrap()["code"],
         "IDEMPOTENCY_CONFLICT"
+    );
+    assert_eq!(
+        tx.query_row::<i64, _, _>(
+            "SELECT count(*) FROM audit_log WHERE event_type='idempotency_conflict'",
+            [],
+            |r| r.get(0)
+        )
+        .unwrap(),
+        1
     );
     input.idempotency_key = None;
     assert!(
