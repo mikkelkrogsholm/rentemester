@@ -301,6 +301,8 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
         .route("/api/companies/{slug}/annual-report", get(annual_report::read))
         .route("/api/companies/{slug}/annual-exports", get(annual_exports::read))
         .route("/api/companies/{slug}/obligations", get(obligations::read))
+        .route("/api/companies/{slug}/exceptions/original", get(exceptions_original::handle))
+        .route("/api/companies/{slug}/exceptions/original/{id}/resolve", post(exceptions_original::handle))
         .route("/api/companies/{slug}/exceptions", get(exceptions::handle))
         .route(
             "/api/companies/{slug}/exceptions/{id}/resolve",
@@ -955,3 +957,5 @@ mod eliminations;
 mod consolidation;
 
 mod journal_original;
+
+mod exceptions_original;

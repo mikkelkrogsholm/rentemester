@@ -109,6 +109,23 @@ pub fn resolve(
     input: &Resolve,
     actor: &str,
 ) -> Result<Value, Error> {
+    resolve_principal(tx, id, input, Principal::Human(actor))
+}
+/// Trusted identity kind and subject supplied only by the current authority fence.
+pub enum Principal<'a> {
+    Human(&'a str),
+    ServiceAccount(&'a str),
+}
+pub fn resolve_principal(
+    tx: &Transaction<'_>,
+    id: i64,
+    input: &Resolve,
+    principal: Principal<'_>,
+) -> Result<Value, Error> {
+    let actor = match principal {
+        Principal::Human(subject) => format!("user:{subject}"),
+        Principal::ServiceAccount(subject) => format!("service-account:{subject}"),
+    };
     crate::journal_post::require_current(tx)?;
     if id <= 0 || id > 9_007_199_254_740_991 || input.note.as_ref().is_some_and(|s| s.len() > 4096)
     {
@@ -137,12 +154,12 @@ pub fn resolve(
         .as_deref()
         .map(str::trim)
         .filter(|s| !s.is_empty());
-    let changed=tx.execute("UPDATE exceptions SET status='resolved',resolved_at=CURRENT_TIMESTAMP,resolved_by=?1,resolution_note=?2 WHERE id=?3 AND status='open'",params![format!("user:{actor}"),note,id]).map_err(invalid)?;
+    let changed=tx.execute("UPDATE exceptions SET status='resolved',resolved_at=CURRENT_TIMESTAMP,resolved_by=?1,resolution_note=?2 WHERE id=?3 AND status='open'",params![actor,note,id]).map_err(invalid)?;
     if changed != 1 {
         return Err(refused("exception state changed; refresh the queue"));
     }
-    let evidence = json!({"exceptionId":id,"type":kind,"message":message,"requiredAction":required_action,"note":note,"resolvedBy":format!("user:{actor}"),"effect":"review_only_no_posting"});
-    tx.execute("INSERT INTO audit_log(event_type,entity_type,entity_id,message,actor) VALUES('exception_resolve','exception',?1,?2,?3)",params![id.to_string(),evidence.to_string(),format!("user:{actor}")]).map_err(invalid)?;
+    let evidence = json!({"exceptionId":id,"type":kind,"message":message,"requiredAction":required_action,"note":note,"resolvedBy":actor,"effect":"review_only_no_posting"});
+    tx.execute("INSERT INTO audit_log(event_type,entity_type,entity_id,message,actor) VALUES('exception_resolve','exception',?1,?2,?3)",params![id.to_string(),evidence.to_string(),actor]).map_err(invalid)?;
     Ok(json!({"id":id,"resolved":true}))
 }
 #[cfg(test)]
@@ -335,5 +352,134 @@ mod tests {
                 .iter()
                 .any(|r| r["id"] == 3)
         );
+    }
+}
+
+#[cfg(test)]
+mod original_tests {
+    use super::*;
+    #[test]
+    fn exception_original_resolution_preserves_genuine_forced_open_obligations() {
+        let mut control = rusqlite::Connection::open_in_memory().unwrap();
+        let mut db = rusqlite::Connection::open_in_memory().unwrap();
+        crate::fresh::initialize_empty_pair(
+            &mut control,
+            &mut db,
+            "Synthetic Exception Obligations",
+        )
+        .unwrap();
+        db.execute_batch("UPDATE companies SET cvr='87654321',vat_period_type='quarter'; INSERT INTO accounts(account_no,name,type,normal_balance) VALUES('B','Bank','asset','debit'),('R','Receivable','asset','debit'),('C','Creditor','liability','credit'); INSERT INTO account_role_mappings(role,account_no,version,confirmed_by) VALUES('bank','B',1,'synthetic'),('debtors','R',1,'synthetic'),('creditors','C',1,'synthetic'); INSERT INTO documents(id,source,sha256_hash,invoice_date,status,document_type) VALUES(91,'synthetic','synthetic-source-hash','2026-08-01','ingested','other'); INSERT INTO exceptions(id,type,severity,status,related_document_id,message) VALUES(92,'synthetic-review','high','open',91,'Human review remains necessary');").unwrap();
+        let tx = db
+            .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
+            .unwrap();
+        let packet = crate::periods::compute(&tx, "2026-07-01", "2026-09-30", Ok(vec![])).unwrap();
+        assert!(packet["blockers"].as_i64().unwrap() > 0);
+        let principal = crate::periods::Principal::Human("reviewer");
+        let review = crate::periods::review_principal(&tx, &packet, principal).unwrap();
+        let input = serde_json::from_value(json!({"periodStart":"2026-07-01","periodEnd":"2026-09-30","packetHash":packet["hash"],"reviewId":review["id"],"force":true,"reason":"Explicit synthetic waiver","confirm":true})).unwrap();
+        let closed = crate::periods::original::atomic(&tx, Some(&packet), || {
+            crate::periods::close_mcp(&tx, &input, &packet, principal, "2026-10-22")
+        })
+        .unwrap();
+        assert_eq!(closed["ok"], true, "{closed}");
+        let snapshot = || {
+            let mut q = tx
+                .prepare("SELECT * FROM period_close_open_items ORDER BY id")
+                .unwrap();
+            let n = q.column_count();
+            q.query_map([], |r| {
+                (0..n)
+                    .map(|i| r.get::<_, rusqlite::types::Value>(i))
+                    .collect::<Result<Vec<_>, _>>()
+            })
+            .unwrap()
+            .collect::<Result<Vec<_>, _>>()
+            .unwrap()
+        };
+        let obligations = snapshot();
+        assert!(!obligations.is_empty());
+        assert_eq!(
+            resolve_principal(
+                &tx,
+                92,
+                &Resolve {
+                    note: Some(" first ".into())
+                },
+                Principal::ServiceAccount("reviewer")
+            )
+            .unwrap()["resolved"],
+            true
+        );
+        assert_eq!(snapshot(), obligations);
+        let first = list_with_archived(&tx, "synthetic", "resolved", true).unwrap();
+        assert_eq!(first["rows"][0]["resolvedBy"], "service-account:reviewer");
+        assert_eq!(first["rows"][0]["resolutionNote"], "first");
+        assert_eq!(
+            resolve(
+                &tx,
+                92,
+                &Resolve {
+                    note: Some("overwrite".into())
+                },
+                "service-account:human"
+            )
+            .unwrap()["resolved"],
+            false
+        );
+        assert_eq!(
+            list_with_archived(&tx, "synthetic", "resolved", true).unwrap(),
+            first
+        );
+        let changes = tx.total_changes();
+        let error = resolve(&tx, 999, &Resolve { note: None }, "reviewer").unwrap_err();
+        assert_eq!(error.message, "exception 999 does not exist");
+        assert_eq!(tx.total_changes(), changes);
+        assert_eq!(snapshot(), obligations);
+        assert_eq!(
+            tx.query_row(
+                "SELECT count(*) FROM audit_log WHERE event_type='exception_resolve'",
+                [],
+                |r| r.get::<_, i64>(0)
+            )
+            .unwrap(),
+            1
+        );
+        assert_eq!(
+            tx.query_row("SELECT count(*) FROM journal_entries", [], |r| r
+                .get::<_, i64>(0))
+                .unwrap(),
+            0
+        );
+    }
+    #[test]
+    fn exception_original_effective_reopened_visibility_and_typed_human_service_like_id() {
+        let mut control = rusqlite::Connection::open_in_memory().unwrap();
+        let mut db = rusqlite::Connection::open_in_memory().unwrap();
+        crate::fresh::initialize_empty_pair(&mut control, &mut db, "Synthetic Reopen").unwrap();
+        db.execute_batch("INSERT INTO accounting_periods(id,period_start,period_end,kind,status) VALUES(1,'2026-01-01','2026-01-31','custom','closed'); INSERT INTO bank_transactions(id,transaction_date,text,amount,currency) VALUES(1,'2026-01-01','Synthetic',1,'DKK'); INSERT INTO exceptions(id,type,severity,message,related_bank_transaction_id) VALUES(1,'SYNTHETIC','low','Synthetic',1); INSERT INTO exceptions(id,type,severity,message) VALUES(2,'UNDATED','low','Synthetic undated');").unwrap();
+        let tx = db
+            .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
+            .unwrap();
+        assert_eq!(list(&tx, "synthetic", "open").unwrap()["count"], 1);
+        tx.execute_batch("INSERT INTO audit_log(event_type,entity_type,entity_id,message,actor) VALUES('period_reopen','accounting_period','1','Synthetic reopen','user:reviewer');").unwrap();
+        let visible = list(&tx, "synthetic", "open").unwrap();
+        assert_eq!(visible["count"], 2);
+        assert_eq!(visible["rows"][1]["archived"], false);
+        assert_eq!(visible["rows"][1].as_object().unwrap().len(), 15);
+        resolve(
+            &tx,
+            1,
+            &Resolve {
+                note: Some("   ".into()),
+            },
+            "service-account:human",
+        )
+        .unwrap();
+        let resolved = list(&tx, "synthetic", "resolved").unwrap();
+        assert_eq!(
+            resolved["rows"][0]["resolvedBy"],
+            "user:service-account:human"
+        );
+        assert!(resolved["rows"][0]["resolutionNote"].is_null());
     }
 }
