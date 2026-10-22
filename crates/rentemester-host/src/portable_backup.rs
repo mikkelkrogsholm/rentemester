@@ -1766,3 +1766,6 @@ fn archive_transfer_state(
     )?;
     rentemester_storage::workspace_transfer::current(&db)
 }
+
+#[cfg(test)]
+mod recurring_workspace_tests;
