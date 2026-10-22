@@ -38,6 +38,11 @@ fn decode(raw: &str) -> Result<Metadata, Error> {
     metadata.validate()?;
     Ok(metadata)
 }
+// Older unlinked metadata may be incomplete; only the new enrichment must meet
+// current ingest requirements. Its immutable original bytes/hash remain bound.
+fn original_metadata(raw: &str) -> Result<Metadata, Error> {
+    serde_json::from_str(raw).map_err(|_| refused("invalid original document metadata JSON"))
+}
 fn subset(old: &Value, new: &Value) -> bool {
     match old {
         Value::Null => true,
@@ -65,7 +70,11 @@ fn eligible(tx: &Transaction<'_>, id: i64, strict_links: bool) -> Result<String,
     if linked {
         return Err(refused("document is linked to accounting evidence"));
     }
-    decode(&payload)?;
+    if strict_links {
+        decode(&payload)?;
+    } else {
+        original_metadata(&payload)?;
+    }
     Ok(payload)
 }
 /// Projection shared by mutation and semantic history checks, never physical PDF bytes.
@@ -178,7 +187,7 @@ pub fn enrich(
             ))
         };
     }
-    if !subset(&normalized(&decode(&original)?)?, &value) {
+    if !subset(&normalized(&original_metadata(&original)?)?, &value) {
         return Err(refused(
             "existing document metadata conflicts with enrichment",
         ));
@@ -359,7 +368,7 @@ pub fn validate_history(db: &Connection) -> Result<(), Error> {
         let enriched: String = r.get(3).map_err(sql)?;
         let digest: String = r.get(4).map_err(sql)?;
         let current: String = r.get(5).map_err(sql)?;
-        let old = decode(&original)?;
+        let old = original_metadata(&original)?;
         let new = decode(&enriched)?;
         let old = normalized(&old)?;
         let value = normalized(&new)?;

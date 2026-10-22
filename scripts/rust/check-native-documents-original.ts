@@ -96,14 +96,14 @@ export function createDocumentsOriginalProof(base: string, work: string, pdf: (s
       for (const kind of ['enrich', 'context', 'blank', 'malformed', 'force']) {
         const bytes = kind === 'malformed' ? Buffer.from('%PDF-1.4\nSynthetic malformed original165\n') : pdf(kind === 'blank' ? '' : `BT\n/F1 18 Tf\n72 720 Td\n(Synthetic original165 ${kind}) Tj\nET\n`);
         paths[kind] = join(work, `synthetic-original165-${kind}.pdf`); writeFileSync(paths[kind], bytes, { mode: 0o600, flag: 'wx' });
-        let m: any = ['blank', 'malformed'].includes(kind) ? { source: 'Synthetic original165 ' + kind, documentType: 'cash_register_receipt' } : { ...metadata, invoiceNo: kind === 'enrich' ? 'SYN-165-ENRICH' : 'SYN-165-CONTEXT', ...(kind !== 'enrich' ? { danishSimplifiedPurchaseInvoice: true } : {}) };
+        let m: any = ['blank', 'malformed'].includes(kind) ? { source: 'Synthetic original165 ' + kind, documentType: 'cash_register_receipt' } : { ...metadata, invoiceNo: kind === 'enrich' ? 'SYN-165-ENRICH' : 'SYN-165-CONTEXT', ...(kind !== 'enrich' ? { danishSimplifiedPurchaseInvoice: true } : { documentType: 'cash_register_receipt' }) };
         if (kind === 'context') { m = { ...m, sender: { name: 'Explicit Supplier165' } }; }
         if (kind === 'force') rpc('documents_ingest', { company: 'synthetic', filePath: paths[kind], metadata: m, confirm: true }, 'refused');
         const value = ['enrich', 'blank'].includes(kind) ? cli('ingest', ['--file', paths[kind], '--metadata', local(kind + '.json', m)]) : rpc('documents_ingest', { company: 'synthetic', filePath: paths[kind], metadata: m, ...(kind === 'context' ? { vendorId } : {}), ...(kind === 'force' ? { force: true } : {}), confirm: true }).data;
         need(value.ok !== false && value.documentId > 0 && value.sha256 === hash(bytes) && value.storedPath === null, 'flat ingest receipt ' + kind); documents[kind] = value;
       }
       rpc('documents_ingest', { company: 'synthetic', filePath: paths.context, metadata: { ...metadata, invoiceNo: 'UNIQUE', danishSimplifiedPurchaseInvoice: true }, force: true, confirm: true }, 'refused');
-      const enriched = { ...metadata, invoiceNo: 'SYN-165-ENRICH', recipient: { name: company.name, address: company.address, vatOrCvr: company.cvr } }, enrichedFile = local('enriched.json', enriched);
+      const enriched = { ...metadata, documentType: 'cash_register_receipt', invoiceNo: 'SYN-165-ENRICH', recipient: { name: company.name, address: company.address, vatOrCvr: company.cvr } }, enrichedFile = local('enriched.json', enriched);
       need(cli('enrich', ['--document-id', String(documents.enrich.documentId), '--metadata', enrichedFile, '--confirm', 'yes']).enriched === true, 'CLI enrichment');
       need(rpc('documents_enrich', { company: 'synthetic', documentId: documents.enrich.documentId, metadata: enriched, confirm: true }).data.enriched === false, 'MCP enrichment repeat');
       rpc('documents_enrich', { company: 'synthetic', documentId: documents.enrich.documentId, metadata: { ...enriched, paymentDetails: 'conflicting repeat' }, confirm: true }, 'refused');
