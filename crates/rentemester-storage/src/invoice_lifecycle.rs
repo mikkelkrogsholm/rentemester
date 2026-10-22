@@ -433,10 +433,15 @@ pub fn prepare(
     if matches!(kind, Kind::Issue) {
         let full = source["invoiceType"] == "full";
         let standard = source["vatTreatment"].as_str().unwrap_or("standard") == "standard";
+        let explicit_tax = source["lines"].as_array().is_some_and(|lines| {
+            lines
+                .iter()
+                .any(|line| line.get("taxClassification").is_some())
+        });
         if source["totals"].get("grossAmount").is_none()
             || (full && source["totals"].get("netAmount").is_none())
             || (standard
-                && (source["totals"].get("vatRate").is_none()
+                && ((!explicit_tax && source["totals"].get("vatRate").is_none())
                     || (source["totals"].get("vatAmount").is_none()
                         && source["totals"]["vatComputationBasis"] != "VAT_20_OF_GROSS")))
         {
@@ -447,6 +452,23 @@ pub fn prepare(
     }
     if matches!(kind, Kind::Issue) {
         let t = source.get("totals").cloned();
+        if let Some(rate) = t.as_ref().and_then(|t| t.get("vatRate"))
+            && source["vatTreatment"].as_str().unwrap_or("standard") == "standard"
+            && !source["lines"].as_array().is_some_and(|lines| {
+                lines
+                    .iter()
+                    .any(|line| line.get("taxClassification").is_some())
+            })
+        {
+            // The common issuance engine currently admits only25 percent taxable VAT.
+            // Preserve this assertion explicitly rather than falling back to its default.
+            if rate.as_f64() != Some(0.25) {
+                return Err(input_error(
+                    "native taxable invoices currently support 25% VAT",
+                ));
+            }
+            source["vatRatePercent"] = json!(25);
+        }
         if let Some(rate) = t.as_ref().and_then(|t| t.get("fxRateToDkk")) {
             source["fxRateToDkk"] = rate.clone();
         }

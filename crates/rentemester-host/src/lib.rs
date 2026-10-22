@@ -1414,3 +1414,6 @@ mod service_bank;
 mod service_expense;
 
 mod dashboard_json;
+
+#[cfg(all(test, target_os = "macos"))]
+mod recurring_original_tests;

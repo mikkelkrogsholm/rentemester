@@ -1,4 +1,5 @@
 //! Immutable recurring specifications; generation is an explicit fenced transaction.
+pub mod original;
 use crate::{invalid, sales};
 use rentemester_engine::{
     Error,
@@ -239,6 +240,18 @@ pub fn prepare(
         return Err(refused("confirm an as-of date no later than today"));
     }
     let t = load(tx, id)?;
+    if t.payload.get("invoiceType").is_some() {
+        return original::prepare(
+            tx,
+            &original::Generate {
+                template_id: id,
+                as_of_date: i.as_of_date.clone(),
+                confirm: i.confirm,
+            },
+            today,
+            now,
+        );
+    }
     if t.channel != "manual" {
         return Err(refused("only explicit manual templates may generate here"));
     }

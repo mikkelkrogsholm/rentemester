@@ -64,6 +64,7 @@ mod backup_remote;
 mod workspace_transfer;
 mod restored_receipts;
 mod recurring_invoices;
+mod recurring_original;
 mod scheduled_recurring;
 mod hosted_recurring;
 mod reviewed_bookkeeping;
@@ -336,6 +337,9 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
         .route("/api/companies/{slug}/scheduled-recurring/catch-up", post(scheduled_recurring::handle))
         .route("/api/companies/{slug}/scheduled-recurring/skip", post(scheduled_recurring::handle))
         .route("/api/companies/{slug}/scheduled-recurring/dispatch", post(scheduled_recurring::handle))
+        .route("/api/companies/{slug}/recurring-invoices/original/list", get(recurring_original::handle))
+        .route("/api/companies/{slug}/recurring-invoices/original/create", post(recurring_original::handle))
+        .route("/api/companies/{slug}/recurring-invoices/original/generate", post(recurring_original::handle))
         .route(
             "/api/companies/{slug}/recurring-invoices",
             get(recurring_invoices::handle).post(recurring_invoices::handle),
