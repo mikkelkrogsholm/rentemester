@@ -268,6 +268,7 @@ pub async fn call(api: &ApiClient, name: &str, args: Value) -> Result<Value, &'s
     if !args.is_object() {
         return Err("expected arguments object");
     }
+    if crate::periods::original(name) { return crate::periods::call_original(api,name,args).await; }
     if crate::journal_original::accepts(name) { return crate::journal_original::call(api,name,args).await; }
     if name=="invoice_validate" {return crate::invoice_validation::call(args);}
     if crate::recurring_original::accepts(name) {return crate::recurring_original::call(api,name,args).await;}

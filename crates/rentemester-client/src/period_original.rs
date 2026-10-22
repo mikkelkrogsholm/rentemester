@@ -6,12 +6,12 @@ use serde_json::{Value, json};
 const MAX_ID: i64 = 9_007_199_254_740_991;
 const RULE: &str = "DK-BOOKKEEPING-PERIOD-LOCK-001";
 #[derive(Clone, Copy)]
-enum Operation { Readiness, Status(i64), Review, Close, Reopen }
+enum Operation { Readiness, Status(i64), Review, Close, Reopen, McpReadiness, McpStatus(i64), McpList, McpReview, McpClose }
 impl Operation {
     fn suffix(self) -> &'static str {
-        match self { Self::Readiness => "readiness", Self::Status(_) => "status", Self::Review => "review", Self::Close => "close", Self::Reopen => "reopen" }
+        match self { Self::Readiness | Self::McpReadiness => "readiness", Self::Status(_) | Self::McpStatus(_) => "status", Self::Review => "review", Self::Close => "close", Self::Reopen => "reopen", Self::McpList => "list", Self::McpReview => "review-current", Self::McpClose => "mcp-close" }
     }
-    fn mutation(self) -> bool { matches!(self, Self::Review | Self::Close | Self::Reopen) }
+    fn mutation(self) -> bool { matches!(self, Self::Review | Self::Close | Self::Reopen | Self::McpReview | Self::McpClose) }
 }
 fn date(value: &Value) -> bool {
     value.as_str().is_some_and(|s| {
@@ -32,12 +32,12 @@ fn schema(op: Operation) -> Value {
     let text = json!({"type":"string","maxLength":4096});
     let mut fields = json!({"periodStart":date,"periodEnd":date,"confirm":{"const":true}});
     let mut required = vec!["periodStart", "periodEnd", "confirm"];
-    if !matches!(op, Operation::Review) {
+    if !matches!(op, Operation::Review | Operation::McpReview) {
         fields["kind"] = json!({"type":"string","enum":["vat_period","vat_quarter","fiscal_year","custom"]});
     }
     match op {
         Operation::Review => { fields["packetHash"] = hash; required.push("packetHash"); }
-        Operation::Close => {
+        Operation::Close | Operation::McpClose => {
             fields["packetHash"] = hash;
             fields["reviewId"] = json!({"type":"integer","minimum":1,"maximum":MAX_ID});
             fields["status"] = json!({"type":"string","enum":["closed","reported"]});
@@ -53,6 +53,7 @@ fn schema(op: Operation) -> Value {
 }
 fn input(op: Operation, bytes: &[u8], confirmed: bool) -> Result<Value, Error> {
     if !confirmed { return Err(Error::InvalidInput("explicit period lifecycle confirmation required")); }
+    if matches!(op, Operation::McpReview | Operation::McpClose) && bytes.len() > 65536 { return Err(Error::InvalidInput("period request exceeds65536 bytes")); }
     body(bytes, &schema(op))?;
     let value: Value = serde_json::from_slice(bytes).map_err(|_| Error::InvalidInput("expected JSON object"))?;
     if !date(&value["periodStart"]) || !date(&value["periodEnd"])
@@ -95,12 +96,15 @@ fn success(v: &Value, op: Operation, expected: &Value) -> bool {
     match op {
         Operation::Review => review(v) && v["packet"]["hash"] == expected["packetHash"]
             && v["packet"]["periodStart"] == expected["periodStart"] && v["packet"]["periodEnd"] == expected["periodEnd"],
-        Operation::Readiness => v["ok"] == true && packet(&v["packet"])
+        Operation::McpReview => v["ok"] == true && review(&v["review"])
+            && v["review"]["packet"]["periodStart"] == expected["periodStart"] && v["review"]["packet"]["periodEnd"] == expected["periodEnd"],
+        Operation::McpList => period_list(v),
+        Operation::Readiness | Operation::McpReadiness => v["ok"] == true && packet(&v["packet"])
             && v["packet"]["periodStart"] == expected["periodStart"] && v["packet"]["periodEnd"] == expected["periodEnd"],
-        Operation::Status(requested) => v["ok"] == true && v.get("review").is_some_and(|r| r.is_null() || (review(r) && r["id"] == requested))
+        Operation::Status(requested) | Operation::McpStatus(requested) => v["ok"] == true && v.get("review").is_some_and(|r| r.is_null() || (review(r) && r["id"] == requested))
             && v.get("status").is_none_or(|s| s == "unavailable" && v["review"].is_null() && v["code"] == "PERIOD_CLOSE_REVIEW_SCHEMA_UNAVAILABLE")
             && v.get("code").is_none_or(|c| c == "PERIOD_CLOSE_REVIEW_SCHEMA_UNAVAILABLE" && v["status"] == "unavailable"),
-        Operation::Close | Operation::Reopen => {
+        Operation::Close | Operation::McpClose | Operation::Reopen => {
             let expected_kind = expected["kind"].as_str().unwrap_or("vat_period");
             let expected_kind = if expected_kind == "vat_quarter" { "vat_period" } else { expected_kind };
             v["ok"] == true && id(&v["periodId"]) && v.get("id").is_none()
@@ -108,15 +112,45 @@ fn success(v: &Value, op: Operation, expected: &Value) -> bool {
                 && kind(&v["kind"]) && v["kind"] == expected_kind
                 && v["errors"].as_array().is_some_and(Vec::is_empty)
                 && v["appliedRules"] == json!([RULE])
-                && v.get("reference").is_none_or(Value::is_string)
+                && v.get("reference").is_none_or(|r| r.is_string() || (matches!(op, Operation::McpClose) && r.is_null()))
                 && v.get("readinessPacket").is_none_or(packet)
-                && if matches!(op, Operation::Close) {
+                && if matches!(op, Operation::Close | Operation::McpClose) {
                     v["status"] == expected["status"].as_str().unwrap_or("closed")
                 } else { v["effectiveStatus"] == "open" && text(&v["reopenedBy"]) && text(&v["reason"]) }
         }
     }
 }
+fn period_list(v: &Value) -> bool {
+    v["ok"] == true && v["periods"].as_array().is_some_and(|rows| {
+        v["count"].as_u64() == Some(rows.len() as u64) && rows.iter().all(|r| {
+            id(&r["id"]) && date(&r["periodStart"]) && date(&r["periodEnd"]) && kind(&r["kind"])
+                && matches!(r["status"].as_str(), Some("open" | "closed" | "reported"))
+                && r.get("reference").is_some_and(|v| v.is_null() || v.is_string()) && text(&r["createdAt"])
+        }) && rows.windows(2).all(|pair| {
+            pair[0]["periodStart"].as_str() > pair[1]["periodStart"].as_str()
+                || (pair[0]["periodStart"] == pair[1]["periodStart"] && pair[0]["id"].as_i64() > pair[1]["id"].as_i64())
+        })
+    })
+}
 impl ApiClient {
+    pub async fn period_mcp_readiness(&self, company: &str, from: &str, to: &str) -> Result<Value, Error> {
+        let expected = json!({"periodStart":from,"periodEnd":to});
+        if !date(&expected["periodStart"]) || !date(&expected["periodEnd"]) { return Err(Error::InvalidInput("valid ISO period dates required")); }
+        self.period_original_request(company, Operation::McpReadiness, &[("from",from),("to",to)], None, expected).await
+    }
+    pub async fn period_mcp_status(&self, company: &str, review_id: i64) -> Result<Value, Error> {
+        if !(1..=MAX_ID).contains(&review_id) { return Err(Error::InvalidInput("positive safe review id required")); }
+        self.period_original_request(company, Operation::McpStatus(review_id), &[("reviewId", &review_id.to_string())], None, Value::Null).await
+    }
+    pub async fn period_mcp_list(&self, company: &str) -> Result<Value, Error> {
+        self.period_original_request(company, Operation::McpList, &[], None, Value::Null).await
+    }
+    pub async fn period_mcp_review(&self, company: &str, bytes: Vec<u8>, confirmed: bool) -> Result<Value, Error> {
+        self.period_original_write(company, Operation::McpReview, bytes, confirmed).await
+    }
+    pub async fn period_mcp_close(&self, company: &str, bytes: Vec<u8>, confirmed: bool) -> Result<Value, Error> {
+        self.period_original_write(company, Operation::McpClose, bytes, confirmed).await
+    }
     pub async fn period_original_readiness(&self, company: &str, from: &str, to: &str) -> Result<Value, Error> {
         let expected = json!({"periodStart":from,"periodEnd":to});
         if !date(&expected["periodStart"]) || !date(&expected["periodEnd"]) { return Err(Error::InvalidInput("valid ISO period dates required")); }
@@ -142,7 +176,7 @@ impl ApiClient {
     }
     // Family-local bounded parser: auth/error HTML and malformed business errors never escape.
     async fn period_original_request(&self, company: &str, op: Operation, query: &[(&str,&str)], body: Option<Vec<u8>>, expected: Value) -> Result<Value, Error> {
-        if self.service_key.is_some() { return Err(Error::InvalidInput("original periods require current human authority")); }
+        if self.service_key.is_some() && matches!(op, Operation::Readiness | Operation::Status(_) | Operation::Review | Operation::Close | Operation::Reopen) { return Err(Error::InvalidInput("original periods require current human authority")); }
         let path = company_path(company, &format!("periods/original/{}", op.suffix()))?;
         let mut response = self.send(if op.mutation() { Method::POST } else { Method::GET }, &path, query, body, self.cookie.as_ref().map(|v| v.as_str())).await?;
         let status = response.status();
@@ -182,14 +216,16 @@ mod tests {
         let count = Arc::new(AtomicUsize::new(0));
         let seen = count.clone();
         let handle = thread::spawn(move || {
-            let mut last = std::time::Instant::now();
-            while last.elapsed() < Duration::from_millis(400) {
+            let start = std::time::Instant::now();
+            let mut last = None;
+            while last.is_none_or(|t: std::time::Instant| t.elapsed() < Duration::from_millis(400)) {
+                assert!(start.elapsed() < Duration::from_secs(5), "mock startup deadline exceeded");
                 let (mut stream, _) = match listener.accept() {
                     Ok(s) => s,
                     Err(e) if e.kind() == std::io::ErrorKind::WouldBlock => { thread::sleep(Duration::from_millis(5)); continue; }
                     Err(e) => panic!("{e}"),
                 };
-                last = std::time::Instant::now();
+                last = Some(std::time::Instant::now());
                 seen.fetch_add(1, Ordering::SeqCst);
                 stream.set_nonblocking(false).unwrap();
                 stream.set_read_timeout(Some(Duration::from_secs(2))).unwrap();

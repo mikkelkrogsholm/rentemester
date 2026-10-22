@@ -1,7 +1,7 @@
 use serde_json::{Value, json};
 
 // Includes the original bindings already registered before recurring Group154.
-const EXPECTED_NATIVE_TOOLS: usize = 295;
+const EXPECTED_NATIVE_TOOLS: usize = 299;
 
 #[test]
 fn pdf_tools_require_confirmation_and_keep_reads_bounded() {
@@ -2212,3 +2212,6 @@ mod recurring_original;
 
 #[path="stdio/journal_original.rs"]
 mod journal_original;
+
+#[path="stdio/period_original.rs"]
+mod period_original;
