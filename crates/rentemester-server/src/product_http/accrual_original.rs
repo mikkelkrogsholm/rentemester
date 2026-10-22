@@ -199,8 +199,7 @@ fn valid_fields(fields: &Value, register: bool) -> bool {
                 }
             }
             "date" | "firstRecognitionDate" | "registrationDate" => {
-                if v
-                    .as_str()
+                if v.as_str()
                     .is_none_or(|s| rentemester_engine::fiscal_year::Date::parse(s).is_err())
                 {
                     return false;
