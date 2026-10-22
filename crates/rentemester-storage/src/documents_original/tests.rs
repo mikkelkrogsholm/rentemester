@@ -399,3 +399,96 @@ fn documents_original_legacy_incomplete_payload_can_be_enriched_without_weakenin
         .is_ok()
     );
 }
+
+#[test]
+fn documents_original_party_bound_payload_refuses_new_enrichment_and_retains_existing_noop() {
+    for enriched_first in [false, true] {
+        let (_dir, mut control, mut db) = fixture();
+        let ct = control
+            .transaction_with_behavior(TransactionBehavior::Immediate)
+            .unwrap();
+        let now = "2026-10-19T01:00:00.000Z";
+        let create = serde_json::from_value(json!({"partyId":"party-synthetic-supplier","kind":"organization","name":"Synthetic supplier","identifiers":[{"country":"DK","identifierKind":"dk_cvr","identifier":"12345678"}],"source":"synthetic-source","observedAt":now,"reviewAssertion":"Synthetic explicit source review","role":"vendor"})).unwrap();
+        let party = crate::parties::create(&ct, &create, "unused", "user:owner", now).unwrap();
+        crate::parties::role(
+            &ct,
+            &party,
+            "synthetic",
+            &crate::parties::Role {
+                role: "vendor".into(),
+                defaults: None,
+            },
+            "user:owner",
+            now,
+        )
+        .unwrap();
+        let tx = db
+            .transaction_with_behavior(TransactionBehavior::Immediate)
+            .unwrap();
+        let initial = metadata(false);
+        let id = register(&tx, &initial);
+        let mut incoming = serde_json::to_value(&initial).unwrap();
+        incoming["paymentDetails"] = json!("Synthetic retained payment facts");
+        let incoming: Metadata = serde_json::from_value(incoming).unwrap();
+        if enriched_first {
+            assert_eq!(
+                enrich(&tx, id, &incoming, "user:owner").unwrap()["enriched"],
+                true
+            );
+        }
+        let input = serde_json::from_value(json!({"documentId":id,"role":"vendor","jurisdiction":"DK","identifierKind":"dk_cvr","identifier":"12345678"})).unwrap();
+        let snapshot = crate::document_party_links::capture(&ct, &input, "synthetic").unwrap();
+        let planned = crate::document_party_links::plan(&tx, &input, &snapshot).unwrap();
+        let apply = serde_json::from_value(json!({"documentId":id,"role":"vendor","jurisdiction":"DK","identifierKind":"dk_cvr","identifier":"12345678","planHash":planned["plan"]["planHash"],"confirm":true})).unwrap();
+        crate::document_party_links::apply(&tx, &apply, &snapshot, "user:owner", "user:owner", now)
+            .unwrap();
+        let before: String = tx
+            .query_row(
+                "SELECT payload_json FROM documents WHERE id=?1",
+                [id],
+                |r| r.get(0),
+            )
+            .unwrap();
+        let result = enrich(&tx, id, &incoming, "user:owner");
+        if enriched_first {
+            assert_eq!(result.unwrap()["enriched"], false);
+        } else {
+            assert!(
+                result.is_err(),
+                "new metadata would invalidate immutable party history"
+            );
+        }
+        assert_eq!(
+            tx.query_row(
+                "SELECT payload_json FROM documents WHERE id=?1",
+                [id],
+                |r| r.get::<_, String>(0)
+            )
+            .unwrap(),
+            before
+        );
+        assert_eq!(
+            tx.query_row(
+                "SELECT count(*) FROM document_metadata_enrichments",
+                [],
+                |r| r.get::<_, i64>(0)
+            )
+            .unwrap(),
+            i64::from(enriched_first)
+        );
+        assert_eq!(
+            tx.query_row("SELECT count(*) FROM document_party_link_events", [], |r| r
+                .get::<_, i64>(0))
+                .unwrap(),
+            1
+        );
+        assert_eq!(
+            tx.query_row("SELECT count(*) FROM journal_entries", [], |r| r
+                .get::<_, i64>(0))
+                .unwrap(),
+            0
+        );
+        crate::document_party_links::validate_backup(&tx).unwrap();
+        crate::portable_backup::company(&tx).unwrap();
+    }
+}

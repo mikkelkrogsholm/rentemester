@@ -187,6 +187,17 @@ pub fn enrich(
             ))
         };
     }
+    // Both active and superseded party decisions bind the immutable payload.
+    // An existing same-hash enrichment above is a harmless no-op after linking.
+    let bound: bool = tx.query_row(
+        "SELECT EXISTS(SELECT 1 FROM document_party_link_events WHERE document_id=?1 UNION ALL SELECT 1 FROM document_party_resolution_events WHERE document_id=?1)",
+        [id], |r| r.get(0),
+    ).map_err(sql)?;
+    if bound {
+        return Err(refused(
+            "document party history already binds the current payload",
+        ));
+    }
     if !subset(&normalized(&original_metadata(&original)?)?, &value) {
         return Err(refused(
             "existing document metadata conflicts with enrichment",
