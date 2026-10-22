@@ -137,12 +137,12 @@ fn append(
 pub fn reserve(tx: &Transaction<'_>, id: i64, actor: &str) -> Result<Value, Error> {
     crate::journal_post::require_current(tx)?;
     validate_history(tx)?;
-    if let Some((event, kind, _)) = latest(tx, id)? {
-        if kind != "preflight_failed" || !typed(tx, event)? {
-            return Err(refused(
-                "delivery requires reconciliation; no new attempt permitted",
-            ));
-        }
+    if let Some((event, kind, _)) = latest(tx, id)?
+        && (kind != "preflight_failed" || !typed(tx, event)?)
+    {
+        return Err(refused(
+            "delivery requires reconciliation; no new attempt permitted",
+        ));
     }
     if !matches!(channel(tx, id)?.as_str(), "email" | "digisense") {
         return Err(refused("manual generation has no delivery"));
@@ -223,10 +223,11 @@ pub fn event(
             ));
         }
     }
-    if let Some((_, kind, Some(old))) = &previous {
-        if kind == "accepted_pending" && provider != Some(old.as_str()) {
-            return Err(refused("accepted provider identity cannot change"));
-        }
+    if let Some((_, kind, Some(old))) = &previous
+        && kind == "accepted_pending"
+        && provider != Some(old.as_str())
+    {
+        return Err(refused("accepted provider identity cannot change"));
     }
     append(tx, id, event, provider, message, actor)?;
     Ok(json!({"recorded":true}))

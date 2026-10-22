@@ -46,8 +46,8 @@ fn add_case(db: &mut Connection, channel: &str) -> Vec<artifact::Snapshot> {
     let hash = rentemester_runtime::backup_keys::digest(&json);
     let pdf = rentemester_engine::invoice_pdf::build(&pending.payload);
     let pdf_hash = rentemester_runtime::backup_keys::digest(&pdf);
-    let json_path = format!("documents/{hash}/synthetic.json");
-    let pdf_path = format!("documents/{pdf_hash}/synthetic.pdf");
+    let json_path = format!("documents/originals/{hash}.json");
+    let pdf_path = format!("documents/originals/{pdf_hash}.pdf");
     let issued = sales::register(
         &tx,
         &pending.payload,

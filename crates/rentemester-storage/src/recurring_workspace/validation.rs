@@ -221,7 +221,7 @@ pub fn validate_history(db: &Connection) -> Result<(), Error> {
                     .is_some_and(|s| text(s, 480)),
         )?;
         ensure(
-            value.to_string() == *raw
+            serde_json::to_vec(&value).map_err(|_| refused())? == raw.as_bytes()
                 && entity == "recurring_invoice_delivery_event"
                 && p.version == 1
                 && p.event_id == e.id

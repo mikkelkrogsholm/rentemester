@@ -64,6 +64,8 @@ struct Config {
     public_einvoice: std::collections::BTreeMap<String, rentemester_runtime::public_einvoice::Config>,
     #[serde(default)]
     invoice_mail: std::collections::BTreeMap<String, rentemester_runtime::invoice_mail::Config>,
+    #[serde(default)]
+    recurring_email_dry_run: std::collections::BTreeMap<String, rentemester_runtime::invoice_mail::SenderIdentity>,
 }
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -114,6 +116,7 @@ pub struct Backend {
     pub(crate) vies: rentemester_runtime::vies::Client,
     pub(crate) public_einvoice: std::collections::BTreeMap<String, rentemester_runtime::public_einvoice::Client>,
     pub(crate) invoice_mail: std::collections::BTreeMap<String, Mutex<rentemester_runtime::invoice_mail::SmtpSender>>,
+    pub(crate) recurring_email_dry_run: std::collections::BTreeMap<String, rentemester_runtime::invoice_mail::SenderIdentity>,
     keys: MfaKeyring,
     pub(crate) signer: EmailTokenSigner,
     pub(crate) links: RecoveryLinks,
@@ -414,6 +417,7 @@ impl Backend {
             mail_executor: None,
             imap_transport,
             invoice_mail,
+            recurring_email_dry_run: config.recurring_email_dry_run.clone(),
             public_einvoice,
             vies,
             signer,

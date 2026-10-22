@@ -241,120 +241,154 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
                 Err(_) => refused(StatusCode::SERVICE_UNAVAILABLE, "owner_unavailable"),
             };
         };
-        let Some(client) = client else {
-            return refused(
-                StatusCode::UNPROCESSABLE_ENTITY,
-                "public_einvoice_config_required",
-            );
-        };
-        let initial = {
-            let Ok(mut owner) = state.native.lock_company(&slug) else {
-                return refused(StatusCode::SERVICE_UNAVAILABLE, "owner_unavailable");
-            };
-            match owner.start_public_einvoice(&cookie, &SystemClock, intent, environment(client)) {
-                Ok(a) => a,
-                Err(_) => return refused(StatusCode::SERVICE_UNAVAILABLE, "owner_unavailable"),
-            }
-        };
-        let mut work = match next(initial) {
-            Ok(n) => n,
-            Err(r) => return *r,
-        };
-        // Setup has separate discovery and registration calls for company/outbound.
-        // Each result crosses current authority before the next network action.
-        // Send uses validation + delivery; status is one read. Never retry a phase.
-        for _ in 0..5 {
-            let admission = match work {
-                Next::Complete(v) => {
-                    return response(
-                        StatusCode::OK,
-                        if original { original_result(v) } else { v },
-                    );
-                }
-                Next::Pending(a) => *a,
-            };
-            let outcome = match admission.request() {
-                app::Request::FindCompany { cvr, name } => {
-                    let found = match client.registered_company(&provider_cvr(cvr), name) {
-                        Ok(Some(existing)) => app::Discovery::Found(existing.company_key),
-                        Ok(None) => app::Discovery::Missing,
-                        Err(_) => app::Discovery::Failed,
-                    };
-                    Outcome::CompanyFound(found)
-                }
-                app::Request::Company { cvr, name } => Outcome::Company(
-                    client
-                        .register_company(&provider_cvr(cvr), name)
-                        .ok()
-                        .map(|v| v.company_key),
-                ),
-                app::Request::FindOutbound {
-                    cvr,
-                    name,
-                    company_key,
-                } => {
-                    let found =
-                        match client.registered_outbound(company_key, &provider_cvr(cvr), name) {
-                            Ok(Some(existing))
-                                if existing.registered_on_network
-                                    && !existing.webhook_registered =>
-                            {
-                                app::Discovery::Found(())
-                            }
-                            Ok(Some(_)) => app::Discovery::Failed,
-                            Ok(None) => app::Discovery::Missing,
-                            Err(_) => app::Discovery::Failed,
-                        };
-                    Outcome::OutboundFound(found)
-                }
-                app::Request::Outbound {
-                    cvr,
-                    name: _,
-                    company_key,
-                } => Outcome::Outbound(
-                    client
-                        .register_outbound(
-                            company_key,
-                            &provider_cvr(cvr),
-                            provider::Network::Nemhandel,
-                        )
-                        .is_ok_and(|v| v.registered_on_network && !v.webhook_registered),
-                ),
-                app::Request::Validate { xml } => {
-                    Outcome::Validated(client.validate(xml).is_ok_and(|v| v.valid))
-                }
-                app::Request::Deliver { xml, company_key } => {
-                    Outcome::Delivered(match client.deliver(company_key, xml) {
-                        provider::DeliveryOutcome::Observed(o) => Some(observed(o)),
-                        provider::DeliveryOutcome::Unknown => None,
-                    })
-                }
-                app::Request::Observe {
-                    company_key,
-                    document_id,
-                } => Outcome::Observed(client.status(company_key, document_id).ok().map(observed)),
-            };
-            let attempt = {
-                let Ok(mut owner) = state.native.lock_company(&slug) else {
-                    return refused(StatusCode::SERVICE_UNAVAILABLE, "outcome_unknown");
-                };
-                match owner.finish_public_einvoice(&cookie, &SystemClock, admission, outcome) {
-                    Ok(a) => a,
-                    Err(_) => return refused(StatusCode::SERVICE_UNAVAILABLE, "outcome_unknown"),
-                }
-            };
-            work = match next(attempt) {
-                Ok(n) => n,
-                Err(r) => return *r,
-            };
+        match drive(&state, &slug, &cookie, intent) {
+            Ok(value) => response(
+                StatusCode::OK,
+                if original {
+                    original_result(value)
+                } else {
+                    value
+                },
+            ),
+            Err(failure) => *failure,
         }
-        refused(StatusCode::SERVICE_UNAVAILABLE, "outcome_unknown")
     })
     .await;
     match result {
         Ok(r) => r,
         Err(_) => refused(StatusCode::SERVICE_UNAVAILABLE, "outcome_unknown"),
     }
+}
+
+fn driver_refusal(status: StatusCode, code: &str) -> Box<Response> {
+    Box::new(refused(status, code))
+}
+
+/// Shared admitted provider phases for direct commands and explicit workspace runs.
+/// No caller-supplied endpoint, credentials, retry, or held Owner lock crosses transport.
+pub(super) fn drive(
+    state: &Product,
+    slug: &str,
+    cookie: &rentemester_runtime::auth::VerifiedCookie,
+    intent: Intent,
+) -> Result<Value, Box<Response>> {
+    let Some(client) = state.native.public_einvoice.get(slug) else {
+        return Err(driver_refusal(
+            StatusCode::UNPROCESSABLE_ENTITY,
+            "public_einvoice_config_required",
+        ));
+    };
+    let initial = {
+        let Ok(mut owner) = state.native.lock_company(slug) else {
+            return Err(driver_refusal(
+                StatusCode::SERVICE_UNAVAILABLE,
+                "owner_unavailable",
+            ));
+        };
+        match owner.start_public_einvoice(cookie, &SystemClock, intent, environment(client)) {
+            Ok(a) => a,
+            Err(_) => {
+                return Err(driver_refusal(
+                    StatusCode::SERVICE_UNAVAILABLE,
+                    "owner_unavailable",
+                ));
+            }
+        }
+    };
+    let mut work = next(initial)?;
+    // Setup has separate discovery and registration calls for company/outbound.
+    // Each result crosses current authority before the next network action.
+    // Send uses validation + delivery; status is one read. Never retry a phase.
+    for _ in 0..5 {
+        let admission = match work {
+            Next::Complete(v) => {
+                return Ok(v);
+            }
+            Next::Pending(a) => *a,
+        };
+        let outcome = match admission.request() {
+            app::Request::FindCompany { cvr, name } => {
+                let found = match client.registered_company(&provider_cvr(cvr), name) {
+                    Ok(Some(existing)) => app::Discovery::Found(existing.company_key),
+                    Ok(None) => app::Discovery::Missing,
+                    Err(_) => app::Discovery::Failed,
+                };
+                Outcome::CompanyFound(found)
+            }
+            app::Request::Company { cvr, name } => Outcome::Company(
+                client
+                    .register_company(&provider_cvr(cvr), name)
+                    .ok()
+                    .map(|v| v.company_key),
+            ),
+            app::Request::FindOutbound {
+                cvr,
+                name,
+                company_key,
+            } => {
+                let found = match client.registered_outbound(company_key, &provider_cvr(cvr), name)
+                {
+                    Ok(Some(existing))
+                        if existing.registered_on_network && !existing.webhook_registered =>
+                    {
+                        app::Discovery::Found(())
+                    }
+                    Ok(Some(_)) => app::Discovery::Failed,
+                    Ok(None) => app::Discovery::Missing,
+                    Err(_) => app::Discovery::Failed,
+                };
+                Outcome::OutboundFound(found)
+            }
+            app::Request::Outbound {
+                cvr,
+                name: _,
+                company_key,
+            } => Outcome::Outbound(
+                client
+                    .register_outbound(
+                        company_key,
+                        &provider_cvr(cvr),
+                        provider::Network::Nemhandel,
+                    )
+                    .is_ok_and(|v| v.registered_on_network && !v.webhook_registered),
+            ),
+            app::Request::Validate { xml } => {
+                Outcome::Validated(client.validate(xml).is_ok_and(|v| v.valid))
+            }
+            app::Request::Deliver { xml, company_key } => {
+                Outcome::Delivered(match client.deliver(company_key, xml) {
+                    provider::DeliveryOutcome::Observed(o) => Some(observed(o)),
+                    provider::DeliveryOutcome::Unknown => None,
+                })
+            }
+            app::Request::Observe {
+                company_key,
+                document_id,
+            } => Outcome::Observed(client.status(company_key, document_id).ok().map(observed)),
+        };
+        let attempt = {
+            let Ok(mut owner) = state.native.lock_company(slug) else {
+                return Err(driver_refusal(
+                    StatusCode::SERVICE_UNAVAILABLE,
+                    "outcome_unknown",
+                ));
+            };
+            match owner.finish_public_einvoice(cookie, &SystemClock, admission, outcome) {
+                Ok(a) => a,
+                Err(_) => {
+                    return Err(driver_refusal(
+                        StatusCode::SERVICE_UNAVAILABLE,
+                        "outcome_unknown",
+                    ));
+                }
+            }
+        };
+        work = next(attempt)?;
+    }
+    Err(driver_refusal(
+        StatusCode::SERVICE_UNAVAILABLE,
+        "outcome_unknown",
+    ))
 }
 
 #[cfg(test)]
