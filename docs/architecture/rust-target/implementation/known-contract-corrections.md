@@ -160,3 +160,15 @@ Den native v4-packetkontrakt og de eksisterende native readiness-rettigheder
 bevares. En menneskelig subject kan lovligt starte med service-account:, så
 principaltype udledes aldrig af denne tekst. Den sendes typet fra serverens
 verificerede indgang og bevarer hele subject-ID'et i review og audit.
+
+
+## Undtagelser efter genåbning (Group163)
+
+TypeScript-kildens loadArchivedBoundary filtrerer lagret accounting_periods.status,
+selv om genåbning er append-only og kan efterlade den lagrede status closed.
+De oprindelige Rust CLI/MCP-interface bruger derfor samme effektive
+periodestatus som native web og resolver. Genåbnede opgaver bliver synlige
+igen. Cutover er fortsat strengt før datoen; effektiv closed/reported dækker
+inklusive grænser, og udaterede opgaver arkiveres ikke ved gæt. Dette er en
+afgrænset kildefejlrettelse, ikke en separat arkivmodel. Markering af den
+operationelle undtagelse ændrer aldrig de uforanderlige waiver-obligationer.

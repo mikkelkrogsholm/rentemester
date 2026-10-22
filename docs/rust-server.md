@@ -3648,3 +3648,28 @@ Den operationelle bank-/undtagelsesfixture og slutsaldo er syntetiske input,
 ikke en påstand om import- eller exception-oprettelses-UI. CLI'ens og de
 øvrige native periodeværktøjers force-afvisning bevares. Hele omskrivningen
 og den sidste installerede desktopaccept er fortsat åbne.
+
+
+## Oprindelig undtagelsesliste og review (Group163)
+
+CLI `exceptions list|resolve` og MCP `exceptions_list`/`exception_resolve`
+bruger nu den fælles Rust-server og resolver. Listen bevarer de 15 oprindelige
+felter, nullable kilde-/reviewdata og faldende ID-rækkefølge. `--include-archived`
+er et selvstændigt flag. CLI har det danske kildereport, JSON ved pipe og
+eksplicit formatvalg; ugyldigt statusfilter er forretningsfejl1, ugyldigt ID
+er brugsfejl2. MCP bevarer envelope, outputSchema og bekræftelse før HTTP.
+
+Aktuel læseadgang kræves til listen og reviewadgang til resolution. En
+menneske- eller serviceprincipal kommer fra serverens verificerede indgang.
+Første resolution gemmer actor, tid, trimmet note og én audit; gentagelse
+returnerer resolved:false uden at overskrive historikken. Resolution er kun
+review: den bogfører, afstemmer og løser ikke en periodes waiver-obligationer.
+Genåbnede perioder følger den fælles motors effektive periodestatus.
+
+28 målrettede tests, syv pakkers strict Clippy og samlet faktisk accept består.
+Normal MFA, owner-oprettet service, aktuelle roller, revokation og præcis
+genstart er prøvet gennem original CLI og stdio MCP. Uafhængig SQL viser to
+syntetiske undtagelser, to audits og nul bogførings-/bank-/bilags-/periodeeffekter.
+Bevarelse af alle ægte forced-close-obligationsfelter og genåbningens
+arkivgrænser er særskilte lagringstests. Der påstås ingen exception-oprettelses-UI,
+faktisk waiverrejse, signed restore eller installeret desktopaccept her.
