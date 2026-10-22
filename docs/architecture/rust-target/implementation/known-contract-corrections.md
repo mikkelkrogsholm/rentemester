@@ -235,3 +235,27 @@ ny post med korrekt næste ID, type, entity, high-water-mark, manifesthash,
 actor og tidsstempelformat. Seks isolerede manipulationsprøver afviser
 ændret historik, manglende/ekstra post, falsk actor, forkert manifest og
 ændrede domænedata. Ingen generel auditfiltrering eller svækket kontrol.
+
+### Originalt fakturaudtræk og aktuel serviceidentitet (Group167)
+
+Et kildekompatibelt udtræk returnerer flad `{ok, extraction}`; MCP lægger kun
+`extraction` i sit normale envelope. Et positivt ID uden dokument eller
+udtræk giver `extraction:null` efter aktuel adgangskontrol, mens native manglende-ID-politik
+bevares. Konflikt/providerfejl med gemt evidens er et vellykket udtræksresultat,
+som kræver afklaring. Den præcise deaktiverede providerfejl er en kendt
+afvisning; et mistet eller uklart skriveresultat genforsøges aldrig automatisk.
+
+En services eksplicit tildelte subject, nøgle, scope og aktuelle rettigheder
+bestemmer dens adgang. Den historiske menneskelige opretter er auditspor,
+ikke en kæde af nedarvet aktuel myndighed. Tests tilbagekalder derfor det
+faktiske subject eller dets nøgle/scope; ingen ny creator-cascade indføres.
+
+Den faktiske prøve bevarede to fejlede kørsler: serviceoprettelse svarer korrekt
+HTTP 201, og et konfliktudtræk blev først bestilt via MCP og derefter fejlagtigt
+bestilt igen af hjælperen. Den første statusforventning er rettet præcist; den
+anden fase læser det allerede gemte konfliktresultat. Begge rettelser blev
+kontrolleret isoleret på de fangede resultater før en ny samlet prøve. De seks
+providerkald og begge konfliktforsøg fra den fejlede kørsel bevares; de skjules
+ikke som cache eller rulles tilbage. Produktets udtræks- og adgangspolitik er
+uændret af disse hjælperrettelser. Gendannelse bruger fortsat Group166's
+eksakte auditpræfiks og ene manifest/high-water-bundne restorepost.

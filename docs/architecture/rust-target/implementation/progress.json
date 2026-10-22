@@ -1,15 +1,15 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "Group166 original7CLI7MCP document-party/internal resolution, restart and signed source-free recovery accepted",
-  "code_revision": "9d16996d245a42716dff73f71f36fcc980e5b22d",
+  "current_increment": "Group167 original2CLI2MCP invoice extraction, currentservice and signed recovery accepted",
+  "code_revision": "7a2e4db8f208eb7fd0ca2522cfc195a9a935dae4",
   "spec_revision": "sha256:8979030956647a0f03266c50d42786b5d33ab71a59c78528203d223226171e72",
-  "state": "Group166 ACCEPTED: all7originalCLI7MCP through commonRustengine,18roles/exactidentifier/reviewedlegacy/currenthuman+service/sourcehash/immutablehistory/internalmutualexclusion.40targetedtests+sevenpackagealltargetstrict/build+fullnormalMFAactualPASS.3originals/3linkevents/3resolutionevents/1internalvoucher/15sourceaudits/0journals; exactrestart andsignedsourcefreefreshownerrestore retainallhistory plus exactly1manifest-boundrestoreaudit.2477source/3binary/8webpins independentlymatched;3scanner calls/no restorecalls; processesstopped/runtimecleaned. Allfailed/cancelledreceipts preserved. Full55/672/716/717OPEN; next167existing2CLI2MCPinvoiceextraction, finaldesktoplast.",
+  "state": "Group167 ACCEPTED: original2CLI2MCP share existingRustextractionengine; currenthuman/service, strict source DTO/confirmation/null/errors, prechargedonce/currentkeysubjectscope/source/context andprovideroutsideSQL/Owner.29targetedtests+strict/build+actualPASS.5originals/5attempts/2results/30fields/6resolutions/3exceptions/15sourceaudits/0journals;5providerrequests, normalMFArestart andsignedsourcefreefreshownerrestore/reopen preserveallrows plus1manifestboundaudit.2513source/3binary/8web/helperpins independentlymatched;ownedprocessesstopped/runtimecleaned. Allfailed/cancelledreceipts preserved. Full55/672/716/717OPEN; next168wholeexpense/purchaseVAT, finaldesktoplast.",
   "issues_closed": [
     701
   ],
   "next": [
-    "Next167: existing original documents extract-invoice/invoice-extraction CLI+MCP compatibility on accepted native extraction engine, current service admission, exact source DTO/errors/confirmation, normal-MFA configured-provider/client/restart proof. Parallelize independent backend, SDK/MCP, CLI and actual-proof ownership; no new engine or provider framework.",
+    "Next168 original expense/purchaseVAT wholeflow2CLI3MCP: read-onlypreflight, explicit authoritative EU evidence, shared6treatment expenseposting/reconciliation with currenthuman/service andoptional keyedreceipt. Four independent storage/domain, authority/server, SDK/CLI/MCP andactualproof ownership; no newengine/providerframework.",
     "Original invoice interface inventory now has all31CLI and25MCP bindings, with explicit compatibility corrections documented; do not mistake that family inventory for full product parity. Reconcile remaining original whole-product R44/R45 acceptance from existing epic/issues: actor/env/company-path/default launcher/errors/historical receipts, closure/recovery/automation, signed distribution/update/cutover and TypeScript backend retirement. Continue next necessary whole journey, preserve all accepted evidence/full original scope; installed desktop acceptance last.",
     "Installed desktop acceptance is explicitly deferred to the very end by the user. Preserve prepared Group100 profile; collect remaining native automation, closure, recovery and packaging checks for final installed acceptance without requesting screen unlock during development.",
     "J03/R50 and remaining R54 scope: only still-supported operation closure/recovery, nonempty scheduler handoff, hostile/older clone and post-cutover rollback requirements. Group99 qualifies managed installed J06 flow, not every R54 acceptance item.",
@@ -25,9 +25,9 @@
   ],
   "all_goal_requirements_complete": false,
   "previous_verified_increment": {
-    "name": "Group165 original8CLI8MCP document intake, PDF, metadata/context, shared payable, restart/signed restore accepted",
-    "code_revision": "f7515051d9d6d198ce50e376361faef1ec0024e9",
-    "evidence_key": "original_documents165"
+    "name": "Group166 original7CLI7MCP document-party/internal resolution, restart and signed source-free recovery accepted",
+    "code_revision": "9d16996d245a42716dff73f71f36fcc980e5b22d",
+    "evidence_key": "original_document_parties166"
   },
   "evidence": {
     "combined_browser_log": "/tmp/rm-platform5-combined.log",
@@ -9660,6 +9660,192 @@
         "Third actual completed business/restart/signed fresh-owner restore but exact all-audit equality incorrectly rejected expected native restore receipt boundary; samefixture predicate positive plus six tamper negatives verified before final agreed actual PASS. No audit control weakened."
       ],
       "retained_postcheck_evidence": "/tmp/rentemester-rust-reports/document-party166-qualified.json"
+    },
+    "original_invoice_extraction167": {
+      "issue": 717,
+      "status": "ACCEPTED finite original2CLI2MCP extraction wholeflow; fullissue/epicOPEN",
+      "source_revision": "7a2e4db8f208eb7fd0ca2522cfc195a9a935dae4",
+      "sgd_run": "rust-original-invoice-extraction167-20261022T204203.293147000",
+      "engine_phase": "done",
+      "sgd_published": true,
+      "source_blob_count": 19,
+      "actual_report": "/tmp/rentemester-rust-reports/original-invoice-extraction167-actual.json",
+      "actual_report_sha256": "037cfab9484427d7577c1dff120edcce4da8da22beef427d9995afb36849b4b0",
+      "unique_targeted_tests": 29,
+      "test_counts": {
+        "application": 1,
+        "host": 16,
+        "sdk": 3,
+        "cli": 4,
+        "mcp": 5
+      },
+      "strict": "Sevenpackages --all-targets --locked -Dwarnings PASS",
+      "checks": [
+        {
+          "check": "core",
+          "key": "7e61051b9c7fc7e6afbbffd6d459758c7bfbca3e8428369361a8568e6bb7cacb",
+          "argv": [
+            "python3",
+            "scripts/rust/cargo-guard.py",
+            "cargo",
+            "test",
+            "--lib",
+            "-p",
+            "rentemester-application",
+            "-p",
+            "rentemester-host",
+            "invoice_extraction",
+            "--locked"
+          ],
+          "exit_code": 0,
+          "passed": true,
+          "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/rust-original-invoice-extraction167-20261022T204203.293147000/acceptance/7e61051b9c7fc7e6afbbffd6d459758c7bfbca3e8428369361a8568e6bb7cacb/core.log"
+        },
+        {
+          "check": "client-cli",
+          "key": "b2379ed77074c96b11b379e33d2d50704cb44d467b16e3101ed0ca52fc59cce9",
+          "argv": [
+            "python3",
+            "-c",
+            "import subprocess,sys; [subprocess.run([sys.executable,'scripts/rust/cargo-guard.py','cargo','test','-p',p,'--test','invoice_extraction_original','--locked'],check=True) for p in ['rentemester-client','rentemester-cli']]"
+          ],
+          "exit_code": 0,
+          "passed": true,
+          "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/rust-original-invoice-extraction167-20261022T204203.293147000/acceptance/b2379ed77074c96b11b379e33d2d50704cb44d467b16e3101ed0ca52fc59cce9/client-cli.log"
+        },
+        {
+          "check": "mcp",
+          "key": "012d23da20dc9653b65983192de1198a2e2558a65b28ff2f6129a3652e447a3a",
+          "argv": [
+            "python3",
+            "scripts/rust/cargo-guard.py",
+            "cargo",
+            "test",
+            "-p",
+            "rentemester-mcp",
+            "--test",
+            "stdio",
+            "invoice_extraction",
+            "--locked"
+          ],
+          "exit_code": 0,
+          "passed": true,
+          "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/rust-original-invoice-extraction167-20261022T204203.293147000/acceptance/012d23da20dc9653b65983192de1198a2e2558a65b28ff2f6129a3652e447a3a/mcp.log"
+        },
+        {
+          "check": "strict",
+          "key": "4d4c38f8bac37ed85e02073687df6ac366233c68af7097ccf89f31d26f4fe675",
+          "argv": [
+            "python3",
+            "scripts/rust/cargo-guard.py",
+            "cargo",
+            "clippy",
+            "-p",
+            "rentemester-storage",
+            "-p",
+            "rentemester-client",
+            "-p",
+            "rentemester-cli",
+            "-p",
+            "rentemester-mcp",
+            "-p",
+            "rentemester-application",
+            "-p",
+            "rentemester-host",
+            "-p",
+            "rentemester-server",
+            "--all-targets",
+            "--locked",
+            "--",
+            "-D",
+            "warnings"
+          ],
+          "exit_code": 0,
+          "passed": true,
+          "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/rust-original-invoice-extraction167-20261022T204203.293147000/acceptance/4d4c38f8bac37ed85e02073687df6ac366233c68af7097ccf89f31d26f4fe675/strict.log"
+        },
+        {
+          "check": "build",
+          "key": "39e8dae70ac881397bce8a46622e887b4370c8819b2b0fa7261def57e5f9903f",
+          "argv": [
+            "python3",
+            "scripts/rust/cargo-guard.py",
+            "cargo",
+            "build",
+            "-p",
+            "rentemester-server",
+            "-p",
+            "rentemester-cli",
+            "-p",
+            "rentemester-mcp",
+            "--locked"
+          ],
+          "exit_code": 0,
+          "passed": true,
+          "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/rust-original-invoice-extraction167-20261022T204203.293147000/acceptance/39e8dae70ac881397bce8a46622e887b4370c8819b2b0fa7261def57e5f9903f/build.log"
+        },
+        {
+          "check": "actual",
+          "key": "7d43c579e3349b8483a3fa6d6f7204595b470bd26d999b205a312892e0bccbd8",
+          "argv": [
+            "python3",
+            "-c",
+            "import os,subprocess; from pathlib import Path; b=Path(os.environ['CARGO_TARGET_DIR'])/'debug'; rev=subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(); evidence=Path(os.environ['CARGO_TARGET_DIR'])/('original-invoice-extraction167-'+rev+'.json'); subprocess.run(['python3','scripts/rust/run-invoice-extraction.py','--original-interfaces','--server-binary',str(b/'rentemester-server'),'--cli-binary',str(b/'rentemester-rust'),'--mcp-binary',str(b/'rentemester-mcp'),'--web-dir',os.environ['RM_REWRITE_WEB_DIR'],'--evidence',str(evidence)],check=True)"
+          ],
+          "exit_code": 0,
+          "passed": true,
+          "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/rust-original-invoice-extraction167-20261022T204203.293147000/acceptance/7d43c579e3349b8483a3fa6d6f7204595b470bd26d999b205a312892e0bccbd8/actual.log"
+        }
+      ],
+      "actual_sql_counts": {
+        "documents": 5,
+        "invoice_extraction_documents": 5,
+        "invoice_extraction_attempts": 5,
+        "invoice_extraction_results": 2,
+        "invoice_extraction_fields": 30,
+        "invoice_extraction_resolutions": 6,
+        "exceptions": 3,
+        "audit_log": 15,
+        "journal_entries": 0,
+        "journal_lines": 0
+      },
+      "restored_audits": 16,
+      "provider_calls": 5,
+      "source_artifact_web_pins": {
+        "source_files": 2513,
+        "binaries": 3,
+        "web_files": 8,
+        "helpers": 2,
+        "independently_matched": true
+      },
+      "normal_mfa_source_restart": true,
+      "signed_source_free_fresh_owner_restore": true,
+      "restored_fresh_mfa_reopen": true,
+      "current_service_credential_revoked_during_provider_wait": true,
+      "exact_manifest_bound_restore_audit_append": 1,
+      "owned_processes_stopped": true,
+      "runtime_cleaned": true,
+      "scope_clarification": "Existing explicit current user-backed service subject/key/scope is authority; historical human creator is audit attribution, not inherited grantor. Wrong creator-revocation fixture corrected to revoke actual subject, source policies unchanged.",
+      "scope_limits": [
+        "Configured synthetic private verifiedTLS provider only; no claim about external production provider availability.",
+        "No automatic-on-upload extraction or installed desktop acceptance claimed; manual desktop remains last.",
+        "Retained needs_resolution evidence is a successful extraction surface; never an inferred financial posting."
+      ],
+      "preserved_failures": [
+        "Initial host creator-revocation fixture expectation contradicted existing independent service-subject policy; isolated actual subject/key/scope cases PASS without product-policy change.",
+        "Original CLI mock Bearer assertion corrected to canonical x-rentemester-service-key, isolated positive PASS before combined.",
+        "Combined Clippy equivalent predicates/let chains corrected; isolated all-seven-package all-target strict PASS before complete run.",
+        "First actual stopped after legitimate servicecreate HTTP201, zero provider calls, five realuploads and failed profile/report retained; exact helper status/body predicate locallyverified seven positive/negative cases.",
+        "Second actual completed original writes/read/cache/held-service-key refusal, but runner explicitly POSTed conflict twice; six provider calls and two distinct conflictattempts preserved honestly. Isolated modified negatives function reuses exact captured first result and leaves native default three writes unchanged before final agreed actual PASS."
+      ],
+      "isolated_harness_evidence": [
+        "/tmp/rentemester-rust-reports/extraction167-http201-isolated.json",
+        "/tmp/rentemester-rust-reports/extraction167-retained-conflict-diagnosis.json"
+      ],
+      "failed_actual_reports": [
+        "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/builds/checks/acceptance/original-invoice-extraction167-6562b5dcbe4be1b1799469d09ea799ff02953e90.json",
+        "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/builds/checks/acceptance/original-invoice-extraction167-fef796d7fb73c6b1ca0647e66eca2a4203053001.json"
+      ]
     }
   },
   "verified_history": [
@@ -11392,6 +11578,12 @@
       "code_revision": "9d16996d245a42716dff73f71f36fcc980e5b22d",
       "evidence_key": "original_document_parties166",
       "status": "ACCEPTED finite original document-party journey; entiremissionOPEN"
+    },
+    {
+      "increment": "Group167",
+      "code_revision": "7a2e4db8f208eb7fd0ca2522cfc195a9a935dae4",
+      "evidence_key": "original_invoice_extraction167",
+      "status": "ACCEPTED finite original extraction journey; entiremissionOPEN"
     }
   ],
   "scope_clarifications": [

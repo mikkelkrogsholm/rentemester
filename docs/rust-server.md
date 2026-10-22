@@ -3764,3 +3764,28 @@ Legacy-positivforløbet er dækket af fokuserede syntetiske tests; det påstås 
 kørt gennem en ny legacy-administration. En anden genåbning af det gendannede
 workspace og installeret desktop er ikke kvalificeret her. Hele epic #672
 forbliver åben; næste forløb er det eksisterende fakturaudtræk.
+
+### Oprindeligt fakturaudtræk (Group167)
+
+`documents extract-invoice` og `documents invoice-extraction` samt de to
+oprindelige MCP-navne bruger nu den eksisterende Rust-motor med normale
+bruger- og serviceoplysninger. CLI-kaldet beder eksplicit om udtræk; MCP kræver
+fortsat bekræftelse. Native kommandoer bevares under `remote`. Et udtræk med
+konflikt eller providerfejl er gemt evidens til afklaring og bogfører intet.
+Aktuel adgang, originalens hash og virksomhedskontekst kontrolleres før
+genbrug og efter providerkald. Providerkald holder ingen SQL-transaktion eller
+Owner-lås. En tilbagekaldt servicekonto kan ikke færdiggøre sit igangværende
+udtræk; det legitime startforsøg bevares.
+
+29 målrettede tests, streng Clippy for syv pakker og den faktiske prøve består
+på `7a2e4db8`. Fem normale indlæste originaler giver fem forsøg, to resultater,
+30 citerede felter, tre undtagelser og nul journalposter. Præcis fem
+providerkald udføres. Normal MFA-genstart og signeret gendannelse uden kilde
+eller privat signer, efterfulgt af en ny genåbning, bevarer originaler og
+udtræk. De 15 oprindelige auditposter bevares med præcis én manifestbundet
+restorepost. 2513 kildefiler, tre binære filer, otte webfiler og hjælperne er
+uafhængigt hashkontrolleret; prøveprocesserne er stoppet.
+
+Prøven bruger en kontrolleret provider med verificeret TLS. Den kvalificerer
+ikke ekstern produktion, automatisk udtræk ved upload eller installeret
+desktop. Hele epic #672 forbliver åben. Næste forløb er udgift og købsmoms.
