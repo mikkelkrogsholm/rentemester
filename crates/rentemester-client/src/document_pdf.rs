@@ -125,6 +125,11 @@ impl ApiClient {
         if status.is_server_error() || status.as_u16() == 408 {
             return Err(failure());
         }
+        if !status.is_success() && !matches!(status.as_u16(), 409 | 422) {
+            return Err(Error::Refused {
+                status: status.as_u16(),
+            });
+        }
         let mut bytes = Vec::new();
         while let Some(chunk) = response.chunk().await.map_err(|_| failure())? {
             if bytes.len().saturating_add(chunk.len()) > MAX_RESPONSE {
@@ -141,8 +146,26 @@ impl ApiClient {
                 }
             }
         })?;
-        if value["ok"] == false
-            && (value["code"].is_string() || status.is_success() && value["errors"].is_array())
+        let valid_error = value["ok"] == false
+            && value.as_object().is_some_and(|fields| {
+                fields.keys().all(|key| {
+                    ["ok", "errors", "code", "errorCode", "appliedRules"].contains(&key.as_str())
+                })
+            })
+            && value["errors"].as_array().is_some_and(|errors| {
+                !errors.is_empty()
+                    && errors
+                        .iter()
+                        .all(|error| error.as_str().is_some_and(|s| !s.trim().is_empty()))
+            })
+            && value
+                .get("code")
+                .is_none_or(|code| code.as_str().is_some_and(|s| !s.trim().is_empty()));
+        if valid_error
+            && (status.is_success()
+                || status.as_u16() == 409 && value["code"] == "PDF_EVIDENCE_TAMPERED"
+                || status.as_u16() == 422
+                    && value["code"].as_str().is_some_and(|s| !s.trim().is_empty()))
         {
             return Ok(value);
         }

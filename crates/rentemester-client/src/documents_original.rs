@@ -196,7 +196,8 @@ fn valid(v: &Value, kind: Option<DocumentsOriginalMutation>) -> bool {
                 .all(|k| ["ok", "errors", "code", "appliedRules"].contains(&k.as_str()))
         }) && errors(&v["errors"])
             && v["errors"].as_array().is_some_and(|a| !a.is_empty())
-            && v.get("code").is_none_or(Value::is_string)
+            && v.get("code")
+                .is_none_or(|v| v.as_str().is_some_and(|s| !s.trim().is_empty()))
             && v.get("appliedRules").is_none_or(errors);
     }
     if v["ok"] != true {
@@ -360,6 +361,12 @@ impl ApiClient {
                 Error::Transport
             });
         }
+        let strict = status.as_u16() == 422;
+        if !status.is_success() && !strict {
+            return Err(Error::Refused {
+                status: status.as_u16(),
+            });
+        }
         let mut bytes = Vec::new();
         while let Some(chunk) = response.chunk().await.map_err(|_| failure())? {
             if bytes.len().saturating_add(chunk.len()) > MAX_RESPONSE {
@@ -368,7 +375,13 @@ impl ApiClient {
             bytes.extend_from_slice(&chunk);
         }
         let value: Value = serde_json::from_slice(&bytes).map_err(|_| failure())?;
-        if valid(&value, kind) && (status.is_success() || value["ok"] == false) {
+        if valid(&value, kind)
+            && (!strict
+                || value["ok"] == false
+                    && value["code"]
+                        .as_str()
+                        .is_some_and(|code| !code.trim().is_empty()))
+        {
             Ok(value)
         } else if !status.is_success() {
             Err(Error::Refused {

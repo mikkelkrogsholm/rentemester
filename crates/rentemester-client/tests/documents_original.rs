@@ -229,3 +229,69 @@ async fn documents_original_pdf_service_uses_native_transport_and_strict_status(
     );
     task.join().unwrap();
 }
+
+#[tokio::test]
+async fn documents_original_auth_refusals_and_strict_422_never_release_untrusted_business_text() {
+    for pdf in [false, true] {
+        for (status, code) in [
+            (401, Some("AUTH_DETAIL")),
+            (403, Some("AUTH_DETAIL")),
+            (422, None),
+            (422, Some("  ")),
+        ] {
+            let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+            listener.set_nonblocking(true).unwrap();
+            let api = ApiClient::new(
+                &format!("http://{}", listener.local_addr().unwrap()),
+                true,
+                None,
+            )
+            .unwrap();
+            let mut body = json!({"ok":false,"errors":["private authentication or proxy detail"]});
+            if let Some(code) = code {
+                body["code"] = json!(code);
+            }
+            let worker = thread::spawn(move || {
+                let start = Instant::now();
+                let mut socket = loop {
+                    match listener.accept() {
+                        Ok((socket, _)) => break socket,
+                        Err(error) if error.kind() == std::io::ErrorKind::WouldBlock => {
+                            assert!(start.elapsed() < Duration::from_secs(5));
+                            thread::sleep(Duration::from_millis(5));
+                        }
+                        Err(error) => panic!("{error}"),
+                    }
+                };
+                socket.set_nonblocking(false).unwrap();
+                socket
+                    .set_read_timeout(Some(Duration::from_secs(2)))
+                    .unwrap();
+                let mut request = Vec::new();
+                while !request.windows(4).any(|w| w == b"\r\n\r\n") {
+                    let mut bytes = [0; 1024];
+                    let count = socket.read(&mut bytes).unwrap();
+                    assert!(count > 0);
+                    request.extend_from_slice(&bytes[..count]);
+                }
+                let body = body.to_string();
+                write!(socket, "HTTP/1.1 {status} Refused\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{body}", body.len()).unwrap();
+                drop(socket);
+                let until = Instant::now() + Duration::from_millis(150);
+                while Instant::now() < until {
+                    assert!(listener.accept().is_err());
+                    thread::sleep(Duration::from_millis(5));
+                }
+            });
+            let result = if pdf {
+                api.document_parse_status("synthetic", 7).await
+            } else {
+                api.documents_original_list("synthetic").await
+            };
+            let error = result.unwrap_err();
+            assert!(!error.to_string().contains("private authentication"));
+            assert!(matches!(error, Error::Refused { .. } | Error::Protocol));
+            worker.join().unwrap();
+        }
+    }
+}

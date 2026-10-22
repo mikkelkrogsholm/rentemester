@@ -301,6 +301,7 @@ pub fn execute(args: &[String]) -> Output {
                 json!({"ok":false,"code":e.code,"errors":[e.message]}),
                 json_mode,
                 exit,
+                &args[1],
             );
         }
     };
@@ -311,6 +312,7 @@ pub fn execute(args: &[String]) -> Output {
                 json!({"ok":false,"errors":["HTTP runtime unavailable"]}),
                 json_mode,
                 1,
+                &args[1],
             );
         }
     };
@@ -364,11 +366,12 @@ pub fn execute(args: &[String]) -> Output {
                 json!({"ok":false,"code":e.code,"errors":[e.message]}),
                 json_mode,
                 exit,
+                &args[1],
             );
         }
     };
     if value["ok"] == false {
-        return failure(value, json_mode, 1);
+        return failure(value, json_mode, 1, &args[1]);
     }
     let rendered = if args[1] == "list" {
         let rows = value["documents"].as_array().unwrap();
@@ -390,12 +393,7 @@ pub fn execute(args: &[String]) -> Output {
     } else if json_mode {
         serde_json::to_string_pretty(&value).unwrap()
     } else {
-        format!(
-            "✔ {}",
-            value["message"]
-                .as_str()
-                .map_or_else(|| value.to_string(), str::to_owned)
-        )
+        human_success(&args[1], &value)
     };
     Output {
         stdout: format!("{rendered}\n"),
@@ -403,20 +401,73 @@ pub fn execute(args: &[String]) -> Output {
         exit: 0,
     }
 }
-fn failure(v: Value, json_mode: bool, exit: u8) -> Output {
+fn label(operation: &str) -> &'static str {
+    match operation {
+        "ingest" => "Indlæser og validerer et bilag med metadata.",
+        "enrich" => "Udfylder manglende metadata på et ubogført legacy-bilag.",
+        "set-company-context" => {
+            "Registrerer en hash-bundet virksomheds-kontekst for et dansk forenklet købsbilag."
+        }
+        "parse" => "Parser et allerede gemt PDF-bilag offline; udfører ingen bogføring.",
+        "parse-pending" => {
+            "Parser op til 100 gemte PDF-bilag uden en aktuel parse; genoptag med nextCursor som --cursor."
+        }
+        "parse-status" => "Viser den seneste PDF-parserstatus uden filsti eller child-stderr.",
+        "parsed-text" => "Viser højst 10 parse-sider ad gangen.",
+        _ => "Lister gemte bilag.",
+    }
+}
+fn human_success(operation: &str, value: &Value) -> String {
+    // The existing generic renderer selects named scalar summaries, never raw JSON.
+    let heading = label(operation);
+    let short = if heading.chars().count() > 60 {
+        format!(
+            "{}…",
+            heading.chars().take(57).collect::<String>().trim_end()
+        )
+    } else {
+        heading.to_owned()
+    };
+    let mut lines = vec![format!("✔ {short}")];
+    for (key, name) in [("message", "Besked"), ("documentId", "Bilags-id")] {
+        let scalar = match &value[key] {
+            Value::String(s) if !s.is_empty() => Some(s.clone()),
+            Value::Number(n) => Some(n.to_string()),
+            Value::Bool(b) => Some(b.to_string()),
+            _ => None,
+        };
+        if let Some(scalar) = scalar {
+            lines.push(format!("  {name}: {scalar}"));
+        }
+    }
+    lines.join("\n")
+}
+fn failure(v: Value, json_mode: bool, exit: u8, operation: &str) -> Output {
     if exit == 2 {
         return usage(&display(&v["errors"]));
     }
+    if json_mode {
+        return Output {
+            stdout: format!("{v}\n"),
+            stderr: String::new(),
+            exit,
+        };
+    }
+    let mut lines = vec![format!("✘ {} failed", label(operation))];
+    if let Some(errors) = v["errors"].as_array().filter(|errors| !errors.is_empty()) {
+        for error in errors.iter().filter_map(Value::as_str) {
+            lines.push(format!("  → {error}"));
+        }
+    } else {
+        lines.push("  → Kommandoen fejlede uden en specifik fejlbesked.".into());
+    }
     Output {
-        stdout: if json_mode {
-            format!("{v}\n")
-        } else {
-            format!("✘ {}\n", display(&v["errors"]))
-        },
-        stderr: String::new(),
+        stdout: String::new(),
+        stderr: format!("{}\n", lines.join("\n")),
         exit,
     }
 }
+
 fn encode(bytes: &[u8]) -> String {
     const TABLE: &[u8; 64] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
     let mut out = String::with_capacity(bytes.len().div_ceil(3) * 4);

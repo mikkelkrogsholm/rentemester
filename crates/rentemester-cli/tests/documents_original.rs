@@ -436,3 +436,66 @@ fn documents_original_tty_defaults_to_human() {
     once(count, handle);
     std::fs::remove_dir_all(root).unwrap();
 }
+
+#[test]
+fn documents_original_nonlist_human_summary_and_business_failure_stderr() {
+    let root = root();
+    let credential = cookie(&root);
+    for ok in [true, false] {
+        let response = if ok {
+            json!({"ok":true,"documentId":7,"applied":true,"errors":[]})
+        } else {
+            json!({"ok":false,"errors":["actual immutable context conflict"]})
+        };
+        let body = json!({"sourceReference":"synthetic receipt","businessUseReason":"synthetic business use","confirm":true});
+        let (origin, count, handle) = server(
+            200,
+            response.to_string(),
+            "POST /api/companies/synthetic/documents/original/7/company-context ",
+            Some(serde_json::to_vec(&body).unwrap()),
+        );
+        let output = Command::new(BIN)
+            .args([
+                "documents",
+                "set-company-context",
+                "--document-id",
+                "7",
+                "--source-reference",
+                "synthetic receipt",
+                "--business-use-reason",
+                "synthetic business use",
+                "--confirm",
+                "yes",
+                "--format",
+                "human",
+                "--server",
+                &origin,
+                "--allow-loopback-http",
+                "--company",
+                "synthetic",
+                "--cookie-file",
+                credential.to_str().unwrap(),
+            ])
+            .output()
+            .unwrap();
+        assert_eq!(output.status.code(), Some(if ok { 0 } else { 1 }));
+        if ok {
+            let label =
+                "Registrerer en hash-bundet virksomheds-kontekst for et dansk forenklet købsbilag.";
+            let heading = format!(
+                "✔ {}…\n  Bilags-id: 7\n",
+                label.chars().take(57).collect::<String>().trim_end()
+            );
+            assert_eq!(String::from_utf8(output.stdout).unwrap(), heading);
+            assert!(output.stderr.is_empty());
+        } else {
+            assert!(output.stdout.is_empty());
+            assert_eq!(
+                String::from_utf8(output.stderr).unwrap(),
+                "✘ Registrerer en hash-bundet virksomheds-kontekst for et dansk forenklet købsbilag. failed\n  → actual immutable context conflict\n"
+            );
+        }
+        once(count, handle);
+    }
+    std::fs::remove_dir_all(root).unwrap();
+}
