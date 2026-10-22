@@ -52,7 +52,12 @@ fn read_input(path: &str) -> Result<Vec<u8>, &'static str> {
 }
 pub fn execute(args: &[String]) -> Output {
     let command = args[1].as_str();
-    if args.iter().skip(2).any(|s| s == "--help") {
+    if args
+        .iter()
+        .skip(2)
+        .take_while(|arg| arg.as_str() != "--")
+        .any(|s| s == "--help")
+    {
         return output(
             json!({"usage":"invoice validate --input FILE|- [--json]; invoice write-off-bad-debt --input FILE|-; invoice imported-receivables [--as-of DATE]","transport":"Validation is offline without company/server. Other commands require --company SLUG --server ORIGIN and exactly one --cookie-file/--service-key-file; optional --json/--allow-loopback-http. Write invocation confirms payload; explicit expenseAccountNo required. No retry. Omitted as-of resolved by server UTC today."}),
             true,
@@ -63,13 +68,13 @@ pub fn execute(args: &[String]) -> Output {
     let (mut json_mode, mut http) = (false, false);
     let mut cursor = 2;
     while cursor < args.len() {
-        let key = args[cursor].as_str();
-        if key == "--json" && !json_mode {
+        let (key, attached) = crate::original_args::option(&args[cursor]);
+        if key == "--json" && !json_mode && attached.is_none() {
             json_mode = true;
             cursor += 1;
             continue;
         }
-        if key == "--allow-loopback-http" && command != "validate" && !http {
+        if key == "--allow-loopback-http" && command != "validate" && !http && attached.is_none() {
             http = true;
             cursor += 1;
             continue;
@@ -93,13 +98,13 @@ pub fn execute(args: &[String]) -> Output {
         if !allowed.contains(&key) {
             return failure("Unknown financial invoice flag");
         }
-        let Some(value) = args.get(cursor + 1).filter(|s| !s.starts_with("--")) else {
+        let Some((value, next)) = crate::original_args::value(args, cursor) else {
             return failure("Missing flag value");
         };
-        if flags.insert(key, value.as_str()).is_some() {
+        if flags.insert(key, value).is_some() {
             return failure("Duplicate flag");
         }
-        cursor += 2;
+        cursor = next;
     }
     let mut bytes = vec![];
     if command != "imported-receivables" {

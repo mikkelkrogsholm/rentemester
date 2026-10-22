@@ -54,13 +54,13 @@ fn parse(args: &[String]) -> Result<Input<'_>, String> {
     let (mut json, mut http) = (false, false);
     let mut cursor = 2;
     while cursor < args.len() {
-        let key = args[cursor].as_str();
+        let (key, attached) = crate::original_args::option(&args[cursor]);
         match key {
-            "--json" if !json => {
+            "--json" if attached.is_none() && !json => {
                 json = true;
                 cursor += 1;
             }
-            "--allow-loopback-http" if !http => {
+            "--allow-loopback-http" if attached.is_none() && !http => {
                 http = true;
                 cursor += 1;
             }
@@ -74,14 +74,12 @@ fn parse(args: &[String]) -> Result<Input<'_>, String> {
                 {
                     return Err("bank-account list accepts no transaction filters".into());
                 }
-                let value = args
-                    .get(cursor + 1)
-                    .filter(|v| !v.starts_with("--"))
+                let (value, next) = crate::original_args::value(args, cursor)
                     .ok_or_else(|| format!("Missing value for {key}"))?;
-                if flags.insert(key, value.as_str()).is_some() {
+                if flags.insert(key, value).is_some() {
                     return Err(format!("Duplicate {key}"));
                 }
-                cursor += 2;
+                cursor = next;
             }
             _ => return Err(format!("Unknown or duplicate bank read flag {key}")),
         }
@@ -198,7 +196,12 @@ fn human(kind: &str, value: &Value) -> String {
     lines.join("\n") + "\n"
 }
 pub fn execute(args: &[String]) -> Output {
-    if args.len() == 3 && args[2] == "--help" {
+    if args
+        .iter()
+        .skip(2)
+        .take_while(|s| s.as_str() != "--")
+        .any(|s| s == "--help")
+    {
         return Output {
             stdout: format!("{}\n", serde_json::to_string_pretty(&help()).unwrap()),
             stderr: String::new(),

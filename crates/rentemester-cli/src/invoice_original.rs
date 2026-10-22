@@ -117,7 +117,12 @@ fn number(text: &str) -> Option<Number> {
     })
 }
 pub fn execute(args: &[String]) -> Output {
-    if args.iter().skip(2).any(|s| s == "--help") {
+    if args
+        .iter()
+        .skip(2)
+        .take_while(|s| s.as_str() != "--")
+        .any(|s| s == "--help")
+    {
         return Output {
             stdout: format!("{}\n", serde_json::to_string_pretty(&help()).unwrap()),
             stderr: String::new(),
@@ -151,19 +156,23 @@ pub fn execute(args: &[String]) -> Output {
         InvoiceOriginalKind::Overdue => vec!["--min-days", "--as-of"],
     };
     while cursor < args.len() {
-        let key = args[cursor].as_str();
-        if key == "--json" && !json_mode {
+        if args[cursor] == "--" && matches!(kind, InvoiceOriginalKind::Find) {
+            words.extend(args[cursor + 1..].iter().map(String::as_str));
+            break;
+        }
+        let (key, attached) = crate::original_args::option(&args[cursor]);
+        if key == "--json" && !json_mode && attached.is_none() {
             json_mode = true;
             cursor += 1;
             continue;
         }
-        if key == "--allow-loopback-http" && !http {
+        if key == "--allow-loopback-http" && !http && attached.is_none() {
             http = true;
             cursor += 1;
             continue;
         }
         if !key.starts_with("--") && matches!(kind, InvoiceOriginalKind::Find) {
-            words.push(key);
+            words.push(args[cursor].as_str());
             cursor += 1;
             continue;
         }
@@ -178,13 +187,13 @@ pub fn execute(args: &[String]) -> Output {
         {
             return failure(&format!("Unknown/duplicate invoice flag {key}"), false, 2);
         }
-        let Some(value) = args.get(cursor + 1).filter(|s| !s.starts_with("--")) else {
+        let Some((value, next)) = crate::original_args::value(args, cursor) else {
             return failure(&format!("Missing value for {key}"), false, 2);
         };
-        if flags.insert(key, value.as_str()).is_some() {
+        if flags.insert(key, value).is_some() {
             return failure(&format!("Duplicate {key}"), false, 2);
         }
-        cursor += 2;
+        cursor = next;
     }
     if matches!(kind, InvoiceOriginalKind::Status)
         && !flags.contains_key("--document-id")

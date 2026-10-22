@@ -45,7 +45,12 @@ pub fn execute(args: &[String]) -> Output {
     if command == "run-workspace" {
         return run_workspace(args);
     }
-    if args.iter().skip(2).any(|a| a == "--help") {
+    if args
+        .iter()
+        .skip(2)
+        .take_while(|arg| arg.as_str() != "--")
+        .any(|a| a == "--help")
+    {
         return output(
             json!({"usage":"recurring-invoice create --input FILE|-; recurring-invoice generate --template-id N --as-of YYYY-MM-DD; recurring-invoice list [--include-inactive]","transport":"Explicit --company SLUG --server ORIGIN and exactly one private --cookie-file/--service-key-file. Optional --json/--allow-loopback-http or global --local-profile. Create/generate invocation confirms this single mutation. No timer, posting, delivery or retry; unknown outcome requires canonical template/invoice/document reads. Workspace runner is a separate command."}),
             0,
@@ -55,18 +60,18 @@ pub fn execute(args: &[String]) -> Output {
     let (mut json_mode, mut http, mut include) = (false, false, false);
     let mut cursor = 2;
     while cursor < args.len() {
-        let key = args[cursor].as_str();
-        if key == "--json" && !json_mode {
+        let (key, attached) = crate::original_args::option(&args[cursor]);
+        if key == "--json" && !json_mode && attached.is_none() {
             json_mode = true;
             cursor += 1;
             continue;
         }
-        if key == "--allow-loopback-http" && !http {
+        if key == "--allow-loopback-http" && !http && attached.is_none() {
             http = true;
             cursor += 1;
             continue;
         }
-        if key == "--include-inactive" && command == "list" && !include {
+        if key == "--include-inactive" && command == "list" && !include && attached.is_none() {
             include = true;
             cursor += 1;
             continue;
@@ -83,13 +88,13 @@ pub fn execute(args: &[String]) -> Output {
         if !allowed {
             return invalid("Unknown recurring-invoice flag");
         }
-        let Some(value) = args.get(cursor + 1).filter(|s| !s.starts_with("--")) else {
+        let Some((value, next)) = crate::original_args::value(args, cursor) else {
             return invalid("Missing flag value");
         };
-        if flags.insert(key, value.as_str()).is_some() {
+        if flags.insert(key, value).is_some() {
             return invalid("Duplicate flag");
         }
-        cursor += 2;
+        cursor = next;
     }
     let kind = if command == "create" {
         Some(Kind::Create)
@@ -217,7 +222,12 @@ pub fn execute(args: &[String]) -> Output {
 }
 
 fn run_workspace(args: &[String]) -> Output {
-    if args.iter().skip(2).any(|a| a == "--help") {
+    if args
+        .iter()
+        .skip(2)
+        .take_while(|arg| arg.as_str() != "--")
+        .any(|a| a == "--help")
+    {
         return output(
             json!({"usage":"recurring-invoice run-workspace --workspace ASSERTION --as-of YYYY-MM-DD [--max-generations N] --confirm yes --server ORIGIN --cookie-file FILE [--json]","policy":"Current human cookie required. Workspace asserts configured server identity or exact configured absolute root; never opens caller paths. Cap defaults500 per company. Partial companies/continuation remain in output on business1; inspect before any explicit continuation. Server owns generation/delivery, no timer or automatic retry."}),
             0,
@@ -228,13 +238,13 @@ fn run_workspace(args: &[String]) -> Output {
     let mut json_mode = false;
     let mut cursor = 2;
     while cursor < args.len() {
-        let key = args[cursor].as_str();
-        if key == "--json" && !json_mode {
+        let (key, attached) = crate::original_args::option(&args[cursor]);
+        if key == "--json" && !json_mode && attached.is_none() {
             json_mode = true;
             cursor += 1;
             continue;
         }
-        if key == "--allow-loopback-http" && !http {
+        if key == "--allow-loopback-http" && !http && attached.is_none() {
             http = true;
             cursor += 1;
             continue;
@@ -251,13 +261,13 @@ fn run_workspace(args: &[String]) -> Output {
         {
             return invalid("Unknown workspace recurring flag; current human cookie required");
         }
-        let Some(value) = args.get(cursor + 1).filter(|v| !v.starts_with("--")) else {
+        let Some((value, next)) = crate::original_args::value(args, cursor) else {
             return invalid("Missing flag value");
         };
-        if flags.insert(key, value.as_str()).is_some() {
+        if flags.insert(key, value).is_some() {
             return invalid("Duplicate flag");
         }
-        cursor += 2;
+        cursor = next;
     }
     if flags
         .get("--confirm")

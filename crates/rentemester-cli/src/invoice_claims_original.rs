@@ -98,7 +98,12 @@ fn flag(key: &str) -> Option<&'static str> {
     })
 }
 pub fn execute(args: &[String]) -> Output {
-    if args.iter().skip(2).any(|s| s == "--help") {
+    if args
+        .iter()
+        .skip(2)
+        .take_while(|arg| arg.as_str() != "--")
+        .any(|s| s == "--help")
+    {
         return Output {
             stdout: format!("{}\n", serde_json::to_string_pretty(&help()).unwrap()),
             stderr: String::new(),
@@ -115,13 +120,13 @@ pub fn execute(args: &[String]) -> Output {
     let mut flags = BTreeMap::new();
     let mut cursor = 2;
     while cursor < args.len() {
-        let key = args[cursor].as_str();
-        if key == "--json" && !json_mode {
+        let (key, attached) = crate::original_args::option(&args[cursor]);
+        if key == "--json" && !json_mode && attached.is_none() {
             json_mode = true;
             cursor += 1;
             continue;
         }
-        if key == "--allow-loopback-http" && !http {
+        if key == "--allow-loopback-http" && !http && attached.is_none() {
             http = true;
             cursor += 1;
             continue;
@@ -142,13 +147,13 @@ pub fn execute(args: &[String]) -> Output {
                 2,
             );
         }
-        let Some(value) = args.get(cursor + 1).filter(|s| !s.starts_with("--")) else {
+        let Some((value, next)) = crate::original_args::value(args, cursor) else {
             return failure(&format!("Missing value for {key}"), false, 2);
         };
-        if flags.insert(key, value.as_str()).is_some() {
+        if flags.insert(key, value).is_some() {
             return failure(&format!("Duplicate {key}"), false, 2);
         }
-        cursor += 2;
+        cursor = next;
     }
     for key in ["--server", "--company"] {
         if flags.get(key).is_none_or(|v| v.is_empty()) {

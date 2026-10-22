@@ -22,25 +22,24 @@ fn parse(args: &[String]) -> Result<Parsed<'_>, (u8, Error)> {
     let (mut json, mut http) = (false, false);
     let mut cursor = 0;
     while cursor < args.len() {
-        let key = args[cursor].as_str();
+        let (key, attached) = crate::original_args::option(&args[cursor]);
         match key {
-            "--json" if !json => {
+            "--json" if attached.is_none() && !json => {
                 json = true;
                 cursor += 1;
             }
-            "--allow-loopback-http" if !http => {
+            "--allow-loopback-http" if attached.is_none() && !http => {
                 http = true;
                 cursor += 1;
             }
             "--server" | "--cookie-file" | "--company" => {
-                let value = args
-                    .get(cursor + 1)
-                    .filter(|s| !s.is_empty() && !s.starts_with("--"))
+                let (value, next) = crate::original_args::value(args, cursor)
+                    .filter(|(value, _)| !value.is_empty())
                     .ok_or_else(invalid)?;
-                if flags.insert(key, value.as_str()).is_some() {
+                if flags.insert(key, value).is_some() {
                     return Err(invalid());
                 }
-                cursor += 2;
+                cursor = next;
             }
             _ => return Err(invalid()),
         }
@@ -161,7 +160,11 @@ fn human(page: Value) -> Result<Value, (u8, Error)> {
     Ok(Value::String(lines.join("\n")))
 }
 pub fn run(args: &[String]) -> Result<Value, (u8, Error)> {
-    if args == ["--help"] {
+    if args
+        .iter()
+        .take_while(|s| s.as_str() != "--")
+        .any(|s| s == "--help")
+    {
         return Ok(help());
     }
     let (flags, http, json) = parse(args)?;

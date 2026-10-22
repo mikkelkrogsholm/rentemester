@@ -1,72 +1,78 @@
-mod recurring_original;
-mod invoice_public_original;
-mod invoice_financial_original;
-mod invoice_claims_original;
-mod invoice_lifecycle;
-mod invoice_original;
-mod payable_original;
-mod direct_bank_original;
-mod bank_original;
-mod bank_accounts_original;
-mod bank_import;
-mod bank_queries;
-mod local_binding;
-mod handoff_export;
-mod saft_artifact;
 mod annual_exports;
-mod dated_reports;
-mod journal_history;
-mod dashboard_artifact;
-mod invoice_bad_debt;
-mod invoice_interest;
-mod invoice_compensation;
-mod audit_verify;
 mod audit_log;
-mod bank_matches;
-mod cvr;
-mod backup_remote;
+mod audit_verify;
 mod backup_governance;
 mod backup_registration;
+mod backup_remote;
+mod bank_accounts_original;
+mod bank_import;
+mod bank_matches;
+mod bank_original;
+mod bank_queries;
+mod cvr;
+mod dashboard_artifact;
+mod dated_reports;
+mod direct_bank_original;
 mod eu_sales;
+mod handoff_export;
+mod invoice_bad_debt;
+mod invoice_claims_original;
+mod invoice_compensation;
+mod invoice_financial_original;
+mod invoice_interest;
+mod invoice_lifecycle;
+mod invoice_original;
+mod invoice_public_original;
+mod journal_history;
+mod local_binding;
+mod original_args;
+mod original_discovery;
 mod oss_report;
+mod payable_original;
+mod recurring_original;
+mod saft_artifact;
 use rentemester_engine::{Error, trial_balance::Period};
 use serde_json::json;
 use std::{collections::BTreeMap, io::Read, path::Path, process::ExitCode};
-mod reminder_claims;
-mod report_reads;
-mod company_creation;
-mod saft;
-mod portable_backup;
-mod company_setup;
-mod privacy;
-mod budget;
-mod exceptions;
-mod mileage;
-mod company_knowledge;
-mod parties;
-mod workspace_inbox;
-mod bilagsmail;
-mod public_einvoice;
-mod corporate_records;
-mod ownership;
-mod intercompany;
-mod elimination;
-mod consolidation;
 mod accruals;
+mod annual_reports;
 mod assets;
-mod recurring_invoices;
 mod bank_correction;
 mod bank_reconciliation;
-mod documents;
-mod document_pdf;
-mod invoice_extraction;
-mod reviewed_bookkeeping;
-mod annual_reports;
+mod bilagsmail;
+mod budget;
 mod commitments;
+mod company_creation;
+mod company_knowledge;
+mod company_setup;
+mod consolidation;
+mod corporate_records;
+mod document_pdf;
+mod documents;
+mod elimination;
+mod exceptions;
+mod intercompany;
+mod invoice_extraction;
+mod mileage;
+mod ownership;
+mod parties;
+mod portable_backup;
+mod privacy;
+mod public_einvoice;
 mod receivables;
+mod recurring_invoices;
+mod reminder_claims;
 mod remote;
+mod report_reads;
+mod reviewed_bookkeeping;
+mod saft;
+mod workspace_inbox;
 fn run(args: Vec<String>) -> Result<serde_json::Value, (u8, Error)> {
-    if args.first().map(String::as_str) == Some("journal") && args.get(1).map(String::as_str) == Some("list") { return journal_history::run(&args[2..]); }
+    if args.first().map(String::as_str) == Some("journal")
+        && args.get(1).map(String::as_str) == Some("list")
+    {
+        return journal_history::run(&args[2..]);
+    }
     if args.first().map(String::as_str) == Some("documents") {
         if args.len() == 1 || args == ["documents", "--help"] {
             return Ok(invoice_extraction::help());
@@ -77,31 +83,22 @@ fn run(args: Vec<String>) -> Result<serde_json::Value, (u8, Error)> {
             }
             return remote::run(&args[1..]);
         }
-        return Err((2,Error::new("invalid_input","expected documents extract-invoice|invoice-extraction; see documents --help")));
+        return Err((
+            2,
+            Error::new(
+                "invalid_input",
+                "expected documents extract-invoice|invoice-extraction; see documents --help",
+            ),
+        ));
     }
-    if args.first().map(String::as_str) == Some("dashboard") { return remote::run(&args); }
+    if args.first().map(String::as_str) == Some("dashboard") {
+        return remote::run(&args);
+    }
     if args.first().map(String::as_str) == Some("remote") {
         return remote::run(&args[1..]);
     }
     if args == ["--help"] {
-        return Ok(json!({"ok":true,"localBinding":"Existing migrated commands may select --local-profile ABS_PRIVATE_PROFILE instead of --server/--allow-loopback-http. Join only: same server via private Unix socket with normal cookie/service authentication. No actor, legacy path, environment-default or launcher parity claim.","commands":[
-            {"name":"bank list|reconcile bank|invoice issue|invoice create|invoice render|invoice post|invoice settle-bank|invoice credit-note|invoice refund-bank|invoice list|invoice find|invoice status|invoice overdue|invoice remind|invoice post-reminder|invoice compensation|invoice claim-compensation|invoice post-compensation|invoice interest|invoice claim-interest|invoice post-interest|invoice interest-correction|invoice post-interest-correction|invoice settle-claim-bank|invoice write-off-bad-debt|invoice imported-receivables|invoice validate|payable register|payable list|payable pay|bank direct-payable-plan|bank direct-payable-apply|bank suggest-matches|bank link-journal|bank correction-plan|bank correction-apply|bank-account list|bank-account add|bank-account update|bank import --file PATH","usage":"bank list --help","scope":"original canonical bank reads and reconciliation, unpaged CLI output"},
-            {"name":"system export-saft","usage":"system export-saft --help","scope":"one audited SAF-T export and verified fresh local package"},
-            {"name":"system export-authority|export-accountant","usage":"system export-authority --help","scope":"one audited export and verified fresh local handover package"},
-            {"name":"report annual|tax","usage":"report annual --help; report tax --help","scope":"closed-year preparation and verified optional XHTML; no submission"},
-            {"name":"invoice export-public|invoice export-public-oioubl|invoice submit-public-peppol|invoice transmit-digisense","usage":"invoice export-public --help","scope":"original public invoice exports, metadata handoff and configured provider delivery; verified local artifacts"},
-            {"name":"report trial-balance|profit-loss|balance","usage":"report --help","scope":"original dated numeric reports; explicit authenticated server, human/JSON streams"},
-            {"name":"journal list","usage":"journal list --help","scope":"explicit authenticated native journal headers; JSON or Danish details"},
-            {"name":"dashboard","usage":"dashboard --server ORIGIN --cookie-file PATH --company SLUG --out FILE.html [--as-of YYYY-MM-DD] [--open]","scope":"authenticated server HTML, atomic local output"},
-            {"name":"remote","usage":"remote --help","scope":"explicit authenticated Rust HTTP server; no local fallback"},
-            {"name":"documents","usage":"documents --help","scope":"registered-PDF invoice extraction or retained evidence; explicit remote server/session"},
-            {"name":"validate-journal","usage":"validate-journal --company PATH < request.json","scope":"experimental source-backed advisory manual validation; no writer authority"},
-            {"name":"trial-balance","usage":"trial-balance --company PATH --from YYYY-MM-DD --to YYYY-MM-DD","scope":"experimental local read-only report"},
-            {"name":"rehearse-company-baseline","usage":"rehearse-company-baseline --company PATH","scope":"experimental explicit known unversioned physical baseline copy; no adoption authority"},
-            {"name":"rehearse-control-migration","usage":"rehearse-control-migration --workspace PATH","scope":"experimental private control copy; no source migration"},
-            {"name":"rehearse-company-migration","usage":"rehearse-company-migration --company PATH","scope":"experimental full canonical company prefixes0–36 and bounded minimal suffix32–36; no source migration"},
-            {"name":"verify-journal-hashes","usage":"verify-journal-hashes --company PATH","scope":"experimental journal canonical hashes; not full audit integrity"}
-        ]}));
+        return Ok(original_discovery::help());
     }
     if args == ["validate-journal", "--help"] {
         return Ok(
@@ -302,30 +299,151 @@ fn run(args: Vec<String>) -> Result<serde_json::Value, (u8, Error)> {
     Ok(json!({"ok":true,"format":"rentemester-trial-balance/1","data":report}))
 }
 fn main() -> ExitCode {
-    let args=match local_binding::prepare(std::env::args().skip(1).collect()) {Ok(args)=>args,Err((code,error))=>{println!("{}",json!({"ok":false,"code":error.code,"errors":[error.message]}));return ExitCode::from(code);}};
-    if recurring_original::accepts(&args) {let output=recurring_original::execute(&args);print!("{}",output.stdout);eprint!("{}",output.stderr);return ExitCode::from(output.exit);}
-    if invoice_financial_original::accepts(&args) {let output=invoice_financial_original::execute(&args);print!("{}",output.stdout);eprint!("{}",output.stderr);return ExitCode::from(output.exit);}
-    if invoice_public_original::accepts(&args) {let output=invoice_public_original::execute(&args);print!("{}",output.stdout);eprint!("{}",output.stderr);return ExitCode::from(output.exit);}
-    if invoice_claims_original::accepts(&args) {let output=invoice_claims_original::execute(&args);print!("{}",output.stdout);eprint!("{}",output.stderr);return ExitCode::from(output.exit);}
-    if invoice_lifecycle::accepts(&args) {let output=invoice_lifecycle::execute(&args);print!("{}",output.stdout);eprint!("{}",output.stderr);return ExitCode::from(output.exit);}
-    if invoice_original::accepts(&args) {let output=invoice_original::execute(&args);print!("{}",output.stdout);eprint!("{}",output.stderr);return ExitCode::from(output.exit);}
-    if payable_original::accepts(&args) {let output=payable_original::execute(&args);print!("{}",output.stdout);eprint!("{}",output.stderr);return ExitCode::from(output.exit);}
-    if direct_bank_original::accepts(&args) {let output=direct_bank_original::execute(&args);print!("{}",output.stdout);eprint!("{}",output.stderr);return ExitCode::from(output.exit);}
-    if bank_original::accepts(&args) {let output=bank_original::execute(&args);print!("{}",output.stdout);eprint!("{}",output.stderr);return ExitCode::from(output.exit);}
-    if bank_accounts_original::accepts(&args) {let output=bank_accounts_original::execute(&args);print!("{}",output.stdout);eprint!("{}",output.stderr);return ExitCode::from(output.exit);}
-    if bank_import::accepts(&args) {let output=bank_import::execute(&args);print!("{}",output.stdout);eprint!("{}",output.stderr);return ExitCode::from(output.exit);}
-    if bank_queries::accepts(&args) {let output=bank_queries::execute(&args);print!("{}",output.stdout);eprint!("{}",output.stderr);return ExitCode::from(output.exit);}
-    if args.first().map(String::as_str)==Some("system") && args.get(1).map(String::as_str)==Some("export-saft") {let output=saft_artifact::execute(&args[1..]);print!("{}",output.stdout);eprint!("{}",output.stderr);return ExitCode::from(output.exit);}
-    if args.first().map(String::as_str)==Some("system") && args.get(1).is_some_and(|s|matches!(s.as_str(),"export-authority"|"export-accountant")) {let output=handoff_export::execute(&args[1..]);print!("{}",output.stdout);eprint!("{}",output.stderr);return ExitCode::from(output.exit);}
+    let args = match original_args::prepare(std::env::args().skip(1).collect()) {
+        Ok(args) => args,
+        Err((code, error)) => {
+            eprintln!("{}: {}; see --help", error.code, error.message);
+            return ExitCode::from(code);
+        }
+    };
+    if let Some(output) = original_discovery::execute(&args) {
+        print!("{}", output.stdout);
+        eprint!("{}", output.stderr);
+        return ExitCode::from(output.exit);
+    }
+    let args = match local_binding::prepare(args) {
+        Ok(args) => args,
+        Err((code, error)) => {
+            println!(
+                "{}",
+                json!({"ok":false,"code":error.code,"errors":[error.message]})
+            );
+            return ExitCode::from(code);
+        }
+    };
+    if recurring_original::accepts(&args) {
+        let output = recurring_original::execute(&args);
+        print!("{}", output.stdout);
+        eprint!("{}", output.stderr);
+        return ExitCode::from(output.exit);
+    }
+    if invoice_financial_original::accepts(&args) {
+        let output = invoice_financial_original::execute(&args);
+        print!("{}", output.stdout);
+        eprint!("{}", output.stderr);
+        return ExitCode::from(output.exit);
+    }
+    if invoice_public_original::accepts(&args) {
+        let output = invoice_public_original::execute(&args);
+        print!("{}", output.stdout);
+        eprint!("{}", output.stderr);
+        return ExitCode::from(output.exit);
+    }
+    if invoice_claims_original::accepts(&args) {
+        let output = invoice_claims_original::execute(&args);
+        print!("{}", output.stdout);
+        eprint!("{}", output.stderr);
+        return ExitCode::from(output.exit);
+    }
+    if invoice_lifecycle::accepts(&args) {
+        let output = invoice_lifecycle::execute(&args);
+        print!("{}", output.stdout);
+        eprint!("{}", output.stderr);
+        return ExitCode::from(output.exit);
+    }
+    if invoice_original::accepts(&args) {
+        let output = invoice_original::execute(&args);
+        print!("{}", output.stdout);
+        eprint!("{}", output.stderr);
+        return ExitCode::from(output.exit);
+    }
+    if payable_original::accepts(&args) {
+        let output = payable_original::execute(&args);
+        print!("{}", output.stdout);
+        eprint!("{}", output.stderr);
+        return ExitCode::from(output.exit);
+    }
+    if direct_bank_original::accepts(&args) {
+        let output = direct_bank_original::execute(&args);
+        print!("{}", output.stdout);
+        eprint!("{}", output.stderr);
+        return ExitCode::from(output.exit);
+    }
+    if bank_original::accepts(&args) {
+        let output = bank_original::execute(&args);
+        print!("{}", output.stdout);
+        eprint!("{}", output.stderr);
+        return ExitCode::from(output.exit);
+    }
+    if bank_accounts_original::accepts(&args) {
+        let output = bank_accounts_original::execute(&args);
+        print!("{}", output.stdout);
+        eprint!("{}", output.stderr);
+        return ExitCode::from(output.exit);
+    }
+    if bank_import::accepts(&args) {
+        let output = bank_import::execute(&args);
+        print!("{}", output.stdout);
+        eprint!("{}", output.stderr);
+        return ExitCode::from(output.exit);
+    }
+    if bank_queries::accepts(&args) {
+        let output = bank_queries::execute(&args);
+        print!("{}", output.stdout);
+        eprint!("{}", output.stderr);
+        return ExitCode::from(output.exit);
+    }
+    if args.first().map(String::as_str) == Some("system")
+        && args.get(1).map(String::as_str) == Some("export-saft")
+    {
+        let output = saft_artifact::execute(&args[1..]);
+        print!("{}", output.stdout);
+        eprint!("{}", output.stderr);
+        return ExitCode::from(output.exit);
+    }
+    if args.first().map(String::as_str) == Some("system")
+        && args
+            .get(1)
+            .is_some_and(|s| matches!(s.as_str(), "export-authority" | "export-accountant"))
+    {
+        let output = handoff_export::execute(&args[1..]);
+        print!("{}", output.stdout);
+        eprint!("{}", output.stderr);
+        return ExitCode::from(output.exit);
+    }
 
-    if args.first().map(String::as_str)==Some("report") {
-        let output=if args.get(1).is_some_and(|s|matches!(s.as_str(),"annual"|"tax")) {annual_exports::execute(&args[1..])} else if args==["report","--help"] { dated_reports::Output{stdout:format!("{}\n",serde_json::to_string_pretty(&json!({"dated":dated_reports::help(),"annualTax":annual_exports::help()})).unwrap()),stderr:String::new(),exit:0} } else {dated_reports::execute(&args[1..])};
-        print!("{}",output.stdout);eprint!("{}",output.stderr);
+    if args.first().map(String::as_str) == Some("report") {
+        let output = if args
+            .get(1)
+            .is_some_and(|s| matches!(s.as_str(), "annual" | "tax"))
+        {
+            annual_exports::execute(&args[1..])
+        } else if args == ["report", "--help"] {
+            dated_reports::Output {
+                stdout: format!(
+                    "{}\n",
+                    serde_json::to_string_pretty(
+                        &json!({"dated":dated_reports::help(),"annualTax":annual_exports::help()})
+                    )
+                    .unwrap()
+                ),
+                stderr: String::new(),
+                exit: 0,
+            }
+        } else {
+            dated_reports::execute(&args[1..])
+        };
+        print!("{}", output.stdout);
+        eprint!("{}", output.stderr);
         return ExitCode::from(output.exit);
     }
     match run(args) {
         Ok(value) => {
-            if let Some(text)=value.as_str() {println!("{text}");} else {println!("{value}");}
+            if let Some(text) = value.as_str() {
+                println!("{text}");
+            } else {
+                println!("{value}");
+            }
             if value.get("ok").and_then(serde_json::Value::as_bool) == Some(false) {
                 ExitCode::from(1)
             } else {

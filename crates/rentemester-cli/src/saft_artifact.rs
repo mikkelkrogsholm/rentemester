@@ -37,26 +37,25 @@ fn parse(args: &[String]) -> Result<Input<'_>, String> {
     let (mut json, mut http) = (false, false);
     let mut cursor = 1;
     while cursor < args.len() {
-        let key = args[cursor].as_str();
+        let (key, attached) = crate::original_args::option(&args[cursor]);
         match key {
-            "--json" if !json => {
+            "--json" if attached.is_none() && !json => {
                 json = true;
                 cursor += 1;
             }
-            "--allow-loopback-http" if !http => {
+            "--allow-loopback-http" if attached.is_none() && !http => {
                 http = true;
                 cursor += 1;
             }
             "--server" | "--cookie-file" | "--company" | "--from" | "--to" | "--out"
             | "--generated-at" => {
-                let value = args
-                    .get(cursor + 1)
-                    .filter(|v| (key == "--generated-at" || !v.is_empty()) && !v.starts_with("--"))
+                let (value, next) = crate::original_args::value(args, cursor)
+                    .filter(|(value, _)| key == "--generated-at" || !value.is_empty())
                     .ok_or_else(|| format!("Missing value for {key}"))?;
-                if flags.insert(key, value.as_str()).is_some() {
+                if flags.insert(key, value).is_some() {
                     return Err(format!("Duplicate flag {key}"));
                 }
-                cursor += 2;
+                cursor = next;
             }
             _ => return Err(format!("Unknown or duplicate export flag {key}")),
         }
@@ -79,7 +78,12 @@ fn parse(args: &[String]) -> Result<Input<'_>, String> {
     Ok(Input { flags, json, http })
 }
 pub fn execute(args: &[String]) -> Output {
-    if args.len() == 2 && args[1] == "--help" {
+    if args
+        .iter()
+        .skip(1)
+        .take_while(|s| s.as_str() != "--")
+        .any(|s| s == "--help")
+    {
         return Output {
             stdout: format!("{}\n", serde_json::to_string_pretty(&help()).unwrap()),
             stderr: String::new(),
