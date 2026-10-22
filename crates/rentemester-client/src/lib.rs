@@ -542,3 +542,6 @@ pub use documents_original::{DocumentsOriginalMutation, documents_original_schem
 
 mod document_party_original;
 pub use document_party_original::{DocumentPartyOriginalOperation, document_party_original_schema, document_party_original_validate};
+
+mod invoice_extraction_original;
+pub use invoice_extraction_original::original_invoice_extraction_surface_schema;

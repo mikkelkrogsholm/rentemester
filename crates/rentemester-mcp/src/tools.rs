@@ -279,6 +279,7 @@ pub async fn call(api: &ApiClient, name: &str, args: Value) -> Result<Value, &'s
     if crate::exceptions::accepts(name) { return crate::exceptions::call(api,name,args).await; }
     if crate::periods::original(name) { return crate::periods::call_original(api,name,args).await; }
     if crate::journal_original::accepts(name) { return crate::journal_original::call(api,name,args).await; }
+    if matches!(name,"documents_extract_invoice"|"documents_invoice_extraction") {return crate::invoice_extraction::call(api,name,args).await;}
     if name=="invoice_validate" {return crate::invoice_validation::call(args);}
     if crate::recurring_original::accepts(name) {return crate::recurring_original::call(api,name,args).await;}
     if name=="invoice_write_off_bad_debt" && args.get("body").is_none() {return crate::invoice_bad_debt::call_original(api,args).await;}
@@ -373,7 +374,6 @@ pub async fn call(api: &ApiClient, name: &str, args: Value) -> Result<Value, &'s
         },
         "bank_reconciliation_candidates" | "bank_reconciliation_link" => crate::bank_reconciliation::call(api,name,args).await?,
         "parse_document" | "document_parse_status" | "document_parsed_text" | "parse_pending_documents" => crate::document_pdf::call(api,name,args).await?,
-        "documents_extract_invoice" | "documents_invoice_extraction" => crate::invoice_extraction::call(api,name,args).await?,
         "ingest_document" | "document_original" => crate::documents::call(api,name,args).await?,
         name if crate::reviewed_bookkeeping::accepts(name) => crate::reviewed_bookkeeping::call(api,name,args).await?,
         name @ ("backup_destinations"|"place_backup"|"verify_backup_placement") => crate::portable_backup::destination_call(api,name,args).await?,
