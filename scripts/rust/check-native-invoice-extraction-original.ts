@@ -13,7 +13,12 @@ export function originalExtractionProof(d: any) {
     evidence.push(value);
     writeFileSync(join(work, 'original-extraction-observations.json'), JSON.stringify(evidence), { mode: 0o600 });
   }
-  const admin = (path: string, body: any) => d.post('/api/workspace/' + path, body);
+  async function admin(path: string, body: any) {
+    const r = await ownerPage.request.post(base + '/api/workspace/' + path, { headers: { origin: base }, data: body });
+    const value = await r.json();
+    need(r.status() === (path === 'service-principals' ? 201 : 200) && value?.ok === true, 'Original service administration ' + path + ' HTTP' + r.status());
+    return value;
+  }
   function invoke(kind: string, write: boolean, id: number, service = false, confirm: any = true) {
     const common = ['--server', base, '--allow-loopback-http', service ? '--service-key-file' : '--cookie-file', service ? key : cookie];
     let argv: string[], input: string | undefined;
