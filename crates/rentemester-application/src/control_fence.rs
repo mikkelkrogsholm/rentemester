@@ -384,6 +384,14 @@ pub(crate) fn execute_authorized_with_backup<T>(
     authorize:impl FnOnce(&Transaction<'_>)->Result<String,Error>,
     apply:impl FnOnce(&Transaction<'_>,&str)->Result<T,Error>,
 )->Result<Committed<T>,Failure>{execute_authorized_both(control,company,check,false,authorize,|_,tx,actor|apply(tx,actor))}
+/// Paired service callback; control writes remain prohibited by the shared fence.
+pub(crate) fn execute_authorized_both_with_backup<T>(
+    control: &mut Connection, company: &mut Connection, check: Option<BackupCheck<'_>>,
+    authorize: impl FnOnce(&Transaction<'_>) -> Result<String, Error>,
+    apply: impl FnOnce(&Transaction<'_>, &Transaction<'_>, &str) -> Result<T, Error>,
+) -> Result<Committed<T>, Failure> {
+    execute_authorized_both(control, company, check, false, authorize, apply)
+}
 fn execute_authorized_both<T>(
     control:&mut Connection,company:&mut Connection,check:Option<BackupCheck<'_>>,
     control_owned: bool,
@@ -503,3 +511,34 @@ pub(crate) fn checkpoint(point: &str) {
 }
 #[cfg(test)]
 mod tests;
+
+#[cfg(test)]
+mod paired_callback_tests {
+    use super::*;
+    #[test]
+    fn paired_callback_reads_current_control_and_cannot_write_it() {
+        let mut control = Connection::open_in_memory().unwrap();
+        let mut company = Connection::open_in_memory().unwrap();
+        control.execute_batch("CREATE TABLE current_fact(value INTEGER); INSERT INTO current_fact VALUES(7)").unwrap();
+        company.execute_batch("CREATE TABLE effect(value INTEGER)").unwrap();
+        let result = execute_authorized_both_with_backup(&mut control, &mut company, None,
+            |_| Ok("synthetic".into()), |control, company, subject| {
+                assert_eq!(subject, "synthetic");
+                let value: i64 = control.query_row("SELECT value FROM current_fact", [], |r| r.get(0)).unwrap();
+                company.execute("INSERT INTO effect VALUES(?1)", [value]).unwrap();
+                Ok(value)
+            }).unwrap();
+        assert_eq!(result.value, 7);
+        assert!(result.control_reusable);
+        let failure = execute_authorized_both_with_backup(&mut control, &mut company, None,
+            |_| Ok("synthetic".into()), |control, company, _| {
+                control.execute("UPDATE current_fact SET value=8", []).unwrap();
+                company.execute("INSERT INTO effect VALUES(8)", []).unwrap();
+                Ok(())
+            }).unwrap_err();
+        assert_eq!(failure.stage, FailureStage::OutcomeUnknown);
+        assert_eq!(failure.error.code, "transaction_escaped");
+        assert_eq!(control.query_row("SELECT value FROM current_fact", [], |r| r.get::<_,i64>(0)).unwrap(), 7);
+        assert_eq!(company.query_row("SELECT count(*) FROM effect", [], |r| r.get::<_,i64>(0)).unwrap(), 1);
+    }
+}

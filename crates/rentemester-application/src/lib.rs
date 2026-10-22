@@ -1,4 +1,5 @@
 //! Shared use-case policy. Trusted adapters own authentication and current source observations.
+pub mod budget_original;
 pub mod journal_original;
 pub mod invoice_compensation;
 pub mod invoice_interest;
