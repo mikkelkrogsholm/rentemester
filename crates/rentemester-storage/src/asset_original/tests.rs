@@ -58,7 +58,9 @@ fn missing_document_durable_exception_dedup_and_manual_resolution() {
         0
     );
     input.confirm_immediate_write_off = true;
-    for _ in 0..2 {
+    // Metadata refusals precede financial posting-date checks in the source.
+    for date in ["2025-12-31", "2027-01-01"] {
+        input.date = date.into();
         let result = write_off(
             &tx,
             &input,
@@ -123,7 +125,6 @@ fn invalid_inputs_never_queue_exception_and_unexpected_errors_remain_errors() {
         (9_007_199_254_740_992, 250.0, "2026-10-19"),
         (99, 0.0, "2026-10-19"),
         (99, 250.0, "2026-02-30"),
-        (99, 250.0, "2027-01-01"),
     ] {
         let mut i = writeoff(id, cost);
         i.date = date.into();
@@ -301,6 +302,20 @@ fn source_register_selected_periods_receipts_report_and_writeoff() {
     wo.cost = Number::from(250);
     wo.expense_account = "D".into();
     wo.payment_account = Some("A".into());
+    // A valid source exception may use future metadata, but an actual journal
+    // remains subject to the existing admitted posting horizon.
+    wo.date = "2027-01-01".into();
+    let journals_before: i64 = tx
+        .query_row("SELECT count(*) FROM journal_entries", [], |r| r.get(0))
+        .unwrap();
+    assert!(write_off(&tx, &wo, "synthetic", PrincipalKind::ServiceAccount, today).is_err());
+    assert_eq!(
+        tx.query_row("SELECT count(*) FROM journal_entries", [], |r| r
+            .get::<_, i64>(0))
+            .unwrap(),
+        journals_before
+    );
+    wo.date = "2026-10-19".into();
     let written = write_off(&tx, &wo, "synthetic", PrincipalKind::ServiceAccount, today).unwrap();
     assert_eq!(written["ok"], true);
     assert_eq!(written["thresholdDkk"], 36000);
@@ -385,6 +400,14 @@ fn source_zero_slice_registration_report_and_posting_refusal() {
             .get::<_, Option<String>>(0))
             .unwrap(),
         None
+    );
+    assert_eq!(assets::next(&tx, id).unwrap()["nextPeriodAmount"], 0.0);
+    assert_eq!(
+        assets::list(&tx, "synthetic").unwrap()["assets"]
+            .as_array()
+            .unwrap()
+            .len(),
+        1
     );
     let first = Depreciate {
         period: 1,

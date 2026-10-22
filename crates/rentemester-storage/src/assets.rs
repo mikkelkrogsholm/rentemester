@@ -181,7 +181,7 @@ pub(crate) fn register_resolved(
     }
     // Registration describes an already capitalised purchase; never invent a ledger balance.
     let mut available = Money::default();
-    let mut q=tx.prepare("SELECT l.debit_amount,l.credit_amount,j.transaction_date FROM journal_lines l JOIN accounts a ON a.id=l.account_id JOIN journal_entries j ON j.id=l.journal_entry_id WHERE j.status='posted' AND j.document_id=?1 AND a.account_no=?2 ORDER BY j.id,l.id").map_err(invalid)?;
+    let mut q=tx.prepare("SELECT l.debit_amount,l.credit_amount,j.transaction_date FROM journal_lines l JOIN accounts a ON a.id=l.account_id JOIN journal_entries j ON j.id=l.journal_entry_id WHERE j.document_id=?1 AND a.account_no=?2 ORDER BY j.id,l.id").map_err(invalid)?;
     let mut rows = q
         .query(params![i.purchase_document_id, asset])
         .map_err(invalid)?;

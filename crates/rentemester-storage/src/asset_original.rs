@@ -208,11 +208,8 @@ pub fn write_off(
             "name, category, expense account and threshold rule source required",
         ));
     }
-    let acquisition = Date::parse(&input.acquisition_date)?;
+    Date::parse(&input.acquisition_date)?;
     let date = Date::parse(&input.date)?;
-    if acquisition > date || date > latest {
-        return Err(refused("invalid write-off date bounds"));
-    }
     let cost = money(&input.cost)?;
     if cost == Money::default() || cost.is_negative() {
         return Err(refused("cost must be positive"));
@@ -243,12 +240,6 @@ pub fn write_off(
         )));
     }
     original(tx, input.document_id)?;
-    let metadata = crate::expense::metadata(tx, input.document_id)?;
-    if metadata.currency.as_deref().unwrap_or("DKK") != "DKK"
-        || !matches!(metadata.kind(), "purchase_sale" | "cash_register_receipt")
-    {
-        return Err(refused("write-off requires a DKK purchase document"));
-    }
     if bound.subtract(&cost).is_negative() {
         let message = format!(
             "Immediate write-off for \"{name}\" (cost {}) exceeds the small-asset threshold {threshold_dkk} for income year {year}",
@@ -266,6 +257,12 @@ pub fn write_off(
             "cost {} exceeds the small-asset threshold {threshold_dkk} for income year {year} — eligibility uncertain, exception queued for advisor review",
             wire(&cost)?
         )));
+    }
+    let metadata = crate::expense::metadata(tx, input.document_id)?;
+    if metadata.currency.as_deref().unwrap_or("DKK") != "DKK"
+        || !matches!(metadata.kind(), "purchase_sale" | "cash_register_receipt")
+    {
+        return Err(refused("write-off requires a DKK purchase document"));
     }
     let expense = assets::account(tx, Some(input.expense_account.trim()), "expense", "debit")?;
     let payment = match input.payment_account.as_deref() {
