@@ -567,6 +567,7 @@ pub mod credit_note;
 pub mod assets;
 
 pub mod accruals;
+pub mod accrual_original;
 pub mod budget;
 pub mod mileage;
 

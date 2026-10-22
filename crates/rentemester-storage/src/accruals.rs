@@ -1,5 +1,11 @@
 //! Append-only accrual registration and recognition through the native journal writer.
-use crate::{invalid, legacy_money};
+use crate::{idempotency::PrincipalKind, legacy_money};
+fn invalid(_: impl std::fmt::Display) -> Error {
+    Error::new(
+        "accrual_storage_failure",
+        "accrual storage failed; abort caller transaction",
+    )
+}
 use rentemester_engine::{
     Error, accrual,
     currency::Currency,
@@ -38,20 +44,20 @@ pub struct Recognize {
     pub settlement_account_no: Option<String>,
     pub confirm: bool,
 }
-struct Accrual {
+pub(crate) struct Accrual {
     id: i64,
-    kind: String,
+    pub(crate) kind: String,
     description: String,
-    total: Money,
-    periods: u32,
-    first: String,
-    step: u32,
+    pub(crate) total: Money,
+    pub(crate) periods: u32,
+    pub(crate) first: String,
+    pub(crate) step: u32,
     balance: String,
     result: String,
-    document: i64,
+    pub(crate) document: Option<i64>,
     registration: i64,
 }
-fn load(tx: &Transaction<'_>, id: i64) -> Result<Accrual, Error> {
+pub(crate) fn load(tx: &Transaction<'_>, id: i64) -> Result<Accrual, Error> {
     let row=tx.query_row("SELECT id,accrual_type,description,total_amount,recognition_periods,first_recognition_date,period_step_months,balance_account_no,result_account_no,document_id,registration_journal_entry_id FROM accruals WHERE id=?1",[id],|r|Ok((r.get(0)?,r.get(1)?,r.get(2)?,legacy_money(r.get_ref(3)?),r.get(4)?,r.get(5)?,r.get(6)?,r.get(7)?,r.get(8)?,r.get(9)?,r.get(10)?))).optional().map_err(invalid)?.ok_or_else(||refused("accrual not found"))?;
     Ok(Accrual {
         id: row.0,
@@ -68,7 +74,9 @@ fn load(tx: &Transaction<'_>, id: i64) -> Result<Accrual, Error> {
     })
 }
 pub fn document_id(tx: &Transaction<'_>, id: i64) -> Result<i64, Error> {
-    Ok(load(tx, id)?.document)
+    load(tx, id)?
+        .document
+        .ok_or_else(|| refused("accrual has no original document"))
 }
 fn account(tx: &Transaction<'_>, no: &str, kind: &str, balance: &str) -> Result<(), Error> {
     let valid:bool=tx.query_row("SELECT EXISTS(SELECT 1 FROM accounts WHERE account_no=?1 AND active=1 AND allow_direct_posting=1 AND type=?2 AND normal_balance=?3)",params![no,kind,balance],|r|r.get(0)).map_err(invalid)?;
@@ -110,13 +118,13 @@ fn accounts(
     Ok(())
 }
 fn audit(tx: &Transaction<'_>, id: i64, event: &str, actor: &str) -> Result<(), Error> {
-    tx.execute("INSERT INTO audit_log(event_type,entity_type,entity_id,message,actor) VALUES(?1,'accrual',?2,?3,?4)",params![event,id.to_string(),format!("{event} {id}"),format!("user:{actor}")]).map_err(invalid)?;
+    tx.execute("INSERT INTO audit_log(event_type,entity_type,entity_id,message,actor) VALUES(?1,'accrual',?2,?3,?4)",params![event,id.to_string(),format!("{event} {id}"),actor]).map_err(invalid)?;
     Ok(())
 }
 struct Posting<'a> {
     date: &'a str,
     description: &'a str,
-    document: i64,
+    document: Option<i64>,
     debit: &'a str,
     credit: &'a str,
     amount: &'a Money,
@@ -126,7 +134,7 @@ fn post(
     posting: Posting<'_>,
     actor: &str,
     latest: Date,
-) -> Result<i64, Error> {
+) -> Result<Value, Error> {
     let Posting {
         date,
         description,
@@ -139,7 +147,7 @@ fn post(
         transaction_date: Date::parse(date)?,
         text: description.to_owned(),
         currency: Currency::parse("DKK")?,
-        document_id: Some(DocumentId::from_sqlite(document)),
+        document_id: document.map(DocumentId::from_sqlite),
         source_bank_transaction_id: None,
         amount_foreign: None,
         amount_dkk: None,
@@ -168,16 +176,14 @@ fn post(
         &crate::journal_preview::manual_journal_rule_version()?,
         latest,
         crate::journal_post::Actor {
-            subject: &format!("user:{actor}"),
+            subject: actor,
             program: "rentemester-rust",
         },
     )?;
     if result["ok"] != true {
         return Err(refused(result["errors"].to_string()));
     }
-    result["entryId"]
-        .as_i64()
-        .ok_or_else(|| refused("missing accrual journal"))
+    Ok(result)
 }
 fn intact(tx: &Transaction<'_>, id: i64) -> Result<(), Error> {
     let valid:bool=tx.query_row("SELECT EXISTS(SELECT 1 FROM journal_entries j WHERE j.id=?1 AND j.status='posted' AND NOT EXISTS(SELECT 1 FROM journal_entries r WHERE r.reversal_of_entry_id=j.id))",[id],|r|r.get(0)).map_err(invalid)?;
@@ -221,15 +227,17 @@ pub fn preview(tx: &Transaction<'_>, id: i64) -> Result<Value, Error> {
         json!({"accrualId":id,"schedule":schedule(tx,&a)?,"documentId":a.document,"accrualType":a.kind}),
     )
 }
-pub fn register(
+pub(crate) fn register_resolved(
     tx: &Transaction<'_>,
     i: &Register,
     actor: &str,
     latest: Date,
+    document: Option<i64>,
+    original: bool,
 ) -> Result<Value, Error> {
     crate::journal_post::require_current(tx)?;
     if !i.confirm
-        || i.document_id <= 0
+        || document.is_some_and(|id| id <= 0 || id > 9_007_199_254_740_991)
         || i.description.trim().is_empty()
         || i.description.len() > 500
         || i.note.as_ref().is_some_and(|s| s.len() > 4096)
@@ -239,7 +247,7 @@ pub fn register(
         ));
     }
     let date = Date::parse(&i.registration_date)?;
-    if date > Date::parse(&i.first_recognition_date)? {
+    if !original && date > Date::parse(&i.first_recognition_date)? {
         return Err(refused(
             "registration must not follow first recognition date",
         ));
@@ -259,9 +267,11 @@ pub fn register(
         &i.result_account_no,
         Some(&i.settlement_account_no),
     )?;
-    let meta = crate::expense::metadata(tx, i.document_id)?;
-    if meta.currency.as_deref().unwrap_or("DKK") != "DKK" {
-        return Err(refused("accrual evidence must be DKK"));
+    if let Some(document) = document {
+        let meta = crate::expense::metadata(tx, document)?;
+        if meta.currency.as_deref().unwrap_or("DKK") != "DKK" {
+            return Err(refused("accrual evidence must be DKK"));
+        }
     }
     let (debit, credit) = match i.accrual_type.as_str() {
         "prepaid_expense" => (&i.balance_account_no, &i.settlement_account_no),
@@ -273,7 +283,7 @@ pub fn register(
         Posting {
             date: &i.registration_date,
             description: &format!("Accrual registration: {}", i.description.trim()),
-            document: i.document_id,
+            document,
             debit,
             credit,
             amount: &total,
@@ -281,22 +291,50 @@ pub fn register(
         actor,
         latest,
     )?;
-    let id:i64=tx.query_row("INSERT INTO accruals(accrual_type,description,total_amount,recognition_periods,first_recognition_date,period_step_months,balance_account_no,result_account_no,document_id,registration_journal_entry_id,note) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11) RETURNING id",params![i.accrual_type,i.description.trim(),crate::journal_post::money(&total)?,i.recognition_periods,i.first_recognition_date,i.period_step_months,i.balance_account_no,i.result_account_no,i.document_id,entry,i.note],|r|r.get(0)).map_err(invalid)?;
+    let receipt = entry;
+    let entry = receipt["entryId"]
+        .as_i64()
+        .ok_or_else(|| refused("missing accrual journal"))?;
+    let id:i64=tx.query_row("INSERT INTO accruals(accrual_type,description,total_amount,recognition_periods,first_recognition_date,period_step_months,balance_account_no,result_account_no,document_id,registration_journal_entry_id,note) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11) RETURNING id",params![i.accrual_type,i.description.trim(),crate::journal_post::money(&total)?,i.recognition_periods,i.first_recognition_date,i.period_step_months,i.balance_account_no,i.result_account_no,document,entry,i.note],|r|r.get(0)).map_err(invalid)?;
     audit(tx, id, "accrual_register", actor)?;
-    Ok(json!({"accrualId":id,"entryId":entry,"schedule":schedule(tx,&load(tx,id)?)?}))
+    let mut result = receipt;
+    result["accrualId"] = json!(id);
+    result["accrualType"] = json!(i.accrual_type);
+    result["totalPeriods"] = json!(i.recognition_periods);
+    result["periodAmount"] = wire(
+        &accrual::period(
+            &total,
+            i.recognition_periods,
+            &i.first_recognition_date,
+            i.period_step_months,
+            1,
+        )?
+        .1,
+    )?;
+    if !original {
+        result["schedule"] = schedule(tx, &load(tx, id)?)?;
+    }
+    Ok(result)
 }
-pub fn recognize(
+pub(crate) fn recognize_resolved(
     tx: &Transaction<'_>,
     id: i64,
     i: &Recognize,
     actor: &str,
     latest: Date,
+    original: bool,
 ) -> Result<Value, Error> {
     crate::journal_post::require_current(tx)?;
     if !i.confirm {
         return Err(refused("recognition confirmation required"));
     }
     let a = load(tx, id)?;
+    if let Some(document) = a.document {
+        let meta = crate::expense::metadata(tx, document)?;
+        if meta.currency.as_deref().unwrap_or("DKK") != "DKK" {
+            return Err(refused("accrual evidence must be DKK"));
+        }
+    }
     let (indices, _) = posted(tx, &a)?;
     if indices.contains(&i.period_index) {
         return Err(refused("accrual period already recognized"));
@@ -304,7 +342,7 @@ pub fn recognize(
     let (scheduled, amount) =
         accrual::period(&a.total, a.periods, &a.first, a.step, i.period_index)?;
     // Recognition cannot bring a future service period forward; a later open posting date remains explicit.
-    if Date::parse(&i.transaction_date)? < Date::parse(&scheduled)? {
+    if !original && Date::parse(&i.transaction_date)? < Date::parse(&scheduled)? {
         return Err(refused("posting date cannot precede scheduled recognition"));
     }
     let settlement = if a.kind == "accrued_expense" {
@@ -338,13 +376,27 @@ pub fn recognize(
         actor,
         latest,
     )?;
+    let receipt = entry;
+    let entry = receipt["entryId"]
+        .as_i64()
+        .ok_or_else(|| refused("missing accrual journal"))?;
     tx.execute("INSERT INTO accrual_schedule_postings(accrual_id,period_index,recognition_date,amount,journal_entry_id) VALUES(?1,?2,?3,?4,?5)",params![id,i.period_index,i.transaction_date,crate::journal_post::money(&amount)?,entry]).map_err(invalid)?;
     audit(tx, id, "accrual_recognize", actor)?;
-    Ok(
-        json!({"accrualId":id,"entryId":entry,"periodIndex":i.period_index,"periodAmount":wire(&amount)?}),
-    )
+    let mut result = receipt;
+    result["accrualId"] = json!(id);
+    result["periodIndex"] = json!(i.period_index);
+    result["periodAmount"] = wire(&amount)?;
+    result["recognizedPeriods"] = json!(indices.len() + 1);
+    result["totalPeriods"] = json!(a.periods);
+    result["fullyRecognized"] = json!(indices.len() + 1 == a.periods as usize);
+    Ok(result)
 }
 pub fn list(tx: &Transaction<'_>, slug: &str) -> Result<Value, Error> {
+    Ok(
+        json!({"slug":slug,"nativeAccruals":true,"company":crate::company_setup::profile(tx)?,"report":report(tx)?}),
+    )
+}
+pub(crate) fn report(tx: &Transaction<'_>) -> Result<Value, Error> {
     let mut q = tx
         .prepare("SELECT id FROM accruals ORDER BY id")
         .map_err(invalid)?;
@@ -364,7 +416,54 @@ pub fn list(tx: &Transaction<'_>, slug: &str) -> Result<Value, Error> {
         rows.push(json!({"accrualId":id,"accrualType":a.kind,"description":a.description,"totalAmount":wire(&a.total)?,"recognitionPeriods":a.periods,"recognizedPeriods":indices.len(),"recognizedAmount":wire(&value)?,"remainingAmount":wire(&a.total.subtract(&value))?,"fullyRecognized":indices.len()==a.periods as usize,"balanceAccountNo":a.balance,"resultAccountNo":a.result,"firstRecognitionDate":a.first,"periodStepMonths":a.step}));
     }
     Ok(
-        json!({"slug":slug,"nativeAccruals":true,"company":crate::company_setup::profile(tx)?,"report":{"ok":true,"accruals":rows,"totals":{"totalAmount":wire(&total)?,"recognizedAmount":wire(&recognized)?,"remainingAmount":wire(&total.subtract(&recognized))?},"errors":[]}}),
+        json!({"ok":true,"accruals":rows,"totals":{"totalAmount":wire(&total)?,"recognizedAmount":wire(&recognized)?,"remainingAmount":wire(&total.subtract(&recognized))?},"errors":[]}),
+    )
+}
+
+pub(crate) fn principal(subject: &str, kind: PrincipalKind) -> Result<String, Error> {
+    if subject.trim().is_empty() || subject.len() > 256 || subject.chars().any(char::is_control) {
+        return Err(refused("valid current principal required"));
+    }
+    Ok(format!(
+        "{}:{subject}",
+        match kind {
+            PrincipalKind::User => "user",
+            PrincipalKind::ServiceAccount => "service_account",
+        }
+    ))
+}
+pub fn register(
+    tx: &Transaction<'_>,
+    i: &Register,
+    actor: &str,
+    latest: Date,
+) -> Result<Value, Error> {
+    if i.document_id <= 0 {
+        return Err(refused("original document required"));
+    }
+    register_resolved(
+        tx,
+        i,
+        &principal(actor, PrincipalKind::User)?,
+        latest,
+        Some(i.document_id),
+        false,
+    )
+}
+pub fn recognize(
+    tx: &Transaction<'_>,
+    id: i64,
+    i: &Recognize,
+    actor: &str,
+    latest: Date,
+) -> Result<Value, Error> {
+    recognize_resolved(
+        tx,
+        id,
+        i,
+        &principal(actor, PrincipalKind::User)?,
+        latest,
+        false,
     )
 }
 
