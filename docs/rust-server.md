@@ -3253,8 +3253,8 @@ MCP og HTTP kræver fortsat `confirm:true`. Serveren validerer leverede beløb,
 kundekort, adgang og originale bilag. Ved ukendt udfald skal status og
 bogføring afstemmes før et nyt forsøg; klienterne gentager aldrig automatisk.
 
-Dette forløb erstatter ikke de åbne kontrakter for `repair-posting` og de
-resterende claim-/beregningskommandoer.
+De resterende claim-/beregningskommandoer har fortsat åbne oprindelige
+CLI/MCP-kontrakter.
 
 
 ### Fakturabetaling uden bankimport og med eksisterende postering (Group149)
@@ -3281,3 +3281,34 @@ Svaret indeholder `paymentId`, `journalEntryId`, `invoiceDocumentId`,
 fakturastatus og journal afstemmes før et nyt forsøg; der er ingen automatisk
 gentagelse. Bankimport, moms og oprindelige dokumenter ændres ikke ved ren
 tilknytning af en eksisterende postering.
+
+
+### Reparation af en uklassificeret fakturapostering (Group150)
+
+Efter udtrykkelig gennemgang kan operatøren bruge CLI-kommandoen:
+
+```sh
+rentemester-rust invoice repair-posting --document-id ID \
+  --legacy-journal-entry-id ID --reason 'Begrundelse for reparationen' \
+  --revenue-account KONTO --company VIRKSOMHED --server SERVER \
+  --cookie-file COOKIEFIL --json
+```
+
+`--invoice-number` kan erstatte dokumentvalget. De almindelige transport- og
+legitimationsregler gælder; der er ikke tilføjet et MCP-reparationsværktøj.
+Salgskontoen vælges eksplicit som ved `invoice post`. Den tidligere faste
+konto 1000 genindføres ikke.
+
+Serveren kræver præcis én navngivet, aktiv og uklassificeret gammel postering,
+ingen banktilknytning, ingen efterfølgende krav/betalinger/kreditnotaer og ingen
+anden anvendelse eller ekstra aktiv fakturapostering. Begge berørte datoer skal
+ligge i åbne perioder. I én transaktion oprettes den korrekte bogføring på
+fakturadatoen og en præcis modpostering på den gamle posterings oprindelige
+dato. Originalbilag og den gamle postering bevares. Hvis et trin afvises,
+rulles hele reparationen tilbage. Almindelig bogføring og generisk tilbageførsel
+beholder deres beskyttelse mod dobbelt eller løsrevet fakturabogføring.
+
+Svaret identificerer gammel, ny og modposteret journal samt den nye posterings
+nummer/hash og anvendte regler. Begrundelse og alle identiteter gemmes i audit.
+Gentaget reparation afvises. Ved ukendt udfald skal den kanoniske fakturastatus
+og de konkrete journalidentiteter kontrolleres før videre handling.
