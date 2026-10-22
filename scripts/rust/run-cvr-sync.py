@@ -524,6 +524,8 @@ def main():
             if args.master_data_original:
                 helper = REPO / 'scripts/rust/check-native-master-data-original.ts'
                 report['masterDataOriginalHelperSha256'] = digest(helper)
+                original_sources = [helper] + [REPO / name for name in ['src/cli/customer.ts','src/cli/vendor.ts','src/cli-meta/master-data-specs.ts','src/mcp/tools/customer.ts','src/mcp/tools/vendor.ts','src/mcp/pagination.ts','src/core/master-data.ts','src/core/vies.ts']]
+                report['originalSourceHashes'] = {str(path.relative_to(REPO)):digest(path) for path in original_sources}
                 report['workflow'] = 'original_customer_vendor_master_data'
                 browser_source = browser_source.replace("let stable,freshOwner,sourceCookie,protectedSettings;", "let stable,freshOwner,sourceCookie,protectedSettings; let originalProof;")
                 browser_source = browser_source.replace("else if(action==='setup')", "else if(action==='master-original'){const {createMasterDataOriginalProof}=await import(" + json.dumps(helper.as_uri()) + ");originalProof=createMasterDataOriginalProof(ownerPage,memberPage,base,work);value=await originalProof.run();}else if(action==='master-original-reopen'){await ownerPage.context().clearCookies();await login(ownerPage,owner);value=await originalProof.reopen();}else if(action==='setup')")
@@ -555,6 +557,13 @@ def main():
                     expected = Counter({('DK','12345678'):1,('DE',('123'+'456789')):3,('DE','0'*9):1,('DE','1'*9):1,('DE','3'*9):1})
                     if Counter((r['countryCode'],r['vatNumber']) for r in vies_requests) != expected:
                         raise RuntimeError('VIES current observation/request count differs; missing proof or forbidden retry')
+                if any(digest(path) != report['originalSourceHashes'][str(path.relative_to(REPO))] for path in original_sources) or digest(Path(__file__)) != report['runnerSha256']:
+                    raise RuntimeError('Original master-data pinned sources changed during proof')
+                if any(digest(path) != report['artifacts'][name] or digest(getattr(args,name)) != report['artifacts'][name] for name,path in pinned.items()):
+                    raise RuntimeError('Original master-data pinned binaries changed during proof')
+                for web_root in [web,args.web_dir]:
+                    if {str(path.relative_to(web_root)):digest(path) for path in sorted(web_root.rglob('*')) if path.is_file()} != report['webFiles']:
+                        raise RuntimeError('Original master-data pinned web artifacts changed during proof')
                 report.update({'status':'passed','currentAction':'complete','masterDataOriginalActualQualified':True,'independentSql':first,'archivedBoundaryActualQualified':False,'delayedProviderRevokeActualQualified':False})
                 save()
                 print('PASS: original customer/vendor finite synthetic CLI/MCP proof and exact normal MFA restart; '+str(args.evidence))
