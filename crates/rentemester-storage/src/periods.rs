@@ -1,9 +1,11 @@
 //! Reviewed period locks. All lifecycle changes append evidence on the admitted writer.
 pub(crate) mod audit;
 pub(crate) mod bank_audit;
-mod readiness;
+mod mcp;
 pub mod original;
+mod readiness;
 use crate::invalid;
+pub use mcp::{close_mcp, list_original, review_principal};
 pub use readiness::compute;
 use rentemester_engine::{Error, fiscal_year::Date, sales_invoice::refused, vat_period};
 use rusqlite::{OptionalExtension, Transaction, params};
@@ -102,13 +104,15 @@ pub fn list(tx: &Transaction<'_>, slug: &str) -> Result<Value, Error> {
     )
 }
 pub fn review(tx: &Transaction<'_>, packet: &Value, actor: &str) -> Result<Value, Error> {
-    crate::journal_post::require_current(tx)?;
-    tx.execute("INSERT OR IGNORE INTO period_close_readiness_packets(packet_hash,period_start,period_end,cutoff,packet_json) VALUES(?1,?2,?3,?4,?5)",params![packet["hash"].as_str(),packet["periodStart"].as_str(),packet["periodEnd"].as_str(),packet["cutoff"].as_str(),packet.to_string()]).map_err(invalid)?;
-    let principal = json!({"kind":"user","subjectId":actor}).to_string();
-    let (id,created):(i64,String)=tx.query_row("INSERT INTO period_close_reviews(packet_id,packet_hash,reviewer_actor,reviewer_principal) VALUES((SELECT id FROM period_close_readiness_packets WHERE packet_hash=?1),?1,?2,?3) RETURNING id,created_at",params![packet["hash"].as_str(),format!("user:{actor}"),principal],|r|Ok((r.get(0)?,r.get(1)?))).map_err(invalid)?;
-    Ok(
-        json!({"id":id,"packet":packet,"reviewerActor":format!("user:{actor}"),"reviewerPrincipal":{"kind":"user","subjectId":actor},"createdAt":created}),
-    )
+    review_principal(tx, packet, actor)
+}
+
+fn audit_actor(actor: &str) -> String {
+    if actor.starts_with("service-account:") {
+        actor.to_owned()
+    } else {
+        format!("user:{actor}")
+    }
 }
 fn event(
     tx: &Transaction<'_>,
@@ -117,7 +121,7 @@ fn event(
     actor: &str,
     message: &str,
 ) -> Result<(), Error> {
-    tx.execute("INSERT INTO audit_log(event_type,entity_type,entity_id,message,actor) VALUES(?1,'accounting_period',?2,?3,?4)",params![event,id.to_string(),message,format!("user:{actor}")]).map_err(invalid)?;
+    tx.execute("INSERT INTO audit_log(event_type,entity_type,entity_id,message,actor) VALUES(?1,'accounting_period',?2,?3,?4)",params![event,id.to_string(),message,audit_actor(actor)]).map_err(invalid)?;
     Ok(())
 }
 fn decision(
@@ -128,7 +132,7 @@ fn decision(
     actor: &str,
     reason: Option<&str>,
 ) -> Result<(), Error> {
-    tx.execute("INSERT INTO period_close_decisions(period_id,packet_hash,decision,actor,reason,supersedes_decision_id) VALUES(?1,?2,?3,?4,?5,(SELECT id FROM period_close_decisions WHERE period_id=?1 ORDER BY id DESC LIMIT 1))",params![id,packet["hash"].as_str(),value,format!("user:{actor}"),reason]).map_err(invalid)?;
+    tx.execute("INSERT INTO period_close_decisions(period_id,packet_hash,decision,actor,reason,supersedes_decision_id) VALUES(?1,?2,?3,?4,?5,(SELECT id FROM period_close_decisions WHERE period_id=?1 ORDER BY id DESC LIMIT 1))",params![id,packet["hash"].as_str(),value,audit_actor(actor),reason]).map_err(invalid)?;
     Ok(())
 }
 pub fn close(
@@ -148,14 +152,26 @@ fn close_with_status(
     today: &str,
     reported: bool,
 ) -> Result<Value, Error> {
+    close_authorized(tx, input, packet, actor, today, reported, false)
+}
+#[allow(clippy::too_many_arguments)]
+fn close_authorized(
+    tx: &Transaction<'_>,
+    input: &Close,
+    packet: &Value,
+    actor: &str,
+    today: &str,
+    reported: bool,
+    trusted_force: bool,
+) -> Result<Value, Error> {
     crate::journal_post::require_current(tx)?;
     bounds(&input.period_start, &input.period_end)?;
-    if !input.confirm || input.force == Some(true) {
+    if !input.confirm || (input.force == Some(true) && !trusted_force) {
         return Err(refused(
             "confirmation required; forced period close is not ported to native execution",
         ));
     }
-    if Date::parse(&input.period_end)? > Date::parse(today)? {
+    if !trusted_force && Date::parse(&input.period_end)? > Date::parse(today)? {
         return Err(refused(
             "period ends in the future; wait until it is complete",
         ));
@@ -189,7 +205,7 @@ fn close_with_status(
     {
         return Err(refused("PERIOD_CLOSE_PACKET_STALE_OR_MISSING"));
     }
-    if packet["blockers"].as_u64() != Some(0) {
+    if !trusted_force && packet["blockers"].as_u64() != Some(0) {
         return Err(refused(
             "PERIOD_CLOSE_BLOCKED: resolve every blocked or unavailable control",
         ));
@@ -208,16 +224,44 @@ fn close_with_status(
         id
     } else {
         let status = if reported { "reported" } else { "closed" };
-        tx.query_row("INSERT INTO accounting_periods(period_start,period_end,kind,status,closed_at,closed_by,reference,reported_at) VALUES(?1,?2,?3,?4,CURRENT_TIMESTAMP,?5,?6,CASE WHEN ?4='reported' THEN CURRENT_TIMESTAMP ELSE NULL END) RETURNING id",params![input.period_start,input.period_end,kind,status,format!("user:{actor}"),input.reference],|r|r.get(0)).map_err(invalid)?
+        tx.query_row("INSERT INTO accounting_periods(period_start,period_end,kind,status,closed_at,closed_by,reference,reported_at) VALUES(?1,?2,?3,?4,CURRENT_TIMESTAMP,?5,?6,CASE WHEN ?4='reported' THEN CURRENT_TIMESTAMP ELSE NULL END) RETURNING id",params![input.period_start,input.period_end,kind,status,audit_actor(actor),input.reference],|r|r.get(0)).map_err(invalid)?
     };
     event(
         tx,
         id,
-        if reported { "period_report" } else { "period_close" },
+        if reported {
+            "period_report"
+        } else {
+            "period_close"
+        },
         actor,
         &format!("Closed {kind} {}..{}", input.period_start, input.period_end),
     )?;
-    decision(tx, id, packet, "closed", actor, None)?;
+    decision(
+        tx,
+        id,
+        packet,
+        if trusted_force {
+            "forced_closed"
+        } else {
+            "closed"
+        },
+        actor,
+        if trusted_force {
+            input.reason.as_deref()
+        } else {
+            None
+        },
+    )?;
+    if trusted_force {
+        mcp::obligations(
+            tx,
+            id,
+            packet,
+            actor,
+            input.reason.as_deref().unwrap_or_default(),
+        )?;
+    }
     Ok(
         json!({"id":id,"periodStart":input.period_start,"periodEnd":input.period_end,"kind":kind,"status":if reported { "reported" } else { "closed" },"reference":input.reference}),
     )
@@ -268,7 +312,7 @@ pub fn reopen(
     )?;
     decision(tx, id, packet, "reopened", actor, Some(input.reason.trim()))?;
     Ok(
-        json!({"id":id,"periodStart":input.period_start,"periodEnd":input.period_end,"kind":kind,"effectiveStatus":"open","reopenedBy":format!("user:{actor}"),"reason":input.reason.trim()}),
+        json!({"id":id,"periodStart":input.period_start,"periodEnd":input.period_end,"kind":kind,"effectiveStatus":"open","reopenedBy":audit_actor(actor),"reason":input.reason.trim()}),
     )
 }
 

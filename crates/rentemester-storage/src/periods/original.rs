@@ -60,7 +60,7 @@ pub fn review_expected(
     }
     review(tx, packet, actor)
 }
-fn envelope(mut value: Value) -> Value {
+pub(super) fn envelope(mut value: Value) -> Value {
     let object = value.as_object_mut().expect("native period result object");
     if let Some(id) = object.remove("id") {
         object.insert("periodId".into(), id);
