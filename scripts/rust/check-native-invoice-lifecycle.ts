@@ -5,12 +5,12 @@ import { join } from 'node:path';
 import { isDeepStrictEqual } from 'node:util';
 import { originalInvoiceProof } from './check-native-invoice-original';
 
-type Operation = 'issue' | 'render' | 'post' | 'settle-bank' | 'credit-note' | 'refund-bank';
+type Operation = 'issue' | 'render' | 'post' | 'settle-bank' | 'credit-note' | 'refund-bank' | 'apply-payment';
 type Credential = { file: string; service?: boolean };
 const need = (value: unknown, label: string) => { if (!value) throw Error(label); };
 
 /** Original public clients, single submission per write; never seeds auth or ledger SQL. */
-export function invoiceLifecycleProof(http: APIRequestContext, base: string, work: string, owner: Credential) {
+export function invoiceLifecycleProof(http: APIRequestContext, base: string, work: string, owner: Credential, run = '148') {
   let sequence = 0;
   function client(kind: 'cli' | 'mcp', operation: Operation, body: Record<string, any>, credential = owner, refused = false) {
     const common = ['--server', base, '--allow-loopback-http', credential.service ? '--service-key-file' : '--cookie-file', credential.file];
@@ -18,7 +18,7 @@ export function invoiceLifecycleProof(http: APIRequestContext, base: string, wor
     if (kind === 'cli') {
       args = ['invoice', operation, ...common, '--company', 'synthetic', '--json'];
       if (body.payload !== undefined) {
-        const file = join(work, `invoice-lifecycle148-input-${++sequence}.json`);
+        const file = join(work, `invoice-lifecycle${run}-input-${++sequence}.json`);
         writeFileSync(file, JSON.stringify(body.payload), { mode: 0o600, flag: 'wx' });
         args.push('--input', file);
       }
