@@ -11,7 +11,7 @@ pub fn help() -> Value {
         {"name":"report annual|tax","usage":"report annual --help; report tax --help","scope":"closed-year preparation and verified optional XHTML; no submission"},
         {"name":"invoice export-public|invoice export-public-oioubl|invoice submit-public-peppol|invoice transmit-digisense","usage":"invoice export-public --help","scope":"original public invoice exports, metadata handoff and configured provider delivery; verified local artifacts"},
         {"name":"report trial-balance|profit-loss|balance","usage":"report --help","scope":"original dated numeric reports; explicit authenticated server, human/JSON streams"},
-        {"name":"journal list","usage":"journal list --help","scope":"explicit authenticated native journal headers; JSON or Danish details"},
+        {"name":"journal post|dry-run|reverse|list","usage":"journal --help","scope":"original numeric manual journal operations, rollback-only dry-run, server-side reversal selection; native journal list retained"},
         {"name":"dashboard","usage":"dashboard --server ORIGIN --cookie-file PATH --company SLUG --out FILE.html [--as-of YYYY-MM-DD] [--open]","scope":"authenticated server HTML, atomic local output"},
         {"name":"remote","usage":"remote --help","scope":"explicit authenticated Rust HTTP server; no local fallback"},
         {"name":"documents","usage":"documents --help","scope":"registered-PDF invoice extraction or retained evidence; explicit remote server/session"},

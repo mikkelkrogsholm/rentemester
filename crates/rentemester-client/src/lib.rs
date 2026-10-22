@@ -531,3 +531,5 @@ pub use invoice_public_original::{OriginalPublicInvoiceKind,invoice_public_origi
 
 mod recurring_original;
 pub use recurring_original::{OriginalRecurringKind,recurring_original_schema,recurring_original_invoice_schema,validate_recurring_original,recurring_workspace_schema,validate_recurring_workspace};
+
+mod journal_original;
