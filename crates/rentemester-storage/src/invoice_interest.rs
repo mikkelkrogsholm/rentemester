@@ -1,5 +1,5 @@
 //! Separate human-attributed interest registration, posting and causal correction.
-use crate::{invalid, legacy_money};
+use crate::{idempotency::PrincipalKind, invalid, legacy_money};
 use rentemester_engine::{
     Error, fiscal_year::Date, invoice_interest as engine, money::Money, sales_invoice::wire,
 };
@@ -81,9 +81,11 @@ fn audit(
     id: i64,
     subject: &str,
     message: &str,
+    principal: PrincipalKind,
 ) -> Result<(), Error> {
     actor(subject)?;
-    tx.execute("INSERT INTO audit_log(event_type,entity_type,entity_id,message,actor)VALUES(?1,?2,?3,?4,?5)",params![event,entity,id.to_string(),message,format!("user:{subject}")]).map_err(invalid)?;
+    let (actor, message) = crate::reminder_claims::principal::audit(subject, message, principal)?;
+    tx.execute("INSERT INTO audit_log(event_type,entity_type,entity_id,message,actor)VALUES(?1,?2,?3,?4,?5)",params![event,entity,id.to_string(),message,actor]).map_err(invalid)?;
     Ok(())
 }
 fn engine_wire(mut value: Value) -> Result<Value, Error> {
@@ -162,6 +164,14 @@ pub fn calculate(tx: &Transaction<'_>, input: &Calculate) -> Result<Value, Error
     Ok(out)
 }
 pub fn register(tx: &Transaction<'_>, input: &Register, subject: &str) -> Result<Value, Error> {
+    register_with_principal(tx, input, subject, PrincipalKind::User)
+}
+pub fn register_with_principal(
+    tx: &Transaction<'_>,
+    input: &Register,
+    subject: &str,
+    principal: PrincipalKind,
+) -> Result<Value, Error> {
     crate::journal_post::require_current(tx)?;
     actor(subject)?;
     if !input.confirm {
@@ -198,6 +208,7 @@ pub fn register(tx: &Transaction<'_>, input: &Register, subject: &str) -> Result
         id,
         subject,
         "Registered incremental late interest",
+        principal,
     )?;
     let mut out = calculate(tx, &req)?;
     out["claimId"] = json!(id);
@@ -218,6 +229,15 @@ pub fn post(
     input: &Post,
     subject: &str,
     latest: Date,
+) -> Result<Value, Error> {
+    post_with_principal(tx, input, subject, latest, PrincipalKind::User)
+}
+pub fn post_with_principal(
+    tx: &Transaction<'_>,
+    input: &Post,
+    subject: &str,
+    latest: Date,
+    principal: PrincipalKind,
 ) -> Result<Value, Error> {
     crate::journal_post::require_current(tx)?;
     actor(subject)?;
@@ -272,7 +292,7 @@ pub fn post(
                 "Interest income",
             )?,
         ],
-        (subject, latest),
+        (subject, latest, principal),
     )?;
     tx.execute(
         "INSERT INTO invoice_interest_postings(interest_claim_id,journal_entry_id)VALUES(?1,?2)",
@@ -286,6 +306,7 @@ pub fn post(
         claim.id,
         subject,
         "Posted registered late interest",
+        principal,
     )?;
     let mut out = calculate(
         tx,
@@ -568,6 +589,15 @@ pub fn post_correction(
     subject: &str,
     latest: Date,
 ) -> Result<Value, Error> {
+    post_correction_with_principal(tx, input, subject, latest, PrincipalKind::User)
+}
+pub fn post_correction_with_principal(
+    tx: &Transaction<'_>,
+    input: &PostCorrection,
+    subject: &str,
+    latest: Date,
+    principal: PrincipalKind,
+) -> Result<Value, Error> {
     crate::journal_post::require_current(tx)?;
     actor(subject)?;
     if !input.confirm || input.reason.trim().is_empty() || input.reason.len() > 4096 {
@@ -627,7 +657,7 @@ pub fn post_correction(
         &parsed.to_string(),
         format!("Late interest correction {}", loaded.no),
         lines,
-        (subject, latest),
+        (subject, latest, principal),
     )?;
     let j = result["entryId"]
         .as_i64()
@@ -650,6 +680,7 @@ pub fn post_correction(
         id,
         subject,
         &input.reason,
+        principal,
     )?;
     let mut out = correction(
         tx,

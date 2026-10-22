@@ -259,3 +259,75 @@ fn rate_wire_rejects_fractional_basis_points() {
     assert_eq!(rate(&serde_json::from_str("1.75").unwrap()).unwrap(), 175);
     assert!(rate(&serde_json::from_str("1.751").unwrap()).is_err());
 }
+
+#[test]
+fn service_principal_claim_interest_post_correction_and_receipt_keep_full_audit() {
+    let (mut db, id) = fixture();
+    let tx = db
+        .transaction_with_behavior(TransactionBehavior::Immediate)
+        .unwrap();
+    register_with_principal(
+        &tx,
+        &registration(id),
+        "synthetic-service",
+        PrincipalKind::ServiceAccount,
+    )
+    .unwrap();
+    post_with_principal(
+        &tx,
+        &posting(id),
+        "synthetic-service",
+        latest(),
+        PrincipalKind::ServiceAccount,
+    )
+    .unwrap();
+    principal(&tx, id, "principal-backdated");
+    let proposed = correction(
+        &tx,
+        &Correction {
+            invoice_document_id: id,
+        },
+    )
+    .unwrap();
+    assert_eq!(proposed["overClaimedAmount"], json!(0.69));
+    post_correction_with_principal(
+        &tx,
+        &adjustment(id),
+        "synthetic-service",
+        latest(),
+        PrincipalKind::ServiceAccount,
+    )
+    .unwrap();
+    assert!(
+        post_correction_with_principal(
+            &tx,
+            &adjustment(id),
+            "synthetic-service",
+            latest(),
+            PrincipalKind::ServiceAccount
+        )
+        .is_err()
+    );
+    principal(&tx, id, "principal-final");
+    crate::reminder_claims::settle_with_principal(
+        &tx,
+        &receipt(&tx, id, "interest-net"),
+        "synthetic-service",
+        latest(),
+        PrincipalKind::ServiceAccount,
+    )
+    .unwrap();
+    assert_eq!(
+        crate::reminder_claims::read(&tx, id, "2026-01-21").unwrap()["ledgerBackedClaimBalance"],
+        json!(0.0)
+    );
+    assert_eq!(tx.query_row::<i64,_,_>("SELECT count(*) FROM audit_log WHERE actor='service_account:synthetic-service' AND event_type IN ('invoice_interest_register','invoice_interest_post','invoice_interest_correction','invoice_claim_payment_apply')",[],|r|r.get(0)).unwrap(),4);
+    assert_eq!(tx.query_row::<i64,_,_>("SELECT count(*) FROM journal_entries WHERE created_by='user:synthetic-service' AND created_by_program='service-principal'",[],|r|r.get(0)).unwrap(),3);
+    assert!(
+        crate::reminder_claims::audit_evidence(&tx)
+            .unwrap()
+            .is_empty()
+    );
+    let audit = crate::audit_invoice::verify(&tx).unwrap();
+    assert_eq!(audit["ok"], true, "{audit}");
+}

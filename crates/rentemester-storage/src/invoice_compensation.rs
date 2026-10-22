@@ -1,5 +1,5 @@
 //! Human-attributed compensation: assessment, separate registration, separate DKK posting.
-use crate::{invalid, legacy_money};
+use crate::{idempotency::PrincipalKind, invalid, legacy_money};
 use rentemester_engine::{
     Error,
     currency::Currency,
@@ -181,12 +181,22 @@ fn audit(
     id: i64,
     message: &str,
     subject: &str,
+    principal: PrincipalKind,
 ) -> Result<(), Error> {
     actor(subject)?;
-    tx.execute("INSERT INTO audit_log(event_type,entity_type,entity_id,message,actor)VALUES(?1,'invoice_compensation_claim',?2,?3,?4)",params![event,id.to_string(),message,format!("user:{subject}")]).map_err(invalid)?;
+    let (actor, message) = crate::reminder_claims::principal::audit(subject, message, principal)?;
+    tx.execute("INSERT INTO audit_log(event_type,entity_type,entity_id,message,actor)VALUES(?1,'invoice_compensation_claim',?2,?3,?4)",params![event,id.to_string(),message,actor]).map_err(invalid)?;
     Ok(())
 }
 pub fn register(tx: &Transaction<'_>, input: &Register, subject: &str) -> Result<Value, Error> {
+    register_with_principal(tx, input, subject, PrincipalKind::User)
+}
+pub fn register_with_principal(
+    tx: &Transaction<'_>,
+    input: &Register,
+    subject: &str,
+    principal: PrincipalKind,
+) -> Result<Value, Error> {
     crate::journal_post::require_current(tx)?;
     actor(subject)?;
     if !input.confirm {
@@ -230,6 +240,7 @@ pub fn register(tx: &Transaction<'_>, input: &Register, subject: &str) -> Result
             before["invoiceNumber"].as_str().unwrap()
         ),
         subject,
+        principal,
     )?;
     let mut after = calculate(tx, &request)?;
     after["appliedRules"] = json!([policy::CALCULATE_RULE, policy::REGISTER_RULE]);
@@ -240,6 +251,15 @@ pub fn post(
     input: &Post,
     subject: &str,
     latest: Date,
+) -> Result<Value, Error> {
+    post_with_principal(tx, input, subject, latest, PrincipalKind::User)
+}
+pub fn post_with_principal(
+    tx: &Transaction<'_>,
+    input: &Post,
+    subject: &str,
+    latest: Date,
+    principal: PrincipalKind,
 ) -> Result<Value, Error> {
     crate::journal_post::require_current(tx)?;
     actor(subject)?;
@@ -322,7 +342,7 @@ pub fn post(
         latest,
         crate::journal_post::Actor {
             subject: &format!("user:{subject}"),
-            program: "rentemester-rust",
+            program: crate::reminder_claims::principal::program(principal),
         },
     )?;
     if posted["ok"] != true {
@@ -340,6 +360,7 @@ pub fn post(
             posted["entryNo"].as_str().unwrap_or("")
         ),
         subject,
+        principal,
     )?;
     let mut out = calculate(
         tx,
@@ -730,5 +751,78 @@ mod tests {
             .is_err()
         );
         assert!(serde_json::from_value::<Register>(json!({"invoiceDocumentId":1,"asOfDate":"2026-03-02","confirm":true,"actor":"forged"})).is_err());
+    }
+    #[test]
+    fn service_principal_claim_compensation_proof_is_typed_and_bound_to_journal() {
+        let mut db = fixture("DKK", true);
+        let tx = db
+            .transaction_with_behavior(TransactionBehavior::Immediate)
+            .unwrap();
+        register_with_principal(
+            &tx,
+            &register_request(),
+            "synthetic-service",
+            PrincipalKind::ServiceAccount,
+        )
+        .unwrap();
+        assert_eq!(counts(&tx), (1, 0, 1));
+        post_with_principal(
+            &tx,
+            &post_request(),
+            "synthetic-service",
+            Date::parse("2026-03-02").unwrap(),
+            PrincipalKind::ServiceAccount,
+        )
+        .unwrap();
+        assert!(
+            post_with_principal(
+                &tx,
+                &post_request(),
+                "synthetic-service",
+                Date::parse("2026-03-02").unwrap(),
+                PrincipalKind::ServiceAccount
+            )
+            .is_err()
+        );
+        assert!(
+            crate::reminder_claims::audit_evidence(&tx)
+                .unwrap()
+                .is_empty()
+        );
+        let audit = crate::audit_invoice::verify(&tx).unwrap();
+        assert_eq!(audit["ok"], true, "{audit}");
+        assert_eq!(tx.query_row::<i64,_,_>("SELECT count(*) FROM audit_log WHERE actor='service_account:synthetic-service' AND event_type IN ('invoice_compensation_register','invoice_compensation_post')",[],|r|r.get(0)).unwrap(),2);
+        assert_eq!(tx.query_row::<i64,_,_>("SELECT count(*) FROM journal_entries WHERE created_by='user:synthetic-service' AND created_by_program='service-principal'",[],|r|r.get(0)).unwrap(),1);
+        for message in [json!({"schema":"rentemester.claim-principal.v1","principalKind":"user","subjectId":"synthetic-service","message":"forged kind"}).to_string(),"arbitrary prefix is not typed proof".into()] {
+            tx.execute_batch("SAVEPOINT corrupt_service_proof;DROP TRIGGER audit_log_no_update").unwrap();
+            tx.execute("UPDATE audit_log SET message=?1 WHERE event_type='invoice_compensation_register'",[message]).unwrap();
+            assert!(!crate::reminder_claims::audit_evidence(&tx).unwrap().is_empty());
+            tx.execute_batch("ROLLBACK TO corrupt_service_proof;RELEASE corrupt_service_proof").unwrap();
+        }
+        tx.execute_batch("SAVEPOINT wrong_post_subject;DROP TRIGGER audit_log_no_update")
+            .unwrap();
+        let (actor, message) = crate::reminder_claims::principal::audit(
+            "another-service",
+            "forged subject",
+            PrincipalKind::ServiceAccount,
+        )
+        .unwrap();
+        tx.execute(
+            "UPDATE audit_log SET actor=?1,message=?2 WHERE event_type='invoice_compensation_post'",
+            params![actor, message],
+        )
+        .unwrap();
+        assert!(
+            !crate::reminder_claims::audit_evidence(&tx)
+                .unwrap()
+                .is_empty()
+        );
+        tx.execute_batch("ROLLBACK TO wrong_post_subject;RELEASE wrong_post_subject")
+            .unwrap();
+        assert!(
+            crate::reminder_claims::audit_evidence(&tx)
+                .unwrap()
+                .is_empty()
+        );
     }
 }

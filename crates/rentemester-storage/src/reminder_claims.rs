@@ -1,5 +1,5 @@
 //! Native reminder and compensation claims. Current immutable relations, account effects and bank facts are rechecked.
-use crate::{invalid, legacy_money};
+use crate::{idempotency::PrincipalKind, invalid, legacy_money};
 use rentemester_engine::{
     Error,
     currency::Currency,
@@ -14,6 +14,7 @@ use rusqlite::{OptionalExtension, Transaction, params};
 use serde::Deserialize;
 use serde_json::{Number, Value, json};
 use std::collections::{BTreeMap, BTreeSet};
+pub(crate) mod principal;
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct Register {
@@ -59,8 +60,10 @@ fn audit(
     entity: i64,
     message: &str,
     actor: &str,
+    principal: PrincipalKind,
 ) -> Result<(), Error> {
-    tx.execute("INSERT INTO audit_log(event_type,entity_type,entity_id,message,actor)VALUES(?1,'invoice_reminder_claim',?2,?3,?4)",params![event,entity.to_string(),message,format!("user:{actor}")]).map_err(invalid)?;
+    let (actor, message) = principal::audit(actor, message, principal)?;
+    tx.execute("INSERT INTO audit_log(event_type,entity_type,entity_id,message,actor)VALUES(?1,'invoice_reminder_claim',?2,?3,?4)",params![event,entity.to_string(),message,actor]).map_err(invalid)?;
     Ok(())
 }
 fn unsupported(tx: &Transaction<'_>, id: i64) -> Result<(), Error> {
@@ -525,7 +528,7 @@ pub fn principal_open(tx: &Transaction<'_>, id: i64) -> Result<(Money, String), 
     Ok((principal(tx, id, &invoice)?, invoice.currency))
 }
 pub fn required_banks(tx: &Transaction<'_>, id: i64) -> Result<Vec<i64>, Error> {
-    let mut q=tx.prepare("SELECT bank_transaction_id FROM invoice_payments WHERE invoice_document_id=?1 UNION SELECT bank_transaction_id FROM invoice_refunds WHERE invoice_document_id=?1 UNION SELECT bank_transaction_id FROM invoice_claim_payments WHERE invoice_document_id=?1").map_err(invalid)?;
+    let mut q=tx.prepare("SELECT bank_transaction_id FROM invoice_payments WHERE invoice_document_id=?1 AND bank_transaction_id IS NOT NULL UNION SELECT bank_transaction_id FROM invoice_refunds WHERE invoice_document_id=?1 AND bank_transaction_id IS NOT NULL UNION SELECT bank_transaction_id FROM invoice_claim_payments WHERE invoice_document_id=?1 AND bank_transaction_id IS NOT NULL").map_err(invalid)?;
     q.query_map([id], |r| r.get(0))
         .map_err(invalid)?
         .collect::<Result<Vec<_>, _>>()
@@ -627,14 +630,29 @@ fn require_audit(tx: &Transaction<'_>, event: &str, id: i64) -> Result<(), Error
     Ok(())
 }
 fn require_compensation_audit(tx: &Transaction<'_>, event: &str, id: i64) -> Result<(), Error> {
-    let (count, valid):(i64,i64)=tx.query_row("SELECT count(*),COALESCE(sum(actor LIKE 'user:%' AND length(trim(substr(actor,6)))>0),0) FROM audit_log WHERE event_type=?1 AND entity_type='invoice_compensation_claim' AND entity_id=?2",params![event,id.to_string()],|r|Ok((r.get(0)?,r.get(1)?))).map_err(invalid)?;
-    if count != 1 || valid != 1 {
+    let rows:Vec<(String,String,bool)>=tx.prepare("SELECT actor,message,actor LIKE 'user:%' AND length(trim(substr(actor,6)))>0 FROM audit_log WHERE event_type=?1 AND entity_type='invoice_compensation_claim' AND entity_id=?2").map_err(invalid)?.query_map(params![event,id.to_string()],|r|Ok((r.get(0)?,r.get(1)?,r.get(2)?))).map_err(invalid)?.collect::<Result<_,_>>().map_err(invalid)?;
+    if rows.len() != 1 {
         return Err(refused(
             "unique compensation workflow audit evidence required",
         ));
     }
+    let (actor, message, human) = &rows[0];
+    if *human {
+        return Ok(());
+    }
+    let subject = principal::service_subject(actor, message)
+        .ok_or_else(|| refused("typed compensation service audit evidence required"))?;
+    if event == "invoice_compensation_post" {
+        let bound:bool=tx.query_row("SELECT EXISTS(SELECT 1 FROM invoice_compensation_postings p JOIN journal_entries j ON j.id=p.journal_entry_id WHERE p.compensation_claim_id=?1 AND j.created_by=?2 AND j.created_by_program='service-principal')",params![id,format!("user:{subject}")],|r|r.get(0)).map_err(invalid)?;
+        if !bound {
+            return Err(refused(
+                "compensation service audit and journal principal differ",
+            ));
+        }
+    }
     Ok(())
 }
+
 fn require_interest_audit(
     tx: &Transaction<'_>,
     event: &str,
@@ -673,6 +691,14 @@ pub fn read(tx: &Transaction<'_>, id: i64, as_of: &str) -> Result<Value, Error> 
     )
 }
 pub fn register(tx: &Transaction<'_>, input: &Register, actor: &str) -> Result<Value, Error> {
+    register_with_principal(tx, input, actor, PrincipalKind::User)
+}
+pub fn register_with_principal(
+    tx: &Transaction<'_>,
+    input: &Register,
+    actor: &str,
+    principal: PrincipalKind,
+) -> Result<Value, Error> {
     crate::journal_post::require_current(tx)?;
     if !input.confirm {
         return Err(refused(
@@ -686,7 +712,7 @@ pub fn register(tx: &Transaction<'_>, input: &Register, actor: &str) -> Result<V
         ));
     }
     let c = validated_claims(tx, input.invoice_document_id)?;
-    let open = principal(tx, input.invoice_document_id, &i)?;
+    let open = self::principal(tx, input.invoice_document_id, &i)?;
     let dates = c
         .reminders
         .iter()
@@ -713,6 +739,7 @@ pub fn register(tx: &Transaction<'_>, input: &Register, actor: &str) -> Result<V
             i.no
         ),
         actor,
+        principal,
     )?;
     Ok(
         json!({"ok":true,"reminderId":id,"reminderSequence":dates.len()+1,"invoiceDocumentId":input.invoice_document_id,"invoiceNumber":i.no,"reminderDate":input.reminder_date,"feeAmount":wire(&fee)?,"appliedRules":[engine::REGISTER_RULE],"errors":[]}),
@@ -725,9 +752,9 @@ pub(crate) fn post_journal(
     date: &str,
     text: String,
     lines: Vec<JournalLine>,
-    posting: (&str, Date),
+    posting: (&str, Date, PrincipalKind),
 ) -> Result<Value, Error> {
-    let (actor, latest) = posting;
+    let (actor, latest, principal) = posting;
     let request = ManualJournal {
         transaction_date: Date::parse(date)?,
         text,
@@ -747,7 +774,7 @@ pub(crate) fn post_journal(
         latest,
         crate::journal_post::Actor {
             subject: &format!("user:{actor}"),
-            program: "rentemester-rust",
+            program: principal::program(principal),
         },
     )?;
     if r["ok"] != true {
@@ -770,6 +797,15 @@ pub(crate) fn line(
     })
 }
 pub fn post(tx: &Transaction<'_>, input: &Post, actor: &str, latest: Date) -> Result<Value, Error> {
+    post_with_principal(tx, input, actor, latest, PrincipalKind::User)
+}
+pub fn post_with_principal(
+    tx: &Transaction<'_>,
+    input: &Post,
+    actor: &str,
+    latest: Date,
+    principal: PrincipalKind,
+) -> Result<Value, Error> {
     crate::journal_post::require_current(tx)?;
     if !input.confirm {
         return Err(refused(
@@ -831,7 +867,7 @@ pub fn post(tx: &Transaction<'_>, input: &Post, actor: &str, latest: Date) -> Re
                 "Reminder income",
             )?,
         ],
-        (actor, latest),
+        (actor, latest, principal),
     )?;
     tx.execute(
         "INSERT INTO invoice_reminder_postings(reminder_id,journal_entry_id)VALUES(?1,?2)",
@@ -847,6 +883,7 @@ pub fn post(tx: &Transaction<'_>, input: &Post, actor: &str, latest: Date) -> Re
             i.no, result["entryNo"]
         ),
         actor,
+        principal,
     )?;
     Ok(
         json!({"ok":true,"reminderId":input.reminder_id,"invoiceDocumentId":input.invoice_document_id,"entryId":result["entryId"],"entryNo":result["entryNo"],"appliedRules":[engine::POST_RULE],"errors":[]}),
@@ -858,13 +895,22 @@ pub fn settle(
     actor: &str,
     latest: Date,
 ) -> Result<Value, Error> {
+    settle_with_principal(tx, input, actor, latest, PrincipalKind::User)
+}
+pub fn settle_with_principal(
+    tx: &Transaction<'_>,
+    input: &Settle,
+    actor: &str,
+    latest: Date,
+    principal: PrincipalKind,
+) -> Result<Value, Error> {
     crate::journal_post::require_current(tx)?;
     if !input.confirm {
         return Err(refused("explicit claim settlement confirmation required"));
     }
     let i = invoice(tx, input.invoice_document_id)?;
     let c = validated_claims(tx, input.invoice_document_id)?;
-    if principal(tx, input.invoice_document_id, &i)? != Money::default() {
+    if self::principal(tx, input.invoice_document_id, &i)? != Money::default() {
         return Err(refused("settle invoice principal before claim receipts"));
     }
     if c.pending {
@@ -949,7 +995,7 @@ pub fn settle(
         date,
         format!("Customer claim payment for invoice {}", i.no),
         entries,
-        (actor, latest),
+        (actor, latest, principal),
     )?;
     let payment:i64=tx.query_row("INSERT INTO invoice_claim_payments(invoice_document_id,bank_transaction_id,journal_entry_id,payment_date,amount,currency,note)VALUES(?1,?2,?3,?4,?5,'DKK',?6)RETURNING id",params![input.invoice_document_id,input.bank_transaction_id,result["entryId"].as_i64(),date,wire(&b.amount)?.as_f64(),format!("Claim settlement from transaction {}",input.bank_transaction_id)],|r|r.get(0)).map_err(invalid)?;
     audit(
@@ -962,6 +1008,7 @@ pub fn settle(
             i.no
         ),
         actor,
+        principal,
     )?;
     let after = validated_claims(tx, input.invoice_document_id)?;
     Ok(
@@ -1366,7 +1413,7 @@ mod tests {
                 )
                 .unwrap(),
             ],
-            ("synthetic", latest),
+            ("synthetic", latest, PrincipalKind::User),
         )
         .unwrap();
         let principal=serde_json::from_value(json!({"invoiceDocumentId":id,"bankTransactionReference":"reminder-principal","confirm":true})).unwrap();
@@ -1442,5 +1489,92 @@ mod tests {
         tx.execute_batch(&guard).unwrap();
         assert!(validated_claims(&tx, id).is_err());
         assert!(read(&tx, id, "2026-01-07").is_err());
+    }
+    #[test]
+    fn service_principal_claim_reminder_registration_post_and_receipt_keep_full_audit() {
+        let (mut db, id) = fixture();
+        let tx = db
+            .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
+            .unwrap();
+        let latest = Date::parse("2026-01-07").unwrap();
+        tx.execute_batch("SAVEPOINT bankless_source;INSERT INTO account_role_mappings(role,account_no,version,confirmed_by)VALUES('bank','A',1,'synthetic')").unwrap();
+        crate::invoice_payment_apply::apply(
+            &tx,
+            &serde_json::from_value(
+                json!({"invoiceDocumentId":id,"paymentDate":"2026-01-05","amount":50}),
+            )
+            .unwrap(),
+            "synthetic-service",
+            PrincipalKind::ServiceAccount,
+            latest,
+        )
+        .unwrap();
+        assert!(required_banks(&tx, id).unwrap().is_empty());
+        let bankless_audit = crate::audit_invoice::verify(&tx).unwrap();
+        assert_eq!(bankless_audit["ok"], true, "{bankless_audit}");
+        tx.execute_batch("ROLLBACK TO bankless_source;RELEASE bankless_source")
+            .unwrap();
+        let r = register_with_principal(
+            &tx,
+            &reg(id),
+            "synthetic-service",
+            PrincipalKind::ServiceAccount,
+        )
+        .unwrap();
+        assert_eq!(
+            tx.query_row::<i64, _, _>("SELECT count(*) FROM journal_entries", [], |r| r.get(0))
+                .unwrap(),
+            1
+        );
+        let p = posting(id, r["reminderId"].as_i64().unwrap());
+        post_with_principal(
+            &tx,
+            &p,
+            "synthetic-service",
+            latest,
+            PrincipalKind::ServiceAccount,
+        )
+        .unwrap();
+        assert!(
+            post_with_principal(
+                &tx,
+                &p,
+                "synthetic-service",
+                latest,
+                PrincipalKind::ServiceAccount
+            )
+            .is_err()
+        );
+        crate::invoice_settlement::settle(&tx,&serde_json::from_value(json!({"invoiceDocumentId":id,"bankTransactionReference":"reminder-principal","confirm":true})).unwrap(),"synthetic",latest).unwrap();
+        for reference in ["reminder-part", "reminder-final"] {
+            settle_with_principal(
+                &tx,
+                &settle_input(&tx, id, reference),
+                "synthetic-service",
+                latest,
+                PrincipalKind::ServiceAccount,
+            )
+            .unwrap();
+        }
+        assert!(
+            settle_with_principal(
+                &tx,
+                &settle_input(&tx, id, "reminder-part"),
+                "synthetic-service",
+                latest,
+                PrincipalKind::ServiceAccount
+            )
+            .is_err()
+        );
+        assert_eq!(
+            read(&tx, id, "2026-01-07").unwrap()["ledgerBackedClaimBalance"],
+            json!(0.0)
+        );
+        assert_eq!(tx.query_row::<i64,_,_>("SELECT count(*) FROM audit_log WHERE actor='service_account:synthetic-service' AND event_type IN ('invoice_reminder_register','invoice_reminder_post','invoice_claim_payment_apply')",[],|r|r.get(0)).unwrap(),4);
+        assert_eq!(tx.query_row::<i64,_,_>("SELECT count(*) FROM journal_entries WHERE created_by='user:synthetic-service' AND created_by_program='service-principal'",[],|r|r.get(0)).unwrap(),3);
+        assert_eq!(required_banks(&tx, id).unwrap().len(), 3);
+        assert!(audit_evidence(&tx).unwrap().is_empty());
+        let audit = crate::audit_invoice::verify(&tx).unwrap();
+        assert_eq!(audit["ok"], true, "{audit}");
     }
 }
