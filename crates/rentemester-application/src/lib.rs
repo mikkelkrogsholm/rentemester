@@ -163,3 +163,4 @@ pub mod documents_original;
 pub mod expense_original;
 
 pub mod accrual_original;
+pub mod asset_original;

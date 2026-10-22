@@ -1431,3 +1431,4 @@ mod documents_original;
 mod expense_original;
 
 mod accrual_original;
+mod asset_original;
