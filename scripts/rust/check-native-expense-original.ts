@@ -110,7 +110,7 @@ export function createOriginalExpenseProof(base: string, work: string, onStep: (
     for (const original of originals) await parity(original.id, supplied.some(v => v.id === original.id));
     need(equal(await books(), before) && trace().length === 0, 'inspection no writes/provider');
 
-    // Real extraction request against a retained PDF. Empty provider fields retain
+    // Configured human-ingest extraction against a retained PDF. Empty provider fields retain
     // unresolved evidence, which preflight must reject before any VIES request.
     const stream = 'BT /F1 12 Tf 72 720 Td (SYN168-CONFLICT) Tj ET\n';
     const objects = ['<< /Type /Catalog /Pages 2 0 R >>', '<< /Type /Pages /Kids [3 0 R] /Count 1 >>', '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 5 0 R >> >> /Contents 4 0 R >>', `<< /Length ${Buffer.byteLength(stream)} >>\nstream\n${stream}endstream`, '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>'];
@@ -119,10 +119,11 @@ export function createOriginalExpenseProof(base: string, work: string, onStep: (
     const xref = Buffer.byteLength(pdf);
     pdf += `xref\n0 6\n0000000000 65535 f \n` + offsets.map(o => String(o).padStart(10, '0') + ' 00000 n \n').join('') + `trailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF\n`;
     const pdfBytes = Buffer.from(pdf);
-    const conflict = await http(root + 'documents/ingest', { confirm: true, fileName: 'synthetic-expense168-conflict.pdf', fileBase64: pdfBytes.toString('base64'), metadata: { source: 'Synthetic extraction fence168', documentType: 'purchase_sale', issueDate: today, invoiceNo: 'SYN168-CONFLICT', amountIncVat: 100, vatAmount: 0, currency: 'DKK', sender: { name: 'Synthetic unresolved supplier168', address: 'Synthetic Street 168', vatOrCvr: 'DE168000004', countryCode: 'DE', identifierKind: 'eu_vat' } } });
+    const conflict = await http(root + 'documents/ingest', { confirm: true, fileName: 'synthetic-expense168-conflict.pdf', fileBase64: pdfBytes.toString('base64'), metadata: { source: 'Synthetic extraction fence168', documentType: 'purchase_sale', issueDate: today, invoiceNo: 'SYN168-CONFLICT', deliveryDescription: 'Synthetic unresolved purchased service168', recipient: { name: 'Synthetic Batch Company', address: 'Synthetic Batch Street 1', vatOrCvr: 'DK87654321' }, amountIncVat: 100, vatAmount: 0, currency: 'DKK', sender: { name: 'Synthetic unresolved supplier168', address: 'Synthetic Street 168', vatOrCvr: 'DE168000004', countryCode: 'DE', identifierKind: 'eu_vat' } } });
     const conflictId = conflict.document.id;
     originals.push({ id: conflictId, sha256: hash(pdfBytes), gross: 100, vat: 0 });
-    const extracted = await http(root + `documents/${conflictId}/extract-invoice`, { confirm: true });
+    // Human ingestion already runs the configured extractor; inspect that retained result.
+    const extracted = await http(root + `documents/${conflictId}/invoice-extraction`, undefined, 'GET');
     need(extracted.extraction.status !== 'completed', 'source extraction remains unresolved');
     const conflictSnapshot = await inspect(conflictId);
     need(conflictSnapshot.classification === 'CONFLICT' && !conflictSnapshot.wouldCallProvider, 'latest unresolved extraction wins EU identity');
