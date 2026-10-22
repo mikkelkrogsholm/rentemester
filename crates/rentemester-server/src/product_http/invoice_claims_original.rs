@@ -1,6 +1,17 @@
 //! Additive original claim transport through the existing admitted sales owner.
 use super::*;
 use rentemester_storage::invoice_claims_original::{self as storage, Kind};
+fn original_foreign_refusal(
+    error: &rentemester_engine::Error,
+    not_committed: bool,
+) -> Option<Response> {
+    (not_committed && error.code == "unsupported_foreign_interest").then(|| {
+        response(
+            StatusCode::OK,
+            json!({"ok":false,"code":error.code,"errors":[error.message],"appliedRules":[]}),
+        )
+    })
+}
 fn parse(path: &str, bytes: &[u8]) -> Result<(Kind, Value), &'static str> {
     let kind = match path.rsplit('/').next().unwrap_or("") {
         "remind" => Kind::Remind,
@@ -69,6 +80,14 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
                 let attempt = owner
                     .sales(&cookie, &SystemClock, action, "", "", None)
                     .map_err(|_| ())?;
+                if let Err(f) = &attempt.outcome
+                    && let Some(reply) = original_foreign_refusal(
+                        &f.error,
+                        f.stage == rentemester_application::control_fence::FailureStage::NotCommitted,
+                    )
+                {
+                    return Ok(Err(Box::new(reply)));
+                }
                 Ok::<_, ()>(documents::outcome(attempt))
             }
             documents::Credential::Service(key) => {
@@ -86,7 +105,13 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
                     .map_err(|_| ())?;
                 Ok(match attempt.outcome {
                     Ok(done) => Ok(done.result),
-                    Err(f) => Err(Box::new(service_company::failure(f))),
+                    Err(f) => {
+                        let reply = original_foreign_refusal(
+                            &f.error,
+                            f.business == rentemester_application::service_company::BusinessStage::NotCommitted,
+                        ).unwrap_or_else(|| service_company::failure(f));
+                        Err(Box::new(reply))
+                    },
                 })
             }
         }
@@ -103,6 +128,32 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn original_foreign_interest_refusal_preserves_code_only_after_definite_rollback() {
+        let error = rentemester_engine::Error::new(
+            "unsupported_foreign_interest",
+            "Foreign interest is unsupported",
+        );
+        assert!(original_foreign_refusal(&error, false).is_none());
+        assert!(
+            original_foreign_refusal(
+                &rentemester_engine::Error::new("access_denied", "Denied"),
+                true
+            )
+            .is_none()
+        );
+        let reply = original_foreign_refusal(&error, true).unwrap();
+        assert_eq!(reply.status(), StatusCode::OK);
+        let bytes = tokio::runtime::Runtime::new()
+            .unwrap()
+            .block_on(axum::body::to_bytes(reply.into_body(), 262144))
+            .unwrap();
+        let wire: Value = serde_json::from_slice(&bytes).unwrap();
+        assert_eq!(
+            wire,
+            json!({"ok":false,"code":"unsupported_foreign_interest","errors":["Foreign interest is unsupported"],"appliedRules":[]})
+        );
+    }
     #[test]
     fn original_claim_routes_strict_duplicate_unknown_null_and_confirmation() {
         for (path, raw) in [

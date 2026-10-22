@@ -126,16 +126,16 @@ pub fn execute(args: &[String]) -> Output {
             cursor += 1;
             continue;
         }
-        if ![
+        let allowed = [
             "--server",
             "--company",
             "--cookie-file",
             "--service-key-file",
         ]
         .contains(&key)
-            && !(kind == Kind::SettleClaimBank && key == "--input")
-            && !properties.keys().any(|s| flag(s) == Some(key))
-        {
+            || kind == Kind::SettleClaimBank && key == "--input"
+            || properties.keys().any(|s| flag(s) == Some(key));
+        if !allowed {
             return failure(
                 &format!("Unknown/duplicate original claim flag {key}"),
                 false,

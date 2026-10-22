@@ -63,11 +63,11 @@ pub fn validate(kind: Kind, body: &Value) -> Result<(), Error> {
         Kind::SettleClaimBank => &["payload"],
     };
     for (key, v) in o {
-        if !extra.contains(&key.as_str())
-            && !(key == "confirm" && !kind.readonly())
-            && !(matches!(key.as_str(), "documentId" | "invoiceNumber")
-                && kind != Kind::SettleClaimBank)
-        {
+        let allowed = extra.contains(&key.as_str())
+            || key == "confirm" && !kind.readonly()
+            || matches!(key.as_str(), "documentId" | "invoiceNumber")
+                && kind != Kind::SettleClaimBank;
+        if !allowed {
             return Err(input_error("unknown claim field"));
         }
         check(key, v)?;
@@ -386,49 +386,49 @@ pub fn apply(
         value["reason"] = json!("registered");
         value["eligible"] = json!(true);
     }
-    if kind == Kind::PostReminder {
-        if let Some(reminder) = value["reminderId"].as_i64() {
-            let (date, fee): (String, Value) = tx
-                .query_row(
-                    "SELECT reminder_date,fee_amount FROM invoice_reminders WHERE id=?1",
-                    [reminder],
-                    |r| {
-                        Ok((
-                            r.get(0)?,
-                            rentemester_engine::sales_invoice::wire(
-                                &crate::legacy_money(r.get_ref(1)?)
-                                    .map_err(|_| rusqlite::Error::InvalidQuery)?,
-                            )
-                            .map_err(|_| rusqlite::Error::InvalidQuery)?,
-                        ))
-                    },
-                )
-                .map_err(invalid)?;
-            value["reminderDate"] = json!(date);
-            value["feeAmount"] = fee;
-        }
+    if kind == Kind::PostReminder
+        && let Some(reminder) = value["reminderId"].as_i64()
+    {
+        let (date, fee): (String, Value) = tx
+            .query_row(
+                "SELECT reminder_date,fee_amount FROM invoice_reminders WHERE id=?1",
+                [reminder],
+                |r| {
+                    Ok((
+                        r.get(0)?,
+                        rentemester_engine::sales_invoice::wire(
+                            &crate::legacy_money(r.get_ref(1)?)
+                                .map_err(|_| rusqlite::Error::InvalidQuery)?,
+                        )
+                        .map_err(|_| rusqlite::Error::InvalidQuery)?,
+                    ))
+                },
+            )
+            .map_err(invalid)?;
+        value["reminderDate"] = json!(date);
+        value["feeAmount"] = fee;
     }
-    if kind == Kind::PostInterest {
-        if let Some(claim) = value["claimId"].as_i64() {
-            let (date, amount): (String, Value) = tx
-                .query_row(
-                    "SELECT claim_date,amount_dkk FROM invoice_interest_claims WHERE id=?1",
-                    [claim],
-                    |r| {
-                        Ok((
-                            r.get(0)?,
-                            rentemester_engine::sales_invoice::wire(
-                                &crate::legacy_money(r.get_ref(1)?)
-                                    .map_err(|_| rusqlite::Error::InvalidQuery)?,
-                            )
-                            .map_err(|_| rusqlite::Error::InvalidQuery)?,
-                        ))
-                    },
-                )
-                .map_err(invalid)?;
-            value["claimDate"] = json!(date);
-            value["accruedInterestAmount"] = amount;
-        }
+    if kind == Kind::PostInterest
+        && let Some(claim) = value["claimId"].as_i64()
+    {
+        let (date, amount): (String, Value) = tx
+            .query_row(
+                "SELECT claim_date,amount_dkk FROM invoice_interest_claims WHERE id=?1",
+                [claim],
+                |r| {
+                    Ok((
+                        r.get(0)?,
+                        rentemester_engine::sales_invoice::wire(
+                            &crate::legacy_money(r.get_ref(1)?)
+                                .map_err(|_| rusqlite::Error::InvalidQuery)?,
+                        )
+                        .map_err(|_| rusqlite::Error::InvalidQuery)?,
+                    ))
+                },
+            )
+            .map_err(invalid)?;
+        value["claimDate"] = json!(date);
+        value["accruedInterestAmount"] = amount;
     }
     for (from, to) in [("journalEntryId", "entryId"), ("journalEntryNo", "entryNo")] {
         if let Some(v) = value.get(from).cloned() {

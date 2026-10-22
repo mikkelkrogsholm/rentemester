@@ -57,7 +57,7 @@ export function originalClaimsProof(base: string, work: string, owner: Credentia
     const reply = result.stdout.trim().split('\n').map(line => JSON.parse(line)).find(v => v.id === 2);
     need(!reply?.error && reply.result.isError === refused && isDeepStrictEqual(JSON.parse(reply.result.content[0].text), reply.result.structuredContent), 'Original claims MCP text/structured equality');
     const value = reply.result.structuredContent; need(value.ok === !refused, `Original claims MCP ${operation} outcome`);
-    return { ok: value.ok, ...(value.data ?? {}), errors: value.errors, ...(value.appliedRules ? { appliedRules: value.appliedRules } : {}) };
+    return { ok: value.ok, ...(value.data ?? {}), errors: value.errors, ...(value.code ? { code: value.code } : {}), ...(value.appliedRules ? { appliedRules: value.appliedRules } : {}) };
   }
   return { invoke };
 }

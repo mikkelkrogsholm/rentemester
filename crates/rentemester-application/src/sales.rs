@@ -372,7 +372,7 @@ pub fn execute_service(
                         body,
                         crate::invoice_lifecycle::Context {
                             slug,
-                            subject: subject,
+                            subject,
                             principal: PrincipalKind::ServiceAccount,
                             clock,
                         },
