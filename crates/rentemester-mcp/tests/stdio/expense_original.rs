@@ -10,7 +10,7 @@ fn three_original_names_native_aliases_strict_five_treatments_and_confirmation()
         ],
     ));
     let tools = rows[1]["result"]["tools"].as_array().unwrap();
-    assert_eq!(tools.len(), 322);
+    assert_eq!(tools.len(), EXPECTED_NATIVE_TOOLS);
     for name in [
         "expense_vat_preflight",
         "expense_vat_preflight_apply",

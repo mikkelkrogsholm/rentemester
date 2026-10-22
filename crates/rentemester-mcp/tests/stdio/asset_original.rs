@@ -16,7 +16,7 @@ fn discovery_native_aliases_strict_schemas_and_outer_confirmation() {
         ],
     ));
     let tools = rows[1]["result"]["tools"].as_array().unwrap();
-    assert_eq!(tools.len(), 329);
+    assert_eq!(tools.len(), EXPECTED_NATIVE_TOOLS);
     for name in [
         "register_asset",
         "depreciate_asset",

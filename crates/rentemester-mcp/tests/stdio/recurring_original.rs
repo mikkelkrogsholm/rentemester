@@ -30,7 +30,7 @@ fn original_recurring_discovery_source_shapes_confirmation_and_no_forged_authori
             .iter()
             .filter(|name| !new_names.contains(name))
             .count(),
-        288,
+        EXPECTED_NATIVE_TOOLS - new_names.len(),
         "unchanged source baseline plus exactly four original recurring tools"
     );
     for native in [

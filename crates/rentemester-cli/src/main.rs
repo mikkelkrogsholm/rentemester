@@ -18,6 +18,7 @@ mod dashboard_artifact;
 mod dated_reports;
 mod direct_bank_original;
 mod document_party_original;
+mod budget_original;
 mod documents_original;
 mod eu_sales;
 mod exceptions_original;
@@ -357,6 +358,11 @@ fn main() -> ExitCode {
             return ExitCode::SUCCESS;
         }
     }
+    if args == ["budget"] || args == ["budget", "--help"] { println!("{}", budget_original::help()); return ExitCode::SUCCESS; }
+    if budget_original::accepts(&args) {
+        if let Err(output) = budget_original::preflight(&args) { eprint!("{}", output.stderr); return ExitCode::from(output.exit); }
+        if args.iter().any(|s|s=="--help") {println!("{}",budget_original::help());return ExitCode::SUCCESS;}
+    }
     if document_party_original::accepts(&args) {
         if let Err(output) = document_party_original::preflight(&args) {
             eprint!("{}", output.stderr);
@@ -486,6 +492,9 @@ fn main() -> ExitCode {
         print!("{}", output.stdout);
         eprint!("{}", output.stderr);
         return ExitCode::from(output.exit);
+    }
+    if budget_original::accepts(&args) {
+        let output=budget_original::execute(&args);print!("{}",output.stdout);eprint!("{}",output.stderr);return ExitCode::from(output.exit);
     }
     if document_party_original::accepts(&args) {
         let output = document_party_original::execute(&args);

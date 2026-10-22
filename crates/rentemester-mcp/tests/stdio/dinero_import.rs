@@ -10,7 +10,7 @@ fn dinero_tools_discovery_readonly_and_confirmation_admission() {
         ],
     ));
     let tools = rows[1]["result"]["tools"].as_array().unwrap();
-    assert_eq!(tools.len(), 257);
+    assert_eq!(tools.len(), EXPECTED_NATIVE_TOOLS);
     for name in [
         "dinero_import_plan",
         "dinero_imports",

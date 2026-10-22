@@ -20,6 +20,9 @@ pub fn tools() -> Vec<Value> {
         }
         out.push(tool(name,"Read full server budget revisions/actuals/dimension comparison under CompanyRead. Explicit fiscal year; optional dimension/member only on dimension comparison, member requires dimension. Server owns totals/variance/actuals. Preserve accountBudget/accountActual/unallocated/other members, null unreviewed dimension budget/variance, selections/options and advisory notes. Never infer allocation or money.",json!({"type":"object","required":["company","year"],"properties":props,"additionalProperties":false}),true));
     }
+    let comparison=out.iter_mut().find(|t|t["name"]=="budget_vs_actual").unwrap();
+    let native=comparison["inputSchema"].clone();
+    comparison["inputSchema"]=json!({"oneOf":[native,crate::budget_original::comparison_schema()]});
     let mut body = native_body(budget_body_schema());
     body["maxLength"] = json!(MAX_BUDGET_BODY);
     out.push(tool("set_budget","CompanyAdmin: append one exact native16KiB {accountNo,period,amount,notes?} revision. Outer confirm:true required; native body has NO inner confirm/key/actor. No deduplication promise, journal effects or automatic retries. Unknown outcome requires canonical budget revision read before further action.",json!({"type":"object","required":["company","body","confirm"],"properties":{"company":company_schema(),"body":body,"confirm":{"const":true}},"additionalProperties":false}),false));

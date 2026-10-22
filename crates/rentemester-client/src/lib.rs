@@ -557,3 +557,6 @@ pub use asset_original::{original_asset_schema, validate_original_asset, validat
 
 mod mileage_original;
 pub use mileage_original::{validate_original_mileage_shape, original_mileage_log_schema, publish_original_mileage};
+
+mod budget_original;
+pub use budget_original::{original_budget_set_schema, validate_original_budget_result};
