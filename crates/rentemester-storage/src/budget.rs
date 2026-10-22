@@ -31,6 +31,14 @@ fn period(s: &str) -> Result<(), Error> {
     Ok(())
 }
 pub fn set(tx: &Transaction<'_>, input: &Set, actor: &str) -> Result<Value, Error> {
+    set_with_principal(tx, input, actor, crate::idempotency::PrincipalKind::User)
+}
+pub fn set_with_principal(
+    tx: &Transaction<'_>,
+    input: &Set,
+    actor: &str,
+    kind: crate::idempotency::PrincipalKind,
+) -> Result<Value, Error> {
     crate::journal_post::require_current(tx)?;
     period(&input.period)?;
     let no = input.account_no.trim();
@@ -55,7 +63,7 @@ pub fn set(tx: &Transaction<'_>, input: &Set, actor: &str) -> Result<Value, Erro
         .map(str::trim)
         .filter(|s| !s.is_empty());
     let id:i64=tx.query_row("INSERT INTO budget_lines(account_no,period,amount,notes) VALUES(?1,?2,?3,?4) RETURNING id",params![no,input.period,crate::journal_post::money(&amount)?,notes],|r|r.get(0)).map_err(invalid)?;
-    tx.execute("INSERT INTO audit_log(event_type,entity_type,entity_id,message,actor) VALUES('budget_set','budget_line',?1,?2,?3)",params![id.to_string(),format!("Set budget for {no} {} to {}",input.period,amount.decimal()),format!("user:{actor}")]).map_err(invalid)?;
+    tx.execute("INSERT INTO audit_log(event_type,entity_type,entity_id,message,actor) VALUES('budget_set','budget_line',?1,?2,?3)",params![id.to_string(),format!("Set budget for {no} {} to {}",input.period,amount.decimal()),format!("{}:{actor}", match kind { crate::idempotency::PrincipalKind::User => "user", crate::idempotency::PrincipalKind::ServiceAccount => "service_account" })]).map_err(invalid)?;
     Ok(json!({"id":id,"accountNo":no,"period":input.period,"amount":wire(&amount)?}))
 }
 struct Cell {
