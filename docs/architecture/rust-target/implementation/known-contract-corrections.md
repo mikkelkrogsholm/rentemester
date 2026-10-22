@@ -328,3 +328,29 @@ er en påkrævet boolean; falsk er en legitim forretningsafvisning.
 Fejlede checks og reviewrettelser blev bevaret, og den første faktiske
 prøve bestod uden gentagelse af finansielle skrivninger. Ingen prøve
 påstår juridisk egnethed eller udleder momsfradrag af de syntetiske køb.
+
+### Lokal kørselseksport og eksisterende eksportret (Group171)
+
+Kildens MCP-beskrivelse af eksport til en servermappe er korrigeret: filer
+tilhører den lokale CLI-/stdio-maskine, og outputDir sendes aldrig som sti
+til Rust-serveren. Serveraudit beskriver forberedte data frem for at påstå
+lokal filsucces. Eksisterende faste filer kan erstattes som i kilden;
+per-fil-atomicitet er ikke en garanti for samlet crash-atomicitet.
+
+Manglende eller ugyldige numeriske CLI-værdier udelades på wire og når
+serverens ordnede kildevalidering; eksplicit null er ikke et tal. Negative
+og nulværdier giver stadig forretningsafvisning. Kildens positive kilometer,
+som afrundes til nul, afvises fortsat af den eksisterende Rust-kontrol.
+Eksportens JS-tal 0 og serverens monetære wiretal 0.0 sammenlignes i præcise
+hundrededele, så tomme og heltallige summer ikke afvises som usikre resultater.
+
+CompanyExport tillades allerede for læsere. Den faktiske prøves oprindelige
+forventning om afvisning var forkert; data og audit fra den prøve bevares.
+Den korrigerede prøve tilbagekalder medlemskabet før eksportafvisning og
+tilbagekalder derefter nøglen. Ingen adgangspolitik er strammet eller svækket.
+
+Flere historiske MCP-discoverytests har stadig faste gamle totaler på bl.a.
+225, 257, 319, 322 og 325 tools. Det er en konkret resterende harnesskorrektion
+ved næste registrytilføjelse: genbrug den eksisterende fælles
+EXPECTED_NATIVE_TOOLS, og bevar kontrollen af alle navne, schemaer og kald.
+Den fulde stdio-suite påstås ikke bestået af denne afgrænsede delaccept.

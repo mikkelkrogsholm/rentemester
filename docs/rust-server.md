@@ -3866,3 +3866,30 @@ otte webfiler og hjælperne er uafhængigt hashkontrolleret; processerne er stop
 Lukkede perioder, nulperioder og grænseår er dækket af målrettede fixtures.
 Næste forløb er kørselsregnskabets oprindelige CLI/MCP og lokale eksport.
 Installeret desktopaccept ligger fortsat til allersidst.
+
+### Oprindeligt kørselsregnskab og lokal eksport (Group171)
+
+`mileage log`, `mileage list`, `mileage report` og `mileage export` samt de fire
+oprindelige MCP-navne bruger samme Rust-motor som de bevarede native adaptere.
+Loggen er dokumentation; den opretter ingen finans- eller momsposteringer.
+Brugeren vælger sats og grundlag. Listen dækker alle år, og rapportens
+datointerval inkluderer begge grænser.
+
+Eksporten leverer deterministisk JSON og CSV fra serveren og skriver de to
+faste filnavne på CLI-/stdio-maskinen. Eksisterende filer erstattes atomisk
+pr. fil, mens andre filer bevares. Begge filer valideres og klargøres før
+erstatning. Serverens audit bekræfter forberedelse; lokal succes meddeles
+først efter begge skrivninger. En lokal fejl kan derfor efterlade serveraudit,
+og eksportkaldet må ikke automatisk gentages. En læser må fortsat eksportere;
+tilbagekaldt virksomhedsadgang eller nøgle afvises.
+
+15 målrettede tests, streng Clippy for otte pakker og den samlede prøve består
+på `b9d8b74f`. Tre ture over årsskiftet giver 15,85 km og 71,63 kr. To faktiske
+lokale eksporter har præcis kildekompatibel JSON-/CSV-orden, tal, escaping og
+linjeskift. Tre logposter og to eksportforberedelser giver fem auditposter.
+Normal MFA-genstart, signeret kildefri gendannelse til ny ejer og genåbning
+bevarer alle rækker med præcis én manifestbundet restorepost. 2533 kildefiler,
+tre binære filer, otte webfiler og hjælperne er uafhængigt hashkontrolleret.
+Den første prøves fejlagtige forventning om læserens eksportret er bevaret
+med dens data og kvitteringer; produktets politik er uændret.
+Næste forløb er budgetter, faktiske afvigelser og likviditetsprognoser.
