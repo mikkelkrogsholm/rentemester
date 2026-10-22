@@ -50,6 +50,7 @@ mod gdpr;
 mod dimensions;
 mod exceptions;
 mod mileage;
+mod mileage_original;
 mod audit_verify;
 mod invoice_compensation;
 mod invoice_interest;
@@ -597,6 +598,10 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
         .route("/api/companies/{slug}/manual-journal", post(write))
         .route("/api/companies/{slug}/manual-journal/recovery", get(manual_post_recovery::handle).post(manual_post_recovery::handle))
         .route("/api/companies/{slug}/manual-journal-reversal", post(write))
+        .route("/api/companies/{slug}/original/mileage/log", post(mileage_original::handle))
+        .route("/api/companies/{slug}/original/mileage/list", get(mileage_original::handle))
+        .route("/api/companies/{slug}/original/mileage/report", get(mileage_original::handle))
+        .route("/api/companies/{slug}/original/mileage/export", post(mileage_original::handle))
         .with_state(state)
 }
 fn response(status: StatusCode, value: Value) -> Response {
