@@ -199,6 +199,11 @@ pub fn prepare(args: Vec<String>) -> Result<Vec<String>, (u8, Error)> {
     }
     // Source precedence: --json wins regardless of its position; the last
     // --format otherwise wins. Human is the adapters' existing no-json mode.
+    // Preserve the source human request for the exceptions family, whose
+    // default distinguishes a terminal report from piped flat JSON.
+    if !json && format == Some("human") && output.first().is_some_and(|s| s == "exceptions") {
+        output.extend(["--format".into(), "human".into()]);
+    }
     if json || format == Some("json") {
         let end = output
             .iter()
