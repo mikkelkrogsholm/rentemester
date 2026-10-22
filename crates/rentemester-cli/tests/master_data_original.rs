@@ -187,8 +187,7 @@ fn master_data_original_actual_exits_global_positions_pipe_human_json_precedence
 
 #[test]
 fn master_data_original_sdk_schema_usage_is_stderr_before_http() {
-    let dir = tempfile::tempdir().unwrap();
-    let cookie = dir.path().join("cookie");
+    let cookie = std::env::temp_dir().join(format!("rm164-schema-cookie-{}", std::process::id()));
     let mut options = std::fs::OpenOptions::new();
     options.create_new(true).write(true);
     #[cfg(unix)]
@@ -226,4 +225,5 @@ fn master_data_original_sdk_schema_usage_is_stderr_before_http() {
     assert!(out.stdout.is_empty());
     assert!(!out.stderr.is_empty());
     assert!(matches!(listener.accept(),Err(e) if e.kind()==std::io::ErrorKind::WouldBlock));
+    std::fs::remove_file(cookie).unwrap();
 }
