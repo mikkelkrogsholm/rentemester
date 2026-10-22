@@ -62,11 +62,23 @@ pub fn credited(tx: &Transaction<'_>, id: i64) -> Result<Money, Error> {
     }
     Ok(total)
 }
+fn require_classified(
+    projection: &rentemester_engine::sales_invoice::TaxProjection,
+) -> Result<(), Error> {
+    if projection.lines.iter().any(|line| line.vat_code.is_none()) {
+        return Err(Error::new(
+            "unsupported_invoice_vat_classification",
+            "Invoice VAT rate has no supported credit posting classification",
+        ));
+    }
+    Ok(())
+}
 /// Read-only reuse of the credit writer's immutable original and prior-counter proof.
 pub(crate) fn verify_existing(tx: &Transaction<'_>, id: i64) -> Result<(), Error> {
     let (journal,debtor_id,debtor,gross,payload):(i64,i64,String,Money,String)=tx.query_row("SELECT p.journal_entry_id,p.receivable_account_id,a.account_no,p.booked_gross_dkk,d.payload_json FROM documents d JOIN issued_invoice_postings p ON p.invoice_document_id=d.id JOIN journal_entries j ON j.id=p.journal_entry_id JOIN accounts a ON a.id=p.receivable_account_id WHERE d.id=?1 AND d.document_type='issued_invoice' AND j.status='posted' AND j.document_id=d.id AND j.source_bank_transaction_id IS NULL AND j.reversal_of_entry_id IS NULL AND NOT EXISTS(SELECT 1 FROM journal_entries r WHERE r.reversal_of_entry_id=j.id)",[id],|r|Ok((r.get(0)?,r.get(1)?,r.get(2)?,legacy_money(r.get_ref(3)?).map_err(|_|rusqlite::Error::InvalidQuery)?,r.get(4)?))).map_err(invalid)?;
     let payload: Value = serde_json::from_str(&payload).map_err(invalid)?;
     let projection = crate::invoice_fx::projection(&payload)?;
+    require_classified(&projection)?;
     if projection.gross != gross {
         return Err(refused(
             "original snapshot gross differs from posting identity",
@@ -149,6 +161,7 @@ pub fn prepare(tx: &Transaction<'_>, input: &Input, now: &str) -> Result<Prepare
     }
     let original: Value = serde_json::from_str(&payload).map_err(invalid)?;
     let projection = rentemester_engine::sales_invoice::project(&original)?;
+    require_classified(&projection)?;
     let dkk_projection = crate::invoice_fx::projection(&original)?;
     let currency = original["currency"]
         .as_str()
@@ -562,6 +575,64 @@ pub(crate) mod tests {
             "synthetic",
             Date::parse("2026-10-18")?,
         )
+    }
+    #[test]
+    fn historical_unmapped_rate_refuses_legacy_credit_before_new_effects() {
+        // Deliberate unit-only legacy source image: source tagged a20% posting DK_SALE_25.
+        // Native writers cannot create this combination. No runtime guard is disabled.
+        let mut db = fixture_with(
+            json!({"lines":[{"description":"Synthetic legacy source","quantity":1,"unitPriceExVat":1000}]}),
+            true,
+        );
+        let triggers = db
+            .prepare("SELECT name,sql FROM sqlite_master WHERE type='trigger'")
+            .unwrap()
+            .query_map([], |row| {
+                Ok((row.get::<_, String>(0)?, row.get::<_, String>(1)?))
+            })
+            .unwrap()
+            .collect::<Result<Vec<_>, _>>()
+            .unwrap();
+        for (name, _) in &triggers {
+            db.execute_batch(&format!("DROP TRIGGER \"{}\"", name.replace('"', "\"\"")))
+                .unwrap();
+        }
+        let tx = db.transaction().unwrap();
+        let raw: String = tx
+            .query_row("SELECT payload_json FROM documents WHERE id=1", [], |row| {
+                row.get(0)
+            })
+            .unwrap();
+        let mut payload: Value = serde_json::from_str(&raw).unwrap();
+        payload["totals"] =
+            json!({"netAmount":1000,"vatRate":0.2,"vatAmount":200,"grossAmount":1200});
+        let projection = rentemester_engine::sales_invoice::project(&payload).unwrap();
+        assert!(projection.legacy && projection.lines[0].vat_code.is_none());
+        tx.execute("UPDATE documents SET payload_json=?1,amount_inc_vat=1200,vat_amount=200 WHERE document_type IN ('issued_invoice','issued_invoice_pdf')",[serde_json::to_string_pretty(&payload).unwrap()]).unwrap();
+        tx.execute_batch("UPDATE issued_invoice_postings SET booked_gross_dkk=1200 WHERE invoice_document_id=1;UPDATE journal_lines SET debit_amount=1200 WHERE account_id=(SELECT id FROM accounts WHERE account_no='R');UPDATE journal_lines SET credit_amount=200 WHERE account_id=(SELECT id FROM accounts WHERE account_no='V')").unwrap();
+        for (_, sql) in &triggers {
+            tx.execute_batch(sql).unwrap();
+        }
+        let before = tx.total_changes();
+        let input: Input = serde_json::from_value(json!({"invoiceDocumentId":1,"issueDate":"2026-10-18","reason":"Synthetic legacy correction","confirm":true})).unwrap();
+        let error = match prepare(&tx, &input, "2026-10-18T12:00:00Z") {
+            Err(error) => error,
+            Ok(_) => panic!("unsupported legacy source cannot authorize credit"),
+        };
+        assert_eq!(error.code, "unsupported_invoice_vat_classification");
+        assert_eq!(
+            verify_existing(&tx, 1).unwrap_err().code,
+            "unsupported_invoice_vat_classification"
+        );
+        assert_eq!(tx.total_changes(), before);
+        assert_eq!(
+            tx.query_row("SELECT count(*) FROM credit_note_postings", [], |row| row
+                .get::<_, i64>(
+                0
+            ))
+            .unwrap(),
+            0
+        );
     }
     #[test]
     fn partial_then_final_credit_preserves_original_and_reduces_exact_original_accounts() {
