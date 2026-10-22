@@ -722,14 +722,14 @@ def main():
                     report['terminalSql'] = {'counts':counts,'headers':rows,'journalActors':db.execute('SELECT created_by,created_by_program FROM journal_entries ORDER BY id').fetchall()}
                     if args.journal_original:
                         db.row_factory = sqlite3.Row
-                        evidence = actual['journalEvidence']
+                        journal_evidence = actual['journalEvidence']
                         facts = {table:[dict(row) for row in db.execute('SELECT * FROM '+table+' ORDER BY '+('kind,scope' if table == 'sequences' else 'tombstone_id' if table == 'mutation_idempotency_outcomes' else 'id'))] for table in ['journal_entries','journal_lines','sequences','audit_log','exceptions','mutation_idempotency_tombstones','mutation_idempotency_outcomes']}
                         original, reversal = facts['journal_entries']
                         if original['currency'] != 'DKK' or reversal['currency'] != 'DKK' or original['created_by'] != 'user:'+report['results']['authenticate']['ownerId'] or reversal['created_by'] != original['created_by']:
                             raise RuntimeError('Original journal default currency/current principal attribution differs')
-                        if (original['id'],original['entry_no'],original['entry_hash'],original['previous_hash']) != (evidence['posted']['entryId'],evidence['posted']['entryNo'],evidence['posted']['entryHash'],evidence['dryRun']['previousHash']):
+                        if (original['id'],original['entry_no'],original['entry_hash'],original['previous_hash']) != (journal_evidence['posted']['entryId'],journal_evidence['posted']['entryNo'],journal_evidence['posted']['entryHash'],journal_evidence['dryRun']['previousHash']):
                             raise RuntimeError('Original journal persisted provisional identity/hash differs')
-                        if reversal['entry_hash'] != evidence['reversal']['entryHash'] or reversal['previous_hash'] != original['entry_hash'] or reversal['reversal_of_entry_id'] != original['id']:
+                        if reversal['entry_hash'] != journal_evidence['reversal']['entryHash'] or reversal['previous_hash'] != original['entry_hash'] or reversal['reversal_of_entry_id'] != original['id']:
                             raise RuntimeError('Original journal reversal hash chain differs')
                         lines = facts['journal_lines']
                         if [(r['debit_amount'],r['credit_amount']) for r in lines] != [(3.25,0),(0,3.25),(0,3.25),(3.25,0)]:
