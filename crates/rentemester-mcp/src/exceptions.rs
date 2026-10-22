@@ -1,110 +1,181 @@
+//! Existing source tool names, source envelopes, shared original HTTP transport.
 use crate::tools::{company_schema, tool};
 use rentemester_client::{ApiClient, Error};
-use serde::Deserialize;
 use serde_json::{Value, json};
 pub fn accepts(s: &str) -> bool {
     matches!(s, "exceptions_list" | "exception_resolve")
 }
 pub fn tools() -> Vec<Value> {
-    vec![
+    let mut tools = vec![
         tool(
             "exceptions_list",
-            "CompanyRead: exact canonical task queue and context. Optional status open/resolved/all; includeArchived defaults false. Read-only: no task refresh, financial effects or local aggregation.",
+            "List exceptions in descending ID order; open and unarchived by default.",
             json!({"type":"object","required":["company"],"properties":{"company":company_schema(),"status":{"type":"string","enum":["open","resolved","all"]},"includeArchived":{"type":"boolean"}},"additionalProperties":false}),
             true,
         ),
         tool(
             "exception_resolve",
-            "CompanyReview: explicitly review one task with optional note, current actor from authentication. Resolves the task only; does not book or clear an underlying bank condition. No caller keys/actor, inner confirm or automatic retries. If the outcome is unknown, read canonical queue/audit before further action.",
-            json!({"type":"object","required":["company","id","confirm"],"properties":{"company":company_schema(),"id":{"type":"integer","minimum":1,"maximum":9_007_199_254_740_991_i64},"note":{"type":["string","null"],"maxLength":4096},"confirm":{"const":true}},"additionalProperties":false}),
+            "Review one exception. Requires confirm:true. No accounting repair or automatic retry; server-owned identity.",
+            json!({"type":"object","required":["company","id"],"properties":{"company":company_schema(),"id":{"type":"integer","minimum":1,"maximum":9_007_199_254_740_991_i64},"note":{"type":"string"},"confirm":{"type":"boolean"}},"additionalProperties":false}),
             false,
         ),
-    ]
-}
-#[derive(Deserialize)]
-#[serde(deny_unknown_fields)]
-struct Read {
-    company: String,
-    status: Option<String>,
-    #[serde(default, rename = "includeArchived")]
-    include_archived: bool,
-}
-#[derive(Deserialize)]
-#[serde(deny_unknown_fields)]
-struct Resolve {
-    company: String,
-    id: i64,
-    #[serde(rename = "note")]
-    _note: Option<String>,
-    confirm: bool,
-}
-pub async fn call(
-    api: &ApiClient,
-    name: &str,
-    args: Value,
-) -> Result<Result<Value, Error>, &'static str> {
-    match name {
-        "exceptions_list" => {
-            let r: Read = serde_json::from_value(args)
-                .map_err(|_| "exceptions_list accepts only company/status/includeArchived")?;
-            Ok(api
-                .exceptions(&r.company, r.status.as_deref(), r.include_archived)
-                .await)
-        }
-        "exception_resolve" => {
-            let r: Resolve = serde_json::from_value(args.clone())
-                .map_err(|_| "exception_resolve requires company/id/confirm and optional note")?;
-            let mut body = json!({});
-            // Preserve a caller-supplied null as well as exact text; never forward confirmation.
-            if let Some(note) = args.get("note") {
-                body["note"] = note.clone();
-            }
-            Ok(api
-                .resolve_exception(
-                    &r.company,
-                    r.id,
-                    serde_json::to_vec(&body).map_err(|_| "invalid exception note")?,
-                    r.confirm,
-                )
-                .await)
-        }
-        _ => Err("unknown exceptions tool"),
+    ];
+    for t in &mut tools {
+        t["outputSchema"] = json!({"type":"object","required":["ok","errors"],"properties":{"ok":{"type":"boolean"},"errors":{"type":"array","items":{"type":"string"}},"data":{"type":"object"},"code":{"type":"string"},"appliedRules":{"type":"array","items":{"type":"string"}}},"additionalProperties":false});
+        t["annotations"]["destructiveHint"] = json!(false);
+        t["annotations"]["openWorldHint"] = json!(false);
     }
+    tools
+}
+fn result(value: Value) -> Value {
+    json!({"content":[{"type":"text","text":value.to_string()}],"structuredContent":value,"isError":value["ok"]!=true})
+}
+fn wrap(mut core: Value) -> Value {
+    let fields = core.as_object_mut().unwrap();
+    let ok = fields.remove("ok").unwrap();
+    let errors = fields.remove("errors").unwrap();
+    let rules = fields.remove("appliedRules");
+    let code = fields.remove("code");
+    let mut envelope = json!({"ok":ok,"errors":errors});
+    if let Some(rules) = rules {
+        envelope["appliedRules"] = rules;
+    }
+    if let Some(code) = code {
+        envelope["code"] = code;
+    }
+    if ok == true {
+        envelope["data"] = core;
+    }
+    result(envelope)
+}
+pub async fn call(api: &ApiClient, name: &str, args: Value) -> Result<Value, &'static str> {
+    let o = args
+        .as_object()
+        .ok_or("expected exceptions arguments object")?;
+    let write = name == "exception_resolve";
+    if !accepts(name)
+        || o.keys().any(|k| {
+            !if write {
+                ["company", "id", "note", "confirm"].contains(&k.as_str())
+            } else {
+                ["company", "status", "includeArchived"].contains(&k.as_str())
+            }
+        })
+    {
+        return Err("unknown exceptions argument");
+    }
+    let company = args["company"]
+        .as_str()
+        .filter(|s| !s.is_empty())
+        .ok_or("company required")?;
+    if write {
+        if !args["id"]
+            .as_i64()
+            .is_some_and(|n| (1..=9_007_199_254_740_991).contains(&n))
+            || args
+                .get("note")
+                .is_some_and(|n| n.as_str().is_none_or(|s| s.len() > 4096))
+            || args.get("confirm").is_some_and(|c| !c.is_boolean())
+        {
+            return Err("invalid exception_resolve arguments");
+        }
+        if args["confirm"] != true {
+            return Ok(result(
+                json!({"ok":false,"code":"CONFIRM_REQUIRED","errors":["confirm: true required for write tool exception_resolve"]}),
+            ));
+        }
+    } else if args
+        .get("status")
+        .is_some_and(|s| !matches!(s.as_str(), Some("open" | "resolved" | "all")))
+        || args.get("includeArchived").is_some_and(|v| !v.is_boolean())
+    {
+        return Err("invalid exceptions_list arguments");
+    }
+    let outcome = if write {
+        let mut body = json!({});
+        if let Some(note) = args.get("note") {
+            body["note"] = note.clone();
+        }
+        api.exceptions_original_resolve(
+            company,
+            args["id"].as_i64().unwrap(),
+            serde_json::to_vec(&body).map_err(|_| "invalid note")?,
+            true,
+        )
+        .await
+    } else {
+        api.exceptions_original_list(
+            company,
+            args.get("status").and_then(Value::as_str),
+            args["includeArchived"] == true,
+        )
+        .await
+    };
+    Ok(match outcome {
+        Ok(core) => wrap(core),
+        Err(e) => {
+            let code = match e {
+                Error::InvalidInput(_) => "invalid_input",
+                Error::Refused { .. } => "server_refused",
+                Error::Transport => "transport",
+                Error::Protocol => "protocol",
+                Error::OutcomeUnknown => "outcome_unknown",
+            };
+            result(json!({"ok":false,"code":code,"errors":[e.to_string()]}))
+        }
+    })
 }
 #[cfg(test)]
 mod tests {
     use super::*;
-    #[test]
-    fn tools_expose_flat_resolution_and_read_only_queue() {
-        let t = tools();
-        assert_eq!(t[0]["name"], "exceptions_list");
-        assert_eq!(t[0]["annotations"]["readOnlyHint"], true);
-        assert_eq!(t[1]["name"], "exception_resolve");
-        assert_eq!(t[1]["annotations"]["readOnlyHint"], false);
-        assert_eq!(t[1]["inputSchema"]["additionalProperties"], false);
-        assert!(t[1]["inputSchema"]["properties"].get("body").is_none());
-        assert_eq!(t[1]["inputSchema"]["properties"]["confirm"]["const"], true);
+    #[tokio::test]
+    async fn exception_source_confirm_and_null_note() {
+        let api = ApiClient::new("http://127.0.0.1:9", true, None).unwrap();
+        for confirm in [None, Some(false)] {
+            let mut args = json!({"company":"synthetic","id":1});
+            if let Some(c) = confirm {
+                args["confirm"] = json!(c);
+            }
+            let out = call(&api, "exception_resolve", args).await.unwrap();
+            assert_eq!(
+                out["structuredContent"],
+                json!({"ok":false,"code":"CONFIRM_REQUIRED","errors":["confirm: true required for write tool exception_resolve"]})
+            );
+            assert_eq!(
+                serde_json::from_str::<Value>(out["content"][0]["text"].as_str().unwrap()).unwrap(),
+                out["structuredContent"]
+            );
+        }
+        for extra in [
+            json!({"note":null}),
+            json!({"confirm":"true"}),
+            json!({"actor":"user:caller"}),
+        ] {
+            let mut args = json!({"company":"synthetic","id":1,"confirm":true});
+            args.as_object_mut()
+                .unwrap()
+                .extend(extra.as_object().unwrap().clone());
+            assert!(call(&api, "exception_resolve", args).await.is_err());
+        }
     }
     #[test]
-    fn malformed_flat_resolution_cannot_reach_network() {
-        tokio::runtime::Runtime::new().unwrap().block_on(async {
-            let api = ApiClient::new("http://127.0.0.1:9", true, None).unwrap();
-            for args in [
-                json!({"company":"synthetic","id":1,"confirm":true,"body":"{}"}),
-                json!({"company":"synthetic","id":1,"confirm":true,"actor":"agent:caller"}),
-                json!({"company":"synthetic","id":1,"confirm":true,"note":1}),
-            ] {
-                assert!(call(&api, "exception_resolve", args).await.is_err());
-            }
-            for args in [
-                json!({"company":"synthetic","id":1,"confirm":false}),
-                json!({"company":"synthetic","id":0,"confirm":true}),
-            ] {
-                assert!(matches!(
-                    call(&api, "exception_resolve", args).await.unwrap(),
-                    Err(Error::InvalidInput(_))
-                ));
-            }
-        });
+    fn exception_source_annotations_and_envelopes() {
+        let t = tools();
+        for tool in &t {
+            assert_eq!(tool["outputSchema"]["required"], json!(["ok", "errors"]));
+        }
+        assert_eq!(
+            t[0]["annotations"],
+            json!({"readOnlyHint":true,"destructiveHint":false,"idempotentHint":true,"openWorldHint":false})
+        );
+        assert_eq!(
+            t[1]["annotations"],
+            json!({"readOnlyHint":false,"destructiveHint":false,"idempotentHint":false,"openWorldHint":false})
+        );
+        assert_eq!(
+            wrap(json!({"ok":true,"resolved":false,"errors":[]}))["structuredContent"],
+            json!({"ok":true,"data":{"resolved":false},"errors":[]})
+        );
+        assert!(wrap(json!({"ok":false,"resolved":false,"errors":["actual"],"code":"ACTUAL"}))["structuredContent"].get("data").is_none());
     }
 }
