@@ -558,6 +558,8 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
         .route("/api/companies/{slug}/{report}/export", get(read))
         .route("/api/companies/{slug}/fiscal-years", get(archive_reports::read))
         .route("/api/companies/{slug}/journal/original/post", post(journal_original::handle))
+        .route("/api/companies/{slug}/journal/original/keyed-post", post(journal_original::handle))
+        .route("/api/companies/{slug}/journal/original/keyed-reverse", post(journal_original::handle))
         .route("/api/companies/{slug}/journal/original/dry-run", post(journal_original::handle))
         .route("/api/companies/{slug}/journal/original/reverse", post(journal_original::handle))
         .route("/api/companies/{slug}/manual-journal", post(write))
