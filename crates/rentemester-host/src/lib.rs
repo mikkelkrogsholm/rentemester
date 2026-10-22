@@ -1427,3 +1427,5 @@ mod exceptions_original;
 
 mod master_data_original;
 mod documents_original;
+
+mod expense_original;

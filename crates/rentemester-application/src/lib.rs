@@ -159,3 +159,5 @@ pub mod recurring_workspace;
 
 pub mod master_data_original;
 pub mod documents_original;
+
+pub mod expense_original;
