@@ -212,10 +212,10 @@ fn human(value: &Value, args: &[String]) -> String {
     }
     if let Some(o) = value["company"].as_object() {
         for (k, v) in o {
-            if !seen.contains(k) {
-                if let Some(s) = scalar(v) {
-                    lines.push(format!("  {}: {s}", field_label(k)));
-                }
+            if !seen.contains(k)
+                && let Some(s) = scalar(v)
+            {
+                lines.push(format!("  {}: {s}", field_label(k)));
             }
         }
     }
@@ -332,10 +332,10 @@ pub fn execute(args: &[String]) -> Output {
             ("--expense-account", "defaultExpenseAccount"),
             ("--default-vat", "defaultVatTreatment"),
         ] {
-            if let Some(s) = flags.get(flag) {
-                if key != "name" || !s.is_empty() {
-                    body["input"][key] = json!(s);
-                }
+            if let Some(s) = flags.get(flag)
+                && (key != "name" || !s.is_empty())
+            {
+                body["input"][key] = json!(s);
             }
         }
         if let Some(s) = flags.get("--payment-terms") {
