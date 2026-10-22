@@ -3814,3 +3814,27 @@ hjælperne er uafhængigt hashkontrolleret; prøveprocesserne er stoppet.
 Den faktiske prøve dækker dansk standardmoms og EU-servicekøb. De øvrige
 behandlinger og valutaregler dækkes af målrettede fixtures. Produktions-VIES
 og installeret desktop er ikke kvalificeret her. Næste forløb er periodisering.
+
+### Oprindelig periodisering (Group169)
+
+`accrual register`, `accrual recognize` og `accrual register-report` samt de tre
+oprindelige MCP-navne bruger samme Rust-motor og journal som de bevarede native
+kommandoer. Serveren vælger udeladte datoer, månedstrin og bekræftet bankrolle
+under aktuel bruger- eller serviceadgang. Registrering og periodisering
+returnerer komplette kildekompatible kvitteringer; rapporten viser præcist
+periodiseret og resterende beløb. MCP-skrivninger kræver bekræftelse.
+
+16 målrettede tests, streng Clippy for otte pakker og den første faktiske prøve
+består på `d207aef5`. To normale originaler dokumenterer tre typer periodisering,
+fem periodiseringer og præcis otte journalposter med 16 linjer. Af 315,09 kr. er
+220,09 kr. periodiseret og 95 kr. tilbage. Gentagne perioder, forkerte konti og
+aktuel tilbagekaldt adgang afvises uden nye bogføringer. Tre journalposter og
+tilhørende auditspor har den faktiske serviceidentitet.
+
+Normal MFA-genstart og signeret gendannelse uden kilde eller privat signer,
+efterfulgt af genåbning, bevarer alle forretningsrækker og de 32 auditposter
+med præcis én manifestbundet restorepost. 2509 kildefiler, tre binære filer,
+otte webfiler og hjælperne er uafhængigt hashkontrolleret; processerne er stoppet.
+Bilagsløse registreringer, nulbeløbsperioder og lukkede perioder er kvalificeret
+med målrettede fixtures. Installeret desktop ligger fortsat til sidst.
+Næste forløb er aktiver, afskrivninger og straksafskrivning.

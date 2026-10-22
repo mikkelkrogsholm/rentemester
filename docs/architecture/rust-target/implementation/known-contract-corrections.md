@@ -279,3 +279,26 @@ udtræk; hjælperen læser derfor det gemte resultat i stedet for at bestille
 et nyt udtræk. Ingen dokument-, udtræks- eller adgangskontrol er svækket.
 Den endelige prøve kvalificerer præcis DK-standard og EU-reverse-charge;
 den hævder ikke en faktisk prøve af alle seks behandlinger eller desktop.
+
+### Kildens periodiseringsdatoer, nullable bilag og nulperioder (Group169)
+
+Kildens faktiske postering af forudbetalt omkostning og forudbetalt indtægt
+rammer kun balancekonti ved registrering og kan derfor undlade bilag. Prosaen
+om at forudbetalt indtægt altid rammer resultatet er upræcis. Senere udgifts-
+eller indtægtspostering kræver stadig fælles journalvaliderings bilag. Nullable
+hoveder kan læses gennem både oprindelige og native rapporter. Et angivet
+bilags fysiske original og hash kontrolleres altid.
+
+Kilden kræver ikke registrering før første plandato eller en eksplicit
+periodiseringsdato efter plandatoen. De oprindelige adaptere følger denne
+adfærd; native wrappers bevarer deres tidligere relative datopolitik. Fælles
+aktuel bogføringshorisont, lukket/indberettet periode, konti, dubletter og
+balancering bevares. Ingen separat bogføringsmotor indføres.
+
+Planen 0,01 kr. over to perioder er 0 og 0,01 kr. Den kan registreres og
+rapporteres, men nulpostering afvises fortsat af fælles journalvalidering.
+Afslutning bestemmes af antal bogførte perioder og må ikke udledes af en
+resterende saldo på nul. Asset-motorens positive periodelogik er ikke ændret.
+Tekniske crate-header-, float-literal- og ækvivalente prædikatfejl blev rettet
+afgrænset med bevarede checkkvitteringer før den første faktiske prøve.
+Ingen finansielle skrivninger blev gentaget for at teste transporten.

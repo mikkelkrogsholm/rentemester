@@ -1,15 +1,15 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "Group168 original expense and purchaseVAT2CLI3MCP accepted",
-  "code_revision": "7206d199320a9878165a691e95ce87a4413b133c",
+  "current_increment": "Group169 original accrual3CLI3MCP register/recognize/exposure accepted",
+  "code_revision": "d207aef5c4b6a4f97a8f71f17173e37ef8e256e8",
   "spec_revision": "sha256:8979030956647a0f03266c50d42786b5d33ab71a59c78528203d223226171e72",
-  "state": "Group168 ACCEPTED: sameRustexpenseengine original2CLI3MCP currenthuman/service, explicitVATpreflight andatomicbankposting, sixsource treatments, optionalMCPkey.26targetedtests+eightpackagestrict/build+actual DK/EU PASS.6originals/4journals14lines/14VATevents/4bankreconciliations/32audits; bank575/inputVAT125/outputVAT50. NormalMFArestart/signedsourcefreefreshownerrestore/reopen exactplus1boundaudit.2497source/3binary/8web/helperpins independentlymatched; processesstopped/runtimecleaned. Failedreceipts/profilepreserved. Full55/672/716/717OPEN; nextoriginalaccrualwholeflow, finaldesktoplast.",
+  "state": "Group169 ACCEPTED: source3CLI3MCP sameRustaccrual/journalengine currenthuman/service, serverdefaults nullableevidence source-compatiblezero/datepolicy andstrictsource receipts/report.16unique targetedtests+eightpackagestrict/build+firstactualPASS.2originals/3accruals/5recognitions/8journals16lines/32audits; total315.09 recognized220.09 remaining95. NormalMFArestart/signedsourcefreefreshownerrestore/reopen exactplus1manifestboundaudit.2509source/3binary/8web/helperpins independentlymatched, typedservicejournals3;processesstopped/runtimecleaned. Failedchecks/receipts preserved. Full55/672/716/717OPEN; nextoriginalassetwholeflow, finaldesktoplast.",
   "issues_closed": [
     701
   ],
   "next": [
-    "Next169 original accrual wholeflow3CLI3MCP: register documented accrual, inspect exposure, recognize selectedperiods andretain exactreport afterrestart/recovery. Reuse sharedRustaccrual/journalengine, currenthuman/service, server-ownedsource defaults andnullable evidence onlywhere source/sharedposting allows. Fourboundedindependentowners; all55missionretained.",
+    "Next170 originalasset wholeflow4CLI4MCP: documentedpurchase/capitalisation -> register -> explicitdepreciation -> bookvalue; eligibleimmediatewriteoff withdurable sourceexceptions/currentauthority. Reuse sharedRustasset/journalengine/nativealiases/accountingguards, no providers/newframework; fourboundedindependentowners. All55missionretained.",
     "Original invoice interface inventory now has all31CLI and25MCP bindings, with explicit compatibility corrections documented; do not mistake that family inventory for full product parity. Reconcile remaining original whole-product R44/R45 acceptance from existing epic/issues: actor/env/company-path/default launcher/errors/historical receipts, closure/recovery/automation, signed distribution/update/cutover and TypeScript backend retirement. Continue next necessary whole journey, preserve all accepted evidence/full original scope; installed desktop acceptance last.",
     "Installed desktop acceptance is explicitly deferred to the very end by the user. Preserve prepared Group100 profile; collect remaining native automation, closure, recovery and packaging checks for final installed acceptance without requesting screen unlock during development.",
     "J03/R50 and remaining R54 scope: only still-supported operation closure/recovery, nonempty scheduler handoff, hostile/older clone and post-cutover rollback requirements. Group99 qualifies managed installed J06 flow, not every R54 acceptance item.",
@@ -25,9 +25,9 @@
   ],
   "all_goal_requirements_complete": false,
   "previous_verified_increment": {
-    "name": "Group167 original2CLI2MCP invoice extraction, currentservice and signed recovery accepted",
-    "code_revision": "7a2e4db8f208eb7fd0ca2522cfc195a9a935dae4",
-    "evidence_key": "original_invoice_extraction167"
+    "name": "Group168 original expense and purchaseVAT2CLI3MCP accepted",
+    "code_revision": "7206d199320a9878165a691e95ce87a4413b133c",
+    "evidence_key": "original_expense168"
   },
   "evidence": {
     "combined_browser_log": "/tmp/rm-platform5-combined.log",
@@ -10055,6 +10055,210 @@
       "failed_actual_reports": [
         "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/builds/checks/acceptance/original-expense168-de6436ac26d606c88cf9bd4a471594e7070ac0c7.json"
       ]
+    },
+    "original_accrual169": {
+      "issue": 717,
+      "status": "ACCEPTED finite original3CLI3MCP accrual journey; entireissue/epicOPEN",
+      "source_revision": "d207aef5c4b6a4f97a8f71f17173e37ef8e256e8",
+      "sgd_run": "rust-original-accrual169-20261022T221009.767968000",
+      "engine_phase": "done",
+      "sgd_published": true,
+      "source_blob_count": 26,
+      "actual_report": "/tmp/rentemester-rust-reports/original-accrual169-actual.json",
+      "actual_report_sha256": "884d17905a32188197676059c6b1a0b2a29c6e7f9aaeb7cd4eff38604f690f1a",
+      "unique_targeted_tests": 16,
+      "test_counts": {
+        "engine": 2,
+        "storage_including_native_regressions": 4,
+        "sdk": 4,
+        "cli": 2,
+        "mcp_stdio": 2,
+        "additional_server_contract": 2,
+        "application_host_unit_filter": 0
+      },
+      "strict": "Eightpackages --all-targets --locked -Dwarnings PASS",
+      "checks": [
+        {
+          "check": "domain",
+          "key": "4eaf4da6626661cb0a3933cf9324871c149eec95fb9049cb7194562ad151c2af",
+          "argv": [
+            "python3",
+            "-c",
+            "import subprocess,sys; [subprocess.run([sys.executable,'scripts/rust/cargo-guard.py','cargo','test','-p',p,'--lib',f,'--locked'],check=True) for p,f in [('rentemester-engine','accrual'),('rentemester-storage','accrual')]]"
+          ],
+          "exit_code": 0,
+          "passed": true,
+          "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/rust-original-accrual169-20261022T221009.767968000/acceptance/4eaf4da6626661cb0a3933cf9324871c149eec95fb9049cb7194562ad151c2af/domain.log"
+        },
+        {
+          "check": "authority",
+          "key": "9c223e654953e94a024d59502cf6116490117d5e68496dfba4bfe0312c2e4b1b",
+          "argv": [
+            "python3",
+            "scripts/rust/cargo-guard.py",
+            "cargo",
+            "test",
+            "--lib",
+            "-p",
+            "rentemester-application",
+            "-p",
+            "rentemester-host",
+            "accrual_original",
+            "--locked"
+          ],
+          "exit_code": 0,
+          "passed": true,
+          "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/rust-original-accrual169-20261022T221009.767968000/acceptance/9c223e654953e94a024d59502cf6116490117d5e68496dfba4bfe0312c2e4b1b/authority.log"
+        },
+        {
+          "check": "client-cli",
+          "key": "c1465672c99b6851fceb4f1cc9fa5b8954123b72b691217f32c43735f4aa2fad",
+          "argv": [
+            "python3",
+            "-c",
+            "import subprocess,sys; [subprocess.run([sys.executable,'scripts/rust/cargo-guard.py','cargo','test','-p',p,'--test','accrual_original','--locked'],check=True) for p in ['rentemester-client','rentemester-cli']]"
+          ],
+          "exit_code": 0,
+          "passed": true,
+          "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/rust-original-accrual169-20261022T221009.767968000/acceptance/c1465672c99b6851fceb4f1cc9fa5b8954123b72b691217f32c43735f4aa2fad/client-cli.log"
+        },
+        {
+          "check": "mcp",
+          "key": "73e3b6db8fb796979789d91c345f21c1a4cf33f1411af339d4f688b136d319e7",
+          "argv": [
+            "python3",
+            "scripts/rust/cargo-guard.py",
+            "cargo",
+            "test",
+            "-p",
+            "rentemester-mcp",
+            "--test",
+            "stdio",
+            "accrual_original",
+            "--locked"
+          ],
+          "exit_code": 0,
+          "passed": true,
+          "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/rust-original-accrual169-20261022T221009.767968000/acceptance/73e3b6db8fb796979789d91c345f21c1a4cf33f1411af339d4f688b136d319e7/mcp.log"
+        },
+        {
+          "check": "strict",
+          "key": "00ce210bff105fac8667d05602c1656763cb77ddbd8b4a8c4570e8887562db41",
+          "argv": [
+            "python3",
+            "scripts/rust/cargo-guard.py",
+            "cargo",
+            "clippy",
+            "-p",
+            "rentemester-engine",
+            "-p",
+            "rentemester-storage",
+            "-p",
+            "rentemester-client",
+            "-p",
+            "rentemester-cli",
+            "-p",
+            "rentemester-mcp",
+            "-p",
+            "rentemester-application",
+            "-p",
+            "rentemester-host",
+            "-p",
+            "rentemester-server",
+            "--all-targets",
+            "--locked",
+            "--",
+            "-D",
+            "warnings"
+          ],
+          "exit_code": 0,
+          "passed": true,
+          "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/rust-original-accrual169-20261022T221009.767968000/acceptance/00ce210bff105fac8667d05602c1656763cb77ddbd8b4a8c4570e8887562db41/strict.log"
+        },
+        {
+          "check": "build",
+          "key": "abb4d00a7aa19130ed823fbb03807aed7b953fb45e96e704df7d23c6645601c5",
+          "argv": [
+            "python3",
+            "scripts/rust/cargo-guard.py",
+            "cargo",
+            "build",
+            "-p",
+            "rentemester-server",
+            "-p",
+            "rentemester-cli",
+            "-p",
+            "rentemester-mcp",
+            "--locked"
+          ],
+          "exit_code": 0,
+          "passed": true,
+          "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/rust-original-accrual169-20261022T221009.767968000/acceptance/abb4d00a7aa19130ed823fbb03807aed7b953fb45e96e704df7d23c6645601c5/build.log"
+        },
+        {
+          "check": "actual",
+          "key": "df95f6f2c071e5566b567d5ee8d883e28ff85e82076747d9459180611782fc43",
+          "argv": [
+            "python3",
+            "-c",
+            "import os,subprocess; from pathlib import Path; b=Path(os.environ['CARGO_TARGET_DIR'])/'debug'; rev=subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(); evidence=Path(os.environ['CARGO_TARGET_DIR'])/('original-accrual169-'+rev+'.json'); subprocess.run(['python3','scripts/rust/run-bookkeeping-batch.py','--original-accrual','--server-binary',str(b/'rentemester-server'),'--cli-binary',str(b/'rentemester-rust'),'--mcp-binary',str(b/'rentemester-mcp'),'--web-dir',os.environ['RM_REWRITE_WEB_DIR'],'--evidence',str(evidence)],check=True)"
+          ],
+          "exit_code": 0,
+          "passed": true,
+          "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/rust-original-accrual169-20261022T221009.767968000/acceptance/df95f6f2c071e5566b567d5ee8d883e28ff85e82076747d9459180611782fc43/actual.log"
+        }
+      ],
+      "actual_sql_counts": {
+        "documents": 2,
+        "document_party_link_events": 0,
+        "document_party_resolution_events": 0,
+        "internal_voucher_evidence": 0,
+        "audit_log": 32,
+        "journal_entries": 8,
+        "journal_lines": 16,
+        "accruals": 3,
+        "accrual_schedule_postings": 5
+      },
+      "restored_audits": 33,
+      "provider_calls": 0,
+      "scanner_calls": 2,
+      "exact_exposure": {
+        "recognizedAmount": 220.09,
+        "remainingAmount": 95,
+        "totalAmount": 315.09
+      },
+      "typed_service_journals": 3,
+      "source_artifact_web_pins": {
+        "source_files": 2509,
+        "binaries": 3,
+        "web_files": 8,
+        "helpers": 2,
+        "independently_matched": true
+      },
+      "normal_mfa_source_restart": true,
+      "signed_source_free_fresh_owner_restore": true,
+      "restored_fresh_mfa_reopen": true,
+      "current_service_role_and_credential_revocation_refused": true,
+      "exact_manifest_bound_restore_audit_append": 1,
+      "owned_processes_stopped": true,
+      "runtime_cleaned": true,
+      "scope_limits": [
+        "Actual covers allthree documented types, defaultaccounts/date/step/currentbankrole, explicitdate earlierthan later schedule; documentless/zero-slice/closed-period branches are targetedfixtures, not actualclaims.",
+        "No productionprovider or installeddesktop qualification; manualdesktop remainslast.",
+        "No screenshot produced or claimed."
+      ],
+      "preserved_failures": [
+        "MCPmodule declaration beforecrate innerdocs caughtinactualdiffreview beforeintegration; mainonlymoveddeclaration, no modelretry.",
+        "First combined all14behaviorPASS, strict2excessiveprecision schemaliterals refused; exactsamef64boundary expressed as MAX_IDasf64/100.0, isolatedbitidentity7a14ae47e17ad442.",
+        "Second combined all14behaviorPASS, strictsingleequivalentOptiondatepredicate lint refused. Localpredicate repaired withsameNone/valid/invalid truth table; initialone-lineformatcheckfailure retained thenpinnedformatterPASS.",
+        "No169actualfailure or financialwrite replay: firstactualPASS aftersourcechecks/strict/build.",
+        "Rejectedcommit hooks without completeSGDpacketenv made no commits; sourcehookcontract read then exactSGD_TASK_ID/SGD_PHASE/SGD_WORK_PACKAGE honored. No bypass."
+      ],
+      "cache_cleanup_evidence": [
+        "/tmp/rentemester-rust-reports/pre169-idle-test-binary-cleanup.json",
+        "/tmp/rentemester-rust-reports/idle-root-binary-cleanup169.json",
+        "/tmp/rentemester-rust-reports/accepted166-idle-worker-cache-cleanup169.json"
+      ]
     }
   },
   "verified_history": [
@@ -11799,6 +12003,12 @@
       "code_revision": "7206d199320a9878165a691e95ce87a4413b133c",
       "evidence_key": "original_expense168",
       "status": "ACCEPTED finite original expense/purchaseVAT journey; entiremissionOPEN"
+    },
+    {
+      "increment": "Group169",
+      "code_revision": "d207aef5c4b6a4f97a8f71f17173e37ef8e256e8",
+      "evidence_key": "original_accrual169",
+      "status": "ACCEPTED finite original accrual journey; entiremissionOPEN"
     }
   ],
   "scope_clarifications": [
