@@ -1,3 +1,4 @@
+mod expense_original;
 mod annual_exports;
 mod audit_log;
 mod audit_verify;
@@ -303,6 +304,24 @@ fn main() -> ExitCode {
         eprint!("{}", output.stderr);
         return ExitCode::from(output.exit);
     }
+    if args.first().is_some_and(|s| s == "expense") {
+        if args == ["expense"] || args == ["expense", "--help"] {
+            println!("{}", expense_original::help());
+            return ExitCode::SUCCESS;
+        }
+        if !expense_original::accepts(&args) {
+            eprintln!("Unknown expense command; see expense --help");
+            return ExitCode::from(2);
+        }
+        if let Err(output) = expense_original::preflight(&args) {
+            eprint!("{}", output.stderr);
+            return ExitCode::from(output.exit);
+        }
+        if args.iter().any(|s| s == "--help") {
+            println!("{}", expense_original::help());
+            return ExitCode::SUCCESS;
+        }
+    }
     if args == ["documents"] || args == ["documents", "--help"] {
         println!("{}", invoice_extraction_original::family_help());
         return ExitCode::SUCCESS;
@@ -423,6 +442,12 @@ fn main() -> ExitCode {
             return ExitCode::from(code);
         }
     };
+    if expense_original::accepts(&args) {
+        let output = expense_original::execute(&args);
+        print!("{}", output.stdout);
+        eprint!("{}", output.stderr);
+        return ExitCode::from(output.exit);
+    }
     if invoice_extraction_original::accepts(&args) {
         let output = invoice_extraction_original::execute(&args);
         print!("{}", output.stdout);

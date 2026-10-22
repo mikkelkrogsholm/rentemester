@@ -545,3 +545,6 @@ pub use document_party_original::{DocumentPartyOriginalOperation, document_party
 
 mod invoice_extraction_original;
 pub use invoice_extraction_original::original_invoice_extraction_surface_schema;
+
+mod expense_original;
+pub use expense_original::{original_expense_book_schema, validate_original_expense_book};
