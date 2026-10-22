@@ -680,3 +680,5 @@ pub mod invoice_claims_original;
 pub mod invoice_bad_debt_original;
 
 pub mod recurring_workspace;
+
+pub mod master_data_original;

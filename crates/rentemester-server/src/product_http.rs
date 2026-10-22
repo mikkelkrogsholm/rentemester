@@ -1,4 +1,5 @@
 //! Thin browser adapter over the same owner used for authentication.
+mod master_data_original;
 mod backup_status;
 mod backup_governance;
 mod backup_registration;
@@ -119,6 +120,10 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
         pdf_workers: Arc::new(Semaphore::new(4)),
     };
     Router::new()
+        .route("/api/companies/{slug}/master-data/original/customers",get(master_data_original::handle).post(master_data_original::handle))
+        .route("/api/companies/{slug}/master-data/original/vendors",get(master_data_original::handle).post(master_data_original::handle))
+        .route("/api/companies/{slug}/master-data/original/cvr-lookup",get(master_data_original::handle))
+        .route("/api/companies/{slug}/master-data/original/customer-validate-vat",post(master_data_original::handle))
         .route("/api/companies/{slug}/invoices/original/write-off-bad-debt",post(invoice_bad_debt_original::handle))
         .route("/api/companies/{slug}/invoices/original/remind",post(invoice_claims_original::handle))
         .route("/api/companies/{slug}/invoices/original/post-reminder",post(invoice_claims_original::handle))
