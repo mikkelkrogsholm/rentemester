@@ -114,7 +114,7 @@ fn failure(v: &Value) -> bool {
         })
 }
 fn success(v: &Value, document_id: i64) -> bool {
-    if !v.as_object().is_some_and(|o| o.len() == 2)
+    if v.as_object().is_none_or(|o| o.len() != 2)
         || v["ok"] != true
         || !v
             .get("extraction")
