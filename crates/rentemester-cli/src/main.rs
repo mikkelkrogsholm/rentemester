@@ -13,7 +13,10 @@ mod cvr;
 mod dashboard_artifact;
 mod dated_reports;
 mod direct_bank_original;
+mod document_party_original;
+mod documents_original;
 mod eu_sales;
+mod exceptions_original;
 mod handoff_export;
 mod invoice_bad_debt;
 mod invoice_claims_original;
@@ -26,14 +29,12 @@ mod invoice_public_original;
 mod journal_history;
 mod journal_original;
 mod local_binding;
-mod original_args;
-mod documents_original;
 mod master_data_original;
+mod original_args;
 mod original_discovery;
-mod period_original;
-mod exceptions_original;
 mod oss_report;
 mod payable_original;
+mod period_original;
 mod recurring_original;
 mod saft_artifact;
 use rentemester_engine::{Error, trial_balance::Period};
@@ -317,18 +318,33 @@ fn main() -> ExitCode {
         return ExitCode::from(output.exit);
     }
     if args == ["documents"] || args == ["documents", "--help"] {
-        println!("{}", documents_original::help());
+        println!("{}", document_party_original::family_help());
         return ExitCode::SUCCESS;
+    }
+    if document_party_original::accepts(&args) {
+        if let Err(output) = document_party_original::preflight(&args) {
+            eprint!("{}", output.stderr);
+            return ExitCode::from(output.exit);
+        }
+        if args.iter().any(|s| s == "--help") {
+            println!("{}", document_party_original::help());
+            return ExitCode::SUCCESS;
+        }
     }
     if documents_original::accepts(&args) {
         if let Err(output) = documents_original::preflight(&args) {
-            eprint!("{}", output.stderr); return ExitCode::from(output.exit);
+            eprint!("{}", output.stderr);
+            return ExitCode::from(output.exit);
         }
         if args.iter().any(|s| s == "--help") {
-            println!("{}", documents_original::help()); return ExitCode::SUCCESS;
+            println!("{}", documents_original::help());
+            return ExitCode::SUCCESS;
         }
     }
-    if args.first().is_some_and(|s| matches!(s.as_str(), "customer" | "vendor")) {
+    if args
+        .first()
+        .is_some_and(|s| matches!(s.as_str(), "customer" | "vendor"))
+    {
         if args.len() == 1 || args.get(1).is_some_and(|s| s == "--help") {
             println!("{}", master_data_original::help());
             return ExitCode::SUCCESS;
@@ -338,7 +354,8 @@ fn main() -> ExitCode {
             return ExitCode::from(2);
         }
         if let Err(output) = master_data_original::preflight(&args) {
-            print!("{}", output.stdout); eprint!("{}", output.stderr);
+            print!("{}", output.stdout);
+            eprint!("{}", output.stderr);
             return ExitCode::from(output.exit);
         }
         if args.iter().any(|s| s == "--help") {
@@ -356,7 +373,8 @@ fn main() -> ExitCode {
             return ExitCode::from(2);
         }
         if let Err(output) = exceptions_original::preflight(&args) {
-            print!("{}", output.stdout); eprint!("{}", output.stderr);
+            print!("{}", output.stdout);
+            eprint!("{}", output.stderr);
             return ExitCode::from(output.exit);
         }
     }
@@ -401,24 +419,36 @@ fn main() -> ExitCode {
             if code == 2 && std::env::args().any(|s| s == "documents") {
                 eprintln!("{}: {}", error.code, error.message);
             } else {
-                println!("{}", json!({"ok":false,"code":error.code,"errors":[error.message]}));
+                println!(
+                    "{}",
+                    json!({"ok":false,"code":error.code,"errors":[error.message]})
+                );
             }
             return ExitCode::from(code);
         }
     };
+    if document_party_original::accepts(&args) {
+        let output = document_party_original::execute(&args);
+        print!("{}", output.stdout);
+        eprint!("{}", output.stderr);
+        return ExitCode::from(output.exit);
+    }
     if documents_original::accepts(&args) {
         let output = documents_original::execute(&args);
-        print!("{}", output.stdout); eprint!("{}", output.stderr);
+        print!("{}", output.stdout);
+        eprint!("{}", output.stderr);
         return ExitCode::from(output.exit);
     }
     if master_data_original::accepts(&args) {
         let output = master_data_original::execute(&args);
-        print!("{}", output.stdout); eprint!("{}", output.stderr);
+        print!("{}", output.stdout);
+        eprint!("{}", output.stderr);
         return ExitCode::from(output.exit);
     }
     if exceptions_original::accepts(&args) {
         let output = exceptions_original::execute(&args);
-        print!("{}", output.stdout); eprint!("{}", output.stderr);
+        print!("{}", output.stdout);
+        eprint!("{}", output.stderr);
         return ExitCode::from(output.exit);
     }
     if journal_original::accepts(&args) {

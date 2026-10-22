@@ -19,6 +19,7 @@ pub fn read(
     today: &str,
     period_close: Value,
 ) -> Result<Value, Error> {
+    crate::document_party_links::validate_backup(tx)?;
     input.validate()?;
     if input
         .status

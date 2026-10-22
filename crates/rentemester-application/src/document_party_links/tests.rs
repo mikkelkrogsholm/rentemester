@@ -75,3 +75,38 @@ fn current_membership_and_transfer_fence_precede_registry_or_company_effects() {
         0
     );
 }
+
+#[test]
+fn document_party_original_missing_document_preserves_source_error_and_storage_failure() {
+    let mut control = Connection::open_in_memory().unwrap();
+    let mut ledger = Connection::open_in_memory().unwrap();
+    rentemester_storage::fresh::initialize_empty_pair(
+        &mut control,
+        &mut ledger,
+        "Synthetic missing source",
+    )
+    .unwrap();
+    let tx = ledger.transaction().unwrap();
+    assert_eq!(
+        source_evidence(&tx, 99).err().unwrap().code,
+        "DOCUMENT_NOT_FOUND"
+    );
+    tx.rollback().unwrap();
+    let mut invalid = Connection::open_in_memory().unwrap();
+    let tx = invalid.transaction().unwrap();
+    assert_eq!(
+        source_evidence(&tx, 99).err().unwrap().code,
+        "DOCUMENT_SOURCE_REFUSED"
+    );
+    let action = Action::Internal(&store::Internal {
+        document_id: 99,
+        reason: "Synthetic reason".into(),
+        confirm: true,
+        idempotency_key: None,
+    });
+    let asserted = Action::Asserted(&action, Some("user:forged"), None);
+    assert_eq!(
+        asserted.assertions("user:current").unwrap_err().code,
+        "access_denied"
+    );
+}
