@@ -1,0 +1,248 @@
+use serde_json::{Value, json};
+use std::{
+    fs,
+    io::{Read, Write},
+    net::TcpListener,
+    path::PathBuf,
+    process::{Command, Output},
+    sync::atomic::{AtomicU64, Ordering},
+    thread,
+};
+const BIN: &str = env!("CARGO_BIN_EXE_rentemester-rust");
+static NEXT: AtomicU64 = AtomicU64::new(0);
+struct Fixture(PathBuf);
+impl Fixture {
+    fn new() -> Self {
+        let path = std::env::temp_dir().join(format!(
+            "rm154-recurring-cli-{}-{}",
+            std::process::id(),
+            NEXT.fetch_add(1, Ordering::Relaxed)
+        ));
+        fs::create_dir(&path).unwrap();
+        let fixture = Self(path);
+        for (name, bytes) in [
+            ("cookie", b"session=synthetic".as_slice()),
+            ("key", b"synthetic-key".as_slice()),
+        ] {
+            let mut options = fs::OpenOptions::new();
+            options.write(true).create_new(true);
+            #[cfg(unix)]
+            {
+                use std::os::unix::fs::OpenOptionsExt;
+                options.mode(0o600);
+            }
+            options
+                .open(fixture.0.join(name))
+                .unwrap()
+                .write_all(bytes)
+                .unwrap();
+        }
+        fixture
+    }
+}
+impl Drop for Fixture {
+    fn drop(&mut self) {
+        let _ = fs::remove_dir_all(&self.0);
+    }
+}
+fn server(status: u16, value: Value) -> (String, thread::JoinHandle<(String, Value)>) {
+    let l = TcpListener::bind("127.0.0.1:0").unwrap();
+    let origin = format!("http://{}", l.local_addr().unwrap());
+    let t = thread::spawn(move || {
+        let (mut s, _) = l.accept().unwrap();
+        s.set_read_timeout(Some(std::time::Duration::from_secs(5)))
+            .unwrap();
+        let mut bytes = vec![];
+        let end = loop {
+            let mut b = [0; 1024];
+            let n = s.read(&mut b).unwrap();
+            assert!(n > 0);
+            bytes.extend_from_slice(&b[..n]);
+            if let Some(i) = bytes.windows(4).position(|b| b == b"\r\n\r\n") {
+                break i + 4;
+            }
+        };
+        let header = String::from_utf8_lossy(&bytes[..end]).to_string();
+        let length: usize = header
+            .lines()
+            .find_map(|l| {
+                l.to_lowercase()
+                    .strip_prefix("content-length:")
+                    .map(|v| v.trim().parse().unwrap())
+            })
+            .unwrap_or(0);
+        while bytes.len() < end + length {
+            let mut b = [0; 1024];
+            let n = s.read(&mut b).unwrap();
+            assert!(n > 0);
+            bytes.extend_from_slice(&b[..n]);
+        }
+        let body = if length == 0 {
+            Value::Null
+        } else {
+            serde_json::from_slice(&bytes[end..end + length]).unwrap()
+        };
+        let response = value.to_string();
+        write!(
+            s,
+            "HTTP/1.1 {status} Mock\r\nContent-Length:{}\r\nConnection:close\r\n\r\n{response}",
+            response.len()
+        )
+        .unwrap();
+        (header, body)
+    });
+    (origin, t)
+}
+
+fn call(command: &str, origin: &str, f: &Fixture, extra: &[&str], service: bool) -> Output {
+    Command::new(BIN)
+        .args([
+            "recurring-invoice",
+            command,
+            "--server",
+            origin,
+            "--allow-loopback-http",
+            "--company",
+            "synthetic",
+            if service {
+                "--service-key-file"
+            } else {
+                "--cookie-file"
+            },
+            f.0.join(if service { "key" } else { "cookie" })
+                .to_str()
+                .unwrap(),
+            "--json",
+        ])
+        .args(extra)
+        .output()
+        .unwrap()
+}
+#[test]
+fn original_recurring_cli_source_shapes_flat_output_and_service_authority() {
+    let f = Fixture::new();
+    let input = f.0.join("template.json");
+    let payload = json!({"name":"Synthetic subscription","interval":"monthly","firstIssueDate":"2024-01-31","invoice":{"invoiceType":"full","seller":{"name":"Synthetic Seller","address":"S1","vatOrCvr":"87654321"},"buyer":{"name":"Synthetic Buyer","address":"S2"},"lines":[{"description":"Synthetic service","quantity":1,"unitPriceExVat":100,"lineTotalExVat":100}],"totals":{"netAmount":100,"vatRate":0.25,"vatAmount":25,"grossAmount":125}}});
+    fs::write(&input, payload.to_string()).unwrap();
+    let expected = json!({"ok":true,"templateId":7,"appliedRules":["DK-RECURRING-INVOICE-TEMPLATE-001"],"errors":[]});
+    let (origin, t) = server(200, expected.clone());
+    let output = call(
+        "create",
+        &origin,
+        &f,
+        &["--input", input.to_str().unwrap()],
+        true,
+    );
+    assert!(
+        output.status.success(),
+        "{}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    assert!(output.stderr.is_empty());
+    assert_eq!(
+        serde_json::from_slice::<Value>(&output.stdout).unwrap(),
+        expected
+    );
+    let (header, sent) = t.join().unwrap();
+    assert!(
+        header.starts_with("POST /api/companies/synthetic/recurring-invoices/original/create ")
+    );
+    assert!(
+        header
+            .to_lowercase()
+            .contains("x-rentemester-service-key: synthetic-key")
+    );
+    assert!(!header.to_lowercase().contains("\r\ncookie:"));
+    let mut confirmed = payload;
+    confirmed["confirm"] = json!(true);
+    assert_eq!(sent, confirmed);
+    let expected = json!({"ok":true,"created":false,"templateId":7,"periodIndex":1,"documentId":11,"invoiceNumber":"2024-0001","issueDate":"2024-02-29","dueDate":"2024-03-30","appliedRules":["DK-RECURRING-INVOICE-GENERATE-001"],"errors":[]});
+    let (origin, t) = server(200, expected.clone());
+    let output = call(
+        "generate",
+        &origin,
+        &f,
+        &["--template-id", "7", "--as-of", "2024-02-29"],
+        false,
+    );
+    assert!(output.status.success());
+    assert_eq!(
+        serde_json::from_slice::<Value>(&output.stdout).unwrap(),
+        expected
+    );
+    let (header, sent) = t.join().unwrap();
+    assert!(
+        header.starts_with("POST /api/companies/synthetic/recurring-invoices/original/generate ")
+    );
+    assert_eq!(
+        sent,
+        json!({"templateId":7,"asOfDate":"2024-02-29","confirm":true})
+    );
+    let expected = json!({"ok":true,"count":0,"rows":[],"errors":[]});
+    let (origin, t) = server(200, expected.clone());
+    let output = call("list", &origin, &f, &["--include-inactive"], false);
+    assert!(output.status.success());
+    assert_eq!(
+        serde_json::from_slice::<Value>(&output.stdout).unwrap(),
+        expected
+    );
+    assert!(t.join().unwrap().0.starts_with(
+        "GET /api/companies/synthetic/recurring-invoices/original/list?includeInactive=true "
+    ));
+}
+#[test]
+fn original_recurring_cli_business_usage_and_human_list_are_distinct() {
+    let f = Fixture::new();
+    let expected = json!({"ok":false,"appliedRules":["DK-RECURRING-INVOICE-GENERATE-001"],"errors":["template is inactive"]});
+    let (origin, t) = server(200, expected.clone());
+    let output = call(
+        "generate",
+        &origin,
+        &f,
+        &["--template-id", "7", "--as-of", "2024-02-29"],
+        false,
+    );
+    assert_eq!(output.status.code(), Some(1));
+    assert_eq!(
+        serde_json::from_slice::<Value>(&output.stdout).unwrap(),
+        expected
+    );
+    assert!(output.stderr.is_empty());
+    t.join().unwrap();
+    for (command, args) in [
+        ("create", vec![]),
+        (
+            "generate",
+            vec!["--template-id", "0", "--as-of", "2024-01-01"],
+        ),
+        ("list", vec!["--confirm", "yes"]),
+        ("list", vec!["--actor", "forged"]),
+        ("list", vec!["--include-inactive", "--include-inactive"]),
+    ] {
+        let output = call(command, "http://127.0.0.1:9", &f, &args, false);
+        assert_eq!(output.status.code(), Some(2));
+        assert!(output.stdout.is_empty());
+        assert!(!output.stderr.is_empty());
+    }
+    let (origin, t) = server(200, json!({"ok":true,"count":0,"rows":[],"errors":[]}));
+    let output = Command::new(BIN)
+        .args([
+            "recurring-invoice",
+            "list",
+            "--server",
+            &origin,
+            "--allow-loopback-http",
+            "--company",
+            "synthetic",
+            "--cookie-file",
+            f.0.join("cookie").to_str().unwrap(),
+        ])
+        .output()
+        .unwrap();
+    assert!(output.status.success());
+    assert_eq!(
+        String::from_utf8(output.stdout).unwrap(),
+        "Recurring invoice templates (0)\nNo recurring invoice templates.\n"
+    );
+    t.join().unwrap();
+}

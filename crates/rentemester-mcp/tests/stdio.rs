@@ -1,6 +1,7 @@
 use serde_json::{Value, json};
 
-const EXPECTED_NATIVE_TOOLS: usize = 258;
+// Includes the original bindings already registered before recurring Group154.
+const EXPECTED_NATIVE_TOOLS: usize = 291;
 
 #[test]
 fn pdf_tools_require_confirmation_and_keep_reads_bounded() {
@@ -2205,3 +2206,6 @@ mod dinero_import;
 
 #[path="stdio/dashboard_artifact.rs"]
 mod dashboard_artifact;
+
+#[path="stdio/recurring_original.rs"]
+mod recurring_original;

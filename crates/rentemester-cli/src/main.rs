@@ -1,3 +1,4 @@
+mod recurring_original;
 mod invoice_public_original;
 mod invoice_financial_original;
 mod invoice_claims_original;
@@ -302,6 +303,7 @@ fn run(args: Vec<String>) -> Result<serde_json::Value, (u8, Error)> {
 }
 fn main() -> ExitCode {
     let args=match local_binding::prepare(std::env::args().skip(1).collect()) {Ok(args)=>args,Err((code,error))=>{println!("{}",json!({"ok":false,"code":error.code,"errors":[error.message]}));return ExitCode::from(code);}};
+    if recurring_original::accepts(&args) {let output=recurring_original::execute(&args);print!("{}",output.stdout);eprint!("{}",output.stderr);return ExitCode::from(output.exit);}
     if invoice_financial_original::accepts(&args) {let output=invoice_financial_original::execute(&args);print!("{}",output.stdout);eprint!("{}",output.stderr);return ExitCode::from(output.exit);}
     if invoice_public_original::accepts(&args) {let output=invoice_public_original::execute(&args);print!("{}",output.stdout);eprint!("{}",output.stderr);return ExitCode::from(output.exit);}
     if invoice_claims_original::accepts(&args) {let output=invoice_claims_original::execute(&args);print!("{}",output.stdout);eprint!("{}",output.stderr);return ExitCode::from(output.exit);}

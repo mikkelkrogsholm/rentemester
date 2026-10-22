@@ -150,6 +150,7 @@ pub fn list() -> Value {
     tools.extend(crate::bank_reconciliation::tools());
     tools.extend(crate::bank_correction::tools());
     tools.extend(crate::recurring_invoices::tools());
+    tools.extend(crate::recurring_original::tools());
     tools.extend(crate::service_principals::tools());
     tools.extend(crate::opening_balance::tools());
     tools.extend(crate::archive_import::tools());
@@ -267,6 +268,7 @@ pub async fn call(api: &ApiClient, name: &str, args: Value) -> Result<Value, &'s
         return Err("expected arguments object");
     }
     if name=="invoice_validate" {return crate::invoice_validation::call(args);}
+    if crate::recurring_original::accepts(name) {return crate::recurring_original::call(api,name,args).await;}
     if name=="invoice_write_off_bad_debt" && args.get("body").is_none() {return crate::invoice_bad_debt::call_original(api,args).await;}
     if crate::invoice_claims_original::accepts(name,&args) {return crate::invoice_claims_original::call(api,name,args).await;}
     if matches!(name,"invoice_issue"|"invoice_render"|"invoice_post"|"invoice_settle_bank"|"invoice_credit_note"|"invoice_refund_bank"|"invoice_apply_payment") {return crate::invoice_lifecycle::call(api,name,args).await;}
