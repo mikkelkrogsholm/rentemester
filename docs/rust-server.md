@@ -3789,3 +3789,28 @@ uafhængigt hashkontrolleret; prøveprocesserne er stoppet.
 Prøven bruger en kontrolleret provider med verificeret TLS. Den kvalificerer
 ikke ekstern produktion, automatisk udtræk ved upload eller installeret
 desktop. Hele epic #672 forbliver åben. Næste forløb er udgift og købsmoms.
+
+### Oprindelig udgift og købsmoms (Group168)
+
+`expense vat-preflight` læser momsevidens; `--apply yes` indhenter den eksplicit.
+`expense book` og de tre oprindelige MCP-navne bruger samme Rust-motor som de
+bevarede native kommandoer. MCP-skrivninger kræver bekræftelse. En valgfri
+MCP-nøgle bevarer kvittering og afviser ændret indhold; CLI kræver ingen ny nøgle.
+Aktuel bruger/service, original, bankkilde og virksomhedskontekst kontrolleres
+før bogføring og genbrug. EU-validering foregår uden SQL-transaktion eller
+Owner-lås; tilbagekaldt serviceadgang kan ikke færdiggøre providerresultatet.
+
+26 målrettede tests, streng Clippy for otte pakker og faktisk DK/EU-prøve består
+på `7206d199`. Seks indlæste originaler og fire bankposter giver præcis fire
+journalposter med 14 linjer og fire afstemninger. Bank krediteres 575 kr.,
+købsmoms debiteres 125 kr., og omvendt betalingspligt krediteres 50 kr.
+Fem VIES-kald dokumenterer fejl, eksplicit genopretning og tilbagekaldelse;
+udtrækskonflikten afvises før VIES. De 32 auditposter og alle forretningsrækker
+bevares ved normal MFA-genstart og signeret gendannelse uden kilde eller
+privat signer, samt efterfølgende genåbning. Restore tilføjer præcis én
+manifestbundet auditpost. 2497 kildefiler, tre binære filer, otte webfiler og
+hjælperne er uafhængigt hashkontrolleret; prøveprocesserne er stoppet.
+
+Den faktiske prøve dækker dansk standardmoms og EU-servicekøb. De øvrige
+behandlinger og valutaregler dækkes af målrettede fixtures. Produktions-VIES
+og installeret desktop er ikke kvalificeret her. Næste forløb er periodisering.

@@ -259,3 +259,23 @@ providerkald og begge konfliktforsøg fra den fejlede kørsel bevares; de skjule
 ikke som cache eller rulles tilbage. Produktets udtræks- og adgangspolitik er
 uændret af disse hjælperrettelser. Gendannelse bruger fortsat Group166's
 eksakte auditpræfiks og ene manifest/high-water-bundne restorepost.
+
+### Oprindelig udgift, valgfri kvittering og præcis momsprøve (Group168)
+
+De oprindelige to CLI- og tre MCP-operationer er additive adaptere til samme
+Rust-motor. CLI accepterer seks momsbehandlinger; kildens MCP accepterer fem.
+En providerfejl kan være en gemt, flad preflight med `ok:false`; rå providerdata
+returneres ikke. Et ukendt skriveresultat genforsøges ikke automatisk.
+MCP's valgfrie idempotensnøgle kontrolleres først efter aktuel adgang og
+fysisk kilde. Konflikt returnerer kildens definite afvisning og bevarer
+den eksisterende diagnostiske audit uden ny journal eller bankafstemning.
+
+Den første faktiske prøve stoppede korrekt ved et konfliktbilag uden
+obligatorisk beskrivelse og modtager. Fem originaler og fire bankposter
+bevares i den fejlede prøve; der var ingen journalposter eller VIES-kald.
+Hjælperens metadata blev sammenlignet isoleret med den gemte, accepterede
+EU-faktura før en ny prøve. Indlæsning af en konfigureret PDF afventer allerede
+udtræk; hjælperen læser derfor det gemte resultat i stedet for at bestille
+et nyt udtræk. Ingen dokument-, udtræks- eller adgangskontrol er svækket.
+Den endelige prøve kvalificerer præcis DK-standard og EU-reverse-charge;
+den hævder ikke en faktisk prøve af alle seks behandlinger eller desktop.
