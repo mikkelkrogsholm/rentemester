@@ -1,5 +1,5 @@
 //! Deterministic OIOUBL 2.02 over an immutable issued snapshot, never live contacts.
-//! Bounded initial scope: full DKK invoices with standard 25% VAT. Unlike the old
+//! Full issued snapshots with source tax classifications and original currency. Unlike the old
 //! TS formatter, unit prices retain exact decimal precision: rounding 0.335 to
 //! 0.34 would contradict a recorded quantity 3 / line base 1.01. No totals are repaired.
 use crate::{Error, decimal, fiscal_year::Date, money::Money};
@@ -131,13 +131,32 @@ fn money(value: &Value) -> Result<Money, Error> {
     }
     Ok(m)
 }
-fn rate(value: &Value) -> Result<(), Error> {
-    if decimal::compare(&number(value)?, "0.25").map_err(|_| refused("VAT rate invalid"))?
-        != Ordering::Equal
-    {
-        return Err(refused("Only standard 25% VAT supported"));
+fn fraction(value: &Value) -> Result<String, Error> {
+    let raw = number(value)?;
+    if !decimal::positive(&raw).map_err(|_| refused("VAT rate invalid"))? {
+        return Err(refused("Taxable VAT rate must be positive"));
     }
-    Ok(())
+    Ok(raw)
+}
+// Formatting only: rate is already a canonical nonnegative decimal. Move the
+// decimal point without quantizing the rate used by the shared arithmetic.
+fn percent(rate: &str) -> String {
+    let (whole, fraction) = rate.split_once('.').unwrap_or((rate, ""));
+    let padded = format!("{fraction}00");
+    let integer = format!("{whole}{}", &padded[..2]);
+    let integer = integer.trim_start_matches('0');
+    let integer = if integer.is_empty() { "0" } else { integer };
+    let tail = padded[2..].trim_end_matches('0');
+    if tail.is_empty() {
+        integer.into()
+    } else {
+        format!("{integer}.{tail}")
+    }
+}
+#[derive(Clone, PartialEq, Eq)]
+struct Tax {
+    category: &'static str,
+    rate: String,
 }
 fn escape(value: &str) -> String {
     value
@@ -149,6 +168,7 @@ fn escape(value: &str) -> String {
 }
 struct Xml {
     value: String,
+    currency: String,
 }
 impl Xml {
     fn line(&mut self, line: &str) -> Result<(), Error> {
@@ -185,21 +205,32 @@ impl Xml {
         ))
     }
     fn amount(&mut self, indent: &str, name: &str, m: &Money) -> Result<(), Error> {
-        self.tag(indent, name, &m.decimal(), &[("currencyID", "DKK")])
+        self.tag(
+            indent,
+            name,
+            &m.decimal(),
+            &[("currencyID", &self.currency.clone())],
+        )
     }
-    fn tax_category(&mut self, indent: &str) -> Result<(), Error> {
+    fn tax_category(&mut self, indent: &str, tax: &Tax, reason: Option<&str>) -> Result<(), Error> {
         self.line(&format!("{indent}<cac:TaxCategory>"))?;
-        self.tax_fields(&format!("{indent}  "))?;
+        self.tax_fields(&format!("{indent}  "), tax, reason)?;
         self.line(&format!("{indent}</cac:TaxCategory>"))
     }
-    fn tax_fields(&mut self, indent: &str) -> Result<(), Error> {
+    fn tax_fields(&mut self, indent: &str, tax: &Tax, reason: Option<&str>) -> Result<(), Error> {
         self.tag(
             indent,
             "cbc:ID",
-            "StandardRated",
+            tax.category,
             &[("schemeID", TAX_ID), ("schemeAgencyID", AGENCY)],
         )?;
-        self.tag(indent, "cbc:Percent", "25", &[])?;
+        self.tag(indent, "cbc:Percent", &percent(&tax.rate), &[])?;
+        if let Some(reason) = reason {
+            if tax.category == "ReverseCharge" {
+                self.tag(indent, "cbc:TaxExemptionReasonCode", "VATEX-EU-AE", &[])?;
+            }
+            self.tag(indent, "cbc:TaxExemptionReason", reason, &[])?;
+        }
         self.line(&format!("{indent}<cac:TaxScheme>"))?;
         self.tag(
             &format!("{indent}  "),
@@ -210,11 +241,18 @@ impl Xml {
         self.tag(&format!("{indent}  "), "cbc:Name", "Moms", &[])?;
         self.line(&format!("{indent}</cac:TaxScheme>"))
     }
-    fn subtotal(&mut self, indent: &str, base: &Money, vat: &Money) -> Result<(), Error> {
+    fn subtotal(
+        &mut self,
+        indent: &str,
+        base: &Money,
+        vat: &Money,
+        tax: &Tax,
+        reason: Option<&str>,
+    ) -> Result<(), Error> {
         self.line(&format!("{indent}<cac:TaxSubtotal>"))?;
         self.amount(&format!("{indent}  "), "cbc:TaxableAmount", base)?;
         self.amount(&format!("{indent}  "), "cbc:TaxAmount", vat)?;
-        self.tax_category(&format!("{indent}  "))?;
+        self.tax_category(&format!("{indent}  "), tax, reason)?;
         self.line(&format!("{indent}</cac:TaxSubtotal>"))
     }
     fn address(&mut self, address: &str) -> Result<(), Error> {
@@ -297,6 +335,7 @@ struct Line<'a> {
     base: Money,
     vat: Money,
     unit: &'a str,
+    tax: Tax,
 }
 /// Consumes only the immutable snapshot's fields; unrelated source fields remain untouched.
 pub fn export(invoice_number: &str, payload: &Value) -> Result<Export, Error> {
@@ -312,12 +351,17 @@ pub fn export(invoice_number: &str, payload: &Value) -> Result<Export, Error> {
     {
         return Err(refused("Only a full issued invoice snapshot is supported"));
     }
-    if payload.get("vatTreatment").is_some_and(|v| v != "standard")
-        || !required(&payload["currency"])?
-            .trim()
-            .eq_ignore_ascii_case("DKK")
-    {
-        return Err(refused("Only standard DKK invoices supported"));
+    let treatment = optional(&payload["vatTreatment"])?.unwrap_or("standard");
+    let reverse = matches!(
+        treatment,
+        "domestic_reverse_charge" | "foreign_reverse_charge"
+    );
+    if treatment != "standard" && !reverse {
+        return Err(refused("Unknown VAT treatment"));
+    }
+    let currency = required(&payload["currency"])?.trim().to_ascii_uppercase();
+    if currency.len() != 3 || !currency.bytes().all(|b| b.is_ascii_uppercase()) {
+        return Err(refused("Currency must be a three-letter code"));
     }
     let issue = required(&payload["issueDate"])?;
     let due = required(&payload["dueDate"])?;
@@ -336,11 +380,14 @@ pub fn export(invoice_number: &str, payload: &Value) -> Result<Export, Error> {
     }
     let seller = seller_endpoint(&payload["seller"]["vatOrCvr"])?;
     let net = money(&payload["totals"]["netAmount"])?;
-    let vat = money(&payload["totals"]["vatAmount"])?;
+    let vat = if reverse && payload["totals"].get("vatAmount").is_none() {
+        Money::default()
+    } else {
+        money(&payload["totals"]["vatAmount"])?
+    };
     let gross = money(&payload["totals"]["grossAmount"])?;
-    rate(&payload["totals"]["vatRate"])?;
-    if net == Money::default() {
-        return Err(refused("Invoice net amount must be positive"));
+    if !reverse {
+        number(&payload["totals"]["vatRate"])?;
     }
     let items = payload["lines"]
         .as_array()
@@ -350,17 +397,66 @@ pub fn export(invoice_number: &str, payload: &Value) -> Result<Export, Error> {
     let mut lines = Vec::new();
     let mut bases = Money::default();
     let mut taxes = Money::default();
+    let explicit = items.iter().any(|l| {
+        l["taxClassification"]
+            .as_str()
+            .is_some_and(|s| !s.is_empty())
+    });
+    let legacy_exempt = !reverse
+        && !explicit
+        && number(&payload["totals"]["vatRate"])? == "0"
+        && vat == Money::default();
+    // Issued snapshots retain delivery evidence, although the original OIOUBL
+    // formatter does not serialize it. Reuse the shared calendar boundary;
+    // issuance-only FX/legal checks must not constrain historical exports.
+    for key in ["deliveryDate", "deliveryPeriodStart", "deliveryPeriodEnd"] {
+        if let Some(value) = payload.get(key) {
+            Date::parse(required(value)?).map_err(|_| refused("Delivery date invalid"))?;
+        }
+    }
+    let start = payload.get("deliveryPeriodStart");
+    let end = payload.get("deliveryPeriodEnd");
+    if start.is_some() != end.is_some()
+        || payload.get("deliveryDate").is_some() && start.is_some()
+        || start.zip(end).is_some_and(|(s, e)| s.as_str() > e.as_str())
+    {
+        return Err(refused("Delivery date/period evidence is inconsistent"));
+    }
+    let mut groups: Vec<(Tax, Money, Money)> = Vec::new();
     for source in items {
         required(&source["description"])?;
-        if source
-            .get("taxClassification")
-            .is_some_and(|v| !v.is_null() && v != "taxable")
-        {
-            return Err(refused("Only taxable standard lines supported"));
-        }
-        if let Some(value) = source.get("vatRate").filter(|v| !v.is_null()) {
-            rate(value)?;
-        }
+        let classification = optional(&source["taxClassification"])?.unwrap_or(if reverse {
+            "reverse_charge"
+        } else if legacy_exempt {
+            "exempt"
+        } else {
+            "taxable"
+        });
+        let tax = match classification {
+            "taxable" => Tax {
+                category: "StandardRated",
+                rate: fraction(
+                    source
+                        .get("vatRate")
+                        .filter(|v| !v.is_null())
+                        .unwrap_or(&payload["totals"]["vatRate"]),
+                )?,
+            },
+            "exempt" => Tax {
+                category: "ZeroRated",
+                rate: "0".into(),
+            },
+            "reverse_charge" => {
+                if optional(&source["taxClassification"])?.is_some() {
+                    required(&source["reverseChargeBasis"])?;
+                }
+                Tax {
+                    category: "ReverseCharge",
+                    rate: "0".into(),
+                }
+            }
+            _ => return Err(refused("Unknown tax classification")),
+        };
         let quantity = number(&source["quantity"])?;
         let raw_price = number(&source["unitPriceExVat"])?;
         let cent_price = Money::parse(&raw_price).map_err(|_| refused("Price invalid"))?;
@@ -387,8 +483,7 @@ pub fn export(invoice_number: &str, payload: &Value) -> Result<Export, Error> {
                 "Recorded line total differs from exact price times quantity",
             ));
         }
-        let line_vat = base
-            .percent("25")
+        let line_vat = Money::multiply_decimal(&base.decimal(), &tax.rate)
             .map_err(|_| refused("Line VAT invalid"))?;
         if let Some(value) = source.get("vatAmount").filter(|v| !v.is_null())
             && money(value)? != line_vat
@@ -402,6 +497,12 @@ pub fn export(invoice_number: &str, payload: &Value) -> Result<Export, Error> {
         let unit = if unit == "H87" { "EA" } else { unit };
         bases.add(&base);
         taxes.add(&line_vat);
+        if let Some((_, group_base, group_vat)) = groups.iter_mut().find(|(t, _, _)| *t == tax) {
+            group_base.add(&base);
+            group_vat.add(&line_vat);
+        } else {
+            groups.push((tax.clone(), base.clone(), line_vat.clone()));
+        }
         lines.push(Line {
             source,
             quantity,
@@ -409,6 +510,7 @@ pub fn export(invoice_number: &str, payload: &Value) -> Result<Export, Error> {
             base,
             vat: line_vat,
             unit,
+            tax,
         });
     }
     let mut total = net.clone();
@@ -424,6 +526,7 @@ pub fn export(invoice_number: &str, payload: &Value) -> Result<Export, Error> {
     let order = optional(&payload["buyer"]["orderReference"])?;
     let mut xml = Xml {
         value: String::new(),
+        currency: currency.clone(),
     };
     xml.line("<?xml version=\"1.0\" encoding=\"UTF-8\"?>")?;
     xml.line("<Invoice xmlns=\"urn:oasis:names:specification:ubl:schema:xsd:Invoice-2\" xmlns:cac=\"urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2\" xmlns:cbc=\"urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2\">")?;
@@ -450,7 +553,7 @@ pub fn export(invoice_number: &str, payload: &Value) -> Result<Export, Error> {
             ("listAgencyID", AGENCY),
         ],
     )?;
-    xml.tag("  ", "cbc:DocumentCurrencyCode", "DKK", &[])?;
+    xml.tag("  ", "cbc:DocumentCurrencyCode", &currency, &[])?;
     xml.tag("  ", "cbc:BuyerReference", buyer_reference, &[])?;
     if let Some(order) = order {
         xml.line("  <cac:OrderReference>")?;
@@ -466,7 +569,18 @@ pub fn export(invoice_number: &str, payload: &Value) -> Result<Export, Error> {
     )?;
     xml.line("  <cac:TaxTotal>")?;
     xml.amount("    ", "cbc:TaxAmount", &vat)?;
-    xml.subtotal("    ", &net, &vat)?;
+    let basis = optional(&payload["reverseChargeBasis"])?;
+    let reverse_reason = basis
+        .map(|b| format!("Reverse charge / Omvendt betalingspligt ({b})"))
+        .unwrap_or_else(|| "Reverse charge / Omvendt betalingspligt".into());
+    for (tax, base, vat) in &groups {
+        let reason = match tax.category {
+            "ReverseCharge" => Some(reverse_reason.as_str()),
+            "ZeroRated" => Some("Exempt from VAT / Momsfritaget"),
+            _ => None,
+        };
+        xml.subtotal("    ", base, vat, tax, reason)?;
+    }
     xml.line("  </cac:TaxTotal>")?;
     xml.line("  <cac:LegalMonetaryTotal>")?;
     for (name, m) in [
@@ -490,7 +604,7 @@ pub fn export(invoice_number: &str, payload: &Value) -> Result<Export, Error> {
         xml.amount("    ", "cbc:LineExtensionAmount", &line.base)?;
         xml.line("    <cac:TaxTotal>")?;
         xml.amount("      ", "cbc:TaxAmount", &line.vat)?;
-        xml.subtotal("      ", &line.base, &line.vat)?;
+        xml.subtotal("      ", &line.base, &line.vat, &line.tax, None)?;
         xml.line("    </cac:TaxTotal>")?;
         xml.line("    <cac:Item>")?;
         xml.tag(
@@ -500,7 +614,7 @@ pub fn export(invoice_number: &str, payload: &Value) -> Result<Export, Error> {
             &[],
         )?;
         xml.line("      <cac:ClassifiedTaxCategory>")?;
-        xml.tax_fields("        ")?;
+        xml.tax_fields("        ", &line.tax, None)?;
         xml.line("      </cac:ClassifiedTaxCategory>")?;
         xml.line("    </cac:Item>")?;
         xml.line("    <cac:Price>")?;
@@ -508,7 +622,7 @@ pub fn export(invoice_number: &str, payload: &Value) -> Result<Export, Error> {
             "      ",
             "cbc:PriceAmount",
             &line.price,
-            &[("currencyID", "DKK")],
+            &[("currencyID", &currency)],
         )?;
         xml.line("    </cac:Price>")?;
         xml.line("  </cac:InvoiceLine>")?;

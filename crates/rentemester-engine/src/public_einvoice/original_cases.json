@@ -1,0 +1,387 @@
+[
+  {
+    "name": "native standard DKK bytes",
+    "input": {
+      "invoiceType": "full",
+      "status": "issued",
+      "invoiceNumber": "SYN-2026-1",
+      "vatTreatment": "standard",
+      "issueDate": "2026-10-20",
+      "dueDate": "2026-11-03",
+      "currency": "DKK",
+      "seller": {
+        "name": "Synthetic Seller",
+        "address": "Synthetic Street 1",
+        "vatOrCvr": "DK12345678"
+      },
+      "buyer": {
+        "name": "Synthetic Buyer",
+        "address": "Synthetic Street 2",
+        "eanNumber": "5790000000000",
+        "publicRecipient": true
+      },
+      "lines": [
+        {
+          "description": "Synthetic service",
+          "quantity": 1,
+          "unitPriceExVat": 100,
+          "lineTotalExVat": 100
+        }
+      ],
+      "totals": {
+        "netAmount": 100,
+        "vatRate": 0.25,
+        "vatAmount": 25,
+        "grossAmount": 125
+      }
+    },
+    "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<Invoice xmlns=\"urn:oasis:names:specification:ubl:schema:xsd:Invoice-2\" xmlns:cac=\"urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2\" xmlns:cbc=\"urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2\">\n  <cbc:UBLVersionID>2.0</cbc:UBLVersionID>\n  <cbc:CustomizationID>OIOUBL-2.02</cbc:CustomizationID>\n  <cbc:ProfileID schemeID=\"urn:oioubl:id:profileid-1.2\" schemeAgencyID=\"320\">Procurement-BilSim-1.0</cbc:ProfileID>\n  <cbc:ID>SYN-2026-1</cbc:ID>\n  <cbc:IssueDate>2026-10-20</cbc:IssueDate>\n  <cbc:DueDate>2026-11-03</cbc:DueDate>\n  <cbc:InvoiceTypeCode listID=\"urn:oioubl:codelist:invoicetypecode-1.1\" listAgencyID=\"320\">380</cbc:InvoiceTypeCode>\n  <cbc:DocumentCurrencyCode>DKK</cbc:DocumentCurrencyCode>\n  <cbc:BuyerReference>SYN-2026-1</cbc:BuyerReference>\n  <cac:AccountingSupplierParty>\n    <cac:Party>\n      <cbc:EndpointID schemeID=\"DK:CVR\">DK12345678</cbc:EndpointID>\n      <cac:PartyName>\n        <cbc:Name>Synthetic Seller</cbc:Name>\n      </cac:PartyName>\n      <cac:PostalAddress>\n        <cbc:AddressFormatCode listID=\"urn:oioubl:codelist:addressformatcode-1.1\" listAgencyID=\"320\">Unstructured</cbc:AddressFormatCode>\n        <cac:AddressLine>\n          <cbc:Line>Synthetic Street 1</cbc:Line>\n        </cac:AddressLine>\n      </cac:PostalAddress>\n      <cac:PartyTaxScheme>\n        <cbc:CompanyID schemeID=\"DK:SE\">DK12345678</cbc:CompanyID>\n        <cac:TaxScheme>\n          <cbc:ID schemeID=\"urn:oioubl:id:taxschemeid-1.1\" schemeAgencyID=\"320\">63</cbc:ID>\n          <cbc:Name>Moms</cbc:Name>\n        </cac:TaxScheme>\n      </cac:PartyTaxScheme>\n      <cac:PartyLegalEntity>\n        <cbc:RegistrationName>Synthetic Seller</cbc:RegistrationName>\n        <cbc:CompanyID schemeID=\"DK:CVR\">DK12345678</cbc:CompanyID>\n      </cac:PartyLegalEntity>\n      <cac:Contact>\n        <cbc:ID>TEST</cbc:ID>\n        <cbc:Name>Synthetic Seller</cbc:Name>\n      </cac:Contact>\n    </cac:Party>\n  </cac:AccountingSupplierParty>\n  <cac:AccountingCustomerParty>\n    <cac:Party>\n      <cbc:EndpointID schemeID=\"GLN\">5790000000000</cbc:EndpointID>\n      <cac:PartyName>\n        <cbc:Name>Synthetic Buyer</cbc:Name>\n      </cac:PartyName>\n      <cac:PostalAddress>\n        <cbc:AddressFormatCode listID=\"urn:oioubl:codelist:addressformatcode-1.1\" listAgencyID=\"320\">Unstructured</cbc:AddressFormatCode>\n        <cac:AddressLine>\n          <cbc:Line>Synthetic Street 2</cbc:Line>\n        </cac:AddressLine>\n      </cac:PostalAddress>\n      <cac:Contact>\n        <cbc:ID>TEST</cbc:ID>\n        <cbc:Name>Synthetic Buyer</cbc:Name>\n      </cac:Contact>\n    </cac:Party>\n  </cac:AccountingCustomerParty>\n  <cac:TaxTotal>\n    <cbc:TaxAmount currencyID=\"DKK\">25.00</cbc:TaxAmount>\n    <cac:TaxSubtotal>\n      <cbc:TaxableAmount currencyID=\"DKK\">100.00</cbc:TaxableAmount>\n      <cbc:TaxAmount currencyID=\"DKK\">25.00</cbc:TaxAmount>\n      <cac:TaxCategory>\n        <cbc:ID schemeID=\"urn:oioubl:id:taxcategoryid-1.1\" schemeAgencyID=\"320\">StandardRated</cbc:ID>\n        <cbc:Percent>25</cbc:Percent>\n        <cac:TaxScheme>\n          <cbc:ID schemeID=\"urn:oioubl:id:taxschemeid-1.1\" schemeAgencyID=\"320\">63</cbc:ID>\n          <cbc:Name>Moms</cbc:Name>\n        </cac:TaxScheme>\n      </cac:TaxCategory>\n    </cac:TaxSubtotal>\n  </cac:TaxTotal>\n  <cac:LegalMonetaryTotal>\n    <cbc:LineExtensionAmount currencyID=\"DKK\">100.00</cbc:LineExtensionAmount>\n    <cbc:TaxExclusiveAmount currencyID=\"DKK\">100.00</cbc:TaxExclusiveAmount>\n    <cbc:TaxInclusiveAmount currencyID=\"DKK\">125.00</cbc:TaxInclusiveAmount>\n    <cbc:PayableAmount currencyID=\"DKK\">125.00</cbc:PayableAmount>\n  </cac:LegalMonetaryTotal>\n  <cac:InvoiceLine>\n    <cbc:ID>1</cbc:ID>\n    <cbc:InvoicedQuantity unitCode=\"EA\">1</cbc:InvoicedQuantity>\n    <cbc:LineExtensionAmount currencyID=\"DKK\">100.00</cbc:LineExtensionAmount>\n    <cac:TaxTotal>\n      <cbc:TaxAmount currencyID=\"DKK\">25.00</cbc:TaxAmount>\n      <cac:TaxSubtotal>\n        <cbc:TaxableAmount currencyID=\"DKK\">100.00</cbc:TaxableAmount>\n        <cbc:TaxAmount currencyID=\"DKK\">25.00</cbc:TaxAmount>\n        <cac:TaxCategory>\n          <cbc:ID schemeID=\"urn:oioubl:id:taxcategoryid-1.1\" schemeAgencyID=\"320\">StandardRated</cbc:ID>\n          <cbc:Percent>25</cbc:Percent>\n          <cac:TaxScheme>\n            <cbc:ID schemeID=\"urn:oioubl:id:taxschemeid-1.1\" schemeAgencyID=\"320\">63</cbc:ID>\n            <cbc:Name>Moms</cbc:Name>\n          </cac:TaxScheme>\n        </cac:TaxCategory>\n      </cac:TaxSubtotal>\n    </cac:TaxTotal>\n    <cac:Item>\n      <cbc:Name>Synthetic service</cbc:Name>\n      <cac:ClassifiedTaxCategory>\n        <cbc:ID schemeID=\"urn:oioubl:id:taxcategoryid-1.1\" schemeAgencyID=\"320\">StandardRated</cbc:ID>\n        <cbc:Percent>25</cbc:Percent>\n        <cac:TaxScheme>\n          <cbc:ID schemeID=\"urn:oioubl:id:taxschemeid-1.1\" schemeAgencyID=\"320\">63</cbc:ID>\n          <cbc:Name>Moms</cbc:Name>\n        </cac:TaxScheme>\n      </cac:ClassifiedTaxCategory>\n    </cac:Item>\n    <cac:Price>\n      <cbc:PriceAmount currencyID=\"DKK\">100.00</cbc:PriceAmount>\n    </cac:Price>\n  </cac:InvoiceLine>\n</Invoice>"
+  },
+  {
+    "name": "mixed classifications with first-seen grouped tax rates",
+    "input": {
+      "invoiceType": "full",
+      "status": "issued",
+      "invoiceNumber": "SYN-2026-1",
+      "vatTreatment": "standard",
+      "issueDate": "2026-10-20",
+      "dueDate": "2026-11-03",
+      "currency": "DKK",
+      "seller": {
+        "name": "Synthetic Seller",
+        "address": "Synthetic Street 1",
+        "vatOrCvr": "DK12345678"
+      },
+      "buyer": {
+        "name": "Synthetic Buyer",
+        "address": "Synthetic Street 2",
+        "eanNumber": "5790000000000",
+        "publicRecipient": true
+      },
+      "lines": [
+        {
+          "description": "Synthetic taxable",
+          "quantity": 1,
+          "unitPriceExVat": 100,
+          "lineTotalExVat": 100,
+          "taxClassification": "taxable",
+          "vatRate": 0.25
+        },
+        {
+          "description": "Synthetic exempt",
+          "quantity": 1,
+          "unitPriceExVat": 100,
+          "lineTotalExVat": 100,
+          "taxClassification": "exempt"
+        },
+        {
+          "description": "Synthetic taxable",
+          "quantity": 1,
+          "unitPriceExVat": 100,
+          "lineTotalExVat": 100,
+          "taxClassification": "taxable",
+          "vatRate": 0.125
+        },
+        {
+          "description": "Synthetic reverse_charge",
+          "quantity": 1,
+          "unitPriceExVat": 100,
+          "lineTotalExVat": 100,
+          "taxClassification": "reverse_charge",
+          "reverseChargeBasis": "EU_MOMSDIREKTIV_ART_196"
+        },
+        {
+          "description": "Synthetic taxable",
+          "quantity": 1,
+          "unitPriceExVat": 100,
+          "lineTotalExVat": 100,
+          "taxClassification": "taxable",
+          "vatRate": 0.25
+        }
+      ],
+      "totals": {
+        "netAmount": 500,
+        "vatRate": 0.25,
+        "vatAmount": 62.5,
+        "grossAmount": 562.5
+      }
+    },
+    "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<Invoice xmlns=\"urn:oasis:names:specification:ubl:schema:xsd:Invoice-2\" xmlns:cac=\"urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2\" xmlns:cbc=\"urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2\">\n  <cbc:UBLVersionID>2.0</cbc:UBLVersionID>\n  <cbc:CustomizationID>OIOUBL-2.02</cbc:CustomizationID>\n  <cbc:ProfileID schemeID=\"urn:oioubl:id:profileid-1.2\" schemeAgencyID=\"320\">Procurement-BilSim-1.0</cbc:ProfileID>\n  <cbc:ID>SYN-2026-1</cbc:ID>\n  <cbc:IssueDate>2026-10-20</cbc:IssueDate>\n  <cbc:DueDate>2026-11-03</cbc:DueDate>\n  <cbc:InvoiceTypeCode listID=\"urn:oioubl:codelist:invoicetypecode-1.1\" listAgencyID=\"320\">380</cbc:InvoiceTypeCode>\n  <cbc:DocumentCurrencyCode>DKK</cbc:DocumentCurrencyCode>\n  <cbc:BuyerReference>SYN-2026-1</cbc:BuyerReference>\n  <cac:AccountingSupplierParty>\n    <cac:Party>\n      <cbc:EndpointID schemeID=\"DK:CVR\">DK12345678</cbc:EndpointID>\n      <cac:PartyName>\n        <cbc:Name>Synthetic Seller</cbc:Name>\n      </cac:PartyName>\n      <cac:PostalAddress>\n        <cbc:AddressFormatCode listID=\"urn:oioubl:codelist:addressformatcode-1.1\" listAgencyID=\"320\">Unstructured</cbc:AddressFormatCode>\n        <cac:AddressLine>\n          <cbc:Line>Synthetic Street 1</cbc:Line>\n        </cac:AddressLine>\n      </cac:PostalAddress>\n      <cac:PartyTaxScheme>\n        <cbc:CompanyID schemeID=\"DK:SE\">DK12345678</cbc:CompanyID>\n        <cac:TaxScheme>\n          <cbc:ID schemeID=\"urn:oioubl:id:taxschemeid-1.1\" schemeAgencyID=\"320\">63</cbc:ID>\n          <cbc:Name>Moms</cbc:Name>\n        </cac:TaxScheme>\n      </cac:PartyTaxScheme>\n      <cac:PartyLegalEntity>\n        <cbc:RegistrationName>Synthetic Seller</cbc:RegistrationName>\n        <cbc:CompanyID schemeID=\"DK:CVR\">DK12345678</cbc:CompanyID>\n      </cac:PartyLegalEntity>\n      <cac:Contact>\n        <cbc:ID>TEST</cbc:ID>\n        <cbc:Name>Synthetic Seller</cbc:Name>\n      </cac:Contact>\n    </cac:Party>\n  </cac:AccountingSupplierParty>\n  <cac:AccountingCustomerParty>\n    <cac:Party>\n      <cbc:EndpointID schemeID=\"GLN\">5790000000000</cbc:EndpointID>\n      <cac:PartyName>\n        <cbc:Name>Synthetic Buyer</cbc:Name>\n      </cac:PartyName>\n      <cac:PostalAddress>\n        <cbc:AddressFormatCode listID=\"urn:oioubl:codelist:addressformatcode-1.1\" listAgencyID=\"320\">Unstructured</cbc:AddressFormatCode>\n        <cac:AddressLine>\n          <cbc:Line>Synthetic Street 2</cbc:Line>\n        </cac:AddressLine>\n      </cac:PostalAddress>\n      <cac:Contact>\n        <cbc:ID>TEST</cbc:ID>\n        <cbc:Name>Synthetic Buyer</cbc:Name>\n      </cac:Contact>\n    </cac:Party>\n  </cac:AccountingCustomerParty>\n  <cac:TaxTotal>\n    <cbc:TaxAmount currencyID=\"DKK\">62.50</cbc:TaxAmount>\n    <cac:TaxSubtotal>\n      <cbc:TaxableAmount currencyID=\"DKK\">200.00</cbc:TaxableAmount>\n      <cbc:TaxAmount currencyID=\"DKK\">50.00</cbc:TaxAmount>\n      <cac:TaxCategory>\n        <cbc:ID schemeID=\"urn:oioubl:id:taxcategoryid-1.1\" schemeAgencyID=\"320\">StandardRated</cbc:ID>\n        <cbc:Percent>25</cbc:Percent>\n        <cac:TaxScheme>\n          <cbc:ID schemeID=\"urn:oioubl:id:taxschemeid-1.1\" schemeAgencyID=\"320\">63</cbc:ID>\n          <cbc:Name>Moms</cbc:Name>\n        </cac:TaxScheme>\n      </cac:TaxCategory>\n    </cac:TaxSubtotal>\n    <cac:TaxSubtotal>\n      <cbc:TaxableAmount currencyID=\"DKK\">100.00</cbc:TaxableAmount>\n      <cbc:TaxAmount currencyID=\"DKK\">0.00</cbc:TaxAmount>\n      <cac:TaxCategory>\n        <cbc:ID schemeID=\"urn:oioubl:id:taxcategoryid-1.1\" schemeAgencyID=\"320\">ZeroRated</cbc:ID>\n        <cbc:Percent>0</cbc:Percent>\n        <cbc:TaxExemptionReason>Exempt from VAT / Momsfritaget</cbc:TaxExemptionReason>\n        <cac:TaxScheme>\n          <cbc:ID schemeID=\"urn:oioubl:id:taxschemeid-1.1\" schemeAgencyID=\"320\">63</cbc:ID>\n          <cbc:Name>Moms</cbc:Name>\n        </cac:TaxScheme>\n      </cac:TaxCategory>\n    </cac:TaxSubtotal>\n    <cac:TaxSubtotal>\n      <cbc:TaxableAmount currencyID=\"DKK\">100.00</cbc:TaxableAmount>\n      <cbc:TaxAmount currencyID=\"DKK\">12.50</cbc:TaxAmount>\n      <cac:TaxCategory>\n        <cbc:ID schemeID=\"urn:oioubl:id:taxcategoryid-1.1\" schemeAgencyID=\"320\">StandardRated</cbc:ID>\n        <cbc:Percent>12.5</cbc:Percent>\n        <cac:TaxScheme>\n          <cbc:ID schemeID=\"urn:oioubl:id:taxschemeid-1.1\" schemeAgencyID=\"320\">63</cbc:ID>\n          <cbc:Name>Moms</cbc:Name>\n        </cac:TaxScheme>\n      </cac:TaxCategory>\n    </cac:TaxSubtotal>\n    <cac:TaxSubtotal>\n      <cbc:TaxableAmount currencyID=\"DKK\">100.00</cbc:TaxableAmount>\n      <cbc:TaxAmount currencyID=\"DKK\">0.00</cbc:TaxAmount>\n      <cac:TaxCategory>\n        <cbc:ID schemeID=\"urn:oioubl:id:taxcategoryid-1.1\" schemeAgencyID=\"320\">ReverseCharge</cbc:ID>\n        <cbc:Percent>0</cbc:Percent>\n        <cbc:TaxExemptionReasonCode>VATEX-EU-AE</cbc:TaxExemptionReasonCode>\n        <cbc:TaxExemptionReason>Reverse charge / Omvendt betalingspligt</cbc:TaxExemptionReason>\n        <cac:TaxScheme>\n          <cbc:ID schemeID=\"urn:oioubl:id:taxschemeid-1.1\" schemeAgencyID=\"320\">63</cbc:ID>\n          <cbc:Name>Moms</cbc:Name>\n        </cac:TaxScheme>\n      </cac:TaxCategory>\n    </cac:TaxSubtotal>\n  </cac:TaxTotal>\n  <cac:LegalMonetaryTotal>\n    <cbc:LineExtensionAmount currencyID=\"DKK\">500.00</cbc:LineExtensionAmount>\n    <cbc:TaxExclusiveAmount currencyID=\"DKK\">500.00</cbc:TaxExclusiveAmount>\n    <cbc:TaxInclusiveAmount currencyID=\"DKK\">562.50</cbc:TaxInclusiveAmount>\n    <cbc:PayableAmount currencyID=\"DKK\">562.50</cbc:PayableAmount>\n  </cac:LegalMonetaryTotal>\n  <cac:InvoiceLine>\n    <cbc:ID>1</cbc:ID>\n    <cbc:InvoicedQuantity unitCode=\"EA\">1</cbc:InvoicedQuantity>\n    <cbc:LineExtensionAmount currencyID=\"DKK\">100.00</cbc:LineExtensionAmount>\n    <cac:TaxTotal>\n      <cbc:TaxAmount currencyID=\"DKK\">25.00</cbc:TaxAmount>\n      <cac:TaxSubtotal>\n        <cbc:TaxableAmount currencyID=\"DKK\">100.00</cbc:TaxableAmount>\n        <cbc:TaxAmount currencyID=\"DKK\">25.00</cbc:TaxAmount>\n        <cac:TaxCategory>\n          <cbc:ID schemeID=\"urn:oioubl:id:taxcategoryid-1.1\" schemeAgencyID=\"320\">StandardRated</cbc:ID>\n          <cbc:Percent>25</cbc:Percent>\n          <cac:TaxScheme>\n            <cbc:ID schemeID=\"urn:oioubl:id:taxschemeid-1.1\" schemeAgencyID=\"320\">63</cbc:ID>\n            <cbc:Name>Moms</cbc:Name>\n          </cac:TaxScheme>\n        </cac:TaxCategory>\n      </cac:TaxSubtotal>\n    </cac:TaxTotal>\n    <cac:Item>\n      <cbc:Name>Synthetic taxable</cbc:Name>\n      <cac:ClassifiedTaxCategory>\n        <cbc:ID schemeID=\"urn:oioubl:id:taxcategoryid-1.1\" schemeAgencyID=\"320\">StandardRated</cbc:ID>\n        <cbc:Percent>25</cbc:Percent>\n        <cac:TaxScheme>\n          <cbc:ID schemeID=\"urn:oioubl:id:taxschemeid-1.1\" schemeAgencyID=\"320\">63</cbc:ID>\n          <cbc:Name>Moms</cbc:Name>\n        </cac:TaxScheme>\n      </cac:ClassifiedTaxCategory>\n    </cac:Item>\n    <cac:Price>\n      <cbc:PriceAmount currencyID=\"DKK\">100.00</cbc:PriceAmount>\n    </cac:Price>\n  </cac:InvoiceLine>\n  <cac:InvoiceLine>\n    <cbc:ID>2</cbc:ID>\n    <cbc:InvoicedQuantity unitCode=\"EA\">1</cbc:InvoicedQuantity>\n    <cbc:LineExtensionAmount currencyID=\"DKK\">100.00</cbc:LineExtensionAmount>\n    <cac:TaxTotal>\n      <cbc:TaxAmount currencyID=\"DKK\">0.00</cbc:TaxAmount>\n      <cac:TaxSubtotal>\n        <cbc:TaxableAmount currencyID=\"DKK\">100.00</cbc:TaxableAmount>\n        <cbc:TaxAmount currencyID=\"DKK\">0.00</cbc:TaxAmount>\n        <cac:TaxCategory>\n          <cbc:ID schemeID=\"urn:oioubl:id:taxcategoryid-1.1\" schemeAgencyID=\"320\">ZeroRated</cbc:ID>\n          <cbc:Percent>0</cbc:Percent>\n          <cac:TaxScheme>\n            <cbc:ID schemeID=\"urn:oioubl:id:taxschemeid-1.1\" schemeAgencyID=\"320\">63</cbc:ID>\n            <cbc:Name>Moms</cbc:Name>\n          </cac:TaxScheme>\n        </cac:TaxCategory>\n      </cac:TaxSubtotal>\n    </cac:TaxTotal>\n    <cac:Item>\n      <cbc:Name>Synthetic exempt</cbc:Name>\n      <cac:ClassifiedTaxCategory>\n        <cbc:ID schemeID=\"urn:oioubl:id:taxcategoryid-1.1\" schemeAgencyID=\"320\">ZeroRated</cbc:ID>\n        <cbc:Percent>0</cbc:Percent>\n        <cac:TaxScheme>\n          <cbc:ID schemeID=\"urn:oioubl:id:taxschemeid-1.1\" schemeAgencyID=\"320\">63</cbc:ID>\n          <cbc:Name>Moms</cbc:Name>\n        </cac:TaxScheme>\n      </cac:ClassifiedTaxCategory>\n    </cac:Item>\n    <cac:Price>\n      <cbc:PriceAmount currencyID=\"DKK\">100.00</cbc:PriceAmount>\n    </cac:Price>\n  </cac:InvoiceLine>\n  <cac:InvoiceLine>\n    <cbc:ID>3</cbc:ID>\n    <cbc:InvoicedQuantity unitCode=\"EA\">1</cbc:InvoicedQuantity>\n    <cbc:LineExtensionAmount currencyID=\"DKK\">100.00</cbc:LineExtensionAmount>\n    <cac:TaxTotal>\n      <cbc:TaxAmount currencyID=\"DKK\">12.50</cbc:TaxAmount>\n      <cac:TaxSubtotal>\n        <cbc:TaxableAmount currencyID=\"DKK\">100.00</cbc:TaxableAmount>\n        <cbc:TaxAmount currencyID=\"DKK\">12.50</cbc:TaxAmount>\n        <cac:TaxCategory>\n          <cbc:ID schemeID=\"urn:oioubl:id:taxcategoryid-1.1\" schemeAgencyID=\"320\">StandardRated</cbc:ID>\n          <cbc:Percent>12.5</cbc:Percent>\n          <cac:TaxScheme>\n            <cbc:ID schemeID=\"urn:oioubl:id:taxschemeid-1.1\" schemeAgencyID=\"320\">63</cbc:ID>\n            <cbc:Name>Moms</cbc:Name>\n          </cac:TaxScheme>\n        </cac:TaxCategory>\n      </cac:TaxSubtotal>\n    </cac:TaxTotal>\n    <cac:Item>\n      <cbc:Name>Synthetic taxable</cbc:Name>\n      <cac:ClassifiedTaxCategory>\n        <cbc:ID schemeID=\"urn:oioubl:id:taxcategoryid-1.1\" schemeAgencyID=\"320\">StandardRated</cbc:ID>\n        <cbc:Percent>12.5</cbc:Percent>\n        <cac:TaxScheme>\n          <cbc:ID schemeID=\"urn:oioubl:id:taxschemeid-1.1\" schemeAgencyID=\"320\">63</cbc:ID>\n          <cbc:Name>Moms</cbc:Name>\n        </cac:TaxScheme>\n      </cac:ClassifiedTaxCategory>\n    </cac:Item>\n    <cac:Price>\n      <cbc:PriceAmount currencyID=\"DKK\">100.00</cbc:PriceAmount>\n    </cac:Price>\n  </cac:InvoiceLine>\n  <cac:InvoiceLine>\n    <cbc:ID>4</cbc:ID>\n    <cbc:InvoicedQuantity unitCode=\"EA\">1</cbc:InvoicedQuantity>\n    <cbc:LineExtensionAmount currencyID=\"DKK\">100.00</cbc:LineExtensionAmount>\n    <cac:TaxTotal>\n      <cbc:TaxAmount currencyID=\"DKK\">0.00</cbc:TaxAmount>\n      <cac:TaxSubtotal>\n        <cbc:TaxableAmount currencyID=\"DKK\">100.00</cbc:TaxableAmount>\n        <cbc:TaxAmount currencyID=\"DKK\">0.00</cbc:TaxAmount>\n        <cac:TaxCategory>\n          <cbc:ID schemeID=\"urn:oioubl:id:taxcategoryid-1.1\" schemeAgencyID=\"320\">ReverseCharge</cbc:ID>\n          <cbc:Percent>0</cbc:Percent>\n          <cac:TaxScheme>\n            <cbc:ID schemeID=\"urn:oioubl:id:taxschemeid-1.1\" schemeAgencyID=\"320\">63</cbc:ID>\n            <cbc:Name>Moms</cbc:Name>\n          </cac:TaxScheme>\n        </cac:TaxCategory>\n      </cac:TaxSubtotal>\n    </cac:TaxTotal>\n    <cac:Item>\n      <cbc:Name>Synthetic reverse_charge</cbc:Name>\n      <cac:ClassifiedTaxCategory>\n        <cbc:ID schemeID=\"urn:oioubl:id:taxcategoryid-1.1\" schemeAgencyID=\"320\">ReverseCharge</cbc:ID>\n        <cbc:Percent>0</cbc:Percent>\n        <cac:TaxScheme>\n          <cbc:ID schemeID=\"urn:oioubl:id:taxschemeid-1.1\" schemeAgencyID=\"320\">63</cbc:ID>\n          <cbc:Name>Moms</cbc:Name>\n        </cac:TaxScheme>\n      </cac:ClassifiedTaxCategory>\n    </cac:Item>\n    <cac:Price>\n      <cbc:PriceAmount currencyID=\"DKK\">100.00</cbc:PriceAmount>\n    </cac:Price>\n  </cac:InvoiceLine>\n  <cac:InvoiceLine>\n    <cbc:ID>5</cbc:ID>\n    <cbc:InvoicedQuantity unitCode=\"EA\">1</cbc:InvoicedQuantity>\n    <cbc:LineExtensionAmount currencyID=\"DKK\">100.00</cbc:LineExtensionAmount>\n    <cac:TaxTotal>\n      <cbc:TaxAmount currencyID=\"DKK\">25.00</cbc:TaxAmount>\n      <cac:TaxSubtotal>\n        <cbc:TaxableAmount currencyID=\"DKK\">100.00</cbc:TaxableAmount>\n        <cbc:TaxAmount currencyID=\"DKK\">25.00</cbc:TaxAmount>\n        <cac:TaxCategory>\n          <cbc:ID schemeID=\"urn:oioubl:id:taxcategoryid-1.1\" schemeAgencyID=\"320\">StandardRated</cbc:ID>\n          <cbc:Percent>25</cbc:Percent>\n          <cac:TaxScheme>\n            <cbc:ID schemeID=\"urn:oioubl:id:taxschemeid-1.1\" schemeAgencyID=\"320\">63</cbc:ID>\n            <cbc:Name>Moms</cbc:Name>\n          </cac:TaxScheme>\n        </cac:TaxCategory>\n      </cac:TaxSubtotal>\n    </cac:TaxTotal>\n    <cac:Item>\n      <cbc:Name>Synthetic taxable</cbc:Name>\n      <cac:ClassifiedTaxCategory>\n        <cbc:ID schemeID=\"urn:oioubl:id:taxcategoryid-1.1\" schemeAgencyID=\"320\">StandardRated</cbc:ID>\n        <cbc:Percent>25</cbc:Percent>\n        <cac:TaxScheme>\n          <cbc:ID schemeID=\"urn:oioubl:id:taxschemeid-1.1\" schemeAgencyID=\"320\">63</cbc:ID>\n          <cbc:Name>Moms</cbc:Name>\n        </cac:TaxScheme>\n      </cac:ClassifiedTaxCategory>\n    </cac:Item>\n    <cac:Price>\n      <cbc:PriceAmount currencyID=\"DKK\">100.00</cbc:PriceAmount>\n    </cac:Price>\n  </cac:InvoiceLine>\n</Invoice>"
+  },
+  {
+    "name": "legacy uniform exempt zero rate",
+    "input": {
+      "invoiceType": "full",
+      "status": "issued",
+      "invoiceNumber": "SYN-2026-1",
+      "vatTreatment": "standard",
+      "issueDate": "2026-10-20",
+      "dueDate": "2026-11-03",
+      "currency": "DKK",
+      "seller": {
+        "name": "Synthetic Seller",
+        "address": "Synthetic Street 1",
+        "vatOrCvr": "DK12345678"
+      },
+      "buyer": {
+        "name": "Synthetic Buyer",
+        "address": "Synthetic Street 2",
+        "eanNumber": "5790000000000",
+        "publicRecipient": true
+      },
+      "lines": [
+        {
+          "description": "Synthetic service",
+          "quantity": 1,
+          "unitPriceExVat": 100,
+          "lineTotalExVat": 100
+        }
+      ],
+      "totals": {
+        "netAmount": 100,
+        "vatRate": 0,
+        "vatAmount": 0,
+        "grossAmount": 100
+      }
+    },
+    "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<Invoice xmlns=\"urn:oasis:names:specification:ubl:schema:xsd:Invoice-2\" xmlns:cac=\"urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2\" xmlns:cbc=\"urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2\">\n  <cbc:UBLVersionID>2.0</cbc:UBLVersionID>\n  <cbc:CustomizationID>OIOUBL-2.02</cbc:CustomizationID>\n  <cbc:ProfileID schemeID=\"urn:oioubl:id:profileid-1.2\" schemeAgencyID=\"320\">Procurement-BilSim-1.0</cbc:ProfileID>\n  <cbc:ID>SYN-2026-1</cbc:ID>\n  <cbc:IssueDate>2026-10-20</cbc:IssueDate>\n  <cbc:DueDate>2026-11-03</cbc:DueDate>\n  <cbc:InvoiceTypeCode listID=\"urn:oioubl:codelist:invoicetypecode-1.1\" listAgencyID=\"320\">380</cbc:InvoiceTypeCode>\n  <cbc:DocumentCurrencyCode>DKK</cbc:DocumentCurrencyCode>\n  <cbc:BuyerReference>SYN-2026-1</cbc:BuyerReference>\n  <cac:AccountingSupplierParty>\n    <cac:Party>\n      <cbc:EndpointID schemeID=\"DK:CVR\">DK12345678</cbc:EndpointID>\n      <cac:PartyName>\n        <cbc:Name>Synthetic Seller</cbc:Name>\n      </cac:PartyName>\n      <cac:PostalAddress>\n        <cbc:AddressFormatCode listID=\"urn:oioubl:codelist:addressformatcode-1.1\" listAgencyID=\"320\">Unstructured</cbc:AddressFormatCode>\n        <cac:AddressLine>\n          <cbc:Line>Synthetic Street 1</cbc:Line>\n        </cac:AddressLine>\n      </cac:PostalAddress>\n      <cac:PartyTaxScheme>\n        <cbc:CompanyID schemeID=\"DK:SE\">DK12345678</cbc:CompanyID>\n        <cac:TaxScheme>\n          <cbc:ID schemeID=\"urn:oioubl:id:taxschemeid-1.1\" schemeAgencyID=\"320\">63</cbc:ID>\n          <cbc:Name>Moms</cbc:Name>\n        </cac:TaxScheme>\n      </cac:PartyTaxScheme>\n      <cac:PartyLegalEntity>\n        <cbc:RegistrationName>Synthetic Seller</cbc:RegistrationName>\n        <cbc:CompanyID schemeID=\"DK:CVR\">DK12345678</cbc:CompanyID>\n      </cac:PartyLegalEntity>\n      <cac:Contact>\n        <cbc:ID>TEST</cbc:ID>\n        <cbc:Name>Synthetic Seller</cbc:Name>\n      </cac:Contact>\n    </cac:Party>\n  </cac:AccountingSupplierParty>\n  <cac:AccountingCustomerParty>\n    <cac:Party>\n      <cbc:EndpointID schemeID=\"GLN\">5790000000000</cbc:EndpointID>\n      <cac:PartyName>\n        <cbc:Name>Synthetic Buyer</cbc:Name>\n      </cac:PartyName>\n      <cac:PostalAddress>\n        <cbc:AddressFormatCode listID=\"urn:oioubl:codelist:addressformatcode-1.1\" listAgencyID=\"320\">Unstructured</cbc:AddressFormatCode>\n        <cac:AddressLine>\n          <cbc:Line>Synthetic Street 2</cbc:Line>\n        </cac:AddressLine>\n      </cac:PostalAddress>\n      <cac:Contact>\n        <cbc:ID>TEST</cbc:ID>\n        <cbc:Name>Synthetic Buyer</cbc:Name>\n      </cac:Contact>\n    </cac:Party>\n  </cac:AccountingCustomerParty>\n  <cac:TaxTotal>\n    <cbc:TaxAmount currencyID=\"DKK\">0.00</cbc:TaxAmount>\n    <cac:TaxSubtotal>\n      <cbc:TaxableAmount currencyID=\"DKK\">100.00</cbc:TaxableAmount>\n      <cbc:TaxAmount currencyID=\"DKK\">0.00</cbc:TaxAmount>\n      <cac:TaxCategory>\n        <cbc:ID schemeID=\"urn:oioubl:id:taxcategoryid-1.1\" schemeAgencyID=\"320\">ZeroRated</cbc:ID>\n        <cbc:Percent>0</cbc:Percent>\n        <cbc:TaxExemptionReason>Exempt from VAT / Momsfritaget</cbc:TaxExemptionReason>\n        <cac:TaxScheme>\n          <cbc:ID schemeID=\"urn:oioubl:id:taxschemeid-1.1\" schemeAgencyID=\"320\">63</cbc:ID>\n          <cbc:Name>Moms</cbc:Name>\n        </cac:TaxScheme>\n      </cac:TaxCategory>\n    </cac:TaxSubtotal>\n  </cac:TaxTotal>\n  <cac:LegalMonetaryTotal>\n    <cbc:LineExtensionAmount currencyID=\"DKK\">100.00</cbc:LineExtensionAmount>\n    <cbc:TaxExclusiveAmount currencyID=\"DKK\">100.00</cbc:TaxExclusiveAmount>\n    <cbc:TaxInclusiveAmount currencyID=\"DKK\">100.00</cbc:TaxInclusiveAmount>\n    <cbc:PayableAmount currencyID=\"DKK\">100.00</cbc:PayableAmount>\n  </cac:LegalMonetaryTotal>\n  <cac:InvoiceLine>\n    <cbc:ID>1</cbc:ID>\n    <cbc:InvoicedQuantity unitCode=\"EA\">1</cbc:InvoicedQuantity>\n    <cbc:LineExtensionAmount currencyID=\"DKK\">100.00</cbc:LineExtensionAmount>\n    <cac:TaxTotal>\n      <cbc:TaxAmount currencyID=\"DKK\">0.00</cbc:TaxAmount>\n      <cac:TaxSubtotal>\n        <cbc:TaxableAmount currencyID=\"DKK\">100.00</cbc:TaxableAmount>\n        <cbc:TaxAmount currencyID=\"DKK\">0.00</cbc:TaxAmount>\n        <cac:TaxCategory>\n          <cbc:ID schemeID=\"urn:oioubl:id:taxcategoryid-1.1\" schemeAgencyID=\"320\">ZeroRated</cbc:ID>\n          <cbc:Percent>0</cbc:Percent>\n          <cac:TaxScheme>\n            <cbc:ID schemeID=\"urn:oioubl:id:taxschemeid-1.1\" schemeAgencyID=\"320\">63</cbc:ID>\n            <cbc:Name>Moms</cbc:Name>\n          </cac:TaxScheme>\n        </cac:TaxCategory>\n      </cac:TaxSubtotal>\n    </cac:TaxTotal>\n    <cac:Item>\n      <cbc:Name>Synthetic service</cbc:Name>\n      <cac:ClassifiedTaxCategory>\n        <cbc:ID schemeID=\"urn:oioubl:id:taxcategoryid-1.1\" schemeAgencyID=\"320\">ZeroRated</cbc:ID>\n        <cbc:Percent>0</cbc:Percent>\n        <cac:TaxScheme>\n          <cbc:ID schemeID=\"urn:oioubl:id:taxschemeid-1.1\" schemeAgencyID=\"320\">63</cbc:ID>\n          <cbc:Name>Moms</cbc:Name>\n        </cac:TaxScheme>\n      </cac:ClassifiedTaxCategory>\n    </cac:Item>\n    <cac:Price>\n      <cbc:PriceAmount currencyID=\"DKK\">100.00</cbc:PriceAmount>\n    </cac:Price>\n  </cac:InvoiceLine>\n</Invoice>"
+  },
+  {
+    "name": "explicit exempt zero rate",
+    "input": {
+      "invoiceType": "full",
+      "status": "issued",
+      "invoiceNumber": "SYN-2026-1",
+      "vatTreatment": "standard",
+      "issueDate": "2026-10-20",
+      "dueDate": "2026-11-03",
+      "currency": "DKK",
+      "seller": {
+        "name": "Synthetic Seller",
+        "address": "Synthetic Street 1",
+        "vatOrCvr": "DK12345678"
+      },
+      "buyer": {
+        "name": "Synthetic Buyer",
+        "address": "Synthetic Street 2",
+        "eanNumber": "5790000000000",
+        "publicRecipient": true
+      },
+      "lines": [
+        {
+          "description": "Synthetic exempt",
+          "quantity": 1,
+          "unitPriceExVat": 100,
+          "lineTotalExVat": 100,
+          "taxClassification": "exempt"
+        }
+      ],
+      "totals": {
+        "netAmount": 100,
+        "vatRate": 0,
+        "vatAmount": 0,
+        "grossAmount": 100
+      }
+    },
+    "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<Invoice xmlns=\"urn:oasis:names:specification:ubl:schema:xsd:Invoice-2\" xmlns:cac=\"urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2\" xmlns:cbc=\"urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2\">\n  <cbc:UBLVersionID>2.0</cbc:UBLVersionID>\n  <cbc:CustomizationID>OIOUBL-2.02</cbc:CustomizationID>\n  <cbc:ProfileID schemeID=\"urn:oioubl:id:profileid-1.2\" schemeAgencyID=\"320\">Procurement-BilSim-1.0</cbc:ProfileID>\n  <cbc:ID>SYN-2026-1</cbc:ID>\n  <cbc:IssueDate>2026-10-20</cbc:IssueDate>\n  <cbc:DueDate>2026-11-03</cbc:DueDate>\n  <cbc:InvoiceTypeCode listID=\"urn:oioubl:codelist:invoicetypecode-1.1\" listAgencyID=\"320\">380</cbc:InvoiceTypeCode>\n  <cbc:DocumentCurrencyCode>DKK</cbc:DocumentCurrencyCode>\n  <cbc:BuyerReference>SYN-2026-1</cbc:BuyerReference>\n  <cac:AccountingSupplierParty>\n    <cac:Party>\n      <cbc:EndpointID schemeID=\"DK:CVR\">DK12345678</cbc:EndpointID>\n      <cac:PartyName>\n        <cbc:Name>Synthetic Seller</cbc:Name>\n      </cac:PartyName>\n      <cac:PostalAddress>\n        <cbc:AddressFormatCode listID=\"urn:oioubl:codelist:addressformatcode-1.1\" listAgencyID=\"320\">Unstructured</cbc:AddressFormatCode>\n        <cac:AddressLine>\n          <cbc:Line>Synthetic Street 1</cbc:Line>\n        </cac:AddressLine>\n      </cac:PostalAddress>\n      <cac:PartyTaxScheme>\n        <cbc:CompanyID schemeID=\"DK:SE\">DK12345678</cbc:CompanyID>\n        <cac:TaxScheme>\n          <cbc:ID schemeID=\"urn:oioubl:id:taxschemeid-1.1\" schemeAgencyID=\"320\">63</cbc:ID>\n          <cbc:Name>Moms</cbc:Name>\n        </cac:TaxScheme>\n      </cac:PartyTaxScheme>\n      <cac:PartyLegalEntity>\n        <cbc:RegistrationName>Synthetic Seller</cbc:RegistrationName>\n        <cbc:CompanyID schemeID=\"DK:CVR\">DK12345678</cbc:CompanyID>\n      </cac:PartyLegalEntity>\n      <cac:Contact>\n        <cbc:ID>TEST</cbc:ID>\n        <cbc:Name>Synthetic Seller</cbc:Name>\n      </cac:Contact>\n    </cac:Party>\n  </cac:AccountingSupplierParty>\n  <cac:AccountingCustomerParty>\n    <cac:Party>\n      <cbc:EndpointID schemeID=\"GLN\">5790000000000</cbc:EndpointID>\n      <cac:PartyName>\n        <cbc:Name>Synthetic Buyer</cbc:Name>\n      </cac:PartyName>\n      <cac:PostalAddress>\n        <cbc:AddressFormatCode listID=\"urn:oioubl:codelist:addressformatcode-1.1\" listAgencyID=\"320\">Unstructured</cbc:AddressFormatCode>\n        <cac:AddressLine>\n          <cbc:Line>Synthetic Street 2</cbc:Line>\n        </cac:AddressLine>\n      </cac:PostalAddress>\n      <cac:Contact>\n        <cbc:ID>TEST</cbc:ID>\n        <cbc:Name>Synthetic Buyer</cbc:Name>\n      </cac:Contact>\n    </cac:Party>\n  </cac:AccountingCustomerParty>\n  <cac:TaxTotal>\n    <cbc:TaxAmount currencyID=\"DKK\">0.00</cbc:TaxAmount>\n    <cac:TaxSubtotal>\n      <cbc:TaxableAmount currencyID=\"DKK\">100.00</cbc:TaxableAmount>\n      <cbc:TaxAmount currencyID=\"DKK\">0.00</cbc:TaxAmount>\n      <cac:TaxCategory>\n        <cbc:ID schemeID=\"urn:oioubl:id:taxcategoryid-1.1\" schemeAgencyID=\"320\">ZeroRated</cbc:ID>\n        <cbc:Percent>0</cbc:Percent>\n        <cbc:TaxExemptionReason>Exempt from VAT / Momsfritaget</cbc:TaxExemptionReason>\n        <cac:TaxScheme>\n          <cbc:ID schemeID=\"urn:oioubl:id:taxschemeid-1.1\" schemeAgencyID=\"320\">63</cbc:ID>\n          <cbc:Name>Moms</cbc:Name>\n        </cac:TaxScheme>\n      </cac:TaxCategory>\n    </cac:TaxSubtotal>\n  </cac:TaxTotal>\n  <cac:LegalMonetaryTotal>\n    <cbc:LineExtensionAmount currencyID=\"DKK\">100.00</cbc:LineExtensionAmount>\n    <cbc:TaxExclusiveAmount currencyID=\"DKK\">100.00</cbc:TaxExclusiveAmount>\n    <cbc:TaxInclusiveAmount currencyID=\"DKK\">100.00</cbc:TaxInclusiveAmount>\n    <cbc:PayableAmount currencyID=\"DKK\">100.00</cbc:PayableAmount>\n  </cac:LegalMonetaryTotal>\n  <cac:InvoiceLine>\n    <cbc:ID>1</cbc:ID>\n    <cbc:InvoicedQuantity unitCode=\"EA\">1</cbc:InvoicedQuantity>\n    <cbc:LineExtensionAmount currencyID=\"DKK\">100.00</cbc:LineExtensionAmount>\n    <cac:TaxTotal>\n      <cbc:TaxAmount currencyID=\"DKK\">0.00</cbc:TaxAmount>\n      <cac:TaxSubtotal>\n        <cbc:TaxableAmount currencyID=\"DKK\">100.00</cbc:TaxableAmount>\n        <cbc:TaxAmount currencyID=\"DKK\">0.00</cbc:TaxAmount>\n        <cac:TaxCategory>\n          <cbc:ID schemeID=\"urn:oioubl:id:taxcategoryid-1.1\" schemeAgencyID=\"320\">ZeroRated</cbc:ID>\n          <cbc:Percent>0</cbc:Percent>\n          <cac:TaxScheme>\n            <cbc:ID schemeID=\"urn:oioubl:id:taxschemeid-1.1\" schemeAgencyID=\"320\">63</cbc:ID>\n            <cbc:Name>Moms</cbc:Name>\n          </cac:TaxScheme>\n        </cac:TaxCategory>\n      </cac:TaxSubtotal>\n    </cac:TaxTotal>\n    <cac:Item>\n      <cbc:Name>Synthetic exempt</cbc:Name>\n      <cac:ClassifiedTaxCategory>\n        <cbc:ID schemeID=\"urn:oioubl:id:taxcategoryid-1.1\" schemeAgencyID=\"320\">ZeroRated</cbc:ID>\n        <cbc:Percent>0</cbc:Percent>\n        <cac:TaxScheme>\n          <cbc:ID schemeID=\"urn:oioubl:id:taxschemeid-1.1\" schemeAgencyID=\"320\">63</cbc:ID>\n          <cbc:Name>Moms</cbc:Name>\n        </cac:TaxScheme>\n      </cac:ClassifiedTaxCategory>\n    </cac:Item>\n    <cac:Price>\n      <cbc:PriceAmount currencyID=\"DKK\">100.00</cbc:PriceAmount>\n    </cac:Price>\n  </cac:InvoiceLine>\n</Invoice>"
+  },
+  {
+    "name": "domestic_reverse_charge",
+    "input": {
+      "invoiceType": "full",
+      "status": "issued",
+      "invoiceNumber": "SYN-2026-1",
+      "vatTreatment": "domestic_reverse_charge",
+      "issueDate": "2026-10-20",
+      "dueDate": "2026-11-03",
+      "currency": "DKK",
+      "seller": {
+        "name": "Synthetic Seller",
+        "address": "Synthetic Street 1",
+        "vatOrCvr": "DK12345678"
+      },
+      "buyer": {
+        "name": "Synthetic Buyer",
+        "address": "Synthetic Street 2",
+        "eanNumber": "5790000000000",
+        "publicRecipient": true,
+        "vatOrCvr": "DE123456789"
+      },
+      "lines": [
+        {
+          "description": "Synthetic service",
+          "quantity": 1,
+          "unitPriceExVat": 100,
+          "lineTotalExVat": 100
+        }
+      ],
+      "totals": {
+        "netAmount": 100,
+        "grossAmount": 100
+      },
+      "reverseChargeBasis": "DK_MOMSLOVEN_§46_STK_1_NR_6"
+    },
+    "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<Invoice xmlns=\"urn:oasis:names:specification:ubl:schema:xsd:Invoice-2\" xmlns:cac=\"urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2\" xmlns:cbc=\"urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2\">\n  <cbc:UBLVersionID>2.0</cbc:UBLVersionID>\n  <cbc:CustomizationID>OIOUBL-2.02</cbc:CustomizationID>\n  <cbc:ProfileID schemeID=\"urn:oioubl:id:profileid-1.2\" schemeAgencyID=\"320\">Procurement-BilSim-1.0</cbc:ProfileID>\n  <cbc:ID>SYN-2026-1</cbc:ID>\n  <cbc:IssueDate>2026-10-20</cbc:IssueDate>\n  <cbc:DueDate>2026-11-03</cbc:DueDate>\n  <cbc:InvoiceTypeCode listID=\"urn:oioubl:codelist:invoicetypecode-1.1\" listAgencyID=\"320\">380</cbc:InvoiceTypeCode>\n  <cbc:DocumentCurrencyCode>DKK</cbc:DocumentCurrencyCode>\n  <cbc:BuyerReference>SYN-2026-1</cbc:BuyerReference>\n  <cac:AccountingSupplierParty>\n    <cac:Party>\n      <cbc:EndpointID schemeID=\"DK:CVR\">DK12345678</cbc:EndpointID>\n      <cac:PartyName>\n        <cbc:Name>Synthetic Seller</cbc:Name>\n      </cac:PartyName>\n      <cac:PostalAddress>\n        <cbc:AddressFormatCode listID=\"urn:oioubl:codelist:addressformatcode-1.1\" listAgencyID=\"320\">Unstructured</cbc:AddressFormatCode>\n        <cac:AddressLine>\n          <cbc:Line>Synthetic Street 1</cbc:Line>\n        </cac:AddressLine>\n      </cac:PostalAddress>\n      <cac:PartyTaxScheme>\n        <cbc:CompanyID schemeID=\"DK:SE\">DK12345678</cbc:CompanyID>\n        <cac:TaxScheme>\n          <cbc:ID schemeID=\"urn:oioubl:id:taxschemeid-1.1\" schemeAgencyID=\"320\">63</cbc:ID>\n          <cbc:Name>Moms</cbc:Name>\n        </cac:TaxScheme>\n      </cac:PartyTaxScheme>\n      <cac:PartyLegalEntity>\n        <cbc:RegistrationName>Synthetic Seller</cbc:RegistrationName>\n        <cbc:CompanyID schemeID=\"DK:CVR\">DK12345678</cbc:CompanyID>\n      </cac:PartyLegalEntity>\n      <cac:Contact>\n        <cbc:ID>TEST</cbc:ID>\n        <cbc:Name>Synthetic Seller</cbc:Name>\n      </cac:Contact>\n    </cac:Party>\n  </cac:AccountingSupplierParty>\n  <cac:AccountingCustomerParty>\n    <cac:Party>\n      <cbc:EndpointID schemeID=\"GLN\">5790000000000</cbc:EndpointID>\n      <cac:PartyName>\n        <cbc:Name>Synthetic Buyer</cbc:Name>\n      </cac:PartyName>\n      <cac:PostalAddress>\n        <cbc:AddressFormatCode listID=\"urn:oioubl:codelist:addressformatcode-1.1\" listAgencyID=\"320\">Unstructured</cbc:AddressFormatCode>\n        <cac:AddressLine>\n          <cbc:Line>Synthetic Street 2</cbc:Line>\n        </cac:AddressLine>\n      </cac:PostalAddress>\n      <cac:Contact>\n        <cbc:ID>TEST</cbc:ID>\n        <cbc:Name>Synthetic Buyer</cbc:Name>\n      </cac:Contact>\n    </cac:Party>\n  </cac:AccountingCustomerParty>\n  <cac:TaxTotal>\n    <cbc:TaxAmount currencyID=\"DKK\">0.00</cbc:TaxAmount>\n    <cac:TaxSubtotal>\n      <cbc:TaxableAmount currencyID=\"DKK\">100.00</cbc:TaxableAmount>\n      <cbc:TaxAmount currencyID=\"DKK\">0.00</cbc:TaxAmount>\n      <cac:TaxCategory>\n        <cbc:ID schemeID=\"urn:oioubl:id:taxcategoryid-1.1\" schemeAgencyID=\"320\">ReverseCharge</cbc:ID>\n        <cbc:Percent>0</cbc:Percent>\n        <cbc:TaxExemptionReasonCode>VATEX-EU-AE</cbc:TaxExemptionReasonCode>\n        <cbc:TaxExemptionReason>Reverse charge / Omvendt betalingspligt (DK_MOMSLOVEN_§46_STK_1_NR_6)</cbc:TaxExemptionReason>\n        <cac:TaxScheme>\n          <cbc:ID schemeID=\"urn:oioubl:id:taxschemeid-1.1\" schemeAgencyID=\"320\">63</cbc:ID>\n          <cbc:Name>Moms</cbc:Name>\n        </cac:TaxScheme>\n      </cac:TaxCategory>\n    </cac:TaxSubtotal>\n  </cac:TaxTotal>\n  <cac:LegalMonetaryTotal>\n    <cbc:LineExtensionAmount currencyID=\"DKK\">100.00</cbc:LineExtensionAmount>\n    <cbc:TaxExclusiveAmount currencyID=\"DKK\">100.00</cbc:TaxExclusiveAmount>\n    <cbc:TaxInclusiveAmount currencyID=\"DKK\">100.00</cbc:TaxInclusiveAmount>\n    <cbc:PayableAmount currencyID=\"DKK\">100.00</cbc:PayableAmount>\n  </cac:LegalMonetaryTotal>\n  <cac:InvoiceLine>\n    <cbc:ID>1</cbc:ID>\n    <cbc:InvoicedQuantity unitCode=\"EA\">1</cbc:InvoicedQuantity>\n    <cbc:LineExtensionAmount currencyID=\"DKK\">100.00</cbc:LineExtensionAmount>\n    <cac:TaxTotal>\n      <cbc:TaxAmount currencyID=\"DKK\">0.00</cbc:TaxAmount>\n      <cac:TaxSubtotal>\n        <cbc:TaxableAmount currencyID=\"DKK\">100.00</cbc:TaxableAmount>\n        <cbc:TaxAmount currencyID=\"DKK\">0.00</cbc:TaxAmount>\n        <cac:TaxCategory>\n          <cbc:ID schemeID=\"urn:oioubl:id:taxcategoryid-1.1\" schemeAgencyID=\"320\">ReverseCharge</cbc:ID>\n          <cbc:Percent>0</cbc:Percent>\n          <cac:TaxScheme>\n            <cbc:ID schemeID=\"urn:oioubl:id:taxschemeid-1.1\" schemeAgencyID=\"320\">63</cbc:ID>\n            <cbc:Name>Moms</cbc:Name>\n          </cac:TaxScheme>\n        </cac:TaxCategory>\n      </cac:TaxSubtotal>\n    </cac:TaxTotal>\n    <cac:Item>\n      <cbc:Name>Synthetic service</cbc:Name>\n      <cac:ClassifiedTaxCategory>\n        <cbc:ID schemeID=\"urn:oioubl:id:taxcategoryid-1.1\" schemeAgencyID=\"320\">ReverseCharge</cbc:ID>\n        <cbc:Percent>0</cbc:Percent>\n        <cac:TaxScheme>\n          <cbc:ID schemeID=\"urn:oioubl:id:taxschemeid-1.1\" schemeAgencyID=\"320\">63</cbc:ID>\n          <cbc:Name>Moms</cbc:Name>\n        </cac:TaxScheme>\n      </cac:ClassifiedTaxCategory>\n    </cac:Item>\n    <cac:Price>\n      <cbc:PriceAmount currencyID=\"DKK\">100.00</cbc:PriceAmount>\n    </cac:Price>\n  </cac:InvoiceLine>\n</Invoice>"
+  },
+  {
+    "name": "foreign_reverse_charge",
+    "input": {
+      "invoiceType": "full",
+      "status": "issued",
+      "invoiceNumber": "SYN-2026-1",
+      "vatTreatment": "foreign_reverse_charge",
+      "issueDate": "2026-10-20",
+      "dueDate": "2026-11-03",
+      "currency": "DKK",
+      "seller": {
+        "name": "Synthetic Seller",
+        "address": "Synthetic Street 1",
+        "vatOrCvr": "DK12345678"
+      },
+      "buyer": {
+        "name": "Synthetic Buyer",
+        "address": "Synthetic Street 2",
+        "eanNumber": "5790000000000",
+        "publicRecipient": true,
+        "vatOrCvr": "DE123456789"
+      },
+      "lines": [
+        {
+          "description": "Synthetic service",
+          "quantity": 1,
+          "unitPriceExVat": 100,
+          "lineTotalExVat": 100
+        }
+      ],
+      "totals": {
+        "netAmount": 100,
+        "grossAmount": 100
+      },
+      "reverseChargeBasis": "EU_MOMSDIREKTIV_ART_196"
+    },
+    "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<Invoice xmlns=\"urn:oasis:names:specification:ubl:schema:xsd:Invoice-2\" xmlns:cac=\"urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2\" xmlns:cbc=\"urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2\">\n  <cbc:UBLVersionID>2.0</cbc:UBLVersionID>\n  <cbc:CustomizationID>OIOUBL-2.02</cbc:CustomizationID>\n  <cbc:ProfileID schemeID=\"urn:oioubl:id:profileid-1.2\" schemeAgencyID=\"320\">Procurement-BilSim-1.0</cbc:ProfileID>\n  <cbc:ID>SYN-2026-1</cbc:ID>\n  <cbc:IssueDate>2026-10-20</cbc:IssueDate>\n  <cbc:DueDate>2026-11-03</cbc:DueDate>\n  <cbc:InvoiceTypeCode listID=\"urn:oioubl:codelist:invoicetypecode-1.1\" listAgencyID=\"320\">380</cbc:InvoiceTypeCode>\n  <cbc:DocumentCurrencyCode>DKK</cbc:DocumentCurrencyCode>\n  <cbc:BuyerReference>SYN-2026-1</cbc:BuyerReference>\n  <cac:AccountingSupplierParty>\n    <cac:Party>\n      <cbc:EndpointID schemeID=\"DK:CVR\">DK12345678</cbc:EndpointID>\n      <cac:PartyName>\n        <cbc:Name>Synthetic Seller</cbc:Name>\n      </cac:PartyName>\n      <cac:PostalAddress>\n        <cbc:AddressFormatCode listID=\"urn:oioubl:codelist:addressformatcode-1.1\" listAgencyID=\"320\">Unstructured</cbc:AddressFormatCode>\n        <cac:AddressLine>\n          <cbc:Line>Synthetic Street 1</cbc:Line>\n        </cac:AddressLine>\n      </cac:PostalAddress>\n      <cac:PartyTaxScheme>\n        <cbc:CompanyID schemeID=\"DK:SE\">DK12345678</cbc:CompanyID>\n        <cac:TaxScheme>\n          <cbc:ID schemeID=\"urn:oioubl:id:taxschemeid-1.1\" schemeAgencyID=\"320\">63</cbc:ID>\n          <cbc:Name>Moms</cbc:Name>\n        </cac:TaxScheme>\n      </cac:PartyTaxScheme>\n      <cac:PartyLegalEntity>\n        <cbc:RegistrationName>Synthetic Seller</cbc:RegistrationName>\n        <cbc:CompanyID schemeID=\"DK:CVR\">DK12345678</cbc:CompanyID>\n      </cac:PartyLegalEntity>\n      <cac:Contact>\n        <cbc:ID>TEST</cbc:ID>\n        <cbc:Name>Synthetic Seller</cbc:Name>\n      </cac:Contact>\n    </cac:Party>\n  </cac:AccountingSupplierParty>\n  <cac:AccountingCustomerParty>\n    <cac:Party>\n      <cbc:EndpointID schemeID=\"GLN\">5790000000000</cbc:EndpointID>\n      <cac:PartyName>\n        <cbc:Name>Synthetic Buyer</cbc:Name>\n      </cac:PartyName>\n      <cac:PostalAddress>\n        <cbc:AddressFormatCode listID=\"urn:oioubl:codelist:addressformatcode-1.1\" listAgencyID=\"320\">Unstructured</cbc:AddressFormatCode>\n        <cac:AddressLine>\n          <cbc:Line>Synthetic Street 2</cbc:Line>\n        </cac:AddressLine>\n      </cac:PostalAddress>\n      <cac:Contact>\n        <cbc:ID>TEST</cbc:ID>\n        <cbc:Name>Synthetic Buyer</cbc:Name>\n      </cac:Contact>\n    </cac:Party>\n  </cac:AccountingCustomerParty>\n  <cac:TaxTotal>\n    <cbc:TaxAmount currencyID=\"DKK\">0.00</cbc:TaxAmount>\n    <cac:TaxSubtotal>\n      <cbc:TaxableAmount currencyID=\"DKK\">100.00</cbc:TaxableAmount>\n      <cbc:TaxAmount currencyID=\"DKK\">0.00</cbc:TaxAmount>\n      <cac:TaxCategory>\n        <cbc:ID schemeID=\"urn:oioubl:id:taxcategoryid-1.1\" schemeAgencyID=\"320\">ReverseCharge</cbc:ID>\n        <cbc:Percent>0</cbc:Percent>\n        <cbc:TaxExemptionReasonCode>VATEX-EU-AE</cbc:TaxExemptionReasonCode>\n        <cbc:TaxExemptionReason>Reverse charge / Omvendt betalingspligt (EU_MOMSDIREKTIV_ART_196)</cbc:TaxExemptionReason>\n        <cac:TaxScheme>\n          <cbc:ID schemeID=\"urn:oioubl:id:taxschemeid-1.1\" schemeAgencyID=\"320\">63</cbc:ID>\n          <cbc:Name>Moms</cbc:Name>\n        </cac:TaxScheme>\n      </cac:TaxCategory>\n    </cac:TaxSubtotal>\n  </cac:TaxTotal>\n  <cac:LegalMonetaryTotal>\n    <cbc:LineExtensionAmount currencyID=\"DKK\">100.00</cbc:LineExtensionAmount>\n    <cbc:TaxExclusiveAmount currencyID=\"DKK\">100.00</cbc:TaxExclusiveAmount>\n    <cbc:TaxInclusiveAmount currencyID=\"DKK\">100.00</cbc:TaxInclusiveAmount>\n    <cbc:PayableAmount currencyID=\"DKK\">100.00</cbc:PayableAmount>\n  </cac:LegalMonetaryTotal>\n  <cac:InvoiceLine>\n    <cbc:ID>1</cbc:ID>\n    <cbc:InvoicedQuantity unitCode=\"EA\">1</cbc:InvoicedQuantity>\n    <cbc:LineExtensionAmount currencyID=\"DKK\">100.00</cbc:LineExtensionAmount>\n    <cac:TaxTotal>\n      <cbc:TaxAmount currencyID=\"DKK\">0.00</cbc:TaxAmount>\n      <cac:TaxSubtotal>\n        <cbc:TaxableAmount currencyID=\"DKK\">100.00</cbc:TaxableAmount>\n        <cbc:TaxAmount currencyID=\"DKK\">0.00</cbc:TaxAmount>\n        <cac:TaxCategory>\n          <cbc:ID schemeID=\"urn:oioubl:id:taxcategoryid-1.1\" schemeAgencyID=\"320\">ReverseCharge</cbc:ID>\n          <cbc:Percent>0</cbc:Percent>\n          <cac:TaxScheme>\n            <cbc:ID schemeID=\"urn:oioubl:id:taxschemeid-1.1\" schemeAgencyID=\"320\">63</cbc:ID>\n            <cbc:Name>Moms</cbc:Name>\n          </cac:TaxScheme>\n        </cac:TaxCategory>\n      </cac:TaxSubtotal>\n    </cac:TaxTotal>\n    <cac:Item>\n      <cbc:Name>Synthetic service</cbc:Name>\n      <cac:ClassifiedTaxCategory>\n        <cbc:ID schemeID=\"urn:oioubl:id:taxcategoryid-1.1\" schemeAgencyID=\"320\">ReverseCharge</cbc:ID>\n        <cbc:Percent>0</cbc:Percent>\n        <cac:TaxScheme>\n          <cbc:ID schemeID=\"urn:oioubl:id:taxschemeid-1.1\" schemeAgencyID=\"320\">63</cbc:ID>\n          <cbc:Name>Moms</cbc:Name>\n        </cac:TaxScheme>\n      </cac:ClassifiedTaxCategory>\n    </cac:Item>\n    <cac:Price>\n      <cbc:PriceAmount currencyID=\"DKK\">100.00</cbc:PriceAmount>\n    </cac:Price>\n  </cac:InvoiceLine>\n</Invoice>"
+  },
+  {
+    "name": "original EUR currency and delivery period evidence",
+    "input": {
+      "invoiceType": "full",
+      "status": "issued",
+      "invoiceNumber": "SYN-2026-1",
+      "vatTreatment": "standard",
+      "issueDate": "2026-10-20",
+      "dueDate": "2026-11-03",
+      "currency": " eur ",
+      "seller": {
+        "name": "Synthetic Seller",
+        "address": "Synthetic Street 1",
+        "vatOrCvr": "DK12345678"
+      },
+      "buyer": {
+        "name": "Synthetic Buyer",
+        "address": "Synthetic Street 2",
+        "eanNumber": "5790000000000",
+        "publicRecipient": true,
+        "orderReference": "PO & synthetic"
+      },
+      "lines": [
+        {
+          "description": "Synthetic service",
+          "quantity": 1,
+          "unitPriceExVat": 100,
+          "lineTotalExVat": 100,
+          "unitCode": "HUR"
+        }
+      ],
+      "totals": {
+        "netAmount": 100,
+        "vatRate": 0.25,
+        "vatAmount": 25,
+        "grossAmount": 125,
+        "fxRateToDkk": 7.5,
+        "netAmountDkk": 750,
+        "vatAmountDkk": 187.5,
+        "grossAmountDkk": 937.5
+      },
+      "deliveryPeriodStart": "2026-10-01",
+      "deliveryPeriodEnd": "2026-10-19"
+    },
+    "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<Invoice xmlns=\"urn:oasis:names:specification:ubl:schema:xsd:Invoice-2\" xmlns:cac=\"urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2\" xmlns:cbc=\"urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2\">\n  <cbc:UBLVersionID>2.0</cbc:UBLVersionID>\n  <cbc:CustomizationID>OIOUBL-2.02</cbc:CustomizationID>\n  <cbc:ProfileID schemeID=\"urn:oioubl:id:profileid-1.2\" schemeAgencyID=\"320\">Procurement-BilSim-1.0</cbc:ProfileID>\n  <cbc:ID>SYN-2026-1</cbc:ID>\n  <cbc:IssueDate>2026-10-20</cbc:IssueDate>\n  <cbc:DueDate>2026-11-03</cbc:DueDate>\n  <cbc:InvoiceTypeCode listID=\"urn:oioubl:codelist:invoicetypecode-1.1\" listAgencyID=\"320\">380</cbc:InvoiceTypeCode>\n  <cbc:DocumentCurrencyCode>EUR</cbc:DocumentCurrencyCode>\n  <cbc:BuyerReference>PO &amp; synthetic</cbc:BuyerReference>\n  <cac:OrderReference>\n    <cbc:ID>PO &amp; synthetic</cbc:ID>\n  </cac:OrderReference>\n  <cac:AccountingSupplierParty>\n    <cac:Party>\n      <cbc:EndpointID schemeID=\"DK:CVR\">DK12345678</cbc:EndpointID>\n      <cac:PartyName>\n        <cbc:Name>Synthetic Seller</cbc:Name>\n      </cac:PartyName>\n      <cac:PostalAddress>\n        <cbc:AddressFormatCode listID=\"urn:oioubl:codelist:addressformatcode-1.1\" listAgencyID=\"320\">Unstructured</cbc:AddressFormatCode>\n        <cac:AddressLine>\n          <cbc:Line>Synthetic Street 1</cbc:Line>\n        </cac:AddressLine>\n      </cac:PostalAddress>\n      <cac:PartyTaxScheme>\n        <cbc:CompanyID schemeID=\"DK:SE\">DK12345678</cbc:CompanyID>\n        <cac:TaxScheme>\n          <cbc:ID schemeID=\"urn:oioubl:id:taxschemeid-1.1\" schemeAgencyID=\"320\">63</cbc:ID>\n          <cbc:Name>Moms</cbc:Name>\n        </cac:TaxScheme>\n      </cac:PartyTaxScheme>\n      <cac:PartyLegalEntity>\n        <cbc:RegistrationName>Synthetic Seller</cbc:RegistrationName>\n        <cbc:CompanyID schemeID=\"DK:CVR\">DK12345678</cbc:CompanyID>\n      </cac:PartyLegalEntity>\n      <cac:Contact>\n        <cbc:ID>TEST</cbc:ID>\n        <cbc:Name>Synthetic Seller</cbc:Name>\n      </cac:Contact>\n    </cac:Party>\n  </cac:AccountingSupplierParty>\n  <cac:AccountingCustomerParty>\n    <cac:Party>\n      <cbc:EndpointID schemeID=\"GLN\">5790000000000</cbc:EndpointID>\n      <cac:PartyName>\n        <cbc:Name>Synthetic Buyer</cbc:Name>\n      </cac:PartyName>\n      <cac:PostalAddress>\n        <cbc:AddressFormatCode listID=\"urn:oioubl:codelist:addressformatcode-1.1\" listAgencyID=\"320\">Unstructured</cbc:AddressFormatCode>\n        <cac:AddressLine>\n          <cbc:Line>Synthetic Street 2</cbc:Line>\n        </cac:AddressLine>\n      </cac:PostalAddress>\n      <cac:Contact>\n        <cbc:ID>TEST</cbc:ID>\n        <cbc:Name>Synthetic Buyer</cbc:Name>\n      </cac:Contact>\n    </cac:Party>\n  </cac:AccountingCustomerParty>\n  <cac:TaxTotal>\n    <cbc:TaxAmount currencyID=\"EUR\">25.00</cbc:TaxAmount>\n    <cac:TaxSubtotal>\n      <cbc:TaxableAmount currencyID=\"EUR\">100.00</cbc:TaxableAmount>\n      <cbc:TaxAmount currencyID=\"EUR\">25.00</cbc:TaxAmount>\n      <cac:TaxCategory>\n        <cbc:ID schemeID=\"urn:oioubl:id:taxcategoryid-1.1\" schemeAgencyID=\"320\">StandardRated</cbc:ID>\n        <cbc:Percent>25</cbc:Percent>\n        <cac:TaxScheme>\n          <cbc:ID schemeID=\"urn:oioubl:id:taxschemeid-1.1\" schemeAgencyID=\"320\">63</cbc:ID>\n          <cbc:Name>Moms</cbc:Name>\n        </cac:TaxScheme>\n      </cac:TaxCategory>\n    </cac:TaxSubtotal>\n  </cac:TaxTotal>\n  <cac:LegalMonetaryTotal>\n    <cbc:LineExtensionAmount currencyID=\"EUR\">100.00</cbc:LineExtensionAmount>\n    <cbc:TaxExclusiveAmount currencyID=\"EUR\">100.00</cbc:TaxExclusiveAmount>\n    <cbc:TaxInclusiveAmount currencyID=\"EUR\">125.00</cbc:TaxInclusiveAmount>\n    <cbc:PayableAmount currencyID=\"EUR\">125.00</cbc:PayableAmount>\n  </cac:LegalMonetaryTotal>\n  <cac:InvoiceLine>\n    <cbc:ID>1</cbc:ID>\n    <cbc:InvoicedQuantity unitCode=\"HUR\">1</cbc:InvoicedQuantity>\n    <cbc:LineExtensionAmount currencyID=\"EUR\">100.00</cbc:LineExtensionAmount>\n    <cac:TaxTotal>\n      <cbc:TaxAmount currencyID=\"EUR\">25.00</cbc:TaxAmount>\n      <cac:TaxSubtotal>\n        <cbc:TaxableAmount currencyID=\"EUR\">100.00</cbc:TaxableAmount>\n        <cbc:TaxAmount currencyID=\"EUR\">25.00</cbc:TaxAmount>\n        <cac:TaxCategory>\n          <cbc:ID schemeID=\"urn:oioubl:id:taxcategoryid-1.1\" schemeAgencyID=\"320\">StandardRated</cbc:ID>\n          <cbc:Percent>25</cbc:Percent>\n          <cac:TaxScheme>\n            <cbc:ID schemeID=\"urn:oioubl:id:taxschemeid-1.1\" schemeAgencyID=\"320\">63</cbc:ID>\n            <cbc:Name>Moms</cbc:Name>\n          </cac:TaxScheme>\n        </cac:TaxCategory>\n      </cac:TaxSubtotal>\n    </cac:TaxTotal>\n    <cac:Item>\n      <cbc:Name>Synthetic service</cbc:Name>\n      <cac:ClassifiedTaxCategory>\n        <cbc:ID schemeID=\"urn:oioubl:id:taxcategoryid-1.1\" schemeAgencyID=\"320\">StandardRated</cbc:ID>\n        <cbc:Percent>25</cbc:Percent>\n        <cac:TaxScheme>\n          <cbc:ID schemeID=\"urn:oioubl:id:taxschemeid-1.1\" schemeAgencyID=\"320\">63</cbc:ID>\n          <cbc:Name>Moms</cbc:Name>\n        </cac:TaxScheme>\n      </cac:ClassifiedTaxCategory>\n    </cac:Item>\n    <cac:Price>\n      <cbc:PriceAmount currencyID=\"EUR\">100.00</cbc:PriceAmount>\n    </cac:Price>\n  </cac:InvoiceLine>\n</Invoice>"
+  },
+  {
+    "name": "alternate positive rate and delivery date evidence",
+    "input": {
+      "invoiceType": "full",
+      "status": "issued",
+      "invoiceNumber": "SYN-2026-1",
+      "vatTreatment": "standard",
+      "issueDate": "2026-10-20",
+      "dueDate": "2026-11-03",
+      "currency": "DKK",
+      "seller": {
+        "name": "Synthetic Seller",
+        "address": "Synthetic Street 1",
+        "vatOrCvr": "DK12345678"
+      },
+      "buyer": {
+        "name": "Synthetic Buyer",
+        "address": "Synthetic Street 2",
+        "eanNumber": "5790000000000",
+        "publicRecipient": true
+      },
+      "lines": [
+        {
+          "description": "Synthetic service",
+          "quantity": 1,
+          "unitPriceExVat": 100,
+          "lineTotalExVat": 100
+        }
+      ],
+      "totals": {
+        "netAmount": 100,
+        "vatRate": 0.2,
+        "vatAmount": 20,
+        "grossAmount": 120
+      },
+      "deliveryDate": "2026-10-19"
+    },
+    "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<Invoice xmlns=\"urn:oasis:names:specification:ubl:schema:xsd:Invoice-2\" xmlns:cac=\"urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2\" xmlns:cbc=\"urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2\">\n  <cbc:UBLVersionID>2.0</cbc:UBLVersionID>\n  <cbc:CustomizationID>OIOUBL-2.02</cbc:CustomizationID>\n  <cbc:ProfileID schemeID=\"urn:oioubl:id:profileid-1.2\" schemeAgencyID=\"320\">Procurement-BilSim-1.0</cbc:ProfileID>\n  <cbc:ID>SYN-2026-1</cbc:ID>\n  <cbc:IssueDate>2026-10-20</cbc:IssueDate>\n  <cbc:DueDate>2026-11-03</cbc:DueDate>\n  <cbc:InvoiceTypeCode listID=\"urn:oioubl:codelist:invoicetypecode-1.1\" listAgencyID=\"320\">380</cbc:InvoiceTypeCode>\n  <cbc:DocumentCurrencyCode>DKK</cbc:DocumentCurrencyCode>\n  <cbc:BuyerReference>SYN-2026-1</cbc:BuyerReference>\n  <cac:AccountingSupplierParty>\n    <cac:Party>\n      <cbc:EndpointID schemeID=\"DK:CVR\">DK12345678</cbc:EndpointID>\n      <cac:PartyName>\n        <cbc:Name>Synthetic Seller</cbc:Name>\n      </cac:PartyName>\n      <cac:PostalAddress>\n        <cbc:AddressFormatCode listID=\"urn:oioubl:codelist:addressformatcode-1.1\" listAgencyID=\"320\">Unstructured</cbc:AddressFormatCode>\n        <cac:AddressLine>\n          <cbc:Line>Synthetic Street 1</cbc:Line>\n        </cac:AddressLine>\n      </cac:PostalAddress>\n      <cac:PartyTaxScheme>\n        <cbc:CompanyID schemeID=\"DK:SE\">DK12345678</cbc:CompanyID>\n        <cac:TaxScheme>\n          <cbc:ID schemeID=\"urn:oioubl:id:taxschemeid-1.1\" schemeAgencyID=\"320\">63</cbc:ID>\n          <cbc:Name>Moms</cbc:Name>\n        </cac:TaxScheme>\n      </cac:PartyTaxScheme>\n      <cac:PartyLegalEntity>\n        <cbc:RegistrationName>Synthetic Seller</cbc:RegistrationName>\n        <cbc:CompanyID schemeID=\"DK:CVR\">DK12345678</cbc:CompanyID>\n      </cac:PartyLegalEntity>\n      <cac:Contact>\n        <cbc:ID>TEST</cbc:ID>\n        <cbc:Name>Synthetic Seller</cbc:Name>\n      </cac:Contact>\n    </cac:Party>\n  </cac:AccountingSupplierParty>\n  <cac:AccountingCustomerParty>\n    <cac:Party>\n      <cbc:EndpointID schemeID=\"GLN\">5790000000000</cbc:EndpointID>\n      <cac:PartyName>\n        <cbc:Name>Synthetic Buyer</cbc:Name>\n      </cac:PartyName>\n      <cac:PostalAddress>\n        <cbc:AddressFormatCode listID=\"urn:oioubl:codelist:addressformatcode-1.1\" listAgencyID=\"320\">Unstructured</cbc:AddressFormatCode>\n        <cac:AddressLine>\n          <cbc:Line>Synthetic Street 2</cbc:Line>\n        </cac:AddressLine>\n      </cac:PostalAddress>\n      <cac:Contact>\n        <cbc:ID>TEST</cbc:ID>\n        <cbc:Name>Synthetic Buyer</cbc:Name>\n      </cac:Contact>\n    </cac:Party>\n  </cac:AccountingCustomerParty>\n  <cac:TaxTotal>\n    <cbc:TaxAmount currencyID=\"DKK\">20.00</cbc:TaxAmount>\n    <cac:TaxSubtotal>\n      <cbc:TaxableAmount currencyID=\"DKK\">100.00</cbc:TaxableAmount>\n      <cbc:TaxAmount currencyID=\"DKK\">20.00</cbc:TaxAmount>\n      <cac:TaxCategory>\n        <cbc:ID schemeID=\"urn:oioubl:id:taxcategoryid-1.1\" schemeAgencyID=\"320\">StandardRated</cbc:ID>\n        <cbc:Percent>20</cbc:Percent>\n        <cac:TaxScheme>\n          <cbc:ID schemeID=\"urn:oioubl:id:taxschemeid-1.1\" schemeAgencyID=\"320\">63</cbc:ID>\n          <cbc:Name>Moms</cbc:Name>\n        </cac:TaxScheme>\n      </cac:TaxCategory>\n    </cac:TaxSubtotal>\n  </cac:TaxTotal>\n  <cac:LegalMonetaryTotal>\n    <cbc:LineExtensionAmount currencyID=\"DKK\">100.00</cbc:LineExtensionAmount>\n    <cbc:TaxExclusiveAmount currencyID=\"DKK\">100.00</cbc:TaxExclusiveAmount>\n    <cbc:TaxInclusiveAmount currencyID=\"DKK\">120.00</cbc:TaxInclusiveAmount>\n    <cbc:PayableAmount currencyID=\"DKK\">120.00</cbc:PayableAmount>\n  </cac:LegalMonetaryTotal>\n  <cac:InvoiceLine>\n    <cbc:ID>1</cbc:ID>\n    <cbc:InvoicedQuantity unitCode=\"EA\">1</cbc:InvoicedQuantity>\n    <cbc:LineExtensionAmount currencyID=\"DKK\">100.00</cbc:LineExtensionAmount>\n    <cac:TaxTotal>\n      <cbc:TaxAmount currencyID=\"DKK\">20.00</cbc:TaxAmount>\n      <cac:TaxSubtotal>\n        <cbc:TaxableAmount currencyID=\"DKK\">100.00</cbc:TaxableAmount>\n        <cbc:TaxAmount currencyID=\"DKK\">20.00</cbc:TaxAmount>\n        <cac:TaxCategory>\n          <cbc:ID schemeID=\"urn:oioubl:id:taxcategoryid-1.1\" schemeAgencyID=\"320\">StandardRated</cbc:ID>\n          <cbc:Percent>20</cbc:Percent>\n          <cac:TaxScheme>\n            <cbc:ID schemeID=\"urn:oioubl:id:taxschemeid-1.1\" schemeAgencyID=\"320\">63</cbc:ID>\n            <cbc:Name>Moms</cbc:Name>\n          </cac:TaxScheme>\n        </cac:TaxCategory>\n      </cac:TaxSubtotal>\n    </cac:TaxTotal>\n    <cac:Item>\n      <cbc:Name>Synthetic service</cbc:Name>\n      <cac:ClassifiedTaxCategory>\n        <cbc:ID schemeID=\"urn:oioubl:id:taxcategoryid-1.1\" schemeAgencyID=\"320\">StandardRated</cbc:ID>\n        <cbc:Percent>20</cbc:Percent>\n        <cac:TaxScheme>\n          <cbc:ID schemeID=\"urn:oioubl:id:taxschemeid-1.1\" schemeAgencyID=\"320\">63</cbc:ID>\n          <cbc:Name>Moms</cbc:Name>\n        </cac:TaxScheme>\n      </cac:ClassifiedTaxCategory>\n    </cac:Item>\n    <cac:Price>\n      <cbc:PriceAmount currencyID=\"DKK\">100.00</cbc:PriceAmount>\n    </cac:Price>\n  </cac:InvoiceLine>\n</Invoice>"
+  },
+  {
+    "name": "original EUR export requires no DKK bookkeeping FX",
+    "input": {
+      "invoiceType": "full",
+      "status": "issued",
+      "invoiceNumber": "SYN-2026-1",
+      "vatTreatment": "standard",
+      "issueDate": "2026-10-20",
+      "dueDate": "2026-11-03",
+      "currency": "EUR",
+      "seller": {
+        "name": "Synthetic Seller",
+        "address": "Synthetic Street 1",
+        "vatOrCvr": "DK12345678"
+      },
+      "buyer": {
+        "name": "Synthetic Buyer",
+        "address": "Synthetic Street 2",
+        "eanNumber": "5790000000000",
+        "publicRecipient": true
+      },
+      "lines": [
+        {
+          "description": "Synthetic service",
+          "quantity": 1,
+          "unitPriceExVat": 100,
+          "lineTotalExVat": 100
+        }
+      ],
+      "totals": {
+        "netAmount": 100,
+        "vatRate": 0.25,
+        "vatAmount": 25,
+        "grossAmount": 125
+      }
+    },
+    "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<Invoice xmlns=\"urn:oasis:names:specification:ubl:schema:xsd:Invoice-2\" xmlns:cac=\"urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2\" xmlns:cbc=\"urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2\">\n  <cbc:UBLVersionID>2.0</cbc:UBLVersionID>\n  <cbc:CustomizationID>OIOUBL-2.02</cbc:CustomizationID>\n  <cbc:ProfileID schemeID=\"urn:oioubl:id:profileid-1.2\" schemeAgencyID=\"320\">Procurement-BilSim-1.0</cbc:ProfileID>\n  <cbc:ID>SYN-2026-1</cbc:ID>\n  <cbc:IssueDate>2026-10-20</cbc:IssueDate>\n  <cbc:DueDate>2026-11-03</cbc:DueDate>\n  <cbc:InvoiceTypeCode listID=\"urn:oioubl:codelist:invoicetypecode-1.1\" listAgencyID=\"320\">380</cbc:InvoiceTypeCode>\n  <cbc:DocumentCurrencyCode>EUR</cbc:DocumentCurrencyCode>\n  <cbc:BuyerReference>SYN-2026-1</cbc:BuyerReference>\n  <cac:AccountingSupplierParty>\n    <cac:Party>\n      <cbc:EndpointID schemeID=\"DK:CVR\">DK12345678</cbc:EndpointID>\n      <cac:PartyName>\n        <cbc:Name>Synthetic Seller</cbc:Name>\n      </cac:PartyName>\n      <cac:PostalAddress>\n        <cbc:AddressFormatCode listID=\"urn:oioubl:codelist:addressformatcode-1.1\" listAgencyID=\"320\">Unstructured</cbc:AddressFormatCode>\n        <cac:AddressLine>\n          <cbc:Line>Synthetic Street 1</cbc:Line>\n        </cac:AddressLine>\n      </cac:PostalAddress>\n      <cac:PartyTaxScheme>\n        <cbc:CompanyID schemeID=\"DK:SE\">DK12345678</cbc:CompanyID>\n        <cac:TaxScheme>\n          <cbc:ID schemeID=\"urn:oioubl:id:taxschemeid-1.1\" schemeAgencyID=\"320\">63</cbc:ID>\n          <cbc:Name>Moms</cbc:Name>\n        </cac:TaxScheme>\n      </cac:PartyTaxScheme>\n      <cac:PartyLegalEntity>\n        <cbc:RegistrationName>Synthetic Seller</cbc:RegistrationName>\n        <cbc:CompanyID schemeID=\"DK:CVR\">DK12345678</cbc:CompanyID>\n      </cac:PartyLegalEntity>\n      <cac:Contact>\n        <cbc:ID>TEST</cbc:ID>\n        <cbc:Name>Synthetic Seller</cbc:Name>\n      </cac:Contact>\n    </cac:Party>\n  </cac:AccountingSupplierParty>\n  <cac:AccountingCustomerParty>\n    <cac:Party>\n      <cbc:EndpointID schemeID=\"GLN\">5790000000000</cbc:EndpointID>\n      <cac:PartyName>\n        <cbc:Name>Synthetic Buyer</cbc:Name>\n      </cac:PartyName>\n      <cac:PostalAddress>\n        <cbc:AddressFormatCode listID=\"urn:oioubl:codelist:addressformatcode-1.1\" listAgencyID=\"320\">Unstructured</cbc:AddressFormatCode>\n        <cac:AddressLine>\n          <cbc:Line>Synthetic Street 2</cbc:Line>\n        </cac:AddressLine>\n      </cac:PostalAddress>\n      <cac:Contact>\n        <cbc:ID>TEST</cbc:ID>\n        <cbc:Name>Synthetic Buyer</cbc:Name>\n      </cac:Contact>\n    </cac:Party>\n  </cac:AccountingCustomerParty>\n  <cac:TaxTotal>\n    <cbc:TaxAmount currencyID=\"EUR\">25.00</cbc:TaxAmount>\n    <cac:TaxSubtotal>\n      <cbc:TaxableAmount currencyID=\"EUR\">100.00</cbc:TaxableAmount>\n      <cbc:TaxAmount currencyID=\"EUR\">25.00</cbc:TaxAmount>\n      <cac:TaxCategory>\n        <cbc:ID schemeID=\"urn:oioubl:id:taxcategoryid-1.1\" schemeAgencyID=\"320\">StandardRated</cbc:ID>\n        <cbc:Percent>25</cbc:Percent>\n        <cac:TaxScheme>\n          <cbc:ID schemeID=\"urn:oioubl:id:taxschemeid-1.1\" schemeAgencyID=\"320\">63</cbc:ID>\n          <cbc:Name>Moms</cbc:Name>\n        </cac:TaxScheme>\n      </cac:TaxCategory>\n    </cac:TaxSubtotal>\n  </cac:TaxTotal>\n  <cac:LegalMonetaryTotal>\n    <cbc:LineExtensionAmount currencyID=\"EUR\">100.00</cbc:LineExtensionAmount>\n    <cbc:TaxExclusiveAmount currencyID=\"EUR\">100.00</cbc:TaxExclusiveAmount>\n    <cbc:TaxInclusiveAmount currencyID=\"EUR\">125.00</cbc:TaxInclusiveAmount>\n    <cbc:PayableAmount currencyID=\"EUR\">125.00</cbc:PayableAmount>\n  </cac:LegalMonetaryTotal>\n  <cac:InvoiceLine>\n    <cbc:ID>1</cbc:ID>\n    <cbc:InvoicedQuantity unitCode=\"EA\">1</cbc:InvoicedQuantity>\n    <cbc:LineExtensionAmount currencyID=\"EUR\">100.00</cbc:LineExtensionAmount>\n    <cac:TaxTotal>\n      <cbc:TaxAmount currencyID=\"EUR\">25.00</cbc:TaxAmount>\n      <cac:TaxSubtotal>\n        <cbc:TaxableAmount currencyID=\"EUR\">100.00</cbc:TaxableAmount>\n        <cbc:TaxAmount currencyID=\"EUR\">25.00</cbc:TaxAmount>\n        <cac:TaxCategory>\n          <cbc:ID schemeID=\"urn:oioubl:id:taxcategoryid-1.1\" schemeAgencyID=\"320\">StandardRated</cbc:ID>\n          <cbc:Percent>25</cbc:Percent>\n          <cac:TaxScheme>\n            <cbc:ID schemeID=\"urn:oioubl:id:taxschemeid-1.1\" schemeAgencyID=\"320\">63</cbc:ID>\n            <cbc:Name>Moms</cbc:Name>\n          </cac:TaxScheme>\n        </cac:TaxCategory>\n      </cac:TaxSubtotal>\n    </cac:TaxTotal>\n    <cac:Item>\n      <cbc:Name>Synthetic service</cbc:Name>\n      <cac:ClassifiedTaxCategory>\n        <cbc:ID schemeID=\"urn:oioubl:id:taxcategoryid-1.1\" schemeAgencyID=\"320\">StandardRated</cbc:ID>\n        <cbc:Percent>25</cbc:Percent>\n        <cac:TaxScheme>\n          <cbc:ID schemeID=\"urn:oioubl:id:taxschemeid-1.1\" schemeAgencyID=\"320\">63</cbc:ID>\n          <cbc:Name>Moms</cbc:Name>\n        </cac:TaxScheme>\n      </cac:ClassifiedTaxCategory>\n    </cac:Item>\n    <cac:Price>\n      <cbc:PriceAmount currencyID=\"EUR\">100.00</cbc:PriceAmount>\n    </cac:Price>\n  </cac:InvoiceLine>\n</Invoice>"
+  }
+]

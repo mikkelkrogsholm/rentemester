@@ -106,11 +106,11 @@ fn refuses_recorded_money_line_math_and_immutable_vat_rounding_mismatch() {
     assert!(error.message.contains("never rewrites"));
 }
 #[test]
-fn refuses_bad_dates_endpoints_and_unsupported_tax_or_currency() {
+fn refuses_bad_dates_endpoints_and_inconsistent_tax_or_invalid_currency() {
     for (field, value) in [
         ("issueDate", json!("2026-02-30")),
         ("dueDate", json!("2026-10-19")),
-        ("currency", json!("EUR")),
+        ("currency", json!("EU")),
         ("vatTreatment", json!("domestic_reverse_charge")),
         ("invoiceType", json!("credit_note")),
         ("invoiceNumber", json!("other")),
@@ -150,9 +150,60 @@ fn bounded_text_and_xml_and_illegal_codepoints_fail_closed() {
     assert!(export("SYN-2026-1", &p).is_err());
     let mut xml = Xml {
         value: String::new(),
+        currency: "DKK".into(),
     };
     assert!(xml.line(&"x".repeat(MAX_XML)).is_err());
     p = snapshot();
     p["lines"] = json!([{"description":"a","quantity":0,"unitPriceExVat":100,"lineTotalExVat":0}]);
     assert!(export("SYN-2026-1", &p).is_err());
+}
+
+#[test]
+fn original_rich_source_snapshots_preserve_complete_xml_bytes() {
+    let cases: Vec<Value> = serde_json::from_str(include_str!("original_cases.json")).unwrap();
+    assert_eq!(cases.len(), 9);
+    for case in cases {
+        let input = &case["input"];
+        let exported = export(input["invoiceNumber"].as_str().unwrap(), input).unwrap();
+        assert_eq!(
+            exported.xml,
+            case["xml"].as_str().unwrap(),
+            "{}",
+            case["name"]
+        );
+        assert_eq!(
+            exported.sha256,
+            format!("{:x}", Sha256::digest(exported.xml.as_bytes()))
+        );
+    }
+}
+#[test]
+fn rich_snapshots_refuse_inconsistent_tax_delivery_and_missing_line_basis() {
+    let cases: Vec<Value> = serde_json::from_str(include_str!("original_cases.json")).unwrap();
+    for case in &cases {
+        let mut input = case["input"].clone();
+        input["totals"]["grossAmount"] = json!(999);
+        assert!(export("SYN-2026-1", &input).is_err(), "{}", case["name"]);
+    }
+    for (index, path, value) in [
+        (1, vec!["lines", "3", "reverseChargeBasis"], json!("")),
+        (6, vec!["deliveryPeriodEnd"], json!("2026-09-01")),
+        (7, vec!["deliveryDate"], json!("2026-02-30")),
+    ] {
+        let mut input = cases[index]["input"].clone();
+        let mut target = &mut input;
+        for key in path {
+            target = if target.is_array() {
+                &mut target[key.parse::<usize>().unwrap()]
+            } else {
+                &mut target[key]
+            };
+        }
+        *target = value;
+        assert!(
+            export("SYN-2026-1", &input).is_err(),
+            "{}",
+            cases[index]["name"]
+        );
+    }
 }
