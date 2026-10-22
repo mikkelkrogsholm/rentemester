@@ -159,6 +159,7 @@ fn valid(v: &Value, op: Operation, strict: bool) -> bool {
                 "appliedRules",
                 "cached",
                 "fetchedAt",
+                "company",
             ]
         } else {
             &["ok", "errors", "code", "status", "appliedRules"]
@@ -168,7 +169,8 @@ fn valid(v: &Value, op: Operation, strict: bool) -> bool {
             && (!strict || text(&v["code"]))
             && v.get("status").is_none_or(text)
             && v.get("cached").is_none_or(Value::is_boolean)
-            && v.get("fetchedAt").is_none_or(text);
+            && v.get("fetchedAt").is_none_or(text)
+            && v.get("company").is_none_or(Value::is_null);
     }
     if strict || !v["errors"].as_array().unwrap().is_empty() {
         return false;
@@ -182,8 +184,8 @@ fn valid(v: &Value, op: Operation, strict: bool) -> bool {
                             .iter()
                             .all(|r| row(r, kind) && (archived || r["archived"] == false))
                         && rows.windows(2).all(|p| {
-                            let a = p[0]["name"].as_str().unwrap().to_lowercase();
-                            let b = p[1]["name"].as_str().unwrap().to_lowercase();
+                            let a = p[0]["name"].as_str().unwrap().to_ascii_lowercase();
+                            let b = p[1]["name"].as_str().unwrap().to_ascii_lowercase();
                             a < b || (a == b && p[0]["id"].as_u64() < p[1]["id"].as_u64())
                         })
                 })

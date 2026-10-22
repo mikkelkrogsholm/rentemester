@@ -251,3 +251,44 @@ async fn master_data_original_contact_input_schema_and_prehttp_fences() {
         Err(Error::InvalidInput(_))
     ));
 }
+
+#[tokio::test]
+async fn master_data_original_sqlite_ascii_order_and_canonical_failed_cvr() {
+    let mut rows = Vec::new();
+    // SQLite lower() leaves non-ASCII case intact. Both are distinct sort keys;
+    // applying Unicode folding would incorrectly demand ascending IDs here.
+    for (id, name) in [(1, "Zeta"), (3, "Æble"), (2, "æble")] {
+        let mut row = customer();
+        row["id"] = json!(id);
+        row["name"] = json!(name);
+        rows.push(row);
+    }
+    let value = json!({"ok":true,"count":3,"rows":rows,"errors":[]});
+    let (api, count, t) = server(
+        200,
+        value.to_string(),
+        "GET /api/companies/synthetic/master-data/original/customers?archived=false HTTP/1.1",
+        None,
+    );
+    assert_eq!(
+        api.master_data_original_list("synthetic", Kind::Customer, false)
+            .await
+            .unwrap(),
+        value
+    );
+    once(count, t);
+    let value = json!({"ok":false,"company":null,"cached":false,"errors":["synthetic provider unavailable"]});
+    let (api, count, t) = server(
+        200,
+        value.to_string(),
+        "GET /api/companies/synthetic/master-data/original/cvr-lookup?cvr=55555555 HTTP/1.1",
+        None,
+    );
+    assert_eq!(
+        api.master_data_original_cvr_lookup("synthetic", "55555555")
+            .await
+            .unwrap(),
+        value
+    );
+    once(count, t);
+}
