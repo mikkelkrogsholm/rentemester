@@ -1,15 +1,15 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "Group148 original invoice issuance, immutable rendering, posting, bank settlement, credit and refund lifecycle accepted",
-  "code_revision": "6b6ed161b192ca0aa3eb2770282e394e392b976e",
+  "current_increment": "Group149 original invoice bankless payment and existing-journal application accepted",
+  "code_revision": "a613612f9f02ea4cf308b65083db6a8b4d3ebda7",
   "spec_revision": "sha256:bc98636be4a972407adce0f817a76bb9d4bb7200cb292a70965e75ab62fae250",
-  "state": "Group148 ACCEPTED original invoice issue/create/render/post/settle-bank/credit-note/refund-bank bindings through one existing Rust sales engine and held current-authority transaction. Original structured source payloads retain server-side total/line/FX validation, selected customer/default terms/notes, immutable JSON/PDF and exact source selectors. Post requires explicit active income account (revenueAccountNo / --revenue-account); no source account1000 hardcoding or new chart-role/schema project. Existing native wire retained; credit/refund principal-aware wrappers reuse the same native writers with typed service provenance. SDK2 CLI2 MCP2 plus storage1/application1/HTTP1/native-sales1/native-credit-refund1 PASS; seven-package all-target strict check and normal server/CLI/MCP build PASS after three equivalent guard lint corrections. Actual retained normal-MFA fixture first stopped at fresh-MFA-required service creation after one customer and zero financial effects; failed report preserved, no broad fixture rerun. Targeted continuation reused the existing normally owner-granted service credential: original MCP issue125, immutable render HTTP/CLI/MCP, explicit CLI post, service MCP bank settle125, CLI credit25, service MCP refund25, canonical147 histories and persisted-MFA-cookie restart PASS. Definite invalid-total/missing-account/unknown-selector/unposted/duplicate/overcredit/overrefund refusals add no effects. Independent source/artifact/SQL checks prove four journals/ten lines, revenue80/outputVAT20/bank100/debtor0, unchanged old rows/original files and full native audit14/VAT219.39. Current service revocation/source tamper are proven in focused real application lifecycle; no fresh service creation, actual revocation or fresh MFA after final restart is claimed. Processes stopped; completed synthetic fixture and snapshots retained. Both worker worktrees integrated/hash-verified and removed with recoverable Graphify snapshots. Full epic55children remains open; no whole717/epic closure.",
+  "state": "Group149 ACCEPTED original apply-payment via same native engine: actual CLI bankless partial50 creates one journal/payment, ordinary manual journal75 is classified by original MCP with exact existing identity and no duplicate posting. Original debtor1210 retained after explicit mapping1211; full selected-invoice evidence and global native audit17 pass, revenue100/VAT25 posted once, bank125, no invented bank rows. Same-invoice unresolved journals refuse; unrelated invoice candidate does not impose a new global barrier. Existing DKK candidate proof and native bank/FX paths remain strict. Closed/reported payment classification explicitly refuses until native reopening; bankless FX and supplied FX journals remain unsupported. Client3/backend5 focused checks, integrated seven-package strict Clippy and normal three binaries pass. One retained normal-MFA fixture PASS first run including overpayment/duplicate refusal, immutable originals and persisted-auth restart. Independent SQL/hash/source/artifact verifier PASS; three new journals/seven lines/two NULL-bank payments, old rows/files unchanged, service classification preserves owner-created journal identity. All processes stopped; both completed worker trees integrated/hash-verified/recoverably removed. Full epic and remaining717 scope OPEN; no new service creation, actual revocation or fresh MFA claim.",
   "issues_closed": [
     701
   ],
   "next": [
-    "R44/R45 remaining original invoice workflow: apply-payment is a real native domain gap (optional existing journal, not an alias to bank settlement); repair-posting, original claim/calculation wrappers and complete original parity remain OPEN. Preserve accepted148 lifecycle and147 queries; actor/env/company-path/default launcher/errors, historical receipt migration, signed release/cutover/retirement/final installed desktop and every original epic gate remain open.",
+    "R44/R45 original invoice repair-posting (CLI-only), original claim/calculation wrappers and complete parity remain OPEN. Actor/env/company-path/default launcher/errors, historical receipt migration, remaining recovery/automation, signed release/cutover/TypeScript retirement and final installed desktop remain open. Preserve all original epic requirements and prior verified journeys.",
     "Installed desktop acceptance is explicitly deferred to the very end by the user. Preserve prepared Group100 profile; collect remaining native automation, closure, recovery and packaging checks for final installed acceptance without requesting screen unlock during development.",
     "J03/R50 and remaining R54 scope: only still-supported operation closure/recovery, nonempty scheduler handoff, hostile/older clone and post-cutover rollback requirements. Group99 qualifies managed installed J06 flow, not every R54 acceptance item.",
     "Signed distribution/update/cutover evidence must match actual full Rust replacement; retain all existing completion gates and TypeScript retirement gate.",
@@ -8357,6 +8357,71 @@
         ".git/rentemester-recovery/archived148-core.json"
       ],
       "remaining": "R44/R45 remaining original invoice workflow: apply-payment is a real native domain gap (optional existing journal, not an alias to bank settlement); repair-posting, original claim/calculation wrappers and complete original parity remain OPEN. Preserve accepted148 lifecycle and147 queries; actor/env/company-path/default launcher/errors, historical receipt migration, signed release/cutover/retirement/final installed desktop and every original epic gate remain open."
+    },
+    "invoice_payment149": {
+      "issue": 717,
+      "status": "accepted bounded journey; whole issue OPEN",
+      "source_revision": "a613612f9f02ea4cf308b65083db6a8b4d3ebda7",
+      "backend_worker_commit": "1d3e35a0",
+      "backend_integrated": "a613612f",
+      "clients_worker_commit": "f5452f70",
+      "clients_integrated": "dd60ce29",
+      "helper_commit": "b34dbbd9",
+      "contract": "/tmp/rm149-apply-payment-contract.md",
+      "report": "/tmp/rentemester-rust-reports/invoice-payment149.json",
+      "report_sha256": "5b826fb4b7c16d7aebfdc85700798812a3d0e205a664d4597a89c11379bee838",
+      "terminal_exit": 0,
+      "independent_verification": "/tmp/rm149-independent.log",
+      "independent_verifier": "/tmp/rm149-independent.py",
+      "focused_logs": [
+        "/tmp/rm149-clients.log",
+        "/tmp/rm149-storage-selected-final.log",
+        "/tmp/rm149-storage-fx-selected.log",
+        "/tmp/rm149-app-selected.log",
+        "/tmp/rm149-http.log",
+        "/tmp/rm149-native-credit-refund.log"
+      ],
+      "strict_clippy": "/tmp/rm149-integrated-clippy.log",
+      "normal_build": "/tmp/rm149-integrated-normal-build.log",
+      "actual_first_run_pass": true,
+      "terminal_counts": {
+        "journal_entries": 17,
+        "journal_lines": 43,
+        "documents": 9,
+        "bank_transactions": 6,
+        "invoice_payments": 5
+      },
+      "new_financial_delta": {
+        "journals": 3,
+        "lines": 7,
+        "revenue": 100,
+        "outputVat": 25,
+        "bank": 125,
+        "debtor": 0
+      },
+      "full_native_audit_entries": 17,
+      "total_vat_payable": 244.39,
+      "existing_journal_identity_preserved": true,
+      "current_role_remap_original_debtor_preserved": true,
+      "closed_period_classification_safety_correction": true,
+      "bankless_fx_supported": false,
+      "supplied_fx_journal_supported": false,
+      "actual_new_service_creation": false,
+      "actual_revocation": false,
+      "fresh_mfa_after_final_restart_claimed": false,
+      "authenticated_persisted_mfa_cookie_restart": true,
+      "before_snapshot": {
+        "path": "/tmp/rentemester-rust-reports/invoice-payment149.before.sqlite",
+        "sha256": "c4a21b614c3b9205493cc2821bfb24e8faeedaaa11f3b63754f9fa8b8f1606ad"
+      },
+      "owned_processes_stopped": true,
+      "owned_runtime_cleaned": false,
+      "worker_worktrees_removed": true,
+      "worktree_recovery": [
+        ".git/rentemester-recovery/archived149-clients.json",
+        ".git/rentemester-recovery/archived149-core.json"
+      ],
+      "remaining": "R44/R45 original invoice repair-posting (CLI-only), original claim/calculation wrappers and complete parity remain OPEN. Actor/env/company-path/default launcher/errors, historical receipt migration, remaining recovery/automation, signed release/cutover/TypeScript retirement and final installed desktop remain open. Preserve all original epic requirements and prior verified journeys."
     }
   },
   "verified_history": [

@@ -3253,5 +3253,31 @@ MCP og HTTP kræver fortsat `confirm:true`. Serveren validerer leverede beløb,
 kundekort, adgang og originale bilag. Ved ukendt udfald skal status og
 bogføring afstemmes før et nyt forsøg; klienterne gentager aldrig automatisk.
 
-Dette forløb erstatter ikke de åbne kontrakter for `apply-payment`,
-`repair-posting` og de resterende claim-/beregningskommandoer.
+Dette forløb erstatter ikke de åbne kontrakter for `repair-posting` og de
+resterende claim-/beregningskommandoer.
+
+
+### Fakturabetaling uden bankimport og med eksisterende postering (Group149)
+
+`invoice apply-payment --input FILE|-` og MCP `invoice_apply_payment`
+bruger samme Rust-server. Input er `invoiceDocumentId` eller `invoiceNumber`,
+`paymentDate` og `amount`; valgfrit `bankTransactionId`, `journalEntryId`,
+`bankAccountNo`, `receivableAccountNo` og `note`. MCP kræver `confirm:true`.
+CLI-kaldet bekræfter handlingen. Alle valg og kontroller afgøres på serveren.
+
+Uden bankrække oprettes en DKK-betalingspostering mod den bekræftede bankrolle
+og fakturaens oprindeligt bogførte debitorkonto. Et angivet `journalEntryId`
+tilknytter i stedet den præcist kontrollerede eksisterende DKK-postering;
+den bogføres ikke igen. Beløb, dato, faktura, banktilknytning, konti og
+manglende tidligere anvendelse skal stemme. Bankløse betalinger får ingen
+kunstige bankrækker. Valutabetaling kræver en rigtig bankrække og understøtter
+ikke et leveret journal-ID.
+
+Lukkede eller indberettede betalingsperioder skal genåbnes gennem det normale
+periodeforløb før klassifikation. Dette er en bevidst kontrolforskel fra den
+gamle klassifikationsgren. Overbetaling og genbrug af samme postering afvises.
+Svaret indeholder `paymentId`, `journalEntryId`, `invoiceDocumentId`,
+`invoiceNumber`, `openBalance` og de anvendte regler. Ved ukendt udfald skal
+fakturastatus og journal afstemmes før et nyt forsøg; der er ingen automatisk
+gentagelse. Bankimport, moms og oprindelige dokumenter ændres ikke ved ren
+tilknytning af en eksisterende postering.
