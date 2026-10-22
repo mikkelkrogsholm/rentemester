@@ -1,4 +1,4 @@
-//! Canonical documents namespace, narrowly adapted to the existing remote parser.
+//! Native extraction compatibility aliases under the existing remote parser.
 use rentemester_client::ApiClient;
 use rentemester_engine::Error;
 use serde_json::{Value, json};
@@ -9,10 +9,10 @@ pub fn accepts(command: &str) -> bool {
     COMMANDS.contains(&command)
 }
 pub fn help() -> Value {
-    json!({"ok":true,"usage":"documents extract-invoice --server ORIGIN [--allow-loopback-http] --cookie-file PATH --company SLUG --document-id N --confirm; documents invoice-extraction --server ORIGIN [--allow-loopback-http] --cookie-file PATH --company SLUG --document-id N",
+    json!({"ok":true,"usage":"remote extract-invoice --server ORIGIN [--allow-loopback-http] --cookie-file PATH --company SLUG --document-id N --confirm; remote invoice-extraction --server ORIGIN [--allow-loopback-http] --cookie-file PATH --company SLUG --document-id N",
         "scope":"Explicit registered-PDF extraction and retained evidence on the selected Rust server. No local fallback, metadata inference or accounting entries. Server session determines actor and current MasterData authority for extraction; reads require document-read authority.",
         "confirmation":"Native boolean --confirm is required only for extract-invoice; no stdin body, provider, actor, path or idempotency key is accepted. Provider is operator-configured; missing provider is a known refusal and does not create an attempt.",
-        "recovery":"Sent once with no automatic retries. After outcome_unknown, read documents invoice-extraction before deciding whether to make another explicit attempt. A started attempt may remain unresolved; a needs_resolution response is retained evidence, not a posting.",
+        "recovery":"Sent once with no automatic retries. After outcome_unknown, read remote invoice-extraction before deciding whether to make another explicit attempt. A started attempt may remain unresolved; a needs_resolution response is retained evidence, not a posting.",
         "output":"{ok,data:HTTPenvelope}; canonical extraction fields/conflicts/resolutions remain unchanged, including extraction:null and known {ok:false,code} refusals.",
         "commands":COMMANDS})
 }
@@ -21,7 +21,7 @@ fn invalid() -> Failure {
         2,
         Error::new(
             "invalid_input",
-            "expected documents extract-invoice|invoice-extraction with explicit --server, --cookie-file, --company and positive safe --document-id; boolean --confirm only for extract-invoice",
+            "expected remote extract-invoice|invoice-extraction with explicit --server, --cookie-file, --company and positive safe --document-id; boolean --confirm only for extract-invoice",
         ),
     )
 }

@@ -59,6 +59,7 @@ mod elimination;
 mod exceptions;
 mod intercompany;
 mod invoice_extraction;
+mod invoice_extraction_original;
 mod mileage;
 mod ownership;
 mod parties;
@@ -80,22 +81,7 @@ fn run(args: Vec<String>) -> Result<serde_json::Value, (u8, Error)> {
         return journal_history::run(&args[2..]);
     }
     if args.first().map(String::as_str) == Some("documents") {
-        if args.len() == 1 || args == ["documents", "--help"] {
-            return Ok(invoice_extraction::help());
-        }
-        if args.get(1).is_some_and(|s| invoice_extraction::accepts(s)) {
-            if args.get(2).map(String::as_str) == Some("--help") && args.len() == 3 {
-                return Ok(invoice_extraction::help());
-            }
-            return remote::run(&args[1..]);
-        }
-        return Err((
-            2,
-            Error::new(
-                "invalid_input",
-                "expected documents extract-invoice|invoice-extraction; see documents --help",
-            ),
-        ));
+        return Err((2, Error::new("invalid_input", "unknown documents command; see documents --help")));
     }
     if args.first().map(String::as_str) == Some("dashboard") {
         return remote::run(&args);
@@ -318,8 +304,18 @@ fn main() -> ExitCode {
         return ExitCode::from(output.exit);
     }
     if args == ["documents"] || args == ["documents", "--help"] {
-        println!("{}", document_party_original::family_help());
+        println!("{}", invoice_extraction_original::family_help());
         return ExitCode::SUCCESS;
+    }
+    if invoice_extraction_original::accepts(&args) {
+        if let Err(output) = invoice_extraction_original::preflight(&args) {
+            eprint!("{}", output.stderr);
+            return ExitCode::from(output.exit);
+        }
+        if args.iter().any(|s| s == "--help") {
+            println!("{}", invoice_extraction_original::help());
+            return ExitCode::SUCCESS;
+        }
     }
     if document_party_original::accepts(&args) {
         if let Err(output) = document_party_original::preflight(&args) {
@@ -427,6 +423,12 @@ fn main() -> ExitCode {
             return ExitCode::from(code);
         }
     };
+    if invoice_extraction_original::accepts(&args) {
+        let output = invoice_extraction_original::execute(&args);
+        print!("{}", output.stdout);
+        eprint!("{}", output.stderr);
+        return ExitCode::from(output.exit);
+    }
     if document_party_original::accepts(&args) {
         let output = document_party_original::execute(&args);
         print!("{}", output.stdout);
