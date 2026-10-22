@@ -264,7 +264,7 @@ pub async fn call(api: &ApiClient, name: &str, args: Value) -> Result<Value, &'s
     if !args.is_object() {
         return Err("expected arguments object");
     }
-    if matches!(name,"invoice_issue"|"invoice_render"|"invoice_post"|"invoice_settle_bank"|"invoice_credit_note"|"invoice_refund_bank") {return crate::invoice_lifecycle::call(api,name,args).await;}
+    if matches!(name,"invoice_issue"|"invoice_render"|"invoice_post"|"invoice_settle_bank"|"invoice_credit_note"|"invoice_refund_bank"|"invoice_apply_payment") {return crate::invoice_lifecycle::call(api,name,args).await;}
     if matches!(name,"invoice_list"|"invoice_find"|"invoice_status"|"invoice_overdue") {return crate::invoice_original::call(api,name,args).await;}
     if matches!(name,"payable_register"|"payable_list"|"payable_pay") {return crate::payable_original::call(api,name,args).await;}
     if matches!(name,"direct_bank_purchase_payable_correction_plan"|"direct_bank_purchase_payable_correction_apply") {return crate::direct_bank_original::call(api,name,args).await;}

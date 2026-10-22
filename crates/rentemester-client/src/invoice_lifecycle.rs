@@ -11,6 +11,7 @@ pub enum InvoiceLifecycleKind {
     SettleBank,
     CreditNote,
     RefundBank,
+    ApplyPayment,
 }
 fn object(properties: Value, required: &[&str]) -> Value {
     json!({"type":"object","properties":properties,"required":required,"additionalProperties":false})
@@ -101,6 +102,23 @@ pub fn invoice_lifecycle_schema(kind: InvoiceLifecycleKind) -> Value {
             }
             object(fields, &[])
         }
+        InvoiceLifecycleKind::ApplyPayment => {
+            let mut fields = strings(&[
+                "invoiceNumber",
+                "paymentDate",
+                "bankAccountNo",
+                "receivableAccountNo",
+                "note",
+            ]);
+            fields["invoiceDocumentId"] = id.clone();
+            fields["bankTransactionId"] = id.clone();
+            fields["journalEntryId"] = id;
+            fields["amount"] = json!({"type":"number"});
+            object(
+                json!({"payload":object(fields,&["paymentDate","amount"])}),
+                &["payload"],
+            )
+        }
         InvoiceLifecycleKind::CreditNote => {
             let mut fields = strings(&[
                 "originalInvoiceNumber",
@@ -160,6 +178,7 @@ impl ApiClient {
             InvoiceLifecycleKind::SettleBank => "settle-bank",
             InvoiceLifecycleKind::CreditNote => "credit-note",
             InvoiceLifecycleKind::RefundBank => "refund-bank",
+            InvoiceLifecycleKind::ApplyPayment => "apply-payment",
         };
         let path = company_path(company, &format!("invoices/original/{action}"))?;
         let unknown = || {

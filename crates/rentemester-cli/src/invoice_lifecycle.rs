@@ -15,11 +15,12 @@ pub fn accepts(args: &[String]) -> bool {
                     | "settle-bank"
                     | "credit-note"
                     | "refund-bank"
+                    | "apply-payment"
             )
         })
 }
 pub fn help() -> Value {
-    json!({"usage":"invoice issue --input FILE|- [--customer-id ID]; invoice create --issue-date DATE --line 'description|quantity|unitPrice;...' [--vat-rate PERCENT(default25)] [--customer-id ID] [--buyer-name/--buyer-address/--buyer-vat TEXT] [--seller-name/--seller-address/--seller-vat TEXT] [--currency CODE] [--due-date DATE] [--invoice-number NUMBER]; invoice render|post --document-id ID|--invoice-number NUMBER (post requires --revenue-account ACCOUNT); invoice settle-bank|credit-note|refund-bank --input FILE|-", "transport":"Explicit --company SLUG --server ORIGIN or global --local-profile, exactly one --cookie-file PATH/--service-key-file PATH. Optional --json/--allow-loopback-http. Command invocation confirms; no --confirm, key, actor or principal. Bounded256KiB JSON object; no local files written, arithmetic/default account, hash generation or automatic retry. Server computes create totals and validates all issue-supplied totals; render verifies existing immutable PDF."})
+    json!({"usage":"invoice issue --input FILE|- [--customer-id ID]; invoice create --issue-date DATE --line 'description|quantity|unitPrice;...' [--vat-rate PERCENT(default25)] [--customer-id ID] [--buyer-name/--buyer-address/--buyer-vat TEXT] [--seller-name/--seller-address/--seller-vat TEXT] [--currency CODE] [--due-date DATE] [--invoice-number NUMBER]; invoice render|post --document-id ID|--invoice-number NUMBER (post requires --revenue-account ACCOUNT); invoice settle-bank|credit-note|refund-bank|apply-payment --input FILE|-", "transport":"Explicit --company SLUG --server ORIGIN or global --local-profile, exactly one --cookie-file PATH/--service-key-file PATH. Optional --json/--allow-loopback-http. Command invocation confirms; no --confirm, key, actor or principal. Bounded256KiB JSON object; no local files written, arithmetic/default account, hash generation or automatic retry. Server computes create totals and validates all issue-supplied totals; render verifies existing immutable PDF."})
 }
 fn output(value: Value, json_mode: bool, exit: u8) -> Output {
     if json_mode && exit != 2 {
@@ -106,6 +107,7 @@ pub fn execute(args: &[String]) -> Output {
         "post" => InvoiceLifecycleKind::Post,
         "settle-bank" => InvoiceLifecycleKind::SettleBank,
         "credit-note" => InvoiceLifecycleKind::CreditNote,
+        "apply-payment" => InvoiceLifecycleKind::ApplyPayment,
         _ => InvoiceLifecycleKind::RefundBank,
     };
     let mut flags = BTreeMap::new();

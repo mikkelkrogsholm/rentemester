@@ -180,3 +180,63 @@ async fn strict_source_payloads_confirm_business_account_selection_and_unknown_w
         t.join().unwrap();
     }
 }
+
+#[tokio::test]
+async fn apply_payment_preserves_source_fields_business_refusals_and_uncertain_writes() {
+    let kind = InvoiceLifecycleKind::ApplyPayment;
+    let payload = json!({"invoiceDocumentId":7,"invoiceNumber":" raw INV ","paymentDate":"2026-02-03","amount":12.34,"bankTransactionId":11,"journalEntryId":19,"bankAccountNo":"bank-role","receivableAccountNo":"historical-debtor","note":" raw note "});
+    let body = json!({"confirm":true,"payload":payload});
+    let receipt = json!({"ok":true,"data":{"paymentId":4,"journalEntryId":19,"invoiceDocumentId":7,"invoiceNumber":"INV","openBalance":22.66},"errors":[],"appliedRules":["source-rule"]});
+    for (status, value) in [
+        (200, receipt),
+        (
+            200,
+            json!({"ok":false,"code":"business","errors":["source rejected candidate journal"]}),
+        ),
+        (403, json!({"ok":false})),
+        (503, json!({"ok":false})),
+    ] {
+        let (origin, t) = server(status, value.clone());
+        let result = ApiClient::new(&origin, true, None)
+            .unwrap()
+            .invoice_lifecycle("synthetic", kind, body.to_string().into_bytes())
+            .await;
+        match status {
+            200 => assert_eq!(result.unwrap(), value),
+            403 => assert_eq!(result.unwrap_err(), Error::Refused { status: 403 }),
+            _ => assert_eq!(result.unwrap_err(), Error::OutcomeUnknown),
+        }
+        let (header, actual) = t.join().unwrap();
+        assert!(
+            header.starts_with("POST /api/companies/synthetic/invoices/original/apply-payment ")
+        );
+        assert_eq!(actual, body);
+    }
+    let api = ApiClient::new("http://127.0.0.1:9", true, None).unwrap();
+    for payload in [
+        json!({"amount":1}),
+        json!({"paymentDate":"2026-01-01"}),
+        json!({"paymentDate":"2026-01-01","amount":null}),
+        json!({"paymentDate":"2026-01-01","amount":1,"journalEntryId":0}),
+        json!({"paymentDate":"2026-01-01","amount":1,"bankTransactionReference":"not-source"}),
+        json!({"paymentDate":"2026-01-01","amount":1,"createdBy":"forged"}),
+    ] {
+        assert!(matches!(
+            api.invoice_lifecycle(
+                "synthetic",
+                kind,
+                json!({"confirm":true,"payload":payload})
+                    .to_string()
+                    .into_bytes()
+            )
+            .await,
+            Err(Error::InvalidInput(_))
+        ));
+    }
+    // Sign, calendar, selectors and evidence are business decisions, never client calculations.
+    rentemester_client::validate_invoice_lifecycle(
+        kind,
+        br#"{"confirm":true,"payload":{"paymentDate":"2026-02-30","amount":-1}}"#,
+    )
+    .unwrap();
+}

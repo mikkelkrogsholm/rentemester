@@ -286,3 +286,73 @@ fn malformed_input_forbidden_flags_and_server_business_refusals_preserve_exits()
         );
     }
 }
+
+#[test]
+fn apply_payment_file_stdin_flat_receipts_business_and_strict_usage() {
+    let f = Fixture::new();
+    let raw = " { \"invoiceNumber\" : \" raw INV \", \"paymentDate\":\"2026-02-03\", \"amount\":12.34, \"journalEntryId\":19, \"bankAccountNo\":\"bank-role\", \"receivableAccountNo\":\"historical-debtor\", \"note\":\" raw note \" } ";
+    let path = f.0.join("payment.json");
+    fs::write(&path, raw).unwrap();
+    for from_file in [true, false] {
+        let value = if from_file {
+            json!({"ok":true,"data":{"paymentId":4,"journalEntryId":19,"invoiceDocumentId":7,"invoiceNumber":"INV","openBalance":22.66},"errors":[],"appliedRules":["source-rule"]})
+        } else {
+            json!({"ok":false,"code":"business","errors":["source rejected candidate journal"]})
+        };
+        let (origin, t) = server(200, value.clone());
+        let out = call(
+            "apply-payment",
+            &origin,
+            &f,
+            &[
+                "--input",
+                if from_file {
+                    path.to_str().unwrap()
+                } else {
+                    "-"
+                },
+                "--json",
+            ],
+            if from_file { None } else { Some(raw) },
+        );
+        assert_eq!(out.status.code(), Some(if from_file { 0 } else { 1 }));
+        assert!(out.stderr.is_empty());
+        let actual: Value = serde_json::from_slice(&out.stdout).unwrap();
+        if from_file {
+            assert_eq!(
+                actual,
+                json!({"ok":true,"paymentId":4,"journalEntryId":19,"invoiceDocumentId":7,"invoiceNumber":"INV","openBalance":22.66,"errors":[],"appliedRules":["source-rule"]})
+            );
+            assert!(actual.get("entryId").is_none());
+        } else {
+            assert_eq!(actual, value);
+        }
+        let (header, body) = t.join().unwrap();
+        assert!(
+            header.starts_with("POST /api/companies/synthetic/invoices/original/apply-payment ")
+        );
+        assert_eq!(
+            body,
+            json!({"confirm":true,"payload":serde_json::from_str::<Value>(raw).unwrap()})
+        );
+    }
+    for (extra, input) in [
+        (vec!["--input", "-", "--confirm", "yes"], raw),
+        (vec!["--input", "-"], "{\"paymentDate\":\"2026-01-01\"}"),
+        (
+            vec!["--input", "-"],
+            "{\"paymentDate\":\"2026-01-01\",\"amount\":1,\"actor\":\"forged\"}",
+        ),
+    ] {
+        let out = call(
+            "apply-payment",
+            "http://127.0.0.1:9",
+            &f,
+            &extra,
+            Some(input),
+        );
+        assert_eq!(out.status.code(), Some(2));
+        assert!(out.stdout.is_empty());
+        assert!(!out.stderr.is_empty());
+    }
+}
