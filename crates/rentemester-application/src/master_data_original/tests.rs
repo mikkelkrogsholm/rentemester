@@ -114,7 +114,7 @@ fn prepare(f: &mut Fixture, request: Request<'_>) -> Admission {
 fn master_data_original_reader_bookkeeper_and_provider_finish_current_revocation() {
     let mut f = fixture("reader");
     f.guard
-        .ensure_connections(&mut f.control, &mut f.company)
+        .ensure_connections(&f.control, &f.company)
         .unwrap();
     assert!(f.control_path.is_file() && f.company_path.is_file());
     let result = execute(
