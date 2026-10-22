@@ -161,3 +161,5 @@ pub mod master_data_original;
 pub mod documents_original;
 
 pub mod expense_original;
+
+pub mod accrual_original;

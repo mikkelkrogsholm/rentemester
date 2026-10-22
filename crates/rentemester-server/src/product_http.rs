@@ -30,6 +30,7 @@ mod company_creation;
 mod accountant;
 mod reminder_claims;
 mod accruals;
+mod accrual_original;
 mod assets;
 mod bank;
 mod bank_original;
@@ -123,6 +124,9 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
         pdf_workers: Arc::new(Semaphore::new(4)),
     };
     Router::new()
+        .route("/api/companies/{slug}/accrual/original/register", post(accrual_original::handle))
+        .route("/api/companies/{slug}/accrual/original/{id}/recognize", post(accrual_original::handle))
+        .route("/api/companies/{slug}/accrual/original/register-report", get(accrual_original::handle))
         .route("/api/companies/{slug}/master-data/original/customers",get(master_data_original::handle).post(master_data_original::handle))
         .route("/api/companies/{slug}/master-data/original/vendors",get(master_data_original::handle).post(master_data_original::handle))
         .route("/api/companies/{slug}/master-data/original/cvr-lookup",get(master_data_original::handle))
