@@ -120,6 +120,8 @@ export function createOriginalMileageProof(base: string, work: string, onStep: (
     await http(api+'log',{...trip,confirm:true},403,reader);
     await admin('members/company',{userId:service.serviceAccountId,companySlug:'synthetic',action:'grant',role:'reader'});
     invoke('mcp','log',{...trip,confirm:true},true,'refused');
+    // Reader retains CompanyExport. Revoke company membership to test export denial.
+    await admin('members/company',{userId:service.serviceAccountId,companySlug:'synthetic',action:'revoke'});
     invoke('mcp','export',{...range,outputDir,confirm:true},true,'refused');
     await admin('service-principals/revoke',{serviceAccountId:service.serviceAccountId,credentialId:service.credentialId,operationId:randomUUID(),confirm:true});
     invoke('mcp','log',{...trip,confirm:true},true,'refused');
