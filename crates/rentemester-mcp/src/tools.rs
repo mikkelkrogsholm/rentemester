@@ -207,6 +207,7 @@ pub fn list() -> Value {
     tools.extend(crate::journal_original::tools());
     tools.extend(crate::audit_log::tools());
     tools.extend(crate::audit_verify::tools());
+    tools.extend(crate::master_data_original::tools());
     crate::invoice_claims_original::register(&mut tools);
     json!({"tools":tools})
 }
@@ -268,6 +269,7 @@ pub async fn call(api: &ApiClient, name: &str, args: Value) -> Result<Value, &'s
     if !args.is_object() {
         return Err("expected arguments object");
     }
+    if crate::master_data_original::accepts(name) { return crate::master_data_original::call(api,name,args).await; }
     if crate::exceptions::accepts(name) { return crate::exceptions::call(api,name,args).await; }
     if crate::periods::original(name) { return crate::periods::call_original(api,name,args).await; }
     if crate::journal_original::accepts(name) { return crate::journal_original::call(api,name,args).await; }

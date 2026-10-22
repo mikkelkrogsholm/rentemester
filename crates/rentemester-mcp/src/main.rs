@@ -448,3 +448,5 @@ mod portfolio_cashflow;
 mod dinero_import;
 
 mod journal_original;
+
+mod master_data_original;

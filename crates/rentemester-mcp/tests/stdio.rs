@@ -1,7 +1,7 @@
 use serde_json::{Value, json};
 
-// Includes the original bindings already registered before recurring Group154.
-const EXPECTED_NATIVE_TOOLS: usize = 299;
+// Existing 299 bindings plus the five original customer/vendor tools.
+const EXPECTED_NATIVE_TOOLS: usize = 304;
 
 #[test]
 fn pdf_tools_require_confirmation_and_keep_reads_bounded() {
@@ -2218,3 +2218,6 @@ mod period_original;
 
 #[path="stdio/exceptions_original.rs"]
 mod exceptions_original;
+
+#[path="stdio/master_data_original.rs"]
+mod master_data_original;
