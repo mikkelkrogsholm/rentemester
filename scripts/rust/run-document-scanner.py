@@ -210,7 +210,10 @@ def main():
     parser.add_argument('--period-original', action='store_true', help='Standalone original five-command period lifecycle, historical reviews, atomic reported receipts and normal MFA restart')
     parser.add_argument('--journal-original', action='store_true', help='Standalone original numeric journal dry-run/post/reversal with period locks and normal MFA restart')
     parser.add_argument('--journal-mcp-original', action='store_true', help='Standalone original numeric MCP keyed post/reversal, source envelopes, period lifecycle and normal MFA receipt restart')
+    parser.add_argument('--period-mcp-original', action='store_true', help='Standalone original five named period tools, owner-issued service force/open obligations and exact MFA restart')
     args = parser.parse_args()
+    if args.period_mcp_original and any(value for key,value in vars(args).items() if isinstance(value,bool) and key != 'period_mcp_original'):
+        parser.error('--period-mcp-original is standalone and excludes other extensions')
     if args.journal_mcp_original and any(value for key,value in vars(args).items() if isinstance(value,bool) and key != 'journal_mcp_original'):
         parser.error('--journal-mcp-original is standalone and excludes other extensions')
     if args.journal_original and any(value for key,value in vars(args).items() if isinstance(value,bool) and key != 'journal_original'):
@@ -261,7 +264,7 @@ def main():
         parser.error('--backup-lock is mutually exclusive with --service-purchase/--backup-destinations')
     if args.backup_destinations and not args.service_purchase:
         parser.error('--backup-destinations requires --service-purchase')
-    if args.evidence.exists() or args.evidence.with_suffix('.png').exists():
+    if os.path.lexists(args.evidence) or os.path.lexists(args.evidence.with_suffix('.png')):
         parser.error('New evidence and screenshot paths required')
     if os.uname().sysname != 'Darwin' or os.getuid() == 0 or os.getuid() != os.geteuid():
         parser.error('Ordinary macOS fixture owner required')
@@ -680,17 +683,113 @@ def main():
                 (work / 'drive-trace.json').write_text('[]')
                 config['backupDestinations'] = [{'id':'synthetic-drive','label':'Synthetic Drive fixture','kind':'google-drive','directory':str(work/'backup-destination'),'nonRelatedParty':False,'inEeaOrEu':False,'country':'DK','meetsRecognisedStandards':False,'attestedBy':'Synthetic operator','attestedAt':'2026-01-01T00:00:00Z'}]
                 config['backupRemoteVerification'] = {'provider':'google-drive','url':f'https://127.0.0.1:{mail_port}/drive/v3','bearerToken':drive_token,'trustedCaFile':str(ca),'destinations':[{'destinationId':'synthetic-drive','folderId':'synthetic-drive-folder'}]}
-            if not args.service_purchase and not args.backup_lock and not args.journal_history and not args.dated_reports and not args.dashboard_json and not args.portfolio_overview and not args.annual_exports and not args.authority_export and not args.saft_artifact and not (args.local_runtime_join or args.local_runtime_mcp) and not args.bank_queries and not args.period_original and not args.journal_original and not args.journal_mcp_original:
+            if not args.service_purchase and not args.backup_lock and not args.journal_history and not args.dated_reports and not args.dashboard_json and not args.portfolio_overview and not args.annual_exports and not args.authority_export and not args.saft_artifact and not (args.local_runtime_join or args.local_runtime_mcp) and not args.bank_queries and not args.period_original and not args.journal_original and not args.journal_mcp_original and not args.period_mcp_original:
                 invalid_config_checks()
             write_config()
             start(create=True)
+            if args.period_mcp_original:
+                stop()
+                ledger = work / 'workspace/synthetic/data/ledger.sqlite'
+                if not owned() or ledger.is_symlink() or not ledger.is_file():
+                    raise RuntimeError('Owned initialized synthetic ledger required')
+                with sqlite3.connect(ledger) as fixture:
+                    # Bounded operational fixture only: no identities, grants, reviews,
+                    # packet/decision/waiver/audit controls are seeded or modified.
+                    if fixture.execute('SELECT count(*) FROM bank_transactions').fetchone()[0] or fixture.execute('SELECT count(*) FROM exceptions').fetchone()[0]:
+                        raise RuntimeError('Synthetic operational fixture namespace must be empty')
+                    fixture.execute("INSERT INTO bank_transactions(id,transaction_date,text,amount,currency,status) VALUES(162,'2001-02-01','Explicit synthetic period operational fixture',1.25,'DKK','imported')")
+                    fixture.execute("INSERT INTO exceptions(id,type,severity,status,related_bank_transaction_id,message,required_action) VALUES(162,'synthetic-period-follow-up','medium','open',162,'Explicit synthetic period force proof only','Owner follow-up remains open')")
+                report['operationalFixture'] = {'synthetic':True,'bankId':162,'exceptionId':162,'exceptionCreationUiQualified':False,'beforePrivateLedgerRestart':True}
+                start()
             script = work / 'browser.mjs'
             script.write_text(BROWSER)
-            controller = subprocess.Popen(['/opt/homebrew/bin/bun', str(script)], cwd=REPO, env={**os.environ, 'RM_IMPORTED_PORTFOLIO_HELPER': str(REPO / 'scripts/rust/check-native-imported-portfolio.ts'), 'RM_SYNTHETIC_IMPORT_HELPER': str(REPO / 'scripts/rust/check-native-synthetic-import.ts'), 'RM_DINERO_IMPORT_HELPER': str(REPO / 'scripts/rust/check-native-dinero-import.ts'), 'RM_INVOICE_BAD_DEBT_HELPER': str(REPO / 'scripts/rust/check-native-invoice-bad-debt.ts'), 'RM_INVOICE_INTEREST_HELPER': str(REPO / 'scripts/rust/check-native-invoice-interest.ts'), 'RM_INVOICE_COMPENSATION_HELPER': str(REPO / 'scripts/rust/check-native-invoice-compensation.ts'), 'RM_NATIVE_BACKUP_DESTINATION_PROOF':'1' if args.backup_destinations else '0', 'RM_NATIVE_REMOTE_BACKUP_PROOF':'1' if args.remote_backup else '0', 'RM_AUDIT_VERIFY_HELPER': str(REPO / 'scripts/rust/check-native-audit-verify.ts'), 'RM_AUDIT_HELPER': str(REPO / 'scripts/rust/check-native-audit-log.ts'), 'RM_BACKUP_RECOVERY_HELPER': str(REPO / 'scripts/rust/check-native-backup-recovery.ts'), 'RM_SERVICE_PURCHASE_HELPER': str(REPO / ('scripts/rust/check-native-journal-mcp.ts' if args.journal_mcp_original else 'scripts/rust/check-native-period-original.ts' if (args.period_original or args.journal_original or args.journal_mcp_original) else 'scripts/rust/check-native-bank-queries.ts' if args.bank_queries else 'scripts/rust/check-native-local-runtime.ts' if (args.local_runtime_join or args.local_runtime_mcp) else 'scripts/rust/check-native-saft.ts' if args.saft_artifact else 'scripts/rust/check-native-accountant.ts' if args.authority_export else 'scripts/rust/check-native-annual-clients.ts' if args.annual_exports else 'scripts/rust/check-native-dashboard-json.ts' if args.dashboard_json or args.portfolio_overview else 'scripts/rust/check-native-dated-reports.ts' if args.dated_reports else 'scripts/rust/check-native-journal-history.ts' if args.journal_history else 'scripts/rust/check-native-backup-lock.ts' if args.backup_lock else 'scripts/rust/check-native-service-purchase.ts')), 'RM_SCANNER_PROOF_FACTORY': 'createOriginalJournalMcpProof' if args.journal_mcp_original else 'createOriginalJournalProof' if args.journal_original else 'createOriginalPeriodProof' if args.period_original else 'createBankQueriesProof' if args.bank_queries else 'createLocalRuntimeMcpProof' if args.local_runtime_mcp else 'createLocalRuntimeProof' if (args.local_runtime_join or args.local_runtime_mcp) else 'createSaftArtifactProof' if args.saft_artifact else 'createAuthorityExportProof' if args.authority_export else 'createAnnualExportsProof' if args.annual_exports else 'createPortfolioOverviewProof' if args.portfolio_overview else 'createDashboardJsonProof' if args.dashboard_json else 'createDatedReportsProof' if args.dated_reports else 'createJournalHistoryProof' if args.journal_history else 'createBackupLockProof' if args.backup_lock else 'createServicePurchaseProof', 'RM_SCANNER_BASE': origin, 'RM_SCANNER_WORK': str(work), 'RM_SCANNER_SCREENSHOT': str(args.evidence.with_suffix('.png')), 'RM_SCANNER_PLAYWRIGHT': str((REPO / 'node_modules/@playwright/test/index.mjs').resolve(strict=True))}, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True, bufsize=1, start_new_session=True)
+            controller = subprocess.Popen(['/opt/homebrew/bin/bun', str(script)], cwd=REPO, env={**os.environ, 'RM_IMPORTED_PORTFOLIO_HELPER': str(REPO / 'scripts/rust/check-native-imported-portfolio.ts'), 'RM_SYNTHETIC_IMPORT_HELPER': str(REPO / 'scripts/rust/check-native-synthetic-import.ts'), 'RM_DINERO_IMPORT_HELPER': str(REPO / 'scripts/rust/check-native-dinero-import.ts'), 'RM_INVOICE_BAD_DEBT_HELPER': str(REPO / 'scripts/rust/check-native-invoice-bad-debt.ts'), 'RM_INVOICE_INTEREST_HELPER': str(REPO / 'scripts/rust/check-native-invoice-interest.ts'), 'RM_INVOICE_COMPENSATION_HELPER': str(REPO / 'scripts/rust/check-native-invoice-compensation.ts'), 'RM_NATIVE_BACKUP_DESTINATION_PROOF':'1' if args.backup_destinations else '0', 'RM_NATIVE_REMOTE_BACKUP_PROOF':'1' if args.remote_backup else '0', 'RM_AUDIT_VERIFY_HELPER': str(REPO / 'scripts/rust/check-native-audit-verify.ts'), 'RM_AUDIT_HELPER': str(REPO / 'scripts/rust/check-native-audit-log.ts'), 'RM_BACKUP_RECOVERY_HELPER': str(REPO / 'scripts/rust/check-native-backup-recovery.ts'), 'RM_SERVICE_PURCHASE_HELPER': str(REPO / ('scripts/rust/check-native-period-mcp.ts' if args.period_mcp_original else 'scripts/rust/check-native-journal-mcp.ts' if args.journal_mcp_original else 'scripts/rust/check-native-period-original.ts' if (args.period_original or args.journal_original or args.journal_mcp_original) else 'scripts/rust/check-native-bank-queries.ts' if args.bank_queries else 'scripts/rust/check-native-local-runtime.ts' if (args.local_runtime_join or args.local_runtime_mcp) else 'scripts/rust/check-native-saft.ts' if args.saft_artifact else 'scripts/rust/check-native-accountant.ts' if args.authority_export else 'scripts/rust/check-native-annual-clients.ts' if args.annual_exports else 'scripts/rust/check-native-dashboard-json.ts' if args.dashboard_json or args.portfolio_overview else 'scripts/rust/check-native-dated-reports.ts' if args.dated_reports else 'scripts/rust/check-native-journal-history.ts' if args.journal_history else 'scripts/rust/check-native-backup-lock.ts' if args.backup_lock else 'scripts/rust/check-native-service-purchase.ts')), 'RM_SCANNER_PROOF_FACTORY': 'createOriginalPeriodMcpProof' if args.period_mcp_original else 'createOriginalJournalMcpProof' if args.journal_mcp_original else 'createOriginalJournalProof' if args.journal_original else 'createOriginalPeriodProof' if args.period_original else 'createBankQueriesProof' if args.bank_queries else 'createLocalRuntimeMcpProof' if args.local_runtime_mcp else 'createLocalRuntimeProof' if (args.local_runtime_join or args.local_runtime_mcp) else 'createSaftArtifactProof' if args.saft_artifact else 'createAuthorityExportProof' if args.authority_export else 'createAnnualExportsProof' if args.annual_exports else 'createPortfolioOverviewProof' if args.portfolio_overview else 'createDashboardJsonProof' if args.dashboard_json else 'createDatedReportsProof' if args.dated_reports else 'createJournalHistoryProof' if args.journal_history else 'createBackupLockProof' if args.backup_lock else 'createServicePurchaseProof', 'RM_SCANNER_BASE': origin, 'RM_SCANNER_WORK': str(work), 'RM_SCANNER_SCREENSHOT': str(args.evidence.with_suffix('.png')), 'RM_SCANNER_PLAYWRIGHT': str((REPO / 'node_modules/@playwright/test/index.mjs').resolve(strict=True))}, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True, bufsize=1, start_new_session=True)
             report['browserControllerPid'] = controller.pid
             phase('authenticate')
+            if args.period_mcp_original:
+                helper = REPO / 'scripts/rust/check-native-period-mcp.ts'
+                sources = [helper, REPO / 'scripts/rust/check-native-period-original.ts'] + [REPO / p for p in ['src/mcp/tools/period.ts','src/mcp/security.ts','src/mcp/tool-runtime.ts','src/mcp/envelope.ts','src/core/periods.ts','src/core/period-close-readiness.ts']]
+                hashes = {str(p.relative_to(REPO)):digest(p) for p in sources}
+                def period_sql(actual):
+                    ledger = work / 'workspace/synthetic/data/ledger.sqlite'
+                    if not owned() or ledger.is_symlink() or not ledger.is_file():
+                        raise RuntimeError('Owned period MCP ledger missing')
+                    with sqlite3.connect(ledger.as_uri()+'?mode=ro', uri=True) as db:
+                        db.row_factory = sqlite3.Row
+                        db.execute('PRAGMA query_only=ON')
+                        facts = {t:[dict(r) for r in db.execute('SELECT * FROM '+t+' ORDER BY id')] for t in ['accounting_periods','period_close_readiness_packets','period_close_reviews','period_close_decisions','period_close_open_items','exceptions','bank_transactions','journal_entries','journal_lines','audit_log']}
+                        counts = {t:db.execute('SELECT count(*) FROM '+t).fetchone()[0] for t in ['documents','bank_transactions','journal_entries','journal_lines']}
+                        if counts != {'documents':0,'bank_transactions':1,'journal_entries':2,'journal_lines':4}:
+                            raise RuntimeError('Period MCP unexpected financial effects')
+                        if len(facts['exceptions']) != 1 or facts['exceptions'][0]['id'] != 162 or facts['exceptions'][0]['status'] != 'open' or facts['exceptions'][0]['resolved_at'] is not None:
+                            raise RuntimeError('Original operational exception must remain open')
+                        raw_list = [dict(r) for r in db.execute('SELECT id,period_start AS periodStart,period_end AS periodEnd,kind,status,reference,created_at AS createdAt FROM accounting_periods WHERE id != ? ORDER BY period_start DESC,id DESC',(actual['forced']['periodId'],))]
+                        if actual['listed'] != {'periods':raw_list,'count':len(raw_list)}:
+                            raise RuntimeError('Original raw stored list DTO/order/reference mismatch')
+                        subject = actual['serviceSubjectId']
+                        packets = {p['packet_hash']:json.loads(p['packet_json']) for p in facts['period_close_readiness_packets']}
+                        for saved in actual['reviews']:
+                            stored = next((r for r in facts['period_close_reviews'] if r['id'] == saved['id']), None)
+                            packet = packets.get(saved['packet']['hash'])
+                            if not stored or packet != saved['packet'] or json.loads(stored['reviewer_principal']) != {'kind':'service-account','subjectId':subject} or stored['reviewer_actor'] != saved['reviewerActor']:
+                                raise RuntimeError('Exact service review/packet independent SQL mismatch')
+                            body = {k:v for k,v in packet.items() if k != 'hash'}
+                            canonical = lambda v: json.dumps(v,sort_keys=True,separators=(',',':'),ensure_ascii=False)
+                            if packet['version'] != 4 or packet['format'] != 'rentemester.native-period-close.v1' or hashlib.sha256(canonical(body).encode()).hexdigest() != packet['hash'] or not all(isinstance(packet['sourceRevision'][k],list) for k in ['journal','journalCount','audit']):
+                                raise RuntimeError('Exact real native4 packet/hash/revision mismatch')
+                        reviewed = actual['reviews'][-1]
+                        decisions = [d for d in facts['period_close_decisions'] if d['decision'] == 'forced_closed']
+                        if len(decisions) != 1:
+                            raise RuntimeError('Exactly one actual forced decision required')
+                        decision = decisions[0]
+                        if decision['period_id'] != actual['forced']['periodId'] or decision['packet_hash'] != reviewed['packet']['hash'] or decision['reason'] != actual['reason'] or decision['actor'] != reviewed['reviewerActor']:
+                            raise RuntimeError('Forced decision exact packet/reason/actor mismatch')
+                        blocked = [i for i in reviewed['packet']['items'] if i['status'] == 'blocked']
+                        obligations = facts['period_close_open_items']
+                        if not blocked or len(obligations) != len(blocked) or any(not i['waivable'] for i in blocked):
+                            raise RuntimeError('Every and only waived blocked control requires an obligation')
+                        for item in blocked:
+                            matches = [o for o in obligations if o['code'] == item['code']]
+                            if len(matches) != 1:
+                                raise RuntimeError('Missing exact waived control')
+                            o = matches[0]
+                            expected = {'decision_id':decision['id'],'period_id':decision['period_id'],'packet_hash':decision['packet_hash'],'code':item['code'],'severity':'blocker','count':item['count'],'amount':item['amount'],'reason':actual['reason'],'actor':decision['actor']}
+                            if any(o[k] != v for k,v in expected.items()) or o['evidence_json'] != canonical(item['evidence']):
+                                raise RuntimeError('Exact durable obligation evidence/reason/actor mismatch')
+                        if len([a for a in facts['audit_log'] if a['event_type'] == 'PERIOD_CLOSED_WITH_OPEN_ITEMS']) != 1:
+                            raise RuntimeError('Forced open-items audit required exactly once')
+                        return facts
+                phase('service-run')
+                actual = report['results']['service-run']
+                if not actual.get('qualified') or not actual.get('originalPeriodMcpQualified'):
+                    raise RuntimeError('Original period MCP whole journey missing')
+                stop()
+                first = period_sql(actual)
+                report['periodMcpSqlBeforeRestart'] = first
+                config.pop('firstOwner'); write_config(); start()
+                phase('service-reopen')
+                reopened = report['results']['service-reopen']
+                stop()
+                second = period_sql(actual)
+                if first != second or not reopened.get('exactNormalMfaRestartState') or not reopened.get('originalPeriodMcpRestartQualified') or actual['accountingFingerprint'] != reopened['accountingFingerprint']:
+                    raise RuntimeError('Exact historical SQL and ordinary MFA period restart mismatch')
+                if any(digest(p) != hashes[str(p.relative_to(REPO))] for p in sources):
+                    raise RuntimeError('Period MCP pinned source changed')
+                if any(digest(path) != report['artifacts'][name] or digest(getattr(args,name)) != report['artifacts'][name] for name,path in pinned.items()):
+                    raise RuntimeError('Period MCP pinned binaries changed')
+                if {str(path.relative_to(args.web_dir)):digest(path) for path in sorted(args.web_dir.rglob('*')) if path.is_file()} != report['webFiles']:
+                    raise RuntimeError('Period MCP pinned web artifacts changed')
+                report['originalSourceHashes'] = hashes
+                report['periodMcpSqlAfterRestart'] = second
+                phase('finish',20)
+                controller.stdin.close(); controller.wait(timeout=20)
+                if controller.returncode != 0:
+                    raise RuntimeError('Period MCP browser controller failed')
+                report.update(status='passed',currentAction='complete',workflow='original_period_mcp_owner_service_forced_open_obligations_restart',periodMcpOriginalQualified=True,periodMcpOriginalRestartQualified=True,installedNativeQualified=False,sourceFreeRestoreQualified=False,externalFilingQualified=False,exceptionCreationUiQualified=False)
+                save()
+                return
             if args.journal_mcp_original or args.journal_original or args.period_original or args.bank_queries or args.journal_history or args.dated_reports or args.dashboard_json or args.portfolio_overview or args.annual_exports or args.authority_export or args.saft_artifact or (args.local_runtime_join or args.local_runtime_mcp):
-                helper = REPO / ('scripts/rust/check-native-journal-mcp.ts' if args.journal_mcp_original else 'scripts/rust/check-native-period-original.ts' if (args.period_original or args.journal_original or args.journal_mcp_original) else 'scripts/rust/check-native-bank-queries.ts' if args.bank_queries else 'scripts/rust/check-native-local-runtime.ts' if (args.local_runtime_join or args.local_runtime_mcp) else 'scripts/rust/check-native-saft.ts' if args.saft_artifact else 'scripts/rust/check-native-accountant.ts' if args.authority_export else 'scripts/rust/check-native-annual-clients.ts' if args.annual_exports else 'scripts/rust/check-native-dashboard-json.ts' if args.dashboard_json or args.portfolio_overview else 'scripts/rust/check-native-dated-reports.ts' if args.dated_reports else 'scripts/rust/check-native-journal-history.ts')
+                helper = REPO / ('scripts/rust/check-native-period-mcp.ts' if args.period_mcp_original else 'scripts/rust/check-native-journal-mcp.ts' if args.journal_mcp_original else 'scripts/rust/check-native-period-original.ts' if (args.period_original or args.journal_original or args.journal_mcp_original) else 'scripts/rust/check-native-bank-queries.ts' if args.bank_queries else 'scripts/rust/check-native-local-runtime.ts' if (args.local_runtime_join or args.local_runtime_mcp) else 'scripts/rust/check-native-saft.ts' if args.saft_artifact else 'scripts/rust/check-native-accountant.ts' if args.authority_export else 'scripts/rust/check-native-annual-clients.ts' if args.annual_exports else 'scripts/rust/check-native-dashboard-json.ts' if args.dashboard_json or args.portfolio_overview else 'scripts/rust/check-native-dated-reports.ts' if args.dated_reports else 'scripts/rust/check-native-journal-history.ts')
                 helper_key = 'journalMcpOriginalHelperSha256' if args.journal_mcp_original else 'journalOriginalHelperSha256' if args.journal_original else 'periodOriginalHelperSha256' if args.period_original else 'bankQueriesHelperSha256' if args.bank_queries else 'localRuntimeMcpHelperSha256' if args.local_runtime_mcp else 'localRuntimeHelperSha256' if (args.local_runtime_join or args.local_runtime_mcp) else 'saftArtifactHelperSha256' if args.saft_artifact else 'authorityExportHelperSha256' if args.authority_export else 'annualExportsHelperSha256' if args.annual_exports else 'portfolioOverviewHelperSha256' if args.portfolio_overview else 'dashboardJsonHelperSha256' if args.dashboard_json else 'datedReportsHelperSha256' if args.dated_reports else 'journalHistoryHelperSha256'
                 report[helper_key] = digest(helper)
                 reference_files = [REPO / path for path in ['src/mcp/tools/journal.ts','src/mcp/tool-runtime.ts','src/mcp/envelope.ts','src/core/idempotency.ts','scripts/rust/check-native-period-original.ts']] if args.journal_mcp_original else [REPO / path for path in ['src/cli/journal.ts','src/cli-meta/journal-specs.ts','src/core/ledger.ts','src/cli/period.ts','src/core/period-close-readiness.ts']] if args.journal_original else [REPO / path for path in ['src/cli/period.ts','src/cli-meta/period-specs.ts','src/core/period-close-readiness.ts','src/core/periods.ts']] if args.period_original else [REPO / ('src/core/' + name + '.ts') for name in ['saft-export','tar']] if args.saft_artifact else [REPO / ('src/core/' + name + '.ts') for name in ['authority-export','tar']] if args.authority_export else [REPO / ('src/core/' + name + '.ts') for name in ['tax-return','ixbrl','annual-report']] if args.annual_exports else [REPO / ('src/core/' + name + '.ts') for name in ['financial-statements','account-classification','dates','money']] if args.dated_reports else []
@@ -1488,7 +1587,7 @@ db.close();process.stdout.write(JSON.stringify(out));"""
                 server.shutdown()
                 server.server_close()
             report['ownedProcessesStopped'] = child is None and (controller is None or controller.poll() is not None)
-            if owned() and (args.journal_mcp_original or args.journal_original or args.period_original or args.bank_queries or args.local_runtime_join or args.local_runtime_mcp or args.service_purchase or args.invoice_bad_debt) and report['status'] == 'failed':
+            if owned() and (args.period_mcp_original or args.journal_mcp_original or args.journal_original or args.period_original or args.bank_queries or args.local_runtime_join or args.local_runtime_mcp or args.service_purchase or args.invoice_bad_debt) and report['status'] == 'failed':
                 # Retain the stopped, private synthetic fixture for targeted diagnosis.
                 # This prevents repeating MFA merely to recover an assertion's source.
                 report['ownedRuntimeCleaned'] = False
