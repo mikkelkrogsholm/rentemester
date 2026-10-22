@@ -85,7 +85,9 @@ fn source_validation_order_and_prepared_service_audit_no_financial_effects() {
     let mut db = rusqlite::Connection::open_in_memory().unwrap();
     let mut control = rusqlite::Connection::open_in_memory().unwrap();
     crate::fresh::initialize_empty_pair(&mut control, &mut db, "Synthetic Mileage").unwrap();
-    let tx = db.transaction().unwrap();
+    let tx = db
+        .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
+        .unwrap();
     let mut input:Log=serde_json::from_value(json!({"tripDate":"","purpose":"","fromLocation":"","toLocation":"","vehicle":"","driver":"","rateBasis":""})).unwrap();
     assert_eq!(
         log(&tx, &input, "service", PrincipalKind::ServiceAccount).unwrap()["errors"],
