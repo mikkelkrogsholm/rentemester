@@ -524,3 +524,6 @@ pub use invoice_lifecycle::{InvoiceLifecycleKind,invoice_lifecycle_schema,valida
 
 mod invoice_claims_original;
 pub use invoice_claims_original::{OriginalInvoiceClaimKind,invoice_claims_original_schema,validate_invoice_claims_original};
+
+mod invoice_public_original;
+pub use invoice_public_original::{OriginalPublicInvoiceKind,invoice_public_original_schema,validate_invoice_public_original,public_invoice_artifact};
