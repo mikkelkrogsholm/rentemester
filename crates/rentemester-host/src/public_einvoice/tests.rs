@@ -488,3 +488,54 @@ fn original_queued_repetition_observes_only_and_delivered_repetition_is_cached()
     assert_eq!(repeat["submission"]["duplicate"], true);
     assert_eq!(repeat["submission"]["status"], "acknowledged");
 }
+
+#[test]
+fn native_first_delivery_keeps_canonical_duplicate_projection() {
+    let (_dir, mut owner, _cookies, proof, _uid) = setup();
+    let (id, _) = issued(&mut owner);
+    register_provider(&mut owner);
+    let validation = pending(
+        owner
+            .start_public_einvoice(&proof, &Fixed(NOW), Intent::Send(id), "test")
+            .unwrap()
+            .outcome
+            .unwrap()
+            .value,
+    );
+    let delivery = pending(
+        owner
+            .finish_public_einvoice(&proof, &Fixed(NOW), validation, Outcome::Validated(true))
+            .unwrap()
+            .outcome
+            .unwrap()
+            .value,
+    );
+    let Next::Complete(first) = owner
+        .finish_public_einvoice(
+            &proof,
+            &Fixed(NOW),
+            delivery,
+            Outcome::Delivered(Some(app::Observation {
+                document_id: Some("native-provider-id".into()),
+                status: "unable-to-deliver".into(),
+            })),
+        )
+        .unwrap()
+        .outcome
+        .unwrap()
+        .value
+    else {
+        panic!("native outcome")
+    };
+    assert_eq!(first["submission"]["duplicate"], true);
+    let Next::Complete(repeated) = owner
+        .start_public_einvoice(&proof, &Fixed(NOW), Intent::Send(id), "test")
+        .unwrap()
+        .outcome
+        .unwrap()
+        .value
+    else {
+        panic!("native repeat must be cached")
+    };
+    assert_eq!(first, repeated);
+}

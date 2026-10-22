@@ -400,7 +400,9 @@ pub fn finish(
                         Some(o) => store::record_outcome(tx, *id, o, actor, &now)?,
                         None => store::get(tx, source.invoice_document_id)?.ok_or_else(refused)?,
                     };
-                    row["duplicate"] = json!(false);
+                    if admission.original {
+                        row["duplicate"] = json!(false);
+                    }
                     Ok(Next::Complete(json!({"ok":true,"submission":row})))
                 }
                 (Step::Observe(source, id, expected), Outcome::Observed(Some(observation))) => {
