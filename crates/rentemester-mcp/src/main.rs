@@ -4,6 +4,7 @@
 //! https://modelcontextprotocol.io/specification/2025-11-25/server/tools
 mod asset_original;
 mod accrual_original;
+mod mileage_original;
 mod expense_original;
 mod recurring_original;
 mod invoice_claims_original;
