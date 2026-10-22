@@ -11,9 +11,7 @@ fn source_empty_bytes() {
     .unwrap();
     assert_eq!(
         String::from_utf8(json).unwrap(),
-        concat!(
-            "{\n  \"appliedRules\": [\n    \"DK-MILEAGE-LOG-001\"\n  ],\n  \"from\": \"2025-01-01\",\n  \"to\": \"2026-12-31\",\n  \"entryCount\": 0,\n  \"totalKilometers\": 0,\n  \"totalAmountBasis\": 0,\n  \"note\": \"Mileage log only. Rentemester records the trips; tax treatment is the user/advisor's responsibility.\",\n  \"entries\": []\n}\n"
-        )
+        "{\n  \"appliedRules\": [\n    \"DK-MILEAGE-LOG-001\"\n  ],\n  \"from\": \"2025-01-01\",\n  \"to\": \"2026-12-31\",\n  \"entryCount\": 0,\n  \"totalKilometers\": 0,\n  \"totalAmountBasis\": 0,\n  \"note\": \"Mileage log only. Rentemester records the trips; tax treatment is the user/advisor's responsibility.\",\n  \"entries\": []\n}\n"
     );
     assert_eq!(csv,b"entry_no,trip_date,purpose,from_location,to_location,kilometers,vehicle,driver,rate_per_km,amount_basis,rate_basis,rate_source\n");
 }
