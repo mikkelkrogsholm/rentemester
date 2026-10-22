@@ -80,14 +80,14 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
             return refused(StatusCode::BAD_REQUEST, "invalid_input");
         }
         for key in ["planHash", "decisionHash"] {
-            if let Some(v) = value.get(key) {
-                if !v.as_str().is_some_and(|s| {
+            if let Some(v) = value.get(key)
+                && !v.as_str().is_some_and(|s| {
                     s.len() == 64
                         && s.bytes()
                             .all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b))
-                }) {
-                    return refused(StatusCode::BAD_REQUEST, "invalid_input");
-                }
+                })
+            {
+                return refused(StatusCode::BAD_REQUEST, "invalid_input");
             }
         }
         for (key, min, max) in [
@@ -99,13 +99,12 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
             ("reason", 1, 1000),
             ("idempotencyKey", 1, 128),
         ] {
-            if let Some(v) = value.get(key) {
-                if !v
+            if let Some(v) = value.get(key)
+                && !v
                     .as_str()
                     .is_some_and(|s| s.len() >= min && s.len() <= max && !s.trim().is_empty())
-                {
-                    return refused(StatusCode::BAD_REQUEST, "invalid_input");
-                }
+            {
+                return refused(StatusCode::BAD_REQUEST, "invalid_input");
             }
         }
         for (key, allowed) in [
@@ -113,10 +112,10 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
             ("legacyKind", &["customer", "vendor"][..]),
             ("role", rentemester_engine::parties::ROLES),
         ] {
-            if let Some(v) = value.get(key) {
-                if !v.as_str().is_some_and(|s| allowed.contains(&s)) {
-                    return refused(StatusCode::BAD_REQUEST, "invalid_input");
-                }
+            if let Some(v) = value.get(key)
+                && !v.as_str().is_some_and(|s| allowed.contains(&s))
+            {
+                return refused(StatusCode::BAD_REQUEST, "invalid_input");
             }
         }
         let bytes = serde_json::to_vec(&value).unwrap();
@@ -201,19 +200,19 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
         };
         Ok::<_, ()>(result.map(|mut v| {
             // Source projection only: native history keeps its established receipt key.
-            if matches!(command, Command::History(_)) {
-                if let Some(rows) = v["links"].as_array_mut() {
-                    for row in rows {
-                        if let Some(o) = row.as_object_mut() {
-                            o.remove("idempotency_key");
-                        }
+            if matches!(command, Command::History(_))
+                && let Some(rows) = v["links"].as_array_mut()
+            {
+                for row in rows {
+                    if let Some(o) = row.as_object_mut() {
+                        o.remove("idempotency_key");
                     }
                 }
             }
-            if matches!(command, Command::Supersede(_)) {
-                if let Some(o) = v.as_object_mut() {
-                    o.remove("planHash");
-                }
+            if matches!(command, Command::Supersede(_))
+                && let Some(o) = v.as_object_mut()
+            {
+                o.remove("planHash");
             }
             v
         }))
