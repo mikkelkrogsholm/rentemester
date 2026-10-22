@@ -40,7 +40,8 @@ fn boolean(name: &str) -> bool {
 }
 
 fn migrated(args: &[String]) -> bool {
-    crate::invoice_extraction_original::accepts(args)
+    crate::expense_original::accepts(args)
+        || crate::invoice_extraction_original::accepts(args)
         || crate::document_party_original::accepts(args)
         || crate::documents_original::accepts(args)
         || crate::master_data_original::accepts(args)
@@ -131,6 +132,7 @@ pub fn prepare(args: Vec<String>) -> Result<Vec<String>, (u8, Error)> {
             matches!(
                 s.as_str(),
                 "customer"
+                    | "expense"
                     | "documents"
                     | "vendor"
                     | "exceptions"
@@ -214,7 +216,7 @@ pub fn prepare(args: Vec<String>) -> Result<Vec<String>, (u8, Error)> {
         && output.first().is_some_and(|s| {
             matches!(
                 s.as_str(),
-                "exceptions" | "customer" | "vendor" | "documents"
+                "exceptions" | "customer" | "vendor" | "documents" | "expense"
             )
         })
     {
