@@ -33,12 +33,12 @@ pub struct Input {
 pub(crate) fn role(tx: &Transaction<'_>, role: &str) -> Result<String, Error> {
     let kind = match role {
         "bank" => "asset",
-        "input_vat" => "vat",
+        "input_vat" | "reverse_charge_vat" => "vat",
         "creditors" => "liability",
         _ => return Err(fail("unsupported expense account role")),
     };
     tx.query_row(
-        "SELECT m.account_no FROM account_role_mappings m JOIN accounts a ON a.account_no=m.account_no WHERE m.role=?1 AND m.status='confirmed' AND a.active=1 AND a.type=?2 AND a.normal_balance=CASE WHEN ?1='creditors' THEN 'credit' ELSE 'debit' END",
+        "SELECT m.account_no FROM account_role_mappings m JOIN accounts a ON a.account_no=m.account_no WHERE m.role=?1 AND m.status='confirmed' AND a.active=1 AND a.type=?2 AND a.normal_balance=CASE WHEN ?1 IN ('creditors','reverse_charge_vat') THEN 'credit' ELSE 'debit' END",
         [role,kind],
         |r| r.get(0),
     )
@@ -166,26 +166,39 @@ pub(crate) fn purchase(
         .ok_or_else(|| {
             fail("expense account has no mapped VAT treatment; choose an explicit treatment")
         })?;
-    if !["standard", "exempt", "non_deductible"].contains(&treatment) {
-        return Err(fail(
-            "this VAT treatment is not ported to native expense booking yet",
-        ));
+    if ![
+        "standard",
+        "reverse_charge",
+        "eu_goods_acquisition",
+        "representation",
+        "exempt",
+        "non_deductible",
+    ]
+    .contains(&treatment)
+    {
+        return Err(fail("unknown expense VAT treatment"));
     }
     if treatment == "exempt" && vat != Money::default() {
         return Err(fail("exempt expense requires zero document VAT"));
     }
-    if treatment == "standard" {
+    if treatment == "standard" || treatment == "representation" {
         if registered.is_none() {
             return Err(fail("company is not VAT registered; use non_deductible"));
         }
+        let persisted = crate::purchase_preflight::supplier(tx, document_id)?
+            .ok_or_else(|| fail("resolved persisted supplier identity required"))?;
         let supplier = meta
             .sender
             .as_ref()
             .ok_or_else(|| fail("Danish supplier identity required"))?;
-        if rentemester_engine::document::supplier(supplier)?.kind != "dk_cvr" {
+        if rentemester_engine::document::supplier(supplier)?.kind != "dk_cvr"
+            || persisted.kind != "dk_cvr"
+            || persisted.identifier != rentemester_engine::document::supplier(supplier)?.identifier
+        {
             return Err(fail("deductible Danish VAT requires a Danish supplier CVR"));
         }
-        if meta.kind() == "purchase_sale"
+        if treatment == "standard"
+            && meta.kind() == "purchase_sale"
             && meta
                 .recipient
                 .as_ref()
@@ -208,13 +221,159 @@ pub(crate) fn purchase(
     }
     let mut lines = Vec::new();
     let expense = expense.trim();
-    let deductible = if treatment == "standard" {
-        rate.apply(&vat)
+    let full_vat = rate.apply(&vat);
+    let net = if treatment == "standard" || treatment == "representation" {
+        gross_dkk.subtract(&full_vat)
+    } else {
+        gross_dkk.clone()
+    };
+    // Allocation.deductible is the source result's document VAT summary, not the
+    // self-assessed VAT on foreign purchases. Representation reports full VAT.
+    let deductible = if treatment == "standard" || treatment == "representation" {
+        full_vat.clone()
     } else {
         Money::default()
     };
-    let net = gross_dkk.subtract(&deductible);
-    if treatment == "standard" {
+    if treatment == "reverse_charge" || treatment == "eu_goods_acquisition" {
+        if registered.is_none() {
+            return Err(fail(
+                "VAT registration required for foreign reverse charge; separate section 50 b registration requires human resolution",
+            ));
+        }
+        if vat != Money::default() {
+            return Err(fail("foreign reverse charge requires zero document VAT"));
+        }
+        if meta.purchase_vat_lines.is_some() {
+            return Err(fail(
+                "foreign reverse charge does not support structured purchaseVatLines",
+            ));
+        }
+        let supplier = crate::purchase_preflight::supplier(tx, document_id)?
+            .ok_or_else(|| fail("resolved foreign supplier identity required"))?;
+        let original = rentemester_engine::document::supplier(
+            meta.sender
+                .as_ref()
+                .ok_or_else(|| fail("invoice supplier required"))?,
+        )?;
+        if supplier.kind != original.kind
+            || supplier.country != original.country
+            || supplier.identifier != original.identifier
+        {
+            return Err(fail(
+                "persisted supplier identity conflicts with immutable invoice",
+            ));
+        }
+        let code = if supplier.kind == "eu_vat" {
+            let now: String = tx
+                .query_row("SELECT strftime('%Y-%m-%dT%H:%M:%fZ','now')", [], |r| {
+                    r.get(0)
+                })
+                .map_err(sql)?;
+            crate::vies::require(
+                tx,
+                supplier
+                    .identifier
+                    .as_deref()
+                    .ok_or_else(|| fail("EU VAT identifier required"))?,
+                &now,
+            )?;
+            if treatment == "eu_goods_acquisition" {
+                "EU_GOODS_ACQUISITION"
+            } else {
+                "EU_SERVICE_REVERSE_CHARGE"
+            }
+        } else if supplier.kind == "non_eu" && treatment == "reverse_charge" {
+            let company: Option<String> = tx
+                .query_row("SELECT cvr FROM companies WHERE id=1", [], |r| r.get(0))
+                .map_err(sql)?;
+            let normalize = |s: &str| {
+                s.chars()
+                    .filter(|c| !c.is_whitespace())
+                    .collect::<String>()
+                    .to_uppercase()
+            };
+            let buyer = meta
+                .recipient
+                .as_ref()
+                .and_then(|p| p.vat_or_cvr.as_deref())
+                .map(normalize)
+                .unwrap_or_default();
+            let company = company.map(|s| normalize(&s)).map(|s| {
+                if s.starts_with("DK") {
+                    s
+                } else {
+                    format!("DK{s}")
+                }
+            });
+            if supplier.identifier.is_none()
+                || buyer.len() != 10
+                || !buyer.starts_with("DK")
+                || !buyer[2..].bytes().all(|b| b.is_ascii_digit())
+                || company.as_deref() != Some(&buyer)
+                || meta.reverse_charge_wording_confirmed != Some(true)
+            {
+                return Err(fail(
+                    "non-EU reverse charge requires invoice supplier registration, matching configured Danish buyer VAT and confirmed reverse-charge wording",
+                ));
+            }
+            "NON_EU_SERVICE_REVERSE_CHARGE"
+        } else {
+            return Err(fail(
+                "foreign treatment requires appropriate non-Danish supplier identity",
+            ));
+        };
+        let assessed = gross_dkk.percent("25")?;
+        lines.push(line(
+            expense,
+            gross_dkk.clone(),
+            Money::default(),
+            Some(code),
+            "Foreign purchase base".into(),
+        )?);
+        lines.push(line(
+            &role(tx, "input_vat")?,
+            assessed.clone(),
+            Money::default(),
+            None,
+            "Deductible self-assessed VAT".into(),
+        )?);
+        lines.push(line(
+            &role(tx, "reverse_charge_vat")?,
+            Money::default(),
+            assessed,
+            None,
+            "Self-assessed output VAT".into(),
+        )?);
+    } else if treatment == "representation" {
+        if meta.purchase_vat_lines.is_some() {
+            return Err(fail(
+                "representation does not support structured purchaseVatLines",
+            ));
+        }
+        let partial = net.percent("25")?.percent("25")?;
+        let cost = gross_dkk.subtract(&net).subtract(&partial);
+        lines.push(line(
+            expense,
+            net.clone(),
+            Money::default(),
+            Some("REPRESENTATION_SPECIAL"),
+            "Representation purchase base".into(),
+        )?);
+        lines.push(line(
+            expense,
+            cost,
+            Money::default(),
+            Some("REPRESENTATION_NON_DEDUCTIBLE_VAT"),
+            "Non-deductible representation VAT (75%)".into(),
+        )?);
+        lines.push(line(
+            &role(tx, "input_vat")?,
+            partial,
+            Money::default(),
+            None,
+            "Deductible representation VAT (25%)".into(),
+        )?);
+    } else if treatment == "standard" {
         if let Some(split) = &meta.purchase_vat_lines {
             let scaled = expense_fx::scale_net(split, rate, &net)?;
             for (part, amount) in split.iter().zip(scaled) {
@@ -277,6 +436,35 @@ pub(crate) struct Prepared {
     pub basis: expense_fx::Basis,
 }
 pub(crate) fn prepare(tx: &Transaction<'_>, input: &Input) -> Result<Prepared, Error> {
+    prepare_mode(tx, input, false)
+}
+/// Receipt admission checks current source without refusing the already accepted
+/// reconciliation. Only the shared keyed writer may return an accepted replay.
+pub(crate) fn prepare_for_receipt(
+    tx: &Transaction<'_>,
+    input: &Input,
+    latest: Date,
+) -> Result<(), Error> {
+    let mut prepared = prepare_mode(tx, input, true)?;
+    // The payment may already be reconciled by this receipt; all other current
+    // account, period, horizon and rule controls still precede receipt lookup.
+    prepared.request.source_bank_transaction_id = None;
+    let facts = crate::journal_preview::collect_facts(tx, &prepared.request, latest)?;
+    let rules = crate::journal_preview::compiled_rules()?;
+    let validation = rentemester_engine::manual_journal::validate(
+        &prepared.request,
+        &facts,
+        &rules,
+        rules.version(),
+    )?;
+    if !validation.ok {
+        return Err(fail(
+            "current expense period/account/rule controls refuse this request",
+        ));
+    }
+    Ok(())
+}
+fn prepare_mode(tx: &Transaction<'_>, input: &Input, receipt: bool) -> Result<Prepared, Error> {
     crate::journal_preview::require_current(tx)?;
     if input.document_id <= 0
         || input.bank_transaction_id <= 0
@@ -297,6 +485,7 @@ pub(crate) fn prepare(tx: &Transaction<'_>, input: &Input) -> Result<Prepared, E
             "purchase is already registered as a payable; settle its creditor balance",
         ));
     }
+    crate::invoice_extraction::require_completed_or_absent(tx, input.document_id)?;
     let meta = metadata(tx, input.document_id)?;
     let gross = meta
         .amount_inc_vat
@@ -360,7 +549,7 @@ pub(crate) fn prepare(tx: &Transaction<'_>, input: &Input) -> Result<Prepared, E
         ..
     } = bank;
     let linked:bool=tx.query_row("SELECT EXISTS(SELECT 1 FROM bank_journal_reconciliations WHERE bank_transaction_id=?1)",[input.bank_transaction_id],|r|r.get(0)).map_err(sql)?;
-    if linked {
+    if linked && !receipt {
         return Err(fail(
             "bank transaction is already linked to a journal entry",
         ));
@@ -450,6 +639,21 @@ pub fn post(
     subject: &str,
     latest: Date,
 ) -> Result<Value, Error> {
+    post_with_principal(
+        tx,
+        input,
+        subject,
+        latest,
+        crate::idempotency::PrincipalKind::User,
+    )
+}
+pub fn post_with_principal(
+    tx: &Transaction<'_>,
+    input: &Input,
+    subject: &str,
+    latest: Date,
+    principal_kind: crate::idempotency::PrincipalKind,
+) -> Result<Value, Error> {
     crate::journal_post::require_current(tx)?;
     let Prepared {
         request,
@@ -459,7 +663,13 @@ pub fn post(
         treatment,
         basis,
     } = prepare(tx, input)?;
-    let actor = format!("user:{subject}");
+    let (prefix, program) = match principal_kind {
+        crate::idempotency::PrincipalKind::User => ("user", "rentemester-rust"),
+        crate::idempotency::PrincipalKind::ServiceAccount => {
+            ("service_account", "service-principal")
+        }
+    };
+    let actor = format!("{prefix}:{subject}");
     let mut result = crate::journal_post::post(
         tx,
         &request,
@@ -467,7 +677,7 @@ pub fn post(
         latest,
         crate::journal_post::Actor {
             subject: &actor,
-            program: "rentemester-rust",
+            program,
         },
     )?;
     if result["ok"] != true {
@@ -491,9 +701,36 @@ pub fn post(
     ] {
         result[key] = value;
     }
+    let treatment_rule = match treatment.as_str() {
+        "representation" => Some("DK-VAT-REPRESENTATION-001"),
+        "eu_goods_acquisition" => Some("DK-VAT-REVERSE-CHARGE-001"),
+        "reverse_charge" => Some(
+            if request
+                .lines
+                .iter()
+                .any(|l| l.vat_code.as_deref() == Some("NON_EU_SERVICE_REVERSE_CHARGE"))
+            {
+                "DK-VAT-NON-EU-SERVICE-REVERSE-CHARGE-001"
+            } else {
+                "DK-VAT-REVERSE-CHARGE-001"
+            },
+        ),
+        _ => None,
+    };
+    if let Some(rule) = treatment_rule {
+        let mut applied = result["appliedRules"]
+            .as_array()
+            .cloned()
+            .unwrap_or_default();
+        if !applied.iter().any(|v| v == rule) {
+            applied.push(json!(rule));
+        }
+        result["appliedRules"] = json!(applied);
+    }
     if let Some(source) = basis.rate_source {
         result["fxRateSource"] = json!(source);
-        result["fxReconstructionDifferenceDkk"] = json!(0);
+        result["fxReconstructionDifferenceDkk"] =
+            crate::cockpit::number(&basis.rate.apply(&gross).subtract(&basis.gross_dkk))?;
     }
     Ok(result)
 }

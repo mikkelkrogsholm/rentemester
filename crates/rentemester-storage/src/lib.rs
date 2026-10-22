@@ -1,3 +1,5 @@
+pub mod purchase_preflight;
+pub mod expense_original;
 //! Source-read-only reports/rehearsals and caller-owned transactional primitives.
 pub mod journal_original;
 pub mod invoice_bad_debt;
