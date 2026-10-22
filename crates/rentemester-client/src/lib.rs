@@ -554,3 +554,6 @@ pub use accrual_original::{original_accrual_schema, validate_original_accrual, v
 
 mod asset_original;
 pub use asset_original::{original_asset_schema, validate_original_asset, validate_original_asset_actor};
+
+mod mileage_original;
+pub use mileage_original::{validate_original_mileage_shape, original_mileage_log_schema, publish_original_mileage};

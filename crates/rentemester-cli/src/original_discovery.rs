@@ -4,6 +4,7 @@ use serde_json::{Value, json};
 pub fn help() -> Value {
     json!({"ok":true,"localBinding":"Existing migrated commands may select --local-profile ABS_PRIVATE_PROFILE instead of --server/--allow-loopback-http. Join only: same server via private Unix socket with normal cookie/service authentication. Bounded company selection supports explicit slug or verified workspace path and RENTEMESTER_COMPANY fallback for migrated company commands only. Identity remains server-owned; no caller-selected actor. Whole-product parity is unfinished and the default launcher is unchanged.","commands":[
         {"name":"asset register|depreciate|write-off|register-report","usage":"asset --help","scope":"original source asset lifecycle; native remote aliases retained"},
+        {"name":"mileage log|list|report|export","usage":"mileage --help","scope":"original mileage log and local JSON/CSV export; native aliases retained"},
         {"name":"accrual register|recognize|register-report","usage":"accrual --help","scope":"original flat accrual journal writes and exposure report; native remote aliases retained"},
         {"name":"expense vat-preflight|book","usage":"expense --help","scope":"original document-local read/apply VAT evidence and atomic expense booking; six CLI treatments; native aliases under remote"},
         {"name":"customer create|list|validate-vat|cvr-lookup; vendor create|list","usage":"customer create --help; vendor create --help","scope":"original source-flat master data using current shared server writers/providers"},
@@ -147,6 +148,7 @@ fn recognized(root: &str) -> bool {
         root,
         "asset"
             | "accrual"
+            | "mileage"
             | "customer"
             | "expense"
             | "vendor"

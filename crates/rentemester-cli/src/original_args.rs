@@ -40,7 +40,8 @@ fn boolean(name: &str) -> bool {
 }
 
 fn migrated(args: &[String]) -> bool {
-    crate::asset_original::accepts(args)
+    crate::mileage_original::accepts(args)
+        || crate::asset_original::accepts(args)
         || crate::accrual_original::accepts(args)
         || crate::expense_original::accepts(args)
         || crate::invoice_extraction_original::accepts(args)
@@ -136,6 +137,7 @@ pub fn prepare(args: Vec<String>) -> Result<Vec<String>, (u8, Error)> {
                 "customer"
                     | "asset"
                     | "accrual"
+                    | "mileage"
                     | "expense"
                     | "documents"
                     | "vendor"
@@ -227,6 +229,7 @@ pub fn prepare(args: Vec<String>) -> Result<Vec<String>, (u8, Error)> {
                     | "expense"
                     | "asset"
                     | "accrual"
+                    | "mileage"
             )
         })
     {
