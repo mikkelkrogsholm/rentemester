@@ -1,15 +1,15 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "Group154 original supported recurring lifecycle accepted; workspace automation continuation required",
-  "code_revision": "8445f1c45f7994b026977345d5b709fc36f40c87",
+  "current_increment": "Group155 workspace runner integrated; manual/email multi-company continuation and restart verified; public/recovery acceptances remain",
+  "code_revision": "528c1f9d38c2b4ae83a1d3cd5b674e8461e634c1",
   "spec_revision": "sha256:bc98636be4a972407adce0f817a76bb9d4bb7200cb292a70965e75ab62fae250",
-  "state": "Group154 ACCEPTED supported original recurring create/list/generate through one shared Rust issuer and native UI API. Structured full mixed taxable/exempt and reduced simplified source payloads retained, source defaults/filtering/calendar/window/notes, typed human/service authority, claims and immutable JSON/PDF. Native next-period generation from original mixed template retains frozen buyer and tax decisions; no second engine or transport. Shared original issuance mandatory-global-VAT defect fixed for explicit tax lines; unsupported non25 taxable rates remain definite refusal, no silent25 fallback or weakened control. Source no-note reverse charge remains unsupported by native required-note gate; both original parity decisions stay OPEN. Focused SDK2/CLI2/MCP2/storage3/host2/shared1 pass; main source-required line-description regression passes; eight-package all-target strict and normal three binaries pass. Actual retained synthetic ordinary-MFA/current service profile: three templates/four generations/eight immutable artifacts, CLI and MCP full list/result parity, original and native period dedup/retirement, current reviewer refusal, typed audits, exact books/originals restart. No added journals, bank changes, or provider/delivery events; existing33journals80lines preserved. Independent source/artifact/script/completeSQL/original verifier passes. No Fresh MFA renewal or signed recovery in154; prior signed evidence retained, original nonempty workspace-delivery backup/recovery remains for155. Two worker trees integrated and recoverably removed. Whole recurring journey, R44/R45, epic and desktop final acceptance remain OPEN.",
+  "state": "Group155 integrated explicit original workspace runner over the single Rust engine. Required human workspace-owner catalog assertion, sorted admitted companies, per-company capped oldest gaps and independent delivery cap, preserved partial failures/continuation, shared native public transport outside Owner lock, local admission before one-attempt reservation, explicit email dry-run/no SMTP receipt, typed append-only delivery provenance and full backup admission validation. Three worker parts integrated and recoverably removed. Eight-package all-target strict and normal three binaries pass; validation3 and signed-host2 pass. Actual retained normal-MFA profile proves three active catalog companies (known failing, progressing, existing empty), CLI first partial failure does not starve next, MCP cap2 continuation, HTTP final batch and one dryrun, exact CLI no-effect repeat, reviewer/wrong-workspace refusal, six new generations/twelve immutable originals, typed attempt+dryrun acknowledgement and no SMTP receipt, existing33 journals80lines and bank/files preserved, exact persisted-session restart. Independent complete main-company SQL/source/artifact hashes and failed-company zero-effect checks pass. Whole Group155 NOT accepted: actual public queued/status/unknown no-resend, archived/uninitialized skip and signed source-free recovery of these events remain required; current-authority/backup controls retained and broader original contract parity remains open. No new full fixture loop after diagnosed setup failures; effects reconciled and continuation only. Whole717/epic/release/cutover/TS retirement/final installed desktop scope retained and OPEN.",
   "issues_closed": [
     701
   ],
   "next": [
-    "Group155 REQUIRED next within recurring journey: original explicit run-workspace (CLI/MCP) using configured authenticated workspace/manifest, earliest missing periods and per-company cap/continuation, skip archived/uninitialized, one company failure must not starve next, source email dry-run boundary, configured public transport/status-only/reconciliation/no resend, current per-company authority/backup, nonempty original delivery evidence and signed source-free recovery. Reuse /tmp/rm155-workspace-seams.md; no new timer, engine, schema or automatic live SMTP. Resolve retained original rate/required reverse-note parity and original domain error contracts explicitly before claiming full parity.",
+    "Finish remaining Group155 original explicit workspace runner acceptance: actual public configured transport/queued GET-only/unknown no-resend, archived/uninitialized skip, current backup/revocation and nonempty signed source-free fresh-owner restore/reopen. Preserve partial accepted CLI/MCP/HTTP cap/continuation/dryrun/restart evidence; do not repeat those unchanged. Whole717 and epic OPEN; no new timer/second engine/live SMTP. Then resolve retained rate/required reverse-note/domain-error parity and original global actor/env/path/launcher/receipt contracts.",
     "Original invoice interface inventory now has all31CLI and25MCP bindings, with explicit compatibility corrections documented; do not mistake that family inventory for full product parity. Reconcile remaining original whole-product R44/R45 acceptance from existing epic/issues: actor/env/company-path/default launcher/errors/historical receipts, closure/recovery/automation, signed distribution/update/cutover and TypeScript backend retirement. Continue next necessary whole journey, preserve all accepted evidence/full original scope; installed desktop acceptance last.",
     "Installed desktop acceptance is explicitly deferred to the very end by the user. Preserve prepared Group100 profile; collect remaining native automation, closure, recovery and packaging checks for final installed acceptance without requesting screen unlock during development.",
     "J03/R50 and remaining R54 scope: only still-supported operation closure/recovery, nonempty scheduler handoff, hostile/older clone and post-cutover rollback requirements. Group99 qualifies managed installed J06 flow, not every R54 acceptance item.",
@@ -8809,6 +8809,73 @@
       "previous_accepted_increment": "Group153 four original public invoice CLI artifacts, preparation and shared native delivery accepted",
       "github_child_comment": "https://github.com/mikkelkrogsholm/rentemester/issues/717#issuecomment-6334186097",
       "github_epic_comment": "https://github.com/mikkelkrogsholm/rentemester/issues/672#issuecomment-6334186380"
+    },
+    "original_recurring_workspace155": {
+      "issue": 717,
+      "status": "integrated; partial actual acceptance; whole-workspace acceptance OPEN",
+      "source_revision": "528c1f9d38c2b4ae83a1d3cd5b674e8461e634c1",
+      "contract": "/tmp/rm155-contract.md",
+      "workers": {
+        "clients": "a33f6469",
+        "backup": "8051faca",
+        "core": "045464d6"
+      },
+      "integrated": {
+        "clients": "520b0731",
+        "backup": "ef1b960a",
+        "core": "e92a38eb",
+        "server_review_fixes": "528c1f9d"
+      },
+      "report": "/tmp/rentemester-rust-reports/recurring-workspace155-partial-restart.json",
+      "report_sha256": "9f5669bf74c7446e8f5b854268cdac9bb1e52c61bdd1a06671a96259685a846b",
+      "independent_verifier": "/tmp/rm155-independent.py",
+      "independent_log": "/tmp/rm155-independent.log",
+      "strict": "/tmp/rm155-integrated-clippy-reviewed.log",
+      "normal_build": "/tmp/rm155-integrated-build-reviewed.log",
+      "focused_validation": "/tmp/rm155-integrated-validation-final.log",
+      "signed_host_positive": "/tmp/rm155-integrated-signed-path-fixed.log",
+      "signed_host_negative": "/tmp/rm155-integrated-signed-negative.log",
+      "actual": {
+        "catalog_companies": 3,
+        "new_main_company_templates": 2,
+        "generations": 6,
+        "original_artifacts": 12,
+        "delivery_events": [
+          "attempted",
+          "acknowledged"
+        ],
+        "mode": "email_dry_run",
+        "new_smtp_receipts": 0,
+        "new_journals": 0,
+        "retained_journals": 33,
+        "retained_journal_lines": 80,
+        "cap": 2,
+        "persisted_current_mfa_restart": true,
+        "fresh_mfa_renewal": false,
+        "owned_processes_stopped": true
+      },
+      "script_hashes": {
+        "/tmp/rm155-partial.py": "9dc86e64470f172ce17272940e2f10deb69ab02c747b09d748e28cde6f30c0cb",
+        "/tmp/rm155-run.ts": "6ba879195a5fa10e0d4b8a450206f9c5d9c5acaaa428bce42e398a3d5c1838d9",
+        "/tmp/rm155-continue.py": "a770f1f48e3409f529d840499b375086f2e4c584983bcaed98daeed91125164f",
+        "/tmp/rm155-continue.ts": "ae3461b9d0954fbc039c55734e2709644d59810e6e4af2bc8993df3e85954ca3",
+        "/tmp/rm155-reopen.py": "b8a0913171ce5753ef63e051c43dd71ef407afdc8dee47513bf282b45e710fb9",
+        "/tmp/rm155-independent.py": "3bb353fadf336129613f0e369da70924fd6af79de484e43b2aba392c2d7a2c08"
+      },
+      "worktree_recovery": [
+        "/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/.git/rentemester-recovery/archived155-clients.json",
+        "/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/.git/rentemester-recovery/archived155-backup.json",
+        "/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/.git/rentemester-recovery/archived155-core.json"
+      ],
+      "remaining": [
+        "Actual current-Fresh public queued ID then GET-only acknowledgment and ambiguous no-resend through workspace runner",
+        "Archived/uninitialized manifest skip proof",
+        "Current permission/backup refusal before effects in the integrated workspace flow",
+        "Nonempty original workspace events/full signed SQL/source-free fresh-owner restore/reopen",
+        "Original taxable-rate/reverse-note/domain-error and all remaining whole R44/R45/epic gates"
+      ],
+      "diagnosed_failures": "Fixed canonical signed-host fixture originals path, equivalent lint predicates and large error boxing. Review fixed dryrun acknowledgment text rejected after reserve and native local public admission before reservation. Actual fixture first assertion reused old snapshot filename before effects; retained failure. Actual first run stopped only at two-company expectation overlooking existing third empty company; inspect SQL then continue remaining effects without replay. Immediate restart port preflight hit TIME_WAIT after all effects/verification; isolated read/reopen after kernel release, no effect replay. Independent verifier corrected nonexistent SMTP table name to actual email_send_log and exact baseline comparison. No product control weakened.",
+      "github_child_comment": "https://github.com/mikkelkrogsholm/rentemester/issues/717#issuecomment-6334961010"
     }
   },
   "verified_history": [
