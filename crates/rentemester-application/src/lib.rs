@@ -164,3 +164,5 @@ pub mod expense_original;
 
 pub mod accrual_original;
 pub mod asset_original;
+
+pub mod mileage_original;
