@@ -17,7 +17,6 @@ pub fn tools() -> Vec<Value> {
         schema["required"].as_array_mut().unwrap().push(json!("company"));
         if !read {
             schema["properties"]["confirm"]=json!({"type":"boolean"});
-            schema["required"].as_array_mut().unwrap().push(json!("confirm"));
             schema["properties"]["expectedActor"]=json!({"type":"string","minLength":1,"maxLength":160,"description":"Equality assertion of current credential identity only, never authority"});
         }
         if name=="asset_depreciate" {schema["properties"]["assetId"]=json!({"type":"integer","minimum":1,"maximum":9007199254740991u64});schema["required"].as_array_mut().unwrap().push(json!("assetId"));}

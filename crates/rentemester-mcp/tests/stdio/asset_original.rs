@@ -44,7 +44,7 @@ fn discovery_native_aliases_strict_schemas_and_outer_confirmation() {
         );
         if !read {
             assert!(
-                t["inputSchema"]["required"]
+                !t["inputSchema"]["required"]
                     .as_array()
                     .unwrap()
                     .contains(&json!("confirm"))
