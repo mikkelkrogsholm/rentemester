@@ -90,6 +90,7 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
                 .map_err(|_| ())?
                 .outcome
             {
+                Ok(v) if v.value.get("ok") == Some(&json!(false)) => rejected("business_rejection", Some(v.value)),
                 Ok(v) => response(StatusCode::OK, v.value),
                 Err(f) if f.fence.stage == FailureStage::OutcomeUnknown => {
                     refused(StatusCode::SERVICE_UNAVAILABLE, unknown)
@@ -107,6 +108,7 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
                 .map_err(|_| ())?
                 .outcome
             {
+                Ok(v) if v.result.get("ok") == Some(&json!(false)) => rejected("business_rejection", Some(v.result)),
                 Ok(v) => response(StatusCode::OK, v.result),
                 Err(f) => {
                     use rentemester_application::service_company::{BusinessStage, UsageStage};
