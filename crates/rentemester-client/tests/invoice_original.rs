@@ -6,6 +6,13 @@ use std::{
     thread,
 };
 fn server(status: u16, value: Value) -> (String, thread::JoinHandle<(String, Value)>) {
+    raw_server(status, value.to_string(), None)
+}
+fn raw_server(
+    status: u16,
+    response: String,
+    declared_length: Option<usize>,
+) -> (String, thread::JoinHandle<(String, Value)>) {
     let l = TcpListener::bind("127.0.0.1:0").unwrap();
     let origin = format!("http://{}", l.local_addr().unwrap());
     let t = thread::spawn(move || {
@@ -42,13 +49,18 @@ fn server(status: u16, value: Value) -> (String, thread::JoinHandle<(String, Val
         } else {
             serde_json::from_slice(&bytes[end..end + length]).unwrap()
         };
-        let response = value.to_string();
-        write!(
+        let _ = write!(
             s,
             "HTTP/1.1 {status} Mock\r\nContent-Length:{}\r\nConnection:close\r\n\r\n{response}",
-            response.len()
-        )
-        .unwrap();
+            declared_length.unwrap_or(response.len())
+        );
+        drop(s);
+        thread::sleep(std::time::Duration::from_millis(50));
+        l.set_nonblocking(true).unwrap();
+        assert!(
+            matches!(l.accept(), Err(e) if e.kind() == std::io::ErrorKind::WouldBlock),
+            "read must not retry"
+        );
         (header, body)
     });
     (origin, t)
@@ -186,4 +198,133 @@ async fn business_missing_current_source_and_protocol_errors_preserve_read_only_
         }
         t.join().unwrap();
     }
+}
+
+#[tokio::test]
+async fn exact_422_receipts_and_legacy_200_refusals_survive_all_four_reads() {
+    for kind in [
+        InvoiceOriginalKind::List,
+        InvoiceOriginalKind::Find,
+        InvoiceOriginalKind::Status,
+        InvoiceOriginalKind::Overdue,
+    ] {
+        for (status, value) in [
+            (
+                422,
+                json!({"ok":false,"code":"SOURCE_UNAVAILABLE","errors":["server-owned reason","another reason"],"appliedRules":["original.source"]}),
+            ),
+            (200, json!({"ok":false,"errors":["legacy refusal"]})),
+        ] {
+            let (origin, t) = server(status, value.clone());
+            assert_eq!(
+                ApiClient::new(&origin, true, None)
+                    .unwrap()
+                    .invoice_original("synthetic", kind, &InvoiceOriginalQuery::default())
+                    .await
+                    .unwrap(),
+                value
+            );
+            let (header, body) = t.join().unwrap();
+            assert!(header.starts_with("GET "));
+            assert!(body.is_null());
+        }
+    }
+}
+
+#[tokio::test]
+async fn malformed_and_nonbusiness_http_errors_are_generic_for_all_reads() {
+    let valid = json!({"ok":false,"code":"REMOTE_SECRET","errors":["remote private body"]});
+    let mut invalid = vec![
+        json!({"ok":true,"data":{},"errors":[],"code":"REMOTE_SECRET"}),
+        json!({"ok":false,"errors":["private"]}),
+        json!({"ok":false,"code":" ","errors":["private"]}),
+        json!({"ok":false,"code":"","errors":["private"]}),
+    ];
+    for (key, value) in [
+        ("data", json!({})),
+        ("data", Value::Null),
+        ("code", json!(12)),
+        ("errors", json!([])),
+        ("errors", json!([12])),
+        ("errors", json!("private")),
+        ("appliedRules", Value::Null),
+        ("appliedRules", json!([12])),
+    ] {
+        let mut value_with_invalid_field = valid.clone();
+        value_with_invalid_field[key] = value;
+        invalid.push(value_with_invalid_field);
+    }
+    for kind in [
+        InvoiceOriginalKind::List,
+        InvoiceOriginalKind::Find,
+        InvoiceOriginalKind::Status,
+        InvoiceOriginalKind::Overdue,
+    ] {
+        for (status, body) in invalid.iter().map(|v| (422, v.to_string())).chain([
+            (422, "not json REMOTE_SECRET".into()),
+            (403, valid.to_string()),
+            (401, valid.to_string()),
+            (408, valid.to_string()),
+            (503, valid.to_string()),
+        ]) {
+            let (origin, t) = raw_server(status, body, None);
+            let error = ApiClient::new(&origin, true, None)
+                .unwrap()
+                .invoice_original("synthetic", kind, &InvoiceOriginalQuery::default())
+                .await
+                .unwrap_err();
+            assert_eq!(error, Error::Refused { status });
+            assert!(!error.to_string().contains("REMOTE_SECRET"));
+            assert!(t.join().unwrap().1.is_null());
+        }
+    }
+}
+
+#[tokio::test]
+async fn bounded_complete_reads_never_become_unknown_or_retry() {
+    for status in [200, 422] {
+        for truncated in [false, true] {
+            let body = if truncated {
+                json!({"ok":false,"code":"BUSINESS","errors":["reason"]}).to_string()
+            } else {
+                " ".repeat(16 * 1024 * 1024 + 1)
+            };
+            let length = truncated.then_some(body.len() + 10);
+            let (origin, t) = raw_server(status, body, length);
+            let error = ApiClient::new(&origin, true, None)
+                .unwrap()
+                .invoice_original(
+                    "synthetic",
+                    InvoiceOriginalKind::List,
+                    &InvoiceOriginalQuery::default(),
+                )
+                .await
+                .unwrap_err();
+            assert_eq!(
+                error,
+                if status == 422 {
+                    Error::Refused { status }
+                } else if truncated {
+                    Error::Transport
+                } else {
+                    Error::Protocol
+                }
+            );
+            t.join().unwrap();
+        }
+    }
+    let (origin, t) = raw_server(200, "not json".into(), None);
+    assert_eq!(
+        ApiClient::new(&origin, true, None)
+            .unwrap()
+            .invoice_original(
+                "synthetic",
+                InvoiceOriginalKind::List,
+                &InvoiceOriginalQuery::default()
+            )
+            .await
+            .unwrap_err(),
+        Error::Protocol
+    );
+    t.join().unwrap();
 }

@@ -74,6 +74,8 @@ fn wrap(mut core: Value) -> Value {
     }
     if ok == true {
         envelope["data"] = core;
+    } else if let Some(code) = core.get("code") {
+        envelope["code"] = code.clone();
     } else {
         let errors = envelope["errors"]
             .as_array()

@@ -1,15 +1,15 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "Group156 accepted original full-rate/reverse-note issuance and recurring parity with explicit typed classification refusal; real SGD pilot adopted",
-  "code_revision": "12bda17e9de8754b2671d2856ac5606e07f67a87",
+  "current_increment": "Group157 original invoice refusal/recovery adapters accepted through four parallel SGD workers",
+  "code_revision": "fec6b7081c644153cbd17d085a8bb88be9063a07",
   "spec_revision": "sha256:bc98636be4a972407adce0f817a76bb9d4bb7200cb292a70965e75ab62fae250",
-  "state": "Group156 ACCEPTED: original full invoice totals.vatRate fallback and line overrides preserve exact positive/mixed taxable rates through issuance, immutable JSON/PDF and recurring generation. Explicit reverse-charge basis may omit custom note; direction/classification/zero VAT/totals remain strict. Unmapped taxable rates cannot authorize posting or legacy/explicit credit; original CLI and MCP retain the server-owned422 business refusal. Actual existing-current-human profile: two templates/four generations/eight files,20-percent amounts120, reverse amounts100, exactly one valid zero-VAT journal/two lines, no extra bank/payment/delivery effects, all previous rows/originals unchanged and exact current-MFA restart. Failed generic CLI-error attempt preserved; continuation reused all issued documents without generation replay. Native backup admission and legacy-credit refusal focused evidence retained; no fresh-MFA renewal/signed restore156 claim. SGD guard pilot completed end-to-end with real Docker model, scoped worktree/commit/review/integration/checks and two concurrent real Cargo checks; two actual Rentemester builds also overlapped in separate outputs. Product worker delivered same reviewed code, but its runner cargo command failed to start because PATH lacked cargo; lead executed corrected guarded checks, integrated and accepted the journey without model replay or falsifying Go state. Full717/672/original55/J01-J07/release/cutover/TS retirement/final desktop scope remains OPEN.",
+  "state": "Group157 ACCEPTED bounded original invoice refusal/recovery transport: four invoice GET reads, eleven claims, original recurring create/generate/list and four original public invoice operations preserve validated server-owned HTTP422 code/errors through existing CLI and original MCP where present. Recurring MCP prioritizes authoritative code before legacy code-less200 inference. Malformed, blank-code, success/artifact-shaped and nonbusiness errors remain generic; response bounds, confirmation, read/write policies, no retry on unknown writes and exact output-file preservation retained. Four real isolated Docker workers/commits/reviews integrated through deterministic SGD; all seven focused combined checks (44 tests) plus three-package all-target strict Clippy PASS first attempt. Four Cargo processes actually overlapped in independent outputs. No financial or external effects replayed; existing156 actual accounting/restart evidence retained. Full #717/#672, original55/J01-J07, launcher/global company selection, release/cutover/TypeScript retirement and final installed desktop acceptance remain OPEN.",
   "issues_closed": [
     701
   ],
   "next": [
-    "Continue only the next necessary remaining original whole-product CLI/MCP contract under717: actor/env/company-path/default launcher/error/receipt parity from existing source inventory. Group156 full-rate/reverse-note issuance, recurring, classified refusal and restart are accepted; do not reissue retained originals or rerun unchanged155/156 evidence. Use the adopted bounded SGD workflow, explicit actual check programs and independent compiler output; reconcile cancelled product-run receipt plus lead acceptance before dispatch.",
+    "Next necessary original script entry/selection journey under #717 and existing #716 dependency: supported global flag positions/attached values/output format/root discovery plus explicit/env company selection and safe verified local-profile path bridge. Keep one authenticated Rust server/engine; do not reintroduce spoofable actor authority or switch default launcher before remaining acceptance. Preserve accepted156/157; no repeated financial issuance or unchanged checks. Original bad-debt422 validator gap remains explicitly unaccepted, alongside original whole-product historical receipt/release/cutover/TS retirement scope.",
     "Original invoice interface inventory now has all31CLI and25MCP bindings, with explicit compatibility corrections documented; do not mistake that family inventory for full product parity. Reconcile remaining original whole-product R44/R45 acceptance from existing epic/issues: actor/env/company-path/default launcher/errors/historical receipts, closure/recovery/automation, signed distribution/update/cutover and TypeScript backend retirement. Continue next necessary whole journey, preserve all accepted evidence/full original scope; installed desktop acceptance last.",
     "Installed desktop acceptance is explicitly deferred to the very end by the user. Preserve prepared Group100 profile; collect remaining native automation, closure, recovery and packaging checks for final installed acceptance without requesting screen unlock during development.",
     "J03/R50 and remaining R54 scope: only still-supported operation closure/recovery, nonempty scheduler handoff, hostile/older clone and post-cutover rollback requirements. Group99 qualifies managed installed J06 flow, not every R54 acceptance item.",
@@ -25,9 +25,9 @@
   ],
   "all_goal_requirements_complete": false,
   "previous_verified_increment": {
-    "name": "Group155 original human workspace recurring runner accepted; resolve diagnosed original invoice validation gaps next",
-    "code_revision": "1b73feab2aa1f91bebc6a24698681b630b9ec5b0",
-    "evidence_key": "original_recurring_workspace155_acceptance"
+    "name": "Group156 accepted original full-rate/reverse-note issuance and recurring parity with explicit typed classification refusal; real SGD pilot adopted",
+    "code_revision": "12bda17e9de8754b2671d2856ac5606e07f67a87",
+    "evidence_key": "original_invoice_recurring_tax156"
   },
   "evidence": {
     "combined_browser_log": "/tmp/rm-platform5-combined.log",
@@ -8986,6 +8986,31 @@
       "instructions_commit": "6e7cedc6",
       "domain_controls_unchanged": true,
       "new_scheduler_vm_or_server": false
+    },
+    "original_invoice_refusals157": {
+      "issue": 717,
+      "status": "ACCEPTED bounded transport journey; full issue/epic OPEN",
+      "source_revision": "fec6b7081c644153cbd17d085a8bb88be9063a07",
+      "sgd_run": "rust-invoice-refusals157-20261022T110638.208650000",
+      "sgd_project": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester",
+      "engine_phase": "done",
+      "report": "/tmp/rentemester-rust-reports/original-invoice-refusals157.json",
+      "report_sha256": "0a78df99dcc361b8b3e7062ba14aa49b0c1ed0a1fc933bc8b31b0d9a2962d9b9",
+      "focused_tests": 44,
+      "strict": "client/cli/mcp --all-targets -D warnings",
+      "worker_commits": {
+        "invoice-claims": "c3c3401731007197ae3409bc991edde52767b0fa",
+        "invoice-public": "12041238dcbeb375ba60774a3f4ab91c1fad947c",
+        "invoice-reads": "22a42162a9b0b995a8da4ddbac78a10b1e43d454",
+        "invoice-recurring": "77123bdc7f51f00076b915af3f63bf747abe4687"
+      },
+      "observed_simultaneous_cargo_processes": 4,
+      "no_financial_replay": true,
+      "scope_limits": [
+        "No new live server financial lifecycle, desktop, restore, distribution, cutover or TypeScript retirement claim. Existing156 actual financial/restart evidence remains retained.",
+        "Original global argument/environment/local-path/default-launcher and other whole-product parity contracts remain open; original bad-debt422 validator gap separately recorded.",
+        "Full #717/#672 and all original55/J01-J07 scope remain open."
+      ]
     }
   },
   "verified_history": [
@@ -10651,6 +10676,12 @@
       "code_revision": "1b73feab2aa1f91bebc6a24698681b630b9ec5b0",
       "state": "Group155 ACCEPTED supported current-human original explicit workspace runner through the common Rust engine/server. Combined unchanged-runtime evidence: prior actual three-company known-failure isolation, CLI/MCP/HTTP cap2 oldest-gap continuation, six generations/twelve originals, truthful email dryrun without SMTP, exact books/files/current-session restart; plus new normal-MFA fresh profile public preflight refusal before reservation, explicit registered queued/ambiguous delivery once each, original CLI partial counts, original MCP one recorded-ID GET then no resend, four independently signature-verified full company SQL/original archives, fresh-source MFA restart, source-free new-owner restore and second fresh-MFA reopen without provider credentials/adopted grants/hidden dispatch. Two original templates/generations/claims, four original files, seven typed public recurring events (two preflight refusals/two attempts/pending/uncertain/ack), no journals. Exact original public/history survives recovery; all source/target roots and private signers unavailable before final independent archive verification; owned runtime removed. Focused admitted full catalog proves archived/uninitialized without creating paths (server skip mapping inspected, not claimed a browser manifest case); focused overdue backup test blocks Plan/Generate/Reserve/Event without effects and existing current membership revocation proof retained. Prior eight-package all-target strict and normal three binaries remain valid; added host tests and host all-target strict pass. Production runtime528c1f9d unchanged by acceptance-test commit1b73feab. Supported human runner accepted, not full service/global original-family parity. Next diagnosed original taxable-rate/reverse-note/domain-error compatibility; full original children/J01-J07/release/cutover/TS retirement/final installed desktop scope OPEN.",
       "evidence_key": "original_recurring_workspace155_acceptance"
+    },
+    {
+      "current_increment": "Group156 accepted original full-rate/reverse-note issuance and recurring parity with explicit typed classification refusal; real SGD pilot adopted",
+      "code_revision": "12bda17e9de8754b2671d2856ac5606e07f67a87",
+      "state": "Group156 ACCEPTED: original full invoice totals.vatRate fallback and line overrides preserve exact positive/mixed taxable rates through issuance, immutable JSON/PDF and recurring generation. Explicit reverse-charge basis may omit custom note; direction/classification/zero VAT/totals remain strict. Unmapped taxable rates cannot authorize posting or legacy/explicit credit; original CLI and MCP retain the server-owned422 business refusal. Actual existing-current-human profile: two templates/four generations/eight files,20-percent amounts120, reverse amounts100, exactly one valid zero-VAT journal/two lines, no extra bank/payment/delivery effects, all previous rows/originals unchanged and exact current-MFA restart. Failed generic CLI-error attempt preserved; continuation reused all issued documents without generation replay. Native backup admission and legacy-credit refusal focused evidence retained; no fresh-MFA renewal/signed restore156 claim. SGD guard pilot completed end-to-end with real Docker model, scoped worktree/commit/review/integration/checks and two concurrent real Cargo checks; two actual Rentemester builds also overlapped in separate outputs. Product worker delivered same reviewed code, but its runner cargo command failed to start because PATH lacked cargo; lead executed corrected guarded checks, integrated and accepted the journey without model replay or falsifying Go state. Full717/672/original55/J01-J07/release/cutover/TS retirement/final desktop scope remains OPEN.",
+      "evidence_key": "original_invoice_recurring_tax156"
     }
   ],
   "scope_clarifications": [

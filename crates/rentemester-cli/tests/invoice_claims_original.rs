@@ -201,43 +201,54 @@ fn all_eleven_original_claim_commands_keep_source_flags_omitted_defaults_and_fla
             json!({"payload":{"invoiceNumber":"INV","bankTransactionReference":" raw ref ","amount":12.34},"confirm":true}),
         ),
     ] {
-        let value = json!({"ok":true,"data":{"sourceOperation":command,"remainingClaimOpenBalance":17.66,"canPost":false,"requiresRefund":true,"claimOpenBalance":null,"principalCurrency":"EUR","claimBalanceDkk":17},"errors":[],"appliedRules":["source-rule"]});
-        let (origin, t) = server(200, value.clone());
-        let mut args = extra;
-        if command != "settle-claim-bank" {
-            args.extend(["--document-id", "7"]);
-        }
-        args.push("--json");
-        let out = call(
-            command,
-            &origin,
-            &f,
-            &args,
-            if command == "settle-claim-bank" {
-                Some(
-                    " { \"invoiceNumber\":\"INV\", \"bankTransactionReference\":\" raw ref \" , \"amount\":12.34 } ",
-                )
+        for status in [200, 422] {
+            let value = if status == 422 {
+                json!({"ok":false,"code":" server_claim_gate ","errors":[" exact server error ","second error"],"appliedRules":["source-rule"]})
             } else {
-                None
-            },
-        );
-        assert_eq!(
-            out.status.code(),
-            Some(0),
-            "{}: {}",
-            command,
-            String::from_utf8_lossy(&out.stderr)
-        );
-        let mut flat = value["data"].clone();
-        flat["ok"] = json!(true);
-        flat["errors"] = json!([]);
-        flat["appliedRules"] = json!(["source-rule"]);
-        assert_eq!(serde_json::from_slice::<Value>(&out.stdout).unwrap(), flat);
-        let (header, body) = t.join().unwrap();
-        assert!(header.starts_with(&format!(
-            "POST /api/companies/synthetic/invoices/original/{command} "
-        )));
-        assert_eq!(body, expected);
+                json!({"ok":true,"data":{"sourceOperation":command,"remainingClaimOpenBalance":17.66,"canPost":false,"requiresRefund":true,"claimOpenBalance":null,"principalCurrency":"EUR","claimBalanceDkk":17},"errors":[],"appliedRules":["source-rule"]})
+            };
+            let (origin, t) = server(status, value.clone());
+            let mut args = extra.clone();
+            if command != "settle-claim-bank" {
+                args.extend(["--document-id", "7"]);
+            }
+            args.push("--json");
+            let out = call(
+                command,
+                &origin,
+                &f,
+                &args,
+                if command == "settle-claim-bank" {
+                    Some(
+                        " { \"invoiceNumber\":\"INV\", \"bankTransactionReference\":\" raw ref \" , \"amount\":12.34 } ",
+                    )
+                } else {
+                    None
+                },
+            );
+            assert_eq!(
+                out.status.code(),
+                Some(if status == 422 { 1 } else { 0 }),
+                "{}: {}",
+                command,
+                String::from_utf8_lossy(&out.stderr)
+            );
+            if status == 422 {
+                assert_eq!(serde_json::from_slice::<Value>(&out.stdout).unwrap(), value);
+                assert!(out.stderr.is_empty());
+            } else {
+                let mut flat = value["data"].clone();
+                flat["ok"] = json!(true);
+                flat["errors"] = json!([]);
+                flat["appliedRules"] = json!(["source-rule"]);
+                assert_eq!(serde_json::from_slice::<Value>(&out.stdout).unwrap(), flat);
+            }
+            let (header, body) = t.join().unwrap();
+            assert!(header.starts_with(&format!(
+                "POST /api/companies/synthetic/invoices/original/{command} "
+            )));
+            assert_eq!(body, expected);
+        }
     }
 }
 #[test]
@@ -286,22 +297,26 @@ fn strict_claim_flags_business_and_input_failures_preserve_exit_streams() {
         assert!(out.stdout.is_empty());
         assert!(!out.stderr.is_empty());
     }
-    for human in [false, true] {
-        let value = json!({"ok":false,"code":"unsupported_foreign_interest","errors":["unsupported foreign interest"],"appliedRules":["source-rule"]});
-        let (origin, t) = server(200, value.clone());
-        let mut args = vec!["--invoice-number", "INV", "--as-of", "2026-01-01"];
-        if !human {
-            args.push("--json");
+    for status in [200, 422] {
+        for human in [false, true] {
+            let value = json!({"ok":false,"code":"unsupported_foreign_interest","errors":["unsupported foreign interest"],"appliedRules":["source-rule"]});
+            let (origin, t) = server(status, value.clone());
+            let mut args = vec!["--invoice-number", "INV", "--as-of", "2026-01-01"];
+            if !human {
+                args.push("--json");
+            }
+            let out = call("interest", &origin, &f, &args, None);
+            assert_eq!(out.status.code(), Some(1));
+            if human {
+                assert!(out.stdout.is_empty());
+                assert!(
+                    String::from_utf8_lossy(&out.stderr).contains("unsupported foreign interest")
+                );
+            } else {
+                assert_eq!(serde_json::from_slice::<Value>(&out.stdout).unwrap(), value);
+                assert!(out.stderr.is_empty());
+            }
+            t.join().unwrap();
         }
-        let out = call("interest", &origin, &f, &args, None);
-        assert_eq!(out.status.code(), Some(1));
-        if human {
-            assert!(out.stdout.is_empty());
-            assert!(String::from_utf8_lossy(&out.stderr).contains("unsupported foreign interest"));
-        } else {
-            assert_eq!(serde_json::from_slice::<Value>(&out.stdout).unwrap(), value);
-            assert!(out.stderr.is_empty());
-        }
-        t.join().unwrap();
     }
 }

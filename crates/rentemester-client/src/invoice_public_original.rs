@@ -112,13 +112,6 @@ impl ApiClient {
                 Error::OutcomeUnknown
             }
         };
-        let protocol = || {
-            if preview {
-                Error::Protocol
-            } else {
-                Error::OutcomeUnknown
-            }
-        };
         let path = company_path(company, &format!("invoices/original/{}", kind.suffix()))?;
         let mut response = self
             .send(
@@ -140,19 +133,59 @@ impl ApiClient {
         if !preview && (status.is_server_error() || status.as_u16() == 408) {
             return Err(Error::OutcomeUnknown);
         }
-        if !status.is_success() {
+        let business_refusal = status.as_u16() == 422;
+        if !status.is_success() && !business_refusal {
             return Err(Error::Refused {
                 status: status.as_u16(),
             });
         }
+        // Only complete, bounded, validated 422 business receipts may cross this boundary.
+        let read_error = || {
+            if business_refusal {
+                Error::Refused { status: 422 }
+            } else {
+                unknown()
+            }
+        };
+        let protocol = || {
+            if business_refusal {
+                Error::Refused { status: 422 }
+            } else if preview {
+                Error::Protocol
+            } else {
+                Error::OutcomeUnknown
+            }
+        };
         let mut bytes = vec![];
-        while let Some(chunk) = response.chunk().await.map_err(|_| unknown())? {
+        while let Some(chunk) = response.chunk().await.map_err(|_| read_error())? {
             if bytes.len().saturating_add(chunk.len()) > MAX_RESPONSE {
-                return Err(unknown());
+                return Err(read_error());
             }
             bytes.extend_from_slice(&chunk);
         }
         let value: Value = serde_json::from_slice(&bytes).map_err(|_| protocol())?;
+        if business_refusal {
+            let valid = value["ok"] == false
+                && value["code"].as_str().is_some_and(|s| !s.trim().is_empty())
+                && value["errors"]
+                    .as_array()
+                    .is_some_and(|a| !a.is_empty() && a.iter().all(Value::is_string))
+                && value
+                    .get("appliedRules")
+                    .is_none_or(|v| v.as_array().is_some_and(|a| a.iter().all(Value::is_string)))
+                && [
+                    "data",
+                    "xml",
+                    "sha256",
+                    "envelope",
+                    "envelopeSha256",
+                    "oioublSha256",
+                    "duplicate",
+                ]
+                .iter()
+                .all(|key| value.get(*key).is_none());
+            return if valid { Ok(value) } else { Err(protocol()) };
+        }
         if !value["ok"].is_boolean()
             || !value["errors"]
                 .as_array()

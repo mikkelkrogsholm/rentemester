@@ -251,3 +251,31 @@ fn missing_selector_usage_unmatched_business_and_practical_currency_safe_human()
         );
     }
 }
+
+#[test]
+fn exact_422_receipts_exit_one_for_all_original_reads() {
+    let f = Fixture::new();
+    for (kind, selectors) in [
+        ("list", vec![]),
+        ("find", vec!["literal"]),
+        ("status", vec!["--document-id", "7"]),
+        ("overdue", vec![]),
+    ] {
+        let receipt = json!({"ok":false,"code":"ORIGINAL_SOURCE_MISSING","errors":["server-owned source refusal"],"appliedRules":["original.source"]});
+        let (origin, t) = server(422, receipt.clone());
+        let mut args = selectors;
+        args.push("--json");
+        let out = call(kind, &origin, &f, kind == "status", &args);
+        assert_eq!(out.status.code(), Some(1));
+        assert_eq!(
+            serde_json::from_slice::<Value>(&out.stdout).unwrap(),
+            receipt
+        );
+        assert!(out.stderr.is_empty());
+        let (header, body) = t.join().unwrap();
+        assert!(header.starts_with(&format!(
+            "GET /api/companies/synthetic/invoices/original/{kind}"
+        )));
+        assert!(body.is_null());
+    }
+}

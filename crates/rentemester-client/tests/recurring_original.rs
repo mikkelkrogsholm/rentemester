@@ -223,3 +223,216 @@ async fn workspace_recurring_preserves_partial_runs_and_never_retries_unknown() 
         );
     }
 }
+
+#[tokio::test]
+async fn original_recurring_bounded_422_receipts_for_reads_and_writes() {
+    let receipt = json!({"ok":false,"code":"SERVER_RECURRING_POLICY","errors":["template does not exist","period refused"],"appliedRules":["recurring-policy"]});
+    for mutation in [false, true] {
+        for (status, body, expected) in [
+            (422, receipt.clone(), Ok(receipt.clone())),
+            (200, receipt.clone(), Ok(receipt.clone())),
+            (403, receipt.clone(), Err(Error::Refused { status: 403 })),
+            (
+                422,
+                json!({"ok":true,"code":"BAD","errors":[]}),
+                Err(Error::Refused { status: 422 }),
+            ),
+            (
+                422,
+                json!({"ok":false,"errors":["private marker"]}),
+                Err(Error::Refused { status: 422 }),
+            ),
+            (
+                422,
+                json!({"ok":false,"code":"  ","errors":["private marker"]}),
+                Err(Error::Refused { status: 422 }),
+            ),
+            (
+                422,
+                json!({"ok":false,"code":42,"errors":["private marker"]}),
+                Err(Error::Refused { status: 422 }),
+            ),
+            (
+                422,
+                json!({"ok":false,"code":"BAD","errors":[]}),
+                Err(Error::Refused { status: 422 }),
+            ),
+            (
+                422,
+                json!({"ok":false,"code":"BAD","errors":[42]}),
+                Err(Error::Refused { status: 422 }),
+            ),
+            (
+                422,
+                json!({"ok":false,"code":"BAD","errors":["private marker"],"appliedRules":[42]}),
+                Err(Error::Refused { status: 422 }),
+            ),
+            (
+                422,
+                json!({"ok":false,"code":"BAD","errors":["private marker"],"data":{}}),
+                Err(Error::Refused { status: 422 }),
+            ),
+            (
+                422,
+                json!({"ok":false,"code":"BAD","errors":["private marker"],"rows":[],"count":0}),
+                Err(Error::Refused { status: 422 }),
+            ),
+            (
+                422,
+                json!({"ok":false,"code":"BAD","errors":["private marker"],"created":true,"documentId":7}),
+                Err(Error::Refused { status: 422 }),
+            ),
+        ] {
+            let (origin, t) = server(status, body);
+            let api = ApiClient::new(&origin, true, None).unwrap();
+            let actual = if mutation {
+                api.recurring_original(
+                    "synthetic",
+                    Kind::Create,
+                    template().to_string().into_bytes(),
+                )
+                .await
+            } else {
+                api.recurring_original_list("synthetic", false).await
+            };
+            assert_eq!(actual, expected);
+            let (headers, body) = t.join().unwrap();
+            assert!(headers.starts_with(if mutation { "POST " } else { "GET " }));
+            if !mutation {
+                assert_eq!(body, Value::Null);
+            }
+        }
+    }
+}
+
+// This fixture keeps accepting after the response to detect even a silent retry.
+fn broken_server(status: u16, body: String, declared: usize) -> (String, thread::JoinHandle<()>) {
+    let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+    let origin = format!("http://{}", listener.local_addr().unwrap());
+    let t = thread::spawn(move || {
+        let (mut stream, _) = listener.accept().unwrap();
+        stream
+            .set_read_timeout(Some(std::time::Duration::from_secs(5)))
+            .unwrap();
+        let mut bytes = Vec::new();
+        loop {
+            let mut buf = [0; 4096];
+            let n = stream.read(&mut buf).unwrap();
+            assert!(n > 0);
+            bytes.extend_from_slice(&buf[..n]);
+            if let Some(end) = bytes.windows(4).position(|v| v == b"\r\n\r\n") {
+                let headers = String::from_utf8_lossy(&bytes[..end]);
+                let length: usize = headers
+                    .lines()
+                    .find_map(|line| {
+                        line.to_lowercase()
+                            .strip_prefix("content-length:")
+                            .map(|v| v.trim().parse().unwrap())
+                    })
+                    .unwrap_or(0);
+                if bytes.len() >= end + 4 + length {
+                    break;
+                }
+            }
+        }
+        if status != 0 {
+            let _ = write!(
+                stream,
+                "HTTP/1.1 {status} Mock\r\nContent-Length:{declared}\r\nConnection:close\r\n\r\n{body}"
+            );
+        }
+        drop(stream);
+        listener.set_nonblocking(true).unwrap();
+        let until = std::time::Instant::now() + std::time::Duration::from_millis(150);
+        while std::time::Instant::now() < until {
+            match listener.accept() {
+                Err(e) if e.kind() == std::io::ErrorKind::WouldBlock => {
+                    thread::sleep(std::time::Duration::from_millis(5))
+                }
+                _ => panic!("unexpected retry"),
+            }
+        }
+    });
+    (origin, t)
+}
+
+#[tokio::test]
+async fn original_recurring_incomplete_and_oversized_responses_never_retry() {
+    for mutation in [false, true] {
+        for (status, body, declared, expected) in [
+            (
+                0,
+                String::new(),
+                0,
+                if mutation {
+                    Error::OutcomeUnknown
+                } else {
+                    Error::Transport
+                },
+            ),
+            (
+                200,
+                "{".into(),
+                100,
+                if mutation {
+                    Error::OutcomeUnknown
+                } else {
+                    Error::Transport
+                },
+            ),
+            (422, "{".into(), 100, Error::Refused { status: 422 }),
+            (422, "not json".into(), 8, Error::Refused { status: 422 }),
+            (
+                422,
+                " ".repeat(16 * 1024 * 1024 + 1),
+                16 * 1024 * 1024 + 1,
+                Error::Refused { status: 422 },
+            ),
+            (
+                200,
+                " ".repeat(16 * 1024 * 1024 + 1),
+                16 * 1024 * 1024 + 1,
+                if mutation {
+                    Error::OutcomeUnknown
+                } else {
+                    Error::Protocol
+                },
+            ),
+            (
+                408,
+                String::new(),
+                0,
+                if mutation {
+                    Error::OutcomeUnknown
+                } else {
+                    Error::Refused { status: 408 }
+                },
+            ),
+            (
+                503,
+                String::new(),
+                0,
+                if mutation {
+                    Error::OutcomeUnknown
+                } else {
+                    Error::Refused { status: 503 }
+                },
+            ),
+        ] {
+            let (origin, t) = broken_server(status, body, declared);
+            let api = ApiClient::new(&origin, true, None).unwrap();
+            let actual = if mutation {
+                api.recurring_original(
+                    "synthetic",
+                    Kind::Create,
+                    template().to_string().into_bytes(),
+                )
+                .await
+            } else {
+                api.recurring_original_list("synthetic", false).await
+            };
+            assert_eq!(actual, Err(expected));
+            t.join().unwrap();
+        }
+    }
+}

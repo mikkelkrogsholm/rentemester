@@ -229,3 +229,105 @@ fn workspace_recurring_stdio_preserves_source_success_and_partial_failure() {
         assert_eq!(rows[1]["error"]["code"], -32602);
     }
 }
+
+#[test]
+fn original_recurring_stdio_transport422_preserves_server_code_before_inference() {
+    let receipt = json!({"ok":false,"code":"SERVER_RECURRING_POLICY","errors":["template does not exist; falls in closed period"],"appliedRules":["recurring-policy"]});
+    for (name, args) in [
+        ("recurring_invoice_create", create()),
+        (
+            "recurring_invoice_generate",
+            json!({"company":"synthetic","templateId":7,"asOfDate":"2024-02-29","confirm":true}),
+        ),
+        ("recurring_invoice_list", json!({"company":"synthetic"})),
+    ] {
+        for (status, core, expected_code) in [
+            (422, receipt.clone(), "SERVER_RECURRING_POLICY"),
+            (200, receipt.clone(), "SERVER_RECURRING_POLICY"),
+            (
+                200,
+                json!({"ok":false,"errors":["template does not exist"]}),
+                "NOT_FOUND",
+            ),
+            (
+                200,
+                json!({"ok":false,"errors":["falls in closed period"]}),
+                "PERIOD_CLOSED",
+            ),
+            (403, receipt.clone(), "server_refused"),
+            (
+                422,
+                json!({"ok":false,"errors":["private marker"]}),
+                "server_refused",
+            ),
+            (
+                422,
+                json!({"ok":false,"code":" ","errors":["private marker"]}),
+                "server_refused",
+            ),
+            (
+                422,
+                json!({"ok":false,"code":7,"errors":["private marker"]}),
+                "server_refused",
+            ),
+            (
+                422,
+                json!({"ok":false,"code":"BAD","errors":[42]}),
+                "server_refused",
+            ),
+            (
+                422,
+                json!({"ok":false,"code":"BAD","errors":["private marker"],"appliedRules":{}}),
+                "server_refused",
+            ),
+            (
+                422,
+                json!({"ok":false,"code":"BAD","errors":["private marker"],"data":{}}),
+                "server_refused",
+            ),
+            (
+                422,
+                json!({"ok":true,"templateId":7,"appliedRules":[],"errors":[]}),
+                "server_refused",
+            ),
+        ] {
+            let payload = core.to_string();
+            let response = format!(
+                "HTTP/1.1 {status} Mock\r\nContent-Length:{}\r\nConnection:close\r\n\r\n{payload}",
+                payload.len()
+            );
+            let (origin, req, t) = http(Box::leak(response.into_boxed_str()));
+            let rows = parsed(&run(
+                &origin,
+                &[init("2025-11-25"), ready(), call(2, name, args.clone())],
+            ));
+            let result = &rows[1]["result"];
+            let envelope = &result["structuredContent"];
+            assert_eq!(result["isError"], true);
+            assert_eq!(envelope["ok"], false);
+            assert_eq!(envelope["code"], expected_code);
+            assert!(envelope.get("data").is_none());
+            if expected_code != "server_refused" {
+                assert_eq!(envelope["errors"], core["errors"]);
+                if let Some(rules) = core.get("appliedRules") {
+                    assert_eq!(&envelope["appliedRules"], rules);
+                }
+            } else {
+                assert!(!envelope.to_string().contains("private marker"));
+                assert!(!envelope.to_string().contains("template does not exist"));
+            }
+            assert_eq!(
+                serde_json::from_str::<Value>(result["content"][0]["text"].as_str().unwrap())
+                    .unwrap(),
+                *envelope
+            );
+            let request = String::from_utf8(req.recv().unwrap()).unwrap();
+            assert!(request.starts_with(if name == "recurring_invoice_list" {
+                "GET "
+            } else {
+                "POST "
+            }));
+            t.join().unwrap();
+        }
+    }
+}

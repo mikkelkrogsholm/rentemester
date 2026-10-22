@@ -218,4 +218,21 @@ mod tests {
     fn canonical_four_reads_preserve_negative_bounds_amount_priority_and_status_histories() {
         tokio::runtime::Runtime::new().unwrap().block_on(async{for(name,args,value,contains)in[("invoice_list",json!({"company":"synthetic","customer":" ","customerCvr":" dk123 ","minAmount":-12.34}),json!({"ok":true,"data":{"count":0,"rows":[]},"errors":[]}),vec!["customer=+","customerCvr=+dk123+","minAmount=-12.34"]),("invoice_find",json!({"company":"synthetic","query":"literal % words","amount":-12.34,"minAmount":-999,"maxAmount":999,"asOf":"2020-01-01"}),json!({"ok":true,"data":{"count":1,"rows":[{"invoiceNumber":"server exact amount result"}]},"errors":[]}),vec!["amount=-12.34","minAmount=-999","maxAmount=999","query=literal+%25+words"]),("invoice_status",json!({"company":"synthetic","documentId":7,"invoiceNumber":"ignored"}),json!({"ok":true,"data":{"invoiceDocumentId":7,"claimOpenBalance":null,"currency":"EUR","claimCurrency":"DKK","registeredClaimBalanceDkk":100,"payments":[{"amount":12}]},"errors":[]}),vec!["documentId=7","invoiceNumber=ignored"]),("invoice_overdue",json!({"company":"synthetic","minDays":0}),json!({"ok":false,"errors":["server-owned business refusal"]}),vec!["minDays=0"])]{let(origin,t)=server(200,value.clone());let api=ApiClient::new(&origin,true,None).unwrap();let result=crate::tools::call(&api,name,args).await.unwrap();assert_eq!(result["structuredContent"],value);assert_eq!(serde_json::from_str::<Value>(result["content"][0]["text"].as_str().unwrap()).unwrap(),value);assert_eq!(result["isError"],value["ok"]!=true);let(header,body)=t.join().unwrap();assert!(contains.into_iter().all(|s|header.contains(s)));assert!(body.is_null());}});
     }
+    #[test]
+    fn exact_422_receipts_are_mcp_errors_without_losing_code_or_rules() {
+        tokio::runtime::Runtime::new().unwrap().block_on(async {
+            for name in ["invoice_list", "invoice_find", "invoice_status", "invoice_overdue"] {
+                let receipt = json!({"ok":false,"code":"ORIGINAL_SOURCE_MISSING","errors":["server-owned source refusal"],"appliedRules":["original.source"]});
+                let (origin, t) = server(422, receipt.clone());
+                let api = ApiClient::new(&origin, true, None).unwrap();
+                let result = crate::tools::call(&api, name, json!({"company":"synthetic"})).await.unwrap();
+                assert_eq!(result["isError"], true);
+                assert_eq!(result["structuredContent"], receipt);
+                assert_eq!(serde_json::from_str::<Value>(result["content"][0]["text"].as_str().unwrap()).unwrap(), receipt);
+                let (header, body) = t.join().unwrap();
+                assert!(header.starts_with("GET "));
+                assert!(body.is_null());
+            }
+        });
+    }
 }

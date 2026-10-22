@@ -166,20 +166,32 @@ impl ApiClient {
         if !render && (status.is_server_error() || status.as_u16() == 408) {
             return Err(Error::OutcomeUnknown);
         }
-        if !status.is_success() {
+        let business_refusal = status.as_u16() == 422;
+        if !status.is_success() && !business_refusal {
             return Err(Error::Refused {
                 status: status.as_u16(),
             });
         }
+        // Only a complete, bounded and validated 422 receipt is a business result.
+        // Invalid error bodies remain generic and are never reflected to callers.
+        let read_error = || {
+            if business_refusal {
+                Error::Refused { status: 422 }
+            } else {
+                unknown()
+            }
+        };
         let mut bytes = vec![];
-        while let Some(chunk) = response.chunk().await.map_err(|_| unknown())? {
+        while let Some(chunk) = response.chunk().await.map_err(|_| read_error())? {
             if bytes.len().saturating_add(chunk.len()) > MAX_RESPONSE {
-                return Err(unknown());
+                return Err(read_error());
             }
             bytes.extend_from_slice(&chunk);
         }
         let protocol = || {
-            if render {
+            if business_refusal {
+                Error::Refused { status: 422 }
+            } else if render {
                 Error::Protocol
             } else {
                 Error::OutcomeUnknown
@@ -200,7 +212,12 @@ impl ApiClient {
                 value.get("data").is_none()
                     && value["errors"].as_array().is_some_and(|a| !a.is_empty())
             };
-        if !valid {
+        let valid_refusal = !business_refusal
+            || (value["ok"] == false
+                && value["code"]
+                    .as_str()
+                    .is_some_and(|code| !code.trim().is_empty()));
+        if !valid || !valid_refusal {
             return Err(protocol());
         }
         Ok(value)

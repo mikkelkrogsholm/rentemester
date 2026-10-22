@@ -256,4 +256,45 @@ mod tests {
  }
  });
     }
+    #[test]
+    fn all_original_claim_tools_preserve_422_receipts_and_refuse_untrusted_errors() {
+        tokio::runtime::Runtime::new().unwrap().block_on(async {
+            for kind in Kind::ALL {
+                let mut args = body(kind);
+                args["company"] = json!("synthetic");
+                if kind == Kind::Interest { args["referenceRate"] = json!(2.65); }
+                let receipt = json!({"ok":false,"code":" server_claim_gate ","errors":[" exact server error ","second error"],"appliedRules":["source-rule"]});
+                for (status, value, accepted) in [
+                    (422,receipt.clone(),true),
+                    (200,json!({"ok":false,"errors":["legacy refusal"]}),true),
+                    (403,receipt.clone(),false),
+                    (422,json!({"ok":true,"data":{},"code":"remote-secret","errors":[]}),false),
+                    (422,json!({"ok":false,"data":{},"code":"remote-secret","errors":["remote-secret"]}),false),
+                    (422,json!({"ok":false,"errors":["remote-secret"]}),false),
+                    (422,json!({"ok":false,"code":" ","errors":["remote-secret"]}),false),
+                    (422,json!({"ok":false,"code":"remote-secret","errors":[12]}),false),
+                    (422,json!({"ok":false,"code":"remote-secret","errors":["remote-secret"],"appliedRules":false}),false),
+                ] {
+                    let (origin,t) = server(status,value.clone());
+                    let api = ApiClient::new(&origin,true,None).unwrap();
+                    let out = crate::tools::call(&api,name(kind),args.clone()).await.unwrap();
+                    assert_eq!(out["isError"],true);
+                    let actual = &out["structuredContent"];
+                    assert!(actual.get("data").is_none());
+                    assert_eq!(serde_json::from_str::<Value>(out["content"][0]["text"].as_str().unwrap()).unwrap(),*actual);
+                    if accepted { assert_eq!(*actual,value); }
+                    else {
+                        assert_eq!(actual["code"],"server_refused");
+                        assert!(!out.to_string().contains("remote-secret"));
+                        assert!(!out.to_string().contains("server_claim_gate"));
+                    }
+                    let (_,mut actual_body) = t.join().unwrap();
+                    let mut expected = args.clone();
+                    expected.as_object_mut().unwrap().remove("company");
+                    assert_eq!(actual_body,expected);
+                    if kind.is_read_only() { assert!(actual_body.as_object_mut().unwrap().remove("confirm").is_none()); }
+                }
+            }
+        });
+    }
 }

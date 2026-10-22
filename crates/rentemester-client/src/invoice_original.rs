@@ -1,5 +1,5 @@
 //! Original invoice reads; filters, histories, aging and currencies remain server-owned.
-use crate::{ApiClient, Error, company_path};
+use crate::{ApiClient, Error, MAX_RESPONSE, company_path};
 use reqwest::Method;
 use serde_json::{Number, Value, json};
 #[derive(Clone, Copy, Debug)]
@@ -127,14 +127,44 @@ impl ApiClient {
             .iter()
             .map(|(k, v)| (*k, v.as_str()))
             .collect::<Vec<_>>();
-        let value = self
-            .request(
+        let mut response = self
+            .send(
                 Method::GET,
                 &company_path(company, &format!("invoices/original/{action}"))?,
                 &refs,
                 None,
+                self.cookie.as_ref().map(|v| v.as_str()),
             )
             .await?;
+        let status = response.status();
+        let business_refusal = status.as_u16() == 422;
+        if !status.is_success() && !business_refusal {
+            return Err(Error::Refused {
+                status: status.as_u16(),
+            });
+        }
+        // Only complete, bounded business receipts may cross the HTTP error boundary.
+        let protocol = || {
+            if business_refusal {
+                Error::Refused { status: 422 }
+            } else {
+                Error::Protocol
+            }
+        };
+        let mut bytes = vec![];
+        while let Some(chunk) = response.chunk().await.map_err(|_| {
+            if business_refusal {
+                Error::Refused { status: 422 }
+            } else {
+                Error::Transport
+            }
+        })? {
+            if bytes.len().saturating_add(chunk.len()) > MAX_RESPONSE {
+                return Err(protocol());
+            }
+            bytes.extend_from_slice(&chunk);
+        }
+        let value: Value = serde_json::from_slice(&bytes).map_err(|_| protocol())?;
         let valid = value["ok"].is_boolean()
             && value["errors"]
                 .as_array()
@@ -149,8 +179,13 @@ impl ApiClient {
                 value.get("data").is_none()
                     && value["errors"].as_array().is_some_and(|a| !a.is_empty())
             };
-        if !valid {
-            return Err(Error::Protocol);
+        let valid_refusal = !business_refusal
+            || (value["ok"] == false
+                && value["code"]
+                    .as_str()
+                    .is_some_and(|code| !code.trim().is_empty()));
+        if !valid || !valid_refusal {
+            return Err(protocol());
         }
         Ok(value)
     }

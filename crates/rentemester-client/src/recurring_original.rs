@@ -1,5 +1,5 @@
 //! Original structured recurring operations over the common server-owned engine.
-use crate::{ApiClient, Error, company_path, domain::object};
+use crate::{ApiClient, Error, MAX_RESPONSE, company_path, domain::object};
 use reqwest::Method;
 use serde_json::{Value, json};
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -71,6 +71,9 @@ fn checked(value: Value, mutation: bool) -> Result<Value, Error> {
         if value["errors"].as_array().is_none_or(Vec::is_empty) {
             return Err(protocol());
         }
+        if value.get("code").is_some_and(|v| !v.is_string()) {
+            return Err(protocol());
+        }
         return Ok(value);
     }
     if !value["errors"].as_array().is_some_and(Vec::is_empty) {
@@ -98,16 +101,16 @@ impl ApiClient {
         company: &str,
         include_inactive: bool,
     ) -> Result<Value, Error> {
-        let value = self
-            .get(
-                &company_path(company, "recurring-invoices/original/list")?,
-                &[(
-                    "includeInactive",
-                    if include_inactive { "true" } else { "false" },
-                )],
-            )
-            .await?;
-        checked(value, false)
+        self.recurring_original_request(
+            Method::GET,
+            &company_path(company, "recurring-invoices/original/list")?,
+            &[(
+                "includeInactive",
+                if include_inactive { "true" } else { "false" },
+            )],
+            None,
+        )
+        .await
     }
     /// Exact validated source payload once. Unknown writes require canonical reads, never replay.
     pub async fn recurring_original(
@@ -117,25 +120,100 @@ impl ApiClient {
         bytes: Vec<u8>,
     ) -> Result<Value, Error> {
         validate_recurring_original(kind, &bytes)?;
-        let value = self
-            .request(
-                Method::POST,
-                &company_path(
-                    company,
-                    &format!("recurring-invoices/original/{}", kind.suffix()),
-                )?,
-                &[],
-                Some(bytes),
+        self.recurring_original_request(
+            Method::POST,
+            &company_path(
+                company,
+                &format!("recurring-invoices/original/{}", kind.suffix()),
+            )?,
+            &[],
+            Some(bytes),
+        )
+        .await
+    }
+
+    // Family-local bounded transport: never reflect an unvalidated HTTP error body.
+    async fn recurring_original_request(
+        &self,
+        method: Method,
+        path: &str,
+        query: &[(&str, &str)],
+        body: Option<Vec<u8>>,
+    ) -> Result<Value, Error> {
+        let mutation = body.is_some();
+        let mut response = self
+            .send(
+                method,
+                path,
+                query,
+                body,
+                self.cookie.as_ref().map(|v| v.as_str()),
             )
-            .await
-            .map_err(|error| {
-                if error == (Error::Refused { status: 408 }) {
-                    Error::OutcomeUnknown
-                } else {
-                    error
-                }
-            })?;
-        checked(value, true)
+            .await?;
+        let status = response.status();
+        if mutation && (status.is_server_error() || status.as_u16() == 408) {
+            return Err(Error::OutcomeUnknown);
+        }
+        let refusal = status.as_u16() == 422;
+        if !status.is_success() && !refusal {
+            return Err(Error::Refused {
+                status: status.as_u16(),
+            });
+        }
+        let protocol = || {
+            if refusal {
+                Error::Refused { status: 422 }
+            } else if mutation {
+                Error::OutcomeUnknown
+            } else {
+                Error::Protocol
+            }
+        };
+        let mut bytes = Vec::new();
+        while let Some(chunk) = response.chunk().await.map_err(|_| {
+            if refusal {
+                Error::Refused { status: 422 }
+            } else if mutation {
+                Error::OutcomeUnknown
+            } else {
+                Error::Transport
+            }
+        })? {
+            if bytes.len().saturating_add(chunk.len()) > MAX_RESPONSE {
+                return Err(protocol());
+            }
+            bytes.extend_from_slice(&chunk);
+        }
+        let value: Value = serde_json::from_slice(&bytes).map_err(|_| protocol())?;
+        if refusal {
+            let valid = value["ok"] == false
+                && value["code"].as_str().is_some_and(|s| !s.trim().is_empty())
+                && value["errors"]
+                    .as_array()
+                    .is_some_and(|a| !a.is_empty() && a.iter().all(Value::is_string))
+                && value
+                    .get("appliedRules")
+                    .is_none_or(|v| v.as_array().is_some_and(|a| a.iter().all(Value::is_string)))
+                && [
+                    "data",
+                    "rows",
+                    "count",
+                    "created",
+                    "documentId",
+                    "invoiceNumber",
+                    "periodIndex",
+                    "issueDate",
+                    "dueDate",
+                    "deliveryPeriodStart",
+                    "deliveryPeriodEnd",
+                ]
+                .iter()
+                .all(|key| value.get(*key).is_none());
+            if !valid {
+                return Err(protocol());
+            }
+        }
+        checked(value, mutation).map_err(|_| protocol())
     }
 }
 

@@ -389,3 +389,97 @@ fn prepare_without_ack_or_out_preserves_metadata_and_number_only_selector() {
         json!({"invoiceNumber":"ONLY-NUMBER","confirm":true,"accessPoint":{"accessPointId":"a","endpointUrl":"not-a-network-url","senderEndpointId":"s"}})
     );
 }
+
+#[test]
+fn all_four_422_business_refusals_exit_one_preserve_receipt_and_never_write_artifacts() {
+    let f = Fixture::new();
+    let out = f.0.join("refused.xml");
+    let config = f.0.join("access.json");
+    fs::write(
+        &config,
+        r#"{"accessPointId":"a","endpointUrl":"metadata","senderEndpointId":"s"}"#,
+    )
+    .unwrap();
+    for kind in [
+        "export-public",
+        "export-public-oioubl",
+        "submit-public-peppol",
+        "transmit-digisense",
+    ] {
+        for existing in [false, true] {
+            if existing {
+                fs::write(&out, "preserve exact existing bytes").unwrap();
+            }
+            let expected = json!({"ok":false,"code":" physical_source_tampered ","errors":["Denied æ","Exact second error"],"appliedRules":["source-rule"]});
+            let (origin, t) = server(422, expected.clone());
+            let mut extra = vec!["--document-id", "7"];
+            if kind != "transmit-digisense" {
+                extra.extend(["--out", out.to_str().unwrap()]);
+            }
+            if kind == "submit-public-peppol" {
+                extra.extend(["--access-point", config.to_str().unwrap()]);
+            }
+            if kind == "transmit-digisense" {
+                extra.extend(["--confirm", "yes"]);
+            }
+            let output = call(kind, &origin, &f, &extra);
+            assert_eq!(
+                output.status.code(),
+                Some(1),
+                "{}",
+                String::from_utf8_lossy(&output.stderr)
+            );
+            assert_eq!(
+                serde_json::from_slice::<Value>(&output.stdout).unwrap(),
+                expected
+            );
+            if existing {
+                assert_eq!(
+                    fs::read_to_string(&out).unwrap(),
+                    "preserve exact existing bytes"
+                );
+                fs::remove_file(&out).unwrap();
+            } else {
+                assert!(!out.exists());
+            }
+            t.join().unwrap();
+        }
+    }
+}
+
+#[test]
+fn malformed_422_and_auth_are_generic_and_do_not_write_artifacts() {
+    let f = Fixture::new();
+    let out = f.0.join("refused.xml");
+    for (status, response) in [
+        (422, json!({"ok":false,"errors":["REMOTE_SENTINEL"]})),
+        (
+            422,
+            json!({"ok":false,"code":" ","errors":["REMOTE_SENTINEL"]}),
+        ),
+        (
+            422,
+            json!({"ok":false,"code":"REMOTE_SENTINEL","errors":["REMOTE_SENTINEL"],"xml":"REMOTE_SENTINEL"}),
+        ),
+        (422, value(true)),
+        (
+            403,
+            json!({"ok":false,"code":"REMOTE_SENTINEL","errors":["REMOTE_SENTINEL"]}),
+        ),
+    ] {
+        let (origin, t) = server(status, response);
+        let output = call(
+            "export-public",
+            &origin,
+            &f,
+            &["--document-id", "7", "--out", out.to_str().unwrap()],
+        );
+        assert_eq!(output.status.code(), Some(1));
+        let actual: Value = serde_json::from_slice(&output.stdout).unwrap();
+        assert_eq!(actual["ok"], false);
+        assert!(!String::from_utf8_lossy(&output.stdout).contains("REMOTE_SENTINEL"));
+        assert!(!String::from_utf8_lossy(&output.stderr).contains("REMOTE_SENTINEL"));
+        assert!(!out.exists());
+        t.join().unwrap();
+    }
+}

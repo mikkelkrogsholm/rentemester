@@ -3464,3 +3464,25 @@ genstart. En indledende CLI-fejl i fejlkoden blev rettet, hvorefter prøven
 fortsatte fra de eksisterende dokumenter uden ny generering. Ny MFA-fornyelse
 og signeret gendannelse er ikke påstået for denne prøve. Hele epic'en og den
 sidste installerede desktopaccept er fortsat åbne.
+
+## Oprindelige fakturaafvisninger og recovery (Group157)
+
+De eksisterende originale klientforløb bevarer nu en gyldig HTTP422-afvisnings
+præcise serverkode og fejl: fire fakturalæsninger, elleve kravoperationer,
+gentagne fakturaers create/generate/list og fire offentlige fakturaoperationer.
+CLI returnerer exit1; eksisterende originale MCP-tools returnerer isError:true.
+Recurring-MCP bevarer serverkoden før tekstbaseret kompatibilitetsfortolkning
+af ældre HTTP200-afvisninger uden kode. Der tilføjes ingen nye MCP-tools.
+
+Kun komplette, størrelsesbegrænsede ok:false-svar med ikke-tom kode og gyldige
+fejl accepteres som HTTP422-forretningsresultat. Ugyldige svar og adgangsfejl
+forbliver generiske. Bekræftelse, læse-/skrivepolitik, usikre skriveresultater
+uden automatisk genforsøg samt bevaring af eksisterende eksportfiler er uændrede.
+
+De fire isolerede SGD-leverancer og deres integrerede resultat bestod de
+eksisterende fokuserede klient-, CLI- og MCP-prøver samt strict Clippy.
+Dette er transportaccept med lokale HTTP-fixtures og faktiske CLI/MCP-processer;
+ingen fakturering, levering eller regnskabshandling fra Group156 er gentaget.
+Global argument-/miljø-/virksomhedsvalg, standardlauncher, øvrige åbne
+originalkontrakter, release/cutover, TypeScript-udfasning og endelig installeret
+desktopaccept er fortsat åbne. Evidens: progress.json → original_invoice_refusals157.

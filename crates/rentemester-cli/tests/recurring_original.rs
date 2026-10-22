@@ -344,3 +344,56 @@ fn workspace_recurring_cli_keeps_partial_results_confirmation_and_usage() {
         assert!(!output.stderr.is_empty());
     }
 }
+
+#[test]
+fn original_recurring_cli_transport422_preserves_only_valid_receipts() {
+    let f = Fixture::new();
+    let receipt = json!({"ok":false,"code":"SERVER_RECURRING_POLICY","errors":["template does not exist"],"appliedRules":["recurring-policy"]});
+    for command in ["generate", "list"] {
+        for (status, body, valid) in [
+            (422, receipt.clone(), true),
+            (200, receipt.clone(), true),
+            (403, receipt.clone(), false),
+            (422, json!({"ok":false,"errors":["private marker"]}), false),
+            (
+                422,
+                json!({"ok":false,"code":" ","errors":["private marker"]}),
+                false,
+            ),
+            (
+                422,
+                json!({"ok":false,"code":"BAD","errors":["private marker"],"data":{}}),
+                false,
+            ),
+            (
+                422,
+                json!({"ok":true,"templateId":7,"appliedRules":[],"errors":[]}),
+                false,
+            ),
+        ] {
+            let (origin, t) = server(status, body.clone());
+            let args = if command == "generate" {
+                vec!["--template-id", "7", "--as-of", "2024-02-29"]
+            } else {
+                vec![]
+            };
+            let output = call(command, &origin, &f, &args, false);
+            assert_eq!(output.status.code(), Some(1));
+            assert!(output.stderr.is_empty());
+            let actual: Value = serde_json::from_slice(&output.stdout).unwrap();
+            if valid {
+                assert_eq!(actual, body);
+            } else {
+                assert_eq!(actual["ok"], false);
+                assert!(actual.get("data").is_none());
+                assert!(!String::from_utf8_lossy(&output.stdout).contains("private marker"));
+                assert_ne!(actual["code"], "SERVER_RECURRING_POLICY");
+            }
+            let (header, sent) = t.join().unwrap();
+            if command == "list" {
+                assert!(header.starts_with("GET "));
+                assert_eq!(sent, Value::Null);
+            }
+        }
+    }
+}

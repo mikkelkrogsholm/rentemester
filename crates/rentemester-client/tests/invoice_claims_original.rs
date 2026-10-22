@@ -8,6 +8,15 @@ use std::{
     thread,
 };
 fn server(status: u16, value: Value) -> (String, thread::JoinHandle<(String, Value)>) {
+    let response = value.to_string().into_bytes();
+    let length = response.len();
+    raw_server(status, response, length)
+}
+fn raw_server(
+    status: u16,
+    response: Vec<u8>,
+    response_length: usize,
+) -> (String, thread::JoinHandle<(String, Value)>) {
     let l = TcpListener::bind("127.0.0.1:0").unwrap();
     let origin = format!("http://{}", l.local_addr().unwrap());
     let t = thread::spawn(move || {
@@ -44,13 +53,20 @@ fn server(status: u16, value: Value) -> (String, thread::JoinHandle<(String, Val
         } else {
             serde_json::from_slice(&bytes[end..end + length]).unwrap()
         };
-        let response = value.to_string();
-        write!(
-            s,
-            "HTTP/1.1 {status} Mock\r\nContent-Length:{}\r\nConnection:close\r\n\r\n{response}",
-            response.len()
-        )
-        .unwrap();
+        if status != 0 {
+            write!(s, "HTTP/1.1 {status} Mock\r\nContent-Length:{response_length}\r\nConnection:close\r\n\r\n").unwrap();
+            // Oversized responses may be rejected before the server finishes writing.
+            let _ = s.write_all(&response);
+        }
+        drop(s);
+        l.set_nonblocking(true).unwrap();
+        for _ in 0..10 {
+            assert!(
+                matches!(l.accept(), Err(e) if e.kind() == std::io::ErrorKind::WouldBlock),
+                "unexpected retry"
+            );
+            thread::sleep(std::time::Duration::from_millis(5));
+        }
         (header, body)
     });
     (origin, t)
@@ -172,5 +188,113 @@ async fn original_claims_strict_shapes_business_refusals_and_read_write_transpor
             assert_eq!(result.unwrap_err(), Error::OutcomeUnknown);
         }
         t.join().unwrap();
+    }
+}
+
+#[tokio::test]
+async fn every_claim_preserves_exact_422_and_legacy_codeless_200_refusals() {
+    for kind in Kind::ALL {
+        for status in [200, 422] {
+            let mut value = json!({"ok":false,"errors":[" exact server error ","second error"],"appliedRules":["source-rule"]});
+            if status == 422 {
+                value["code"] = json!(" server_claim_gate ");
+            }
+            let (origin, t) = server(status, value.clone());
+            assert_eq!(
+                ApiClient::new(&origin, true, None)
+                    .unwrap()
+                    .invoice_claims_original("synthetic", kind, body(kind).to_string().into_bytes())
+                    .await
+                    .unwrap(),
+                value
+            );
+            t.join().unwrap();
+        }
+    }
+}
+
+#[tokio::test]
+async fn every_claim_rejects_untrusted_or_inconsistent_error_envelopes_generically() {
+    let invalid = [
+        json!({"ok":true,"data":{},"code":"remote-secret","errors":[]}),
+        json!({"ok":false,"data":{},"code":"remote-secret","errors":["remote-secret"]}),
+        json!({"ok":false,"errors":["remote-secret"]}),
+        json!({"ok":false,"code":"","errors":["remote-secret"]}),
+        json!({"ok":false,"code":" \t ","errors":["remote-secret"]}),
+        json!({"ok":false,"code":12,"errors":["remote-secret"]}),
+        json!({"ok":false,"code":"remote-secret","errors":[]}),
+        json!({"ok":false,"code":"remote-secret","errors":[12]}),
+        json!({"ok":false,"code":"remote-secret","errors":["remote-secret"],"appliedRules":[12]}),
+        json!({"ok":false,"code":"remote-secret","errors":["remote-secret"],"appliedRules":null}),
+    ];
+    for kind in Kind::ALL {
+        for value in &invalid {
+            let (origin, t) = server(422, value.clone());
+            let error = ApiClient::new(&origin, true, None)
+                .unwrap()
+                .invoice_claims_original("synthetic", kind, body(kind).to_string().into_bytes())
+                .await
+                .unwrap_err();
+            assert_eq!(error, Error::Refused { status: 422 });
+            assert!(!error.to_string().contains("remote-secret"));
+            t.join().unwrap();
+        }
+        for status in [401, 403, 409] {
+            let (origin, t) = server(
+                status,
+                json!({"ok":false,"code":"remote-secret","errors":["remote-secret"]}),
+            );
+            assert_eq!(
+                ApiClient::new(&origin, true, None)
+                    .unwrap()
+                    .invoice_claims_original("synthetic", kind, body(kind).to_string().into_bytes())
+                    .await
+                    .unwrap_err(),
+                Error::Refused { status }
+            );
+            t.join().unwrap();
+        }
+    }
+}
+
+#[tokio::test]
+async fn bounded_complete_receipts_and_unknown_writes_never_retry_and_reads_stay_read_only() {
+    for kind in Kind::ALL {
+        let oversized =
+            json!({"ok":false,"code":"gate","errors":["x".repeat(16 * 1024 * 1024 + 1)]})
+                .to_string()
+                .into_bytes();
+        for (status, response, extra) in [
+            (422, b"not json remote-secret".to_vec(), 0),
+            (422, b"{\"ok\":false".to_vec(), 100),
+            (422, oversized, 0),
+            (408, vec![], 0),
+            (503, vec![], 0),
+            (0, vec![], 0),
+            (200, b"{\"ok\":true".to_vec(), 100),
+        ] {
+            let length = response.len() + extra;
+            let (origin, t) = raw_server(status, response, length);
+            let error = ApiClient::new(&origin, true, None)
+                .unwrap()
+                .invoice_claims_original("synthetic", kind, body(kind).to_string().into_bytes())
+                .await
+                .unwrap_err();
+            let expected = if status == 422 {
+                Error::Refused { status }
+            } else if !kind.is_read_only() {
+                Error::OutcomeUnknown
+            } else if status == 0 || status == 200 {
+                Error::Transport
+            } else {
+                Error::Refused { status }
+            };
+            assert_eq!(error, expected, "{} HTTP{status}", kind.suffix());
+            let (_, actual) = t.join().unwrap();
+            assert_eq!(actual, body(kind));
+            if kind.is_read_only() {
+                assert!(actual.get("confirm").is_none());
+            }
+        }
     }
 }

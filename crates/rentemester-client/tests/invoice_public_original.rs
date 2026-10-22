@@ -156,7 +156,7 @@ async fn strict_selectors_config_refusals_hashes_and_unknown_are_fail_closed() {
             body["accessPoint"] =
                 json!({"accessPointId":"a","endpointUrl":"meta","senderEndpointId":"s"});
         }
-        let refusal = json!({"ok":false,"code":"physical_source_tampered","errors":["Denied"]});
+        let refusal = json!({"ok":false,"errors":["Denied"]});
         let (origin, t) = server(200, refusal.clone());
         assert_eq!(
             ApiClient::new(&origin, true, None)
@@ -208,5 +208,208 @@ async fn strict_selectors_config_refusals_hashes_and_unknown_are_fail_closed() {
             Err(Error::Refused { status: 403 })
         );
         t.join().unwrap();
+    }
+}
+
+fn request(kind: Kind) -> Vec<u8> {
+    let mut body = json!({"documentId":7});
+    if !kind.is_export() {
+        body["confirm"] = json!(true);
+    }
+    if kind == Kind::SubmitPublicPeppol {
+        body["accessPoint"] =
+            json!({"accessPointId":"a","endpointUrl":"meta","senderEndpointId":"s"});
+    }
+    body.to_string().into_bytes()
+}
+
+#[tokio::test]
+async fn bounded_422_receipts_preserve_exact_code_errors_for_all_four_operations() {
+    for kind in Kind::ALL {
+        for rules in [None, Some(json!([])), Some(json!(["source-rule"]))] {
+            let mut expected = json!({"ok":false,"code":" physical_source_tampered ","errors":["Denied æ", "Exact second error"]});
+            if let Some(rules) = rules {
+                expected["appliedRules"] = rules;
+            }
+            let (origin, t) = server(422, expected.clone());
+            assert_eq!(
+                ApiClient::new(&origin, true, None)
+                    .unwrap()
+                    .invoice_public_original("synthetic", kind, request(kind))
+                    .await
+                    .unwrap(),
+                expected
+            );
+            t.join().unwrap();
+        }
+        let base = json!({"ok":false,"code":"denied","errors":["REMOTE_SENTINEL"]});
+        let mut invalid = vec![json!({}), json!("REMOTE_SENTINEL"), result(kind)];
+        for (key, bad) in [
+            ("ok", json!(true)),
+            ("code", Value::Null),
+            ("code", json!(42)),
+            ("code", json!(" \t")),
+            ("errors", json!([])),
+            ("errors", json!([42])),
+            ("appliedRules", Value::Null),
+            ("appliedRules", json!([42])),
+            ("data", json!({})),
+            ("xml", json!("artifact")),
+            ("envelope", json!("artifact")),
+        ] {
+            let mut v = base.clone();
+            v[key] = bad;
+            invalid.push(v);
+        }
+        let mut missing = base.clone();
+        missing.as_object_mut().unwrap().remove("code");
+        invalid.push(missing);
+        for value in invalid {
+            let (origin, t) = server(422, value);
+            assert_eq!(
+                ApiClient::new(&origin, true, None)
+                    .unwrap()
+                    .invoice_public_original("synthetic", kind, request(kind))
+                    .await,
+                Err(Error::Refused { status: 422 })
+            );
+            t.join().unwrap();
+        }
+        let (origin, t) = server(403, base);
+        assert_eq!(
+            ApiClient::new(&origin, true, None)
+                .unwrap()
+                .invoice_public_original("synthetic", kind, request(kind))
+                .await,
+            Err(Error::Refused { status: 403 })
+        );
+        t.join().unwrap();
+    }
+}
+
+// A raw responder also observes the listener after completion: no automatic replay is allowed.
+fn raw_server(status: u16, body: Vec<u8>, extra_length: usize) -> (String, thread::JoinHandle<()>) {
+    let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+    let origin = format!("http://{}", listener.local_addr().unwrap());
+    let t = thread::spawn(move || {
+        let (mut stream, _) = listener.accept().unwrap();
+        stream
+            .set_read_timeout(Some(std::time::Duration::from_secs(5)))
+            .unwrap();
+        let mut request = vec![];
+        loop {
+            let mut buf = [0; 1024];
+            let n = stream.read(&mut buf).unwrap();
+            assert!(n > 0);
+            request.extend_from_slice(&buf[..n]);
+            if let Some(end) = request.windows(4).position(|v| v == b"\r\n\r\n") {
+                let header = String::from_utf8_lossy(&request[..end]);
+                let length: usize = header
+                    .lines()
+                    .find_map(|line| {
+                        line.to_lowercase()
+                            .strip_prefix("content-length:")
+                            .map(|v| v.trim().parse().unwrap())
+                    })
+                    .unwrap_or(0);
+                if request.len() >= end + 4 + length {
+                    break;
+                }
+            }
+        }
+        if status != 0 {
+            let header = format!(
+                "HTTP/1.1 {status} Mock\r\nContent-Length:{}\r\nConnection:close\r\n\r\n",
+                body.len() + extra_length
+            );
+            let _ = stream.write_all(header.as_bytes());
+            let _ = stream.write_all(&body);
+        }
+        drop(stream);
+        listener.set_nonblocking(true).unwrap();
+        for _ in 0..20 {
+            assert!(
+                matches!(listener.accept(), Err(e) if e.kind() == std::io::ErrorKind::WouldBlock),
+                "unexpected retry"
+            );
+            thread::sleep(std::time::Duration::from_millis(5));
+        }
+    });
+    (origin, t)
+}
+
+#[tokio::test]
+async fn incomplete_oversized_and_unknown_responses_never_retry_or_relabel_writes() {
+    for kind in Kind::ALL {
+        for (status, bytes, extra, expected) in [
+            (
+                422,
+                b"not json REMOTE_SENTINEL".to_vec(),
+                0,
+                Error::Refused { status: 422 },
+            ),
+            (
+                422,
+                vec![b'x'; 16 * 1024 * 1024 + 1],
+                0,
+                Error::Refused { status: 422 },
+            ),
+            (
+                422,
+                b"{\"ok\":false}".to_vec(),
+                20,
+                Error::Refused { status: 422 },
+            ),
+            (
+                200,
+                result(kind).to_string().into_bytes(),
+                20,
+                if kind == Kind::ExportPublic {
+                    Error::Transport
+                } else {
+                    Error::OutcomeUnknown
+                },
+            ),
+            (
+                408,
+                vec![],
+                0,
+                if kind == Kind::ExportPublic {
+                    Error::Refused { status: 408 }
+                } else {
+                    Error::OutcomeUnknown
+                },
+            ),
+            (
+                503,
+                vec![],
+                0,
+                if kind == Kind::ExportPublic {
+                    Error::Refused { status: 503 }
+                } else {
+                    Error::OutcomeUnknown
+                },
+            ),
+            (
+                0,
+                vec![],
+                0,
+                if kind == Kind::ExportPublic {
+                    Error::Transport
+                } else {
+                    Error::OutcomeUnknown
+                },
+            ),
+        ] {
+            let (origin, t) = raw_server(status, bytes, extra);
+            assert_eq!(
+                ApiClient::new(&origin, true, None)
+                    .unwrap()
+                    .invoice_public_original("synthetic", kind, request(kind))
+                    .await,
+                Err(expected)
+            );
+            t.join().unwrap();
+        }
     }
 }
