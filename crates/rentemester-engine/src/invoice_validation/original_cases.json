@@ -1,0 +1,1430 @@
+[
+  {
+    "input": {
+      "invoiceType": "full",
+      "vatTreatment": "standard",
+      "issueDate": "2026-05-16",
+      "invoiceNumber": "2026-0042",
+      "seller": {
+        "name": "Synthetic Seller",
+        "address": "Synthetic Street 1",
+        "vatOrCvr": "DK00000000"
+      },
+      "buyer": {
+        "name": "Synthetic Buyer",
+        "address": "Synthetic Street 2"
+      },
+      "lines": [
+        {
+          "description": "Bogføring og momsopsætning",
+          "quantity": 1,
+          "unitPriceExVat": 1000,
+          "lineTotalExVat": 1000
+        }
+      ],
+      "totals": {
+        "netAmount": 1000,
+        "vatRate": 0.25,
+        "vatAmount": 250,
+        "grossAmount": 1250
+      },
+      "deliveryDate": "2026-04-30",
+      "currency": "DKK"
+    },
+    "expected": {
+      "ok": true,
+      "invoiceType": "full",
+      "vatTreatment": "standard",
+      "appliedRules": [
+        "DK-INVOICE-FULL-001",
+        "DK-INVOICE-ARITHMETIC-001",
+        "DK-INVOICE-DELIVERY-DATE-001",
+        "DK-VAT-SEPARATE-AMOUNT-001"
+      ],
+      "errors": []
+    }
+  },
+  {
+    "input": {
+      "invoiceType": "full",
+      "vatTreatment": "standard",
+      "issueDate": "2026-05-16",
+      "invoiceNumber": "2026-0042-PUB",
+      "seller": {
+        "name": "Synthetic Seller",
+        "address": "Synthetic Street 1",
+        "vatOrCvr": "DK00000000"
+      },
+      "buyer": {
+        "name": "Synthetic Buyer",
+        "address": "Synthetic Street 2",
+        "publicRecipient": true,
+        "eanNumber": "57900012"
+      },
+      "lines": [
+        {
+          "description": "Bogføring",
+          "quantity": 1,
+          "unitPriceExVat": 1000,
+          "lineTotalExVat": 1000
+        }
+      ],
+      "totals": {
+        "netAmount": 1000,
+        "vatRate": 0.25,
+        "vatAmount": 250,
+        "grossAmount": 1250
+      },
+      "currency": "DKK"
+    },
+    "expected": {
+      "ok": false,
+      "invoiceType": "full",
+      "vatTreatment": "standard",
+      "appliedRules": [
+        "DK-INVOICE-FULL-001",
+        "DK-INVOICE-ARITHMETIC-001",
+        "DK-INVOICE-DELIVERY-DATE-001",
+        "DK-INVOICE-PUBLIC-RECIPIENT-001",
+        "DK-VAT-SEPARATE-AMOUNT-001"
+      ],
+      "errors": [
+        "public-recipient invoices must include buyer.eanNumber as 13 digits"
+      ]
+    }
+  },
+  {
+    "input": {
+      "invoiceType": "full",
+      "vatTreatment": "standard",
+      "issueDate": "2026-05-16",
+      "invoiceNumber": "2026-0042-PUB-OK",
+      "seller": {
+        "name": "Synthetic Seller",
+        "address": "Synthetic Street 1",
+        "vatOrCvr": "DK00000000"
+      },
+      "buyer": {
+        "name": "Synthetic Buyer",
+        "address": "Synthetic Street 2",
+        "publicRecipient": true,
+        "eanNumber": "5790000000001"
+      },
+      "lines": [
+        {
+          "description": "Bogføring",
+          "quantity": 1,
+          "unitPriceExVat": 1000,
+          "lineTotalExVat": 1000
+        }
+      ],
+      "totals": {
+        "netAmount": 1000,
+        "vatRate": 0.25,
+        "vatAmount": 250,
+        "grossAmount": 1250
+      },
+      "currency": "DKK"
+    },
+    "expected": {
+      "ok": true,
+      "invoiceType": "full",
+      "vatTreatment": "standard",
+      "appliedRules": [
+        "DK-INVOICE-FULL-001",
+        "DK-INVOICE-ARITHMETIC-001",
+        "DK-INVOICE-DELIVERY-DATE-001",
+        "DK-INVOICE-PUBLIC-RECIPIENT-001",
+        "DK-VAT-SEPARATE-AMOUNT-001"
+      ],
+      "errors": []
+    }
+  },
+  {
+    "input": {
+      "invoiceType": "simplified",
+      "vatTreatment": "standard",
+      "issueDate": "2026-05-16",
+      "invoiceNumber": "2026-0043",
+      "seller": {
+        "name": "Synthetic Seller",
+        "address": "Synthetic Street 1",
+        "vatOrCvr": "DK00000000"
+      },
+      "lines": [
+        {
+          "description": "Kvitteringssalg"
+        }
+      ],
+      "totals": {
+        "grossAmount": 3000.01,
+        "vatAmount": 600.01,
+        "vatRate": 0.25
+      },
+      "currency": "DKK"
+    },
+    "expected": {
+      "ok": false,
+      "invoiceType": "simplified",
+      "vatTreatment": "standard",
+      "appliedRules": [
+        "DK-INVOICE-SIMPLIFIED-001",
+        "DK-INVOICE-ARITHMETIC-001",
+        "DK-INVOICE-DELIVERY-DATE-001",
+        "DK-VAT-SEPARATE-AMOUNT-001"
+      ],
+      "errors": [
+        "simplified invoices are only allowed up to DKK 3,000 gross"
+      ]
+    }
+  },
+  {
+    "input": {
+      "invoiceType": "simplified",
+      "vatTreatment": "standard",
+      "issueDate": "2026-05-16",
+      "invoiceNumber": "2026-0044",
+      "seller": {
+        "name": "Synthetic Seller",
+        "address": "Synthetic Street 1",
+        "vatOrCvr": "DK00000000"
+      },
+      "lines": [
+        {
+          "description": "Kontant salg"
+        }
+      ],
+      "totals": {
+        "grossAmount": 1250,
+        "vatRate": 0.25,
+        "vatAmount": 250,
+        "vatComputationBasis": "VAT_20_OF_GROSS"
+      },
+      "currency": "DKK"
+    },
+    "expected": {
+      "ok": true,
+      "invoiceType": "simplified",
+      "vatTreatment": "standard",
+      "appliedRules": [
+        "DK-INVOICE-SIMPLIFIED-001",
+        "DK-INVOICE-ARITHMETIC-001",
+        "DK-INVOICE-DELIVERY-DATE-001",
+        "DK-VAT-SEPARATE-AMOUNT-001"
+      ],
+      "errors": []
+    }
+  },
+  {
+    "input": {
+      "invoiceType": "simplified",
+      "vatTreatment": "standard",
+      "issueDate": "2026-05-16",
+      "invoiceNumber": "2026-0045",
+      "seller": {
+        "name": "Synthetic Seller",
+        "address": "Synthetic Street 1",
+        "vatOrCvr": "DK00000000"
+      },
+      "lines": [
+        {
+          "description": "Kontant salg"
+        }
+      ],
+      "totals": {
+        "grossAmount": 1000,
+        "vatRate": 0.25,
+        "vatAmount": 999
+      },
+      "currency": "DKK"
+    },
+    "expected": {
+      "ok": false,
+      "invoiceType": "simplified",
+      "vatTreatment": "standard",
+      "appliedRules": [
+        "DK-INVOICE-SIMPLIFIED-001",
+        "DK-INVOICE-ARITHMETIC-001",
+        "DK-INVOICE-DELIVERY-DATE-001",
+        "DK-VAT-SEPARATE-AMOUNT-001"
+      ],
+      "errors": [
+        "totals.vatAmount must be the VAT contained in totals.grossAmount at totals.vatRate (≈ 200)"
+      ]
+    }
+  },
+  {
+    "input": {
+      "invoiceType": "simplified",
+      "vatTreatment": "standard",
+      "issueDate": "2026-05-16",
+      "invoiceNumber": "2026-0046",
+      "seller": {
+        "name": "Synthetic Seller",
+        "address": "Synthetic Street 1",
+        "vatOrCvr": "DK00000000"
+      },
+      "lines": [
+        {
+          "description": "Kontant salg"
+        }
+      ],
+      "totals": {
+        "grossAmount": 1000,
+        "vatRate": 0.25,
+        "vatAmount": 200
+      },
+      "currency": "DKK"
+    },
+    "expected": {
+      "ok": true,
+      "invoiceType": "simplified",
+      "vatTreatment": "standard",
+      "appliedRules": [
+        "DK-INVOICE-SIMPLIFIED-001",
+        "DK-INVOICE-ARITHMETIC-001",
+        "DK-INVOICE-DELIVERY-DATE-001",
+        "DK-VAT-SEPARATE-AMOUNT-001"
+      ],
+      "errors": []
+    }
+  },
+  {
+    "input": {
+      "invoiceType": "simplified",
+      "vatTreatment": "standard",
+      "issueDate": "2026-05-16",
+      "invoiceNumber": "2026-0046-LINES",
+      "seller": {
+        "name": "Synthetic Seller",
+        "address": "Synthetic Street 1",
+        "vatOrCvr": "DK00000000"
+      },
+      "lines": [
+        {
+          "description": "Kontant salg",
+          "quantity": 1,
+          "unitPriceExVat": 1000,
+          "lineTotalExVat": 1000
+        }
+      ],
+      "totals": {
+        "grossAmount": 1250,
+        "vatRate": 0.25,
+        "vatAmount": 250
+      },
+      "currency": "DKK"
+    },
+    "expected": {
+      "ok": true,
+      "invoiceType": "simplified",
+      "vatTreatment": "standard",
+      "appliedRules": [
+        "DK-INVOICE-SIMPLIFIED-001",
+        "DK-INVOICE-ARITHMETIC-001",
+        "DK-INVOICE-DELIVERY-DATE-001",
+        "DK-VAT-SEPARATE-AMOUNT-001"
+      ],
+      "errors": []
+    }
+  },
+  {
+    "input": {
+      "invoiceType": "simplified",
+      "vatTreatment": "standard",
+      "issueDate": "2026-05-16",
+      "invoiceNumber": "2026-0046-LINES-BAD",
+      "seller": {
+        "name": "Synthetic Seller",
+        "address": "Synthetic Street 1",
+        "vatOrCvr": "DK00000000"
+      },
+      "lines": [
+        {
+          "description": "Kontant salg",
+          "quantity": 1,
+          "unitPriceExVat": 1000,
+          "lineTotalExVat": 1000
+        }
+      ],
+      "totals": {
+        "grossAmount": 1200,
+        "vatRate": 0.25,
+        "vatAmount": 250
+      },
+      "currency": "DKK"
+    },
+    "expected": {
+      "ok": false,
+      "invoiceType": "simplified",
+      "vatTreatment": "standard",
+      "appliedRules": [
+        "DK-INVOICE-SIMPLIFIED-001",
+        "DK-INVOICE-ARITHMETIC-001",
+        "DK-INVOICE-DELIVERY-DATE-001",
+        "DK-VAT-SEPARATE-AMOUNT-001"
+      ],
+      "errors": [
+        "totals.grossAmount must equal rounded VAT line totals (1250)",
+        "totals.vatAmount must be the VAT contained in totals.grossAmount at totals.vatRate (≈ 240)"
+      ]
+    }
+  },
+  {
+    "input": {
+      "invoiceType": "simplified",
+      "vatTreatment": "standard",
+      "issueDate": "2026-05-16",
+      "invoiceNumber": "2026-0047",
+      "seller": {
+        "name": "Synthetic Seller",
+        "address": "Synthetic Street 1",
+        "vatOrCvr": "DK00000000"
+      },
+      "lines": [
+        {
+          "description": "Kontant salg"
+        }
+      ],
+      "totals": {
+        "grossAmount": 100.07,
+        "vatRate": 0.25,
+        "vatAmount": 20.01
+      },
+      "currency": "DKK"
+    },
+    "expected": {
+      "ok": true,
+      "invoiceType": "simplified",
+      "vatTreatment": "standard",
+      "appliedRules": [
+        "DK-INVOICE-SIMPLIFIED-001",
+        "DK-INVOICE-ARITHMETIC-001",
+        "DK-INVOICE-DELIVERY-DATE-001",
+        "DK-VAT-SEPARATE-AMOUNT-001"
+      ],
+      "errors": []
+    }
+  },
+  {
+    "input": {
+      "invoiceType": "full",
+      "vatTreatment": "standard",
+      "issueDate": "2026-05-16",
+      "invoiceNumber": "2026-0047-VAT",
+      "seller": {
+        "name": "Synthetic Seller",
+        "address": "Synthetic Street 1",
+        "vatOrCvr": "DK00000000"
+      },
+      "buyer": {
+        "name": "Synthetic Buyer",
+        "address": "Synthetic Street 2"
+      },
+      "lines": [
+        {
+          "description": "Bogføring",
+          "quantity": 1,
+          "unitPriceExVat": 1000,
+          "lineTotalExVat": 1000
+        }
+      ],
+      "totals": {
+        "netAmount": 1000,
+        "vatRate": 0.25,
+        "vatAmount": 200,
+        "grossAmount": 1200
+      },
+      "currency": "DKK"
+    },
+    "expected": {
+      "ok": false,
+      "invoiceType": "full",
+      "vatTreatment": "standard",
+      "appliedRules": [
+        "DK-INVOICE-FULL-001",
+        "DK-INVOICE-ARITHMETIC-001",
+        "DK-INVOICE-DELIVERY-DATE-001",
+        "DK-VAT-SEPARATE-AMOUNT-001"
+      ],
+      "errors": [
+        "totals.vatAmount must equal rounded VAT line amounts (250)",
+        "totals.grossAmount must equal rounded VAT line totals (1250)"
+      ]
+    }
+  },
+  {
+    "input": {
+      "invoiceType": "full",
+      "vatTreatment": "standard",
+      "issueDate": "2026-05-16",
+      "invoiceNumber": "2026-0047-MIXED",
+      "seller": {
+        "name": "Synthetic Seller",
+        "address": "Synthetic Street 1",
+        "vatOrCvr": "DK00000000"
+      },
+      "buyer": {
+        "name": "Synthetic Buyer",
+        "address": "Synthetic Street 2"
+      },
+      "lines": [
+        {
+          "description": "Taxable service",
+          "quantity": 1,
+          "unitPriceExVat": 100,
+          "lineTotalExVat": 100,
+          "taxClassification": "taxable",
+          "vatRate": 0.25
+        },
+        {
+          "description": "Exempt service",
+          "quantity": 1,
+          "unitPriceExVat": 100,
+          "lineTotalExVat": 100,
+          "taxClassification": "exempt"
+        }
+      ],
+      "totals": {
+        "netAmount": 200,
+        "vatRate": 0.25,
+        "vatAmount": 25,
+        "grossAmount": 225
+      },
+      "currency": "DKK"
+    },
+    "expected": {
+      "ok": true,
+      "invoiceType": "full",
+      "vatTreatment": "standard",
+      "appliedRules": [
+        "DK-INVOICE-FULL-001",
+        "DK-INVOICE-ARITHMETIC-001",
+        "DK-INVOICE-DELIVERY-DATE-001"
+      ],
+      "errors": []
+    }
+  },
+  {
+    "input": {
+      "invoiceType": "full",
+      "vatTreatment": "standard",
+      "issueDate": "2026-05-16",
+      "invoiceNumber": "2026-0047-ORE",
+      "seller": {
+        "name": "Synthetic Seller",
+        "address": "Synthetic Street 1",
+        "vatOrCvr": "DK00000000"
+      },
+      "buyer": {
+        "name": "Synthetic Buyer",
+        "address": "Synthetic Street 2"
+      },
+      "lines": [
+        {
+          "description": "Øre service",
+          "quantity": 1,
+          "unitPriceExVat": 0.02,
+          "lineTotalExVat": 0.02
+        }
+      ],
+      "totals": {
+        "netAmount": 0.02,
+        "vatRate": 0.25,
+        "vatAmount": 0.01,
+        "grossAmount": 0.03
+      },
+      "currency": "DKK"
+    },
+    "expected": {
+      "ok": true,
+      "invoiceType": "full",
+      "vatTreatment": "standard",
+      "appliedRules": [
+        "DK-INVOICE-FULL-001",
+        "DK-INVOICE-ARITHMETIC-001",
+        "DK-INVOICE-DELIVERY-DATE-001",
+        "DK-VAT-SEPARATE-AMOUNT-001"
+      ],
+      "errors": []
+    }
+  },
+  {
+    "input": {
+      "invoiceType": "full",
+      "vatTreatment": "standard",
+      "issueDate": "2026-05-16",
+      "invoiceNumber": "2026-0045",
+      "seller": {
+        "name": "Synthetic Seller",
+        "address": "Synthetic Street 1",
+        "vatOrCvr": "DK00000000"
+      },
+      "buyer": {
+        "name": "Synthetic Buyer",
+        "address": "Synthetic Street 2"
+      },
+      "lines": [
+        {
+          "description": "Bogføring",
+          "quantity": 2,
+          "unitPriceExVat": 500,
+          "lineTotalExVat": 900
+        }
+      ],
+      "totals": {
+        "netAmount": 900,
+        "vatRate": 0.25,
+        "vatAmount": 225,
+        "grossAmount": 1200
+      },
+      "currency": "DKK"
+    },
+    "expected": {
+      "ok": false,
+      "invoiceType": "full",
+      "vatTreatment": "standard",
+      "appliedRules": [
+        "DK-INVOICE-FULL-001",
+        "DK-INVOICE-ARITHMETIC-001",
+        "DK-INVOICE-DELIVERY-DATE-001",
+        "DK-VAT-SEPARATE-AMOUNT-001"
+      ],
+      "errors": [
+        "lines[0].lineTotalExVat must equal quantity * unitPriceExVat (1000)",
+        "totals.grossAmount must equal rounded VAT line totals (1125)",
+        "totals.grossAmount must equal totals.netAmount + totals.vatAmount (1125)"
+      ]
+    }
+  },
+  {
+    "input": {
+      "invoiceType": "full",
+      "vatTreatment": "standard",
+      "issueDate": "2026-05-16",
+      "dueDate": "2026-05-15",
+      "invoiceNumber": "2026-0046",
+      "seller": {
+        "name": "Synthetic Seller",
+        "address": "Synthetic Street 1",
+        "vatOrCvr": "DK00000000"
+      },
+      "buyer": {
+        "name": "Synthetic Buyer",
+        "address": "Synthetic Street 2"
+      },
+      "lines": [
+        {
+          "description": "Bogføring",
+          "quantity": 1,
+          "unitPriceExVat": 1000,
+          "lineTotalExVat": 1000
+        }
+      ],
+      "totals": {
+        "netAmount": 1000,
+        "vatRate": 0.25,
+        "vatAmount": 250,
+        "grossAmount": 1250
+      },
+      "currency": "DKK"
+    },
+    "expected": {
+      "ok": false,
+      "invoiceType": "full",
+      "vatTreatment": "standard",
+      "appliedRules": [
+        "DK-INVOICE-FULL-001",
+        "DK-INVOICE-ARITHMETIC-001",
+        "DK-INVOICE-DELIVERY-DATE-001",
+        "DK-VAT-SEPARATE-AMOUNT-001"
+      ],
+      "errors": [
+        "dueDate cannot be earlier than issueDate"
+      ]
+    }
+  },
+  {
+    "input": {
+      "invoiceType": "full",
+      "vatTreatment": "standard",
+      "issueDate": "2026-05-16",
+      "invoiceNumber": "2026-0047",
+      "seller": {
+        "name": "Synthetic Seller",
+        "address": "Synthetic Street 1",
+        "vatOrCvr": "DK00000000"
+      },
+      "buyer": {
+        "name": "Synthetic Buyer",
+        "address": "Synthetic Street 2"
+      },
+      "lines": [
+        {
+          "description": "Maj 2026 drift",
+          "quantity": 1,
+          "unitPriceExVat": 1000,
+          "lineTotalExVat": 1000
+        }
+      ],
+      "totals": {
+        "netAmount": 1000,
+        "vatRate": 0.25,
+        "vatAmount": 250,
+        "grossAmount": 1250
+      },
+      "deliveryDate": "2026-02-30",
+      "deliveryPeriodStart": "2026-05-01",
+      "currency": "DKK"
+    },
+    "expected": {
+      "ok": false,
+      "invoiceType": "full",
+      "vatTreatment": "standard",
+      "appliedRules": [
+        "DK-INVOICE-FULL-001",
+        "DK-INVOICE-ARITHMETIC-001",
+        "DK-INVOICE-DELIVERY-DATE-001",
+        "DK-VAT-SEPARATE-AMOUNT-001"
+      ],
+      "errors": [
+        "deliveryDate must be YYYY-MM-DD when present",
+        "deliveryPeriodStart and deliveryPeriodEnd must be provided together",
+        "use either deliveryDate or deliveryPeriodStart/deliveryPeriodEnd, not both"
+      ]
+    }
+  },
+  {
+    "input": {
+      "invoiceType": "full",
+      "vatTreatment": "standard",
+      "issueDate": "2026-02-30",
+      "dueDate": "2026-04-31",
+      "invoiceNumber": "2026-0047B",
+      "seller": {
+        "name": "Synthetic Seller",
+        "address": "Synthetic Street 1",
+        "vatOrCvr": "DK00000000"
+      },
+      "buyer": {
+        "name": "Synthetic Buyer",
+        "address": "Synthetic Street 2"
+      },
+      "lines": [
+        {
+          "description": "Bogføring",
+          "quantity": 1,
+          "unitPriceExVat": 1000,
+          "lineTotalExVat": 1000
+        }
+      ],
+      "totals": {
+        "netAmount": 1000,
+        "vatRate": 0.25,
+        "vatAmount": 250,
+        "grossAmount": 1250
+      },
+      "currency": "DKK"
+    },
+    "expected": {
+      "ok": false,
+      "invoiceType": "full",
+      "vatTreatment": "standard",
+      "appliedRules": [
+        "DK-INVOICE-FULL-001",
+        "DK-INVOICE-ARITHMETIC-001",
+        "DK-INVOICE-DELIVERY-DATE-001",
+        "DK-VAT-SEPARATE-AMOUNT-001"
+      ],
+      "errors": [
+        "issueDate must be present in YYYY-MM-DD format",
+        "dueDate must be YYYY-MM-DD when present"
+      ]
+    }
+  },
+  {
+    "input": {
+      "invoiceType": "full",
+      "vatTreatment": "foreign_reverse_charge",
+      "issueDate": "2026-05-16",
+      "invoiceNumber": "2026-0048",
+      "seller": {
+        "name": "Synthetic Seller",
+        "address": "Synthetic Street 1",
+        "vatOrCvr": "DK00000000"
+      },
+      "buyer": {
+        "name": "Synthetic Buyer",
+        "address": "Synthetic Street 2",
+        "vatOrCvr": "DE000000000"
+      },
+      "lines": [
+        {
+          "description": "AI consulting"
+        }
+      ],
+      "totals": {
+        "netAmount": 8000,
+        "vatAmount": 2000,
+        "grossAmount": 8000
+      },
+      "reverseChargeBasis": "DK_MOMSLOVEN_§46_STK_1_NR_7",
+      "reverseChargeNote": "Byggemoms",
+      "currency": "DKK"
+    },
+    "expected": {
+      "ok": false,
+      "invoiceType": "full",
+      "vatTreatment": "foreign_reverse_charge",
+      "appliedRules": [
+        "DK-INVOICE-FULL-001",
+        "DK-INVOICE-ARITHMETIC-001",
+        "DK-INVOICE-DELIVERY-DATE-001",
+        "DK-INVOICE-REVERSE-CHARGE-001",
+        "DK-INVOICE-REVERSE-CHARGE-BASIS-001"
+      ],
+      "errors": [
+        "reverse-charge invoices must not include totals.vatAmount",
+        "reverseChargeBasis DK_MOMSLOVEN_§46_STK_1_NR_7 is not valid for foreign reverse-charge invoices"
+      ]
+    }
+  },
+  {
+    "input": {
+      "invoiceType": "full",
+      "vatTreatment": "foreign_reverse_charge",
+      "issueDate": "2026-05-16",
+      "invoiceNumber": "2026-0049",
+      "seller": {
+        "name": "Synthetic Seller",
+        "address": "Synthetic Street 1",
+        "vatOrCvr": "DK00000000"
+      },
+      "buyer": {
+        "name": "Synthetic Buyer",
+        "address": "Synthetic Street 2",
+        "vatOrCvr": "DE000000000"
+      },
+      "lines": [
+        {
+          "description": "AI consulting",
+          "quantity": 1,
+          "unitPriceExVat": 8000,
+          "lineTotalExVat": 8000
+        }
+      ],
+      "totals": {
+        "netAmount": 8000,
+        "grossAmount": 8000
+      },
+      "reverseChargeBasis": "EU_MOMSDIREKTIV_ART_196",
+      "reverseChargeNote": "VAT reverse charge — VAT to be accounted by the recipient",
+      "deliveryPeriodStart": "2026-05-01",
+      "deliveryPeriodEnd": "2026-05-15",
+      "currency": "DKK"
+    },
+    "expected": {
+      "ok": true,
+      "invoiceType": "full",
+      "vatTreatment": "foreign_reverse_charge",
+      "appliedRules": [
+        "DK-INVOICE-FULL-001",
+        "DK-INVOICE-ARITHMETIC-001",
+        "DK-INVOICE-DELIVERY-DATE-001",
+        "DK-INVOICE-REVERSE-CHARGE-001",
+        "DK-INVOICE-REVERSE-CHARGE-BASIS-001"
+      ],
+      "errors": []
+    }
+  },
+  {
+    "input": {
+      "invoiceType": "full",
+      "vatTreatment": "standard",
+      "issueDate": "2026-05-16",
+      "invoiceNumber": "2026-0050",
+      "seller": {
+        "name": "Synthetic Seller",
+        "address": "Synthetic Street 1",
+        "vatOrCvr": "DK00000000"
+      },
+      "buyer": {
+        "name": "Synthetic Buyer",
+        "address": "Synthetic Street 2"
+      },
+      "lines": [
+        {
+          "description": "Consulting",
+          "quantity": 1,
+          "unitPriceExVat": 100,
+          "lineTotalExVat": 100
+        }
+      ],
+      "totals": {
+        "netAmount": 100,
+        "vatRate": 0.25,
+        "vatAmount": 25,
+        "grossAmount": 125,
+        "fxRateToDkk": 7.46,
+        "netAmountDkk": 746,
+        "vatAmountDkk": 186.5,
+        "grossAmountDkk": 932.5
+      },
+      "currency": "EUR"
+    },
+    "expected": {
+      "ok": true,
+      "invoiceType": "full",
+      "vatTreatment": "standard",
+      "appliedRules": [
+        "DK-INVOICE-FULL-001",
+        "DK-INVOICE-ARITHMETIC-001",
+        "DK-INVOICE-DELIVERY-DATE-001",
+        "DK-VAT-SEPARATE-AMOUNT-001"
+      ],
+      "errors": []
+    }
+  },
+  {
+    "input": {
+      "invoiceType": "full",
+      "vatTreatment": "standard",
+      "issueDate": "2026-05-16",
+      "invoiceNumber": "2026-0051",
+      "seller": {
+        "name": "Synthetic Seller",
+        "address": "Synthetic Street 1",
+        "vatOrCvr": "DK00000000"
+      },
+      "buyer": {
+        "name": "Synthetic Buyer",
+        "address": "Synthetic Street 2"
+      },
+      "lines": [
+        {
+          "description": "Consulting",
+          "quantity": 1,
+          "unitPriceExVat": 100,
+          "lineTotalExVat": 100
+        }
+      ],
+      "totals": {
+        "netAmount": 100,
+        "vatRate": 0.25,
+        "vatAmount": 25,
+        "grossAmount": 125
+      },
+      "currency": "EUR"
+    },
+    "expected": {
+      "ok": false,
+      "invoiceType": "full",
+      "vatTreatment": "standard",
+      "appliedRules": [
+        "DK-INVOICE-FULL-001",
+        "DK-INVOICE-ARITHMETIC-001",
+        "DK-INVOICE-DELIVERY-DATE-001",
+        "DK-VAT-SEPARATE-AMOUNT-001"
+      ],
+      "errors": [
+        "non-DKK invoices must include totals.fxRateToDkk",
+        "non-DKK invoices must include totals.netAmountDkk",
+        "non-DKK invoices must include totals.vatAmountDkk for standard VAT",
+        "non-DKK invoices must include totals.grossAmountDkk"
+      ]
+    }
+  },
+  {
+    "input": {
+      "invoiceType": "full",
+      "vatTreatment": "standard",
+      "issueDate": "2026-05-16",
+      "seller": {
+        "name": "Synthetic Seller",
+        "address": "Synthetic Street 1",
+        "vatOrCvr": "DK00000000"
+      },
+      "buyer": {
+        "name": "Synthetic Buyer",
+        "address": "Synthetic Street 2"
+      },
+      "lines": [
+        {
+          "description": "Bogføring og momsopsætning",
+          "quantity": 1,
+          "unitPriceExVat": 1000,
+          "lineTotalExVat": 1000
+        }
+      ],
+      "totals": {
+        "netAmount": 1000,
+        "vatRate": 0.25,
+        "vatAmount": 250,
+        "grossAmount": 1250
+      },
+      "deliveryDate": "2026-04-30",
+      "currency": "DKK"
+    },
+    "expected": {
+      "ok": true,
+      "invoiceType": "full",
+      "vatTreatment": "standard",
+      "appliedRules": [
+        "DK-INVOICE-FULL-001",
+        "DK-INVOICE-ARITHMETIC-001",
+        "DK-INVOICE-DELIVERY-DATE-001",
+        "DK-VAT-SEPARATE-AMOUNT-001"
+      ],
+      "errors": []
+    }
+  },
+  {
+    "input": {
+      "invoiceType": "full",
+      "vatTreatment": "standard",
+      "issueDate": "2026-05-16",
+      "invoiceNumber": " ",
+      "seller": {
+        "name": "Synthetic Seller",
+        "address": "Synthetic Street 1",
+        "vatOrCvr": "DK00000000"
+      },
+      "buyer": {
+        "name": "Synthetic Buyer",
+        "address": "Synthetic Street 2"
+      },
+      "lines": [
+        {
+          "description": "Bogføring og momsopsætning",
+          "quantity": 1,
+          "unitPriceExVat": 1000,
+          "lineTotalExVat": 1000
+        }
+      ],
+      "totals": {
+        "netAmount": 1000,
+        "vatRate": 0.25,
+        "vatAmount": 250,
+        "grossAmount": 1250
+      },
+      "deliveryDate": "2026-04-30",
+      "currency": "DKK"
+    },
+    "expected": {
+      "ok": false,
+      "invoiceType": "full",
+      "vatTreatment": "standard",
+      "appliedRules": [
+        "DK-INVOICE-FULL-001",
+        "DK-INVOICE-ARITHMETIC-001",
+        "DK-INVOICE-DELIVERY-DATE-001",
+        "DK-VAT-SEPARATE-AMOUNT-001"
+      ],
+      "errors": [
+        "invoiceNumber must not be blank when present"
+      ]
+    }
+  },
+  {
+    "input": {
+      "invoiceType": "full",
+      "vatTreatment": "standard",
+      "issueDate": "2026-05-16",
+      "invoiceNumber": "2026-0042",
+      "seller": {
+        "name": "Synthetic Seller",
+        "address": "Synthetic Street 1",
+        "vatOrCvr": "DK00000000"
+      },
+      "buyer": {
+        "name": "Synthetic Buyer",
+        "address": "Synthetic Street 2"
+      },
+      "lines": [
+        {
+          "description": "Bogføring og momsopsætning",
+          "quantity": 1,
+          "unitPriceExVat": 1000,
+          "lineTotalExVat": 1000
+        }
+      ],
+      "totals": {
+        "netAmount": 1000,
+        "vatRate": 0.25,
+        "vatAmount": 250,
+        "grossAmount": 1250
+      },
+      "currency": "DKK",
+      "deliveryPeriodStart": "2026-06-02",
+      "deliveryPeriodEnd": "2026-06-01"
+    },
+    "expected": {
+      "ok": false,
+      "invoiceType": "full",
+      "vatTreatment": "standard",
+      "appliedRules": [
+        "DK-INVOICE-FULL-001",
+        "DK-INVOICE-ARITHMETIC-001",
+        "DK-INVOICE-DELIVERY-DATE-001",
+        "DK-VAT-SEPARATE-AMOUNT-001"
+      ],
+      "errors": [
+        "deliveryPeriodEnd cannot be earlier than deliveryPeriodStart"
+      ]
+    }
+  },
+  {
+    "input": {
+      "invoiceType": "full",
+      "vatTreatment": "standard",
+      "issueDate": "2026-05-16",
+      "invoiceNumber": "2026-0042",
+      "seller": {
+        "name": "Synthetic Seller",
+        "address": "Synthetic Street 1",
+        "vatOrCvr": "DK00000000"
+      },
+      "buyer": {
+        "name": "Synthetic Buyer",
+        "address": "Synthetic Street 2",
+        "eanNumber": "579 0000000001"
+      },
+      "lines": [
+        {
+          "description": "Bogføring og momsopsætning",
+          "quantity": 1,
+          "unitPriceExVat": 1000,
+          "lineTotalExVat": 1000
+        }
+      ],
+      "totals": {
+        "netAmount": 1000,
+        "vatRate": 0.25,
+        "vatAmount": 250,
+        "grossAmount": 1250
+      },
+      "deliveryDate": "2026-04-30",
+      "currency": "DKK"
+    },
+    "expected": {
+      "ok": true,
+      "invoiceType": "full",
+      "vatTreatment": "standard",
+      "appliedRules": [
+        "DK-INVOICE-FULL-001",
+        "DK-INVOICE-ARITHMETIC-001",
+        "DK-INVOICE-DELIVERY-DATE-001",
+        "DK-INVOICE-PUBLIC-RECIPIENT-001",
+        "DK-VAT-SEPARATE-AMOUNT-001"
+      ],
+      "errors": []
+    }
+  },
+  {
+    "input": {
+      "invoiceType": "simplified",
+      "vatTreatment": "standard",
+      "issueDate": "2026-05-16",
+      "invoiceNumber": "2026-0042",
+      "seller": {
+        "name": "Synthetic Seller",
+        "address": "Synthetic Street 1",
+        "vatOrCvr": "DK00000000"
+      },
+      "lines": [
+        {
+          "description": "Synthetic"
+        }
+      ],
+      "totals": {
+        "grossAmount": 100.07,
+        "vatAmount": 20.02,
+        "vatRate": 0.25
+      },
+      "deliveryDate": "2026-04-30",
+      "currency": "DKK"
+    },
+    "expected": {
+      "ok": true,
+      "invoiceType": "simplified",
+      "vatTreatment": "standard",
+      "appliedRules": [
+        "DK-INVOICE-SIMPLIFIED-001",
+        "DK-INVOICE-ARITHMETIC-001",
+        "DK-INVOICE-DELIVERY-DATE-001",
+        "DK-VAT-SEPARATE-AMOUNT-001"
+      ],
+      "errors": []
+    }
+  },
+  {
+    "input": {
+      "invoiceType": "simplified",
+      "vatTreatment": "standard",
+      "issueDate": "2026-05-16",
+      "invoiceNumber": "2026-0042",
+      "seller": {
+        "name": "Synthetic Seller",
+        "address": "Synthetic Street 1",
+        "vatOrCvr": "DK00000000"
+      },
+      "lines": [
+        {
+          "description": "Synthetic"
+        }
+      ],
+      "totals": {
+        "grossAmount": 100.07,
+        "vatAmount": 20.03,
+        "vatRate": 0.25
+      },
+      "deliveryDate": "2026-04-30",
+      "currency": "DKK"
+    },
+    "expected": {
+      "ok": false,
+      "invoiceType": "simplified",
+      "vatTreatment": "standard",
+      "appliedRules": [
+        "DK-INVOICE-SIMPLIFIED-001",
+        "DK-INVOICE-ARITHMETIC-001",
+        "DK-INVOICE-DELIVERY-DATE-001",
+        "DK-VAT-SEPARATE-AMOUNT-001"
+      ],
+      "errors": [
+        "totals.vatAmount must be the VAT contained in totals.grossAmount at totals.vatRate (≈ 20.01)"
+      ]
+    }
+  },
+  {
+    "input": {
+      "invoiceType": "full",
+      "vatTreatment": "domestic_reverse_charge",
+      "issueDate": "2026-05-16",
+      "invoiceNumber": "2026-0042",
+      "seller": {
+        "name": "Synthetic Seller",
+        "address": "Synthetic Street 1",
+        "vatOrCvr": "DK00000000"
+      },
+      "buyer": {
+        "name": "Synthetic Buyer",
+        "address": "Synthetic Street 2"
+      },
+      "lines": [
+        {
+          "description": "Bogføring og momsopsætning",
+          "quantity": 1,
+          "unitPriceExVat": 1000,
+          "lineTotalExVat": 1000
+        }
+      ],
+      "totals": {
+        "netAmount": 1000,
+        "grossAmount": 1000
+      },
+      "deliveryDate": "2026-04-30",
+      "currency": "DKK",
+      "reverseChargeBasis": "DK_MOMSLOVEN_§46_STK_1_NR_6"
+    },
+    "expected": {
+      "ok": true,
+      "invoiceType": "full",
+      "vatTreatment": "domestic_reverse_charge",
+      "appliedRules": [
+        "DK-INVOICE-FULL-001",
+        "DK-INVOICE-ARITHMETIC-001",
+        "DK-INVOICE-DELIVERY-DATE-001",
+        "DK-INVOICE-REVERSE-CHARGE-001",
+        "DK-INVOICE-REVERSE-CHARGE-BASIS-001"
+      ],
+      "errors": []
+    }
+  },
+  {
+    "input": {
+      "invoiceType": "full",
+      "vatTreatment": "domestic_reverse_charge",
+      "issueDate": "2026-05-16",
+      "invoiceNumber": "2026-0042",
+      "seller": {
+        "name": "Synthetic Seller",
+        "address": "Synthetic Street 1",
+        "vatOrCvr": "DK00000000"
+      },
+      "buyer": {
+        "name": "Synthetic Buyer",
+        "address": "Synthetic Street 2"
+      },
+      "lines": [
+        {
+          "description": "Bogføring og momsopsætning",
+          "quantity": 1,
+          "unitPriceExVat": 1000,
+          "lineTotalExVat": 1000
+        }
+      ],
+      "totals": {
+        "netAmount": 1000,
+        "grossAmount": 1000
+      },
+      "deliveryDate": "2026-04-30",
+      "currency": "DKK",
+      "reverseChargeBasis": "EU_MOMSDIREKTIV_ART_196"
+    },
+    "expected": {
+      "ok": false,
+      "invoiceType": "full",
+      "vatTreatment": "domestic_reverse_charge",
+      "appliedRules": [
+        "DK-INVOICE-FULL-001",
+        "DK-INVOICE-ARITHMETIC-001",
+        "DK-INVOICE-DELIVERY-DATE-001",
+        "DK-INVOICE-REVERSE-CHARGE-001",
+        "DK-INVOICE-REVERSE-CHARGE-BASIS-001"
+      ],
+      "errors": [
+        "reverseChargeBasis EU_MOMSDIREKTIV_ART_196 is not valid for domestic reverse-charge invoices"
+      ]
+    }
+  },
+  {
+    "input": {
+      "invoiceType": "full",
+      "vatTreatment": "standard",
+      "issueDate": "2026-05-16",
+      "invoiceNumber": "2026-0042",
+      "seller": {
+        "name": "Synthetic Seller",
+        "address": "Synthetic Street 1",
+        "vatOrCvr": "DK00000000"
+      },
+      "buyer": {
+        "name": "Synthetic Buyer",
+        "address": "Synthetic Street 2"
+      },
+      "lines": [
+        {
+          "description": "Synthetic",
+          "lineTotalExVat": 100,
+          "vatRate": 0.1,
+          "taxClassification": "taxable"
+        }
+      ],
+      "totals": {
+        "netAmount": 100,
+        "vatAmount": 10,
+        "grossAmount": 110
+      },
+      "deliveryDate": "2026-04-30",
+      "currency": "DKK"
+    },
+    "expected": {
+      "ok": true,
+      "invoiceType": "full",
+      "vatTreatment": "standard",
+      "appliedRules": [
+        "DK-INVOICE-FULL-001",
+        "DK-INVOICE-ARITHMETIC-001",
+        "DK-INVOICE-DELIVERY-DATE-001"
+      ],
+      "errors": []
+    }
+  },
+  {
+    "input": {
+      "invoiceType": "full",
+      "vatTreatment": "standard",
+      "issueDate": "2026-05-16",
+      "invoiceNumber": "2026-0042",
+      "seller": {
+        "name": "Synthetic Seller",
+        "address": "Synthetic Street 1",
+        "vatOrCvr": "DK00000000"
+      },
+      "buyer": {
+        "name": "Synthetic Buyer",
+        "address": "Synthetic Street 2"
+      },
+      "lines": [
+        {
+          "description": "Synthetic",
+          "lineTotalExVat": 100,
+          "taxClassification": "reverse_charge"
+        }
+      ],
+      "totals": {
+        "netAmount": 100,
+        "vatAmount": 0,
+        "grossAmount": 100
+      },
+      "deliveryDate": "2026-04-30",
+      "currency": "DKK"
+    },
+    "expected": {
+      "ok": false,
+      "invoiceType": "full",
+      "vatTreatment": "standard",
+      "appliedRules": [
+        "DK-INVOICE-FULL-001",
+        "DK-INVOICE-ARITHMETIC-001",
+        "DK-INVOICE-DELIVERY-DATE-001"
+      ],
+      "errors": [
+        "lines[0].reverseChargeBasis is required for reverse-charge lines"
+      ]
+    }
+  },
+  {
+    "input": {
+      "invoiceType": "full",
+      "vatTreatment": "standard",
+      "issueDate": "2026-05-16",
+      "invoiceNumber": "2026-0042",
+      "seller": {
+        "name": "Synthetic Seller",
+        "address": "Synthetic Street 1",
+        "vatOrCvr": "DK00000000"
+      },
+      "buyer": {
+        "name": "Synthetic Buyer",
+        "address": "Synthetic Street 2"
+      },
+      "lines": [
+        {
+          "description": "Bogføring og momsopsætning",
+          "quantity": 1,
+          "unitPriceExVat": 1000,
+          "lineTotalExVat": 1000
+        }
+      ],
+      "totals": {
+        "netAmount": 1000,
+        "vatRate": 0.25,
+        "vatAmount": 250,
+        "grossAmount": 1250,
+        "fxRateToDkk": 7.5,
+        "netAmountDkk": 7500,
+        "vatAmountDkk": 1875,
+        "grossAmountDkk": 9374
+      },
+      "deliveryDate": "2026-04-30",
+      "currency": "EUR"
+    },
+    "expected": {
+      "ok": false,
+      "invoiceType": "full",
+      "vatTreatment": "standard",
+      "appliedRules": [
+        "DK-INVOICE-FULL-001",
+        "DK-INVOICE-ARITHMETIC-001",
+        "DK-INVOICE-DELIVERY-DATE-001",
+        "DK-VAT-SEPARATE-AMOUNT-001"
+      ],
+      "errors": [
+        "totals.grossAmountDkk must equal totals.grossAmount * totals.fxRateToDkk (9375)",
+        "totals.grossAmountDkk must equal totals.netAmountDkk + totals.vatAmountDkk (9375)"
+      ]
+    }
+  }
+]
