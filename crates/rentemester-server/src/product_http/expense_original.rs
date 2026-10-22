@@ -123,6 +123,23 @@ fn domain_error(code: &str, unknown: bool) -> Response {
             json!({"ok":false,"errors":["PURCHASE_FAILED"]}),
         );
     }
+    if !unknown {
+        let message = match code {
+            "IDEMPOTENCY_CONFLICT" => {
+                Some("idempotency key was already used with a different validated payload")
+            }
+            "IDEMPOTENCY_OUTCOME_EXPIRED" => Some(
+                "idempotency outcome has expired; inspect canonical state and use a new key only for a new operation",
+            ),
+            _ => None,
+        };
+        if let Some(message) = message {
+            return response(
+                StatusCode::UNPROCESSABLE_ENTITY,
+                json!({"ok":false,"code":code,"errors":[message]}),
+            );
+        }
+    }
     let (status, safe) = if unknown {
         (StatusCode::SERVICE_UNAVAILABLE, "outcome_unknown")
     } else {
@@ -137,8 +154,6 @@ fn domain_error(code: &str, unknown: bool) -> Response {
                 StatusCode::UNPROCESSABLE_ENTITY,
                 "purchase_admission_changed",
             ),
-            "idempotency_conflict" => (StatusCode::CONFLICT, "idempotency_conflict"),
-            "idempotency_expired" => (StatusCode::CONFLICT, "idempotency_expired"),
             _ => (StatusCode::UNPROCESSABLE_ENTITY, "purchase_refused"),
         }
     };
@@ -403,6 +418,30 @@ fn owner_error(_: rentemester_host::OwnerError) -> Box<Response> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[tokio::test]
+    async fn known_key_refusals_keep_source_codes_but_unknown_and_authority_win() {
+        for code in ["IDEMPOTENCY_CONFLICT", "IDEMPOTENCY_OUTCOME_EXPIRED"] {
+            let r = domain_error(code, false);
+            assert_eq!(r.status(), StatusCode::UNPROCESSABLE_ENTITY);
+            let body: Value =
+                serde_json::from_slice(&to_bytes(r.into_body(), 4096).await.unwrap()).unwrap();
+            assert_eq!(body["ok"], false);
+            assert_eq!(body["code"], code);
+            assert!(body["errors"][0].as_str().is_some_and(|s| !s.is_empty()));
+            assert_eq!(
+                domain_error(code, true).status(),
+                StatusCode::SERVICE_UNAVAILABLE
+            );
+        }
+        assert_eq!(
+            domain_error("access_denied", true).status(),
+            StatusCode::FORBIDDEN
+        );
+        assert_eq!(
+            domain_error("invalid_credentials", true).status(),
+            StatusCode::UNAUTHORIZED
+        );
+    }
     #[test]
     fn strict_writes_reject_forged_or_ambiguous_fields() {
         for raw in [
