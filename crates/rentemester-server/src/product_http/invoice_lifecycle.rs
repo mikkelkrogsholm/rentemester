@@ -69,6 +69,7 @@ fn parse(path: &str, bytes: &[u8]) -> Result<(Kind, Value), &'static str> {
         "credit-note" => Kind::CreditNote,
         "refund-bank" => Kind::RefundBank,
         "apply-payment" => Kind::ApplyPayment,
+        "repair-posting" => Kind::RepairPosting,
         _ => return Err("invalid_input"),
     };
     if bytes.len() > 256 * 1024 {
@@ -203,6 +204,22 @@ mod tests {
             r#"{"confirm":true,"payload":{"invoiceDocumentId":1,"paymentDate":"2026-01-01","amount":1,"createdBy":"user:other"}}"#,
         ] {
             assert!(parse("/apply-payment", raw.as_bytes()).is_err(), "{raw}");
+        }
+    }
+    #[test]
+    fn original_repair_wire_is_flat_strict_and_confirms_exact_legacy() {
+        assert!(parse("/repair-posting",br#"{"documentId":1,"legacyJournalEntryId":2,"reason":"Synthetic repair","revenueAccountNo":"S","confirm":true}"#).is_ok());
+        assert!(parse("/repair-posting",br#"{"invoiceNumber":"2026-1","legacyJournalEntryId":2,"reason":"Synthetic repair","revenueAccountNo":"S","confirm":true}"#).is_ok());
+        for raw in [
+            r#"{"documentId":1,"reason":"repair","revenueAccountNo":"S","confirm":true}"#,
+            r#"{"documentId":1,"legacyJournalEntryId":2,"reason":"repair","confirm":true}"#,
+            r#"{"documentId":1,"legacyJournalEntryId":2,"reason":" ","revenueAccountNo":"S","confirm":true}"#,
+            r#"{"documentId":1,"legacyJournalEntryId":null,"reason":"repair","revenueAccountNo":"S","confirm":true}"#,
+            r#"{"documentId":1,"legacyJournalEntryId":2,"legacyJournalEntryId":3,"reason":"repair","revenueAccountNo":"S","confirm":true}"#,
+            r#"{"documentId":1,"legacyJournalEntryId":2,"reason":"repair","revenueAccountNo":"S","confirm":true,"actor":"user:other"}"#,
+            r#"{"documentId":1,"legacyJournalEntryId":2,"reason":"repair","revenueAccountNo":"S","confirm":false}"#,
+        ] {
+            assert!(parse("/repair-posting", raw.as_bytes()).is_err(), "{raw}");
         }
     }
 }

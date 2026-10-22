@@ -16,6 +16,7 @@ pub enum Kind {
     CreditNote,
     RefundBank,
     ApplyPayment,
+    RepairPosting,
 }
 fn input_error(message: impl Into<String>) -> Error {
     Error::new("invoice_lifecycle_input_invalid", message)
@@ -138,6 +139,14 @@ pub fn validate(kind: Kind, body: &Value) -> Result<(), Error> {
         Kind::Issue | Kind::Create => &["payload", "customerId", "confirm"][..],
         Kind::Render => &["documentId", "invoiceNumber", "confirm"],
         Kind::Post => &["documentId", "invoiceNumber", "revenueAccountNo", "confirm"],
+        Kind::RepairPosting => &[
+            "documentId",
+            "invoiceNumber",
+            "legacyJournalEntryId",
+            "reason",
+            "revenueAccountNo",
+            "confirm",
+        ],
         _ => &["payload", "confirm"],
     };
     fields(body, top)?;
@@ -146,7 +155,19 @@ pub fn validate(kind: Kind, body: &Value) -> Result<(), Error> {
     }
     id(body.get("customerId"))?;
     match kind {
-        Kind::Render | Kind::Post => {
+        Kind::Render | Kind::Post | Kind::RepairPosting => {
+            if matches!(kind, Kind::RepairPosting) {
+                id(body.get("legacyJournalEntryId"))?;
+                if body.get("legacyJournalEntryId").is_none()
+                    || body.get("reason").is_none()
+                    || body.get("revenueAccountNo").is_none()
+                {
+                    return Err(input_error(
+                        "legacyJournalEntryId, reason and revenueAccountNo required",
+                    ));
+                }
+                string(body.get("reason"))?;
+            }
             id(body.get("documentId"))?;
             string(body.get("invoiceNumber"))?;
             string(body.get("revenueAccountNo"))?;

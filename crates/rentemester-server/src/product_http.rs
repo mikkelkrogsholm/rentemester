@@ -115,6 +115,7 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
     };
     Router::new()
         .route("/api/companies/{slug}/invoices/original/apply-payment",post(invoice_lifecycle::handle))
+        .route("/api/companies/{slug}/invoices/original/repair-posting",post(invoice_lifecycle::handle))
         .route("/api/companies/{slug}/invoices/original/issue",post(invoice_lifecycle::handle))
         .route("/api/companies/{slug}/invoices/original/create",post(invoice_lifecycle::handle))
         .route("/api/companies/{slug}/invoices/original/render",post(invoice_lifecycle::handle))

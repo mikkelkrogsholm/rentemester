@@ -423,3 +423,83 @@ fn original_apply_payment_service_bankless_and_candidate_keep_sources_and_curren
     assert_eq!(f.count("invoice_payments"), 2);
     assert_eq!(f.count("journal_entries"), 3);
 }
+#[test]
+fn original_repair_service_preserves_sources_current_rights_and_atomic_result() {
+    let mut f = fixture("bookkeeper");
+    let issue = json!({"confirm":true,"payload":{"invoiceType":"full","issueDate":"2026-01-01","buyer":{"name":"Synthetic buyer","address":"Synthetic street2"},"lines":[{"description":"Synthetic service","quantity":1,"unitPriceExVat":100,"lineTotalExVat":100}],"totals":{"netAmount":100,"vatRate":0.25,"vatAmount":25,"grossAmount":125}}});
+    let issued = json_output(f.run(Action::Lifecycle(Kind::Issue, &issue)).unwrap());
+    let id = issued["data"]["documentId"].as_i64().unwrap();
+    let old = {
+        let tx = f
+            .company
+            .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
+            .unwrap();
+        let request=serde_json::from_value(json!({"transactionDate":"2026-01-02","text":"Synthetic legacy invoice booking","currency":"DKK","documentId":id.to_string(),"lines":[{"accountNo":"R","debitAmount":"100.00"},{"accountNo":"S","creditAmount":"100.00"}]})).unwrap();
+        let r = rentemester_storage::journal_post::post(
+            &tx,
+            &request,
+            &rentemester_storage::journal_preview::manual_journal_rule_version().unwrap(),
+            Date::parse("2026-01-02").unwrap(),
+            rentemester_storage::journal_post::Actor {
+                subject: "user:u",
+                program: "rentemester-rust",
+            },
+        )
+        .unwrap();
+        tx.commit().unwrap();
+        r["entryId"].as_i64().unwrap()
+    };
+    let repair = json!({"confirm":true,"documentId":id,"invoiceNumber":"ignored due ID precedence","legacyJournalEntryId":old,"reason":"Synthetic repair","revenueAccountNo":"S"});
+    let path: String = f
+        .company
+        .query_row(
+            "SELECT stored_path FROM documents WHERE id=?1",
+            [issued["data"]["pdfDocumentId"].as_i64().unwrap()],
+            |r| r.get(0),
+        )
+        .unwrap();
+    let path = f._dir.path().join("workspace/a").join(path);
+    let original = std::fs::read(&path).unwrap();
+    std::fs::write(&path, b"synthetic corrupt PDF").unwrap();
+    assert!(
+        f.run(Action::Lifecycle(Kind::RepairPosting, &repair))
+            .is_err()
+    );
+    assert_eq!(f.count("journal_entries"), 1);
+    assert_eq!(f.count("issued_invoice_postings"), 0);
+    std::fs::write(&path, &original).unwrap();
+    let result = json_output(
+        f.run(Action::Lifecycle(Kind::RepairPosting, &repair))
+            .unwrap(),
+    );
+    assert_eq!(result["ok"], true);
+    assert_eq!(result["data"]["legacyJournalEntryId"], old);
+    assert!(result["data"]["entryHash"].is_string());
+    assert_eq!(f.count("journal_entries"), 3);
+    assert_eq!(std::fs::read(&path).unwrap(), original);
+    assert_eq!(
+        f.company
+            .query_row::<String, _, _>(
+                "SELECT actor FROM audit_log WHERE event_type='invoice_booking_repair'",
+                [],
+                |r| r.get(0)
+            )
+            .unwrap(),
+        format!("service_account:{}", f.subject)
+    );
+    assert!(
+        f.run(Action::Lifecycle(Kind::RepairPosting, &repair))
+            .is_err()
+    );
+    assert_eq!(f.count("journal_entries"), 3);
+    f.control.execute("INSERT INTO rm_company_membership_events(user_id,company_slug,event_type,actor)VALUES(?1,'a','revoke','user:u')",[&f.subject]).unwrap();
+    assert_eq!(
+        f.run(Action::Lifecycle(Kind::RepairPosting, &repair))
+            .err()
+            .unwrap()
+            .error
+            .code,
+        "access_denied"
+    );
+    assert_eq!(f.count("journal_entries"), 3);
+}

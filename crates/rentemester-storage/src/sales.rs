@@ -649,6 +649,27 @@ pub fn post_with_principal(
     latest: Date,
     principal: crate::idempotency::PrincipalKind,
 ) -> Result<Value, Error> {
+    post_mode(tx, input, subject, latest, principal, None)
+}
+pub(crate) fn post_for_repair(
+    tx: &Transaction<'_>,
+    input: &Post,
+    subject: &str,
+    latest: Date,
+    principal: crate::idempotency::PrincipalKind,
+    permit: &crate::invoice_repair::Permit,
+) -> Result<Value, Error> {
+    permit.before_post(tx, input.invoice_document_id)?;
+    post_mode(tx, input, subject, latest, principal, Some(permit))
+}
+fn post_mode(
+    tx: &Transaction<'_>,
+    input: &Post,
+    subject: &str,
+    latest: Date,
+    principal: crate::idempotency::PrincipalKind,
+    repair: Option<&crate::invoice_repair::Permit>,
+) -> Result<Value, Error> {
     crate::journal_post::require_current(tx)?;
     if !input.confirm || input.invoice_document_id <= 0 {
         return Err(refused(
@@ -676,7 +697,7 @@ pub fn post_with_principal(
             |r| r.get(0),
         )
         .map_err(invalid)?;
-    if existing {
+    if existing && repair.is_none() {
         return Err(refused(
             "invoice already has journal entry; cannot be booked twice",
         ));

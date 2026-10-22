@@ -102,7 +102,7 @@ fn inner(
         }
         return Ok(storage::envelope(receipt));
     }
-    let p = if matches!(kind, Kind::Render | Kind::Post) {
+    let p = if matches!(kind, Kind::Render | Kind::Post | Kind::RepairPosting) {
         body
     } else {
         &body["payload"]
@@ -110,7 +110,7 @@ fn inner(
     let invoice = storage::resolve_invoice(
         tx,
         p,
-        if matches!(kind, Kind::Render | Kind::Post) {
+        if matches!(kind, Kind::Render | Kind::Post | Kind::RepairPosting) {
             "documentId"
         } else if matches!(kind, Kind::CreditNote) {
             "originalInvoiceDocumentId"
@@ -145,6 +145,9 @@ fn inner(
                 confirm: true,
             };
             rentemester_storage::sales::post_with_principal(tx, &input, subject, latest, principal)?
+        }
+        Kind::RepairPosting => {
+            rentemester_storage::invoice_repair::repair(tx, invoice, p, subject, principal, latest)?
         }
         Kind::CreditNote => {
             let input:rentemester_storage::credit_note::Input=serde_json::from_value(json!({"invoiceDocumentId":invoice,"issueDate":p["issueDate"],"reason":p["reason"],"grossAmount":p["grossAmount"],"creditNoteNumber":p["creditNoteNumber"],"confirm":true})).map_err(|_|Error::new("invoice_lifecycle_input_invalid","invalid credit note payload"))?;

@@ -76,6 +76,27 @@ pub fn reverse(
     latest: Date,
     actor: Actor<'_>,
 ) -> Result<Value, Error> {
+    reverse_mode(tx, input, expected_version, latest, actor, None)
+}
+pub(crate) fn reverse_repaired(
+    tx: &Transaction<'_>,
+    input: &Input,
+    expected_version: &str,
+    latest: Date,
+    actor: Actor<'_>,
+    permit: &crate::invoice_repair::Permit,
+) -> Result<Value, Error> {
+    permit.before_reverse(tx, input.entry_id.value(), input.transaction_date)?;
+    reverse_mode(tx, input, expected_version, latest, actor, Some(permit))
+}
+fn reverse_mode(
+    tx: &Transaction<'_>,
+    input: &Input,
+    expected_version: &str,
+    latest: Date,
+    actor: Actor<'_>,
+    repair: Option<&crate::invoice_repair::Permit>,
+) -> Result<Value, Error> {
     journal_post::require_current(tx)?;
     let rules = crate::journal_preview::compiled_rules()?;
     rules.require_version(expected_version)?;
@@ -140,7 +161,7 @@ pub fn reverse(
     }
     if let Some(document) = document {
         let protected:Option<String>=tx.query_row("SELECT document_type FROM main.documents WHERE id=?1 AND document_type IN ('issued_invoice','credit_note')",[document],|r|r.get(0)).optional().map_err(failed)?;
-        if let Some(kind) = protected {
+        if let Some(kind) = protected.filter(|_| repair.is_none()) {
             return Ok(refusal(format!(
                 "journal entry {id} is protected invoice evidence ({kind}) and cannot be reversed without an atomic invoice correction workflow"
             )));

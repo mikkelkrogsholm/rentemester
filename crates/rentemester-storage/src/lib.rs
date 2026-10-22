@@ -671,3 +671,5 @@ pub mod annual_exports;
 pub mod invoice_lifecycle;
 
 pub mod invoice_payment_apply;
+
+pub mod invoice_repair;
