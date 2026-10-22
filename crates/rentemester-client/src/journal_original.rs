@@ -1,4 +1,4 @@
-//! Flat source journal transport. No keys, preflight reads, or retries.
+//! Flat source journal transport. Explicit caller keys only; no preflight reads or retries.
 use crate::{ApiClient, Error, MAX_RESPONSE, company_path};
 use reqwest::Method;
 use serde_json::Value;
@@ -8,6 +8,8 @@ enum Operation {
     Post,
     DryRun,
     Reverse,
+    KeyedPost,
+    KeyedReverse,
 }
 impl Operation {
     fn suffix(self) -> &'static str {
@@ -15,6 +17,8 @@ impl Operation {
             Self::Post => "post",
             Self::DryRun => "dry-run",
             Self::Reverse => "reverse",
+            Self::KeyedPost => "keyed-post",
+            Self::KeyedReverse => "keyed-reverse",
         }
     }
     fn durable(self) -> bool {
@@ -118,7 +122,57 @@ fn result(v: &Value, op: Operation, strict: bool) -> bool {
     }
     !effects.is_empty()
 }
+fn keyed_result(v: &Value, op: Operation, strict: bool) -> bool {
+    let mut core = v.clone();
+    let Some(fields) = core.as_object_mut() else {
+        return false;
+    };
+    let metadata = fields.remove("idempotency");
+    let core_op = if matches!(op, Operation::KeyedReverse) {
+        Operation::Reverse
+    } else {
+        Operation::Post
+    };
+    if !result(&core, core_op, strict) {
+        return false;
+    }
+    if core["ok"] == false {
+        return metadata.is_none();
+    }
+    let Some(meta) = metadata else {
+        return false;
+    };
+    if meta.as_object().is_none_or(|o| o.len() != 4)
+        || !meta["replayed"].is_boolean()
+        || !id(&meta["receiptId"])
+    {
+        return false;
+    }
+    let timestamp = |key: &str| {
+        meta[key].as_str().and_then(|s| {
+            time::OffsetDateTime::parse(s, &time::format_description::well_known::Rfc3339).ok()
+        })
+    };
+    matches!((timestamp("createdAt"), timestamp("expiresAt")), (Some(created), Some(expires)) if expires > created)
+}
 impl ApiClient {
+    pub async fn journal_original_keyed_post(
+        &self,
+        company: &str,
+        bytes: Vec<u8>,
+        confirmed: bool,
+    ) -> Result<Value, Error> {
+        journal_request(self, company, bytes, Operation::KeyedPost, confirmed).await
+    }
+    pub async fn journal_original_keyed_reverse(
+        &self,
+        company: &str,
+        bytes: Vec<u8>,
+        confirmed: bool,
+    ) -> Result<Value, Error> {
+        journal_request(self, company, bytes, Operation::KeyedReverse, confirmed).await
+    }
+
     pub async fn journal_original_post(
         &self,
         company: &str,
@@ -161,21 +215,31 @@ async fn journal_request(
     if op.durable() && (!confirmed || input["confirm"] != true) {
         return Err(Error::InvalidInput("explicit journal invocation required"));
     }
+    let keyed = matches!(op, Operation::KeyedPost | Operation::KeyedReverse);
+    if keyed
+        && !input["idempotencyKey"]
+            .as_str()
+            .is_some_and(|s| !s.trim().is_empty() && (1..=128).contains(&s.encode_utf16().count()))
+    {
+        return Err(Error::InvalidInput("invalid journal idempotency key"));
+    }
     let valid = match op {
         Operation::Post => fields.len() == 2 && input["input"].is_object(),
+        Operation::KeyedPost => fields.len() == 3 && input["input"].is_object(),
         Operation::DryRun => fields.len() == 1 && input["input"].is_object(),
-        Operation::Reverse => fields.keys().all(|k| {
-            matches!(
-                k.as_str(),
-                "entryId"
-                    | "entryNo"
-                    | "matchText"
-                    | "matchDate"
-                    | "matchDocumentId"
-                    | "transactionDate"
-                    | "reason"
-                    | "confirm"
-            )
+        Operation::Reverse | Operation::KeyedReverse => fields.keys().all(|k| {
+            (keyed && k == "idempotencyKey")
+                || matches!(
+                    k.as_str(),
+                    "entryId"
+                        | "entryNo"
+                        | "matchText"
+                        | "matchDate"
+                        | "matchDocumentId"
+                        | "transactionDate"
+                        | "reason"
+                        | "confirm"
+                )
         }),
     };
     if !valid {
@@ -222,7 +286,11 @@ async fn journal_request(
         bytes.extend_from_slice(&chunk);
     }
     let value: Value = serde_json::from_slice(&bytes).map_err(|_| protocol())?;
-    if result(&value, op, status == 422) {
+    if if keyed {
+        keyed_result(&value, op, status == 422)
+    } else {
+        result(&value, op, status == 422)
+    } {
         Ok(value)
     } else {
         Err(protocol())

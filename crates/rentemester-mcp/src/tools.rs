@@ -204,6 +204,7 @@ pub fn list() -> Value {
     tools.extend(crate::backup_governance::tools());
     tools.extend(crate::backup_registration::tools());
     tools.extend(crate::journal_history::tools());
+    tools.extend(crate::journal_original::tools());
     tools.extend(crate::audit_log::tools());
     tools.extend(crate::audit_verify::tools());
     crate::invoice_claims_original::register(&mut tools);
@@ -267,6 +268,7 @@ pub async fn call(api: &ApiClient, name: &str, args: Value) -> Result<Value, &'s
     if !args.is_object() {
         return Err("expected arguments object");
     }
+    if crate::journal_original::accepts(name) { return crate::journal_original::call(api,name,args).await; }
     if name=="invoice_validate" {return crate::invoice_validation::call(args);}
     if crate::recurring_original::accepts(name) {return crate::recurring_original::call(api,name,args).await;}
     if name=="invoice_write_off_bad_debt" && args.get("body").is_none() {return crate::invoice_bad_debt::call_original(api,args).await;}

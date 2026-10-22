@@ -446,3 +446,5 @@ mod opening_balance;
 mod portfolio_cashflow;
 
 mod dinero_import;
+
+mod journal_original;
