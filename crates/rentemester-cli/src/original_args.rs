@@ -40,7 +40,8 @@ fn boolean(name: &str) -> bool {
 }
 
 fn migrated(args: &[String]) -> bool {
-    crate::document_party_original::accepts(args)
+    crate::invoice_extraction_original::accepts(args)
+        || crate::document_party_original::accepts(args)
         || crate::documents_original::accepts(args)
         || crate::master_data_original::accepts(args)
         || crate::exceptions_original::accepts(args)

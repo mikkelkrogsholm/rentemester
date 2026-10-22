@@ -16,7 +16,7 @@ pub fn help() -> Value {
         {"name":"journal post|dry-run|reverse|list","usage":"journal --help","scope":"original numeric manual journal operations, rollback-only dry-run, server-side reversal selection; native journal list retained"},
         {"name":"dashboard","usage":"dashboard --server ORIGIN --cookie-file PATH --company SLUG --out FILE.html [--as-of YYYY-MM-DD] [--open]","scope":"authenticated server HTML, atomic local output"},
         {"name":"remote","usage":"remote --help","scope":"explicit authenticated Rust HTTP server; no local fallback"},
-        {"name":"documents","usage":"documents --help","scope":"original intake/list/enrich/company-context/parse/parse-pending/parse-status/parsed-text plus seven party-link/internal decision commands and retained native invoice extraction"},
+        {"name":"documents","usage":"documents --help","scope":"original intake/list/enrich/company-context/parse/parse-pending/parse-status/parsed-text plus seven party-link/internal decision commands and two source-flat invoice extraction commands (17 total); native extraction remains under remote"},
         {"name":"validate-journal","usage":"validate-journal --company PATH < request.json","scope":"experimental source-backed advisory manual validation; no writer authority"},
         {"name":"trial-balance","usage":"trial-balance --company PATH --from YYYY-MM-DD --to YYYY-MM-DD","scope":"experimental local read-only report"},
         {"name":"rehearse-company-baseline","usage":"rehearse-company-baseline --company PATH","scope":"experimental explicit known unversioned physical baseline copy; no adoption authority"},
