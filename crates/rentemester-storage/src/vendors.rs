@@ -82,7 +82,16 @@ fn normalize(tx: &Transaction<'_>, input: &mut Vendor) -> Result<bool, Error> {
     Ok(explicit)
 }
 pub fn create(tx: &Transaction<'_>, input: &Vendor, actor: &str) -> Result<Value, Error> {
-    save(tx, None, input.clone(), actor)
+    create_with_principal(tx, input, actor, crate::idempotency::PrincipalKind::User)
+}
+/// Trusted typed principal; native human callers retain their original wrapper.
+pub fn create_with_principal(
+    tx: &Transaction<'_>,
+    input: &Vendor,
+    actor: &str,
+    principal: crate::idempotency::PrincipalKind,
+) -> Result<Value, Error> {
+    save_with_principal(tx, None, input.clone(), actor, principal)
 }
 pub fn update(tx: &Transaction<'_>, id: i64, patch: &Value, actor: &str) -> Result<Value, Error> {
     let fields = patch
@@ -103,11 +112,21 @@ pub fn update(tx: &Transaction<'_>, id: i64, patch: &Value, actor: &str) -> Resu
         actor,
     )
 }
-fn save(
+fn save(tx: &Transaction<'_>, id: Option<i64>, input: Vendor, actor: &str) -> Result<Value, Error> {
+    save_with_principal(
+        tx,
+        id,
+        input,
+        actor,
+        crate::idempotency::PrincipalKind::User,
+    )
+}
+fn save_with_principal(
     tx: &Transaction<'_>,
     id: Option<i64>,
     mut input: Vendor,
     actor: &str,
+    principal: crate::idempotency::PrincipalKind,
 ) -> Result<Value, Error> {
     crate::journal_post::require_current(tx)?;
     let event = if id.is_some() {
@@ -116,11 +135,29 @@ fn save(
         "vendor_create"
     };
     let resolved = normalize(tx, &mut input)?;
-    if let Some(id)=id {
-        let previous:(String,Option<String>)=tx.query_row("SELECT name,vat_or_cvr FROM vendors WHERE id=?1",[id],|r|Ok((r.get(0)?,r.get(1)?))).map_err(invalid)?;
-        crate::gdpr::require_contact_identity(tx,"vendors",Some(id),&previous.0,previous.1.as_deref())?;
+    if let Some(id) = id {
+        let previous: (String, Option<String>) = tx
+            .query_row(
+                "SELECT name,vat_or_cvr FROM vendors WHERE id=?1",
+                [id],
+                |r| Ok((r.get(0)?, r.get(1)?)),
+            )
+            .map_err(invalid)?;
+        crate::gdpr::require_contact_identity(
+            tx,
+            "vendors",
+            Some(id),
+            &previous.0,
+            previous.1.as_deref(),
+        )?;
     }
-    crate::gdpr::require_contact_identity(tx,"vendors",id,&input.name,input.vat_or_cvr.as_deref())?;
+    crate::gdpr::require_contact_identity(
+        tx,
+        "vendors",
+        id,
+        &input.name,
+        input.vat_or_cvr.as_deref(),
+    )?;
     let status = if resolved {
         "resolved"
     } else {
@@ -150,7 +187,7 @@ fn save(
     } else {
         tx.query_row("INSERT INTO vendors(name,address,vat_or_cvr,country_code,identifier_kind,identity_status,email,phone,website,default_expense_account,default_vat_treatment,notes) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12) RETURNING id",&values[..12],|r|r.get(0)).map_err(|e|if e.sqlite_error().is_some_and(|v|v.extended_code==rusqlite::ffi::SQLITE_CONSTRAINT_UNIQUE){refused("vendor already exists")}else{Error::new("contact_storage_unavailable","contact could not be stored")})?
     };
-    tx.execute("INSERT INTO audit_log(event_type,entity_type,entity_id,message,actor) VALUES(?1,'vendor',?2,?3,?4)",params![event,crate::gdpr::contact_audit_reference("vendors",id),format!("{event} {}",crate::gdpr::contact_audit_reference("vendors",id)),format!("user:{actor}")]).map_err(invalid)?;
+    tx.execute("INSERT INTO audit_log(event_type,entity_type,entity_id,message,actor) VALUES(?1,'vendor',?2,?3,?4)",params![event,crate::gdpr::contact_audit_reference("vendors",id),format!("{event} {}",crate::gdpr::contact_audit_reference("vendors",id)),format!("{}:{actor}", match principal { crate::idempotency::PrincipalKind::User => "user", crate::idempotency::PrincipalKind::ServiceAccount => "service_account" })]).map_err(invalid)?;
     Ok(json!({"id":id,"ok":true}))
 }
 
