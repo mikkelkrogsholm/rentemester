@@ -29,6 +29,7 @@ mod local_binding;
 mod original_args;
 mod original_discovery;
 mod period_original;
+mod exceptions_original;
 mod oss_report;
 mod payable_original;
 mod recurring_original;
@@ -313,6 +314,20 @@ fn main() -> ExitCode {
         eprint!("{}", output.stderr);
         return ExitCode::from(output.exit);
     }
+    if args.first().is_some_and(|s| s == "exceptions") {
+        if args.len() == 1 || args.iter().any(|s| s == "--help") {
+            println!("{}", exceptions_original::help());
+            return ExitCode::SUCCESS;
+        }
+        if !exceptions_original::accepts(&args) {
+            eprintln!("Unknown exceptions command; see exceptions --help");
+            return ExitCode::from(2);
+        }
+        if let Err(output) = exceptions_original::preflight(&args) {
+            print!("{}", output.stdout); eprint!("{}", output.stderr);
+            return ExitCode::from(output.exit);
+        }
+    }
     if args.first().is_some_and(|s| s == "period") {
         if args == ["period"] || args == ["period", "--help"] {
             println!("{}", period_original::help());
@@ -358,6 +373,11 @@ fn main() -> ExitCode {
             return ExitCode::from(code);
         }
     };
+    if exceptions_original::accepts(&args) {
+        let output = exceptions_original::execute(&args);
+        print!("{}", output.stdout); eprint!("{}", output.stderr);
+        return ExitCode::from(output.exit);
+    }
     if journal_original::accepts(&args) {
         let output = journal_original::execute(&args);
         print!("{}", output.stdout);

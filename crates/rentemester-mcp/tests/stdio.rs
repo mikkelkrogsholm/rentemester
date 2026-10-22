@@ -2215,3 +2215,6 @@ mod journal_original;
 
 #[path="stdio/period_original.rs"]
 mod period_original;
+
+#[path="stdio/exceptions_original.rs"]
+mod exceptions_original;

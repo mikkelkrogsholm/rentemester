@@ -39,7 +39,8 @@ fn boolean(name: &str) -> bool {
 }
 
 fn migrated(args: &[String]) -> bool {
-    crate::journal_original::accepts(args)
+    crate::exceptions_original::accepts(args)
+        || crate::journal_original::accepts(args)
         || crate::period_original::accepts(args)
         || crate::recurring_original::accepts(args)
         || crate::invoice_financial_original::accepts(args)
@@ -124,7 +125,8 @@ pub fn prepare(args: Vec<String>) -> Result<Vec<String>, (u8, Error)> {
         && command.first().is_some_and(|s| {
             matches!(
                 s.as_str(),
-                "period"
+                "exceptions"
+                    | "period"
                     | "journal"
                     | "invoice"
                     | "bank"
