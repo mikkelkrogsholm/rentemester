@@ -6,7 +6,10 @@ Desktop er Rust/Tauri med det eksisterende React-UI; byg ikke parallelle
 bogføringsmotorer eller separate desktopskærme. Den manuelle installerede
 desktopaccept udføres til allersidst. Bed ikke om skærmoplåsning undervejs.
 
-- GitHub-issues er autoritative for opgavestatus. Brug præcis én `flow:`-status
+- SGD ejer pilotens lokale udførelsestilstand; GDD beskriver kontrakter, og
+  Graphify beskriver observeret kode. Hooks læser SGD_WORK_PACKAGE og kræver
+  fortsat én gyldig Work-Issue-henvisning. Opret ikke en ekstra lokal opgavekø.
+- GitHub-issues er autoritative for leverancestatus. Brug præcis én `flow:`-status
   fra [arbejdsgangen](docs/development-workflow.md). `progress.json` gemmer
   evidens og genoptagelse, aldrig en konkurrerende kø. Bevar hele oprindeligt
   aftalte scope og allerede verificeret arbejde.
@@ -82,6 +85,13 @@ et bestemt CVR-nummer, en konkret kontoplan eller et konkret beløb.
 
 ## graphify
 
+I SGD-workers foretages den eksplicitte AST-opdatering før aflevering med
+`graphify extract . --code-only --no-cluster --out "$SGD_BUILD_DIR/graphify"`.
+Det holder genererede observationer ude af workers' kodeområder og ændrer ikke
+hovedgrafens semantiske indhold. Hovedagenten kører `graphify update .` på den
+integrerede kode før publicering og opdaterer ændrede dokumenters semantik.
+
+
 This project has a knowledge graph at graphify-out/ with god nodes, community structure, and cross-file relationships.
 
 When the user types `/graphify`, use the Graphify CLI before doing anything else.
@@ -99,30 +109,25 @@ Rules:
   færdigintegrerede worktrees efter hver integration. Bevar ikke-integrerede
   commits og ufærdige ændringer i verificerede, gendannelige Git-snapshots før
   fjernelse. Brug Codex' worktree-arkivering, hvor den er tilgængelig.
-- Alle lokale Rust-bygninger deler hovedcheckoutets `target/`. Projektets
-  `.cargo/config.toml` aktiverer `scripts/rust/cargo-guard.sh`, som bruger
-  Python-kontrollen til at forbinde worktrees med cachen og afvise separate
-  compiler-outputmapper. Opret
-  aldrig selvstændige `target`-mapper for agenter, tests eller featuregrene.
+- Uafhængigt arbejde og Rust-bygninger må køre parallelt. SGD giver hver worker
+  sit eget absolutte `CARGO_TARGET_DIR` og konfigurerer `CARGO_BUILD_JOBS` ud fra
+  reelle ressourcer. Tving ikke workers ind i én target-mappe eller global kø.
+  Uden eksplicit target kan hovedcheckoutets eksisterende cache genbruges.
+- Projektets `scripts/rust/cargo-guard.sh` og Python-kontrol skal fortsat afvise
+  kompilering under **30 GiB ledigt**, med **15 GiB** som kritisk grænse, på både
+  kilde- og byggevolumen. Bevar outputvalidering og eksisterende data. En ændret
+  byggeproces er ikke tilladelse til at fjerne plads- eller regnskabskontroller.
 - Kør `scripts/rust/cargo-guard.py status` før større bygninger og nye parallelle
-  arbejdsrunder. Cargo-kontrollen afviser kompilering under **30 GiB ledigt**;
-  under **15 GiB** markeres pladsmanglen som kritisk. Ryd op før nyt arbejde.
-  Kontrollen kører også ved almindelige `cargo build`, `check`, `test` og
-  `clippy`; fjern eller omgå ikke wrapperen eller dens grænser.
-- Brug `scripts/rust/cargo-guard.py cargo <kommando>` til eksplicit preflight,
-  også når Cargo ellers kan genbruge alle artefakter. Rust-bygninger kører
-  med én compilerproces og uden incremental-cache. Cargo serialiserer adgang
-  til den fælles cache; parallelisér udvikling, ikke konkurrerende bygninger.
-- Ryd først genopbyggelige byggefiler og afsluttede worktrees.
-  `scripts/rust/cargo-guard.py cargo clean` må bruges til den fælles byggecache,
-  også under pladsgrænsen, når ingen bygning kører. Slet aldrig virksomhedsdata,
-  testrapporter eller ufærdig kode som automatisk oprydning.
-- Isolerede containere bruger én fælles monteret cache pr. byggemiljø. Kun
-  runnerens operatørkonfiguration må sætte `RENTEMESTER_CARGO_CACHE`;
-  `CARGO_TARGET_DIR` skal pege på samme mappe. Lokale agenter må ikke bruge
-  dette til at omgå den fælles cache.
+  arbejdsrunder. Brug `scripts/rust/cargo-guard.py cargo <kommando>` til eksplicit
+  preflight, også når Cargo kan genbruge alle artefakter. Incremental er slået fra.
+- Fjern færdigintegrerede worktrees og genopbyggelige worker-output efter aflevering;
+  bevar først snapshots af ikke-integreret arbejde. Rør aldrig virksomhedsdata,
+  testrapporter eller ufærdig kode som automatisk oprydning. `cargo clean` må kun
+  rydde den valgte byggecache, når den ikke bruges af en levende bygning.
+- I containere gælder de samme pladsgrænser. Der må være separate bygge-output
+  pr. worker; dependency-downloadcache kan deles. Ingen global compilerlås.
 
 Den fastlåste Linux-byggecontainer har ikke Python. Her håndhæver shell-launcheren
-samme cache- og pladsgrænser på både byggevolumen og den delte kildemappe.
+samme output- og pladsgrænser på både byggevolumen og den delte kildemappe.
 Lokale værtsmaskiner bruger Python 3; en manglende kontrol må aldrig betyde,
 at kompilering fortsætter uden pladsgrænser.
