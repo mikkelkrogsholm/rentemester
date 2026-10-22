@@ -75,21 +75,19 @@ fn valid_original(action: &str, body: &Value) -> bool {
     if o.keys().any(|k| !allowed.contains(&k.as_str())) {
         return false;
     }
-    if let Some(id) = o.get("documentId") {
-        if !id
+    if let Some(id) = o.get("documentId")
+        && !id
             .as_i64()
             .is_some_and(|id| (1..=9_007_199_254_740_991).contains(&id))
-        {
-            return false;
-        }
+    {
+        return false;
     }
-    if let Some(no) = o.get("invoiceNumber") {
-        if !no
+    if let Some(no) = o.get("invoiceNumber")
+        && !no
             .as_str()
             .is_some_and(|s| !s.trim().is_empty() && s.len() <= 256)
-        {
-            return false;
-        }
+    {
+        return false;
     }
     if !o.contains_key("documentId") && !o.contains_key("invoiceNumber") {
         return false;
@@ -103,14 +101,13 @@ fn valid_original(action: &str, body: &Value) -> bool {
         {
             return false;
         }
-        if let Some(a) = o.get("acknowledgement") {
-            if serde_json::from_value::<rentemester_engine::peppol_handoff::Acknowledgement>(
+        if let Some(a) = o.get("acknowledgement")
+            && serde_json::from_value::<rentemester_engine::peppol_handoff::Acknowledgement>(
                 a.clone(),
             )
             .is_err()
-            {
-                return false;
-            }
+        {
+            return false;
         }
     }
     if action == "transmit-digisense"

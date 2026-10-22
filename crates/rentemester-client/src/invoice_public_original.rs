@@ -81,10 +81,10 @@ fn matches_hash(value: &Value, text: &str, hash: &str) -> bool {
         .is_some_and(|(text, hash)| format!("{:x}", Sha256::digest(text.as_bytes())) == hash)
 }
 /// Verify exact returned UTF-8 artifact bytes, including immediately before local writing.
-pub fn public_invoice_artifact<'a>(
+pub fn public_invoice_artifact(
     kind: OriginalPublicInvoiceKind,
-    value: &'a Value,
-) -> Result<&'a str, Error> {
+    value: &Value,
+) -> Result<&str, Error> {
     let (text, hash) = if kind.is_export() {
         ("xml", "sha256")
     } else {
