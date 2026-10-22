@@ -40,7 +40,8 @@ fn boolean(name: &str) -> bool {
 }
 
 fn migrated(args: &[String]) -> bool {
-    crate::accrual_original::accepts(args)
+    crate::asset_original::accepts(args)
+        || crate::accrual_original::accepts(args)
         || crate::expense_original::accepts(args)
         || crate::invoice_extraction_original::accepts(args)
         || crate::document_party_original::accepts(args)
@@ -133,6 +134,7 @@ pub fn prepare(args: Vec<String>) -> Result<Vec<String>, (u8, Error)> {
             matches!(
                 s.as_str(),
                 "customer"
+                    | "asset"
                     | "accrual"
                     | "expense"
                     | "documents"
@@ -218,7 +220,13 @@ pub fn prepare(args: Vec<String>) -> Result<Vec<String>, (u8, Error)> {
         && output.first().is_some_and(|s| {
             matches!(
                 s.as_str(),
-                "exceptions" | "customer" | "vendor" | "documents" | "expense" | "accrual"
+                "exceptions"
+                    | "customer"
+                    | "vendor"
+                    | "documents"
+                    | "expense"
+                    | "asset"
+                    | "accrual"
             )
         })
     {
@@ -239,6 +247,24 @@ mod tests {
     use super::*;
     fn args(values: &[&str]) -> Vec<String> {
         values.iter().map(|v| (*v).into()).collect()
+    }
+    #[test]
+    fn only_original_asset_writeoff_consumes_valued_confirmation() {
+        for input in [
+            vec!["--confirm", "yes", "asset", "write-off", "--help"],
+            vec!["asset", "--confirm=yes", "write-off", "--help"],
+        ] {
+            let prepared = prepare(args(&input)).unwrap();
+            assert_eq!(&prepared[..2], &args(&["asset", "write-off"]));
+            assert!(
+                prepared
+                    .iter()
+                    .any(|s| s == "--confirm" || s == "--confirm=yes")
+            );
+            assert!(requires_company(&prepared));
+        }
+        let native = args(&["remote", "register-asset", "--confirm", "--json"]);
+        assert_eq!(prepare(native.clone()).unwrap(), native);
     }
     #[test]
     fn literal_values_split_once_and_advance_exactly() {

@@ -1,3 +1,4 @@
+mod asset_original;
 mod accrual_original;
 mod expense_original;
 mod annual_exports;
@@ -305,6 +306,12 @@ fn main() -> ExitCode {
         eprint!("{}", output.stderr);
         return ExitCode::from(output.exit);
     }
+    if args.first().is_some_and(|s|s=="asset") {
+        if args==["asset"] || args==["asset","--help"] {println!("{}",asset_original::help());return ExitCode::SUCCESS;}
+        if !asset_original::accepts(&args) {eprintln!("Unknown asset command; see asset --help");return ExitCode::from(2);}
+        if let Err(o)=asset_original::preflight(&args) {print!("{}",o.stdout);eprint!("{}",o.stderr);return ExitCode::from(o.exit);}
+        if args.iter().any(|s|s=="--help") {println!("{}",asset_original::help());return ExitCode::SUCCESS;}
+    }
     if args.first().is_some_and(|s|s=="accrual") {
         if args==["accrual"] || args==["accrual","--help"] {println!("{}",accrual_original::help());return ExitCode::SUCCESS;}
         if !accrual_original::accepts(&args) {eprintln!("Unknown accrual command; see accrual --help");return ExitCode::from(2);}
@@ -449,6 +456,10 @@ fn main() -> ExitCode {
             return ExitCode::from(code);
         }
     };
+    if asset_original::accepts(&args) {
+        let output=asset_original::execute(&args);
+        print!("{}",output.stdout);eprint!("{}",output.stderr);return ExitCode::from(output.exit);
+    }
     if accrual_original::accepts(&args) {
         let output=accrual_original::execute(&args);
         print!("{}",output.stdout);eprint!("{}",output.stderr);return ExitCode::from(output.exit);
