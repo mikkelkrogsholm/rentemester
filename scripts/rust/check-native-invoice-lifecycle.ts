@@ -5,7 +5,7 @@ import { join } from 'node:path';
 import { isDeepStrictEqual } from 'node:util';
 import { originalInvoiceProof } from './check-native-invoice-original';
 
-type Operation = 'issue' | 'render' | 'post' | 'settle-bank' | 'credit-note' | 'refund-bank' | 'apply-payment';
+type Operation = 'issue' | 'render' | 'post' | 'settle-bank' | 'credit-note' | 'refund-bank' | 'apply-payment' | 'repair-posting';
 type Credential = { file: string; service?: boolean };
 const need = (value: unknown, label: string) => { if (!value) throw Error(label); };
 
@@ -13,6 +13,7 @@ const need = (value: unknown, label: string) => { if (!value) throw Error(label)
 export function invoiceLifecycleProof(http: APIRequestContext, base: string, work: string, owner: Credential, run = '148') {
   let sequence = 0;
   function client(kind: 'cli' | 'mcp', operation: Operation, body: Record<string, any>, credential = owner, refused = false) {
+    need(!(kind === 'mcp' && operation === 'repair-posting'), 'Repair is CLI-only after explicit human review');
     const common = ['--server', base, '--allow-loopback-http', credential.service ? '--service-key-file' : '--cookie-file', credential.file];
     let args: string[], input: string | undefined;
     if (kind === 'cli') {
@@ -22,7 +23,7 @@ export function invoiceLifecycleProof(http: APIRequestContext, base: string, wor
         writeFileSync(file, JSON.stringify(body.payload), { mode: 0o600, flag: 'wx' });
         args.push('--input', file);
       }
-      for (const [key, flag] of [['customerId', 'customer-id'], ['documentId', 'document-id'], ['invoiceNumber', 'invoice-number'], ['revenueAccountNo', 'revenue-account']]) {
+      for (const [key, flag] of [['customerId', 'customer-id'], ['documentId', 'document-id'], ['invoiceNumber', 'invoice-number'], ['revenueAccountNo', 'revenue-account'], ['legacyJournalEntryId', 'legacy-journal-entry-id'], ['reason', 'reason']]) {
         if (body[key] !== undefined) args.push('--' + flag, String(body[key]));
       }
     } else {
