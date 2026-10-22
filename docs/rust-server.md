@@ -3233,3 +3233,25 @@ Mailopsætning, alias og nye mailaflæsninger kontrollerer nu backupspærren eft
 aktuel autorisation. Indbakkeruting kontrollerer den udtrykkelige modtager;
 en tidligere accepteret bilagsoverførsel kan fortsat afsluttes uden dubletter
 under en ny lås. Se Group113 i [backupvejledningen](rust-backup-destinations.md).
+
+### Oprindelige fakturakommandoer i Rust (Group148)
+
+`rentemester-rust invoice issue`, `create`, `render`, `post`, `settle-bank`,
+`credit-note` og `refund-bank` bruger samme Rust-motor som web-UI'et.
+Angiv server, virksomhed og én cookie- eller servicelegitimation som ved de
+øvrige serverkommandoer. `issue`, `credit-note`, `settle-bank` og `refund-bank`
+læser kildekontraktens JSON med `--input FILE|-`; MCP bruger det strukturerede
+`payload`-objekt og `confirm:true`. `render` og `post` accepterer dokument-ID
+eller fakturanummer. Rendering verificerer den eksisterende PDF.
+
+Ved `post` skal salgskontoen vælges eksplicit med `--revenue-account`; MCP og
+HTTP bruger `revenueAccountNo`. Dette er en bevidst forskel fra den gamle
+implementerings faste konto 1000. Kontoen skal være en aktiv indtægtskonto
+med normal kreditsaldo. Udeladt valg afvises med vejledning, uden postering.
+De oprindelige CLI-kommandoer kræver ikke et ekstra `--confirm`-flag;
+MCP og HTTP kræver fortsat `confirm:true`. Serveren validerer leverede beløb,
+kundekort, adgang og originale bilag. Ved ukendt udfald skal status og
+bogføring afstemmes før et nyt forsøg; klienterne gentager aldrig automatisk.
+
+Dette forløb erstatter ikke de åbne kontrakter for `apply-payment`,
+`repair-posting` og de resterende claim-/beregningskommandoer.

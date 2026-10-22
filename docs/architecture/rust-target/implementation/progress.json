@@ -1,15 +1,15 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "Group147 original invoice list/find/status/overdue current-history and currency-safe query family accepted",
-  "code_revision": "4d898ed0f4b4a777f399010bc204b06b8cbd3180",
+  "current_increment": "Group148 original invoice issuance, immutable rendering, posting, bank settlement, credit and refund lifecycle accepted",
+  "code_revision": "6b6ed161b192ca0aa3eb2770282e394e392b976e",
   "spec_revision": "sha256:bc98636be4a972407adce0f817a76bb9d4bb7200cb292a70965e75ab62fae250",
-  "state": "Group147 ACCEPTED original invoice list/find/status/overdue CLI and flat MCP through additive read-only HTTP and the shared native sales projection. All fiscal years, source filters/amount precedence/exact invoice-number matching/sort, issued-unposted safe reads, original current-history asOf-aging-only semantics and trusted Copenhagen default preserved. Full status histories reuse native principal/FX/credit/refund/loss/claim evidence. Original positive principal status open with separate overdue flag; foreign principal and DKK claims never mixed (null combined claim with explicit units/separate DKK claim balance). PEPPOL exposes only safe source summary; physical bank assurance verifies actual non-null references while retaining journal proof for valid unbanked history. Native web wire and writers unchanged. Client6/backend6 named cases, integrated7crate strict all-target Clippy and normal3binary build PASS. Three fixture assertion/access mistakes isolated and corrected without product-control changes; one zero-selected exact invocation excluded. Existing normal-MFA bad-debt130 run passed initial/partial original reads then exposed native sales HTTP UTC-day versus Copenhagen-day bug at remaining DKK settlement. Fixed4d898ed0 reuses trusted posting_time for both human/service, targeted server all-target strict/build PASS. Broad fixture was not repeated. Retained8journal ledger snapshot hash verified; exact source-bank date override refusal isolated (not a claim of reaching calendar future-date admission). Continued same authenticated synthetic fixture: current Copenhagen imported bank-day payment and separate compensation receipt accepted once, terminal original HTTP/CLI/MCP matrix/current history/amount precedence/foreign units and persisted-MFA-cookie restart PASS, plus full audit/VAT/signed backup. Fresh MFA baseline restart and prior130 evidence retained; no fresh MFA after final continuation restart claimed. Independent SQL proves4documents4bank10journals2invoice-payments3losses1claim-payment, old8journals/lines unchanged, physical originals and artifact/helper/web pins match. Owned processes stopped; before-ledger snapshot and completed failed/resumed fixture intentionally retained, not claimed cleaned. Both worker snapshots hash verified and worktrees removed. Full epic remains OPEN; original mutations, actor/env/company-path/default launcher/exact errors, discovery, migration and release/cutover/TypeScript retirement/final installed desktop retain original scope.",
+  "state": "Group148 ACCEPTED original invoice issue/create/render/post/settle-bank/credit-note/refund-bank bindings through one existing Rust sales engine and held current-authority transaction. Original structured source payloads retain server-side total/line/FX validation, selected customer/default terms/notes, immutable JSON/PDF and exact source selectors. Post requires explicit active income account (revenueAccountNo / --revenue-account); no source account1000 hardcoding or new chart-role/schema project. Existing native wire retained; credit/refund principal-aware wrappers reuse the same native writers with typed service provenance. SDK2 CLI2 MCP2 plus storage1/application1/HTTP1/native-sales1/native-credit-refund1 PASS; seven-package all-target strict check and normal server/CLI/MCP build PASS after three equivalent guard lint corrections. Actual retained normal-MFA fixture first stopped at fresh-MFA-required service creation after one customer and zero financial effects; failed report preserved, no broad fixture rerun. Targeted continuation reused the existing normally owner-granted service credential: original MCP issue125, immutable render HTTP/CLI/MCP, explicit CLI post, service MCP bank settle125, CLI credit25, service MCP refund25, canonical147 histories and persisted-MFA-cookie restart PASS. Definite invalid-total/missing-account/unknown-selector/unposted/duplicate/overcredit/overrefund refusals add no effects. Independent source/artifact/SQL checks prove four journals/ten lines, revenue80/outputVAT20/bank100/debtor0, unchanged old rows/original files and full native audit14/VAT219.39. Current service revocation/source tamper are proven in focused real application lifecycle; no fresh service creation, actual revocation or fresh MFA after final restart is claimed. Processes stopped; completed synthetic fixture and snapshots retained. Both worker worktrees integrated/hash-verified and removed with recoverable Graphify snapshots. Full epic55children remains open; no whole717/epic closure.",
   "issues_closed": [
     701
   ],
   "next": [
-    "R44/R45 next original invoice issuance→posting→bank settlement→credit note→refund→147 status lifecycle via original CLI --input/ID-or-number and MCP structured payload. Reuse native sales/settlement/credit/refund writers, preserve supplied totals/customer terms and immutable artifacts; general configured revenue account/explicit choice, no hardcoded company chart. apply-payment is a real native domain gap (optional existing journal, not an alias to bank settlement); repair-posting, claim wrappers/calculations and full original parity remain OPEN, together with actor/env/company-path/default launcher/errors, historical receipt migration, release/cutover/retirement/final installed desktop.",
+    "R44/R45 remaining original invoice workflow: apply-payment is a real native domain gap (optional existing journal, not an alias to bank settlement); repair-posting, original claim/calculation wrappers and complete original parity remain OPEN. Preserve accepted148 lifecycle and147 queries; actor/env/company-path/default launcher/errors, historical receipt migration, signed release/cutover/retirement/final installed desktop and every original epic gate remain open.",
     "Installed desktop acceptance is explicitly deferred to the very end by the user. Preserve prepared Group100 profile; collect remaining native automation, closure, recovery and packaging checks for final installed acceptance without requesting screen unlock during development.",
     "J03/R50 and remaining R54 scope: only still-supported operation closure/recovery, nonempty scheduler handoff, hostile/older clone and post-cutover rollback requirements. Group99 qualifies managed installed J06 flow, not every R54 acceptance item.",
     "Signed distribution/update/cutover evidence must match actual full Rust replacement; retain all existing completion gates and TypeScript retirement gate.",
@@ -8287,6 +8287,76 @@
       "worker_worktrees_removed": true,
       "worktree_recovery": ".git/rentemester-recovery/archived147.json",
       "remaining": "R44/R45 next original invoice issuance→posting→bank settlement→credit note→refund→147 status lifecycle via original CLI --input/ID-or-number and MCP structured payload. Reuse native sales/settlement/credit/refund writers, preserve supplied totals/customer terms and immutable artifacts; general configured revenue account/explicit choice, no hardcoded company chart. apply-payment is a real native domain gap (optional existing journal, not an alias to bank settlement); repair-posting, claim wrappers/calculations and full original parity remain OPEN, together with actor/env/company-path/default launcher/errors, historical receipt migration, release/cutover/retirement/final installed desktop."
+    },
+    "invoice_lifecycle148": {
+      "issue": 717,
+      "status": "accepted bounded journey; whole issue OPEN",
+      "source_revision": "6b6ed161b192ca0aa3eb2770282e394e392b976e",
+      "backend_worker_commit": "350f620a",
+      "backend_integrated": "4509aee5",
+      "clients_worker_commit": "8260fcf7",
+      "clients_integrated": "15904083",
+      "helper_commit": "7093b2ce",
+      "equivalent_lint_fix": "6b6ed161",
+      "contract": "/tmp/rm148-invoice-lifecycle-contract.md",
+      "report": "/tmp/rentemester-rust-reports/invoice-lifecycle148-continuation.json",
+      "report_sha256": "71b2a4a688473a8140df4296eb7808e626a1e1204440787bf4f317a21687452f",
+      "terminal_exit": 0,
+      "independent_verification": "/tmp/rm148-independent.log",
+      "independent_verifier": "/tmp/rm148-independent.py",
+      "failed_setup_report": "/tmp/rentemester-rust-reports/invoice-lifecycle148.json",
+      "failed_setup_reason": "Owner session still authorizes accounting; new service issuance requires fresh MFA. One customer created, zero financial effects. Existing normally owner-granted service reused for targeted continuation.",
+      "focused_client_checks": 6,
+      "focused_backend_checks": 5,
+      "focused_logs": [
+        "/tmp/rm148-clients.log",
+        "/tmp/rm148-storage-final.log",
+        "/tmp/rm148-app.log",
+        "/tmp/rm148-http.log",
+        "/tmp/rm148-native-sales.log",
+        "/tmp/rm148-native-credit-refund.log"
+      ],
+      "strict_clippy": "/tmp/rm148-integrated-clippy-fixed.log",
+      "normal_build": "/tmp/rm148-integrated-normal-build.log",
+      "initial_lint_log": "/tmp/rm148-integrated-clippy.log",
+      "revenue_account_explicit_migration_difference": true,
+      "native_web_wire_unchanged": true,
+      "actual_existing_granted_service_reused": true,
+      "actual_new_service_creation": false,
+      "actual_revocation": false,
+      "focused_current_service_revocation_and_source_tamper": true,
+      "authenticated_persisted_mfa_cookie_restart": true,
+      "fresh_mfa_after_final_restart_claimed": false,
+      "terminal_counts": {
+        "journal_entries": 14,
+        "journal_lines": 36,
+        "documents": 7,
+        "bank_transactions": 6,
+        "invoice_payments": 3,
+        "invoice_refunds": 1
+      },
+      "new_financial_delta": {
+        "journals": 4,
+        "lines": 10,
+        "revenue": 80,
+        "outputVat": 20,
+        "bank": 100,
+        "debtor": 0
+      },
+      "full_native_audit_entries": 14,
+      "total_vat_payable": 219.39,
+      "before_snapshot": {
+        "path": "/tmp/rentemester-rust-reports/invoice-lifecycle148-continuation.before.sqlite",
+        "sha256": "c9bc07578856ecca78a62e8a8bbd61699ba8ac680dc7ea71549ce035004ce0bb"
+      },
+      "owned_runtime_cleaned": false,
+      "owned_processes_stopped": true,
+      "worker_worktrees_removed": true,
+      "worktree_recovery": [
+        ".git/rentemester-recovery/archived148-clients.json",
+        ".git/rentemester-recovery/archived148-core.json"
+      ],
+      "remaining": "R44/R45 remaining original invoice workflow: apply-payment is a real native domain gap (optional existing journal, not an alias to bank settlement); repair-posting, original claim/calculation wrappers and complete original parity remain OPEN. Preserve accepted148 lifecycle and147 queries; actor/env/company-path/default launcher/errors, historical receipt migration, signed release/cutover/retirement/final installed desktop and every original epic gate remain open."
     }
   },
   "verified_history": [
@@ -9928,6 +9998,12 @@
       "code_revision": "c2c9caacffd977b34869a0665853e426d77f8fce",
       "spec_revision": "sha256:bc98636be4a972407adce0f817a76bb9d4bb7200cb292a70965e75ab62fae250",
       "state": "Group146 ACCEPTED original payable register/list/pay CLI and flat MCP payable_register/payable_list/payable_pay over one existing Rust writer and dated reader. Original filters, sort, exact Money totals and asOf/asOfDate precedence; original default UTC date retained. Current human/service grants, physical document and selected bank source before optional principal-bound durable receipts; first native mutation admission remains inside existing receipt closure. Registration and payment rule evidence retained, native routes and wire unchanged. Focused client6/backend5 PASS; fixture role version/session errors were isolated and corrected without weakening controls. Integrated7crate strict all-target Clippy and normal3binary build PASS; equivalent date predicate simplification only. Actual normal-MFA required scanner service original MCP keyed registration, exact HTTP/CLI/MCP filtered lists, creditor role remap, keyed partial50 and original CLI final75: one expense100/VAT25, original creditor3101, no replacement3102 postings, exact source bank balance125, duplicate bill/payment refusal. Physical selected CSV tamper refuses known receipt; restore has no financial effects. Normal owner MFA restart retains exact registration/partial receipts and historical partial openBalance75 after current full settlement; service revoked in held scan cannot publish, revoked original receipt/list calls refused after restart without rescan. Independent SQL/source verification and binary/helper/web pins/cleanup pass. First actual run failed only helper using Copenhagen portfolio date for UTC-default fixture; retained one-bill/no-payment profile isolated read-only, same product binaries passed corrected UTC fixture. Both worker snapshots preserve all nonignored work and worktrees removed. Full epic and original other-domain/actor/env/company-path/default launcher/release/cutover/TypeScript retirement/final installed desktop remain OPEN. Historical TypeScript raw-company receipt migration compatibility is not qualified."
+    },
+    {
+      "current_increment": "Group148 original invoice issuance, immutable rendering, posting, bank settlement, credit and refund lifecycle accepted",
+      "code_revision": "6b6ed161b192ca0aa3eb2770282e394e392b976e",
+      "state": "Group148 ACCEPTED original invoice issue/create/render/post/settle-bank/credit-note/refund-bank bindings through one existing Rust sales engine and held current-authority transaction. Original structured source payloads retain server-side total/line/FX validation, selected customer/default terms/notes, immutable JSON/PDF and exact source selectors. Post requires explicit active income account (revenueAccountNo / --revenue-account); no source account1000 hardcoding or new chart-role/schema project. Existing native wire retained; credit/refund principal-aware wrappers reuse the same native writers with typed service provenance. SDK2 CLI2 MCP2 plus storage1/application1/HTTP1/native-sales1/native-credit-refund1 PASS; seven-package all-target strict check and normal server/CLI/MCP build PASS after three equivalent guard lint corrections. Actual retained normal-MFA fixture first stopped at fresh-MFA-required service creation after one customer and zero financial effects; failed report preserved, no broad fixture rerun. Targeted continuation reused the existing normally owner-granted service credential: original MCP issue125, immutable render HTTP/CLI/MCP, explicit CLI post, service MCP bank settle125, CLI credit25, service MCP refund25, canonical147 histories and persisted-MFA-cookie restart PASS. Definite invalid-total/missing-account/unknown-selector/unposted/duplicate/overcredit/overrefund refusals add no effects. Independent source/artifact/SQL checks prove four journals/ten lines, revenue80/outputVAT20/bank100/debtor0, unchanged old rows/original files and full native audit14/VAT219.39. Current service revocation/source tamper are proven in focused real application lifecycle; no fresh service creation, actual revocation or fresh MFA after final restart is claimed. Processes stopped; completed synthetic fixture and snapshots retained. Both worker worktrees integrated/hash-verified and removed with recoverable Graphify snapshots. Full epic55children remains open; no whole717/epic closure.",
+      "evidence_key": "invoice_lifecycle148"
     }
   ],
   "scope_clarifications": [
