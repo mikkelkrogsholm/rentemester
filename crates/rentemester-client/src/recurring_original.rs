@@ -25,7 +25,7 @@ pub fn recurring_original_invoice_schema() -> Value {
     );
     let line = object(
         json!({"description":text,"quantity":num,"unitPriceExVat":num,"lineTotalExVat":num,"unitCode":text,"taxClassification":text,"vatRate":num,"reverseChargeBasis":text}),
-        &[],
+        &["description"],
     );
     let totals = object(
         json!({"netAmount":num,"vatRate":num,"vatAmount":num,"grossAmount":num,"fxRateToDkk":num,"netAmountDkk":num,"vatAmountDkk":num,"grossAmountDkk":num,"vatComputationBasis":text}),
@@ -77,16 +77,16 @@ fn checked(value: Value, mutation: bool) -> Result<Value, Error> {
         return Err(protocol());
     }
     if mutation {
-        if !value["templateId"].as_i64().is_some_and(|n| n > 0)
+        if value["templateId"].as_i64().is_none_or(|n| n <= 0)
             || !value["appliedRules"]
                 .as_array()
                 .is_some_and(|a| a.iter().all(Value::is_string))
         {
             return Err(protocol());
         }
-    } else if !value["rows"]
+    } else if value["rows"]
         .as_array()
-        .is_some_and(|a| Some(a.len() as u64) == value["count"].as_u64())
+        .is_none_or(|a| Some(a.len() as u64) != value["count"].as_u64())
     {
         return Err(protocol());
     }

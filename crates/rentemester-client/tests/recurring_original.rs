@@ -123,6 +123,14 @@ async fn original_recurring_refusals_and_unknown_never_look_like_success() {
             v["invoice"]["buyer"]["actor"] = json!("forged");
             v
         },
+        {
+            let mut v = valid.clone();
+            v["invoice"]["lines"][0]
+                .as_object_mut()
+                .unwrap()
+                .remove("description");
+            v
+        },
     ] {
         assert!(matches!(
             validate_recurring_original(Kind::Create, &body.to_string().into_bytes()),
