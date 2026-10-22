@@ -146,3 +146,47 @@ mod tests {
         );
     }
 }
+
+/// Original source projection, using native effective archive classification.
+pub fn execute_service(
+    control: &mut Connection,
+    company: &mut Connection,
+    context: crate::service_company::Context<'_>,
+    action: Action<'_>,
+) -> Result<crate::service_company::ServiceResult, crate::service_company::ServiceFailure> {
+    let mutation = matches!(action, Action::Resolve(..));
+    let permission = if mutation {
+        Permission::CompanyReview
+    } else {
+        Permission::CompanyRead
+    };
+    let slug = context.selection.slug;
+    crate::service_company::execute_operation(
+        control,
+        company,
+        context,
+        permission,
+        mutation,
+        |tx, subject, _| {
+            let result = match action {
+                Action::List(status) => rentemester_storage::exceptions::list(tx, slug, status),
+                Action::ListWithArchived(status, archived) => {
+                    rentemester_storage::exceptions::list_with_archived(tx, slug, status, archived)
+                }
+                Action::Resolve(id, input) => rentemester_storage::exceptions::resolve_principal(
+                    tx,
+                    id,
+                    input,
+                    rentemester_storage::exceptions::Principal::ServiceAccount(subject),
+                ),
+            }?;
+            Ok(crate::service_company::OperationResult {
+                result,
+                receipt: None,
+            })
+        },
+    )
+}
+
+#[cfg(test)]
+mod original_tests;
