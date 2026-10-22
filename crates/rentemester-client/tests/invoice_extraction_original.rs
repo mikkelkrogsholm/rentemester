@@ -131,6 +131,11 @@ async fn status_precedes_forged_body_and_writes_never_retry() {
         ),
         (
             "422 Domain",
+            r#"{"ok":false,"errors":["EXTRACTION_ADMISSION_CHANGED"]}"#,
+            None,
+        ),
+        (
+            "422 Domain",
             r#"{"ok":false,"errors":["private /server/secret"]}"#,
             Some(Error::Refused { status: 422 }),
         ),

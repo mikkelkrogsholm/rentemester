@@ -95,6 +95,7 @@ fn shape(v: &Value, s: &Value) -> bool {
     }
 }
 const DOMAIN: &[&str] = &[
+    "EXTRACTION_ADMISSION_CHANGED",
     "EXTRACTION_SNAPSHOT_HASH_MISMATCH",
     "EXTRACTION_SNAPSHOT_INVALID",
     "EXTRACTION_SNAPSHOT_UNAVAILABLE",
