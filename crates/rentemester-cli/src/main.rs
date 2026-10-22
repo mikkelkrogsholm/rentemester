@@ -24,6 +24,7 @@ mod invoice_lifecycle;
 mod invoice_original;
 mod invoice_public_original;
 mod journal_history;
+mod journal_original;
 mod local_binding;
 mod original_args;
 mod original_discovery;
@@ -327,6 +328,26 @@ fn main() -> ExitCode {
             return ExitCode::from(output.exit);
         }
     }
+    if args.first().is_some_and(|s| s == "journal") {
+        if args == ["journal"] || args == ["journal", "--help"] {
+            println!("{}", journal_original::help());
+            return ExitCode::SUCCESS;
+        }
+        if journal_original::accepts(&args) {
+            if let Err(output) = journal_original::preflight(&args) {
+                print!("{}", output.stdout);
+                eprint!("{}", output.stderr);
+                return ExitCode::from(output.exit);
+            }
+            if args.iter().any(|s| s == "--help") {
+                println!("{}", journal_original::help());
+                return ExitCode::SUCCESS;
+            }
+        } else if args.get(1).is_none_or(|s| s != "list") {
+            eprintln!("Unknown journal command; see journal --help");
+            return ExitCode::from(2);
+        }
+    }
     let args = match local_binding::prepare(args) {
         Ok(args) => args,
         Err((code, error)) => {
@@ -337,6 +358,12 @@ fn main() -> ExitCode {
             return ExitCode::from(code);
         }
     };
+    if journal_original::accepts(&args) {
+        let output = journal_original::execute(&args);
+        print!("{}", output.stdout);
+        eprint!("{}", output.stderr);
+        return ExitCode::from(output.exit);
+    }
     if period_original::accepts(&args) {
         let output = period_original::execute(&args);
         print!("{}", output.stdout);
