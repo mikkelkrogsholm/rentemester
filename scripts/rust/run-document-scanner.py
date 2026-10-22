@@ -744,7 +744,7 @@ def main():
                     if len(rows) != 2:
                         raise RuntimeError('Exactly two synthetic original exception facts required')
                     mutable = {'status','resolved_at','resolved_by','resolution_note'}
-                    expected_actors = ['user:'+actual['ownerId'], 'user:'+actual['serviceSubjectId']]
+                    expected_actors = ['user:'+actual['ownerId'], 'service-account:'+actual['serviceSubjectId']]
                     audits = facts['audit_log']
                     if len(audits) != 2 or [a['event_type'] for a in audits] != ['exception_resolve','exception_resolve']:
                         raise RuntimeError('Exactly two immutable resolution audits required; no refusal/no-op audits')
@@ -764,14 +764,16 @@ def main():
                         if detail.get('type') != row['type'] or detail.get('message') != row['message'] or detail.get('requiredAction') != row['required_action']:
                             raise RuntimeError('Resolution audit original source facts mismatch')
                     return facts
-                actual = phase('service-run')
+                phase('service-run')
+                actual = report['results']['service-run']
                 if not actual.get('originalExceptionsQualified'):
                     raise RuntimeError('Finite original exceptions journey missing')
                 stop()
                 first = exceptions_sql(actual)
                 report['exceptionsOriginalSqlBeforeRestart'] = first
                 config.pop('firstOwner'); write_config(); start()
-                reopened = phase('service-reopen')
+                phase('service-reopen')
+                reopened = report['results']['service-reopen']
                 stop()
                 second = exceptions_sql(actual)
                 if first != second or not reopened.get('exactNormalMfaRestartState') or not reopened.get('originalExceptionsRestartQualified') or actual['accountingFingerprint'] != reopened['accountingFingerprint']:

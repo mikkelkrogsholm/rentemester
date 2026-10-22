@@ -79,7 +79,7 @@ export function createOriginalExceptionsProof(page: Page, base: string, work: st
       await admin('members/company', { userId: memberId, companySlug: 'synthetic', action: 'grant', role: 'reviewer' });
       await grant('reviewer'); need(equal(mcp('exception_resolve', { company: 'synthetic', id: 2, note: '   ', confirm: true }).data, { resolved: true }), 'Reviewer blank note review');
       const reviewed = await state();
-      const rows = reviewed.exceptions.rows; need(rows[0].resolvedBy === 'user:' + subject && rows[0].resolutionNote === null && rows[1].resolvedBy === 'user:' + ownerId && rows[1].resolutionNote === note && rows.every((r: any) => !!r.resolvedAt), 'current authenticated actors/time/first notes');
+      const rows = reviewed.exceptions.rows; need(rows[0].resolvedBy === 'service-account:' + subject && rows[0].resolutionNote === null && rows[1].resolvedBy === 'user:' + ownerId && rows[1].resolutionNote === note && rows.every((r: any) => !!r.resolvedAt), 'current authenticated actors/time/first notes');
       for (const row of rows) for (const k of fields.filter(k => !['status', 'resolvedAt', 'resolvedBy', 'resolutionNote'].includes(k))) need(equal(row[k], original.rows.find((r: any) => r.id === row.id)[k]), 'preserved source fact ' + k);
       const missing = cli('resolve', ['--id', '2147483647'], 1); need(missing.errors.includes('exception 2147483647 does not exist'), 'missing ID business phrase');
       need(mcp('exception_resolve', { company: 'synthetic', id: 2147483647, confirm: true }, 'refused').errors.includes('exception 2147483647 does not exist'), 'MCP missing ID phrase'); await unchanged(reviewed, 'missing IDs');
