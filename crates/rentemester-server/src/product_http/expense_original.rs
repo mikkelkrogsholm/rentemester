@@ -88,13 +88,13 @@ fn valid_input(v: &Value) -> bool {
         "text",
         "idempotencyKey",
     ] {
-        if let Some(v) = m.get(k) {
-            if !v.as_str().is_some_and(|s| {
+        if let Some(v) = m.get(k)
+            && !v.as_str().is_some_and(|s| {
                 s.len() <= 4096
                     && (k == "text" || (!s.trim().is_empty() && !s.chars().any(char::is_control)))
-            }) {
-                return false;
-            }
+            })
+        {
+            return false;
         }
     }
     m.get("expenseAccount").is_some()
@@ -168,10 +168,10 @@ fn checked<T>(
         >,
     >,
 ) -> Result<T, Box<Response>> {
-    if let Err(f) = &attempt.outcome {
-        if matches!(f.error.code, "invalid_credentials" | "access_denied") {
-            return Err(Box::new(domain_error(f.error.code, false)));
-        }
+    if let Err(f) = &attempt.outcome
+        && matches!(f.error.code, "invalid_credentials" | "access_denied")
+    {
+        return Err(Box::new(domain_error(f.error.code, false)));
     }
     if attempt.retired {
         return Err(Box::new(domain_error("", true)));
@@ -194,10 +194,10 @@ fn service_checked<T>(
     >,
 ) -> Result<T, Box<Response>> {
     use rentemester_application::service_company::{BusinessStage, UsageStage};
-    if let Err(f) = &attempt.outcome {
-        if matches!(f.error.code, "invalid_credentials" | "access_denied") {
-            return Err(Box::new(domain_error(f.error.code, false)));
-        }
+    if let Err(f) = &attempt.outcome
+        && matches!(f.error.code, "invalid_credentials" | "access_denied")
+    {
+        return Err(Box::new(domain_error(f.error.code, false)));
     }
     if attempt.retired {
         return Err(Box::new(domain_error("", true)));
