@@ -126,7 +126,13 @@ fn missing_negative_and_empty_log_values_are_source_exit1_not_usage2() {
         } else {
             Value::Null
         };
-        let input = json!({"tripDate":"","purpose":"","fromLocation":"","toLocation":"","kilometers":km,"vehicle":"","driver":"","ratePerKm":rate,"rateBasis":"","confirm":true});
+        let mut input = json!({"tripDate":"","purpose":"","fromLocation":"","toLocation":"","vehicle":"","driver":"","rateBasis":"","confirm":true});
+        if !km.is_null() {
+            input["kilometers"] = km;
+        }
+        if !rate.is_null() {
+            input["ratePerKm"] = rate;
+        }
         let refusal = json!({"ok":false,"appliedRules":["DK-MILEAGE-LOG-001"],"warnings":[],"errors":["tripDate is required","kilometers must be a positive number"]});
         let (origin, count, t) = server(
             422,

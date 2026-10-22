@@ -76,7 +76,7 @@ fn shape(v: &Value, s: Value) -> bool {
 }
 pub fn original_mileage_log_schema() -> Value {
     object(
-        json!({"tripDate":text(),"purpose":text(),"fromLocation":text(),"toLocation":text(),"kilometers":{"type":["number","null"]},"vehicle":text(),"driver":text(),"ratePerKm":{"type":["number","null"]},"rateBasis":text(),"rateSource":{"type":["string","null"]},"notes":{"type":["string","null"]}}),
+        json!({"tripDate":text(),"purpose":text(),"fromLocation":text(),"toLocation":text(),"kilometers":{"type":"number"},"vehicle":text(),"driver":text(),"ratePerKm":{"type":"number"},"rateBasis":text(),"rateSource":{"type":["string","null"]},"notes":{"type":["string","null"]}}),
         &[
             "tripDate",
             "purpose",
@@ -260,7 +260,13 @@ fn artifacts(v: &Value) -> Result<(Vec<u8>, Vec<u8>), Error> {
         "totalAmountBasis",
         "appliedRules",
     ] {
-        if doc[k] != v[k] {
+        let matches = match k {
+            "totalKilometers" | "totalAmountBasis" => cents(&doc[k])
+                .zip(cents(&v[k]))
+                .is_some_and(|(a, b)| a == b),
+            _ => doc[k] == v[k],
+        };
+        if !matches {
             return Err(Error::Protocol);
         }
     }

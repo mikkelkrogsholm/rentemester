@@ -272,11 +272,13 @@ fn payload(args: &[String], flags: &BTreeMap<&str, &str>) -> Result<Value, Outpu
     let mut input = json!({});
     for (flag, field) in mapping {
         if log && ["kilometers", "ratePerKm"].contains(field) {
-            input[*field] = flags
+            if let Some(n) = flags
                 .get(flag)
                 .and_then(|s| s.trim().parse::<f64>().ok())
                 .filter(|n| n.is_finite())
-                .map_or(Value::Null, |n| json!(n));
+            {
+                input[*field] = json!(n);
+            }
         } else if let Some(v) = flags.get(flag) {
             input[*field] = json!(v);
         } else if !["rateSource", "notes"].contains(field) {

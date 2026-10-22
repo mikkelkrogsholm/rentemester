@@ -68,7 +68,11 @@ fn packet() -> Value {
 fn exact_bytes_replacement_both_validated_first_and_prepared_local_failure() {
     let out = std::env::temp_dir().join(format!("mileage-publisher-test-{}", std::process::id()));
     let _ = std::fs::remove_dir_all(&out);
-    let v = publish_original_mileage(&packet(), &out).unwrap();
+    // Shared money wire values are f64 (0.0); source JSON artifact uses JS 0.
+    let mut shared_wire = packet();
+    shared_wire["totalKilometers"] = json!(0.0);
+    shared_wire["totalAmountBasis"] = json!(0.0);
+    let v = publish_original_mileage(&shared_wire, &out).unwrap();
     assert_eq!(v["ok"], true);
     assert!(v.get("artifacts").is_none());
     std::fs::write(out.join("unrelated"), b"keep").unwrap();
