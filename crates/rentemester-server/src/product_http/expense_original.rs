@@ -90,7 +90,8 @@ fn valid_input(v: &Value) -> bool {
     ] {
         if let Some(v) = m.get(k) {
             if !v.as_str().is_some_and(|s| {
-                !s.trim().is_empty() && s.len() <= 4096 && !s.chars().any(char::is_control)
+                s.len() <= 4096
+                    && (k == "text" || (!s.trim().is_empty() && !s.chars().any(char::is_control)))
             }) {
                 return false;
             }
@@ -462,6 +463,14 @@ mod tests {
     fn booking_has_six_treatments_and_strict_safe_ids() {
         let base = json!({"documentId":1,"bankTransactionId":2,"expenseAccount":"synthetic"});
         assert!(valid_input(&base));
+        for memo in ["", "Synthetic receipt\nSecond memo line"] {
+            let mut input = base.clone();
+            input["text"] = json!(memo);
+            assert!(valid_input(&input));
+        }
+        let mut invalid_account = base.clone();
+        invalid_account["expenseAccount"] = json!("synthetic\naccount");
+        assert!(!valid_input(&invalid_account));
         for treatment in [
             "standard",
             "reverse_charge",
