@@ -83,3 +83,19 @@ korrekt retning, de nødvendige linjebeslutninger, nulmoms og afstemte totaler
 kræves fortsat. En angivet fritekst valideres og bevares; ved udeladelse viser
 nye PDF'er standardteksten om omvendt betalingspligt fra den eksplicitte
 beslutning. Allerede gemte originale filer genbruges uændret.
+
+## Virksomhedssti og actor i serverklienter
+
+Kildens lokale CLI kunne vælge et virksomhedsrod-katalog og tilskrive en lokal
+actor. I den aftalte serverarkitektur åbner klienten ikke en ledger. Remote
+vælger derfor en slug, og identitet følger serverens aktuelt autentificerede
+cookie eller serviceprincipal. Actor-miljøvariabler kan ikke udgive sig for en
+anden bruger eller give serverrettigheder.
+
+Group158 bevarer et afgrænset lokalt stivalg gennem en eksplicit verificeret
+`--local-profile`: et eksisterende kanonisk, ikke-symlink virksomhedsrod-katalog
+direkte under profilens workspace omsættes til slug. En eventuel workspace-
+miljøassertion skal stemme. Det giver samme servervej for lokal og ekstern drift
+med en tydelig afvisning af stier, som serveren ikke har optaget. Det er en
+bevidst arkitekturtilpasning; ikke en påstand om identisk lokal actor- eller
+standardlauncheradfærd. Øvrig kildeparitet og cutover skal fortsat accepteres.

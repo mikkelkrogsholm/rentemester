@@ -3486,3 +3486,34 @@ ingen fakturering, levering eller regnskabshandling fra Group156 er gentaget.
 Global argument-/miljø-/virksomhedsvalg, standardlauncher, øvrige åbne
 originalkontrakter, release/cutover, TypeScript-udfasning og endelig installeret
 desktopaccept er fortsat åbne. Evidens: progress.json → original_invoice_refusals157.
+
+## Oprindeligt CLI-kald og virksomhedsvalg (Group158)
+
+De allerede migrerede originale kommandofamilier accepterer globale flag før,
+mellem og efter kommandoord samt `--flag=værdi`. Kun det første lighedstegn
+opdeler flaget; en tilknyttet tom værdi eller værdi med indledende bindestreger
+forbliver data til familiens egen validering. `--format json|human` vælger det
+eksisterende outputformat. Oprindelige `find --`-søgeord forbliver bogstavelige.
+Familiens tilladte flag, typer, bekræftelser og afvisninger gælder fortsat.
+
+Et eksplicit, trimmet virksomhedsvalg har forrang for `RENTEMESTER_COMPANY`.
+Der vælges aldrig automatisk første virksomhed. Remote bruger fortsat slug.
+Med `--local-profile ABS_PRIVATE_PROFILE` kan et eksisterende kanonisk
+virksomhedskatalog direkte under profilens verificerede workspace omsættes
+til slug. Traversering, symlinks, kataloger udenfor workspacet og en modstridende
+`RENTEMESTER_WORKSPACE` afvises. Serverens normale cookie eller serviceprincipal
+bestemmer identiteten; actor-miljøvariabler giver ingen ekstra rettigheder.
+Der åbnes ingen lokal ledger som fallback.
+
+Tomt kald, root-help og selvstændig `--version` læser ikke profil, credentials,
+stdin eller netværk. Versionen kommer fra Rust-pakken; ukendte root-kald giver
+exit2 med brugbar hjælp. Eksisterende native/eksperimentelle dialekter bevares.
+
+Det integrerede resultat har bestået214 CLI-tests og strict Clippy. En påvist
+macOS-race i en eksisterende HTTP-testfixture blev rettet ved at sætte den
+accepterede socket til blocking før dens eksisterende timeout. Assertions og
+produktkode blev ikke ændret af den rettelse. Dette accepterer de beskrevne
+kaldsformer for allerede migrerede familier; alle265 oprindelige CLI-nøgler,
+oprindelige automatiske outputdefaults og skift af `bin/rentemester` er endnu
+ikke accepteret. Hele epic'en og sidste installerede desktopaccept er åbne.
+Evidens: progress.json → original_cli_entry158.
