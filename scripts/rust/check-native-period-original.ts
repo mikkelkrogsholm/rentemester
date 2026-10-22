@@ -7,8 +7,16 @@ import { isDeepStrictEqual as equal } from 'node:util';
 
 /** Finite, synthetic local proof. No external filing, restore or desktop claim. */
 export function createOriginalPeriodProof(page: Page, base: string, work: string, member: Page) {
+  return createProof(page, base, work, member, false);
+}
+
+export function createOriginalJournalProof(page: Page, base: string, work: string, member: Page) {
+  return createProof(page, base, work, member, true);
+}
+
+function createProof(page: Page, base: string, work: string, member: Page, originalJournal: boolean) {
   const prefix = '/api/companies/synthetic/', ownerFile = join(work, 'period-original-owner.cookie'), memberFile = join(work, 'period-original-member.cookie');
-  const reviews: any[] = [], refusals: any[] = [], closes: any[] = [];
+  const reviews: any[] = [], refusals: any[] = [], closes: any[] = [], journalEvidence: any = {};
   let complete = false, stable: any, start = '', end = '', year = '', periodId = 0, closeHash = '';
   const reference = 'SYNTHETIC-ORIGINAL-PERIOD-RECEIPT';
   const need = (v: unknown, message: string) => { if (!v) throw Error('Original period: ' + message); };
@@ -26,6 +34,22 @@ export function createOriginalPeriodProof(page: Page, base: string, work: string
     if (denied === 2) need(!r.stdout && Array.isArray(v) && v.length > 0 && v.every(e => typeof e === 'string'), 'source usage diagnostic');
     else if (denied) need(v.ok === false && Array.isArray(v.errors) && v.errors.length > 0, 'explicit refusal');
     return v;
+  }
+  function journalCli(operation: string, flags: Record<string, string | number>, denied = false) {
+    const r = spawnSync(join(work, 'rentemester-rust'), ['journal', operation, '--server', base, '--allow-loopback-http', '--cookie-file', ownerFile, '--company', 'synthetic', '--json', ...Object.entries(flags).flatMap(([k, v]) => ['--' + k, String(v)])], { encoding: 'utf8', timeout: 45000, maxBuffer: 16 * 1024 * 1024 });
+    need(!r.error && r.status === (denied ? 1 : 0), 'original journal ' + operation + ' exact exit: ' + r.stdout.slice(0, 1500));
+    const secret = readFileSync(ownerFile, 'utf8');
+    need(!r.stdout.includes(secret) && !r.stderr.includes(secret), 'journal session privacy');
+    const v = JSON.parse(r.stdout);
+    need(v.ok === !denied && Array.isArray(v.appliedRules) && Array.isArray(v.errors) && (denied ? v.errors.length > 0 : v.errors.length === 0), 'flat journal result');
+    if (!denied) need(Number.isSafeInteger(v.entryId) && v.entryId > 0 && typeof v.entryNo === 'string' && /^[a-f0-9]{64}$/.test(v.entryHash), 'numeric original journal identity');
+    return v;
+  }
+  async function rollbackState() { return { books: await books(), sourceRevision: cli('readiness', { from: start, to: end }).packet.sourceRevision }; }
+  async function journalRefusal(operation: string, flags: Record<string, string | number>) {
+    const before = await rollbackState(), result = journalCli(operation, flags, true), after = await rollbackState();
+    need(equal(before, after), 'original journal ' + operation + ' exact rollback');
+    journalEvidence[operation + 'Refusal'] = { result, before, after, fingerprint: fingerprint(before) };
   }
   const bounds = () => ({ from: start, to: end });
   const periods = async () => (await get(prefix + 'periods')).periods;
@@ -63,17 +87,34 @@ export function createOriginalPeriodProof(page: Page, base: string, work: string
       }
       const ownerId = (await get('/api/me')).user.id, first = review();
       need(first.reviewerActor === 'user:' + ownerId && first.reviewerPrincipal?.subjectId === ownerId, 'current human attribution');
-      await journal('synthetic-original-period-change', 'Synthetic original period source change');
+      if (originalJournal) {
+        const input = { transactionDate: end, text: 'Synthetic original journal source change', lines: [{ accountNo: '8711', debitAmount: 3.25 }, { accountNo: '8712', creditAmount: 3.25 }] };
+        const file = join(work, 'journal-original-input.json'); writeFileSync(file, JSON.stringify(input), { mode: 0o600 });
+        const before = await rollbackState(), dryRun = journalCli('dry-run', { input: file }), after = await rollbackState();
+        need(equal(before, after), 'dry-run exact books/audit/source rollback');
+        need(typeof dryRun.previousHash === 'string' && equal(dryRun.accountEffects.map((e: any) => ({ accountNo: e.accountNo, balanceBefore: e.balanceBefore, balanceAfter: e.balanceAfter, delta: e.delta })), [{ accountNo: '8711', balanceBefore: 0, balanceAfter: 3.25, delta: 3.25 }, { accountNo: '8712', balanceBefore: 0, balanceAfter: -3.25, delta: -3.25 }]), 'exact numeric sorted account effects');
+        const posted = journalCli('post', { input: file });
+        need(['entryId', 'entryNo', 'entryHash'].every(k => posted[k] === dryRun[k]), 'provisional identity/no/hash equals first post');
+        Object.assign(journalEvidence, { input, file, dryRun, posted, rollback: { before, after, fingerprint: fingerprint(before) }, post: await rollbackState() });
+      } else await journal('synthetic-original-period-change', 'Synthetic original period source change');
       const changed = readiness(); need(changed.hash !== first.packet.hash, 'posted source changes hash');
       const stale = await refusal('review', { ...bounds(), 'packet-hash': first.packet.hash, confirm: 'yes' }, 'PERIOD_CLOSE_PACKET_STALE_OR_MISSING'); need(stale.packetHash === changed.hash, 'current stale hash');
       await refusal('close', { ...bounds(), 'review-id': first.id, 'packet-hash': first.packet.hash, confirm: 'yes' }); await historical();
       const fresh = review(), closed = close(fresh); periodId = closed.periodId;
+      if (originalJournal) await journalRefusal('post', { input: journalEvidence.file });
+      else {
       // Posting refusal uses the existing native route and a distinct, never retried key.
       const beforeLocked = await books(), version = (await get(prefix + 'journal')).journal.nativePosting.ruleVersion;
       const locked = await page.request.post(base + prefix + 'manual-journal', { headers: { origin: base }, data: { confirm: true, input: { format: 'rentemester-manual-journal-post/1', expectedRuleVersion: version, idempotencyKey: 'synthetic-original-period-locked', request: { transactionDate: end, text: 'Refused synthetic locked posting', currency: 'DKK', lines: [{ accountNo: '8711', debitAmount: '3.25', creditAmount: '0.00' }, { accountNo: '8712', debitAmount: '0.00', creditAmount: '3.25' }] } } } });
       need(locked.status() === 422 && (await locked.json()).ok === false, 'closed period refuses posting'); await unchanged(beforeLocked, 'locked posting');
+      }
       const opened = cli('reopen', { ...bounds(), reason: 'Synthetic correction evidence reviewed' }); need(opened.ok && opened.periodId === periodId && equal(opened.errors, []), 'justified reopen source envelope');
-      await journal('synthetic-original-period-correction', 'Synthetic original period correction');
+      if (originalJournal) {
+        const reversal = journalCli('reverse', { 'entry-id': journalEvidence.posted.entryId, 'entry-no': 'IGNORED-BY-ID-PRIORITY', date: end, reason: 'Synthetic original journal correction' });
+        need(reversal.originalEntryId === journalEvidence.posted.entryId, 'entry-id priority original reversal');
+        Object.assign(journalEvidence, { reversal, reversed: await rollbackState() });
+        await journalRefusal('reverse', { 'entry-no': journalEvidence.posted.entryNo, date: end, reason: 'Duplicate must refuse while open' });
+      } else await journal('synthetic-original-period-correction', 'Synthetic original period correction');
       const corrected = review(); need(close(corrected).periodId === periodId, 'reclose keeps original row'); closeHash = corrected.packet.hash;
       const reported = close(corrected, { status: 'reported', reference }); need(reported.periodId === periodId && reported.reference === reference, 'atomic existing report receipt');
       const beforeReplay = await books(); const { readinessPacket: originalPacket, ...replayEnvelope } = reported; need(equal(close(corrected, { status: 'reported', reference }), replayEnvelope), 'exact source reported replay envelope'); await unchanged(beforeReplay, 'reported replay');
@@ -92,7 +133,7 @@ export function createOriginalPeriodProof(page: Page, base: string, work: string
       const beforeRevoked = await books(); need((await member.request.get(base + prefix + 'periods/original/status?reviewId=' + first.id)).status() === 403, 'current revoked status access');
       cli('status', { 'review-id': first.id }, true, memberFile); cli('review', { ...bounds(), 'packet-hash': closeHash, confirm: 'yes' }, true, memberFile); await unchanged(beforeRevoked, 'revoked member');
       stable = await books(); complete = true;
-      return { qualified: true, ordinaryMfa: true, originalPeriodQualified: true, currentRevocationRefused: true, year, start, end, periodId, closeHash, reference, reviews, closes, refusals, accountingFingerprint: fingerprint(stable), installedNativeQualified: false, sourceFreeRestoreQualified: false, externalFilingQualified: false };
+      return { qualified: true, ordinaryMfa: true, originalPeriodQualified: true, ...(originalJournal ? { originalJournalQualified: true, journalEvidence, journalFingerprints: { dryRun: fingerprint(journalEvidence.dryRun), provisional: fingerprint({ entryId: journalEvidence.dryRun.entryId, entryNo: journalEvidence.dryRun.entryNo, previousHash: journalEvidence.dryRun.previousHash, entryHash: journalEvidence.dryRun.entryHash }), post: fingerprint(journalEvidence.post), reversal: fingerprint(journalEvidence.reversed) } } : {}), currentRevocationRefused: true, year, start, end, periodId, closeHash, reference, reviews, closes, refusals, accountingFingerprint: fingerprint(stable), installedNativeQualified: false, sourceFreeRestoreQualified: false, externalFilingQualified: false };
     },
     async reopen() {
       need(complete, 'completed fixture'); await cookie(page, ownerFile); await historical(); await unchanged(stable, 'exact normal MFA restart');
