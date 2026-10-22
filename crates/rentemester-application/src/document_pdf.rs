@@ -47,6 +47,7 @@ pub struct Admission {
     identity: ParserIdentity,
     source: Option<Source>,
     state: State,
+    service_permit: Option<crate::service_company::precharged::Permit>,
 }
 impl Admission {
     pub fn worker_input(&self) -> Option<&[u8]> {
@@ -145,9 +146,6 @@ fn stamp(context: &Context<'_>) -> Result<String, Error> {
         .map_err(|error| Error::new(error.code(), "Trusted PDF clock unavailable"))?;
     rentemester_engine::company_knowledge::timestamp(now)
 }
-fn actor(subject: &str) -> String {
-    format!("user:{subject}")
-}
 fn failed(code: OperationalError) -> Value {
     json!({"ok":false,"errors":["PDF_PARSE_FAILED"],"errorCode":code.as_str()})
 }
@@ -181,52 +179,17 @@ pub fn prepare(
         context.selection,
         Permission::CompanyDocumentsUpload,
         |tx, subject| {
-            identity.validate()?;
-            registered(tx, document_id)?;
-            store::validate_history(tx)?;
-            let ledger = ledger(tx)?;
-            let source = source(tx, document_id);
-            let bytes = physical(guard, source.as_ref()).and_then(|bytes| {
-                if bytes.is_empty() || bytes.len() > MAX_SOURCE {
-                    Err(OperationalError::SourceInvalid)
-                } else {
-                    Ok(bytes)
-                }
-            });
-            let state = match bytes {
-                Ok(bytes) => State::Ready {
-                    prepared: Box::new(store::prepare(
-                        tx,
-                        document_id,
-                        &source.as_ref().ok_or_else(unavailable)?.hash,
-                        &identity,
-                    )?),
-                    bytes,
-                },
-                Err(code) => {
-                    store::record_failure(
-                        tx,
-                        document_id,
-                        source_hash(source.as_ref()),
-                        &identity,
-                        code,
-                        &actor(subject),
-                        PROGRAM,
-                        &at,
-                    )?;
-                    State::Terminal(code)
-                }
-            };
-            Ok(Admission {
-                workspace,
-                slug,
-                subject: subject.into(),
-                ledger,
+            prepare_tx(
+                tx,
+                guard,
                 document_id,
                 identity,
-                source,
-                state,
-            })
+                workspace,
+                slug,
+                subject,
+                &at,
+                "user",
+            )
         },
     )?;
     if !prepared.control_reusable || !control.is_autocommit() || !company.is_autocommit() {
@@ -244,6 +207,9 @@ pub fn finish(
     admission: Admission,
     completion: Option<Completion>,
 ) -> Result<Committed<Value>, Failure> {
+    if admission.service_permit.is_some() {
+        return Err(failure(unavailable(), true));
+    }
     guard
         .ensure_connections(control, company)
         .map_err(|_| failure(unavailable(), false))?;
@@ -261,98 +227,9 @@ pub fn finish(
         context.selection,
         Permission::CompanyDocumentsUpload,
         |tx, subject| {
-            if workspace != admission.workspace
-                || slug != admission.slug
-                || subject != admission.subject
-                || ledger(tx)? != admission.ledger
-            {
-                return Err(Error::new(
-                    "document_pdf_admission_changed",
-                    "PDF company, subject or ledger changed during processing",
-                ));
-            }
-            registered(tx, admission.document_id)?;
-            store::validate_history(tx)?;
-            let current = source(tx, admission.document_id);
-            if current != admission.source {
-                return Err(pdf::tampered());
-            }
-            match admission.state {
-                State::Terminal(code) => {
-                    if completion.is_some() {
-                        return Err(pdf::tampered());
-                    }
-                    Ok(failed(code))
-                }
-                State::Ready { prepared, bytes } => {
-                    let actual = physical(guard, current.as_ref()).map_err(|_| pdf::tampered())?;
-                    if actual != bytes {
-                        return Err(pdf::tampered());
-                    }
-                    let actor = actor(subject);
-                    if prepared.cached().is_some() {
-                        if completion.is_some() {
-                            return Err(pdf::tampered());
-                        }
-                        let run = store::record_cached(tx, &prepared, &actor, PROGRAM, &at)?;
-                        return Ok(json!({"ok":true,"parse":run.summary(admission.document_id)}));
-                    }
-                    let completion = completion.ok_or_else(|| {
-                        Error::new("invalid_pdf_completion", "Worker completion required")
-                    })?;
-                    if completion.identity != admission.identity {
-                        let code = OperationalError::ProtocolViolation;
-                        store::record_failure(
-                            tx,
-                            admission.document_id,
-                            Some(prepared.source_hash()),
-                            &admission.identity,
-                            code,
-                            &actor,
-                            PROGRAM,
-                            &at,
-                        )?;
-                        return Ok(failed(code));
-                    }
-                    match completion.outcome {
-                        Ok(result) => {
-                            if result
-                                .validate(prepared.source_hash(), &admission.identity)
-                                .is_err()
-                            {
-                                let code = OperationalError::ProtocolViolation;
-                                store::record_failure(
-                                    tx,
-                                    admission.document_id,
-                                    Some(prepared.source_hash()),
-                                    &admission.identity,
-                                    code,
-                                    &actor,
-                                    PROGRAM,
-                                    &at,
-                                )?;
-                                return Ok(failed(code));
-                            }
-                            let run =
-                                store::record_result(tx, &prepared, &result, &actor, PROGRAM, &at)?;
-                            Ok(json!({"ok":true,"parse":run.summary(admission.document_id)}))
-                        }
-                        Err(code) => {
-                            store::record_failure(
-                                tx,
-                                admission.document_id,
-                                Some(prepared.source_hash()),
-                                &admission.identity,
-                                code,
-                                &actor,
-                                PROGRAM,
-                                &at,
-                            )?;
-                            Ok(failed(code))
-                        }
-                    }
-                }
-            }
+            finish_tx(
+                tx, guard, workspace, slug, subject, admission, completion, &at, "user",
+            )
         },
     )
 }
@@ -382,38 +259,329 @@ pub fn read(
         context.selection,
         permission,
         readonly,
-        |tx, _| match action {
-            Read::Status(id) => {
+        |tx, _| read_tx(tx, guard, action),
+    )
+}
+
+#[allow(clippy::too_many_arguments)]
+fn prepare_tx(
+    tx: &Transaction<'_>,
+    guard: &mut NamespaceGuard,
+    document_id: i64,
+    identity: ParserIdentity,
+    workspace: String,
+    slug: String,
+    subject: &str,
+    at: &str,
+    principal: &str,
+) -> Result<Admission, Error> {
+    identity.validate()?;
+    registered(tx, document_id)?;
+    store::validate_history(tx)?;
+    let ledger = ledger(tx)?;
+    let source = source(tx, document_id);
+    let bytes = physical(guard, source.as_ref()).and_then(|bytes| {
+        if bytes.is_empty() || bytes.len() > MAX_SOURCE {
+            Err(OperationalError::SourceInvalid)
+        } else {
+            Ok(bytes)
+        }
+    });
+    let state = match bytes {
+        Ok(bytes) => State::Ready {
+            prepared: Box::new(store::prepare(
+                tx,
+                document_id,
+                &source.as_ref().ok_or_else(unavailable)?.hash,
+                &identity,
+            )?),
+            bytes,
+        },
+        Err(code) => {
+            store::record_failure(
+                tx,
+                document_id,
+                source_hash(source.as_ref()),
+                &identity,
+                code,
+                &format!("{principal}:{subject}"),
+                PROGRAM,
+                at,
+            )?;
+            State::Terminal(code)
+        }
+    };
+    Ok(Admission {
+        workspace,
+        slug,
+        subject: subject.into(),
+        ledger,
+        document_id,
+        identity,
+        source,
+        state,
+        service_permit: None,
+    })
+}
+
+#[allow(clippy::too_many_arguments)]
+fn finish_tx(
+    tx: &Transaction<'_>,
+    guard: &mut NamespaceGuard,
+    workspace: &str,
+    slug: &str,
+    subject: &str,
+    admission: Admission,
+    completion: Option<Completion>,
+    at: &str,
+    principal: &str,
+) -> Result<Value, Error> {
+    if workspace != admission.workspace
+        || slug != admission.slug
+        || subject != admission.subject
+        || ledger(tx)? != admission.ledger
+    {
+        return Err(Error::new(
+            "document_pdf_admission_changed",
+            "PDF company, subject or ledger changed during processing",
+        ));
+    }
+    registered(tx, admission.document_id)?;
+    store::validate_history(tx)?;
+    let current = source(tx, admission.document_id);
+    if current != admission.source {
+        return Err(pdf::tampered());
+    }
+    match admission.state {
+        State::Terminal(code) => {
+            if completion.is_some() {
+                return Err(pdf::tampered());
+            }
+            Ok(failed(code))
+        }
+        State::Ready { prepared, bytes } => {
+            let actual = physical(guard, current.as_ref()).map_err(|_| pdf::tampered())?;
+            if actual != bytes {
+                return Err(pdf::tampered());
+            }
+            let actor = format!("{principal}:{subject}");
+            if prepared.cached().is_some() {
+                if completion.is_some() {
+                    return Err(pdf::tampered());
+                }
+                let run = store::record_cached(tx, &prepared, &actor, PROGRAM, at)?;
+                return Ok(json!({"ok":true,"parse":run.summary(admission.document_id)}));
+            }
+            let completion = completion.ok_or_else(|| {
+                Error::new("invalid_pdf_completion", "Worker completion required")
+            })?;
+            if completion.identity != admission.identity {
+                let code = OperationalError::ProtocolViolation;
+                store::record_failure(
+                    tx,
+                    admission.document_id,
+                    Some(prepared.source_hash()),
+                    &admission.identity,
+                    code,
+                    &actor,
+                    PROGRAM,
+                    at,
+                )?;
+                return Ok(failed(code));
+            }
+            match completion.outcome {
+                Ok(result) => {
+                    if result
+                        .validate(prepared.source_hash(), &admission.identity)
+                        .is_err()
+                    {
+                        let code = OperationalError::ProtocolViolation;
+                        store::record_failure(
+                            tx,
+                            admission.document_id,
+                            Some(prepared.source_hash()),
+                            &admission.identity,
+                            code,
+                            &actor,
+                            PROGRAM,
+                            at,
+                        )?;
+                        return Ok(failed(code));
+                    }
+                    let run = store::record_result(tx, &prepared, &result, &actor, PROGRAM, at)?;
+                    Ok(json!({"ok":true,"parse":run.summary(admission.document_id)}))
+                }
+                Err(code) => {
+                    store::record_failure(
+                        tx,
+                        admission.document_id,
+                        Some(prepared.source_hash()),
+                        &admission.identity,
+                        code,
+                        &actor,
+                        PROGRAM,
+                        at,
+                    )?;
+                    Ok(failed(code))
+                }
+            }
+        }
+    }
+}
+
+fn read_tx(tx: &Transaction<'_>, guard: &mut NamespaceGuard, action: Read) -> Result<Value, Error> {
+    match action {
+        Read::Status(id) => {
+            registered(tx, id)?;
+            physical(guard, source(tx, id).as_ref()).map_err(|_| pdf::tampered())?;
+            Ok(json!({"ok":true,"parse":store::status(tx, id)?}))
+        }
+        Read::Text {
+            document_id,
+            offset,
+            limit,
+        } => {
+            registered(tx, document_id)?;
+            physical(guard, source(tx, document_id).as_ref()).map_err(|_| pdf::tampered())?;
+            let mut value = store::text(tx, document_id, offset, limit)?;
+            value["ok"] = json!(true);
+            Ok(value)
+        }
+        Read::Pending {
+            identity,
+            cursor,
+            limit,
+        } => {
+            let mut value = store::pending(tx, &identity, cursor, limit)?;
+            let ids = value["documentIds"].as_array().ok_or_else(unavailable)?;
+            for id in ids {
+                let id = id.as_i64().ok_or_else(unavailable)?;
                 registered(tx, id)?;
                 physical(guard, source(tx, id).as_ref()).map_err(|_| pdf::tampered())?;
-                Ok(json!({"ok":true,"parse":store::status(tx, id)?}))
             }
-            Read::Text {
+            value["ok"] = json!(true);
+            Ok(value)
+        }
+    }
+}
+
+pub fn prepare_service(
+    control: &mut Connection,
+    company: &mut Connection,
+    guard: &mut NamespaceGuard,
+    context: crate::service_company::Context<'_>,
+    document_id: i64,
+    identity: ParserIdentity,
+) -> Result<crate::service_company::ServiceResult<Admission>, crate::service_company::ServiceFailure>
+{
+    let workspace = context.selection.workspace.to_owned();
+    let slug = context.selection.slug.to_owned();
+    let clock = context.clock;
+    let result = crate::service_company::precharged::prepare(
+        control,
+        company,
+        context,
+        Permission::CompanyDocumentsUpload,
+        |tx, subject| {
+            let at = rentemester_engine::company_knowledge::timestamp(
+                clock.now_unix_ms().map_err(|_| unavailable())?,
+            )?;
+            prepare_tx(
+                tx,
+                guard,
                 document_id,
-                offset,
-                limit,
-            } => {
-                registered(tx, document_id)?;
-                physical(guard, source(tx, document_id).as_ref()).map_err(|_| pdf::tampered())?;
-                let mut value = store::text(tx, document_id, offset, limit)?;
-                value["ok"] = json!(true);
-                Ok(value)
-            }
-            Read::Pending {
                 identity,
-                cursor,
-                limit,
-            } => {
-                let mut value = store::pending(tx, &identity, cursor, limit)?;
-                let ids = value["documentIds"].as_array().ok_or_else(unavailable)?;
-                for id in ids {
-                    let id = id.as_i64().ok_or_else(unavailable)?;
-                    registered(tx, id)?;
-                    physical(guard, source(tx, id).as_ref()).map_err(|_| pdf::tampered())?;
-                }
-                value["ok"] = json!(true);
-                Ok(value)
-            }
+                workspace,
+                slug,
+                subject,
+                &at,
+                "service_account",
+            )
+        },
+    )?;
+    if !result.control_reusable || !control.is_autocommit() || !company.is_autocommit() {
+        return Err(crate::service_company::ServiceFailure {
+            usage: crate::service_company::UsageStage::Committed,
+            business: crate::service_company::BusinessStage::NotAttempted,
+            error: unavailable(),
+            control_reusable: false,
+            company_reusable: false,
+            rejection: None,
+        });
+    }
+    let (mut admission, permit) = result.result;
+    admission.service_permit = Some(permit);
+    Ok(crate::service_company::ServiceResult {
+        result: admission,
+        usage: result.usage,
+        business: result.business,
+        receipt: result.receipt,
+        control_reusable: result.control_reusable,
+    })
+}
+pub fn finish_service(
+    control: &mut Connection,
+    company: &mut Connection,
+    guard: &mut NamespaceGuard,
+    context: crate::service_company::Context<'_>,
+    mut admission: Admission,
+    completion: Option<Completion>,
+) -> Result<crate::service_company::ServiceResult<Value>, crate::service_company::ServiceFailure> {
+    let fail = || crate::service_company::ServiceFailure {
+        usage: crate::service_company::UsageStage::Committed,
+        business: crate::service_company::BusinessStage::NotAttempted,
+        error: unavailable(),
+        control_reusable: false,
+        company_reusable: false,
+        rejection: None,
+    };
+    guard
+        .ensure_connections(control, company)
+        .map_err(|_| fail())?;
+    let permit = admission.service_permit.take().ok_or_else(fail)?;
+    let workspace = context.selection.workspace.to_owned();
+    let slug = context.selection.slug.to_owned();
+    let clock = context.clock;
+    crate::service_company::precharged::finish(control, company, context, permit, |tx, subject| {
+        let at = rentemester_engine::company_knowledge::timestamp(
+            clock.now_unix_ms().map_err(|_| unavailable())?,
+        )?;
+        finish_tx(
+            tx,
+            guard,
+            &workspace,
+            &slug,
+            subject,
+            admission,
+            completion,
+            &at,
+            "service_account",
+        )
+    })
+}
+pub fn read_service(
+    control: &mut Connection,
+    company: &mut Connection,
+    guard: &mut NamespaceGuard,
+    context: crate::service_company::Context<'_>,
+    action: Read,
+) -> Result<crate::service_company::ServiceResult<Value>, crate::service_company::ServiceFailure> {
+    let permission = if matches!(action, Read::Pending { .. }) {
+        Permission::CompanyDocumentsUpload
+    } else {
+        Permission::CompanyDocumentsRead
+    };
+    crate::service_company::execute_operation(
+        control,
+        company,
+        context,
+        permission,
+        false,
+        |tx, _, _| {
+            Ok(crate::service_company::OperationResult {
+                result: read_tx(tx, guard, action)?,
+                receipt: None,
+            })
         },
     )
 }

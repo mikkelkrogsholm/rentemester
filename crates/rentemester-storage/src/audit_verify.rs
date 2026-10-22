@@ -31,6 +31,7 @@ fn component(name: &str, result: Result<Value, Error>) -> Value {
 }
 fn health(tx: &Transaction<'_>) -> Result<Value, Error> {
     crate::journal_preview::require_current(tx)?;
+    crate::documents_original::validate_history(tx)?;
     let mut statement = tx
         .prepare("PRAGMA integrity_check")
         .map_err(crate::invalid)?;

@@ -30,6 +30,12 @@ pub struct Context<'a> {
     pub clock: &'a dyn Clock,
     pub selection: CompanySelection<'a>,
 }
+#[derive(Default)]
+pub struct OriginalOptions {
+    pub vendor_id: Option<i64>,
+    pub force: bool,
+    pub original_api: bool,
+}
 /// Immutable operator policy, never decoded from upload metadata.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum ScanPolicy {
@@ -47,6 +53,8 @@ pub struct Admission {
     ledger: String,
     policy: ScanPolicy,
     service_permit: Option<crate::service_company::precharged::Permit>,
+    original_options: OriginalOptions,
+    vendor_observation: Option<String>,
 }
 impl Admission {
     pub fn file(&self) -> &Prepared {
@@ -67,6 +75,24 @@ impl Admission {
             return Err(Error::new(
                 "document_admission_changed",
                 "document subject, selection or ledger changed during scanning",
+            ));
+        }
+        Ok(())
+    }
+    fn validate_vendor(&self, tx: &rusqlite::Transaction<'_>) -> Result<(), Error> {
+        let mut metadata: Metadata = serde_json::from_value(
+            serde_json::to_value(&self.metadata).map_err(|_| unavailable())?,
+        )
+        .map_err(|_| unavailable())?;
+        let current = rentemester_storage::documents_original::vendor_fill(
+            tx,
+            &mut metadata,
+            self.original_options.vendor_id,
+        )?;
+        if current != self.vendor_observation {
+            return Err(Error::new(
+                "document_admission_changed",
+                "vendor changed during scanning",
             ));
         }
         Ok(())
@@ -167,6 +193,26 @@ pub fn prepare_ingest(
     metadata: Metadata,
     policy: ScanPolicy,
 ) -> Result<Committed<Admission>, Failure> {
+    prepare_original_ingest(
+        control,
+        company,
+        context,
+        file,
+        metadata,
+        policy,
+        OriginalOptions::default(),
+    )
+}
+#[allow(clippy::too_many_arguments)]
+pub fn prepare_original_ingest(
+    control: &mut Connection,
+    company: &mut Connection,
+    context: Context<'_>,
+    file: Prepared,
+    mut metadata: Metadata,
+    policy: ScanPolicy,
+    options: OriginalOptions,
+) -> Result<Committed<Admission>, Failure> {
     let workspace = context.selection.workspace.to_owned();
     let slug = context.selection.slug.to_owned();
     let prepared = control_fence::execute_cookie_subject(
@@ -180,6 +226,11 @@ pub fn prepare_ingest(
         context.selection,
         Permission::CompanyDocumentsUpload,
         |tx, subject| {
+            let vendor_observation = rentemester_storage::documents_original::vendor_fill(
+                tx,
+                &mut metadata,
+                options.vendor_id,
+            )?;
             metadata.validate()?;
             let ledger = ledger_identity(tx)?;
             Ok(Admission {
@@ -191,6 +242,8 @@ pub fn prepare_ingest(
                 ledger,
                 policy,
                 service_permit: None,
+                original_options: options,
+                vendor_observation,
             })
         },
     )?;
@@ -247,6 +300,7 @@ pub fn finish_ingest_registered(
         |tx, subject| {
             admission.validate_binding(workspace, slug, subject, &ledger_identity(tx)?)?;
             admission.validate_scan(scan.as_ref())?;
+            admission.validate_vendor(tx)?;
             admission.metadata.validate()?;
             let today = rentemester_runtime::posting_time::latest_date(
                 context.clock.now_unix_ms().map_err(|_| {
@@ -255,10 +309,14 @@ pub fn finish_ingest_registered(
                 0,
             )
             .map_err(|error| Error::new(error.code(), "trusted document date unavailable"))?;
+            if admission.original_options.original_api && let Some(message)=rentemester_storage::documents_original::intake_duplicate(tx,admission.file.hash(),&admission.metadata,admission.original_options.force)? {
+                let receipt=rentemester_storage::documents_original::blocked(tx,admission.file.filename(),admission.file.hash(),&admission.metadata,&message)?;
+                return Ok(RegisteredIngest { receipt, upload:RegisteredUpload {workspace:workspace.into(),slug:slug.into(),subject:subject.into(),ledger:ledger_identity(tx)?,document_id:0,hash:admission.file.hash().into(),eligible:false} });
+            }
             let path = guard
                 .publish_document(&admission.file)
                 .map_err(|_| unavailable())?;
-            let receipt = rentemester_storage::documents::register_scanned(
+            let receipt = rentemester_storage::documents::register_original(
                 tx,
                 rentemester_storage::documents::Original {
                     filename: admission.file.filename(),
@@ -270,8 +328,41 @@ pub fn finish_ingest_registered(
                 subject,
                 &today,
                 scan.as_ref(),
-            )?;
+                rentemester_storage::idempotency::PrincipalKind::User,
+                admission.original_options.force,
+            )
+            .or_else(|error| {
+                if admission.original_options.original_api
+                    && error.code == "document_refused"
+                    && (error.message.starts_with("duplicate document content")
+                        || error.message.starts_with("supplier invoice identity"))
+                {
+                    rentemester_storage::documents_original::blocked(
+                        tx,
+                        admission.file.filename(),
+                        admission.file.hash(),
+                        &admission.metadata,
+                        &error.message,
+                    )
+                } else {
+                    Err(error)
+                }
+            })?;
             rentemester_storage::unmatched_bank::sync(tx)?;
+            if receipt["ok"] == false {
+                return Ok(RegisteredIngest {
+                    receipt,
+                    upload: RegisteredUpload {
+                        workspace: workspace.into(),
+                        slug: slug.into(),
+                        subject: subject.into(),
+                        ledger: ledger_identity(tx)?,
+                        document_id: 0,
+                        hash: admission.file.hash().into(),
+                        eligible: false,
+                    },
+                });
+            }
             let document_id = receipt["document"]["id"]
                 .as_i64()
                 .filter(|id| *id > 0)
@@ -388,7 +479,9 @@ pub fn list(
 }
 
 mod service;
-pub use service::{finish_service, list_service, prepare_service, read_service};
+pub use service::{
+    finish_service, list_service, prepare_original_service, prepare_service, read_service,
+};
 
 #[cfg(test)]
 mod tests;

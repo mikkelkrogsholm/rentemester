@@ -52,3 +52,56 @@ impl Owner {
 }
 #[cfg(all(test, target_os = "macos"))]
 mod tests;
+impl Owner {
+    pub fn prepare_document_pdf_service(
+        &mut self,
+        key: &ServiceKey,
+        clock: &dyn Clock,
+        id: i64,
+        identity: ParserIdentity,
+    ) -> Result<
+        Attempt<Result<service_company::ServiceResult<Admission>, service_company::ServiceFailure>>,
+        OwnerError,
+    > {
+        self.service_document_action(key, clock, |control, company, guard, context| {
+            app::prepare_service(control, company, guard, context, id, identity)
+        })
+    }
+    pub fn finish_document_pdf_service(
+        &mut self,
+        key: &ServiceKey,
+        clock: &dyn Clock,
+        admission: Admission,
+        completion: Option<Completion>,
+    ) -> Result<
+        Attempt<
+            Result<
+                service_company::ServiceResult<serde_json::Value>,
+                service_company::ServiceFailure,
+            >,
+        >,
+        OwnerError,
+    > {
+        self.service_document_action(key, clock, |control, company, guard, context| {
+            app::finish_service(control, company, guard, context, admission, completion)
+        })
+    }
+    pub fn document_pdf_service(
+        &mut self,
+        key: &ServiceKey,
+        clock: &dyn Clock,
+        action: Read,
+    ) -> Result<
+        Attempt<
+            Result<
+                service_company::ServiceResult<serde_json::Value>,
+                service_company::ServiceFailure,
+            >,
+        >,
+        OwnerError,
+    > {
+        self.service_document_action(key, clock, |control, company, guard, context| {
+            app::read_service(control, company, guard, context, action)
+        })
+    }
+}

@@ -9,6 +9,26 @@ pub fn prepare_service(
     metadata: Metadata,
     policy: ScanPolicy,
 ) -> Result<ServiceResult<Admission>, ServiceFailure> {
+    prepare_original_service(
+        control,
+        company,
+        context,
+        file,
+        metadata,
+        policy,
+        OriginalOptions::default(),
+    )
+}
+#[allow(clippy::too_many_arguments)]
+pub fn prepare_original_service(
+    control: &mut Connection,
+    company: &mut Connection,
+    context: service_company::Context<'_>,
+    file: Prepared,
+    mut metadata: Metadata,
+    policy: ScanPolicy,
+    options: OriginalOptions,
+) -> Result<ServiceResult<Admission>, ServiceFailure> {
     let workspace = context.selection.workspace.to_owned();
     let slug = context.selection.slug.to_owned();
     let mut result = service_company::precharged::prepare(
@@ -17,6 +37,11 @@ pub fn prepare_service(
         context,
         Permission::CompanyDocumentsUpload,
         |tx, subject| {
+            let vendor_observation = rentemester_storage::documents_original::vendor_fill(
+                tx,
+                &mut metadata,
+                options.vendor_id,
+            )?;
             metadata.validate()?;
             Ok(Admission {
                 file,
@@ -27,6 +52,8 @@ pub fn prepare_service(
                 ledger: ledger_identity(tx)?,
                 policy,
                 service_permit: None,
+                original_options: options,
+                vendor_observation,
             })
         },
     )?;
@@ -69,16 +96,20 @@ pub fn finish_service(
     service_company::precharged::finish(control, company, context, permit, |tx, subject| {
         admission.validate_binding(&workspace, &slug, subject, &ledger_identity(tx)?)?;
         admission.validate_scan(scan.as_ref())?;
+        admission.validate_vendor(tx)?;
         admission.metadata.validate()?;
         let today = rentemester_runtime::posting_time::latest_date(
             clock.now_unix_ms().map_err(|_| unavailable())?,
             0,
         )
         .map_err(|_| unavailable())?;
+        if admission.original_options.original_api && let Some(message)=rentemester_storage::documents_original::intake_duplicate(tx,admission.file.hash(),&admission.metadata,admission.original_options.force)? {
+            return rentemester_storage::documents_original::blocked(tx,admission.file.filename(),admission.file.hash(),&admission.metadata,&message);
+        }
         let path = guard
             .publish_document(&admission.file)
             .map_err(|_| unavailable())?;
-        let receipt = rentemester_storage::documents::register_scanned_with_principal(
+        let receipt = rentemester_storage::documents::register_original(
             tx,
             rentemester_storage::documents::Original {
                 filename: admission.file.filename(),
@@ -91,7 +122,25 @@ pub fn finish_service(
             &today,
             scan.as_ref(),
             rentemester_storage::idempotency::PrincipalKind::ServiceAccount,
-        )?;
+            admission.original_options.force,
+        )
+        .or_else(|error| {
+            if admission.original_options.original_api
+                && error.code == "document_refused"
+                && (error.message.starts_with("duplicate document content")
+                    || error.message.starts_with("supplier invoice identity"))
+            {
+                rentemester_storage::documents_original::blocked(
+                    tx,
+                    admission.file.filename(),
+                    admission.file.hash(),
+                    &admission.metadata,
+                    &error.message,
+                )
+            } else {
+                Err(error)
+            }
+        })?;
         rentemester_storage::unmatched_bank::sync(tx)?;
         Ok(receipt)
     })

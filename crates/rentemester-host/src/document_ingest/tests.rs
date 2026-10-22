@@ -441,3 +441,364 @@ fn service_upload_reader_denied_before_usage_and_revoked_credential_after_scan_c
     assert_eq!(count(&owner, "documents"), 0);
     assert_eq!(originals(&owner), 0);
 }
+
+#[test]
+fn documents_original_vendor_rechecked_after_io_and_current_human_permissions() {
+    use rentemester_application::documents::OriginalOptions;
+    let (_dir, mut owner, _cookies, proof, _uid) = setup();
+    owner
+        .held
+        .0
+        .as_ref()
+        .unwrap()
+        .company
+        .as_ref()
+        .unwrap()
+        .execute("INSERT INTO vendors(name) VALUES('Synthetic vendor')", [])
+        .unwrap();
+    let admission = owner
+        .prepare_documents_original(
+            &proof,
+            &Fixed(NOW),
+            file("vendor changed"),
+            metadata(),
+            ScanPolicy::Required,
+            OriginalOptions {
+                vendor_id: Some(1),
+                force: false,
+                original_api: true,
+            },
+        )
+        .unwrap()
+        .outcome
+        .unwrap()
+        .value;
+    let evidence = clean(&admission);
+    owner
+        .held
+        .0
+        .as_ref()
+        .unwrap()
+        .company
+        .as_ref()
+        .unwrap()
+        .execute("UPDATE vendors SET name='Changed vendor' WHERE id=1", [])
+        .unwrap();
+    assert!(
+        owner
+            .finish_document_ingest(&proof, &Fixed(NOW), admission, Some(evidence))
+            .unwrap()
+            .outcome
+            .is_err()
+    );
+    assert_eq!(count(&owner, "documents"), 0);
+    assert_eq!(originals(&owner), 0);
+    let admission = owner
+        .prepare_documents_original(
+            &proof,
+            &Fixed(NOW),
+            file("rights changed"),
+            metadata(),
+            ScanPolicy::Required,
+            OriginalOptions::default(),
+        )
+        .unwrap()
+        .outcome
+        .unwrap()
+        .value;
+    let evidence = clean(&admission);
+    owner.held.0.as_ref().unwrap().control.as_ref().unwrap().execute_batch("INSERT INTO rm_company_membership_events(user_id,company_slug,event_type,company_role,actor)VALUES('u','a','revoke',NULL,'user:synthetic-revoker');").unwrap();
+    assert!(
+        owner
+            .finish_document_ingest(&proof, &Fixed(NOW), admission, Some(evidence))
+            .unwrap()
+            .outcome
+            .is_err()
+    );
+    assert_eq!(count(&owner, "documents"), 0);
+    assert_eq!(originals(&owner), 0);
+    assert!(
+        owner
+            .documents_original(
+                &proof,
+                &Fixed(NOW),
+                rentemester_application::documents_original::Action::List
+            )
+            .unwrap()
+            .outcome
+            .is_err()
+    );
+}
+#[test]
+fn documents_original_service_typed_audit_and_revocation_before_and_after_io() {
+    use rentemester_application::documents::OriginalOptions;
+    let (_dir, mut owner, cookies, proof, _uid) = setup();
+    let (key, subject, credential) = service(&mut owner, &cookies, &proof, "bookkeeper");
+    let admission = owner
+        .prepare_documents_original_service(
+            &key,
+            &Fixed(NOW),
+            file("original service"),
+            metadata(),
+            ScanPolicy::Required,
+            OriginalOptions {
+                original_api: true,
+                ..Default::default()
+            },
+        )
+        .unwrap()
+        .outcome
+        .unwrap()
+        .result;
+    let evidence = clean(&admission);
+    let receipt = owner
+        .finish_document_ingest_service(&key, &Fixed(NOW), admission, Some(evidence))
+        .unwrap()
+        .outcome
+        .unwrap()
+        .result;
+    assert_eq!(receipt["ok"], true);
+    let id = receipt["document"]["id"].as_i64().unwrap();
+    let enriched: Metadata = serde_json::from_value(json!({"source":"synthetic-scan","documentType":"cash_register_receipt","deliveryDescription":"Synthetic service enrichment"})).unwrap();
+    let mutation = owner
+        .documents_original_service(
+            &key,
+            &Fixed(NOW),
+            rentemester_application::documents_original::Action::Enrich(id, Box::new(enriched)),
+        )
+        .unwrap();
+    assert!(!mutation.retired);
+    assert_eq!(mutation.outcome.unwrap().result["enriched"], true);
+    let db = owner.held.0.as_ref().unwrap().company.as_ref().unwrap();
+    let enrichment_actor: String = db
+        .query_row(
+            "SELECT actor FROM document_metadata_enrichments WHERE document_id=?1",
+            [id],
+            |r| r.get(0),
+        )
+        .unwrap();
+    assert_eq!(enrichment_actor, format!("service_account:{subject}"));
+    let audit: String = db
+        .query_row(
+            "SELECT actor FROM audit_log WHERE event_type='document_ingest'",
+            [],
+            |r| r.get(0),
+        )
+        .unwrap();
+    assert_eq!(audit, format!("service_account:{subject}"));
+    let admission = owner
+        .prepare_documents_original_service(
+            &key,
+            &Fixed(NOW),
+            file("revoked original service"),
+            metadata(),
+            ScanPolicy::Required,
+            OriginalOptions::default(),
+        )
+        .unwrap()
+        .outcome
+        .unwrap()
+        .result;
+    let evidence = clean(&admission);
+    owner
+        .held
+        .0
+        .as_ref()
+        .unwrap()
+        .control
+        .as_ref()
+        .unwrap()
+        .execute("UPDATE apikey SET enabled=0 WHERE id=?1", [&credential])
+        .unwrap();
+    assert!(
+        owner
+            .finish_document_ingest_service(&key, &Fixed(NOW), admission, Some(evidence))
+            .unwrap()
+            .outcome
+            .is_err()
+    );
+    assert_eq!(count(&owner, "documents"), 1);
+    assert!(
+        owner
+            .prepare_documents_original_service(
+                &key,
+                &Fixed(NOW),
+                file("already revoked"),
+                metadata(),
+                ScanPolicy::Required,
+                OriginalOptions::default()
+            )
+            .unwrap()
+            .outcome
+            .is_err()
+    );
+}
+#[test]
+fn documents_original_service_pdf_current_grants_before_after_worker_io() {
+    use rentemester_application::document_pdf::{Completion, Read};
+    use rentemester_engine::document_pdf::{NATIVE_CONTRACT, OperationalError, ParserIdentity};
+    let (_dir, mut owner, cookies, proof, _uid) = setup();
+    let pdf = Prepared::new(
+        "synthetic.pdf".into(),
+        b"%PDF-1.4\nSynthetic PDF evidence\n".to_vec(),
+    )
+    .unwrap();
+    let admission = owner
+        .prepare_document_ingest(&proof, &Fixed(NOW), pdf, metadata(), ScanPolicy::Off)
+        .unwrap()
+        .outcome
+        .unwrap()
+        .value;
+    let id = owner
+        .finish_document_ingest(&proof, &Fixed(NOW), admission, None)
+        .unwrap()
+        .outcome
+        .unwrap()
+        .value["document"]["id"]
+        .as_i64()
+        .unwrap();
+    let (key, subject, _credential) = service(&mut owner, &cookies, &proof, "bookkeeper");
+    let identity = ParserIdentity {
+        parser_id: "pdfium".into(),
+        parser_version: "synthetic-adapter-1".into(),
+        contract_version: NATIVE_CONTRACT.into(),
+    };
+    let admission = owner
+        .prepare_document_pdf_service(&key, &Fixed(NOW), id, identity.clone())
+        .unwrap()
+        .outcome
+        .unwrap()
+        .result;
+    assert!(admission.worker_input().is_some());
+    let value = owner
+        .finish_document_pdf_service(
+            &key,
+            &Fixed(NOW),
+            admission,
+            Some(Completion {
+                identity: identity.clone(),
+                outcome: Err(OperationalError::ProtocolViolation),
+            }),
+        )
+        .unwrap()
+        .outcome
+        .unwrap()
+        .result;
+    assert_eq!(value["ok"], false);
+    assert!(
+        owner
+            .document_pdf_service(&key, &Fixed(NOW), Read::Status(id))
+            .unwrap()
+            .outcome
+            .is_ok()
+    );
+    let admission = owner
+        .prepare_document_pdf_service(&key, &Fixed(NOW), id, identity.clone())
+        .unwrap()
+        .outcome
+        .unwrap()
+        .result;
+    owner.held.0.as_ref().unwrap().control.as_ref().unwrap().execute("INSERT INTO rm_company_membership_events(user_id,company_slug,event_type,company_role,actor)VALUES(?1,'a','revoke',NULL,'user:synthetic-revoker')",[&subject]).unwrap();
+    assert!(
+        owner
+            .finish_document_pdf_service(
+                &key,
+                &Fixed(NOW),
+                admission,
+                Some(Completion {
+                    identity: identity.clone(),
+                    outcome: Err(OperationalError::ProtocolViolation)
+                })
+            )
+            .unwrap()
+            .outcome
+            .is_err()
+    );
+    assert!(
+        owner
+            .document_pdf_service(&key, &Fixed(NOW), Read::Status(id))
+            .unwrap()
+            .outcome
+            .is_err()
+    );
+    assert!(
+        owner
+            .prepare_document_pdf_service(&key, &Fixed(NOW), id, identity)
+            .unwrap()
+            .outcome
+            .is_err()
+    );
+    let db = owner.held.0.as_ref().unwrap().company.as_ref().unwrap();
+    let actor: String = db
+        .query_row(
+            "SELECT actor FROM document_pdf_parse_attempts LIMIT 1",
+            [],
+            |r| r.get(0),
+        )
+        .unwrap();
+    assert_eq!(actor, format!("service_account:{subject}"));
+}
+#[test]
+fn documents_original_duplicate_refusal_deduplicated_and_force_never_content_hash() {
+    use rentemester_application::documents::OriginalOptions;
+    let (_dir, mut owner, _cookies, proof, _uid) = setup();
+    let admission = admit(&mut owner, &proof, ScanPolicy::Off, "same bytes");
+    owner
+        .finish_document_ingest(&proof, &Fixed(NOW), admission, None)
+        .unwrap()
+        .outcome
+        .unwrap();
+    let admission = owner
+        .prepare_documents_original(
+            &proof,
+            &Fixed(NOW),
+            file("same bytes"),
+            metadata(),
+            ScanPolicy::Off,
+            OriginalOptions {
+                force: true,
+                original_api: true,
+                ..Default::default()
+            },
+        )
+        .unwrap()
+        .outcome
+        .unwrap()
+        .value;
+    let refusal = owner
+        .finish_document_ingest(&proof, &Fixed(NOW), admission, None)
+        .unwrap()
+        .outcome
+        .unwrap()
+        .value;
+    assert_eq!(refusal["ok"], false);
+    assert_eq!(refusal["code"], "DOCUMENT_INGEST_BLOCKED");
+    let admission = owner
+        .prepare_documents_original(
+            &proof,
+            &Fixed(NOW),
+            file("same bytes"),
+            metadata(),
+            ScanPolicy::Off,
+            OriginalOptions {
+                force: true,
+                original_api: true,
+                ..Default::default()
+            },
+        )
+        .unwrap()
+        .outcome
+        .unwrap()
+        .value;
+    assert_eq!(
+        owner
+            .finish_document_ingest(&proof, &Fixed(NOW), admission, None)
+            .unwrap()
+            .outcome
+            .unwrap()
+            .value["ok"],
+        false
+    );
+    assert_eq!(count(&owner, "documents"), 1);
+    assert_eq!(count(&owner, "exceptions"), 1);
+}

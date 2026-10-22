@@ -40,6 +40,7 @@ mod bank_reconciliation;
 mod budget;
 mod company_setup;
 mod documents;
+mod documents_original;
 mod document_pdf;
 mod invoice_extraction;
 mod gdpr;
@@ -522,6 +523,10 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
         .route("/api/companies/{slug}/bank/accounts-original/create", post(bank_accounts_original::handle))
         .route("/api/companies/{slug}/bank/accounts-original/update", post(bank_accounts_original::handle))
         .route("/api/companies/{slug}/bank-accounts/{account}", axum::routing::patch(bank_accounts_original::handle))
+        .route("/api/companies/{slug}/documents/original/ingest", post(documents::ingest))
+        .route("/api/companies/{slug}/documents/original/list", get(documents_original::handle))
+        .route("/api/companies/{slug}/documents/original/{id}/enrich", post(documents_original::handle))
+        .route("/api/companies/{slug}/documents/original/{id}/company-context", post(documents_original::handle))
         .route("/api/companies/{slug}/documents", get(documents::list))
         .route("/api/companies/{slug}/documents/{id}/invoice-extraction",get(invoice_extraction::handle))
         .route("/api/companies/{slug}/documents/{id}/extract-invoice",post(invoice_extraction::handle))

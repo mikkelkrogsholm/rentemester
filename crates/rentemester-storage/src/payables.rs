@@ -206,6 +206,7 @@ pub(crate) fn prepare_bill(
         });
     let allocation = expense::purchase(
         tx,
+        input.document_id,
         &meta,
         &input.expense_account_no,
         Some(treatment),
