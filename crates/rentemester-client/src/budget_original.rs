@@ -34,6 +34,21 @@ fn close(a: f64, b: f64) -> bool {
 fn n(v: &Value, k: &str) -> f64 {
     v[k].as_f64().unwrap_or(f64::NAN)
 }
+fn date(s: &str) -> Option<time::Date> {
+    if s.len() != 10 || !s.is_ascii() || s.as_bytes()[4] != b'-' || s.as_bytes()[7] != b'-' {
+        return None;
+    }
+    let year = s[..4].parse::<i32>().ok()?;
+    if !(1..=9999).contains(&year) {
+        return None;
+    }
+    time::Date::from_calendar_date(
+        year,
+        time::Month::try_from(s[5..7].parse::<u8>().ok()?).ok()?,
+        s[8..].parse().ok()?,
+    )
+    .ok()
+}
 /// Exact source fields and lowercase rules. No native metadata or DK-rule substitution.
 pub fn validate_original_budget_result(op: &str, v: &Value, success: bool) -> bool {
     let strings = array(text());
@@ -187,6 +202,24 @@ pub fn validate_original_budget_result(op: &str, v: &Value, success: bool) -> bo
     }
     let rows = v["periods"].as_array().unwrap();
     if op == "forecast" {
+        if success {
+            let Some(start) = v["startDate"].as_str().and_then(date) else {
+                return false;
+            };
+            let Some(months) = v["months"].as_u64().filter(|m| (1..=18).contains(m)) else {
+                return false;
+            };
+            if rows.len() != months as usize {
+                return false;
+            }
+            let first = start.year() * 12 + start.month() as i32 - 1;
+            for (i, row) in rows.iter().enumerate() {
+                let month = first + i as i32;
+                if row["period"] != format!("{:04}-{:02}", month / 12, month % 12 + 1) {
+                    return false;
+                }
+            }
+        }
         let mut balance = n(v, "openingBalance");
         for r in rows {
             let change =
@@ -200,6 +233,22 @@ pub fn validate_original_budget_result(op: &str, v: &Value, success: bool) -> bo
             balance = n(r, "closingBalance");
         }
         return close(balance, n(v, "closingBalance"));
+    }
+    if success {
+        let Some(start) = v["startDate"].as_str().and_then(date) else {
+            return false;
+        };
+        if !(1..=13).contains(&rows.len()) {
+            return false;
+        }
+        for (i, row) in rows.iter().enumerate() {
+            let Some(expected) = start.checked_add(time::Duration::days(i as i64 * 7)) else {
+                return false;
+            };
+            if row["weekStart"] != expected.to_string() {
+                return false;
+            }
+        }
     }
     let mut base = n(v, "openingCash");
     let mut scenario = base;

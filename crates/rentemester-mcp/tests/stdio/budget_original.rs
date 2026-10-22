@@ -27,6 +27,15 @@ fn source_discovery_optional_boolean_confirmation_and_disjoint_comparison() {
     ] {
         assert!(names.contains(name));
     }
+    let comparison = tools
+        .iter()
+        .find(|t| t["name"] == "budget_vs_actual")
+        .unwrap();
+    assert_eq!(comparison["inputSchema"]["type"], "object");
+    assert_eq!(
+        comparison["inputSchema"]["oneOf"].as_array().unwrap().len(),
+        2
+    );
     let set = tools.iter().find(|t| t["name"] == "budget_set").unwrap();
     assert_eq!(
         set["inputSchema"]["properties"]["confirm"],

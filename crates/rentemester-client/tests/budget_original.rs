@@ -125,7 +125,7 @@ async fn five_fixed_routes_source_422_and_one_confirmed_append() {
 }
 #[test]
 fn strict_lowercase_rules_shape_arithmetic_and_source_buckets() {
-    let weekly = json!({"ok":true,"startDate":"2026-01-01","openingCash":1000,"lowestPoint":1000,"completeness":{"included":["issued receivables"],"excluded":["undated budgets"]},"periods":[{"weekStart":"2026-01-01","openingCash":1000,"receivables":125,"payables":40,"commitments":30,"budgets":0,"undatedBudgetAssumptions":-90,"scenarios":0,"obligations":0,"intercompany":75,"excluded":[{"source":"foreign","amount":3,"currency":"EUR","reason":"dated_fx_required"}],"closingCash":1055,"scenarioClosingCash":1130,"sources":[{"source":"approved_intercompany_disposition","amount":75,"reference":"intercompany-approved:synthetic:hash","assumption":true},{"source":"vat_obligation","amount":0,"reference":"vat:synthetic","settlementStatus":"unknown"}]}],"errors":[],"appliedRules":["liquidity-forecast-13-week-v3"]});
+    let weekly = json!({"ok":true,"startDate":"2026-01-01","openingCash":1000,"lowestPoint":1000,"completeness":{"included":["issued receivables"],"excluded":["undated budgets"]},"periods":[{"weekStart":"2026-01-01","openingCash":1000,"receivables":125,"payables":40,"commitments":30,"budgets":0,"undatedBudgetAssumptions":-90,"scenarios":0,"obligations":0,"intercompany":75,"excluded":[{"source":"foreign","amount":3,"currency":"EUR","reason":"dated_fx_required"}],"closingCash":1055,"scenarioClosingCash":1130,"sources":[{"source":"approved_intercompany_disposition","amount":75,"reference":"intercompany-disposition:synthetic:hash","assumption":true},{"source":"vat_obligation","amount":0,"reference":"vat:synthetic","settlementStatus":"unknown"}]}],"errors":[],"appliedRules":["liquidity-forecast-13-week-v3"]});
     assert!(validate_original_budget_result(
         "forecast-13-week",
         &weekly,
@@ -205,4 +205,31 @@ async fn confirmation_structural_and_unknown_ack_never_retry() {
         Err(Error::Refused { status: 403 })
     );
     t.join().unwrap();
+}
+
+#[test]
+fn impossible_successful_horizons_are_rejected_without_weakening_refusals() {
+    let mut monthly = json!({"ok":true,"appliedRules":["liquidity-forecast"],"startDate":"2026-01-15","months":1,"openingBalance":0,"closingBalance":0,"periods":[{"period":"2026-01","openingBalance":0,"invoiceInflow":0,"recurringInflow":0,"budgetedCostOutflow":0,"netChange":0,"closingBalance":0}],"errors":[]});
+    assert!(validate_original_budget_result("forecast", &monthly, true));
+    for (field, value) in [
+        ("startDate", json!("")),
+        ("startDate", json!("2026-02-30")),
+        ("months", json!(0)),
+        ("months", json!(19)),
+        ("periods", json!([])),
+    ] {
+        let mut bad = monthly.clone();
+        bad[field] = value;
+        assert!(!validate_original_budget_result("forecast", &bad, true));
+    }
+    monthly["periods"][0]["period"] = json!("2026-02");
+    assert!(!validate_original_budget_result("forecast", &monthly, true));
+    let weekly = json!({"ok":true,"startDate":"2026-01-01","openingCash":0,"lowestPoint":0,"completeness":{"included":[],"excluded":[]},"periods":[],"errors":[],"appliedRules":["liquidity-forecast-13-week-v3"]});
+    assert!(!validate_original_budget_result(
+        "forecast-13-week",
+        &weekly,
+        true
+    ));
+    let refusal = json!({"ok":false,"openingBalance":0,"closingBalance":0,"periods":[],"errors":["opening unavailable"],"appliedRules":["liquidity-forecast"]});
+    assert!(validate_original_budget_result("forecast", &refusal, false));
 }
