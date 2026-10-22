@@ -72,7 +72,7 @@ export function createDocumentsOriginalProof(base: string, work: string, pdf: (s
       await admin('members/access', { userId: service.serviceAccountId, action: 'set-role', workspaceRole: 'member' });
       const grant = (role: string) => admin('members/company', { userId: service.serviceAccountId, companySlug: 'synthetic', action: 'grant', role });
       await grant('bookkeeper');
-      const before = await http(root + 'journal'); need(before.journal.journal.entries.length === 0, 'fresh journal');
+      const before = await http(root + 'journal'); need(before.journal.entries.length === 0, 'fresh journal');
       await http(root + 'company', { cvr: '87654321', address: 'Synthetic Street 165', postalCode: '1000', city: 'Synthetic City', vatPeriodType: 'quarter' }, 'PATCH');
       const company = (await http(root + 'company')).company;
       for (const account of [{ accountNo: '4865', name: 'Synthetic original expense', type: 'expense', normalBalance: 'debit', defaultVatCode: 'DK_PURCHASE_25' }, { accountNo: '6865', name: 'Synthetic input VAT', type: 'vat', normalBalance: 'debit' }, { accountNo: '7865', name: 'Synthetic creditors', type: 'liability', normalBalance: 'credit' }]) await http(root + 'accounts', account);
@@ -130,7 +130,7 @@ export function createDocumentsOriginalProof(base: string, work: string, pdf: (s
       await lists(); need(equal(await http(root + 'journal'), before), 'all intake/parse/history actions financially inert');
       // Exactly one accepted payable registration; never replay or duplicate this financial request.
       const posted = await http(root + 'payables', { documentId: documents.context.documentId, billDate: metadata.issueDate, dueDate: metadata.issueDate, expenseAccountNo: '4865', vatTreatment: 'standard', vendorId, confirm: true });
-      const journal = (await http(root + 'journal')).journal.journal; need(journal.entries.length === 1 && journal.entries[0].documentId === documents.context.documentId && journal.entries[0].total === 125, 'one factual payable through verified context gate');
+      const journal = (await http(root + 'journal')).journal; need(journal.entries.length === 1 && journal.entries[0].documentId === documents.context.documentId && journal.entries[0].total === 125, 'one factual payable through verified context gate');
       const preRevoke = await snapshot(); await admin('members/company', { userId: service.serviceAccountId, companySlug: 'synthetic', action: 'revoke' });
       rpc('documents_list', { company: 'synthetic' }, 'refused'); rpc('documents_parse', { company: 'synthetic', documentId: documents.enrich.documentId, confirm: true }, 'refused');
       need(equal(await snapshot(), preRevoke), 'revoked service publishes no document/history/parser/accounting effect');
