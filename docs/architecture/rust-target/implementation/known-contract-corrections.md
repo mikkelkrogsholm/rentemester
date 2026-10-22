@@ -129,3 +129,20 @@ oprindelig, unkeyed handling; der genereres ingen skjult nøgle. Oprindelige MCP
 værktøjers eksplicitte idempotencyKey er fortsat et separat porteringskrav.
 Native forretningsafvisninger bevarer deres faktiske errors/appliedRules og får
 en manglende transportkode fra den konkrete fence; kontrollerne ændres ikke.
+
+
+## Oprindelig MCP-journal og native receipts (Group161)
+
+De tre oprindelige MCP-navne, numeriske payloads, bekræftelse, envelopes og
+valgfri eksplicit nøgle er nu accepteret gennem samme Rust-motor. Group160s
+sikre selectorprioritet bevares også her: ID, derefter præcist nummer, derefter
+entydig tekst med filtre. Kildens LIMIT1/fallback må ikke reversere en anden
+postering ved tvetydig tekst eller et ukendt eksplicit nummer.
+
+Den nye receipt binder det validerede rå business-input med formatet
+`rentemester-original-journal-mcp/1`, før selectors opløses. Det er ikke en
+påstand om samme hashbytes som gamle TypeScript-receipts. Den eksisterende
+import-/restore-reconciliationkontrol bevares, og historiske nøgler må ikke
+genudstedes. Kodeløse kildeafvisninger kan fortolkes ved HTTP200; HTTP422
+kræver fortsat en gyldig serverkode. Regnskabs- og adgangskontroller svækkes
+ikke for at opnå transportparitet.

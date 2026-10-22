@@ -14,7 +14,7 @@ export function createOriginalJournalProof(page: Page, base: string, work: strin
   return createProof(page, base, work, member, true);
 }
 
-function createProof(page: Page, base: string, work: string, member: Page, originalJournal: boolean) {
+export function createProof(page: Page, base: string, work: string, member: Page, originalJournal: boolean, mcp?: any) {
   const prefix = '/api/companies/synthetic/', ownerFile = join(work, 'period-original-owner.cookie'), memberFile = join(work, 'period-original-member.cookie');
   const reviews: any[] = [], refusals: any[] = [], closes: any[] = [], journalEvidence: any = {};
   let complete = false, stable: any, start = '', end = '', year = '', periodId = 0, closeHash = '';
@@ -36,6 +36,7 @@ function createProof(page: Page, base: string, work: string, member: Page, origi
     return v;
   }
   function journalCli(operation: string, flags: Record<string, string | number>, denied = false) {
+    if (mcp) return mcp.journal(operation, flags, denied, ownerFile);
     const r = spawnSync(join(work, 'rentemester-rust'), ['journal', operation, '--server', base, '--allow-loopback-http', '--cookie-file', ownerFile, '--company', 'synthetic', '--json', ...Object.entries(flags).flatMap(([k, v]) => ['--' + k, String(v)])], { encoding: 'utf8', timeout: 45000, maxBuffer: 16 * 1024 * 1024 });
     need(!r.error && r.status === (denied ? 1 : 0), 'original journal ' + operation + ' exact exit: ' + r.stdout.slice(0, 1500));
     const secret = readFileSync(ownerFile, 'utf8');
@@ -96,6 +97,7 @@ function createProof(page: Page, base: string, work: string, member: Page, origi
         const posted = journalCli('post', { input: file });
         need(['entryId', 'entryNo', 'entryHash'].every(k => posted[k] === dryRun[k]), 'provisional identity/no/hash equals first post');
         Object.assign(journalEvidence, { input, file, dryRun, posted, rollback: { before, after, fingerprint: fingerprint(before) }, post: await rollbackState() });
+        if (mcp) journalEvidence.keyedPost = await mcp.afterPost(input, posted, ownerFile, rollbackState);
       } else await journal('synthetic-original-period-change', 'Synthetic original period source change');
       const changed = readiness(); need(changed.hash !== first.packet.hash, 'posted source changes hash');
       const stale = await refusal('review', { ...bounds(), 'packet-hash': first.packet.hash, confirm: 'yes' }, 'PERIOD_CLOSE_PACKET_STALE_OR_MISSING'); need(stale.packetHash === changed.hash, 'current stale hash');
@@ -113,6 +115,7 @@ function createProof(page: Page, base: string, work: string, member: Page, origi
         const reversal = journalCli('reverse', { 'entry-id': journalEvidence.posted.entryId, 'entry-no': 'IGNORED-BY-ID-PRIORITY', date: end, reason: 'Synthetic original journal correction' });
         need(reversal.originalEntryId === journalEvidence.posted.entryId, 'entry-id priority original reversal');
         Object.assign(journalEvidence, { reversal, reversed: await rollbackState() });
+        if (mcp) journalEvidence.keyedReverse = await mcp.afterReverse(reversal, ownerFile, rollbackState);
         await journalRefusal('reverse', { 'entry-no': journalEvidence.posted.entryNo, date: end, reason: 'Duplicate must refuse while open' });
       } else await journal('synthetic-original-period-correction', 'Synthetic original period correction');
       const corrected = review(); need(close(corrected).periodId === periodId, 'reclose keeps original row'); closeHash = corrected.packet.hash;
@@ -132,13 +135,16 @@ function createProof(page: Page, base: string, work: string, member: Page, origi
       await post('/api/workspace/members/company', { userId: memberId, action: 'revoke', companySlug: 'synthetic' });
       const beforeRevoked = await books(); need((await member.request.get(base + prefix + 'periods/original/status?reviewId=' + first.id)).status() === 403, 'current revoked status access');
       cli('status', { 'review-id': first.id }, true, memberFile); cli('review', { ...bounds(), 'packet-hash': closeHash, confirm: 'yes' }, true, memberFile); await unchanged(beforeRevoked, 'revoked member');
+      if (mcp) await mcp.revoked(memberFile, rollbackState);
       stable = await books(); complete = true;
       return { qualified: true, ordinaryMfa: true, originalPeriodQualified: true, ...(originalJournal ? { originalJournalQualified: true, journalEvidence, journalFingerprints: { dryRun: fingerprint(journalEvidence.dryRun), provisional: fingerprint({ entryId: journalEvidence.dryRun.entryId, entryNo: journalEvidence.dryRun.entryNo, previousHash: journalEvidence.dryRun.previousHash, entryHash: journalEvidence.dryRun.entryHash }), post: fingerprint(journalEvidence.post), reversal: fingerprint(journalEvidence.reversed) } } : {}), currentRevocationRefused: true, year, start, end, periodId, closeHash, reference, reviews, closes, refusals, accountingFingerprint: fingerprint(stable), installedNativeQualified: false, sourceFreeRestoreQualified: false, externalFilingQualified: false };
     },
     async reopen() {
       need(complete, 'completed fixture'); await cookie(page, ownerFile); await historical(); await unchanged(stable, 'exact normal MFA restart');
+      // Exact state is checked FIRST, before intentional replay diagnostics append audit.
+      const receiptRestart = mcp ? await mcp.restart(ownerFile, rollbackState) : undefined;
       rmSync(ownerFile); rmSync(memberFile);
-      return { qualified: true, ordinaryMfa: true, exactNormalMfaRestartState: true, accountingFingerprint: fingerprint(stable), reviews, installedNativeQualified: false, sourceFreeRestoreQualified: false, externalFilingQualified: false };
+      return { qualified: true, ordinaryMfa: true, exactNormalMfaRestartState: true, ...(mcp ? { receiptRestart } : {}), accountingFingerprint: fingerprint(stable), reviews, installedNativeQualified: false, sourceFreeRestoreQualified: false, externalFilingQualified: false };
     },
   };
 }

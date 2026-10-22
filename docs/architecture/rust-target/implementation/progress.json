@@ -1,15 +1,15 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "Group160 original journal CLI dry-run/post/reverse and actual locked-period correction/restart accepted by lead",
-  "code_revision": "7bac700f1a60cabd72fc936b312624a454cc4867",
+  "current_increment": "Group161 original MCP journal dryrun/keyedpost/replay/conflict/reversal and exact normal-MFA restart accepted",
+  "code_revision": "d1a0af7c33b2e26f0d428d97f5f936663a147429",
   "spec_revision": "sha256:8979030956647a0f03266c50d42786b5d33ab71a59c78528203d223226171e72",
-  "state": "Group160 ACCEPTED by lead: original numeric journal file→same native insertion/full rollback dry-run→unkeyed post→original period close/post refusal→reopen→atomic original selector reversal/duplicate refusal→normal-MFA exact restart. Native current human/service gates and keyed APIs preserved. Actual2journals4lines0docs0bank;3reported periods6reviews6decisions.21 scoped tests plus1 ignored reversal subprocess helper, six-package strict and pinned build PASS at c1ba. Actual flow/restart completed; harness then failed terminal reporting due evidence dict shadow. Exact fixed SQL invariant blocks independently PASS read-only on same stopped ledger, pinned source/binaries/helper/web matched, runner-only variable fix integrated without financial replay. Go run cancelled honestly after all3 deliveries integrated; final Go/harness PASS is not claimed. Full original55/J01-J07/epic672 and #716/#717 remain open, next original MCP journal names/envelopes/optional keyed receipts, remaining all-command/default-output/launcher, release/cutover/rollback/TS retirement and final installed desktop.",
+  "state": "Group161 ACCEPTED: original numeric journal_dry_run/journal_post/journal_reverse source envelopes and explicit optional keys use one common native Rust motor/receipt engine. Real stdio flow proved full dry-run rollback, keyed post/exact replay/conflict, closed-period fresh refusal, reopen and keyed reversal/replay, reclose/reported history/current revoked member refusal and exact normal-MFA restart followed by both receipt replays. Independent stopped-ledger SQL:2journals4lines, sequence2,2receipt/outcomes, no extra documents/bank or exceptions, exact reversal/hash/principal/key metadata and native4 history.34 focused tests, five-package strict and pinned build/actual PASS; SGD done and published. Full original55/672/716/717 remain OPEN; next original MCP period lifecycle/authorized force obligations, full remaining CLI/launcher/release/cutover/TS retirement/final desktop.",
   "issues_closed": [
     701
   ],
   "next": [
-    "Next necessary R45 original MCP journal whole agent flow: original numeric journal_dry_run→optional explicit keyed journal_post/exact replay/conflict→period lock/fresh refusal/reopen→atomic original journal_reverse/exact replay→normal-MFA restart and current authority. Reuse160 same writer/dry-run and existing receipt engine; bind caller business request before selector resolution, preserve unkeyed CLI/native tools, no hidden keys or second engine. Other original MCP period aliases/list/trusted force obligations remain open.",
+    "Next necessary R45 original MCP period whole agent flow: readiness/status/list under current company-read, compute-and-persist review, normal close and current authorized service force-close with exact v4 packet and durable waived open-item obligations; preserve CLI159 force refusal, nonwaivable/unavailable blockers and native aliases. Use existing schema/server/engine and finite proof.",
     "Original invoice interface inventory now has all31CLI and25MCP bindings, with explicit compatibility corrections documented; do not mistake that family inventory for full product parity. Reconcile remaining original whole-product R44/R45 acceptance from existing epic/issues: actor/env/company-path/default launcher/errors/historical receipts, closure/recovery/automation, signed distribution/update/cutover and TypeScript backend retirement. Continue next necessary whole journey, preserve all accepted evidence/full original scope; installed desktop acceptance last.",
     "Installed desktop acceptance is explicitly deferred to the very end by the user. Preserve prepared Group100 profile; collect remaining native automation, closure, recovery and packaging checks for final installed acceptance without requesting screen unlock during development.",
     "J03/R50 and remaining R54 scope: only still-supported operation closure/recovery, nonempty scheduler handoff, hostile/older clone and post-cutover rollback requirements. Group99 qualifies managed installed J06 flow, not every R54 acceptance item.",
@@ -25,9 +25,9 @@
   ],
   "all_goal_requirements_complete": false,
   "previous_verified_increment": {
-    "name": "Group159 five original period CLI commands and actual reviewed close/reopen/reported/restart journey accepted",
-    "code_revision": "e572df13e2ebd9b832cf47a573350a44c8a8b5d0",
-    "evidence_key": "original_period159"
+    "name": "Group160 original journal CLI dry-run/post/reverse and actual locked-period correction/restart accepted by lead",
+    "code_revision": "7bac700f1a60cabd72fc936b312624a454cc4867",
+    "evidence_key": "original_journal160"
   },
   "evidence": {
     "combined_browser_log": "/tmp/rm-platform5-combined.log",
@@ -9113,6 +9113,55 @@
         "Original MCP named tools/optional keyed writes remain open; default launcher, full265CLI/55issues, release/cutover/TS retirement and final installed desktop remain open.",
         "No additional positive original document/VAT/FX, source-free restore or external filing claim."
       ]
+    },
+    "original_journal_mcp161": {
+      "issue": 717,
+      "status": "ACCEPTED finite original MCP journal whole flow; full issue/epic OPEN",
+      "source_revision": "d1a0af7c33b2e26f0d428d97f5f936663a147429",
+      "sgd_run": "rust-original-journal-mcp161-20261022T142249.089126000",
+      "engine_phase": "done",
+      "sgd_final_acceptance_passed": true,
+      "actual_report": "/tmp/rentemester-rust-reports/original-journal-mcp161-actual.json",
+      "actual_report_sha256": "04f47b0f3e6e5d6d80df1a31656f1a917212bdc775f0984ebc2d645d7efcd8e1",
+      "tests": [
+        {
+          "check": "core",
+          "passed": 17,
+          "failed": 0
+        },
+        {
+          "check": "mcp",
+          "passed": 13,
+          "failed": 0
+        },
+        {
+          "check": "cli-regression",
+          "passed": 4,
+          "failed": 0
+        }
+      ],
+      "strict": "client/mcp/application/host/server --all-targets -D warnings",
+      "actual_counts": {
+        "documents": 0,
+        "bank_transactions": 0,
+        "journal_entries": 2,
+        "journal_lines": 4
+      },
+      "accepted_receipts": 2,
+      "exact_normal_mfa_restart": true,
+      "receipt_restart_same_outcomes": true,
+      "scope_limits": [
+        "Actual current human cookie journey; current human/service grants, revoked service and expired/restored receipt guards covered by focused application tests. No new actual service-MCP or signed-restore qualification.",
+        "Native raw business intent version is not a claim of byte-identical historical TypeScript receipt hashes; imported reconciliation requirements retained.",
+        "Original period MCP names/list/authorized force obligations, remaining CLI/default launcher/output, all original55 issues, release/cutover/rollback/TS retirement and final installed desktop remain open."
+      ],
+      "failures_preserved": [
+        "Initial missing company membership in test fixture repaired without permission weakening.",
+        "Strict uncoded422 client regression caught in source review; code-less source inference limited to HTTP200.",
+        "Combined strict rejected three equivalent keyed-validator lint forms; scoped30bba920 repair reviewed and integrated, original failure retained."
+      ],
+      "report": "/tmp/rentemester-rust-reports/original-journal-mcp161.json",
+      "report_sha256": "1a9dacc6f0ae81cff7060a7fa19807565cd42dd12a342bc0d610ed0869257f04"
     }
   },
   "verified_history": [
@@ -10808,6 +10857,12 @@
       "name": "Group160 original journal CLI flow",
       "code_revision": "7bac700f1a60cabd72fc936b312624a454cc4867",
       "evidence_key": "original_journal160"
+    },
+    {
+      "increment": "Group161",
+      "code_revision": "d1a0af7c33b2e26f0d428d97f5f936663a147429",
+      "evidence_key": "original_journal_mcp161",
+      "status": "ACCEPTED finite original MCP journal whole journey; entire mission OPEN"
     }
   ],
   "scope_clarifications": [

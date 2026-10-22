@@ -19,6 +19,11 @@ pub enum Action {
     Post(ManualJournal),
     DryRun(ManualJournal),
     Reverse(Reverse),
+    Keyed {
+        action: Box<Action>,
+        key: String,
+        intent: Value,
+    },
 }
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -43,6 +48,37 @@ pub fn parse(operation: &str, bytes: &[u8]) -> Result<Action, Error> {
     let invalid = || Error::new("invalid_input", "invalid original journal request");
     if bytes.len() > 65_536 {
         return Err(invalid());
+    }
+    if matches!(operation, "keyed-post" | "keyed-reverse") {
+        let mut wire: Value = serde_json::from_slice(bytes).map_err(|_| invalid())?;
+        let object = wire.as_object_mut().ok_or_else(invalid)?;
+        let key = object
+            .remove("idempotencyKey")
+            .and_then(|v| v.as_str().map(str::to_owned))
+            .ok_or_else(invalid)?;
+        rentemester_storage::idempotency::validate_key(&key).map_err(|_| invalid())?;
+        if object.get("confirm") != Some(&json!(true)) {
+            return Err(invalid());
+        }
+        let plain = if operation == "keyed-post" {
+            "post"
+        } else {
+            "reverse"
+        };
+        let action = parse(plain, &serde_json::to_vec(&wire).map_err(|_| invalid())?)?;
+        let mut business = wire;
+        business
+            .as_object_mut()
+            .ok_or_else(invalid)?
+            .remove("confirm");
+        validate_keyed_business(plain, &business)?;
+        let intent = json!({"format":"rentemester-original-journal-mcp/1", "request":business});
+        rentemester_storage::idempotency::canonical_payload_hash(&intent).map_err(|_| invalid())?;
+        return Ok(Action::Keyed {
+            action: Box::new(action),
+            key,
+            intent,
+        });
     }
     if operation == "reverse" {
         let value: Reverse = serde_json::from_slice(bytes).map_err(|_| invalid())?;
@@ -91,6 +127,7 @@ fn apply(
             )
             .map(|r| r.result)
         }
+        Action::Keyed { .. } => Err(Error::new("invalid_input", "nested keyed action refused")),
         Action::Reverse(input) => {
             let selector = Selector {
                 entry_id: input.entry_id,
@@ -141,6 +178,24 @@ fn operation(
     action: Action,
     business: &mut Option<Value>,
 ) -> Result<Value, Error> {
+    if let Action::Keyed {
+        action,
+        key,
+        intent,
+    } = action
+    {
+        return keyed(
+            tx,
+            subject,
+            kind,
+            clock,
+            max_future_days,
+            *action,
+            &key,
+            &intent,
+            business,
+        );
+    }
     if let Action::DryRun(request) = action {
         let version = rentemester_storage::journal_preview::manual_journal_rule_version()?;
         let input = journal_post::Input {
@@ -230,6 +285,9 @@ pub fn service(
         },
     )
 }
+
+mod keyed;
+use keyed::{keyed, validate_keyed_business};
 
 #[cfg(test)]
 mod tests;

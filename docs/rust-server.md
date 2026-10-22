@@ -3589,3 +3589,31 @@ bogføring. Den oprindelige harness-exit og annullerede Go-kørsel bevares ærli
 der påstås ingen grøn samlet harness-kvittering. Hovedagentens samlede accept er
 revisionbundet i progress.json → original_journal160. Oprindelige MCP-navne og
 valgfrie nøglekvitteringer, hele epic'en og sidste desktopaccept er stadig åbne.
+
+
+## Oprindelig manuel journal via MCP (Group161)
+
+`journal_dry_run`, `journal_post` og `journal_reverse` bruger samme Rust-motor
+og numeriske input som de oprindelige værktøjer. `confirm:true` kræves før
+skrivning; manglende bekræftelse giver den oprindelige `CONFIRM_REQUIRED`-envelope
+før HTTP. Valgfri eksplicit `idempotencyKey` vælger de additive keyed-ruter;
+uden nøgle anvendes de eksisterende unkeyed-ruter uden skjulte nøgler.
+Resultatets tekst og structuredContent er ens; core-felter ligger under `data`,
+og en keyed succes har præcis replayed, receiptId, createdAt og expiresAt.
+
+Hele det validerede oprindelige business-input indgår i en versioneret native
+receipt før selector-opslag. Eksakt replay virker derfor efter reversering og
+periodelukning; ændret input afvises, også hvis et ændret selector-felt har
+lavere prioritet. Aktuelle menneske- og servicegrants samt schema-, historie-
+og restorekontroller gælder før opslag. Et afvist nyt forsøg opretter ingen
+receipt. Historiske importerede receipts omfortolkes ikke som nye; den native
+reconciliationkontrol og udløbne tombstones bevares. Replay kan tilføje
+diagnostisk audit, men ingen ny postering, linje, sekvens eller outcome.
+
+Den faktiske stdio-prøve med almindelig MFA, lukning/genåbning, reversering,
+aktuel medlemsafvisning og eksakt genstart består. Begge receipts genafspilles
+efter genstart med samme outcome og tidsstempler. Uafhængig SQL bekræfter to
+posteringer, fire modsat rettede linjer og to receipts/outcomes.34 målrettede
+tests, strict Clippy og den samlede SGD-accept består. Oprindelige MCP-
+periodealiaser, autoriseret force/obligationsforløb og hele omskrivningens
+øvrige slutkrav er fortsat åbne; manuel installeret desktopaccept ligger sidst.
