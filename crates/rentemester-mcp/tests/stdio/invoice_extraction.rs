@@ -10,25 +10,24 @@ fn invoice_extraction_tools_publish_exact_source_names_bounds_and_confirmation()
         ],
     ));
     let tools = rows[1]["result"]["tools"].as_array().unwrap();
-    assert_eq!(tools.len(), 225);
+    assert_eq!(tools.len(), 319);
     for (name, read) in [
         ("documents_invoice_extraction", true),
         ("documents_extract_invoice", false),
     ] {
         let t = tools.iter().find(|t| t["name"] == name).unwrap();
         assert_eq!(t["annotations"]["readOnlyHint"], read);
-        assert_eq!(t["annotations"]["idempotentHint"], read);
+        assert_eq!(t["annotations"]["idempotentHint"], true);
         assert_eq!(t["inputSchema"]["additionalProperties"], false);
         assert_eq!(
             t["inputSchema"]["properties"]["documentId"],
             json!({"type":"integer","minimum":1,"maximum":9007199254740991u64})
         );
-        let mut required = vec![json!("company"), json!("documentId")];
+        let required = vec![json!("company"), json!("documentId")];
         if !read {
-            required.push(json!("confirm"));
             assert_eq!(
                 t["inputSchema"]["properties"]["confirm"],
-                json!({"const":true})
+                json!({"type":"boolean"})
             );
         } else {
             assert!(t["inputSchema"]["properties"].get("confirm").is_none());
@@ -113,7 +112,7 @@ fn invoice_extraction_stdio_exact_post_and_read_preserve_full_evidence_without_l
         ("documents_extract_invoice", "POST", "extract-invoice"),
         ("documents_invoice_extraction", "GET", "invoice-extraction"),
     ] {
-        let value = json!({"ok":true,"extraction":{"status":"needs_resolution","duplicate":false,"fields":{"grossAmount":{"value":12.34,"confidence":0.79,"sourceText":"Original cited gross","page":1}},"resolutions":[{"fieldKey":"extraction_status","value":{"status":"needs_resolution","errors":["buyer conflict"]}}],"futureProof":{"sourceHash":"a".repeat(64)}}});
+        let value = json!({"ok":true,"extraction":{"attemptId":1,"documentId":7,"status":"needs_resolution","originalHash":"a".repeat(64),"fields":[{"key":"grossAmount","value":12.34,"confidence":0.79,"sourceText":"Original cited gross","page":1}],"resolutions":[{"fieldKey":"extraction_status","value":{"status":"needs_resolution","errors":["buyer conflict"]}}],"conflicts":["buyer conflict"],"exceptionState":{"id":1,"status":"open"}}});
         let reply = value.to_string();
         let response = format!(
             "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{reply}",
@@ -128,13 +127,19 @@ fn invoice_extraction_stdio_exact_post_and_read_preserve_full_evidence_without_l
             &origin,
             &[init("2025-11-25"), ready(), call(2, name, args)],
         ));
-        assert_eq!(rows[1]["result"]["structuredContent"]["data"], value);
+        assert_eq!(
+            rows[1]["result"]["structuredContent"]["data"],
+            json!({"extraction":value["extraction"]})
+        );
         let wire = request
             .recv_timeout(std::time::Duration::from_secs(5))
             .unwrap();
-        assert!(wire.starts_with(
-            format!("{method} /api/companies/synthetic/documents/7/{path} HTTP/1.1").as_bytes()
-        ));
+        assert!(
+            wire.starts_with(
+                format!("{method} /api/companies/synthetic/documents/original/7/{path} HTTP/1.1")
+                    .as_bytes()
+            )
+        );
         let split = wire.windows(4).position(|w| w == b"\r\n\r\n").unwrap() + 4;
         if method == "POST" {
             assert_eq!(&wire[split..], br#"{"confirm":true}"#);
@@ -149,7 +154,7 @@ fn invoice_extraction_disabled_is_canonical_but_other_temporary_write_failures_s
     for (status, body, code) in [
         (
             503,
-            r#"{"ok":false,"code":"EXTRACTION_PROVIDER_UNAVAILABLE"}"#,
+            r#"{"ok":false,"errors":["EXTRACTION_PROVIDER_UNAVAILABLE"]}"#,
             None,
         ),
         (
@@ -158,7 +163,11 @@ fn invoice_extraction_disabled_is_canonical_but_other_temporary_write_failures_s
             Some("outcome_unknown"),
         ),
         (200, "not-json", Some("outcome_unknown")),
-        (403, r#"{"ok":false,"code":"access_denied"}"#, None),
+        (
+            403,
+            r#"{"ok":true,"extraction":null}"#,
+            Some("server_refused"),
+        ),
     ] {
         let response = format!(
             "HTTP/1.1 {status} Fixture\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{body}",
@@ -179,13 +188,10 @@ fn invoice_extraction_disabled_is_canonical_but_other_temporary_write_failures_s
         ));
         assert_eq!(rows[1]["result"]["isError"], true);
         if let Some(code) = code {
-            assert_eq!(
-                rows[1]["result"]["structuredContent"]["error"]["code"],
-                code
-            );
+            assert_eq!(rows[1]["result"]["structuredContent"]["code"], code);
         } else {
             assert_eq!(
-                rows[1]["result"]["structuredContent"]["data"],
+                rows[1]["result"]["structuredContent"],
                 serde_json::from_str::<Value>(body).unwrap()
             );
         }
@@ -193,8 +199,50 @@ fn invoice_extraction_disabled_is_canonical_but_other_temporary_write_failures_s
             request
                 .recv_timeout(std::time::Duration::from_secs(5))
                 .unwrap()
-                .starts_with(b"POST /api/companies/synthetic/documents/7/extract-invoice HTTP/1.1")
+                .starts_with(
+                    b"POST /api/companies/synthetic/documents/original/7/extract-invoice HTTP/1.1"
+                )
         );
         task.join().unwrap();
+    }
+}
+#[test]
+fn original_extraction_confirmation_envelope_and_rpc_argument_errors() {
+    for args in [
+        json!({"company":"synthetic","documentId":7}),
+        json!({"company":"synthetic","documentId":7,"confirm":false}),
+    ] {
+        let rows = parsed(&run(
+            "http://127.0.0.1:9",
+            &[
+                init("2025-11-25"),
+                ready(),
+                call(2, "documents_extract_invoice", args),
+            ],
+        ));
+        let r = &rows[1]["result"];
+        assert_eq!(r["isError"], true);
+        assert_eq!(r["structuredContent"]["code"], "CONFIRM_REQUIRED");
+        assert!(r["structuredContent"].get("data").is_none());
+        assert_eq!(
+            serde_json::from_str::<Value>(r["content"][0]["text"].as_str().unwrap()).unwrap(),
+            r["structuredContent"]
+        );
+    }
+    for args in [
+        json!({"company":" ","documentId":7,"confirm":true}),
+        json!({"company":"synthetic","documentId":7,"confirm":null}),
+        json!({"company":"synthetic","documentId":7,"confirm":true,"expectedActor":"user:forged"}),
+        json!({"company":"synthetic","documentId":7,"confirm":true,"principal":"forged"}),
+    ] {
+        let rows = parsed(&run(
+            "http://127.0.0.1:9",
+            &[
+                init("2025-11-25"),
+                ready(),
+                call(2, "documents_extract_invoice", args),
+            ],
+        ));
+        assert_eq!(rows[1]["error"]["code"], -32602);
     }
 }
