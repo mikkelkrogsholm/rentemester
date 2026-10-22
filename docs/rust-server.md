@@ -3439,3 +3439,28 @@ Den lokale operatør kan sætte `recurringEmailDryRun: {SLUG: {host,port,fromAdd
 Alle nye delivery-events bindes til generation, original hash, autentificeret actor og leveringsmode gennem en kanonisk auditpost. Signeret backup validerer denne sammenhæng. Historiske events bliver ikke nye tilladelser ved gendannelse.
 
 Group155 er accepteret for den beskrevne menneskelige workspace-kørsel. Faktiske CLI/MCP/HTTP-processer har verificeret fejlisolering mellem virksomheder, cap2/fortsættelse, seks generationer, tolv originale filer, én e-mail-prøvekørsel uden SMTP og identisk tilstand efter genstart. En separat profil med normal MFA og lokal TLS-testudbyder har verificeret to offentlige generationer: manglende tilmelding giver preflight-afvisninger uden reservation; efter eksplicit tilmelding sendes hver faktura én gang. Et ventende ID bekræftes med ét GET, og det tvetydige udfald genafsendes aldrig, heller ikke efter gendannelse. Syv typede recurring-events og hele SQL-/originalhistorikken bevares i fire uafhængigt verificerede signerede snapshots gennem source-free gendannelse med ny ejer og ny MFA-genåbning. Kilde-/målmapper og private signeringsnøgler er fjernet før sidste uafhængige kontrol; operatørcredentials genbruges ikke. Arkiveret/uinitaliseret klassifikation er verificeret i det faktisk åbnede host-katalog uden filoprettelse; serverens skip-mapping er kontrolleret i koden. Aktuel medlemsrevokation og backupspærring før plan/generering/reservation/events er dækket af målrettede hosttests. Dette er ikke en påstand om browsertest af ændrede manifests, service-workspace-paritet eller ny live SMTP-automatik. Hele omskrivningen, resterende oprindelige kontraktforskelle og sidste installerede desktopaccept er åbne.
+
+
+## Oprindelige momssatser og valgfri reverse-note (Group156)
+
+Fulde originale fakturaer bruger linjens momssats og ellers `totals.vatRate` som
+fallback. Udstedelse, gemte JSON/PDF-originaler og tilbagevendende generering
+bevarer de faktiske beløb, også ved andre positive eller blandede satser.
+En eksplicit reverse-charge-basis kræver fortsat korrekt klassifikation og
+nulmoms, men den valgfrie fritekst kan udelades.
+
+En momssats uden understøttet bogføringsklassifikation afvises før bogføring
+eller kreditnota med `unsupported_invoice_vat_classification`. Den oprindelige
+CLI bevarer den validerede serverfejl og exit1; MCP giver samme forretningsafvisning.
+Ugyldige svar bliver ikke til succes, og408/5xx/afbrudte skriveresultater kræver
+fortsat afstemning frem for automatisk gentagelse.
+
+Det faktiske forløb har verificeret to skabeloner, fire generationer og otte
+originale filer gennem kilde-CLI/MCP og næste periode via web-API.20%-fakturaen
+bevarer total120; fakturaen med omvendt betalingspligt bevarer total100 uden
+fritekst. Kun den sidste bogføres: én journal med to linjer. Alle tidligere
+posteringer, bankdata og originaler samt det samlede resultat er uændrede efter
+genstart. En indledende CLI-fejl i fejlkoden blev rettet, hvorefter prøven
+fortsatte fra de eksisterende dokumenter uden ny generering. Ny MFA-fornyelse
+og signeret gendannelse er ikke påstået for denne prøve. Hele epic'en og den
+sidste installerede desktopaccept er fortsat åbne.

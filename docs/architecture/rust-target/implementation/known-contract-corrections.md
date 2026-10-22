@@ -52,3 +52,34 @@ beregning og korrektion. Native beregning og korrektion bruger én fælles
 kildebevidst vinduesfunktion. Dette ændrer ingen rentetabel eller manuelt
 valgt rate. Den målrettede motorregression er
 `table_halfyears_and_old_claims_share_the_same_windows`.
+
+## Fakturaens momssats og bogføringsklassifikation
+
+Kildens `src/core/vat-lines.ts` og `issued-invoices.ts` understøtter positive
+momssatser på fulde fakturaer og beregner de konkrete linjebeløb. Linjens
+`vatRate` har forrang; `totals.vatRate` er en fallback. Rust bevarer denne
+beregning ved udstedelse, PDF, læsning og tilbagevendende generering, inklusive
+blandede satser. En fuld faktura med grundlag100 og sats0,2 har derfor moms20
+og total120; den må ikke ændres til125 ved næste periodes generering.
+
+Kildens `invoice-booking.ts` mærker derimod alle taxable linjer som
+`DK_SALE_25`. Det er en regnskabsfejl, når satsen ikke er25%. Den native
+momsrapport forventer25% af netop dette grundlag. Rust skelner derfor mellem
+validerede fakturabeløb og en understøttet bogføringsklassifikation. En ukendt
+klassifikation giver `unsupported_invoice_vat_classification` før ny
+bogføring eller kreditnota. Dokumentet kan fortsat udstedes, læses og indgå i
+backup. Revisionskontrol og kreditnotaernes historiske gren må heller ikke
+opfatte en forkert25%-mærkning som en gyldig tilladelse til nye posteringer.
+De eksisterende25%-, fritagelses- og reverse-charge-koder bevarer deres
+regnskabsmæssige betydning. Reduced simplified-fakturaens indeholdte25%-kontrakt
+bevares særskilt.
+
+## Valgfri fritekst ved omvendt betalingspligt
+
+Kildens validator og den eksisterende positive differentialfixture tillader
+en eksplicit reverse-charge-basis uden `reverseChargeNote`. Rusts krav om
+både basis og fritekst var derfor en porteringsfejl. Struktureret basis,
+korrekt retning, de nødvendige linjebeslutninger, nulmoms og afstemte totaler
+kræves fortsat. En angivet fritekst valideres og bevares; ved udeladelse viser
+nye PDF'er standardteksten om omvendt betalingspligt fra den eksplicitte
+beslutning. Allerede gemte originale filer genbruges uændret.

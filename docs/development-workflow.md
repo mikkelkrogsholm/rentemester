@@ -1,8 +1,23 @@
 # Rust-omskrivningens arbejdsgang
 
 GitHub-issues under [epic #672](https://github.com/mikkelkrogsholm/rentemester/issues/672)
-er autoritative for opgavestatus. Bevar de eksisterende 55 issues, deres fulde
+er autoritative for leverancestatus. Bevar de eksisterende 55 issues, deres fulde
 acceptkriterier og afhængigheder. Der oprettes ikke et nyt parallelt board.
+
+Den lokale udførelse bruger State Graph Development: GDD beskriver kontrakter,
+Graphify giver kodeobservationer, og Go-værktøjet ejer `.sgd/state.json` for den
+aktuelle afgrænsede leverance. Docker Agent-workers arbejder i egne worktrees.
+Dette er ikke en kopi af produktbackloggen. Hovedagenten reviewer faktisk kode,
+kontrollerer integreret accept og opdaterer først derefter GitHub-leverancestatus.
+
+Uafhængig udvikling og Rust-bygninger må køre parallelt med separate absolutte
+`CARGO_TARGET_DIR` og ressourcebestemte `CARGO_BUILD_JOBS`. Der er ingen global
+compilerkø. Byggewrapperen bevarer 30/15 GiB-grænserne på kilde- og byggevolumen,
+outputvalidering og eksisterende data. Brug aftalte checks med faktisk tilgængelige
+programmer; projektets `scripts/rust/cargo-guard.py cargo ...` finder den installerede
+Cargo også når den ikke står på runnerens `PATH`. En fejlet check-opstart er ikke
+et fejlet Rust-testresultat. Bevar fejl og afleveret kode; gentag ikke modelarbejdet
+for at rette en testkommando.
 
 ```text
 flow:backlog → flow:ready → flow:developing → flow:integrating → flow:acceptance → flow:done
@@ -69,10 +84,13 @@ statusovergange mod de eksisterende GitHub-issues. Overgange kræver en
 begrundelse; acceptance/done kræver også en evidensreference. Statusændringen
 bevarer øvrige labels og skriver et spor i issue-kommentarerne.
 
-Git-hooks kræver en lokal arbejdspakke med issue, ejer, tilladte filstier,
+Git-hooks kræver en afgrænset arbejdspakke med issue, ejer, tilladte filstier,
 accept og checks. `pre-commit` afviser staged ændringer uden for filansvaret;
-`commit-msg` kræver `Work-Issue: #NUMMER`, der matcher pakken. Pakken ligger i
-det enkelte worktrees Git-metadata og bliver ikke et ekstra opgaveboard.
+`commit-msg` kræver `Work-Issue: #NUMMER`, der matcher pakken. I SGD læser hooks
+den aktuelle `dispatch.json` via `SGD_WORK_PACKAGE`, `SGD_TASK_ID` og `SGD_PHASE`.
+Issue kommer fra opgavens `commit_trailers`; ejerskab og checks kommer fra den
+samme dispatch. Der oprettes ingen ekstra opgavestatus. Ved hovedagentens manuelle
+arbejde kan pakken fortsat ligge i det enkelte worktrees Git-metadata.
 Hooks har ingen netværksafhængighed. Installation bevarer eksisterende
 Graphify-hooks og afviser synligt at overskrive andre hooks.
 
@@ -129,7 +147,7 @@ Luk først med `move 701 done`, når **hele** issuets oprindelige accept er
 opfyldt; også denne overgang kræver `--reason` og `--evidence`.
 En konkret acceptfejl bruger `move 701 developing --reason 'Den påviste fejl'`.
 Installér hooks én gang pr. clone; Git deler dem med linked worktrees.
-Arbejdspakken oprettes separat i hvert worktree. Gamle branches uden
+SGD leverer arbejdspakken automatisk; manuelle pakker oprettes separat i hvert worktree. Gamle branches uden
 workflow-scriptet er undtaget, så installationen ikke ødelægger andet arbejde.
 
 Lokale workflowtests:
