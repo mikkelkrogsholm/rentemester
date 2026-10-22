@@ -26,6 +26,7 @@ fn boolean(name: &str) -> bool {
             | "--example"
             | "--json"
             | "--sign-with-ed25519"
+            | "--archived"
             | "--archive"
             | "--enrich-cvr"
             | "--include-archived"
@@ -39,7 +40,8 @@ fn boolean(name: &str) -> bool {
 }
 
 fn migrated(args: &[String]) -> bool {
-    crate::exceptions_original::accepts(args)
+    crate::master_data_original::accepts(args)
+        || crate::exceptions_original::accepts(args)
         || crate::journal_original::accepts(args)
         || crate::period_original::accepts(args)
         || crate::recurring_original::accepts(args)
@@ -125,7 +127,9 @@ pub fn prepare(args: Vec<String>) -> Result<Vec<String>, (u8, Error)> {
         && command.first().is_some_and(|s| {
             matches!(
                 s.as_str(),
-                "exceptions"
+                "customer"
+                    | "vendor"
+                    | "exceptions"
                     | "period"
                     | "journal"
                     | "invoice"
@@ -199,9 +203,14 @@ pub fn prepare(args: Vec<String>) -> Result<Vec<String>, (u8, Error)> {
     }
     // Source precedence: --json wins regardless of its position; the last
     // --format otherwise wins. Human is the adapters' existing no-json mode.
-    // Preserve the source human request for the exceptions family, whose
+    // Preserve explicit human intent for source families whose
     // default distinguishes a terminal report from piped flat JSON.
-    if !json && format == Some("human") && output.first().is_some_and(|s| s == "exceptions") {
+    if !json
+        && format == Some("human")
+        && output
+            .first()
+            .is_some_and(|s| matches!(s.as_str(), "exceptions" | "customer" | "vendor"))
+    {
         output.extend(["--format".into(), "human".into()]);
     }
     if json || format == Some("json") {
