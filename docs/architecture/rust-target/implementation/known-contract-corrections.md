@@ -117,3 +117,15 @@ forespørgsler med brugsfejl, så de ikke ignoreres og bliver til en almindelig
 lukning. Den oprindelige autentificerede MCP-vej kan have en levende force-
 rettighed. Dens positive waiver-/obligationsforløb er stadig et åbent
 porteringskrav; CLI-rettelsen fjerner det ikke fra epicens scope.
+
+
+## Manuel journal og serverejet attribution
+
+Group160 accepterer originale numeriske journal-input gennem den fælles Rust-
+writer. Caller-felterne createdBy/createdByProgram afvises eksplicit. Aktuel
+serverprincipal ejer attribution; hverken fri tekst eller et import-programnavn
+giver identitetsrettigheder eller fritagelse fra bilagskravet. CLI-kaldet er en
+oprindelig, unkeyed handling; der genereres ingen skjult nøgle. Oprindelige MCP-
+værktøjers eksplicitte idempotencyKey er fortsat et separat porteringskrav.
+Native forretningsafvisninger bevarer deres faktiske errors/appliedRules og får
+en manglende transportkode fra den konkrete fence; kontrollerne ændres ikke.

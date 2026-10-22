@@ -3558,3 +3558,34 @@ Sluttilstanden har2 journaler/4 linjer,3 perioder og6 reviews/beslutninger.
 33 periodetests,217 CLI-tests og strict Clippy bestod. Oprindelige MCP-aliaser,
 manual journal-CLI, standardlauncher, hele epic'en og endelig installeret
 desktopaccept er fortsat åbne. Evidens: progress.json → original_period159.
+
+
+## Oprindelig manuel journal via CLI (Group160)
+
+`journal post --input FILE`, `journal dry-run --input FILE` og `journal reverse`
+med `--date`, `--reason` og ID, nummer eller præcis tekst bruger samme Rust-motor.
+Filen indeholder originale numeriske beløb/ID'er; valuta er som standard DKK,
+og udeladt debet/kredit er nul. `-` er et filnavn. Post/reverse-kaldet bekræfter
+handlingen; der er ingen ekstra confirm eller skjult idempotensnøgle. Aktuel
+cookie/serviceprincipal bestemmer identiteten. Caller-createdBy/createdByProgram
+afvises, så de ikke kan udgive sig for andre eller give importundtagelser.
+
+Dry-run udfører den rigtige indsættelse og ruller journal, linjer, sekvens, audit,
+undtagelser og kvitteringer tilbage. Resultatet har foreslået ID/nummer/hash og
+numeriske kontoeffekter sorteret efter kontonummer. Det reserverer intet.
+Tilbageførselsvalget og writer kører i samme transaktion: positivt ID har forrang,
+så nummer, så entydig præcis tekst med valgfrie dato-/bilagsfiltre. Et positivt,
+ikke-eksisterende ID giver writerens forretningsafvisning; manglende/uklart valg
+giver exit2. Forretningsafvisninger giver exit1 med originale errors/appliedRules;
+succes er flad JSON med numeriske ID'er. Ukendt skriveresultat genforsøges ikke.
+
+Prøven har gennemført dry-run/post, lukning/afvisning, genåbning/tilbageførsel,
+dobbelt tilbageførselsafvisning, historiske reviews og normal MFA-genstart.
+Slutkontrollen har2 journaler/4 linjer, ingen bilag/bankrækker/kvitteringer og
+sekvens2.21 målrettede tests og strict Clippy bestod. Rapporteringen fejlede
+bagefter på en lokal variabel, som skyggede rapportfilen; rettelsen og de præcise
+SQL-kontroller blev verificeret read-only på samme stoppede ledger uden ny
+bogføring. Den oprindelige harness-exit og annullerede Go-kørsel bevares ærligt;
+der påstås ingen grøn samlet harness-kvittering. Hovedagentens samlede accept er
+revisionbundet i progress.json → original_journal160. Oprindelige MCP-navne og
+valgfrie nøglekvitteringer, hele epic'en og sidste desktopaccept er stadig åbne.
