@@ -366,3 +366,121 @@ fn delivery_attempts_are_typed_nonreplayable_and_public_ack_cannot_be_forged() {
         0
     );
 }
+
+#[test]
+fn admitted_catalog_preserves_archived_and_uninitialized_without_creating_them() {
+    let (dir, owner, cookies, proof, uid) = setup();
+    let root = dir.path().canonicalize().unwrap().join("workspace");
+    owner.try_close().unwrap();
+    let manifest = root.join("workspace.json");
+    let mut value: serde_json::Value =
+        serde_json::from_slice(&std::fs::read(&manifest).unwrap()).unwrap();
+    value["companies"].as_array_mut().unwrap().extend([
+        json!({"slug":"b-archived","name":"Synthetic archived","createdAt":"2026-01-01T00:00:00.000Z","archived":true}),
+        json!({"slug":"c-missing","name":"Synthetic uninitialized","createdAt":"2026-01-01T00:00:00.000Z","archived":false}),
+    ]);
+    std::fs::write(&manifest, serde_json::to_vec(&value).unwrap()).unwrap();
+    let mut owner =
+        Owner::open_with_profile(&root, uid, "w", "a", NamespaceProfile::LocalUserMacos).unwrap();
+    let attempt = owner
+        .recurring_workspace_catalog(&cookies, &proof, &Fixed(NOW), "w")
+        .unwrap();
+    assert!(!attempt.retired);
+    let companies = attempt.outcome.unwrap()["companies"]
+        .as_array()
+        .unwrap()
+        .clone();
+    assert_eq!(companies.len(), 3);
+    for (slug, archived, initialized) in [
+        ("a", false, true),
+        ("b-archived", true, false),
+        ("c-missing", false, false),
+    ] {
+        let row = companies.iter().find(|row| row["slug"] == slug).unwrap();
+        assert_eq!(row["archived"], archived);
+        assert_eq!(row["initialized"], initialized);
+    }
+    assert!(!root.join("b-archived").exists());
+    assert!(!root.join("c-missing").exists());
+}
+
+#[test]
+fn opted_in_overdue_backup_blocks_plan_generation_and_delivery_before_effects() {
+    let (_dir, mut owner, _cookies, proof, _uid) = setup();
+    prepare_profile(&mut owner);
+    let template = create(&mut owner, &proof, "digisense");
+    call(
+        &mut owner,
+        &proof,
+        Action::Generate {
+            template_id: template,
+            period_index: 0,
+            as_of: "2026-01-01",
+        },
+    )
+    .unwrap();
+    let generation = {
+        let slots = owner.held.0.as_mut().unwrap();
+        let control = slots.control.as_mut().unwrap().transaction().unwrap();
+        let company = slots.company.as_mut().unwrap().transaction().unwrap();
+        company.execute_batch("INSERT INTO accounts(account_no,name,type,normal_balance)VALUES('B','Synthetic bank','asset','debit');INSERT INTO bank_accounts(id,slug,name,currency,ledger_account_no)VALUES(1,'synthetic','Synthetic','DKK','B');INSERT INTO bank_transactions(transaction_date,text,amount,currency,bank_account_id)VALUES('2025-12-01','Synthetic old activity',1,'DKK',1)").unwrap();
+        rentemester_storage::backup_state::configure(
+            &control, &company, "a", true, 0, "user:u", AT,
+        )
+        .unwrap();
+        let generation: i64 = company
+            .query_row(
+                "SELECT id FROM recurring_invoice_generations WHERE template_id=?1",
+                [template],
+                |row| row.get(0),
+            )
+            .unwrap();
+        company.commit().unwrap();
+        control.commit().unwrap();
+        generation
+    };
+    let counts = |owner: &Owner| {
+        let db = owner.held.0.as_ref().unwrap().company.as_ref().unwrap();
+        [
+            "documents",
+            "recurring_invoice_generations",
+            "recurring_invoice_generation_claims",
+            "recurring_invoice_delivery_events",
+            "journal_entries",
+            "audit_log",
+        ]
+        .map(|table| {
+            db.query_row(&format!("SELECT count(*) FROM {table}"), [], |row| {
+                row.get::<_, i64>(0)
+            })
+            .unwrap()
+        })
+    };
+    let before = counts(&owner);
+    for action in [
+        Action::Plan {
+            as_of: "2026-01-01",
+            max: 2,
+        },
+        Action::Generate {
+            template_id: template,
+            period_index: 1,
+            as_of: "2026-01-01",
+        },
+        Action::Reserve {
+            generation_id: generation,
+        },
+        Action::Event {
+            generation_id: generation,
+            event_type: "preflight_failed",
+            provider_id: None,
+            message: "synthetic preflight",
+        },
+    ] {
+        assert_eq!(
+            call(&mut owner, &proof, action).unwrap_err().error.code,
+            "backup_overdue"
+        );
+        assert_eq!(counts(&owner), before);
+    }
+}
