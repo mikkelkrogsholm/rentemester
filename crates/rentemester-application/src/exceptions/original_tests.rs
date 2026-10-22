@@ -12,8 +12,9 @@ impl Clock for Fixed {
 }
 #[test]
 fn exception_original_current_service_reader_bookkeeper_reviewer_and_revoked_noop() {
-    let mut control = Connection::open_in_memory().unwrap();
-    let mut company = Connection::open_in_memory().unwrap();
+    let dir = tempfile::tempdir().unwrap();
+    let mut control = Connection::open(dir.path().join("control.sqlite")).unwrap();
+    let mut company = Connection::open(dir.path().join("company.sqlite")).unwrap();
     rentemester_storage::fresh::initialize_empty_pair(
         &mut control,
         &mut company,
