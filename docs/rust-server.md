@@ -3376,3 +3376,39 @@ fakturaer forbliver adskilt fra native fakturaer, også når de er betalt.
 Group152 er accepteret med faktisk delvis/fuld tabsføring, global audit/moms,
 uændrede originaler og genstart. Offentlig e-fakturering og det samlede
 omskrivningsmål er fortsat åbne; installeret desktopaccept udføres til sidst.
+
+## Oprindelige offentlige fakturakommandoer (Group153)
+
+`invoice export-public --out FILE` og `invoice export-public-oioubl --out FILE`
+eksporterer henholdsvis det særskilte preview-XML og OIOUBL fra den uforanderlige
+udstedte faktura. Vælg `--document-id` eller `--invoice-number`; id vinder ved
+begge. Angiv server, virksomhed og privat cookie som ved øvrige originale
+kommandoer. Filer skrives lokalt efter verificeret XML-hash; serveren modtager
+ingen filsti. Eksport kræver aktuelle dokumentrettigheder, ingen udbyder.
+OIOUBL-eksporten auditeres. Den fælles eksportør understøtter blandet/0/fritaget
+og reverse-charge-moms samt fakturavaluta uden at kræve uvedkommende FX-felter.
+Eksisterende DKK-XML og præcise enhedspriser bevares; summer repareres ikke.
+
+`invoice submit-public-peppol --access-point FILE [--out FILE]` bruger filens
+`accessPointId`, `endpointUrl`, `senderEndpointId` og eventuelle
+`acknowledgement: {transmissionId,acknowledgedAt}`. Endpoint er kun metadata.
+Forberedelsen og den udtrykkelige manuelle kvittering kræver frisk menneskelig
+MFA med ExternalSend. Samme nøgle returnerer den gemte konvolut; en senere
+acknowledgement opgraderer ikke en eksisterende forberedelse. Manuel kvittering
+spærrer for afsendelse, men bliver aldrig en native udbyderkvittering.
+En verificeret ren forberedelse spærrer ikke den senere native levering.
+
+`invoice transmit-digisense --confirm yes [--digisense-company-key KEY]`
+bruger serverens eksisterende registrering, nøgler og udbyderfaser. Det valgfrie
+KEY er kun en assertion mod den konfigurerede identitet. Første afsendelse
+returnerer `duplicate:false`; gentagne originale kald bruger den bevarede
+leveringsidentitet. Kølagt levering kan observeres én gang pr. eksplicit kald,
+uden ny levering; bekræftet levering returneres fra historikken. Accepteret fejl,
+tvetydigt udfald og manuelle/historiske kvitteringer kan ikke omgås ved nye
+access-point-oplysninger. Ingen automatiske retries eller polling-løkker.
+Native svarformat og eksisterende statuskommandoer bevares. De fire oprindelige
+kommandoer er CLI-only; der er ikke opfundet nye MCP-navne.
+
+Group153 er accepteret gennem normal MFA, faktisk syntetisk TLS-levering,
+originale klienter og fire uafhængigt verificerede signerede snapshots med
+source-free restore og genåbning. Det samlede omskrivningsmål er fortsat åbent.

@@ -1,15 +1,15 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "Group152 original bad-debt, offline invoice validation and imported receivables accepted",
-  "code_revision": "4a093d2d83cf95b3bfd206c61aeee634ed8fffe6",
+  "current_increment": "Group153 four original public invoice CLI artifacts, preparation and shared native delivery accepted",
+  "code_revision": "c30cc267afdf5b22f6c2eb337f2e6b5bd467499a",
   "spec_revision": "sha256:bc98636be4a972407adce0f817a76bb9d4bb7200cb292a70965e75ab62fae250",
-  "state": "Group152 ACCEPTED original financial invoice family adapters. Shared pure Rust invoice validator returns original verdict/rules/error ordering, no company/database/provider/number allocation,36 synthetic full source-verdict cases pass. Original bad-debt CLI payload and strict disjoint original/native MCP use existing native loss writer and held human/service sales admission. Explicit expense account replaces hidden3080 default; original debtor/VAT assertions, ID preferred when both selectors supplied, current-vs-historical VAT-role mismatch refuses before posting under existing native schema restriction. Typed service proof binds exact audit subject+journal; old human API/arithmetic unchanged. Original imported CLI optional date resolved UTC on server; fixed boundary test caught Copenhagen helper misuse and corrected to actual UTC. MCP additive direct schedule fields retain native ok/importedReceivables members, nonempty/settled rows proven. Final integrated strict seven-package all-target check and normal three binaries pass; normal build initially reused stale pre-module engine artifact, targeted guarded engine-cache clean resolved without source change. Actual retained MFA profile: pure valid/invalid CLI/MCP and imported explicit/default reads unchanged; invoice125, human originalCLI loss50(net40/VAT10), original serviceMCP remaining75(net60/VAT15), wrong historic debtor and repeat refusals unchanged; full audit33/VAT469.39, unchanged bank/payments/old rows/originals, persisted-auth restart. Independent SQL/hash/artifact verification proves exact3journals9lines2docs,100revenue/100expense/zero net VAT/debtor effect. No new MFA/service/revocation/backup claim; prior qualified recovery evidence retained. Three worker trees integrated, verified recoverable snapshots and removed. Remaining original public invoice four CLI commands and full whole-product epic scope OPEN.",
+  "state": "Group153 ACCEPTED four original public invoice CLI operations: distinct preview XML, shared OIOUBL, original deterministic PEPPOL handoff and configured native Digisense transmit/status. One extended OIOUBL exporter supports original mixed/exempt/zero/reverse/foreign-currency snapshots including EUR without irrelevant issuance FX metadata, preserving native25DKK bytes/subcent price precision. Nine original source whole-XML fixtures and prior strict arithmetic/security cases pass. Preview two whole-source byte/SHA fixtures; PEPPOL two whole-source envelope/key/hash fixtures. Original source accesspoint endpoint is artifact metadata only, never fetched. Fresh current human ExternalSend for durable preparation/manualack and actual transport; current DocumentsRead exports independently of provider. Typed audit provenance binds original handoff row/source/rawconfig/ack/actor; same-key no upgrade/replacement, safe prepared/noevents alone permits native delivery; manual/legacy/accepted/uncertain records permanently block redelivery, atomically before providerPOST. Native get/list prefers delivery authority over safe preparations, retaining all records. Native Source recipient plainEAN retained; original handoff prefixesGLN internally after diagnosed contract integration mismatch. Original first-vsduplicate flags truthful; actual test found native response compatibility regression, fixed only originalfirst flag while native cached first/repeated outputs remain exact. New native regression passes. Full eight-package all-target strict check plus targeted app/host check after fix and normal three binaries pass. Actual ordinary normalMFA profile with verified localTLS provider: original preview/OIOUBL exactfiles/hashes from immutable issued snapshot after contactedit; original preparation repeat and ignored lateack; separate manualack no providercall; key mismatch refusal; original queued send exactlyonce, queued repeat accepted-ID GET only then cached delivered. Native terminal/uncertain/validation/revocation behavior retained. Exactly3native+2original rows,3deliveries,no journals/lines. Four signed complete SQL/original snapshots independently verified; original preview/duplicate/manual refusal persist under source restart and fresh-owner source-free restore/reopen with provider credentials absent. Initial failed proof/scripts retained; fixed proof uses new isolated profile, no real external effects. All4worker trees integrated and recoverably removed. Entire epic and remaining original whole-product R44/R45/recovery/automation/release/TypeScript retirement/final desktop scope OPEN.",
   "issues_closed": [
     701
   ],
   "next": [
-    "Complete original public invoice family153: both distinct XML exports, PEPPOL preparation/explicit acknowledgement and configured synthetic Digisense delivery/status, without inventing CLI-only MCP tools. Financial original family152 accepted. Then all remaining R44/R45 actor/env/company-path/default launcher/error/receipt/recovery/automation/release/cutover/TypeScript retirement requirements and installed desktop last. Preserve all original scope and accepted evidence.",
+    "Original invoice interface inventory now has all31CLI and25MCP bindings, with explicit compatibility corrections documented; do not mistake that family inventory for full product parity. Reconcile remaining original whole-product R44/R45 acceptance from existing epic/issues: actor/env/company-path/default launcher/errors/historical receipts, closure/recovery/automation, signed distribution/update/cutover and TypeScript backend retirement. Continue next necessary whole journey, preserve all accepted evidence/full original scope; installed desktop acceptance last.",
     "Installed desktop acceptance is explicitly deferred to the very end by the user. Preserve prepared Group100 profile; collect remaining native automation, closure, recovery and packaging checks for final installed acceptance without requesting screen unlock during development.",
     "J03/R50 and remaining R54 scope: only still-supported operation closure/recovery, nonempty scheduler handoff, hostile/older clone and post-cutover rollback requirements. Group99 qualifies managed installed J06 flow, not every R54 acceptance item.",
     "Signed distribution/update/cutover evidence must match actual full Rust replacement; retain all existing completion gates and TypeScript retirement gate.",
@@ -8671,6 +8671,80 @@
       ],
       "worker_worktrees_removed": true,
       "remaining": "All four original public invoice CLI artifacts/preparation/synthetic transport commands, then full remaining R44/R45 parity/recovery/automation/release/TS retirement and final installed desktop; entire epic remains open."
+    },
+    "public_invoice_original153": {
+      "issue": 717,
+      "status": "accepted",
+      "source_revision": "c30cc267afdf5b22f6c2eb337f2e6b5bd467499a",
+      "contract": "/tmp/rm153-public-family-contract.md",
+      "source_scout": "/tmp/rm153-public-contract-scout.md",
+      "workers": {
+        "preview": "c70399ab",
+        "oioubl": "70847e01",
+        "clients": "5d661b84",
+        "backend": "74d9e083"
+      },
+      "integrated": {
+        "preview": "bbe6d47e",
+        "oioubl": "cfffd269",
+        "handoff": "7aeeb3f5",
+        "clients": "e3e67160",
+        "receiver_fix": "e0977c3f",
+        "backend": "f6f76d9c",
+        "lint_fix": "5bd88d72",
+        "native_compatibility_fix": "c30cc267"
+      },
+      "report": "/tmp/rentemester-rust-reports/public-original153-fixed.json",
+      "report_sha256": "73ae5c4f9377b8b613f61cb1c406e67cf2dc19e6b4c6833dd4a680fafc61425e",
+      "runner": "/tmp/rm153-public-fixed.py",
+      "runner_sha256": "1e29db7f383e7fb4d10b534d16f5c40dac4b47cd18898bc3a08c48d58a560ef0",
+      "browser": "/tmp/rm153-public-fixed-browser.mjs",
+      "browser_sha256": "3139c1f76fc198f39b7785675deb03cbc86bfbc2f09d0d47efebdabcf5f2349f",
+      "initial_failed_report": "/tmp/rentemester-rust-reports/public-original153.json",
+      "initial_failed_report_sha256": "bac2587b745677522dd5049026e0a04f7242769628a4bb3f2aebae1ddc0c1324",
+      "initial_failure": "Exact native first/repeated delivery reply differed only duplicate flag; kept old expectation and narrowed new flag to original adapter, new native regression+actual complete proof pass. Original failed isolated profile cleaned by existing fixture; second owned profile independent synthetic provider, no real/retained effects replayed.",
+      "focused": {
+        "preview_tests": 3,
+        "preview_full_byte_cases": 2,
+        "oioubl_tests": 9,
+        "oioubl_full_source_cases": 9,
+        "handoff_tests": 3,
+        "handoff_full_source_cases": 2,
+        "sdk_cli_tests": 6,
+        "storage_tests": 14,
+        "host_tests": 6,
+        "server_actual_bin_tests": 3,
+        "additional_native_compatibility_test": 1
+      },
+      "strict_clippy": "/tmp/rm153-integrated-clippy-fixed.log",
+      "changed_app_host_clippy": "/tmp/rm153-native-duplicate-clippy.log",
+      "normal_build": "/tmp/rm153-native-duplicate-normal-build.log",
+      "owned_processes_stopped": true,
+      "owned_runtime_cleaned": true,
+      "actual_no_journals_or_lines": true,
+      "actual_native_submissions": 3,
+      "actual_original_handoffs": 2,
+      "actual_deliveries": 3,
+      "signed_snapshots": [
+        "source",
+        "restarted",
+        "restored",
+        "reopened"
+      ],
+      "original_family_persisted_after_restore": true,
+      "all_archive_sources_and_private_signers_unavailable": true,
+      "worker_worktrees_removed": true,
+      "worktree_recovery": [
+        "/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/.git/rentemester-recovery/archived153-engine.json",
+        "/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/.git/rentemester-recovery/archived153-oioubl.json",
+        "/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/.git/rentemester-recovery/archived153-clients.json",
+        "/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/.git/rentemester-recovery/archived153-backend.json"
+      ],
+      "remaining": "Full whole-product original R44/R45 interface/actor/env/path/default/error/receipt parity, recovery/automation/release/cutover/TypeScript retirement and final installed desktop; no epic/717 closure.",
+      "independent_verifier": "/tmp/rm153-independent.py",
+      "independent_verifier_sha256": "c679155b7317dd72b23b30cb80ad78aac90e7aceb998764dfb40756da0c6b2ba",
+      "independent_verification": "/tmp/rm153-independent.log",
+      "independent_expectation_correction": "Initial supplemental counter matched bare document-status but actual fixture trace preserves document-status/synthetic-queued-74. Inspected exact immutable trace, corrected verifier to require exactly that single GET. No product change or actual rerun."
     }
   },
   "verified_history": [
