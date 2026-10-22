@@ -6,6 +6,7 @@ use crate::{
 use reqwest::Method;
 use serde_json::{Value, json};
 const MAX_ID: i64 = 9_007_199_254_740_991;
+const MAX_DKK: f64 = MAX_ID as f64 / 100.0;
 const RULE: &str = "DK-BOOKKEEPING-ACCRUAL-001";
 fn id() -> Value {
     json!({"type":"integer","minimum":1,"maximum":MAX_ID})
@@ -23,7 +24,7 @@ fn kind() -> Value {
     json!({"type":"string","enum":["prepaid_expense","accrued_expense","deferred_revenue"]})
 }
 fn money_schema() -> Value {
-    json!({"type":"number","minimum":0,"maximum":90071992547409.91})
+    json!({"type":"number","minimum":0,"maximum":MAX_DKK})
 }
 fn strings() -> Value {
     json!({"type":"array","maxItems":128,"items":text(512)})
@@ -32,7 +33,7 @@ fn strings() -> Value {
 pub fn original_accrual_schema(register: bool) -> Value {
     if register {
         object(
-            json!({"accrualType":kind(),"description":text(500),"totalAmount":{"type":"number","exclusiveMinimum":0,"maximum":90071992547409.91},"recognitionPeriods":count(12000),"firstRecognitionDate":date_schema(),"resultAccountNo":text(128),"registrationDate":date_schema(),"periodStepMonths":count(1200),"balanceAccountNo":text(128),"settlementAccountNo":text(128),"documentId":id(),"note":{"type":"string","maxLength":4096}}),
+            json!({"accrualType":kind(),"description":text(500),"totalAmount":{"type":"number","exclusiveMinimum":0,"maximum":MAX_DKK},"recognitionPeriods":count(12000),"firstRecognitionDate":date_schema(),"resultAccountNo":text(128),"registrationDate":date_schema(),"periodStepMonths":count(1200),"balanceAccountNo":text(128),"settlementAccountNo":text(128),"documentId":id(),"note":{"type":"string","maxLength":4096}}),
             &[
                 "accrualType",
                 "description",
