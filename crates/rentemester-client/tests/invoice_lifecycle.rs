@@ -6,6 +6,13 @@ use std::{
     thread,
 };
 fn server(status: u16, value: Value) -> (String, thread::JoinHandle<(String, Value)>) {
+    server_response(status, value.to_string(), None)
+}
+fn server_response(
+    status: u16,
+    response: String,
+    declared_length: Option<usize>,
+) -> (String, thread::JoinHandle<(String, Value)>) {
     let l = TcpListener::bind("127.0.0.1:0").unwrap();
     let origin = format!("http://{}", l.local_addr().unwrap());
     let t = thread::spawn(move || {
@@ -42,11 +49,10 @@ fn server(status: u16, value: Value) -> (String, thread::JoinHandle<(String, Val
         } else {
             serde_json::from_slice(&bytes[end..end + length]).unwrap()
         };
-        let response = value.to_string();
         write!(
             s,
             "HTTP/1.1 {status} Mock\r\nContent-Length:{}\r\nConnection:close\r\n\r\n{response}",
-            response.len()
+            declared_length.unwrap_or(response.len())
         )
         .unwrap();
         (header, body)
@@ -296,5 +302,126 @@ async fn repair_posting_exact_flat_wire_receipt_refusals_and_unknown_writes() {
                 .await,
             Err(Error::InvalidInput(_))
         ));
+    }
+}
+
+#[tokio::test]
+async fn typed_422_invoice_refusals_preserve_server_receipts() {
+    for rules in [None, Some(json!(["server-vat-rule"]))] {
+        let mut receipt = json!({"ok":false,"code":"unsupported_invoice_vat_classification","errors":["Server rejected invoice VAT classification"]});
+        if let Some(rules) = rules {
+            receipt["appliedRules"] = rules;
+        }
+        let body = json!({"confirm":true,"documentId":156,"revenueAccountNo":"synthetic-income"});
+        let (origin, t) = server(422, receipt.clone());
+        let result = ApiClient::new(&origin, true, None)
+            .unwrap()
+            .invoice_lifecycle(
+                "synthetic",
+                InvoiceLifecycleKind::Post,
+                body.to_string().into_bytes(),
+            )
+            .await;
+        assert_eq!(result.unwrap(), receipt);
+        let (header, actual) = t.join().unwrap();
+        assert!(header.starts_with("POST /api/companies/synthetic/invoices/original/post "));
+        assert_eq!(actual, body);
+    }
+}
+
+#[tokio::test]
+async fn malformed_422_and_nonbusiness_errors_remain_generic() {
+    for value in [
+        json!({"ok":true,"data":{},"errors":[],"code":"remote-secret"}),
+        json!({"ok":false,"data":{},"errors":["remote-secret"],"code":"business"}),
+        json!({"ok":false,"data":null,"errors":["remote-secret"],"code":"business"}),
+        json!({"ok":false,"errors":["remote-secret"]}),
+        json!({"ok":false,"code":"","errors":["remote-secret"]}),
+        json!({"ok":false,"code":"  ","errors":["remote-secret"]}),
+        json!({"ok":false,"code":12,"errors":["remote-secret"]}),
+        json!({"ok":false,"code":"business","errors":[]}),
+        json!({"ok":false,"code":"business","errors":[12]}),
+        json!({"ok":false,"code":"business","errors":["remote-secret"],"appliedRules":[12]}),
+        json!({"ok":false,"code":"business","errors":["remote-secret"],"appliedRules":"bad"}),
+        json!("remote-secret"),
+    ] {
+        let (origin, t) = server(422, value);
+        let result = ApiClient::new(&origin, true, None)
+            .unwrap()
+            .invoice_lifecycle(
+                "synthetic",
+                InvoiceLifecycleKind::Post,
+                br#"{"confirm":true,"documentId":156}"#.to_vec(),
+            )
+            .await;
+        assert_eq!(result.unwrap_err(), Error::Refused { status: 422 });
+        t.join().unwrap();
+    }
+    for status in [400, 401, 403, 409, 429, 408, 500, 503] {
+        let (origin, t) = server(
+            status,
+            json!({"ok":false,"code":"remote-secret","errors":["remote-secret"]}),
+        );
+        let result = ApiClient::new(&origin, true, None)
+            .unwrap()
+            .invoice_lifecycle(
+                "synthetic",
+                InvoiceLifecycleKind::Post,
+                br#"{"confirm":true,"documentId":156}"#.to_vec(),
+            )
+            .await;
+        assert_eq!(
+            result.unwrap_err(),
+            if status == 408 || status >= 500 {
+                Error::OutcomeUnknown
+            } else {
+                Error::Refused { status }
+            }
+        );
+        t.join().unwrap();
+    }
+}
+
+#[tokio::test]
+async fn bounded_complete_receipts_required_without_losing_success_uncertainty() {
+    for (status, response, declared_length) in [
+        (422, "remote-secret not JSON".to_owned(), None),
+        (
+            422,
+            r#"{"ok":false,"code":"business","errors":["remote-secret"]}"#.to_owned(),
+            Some(1000),
+        ),
+        (
+            200,
+            r#"{"ok":true,"data":{},"errors":[]}"#.to_owned(),
+            Some(1000),
+        ),
+        (200, String::new(), Some(1)),
+        (200, "not JSON".to_owned(), None),
+        (
+            422,
+            json!({"ok":false,"code":"business","errors":["x".repeat(16 * 1024 * 1024)]})
+                .to_string(),
+            None,
+        ),
+    ] {
+        let (origin, t) = server_response(status, response, declared_length);
+        let result = ApiClient::new(&origin, true, None)
+            .unwrap()
+            .invoice_lifecycle(
+                "synthetic",
+                InvoiceLifecycleKind::Post,
+                br#"{"confirm":true,"documentId":156}"#.to_vec(),
+            )
+            .await;
+        assert_eq!(
+            result.unwrap_err(),
+            if status == 422 {
+                Error::Refused { status }
+            } else {
+                Error::OutcomeUnknown
+            }
+        );
+        t.join().unwrap();
     }
 }

@@ -46,6 +46,13 @@ impl Drop for Fixture {
     }
 }
 fn server(status: u16, value: Value) -> (String, thread::JoinHandle<(String, Value)>) {
+    server_response(status, value.to_string(), None)
+}
+fn server_response(
+    status: u16,
+    response: String,
+    declared_length: Option<usize>,
+) -> (String, thread::JoinHandle<(String, Value)>) {
     let l = TcpListener::bind("127.0.0.1:0").unwrap();
     let origin = format!("http://{}", l.local_addr().unwrap());
     let t = thread::spawn(move || {
@@ -82,11 +89,10 @@ fn server(status: u16, value: Value) -> (String, thread::JoinHandle<(String, Val
         } else {
             serde_json::from_slice(&bytes[end..end + length]).unwrap()
         };
-        let response = value.to_string();
         write!(
             s,
             "HTTP/1.1 {status} Mock\r\nContent-Length:{}\r\nConnection:close\r\n\r\n{response}",
-            response.len()
+            declared_length.unwrap_or(response.len())
         )
         .unwrap();
         (header, body)
@@ -486,5 +492,152 @@ fn repair_posting_explicit_flags_flat_source_receipts_business_and_usage_exits()
         assert_eq!(out.status.code(), Some(2));
         assert!(out.stdout.is_empty());
         assert!(!out.stderr.is_empty());
+    }
+}
+
+#[test]
+fn post_422_preserves_typed_vat_refusal_and_exit_one() {
+    let f = Fixture::new();
+    for rules in [None, Some(json!(["server-vat-rule"]))] {
+        let mut receipt = json!({"ok":false,"code":"unsupported_invoice_vat_classification","errors":["Server rejected invoice VAT classification"]});
+        if let Some(rules) = rules {
+            receipt["appliedRules"] = rules;
+        }
+        let (origin, t) = server(422, receipt.clone());
+        let out = call(
+            "post",
+            &origin,
+            &f,
+            &[
+                "--document-id",
+                "156",
+                "--revenue-account",
+                "synthetic-income",
+                "--json",
+            ],
+            None,
+        );
+        assert_eq!(out.status.code(), Some(1));
+        assert!(out.stderr.is_empty());
+        assert_eq!(
+            serde_json::from_slice::<Value>(&out.stdout).unwrap(),
+            receipt
+        );
+        let (header, body) = t.join().unwrap();
+        assert!(header.starts_with("POST /api/companies/synthetic/invoices/original/post "));
+        assert_eq!(
+            body,
+            json!({"confirm":true,"documentId":156,"revenueAccountNo":"synthetic-income"})
+        );
+    }
+}
+
+#[test]
+fn malformed_422_and_uncertain_post_responses_do_not_reflect_remote_bodies() {
+    let f = Fixture::new();
+    for (status, response, declared_length, code) in [
+        (
+            422,
+            "remote-secret not JSON".to_owned(),
+            None,
+            "server_refused",
+        ),
+        (
+            422,
+            json!({"ok":true,"data":{},"errors":[],"code":"remote-secret"}).to_string(),
+            None,
+            "server_refused",
+        ),
+        (
+            422,
+            json!({"ok":false,"data":{},"errors":["remote-secret"],"code":"business"}).to_string(),
+            None,
+            "server_refused",
+        ),
+        (
+            422,
+            json!({"ok":false,"errors":["remote-secret"]}).to_string(),
+            None,
+            "server_refused",
+        ),
+        (
+            422,
+            json!({"ok":false,"code":"","errors":["remote-secret"]}).to_string(),
+            None,
+            "server_refused",
+        ),
+        (
+            422,
+            json!({"ok":false,"code":12,"errors":["remote-secret"]}).to_string(),
+            None,
+            "server_refused",
+        ),
+        (
+            422,
+            json!({"ok":false,"code":"business","errors":[12]}).to_string(),
+            None,
+            "server_refused",
+        ),
+        (
+            422,
+            json!({"ok":false,"code":"business","errors":["remote-secret"],"appliedRules":[12]})
+                .to_string(),
+            None,
+            "server_refused",
+        ),
+        (
+            422,
+            json!({"ok":false,"code":"business","errors":["remote-secret"]}).to_string(),
+            Some(1000),
+            "server_refused",
+        ),
+        (
+            403,
+            json!({"ok":false,"code":"business","errors":["remote-secret"]}).to_string(),
+            None,
+            "server_refused",
+        ),
+        (
+            408,
+            json!({"ok":false,"code":"business","errors":["remote-secret"]}).to_string(),
+            None,
+            "outcome_unknown",
+        ),
+        (
+            503,
+            json!({"ok":false,"code":"business","errors":["remote-secret"]}).to_string(),
+            None,
+            "outcome_unknown",
+        ),
+        (
+            200,
+            json!({"ok":true,"data":{"secret":"remote-secret"},"errors":[]}).to_string(),
+            Some(1000),
+            "outcome_unknown",
+        ),
+        (200, String::new(), Some(1), "outcome_unknown"),
+    ] {
+        let (origin, t) = server_response(status, response, declared_length);
+        let out = call(
+            "post",
+            &origin,
+            &f,
+            &["--document-id", "156", "--json"],
+            None,
+        );
+        assert_eq!(out.status.code(), Some(1));
+        let actual: Value = serde_json::from_slice(&out.stdout).unwrap();
+        assert_eq!(actual["ok"], false);
+        assert_eq!(actual["code"], code);
+        assert!(actual.get("data").is_none());
+        let output = format!(
+            "{}{}",
+            String::from_utf8_lossy(&out.stdout),
+            String::from_utf8_lossy(&out.stderr)
+        );
+        for secret in ["remote-secret", "session=synthetic", origin.as_str()] {
+            assert!(!output.contains(secret));
+        }
+        t.join().unwrap();
     }
 }
