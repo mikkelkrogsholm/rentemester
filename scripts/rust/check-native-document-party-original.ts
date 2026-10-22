@@ -94,10 +94,14 @@ export function createDocumentPartyOriginalProof(base: string, work: string, onS
       need(rpc('party-link-apply', apply).data.idempotent === true, 'current replay'); await parity(documentId);
       cli('party-link-supersede', { documentId, role: 'vendor', planHash: plan.planHash, reason: 'Explicit new review required', confirm: 'yes' });
       await state(documentId, 'unresolved'); rpc('party-link-apply', apply, 'refused');
-      await http(root + `workspace-parties/${encodeURIComponent(partyId)}/assertion`, { field: 'name', value: 'Synthetic reviewed source assertion166', source: 'Owner source review166', observedAt: today, reviewState: 'approved', confirm: true });
-      const next = cli('party-link-plan', input).plan; need(next.planHash !== plan.planHash, 'legitimate current assertion changes plan');
-      rpc('party-link-apply', { ...apply, planHash: next.planHash }, 'refused');
-      rpc('party-link-apply', { ...apply, planHash: next.planHash, idempotencyKey: 'synthetic-party166-relink' });
+      // Source snapshots bind canonical identity and the selected company role;
+      // appended descriptive assertions intentionally do not rename that identity.
+      await http(root + `workspace-parties/${encodeURIComponent(partyId)}/role`, { role: 'issuer', confirm: true });
+      const nextInput = { ...input, role: 'issuer' };
+      const next = cli('party-link-plan', nextInput).plan; need(next.planHash !== plan.planHash, 'explicit reviewed current role changes plan');
+      rpc('party-link-apply', { ...apply, ...nextInput, planHash: next.planHash }, 'refused');
+      const relink = { ...apply, ...nextInput, planHash: next.planHash, idempotencyKey: 'synthetic-party166-relink' };
+      rpc('party-link-apply', relink);
       rpc('party-link-apply', apply, 'refused'); await parity(documentId);
       const linkedSnapshot = await snapshot();
       for (const k of ['docs', 'bytes', 'journal', 'trial', 'vat']) need(equal(linkedSnapshot[k as keyof typeof linkedSnapshot], before[k as keyof typeof before]), 'links financially/source inert ' + k);
@@ -124,7 +128,7 @@ export function createDocumentPartyOriginalProof(base: string, work: string, onS
       for (const k of ['docs', 'bytes', 'journal', 'trial', 'vat']) need(equal(after[k as keyof typeof after], financialBaseline[k as keyof typeof financialBaseline]), 'resolution financially/source inert ' + k);
       need(after.journal.journal.entries.length === 0, 'zero financial postings');
       await admin('members/company', { userId: service.serviceAccountId, companySlug: 'synthetic', action: 'revoke' });
-      rpc('party-link-inspect', { documentId }, 'refused'); rpc('party-link-apply', { ...apply, planHash: next.planHash, idempotencyKey: 'synthetic-party166-relink' }, 'refused');
+      rpc('party-link-inspect', { documentId }, 'refused'); rpc('party-link-apply', relink, 'refused');
       stable = { snapshot: await snapshot(), history: await inspect(documentId) };
       return { documentId, internalDocumentId: internal.id, plan, nextPlan: next, receipt, internalDecision: decided, stable, transcript, reviewedLegacyActualPositiveQualified: false, noFinancialPosting: true };
     },
