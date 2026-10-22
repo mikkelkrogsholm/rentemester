@@ -40,7 +40,8 @@ fn boolean(name: &str) -> bool {
 }
 
 fn migrated(args: &[String]) -> bool {
-    crate::documents_original::accepts(args)
+    crate::document_party_original::accepts(args)
+        || crate::documents_original::accepts(args)
         || crate::master_data_original::accepts(args)
         || crate::exceptions_original::accepts(args)
         || crate::journal_original::accepts(args)
@@ -209,9 +210,12 @@ pub fn prepare(args: Vec<String>) -> Result<Vec<String>, (u8, Error)> {
     // default distinguishes a terminal report from piped flat JSON.
     if !json
         && format == Some("human")
-        && output
-            .first()
-            .is_some_and(|s| matches!(s.as_str(), "exceptions" | "customer" | "vendor" | "documents"))
+        && output.first().is_some_and(|s| {
+            matches!(
+                s.as_str(),
+                "exceptions" | "customer" | "vendor" | "documents"
+            )
+        })
     {
         output.extend(["--format".into(), "human".into()]);
     }

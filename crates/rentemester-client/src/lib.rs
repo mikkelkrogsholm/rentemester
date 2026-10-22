@@ -539,3 +539,6 @@ mod journal_original;
 
 mod documents_original;
 pub use documents_original::{DocumentsOriginalMutation, documents_original_schema, documents_original_file};
+
+mod document_party_original;
+pub use document_party_original::{DocumentPartyOriginalOperation, document_party_original_schema, document_party_original_validate};

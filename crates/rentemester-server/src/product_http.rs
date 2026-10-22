@@ -76,6 +76,7 @@ mod bookkeeping_batch;
 mod payable_correction;
 mod direct_bank_original;
 mod document_party_links;
+mod document_party_original;
 mod sales;
 mod invoice_original;
 mod invoice_lifecycle;
@@ -249,6 +250,8 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
             "/api/companies/{slug}/budget-vs-actual",
             get(budget::handle),
         )
+        .route("/api/companies/{slug}/documents/original/party-links", get(document_party_original::handle))
+        .route("/api/companies/{slug}/documents/original/party-links/{action}", get(document_party_original::handle).post(document_party_original::handle))
         .route("/api/companies/{slug}/documents/party-links", get(document_party_links::handle))
         .route("/api/companies/{slug}/documents/{id}/party-links", get(document_party_links::handle))
         .route("/api/companies/{slug}/documents/party-links/{action}", post(document_party_links::handle))

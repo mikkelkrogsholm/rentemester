@@ -301,6 +301,7 @@ fn validate(db: &Connection) -> Result<(), Error> {
     {
         return Err(invalid("ledger contains foreign-key violations"));
     }
+    crate::document_party_links::validate_backup(db)?;
     // History provenance is not physical-schema proof. Validate the direct read contract.
     for (table, required) in [
         (

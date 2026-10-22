@@ -452,3 +452,4 @@ mod journal_original;
 mod master_data_original;
 
 mod documents_original;
+mod document_party_original;

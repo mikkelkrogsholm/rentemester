@@ -78,7 +78,7 @@ fn hex(s: &str) -> bool {
             .all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b))
 }
 fn valid_role(role: &str) -> Result<(), Error> {
-    if ["supplier", "vendor"].contains(&role) {
+    if policy::ROLES.contains(&role) {
         Ok(())
     } else {
         Err(refused("UNSUPPORTED_PARTY_ROLE"))
@@ -108,19 +108,76 @@ fn identity(input: &PlanInput) -> Result<policy::ResolvedIdentifier, Error> {
     })
     .map_err(|_| refused("NO_IDENTIFIER_EVIDENCE"))
 }
+fn evidence(input: &PlanInput) -> Result<Value, Error> {
+    valid_role(&input.role)?;
+    if input.document_id <= 0 || input.document_id > 9_007_199_254_740_991 {
+        return Err(refused("DOCUMENT_NOT_FOUND"));
+    }
+    if input.legacy_kind.is_some()
+        || input.legacy_id.is_some()
+        || input.reviewed_legacy_reference.is_some()
+    {
+        if input.identifier.is_some()
+            || input.identifier_kind.is_some()
+            || input.jurisdiction.is_some()
+        {
+            return Err(refused("UNSUPPORTED_EVIDENCE_KIND"));
+        }
+        let kind = input
+            .legacy_kind
+            .as_deref()
+            .filter(|k| ["customer", "vendor"].contains(k))
+            .ok_or_else(|| refused("NO_IDENTIFIER_EVIDENCE"))?;
+        let id = input
+            .legacy_id
+            .as_deref()
+            .filter(|v| !v.trim().is_empty() && v.len() <= 160)
+            .ok_or_else(|| refused("NO_IDENTIFIER_EVIDENCE"))?;
+        let reference = input
+            .reviewed_legacy_reference
+            .as_deref()
+            .filter(|v| !v.trim().is_empty() && v.len() <= 500)
+            .ok_or_else(|| refused("LEGACY_REFERENCE_UNREVIEWED"))?;
+        return Ok(
+            json!({"kind":"reviewed_legacy_reference","legacyKind":kind,"legacyId":id,"reviewedLegacyReference":reference}),
+        );
+    }
+    let id = identity(input)?;
+    Ok(
+        json!({"kind":"exact_identifier","jurisdiction":id.country,"identifierKind":id.identifier_kind,"identifier":id.identifier}),
+    )
+}
 /// Called only after current selected-company read/master-data authorization. No registry writes.
 pub fn capture(control: &Transaction<'_>, input: &PlanInput, slug: &str) -> Result<Value, Error> {
-    let id = identity(input)?;
+    let evidence = evidence(input)?;
     let scope = BTreeSet::from([slug.to_owned()]);
-    let mut q=control.prepare("SELECT party_id FROM rm_party_identifiers WHERE jurisdiction=?1 AND identifier_kind=?2 AND identifier=?3 ORDER BY party_id").map_err(sql)?;
-    let candidates = q
-        .query_map(
-            params![id.country, id.identifier_kind, id.identifier],
+    let candidates = if evidence["kind"] == "exact_identifier" {
+        let mut q = control.prepare("SELECT party_id FROM rm_party_identifiers WHERE jurisdiction=?1 AND identifier_kind=?2 AND identifier=?3 ORDER BY party_id").map_err(sql)?;
+        q.query_map(
+            params![
+                evidence["jurisdiction"].as_str(),
+                evidence["identifierKind"].as_str(),
+                evidence["identifier"].as_str()
+            ],
             |r| r.get::<_, String>(0),
         )
         .map_err(sql)?
         .collect::<Result<Vec<_>, _>>()
-        .map_err(sql)?;
+        .map_err(sql)?
+    } else {
+        let mut q = control.prepare("SELECT party_id FROM rm_party_legacy_links WHERE company_slug=?1 AND legacy_kind=?2 AND legacy_id=?3 ORDER BY party_id").map_err(sql)?;
+        q.query_map(
+            params![
+                slug,
+                evidence["legacyKind"].as_str(),
+                evidence["legacyId"].as_str()
+            ],
+            |r| r.get::<_, String>(0),
+        )
+        .map_err(sql)?
+        .collect::<Result<Vec<_>, _>>()
+        .map_err(sql)?
+    };
     let mut visible = vec![];
     for p in candidates {
         if crate::parties::visible(control, &p, &scope)? {
@@ -179,11 +236,12 @@ fn document(tx: &Connection, id: i64) -> Result<Value, Error> {
     )
 }
 pub fn plan(tx: &Transaction<'_>, input: &PlanInput, snapshot: &Value) -> Result<Value, Error> {
-    let id = identity(input)?;
+    let evidence = evidence(input)?;
     let doc = document(tx, input.document_id)?;
-    if doc["country"] != id.country
-        || doc["identifierKind"] != id.identifier_kind
-        || doc["identifier"] != id.identifier
+    if evidence["kind"] == "exact_identifier"
+        && (doc["country"] != evidence["jurisdiction"]
+            || doc["identifierKind"] != evidence["identifierKind"]
+            || doc["identifier"] != evidence["identifier"])
     {
         return Err(refused("NO_IDENTIFIER_EVIDENCE"));
     }
@@ -196,7 +254,7 @@ pub fn plan(tx: &Transaction<'_>, input: &PlanInput, snapshot: &Value) -> Result
     {
         return Err(refused("SCOPE_MISMATCH"));
     }
-    let mut p = json!({"documentId":input.document_id,"documentSha256":doc["sha256"],"documentPayloadSha256":doc["payloadHash"],"partyId":party,"partySnapshot":snapshot,"role":input.role,"evidence":{"kind":"exact_identifier","jurisdiction":id.country,"identifierKind":id.identifier_kind,"identifier":id.identifier}});
+    let mut p = json!({"documentId":input.document_id,"documentSha256":doc["sha256"],"documentPayloadSha256":doc["payloadHash"],"partyId":party,"partySnapshot":snapshot,"role":input.role,"evidence":evidence});
     p["planHash"] = json!(hash(&p)?);
     Ok(json!({"ok":true,"plan":p}))
 }
@@ -224,6 +282,12 @@ fn checked_history(tx: &Connection, document_id: i64) -> Result<Vec<Value>, Erro
         let evidence: Value = serde_json::from_str(&evidence_raw).map_err(sql)?;
         let snapshot: Value = serde_json::from_str(&snapshot_raw).map_err(sql)?;
         let payload = json!({"documentId":document_id,"documentSha256":sha,"documentPayloadSha256":payload_sha,"partyId":party,"partySnapshot":snapshot,"role":role,"evidence":evidence});
+        let source = document(tx, document_id)?;
+        valid_role(&role)?;
+        validate_actor(&actor, &principal, &created)?;
+        if source["sha256"] != sha || source["payloadHash"] != payload_sha {
+            return Err(refused("DOCUMENT_PARTY_HISTORY_SOURCE_MISMATCH"));
+        }
         if id <= 0
             || !hex(&sha)
             || !hex(&payload_sha)
@@ -293,13 +357,16 @@ pub fn validate_backup(db: &Connection) -> Result<(), Error> {
             )?;
         }
     }
+    validate_internal_history(db)?;
     Ok(())
 }
 pub fn history(tx: &Transaction<'_>, document_id: i64) -> Result<Value, Error> {
     document(tx, document_id)?;
-    Ok(json!({"ok":true,"links":checked_history(tx,document_id)?}))
+    validate_backup(tx)?;
+    Ok(json!({"ok":true,"links":checked_history(tx, document_id)?}))
 }
 pub fn list(tx: &Transaction<'_>, status: Option<&str>, limit: usize) -> Result<Value, Error> {
+    validate_backup(tx)?;
     let status = match status {
         Some("linked") => Some("resolved"),
         Some("unlinked") => Some("unresolved"),
@@ -330,6 +397,7 @@ pub fn apply(
     if !input.confirm {
         return Err(refused("CONFIRMATION_REQUIRED"));
     }
+    validate_actor(actor, principal, now)?;
     let planned = plan(tx, &input.input(), snapshot)?;
     let p = &planned["plan"];
     if p["planHash"] != input.plan_hash {
@@ -338,10 +406,11 @@ pub fn apply(
     if input
         .idempotency_key
         .as_ref()
-        .is_some_and(|s| s.trim().is_empty() || s.len() > 512)
+        .is_some_and(|s| s.trim().is_empty() || s.len() > 128)
     {
         return Err(refused("IDEMPOTENCY_CONFLICT"));
     }
+    validate_backup(tx)?;
     let history = checked_history(tx, input.document_id)?;
     let keyed:Option<(i64,i64,String,String)>=input.idempotency_key.as_ref().map(|key|tx.query_row("SELECT id,document_id,party_role,plan_hash FROM document_party_link_events WHERE idempotency_key=?1",[key],|r|Ok((r.get(0)?,r.get(1)?,r.get(2)?,r.get(3)?))).optional().map_err(sql)).transpose()?.flatten();
     if keyed.as_ref().is_some_and(|(_, doc, role, hash)| {
@@ -365,10 +434,12 @@ pub fn apply(
         return Err(refused("CURRENT_STATE_CONFLICT"));
     }
     validate_actor(actor, principal, now)?;
-    let id:i64=tx.query_row("INSERT INTO document_party_link_events(document_id,party_id,party_role,event_type,evidence_kind,evidence_json,document_sha256,document_payload_sha256,party_snapshot_json,plan_hash,idempotency_key,actor,principal,created_at)VALUES(?1,?2,?3,'linked','exact_identifier',?4,?5,?6,?7,?8,?9,?10,?11,?12) RETURNING id",params![input.document_id,p["partyId"].as_str(),input.role,serde_json::to_string(&p["evidence"]).map_err(sql)?,p["documentSha256"].as_str(),p["documentPayloadSha256"].as_str(),serde_json::to_string(&p["partySnapshot"]).map_err(sql)?,input.plan_hash,input.idempotency_key,actor,principal,now],|r|r.get(0)).map_err(sql)?;
+    let id:i64=tx.query_row("INSERT INTO document_party_link_events(document_id,party_id,party_role,event_type,evidence_kind,evidence_json,document_sha256,document_payload_sha256,party_snapshot_json,plan_hash,idempotency_key,actor,principal,created_at)VALUES(?1,?2,?3,'linked',?13,?4,?5,?6,?7,?8,?9,?10,?11,?12) RETURNING id",params![input.document_id,p["partyId"].as_str(),input.role,serde_json::to_string(&p["evidence"]).map_err(sql)?,p["documentSha256"].as_str(),p["documentPayloadSha256"].as_str(),serde_json::to_string(&p["partySnapshot"]).map_err(sql)?,input.plan_hash,input.idempotency_key,actor,principal,now,p["evidence"]["kind"].as_str()],|r|r.get(0)).map_err(sql)?;
     Ok(json!({"ok":true,"id":id,"idempotent":false,"planHash":input.plan_hash}))
 }
 fn validate_actor(actor: &str, principal: &str, now: &str) -> Result<(), Error> {
+    // Historical source attribution may be agent/system and a distinct principal.
+    // Current authority and equality assertions belong to application admission.
     if actor.trim().is_empty()
         || actor.len() > 160
         || principal.trim().is_empty()
@@ -397,6 +468,7 @@ pub fn supersede(
         return Err(refused("SUPERSEDE_REASON_REQUIRED"));
     }
     document(tx, input.document_id)?;
+    validate_backup(tx)?;
     let history = checked_history(tx, input.document_id)?;
     let prior = history
         .iter()
@@ -416,3 +488,180 @@ pub fn supersede(
 }
 #[cfg(test)]
 mod tests;
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct Internal {
+    pub document_id: i64,
+    pub reason: String,
+    pub confirm: bool,
+    pub idempotency_key: Option<String>,
+}
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct InternalSupersede {
+    pub document_id: i64,
+    pub decision_hash: String,
+    pub reason: String,
+    pub confirm: bool,
+}
+fn reason(value: &str) -> Result<&str, Error> {
+    let value = value.trim();
+    if value.is_empty() || value.len() > 1000 {
+        return Err(refused("SUPERSEDE_REASON_REQUIRED"));
+    }
+    Ok(value)
+}
+fn internal_source(db: &Connection, id: i64) -> Result<Value, Error> {
+    let source = document(db, id)?;
+    let kind: String = db
+        .query_row(
+            "SELECT document_type FROM documents WHERE id=?1",
+            [id],
+            |r| r.get(0),
+        )
+        .map_err(sql)?;
+    if kind != "internal_voucher" {
+        return Err(refused("DOCUMENT_NOT_FOUND"));
+    }
+    Ok(source)
+}
+fn decision(id: i64, source: &Value, reason: &str) -> Result<String, Error> {
+    hash(
+        &json!({"documentId":id,"documentSha256":source["sha256"],"documentPayloadSha256":source["payloadHash"],"state":"internal_no_external_party","reason":reason}),
+    )
+}
+fn validate_internal_history(db: &Connection) -> Result<(), Error> {
+    let mut q = db.prepare("SELECT document_id,state,reason,document_sha256,document_payload_sha256,decision_hash,supersedes_hash,actor,principal,created_at FROM document_party_resolution_events ORDER BY id").map_err(sql)?;
+    let mut rows = q.query([]).map_err(sql)?;
+    let mut live = std::collections::BTreeMap::new();
+    while let Some(r) = rows.next().map_err(sql)? {
+        let id: i64 = r.get(0).map_err(sql)?;
+        let state: String = r.get(1).map_err(sql)?;
+        let why: String = r.get(2).map_err(sql)?;
+        let sha: String = r.get(3).map_err(sql)?;
+        let payload: String = r.get(4).map_err(sql)?;
+        let digest: String = r.get(5).map_err(sql)?;
+        let supersedes: Option<String> = r.get(6).map_err(sql)?;
+        let actor: String = r.get(7).map_err(sql)?;
+        let principal: String = r.get(8).map_err(sql)?;
+        let now: String = r.get(9).map_err(sql)?;
+        validate_actor(&actor, &principal, &now)?;
+        reason(&why)?;
+        let source = internal_source(db, id)?;
+        if source["sha256"] != sha || source["payloadHash"] != payload || !hex(&digest) {
+            return Err(refused("DOCUMENT_PARTY_HISTORY_SOURCE_MISMATCH"));
+        }
+        match state.as_str() {
+            "internal_no_external_party" => {
+                if supersedes.is_some()
+                    || decision(id, &source, &why)? != digest
+                    || live.insert(id, digest).is_some()
+                {
+                    return Err(refused("DOCUMENT_PARTY_HISTORY_REFUSED"));
+                }
+            }
+            "superseded" => {
+                if supersedes.as_ref() != Some(&digest)
+                    || live.remove(&id).as_ref() != Some(&digest)
+                {
+                    return Err(refused("DOCUMENT_PARTY_HISTORY_REFUSED"));
+                }
+            }
+            _ => return Err(refused("DOCUMENT_PARTY_HISTORY_REFUSED")),
+        }
+    }
+    for id in live.keys() {
+        let linked: bool = db
+            .query_row(
+                "SELECT EXISTS(SELECT 1 FROM current_document_party_links WHERE document_id=?1)",
+                [id],
+                |r| r.get(0),
+            )
+            .map_err(sql)?;
+        if linked {
+            return Err(refused("CURRENT_STATE_CONFLICT"));
+        }
+    }
+    Ok(())
+}
+pub fn internal(
+    tx: &Transaction<'_>,
+    input: &Internal,
+    actor: &str,
+    principal: &str,
+    now: &str,
+) -> Result<Value, Error> {
+    crate::journal_post::require_current(tx)?;
+    validate_actor(actor, principal, now)?;
+    if !input.confirm {
+        return Err(refused("CONFIRMATION_REQUIRED"));
+    }
+    let why = reason(&input.reason)?;
+    let source = internal_source(tx, input.document_id)?;
+    validate_backup(tx)?;
+    let digest = decision(input.document_id, &source, why)?;
+    if input
+        .idempotency_key
+        .as_ref()
+        .is_some_and(|k| k.trim().is_empty() || k.len() > 128)
+    {
+        return Err(refused("IDEMPOTENCY_CONFLICT"));
+    }
+    let linked: bool = tx
+        .query_row(
+            "SELECT EXISTS(SELECT 1 FROM current_document_party_links WHERE document_id=?1)",
+            [input.document_id],
+            |r| r.get(0),
+        )
+        .map_err(sql)?;
+    if linked {
+        return Err(refused("CURRENT_STATE_CONFLICT"));
+    }
+    let keyed: Option<(i64,String)> = input.idempotency_key.as_ref().map(|k| tx.query_row("SELECT document_id,decision_hash FROM document_party_resolution_events WHERE idempotency_key=?1",[k],|r|Ok((r.get(0)?,r.get(1)?))).optional().map_err(sql)).transpose()?.flatten();
+    if keyed
+        .as_ref()
+        .is_some_and(|(id, h)| *id != input.document_id || h != &digest)
+    {
+        return Err(refused("IDEMPOTENCY_CONFLICT"));
+    }
+    let current: Option<(i64,String)> = tx.query_row("SELECT id,decision_hash FROM current_document_party_resolution_events WHERE document_id=?1",[input.document_id],|r|Ok((r.get(0)?,r.get(1)?))).optional().map_err(sql)?;
+    if let Some((id, h)) = current {
+        if h != digest {
+            return Err(refused("IDEMPOTENCY_CONFLICT"));
+        }
+        return Ok(json!({"ok":true,"id":id,"idempotent":true,"decisionHash":digest}));
+    }
+    let old: bool = tx.query_row("SELECT EXISTS(SELECT 1 FROM document_party_resolution_events WHERE document_id=?1 AND decision_hash=?2)",params![input.document_id,digest],|r|r.get(0)).map_err(sql)?;
+    if keyed.is_some() || old {
+        return Err(refused("CURRENT_STATE_CONFLICT"));
+    }
+    let id: i64 = tx.query_row("INSERT INTO document_party_resolution_events(document_id,state,reason,document_sha256,document_payload_sha256,decision_hash,idempotency_key,actor,principal,created_at) VALUES(?1,'internal_no_external_party',?2,?3,?4,?5,?6,?7,?8,?9) RETURNING id",params![input.document_id,why,source["sha256"].as_str(),source["payloadHash"].as_str(),digest,input.idempotency_key,actor,principal,now],|r|r.get(0)).map_err(sql)?;
+    Ok(json!({"ok":true,"id":id,"idempotent":false,"decisionHash":digest}))
+}
+pub fn internal_supersede(
+    tx: &Transaction<'_>,
+    input: &InternalSupersede,
+    actor: &str,
+    principal: &str,
+    now: &str,
+) -> Result<Value, Error> {
+    crate::journal_post::require_current(tx)?;
+    validate_actor(actor, principal, now)?;
+    if !input.confirm {
+        return Err(refused("CONFIRMATION_REQUIRED"));
+    }
+    let why = reason(&input.reason)?;
+    let source = internal_source(tx, input.document_id)?;
+    validate_backup(tx)?;
+    let prior: Option<(i64,String,String)> = tx.query_row("SELECT id,state,reason FROM document_party_resolution_events WHERE document_id=?1 AND decision_hash=?2 ORDER BY id DESC LIMIT 1",params![input.document_id,input.decision_hash],|r|Ok((r.get(0)?,r.get(1)?,r.get(2)?))).optional().map_err(sql)?;
+    let (id, state, old_reason) = prior.ok_or_else(|| refused("LINK_NOT_FOUND"))?;
+    if state == "superseded" {
+        if old_reason != why {
+            return Err(refused("IDEMPOTENCY_CONFLICT"));
+        }
+        return Ok(json!({"ok":true,"id":id,"idempotent":true}));
+    }
+    let id: i64 = tx.query_row("INSERT INTO document_party_resolution_events(document_id,state,reason,document_sha256,document_payload_sha256,decision_hash,supersedes_hash,actor,principal,created_at) VALUES(?1,'superseded',?2,?3,?4,?5,?5,?6,?7,?8) RETURNING id",params![input.document_id,why,source["sha256"].as_str(),source["payloadHash"].as_str(),input.decision_hash,actor,principal,now],|r|r.get(0)).map_err(sql)?;
+    Ok(json!({"ok":true,"id":id,"idempotent":false}))
+}
