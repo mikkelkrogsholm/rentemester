@@ -213,3 +213,25 @@ før skrivning; samme allerede eksisterende enrichment-hash forbliver en
 autoriseret no-op. Historik- og backupkontrollen bevares. En regression
 reproducerer det tidligere brud og beviser både afvisning uden ændringer og
 den lovlige no-op samt fortsat gyldig backup.
+
+### Oprindelige partskoblinger og restoreproveniens (Group166)
+
+Original planfejl returnerer et fejlet MCP-envelope; den tidligere ydre succes
+ved fejlet plan bevares ikke. Source-historik skjuler idempotency_key; native
+historik beholder sit eksisterende felt. CLI actor/principal er valgfrie
+lighedsassertioner mod aktuel serveridentitet og giver aldrig myndighed.
+Historisk gyldig agent/system-attribution og forskellige actor/principal
+bevares strukturelt uden at blive genindført som aktuel adgang.
+
+Et beskrivende navneudsagn ændrer ikke den kildefastsatte kanoniske
+partssnapshot. Faktisk omplanlægning afprøves derfor med en eksplicit tilladt
+issuer-rolle og en ny evidensbundet plan; en gammel supersederet kvittering
+kan ikke genoplive koblingen. Metadataenrichment efter partshistorik afvises
+fortsat af Group165-kontrollen.
+
+Gendannelse tilføjer bevidst native_restore_receipt_boundary. Prøven kræver
+alle oprindelige auditposter og domænerækker eksakt bevaret og præcis én
+ny post med korrekt næste ID, type, entity, high-water-mark, manifesthash,
+actor og tidsstempelformat. Seks isolerede manipulationsprøver afviser
+ændret historik, manglende/ekstra post, falsk actor, forkert manifest og
+ændrede domænedata. Ingen generel auditfiltrering eller svækket kontrol.

@@ -3739,3 +3739,28 @@ består en ny regression samt alle ti storage-bilagstests. Rapporten adskiller
 prøvens hashbundne binærer fra den særskilt prøvede kontrol. Forsinket scanner-
 revokation og fault-injiceret oprydning påstås ikke som faktiske forløb her.
 Installeret manuel desktopaccept ligger fortsat til allersidst.
+
+### Oprindelig partskobling og interne bilag (Group166)
+
+De syv oprindelige CLI- og MCP-operationer til plan, anvendelse, inspektion,
+liste, supersession og beslutning om ingen ekstern modpart bruger nu samme
+Rust-server. Alle 18 roller, eksakt identifikation og eksplicit gennemgået
+legacy-mapping bevares. Navne bruges aldrig som identitet. En intern beslutning
+og en partskobling udelukker hinanden; historik supersederes append-only.
+Nuværende legitimationsoplysninger bestemmer actor/principal. CLI-værdier kan
+kun være lighedsassertioner; gamle kvitteringer giver ingen ny myndighed.
+
+40 målrettede tests, streng Clippy for syv pakker og den faktiske prøve består
+på `9d16996d`. Prøven anvender CLI og MCP med normale MFA-brugere og en
+ejerudstedt servicekonto: tre originale bilag, tre koblingshændelser, tre
+interne beslutningshændelser og nul journalposter. Normal genstart og signeret
+gendannelse uden kilde eller privat signer bevarer bilag og historik; en ny
+MFA-ejer får sin egen myndighed. Alle 15 oprindelige auditposter er uændrede,
+og præcis én dokumenteret restorepost binder gendannelsen til manifestet.
+Der er præcis tre scannerkald; gendannelse scanner ikke igen.
+
+2477 kildefiler, tre binære filer og otte webfiler er uafhængigt hashkontrolleret.
+Legacy-positivforløbet er dækket af fokuserede syntetiske tests; det påstås ikke
+kørt gennem en ny legacy-administration. En anden genåbning af det gendannede
+workspace og installeret desktop er ikke kvalificeret her. Hele epic #672
+forbliver åben; næste forløb er det eksisterende fakturaudtræk.
