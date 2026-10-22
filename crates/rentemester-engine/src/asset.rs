@@ -21,6 +21,22 @@ pub fn amount(cost: &Money, months: u32, period: u32) -> Result<Money, Error> {
         base
     }))
 }
+/// Source schedules permit zero slices; the journal writer still refuses zero postings.
+pub fn source_amount(cost: &Money, months: u32, period: u32) -> Result<Money, Error> {
+    if months == 0 || months > 12000 || period == 0 || period > months || cost.0 <= BigInt::from(0)
+    {
+        return Err(Error::new(
+            "asset_refused",
+            "invalid cost, depreciation period or useful life",
+        ));
+    }
+    let base = &cost.0 / BigInt::from(months);
+    Ok(Money(if period == months {
+        &cost.0 - &base * BigInt::from(months - 1)
+    } else {
+        base
+    }))
+}
 #[cfg(test)]
 mod tests {
     use super::*;

@@ -565,6 +565,7 @@ pub mod invoice_settlement;
 pub mod credit_note;
 
 pub mod assets;
+pub mod asset_original;
 
 pub mod accruals;
 pub mod accrual_original;
