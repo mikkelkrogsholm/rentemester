@@ -334,15 +334,15 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
     };
     if matches!(operation, Operation::WriteOff) && reply.status() != StatusCode::OK {
         let (parts, body) = reply.into_parts();
-        if let Ok(bytes) = to_bytes(body, 16384).await {
-            if let Ok(mut value) = serde_json::from_slice::<Value>(&bytes) {
-                // Only the generic error fallback has the default depreciation
-                // rule; preserve all actual domain/journal refusal evidence.
-                if value["appliedRules"] == json!(["DK-ASSET-DEPR-001"]) {
-                    value["appliedRules"] = json!(["DK-ASSET-WRITEOFF-001"]);
-                }
-                return response(parts.status, value);
+        if let Ok(bytes) = to_bytes(body, 16384).await
+            && let Ok(mut value) = serde_json::from_slice::<Value>(&bytes)
+        {
+            // Only the generic error fallback has the default depreciation
+            // rule; preserve all actual domain/journal refusal evidence.
+            if value["appliedRules"] == json!(["DK-ASSET-DEPR-001"]) {
+                value["appliedRules"] = json!(["DK-ASSET-WRITEOFF-001"]);
             }
+            return response(parts.status, value);
         }
         return domain_error("", true);
     }
