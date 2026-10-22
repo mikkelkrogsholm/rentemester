@@ -2,6 +2,15 @@
 use super::*;
 use rentemester_application::journal_original;
 
+fn rejected(code: &str, business: Option<Value>) -> Response {
+    let mut value = business.unwrap_or_else(|| json!({"ok":false,"errors":[code]}));
+    // Native writer refusals may omit a code; preserve their actual errors and
+    // rules while supplying the bounded source transport's required code.
+    if value.get("code").is_none() { value["code"] = json!(code); }
+    if value.get("appliedRules").is_none() { value["appliedRules"] = json!([]); }
+    response(StatusCode::UNPROCESSABLE_ENTITY, value)
+}
+
 enum Principal {
     Human(rentemester_runtime::auth::VerifiedCookie),
     Service(rentemester_runtime::service_key::ServiceKey),
@@ -91,10 +100,7 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
                 Err(f) if f.fence.error.code == "access_denied" => {
                     refused(StatusCode::FORBIDDEN, "access_denied")
                 }
-                Err(f) => match f.business {
-                    Some(v) => response(StatusCode::UNPROCESSABLE_ENTITY, v),
-                    None => refused(StatusCode::UNPROCESSABLE_ENTITY, f.fence.error.code),
-                },
+                Err(f) => rejected(f.fence.error.code, f.business),
             },
             Principal::Service(key) => match owner
                 .journal_original_service(&key, &SystemClock, action)
@@ -113,10 +119,7 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
                     } else if f.error.code == "access_denied" {
                         refused(StatusCode::FORBIDDEN, "access_denied")
                     } else {
-                        match f.rejection {
-                            Some(v) => response(StatusCode::UNPROCESSABLE_ENTITY, v),
-                            None => refused(StatusCode::UNPROCESSABLE_ENTITY, f.error.code),
-                        }
+                        rejected(f.error.code, f.rejection)
                     }
                 }
             },
@@ -126,5 +129,23 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
     match result {
         Ok(Ok(response)) => response,
         _ => refused(StatusCode::SERVICE_UNAVAILABLE, unconfirmed),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[tokio::test]
+    async fn journal_original_native_refusals_preserve_errors_rules_and_transport_code() {
+        for (code, business, expected) in [
+            ("business_rejection", Some(json!({"ok":false,"errors":["Closed period"],"appliedRules":["PERIOD_LOCK"]})), json!({"ok":false,"code":"business_rejection","errors":["Closed period"],"appliedRules":["PERIOD_LOCK"]})),
+            ("period_closed", None, json!({"ok":false,"code":"period_closed","errors":["period_closed"],"appliedRules":[]})),
+            ("business_rejection", Some(json!({"ok":false,"code":"journal_selection_usage","errors":["Ambiguous selector"],"appliedRules":[]})), json!({"ok":false,"code":"journal_selection_usage","errors":["Ambiguous selector"],"appliedRules":[]})),
+        ] {
+            let response = rejected(code, business);
+            assert_eq!(response.status(), StatusCode::UNPROCESSABLE_ENTITY);
+            let bytes = to_bytes(response.into_body(), 65536).await.unwrap();
+            assert_eq!(serde_json::from_slice::<Value>(&bytes).unwrap(), expected);
+        }
     }
 }
