@@ -34,7 +34,7 @@ fn master_data_original_pure_lists_null_terms_mixed_case_archived_all_and_typed_
     assert_eq!(rows["rows"][0]["paymentTermsDays"], Value::Null);
     assert_eq!(rows["rows"][0]["email"], Value::Null);
     assert_eq!(rows["rows"][0]["defaultCurrency"], "EUR");
-    assert_eq!(rows["rows"][0].as_object().unwrap().len(), 14);
+    assert_eq!(rows["rows"][0].as_object().unwrap().len(), 13);
     assert_eq!(rows["rows"][0]["archived"], false);
     // Explicit synthetic boundary fixture, not an operational archive workflow.
     tx.execute("UPDATE customers SET archived=1 WHERE name='Alpha'", [])
@@ -50,7 +50,7 @@ fn master_data_original_pure_lists_null_terms_mixed_case_archived_all_and_typed_
     )
     .unwrap();
     let vendors = list(&tx, Kind::Vendor, false).unwrap();
-    assert_eq!(vendors["rows"][0].as_object().unwrap().len(), 16);
+    assert_eq!(vendors["rows"][0].as_object().unwrap().len(), 15);
     assert_eq!(
         vendors["rows"][0]["identityStatus"],
         "human_resolution_required"

@@ -100,8 +100,20 @@ pub fn list(tx: &Transaction<'_>, kind: Kind, archived: bool) -> Result<Value, E
             };
         }
         crate::gdpr::overlay_contact(tx, table, &mut value)?;
+        // Preserve redaction without adding a field to the source DTO.
+        value.as_object_mut().unwrap().remove("gdprErased");
         rows.push(value);
     }
+    // Privacy overlays can change the visible name. Keep source ASCII lower-name
+    // ordering on that projection, without disclosing the hidden original name.
+    rows.sort_by(|a, b| {
+        a["name"]
+            .as_str()
+            .unwrap()
+            .to_ascii_lowercase()
+            .cmp(&b["name"].as_str().unwrap().to_ascii_lowercase())
+            .then_with(|| a["id"].as_i64().cmp(&b["id"].as_i64()))
+    });
     Ok(json!({"ok":true,"count":rows.len(),"rows":rows,"errors":[]}))
 }
 /// Only the six source CVR fill fields are composed; explicit nonblank values win.

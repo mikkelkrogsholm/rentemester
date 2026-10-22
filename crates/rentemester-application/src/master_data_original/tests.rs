@@ -265,9 +265,10 @@ fn master_data_original_composed_create_fill_override_and_revocation_no_cache_pu
     assert_eq!(rows["rows"][0]["vatOrCvr"], "DK12345678");
     assert_eq!(rows["rows"][0]["defaultCurrency"], "EUR");
     assert_eq!(rows["rows"][0]["paymentTermsDays"], Value::Null);
+    let vendor_input: Create = serde_json::from_value(json!({"input":{"name":"Synthetic vendor","notes":"Kept"},"fromCvr":"87654321","confirm":true})).unwrap();
     let admission = prepare(
         &mut f,
-        Request::PrepareCvr("87654321", Some((Kind::Vendor, &input))),
+        Request::PrepareCvr("87654321", Some((Kind::Vendor, &vendor_input))),
     );
     f.control.execute_batch("INSERT INTO rm_company_membership_events(user_id,company_slug,event_type,company_role,actor)VALUES('u','a','revoke',NULL,'user:u')").unwrap();
     assert!(

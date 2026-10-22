@@ -155,7 +155,7 @@ fn apply(
                     )?;
                     if let Some((kind, input)) = create {
                         if result["ok"] != true {
-                            result
+                            json!({"ok":false,"errors":result["errors"]})
                         } else {
                             store::create(
                                 tx,
