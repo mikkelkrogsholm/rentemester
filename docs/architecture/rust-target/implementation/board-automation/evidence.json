@@ -1,0 +1,30 @@
+{
+  "status": "configured_and_verified",
+  "checked_at": "2026-10-22T15:32:33.998012+00:00",
+  "board": "http://127.0.0.1:8743/",
+  "native_automation_id": "rentemester-rust-automatisk-fremdrift",
+  "automation_status": "ACTIVE",
+  "interval_minutes": 5,
+  "target_thread": "01a149cc-ea12-7880-950d-fc39b108f333",
+  "scope": {
+    "original_issues": 55,
+    "github_open": 54,
+    "github_closed": 1,
+    "authority": "GitHub; read-only display projection; no second queue"
+  },
+  "verification": [
+    "Actual GitHub complete mapped scope fetched in one read-only query;55issues preserved.",
+    "3 focused projection tests passed: complete scope, closed deps/partial evidence distinction, invalid/missing status fail closed.",
+    "Existing+new Go TestBoard cases passed; board reads optional display files without engine mutation or arbitrary artifact exposure.",
+    "Actual in-app UI filters showed55all/1closed/54open, same browser tab refreshed and kept.",
+    "Current work reconciled:3receipts collected, concrete review rejected client boundary weakening; proof accepted/integrated through SGD at394ad8bd. Native/service auth fixture defect diagnosed without relaxing gate; scoped repairs started."
+  ],
+  "limits": [
+    "Native heartbeat configuration confirmed ACTIVE; a scheduled wake has not been claimed as observed.",
+    "Review and product acceptance stay with main agent; passing worker checks never automatically approve.",
+    "Host and Codex scheduling must remain available. Manual installed desktop acceptance remains last."
+  ],
+  "screenshot": "/tmp/rentemester-board-full-scope.png",
+  "tooling_patch": "sgd-board.patch",
+  "tooling_patch_sha256": "265ddef240eb3844bf3d75b43fcb324cf617f084eabfdb7cb9c8ae060d1c7935"
+}

@@ -155,3 +155,33 @@ Lokale workflowtests:
 ```sh
 python3 -m unittest discover -s scripts/workflow -p 'test_*.py' -v
 ```
+
+
+## Fuld oversigt og automatisk fortsættelse
+
+Det eksisterende SGD-board på `http://127.0.0.1:8743` viser både alle55
+oprindelige issues og den aktuelle udførelse. Issueoversigten er en read-only
+GitHub-projektion med status, afhængigheder, åbne acceptkriterier og bevaret
+delaccept. Åbne issues er ikke et mål for andelen af kode, der mangler. Ingen
+lokal kopi af oversigten må overtage leverancestatus eller blive en ekstra kø.
+
+Opdatér fra hovedcheckoutet med:
+
+```sh
+python3 scripts/workflow/board_snapshot.py --project /Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester
+```
+
+Codex-heartbeat `rentemester-rust-automatisk-fremdrift` følger denne chat hvert
+femte minut. Hovedagenten afstemmer processer/resultater, opsamler afsluttede
+workers, reviewer konkrete diffs og checks, retter diagnosticerede fejl og
+integrerer gennem SGD. En bestået test er aldrig automatisk reviewgodkendelse.
+Efter samlet accept integreres og registreres evidens; næste nødvendige hele
+brugerforløb planlægges og dispatches med uafhængige dele parallelt. Eksisterende
+WIP-, worktree-, plads-, regnskabs-, adgangs- og acceptkontroller bevares.
+
+`.sgd/driver.json` viser kun styringens konfiguration og seneste observerede
+handling. Den ejer ingen opgaver. Heartbeat kører via Codex' understøttede
+planlægning, og lokal eksekvering kræver en tilgængelig vært. Boardets to-sekunders
+visningsopdatering starter ingen arbejde. Opfølgningen er stille ved uændret
+status og stoppes ved brugerens pause/stop eller hele målets verificerede
+færdiggørelse. Installeret manuel desktopaccept ligger stadig allersidst.

@@ -1,0 +1,159 @@
+--- a/tooling/cmd/sgd/board.go
++++ b/tooling/cmd/sgd/board.go
+@@ -49,24 +49,26 @@
+ }
+ 
+ type boardSnapshot struct {
+-	Project     string       `json:"project"`
+-	Title       string       `json:"title"`
+-	Goal        string       `json:"goal"`
+-	Milestone   string       `json:"milestone"`
+-	RunID       string       `json:"run_id"`
+-	Phase       string       `json:"phase"`
+-	Message     string       `json:"message"`
+-	Branch      string       `json:"branch"`
+-	Commit      string       `json:"commit"`
+-	Updated     string       `json:"updated,omitempty"`
+-	Observed    string       `json:"observed"`
+-	MaxParallel int          `json:"max_parallel"`
+-	MaxAttempts int          `json:"max_attempts"`
+-	Active      int          `json:"active"`
+-	Integrated  int          `json:"integrated"`
+-	Warnings    []string     `json:"warnings"`
+-	Tasks       []boardTask  `json:"tasks"`
+-	Acceptance  []boardCheck `json:"acceptance"`
++	Overview    json.RawMessage `json:"overview,omitempty"`
++	Driver      json.RawMessage `json:"driver,omitempty"`
++	Project     string          `json:"project"`
++	Title       string          `json:"title"`
++	Goal        string          `json:"goal"`
++	Milestone   string          `json:"milestone"`
++	RunID       string          `json:"run_id"`
++	Phase       string          `json:"phase"`
++	Message     string          `json:"message"`
++	Branch      string          `json:"branch"`
++	Commit      string          `json:"commit"`
++	Updated     string          `json:"updated,omitempty"`
++	Observed    string          `json:"observed"`
++	MaxParallel int             `json:"max_parallel"`
++	MaxAttempts int             `json:"max_attempts"`
++	Active      int             `json:"active"`
++	Integrated  int             `json:"integrated"`
++	Warnings    []string        `json:"warnings"`
++	Tasks       []boardTask     `json:"tasks"`
++	Acceptance  []boardCheck    `json:"acceptance"`
+ }
+ 
+ func artifactURL(run, task, kind, check string) string {
+@@ -200,6 +202,23 @@
+ 			c = e.boardCheck(r, s.RunID, "")
+ 		}
+ 		b.Acceptance = append(b.Acceptance, c)
++	}
++	// Optional display projections only. They never dispatch or override engine state.
++	for name, target := range map[string]*json.RawMessage{"overview.json": &b.Overview, "driver.json": &b.Driver} {
++		info, err := os.Lstat(e.path(name))
++		if os.IsNotExist(err) {
++			continue
++		}
++		if err != nil || !info.Mode().IsRegular() || info.Size() > 2*1024*1024 {
++			b.Warnings = append(b.Warnings, "Visningsfil utilgængelig: "+name)
++			continue
++		}
++		data, err := os.ReadFile(e.path(name))
++		if err != nil || !json.Valid(data) {
++			b.Warnings = append(b.Warnings, "Visningsfil ugyldig; beholdt engine-state: "+name)
++			continue
++		}
++		*target = data
+ 	}
+ 	return b, w, s, nil
+ }
+--- a/tooling/cmd/sgd/board.html
++++ b/tooling/cmd/sgd/board.html
+@@ -19,6 +19,7 @@
+ .runline{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:18px 0 14px}.runline .path{font-size:11px}.board{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;align-items:start}.column{min-width:0;background:#edf0e9;border-radius:9px;padding:12px;min-height:210px}.column>h2{display:flex;justify-content:space-between;gap:8px;font-size:12px;padding:0 3px 12px}.count{color:var(--muted);font-weight:400}.empty{font-size:12px;color:var(--muted);padding:8px 3px}
+ .card{background:var(--paper);border:1px solid var(--line);border-radius:7px;padding:14px;margin-bottom:10px;overflow-wrap:anywhere}.card:last-child{margin-bottom:0}.card.blocked,.card.reconcile{border-top:3px solid #bd6a58}.card.running{border-top:3px solid #3b8266}.card.submitted{border-top:3px solid #817296}.taskid{font-size:13px;font-weight:700;margin:0 0 9px;line-height:1.45;scroll-margin-top:20px}.taskstate{font-size:12px;margin:10px 0 6px;color:var(--muted)}.reason{font-size:12px;color:var(--red);margin-top:9px;white-space:pre-wrap}.agent{font-size:11px;color:var(--muted);margin-top:9px}.links{display:flex;flex-wrap:wrap;gap:6px 12px;font-size:12px;margin-top:12px}a{color:var(--green);text-underline-offset:3px}.dependencies{font-size:12px;color:var(--muted);margin-top:10px}.card details{border-top:1px solid var(--line);margin-top:12px;padding-top:10px;font-size:12px}.card summary{color:var(--muted)}.deliverable{white-space:pre-wrap;margin:12px 0}.field{margin-top:10px;color:var(--muted)}.field b{display:block;font-size:11px;color:var(--ink)}.mono{font:11px/1.6 ui-monospace,SFMono-Regular,monospace;overflow-wrap:anywhere}.check{margin-top:9px;font-size:12px}.check small{display:block;margin-top:4px;color:var(--red);white-space:pre-wrap}.check .pill{margin-right:6px}
+ .acceptance{margin-top:24px;border-top:1px solid var(--line);padding-top:18px}.acceptance .checks{display:flex;gap:8px 24px;flex-wrap:wrap}.footnote{margin-top:20px;color:var(--muted);font-size:12px}.result{margin-top:12px}.loading{padding:45px 0;color:var(--muted)}
++.overview{margin:24px 0 32px;background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:20px}.overview h2{font-size:22px}.overview .summary{margin:8px 0;color:var(--muted)}.filters{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0}.filters button{font:inherit;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:7px 12px;cursor:pointer}.filters button[aria-pressed="true"]{background:var(--green);color:white}.issue{border-top:1px solid var(--line);padding:13px 0}.issue-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.issue-head a{font-weight:650}.issue details{margin-top:8px}.issue ul{padding-left:20px}.issue li{margin:5px 0}.control{padding:12px 16px;background:#e4efe8;border-radius:7px;margin:14px 0}.control p+ p{margin-top:5px}.overview .pill.done{background:#e4efe8;color:var(--green)}
+ @media(max-width:1100px){main{padding:20px}.board{grid-template-columns:repeat(3,minmax(0,1fr))}}@media(max-width:700px){main{padding:16px}.board{grid-template-columns:1fr}.column{min-height:0}.metrics{gap:18px}.context{padding:16px}.brand span{display:block;margin:4px 0 0}.progress{max-width:none;flex-basis:100%}header{align-items:start}.live{max-width:170px}}
+ </style>
+ </head>
+@@ -38,9 +39,30 @@
+ const pill=(value,text)=>`<span class="pill ${esc(value)}">${esc(text||labels[value]||value)}</span>`;
+ const date=v=>v?new Date(v).toLocaleString('da-DK'):'';
+ const short=v=>String(v||'').slice(0,10);
+-const link=(text,url)=>`<a href="${esc(url)}" target="_blank" rel="noopener">${esc(text)}</a>`;
++const link=(text,url)=>/^(https?:\/\/|\/(?!\/))/.test(String(url))?`<a href="${esc(url)}" target="_blank" rel="noopener">${esc(text)}</a>`:esc(text);
+ const check=c=>`<div class="check">${pill(c.status)}${c.url?link(c.id,c.url):esc(c.id)}${c.status==='failed'?` · exit ${esc(c.exit_code)}`:''}${c.reason?`<small>${esc(c.reason)}</small>`:''}</div>`;
+-let previous='', lastSuccess='';
++let previous='', lastSuccess='', issueView='open', lastSnapshot=null;
++const flowNames={backlog:'Backlog',ready:'Klar',developing:'Udvikling',integrating:'Integration',acceptance:'Accept',done:'Færdig'};
++function overview(o,d){
++  if(!o||!Array.isArray(o.issues))return '';
++  const visible=o.issues.filter(i=>issueView==='all'||(issueView==='closed'?i.state==='closed':i.state!=='closed'));
++  const stale=Date.now()-new Date(o.updated_at).getTime()>15*60*1000;
++  return `<section class="overview" aria-label="Hele Rust-omskrivningen"><h2>Hele Rust-omskrivningen</h2>
++  <p class="summary">${o.remaining} åbne · ${o.complete} lukkede · ${o.total} oprindelige issues. Åbne issues kan indeholde allerede accepteret kode; detaljerne viser bevaret evidens.</p>
++  <p class="path">${link('Epic #'+o.epic.number,o.epic.url)} · GitHub er autoritativ · hentet ${esc(date(o.updated_at))}</p>
++  ${stale?'<p class="banner warn">Issueoversigten er over 15 minutter gammel. GitHub kan have nyere status.</p>':''}
++  ${d?`<div class="control"><strong>Automatisk styring · Codex-heartbeat hvert ${esc(d.interval_minutes)}. minut</strong><p>${esc(d.message)}</p><p class="path">${d.last_checked?'Senest kontrolleret '+esc(date(d.last_checked)):''} · ${esc(d.next_action||'Afstem state og behandl næste nødvendige handling.')}</p></div>`:''}
++  <div class="filters" role="group" aria-label="Vis issues">${[['open','Restarbejde ('+o.remaining+')'],['all','Alle ('+o.total+')'],['closed','Færdige ('+o.complete+')']].map(([value,label])=>`<button data-issue-view="${value}" aria-pressed="${value===issueView}">${esc(label)}</button>`).join('')}</div>
++  ${visible.map(i=>`<article class="issue" id="issue-${i.number}"><div class="issue-head">${pill(i.flow,flowNames[i.flow]||i.flow)}${link(i.title,i.url)}</div>
++  ${i.blocked_reason?`<p class="reason">${esc(i.blocked_reason)}</p>`:''}
++  <details data-task="issue-${i.number}"><summary>Kriterier, afhængigheder og accepteret arbejde</summary>
++  <p class="dependencies">Afhænger af ${(i.dependencies||[]).map(n=>link('#'+n,o.epic.url.replace(/\d+$/,'')+n)).join(', ')||'Ingen angivet'}</p>
++  <p class="summary">${i.state==='closed'?'Lukket i GitHub.':(i.remaining||[]).length+' åbne acceptkriterier i GitHub:'}</p><ul>${(i.remaining||[]).map(v=>`<li>${esc(v)}</li>`).join('')}</ul>
++  ${(i.evidence||[]).length?`<p><strong>Bevaret delaccept:</strong></p><ul>${i.evidence.map(e=>`<li>${esc(e.id)} · ${esc(e.status)} ${e.revision?'· '+esc(short(e.revision)):''}</li>`).join('')}</ul>`:''}
++  </details></article>`).join('')}</section>`;
++}
++app.addEventListener('click',event=>{const button=event.target.closest('[data-issue-view]');if(button){issueView=button.dataset.issueView;render(lastSnapshot)}});
++
+ function status(t,b){
+   const s=t.state;
+   if(t.process)return b.phase==='cancelled'?`Stop anmodet · proces ${t.process} findes stadig`:`Agent/runner aktiv · PID ${t.process}`;
+@@ -79,12 +101,14 @@
+   </article>`;
+ }
+ function render(b){
++  lastSnapshot=b;
+   const open=[...app.querySelectorAll('details[open]')].map(d=>d.dataset.task||'goal');
+   const focus=app.contains(document.activeElement)?document.activeElement.id:'';
+   const focusedLink=app.contains(document.activeElement)?document.activeElement.getAttribute('href'):null;
+   const total=b.tasks.length, reviews=b.tasks.filter(t=>t.state.phase==='submitted').length, blocked=b.tasks.filter(t=>['blocked','reconcile'].includes(t.state.phase)).length;
+-  document.title=`SGD · ${b.title}`;
+-  app.innerHTML=`<h1>${esc(b.title)}</h1><p class="path">${esc(b.project)}</p>
++  document.title=`SGD · ${b.overview?.title||b.title}`;
++  app.innerHTML=`<h1>${esc(b.overview?.title||b.title)}</h1><p class="path">${esc(b.project)}</p>
++    ${overview(b.overview,b.driver)}
+     <section class="context" aria-label="Mål og milepæl"><div class="label">Aktuel milepæl</div><p class="milestone">${esc(b.milestone)}</p>
+       ${b.goal?`<details data-task="goal"><summary id="detail-goal">Samlet mål</summary><p class="goal">${esc(b.goal)}</p></details>`:''}
+     </section>
+--- a/tooling/cmd/sgd/board_test.go
++++ b/tooling/cmd/sgd/board_test.go
+@@ -150,3 +150,25 @@
+ 		t.Fatal("board exposed an arbitrary file URL")
+ 	}
+ }
++
++func TestBoardOverviewIsReadOnlyAndOptional(t *testing.T) {
++	e, _, _ := boardFixture(t)
++	before, _ := os.ReadFile(e.path("state.json"))
++	writeJSON(e.path("overview.json"), map[string]any{"format": "sgd-github-overview/1", "issues": []any{map[string]any{"number": 717, "title": "Remaining Rust flow"}}})
++	writeJSON(e.path("driver.json"), map[string]any{"interval_minutes": 5, "message": "Awaiting heartbeat"})
++	response := boardRequest(e.boardHandler(), "GET", "/api/state")
++	var b boardSnapshot
++	if response.Code != 200 || json.Unmarshal(response.Body.Bytes(), &b) != nil || len(b.Overview) == 0 || len(b.Driver) == 0 {
++		t.Fatalf("missing overview: %s", response.Body.String())
++	}
++	after, _ := os.ReadFile(e.path("state.json"))
++	if string(before) != string(after) {
++		t.Fatal("overview changed execution state")
++	}
++	writeText(e.path("overview.json"), "invalid")
++	response = boardRequest(e.boardHandler(), "GET", "/api/state")
++	json.Unmarshal(response.Body.Bytes(), &b)
++	if response.Code != 200 || len(b.Warnings) == 0 {
++		t.Fatal("malformed display projection hid current run")
++	}
++}
