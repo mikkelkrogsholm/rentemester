@@ -2,6 +2,23 @@
 use super::*;
 use rentemester_application::public_einvoice::{self as app, Admission, Intent, Next, Outcome};
 impl Owner {
+    pub fn original_public_einvoice(
+        &mut self,
+        cookie: &VerifiedCookie,
+        clock: &dyn Clock,
+        action: app::OriginalAction,
+        body: &serde_json::Value,
+    ) -> Result<
+        Attempt<
+            Result<Committed<serde_json::Value>, rentemester_application::control_fence::Failure>,
+        >,
+        OwnerError,
+    > {
+        self.document_action(cookie, clock, |c, l, g, context| {
+            app::original(c, l, g, context, action, body)
+        })
+    }
+
     pub fn public_einvoice_submissions(
         &mut self,
         cookie: &VerifiedCookie,

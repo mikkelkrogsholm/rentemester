@@ -16,6 +16,7 @@ use serde_json::{Value, json};
 pub enum Intent {
     Setup,
     Send(i64),
+    OriginalSend(Value),
     Status(i64),
 }
 pub enum Next {
@@ -30,6 +31,7 @@ pub struct Admission {
     subject: String,
     ledger: String,
     environment: String,
+    original: bool,
     step: Step,
 }
 enum Step {
@@ -159,6 +161,7 @@ fn at(context: &Context<'_>) -> Result<String, Error> {
     )
 }
 fn physical(tx: &Transaction<'_>, guard: &mut NamespaceGuard, s: &Source) -> Result<(), Error> {
+    crate::sales::verify_invoice(tx, guard, s.invoice_document_id)?;
     let (path,hash,payload):(String,String,String)=tx.query_row("SELECT stored_path,sha256_hash,payload_json FROM documents WHERE id=?1 AND document_type='issued_invoice'",[s.invoice_document_id],|r|Ok((r.get(0)?,r.get(1)?,r.get(2)?))).map_err(|_|refused())?;
     if hash != s.json_sha256 {
         return Err(refused());
@@ -180,6 +183,7 @@ fn admitted(
     actor: &str,
     ledger: String,
     environment: &str,
+    original: bool,
     step: Step,
 ) -> Admission {
     Admission {
@@ -188,6 +192,7 @@ fn admitted(
         subject: actor.into(),
         ledger,
         environment: environment.into(),
+        original,
         step,
     }
 }
@@ -207,6 +212,7 @@ pub fn start(
     if !matches!(environment, "test" | "production") {
         return Err(fail(refused()));
     }
+    let original = matches!(&intent, Intent::OriginalSend(_));
     control_fence::execute_cookie_subject(
         control,
         company,
@@ -238,17 +244,23 @@ pub fn start(
                         }
                     }
                 }
-                Intent::Send(id) => {
-                    if let Some(row) = store::get(tx, id)? {
-                        return Ok(Next::Complete(json!({"ok":true,"submission":row})));
+                Intent::Send(id) => match send_step(tx, guard, id, environment, false)? {
+                    Ok(step) => step,
+                    Err(value) => return Ok(Next::Complete(value)),
+                },
+                Intent::OriginalSend(body) => {
+                    let id = original_id(tx, &body)?;
+                    if let Some(assertion) = body.get("companyKey") {
+                        let key = store::load_bound(tx, environment)?.ok_or_else(refused)?;
+                        if assertion.as_str() != Some(key.as_str()) {
+                            return Err(refused());
+                        }
                     }
-                    let key = store::load_bound(tx, environment)?.ok_or_else(refused)?;
-                    if !store::outbound_registered(tx, environment, &key)? {
-                        return Err(refused());
+                    crate::sales::verify_invoice(tx, guard, id)?;
+                    match send_step(tx, guard, id, environment, true)? {
+                        Ok(step) => step,
+                        Err(value) => return Ok(Next::Complete(value)),
                     }
-                    let source = store::load_source(tx, id, &key, environment)?;
-                    physical(tx, guard, &source)?;
-                    Step::Validate(source)
                 }
                 Intent::Status(id) => {
                     let (row_id, source, document_id) =
@@ -265,6 +277,7 @@ pub fn start(
                 actor,
                 ledger,
                 environment,
+                original,
                 step,
             ))))
         },
@@ -367,6 +380,9 @@ pub fn finish(
                     }
                     let reserved = store::reserve(tx, source, actor, &now)?;
                     if !reserved.should_deliver {
+                        if admission.original && !reserved.result["providerStatus"].is_string() {
+                            return Err(blocked());
+                        }
                         return Ok(Next::Complete(
                             json!({"ok":true,"submission":reserved.result}),
                         ));
@@ -380,10 +396,11 @@ pub fn finish(
                         document_id: o.document_id,
                         status: o.status,
                     });
-                    let row = match observation {
+                    let mut row = match observation {
                         Some(o) => store::record_outcome(tx, *id, o, actor, &now)?,
                         None => store::get(tx, source.invoice_document_id)?.ok_or_else(refused)?,
                     };
+                    row["duplicate"] = json!(false);
                     Ok(Next::Complete(json!({"ok":true,"submission":row})))
                 }
                 (Step::Observe(source, id, expected), Outcome::Observed(Some(observation))) => {
@@ -472,5 +489,123 @@ pub fn submissions(
             store::validate_backup(tx)?;
             Ok(json!({"ok":true,"rows":store::rows(tx)?["submissions"]}))
         },
+    )
+}
+
+#[derive(Clone, Copy)]
+pub enum OriginalAction {
+    Preview,
+    OioUbl,
+    Prepare,
+}
+/// Original artifacts use physical issued JSON/PDF, independently of provider configuration.
+pub fn original(
+    control: &mut Connection,
+    company: &mut Connection,
+    guard: &mut NamespaceGuard,
+    context: Context<'_>,
+    action: OriginalAction,
+    body: &Value,
+) -> Result<Committed<Value>, Failure> {
+    let preparing = matches!(action, OriginalAction::Prepare);
+    control_fence::execute_cookie_subject_mode(
+        control,
+        company,
+        CookieAuthorization {
+            cookie: context.cookie,
+            clock: context.clock,
+            requirement: if preparing {
+                SessionRequirement::Fresh
+            } else {
+                SessionRequirement::Current
+            },
+        },
+        selection(&context),
+        if preparing {
+            Permission::CompanyExternalSend
+        } else {
+            Permission::CompanyDocumentsRead
+        },
+        matches!(action, OriginalAction::Preview),
+        |tx, actor| {
+            let id = original_id(tx, body)?;
+            crate::sales::verify_invoice(tx, guard, id)?;
+            let (no,raw):(String,String)=tx.query_row("SELECT invoice_no,payload_json FROM documents WHERE id=? AND document_type='issued_invoice'",[id],|r|Ok((r.get(0)?,r.get(1)?))).map_err(|_|refused())?;
+            let payload: Value = serde_json::from_str(&raw).map_err(|_| refused())?;
+            if preparing {
+                if body["confirm"] != true {
+                    return Err(refused());
+                }
+                let access =
+                    serde_json::from_value(body["accessPoint"].clone()).map_err(|_| refused())?;
+                let ack = body
+                    .get("acknowledgement")
+                    .cloned()
+                    .map(serde_json::from_value)
+                    .transpose()
+                    .map_err(|_| refused())?;
+                return store::prepare_original(
+                    tx,
+                    id,
+                    &access,
+                    ack.as_ref(),
+                    actor,
+                    &at(&context)?,
+                );
+            }
+            let preview = matches!(action, OriginalAction::Preview);
+            let export = if preview {
+                rentemester_engine::public_einvoice_preview::export(&no, &payload)?
+            } else {
+                rentemester_engine::public_einvoice::export(&no, &payload)?
+            };
+            if !preview {
+                tx.execute("INSERT INTO audit_log(event_type,entity_type,entity_id,message,actor,created_at)VALUES('public_einvoice_oioubl_export','document',?,?,?,?)",rusqlite::params![id.to_string(),json!({"invoiceNumber":no,"sha256":export.sha256}).to_string(),actor,at(&context)?]).map_err(|_|refused())?;
+            }
+            Ok(
+                json!({"ok":true,"invoiceNumber":no,"sha256":export.sha256,"xml":export.xml,"appliedRules":[if preview{"DK-INVOICE-PUBLIC-EXPORT-001"}else{"DK-INVOICE-PUBLIC-OIOUBL-001"}],"errors":[]}),
+            )
+        },
+    )
+}
+fn original_id(tx: &Transaction<'_>, body: &Value) -> Result<i64, Error> {
+    rentemester_storage::invoice_lifecycle::resolve_invoice(tx, body, "documentId", "invoiceNumber")
+}
+fn send_step(
+    tx: &Transaction<'_>,
+    guard: &mut NamespaceGuard,
+    id: i64,
+    environment: &str,
+    original: bool,
+) -> Result<Result<Step, Value>, Error> {
+    if let Some(row) = store::get(tx, id)? {
+        if original && !row["providerStatus"].is_string() {
+            return Err(blocked());
+        }
+        // Repeated original transmit may observe an already accepted queued ID once.
+        // Terminal/uncertain/legacy/manual states are cached and never redelivered.
+        if original && row["legacy"] == false && row["providerStatus"] == "queued-for-delivery" {
+            let (row_id, source, document_id) = store::accepted(tx, id)?.ok_or_else(refused)?;
+            if source.environment != environment {
+                return Err(refused());
+            }
+            physical(tx, guard, &source)?;
+            return Ok(Ok(Step::Observe(source, row_id, document_id)));
+        }
+        return Ok(Err(json!({"ok":true,"submission":row})));
+    }
+    let key = store::load_bound(tx, environment)?.ok_or_else(refused)?;
+    if !store::outbound_registered(tx, environment, &key)? {
+        return Err(refused());
+    }
+    let source = store::load_source(tx, id, &key, environment)?;
+    physical(tx, guard, &source)?;
+    Ok(Ok(Step::Validate(source)))
+}
+
+fn blocked() -> Error {
+    Error::new(
+        "public_einvoice_redelivery_blocked",
+        "An existing manual or historical handoff blocks delivery and is not native provider evidence",
     )
 }

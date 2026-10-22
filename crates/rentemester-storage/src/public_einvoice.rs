@@ -4,7 +4,9 @@ use rusqlite::{Connection, OptionalExtension, Transaction, params};
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
+mod handoff;
 mod registration;
+pub use handoff::prepare_original;
 pub use registration::{
     Identity, Registration, identity, load_bound, outbound_registered, registration, save_key,
     save_outbound,
@@ -302,15 +304,7 @@ pub fn reserve(
     now: &str,
 ) -> Result<Reservation, Error> {
     validate_backup(tx)?;
-    if let Some(id) = tx
-        .query_row(
-            "SELECT id FROM peppol_submissions WHERE invoice_document_id=? ORDER BY id LIMIT 1",
-            [source.invoice_document_id],
-            |r| r.get(0),
-        )
-        .optional()
-        .map_err(sql)?
-    {
+    if let Some(id) = blocking_id(tx, source.invoice_document_id)? {
         return Ok(Reservation {
             id,
             should_deliver: false,
@@ -392,6 +386,7 @@ pub fn record_outcome(
     event(tx, id, kind, &o, actor, now, &s.head)?;
     project(tx, id)
 }
+#[derive(Serialize)]
 struct Row {
     invoice: i64,
     no: Option<String>,
@@ -414,7 +409,7 @@ fn project(db: &Connection, id: i64) -> Result<Value, Error> {
     let r = raw(db, id)?;
     if !r.envelope.starts_with(PREFIX) {
         return Ok(
-            json!({"id":id,"invoiceDocumentId":r.invoice,"invoiceNumber":r.no,"submissionReference":r.reference,"idempotencyKey":r.key,"oioublSha256":r.xml_hash,"envelopeSha256":r.envelope_hash,"status":r.status,"transmissionId":r.transmission,"legacy":true,"duplicate":true,"redeliveryBlocked":true}),
+            json!({"id":id,"invoiceDocumentId":r.invoice,"invoiceNumber":r.no,"submissionReference":r.reference,"idempotencyKey":r.key,"oioublSha256":r.xml_hash,"envelopeSha256":r.envelope_hash,"envelope":r.envelope,"status":r.status,"transmissionId":r.transmission,"legacy":!handoff::verified(db,id,&r)?,"duplicate":true,"redeliveryBlocked":!handoff::safe(db,id,&r)?}),
         );
     }
     let e = decode(&r.envelope)?;
@@ -436,32 +431,36 @@ fn project(db: &Connection, id: i64) -> Result<Value, Error> {
         "uncertain"
     };
     Ok(
-        json!({"id":id,"invoiceDocumentId":r.invoice,"invoiceNumber":r.no,"submissionReference":r.reference,"idempotencyKey":r.key,"oioublSha256":r.xml_hash,"envelopeSha256":r.envelope_hash,"status":status,"providerStatus":s.status,"transmissionId":s.document_id,"companyKey":e.source.company_key,"environment":e.source.environment,"stateHash":s.head,"history":s.history,"legacy":false,"duplicate":true,"redeliveryBlocked":true}),
+        json!({"id":id,"invoiceDocumentId":r.invoice,"invoiceNumber":r.no,"submissionReference":r.reference,"idempotencyKey":r.key,"oioublSha256":r.xml_hash,"envelopeSha256":r.envelope_hash,"envelope":r.envelope,"status":status,"providerStatus":s.status,"transmissionId":s.document_id,"companyKey":e.source.company_key,"environment":e.source.environment,"stateHash":s.head,"history":s.history,"legacy":false,"duplicate":true,"redeliveryBlocked":true}),
     )
+}
+// Only positively verified new preparations without any attestation or event may be bypassed.
+fn blocking_id(db: &Connection, invoice_id: i64) -> Result<Option<i64>, Error> {
+    let mut q = db
+        .prepare("SELECT id FROM peppol_submissions WHERE invoice_document_id=? ORDER BY id")
+        .map_err(sql)?;
+    let ids = q
+        .query_map([invoice_id], |r| r.get(0))
+        .map_err(sql)?
+        .collect::<Result<Vec<i64>, _>>()
+        .map_err(sql)?;
+    for id in ids {
+        let r = raw(db, id)?;
+        if !handoff::safe(db, id, &r)? {
+            return Ok(Some(id));
+        }
+    }
+    Ok(None)
 }
 /// Read prior invoice state without needing current credentials or registration.
 pub fn get(db: &Connection, invoice_id: i64) -> Result<Option<Value>, Error> {
     validate_backup(db)?;
-    let id: Option<i64> = db
-        .query_row(
-            "SELECT id FROM peppol_submissions WHERE invoice_document_id=? ORDER BY id LIMIT 1",
-            [invoice_id],
-            |r| r.get(0),
-        )
-        .optional()
-        .map_err(sql)?;
+    let id = blocking_id(db, invoice_id)?;
     id.map(|id| project(db, id)).transpose()
 }
 pub fn accepted(db: &Connection, invoice_id: i64) -> Result<Option<(i64, Source, String)>, Error> {
     validate_backup(db)?;
-    let id: Option<i64> = db
-        .query_row(
-            "SELECT id FROM peppol_submissions WHERE invoice_document_id=? ORDER BY id LIMIT 1",
-            [invoice_id],
-            |r| r.get(0),
-        )
-        .optional()
-        .map_err(sql)?;
+    let id = blocking_id(db, invoice_id)?;
     let Some(id) = id else { return Ok(None) };
     let r = raw(db, id)?;
     // Legacy rows retain their original projection but never acquire native transport authority.
@@ -482,9 +481,20 @@ pub fn rows(db: &Connection) -> Result<Value, Error> {
         .map_err(sql)?
         .collect::<Result<Vec<i64>, _>>()
         .map_err(sql)?;
-    Ok(
-        json!({"submissions":ids.into_iter().map(|id|project(db,id)).collect::<Result<Vec<_>,_>>()?}),
-    )
+    let mut submissions = ids
+        .into_iter()
+        .map(|id| project(db, id))
+        .collect::<Result<Vec<_>, _>>()?;
+    // First-per-invoice consumers must see durable delivery/attestation before
+    // an earlier harmless artifact preparation. Preserve every immutable row.
+    submissions.sort_by_key(|r| {
+        (
+            r["invoiceDocumentId"].as_i64().unwrap_or(0),
+            r["redeliveryBlocked"] == false,
+            r["id"].as_i64().unwrap_or(0),
+        )
+    });
+    Ok(json!({"submissions":submissions}))
 }
 pub fn validate_backup(db: &Connection) -> Result<(), Error> {
     registration::validate(db)?;
@@ -524,6 +534,7 @@ pub fn validate_backup(db: &Connection) -> Result<(), Error> {
         } else {
             let exists:bool=db.query_row("SELECT EXISTS(SELECT 1 FROM documents WHERE id=? AND document_type='issued_invoice')",[r.invoice],|r|r.get(0)).map_err(sql)?;
             ensure(exists)?;
+            handoff::verified(db, id, &r)?;
         }
     }
     let audits: i64 = db
@@ -534,6 +545,7 @@ pub fn validate_backup(db: &Connection) -> Result<(), Error> {
         )
         .map_err(sql)?;
     ensure(audits == native_events as i64)?;
+    handoff::validate_audits(db)?;
     Ok(())
 }
 #[cfg(test)]

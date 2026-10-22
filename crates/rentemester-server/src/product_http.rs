@@ -440,6 +440,10 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
             "/api/companies/{slug}/customers/{id}",
             axum::routing::patch(sales::handle).delete(sales::handle),
         )
+        .route("/api/companies/{slug}/invoices/original/export-public", post(public_einvoice::handle))
+        .route("/api/companies/{slug}/invoices/original/export-public-oioubl", post(public_einvoice::handle))
+        .route("/api/companies/{slug}/invoices/original/submit-public-peppol", post(public_einvoice::handle))
+        .route("/api/companies/{slug}/invoices/original/transmit-digisense", post(public_einvoice::handle))
         .route("/api/companies/{slug}/invoices/public-submissions", get(public_einvoice::handle))
         .route("/api/companies/{slug}/invoices/public-config", get(public_einvoice::handle))
         .route("/api/companies/{slug}/invoices/public-register", post(public_einvoice::handle))

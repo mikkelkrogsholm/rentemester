@@ -56,6 +56,83 @@ fn observed(value: provider::Observation) -> app::Observation {
         status: value.status,
     }
 }
+fn valid_original(action: &str, body: &Value) -> bool {
+    let Some(o) = body.as_object() else {
+        return false;
+    };
+    let allowed: &[&str] = match action {
+        "export-public" | "export-public-oioubl" => &["documentId", "invoiceNumber"],
+        "submit-public-peppol" => &[
+            "documentId",
+            "invoiceNumber",
+            "accessPoint",
+            "acknowledgement",
+            "confirm",
+        ],
+        "transmit-digisense" => &["documentId", "invoiceNumber", "companyKey", "confirm"],
+        _ => return false,
+    };
+    if o.keys().any(|k| !allowed.contains(&k.as_str())) {
+        return false;
+    }
+    if let Some(id) = o.get("documentId") {
+        if !id
+            .as_i64()
+            .is_some_and(|id| (1..=9_007_199_254_740_991).contains(&id))
+        {
+            return false;
+        }
+    }
+    if let Some(no) = o.get("invoiceNumber") {
+        if !no
+            .as_str()
+            .is_some_and(|s| !s.trim().is_empty() && s.len() <= 256)
+        {
+            return false;
+        }
+    }
+    if !o.contains_key("documentId") && !o.contains_key("invoiceNumber") {
+        return false;
+    }
+    if action == "submit-public-peppol" {
+        if body["confirm"] != true
+            || serde_json::from_value::<rentemester_engine::peppol_handoff::AccessPoint>(
+                body["accessPoint"].clone(),
+            )
+            .is_err()
+        {
+            return false;
+        }
+        if let Some(a) = o.get("acknowledgement") {
+            if serde_json::from_value::<rentemester_engine::peppol_handoff::Acknowledgement>(
+                a.clone(),
+            )
+            .is_err()
+            {
+                return false;
+            }
+        }
+    }
+    if action == "transmit-digisense"
+        && (body["confirm"] != true
+            || o.get("companyKey").is_some_and(|k| {
+                !k.as_str()
+                    .is_some_and(|s| !s.trim().is_empty() && s.len() <= 512)
+            }))
+    {
+        return false;
+    }
+    true
+}
+fn original_result(value: Value) -> Value {
+    let Some(mut row) = value.get("submission").cloned() else {
+        return value;
+    };
+    row["ok"] = json!(true);
+    row["appliedRules"] = json!(["DK-PEPPOL-SUBMIT-001"]);
+    row["errors"] = json!([]);
+    row
+}
 pub(super) async fn handle(State(state): State<Product>, request: Request) -> Response {
     let path = request.uri().path().to_owned();
     let slug = path.split('/').nth(3).unwrap_or("").to_owned();
@@ -70,6 +147,8 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
     if request.uri().query().is_some() || request.headers().contains_key("content-encoding") {
         return refused(StatusCode::BAD_REQUEST, "invalid_input");
     }
+    let original = path.contains("/invoices/original/");
+    let mut artifact = None;
     let intent = if read {
         match to_bytes(request.into_body(), 1).await {
             Ok(b) if b.is_empty() => {}
@@ -88,7 +167,25 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
         let Ok(body) = serde_json::from_slice::<Value>(&bytes) else {
             return refused(StatusCode::BAD_REQUEST, "invalid_input");
         };
-        if path.ends_with("/public-register") {
+        if original {
+            let action = path.rsplit('/').next().unwrap_or("");
+            if !valid_original(action, &body) {
+                return refused(StatusCode::BAD_REQUEST, "invalid_input");
+            }
+            if action == "transmit-digisense" {
+                Some(Intent::OriginalSend(body))
+            } else {
+                artifact = Some((
+                    match action {
+                        "export-public" => app::OriginalAction::Preview,
+                        "export-public-oioubl" => app::OriginalAction::OioUbl,
+                        _ => app::OriginalAction::Prepare,
+                    },
+                    body,
+                ));
+                None
+            }
+        } else if path.ends_with("/public-register") {
             if body != json!({"confirm":true}) {
                 return refused(StatusCode::BAD_REQUEST, "confirmation_required");
             }
@@ -119,6 +216,18 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
     let result = tokio::task::spawn_blocking(move || {
         let _permit = permit;
         let client = state.native.public_einvoice.get(&slug);
+        if let Some((action, body)) = artifact {
+            let Ok(mut owner) = state.native.lock_company(&slug) else {
+                return refused(StatusCode::SERVICE_UNAVAILABLE, "owner_unavailable");
+            };
+            return match owner.original_public_einvoice(&cookie, &SystemClock, action, &body) {
+                Ok(a) => match super::documents::outcome(a) {
+                    Ok(v) => response(StatusCode::OK, v),
+                    Err(r) => *r,
+                },
+                Err(_) => refused(StatusCode::SERVICE_UNAVAILABLE, "owner_unavailable"),
+            };
+        }
         let Some(intent) = intent else {
             let Ok(mut owner) = state.native.lock_company(&slug) else {
                 return refused(StatusCode::SERVICE_UNAVAILABLE, "owner_unavailable");
@@ -159,7 +268,12 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
         // Send uses validation + delivery; status is one read. Never retry a phase.
         for _ in 0..5 {
             let admission = match work {
-                Next::Complete(v) => return response(StatusCode::OK, v),
+                Next::Complete(v) => {
+                    return response(
+                        StatusCode::OK,
+                        if original { original_result(v) } else { v },
+                    );
+                }
                 Next::Pending(a) => *a,
             };
             let outcome = match admission.request() {
@@ -252,5 +366,54 @@ mod tests {
     #[test]
     fn canonical_ledger_identity_is_encoded_for_both_provider_registration_steps() {
         assert_eq!(provider_cvr("12345678"), "DK12345678");
+    }
+}
+
+#[cfg(test)]
+mod original_tests {
+    use super::*;
+    #[test]
+    fn strict_original_selectors_confirmation_and_metadata_boundary() {
+        assert!(valid_original(
+            "export-public",
+            &json!({"documentId":1,"invoiceNumber":"n"})
+        ));
+        assert!(valid_original(
+            "transmit-digisense",
+            &json!({"invoiceNumber":"n","confirm":true,"companyKey":"configured-assertion"})
+        ));
+        assert!(valid_original(
+            "submit-public-peppol",
+            &json!({"documentId":1,"confirm":true,"accessPoint":{"accessPointId":"a","endpointUrl":"metadata:only","senderEndpointId":"b"}})
+        ));
+        for body in [
+            json!({}),
+            json!({"documentId":0}),
+            json!({"documentId":9007199254740992i64}),
+            json!({"invoiceNumber":" "}),
+            json!({"documentId":1,"outPath":"local"}),
+            json!({"documentId":1,"apiKey":"secret"}),
+        ] {
+            assert!(!valid_original("export-public", &body));
+        }
+        for body in [
+            json!({"documentId":1}),
+            json!({"documentId":1,"confirm":false}),
+            json!({"documentId":1,"confirm":true,"companyKey":" "}),
+            json!({"documentId":1,"confirm":true,"endpointUrl":"https://arbitrary.invalid"}),
+        ] {
+            assert!(!valid_original("transmit-digisense", &body));
+        }
+    }
+    #[test]
+    fn original_transmit_projection_preserves_actual_native_key_and_uncertain_evidence() {
+        let r = original_result(
+            json!({"ok":true,"submission":{"idempotencyKey":"native-key","submissionReference":"native-ref","envelope":"native-envelope","status":"uncertain","transmissionId":null,"duplicate":false}}),
+        );
+        assert_eq!(r["idempotencyKey"], "native-key");
+        assert_eq!(r["envelope"], "native-envelope");
+        assert_eq!(r["status"], "uncertain");
+        assert_eq!(r["duplicate"], false);
+        assert!(r["transmissionId"].is_null());
     }
 }
