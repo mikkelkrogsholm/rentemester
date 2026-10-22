@@ -1,5 +1,5 @@
-//! Exact positive recognition slices and anchored, clamped calendar-month dates.
-use crate::{Error, asset, calendar::valid_iso_date, fiscal_year::Date, money::Money};
+//! Exact nonnegative recognition slices and anchored, clamped calendar-month dates.
+use crate::{Error, calendar::valid_iso_date, fiscal_year::Date, money::Money};
 pub fn period(
     total: &Money,
     periods: u32,
@@ -11,7 +11,18 @@ pub fn period(
     if step == 0 || step > 1200 {
         return Err(Error::new("accrual_refused", "month step must be 1–1200"));
     }
-    let amount = asset::amount(total, periods, index)?;
+    if periods == 0 || periods > 12000 || index == 0 || index > periods || total.0 <= 0.into() {
+        return Err(Error::new(
+            "accrual_refused",
+            "invalid amount or recognition period",
+        ));
+    }
+    let base = &total.0 / num_bigint::BigInt::from(periods);
+    let amount = Money(if index == periods {
+        &total.0 - &base * num_bigint::BigInt::from(periods - 1)
+    } else {
+        base
+    });
     let year = first[..4].parse::<u32>().unwrap();
     let month = first[5..7].parse::<u32>().unwrap();
     let mut day = first[8..].parse::<u32>().unwrap();
@@ -34,6 +45,23 @@ pub fn period(
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn zero_slice_is_schedule_only_and_asset_rule_stays_positive() {
+        let tiny = Money::parse("0.01").unwrap();
+        assert_eq!(
+            period(&tiny, 2, "2026-01-31", 1, 1).unwrap().1.decimal(),
+            "0.00"
+        );
+        assert_eq!(
+            period(&tiny, 2, "2026-01-31", 1, 2).unwrap().1.decimal(),
+            "0.01"
+        );
+        assert!(crate::asset::amount(&tiny, 2, 1).is_err());
+        for (n, i) in [(0, 1), (12001, 1), (2, 0), (2, 3)] {
+            assert!(period(&tiny, n, "2026-01-31", 1, i).is_err());
+        }
+        assert!(period(&Money::default(), 2, "2026-01-31", 1, 1).is_err());
+    }
     #[test]
     fn anchored_schedule_and_final_remainder() {
         let t = Money::parse("1000").unwrap();
