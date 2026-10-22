@@ -6,6 +6,7 @@ pub mod vies;
 pub mod sales_fx;
 pub mod public_einvoice;
 pub mod public_einvoice_preview;
+pub mod peppol_handoff;
 pub mod mail_intake;
 pub mod document_scan;
 pub mod document_pdf;

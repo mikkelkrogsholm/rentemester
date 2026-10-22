@@ -1,0 +1,50 @@
+[
+  {
+    "invoiceNumber": "SYN-153",
+    "export": {
+      "xml": "<Invoice><cbc:EndpointID schemeID=\"GLN\">5790000000000</cbc:EndpointID></Invoice>",
+      "sha256": "fb8770cbb1421c1eea1f3cc5898f23fc6dacd8dd2bcc7defb81ee021001c49f8",
+      "receiverEndpointId": "GLN:5790000000000"
+    },
+    "accessPoint": {
+      "accessPointId": " synthetic & point ",
+      "endpointUrl": "https://metadata.invalid/a?x=1&y=2",
+      "senderEndpointId": " DK12345678 "
+    },
+    "acknowledgement": null,
+    "expected": {
+      "submissionReference": "PEPPOL-SYN-153-de8fc42bbfbb",
+      "idempotencyKey": "de8fc42bbfbbc7706f1698b1977d0c211fc2bbc90d5116bd824f05e202a9ff70",
+      "oioublSha256": "fb8770cbb1421c1eea1f3cc5898f23fc6dacd8dd2bcc7defb81ee021001c49f8",
+      "envelopeSha256": "11e81dee47743dd85335dedae9209581af6af597a3aa73fb55c04a9e35deb6f7",
+      "envelope": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<PeppolSubmission xmlns=\"urn:rentemester:dk:peppol-submission:v1\">\n  <SubmissionReference>PEPPOL-SYN-153-de8fc42bbfbb</SubmissionReference>\n  <IdempotencyKey>de8fc42bbfbbc7706f1698b1977d0c211fc2bbc90d5116bd824f05e202a9ff70</IdempotencyKey>\n  <Status>prepared</Status>\n  <Document>\n    <InvoiceNumber>SYN-153</InvoiceNumber>\n    <Format>OIOUBL-2.02</Format>\n    <Profile>Procurement-BilSim-1.0</Profile>\n    <HandoffArtifactSha256>fb8770cbb1421c1eea1f3cc5898f23fc6dacd8dd2bcc7defb81ee021001c49f8</HandoffArtifactSha256>\n  </Document>\n  <AccessPoint>\n    <AccessPointId> synthetic &amp; point </AccessPointId>\n    <EndpointUrl>https://metadata.invalid/a?x=1&amp;y=2</EndpointUrl>\n    <SenderEndpointId> DK12345678 </SenderEndpointId>\n    <ReceiverEndpointId>GLN:5790000000000</ReceiverEndpointId>\n  </AccessPoint>\n</PeppolSubmission>",
+      "status": "prepared"
+    }
+  },
+  {
+    "invoiceNumber": "SYN-153",
+    "export": {
+      "xml": "<Invoice><cbc:EndpointID schemeID=\"GLN\">5790000000000</cbc:EndpointID></Invoice>",
+      "sha256": "fb8770cbb1421c1eea1f3cc5898f23fc6dacd8dd2bcc7defb81ee021001c49f8",
+      "receiverEndpointId": "GLN:5790000000000"
+    },
+    "accessPoint": {
+      "accessPointId": " synthetic & point ",
+      "endpointUrl": "https://metadata.invalid/a?x=1&y=2",
+      "senderEndpointId": " DK12345678 "
+    },
+    "acknowledgement": {
+      "transmissionId": "MANUAL<&153",
+      "acknowledgedAt": "2026-10-22T00:00:00Z"
+    },
+    "expected": {
+      "submissionReference": "PEPPOL-SYN-153-de8fc42bbfbb",
+      "idempotencyKey": "de8fc42bbfbbc7706f1698b1977d0c211fc2bbc90d5116bd824f05e202a9ff70",
+      "oioublSha256": "fb8770cbb1421c1eea1f3cc5898f23fc6dacd8dd2bcc7defb81ee021001c49f8",
+      "envelopeSha256": "64b3cc924fab685f4c1cdd1db1c02cc86d61701f35742826c9b6e9d17c7b8343",
+      "envelope": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<PeppolSubmission xmlns=\"urn:rentemester:dk:peppol-submission:v1\">\n  <SubmissionReference>PEPPOL-SYN-153-de8fc42bbfbb</SubmissionReference>\n  <IdempotencyKey>de8fc42bbfbbc7706f1698b1977d0c211fc2bbc90d5116bd824f05e202a9ff70</IdempotencyKey>\n  <Status>acknowledged</Status>\n  <Document>\n    <InvoiceNumber>SYN-153</InvoiceNumber>\n    <Format>OIOUBL-2.02</Format>\n    <Profile>Procurement-BilSim-1.0</Profile>\n    <HandoffArtifactSha256>fb8770cbb1421c1eea1f3cc5898f23fc6dacd8dd2bcc7defb81ee021001c49f8</HandoffArtifactSha256>\n  </Document>\n  <AccessPoint>\n    <AccessPointId> synthetic &amp; point </AccessPointId>\n    <EndpointUrl>https://metadata.invalid/a?x=1&amp;y=2</EndpointUrl>\n    <SenderEndpointId> DK12345678 </SenderEndpointId>\n    <ReceiverEndpointId>GLN:5790000000000</ReceiverEndpointId>\n  </AccessPoint>\n  <Acknowledgement>\n    <TransmissionId>MANUAL&lt;&amp;153</TransmissionId>\n    <AcknowledgedAt>2026-10-22T00:00:00Z</AcknowledgedAt>\n  </Acknowledgement>\n</PeppolSubmission>",
+      "status": "acknowledged",
+      "transmissionId": "MANUAL<&153"
+    }
+  }
+]
