@@ -100,7 +100,7 @@ async function holdBegin(){if(originalMode)return original.holdBegin();step='aut
 async function revoke(){if(originalMode)return original.revoke();step='public-owner-revokes-master-data-while-provider-held';const result=await post('/api/workspace/members/company',{userId:memberId,action:'revoke',companySlug:'synthetic'});return{revokedBeforeProviderRelease:true,result};}
 async function holdFinish(){if(originalMode){const result=await original.holdFinish();extractions.held=result.evidence;return result;}step='held-provider-cannot-finalize-revoked-principal';const r=await memberPage.evaluate(()=>window.extractionPending);need(r.status===403&&r.body?.ok===false,'current authority rechecked after held provider');const current=await read(path('held')),e=evidence(current,'held','started');need(e.fields.length===0&&e.resolutions.length===0&&e.conflicts.length===0,'revoked attempt remains historically started without manufactured terminal cleanup');extractions.held=current;need(isDeepStrictEqual(await read(prefix+'documents'),uploaded)&&isDeepStrictEqual(await books(),sourceBooks),'revoked result cannot modify metadata/books');return{refusal:r,evidence:current};}
 async function book(){if(originalMode){stable=await snapshot();await originals();await ownerPage.screenshot({path:process.env.RM_EXTRACTION_SCREENSHOT,fullPage:true});return{canonical:stable,noFinancialReplay:true};}step='independent-bank-original-for-explicit-manual-expense';const imported=await post(prefix+'bank/import',{confirm:true,csvContent:`dato;tekst;beløb;valuta;saldo\n${today};Synthetic extraction explicit purchase;-10,00;DKK;-10,00\n`,account:'synthetic-extraction-bank'});need(imported.import.imported===1,'actual retained outgoing bank original');bank=(await read(prefix+'bank')).bank.transactions.find(r=>r.text==='Synthetic extraction explicit purchase');need(bank?.amount===-10,'explicit bank amount');step='manual-expense-exact-source-document';await ownerPage.goto(base+'/companies/synthetic/bilag');await ownerPage.getByRole('row').filter({hasText:documents.good.documentNo}).getByRole('link',{name:'Bogfør bilag',exact:true}).click();await ownerPage.getByRole('heading',{name:'Bogfør bilag',exact:true,level:1}).waitFor();step='manual-expense-explicit-account-bank-vat';await ownerPage.getByLabel(/^Udgiftskonto/).selectOption('4870');await ownerPage.getByLabel(/^Banktransaktion \(uafstemt, udgående\)/).selectOption(String(bank.id));await ownerPage.getByLabel(/^Moms-behandling/).selectOption('exempt');const wait=ownerPage.waitForResponse(r=>new URL(r.url()).pathname===prefix+'documents/book-expense'&&r.request().method()==='POST');step='one-explicit-manual-booking';await ownerPage.getByRole('button',{name:'Bogfør',exact:true}).click();const response=await wait,receipt=await response.json();need(response.status()===200&&receipt.ok===true,'explicit expense receipt');await ownerPage.getByText(/Bilaget blev bogført som journalpost/).waitFor();const b=await books();need(b.journal.journal.entries.length===1,'only one explicit journal after all extraction actions');const j=b.journal.journal.entries[0];need(j.documentId===documents.good.id&&j.lines.some(l=>l.accountNo==='4870'&&l.debit===10)&&j.lines.some(l=>l.accountNo==='1870'&&l.credit===10),'manual explicit account/amounts, not provider inference');const payment=(await read(prefix+'bank')).bank;need(payment.matchedCount===1&&payment.unmatchedCount===0&&payment.bookedBalance===-10&&payment.actualBalance===-10,'one canonical bank relation and closing reconcile');stable=await snapshot();await originals();await ownerPage.screenshot({path:process.env.RM_EXTRACTION_SCREENSHOT,fullPage:true});return{receipt,canonical:stable,manualAmountNotExtracted:true};}
-async function client(kind,write,id){const file=join(work,'extraction-client.cookie');writeFileSync(file,(await ownerPage.context().cookies(base)).map(c=>`${c.name}=${c.value}`).join('; '),{mode:0o600,flag:'wx'});try{const common=['--server',base,'--cookie-file',file,'--allow-loopback-http'];let argv,input;if(kind==='cli')argv=[originalMode?'documents':'remote',write?'extract-invoice':'invoice-extraction',...common,'--company','synthetic',originalMode?'--document-id':'--id',String(id),...(write&&!originalMode?['--confirm']:[])];else{argv=common;input=[{jsonrpc:'2.0',id:1,method:'initialize',params:{protocolVersion:'2025-11-25',capabilities:{},clientInfo:{name:'synthetic-extraction-proof',version:'1'}}},{jsonrpc:'2.0',method:'notifications/initialized'},{jsonrpc:'2.0',id:2,method:'tools/call',params:{name:write?'documents_extract_invoice':'documents_invoice_extraction',arguments:{company:'synthetic',documentId:id,...(write?{confirm:true}:{})}}}].map(v=>JSON.stringify(v)).join('\n')+'\n';}const r=spawnSync(join(work,kind==='cli'?'rentemester-rust':'rentemester-mcp'),argv,{input,encoding:'utf8',timeout:45000,maxBuffer:16*1024*1024});need(!r.error&&r.status===0,kind+' source-name adapter terminal');const value=kind==='cli'?JSON.parse(r.stdout):r.stdout.trim().split('\n').map(s=>JSON.parse(s)).find(v=>v.id===2)?.result?.structuredContent;if(kind==='cli'&&originalMode){need(value?.ok===true&&Object.keys(value).sort().join()==='extraction,ok','flat original CLI');return value;}if(kind==='mcp'){need(value?.ok===true&&Object.keys(value.data??{}).join()==='extraction','source MCP envelope');return{ok:true,extraction:value.data.extraction};}need(value?.ok===true&&value.data?.ok===true,'full canonical CLI envelope');return value.data;}finally{unlinkSync(file);}}
+async function client(kind,write,id){const file=join(work,'extraction-client.cookie');writeFileSync(file,(await ownerPage.context().cookies(base)).map(c=>`${c.name}=${c.value}`).join('; '),{mode:0o600,flag:'wx'});try{const common=['--server',base,'--cookie-file',file,'--allow-loopback-http'];let argv,input;if(kind==='cli')argv=[originalMode?'documents':'remote',write?'extract-invoice':'invoice-extraction',...common,'--company','synthetic','--document-id',String(id),...(write&&!originalMode?['--confirm']:[])];else{argv=common;input=[{jsonrpc:'2.0',id:1,method:'initialize',params:{protocolVersion:'2025-11-25',capabilities:{},clientInfo:{name:'synthetic-extraction-proof',version:'1'}}},{jsonrpc:'2.0',method:'notifications/initialized'},{jsonrpc:'2.0',id:2,method:'tools/call',params:{name:write?'documents_extract_invoice':'documents_invoice_extraction',arguments:{company:'synthetic',documentId:id,...(write?{confirm:true}:{})}}}].map(v=>JSON.stringify(v)).join('\n')+'\n';}const r=spawnSync(join(work,kind==='cli'?'rentemester-rust':'rentemester-mcp'),argv,{input,encoding:'utf8',timeout:45000,maxBuffer:16*1024*1024});need(!r.error&&r.status===0,kind+' source-name adapter terminal');const value=kind==='cli'?JSON.parse(r.stdout):r.stdout.trim().split('\n').map(s=>JSON.parse(s)).find(v=>v.id===2)?.result?.structuredContent;if(kind==='cli'&&originalMode){need(value?.ok===true&&Object.keys(value).sort().join()==='extraction,ok','flat original CLI');return value;}if(kind==='mcp'){need(value?.ok===true&&Object.keys(value.data??{}).join()==='extraction','source MCP envelope');return{ok:true,extraction:value.data.extraction};}need(value?.ok===true&&value.data?.ok===true,'full canonical CLI envelope');return value.data;}finally{unlinkSync(file);}}
 async function clients(write=false){if(originalMode){if(!write)return{cookieReadsOnly:await originalReads()};return original.clients();}step='actual-source-name-http-cli-mcp-full-parity';const results={};for(const kind of['cli','mcp']){results[kind]={};for(const name of kinds){const expected=await read(path(name)),actual=await client(kind,false,documents[name].id);need(isDeepStrictEqual(actual,expected),'full exact HTTP/'+kind+' canonical '+name);results[kind][name]=actual;}if(write){const actual=await client(kind,true,documents.good.id);need(isDeepStrictEqual(actual,extractions.good),'confirmed client cache does not create another attempt');}}need(isDeepStrictEqual(await snapshot(),stable),'all read/client cache actions preserve exact canonical metadata/books/history');return results;}
 async function originalReads(){const results={};for(const kind of ['cli','mcp'])for(const name of kinds){const actual=await client(kind,false,documents[name].id);need(isDeepStrictEqual(actual,await read(path(name))),'retained source projection after restart');results[kind+'-'+name]=actual;}return results;}
 async function assertStable(){need(isDeepStrictEqual(await snapshot(),stable),'exact source history/metadata/books/UUID survive restart or source-free restore');await originals();}
@@ -119,6 +119,29 @@ def free_port():
     with socket.socket() as sock:
         sock.bind(('127.0.0.1', 0))
         return sock.getsockname()[1]
+
+
+def verify_restored_resolution_inventory(source, restored, manifest_hash, receipt_high_water):
+    if source.keys() != restored.keys():
+        raise RuntimeError('Restored resolution table inventory differs')
+    for table, rows in source.items():
+        current = restored[table]
+        if table != 'audit_log':
+            if current != rows:
+                raise RuntimeError('Restored resolution table differs: ' + table)
+            continue
+        if len(current) != len(rows) + 1 or current[:len(rows)] != rows:
+            raise RuntimeError('Restored resolution audit prefix or boundary count differs')
+        boundary = dict(current[-1])
+        stamp = boundary.pop('created_at', None)
+        expected = {'id': max((row['id'] for row in rows), default=0) + 1,
+                    'event_type': 'native_restore_receipt_boundary',
+                    'entity_type': 'mutation_idempotency_tombstones',
+                    'entity_id': str(receipt_high_water),
+                    'message': 'Imported receipt high-water mark; archive ' + manifest_hash + '; original keys require manual reconciliation under fresh identities',
+                    'actor': 'system:portable-restore'}
+        if boundary != expected or not isinstance(stamp, str) or not re.fullmatch(r'\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}', stamp):
+            raise RuntimeError('Unexpected restored resolution audit boundary')
 
 
 def main():
@@ -404,6 +427,7 @@ def main():
                 try:
                     db.execute('PRAGMA query_only=ON')
                     result = {}
+                    receipt_high_water = db.execute('SELECT COALESCE(MAX(id),0) FROM mutation_idempotency_tombstones').fetchone()[0]
                     for table in tables:
                         cursor = db.execute('SELECT * FROM ' + table + ' ORDER BY id')
                         rows = [dict(zip([c[0] for c in cursor.description], row)) for row in cursor.fetchall()]
@@ -454,7 +478,7 @@ def main():
                     raise RuntimeError('Provider malformed/unavailable failure must not fabricate a result')
             if len([row for row in result['audit_log'] if row['event_type'] == 'document_ingest']) != 5:
                 raise RuntimeError('Exact five immutable document intake audits required')
-            report.setdefault('snapshots', {})[name] = {'sha256': receipt['sha256'], 'trustedPublicKeySha256': digest(trusted), 'operatorCredentialsExcluded': True, 'tables': result}
+            report.setdefault('snapshots', {})[name] = {'sha256': receipt['sha256'], 'trustedPublicKeySha256': digest(trusted), 'operatorCredentialsExcluded': True, 'manifestSha256': hashlib.sha256(base64.b64decode(wire['manifestBase64'], validate=True)).hexdigest(), 'receiptHighWater': receipt_high_water, 'tables': result}
             save()
             return result
 
@@ -462,8 +486,8 @@ def main():
             for table in ['documents', 'invoice_extraction_documents', 'invoice_extraction_attempts', 'invoice_extraction_results', 'invoice_extraction_fields', 'invoice_extraction_resolutions', 'exceptions', 'journal_entries', 'journal_lines']:
                 if original[table] != newer[table]:
                     raise RuntimeError('Restored exact immutable evidence differs: ' + table)
-            if newer['audit_log'][:len(original['audit_log'])] != original['audit_log']:
-                raise RuntimeError('Original company audit must remain exact historical prefix at restore boundary')
+            source_snapshot = report['snapshots']['source']
+            verify_restored_resolution_inventory(original, newer, source_snapshot['manifestSha256'], source_snapshot['receiptHighWater'])
             report.setdefault('restoreAuditBoundaries', []).append({'originalRows': len(original['audit_log']), 'restoredRows': len(newer['audit_log']), 'additionalRows': newer['audit_log'][len(original['audit_log']):]})
             save()
 
