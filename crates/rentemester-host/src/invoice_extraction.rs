@@ -118,3 +118,21 @@ fn source_unavailable() -> rentemester_engine::Error {
 }
 #[cfg(all(test, target_os = "macos"))]
 mod tests;
+
+impl Owner {
+    pub fn prepare_original_invoice_extraction(&mut self, cookie: &VerifiedCookie, clock: &dyn Clock, id: i64, identity: Option<ProviderIdentity>, expected_actor: Option<&str>) -> Result<Attempt<Result<Committed<Admission>, rentemester_application::control_fence::Failure>>, OwnerError> {
+        self.document_action(cookie, clock, |control, company, guard, context| { app::prepare_original(control, company, guard, context, id, identity, expected_actor) })
+    }
+    pub fn original_invoice_extraction(&mut self, cookie: &VerifiedCookie, clock: &dyn Clock, id: i64) -> Result<Attempt<Result<Committed<serde_json::Value>, rentemester_application::control_fence::Failure>>, OwnerError> {
+        self.document_action(cookie, clock, |control, company, guard, context| { app::read_original(control, company, guard, context, id) })
+    }
+    pub fn prepare_invoice_extraction_service(&mut self, key: &ServiceKey, clock: &dyn Clock, id: i64, identity: Option<ProviderIdentity>, expected_actor: Option<&str>) -> Result<Attempt<Result<service_company::ServiceResult<Admission>, service_company::ServiceFailure>>, OwnerError> {
+        self.service_document_action(key, clock, |control, company, guard, context| { app::prepare_service(control, company, guard, context, id, identity, expected_actor) })
+    }
+    pub fn finish_invoice_extraction_service(&mut self, key: &ServiceKey, clock: &dyn Clock, admission: Admission, completion: Option<Completion>) -> Result<Attempt<Result<service_company::ServiceResult<serde_json::Value>, service_company::ServiceFailure>>, OwnerError> {
+        self.service_document_action(key, clock, |control, company, guard, context| { app::finish_service(control, company, guard, context, admission, completion) })
+    }
+    pub fn invoice_extraction_service(&mut self, key: &ServiceKey, clock: &dyn Clock, id: i64) -> Result<Attempt<Result<service_company::ServiceResult<serde_json::Value>, service_company::ServiceFailure>>, OwnerError> {
+        self.service_document_action(key, clock, |control, company, guard, context| { app::read_service(control, company, guard, context, id) })
+    }
+}
