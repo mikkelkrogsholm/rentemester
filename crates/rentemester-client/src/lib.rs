@@ -551,3 +551,6 @@ pub use expense_original::{original_expense_book_schema, validate_original_expen
 
 mod accrual_original;
 pub use accrual_original::{original_accrual_schema, validate_original_accrual, validate_original_accrual_actor};
+
+mod asset_original;
+pub use asset_original::{original_asset_schema, validate_original_asset, validate_original_asset_actor};
