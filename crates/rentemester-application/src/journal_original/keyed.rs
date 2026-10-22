@@ -29,19 +29,17 @@ pub(super) fn validate_keyed_business(operation: &str, business: &Value) -> Resu
         return Ok(());
     }
     let input = &business["input"];
-    if !input
+    if input
         .get("text")
         .and_then(Value::as_str)
-        .is_some_and(|s| !s.is_empty())
+        .is_none_or(|s| s.is_empty())
     {
         return Err(invalid());
     }
     for field in ["documentId", "sourceBankTransactionId"] {
         optional(input, field, positive_id)?;
     }
-    for field in ["currency"] {
-        optional(input, field, Value::is_string)?;
-    }
+    optional(input, "currency", Value::is_string)?;
     for field in ["amountForeign", "amountDkk", "fxRateToDkk"] {
         optional(input, field, |v| v.as_f64().is_some_and(f64::is_finite))?;
     }
@@ -51,10 +49,10 @@ pub(super) fn validate_keyed_business(operation: &str, business: &Value) -> Resu
         .filter(|v| v.len() >= 2)
         .ok_or_else(invalid)?;
     for line in lines {
-        if !line
+        if line
             .get("accountNo")
             .and_then(Value::as_str)
-            .is_some_and(|s| !s.is_empty())
+            .is_none_or(|s| s.is_empty())
         {
             return Err(invalid());
         }
