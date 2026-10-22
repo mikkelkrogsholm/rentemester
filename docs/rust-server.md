@@ -3673,3 +3673,34 @@ syntetiske undtagelser, to audits og nul bogførings-/bank-/bilags-/periodeeffek
 Bevarelse af alle ægte forced-close-obligationsfelter og genåbningens
 arkivgrænser er særskilte lagringstests. Der påstås ingen exception-oprettelses-UI,
 faktisk waiverrejse, signed restore eller installeret desktopaccept her.
+
+
+## Oprindelige kunder, leverandører, CVR og VAT (Group164)
+
+CLI `customer create|list|validate-vat|cvr-lookup` og `vendor create|list`
+samt MCP `customer_list`, `vendor_list`, `customer_create`, `vendor_create` og
+`customer_validate_vat` bruger fælles Rust-server, kontaktforfattere og
+CVR/VIES-adaptere. Eksplicitte kontaktfelter vinder over CVR-opslag; manglende
+betalingsbetingelser forbliver NULL/arv. Lister er rene kildedata med fulde
+13 kunde- og 15 leverandørfelter, ASCII-navnesortering/ID og kildens pagination.
+CLI bevarer dansk humanvisning, JSON ved pipe, formatvalg og 0/1/2. MCP
+bevarer kilde-schema, envelope, annotations og bekræftelse før HTTP.
+
+Serveren udleder den aktuelle menneske- eller serviceprincipal. Læsning,
+kontaktændring og eksternt opslag følger de eksisterende roller og fences;
+providerarbejde holder ingen SQL-transaktion åben. Human VAT kræver den
+navngivne friske session både før og efter kaldet. Service ExternalLookup
+og MasterData har aktuelt samme Owner/Bookkeeper-adgang; der påstås ikke to
+separate service-permissionskald. Original VAT validerer også DK, og hvert
+kald indhenter en ny observation; native foreign-invoice-regler ændres ikke.
+
+24 nye målrettede tests og to arvede MCP-regressionstests, strict Clippy for
+syv pakker, build og den første faktiske prøve består. Prøven bruger normal
+MFA og owner-oprettet service gennem original CLI/stdio MCP, egne CVR-feltvalg,
+DK/udenlandsk VAT, gyldig/ugyldig observation, providerfejl, roller, revokation,
+deaktiveret nøgle og præcis genstart. Uafhængig SQL viser tre kunder, tre
+leverandører, elleve audits, to CVR- og tre VIES-cacheposter samt nul
+journal-/linje-/bank-/bilagseffekter. Source, tre binærer og web er hashbundet.
+Arkiv/GDPR-projektion, forsinket provider-revokation og øvrige fence-grænser
+er fokuserede tests; de påstås ikke som faktiske forløb her. Signed restore
+og installeret desktopaccept er fortsat separate slutkrav.

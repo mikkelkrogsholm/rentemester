@@ -1,15 +1,15 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "Group163 original exception CLI/MCP review, current authority and exact restart accepted",
-  "code_revision": "d5caea35aba2a6dc46e9c9fef577791814aacaa4",
+  "current_increment": "Group164 original customer/vendor6CLI5MCP CVR/VAT/currentauthority/restart accepted",
+  "code_revision": "e3584605f8b87b02694a6535868a3470f81f2db9",
   "spec_revision": "sha256:8979030956647a0f03266c50d42786b5d33ab71a59c78528203d223226171e72",
-  "state": "Group163 ACCEPTED: original exceptions list/resolve CLI and existing2 MCP names use common Rust resolver; flat source15field lists, schema/envelope, optional MCP confirmation beforeHTTP, actual current human/service roles and revocation, first-resolution notes/actors/time plus immutable no-op history. Actual exact normalMFArestart and independent SQL:2exceptions/2audits,0journals/lines/bank/doc/period effects.28 targeted tests, seven-package strict and pinned build/actual PASS; SGD done/published. Source output/schema defects caught by actual review and repaired, fixture guard retained. Full original55/672/716/717 OPEN; next original customer/vendor CLI/MCP whole journey, remaining launcher/release/cutover/TSretirement/finaldesktop.",
+  "state": "Group164 ACCEPTED: original customer/vendor6CLI5MCP use commonRust writers/providers. Source purefields/NULLterms/CVRfills+overrides/ASCIInameorder, sourceflatCLI+MCPschemas/envelopes/pagination, confirmed current human/service authority. Firstactual normalMFA+Ownerissuedservice/CVR/VATvalidinvalid/repeated/providerfailures/roles/revocation/disabledkey and exactrestart PASS. IndependentSQL3customers3vendors11audits2CVRcache3VIEScache zerojournal/lines/bank/doc;26tests including2inheritedregressions/sevenpackagesstrict/build. All failed/cancelled164receipts preserved; finalSGDdone/published, no effectsreplay. Fulloriginal55/672/716/717OPEN. Next originaldocuments8CLI8MCP wholeflow, finaldesktoplast.",
   "issues_closed": [
     701
   ],
   "next": [
-    "Next necessary original customer/vendor master-data journey (#716/#717): original6CLI/5MCP names, CVR autofill plus explicit overrides through existing writers, deterministic complete lists/source pagination, actual VIES/current authority and exact restart. Reuse existing provider fixtures/runner and common Rust motor; retain all gates, no new infrastructure.",
+    "Next necessary original document wholejourney (#716/#717,#686/#691/#695): original8CLI8MCP ingest/list/parse/status/text/pending/enrich/hash-bound companycontext over commonexistingengine, oneacceptedpayableposting, exactrestart and signedsourcefreebackuprestore. Four independent owners fixedHTTP/SDK; existingnativePDFbundle/runner retained, no newinfrastructure.",
     "Original invoice interface inventory now has all31CLI and25MCP bindings, with explicit compatibility corrections documented; do not mistake that family inventory for full product parity. Reconcile remaining original whole-product R44/R45 acceptance from existing epic/issues: actor/env/company-path/default launcher/errors/historical receipts, closure/recovery/automation, signed distribution/update/cutover and TypeScript backend retirement. Continue next necessary whole journey, preserve all accepted evidence/full original scope; installed desktop acceptance last.",
     "Installed desktop acceptance is explicitly deferred to the very end by the user. Preserve prepared Group100 profile; collect remaining native automation, closure, recovery and packaging checks for final installed acceptance without requesting screen unlock during development.",
     "J03/R50 and remaining R54 scope: only still-supported operation closure/recovery, nonempty scheduler handoff, hostile/older clone and post-cutover rollback requirements. Group99 qualifies managed installed J06 flow, not every R54 acceptance item.",
@@ -25,9 +25,9 @@
   ],
   "all_goal_requirements_complete": false,
   "previous_verified_increment": {
-    "name": "Group162 original five MCP period tools and authorized current-service forced close/open obligations/restart accepted",
-    "code_revision": "8a014d233d6f00b38cb17c220c88f02b784974b9",
-    "evidence_key": "original_period_mcp162"
+    "name": "Group163 original exception CLI/MCP review, current authority and exact restart accepted",
+    "code_revision": "d5caea35aba2a6dc46e9c9fef577791814aacaa4",
+    "evidence_key": "original_exceptions163"
   },
   "evidence": {
     "combined_browser_log": "/tmp/rm-platform5-combined.log",
@@ -9273,6 +9273,108 @@
       ],
       "report": "/tmp/rentemester-rust-reports/original-exceptions163.json",
       "report_sha256": "6828e7f4d38b7ee8c4b57a0bd0bb205de9ce6a4bc22c22a6419dcf6f6e9a7b1e"
+    },
+    "original_master_data164": {
+      "issue": 717,
+      "status": "ACCEPTED finite original customer/vendor6CLI5MCP journey; fullissue/epicOPEN",
+      "source_revision": "e3584605f8b87b02694a6535868a3470f81f2db9",
+      "sgd_run": "rust-original-master-data164-final-20261022T175707.756964000",
+      "engine_phase": "done",
+      "sgd_final_acceptance_passed": true,
+      "source_blob_count": 27,
+      "actual_report": "/tmp/rentemester-rust-reports/original-master-data164-actual.json",
+      "actual_report_sha256": "b254a1019cef7103485831a24ba9686bddc0102bea458d94c81c0df456ea16e4",
+      "tests": [
+        {
+          "check": "core",
+          "passed": 7,
+          "failed": 0
+        },
+        {
+          "check": "client-cli",
+          "passed": 10,
+          "failed": 0
+        },
+        {
+          "check": "mcp",
+          "passed": 7,
+          "failed": 0
+        },
+        {
+          "check": "old-mcp-unit",
+          "passed": 2,
+          "failed": 0
+        }
+      ],
+      "strict": "storage/client/cli/mcp/application/host/server --all-targets -Dwarnings",
+      "actual_sql_counts": {
+        "customers": 3,
+        "vendors": 3,
+        "audit_log": 11,
+        "cvr_lookups": 2,
+        "vies_validations": 3,
+        "journal_entries": 0,
+        "journal_lines": 0,
+        "bank_transactions": 0,
+        "documents": 0
+      },
+      "exact_normal_mfa_restart": true,
+      "gateway": {
+        "verifiedHttps": true,
+        "cvrRequests": [
+          "12345678",
+          "87654321",
+          "55555555",
+          "44444444"
+        ],
+        "viesRequests": [
+          {
+            "countryCode": "DK",
+            "vatNumber": "12345678"
+          },
+          {
+            "countryCode": "DE",
+            "vatNumber": "123456789"
+          },
+          {
+            "countryCode": "DE",
+            "vatNumber": "000000000"
+          },
+          {
+            "countryCode": "DE",
+            "vatNumber": "123456789"
+          },
+          {
+            "countryCode": "DE",
+            "vatNumber": "123456789"
+          },
+          {
+            "countryCode": "DE",
+            "vatNumber": "111111111"
+          },
+          {
+            "countryCode": "DE",
+            "vatNumber": "333333333"
+          }
+        ],
+        "errors": []
+      },
+      "current_human_service_role_and_revocation_qualified": true,
+      "source_binary_web_pins_independently_matched": true,
+      "scope_limits": [
+        "Actual normalMFA/sourceCLI/serviceMCP CVRcreate+explicitoverrides+NULLterms, complete/pagedlists/humanformat, DK/foreignVATvalid/invalid/repeated observations, providerunavailable/mismatch/reader/bookkeeper/revocation/disabledkey and exactrestart.",
+        "Archived/GDPRprojection/freshsession/providerdelayedrevoke/namespace/typedprincipal boundaries are focusedunit/source proofs; actual archivedboundary/delayedproviderrevoke flags false. No signedrestore/bookkeeping/finaldesktop claim.",
+        "Current service ExternalLookup role predicate and MasterData have identical Owner/Bookkeeper grants, satisfying effective conjunction; no claim that service calls two distinct permissionchecks. Existing native foreignVAT rules unchanged.",
+        "All55 original issues/release/cutover/rollback/TSretirement/defaultlauncher/remainingoriginaloperations/finalinstalleddesktopremainOPEN."
+      ],
+      "preserved_recovery": [
+        "Original4parallelproductdeliveries+reviews retained from cancelled run rust-original-master-data164-20261022T171714.557345000; final integrated7e5716e. Core7/clientCLI10/MCPstdio7 valid observed. First packageMCP check exposed inherited163 cfg(test) tokio macrofeature, no actualeffects.",
+        "Explicit recovery rust-original-master-data164-recovery-20261022T175056.644379000 retained failed/cancelled receipts, onlychanged inheritedexceptiontest toexistingruntime.block_on withsameassertions, no dependencies/productionchange; old2unit and7stdio PASS. Integrated3741cbd. Cancelled after CLI strict warnings outside onefileowner; notcalleddone.",
+        "Final broad27fileownership preservesallproductsource; twoCLIconditionalcollapses equivalent, and main submit-repair removedtwo unnecessary mutable testborrows. Frozenstrict notwaived, no unchangedfailedrerun/noextra model forborrows. Final7+10+7+2/strict/build/firstactualPASS. Failedstrict copied master-data164-final-initial-strict.log.",
+        "Source reviews repaired actualSDKASCII/nullCVRfailure/usage2stderr/sourcefields/typedproviderfinish/freshhumanVAT/sourceflaterrors/GDPRprojection/pins defects; no safeguardsweakened."
+      ],
+      "report": "/tmp/rentemester-rust-reports/original-master-data164.json",
+      "report_sha256": "a58d5d4bed2f2a5ef5d3e0ceaec0c598421f7ea506461dfeda47f7857de4de82"
     }
   },
   "verified_history": [
@@ -10986,6 +11088,12 @@
       "code_revision": "d5caea35aba2a6dc46e9c9fef577791814aacaa4",
       "evidence_key": "original_exceptions163",
       "status": "ACCEPTED finite exception review flow; entire mission OPEN"
+    },
+    {
+      "increment": "Group164",
+      "code_revision": "e3584605f8b87b02694a6535868a3470f81f2db9",
+      "evidence_key": "original_master_data164",
+      "status": "ACCEPTED finite original customer/vendor journey; entiremissionOPEN"
     }
   ],
   "scope_clarifications": [

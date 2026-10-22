@@ -172,3 +172,21 @@ igen. Cutover er fortsat strengt før datoen; effektiv closed/reported dækker
 inklusive grænser, og udaterede opgaver arkiveres ikke ved gæt. Dette er en
 afgrænset kildefejlrettelse, ikke en separat arkivmodel. Markering af den
 operationelle undtagelse ændrer aldrig de uforanderlige waiver-obligationer.
+
+
+## Kontakter og aktuelle eksterne observationer (Group164)
+
+Original `customer validate-vat` har en vildledende TTL-beskrivelse, men
+kildens faktiske operation kalder provideren hver gang. Rust-porten bevarer
+den operation og gemmer også en autoritativ valid:false-observation; native
+foreign-invoice-VIES-regler er uændrede. Serviceadgang følger de aktuelle
+Owner/Bookkeeper-roller. Human VAT bruger den eksisterende Fresh-sessiongate
+både før og efter providerarbejdet, frem for at lade en blot Current-session
+slippe gennem den friske mutationsgrænse.
+
+Originale kontaktlister skal samtidig overholde den eksisterende
+GDPR-redaktion. Rust bruger den fælles redaktion, returnerer kildens felter
+uden det ekstra gdprErased-metadatafelt og sorterer de synlige værdier efter
+SQLite-kompatibel ASCII lower(name)/ID. Det geneksponerer ikke skjulte navne
+og udleder ikke sorteringsorden fra de uredigerede persondata. Leverandørens
+oprindelige frie kontofelter svækker ikke fælles motors kontoplan- og VAT-kontrol.
