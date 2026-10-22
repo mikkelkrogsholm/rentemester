@@ -3412,3 +3412,18 @@ kommandoer er CLI-only; der er ikke opfundet nye MCP-navne.
 Group153 er accepteret gennem normal MFA, faktisk syntetisk TLS-levering,
 originale klienter og fire uafhængigt verificerede signerede snapshots med
 source-free restore og genåbning. Det samlede omskrivningsmål er fortsat åbent.
+
+
+## Oprindelige tilbagevendende fakturaer (Group154)
+
+De oprindelige `recurring-invoice create --input FILE|-`, `generate --template-id N --as-of YYYY-MM-DD` og `list [--include-inactive]` bruger samme Rust-server som web-UI'et. Vælg eksplicit `--server ORIGIN --company SLUG` og én privat `--cookie-file` eller `--service-key-file`; `--json` giver det flade core-resultat. Oprettelse og generering bekræftes ved selve CLI-kaldet. MCP-navnene er `recurring_invoice_create`, `recurring_invoice_generate` og `recurring_invoice_list`; MCP-skrivninger kræver `confirm:true` og bruger de oprindelige envelopes med ens text/structuredContent.
+
+Oprettelsesinput er det oprindelige strukturerede `invoice` med parter, linjer, totalsummer og momsbehandling samt `name`, `interval`, `firstIssueDate` og valgfrie `intervalCount`, `deliveryChannel`, `paymentTermsDays`, `deliveryPeriodMode`, `notes`. Defaults er 1/manual/30/issue_month. Serveren fryser specifikationen uden afledte datoer eller fakturanummer. `list` viser aktive skabeloner som standard og bevarer inaktive med flaget.
+
+HTTP-kontrakten er GET `recurring-invoices/original/list?includeInactive=false|true` og POST `recurring-invoices/original/create|generate` under `/api/companies/:slug/`. Generate bruger `templateId`, `asOfDate`, `confirm:true`. Aktuel CompanyRead/CompanyDraftWrite og øvrige eksisterende guards gælder; actor følger det autentificerede menneske eller den typede serviceprincipal. Ingen actor i payload giver adgang.
+
+Samme skabelon/periode refererer til samme faktura og originale JSON/PDF. Den oprindelige `interval_window` slutter på næste beregnede periodegrænse; native skabeloners eksisterende kalenderkontrakt bevares. Web-UI'ets native genereringskald bruger også den frosne oprindelige specifikation, så næste periode bevarer blandet moms og parter. Kanalerne manual/email/digisense er metadata her: create/generate hverken sender, bogfører eller starter en scheduler.
+
+Den aktuelle native udstedelse afviser fortsat andre taxable momssatser end25% og omvendt betalingspligt uden eksplicit note; den gamle source-validator accepterer mere. Det er åbne original/native-paritetskrav, ikke en påstand om fuld paritet. Øvrige domæneafvisninger følger de eksisterende native fejl-/transportkontroller, indtil de resterende oprindelige fejlkontrakter er afstemt. Workspace-kørslen med cap/continuation, isolerede virksomhedsfejl, eksplicit afsendelse og nonempty recovery er næste obligatoriske del.
+
+Accepten på syntetiske data gennem faktiske CLI/MCP/HTTP-processer dækker tre skabeloner, fire generationer inklusive næste periode via web-API'et, otte originale filer, identiske læsninger og genstart. De eksisterende33 posteringer/80 linjer, bankdata og tidligere originaler bevares; ingen afsendelses-events tilføjes. Aktuel bruger-/servicerevokation dækkes af hosttest. Denne accept omfatter hverken en ny Fresh MFA-session, signeret gendannelse af workspace-afsendelser eller manuel installeret desktopaccept.

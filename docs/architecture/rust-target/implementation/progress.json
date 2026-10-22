@@ -1,14 +1,15 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "Group153 four original public invoice CLI artifacts, preparation and shared native delivery accepted",
-  "code_revision": "c30cc267afdf5b22f6c2eb337f2e6b5bd467499a",
+  "current_increment": "Group154 original supported recurring lifecycle accepted; workspace automation continuation required",
+  "code_revision": "8445f1c45f7994b026977345d5b709fc36f40c87",
   "spec_revision": "sha256:bc98636be4a972407adce0f817a76bb9d4bb7200cb292a70965e75ab62fae250",
-  "state": "Group153 ACCEPTED four original public invoice CLI operations: distinct preview XML, shared OIOUBL, original deterministic PEPPOL handoff and configured native Digisense transmit/status. One extended OIOUBL exporter supports original mixed/exempt/zero/reverse/foreign-currency snapshots including EUR without irrelevant issuance FX metadata, preserving native25DKK bytes/subcent price precision. Nine original source whole-XML fixtures and prior strict arithmetic/security cases pass. Preview two whole-source byte/SHA fixtures; PEPPOL two whole-source envelope/key/hash fixtures. Original source accesspoint endpoint is artifact metadata only, never fetched. Fresh current human ExternalSend for durable preparation/manualack and actual transport; current DocumentsRead exports independently of provider. Typed audit provenance binds original handoff row/source/rawconfig/ack/actor; same-key no upgrade/replacement, safe prepared/noevents alone permits native delivery; manual/legacy/accepted/uncertain records permanently block redelivery, atomically before providerPOST. Native get/list prefers delivery authority over safe preparations, retaining all records. Native Source recipient plainEAN retained; original handoff prefixesGLN internally after diagnosed contract integration mismatch. Original first-vsduplicate flags truthful; actual test found native response compatibility regression, fixed only originalfirst flag while native cached first/repeated outputs remain exact. New native regression passes. Full eight-package all-target strict check plus targeted app/host check after fix and normal three binaries pass. Actual ordinary normalMFA profile with verified localTLS provider: original preview/OIOUBL exactfiles/hashes from immutable issued snapshot after contactedit; original preparation repeat and ignored lateack; separate manualack no providercall; key mismatch refusal; original queued send exactlyonce, queued repeat accepted-ID GET only then cached delivered. Native terminal/uncertain/validation/revocation behavior retained. Exactly3native+2original rows,3deliveries,no journals/lines. Four signed complete SQL/original snapshots independently verified; original preview/duplicate/manual refusal persist under source restart and fresh-owner source-free restore/reopen with provider credentials absent. Initial failed proof/scripts retained; fixed proof uses new isolated profile, no real external effects. All4worker trees integrated and recoverably removed. Entire epic and remaining original whole-product R44/R45/recovery/automation/release/TypeScript retirement/final desktop scope OPEN.",
+  "state": "Group154 ACCEPTED supported original recurring create/list/generate through one shared Rust issuer and native UI API. Structured full mixed taxable/exempt and reduced simplified source payloads retained, source defaults/filtering/calendar/window/notes, typed human/service authority, claims and immutable JSON/PDF. Native next-period generation from original mixed template retains frozen buyer and tax decisions; no second engine or transport. Shared original issuance mandatory-global-VAT defect fixed for explicit tax lines; unsupported non25 taxable rates remain definite refusal, no silent25 fallback or weakened control. Source no-note reverse charge remains unsupported by native required-note gate; both original parity decisions stay OPEN. Focused SDK2/CLI2/MCP2/storage3/host2/shared1 pass; main source-required line-description regression passes; eight-package all-target strict and normal three binaries pass. Actual retained synthetic ordinary-MFA/current service profile: three templates/four generations/eight immutable artifacts, CLI and MCP full list/result parity, original and native period dedup/retirement, current reviewer refusal, typed audits, exact books/originals restart. No added journals, bank changes, or provider/delivery events; existing33journals80lines preserved. Independent source/artifact/script/completeSQL/original verifier passes. No Fresh MFA renewal or signed recovery in154; prior signed evidence retained, original nonempty workspace-delivery backup/recovery remains for155. Two worker trees integrated and recoverably removed. Whole recurring journey, R44/R45, epic and desktop final acceptance remain OPEN.",
   "issues_closed": [
     701
   ],
   "next": [
+    "Group155 REQUIRED next within recurring journey: original explicit run-workspace (CLI/MCP) using configured authenticated workspace/manifest, earliest missing periods and per-company cap/continuation, skip archived/uninitialized, one company failure must not starve next, source email dry-run boundary, configured public transport/status-only/reconciliation/no resend, current per-company authority/backup, nonempty original delivery evidence and signed source-free recovery. Reuse /tmp/rm155-workspace-seams.md; no new timer, engine, schema or automatic live SMTP. Resolve retained original rate/required reverse-note parity and original domain error contracts explicitly before claiming full parity.",
     "Original invoice interface inventory now has all31CLI and25MCP bindings, with explicit compatibility corrections documented; do not mistake that family inventory for full product parity. Reconcile remaining original whole-product R44/R45 acceptance from existing epic/issues: actor/env/company-path/default launcher/errors/historical receipts, closure/recovery/automation, signed distribution/update/cutover and TypeScript backend retirement. Continue next necessary whole journey, preserve all accepted evidence/full original scope; installed desktop acceptance last.",
     "Installed desktop acceptance is explicitly deferred to the very end by the user. Preserve prepared Group100 profile; collect remaining native automation, closure, recovery and packaging checks for final installed acceptance without requesting screen unlock during development.",
     "J03/R50 and remaining R54 scope: only still-supported operation closure/recovery, nonempty scheduler handoff, hostile/older clone and post-cutover rollback requirements. Group99 qualifies managed installed J06 flow, not every R54 acceptance item.",
@@ -8745,6 +8746,69 @@
       "independent_verifier_sha256": "c679155b7317dd72b23b30cb80ad78aac90e7aceb998764dfb40756da0c6b2ba",
       "independent_verification": "/tmp/rm153-independent.log",
       "independent_expectation_correction": "Initial supplemental counter matched bare document-status but actual fixture trace preserves document-status/synthetic-queued-74. Inspected exact immutable trace, corrected verifier to require exactly that single GET. No product change or actual rerun."
+    },
+    "original_recurring154": {
+      "issue": 717,
+      "status": "accepted-supported-lifecycle; whole-recurring-parity-open",
+      "source_revision": "8445f1c45f7994b026977345d5b709fc36f40c87",
+      "contract": "/tmp/rm154-contract.md",
+      "source_scout": "/tmp/rm154-remaining-scout.md",
+      "workspace_seams": "/tmp/rm155-workspace-seams.md",
+      "workers": {
+        "clients": "4e0de808",
+        "backend": "57396cde"
+      },
+      "integrated": {
+        "helper": "b2cddb5a",
+        "clients": "00bc3d10",
+        "backend": "80567309",
+        "schema_and_lint": "8445f1c4"
+      },
+      "report": "/tmp/rentemester-rust-reports/recurring-original154.json",
+      "report_sha256": "0fc77dae78de85098d00bdeaa08360a27c87cd58c4e39848b184c8029735b490",
+      "runner": "/tmp/rm154-recurring.py",
+      "scenario": "/tmp/rm154-run.ts",
+      "independent_verifier": "/tmp/rm154-independent.py",
+      "independent_log": "/tmp/rm154-independent.log",
+      "script_hashes": {
+        "/tmp/rm154-recurring.py": "fb7d0fc13d7c965b7d30e3f82087a8bd1533f649cc0a24744e72e2d2d78c4775",
+        "/tmp/rm154-run.ts": "35bc83a48d919185a00a68305deba601582db12de0efe6453e817317aeaff376",
+        "/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/scripts/rust/check-native-recurring-original.ts": "f05c15e9ed4b0e75b9c9f5bce4c35b410d50e555612b8cb154c6ebfb92cfab3c"
+      },
+      "independent_verifier_sha256": "2e686c30eca4ba126ba14a6383496f55d8897b6a0e92180504d0d76bb0dbf8c8",
+      "focused": {
+        "sdk": 2,
+        "cli": 2,
+        "mcp": 2,
+        "storage": 3,
+        "host": 2,
+        "shared_existing_lifecycle": 1
+      },
+      "strict": "/tmp/rm154-integrated-clippy-fixed.log",
+      "normal_build": "/tmp/rm154-integrated-normal-build.log",
+      "actual": {
+        "templates": 3,
+        "generations": 4,
+        "new_original_artifacts": 8,
+        "added_journals": 0,
+        "added_delivery_events": 0,
+        "retained_journals": 33,
+        "retained_journal_lines": 80,
+        "fresh_mfa_after_restart": false,
+        "persisted_normal_mfa_session": true,
+        "exact_state_and_originals_restart": true,
+        "owned_processes_stopped": true,
+        "retained_private_synthetic_fixture": true
+      },
+      "worktree_recovery": [
+        "/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/.git/rentemester-recovery/archived154-clients.json",
+        "/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/.git/rentemester-recovery/archived154-backend.json"
+      ],
+      "failures_corrected": "Client misplaced module declaration compile and stale toolcount258 expectation corrected to inspected288+3=291, targeted tests only. Backend private decimal helper compile corrected without exposing engine; reduced source fixture seller and revocation NULL role fixtures fixed without relaxing product; isolated targets rerun. Integrated strict two equivalent boolean warnings fixed. Actual whole flow passed first run; no financial/external replay. Source required description schema fixed and targeted SDK2 pass.",
+      "remaining": "Full workspace runner and delivery/recovery; original-vs-native taxable rate/required reverse-note and domain-error compatibility, all existing whole-product R44/R45/global actor/env/path/launcher/receipt/closure/release/cutover/TS retirement/final desktop requirements.",
+      "previous_accepted_increment": "Group153 four original public invoice CLI artifacts, preparation and shared native delivery accepted",
+      "github_child_comment": "https://github.com/mikkelkrogsholm/rentemester/issues/717#issuecomment-6334186097",
+      "github_epic_comment": "https://github.com/mikkelkrogsholm/rentemester/issues/672#issuecomment-6334186380"
     }
   },
   "verified_history": [
