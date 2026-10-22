@@ -113,12 +113,11 @@ impl<'a> Action<'a> {
         }
     }
     fn assertions(&self, actor: &str) -> Result<(), Error> {
-        if let Self::Asserted(_, expected_actor, expected_principal) = self {
-            if expected_actor.is_some_and(|s| s != actor)
-                || expected_principal.is_some_and(|s| s != actor)
-            {
-                return Err(store::refused("access_denied"));
-            }
+        if let Self::Asserted(_, expected_actor, expected_principal) = self
+            && (expected_actor.is_some_and(|s| s != actor)
+                || expected_principal.is_some_and(|s| s != actor))
+        {
+            return Err(store::refused("access_denied"));
         }
         Ok(())
     }
