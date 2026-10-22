@@ -63,6 +63,24 @@ impl Decimal {
         }
     }
 }
+/// Shift a decimal point without quantization or floating-point conversion.
+pub(crate) fn shift(value: &str, power: i32) -> Result<String, Error> {
+    let mut value = Decimal::parse(value)?;
+    value.scale -= power;
+    if value.scale < 0 {
+        Ok((value.coefficient * BigInt::from(10u8).pow((-value.scale) as u32)).to_string())
+    } else {
+        let formatted = format_scaled(&value.coefficient, value.scale as usize);
+        if formatted.contains('.') {
+            Ok(formatted
+                .trim_end_matches('0')
+                .trim_end_matches('.')
+                .to_owned())
+        } else {
+            Ok(formatted)
+        }
+    }
+}
 pub(crate) fn compare(left: &str, right: &str) -> Result<std::cmp::Ordering, Error> {
     let a = Decimal::parse(left)?;
     let b = Decimal::parse(right)?;

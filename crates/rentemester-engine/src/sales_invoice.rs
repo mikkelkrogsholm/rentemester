@@ -111,7 +111,9 @@ fn reduced_project(payload: &Value, canonical: bool) -> Result<TaxProjection, Er
         }
     }
     let totals = &payload["totals"];
-    taxable_rate(&totals["vatRate"])?;
+    if crate::decimal::compare(&number(&totals["vatRate"])?, "0.25")? != std::cmp::Ordering::Equal {
+        return Err(refused("simplified invoice requires contained 25% VAT"));
+    }
     let gross = money(&totals["grossAmount"])?;
     if gross.is_negative() || gross == Money::default() {
         return Err(refused("simplified gross must be positive"));
@@ -161,7 +163,7 @@ fn reduced_project(payload: &Value, canonical: bool) -> Result<TaxProjection, Er
             index: 0,
             net: net.clone(),
             vat: vat.clone(),
-            vat_code: "DK_SALE_25",
+            vat_code: Some("DK_SALE_25"),
         }],
         net,
         vat,
@@ -237,7 +239,7 @@ pub struct TaxLine {
     pub index: usize,
     pub net: Money,
     pub vat: Money,
-    pub vat_code: &'static str,
+    pub vat_code: Option<&'static str>,
 }
 fn treatment(value: Option<&str>) -> Result<&str, Error> {
     match value.unwrap_or("standard") {
@@ -309,13 +311,30 @@ fn money(value: &Value) -> Result<Money, Error> {
     }
     Ok(value)
 }
-fn taxable_rate(value: &Value) -> Result<(), Error> {
-    if crate::decimal::compare(&number(value)?, "0.25")? != std::cmp::Ordering::Equal {
+fn taxable_rate(value: &Value) -> Result<String, Error> {
+    let rate = number(value)?;
+    if !crate::decimal::positive(&rate)? {
+        return Err(refused("taxable invoice rate must be positive"));
+    }
+    Ok(rate)
+}
+fn taxable_code(rate: &str) -> Result<Option<&'static str>, Error> {
+    Ok(
+        (crate::decimal::compare(rate, "0.25")? == std::cmp::Ordering::Equal)
+            .then_some("DK_SALE_25"),
+    )
+}
+fn percentage_fraction(percent: &Number) -> Result<Value, Error> {
+    let raw = crate::decimal::shift(&percent.to_string(), -2)?;
+    let number: Number = raw.parse().map_err(|_| refused("invalid VAT percentage"))?;
+    if crate::decimal::compare(&number.to_string(), &raw)? != std::cmp::Ordering::Equal {
         return Err(refused(
-            "native taxable invoice lines currently require vatRate 0.25",
+            "VAT percentage exceeds exact numeric storage range",
         ));
     }
-    Ok(())
+    let value = json!(number);
+    taxable_rate(&value)?;
+    Ok(value)
 }
 fn line_base(quantity: &Value, price: &Value) -> Result<Money, Error> {
     let quantity = number(quantity)?;
@@ -394,13 +413,12 @@ pub fn compute(input: &Input) -> Result<Value, Error> {
         input.currency.as_deref().unwrap_or("DKK"),
         input.fx_rate_to_dkk.as_ref(),
     )?;
-    if input
+    let default_rate = input
         .vat_rate_percent
         .as_ref()
-        .is_some_and(|n| n.as_f64() != Some(25.0))
-    {
-        return Err(refused("native taxable invoices currently support 25% VAT"));
-    }
+        .map(percentage_fraction)
+        .transpose()?
+        .unwrap_or(json!(0.25));
     crate::fiscal_year::Date::parse(&input.issue_date)?;
     if input.lines.is_empty() || input.lines.len() > 200 {
         return Err(refused("invoice requires 1–200 lines"));
@@ -427,6 +445,9 @@ pub fn compute(input: &Input) -> Result<Value, Error> {
         .iter()
         .all(|line| line.quantity.is_none() && line.unit_price_ex_vat.is_none());
     if reduced {
+        if crate::decimal::compare(&number(&default_rate)?, "0.25")? != std::cmp::Ordering::Equal {
+            return Err(refused("simplified invoice requires contained 25% VAT"));
+        }
         if kind != "simplified" {
             return Err(refused("full invoices require quantity and unitPriceExVat"));
         }
@@ -493,9 +514,9 @@ pub fn compute(input: &Input) -> Result<Value, Error> {
         .as_deref()
         .map(|s| text(s, 2000))
         .transpose()?;
-    if reverse && (doc_basis.is_none() || note.is_none()) {
+    if reverse && doc_basis.is_none() {
         return Err(refused(
-            "reverse-charge invoices require reverseChargeBasis and reverseChargeNote",
+            "reverse-charge invoices require reverseChargeBasis",
         ));
     }
     let mut net = Money::default();
@@ -503,6 +524,7 @@ pub fn compute(input: &Input) -> Result<Value, Error> {
     let mut lines = Vec::new();
     check_basis(foreign, domestic, doc_basis)?;
     let mut uniform = true;
+    let mut uniform_rate: Option<String> = None;
     for line in &input.lines {
         let total = line_base(&json!(line.quantity), &json!(line.unit_price_ex_vat))?;
         let class = classification(line.tax_classification.as_deref(), reverse)?;
@@ -531,9 +553,18 @@ pub fn compute(input: &Input) -> Result<Value, Error> {
             ));
         }
         check_basis(foreign, domestic, effective_basis)?;
+        let effective_rate = line
+            .vat_rate
+            .as_ref()
+            .map_or_else(|| default_rate.clone(), |n| json!(n));
         let line_vat = if class == "taxable" {
-            taxable_rate(&line.vat_rate.as_ref().map_or(json!(0.25), |n| json!(n)))?;
-            total.percent("25")?
+            let rate = taxable_rate(&effective_rate)?;
+            if let Some(previous) = &uniform_rate {
+                uniform &= crate::decimal::compare(previous, &rate)? == std::cmp::Ordering::Equal;
+            } else {
+                uniform_rate = Some(rate.clone());
+            }
+            Money::multiply_decimal(&total.decimal(), &rate)?
         } else {
             Money::default()
         };
@@ -549,7 +580,7 @@ pub fn compute(input: &Input) -> Result<Value, Error> {
         vat.add(&line_vat);
         let mut result = json!({"description":text(&line.description,1000)?,"quantity":line.quantity,
             "unitPriceExVat":line.unit_price_ex_vat,"lineTotalExVat":wire(&total)?,
-            "taxClassification":class,"vatRate":if class == "taxable" {0.25} else {0.0},
+            "taxClassification":class,"vatRate":if class == "taxable" {effective_rate} else {json!(0.0)},
             "vatBase":wire(&total)?,"vatAmount":wire(&line_vat)?});
         if let Some(value) = effective_basis {
             result["reverseChargeBasis"] = json!(value);
@@ -565,7 +596,7 @@ pub fn compute(input: &Input) -> Result<Value, Error> {
     if !domestic {
         totals["vatAmount"] = wire(&vat)?;
         if uniform {
-            totals["vatRate"] = json!(0.25);
+            totals["vatRate"] = lines[0]["vatRate"].clone();
         }
     }
     let mut result =
@@ -586,7 +617,7 @@ pub fn compute(input: &Input) -> Result<Value, Error> {
     Ok(result)
 }
 /// Verify saved source amounts before posting, crediting or accounting reads.
-/// Missing classifications identify the historical aggregate-25 contract only.
+/// Uniform missing classifications retain historical aggregate rounding.
 pub fn project(payload: &Value) -> Result<TaxProjection, Error> {
     validate_metadata(payload)?;
     crate::currency::Currency::parse(payload["currency"].as_str().unwrap_or("DKK"))?;
@@ -628,23 +659,25 @@ pub fn project(payload: &Value) -> Result<TaxProjection, Error> {
         .map(|v| basis(v.as_str().unwrap_or("")))
         .transpose()?;
     check_basis(foreign, domestic, doc_basis)?;
-    if reverse {
-        if doc_basis.is_none() {
-            return Err(refused("domestic reverse-charge basis missing"));
-        }
-        text(payload["reverseChargeNote"].as_str().unwrap_or(""), 2000)?;
+    if reverse && doc_basis.is_none() {
+        return Err(refused("reverse-charge basis missing"));
+    }
+    if let Some(note) = payload.get("reverseChargeNote") {
+        text(note.as_str().unwrap_or(""), 2000)?;
     }
     let source = payload["lines"]
         .as_array()
         .filter(|v| !v.is_empty() && v.len() <= 200)
         .ok_or_else(|| refused("invoice requires 1–200 lines"))?;
-    let legacy = !reverse
+    let mut legacy = !reverse
         && source
             .iter()
             .all(|line| line.get("taxClassification").is_none());
     let mut net = Money::default();
     let mut vat = Money::default();
     let mut lines = Vec::new();
+    let mut uniform_rate: Option<String> = None;
+    let mut uniform = true;
     for (index, line) in source.iter().enumerate() {
         let base = money(&line["lineTotalExVat"])?;
         if base.is_negative() || line_base(&line["quantity"], &line["unitPriceExVat"])? != base {
@@ -669,10 +702,20 @@ pub fn project(payload: &Value) -> Result<TaxProjection, Error> {
         }
         let (line_vat, code) = match class {
             "taxable" => {
-                taxable_rate(line.get("vatRate").unwrap_or(&payload["totals"]["vatRate"]))?;
-                (base.percent("25")?, "DK_SALE_25")
+                let rate =
+                    taxable_rate(line.get("vatRate").unwrap_or(&payload["totals"]["vatRate"]))?;
+                if let Some(previous) = &uniform_rate {
+                    uniform &=
+                        crate::decimal::compare(previous, &rate)? == std::cmp::Ordering::Equal;
+                } else {
+                    uniform_rate = Some(rate.clone());
+                }
+                (
+                    Money::multiply_decimal(&base.decimal(), &rate)?,
+                    taxable_code(&rate)?,
+                )
             }
-            "exempt" => (Money::default(), "DK_SALE_EXEMPT"),
+            "exempt" => (Money::default(), Some("DK_SALE_EXEMPT")),
             _ => {
                 let value = line
                     .get("reverseChargeBasis")
@@ -683,11 +726,11 @@ pub fn project(payload: &Value) -> Result<TaxProjection, Error> {
                 check_basis(foreign, domestic, Some(value))?;
                 (
                     Money::default(),
-                    if foreign {
+                    Some(if foreign {
                         "REVERSE_CHARGE_EXEMPT"
                     } else {
                         "DOMESTIC_REVERSE_CHARGE_EXEMPT"
-                    },
+                    }),
                 )
             }
         };
@@ -713,6 +756,7 @@ pub fn project(payload: &Value) -> Result<TaxProjection, Error> {
                 "line vatAmount differs from rounded tax projection",
             ));
         }
+        uniform &= class == "taxable";
         net.add(&base);
         vat.add(&line_vat);
         lines.push(TaxLine {
@@ -725,14 +769,27 @@ pub fn project(payload: &Value) -> Result<TaxProjection, Error> {
     if net == Money::default() {
         return Err(refused("invoice total must be positive"));
     }
+    legacy &= uniform;
+    if let Some(declared) = payload["totals"].get("vatRate") {
+        let declared = taxable_rate(declared)?;
+        // Original aggregate rate is a fallback: explicit line rates override it.
+        // Only the matching historical uniform contract rounds in aggregate.
+        legacy &= uniform_rate.as_ref().is_some_and(|rate| {
+            crate::decimal::compare(rate, &declared).ok() == Some(std::cmp::Ordering::Equal)
+        });
+    } else {
+        legacy = false;
+    }
     if legacy {
-        taxable_rate(&payload["totals"]["vatRate"])?;
-        vat = net.percent("25")?;
+        let rate = uniform_rate
+            .as_ref()
+            .ok_or_else(|| refused("missing taxable rate"))?;
+        vat = Money::multiply_decimal(&net.decimal(), rate)?;
         lines = vec![TaxLine {
             index: 0,
             net: net.clone(),
             vat: vat.clone(),
-            vat_code: "DK_SALE_25",
+            vat_code: taxable_code(rate)?,
         }];
     }
     let mut gross = net.clone();
@@ -766,7 +823,7 @@ pub fn project(payload: &Value) -> Result<TaxProjection, Error> {
     }
     if kind == "simplified" {
         simplified_limit(payload, &gross)?;
-        if lines.iter().any(|line| line.vat_code != "DK_SALE_25") {
+        if lines.iter().any(|line| line.vat_code != Some("DK_SALE_25")) {
             return Err(refused(
                 "simplified invoice requires standard 25% taxable lines",
             ));
@@ -785,6 +842,85 @@ pub fn project(payload: &Value) -> Result<TaxProjection, Error> {
 mod tests {
     use super::*;
     #[test]
+    fn full_rates_freeze_exact_fractions_and_never_invent_posting_codes() {
+        let native = computed(json!({"issueDate":"2026-10-20","vatRatePercent":20,
+            "lines":[{"description":"Synthetic","quantity":1,"unitPriceExVat":100}]}));
+        assert_eq!(native["lines"][0]["vatRate"], 0.2);
+        assert_eq!(native["totals"]["vatRate"], 0.2);
+        assert_eq!(native["totals"]["vatAmount"], 20.0);
+        assert_eq!(project(&native).unwrap().lines[0].vat_code, None);
+        let precise = computed(json!({"issueDate":"2026-10-20","vatRatePercent":20.000006,
+            "lines":[{"description":"Synthetic precise","quantity":1,"unitPriceExVat":100000}]}));
+        assert_eq!(precise["lines"][0]["vatRate"], 0.20000006);
+        assert_eq!(precise["totals"]["vatAmount"], 20000.01);
+        let mixed = computed(json!({"issueDate":"2026-10-20","vatRatePercent":20,
+            "lines":[{"description":"Fallback","quantity":1,"unitPriceExVat":100},
+            {"description":"Override","quantity":1,"unitPriceExVat":100,"vatRate":0.25}]}));
+        assert!(mixed["totals"].get("vatRate").is_none());
+        assert_eq!(mixed["totals"]["vatAmount"], 45.0);
+        let projection = project(&mixed).unwrap();
+        assert_eq!(projection.lines[0].vat_code, None);
+        assert_eq!(projection.lines[1].vat_code, Some("DK_SALE_25"));
+        for (key, value) in [("vatAmount", json!(50)), ("grossAmount", json!(250))] {
+            let mut forged = mixed.clone();
+            forged["totals"][key] = value;
+            assert!(project(&forged).is_err(), "{key}");
+        }
+        for rate in [json!(0), json!(-0.2), json!("0.2"), Value::Null] {
+            let mut forged = native.clone();
+            forged["lines"][0]["vatRate"] = rate;
+            assert!(project(&forged).is_err());
+        }
+    }
+    #[test]
+    fn historical_non25_aggregate_and_mixed_line_rates_preserve_source_rounding() {
+        let original = json!({"lines":[
+            {"quantity":1,"unitPriceExVat":0.02,"lineTotalExVat":0.02},
+            {"quantity":1,"unitPriceExVat":0.02,"lineTotalExVat":0.02}],
+            "totals":{"netAmount":0.04,"vatRate":0.2,"vatAmount":0.01,"grossAmount":0.05}});
+        let bytes = serde_json::to_vec(&original).unwrap();
+        let projected = project(&original).unwrap();
+        assert!(projected.legacy);
+        assert_eq!(projected.vat.decimal(), "0.01");
+        assert_eq!(projected.lines[0].vat_code, None);
+        assert_eq!(serde_json::to_vec(&original).unwrap(), bytes);
+        let mixed = json!({"lines":[
+            {"quantity":1,"unitPriceExVat":100,"lineTotalExVat":100,"vatRate":0.2},
+            {"quantity":1,"unitPriceExVat":100,"lineTotalExVat":100,"vatRate":0.25}],
+            "totals":{"netAmount":200,"vatAmount":45,"grossAmount":245}});
+        let projected = project(&mixed).unwrap();
+        assert!(!projected.legacy);
+        assert_eq!(projected.lines.len(), 2);
+        assert_eq!(projected.vat.decimal(), "45.00");
+        let mut fallback = mixed;
+        fallback["totals"]["vatRate"] = json!(0.3);
+        assert_eq!(project(&fallback).unwrap().vat.decimal(), "45.00");
+    }
+    #[test]
+    fn reverse_custom_note_is_optional_and_supplied_text_stays_validated() {
+        for (treatment, basis) in [
+            ("domestic_reverse_charge", "DK_MOMSLOVEN_§46_STK_1_NR_6"),
+            ("foreign_reverse_charge", "EU_MOMSDIREKTIV_ART_196"),
+        ] {
+            let input = json!({"issueDate":"2026-10-20","vatTreatment":treatment,
+                "reverseChargeBasis":basis,"lines":[{"description":"Synthetic","quantity":1,"unitPriceExVat":100}]});
+            let native = computed(input.clone());
+            assert!(native.get("reverseChargeNote").is_none());
+            assert_eq!(project(&native).unwrap().vat, Money::default());
+            for bad in [json!(" "), json!("Unsupported 📄"), json!(42)] {
+                let mut saved = native.clone();
+                saved["reverseChargeNote"] = bad;
+                assert!(project(&saved).is_err());
+            }
+            let mut custom = input;
+            custom["reverseChargeNote"] = json!("Custom synthetic note");
+            assert_eq!(
+                computed(custom)["reverseChargeNote"],
+                "Custom synthetic note"
+            );
+        }
+    }
+    #[test]
     fn supported_foreign_bases_preserve_native_and_omitted_zero_vat_originals() {
         for basis in [
             "EU_B2B_SERVICES",
@@ -799,7 +935,7 @@ mod tests {
             assert_eq!(native["totals"]["vatAmount"], 0.0);
             assert_eq!(
                 project(&native).unwrap().lines[0].vat_code,
-                "REVERSE_CHARGE_EXEMPT"
+                Some("REVERSE_CHARGE_EXEMPT")
             );
             let mut historical = native.clone();
             historical["totals"]
@@ -819,7 +955,7 @@ mod tests {
             let projection = project(&historical).unwrap();
             assert_eq!(projection.gross.decimal(), "100.00");
             assert_eq!(projection.vat, Money::default());
-            assert_eq!(projection.lines[0].vat_code, "REVERSE_CHARGE_EXEMPT");
+            assert_eq!(projection.lines[0].vat_code, Some("REVERSE_CHARGE_EXEMPT"));
             assert_eq!(serde_json::to_vec(&historical).unwrap(), original);
             historical["totals"]["vatRate"] = json!(0);
             assert!(project(&historical).is_err());
@@ -987,10 +1123,10 @@ mod tests {
                 .map(|v| v.vat_code)
                 .collect::<Vec<_>>(),
             vec![
-                "DK_SALE_25",
-                "DK_SALE_25",
-                "DK_SALE_EXEMPT",
-                "DOMESTIC_REVERSE_CHARGE_EXEMPT"
+                Some("DK_SALE_25"),
+                Some("DK_SALE_25"),
+                Some("DK_SALE_EXEMPT"),
+                Some("DOMESTIC_REVERSE_CHARGE_EXEMPT")
             ]
         );
         for index in 0..4 {
@@ -1009,7 +1145,7 @@ mod tests {
         assert!(project(&bad).is_err());
     }
     #[test]
-    fn domestic_reverse_requires_explicit_basis_note_and_omits_total_vat() {
+    fn domestic_reverse_requires_explicit_basis_valid_note_and_omits_total_vat() {
         for basis in ["DK_MOMSLOVEN_§46_STK_1_NR_6", "DK_MOMSLOVEN_§46_STK_1_NR_7"] {
             let mut input = json!({"issueDate":"2026-10-20","vatTreatment":"domestic_reverse_charge",
                 "reverseChargeBasis":basis,"reverseChargeNote":"Omvendt betalingspligt",
@@ -1052,7 +1188,7 @@ mod tests {
     fn unsupported_rates_bases_and_zero_rate_inference_refuse() {
         for extra in [
             json!({"vatRate":0}),
-            json!({"vatRate":0.2}),
+            json!({"vatRate":-0.2}),
             json!({"taxClassification":"reverse_charge"}),
             json!({"taxClassification":"reverse_charge","reverseChargeBasis":"EU_196"}),
             json!({"taxClassification":"unknown"}),
@@ -1131,7 +1267,6 @@ mod private_tests {
             ("quantity", json!(1)),
             ("unitPriceExVat", json!(100)),
             ("taxClassification", json!("exempt")),
-            ("vatRate", json!(0.25)),
             ("reverseChargeBasis", json!("DK_MOMSLOVEN_§46_STK_1_NR_6")),
         ] {
             let mut bad = base.clone();

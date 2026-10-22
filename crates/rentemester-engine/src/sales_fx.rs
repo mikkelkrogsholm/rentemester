@@ -320,6 +320,19 @@ mod tests {
         sales_invoice::compute(&serde_json::from_value(json!({"issueDate":"2025-08-01","currency":"EUR","fxRateToDkk":7.46,"vatTreatment":"foreign_reverse_charge","reverseChargeBasis":"EU_B2B_SERVICES","reverseChargeNote":"Synthetic reverse charge","lines":[{"description":"Synthetic A","quantity":1,"unitPriceExVat":0.01},{"description":"Synthetic B","quantity":1,"unitPriceExVat":0.01}]})).unwrap()).unwrap()
     }
     #[test]
+    fn unclassified_full_rate_survives_frozen_dkk_allocations() {
+        let native = sales_invoice::compute(&serde_json::from_value(json!({"issueDate":"2026-10-20",
+            "currency":"EUR","fxRateToDkk":7.5,"vatRatePercent":20,
+            "lines":[{"description":"Synthetic foreign taxable","quantity":1,"unitPriceExVat":100}]})).unwrap()).unwrap();
+        let projected = project(&native).unwrap();
+        assert_eq!(projected.lines[0].vat_code, None);
+        assert_eq!(projected.net.decimal(), "750.00");
+        assert_eq!(projected.vat.decimal(), "150.00");
+        assert_eq!(projected.gross.decimal(), "900.00");
+        let historical = without_native_allocation(native);
+        assert_eq!(project(&historical).unwrap().lines[0].vat_code, None);
+    }
+    #[test]
     fn historical_aggregate_preserves_original_and_source_final_line_rounding() {
         let native = reverse_invoice();
         let native_projection = project(&native).unwrap();
@@ -412,7 +425,7 @@ mod tests {
         assert_eq!(projected.net.decimal(), "746.00");
         assert_eq!(projected.gross, projected.net);
         assert_eq!(projected.vat, Money::default());
-        assert_eq!(projected.lines[0].vat_code, "DK_SALE_EXEMPT");
+        assert_eq!(projected.lines[0].vat_code, Some("DK_SALE_EXEMPT"));
         assert_eq!(serde_json::to_vec(&old).unwrap(), original);
         let mut bad = old;
         bad["totals"]["vatAmountDkk"] = json!(1);
@@ -426,7 +439,7 @@ mod tests {
         let dkk = project(&value).unwrap();
         assert_eq!(original.gross.decimal(), "0.02");
         assert_eq!(dkk.gross.decimal(), "0.15");
-        assert_eq!(dkk.lines[0].vat_code, "REVERSE_CHARGE_EXEMPT");
+        assert_eq!(dkk.lines[0].vat_code, Some("REVERSE_CHARGE_EXEMPT"));
         let mut sum = Money::default();
         for l in &dkk.lines {
             sum.add(&l.net);
@@ -453,7 +466,7 @@ mod tests {
         assert_eq!(dkk.lines[0].vat.decimal(), "0.02");
         assert_eq!(dkk.lines[1].vat.decimal(), "0.01");
         assert_eq!(dkk.lines[2].vat, Money::default());
-        assert_eq!(dkk.lines[2].vat_code, "DK_SALE_EXEMPT");
+        assert_eq!(dkk.lines[2].vat_code, Some("DK_SALE_EXEMPT"));
     }
     #[test]
     fn rate_requires_explicit_exact_positive_quote() {

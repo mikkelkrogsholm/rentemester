@@ -28,6 +28,11 @@ fn unit_price(value: &Value) -> String {
         amount(value)
     }
 }
+fn vat_label(rate: &Value) -> String {
+    crate::decimal::shift(&rate.to_string(), 2)
+        .map(|percent| format!("Moms {percent}%"))
+        .unwrap_or_else(|_| "Moms i alt".into())
+}
 pub fn build(payload: &Value) -> Vec<u8> {
     let mut rows = Vec::new();
     let currency = payload["currency"].as_str().unwrap_or("DKK");
@@ -109,9 +114,14 @@ pub fn build(payload: &Value) -> Vec<u8> {
                 amount: amount(&line["lineTotalExVat"]),
             });
         }
-        if let Some(class) = line["taxClassification"].as_str() {
+        if let Some(class) = line["taxClassification"]
+            .as_str()
+            .or_else(|| line.get("vatRate").map(|_| "taxable"))
+        {
             let label = match class {
-                "taxable" => "Moms 25%".to_owned(),
+                "taxable" => {
+                    vat_label(line.get("vatRate").unwrap_or(&payload["totals"]["vatRate"]))
+                }
                 "exempt" => "Momsfritaget".to_owned(),
                 "reverse_charge" => format!(
                     "Omvendt betalingspligt: {}",
@@ -133,26 +143,44 @@ pub fn build(payload: &Value) -> Vec<u8> {
             .iter()
             .any(|line| line.get("taxClassification").is_some())
     });
-    let uniform = payload["lines"].as_array().is_some_and(|lines| {
-        lines
-            .iter()
-            .all(|line| line["taxClassification"] == "taxable")
-    });
     let exempt = payload["lines"].as_array().is_some_and(|lines| {
         lines
             .iter()
             .all(|line| line["taxClassification"] == "exempt")
     });
-    let vat_label = if !explicit || uniform {
-        "Moms 25%"
+    let fallback = payload["totals"]
+        .get("vatRate")
+        .cloned()
+        .unwrap_or(json!(0.25));
+    let mut uniform_rate: Option<&Value> = None;
+    let uniform = payload["lines"].as_array().is_some_and(|lines| {
+        !lines.is_empty()
+            && lines.iter().all(|line| {
+                if line["taxClassification"].as_str().unwrap_or("taxable") != "taxable" {
+                    return false;
+                }
+                let rate = line.get("vatRate").unwrap_or(&fallback);
+                if let Some(previous) = uniform_rate {
+                    crate::decimal::compare(&previous.to_string(), &rate.to_string()).ok()
+                        == Some(std::cmp::Ordering::Equal)
+                } else {
+                    uniform_rate = Some(rate);
+                    true
+                }
+            })
+    });
+    let vat_label = if uniform && !domestic && payload["vatTreatment"] != "foreign_reverse_charge" {
+        vat_label(uniform_rate.unwrap_or(&fallback))
+    } else if !explicit {
+        "Moms i alt".into()
     } else if exempt {
-        "Momsfritaget"
+        "Momsfritaget".into()
     } else {
-        "Moms i alt"
+        "Moms i alt".into()
     };
     for (key, label) in [
         ("netAmount", "I alt ekskl. moms"),
-        ("vatAmount", vat_label),
+        ("vatAmount", vat_label.as_str()),
         ("grossAmount", "Til betaling DKK"),
     ] {
         if domestic && key == "vatAmount" {
@@ -343,6 +371,41 @@ fn render(title: &str, value: &Value, today: &str, rows: &[Row]) -> Vec<u8> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn actual_rates_and_derived_reverse_wording_are_printed_without_custom_note() {
+        let input = json!({"issueDate":"2026-10-20","vatRatePercent":20,
+            "lines":[{"description":"Synthetic","quantity":1,"unitPriceExVat":100} ]});
+        let native =
+            crate::sales_invoice::compute(&serde_json::from_value(input.clone()).unwrap()).unwrap();
+        let pdf = build(&native);
+        let text = String::from_utf8_lossy(&pdf);
+        assert!(text.contains("Moms 20%"));
+        assert!(!text.contains("Moms 25%"));
+        let mut mixed = input;
+        mixed["lines"].as_array_mut().unwrap().push(json!({"description":"Override","quantity":1,"unitPriceExVat":100,"vatRate":0.20000006}));
+        let native =
+            crate::sales_invoice::compute(&serde_json::from_value(mixed).unwrap()).unwrap();
+        let pdf = build(&native);
+        let text = String::from_utf8_lossy(&pdf);
+        assert!(text.contains("Moms 20%"));
+        assert!(text.contains("Moms 20.000006%"));
+        assert!(text.contains("Moms i alt"));
+        assert!(!text.contains("Moms 25%"));
+        for (treatment, basis) in [
+            ("domestic_reverse_charge", "DK_MOMSLOVEN_§46_STK_1_NR_6"),
+            ("foreign_reverse_charge", "EU_MOMSDIREKTIV_ART_196"),
+        ] {
+            let native = crate::sales_invoice::compute(
+                &serde_json::from_value(json!({"issueDate":"2026-10-20",
+                "vatTreatment":treatment,"reverseChargeBasis":basis,
+                "lines":[{"description":"Synthetic","quantity":1,"unitPriceExVat":100}]}))
+                .unwrap(),
+            )
+            .unwrap();
+            let pdf = build(&native);
+            assert!(String::from_utf8_lossy(&pdf).contains("Omvendt betalingspligt:"));
+        }
+    }
     #[test]
     fn delivery_and_explicit_units_are_printed_without_inventing_reduced_quantities() {
         let mut source = json!({"invoiceType":"simplified","issueDate":"2026-10-20","deliveryDate":"2026-10-19","unitCode":"HUR","lines":[{"description":"Synthetic reduced service","unitCode":"H87"}],"totals":{"netAmount":80.06,"vatAmount":20.01,"grossAmount":100.07}});
