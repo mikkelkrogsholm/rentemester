@@ -115,6 +115,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     for option in ['server-binary', 'web-dir', 'cli-binary', 'mcp-binary', 'evidence']:
         parser.add_argument('--' + option, required=True, type=Path)
+    parser.add_argument('--master-data-original', action='store_true', help='Standalone original customer/vendor CLI/MCP proof; does not run native CVR flow')
     args = parser.parse_args()
     if args.evidence.exists() or args.evidence.with_suffix('.png').exists():
         parser.error('New evidence and screenshot paths required')
@@ -129,6 +130,7 @@ def main():
     servers = []
     gateway_rows, gateway_requests, errors = {}, [], []
     cvr_requests=[]
+    vies_requests=[]
     cvr_credentials=True
     def entity(cvr,name):
         period={'gyldigFra':'2026-01-01','gyldigTil':None}
@@ -179,7 +181,20 @@ def main():
                     pass
 
             def do_GET(self):
-                self.send_error(404)
+                match = re.fullmatch(r'/vies/ms/(DE|DK)/vat/([0-9]{8,9})', self.path) if args.master_data_original else None
+                if not match:
+                    self.send_error(404)
+                    return
+                country, vat = match.groups()
+                if (country, vat) not in [('DK', '12345678'), ('DE', ('123'+'456789')), ('DE', '0'*9), ('DE', '1'*9), ('DE', '3'*9)]:
+                    self.send_error(404)
+                    return
+                with gateway_lock:
+                    vies_requests.append({'countryCode':country, 'vatNumber':vat})
+                if vat == '3'*9:
+                    self.reply(503, {'userError':'MS_UNAVAILABLE'})
+                    return
+                self.reply(200, {'countryCode':country, 'vatNumber':'9'*9 if vat == '1'*9 else vat, 'isValid':vat != '0'*9, 'userError':'VALID', 'name':'Synthetic VAT Buyer164', 'address':'Synthetic VAT Street164'})
 
             def do_POST(self):
                 try:
@@ -433,6 +448,39 @@ def main():
             if any(row['event_type'] not in ['native_restore_receipt_boundary','native_restore_scheduled_boundary'] or row['actor']!='system:portable-restore' for row in newer['audit_log'] if row['id'] not in prior):
                 raise RuntimeError('Unexpected restore-boundary audit mutation')
 
+        def original_sql_snapshot():
+            # Independent read-only facts, never fixtures/seeds. Hold connection
+            # while reading a consistent snapshot; no provider I/O in this phase.
+            path = Path(config['root']) / 'synthetic/data/ledger.sqlite'
+            db = sqlite3.connect(path.as_uri()+'?mode=ro', uri=True)
+            db.row_factory = sqlite3.Row
+            try:
+                db.execute('PRAGMA query_only=ON')
+                db.execute('BEGIN')
+                facts = {}
+                for table in ['customers','vendors','audit_log','cvr_lookups','vies_validations','journal_entries','journal_lines','bank_transactions','documents']:
+                    if not db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name=?", (table,)).fetchone():
+                        raise RuntimeError('Required independent SQL proof table absent: '+table)
+                    facts[table] = [{k: ({'bytesBase64':base64.b64encode(v).decode()} if isinstance(v,bytes) else v) for k,v in dict(row).items()} for row in db.execute('SELECT * FROM '+table+' ORDER BY rowid')]
+                proof = report['results']['master-original']['stable']
+                for table in ['customers','vendors']:
+                    rows = facts[table]
+                    if len(rows) != proof[table]['count']:
+                        raise RuntimeError('Independent SQL contact count mismatch: '+table)
+                    for source in proof[table]['rows']:
+                        stored = next((r for r in rows if r['id'] == source['id']), None)
+                        for name, value in source.items():
+                            column = re.sub(r'(?<!^)(?=[A-Z])', '_', name).lower()
+                            if stored is None or stored[column] != value:
+                                raise RuntimeError('Independent SQL full source projection mismatch: '+table+'.'+name)
+                if any(facts[t] for t in ['journal_entries','journal_lines','bank_transactions','documents']):
+                    raise RuntimeError('Unexpected accounting/bank/document effects')
+                if len(facts['cvr_lookups']) != 2 or len(facts['vies_validations']) != 3:
+                    raise RuntimeError('Independent provider observations missing or failed observations published')
+                return facts
+            finally:
+                db.close()
+
         try:
             work.mkdir(mode=0o700)
             identity = (work.stat().st_dev, work.stat().st_ino)
@@ -467,80 +515,126 @@ def main():
             subprocess.run(['/opt/homebrew/bin/bun', '-e', "const c=require('node:crypto'),f=require('node:fs'),k=c.generateKeyPairSync('ed25519'),s=k.privateKey.export({format:'der',type:'pkcs8'}).subarray(-32),p=k.publicKey.export({format:'der',type:'spki'}).subarray(-32);f.writeFileSync(process.argv[1],Buffer.concat([Buffer.from('3051020101300506032b657004220420','hex'),s,Buffer.from('812100','hex'),p]),{mode:0o600});f.writeFileSync(process.argv[2],p,{mode:0o600});", str(work / 'signing.der'), str(work / 'trusted.pub')], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             key = lambda: base64.urlsafe_b64encode(secrets.token_bytes(32)).decode().rstrip('=')
             config = {'runtimeProfile': 'local-user-macos', 'root': str(work / 'workspace'), 'brokerUid': os.getuid(), 'workspace': 'synthetic-native-cvr-sync85', 'companySlug': 'synthetic', 'companyName': 'Synthetic Manual Company85', 'cookieKey': key(), 'mfaKey': key(), 'operatorActors': ['system:synthetic-installer'], 'accounts': [], 'firstOwner': {'actor': 'system:synthetic-installer', 'email': 'owner@example.invalid', 'name': 'Synthetic Owner', 'password': 'synthetic-owner-password-123'}, 'backupSigningKeyFile': str(work / 'signing.der'), 'authMail': {'endpoint': f'https://127.0.0.1:{mail_port}/mail', 'bearerToken': bearer, 'from': 'auth@example.invalid', 'idempotencySecret': secrets.token_urlsafe(32), 'trustedCaFile': str(ca)}}
+            if args.master_data_original:
+                config['vies'] = {'baseUrl':f'https://127.0.0.1:{mail_port}/vies','trustedCaPem':ca.read_text()}
             write_config()
             start(create=True)
             script = work / 'browser.mjs'
-            script.write_text(BROWSER)
+            browser_source = BROWSER
+            if args.master_data_original:
+                helper = REPO / 'scripts/rust/check-native-master-data-original.ts'
+                report['masterDataOriginalHelperSha256'] = digest(helper)
+                original_sources = [helper] + [REPO / name for name in ['src/cli/customer.ts','src/cli/vendor.ts','src/cli-meta/master-data-specs.ts','src/mcp/tools/customer.ts','src/mcp/tools/vendor.ts','src/mcp/pagination.ts','src/core/master-data.ts','src/core/vies.ts']]
+                report['originalSourceHashes'] = {str(path.relative_to(REPO)):digest(path) for path in original_sources}
+                report['workflow'] = 'original_customer_vendor_master_data'
+                browser_source = browser_source.replace("let stable,freshOwner,sourceCookie,protectedSettings;", "let stable,freshOwner,sourceCookie,protectedSettings; let originalProof;")
+                browser_source = browser_source.replace("else if(action==='setup')", "else if(action==='master-original'){const {createMasterDataOriginalProof}=await import(" + json.dumps(helper.as_uri()) + ");originalProof=createMasterDataOriginalProof(ownerPage,memberPage,base,work);value=await originalProof.run();}else if(action==='master-original-reopen'){await ownerPage.context().clearCookies();await login(ownerPage,owner);value=await originalProof.reopen();}else if(action==='setup')")
+            script.write_text(browser_source)
             controller = subprocess.Popen(['/opt/homebrew/bin/bun', str(script)], cwd=REPO, env={**os.environ, 'RM_CVR_SYNC_BASE': origin, 'RM_CVR_SYNC_WORK': str(work), 'RM_CVR_SYNC_SCREENSHOT': str(args.evidence.with_suffix('.png')), 'RM_CVR_SYNC_PLAYWRIGHT': str((REPO / 'node_modules/@playwright/test/index.mjs').resolve(strict=True))}, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True, bufsize=1, start_new_session=True)
             report['browserControllerPid'] = controller.pid
             phase('authenticate')
-            phase('setup')
-            phase('contacts')
-            phase('sync')
-            phase('probes')
-            phase('client-mutations')
-            phase('freeze')
-            phase('client-reads-source')
-            phase('archive-source')
-            original = inspect_snapshot('source', work/'trusted.pub')
-            stop()
-            config.pop('firstOwner')
-            cvr_credentials=False
-            write_config()
-            start()
-            phase('reopen')
-            phase('offline')
-            phase('client-reads-restarted')
-            phase('archive-restarted')
-            preserved(original, inspect_snapshot('restarted', work/'trusted.pub'))
-            stop()
-            source = work/'workspace'
-            if not owned() or source.is_symlink() or not source.is_dir():
-                raise RuntimeError('Exact owned source required for source-free removal')
-            shutil.rmtree(source)
-            (work/'signing.der').unlink()
-            report['sourceWorkspaceAndPrivateSignerRemoved'] = not source.exists() and not (work/'signing.der').exists()
-            for name in ['source','restarted']:
-                inspect_snapshot(name, work/'trusted.pub')
-            subprocess.run(['/opt/homebrew/bin/bun','-e',SIGNER,str(work/'target-signing.der'),str(work/'target-trusted.pub')],check=True,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
-            config.update({'root':str(work/'restored'),'backupSigningKeyFile':str(work/'target-signing.der'),'cookieKey':key(),'mfaKey':key(),'restoreActor':'system:synthetic-installer','firstOwner':{'actor':'system:synthetic-installer','email':'restored@example.invalid','name':'Synthetic Restored Owner','password':'synthetic-restored-password-789'}})
-            write_config()
-            start(restore=True)
-            phase('restored')
-            phase('client-reads-restored')
-            report['sourceFreeRestoreQualified'] = True
-            phase('archive-restored')
-            preserved(original, inspect_snapshot('restored',work/'target-trusted.pub'))
-            stop()
-            config.pop('firstOwner');config.pop('restoreActor');write_config();start()
-            phase('restored-reopen')
-            phase('client-reads-reopened')
-            phase('archive-reopened')
-            if inspect_snapshot('reopened',work/'target-trusted.pub') != report['snapshots']['restored']['tables']:
-                raise RuntimeError('Fresh target reopen changed retained full bank-task evidence')
-            phase('finish',20)
-            controller.stdin.close();controller.wait(timeout=10)
-            if controller.returncode:
-                raise RuntimeError('Browser controller nonzero terminal')
-            controller = None
-            stop()
-            # All four native artifacts receive independent verification with
-            # their actual signer unavailable; do not claim target moved/frozen.
-            (work/'target-signing.der').unlink()
-            target = Path(config['root'])
-            if not owned() or target != work/'restored' or target.is_symlink() or not target.is_dir():
-                raise RuntimeError('Exact owned stopped target required before final independent verification')
-            shutil.rmtree(target)
-            report['allArchiveSourcesAndPrivateSignersUnavailable'] = not source.exists() and not target.exists() and not (work/'signing.der').exists() and not (work/'target-signing.der').exists()
-            for name in ['source','restarted','restored','reopened']:
-                inspect_snapshot(name,work/('trusted.pub' if name in ['source','restarted'] else 'target-trusted.pub'))
-            with gateway_lock:
-                if errors:
-                    raise RuntimeError('Private auth gateway protocol error')
-                report['gateway']={'verifiedHttps':True,'acceptedMessages':len(gateway_rows),'requests':list(gateway_requests),'externalRequests':0}
-            report.update({'status':'passed','currentAction':'complete','cvrSyncActualQualified':True,'httpCliMcpReadParityQualified':True,'snapshotCoverage':'four-independently-verified-cvr-sync85-full-ledger-original-archives-fresh-owner-restore-and-reopen'})
-            save()
-            print('PASS: ordinary MFA interactive CVR lookup/manual-contact preservation, protected own-company sync, cache provenance and missing-credential recovery, canonical clients and signed source-free recovery; '+str(args.evidence))
+            if args.master_data_original:
+                phase('master-original')
+                first = original_sql_snapshot()
+                stop()
+                config.pop('firstOwner')
+                write_config()
+                start()
+                phase('master-original-reopen')
+                second = original_sql_snapshot()
+                if first != second:
+                    raise RuntimeError('Exact independent SQL source facts changed across normal MFA restart')
+                phase('finish',20)
+                controller.stdin.close(); controller.wait(timeout=10)
+                if controller.returncode:
+                    raise RuntimeError('Browser controller nonzero terminal')
+                controller = None
+                stop()
+                with gateway_lock:
+                    report['gateway'] = {'verifiedHttps':True,'cvrRequests':list(cvr_requests),'viesRequests':list(vies_requests),'errors':list(errors)}
+                    if errors or Counter(cvr_requests) != Counter({'12345678':1,'87654321':1,'55555555':1,'44444444':1}):
+                        raise RuntimeError('CVR request count differs; missing proof or forbidden retry')
+                    expected = Counter({('DK','12345678'):1,('DE',('123'+'456789')):3,('DE','0'*9):1,('DE','1'*9):1,('DE','3'*9):1})
+                    if Counter((r['countryCode'],r['vatNumber']) for r in vies_requests) != expected:
+                        raise RuntimeError('VIES current observation/request count differs; missing proof or forbidden retry')
+                if any(digest(path) != report['originalSourceHashes'][str(path.relative_to(REPO))] for path in original_sources) or digest(Path(__file__)) != report['runnerSha256']:
+                    raise RuntimeError('Original master-data pinned sources changed during proof')
+                if any(digest(path) != report['artifacts'][name] or digest(getattr(args,name)) != report['artifacts'][name] for name,path in pinned.items()):
+                    raise RuntimeError('Original master-data pinned binaries changed during proof')
+                for web_root in [web,args.web_dir]:
+                    if {str(path.relative_to(web_root)):digest(path) for path in sorted(web_root.rglob('*')) if path.is_file()} != report['webFiles']:
+                        raise RuntimeError('Original master-data pinned web artifacts changed during proof')
+                report.update({'status':'passed','currentAction':'complete','masterDataOriginalActualQualified':True,'independentSql':first,'archivedBoundaryActualQualified':False,'delayedProviderRevokeActualQualified':False})
+                save()
+                print('PASS: original customer/vendor finite synthetic CLI/MCP proof and exact normal MFA restart; '+str(args.evidence))
+            else:
+                phase('setup')
+                phase('contacts')
+                phase('sync')
+                phase('probes')
+                phase('client-mutations')
+                phase('freeze')
+                phase('client-reads-source')
+                phase('archive-source')
+                original = inspect_snapshot('source', work/'trusted.pub')
+                stop()
+                config.pop('firstOwner')
+                cvr_credentials=False
+                write_config()
+                start()
+                phase('reopen')
+                phase('offline')
+                phase('client-reads-restarted')
+                phase('archive-restarted')
+                preserved(original, inspect_snapshot('restarted', work/'trusted.pub'))
+                stop()
+                source = work/'workspace'
+                if not owned() or source.is_symlink() or not source.is_dir():
+                    raise RuntimeError('Exact owned source required for source-free removal')
+                shutil.rmtree(source)
+                (work/'signing.der').unlink()
+                report['sourceWorkspaceAndPrivateSignerRemoved'] = not source.exists() and not (work/'signing.der').exists()
+                for name in ['source','restarted']:
+                    inspect_snapshot(name, work/'trusted.pub')
+                subprocess.run(['/opt/homebrew/bin/bun','-e',SIGNER,str(work/'target-signing.der'),str(work/'target-trusted.pub')],check=True,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+                config.update({'root':str(work/'restored'),'backupSigningKeyFile':str(work/'target-signing.der'),'cookieKey':key(),'mfaKey':key(),'restoreActor':'system:synthetic-installer','firstOwner':{'actor':'system:synthetic-installer','email':'restored@example.invalid','name':'Synthetic Restored Owner','password':'synthetic-restored-password-789'}})
+                write_config()
+                start(restore=True)
+                phase('restored')
+                phase('client-reads-restored')
+                report['sourceFreeRestoreQualified'] = True
+                phase('archive-restored')
+                preserved(original, inspect_snapshot('restored',work/'target-trusted.pub'))
+                stop()
+                config.pop('firstOwner');config.pop('restoreActor');write_config();start()
+                phase('restored-reopen')
+                phase('client-reads-reopened')
+                phase('archive-reopened')
+                if inspect_snapshot('reopened',work/'target-trusted.pub') != report['snapshots']['restored']['tables']:
+                    raise RuntimeError('Fresh target reopen changed retained full bank-task evidence')
+                phase('finish',20)
+                controller.stdin.close();controller.wait(timeout=10)
+                if controller.returncode:
+                    raise RuntimeError('Browser controller nonzero terminal')
+                controller = None
+                stop()
+                # All four native artifacts receive independent verification with
+                # their actual signer unavailable; do not claim target moved/frozen.
+                (work/'target-signing.der').unlink()
+                target = Path(config['root'])
+                if not owned() or target != work/'restored' or target.is_symlink() or not target.is_dir():
+                    raise RuntimeError('Exact owned stopped target required before final independent verification')
+                shutil.rmtree(target)
+                report['allArchiveSourcesAndPrivateSignersUnavailable'] = not source.exists() and not target.exists() and not (work/'signing.der').exists() and not (work/'target-signing.der').exists()
+                for name in ['source','restarted','restored','reopened']:
+                    inspect_snapshot(name,work/('trusted.pub' if name in ['source','restarted'] else 'target-trusted.pub'))
+                with gateway_lock:
+                    if errors:
+                        raise RuntimeError('Private auth gateway protocol error')
+                    report['gateway']={'verifiedHttps':True,'acceptedMessages':len(gateway_rows),'requests':list(gateway_requests),'externalRequests':0}
+                report.update({'status':'passed','currentAction':'complete','cvrSyncActualQualified':True,'httpCliMcpReadParityQualified':True,'snapshotCoverage':'four-independently-verified-cvr-sync85-full-ledger-original-archives-fresh-owner-restore-and-reopen'})
+                save()
+                print('PASS: ordinary MFA interactive CVR lookup/manual-contact preservation, protected own-company sync, cache provenance and missing-credential recovery, canonical clients and signed source-free recovery; '+str(args.evidence))
         except BaseException as error:
             with gateway_lock:
                 report['privateGatewayErrors'] = list(errors)
@@ -563,7 +657,7 @@ def main():
                 server.shutdown()
                 server.server_close()
             report['ownedProcessesStopped'] = child is None and (controller is None or controller.poll() is not None)
-            if owned():
+            if owned() and report['status'] == 'passed':
                 shutil.rmtree(work)
                 report['ownedRuntimeCleaned'] = True
             else:
