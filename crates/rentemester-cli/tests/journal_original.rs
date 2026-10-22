@@ -67,7 +67,7 @@ fn server(status: u16, response: String) -> (String, thread::JoinHandle<Vec<Valu
     let handle = thread::spawn(move || {
         let mut requests = Vec::new();
         let mut last = std::time::Instant::now();
-        while last.elapsed() < std::time::Duration::from_millis(400) {
+        while last.elapsed() < if requests.is_empty() { std::time::Duration::from_secs(5) } else { std::time::Duration::from_millis(400) } {
             let (mut stream, _) = match listener.accept() {
                 Ok(s) => s,
                 Err(e) if e.kind() == std::io::ErrorKind::WouldBlock => {
@@ -159,7 +159,8 @@ fn numeric_post_and_rollback_only_dry_run_use_flat_results() {
         assert_eq!(
             output.status.code(),
             Some(0),
-            "{}",
+            "stdout={} stderr={}",
+            String::from_utf8_lossy(&output.stdout),
             String::from_utf8_lossy(&output.stderr)
         );
         assert_eq!(
