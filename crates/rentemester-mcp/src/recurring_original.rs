@@ -7,7 +7,10 @@ use serde_json::{Value, json};
 pub fn accepts(name: &str) -> bool {
     matches!(
         name,
-        "recurring_invoice_create" | "recurring_invoice_generate" | "recurring_invoice_list"
+        "recurring_invoice_create"
+            | "recurring_invoice_generate"
+            | "recurring_invoice_list"
+            | "recurring_invoice_run_workspace"
     )
 }
 pub fn tools() -> Vec<Value> {
@@ -40,6 +43,21 @@ pub fn tools() -> Vec<Value> {
         tool["outputSchema"] = json!({"type":"object","required":["ok","errors"],"properties":{"ok":{"type":"boolean"},"data":{"type":"object"},"errors":{"type":"array","items":{"type":"string"}},"appliedRules":{"type":"array","items":{"type":"string"}},"code":{"type":"string"}},"additionalProperties":false});
         tools.push(tool);
     }
+    let mut schema = rentemester_client::recurring_workspace_schema();
+    schema["properties"]["confirm"] = json!({"type":"boolean"});
+    schema["required"]
+        .as_array_mut()
+        .unwrap()
+        .retain(|v| v != "confirm");
+    let mut workspace = crate::tools::tool(
+        "recurring_invoice_run_workspace",
+        "Explicit capped run of configured workspace recurring invoices. Current human cookie required, never service impersonation. Workspace asserts server identity or exact configured absolute root, never arbitrary filesystem access. Server selects admitted companies, skips archived/uninitialized, retains per-company failures and continuation. Manual generation, configured email dryrun only, safe configured public delivery/status; no timer or automatic retry. confirm:true required. Unknown/partial outcomes require reconciliation before any further explicit action.",
+        schema,
+        false,
+    );
+    workspace["annotations"] = json!({"readOnlyHint":false,"destructiveHint":false,"idempotentHint":true,"openWorldHint":false});
+    workspace["outputSchema"] = json!({"type":"object","required":["ok","errors"],"properties":{"ok":{"type":"boolean"},"data":{"type":"object"},"errors":{"type":"array","items":{"type":"string"}},"code":{"type":"string"}},"additionalProperties":false});
+    tools.push(workspace);
     tools
 }
 fn result(value: Value) -> Value {
@@ -76,6 +94,9 @@ fn wrap(mut core: Value) -> Value {
     result(envelope)
 }
 pub async fn call(api: &ApiClient, name: &str, args: Value) -> Result<Value, &'static str> {
+    if name == "recurring_invoice_run_workspace" {
+        return call_workspace(api, args).await;
+    }
     let mut object = args
         .as_object()
         .ok_or("expected original recurring object")?
@@ -116,6 +137,48 @@ pub async fn call(api: &ApiClient, name: &str, args: Value) -> Result<Value, &'s
     };
     Ok(match outcome {
         Ok(value) => wrap(value),
+        Err(e) => {
+            let code = match e {
+                Error::InvalidInput(_) => "invalid_input",
+                Error::Refused { .. } => "server_refused",
+                Error::Transport => "transport",
+                Error::Protocol => "protocol",
+                Error::OutcomeUnknown => "outcome_unknown",
+            };
+            result(json!({"ok":false,"code":code,"errors":[e.to_string()]}))
+        }
+    })
+}
+
+async fn call_workspace(api: &ApiClient, args: Value) -> Result<Value, &'static str> {
+    let mut object = args
+        .as_object()
+        .ok_or("expected workspace recurring object")?
+        .clone();
+    if object.get("confirm").is_some_and(|v| !v.is_boolean()) {
+        return Err("confirm must be boolean");
+    }
+    let confirmed = object.get("confirm") == Some(&json!(true));
+    object.insert("confirm".into(), json!(true));
+    let bytes = serde_json::to_vec(&object).map_err(|_| "workspace body unavailable")?;
+    rentemester_client::validate_recurring_workspace(&bytes)
+        .map_err(|_| "workspace recurring schema differs")?;
+    if !confirmed {
+        return Ok(result(
+            json!({"ok":false,"code":"CONFIRM_REQUIRED","errors":["confirm: true is required"]}),
+        ));
+    }
+    Ok(match api.recurring_run_workspace(bytes).await {
+        Ok(core) => {
+            if core["ok"] == true {
+                result(json!({"ok":true,"data":core,"errors":[]}))
+            } else {
+                let mut data = core.as_object().unwrap().clone();
+                let errors = data.remove("errors").unwrap();
+                data.remove("ok");
+                result(json!({"ok":false,"data":data,"errors":errors}))
+            }
+        }
         Err(e) => {
             let code = match e {
                 Error::InvalidInput(_) => "invalid_input",

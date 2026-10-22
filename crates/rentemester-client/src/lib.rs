@@ -529,4 +529,4 @@ mod invoice_public_original;
 pub use invoice_public_original::{OriginalPublicInvoiceKind,invoice_public_original_schema,validate_invoice_public_original,public_invoice_artifact};
 
 mod recurring_original;
-pub use recurring_original::{OriginalRecurringKind,recurring_original_schema,recurring_original_invoice_schema,validate_recurring_original};
+pub use recurring_original::{OriginalRecurringKind,recurring_original_schema,recurring_original_invoice_schema,validate_recurring_original,recurring_workspace_schema,validate_recurring_workspace};

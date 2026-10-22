@@ -1,7 +1,7 @@
 use serde_json::{Value, json};
 
 // Includes the original bindings already registered before recurring Group154.
-const EXPECTED_NATIVE_TOOLS: usize = 291;
+const EXPECTED_NATIVE_TOOLS: usize = 292;
 
 #[test]
 fn pdf_tools_require_confirmation_and_keep_reads_bounded() {

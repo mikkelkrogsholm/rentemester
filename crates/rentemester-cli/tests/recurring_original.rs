@@ -246,3 +246,101 @@ fn original_recurring_cli_business_usage_and_human_list_are_distinct() {
     );
     t.join().unwrap();
 }
+
+#[test]
+fn workspace_recurring_cli_keeps_partial_results_confirmation_and_usage() {
+    let f = Fixture::new();
+    let partial = json!({"ok":false,"companies":[{"slug":"blocked","status":"failed","reason":"run failed"},{"slug":"next","status":"processed","generated":2,"attempted":0,"hasMore":true,"remainingGenerations":3}],"errors":["recurring run failed for company blocked"],"hasMore":true,"remainingGenerations":3,"continuation":{"remainingGenerations":3,"companies":[{"slug":"next","remainingGenerations":3}]}});
+    let (origin, t) = server(200, partial.clone());
+    let run = |origin: &str, extra: &[&str]| {
+        Command::new(BIN)
+            .args([
+                "recurring-invoice",
+                "run-workspace",
+                "--server",
+                origin,
+                "--allow-loopback-http",
+                "--cookie-file",
+                f.0.join("cookie").to_str().unwrap(),
+                "--json",
+            ])
+            .args(extra)
+            .output()
+            .unwrap()
+    };
+    let output = run(
+        &origin,
+        &[
+            "--workspace",
+            "/configured/workspace",
+            "--as-of",
+            "2024-07-31",
+            "--max-generations",
+            "2",
+            "--confirm",
+            " YES ",
+        ],
+    );
+    assert_eq!(output.status.code(), Some(1));
+    assert!(output.stderr.is_empty());
+    assert_eq!(
+        serde_json::from_slice::<Value>(&output.stdout).unwrap(),
+        partial
+    );
+    let (headers, body) = t.join().unwrap();
+    assert!(headers.starts_with("POST /api/recurring-invoices/run-workspace "));
+    assert!(headers.to_lowercase().contains("cookie: session=synthetic"));
+    assert_eq!(
+        body,
+        json!({"workspace":"/configured/workspace","asOfDate":"2024-07-31","maxGenerations":2,"confirm":true})
+    );
+    for confirm in [vec![], vec!["--confirm", "no"]] {
+        let output = run("http://127.0.0.1:9", &confirm);
+        assert_eq!(output.status.code(), Some(1));
+        assert!(output.stderr.is_empty());
+        assert!(
+            serde_json::from_slice::<Value>(&output.stdout).unwrap()["errors"][0]
+                .as_str()
+                .unwrap()
+                .contains("--confirm yes")
+        );
+    }
+    for extra in [
+        vec!["--confirm", "yes"],
+        vec![
+            "--workspace",
+            "w",
+            "--as-of",
+            "2024-01-01",
+            "--confirm",
+            "yes",
+            "--company",
+            "forged",
+        ],
+        vec![
+            "--workspace",
+            "w",
+            "--as-of",
+            "2024-01-01",
+            "--confirm",
+            "yes",
+            "--max-generations",
+            "0",
+        ],
+        vec![
+            "--workspace",
+            "w",
+            "--as-of",
+            "2024-01-01",
+            "--confirm",
+            "yes",
+            "--service-key-file",
+            "key",
+        ],
+    ] {
+        let output = run("http://127.0.0.1:9", &extra);
+        assert_eq!(output.status.code(), Some(2));
+        assert!(output.stdout.is_empty());
+        assert!(!output.stderr.is_empty());
+    }
+}

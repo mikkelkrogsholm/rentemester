@@ -169,3 +169,57 @@ async fn original_recurring_refusals_and_unknown_never_look_like_success() {
         t.join().unwrap();
     }
 }
+
+#[tokio::test]
+async fn workspace_recurring_preserves_partial_runs_and_never_retries_unknown() {
+    let body = json!({"workspace":"/configured/workspace","asOfDate":"2024-07-31","maxGenerations":2,"confirm":true});
+    let partial = json!({"ok":false,"companies":[{"slug":"archived","status":"skipped","reason":"archived"},{"slug":"failed","status":"failed","reason":"run failed"},{"slug":"next","status":"processed","generated":2,"attempted":1,"hasMore":true,"remainingGenerations":4,"continuation":{"remainingGenerations":4}}],"errors":["recurring run failed for company failed"],"hasMore":true,"remainingGenerations":4,"continuation":{"remainingGenerations":4,"companies":[{"slug":"next","remainingGenerations":4}]}});
+    for core in [
+        partial,
+        json!({"ok":true,"companies":[{"slug":"next","status":"processed","generated":1,"attempted":0,"hasMore":false,"remainingGenerations":0}],"errors":[],"hasMore":false,"remainingGenerations":0}),
+    ] {
+        let (origin, t) = server(200, core.clone());
+        let actual = ApiClient::new(&origin, true, Some("session=synthetic".into()))
+            .unwrap()
+            .recurring_run_workspace(body.to_string().into_bytes())
+            .await
+            .unwrap();
+        assert_eq!(actual, core);
+        let (headers, sent) = t.join().unwrap();
+        assert!(headers.starts_with("POST /api/recurring-invoices/run-workspace "));
+        assert_eq!(sent, body);
+    }
+    for (status, result) in [
+        (503, json!({})),
+        (408, json!({})),
+        (200, json!({"ok":true,"companies":[],"errors":[]})),
+    ] {
+        let (origin, t) = server(status, result);
+        assert_eq!(
+            ApiClient::new(&origin, true, None)
+                .unwrap()
+                .recurring_run_workspace(body.to_string().into_bytes())
+                .await,
+            Err(Error::OutcomeUnknown)
+        );
+        t.join().unwrap();
+    }
+    let api =
+        ApiClient::with_service_key("http://127.0.0.1:9", true, "synthetic-key".into()).unwrap();
+    assert!(matches!(
+        api.recurring_run_workspace(body.to_string().into_bytes())
+            .await,
+        Err(Error::InvalidInput(_))
+    ));
+    for invalid in [
+        json!({"workspace":"w","asOfDate":"2024-01-01","confirm":false}),
+        json!({"workspace":"w","asOfDate":"2024-01-01","maxGenerations":5001,"confirm":true}),
+        json!({"workspace":"w","asOfDate":"2024-01-01","company":"forged","confirm":true}),
+        json!({"workspace":"w","asOfDate":"2024-01-01","actor":"forged","confirm":true}),
+    ] {
+        assert!(
+            rentemester_client::validate_recurring_workspace(&invalid.to_string().into_bytes())
+                .is_err()
+        );
+    }
+}

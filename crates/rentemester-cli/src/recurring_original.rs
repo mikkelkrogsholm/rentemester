@@ -7,7 +7,7 @@ pub fn accepts(args: &[String]) -> bool {
     args.first().is_some_and(|s| s == "recurring-invoice")
         && args
             .get(1)
-            .is_some_and(|s| matches!(s.as_str(), "create" | "generate" | "list"))
+            .is_some_and(|s| matches!(s.as_str(), "create" | "generate" | "list" | "run-workspace"))
 }
 fn output(value: Value, exit: u8) -> Output {
     let text = format!("{}\n", serde_json::to_string_pretty(&value).unwrap());
@@ -42,6 +42,9 @@ fn read(path: &str) -> Result<Value, &'static str> {
 }
 pub fn execute(args: &[String]) -> Output {
     let command = args[1].as_str();
+    if command == "run-workspace" {
+        return run_workspace(args);
+    }
     if args.iter().skip(2).any(|a| a == "--help") {
         return output(
             json!({"usage":"recurring-invoice create --input FILE|-; recurring-invoice generate --template-id N --as-of YYYY-MM-DD; recurring-invoice list [--include-inactive]","transport":"Explicit --company SLUG --server ORIGIN and exactly one private --cookie-file/--service-key-file. Optional --json/--allow-loopback-http or global --local-profile. Create/generate invocation confirms this single mutation. No timer, posting, delivery or retry; unknown outcome requires canonical template/invoice/document reads. Workspace runner is a separate command."}),
@@ -205,6 +208,96 @@ pub fn execute(args: &[String]) -> Output {
             } else {
                 output(value, exit)
             }
+        }
+        Err(e) => {
+            let (code, e) = crate::remote::client_error(e);
+            output(json!({"ok":false,"code":e.code,"errors":[e.message]}), code)
+        }
+    }
+}
+
+fn run_workspace(args: &[String]) -> Output {
+    if args.iter().skip(2).any(|a| a == "--help") {
+        return output(
+            json!({"usage":"recurring-invoice run-workspace --workspace ASSERTION --as-of YYYY-MM-DD [--max-generations N] --confirm yes --server ORIGIN --cookie-file FILE [--json]","policy":"Current human cookie required. Workspace asserts configured server identity or exact configured absolute root; never opens caller paths. Cap defaults500 per company. Partial companies/continuation remain in output on business1; inspect before any explicit continuation. Server owns generation/delivery, no timer or automatic retry."}),
+            0,
+        );
+    }
+    let mut flags = BTreeMap::new();
+    let mut http = false;
+    let mut json_mode = false;
+    let mut cursor = 2;
+    while cursor < args.len() {
+        let key = args[cursor].as_str();
+        if key == "--json" && !json_mode {
+            json_mode = true;
+            cursor += 1;
+            continue;
+        }
+        if key == "--allow-loopback-http" && !http {
+            http = true;
+            cursor += 1;
+            continue;
+        }
+        if ![
+            "--workspace",
+            "--as-of",
+            "--max-generations",
+            "--confirm",
+            "--server",
+            "--cookie-file",
+        ]
+        .contains(&key)
+        {
+            return invalid("Unknown workspace recurring flag; current human cookie required");
+        }
+        let Some(value) = args.get(cursor + 1).filter(|v| !v.starts_with("--")) else {
+            return invalid("Missing flag value");
+        };
+        if flags.insert(key, value.as_str()).is_some() {
+            return invalid("Duplicate flag");
+        }
+        cursor += 2;
+    }
+    if flags
+        .get("--confirm")
+        .is_none_or(|v| !v.trim().eq_ignore_ascii_case("yes"))
+    {
+        return output(
+            json!({"ok":false,"errors":["--confirm yes required to run workspace recurring invoices"]}),
+            1,
+        );
+    }
+    for key in ["--workspace", "--as-of", "--server", "--cookie-file"] {
+        if flags.get(key).is_none_or(|v| v.trim().is_empty()) {
+            return invalid("Missing required --workspace/--as-of/--server/--cookie-file");
+        }
+    }
+    let mut body = json!({"workspace":flags["--workspace"].trim(),"asOfDate":flags["--as-of"].trim(),"confirm":true});
+    if let Some(raw) = flags.get("--max-generations") {
+        let Some(cap) = raw.parse::<u32>().ok().filter(|n| (1..=5000).contains(n)) else {
+            return invalid("max-generations must be integer1..5000");
+        };
+        body["maxGenerations"] = json!(cap);
+    }
+    let bytes = serde_json::to_vec(&body).unwrap();
+    if let Err(e) = rentemester_client::validate_recurring_workspace(&bytes) {
+        return invalid(&e.to_string());
+    }
+    let api = match crate::remote::credential_client(flags["--server"], http, &flags, false) {
+        Ok(a) => a,
+        Err((code, e)) => {
+            return output(json!({"ok":false,"code":e.code,"errors":[e.message]}), code);
+        }
+    };
+    let rt = match tokio::runtime::Runtime::new() {
+        Ok(r) => r,
+        Err(_) => return output(json!({"ok":false,"errors":["HTTP runtime unavailable"]}), 1),
+    };
+    match rt.block_on(api.recurring_run_workspace(bytes)) {
+        Ok(value) => {
+            let exit = if value["ok"] == true { 0 } else { 1 };
+            output(value, exit)
         }
         Err(e) => {
             let (code, e) = crate::remote::client_error(e);

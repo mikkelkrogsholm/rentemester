@@ -138,3 +138,69 @@ impl ApiClient {
         checked(value, true)
     }
 }
+
+/// Explicit workspace assertion only; never a caller-selected server filesystem path.
+pub fn recurring_workspace_schema() -> Value {
+    object(
+        json!({"workspace":{"type":"string","minLength":1},"asOfDate":{"type":"string","minLength":1},"maxGenerations":{"type":"integer","minimum":1,"maximum":5000},"confirm":{"const":true}}),
+        &["workspace", "asOfDate", "confirm"],
+    )
+}
+pub fn validate_recurring_workspace(bytes: &[u8]) -> Result<(), Error> {
+    crate::domain::body(bytes, &recurring_workspace_schema())
+}
+fn checked_workspace(value: Value) -> Result<Value, Error> {
+    let errors = value["errors"]
+        .as_array()
+        .filter(|a| a.iter().all(Value::is_string));
+    let companies = value["companies"].as_array();
+    if !value["ok"].is_boolean()
+        || !value["hasMore"].is_boolean()
+        || value["remainingGenerations"].as_u64().is_none()
+        || errors.is_none_or(|a| a.is_empty() != (value["ok"] == true))
+        || companies.is_none_or(|a| {
+            a.iter().any(|v| {
+                v["slug"].as_str().is_none_or(str::is_empty)
+                    || !matches!(
+                        v["status"].as_str(),
+                        Some("processed" | "skipped" | "failed")
+                    )
+            })
+        })
+    {
+        return Err(Error::OutcomeUnknown);
+    }
+    if let Some(continuation) = value.get("continuation")
+        && !continuation.is_object()
+    {
+        return Err(Error::OutcomeUnknown);
+    }
+    Ok(value)
+}
+impl ApiClient {
+    /// One explicit capped run. Partial failure is data, never a reason to retry.
+    pub async fn recurring_run_workspace(&self, bytes: Vec<u8>) -> Result<Value, Error> {
+        validate_recurring_workspace(&bytes)?;
+        if self.service_key.is_some() {
+            return Err(Error::InvalidInput(
+                "workspace recurring run requires current human cookie authority",
+            ));
+        }
+        let value = self
+            .request(
+                Method::POST,
+                "/api/recurring-invoices/run-workspace",
+                &[],
+                Some(bytes),
+            )
+            .await
+            .map_err(|e| {
+                if e == (Error::Refused { status: 408 }) {
+                    Error::OutcomeUnknown
+                } else {
+                    e
+                }
+            })?;
+        checked_workspace(value)
+    }
+}
