@@ -417,7 +417,7 @@ def main():
             start(create=True)
             script = work / 'browser.mjs'
             script.write_text(BROWSER)
-            controller = subprocess.Popen(['/opt/homebrew/bin/bun', str(script)], cwd=REPO, env={**os.environ, 'RM_BATCH_BASE': origin, **({'RM_DOCUMENT_PARTY_ORIGINAL_HELPER': str(helper_copy)} if args.original_document_parties else {}), 'RM_BATCH_WORK': str(work), 'RM_BATCH_SCREENSHOT': str(args.evidence.with_suffix('.png')), 'RM_BATCH_PLAYWRIGHT': str((REPO / 'node_modules/@playwright/test/index.mjs').resolve(strict=True))}, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True, bufsize=1, start_new_session=True)
+            controller = subprocess.Popen(['/opt/homebrew/bin/bun', str(script)], cwd=REPO, env={**os.environ, 'RM_BATCH_BASE': origin, **({'RM_DOCUMENT_PARTY_ORIGINAL_HELPER': str(helper_copy)} if args.original_document_parties else {}), 'RM_BATCH_WORK': str(work), 'RM_BATCH_SCREENSHOT': str(args.evidence.with_suffix('.png')), 'RM_BATCH_PLAYWRIGHT': str(((REPO if (REPO / 'node_modules/@playwright/test/index.mjs').is_file() else args.web_dir.resolve(strict=True).parents[1]) / 'node_modules/@playwright/test/index.mjs').resolve(strict=True))}, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True, bufsize=1, start_new_session=True)
             report['browserControllerPid'] = controller.pid
             actions = ['authenticate', 'intake', 'original-parties'] if args.original_document_parties else ['authenticate', 'intake', 'party-links', 'rules', 'workbench', 'approve-apply', 'replay', 'clients']
             setup_deadline = time.monotonic() + 15 * 60
