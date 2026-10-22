@@ -35,11 +35,11 @@ pub struct Depreciate {
     pub period_index: Option<u32>,
     pub confirm: bool,
 }
-fn audit(tx: &Transaction<'_>, event: &str, id: i64, actor: &str) -> Result<(), Error> {
-    tx.execute("INSERT INTO audit_log(event_type,entity_type,entity_id,message,actor) VALUES(?1,'asset',?2,?3,?4)",params![event,id.to_string(),format!("{event} {id}"),format!("user:{actor}")]).map_err(invalid)?;
+pub(crate) fn audit(tx: &Transaction<'_>, event: &str, id: i64, actor: &str) -> Result<(), Error> {
+    tx.execute("INSERT INTO audit_log(event_type,entity_type,entity_id,message,actor) VALUES(?1,'asset',?2,?3,?4)",params![event,id.to_string(),format!("{event} {id}"),actor]).map_err(invalid)?;
     Ok(())
 }
-fn account(
+pub(crate) fn account(
     tx: &Transaction<'_>,
     value: Option<&str>,
     kind: &str,
@@ -56,23 +56,23 @@ fn account(
     }
     Ok(value.to_owned())
 }
-struct Asset {
-    id: i64,
-    name: String,
-    cost: Money,
-    months: u32,
-    acquisition: String,
+pub(crate) struct Asset {
+    pub(crate) id: i64,
+    pub(crate) name: String,
+    pub(crate) cost: Money,
+    pub(crate) months: u32,
+    pub(crate) acquisition: String,
     expense: String,
     accumulated: String,
     document: i64,
 }
-fn load(tx: &Transaction<'_>, id: i64) -> Result<Asset, Error> {
+pub(crate) fn load(tx: &Transaction<'_>, id: i64) -> Result<Asset, Error> {
     tx.query_row("SELECT id,name,cost,useful_life_months,acquisition_date,depreciation_expense_account_no,accumulated_depreciation_account_no,purchase_document_id FROM assets WHERE id=?1",[id],|r|Ok((r.get::<_,i64>(0)?,r.get::<_,String>(1)?,legacy_money(r.get_ref(2)?),r.get::<_,u32>(3)?,r.get::<_,String>(4)?,r.get::<_,String>(5)?,r.get::<_,String>(6)?,r.get::<_,i64>(7)?))).optional().map_err(invalid)?.ok_or_else(||refused("asset not found")).and_then(|(id,name,cost,months,acquisition,expense,accumulated,document)|Ok(Asset{id,name,cost:cost?,months,acquisition,expense,accumulated,document}))
 }
 pub fn document_id(tx: &Transaction<'_>, id: i64) -> Result<i64, Error> {
     Ok(load(tx, id)?.document)
 }
-fn posted(tx: &Transaction<'_>, a: &Asset) -> Result<(Vec<u32>, Money), Error> {
+pub(crate) fn posted(tx: &Transaction<'_>, a: &Asset) -> Result<(Vec<u32>, Money), Error> {
     let mut q=tx.prepare("SELECT d.period_index,d.amount,j.status,EXISTS(SELECT 1 FROM journal_entries rev WHERE rev.reversal_of_entry_id=j.id) FROM asset_depreciation_entries d JOIN journal_entries j ON j.id=d.journal_entry_id WHERE d.asset_id=?1 ORDER BY d.period_index").map_err(invalid)?;
     let mut rows = q.query([a.id]).map_err(invalid)?;
     let mut indices = vec![];
@@ -83,7 +83,7 @@ fn posted(tx: &Transaction<'_>, a: &Asset) -> Result<(Vec<u32>, Money), Error> {
         let status: String = r.get(2).map_err(invalid)?;
         if status != "posted"
             || r.get::<_, bool>(3).map_err(invalid)?
-            || value != asset::amount(&a.cost, a.months, index)?
+            || value != asset::source_amount(&a.cost, a.months, index)?
         {
             return Err(refused(
                 "asset depreciation evidence requires correction before continuing",
@@ -99,7 +99,7 @@ pub fn next(tx: &Transaction<'_>, id: i64) -> Result<Value, Error> {
     let (indices, _) = posted(tx, &a)?;
     let next = (1..=a.months).find(|i| !indices.contains(i));
     Ok(
-        json!({"assetId":id,"totalPeriods":a.months,"postedPeriods":indices.len(),"remainingPeriods":a.months as usize-indices.len(),"nextPeriodIndex":next,"nextPeriodAmount":next.map(|i|asset::amount(&a.cost,a.months,i).and_then(|v|wire(&v))).transpose()?}),
+        json!({"assetId":id,"totalPeriods":a.months,"postedPeriods":indices.len(),"remainingPeriods":a.months as usize-indices.len(),"nextPeriodIndex":next,"nextPeriodAmount":next.map(|i|asset::source_amount(&a.cost,a.months,i).and_then(|v|wire(&v))).transpose()?}),
     )
 }
 pub fn register(
@@ -108,9 +108,25 @@ pub fn register(
     actor: &str,
     today: Date,
 ) -> Result<Value, Error> {
+    register_resolved(
+        tx,
+        i,
+        &crate::accruals::principal(actor, crate::idempotency::PrincipalKind::User)?,
+        today,
+        false,
+    )
+}
+pub(crate) fn register_resolved(
+    tx: &Transaction<'_>,
+    i: &Register,
+    actor: &str,
+    today: Date,
+    source: bool,
+) -> Result<Value, Error> {
     crate::journal_post::require_current(tx)?;
     if !i.confirm
         || i.purchase_document_id <= 0
+        || i.purchase_document_id > 9_007_199_254_740_991
         || [&i.name, &i.category]
             .iter()
             .any(|s| s.trim().is_empty() || s.len() > 500)
@@ -124,7 +140,11 @@ pub fn register(
         return Err(refused("asset acquisition must not be in the future"));
     }
     let cost = money(&i.cost)?;
-    let first = asset::amount(&cost, i.useful_life_months, 1)?;
+    let first = if source {
+        asset::source_amount(&cost, i.useful_life_months, 1)?
+    } else {
+        asset::amount(&cost, i.useful_life_months, 1)?
+    };
     let asset = account(tx, i.asset_account_no.as_deref(), "asset", "debit")?;
     let expense = account(
         tx,
@@ -198,6 +218,25 @@ pub fn depreciate(
     today: &str,
     latest: Date,
 ) -> Result<Value, Error> {
+    depreciate_resolved(
+        tx,
+        id,
+        i,
+        &crate::accruals::principal(actor, crate::idempotency::PrincipalKind::User)?,
+        today,
+        latest,
+        false,
+    )
+}
+pub(crate) fn depreciate_resolved(
+    tx: &Transaction<'_>,
+    id: i64,
+    i: &Depreciate,
+    actor: &str,
+    today: &str,
+    latest: Date,
+    source: bool,
+) -> Result<Value, Error> {
     crate::journal_post::require_current(tx)?;
     if !i.confirm {
         return Err(refused("depreciation confirmation required"));
@@ -212,7 +251,14 @@ pub fn depreciate(
     if indices.contains(&index) {
         return Err(refused("depreciation period already posted"));
     }
-    let value = asset::amount(&a.cost, a.months, index)?;
+    let value = if source {
+        asset::source_amount(&a.cost, a.months, index)?
+    } else {
+        asset::amount(&a.cost, a.months, index)?
+    };
+    if value == Money::default() {
+        return Err(refused("zero depreciation cannot be posted"));
+    }
     let date = i.transaction_date.as_deref().unwrap_or(today);
     if Date::parse(date)? < Date::parse(&a.acquisition)? {
         return Err(refused("depreciation cannot precede acquisition"));
@@ -255,7 +301,7 @@ pub fn depreciate(
         &crate::journal_preview::manual_journal_rule_version()?,
         latest,
         crate::journal_post::Actor {
-            subject: &format!("user:{actor}"),
+            subject: actor,
             program: "rentemester-rust",
         },
     )?;
@@ -267,7 +313,11 @@ pub fn depreciate(
         .ok_or_else(|| refused("missing depreciation journal"))?;
     tx.execute("INSERT INTO asset_depreciation_entries(asset_id,period_index,transaction_date,amount,journal_entry_id) VALUES(?1,?2,?3,?4,?5)",params![id,index,date,crate::journal_post::money(&value)?,entry]).map_err(invalid)?;
     audit(tx, "asset_depreciation_post", id, actor)?;
-    Ok(json!({"entryId":entry,"assetId":id,"periodIndex":index,"periodAmount":wire(&value)?}))
+    let mut result = journal;
+    result["assetId"] = json!(id);
+    result["periodIndex"] = json!(index);
+    result["periodAmount"] = wire(&value)?;
+    Ok(result)
 }
 pub fn list(tx: &Transaction<'_>, slug: &str) -> Result<Value, Error> {
     let company = crate::company_setup::profile(tx)?;
