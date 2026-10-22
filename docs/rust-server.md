@@ -3704,3 +3704,38 @@ journal-/linje-/bank-/bilagseffekter. Source, tre binærer og web er hashbundet.
 Arkiv/GDPR-projektion, forsinket provider-revokation og øvrige fence-grænser
 er fokuserede tests; de påstås ikke som faktiske forløb her. Signed restore
 og installeret desktopaccept er fortsat separate slutkrav.
+
+
+## Oprindelige bilag, metadata og PDF (Group165)
+
+De otte oprindelige `documents`-kommandoer og tilsvarende `documents_*` MCP-tools
+bruger den fælles Rust-server: ingest, list, enrich, set-company-context, parse,
+parse-pending, parse-status og parsed-text. CLI bevarer kildeformat, dansk
+menneskelig visning og 0/1/2. MCP bevarer schema, bekræftelse, pagination og
+ens tekst/structuredContent. MCP's filePath læses som en begrænset almindelig
+lokal klientfil; serveren modtager bytes og filnavn. Private serverstier vises
+som NULL, og de oprindelige lister indeholder kildefelterne uden payload_json.
+
+Aktuelle menneske- og servicegrants kontrolleres gennem de fælles fences.
+Leverandørdata udfylder manglende identitet; eksplicitte felter bevares. Force
+gælder logiske dubletter, mens samme indholdshash altid afvises. Metadata
+suppleres med bevaret rå original, canonical hash og append-only historik.
+Virksomhedskontekst binder præcis det valgte bilag, dets aktuelle metadata og
+en fuldstændig historisk dansk virksomhedsprofil. Den fælles udgifts- og
+leverandørfakturaforfatter bruger samme validerede kontekst. En ny supplering
+afvises efter partshistorik har bundet payloaden; et eksisterende identisk
+suppleringsresultat kan stadig læses som en no-op.
+
+Den faktiske prøve gennem normal MFA og owner-oprettet service gennemfører
+alle otte CLI/MCP-operationer, fem originale bilag, fem parseresultater,
+metadata- og konteksthistorik samt én leverandørfaktura på 125 DKK med 25 DKK
+moms. Uafhængig SQL viser én journalpost, tre linjer og 21 audits. Den præcise
+tilstand består normal genstart, signeret backup, gendannelse uden kildens
+workspace/private signer/PDF-worker og genåbning hos en ny MFA-owner.
+
+34 målrettede tests og strict/build består for den fuldt prøvede kandidat;
+den efterfølgende partshistorikkontrol er også reproduceret før rettelsen og
+består en ny regression samt alle ti storage-bilagstests. Rapporten adskiller
+prøvens hashbundne binærer fra den særskilt prøvede kontrol. Forsinket scanner-
+revokation og fault-injiceret oprydning påstås ikke som faktiske forløb her.
+Installeret manuel desktopaccept ligger fortsat til allersidst.

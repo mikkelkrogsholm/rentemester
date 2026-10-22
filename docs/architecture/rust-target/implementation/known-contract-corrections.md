@@ -190,3 +190,26 @@ uden det ekstra gdprErased-metadatafelt og sorterer de synlige værdier efter
 SQLite-kompatibel ASCII lower(name)/ID. Det geneksponerer ikke skjulte navne
 og udleder ikke sorteringsorden fra de uredigerede persondata. Leverandørens
 oprindelige frie kontofelter svækker ikke fælles motors kontoplan- og VAT-kontrol.
+
+
+## Oprindelige bilagskontroller og historisk evidens (Group165)
+
+Rust følger den erklærede eksplicitte bekræftelse for parse/parse-pending,
+selv om den gamle CLI-implementering havde glemt denne gate. Klientens lokale
+fil kontrolleres efter bekræftelsen og sendes som bytes; en MCP-filreference
+giver ikke serveren adgang til en vilkårlig sti. Service- og menneskeadgang
+udledes af de aktuelle credentials gennem fælles mutation/read-kontrol.
+
+Virksomhedskontekst må kun kvalificere præcis det valgte dokument. Omvendt
+opslag efter ens metadata kunne både låne en anden originals kontekst og
+afviste lovlige selvstændige bilag; det er erstattet med dokument-ID,
+originalhash, payloadhash og snapshotbinding. Den historiske virksomhedsprofil
+valideres efter sin egen fulde form og hash, så en senere legitim ændring af
+navn, adresse eller momsperiode ikke gør en gammel ledger ugyldig.
+
+Ny supplering af metadata efter enhver partshistorik ville ændre den payload,
+som en eksisterende eller supersederet partshændelse har bundet. Det afvises
+før skrivning; samme allerede eksisterende enrichment-hash forbliver en
+autoriseret no-op. Historik- og backupkontrollen bevares. En regression
+reproducerer det tidligere brud og beviser både afvisning uden ændringer og
+den lovlige no-op samt fortsat gyldig backup.

@@ -1,15 +1,15 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "Group164 original customer/vendor6CLI5MCP CVR/VAT/currentauthority/restart accepted",
-  "code_revision": "e3584605f8b87b02694a6535868a3470f81f2db9",
+  "current_increment": "Group165 original8CLI8MCP document intake, PDF, metadata/context, shared payable, restart/signed restore accepted",
+  "code_revision": "f7515051d9d6d198ce50e376361faef1ec0024e9",
   "spec_revision": "sha256:8979030956647a0f03266c50d42786b5d33ab71a59c78528203d223226171e72",
-  "state": "Group164 ACCEPTED: original customer/vendor6CLI5MCP use commonRust writers/providers. Source purefields/NULLterms/CVRfills+overrides/ASCIInameorder, sourceflatCLI+MCPschemas/envelopes/pagination, confirmed current human/service authority. Firstactual normalMFA+Ownerissuedservice/CVR/VATvalidinvalid/repeated/providerfailures/roles/revocation/disabledkey and exactrestart PASS. IndependentSQL3customers3vendors11audits2CVRcache3VIEScache zerojournal/lines/bank/doc;26tests including2inheritedregressions/sevenpackagesstrict/build. All failed/cancelled164receipts preserved; finalSGDdone/published, no effectsreplay. Fulloriginal55/672/716/717OPEN. Next originaldocuments8CLI8MCP wholeflow, finaldesktoplast.",
+  "state": "Group165 ACCEPTED: original8CLI8MCP use commonRust document/PDF/payableengine. Currenthuman/service/sourcebindings, vendorfill/force-vs-contenthash, immutableenrichment/exactdocument companycontext, fullsourceDTOs/localfileconfirmation/privacy. ActualnormalMFA/Ownerissuedservice5originals5parses/bothhistories/one125gross25VATpayable+1journal3lines21audits, exactrestart andsignedsourcefreefreshownerrestore/reopen PASS.34originaltargetedtests/strict/build andpostacceptpartyboundpayloadguard+1regression/fullstorage10PASS. Qualifiedengine1fa6 exactactual5847pins; finalguardf751 separatelytested, no falsefinalbinaryequivalenceclaim. Allfailed/cancelledreceipts retained.166fourparallelrevieweddeliveries98588db0 preserved; next combinedacceptance, no reimplementation. Full55/672/716/717OPEN; finaldesktoplast.",
   "issues_closed": [
     701
   ],
   "next": [
-    "Next necessary original document wholejourney (#716/#717,#686/#691/#695): original8CLI8MCP ingest/list/parse/status/text/pending/enrich/hash-bound companycontext over commonexistingengine, oneacceptedpayableposting, exactrestart and signedsourcefreebackuprestore. Four independent owners fixedHTTP/SDK; existingnativePDFbundle/runner retained, no newinfrastructure.",
+    "Finalize existing166 original7CLI7MCP document-party wholeflow: retain four reviewed source deliveries98588db0 byte-for-byte on accepted165+payloadguard; one finite retention package, then focused nativehistory/CLI/MCP/strict/build/firstactual currentparty/internaldecision/supersession/restart/signedrestore. No newinfrastructure, no accepted165effects replay.",
     "Original invoice interface inventory now has all31CLI and25MCP bindings, with explicit compatibility corrections documented; do not mistake that family inventory for full product parity. Reconcile remaining original whole-product R44/R45 acceptance from existing epic/issues: actor/env/company-path/default launcher/errors/historical receipts, closure/recovery/automation, signed distribution/update/cutover and TypeScript backend retirement. Continue next necessary whole journey, preserve all accepted evidence/full original scope; installed desktop acceptance last.",
     "Installed desktop acceptance is explicitly deferred to the very end by the user. Preserve prepared Group100 profile; collect remaining native automation, closure, recovery and packaging checks for final installed acceptance without requesting screen unlock during development.",
     "J03/R50 and remaining R54 scope: only still-supported operation closure/recovery, nonempty scheduler handoff, hostile/older clone and post-cutover rollback requirements. Group99 qualifies managed installed J06 flow, not every R54 acceptance item.",
@@ -25,9 +25,9 @@
   ],
   "all_goal_requirements_complete": false,
   "previous_verified_increment": {
-    "name": "Group163 original exception CLI/MCP review, current authority and exact restart accepted",
-    "code_revision": "d5caea35aba2a6dc46e9c9fef577791814aacaa4",
-    "evidence_key": "original_exceptions163"
+    "name": "Group164 original customer/vendor6CLI5MCP CVR/VAT/currentauthority/restart accepted",
+    "code_revision": "e3584605f8b87b02694a6535868a3470f81f2db9",
+    "evidence_key": "original_master_data164"
   },
   "evidence": {
     "combined_browser_log": "/tmp/rm-platform5-combined.log",
@@ -9375,6 +9375,98 @@
       ],
       "report": "/tmp/rentemester-rust-reports/original-master-data164.json",
       "report_sha256": "a58d5d4bed2f2a5ef5d3e0ceaec0c598421f7ea506461dfeda47f7857de4de82"
+    },
+    "original_documents165": {
+      "issue": 717,
+      "status": "ACCEPTED finite original8CLI8MCP document journey; fullissue/epicOPEN",
+      "source_revision": "f7515051d9d6d198ce50e376361faef1ec0024e9",
+      "qualified_engine_revision": "1fa6d5fcb8297f30a726d9b3cec99613e3869d51",
+      "actual_source_revision": "5847fb61c4d8cbb4362aa5dd636b800af0e596a5",
+      "sgd_run": "rust-original-documents165-publish-20261022T193952.678831000",
+      "engine_phase": "done",
+      "sgd_final_acceptance_passed": true,
+      "source_blob_count": 39,
+      "actual_report": "/tmp/rentemester-rust-reports/original-documents165-actual.json",
+      "actual_report_sha256": "71a887525dc8b357c4aae8984114f592cfeaa79ce0bf2666f4f096ef07f17703",
+      "tests": [
+        {
+          "check": "core",
+          "passed": 13
+        },
+        {
+          "check": "client-cli",
+          "passed": 12
+        },
+        {
+          "check": "mcp",
+          "passed": 7
+        },
+        {
+          "check": "server-bin",
+          "passed": 2
+        },
+        {
+          "check": "additional-payload-history-regression",
+          "new_unique_passed": 1,
+          "full_storage_suite_passed": 10
+        }
+      ],
+      "unique_targeted_tests": 35,
+      "strict": "Sevenpackages --all-targets -Dwarnings qualified165base; follow-up storage strict separately verified.",
+      "actual_sql_counts": {
+        "documents": 5,
+        "document_pdf_parse_results": 5,
+        "document_pdf_parse_pages": 4,
+        "document_pdf_parse_attempts": 6,
+        "audit_log": 21,
+        "journal_entries": 1,
+        "journal_lines": 3,
+        "document_metadata_enrichments": 1,
+        "document_company_contexts": 1,
+        "payables": 1
+      },
+      "actual_payable": {
+        "gross": 125,
+        "net": 100,
+        "vat": 25,
+        "currency": "DKK"
+      },
+      "actual_scanner_calls": 7,
+      "source_binary_web_pdf_pins": {
+        "source_files": 2469,
+        "binaries": 3,
+        "web_files": 8,
+        "pdf_bundle_files": 21,
+        "independently_matched_at_qualified_engine_revision": true
+      },
+      "exact_normal_mfa_restart": true,
+      "signed_source_free_restore_and_restored_reopen": true,
+      "source_audits": 21,
+      "restored_audits": 22,
+      "post_accept_guard": {
+        "revision": "f7515051d9d6d198ce50e376361faef1ec0024e9",
+        "change": "A new enrichment refuses when any party link/resolution history binds its payload; existing identical enrichment remains a no-op. Current authority and physical source checks stay unchanged.",
+        "pre_fix_reproduced": "/tmp/rm165-party-bound-pre-fix.log",
+        "isolated_pass": "/tmp/rm165-party-bound-fixed.log",
+        "storage_10_pass": "/tmp/rm165-root-documents-regression.log",
+        "strict_log": "/tmp/rm165-party-bound-clippy.log",
+        "actual_replayed": false,
+        "evidence_scope": "Fullactual source5847 exactlymatched publishedengine1fa6. Final11lineguard plus93line focusedregression were separatelyverified afterpublication; no claim actualbinaryhashes represent that follow-upguard. Fullactual uses no partyhistory; existing9unboundenrichment/context positives andnewboundrefusal/noop test qualify the additional predicate."
+      },
+      "scope_limits": [
+        "Actual delayed scanner revocation/retired Owner cleanup fault injection not claimed; focused host/server/source checks cover necessary boundaries.",
+        "Actual legacy incomplete payload repair is a focused storage proof; actual uses admitted partial cash receipt plus complete qualifying purchase/context.",
+        "All55 original issues/J01-J07/release/cutover/rollback/defaultlauncher/remainingoriginaloperations/finalinstalleddesktop remainopen.166fourparallel candidate deliveries preserved98588db0; own combinedacceptance pending."
+      ],
+      "preserved_recovery": [
+        "Original4parallel165deliveries and unapprovedbackend e43efb1e retained from cancelledrust-original-documents165-20261022T181532.787378000; reviewedstaging2589 and snapshotrefs preserved. Exactdocumentcontext/servicepermissions/providerretirement/historicalcontextsnapshot fixes reviewed; no duplicate motor.",
+        "Corrective165run183820cancelled afteractualsetupfailures; domain/SDK/MCP/strict/build proofs retained. Failed defaultnormalization and missingactor-column test expectations corrected without weakening fresh-ingest. MCP syntheticfilecanonicalized for macOS symlink control, no safetybypass.",
+        "First actual165 error had no useful stage and inherited cleanup removeditsprofile; thisisnot falselyclaimed preserved. Subsequentoriginaloptin fails preserveprivateprofiles andstaticdiagnostics. Second actual revealed my incorrect extrajournallevel, reverted against realHTTP200 andzerocounts.",
+        "Externalverified-journal-repair actual isolated guaranteed baseline bug: company/accountsetup changes journalprojection without posting. Exactbaseline movedaftersetup, bothzeroentrychecks/fullcomparison retained;5847fullactualPASS. Failedreports/profiles retained includingdocuments165-verified-journal-repair.json. No unmodifiedfailedchecks/financialeffects replayed.",
+        "Publication-onlySGD exactcopy/byte-diffreview/retained-whole-flow reverified2469sourcepins/3binaries/8web/21PDF/32+2testreceipts/strictbuild andsignedinventories, done/published1fa6;166fourrevieweddeliveries andreceipts retained98588db0."
+      ],
+      "report": "/tmp/rentemester-rust-reports/original-documents165.json",
+      "report_sha256": "2d37d78336264ad9cbb0b9d29084852e66e170652a1658e93e153125fa7f8245"
     }
   },
   "verified_history": [
@@ -11094,6 +11186,13 @@
       "code_revision": "e3584605f8b87b02694a6535868a3470f81f2db9",
       "evidence_key": "original_master_data164",
       "status": "ACCEPTED finite original customer/vendor journey; entiremissionOPEN"
+    },
+    {
+      "increment": "Group165",
+      "code_revision": "f7515051d9d6d198ce50e376361faef1ec0024e9",
+      "qualified_engine_revision": "1fa6d5fc",
+      "evidence_key": "original_documents165",
+      "status": "ACCEPTED finite original documents journey; entiremissionOPEN"
     }
   ],
   "scope_clarifications": [
