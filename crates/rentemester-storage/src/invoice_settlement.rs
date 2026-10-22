@@ -70,7 +70,7 @@ pub fn refund_with_principal(
         amount: input.amount.clone(),
         confirm: input.confirm,
     };
-    transfer(tx, &input, subject, latest, true, principal)
+    transfer(tx, &input, subject, latest, true, principal, None)
 }
 pub fn settle(
     tx: &Transaction<'_>,
@@ -93,7 +93,18 @@ pub fn settle_with_principal(
     latest: Date,
     principal: crate::idempotency::PrincipalKind,
 ) -> Result<Value, Error> {
-    transfer(tx, input, subject, latest, false, principal)
+    transfer(tx, input, subject, latest, false, principal, None)
+}
+/// Same receipt writer, with the original apply-payment note decided before immutable INSERT.
+pub(crate) fn apply_with_principal(
+    tx: &Transaction<'_>,
+    input: &Input,
+    subject: &str,
+    latest: Date,
+    principal: crate::idempotency::PrincipalKind,
+    note: Option<&str>,
+) -> Result<Value, Error> {
+    transfer(tx, input, subject, latest, false, principal, Some(note))
 }
 fn transfer(
     tx: &Transaction<'_>,
@@ -102,6 +113,7 @@ fn transfer(
     latest: Date,
     refund: bool,
     principal_kind: crate::idempotency::PrincipalKind,
+    application_note: Option<Option<&str>>,
 ) -> Result<Value, Error> {
     crate::journal_post::require_current(tx)?;
     if !input.confirm
@@ -404,7 +416,11 @@ fn transfer(
             json!({"entryId":result["entryId"],"refundId":id,"invoiceNumber":no,"remainingCreditBalance":wire(&available.subtract(&amount))?,"currency":currency,"principalAmountDkk":wire(&principal)?,"bankAmountDkk":wire(&bank_dkk)?,"realizedFxAmountDkk":wire(&difference)?}),
         );
     }
-    let payment:i64=tx.query_row("INSERT INTO invoice_payments(invoice_document_id,bank_transaction_id,journal_entry_id,payment_date,amount,currency,note) VALUES(?1,?2,?3,?4,?5,?7,?6) RETURNING id",params![id,bank_id,result["entryId"].as_i64(),date,wire(&amount)?.as_f64(),format!("Bank settlement from transaction {bank_id}"),currency],|r|r.get(0)).map_err(invalid)?;
+    let note = match application_note {
+        Some(note) => note.map(str::to_owned),
+        None => Some(format!("Bank settlement from transaction {bank_id}")),
+    };
+    let payment:i64=tx.query_row("INSERT INTO invoice_payments(invoice_document_id,bank_transaction_id,journal_entry_id,payment_date,amount,currency,note) VALUES(?1,?2,?3,?4,?5,?7,?6) RETURNING id",params![id,bank_id,result["entryId"].as_i64(),date,wire(&amount)?.as_f64(),note,currency],|r|r.get(0)).map_err(invalid)?;
     tx.execute("INSERT INTO audit_log(event_type,entity_type,entity_id,message,actor) VALUES('invoice_payment_apply','invoice_payment',?1,?2,?3)",params![payment.to_string(),format!("Applied receipt {} to invoice {no}",amount.decimal()),format!("{}:{subject}", match principal_kind {crate::idempotency::PrincipalKind::User=>"user",crate::idempotency::PrincipalKind::ServiceAccount=>"service_account"})]).map_err(invalid)?;
     Ok(
         json!({"entryId":result["entryId"],"paymentId":payment,"principalAmount":wire(&amount)?,"claimAmount":0,"invoiceNumber":no,"openBalance":wire(&open.subtract(&amount))?,"currency":currency,"principalAmountDkk":wire(&principal)?,"bankAmountDkk":wire(&bank_dkk)?,"realizedFxAmountDkk":wire(&difference)?}),

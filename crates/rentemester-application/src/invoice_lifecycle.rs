@@ -169,6 +169,24 @@ fn inner(
             value["storedPath"] = json!(format!("/api/companies/{slug}/documents/{id}/file"));
             value
         }
+        Kind::ApplyPayment => {
+            if let Some(bank) = p["bankTransactionId"].as_i64() {
+                verify_bank(tx, guard, bank)?;
+            }
+            let mut input = p.clone();
+            input.as_object_mut().unwrap().remove("invoiceNumber");
+            input["invoiceDocumentId"] = json!(invoice);
+            let input: rentemester_storage::invoice_payment_apply::Input =
+                serde_json::from_value(input).map_err(|_| {
+                    Error::new(
+                        "invoice_lifecycle_input_invalid",
+                        "invalid payment application payload",
+                    )
+                })?;
+            rentemester_storage::invoice_payment_apply::apply(
+                tx, &input, subject, principal, latest,
+            )?
+        }
         Kind::SettleBank | Kind::RefundBank => {
             let bank = storage::bank_id(tx, p)?;
             verify_bank(tx, guard, bank)?;

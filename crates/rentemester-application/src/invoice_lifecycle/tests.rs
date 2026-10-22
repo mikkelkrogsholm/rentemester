@@ -307,3 +307,119 @@ fn original_service_issue_render_post_settle_credit_refund_current_authority_and
     );
     assert_eq!(f.count("journal_entries"), 4);
 }
+#[test]
+fn original_apply_payment_service_bankless_and_candidate_keep_sources_and_current_rights() {
+    let mut f = fixture("bookkeeper");
+    f.company.execute_batch("INSERT INTO accounts(account_no,name,type,normal_balance)VALUES('B','Synthetic bank','asset','debit');INSERT INTO account_role_mappings(role,account_no,version,confirmed_by)VALUES('bank','B',1,'synthetic')").unwrap();
+    let issue = json!({"confirm":true,"payload":{"invoiceType":"full","issueDate":"2026-01-01","buyer":{"name":"Synthetic buyer","address":"Synthetic street2"},"lines":[{"description":"Synthetic service","quantity":1,"unitPriceExVat":100,"lineTotalExVat":100}],"totals":{"netAmount":100,"vatRate":0.25,"vatAmount":25,"grossAmount":125}}});
+    let issued = json_output(f.run(Action::Lifecycle(Kind::Issue, &issue)).unwrap());
+    let id = issued["data"]["documentId"].as_i64().unwrap();
+    let post = json!({"confirm":true,"documentId":id,"revenueAccountNo":"S"});
+    assert_eq!(
+        json_output(f.run(Action::Lifecycle(Kind::Post, &post)).unwrap())["ok"],
+        true
+    );
+    let pay = json!({"confirm":true,"payload":{"invoiceDocumentId":id,"paymentDate":"2026-01-01","amount":50,"note":"Synthetic partial receipt"}});
+    let first = json_output(f.run(Action::Lifecycle(Kind::ApplyPayment, &pay)).unwrap());
+    assert_eq!(first["data"]["openBalance"], 75.0);
+    assert_eq!(
+        first["appliedRules"],
+        json!([
+            "DK-INVOICE-PAYMENT-001",
+            "DK-INVOICE-CORRECTION-BALANCE-001"
+        ])
+    );
+    assert!(first["data"].get("appliedRules").is_none());
+    assert!(first["data"]["journalEntryId"].is_i64());
+    assert_eq!(f.count("journal_entries"), 2);
+    assert_eq!(f.count("bank_transactions"), 0);
+    let candidate = {
+        let tx = f
+            .company
+            .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
+            .unwrap();
+        let request=serde_json::from_value(json!({"transactionDate":"2026-01-01","text":"Synthetic posted receipt to classify","currency":"DKK","documentId":id.to_string(),"lines":[{"accountNo":"B","debitAmount":"75.00"},{"accountNo":"R","creditAmount":"75.00"}]})).unwrap();
+        let r = rentemester_storage::journal_post::post(
+            &tx,
+            &request,
+            &rentemester_storage::journal_preview::manual_journal_rule_version().unwrap(),
+            Date::parse("2026-01-02").unwrap(),
+            rentemester_storage::journal_post::Actor {
+                subject: "user:u",
+                program: "rentemester-rust",
+            },
+        )
+        .unwrap();
+        tx.commit().unwrap();
+        r["entryId"].as_i64().unwrap()
+    };
+    let classify = json!({"confirm":true,"payload":{"invoiceDocumentId":id,"journalEntryId":candidate,"paymentDate":"2026-01-01","amount":75}});
+    let second = json_output(
+        f.run(Action::Lifecycle(Kind::ApplyPayment, &classify))
+            .unwrap(),
+    );
+    assert_eq!(second["data"]["journalEntryId"], candidate);
+    assert_eq!(second["data"]["openBalance"], 0.0);
+    assert_eq!(f.count("journal_entries"), 3);
+    assert_eq!(f.count("invoice_payments"), 2);
+    assert_eq!(f.count("bank_transactions"), 0);
+    let tx = f.company.transaction().unwrap();
+    let audit = rentemester_storage::audit_invoice::verify(&tx).unwrap();
+    assert_eq!(audit["ok"], true, "{audit}");
+    tx.rollback().unwrap();
+    assert_eq!(f.company.query_row::<i64,_,_>("SELECT count(*) FROM audit_log WHERE event_type='invoice_payment_apply' AND actor=?1",[format!("service_account:{}",f.subject)],|r|r.get(0)).unwrap(),2);
+    f.control.execute("INSERT INTO rm_company_membership_events(user_id,company_slug,event_type,actor)VALUES(?1,'a','revoke','user:u')",[&f.subject]).unwrap();
+    assert_eq!(
+        f.run(Action::Lifecycle(Kind::ApplyPayment, &classify))
+            .err()
+            .unwrap()
+            .error
+            .code,
+        "access_denied"
+    );
+    let path: String = f
+        .company
+        .query_row(
+            "SELECT stored_path FROM documents WHERE id=?1",
+            [issued["data"]["pdfDocumentId"].as_i64().unwrap()],
+            |r| r.get(0),
+        )
+        .unwrap();
+    std::fs::write(f._dir.path().join("workspace/a").join(path), b"changed PDF").unwrap();
+    let cookies = CookieVerifier::new(
+        "w",
+        CookieProfile::Development,
+        "QUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUE",
+    )
+    .unwrap();
+    let issued_cookie = cookies.issue_session("synthetic-token").unwrap();
+    let cookie = cookies
+        .verify(Some(issued_cookie.request_header()), None)
+        .unwrap();
+    let failure = execute(
+        &mut f.control,
+        &mut f.company,
+        &mut f.guard,
+        crate::documents::Context {
+            cookie: &cookie,
+            clock: &Fixed,
+            selection: CompanySelection {
+                workspace: "w",
+                slug: "a",
+                registered: true,
+                archived: false,
+            },
+        },
+        Request {
+            action: Action::Lifecycle(Kind::ApplyPayment, &classify),
+            today: "",
+            now: "",
+            year: None,
+        },
+    )
+    .err()
+    .unwrap();
+    assert_eq!(failure.error.code, "invoice_evidence_unavailable");
+    assert_eq!(f.count("invoice_payments"), 2);
+    assert_eq!(f.count("journal_entries"), 3);
+}

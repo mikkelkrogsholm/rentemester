@@ -15,6 +15,7 @@ pub enum Kind {
     SettleBank,
     CreditNote,
     RefundBank,
+    ApplyPayment,
 }
 fn input_error(message: impl Into<String>) -> Error {
     Error::new("invoice_lifecycle_input_invalid", message)
@@ -255,6 +256,45 @@ pub fn validate(kind: Kind, body: &Value) -> Result<(), Error> {
             )?;
             id(p.get("originalInvoiceDocumentId"))?;
             string(p.get("originalInvoiceNumber"))?;
+        }
+        Kind::ApplyPayment => {
+            let p = &body["payload"];
+            fields(
+                p,
+                &[
+                    "invoiceDocumentId",
+                    "invoiceNumber",
+                    "paymentDate",
+                    "amount",
+                    "bankTransactionId",
+                    "journalEntryId",
+                    "bankAccountNo",
+                    "receivableAccountNo",
+                    "note",
+                ],
+            )?;
+            id(p.get("invoiceDocumentId"))?;
+            id(p.get("bankTransactionId"))?;
+            id(p.get("journalEntryId"))?;
+            for key in ["invoiceNumber", "bankAccountNo", "receivableAccountNo"] {
+                string(p.get(key))?;
+            }
+            if p.get("note")
+                .is_some_and(|v| v.as_str().is_none_or(|s| s.len() > 2000))
+            {
+                return Err(input_error("note must be a bounded string"));
+            }
+            if p.get("invoiceDocumentId").is_none() && p.get("invoiceNumber").is_none() {
+                return Err(input_error("invoice selector required"));
+            }
+            let date = p["paymentDate"]
+                .as_str()
+                .ok_or_else(|| input_error("paymentDate required"))?;
+            rentemester_engine::fiscal_year::Date::parse(date)
+                .map_err(|_| input_error("paymentDate must be YYYY-MM-DD"))?;
+            if !p["amount"].is_number() {
+                return Err(input_error("payment amount required"));
+            }
         }
         Kind::SettleBank | Kind::RefundBank => {
             let p = &body["payload"];

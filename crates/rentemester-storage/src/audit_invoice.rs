@@ -498,6 +498,69 @@ fn legacy_foreign_relief(
     }
     crate::invoice_fx::portion(&open, &carrying, &Money::default(), amount)
 }
+fn historical_bank_account(
+    tx: &Transaction<'_>,
+    j: &Value,
+    actual: &Effects,
+    basis: &Money,
+    refund: bool,
+) -> Result<i64, Error> {
+    let candidates = rows(
+        tx,
+        "SELECT a.id FROM account_role_mappings r JOIN accounts a ON a.account_no=r.account_no WHERE r.role='bank' AND r.confirmed_at<=?1 AND r.confirmed_at=(SELECT max(confirmed_at) FROM account_role_mappings WHERE role='bank' AND confirmed_at<=?1)",
+        &[&text(&j["registration_datetime"])?],
+    )?;
+    let matching = candidates
+        .iter()
+        .filter_map(|c| c["id"].as_i64())
+        .filter(|id| {
+            actual
+                .get(id)
+                .is_some_and(|e| if refund { e.1 == *basis } else { e.0 == *basis })
+        })
+        .collect::<Vec<_>>();
+    require(
+        matching.len() == 1,
+        "historical bank role mapping ambiguous or missing",
+    )?;
+    Ok(matching[0])
+}
+/// Exact bankless DKK payment candidate, shared by application admission and full audit.
+pub(crate) fn bankless_payment_journal(
+    tx: &Transaction<'_>,
+    jid: i64,
+    invoice: i64,
+    debtor: i64,
+    date: &str,
+    amount: &Money,
+) -> Result<String, Error> {
+    let j = journal(tx, jid, invoice, None, date)?;
+    require(
+        j["currency"] == "DKK",
+        "bankless payment journal must be DKK",
+    )?;
+    let ls = lines(tx, jid)?;
+    require(
+        ls.len() == 2 && ls.iter().all(|l| l["vat_code"].is_null()),
+        "bankless payment requires exactly two non-VAT lines",
+    )?;
+    let actual = effects(&ls)?;
+    let bank = historical_bank_account(tx, &j, &actual, amount, false)?;
+    require(bank != debtor, "bank ledger is invoice receivable")?;
+    account(tx, bank, "asset", "debit")?;
+    account(tx, debtor, "asset", "debit")?;
+    let mut expected = Effects::new();
+    effect(&mut expected, bank, amount.clone(), Money::default());
+    effect(&mut expected, debtor, Money::default(), amount.clone());
+    require(
+        equivalent(actual, expected),
+        "bankless payment exact bank/debtor effects differ",
+    )?;
+    tx.query_row("SELECT account_no FROM accounts WHERE id=?1", [bank], |r| {
+        r.get(0)
+    })
+    .map_err(invalid)
+}
 fn cash(
     tx: &Transaction<'_>,
     d: &Value,
@@ -544,6 +607,19 @@ fn cash(
                     && group.iter().any(|a| a["kind"] == "payment"),
             "unsupported/reused cash application journal group",
         )?;
+        if first["bank_transaction_id"].is_null() {
+            require(
+                group.len() == 1
+                    && first["kind"] == "payment"
+                    && currency == "DKK"
+                    && first["currency"] == "DKK",
+                "only one bankless DKK principal payment is supported",
+            )?;
+            let amount = positive(&first["amount"])?;
+            bankless_payment_journal(tx, jid, id, debtor, text(&first["date"])?, &amount)?;
+            paid.add(&amount);
+            continue;
+        }
         let bank = number(&first["bank_transaction_id"])?;
         let date = text(&first["date"])?;
         let refund = first["kind"] == "refund";
@@ -648,11 +724,6 @@ fn cash(
                 b["bank_account_id"].is_null(),
                 "concrete bank account has no ledger mapping",
             )?;
-            let candidates = rows(
-                tx,
-                "SELECT a.id FROM account_role_mappings r JOIN accounts a ON a.account_no=r.account_no WHERE r.role='bank' AND r.confirmed_at<=?1 AND r.confirmed_at=(SELECT max(confirmed_at) FROM account_role_mappings WHERE role='bank' AND confirmed_at<=?1)",
-                &[&text(&j["registration_datetime"])?],
-            )?;
             let actual = effects(&lines(tx, jid)?)?;
             let signed_dkk = if first["currency"] == "DKK" {
                 total.clone()
@@ -664,24 +735,7 @@ fn cash(
             } else {
                 signed_dkk
             };
-            let matching = candidates
-                .iter()
-                .filter_map(|c| c["id"].as_i64())
-                .filter(|id| {
-                    actual.get(id).is_some_and(|e| {
-                        if refund {
-                            e.1 == bank_basis
-                        } else {
-                            e.0 == bank_basis
-                        }
-                    })
-                })
-                .collect::<Vec<_>>();
-            require(
-                matching.len() == 1,
-                "historical bank role mapping ambiguous or missing",
-            )?;
-            matching[0]
+            historical_bank_account(tx, &j, &actual, &bank_basis, refund)?
         };
         require(bank_account != debtor, "bank ledger is invoice receivable")?;
         let bank_dkk = if first["currency"] == "DKK" {
@@ -1079,6 +1133,32 @@ pub(crate) fn adjusted_principal_evidence(tx: &Transaction<'_>, id: i64) -> Resu
 pub(crate) fn interest_cash_evidence(tx: &Transaction<'_>, id: i64) -> Result<(), Error> {
     interest_principal_evidence(tx, id)
 }
+fn classification_journals(tx: &Transaction<'_>, id: i64) -> Result<Vec<Value>, Error> {
+    rows(
+        tx,
+        "SELECT j.id,(SELECT count(*) FROM issued_invoice_postings x WHERE x.journal_entry_id=j.id)+(SELECT count(*) FROM invoice_payments x WHERE x.journal_entry_id=j.id)+(SELECT count(*) FROM invoice_refunds x WHERE x.journal_entry_id=j.id)+(SELECT count(*) FROM invoice_claim_payments x WHERE x.journal_entry_id=j.id)+(SELECT count(*) FROM invoice_bad_debt_writeoffs x WHERE x.journal_entry_id=j.id)+(SELECT count(*) FROM invoice_interest_corrections x WHERE x.journal_entry_id=j.id)+(SELECT count(*) FROM invoice_reminder_postings x WHERE x.journal_entry_id=j.id)+(SELECT count(*) FROM invoice_compensation_postings x WHERE x.journal_entry_id=j.id)+(SELECT count(*) FROM invoice_interest_postings x WHERE x.journal_entry_id=j.id) owners FROM journal_entries j WHERE j.document_id=?1 AND j.status='posted' AND j.reversal_of_entry_id IS NULL AND NOT EXISTS(SELECT 1 FROM journal_entries r WHERE r.reversal_of_entry_id=j.id) ORDER BY j.id",
+        &[&id],
+    )
+}
+fn classification(tx: &Transaction<'_>, j: &Value) -> Result<(), Error> {
+    let owners = number(&j["owners"])?;
+    require(owners==1||owners==2&&tx.query_row("SELECT EXISTS(SELECT 1 FROM invoice_payments p JOIN invoice_claim_payments c ON c.journal_entry_id=p.journal_entry_id AND c.invoice_document_id=p.invoice_document_id WHERE p.journal_entry_id=?1)",[number(&j["id"])?],|r|r.get::<_,bool>(0)).map_err(invalid)?,"unclassified or multiply owned invoice journal")
+}
+/// Complete selected-invoice structure and ownership; other invoices retain their own findings.
+pub(crate) fn payment_evidence(tx: &Transaction<'_>, id: i64) -> Result<(), Error> {
+    interest_principal_evidence(tx, id)?;
+    let d = one(
+        tx,
+        "SELECT * FROM documents WHERE id=?1 AND document_type='issued_invoice'",
+        id,
+    )?;
+    status(tx, &d)?;
+    for j in classification_journals(tx, id)? {
+        classification(tx, &j)?;
+    }
+    let shared:bool=tx.query_row("SELECT EXISTS(SELECT 1 FROM (SELECT invoice_document_id,journal_entry_id FROM invoice_payments UNION ALL SELECT invoice_document_id,journal_entry_id FROM invoice_refunds UNION ALL SELECT invoice_document_id,journal_entry_id FROM invoice_claim_payments) a WHERE a.invoice_document_id<>?1 AND a.journal_entry_id IN (SELECT journal_entry_id FROM invoice_payments WHERE invoice_document_id=?1 UNION SELECT journal_entry_id FROM invoice_refunds WHERE invoice_document_id=?1 UNION SELECT journal_entry_id FROM invoice_claim_payments WHERE invoice_document_id=?1))",[id],|r|r.get(0)).map_err(invalid)?;
+    require(!shared, "invoice cash journal reused by another invoice")
+}
 /// Every persisted family is scanned; a failed record does not suppress later findings.
 pub fn verify(tx: &Transaction<'_>) -> Result<Value, Error> {
     let mut errors = vec![];
@@ -1223,13 +1303,13 @@ pub fn verify(tx: &Transaction<'_>) -> Result<Value, Error> {
             );
         }
         // Every active journal attached to an invoice must have a unique domain owner.
-        for j in rows(
-            tx,
-            "SELECT j.id,(SELECT count(*) FROM issued_invoice_postings x WHERE x.journal_entry_id=j.id)+(SELECT count(*) FROM invoice_payments x WHERE x.journal_entry_id=j.id)+(SELECT count(*) FROM invoice_refunds x WHERE x.journal_entry_id=j.id)+(SELECT count(*) FROM invoice_claim_payments x WHERE x.journal_entry_id=j.id)+(SELECT count(*) FROM invoice_bad_debt_writeoffs x WHERE x.journal_entry_id=j.id)+(SELECT count(*) FROM invoice_interest_corrections x WHERE x.journal_entry_id=j.id)+(SELECT count(*) FROM invoice_reminder_postings x WHERE x.journal_entry_id=j.id)+(SELECT count(*) FROM invoice_compensation_postings x WHERE x.journal_entry_id=j.id)+(SELECT count(*) FROM invoice_interest_postings x WHERE x.journal_entry_id=j.id) owners FROM journal_entries j WHERE j.document_id=?1 AND j.status='posted' AND j.reversal_of_entry_id IS NULL AND NOT EXISTS(SELECT 1 FROM journal_entries r WHERE r.reversal_of_entry_id=j.id) ORDER BY j.id",
-            &[&id],
-        )? {
-            let owners = number(&j["owners"])?;
-            record(&mut errors,"journal_classification",number(&j["id"] )?,require(owners==1||owners==2&&tx.query_row("SELECT EXISTS(SELECT 1 FROM invoice_payments p JOIN invoice_claim_payments c ON c.journal_entry_id=p.journal_entry_id AND c.invoice_document_id=p.invoice_document_id WHERE p.journal_entry_id=?1)",[number(&j["id"])?],|r|r.get::<_,bool>(0)).map_err(invalid)?,"unclassified or multiply owned invoice journal"));
+        for j in classification_journals(tx, id)? {
+            record(
+                &mut errors,
+                "journal_classification",
+                number(&j["id"])?,
+                classification(tx, &j),
+            );
         }
     }
     for row in rows(

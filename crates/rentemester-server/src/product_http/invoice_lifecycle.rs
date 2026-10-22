@@ -68,6 +68,7 @@ fn parse(path: &str, bytes: &[u8]) -> Result<(Kind, Value), &'static str> {
         "settle-bank" => Kind::SettleBank,
         "credit-note" => Kind::CreditNote,
         "refund-bank" => Kind::RefundBank,
+        "apply-payment" => Kind::ApplyPayment,
         _ => return Err("invalid_input"),
     };
     if bytes.len() > 256 * 1024 {
@@ -186,6 +187,22 @@ mod tests {
             ),
         ] {
             assert!(parse(path, raw.as_bytes()).is_err(), "{raw}");
+        }
+    }
+    #[test]
+    fn original_apply_payment_wire_requires_exact_amount_date_and_optional_ids() {
+        assert!(parse("/apply-payment",br#"{"confirm":true,"payload":{"invoiceDocumentId":1,"paymentDate":"2026-01-01","amount":50,"note":""}}"#).is_ok());
+        assert!(parse("/apply-payment",br#"{"confirm":true,"payload":{"invoiceNumber":"2026-1","paymentDate":"2026-01-01","amount":50}}"#).is_ok());
+        assert!(parse("/apply-payment",br#"{"confirm":true,"payload":{"invoiceDocumentId":1,"paymentDate":"2026-01-01","amount":75,"journalEntryId":2}}"#).is_ok());
+        for raw in [
+            r#"{"confirm":true,"payload":{"invoiceDocumentId":1,"paymentDate":"2026-01-01"}}"#,
+            r#"{"confirm":true,"payload":{"invoiceDocumentId":1,"paymentDate":"2026-02-30","amount":1}}"#,
+            r#"{"confirm":true,"payload":{"invoiceDocumentId":1,"paymentDate":"2026-01-01","amount":1,"journalEntryId":null}}"#,
+            r#"{"confirm":true,"payload":{"invoiceDocumentId":1,"paymentDate":"2026-01-01","amount":1,"amount":2}}"#,
+            r#"{"confirm":true,"payload":{"invoiceDocumentId":1,"paymentDate":"2026-01-01","amount":1,"bankTransactionReference":"unsupported"}}"#,
+            r#"{"confirm":true,"payload":{"invoiceDocumentId":1,"paymentDate":"2026-01-01","amount":1,"createdBy":"user:other"}}"#,
+        ] {
+            assert!(parse("/apply-payment", raw.as_bytes()).is_err(), "{raw}");
         }
     }
 }

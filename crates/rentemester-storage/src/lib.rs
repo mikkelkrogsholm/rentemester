@@ -669,3 +669,5 @@ pub mod portfolio_overview;
 pub mod annual_exports;
 
 pub mod invoice_lifecycle;
+
+pub mod invoice_payment_apply;
