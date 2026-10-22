@@ -146,6 +146,7 @@ pub fn list() -> Value {
     tools.extend(crate::reviewed_bookkeeping::tools());
     tools.extend(crate::documents_original::tools());
     tools.extend(crate::document_party_original::tools());
+    tools.extend(crate::budget_original::tools());
     tools.extend(crate::documents::tools());
     tools.extend(crate::document_pdf::tools());
     tools.extend(crate::invoice_extraction::tools());
@@ -274,6 +275,9 @@ struct DomainWriteArgs {
 pub async fn call(api: &ApiClient, name: &str, args: Value) -> Result<Value, &'static str> {
     if !args.is_object() {
         return Err("expected arguments object");
+    }
+    if crate::budget_original::accepts(name) || name=="budget_vs_actual" && (args.get("from").is_some() || args.get("to").is_some()) {
+        return crate::budget_original::call(api,name,args).await;
     }
     if crate::document_party_original::accepts(name) {
         return crate::document_party_original::call(api, name, args).await;

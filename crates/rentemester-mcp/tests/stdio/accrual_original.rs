@@ -13,12 +13,12 @@ fn three_original_names_strict_source_schema_native_aliases_confirmation_and_dis
         ],
     ));
     let tools = rows[1]["result"]["tools"].as_array().unwrap();
-    assert_eq!(tools.len(), 325);
+    assert_eq!(tools.len(), EXPECTED_NATIVE_TOOLS);
     let names = tools
         .iter()
         .map(|t| t["name"].as_str().unwrap())
         .collect::<std::collections::BTreeSet<_>>();
-    assert_eq!(names.len(), 325);
+    assert_eq!(names.len(), EXPECTED_NATIVE_TOOLS);
     for name in [
         "register_accrual",
         "recognize_accrual",

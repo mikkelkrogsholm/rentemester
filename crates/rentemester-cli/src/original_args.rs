@@ -40,7 +40,8 @@ fn boolean(name: &str) -> bool {
 }
 
 fn migrated(args: &[String]) -> bool {
-    crate::mileage_original::accepts(args)
+    crate::budget_original::accepts(args)
+        || crate::mileage_original::accepts(args)
         || crate::asset_original::accepts(args)
         || crate::accrual_original::accepts(args)
         || crate::expense_original::accepts(args)
@@ -135,6 +136,7 @@ pub fn prepare(args: Vec<String>) -> Result<Vec<String>, (u8, Error)> {
             matches!(
                 s.as_str(),
                 "customer"
+                    | "budget"
                     | "asset"
                     | "accrual"
                     | "mileage"
@@ -399,6 +401,17 @@ mod tests {
             input.extend(args(&flags));
             assert_eq!(prepare(input).unwrap_err().0, 2);
         }
+    }
+    #[test]
+    fn budget_source_family_joins_company_binding_without_reinterpreting_native_aliases() {
+        for command in ["set","list","vs-actual","forecast","forecast-13-week"] {
+            let prepared=prepare(args(&["--company=s","budget",command,"--json"])).unwrap();
+            assert_eq!(prepared,args(&["budget",command,"--company=s","--json"]));
+            assert!(requires_company(&prepared));
+        }
+        let native=args(&["remote","budget","--company=s","--year=2026"]);
+        assert_eq!(prepare(native.clone()).unwrap(),native);
+        assert!(!requires_company(&native));
     }
     #[test]
     fn native_dialects_are_opaque_and_company_predicate_is_bounded() {

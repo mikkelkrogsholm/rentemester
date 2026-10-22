@@ -1,7 +1,7 @@
 use serde_json::{Value, json};
 
 // Existing 312 bindings plus seven original document-party tools.
-const EXPECTED_NATIVE_TOOLS: usize = 333;
+const EXPECTED_NATIVE_TOOLS: usize = 337;
 
 #[test]
 fn pdf_tools_require_confirmation_and_keep_reads_bounded() {
@@ -1534,6 +1534,17 @@ fn budget_mileage_discovery_year_scope_and_body_limits_are_strict() {
             true
         );
     }
+    let comparison=tools.iter().find(|t|t["name"]=="budget_vs_actual").unwrap();
+    assert_eq!(tools.iter().filter(|t|t["name"]=="budget_vs_actual").count(),1);
+    let forms=comparison["inputSchema"]["oneOf"].as_array().unwrap();
+    assert_eq!(forms.len(),2);
+    assert_eq!(forms[0]["required"],json!(["company","year"]));
+    assert_eq!(forms[0]["properties"]["year"]["minLength"],1);
+    assert_eq!(forms[0]["properties"]["year"]["maxLength"],128);
+    assert_eq!(forms[1]["required"],json!(["company","from","to"]));
+    for form in forms {assert_eq!(form["additionalProperties"],false);}
+    assert!(forms[0]["properties"].get("from").is_none());
+    assert!(forms[1]["properties"].get("year").is_none());
     for (name, args) in [
         ("budget", json!({"company":"synthetic"})),
         (
@@ -2239,3 +2250,5 @@ mod asset_original;
 
 #[path = "stdio/mileage_original.rs"]
 mod mileage_original;
+#[path = "stdio/budget_original.rs"]
+mod budget_original;

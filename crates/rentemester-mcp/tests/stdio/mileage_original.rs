@@ -20,7 +20,7 @@ fn mileage_discovery_nested_input_optional_confirm_and_local_output() {
         ],
     ));
     let tools = rows[1]["result"]["tools"].as_array().unwrap();
-    assert_eq!(tools.len(), 333);
+    assert_eq!(tools.len(), EXPECTED_NATIVE_TOOLS);
     for name in [
         "mileage_log",
         "mileage_list",
