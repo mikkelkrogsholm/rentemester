@@ -684,7 +684,19 @@ fn service_completed_cache_read_and_typed_actor_charge_once_per_operation() {
     assert_eq!(denied.error.code, "access_denied");
     assert_eq!(remaining(&owner, &credential), 20);
     assert_eq!(count(&owner, "invoice_extraction_attempts"), 0);
-    let admission = service_prepare(&mut owner, &key, id);
+    let expected_actor = format!("service_account:{subject}");
+    let admission = owner
+        .prepare_invoice_extraction_service(
+            &key,
+            &Fixed(NOW),
+            id,
+            Some(identity()),
+            Some(&expected_actor),
+        )
+        .unwrap()
+        .outcome
+        .unwrap()
+        .result;
     assert!(admission.provider_input().is_some());
     assert_eq!(remaining(&owner, &credential), 19);
     let value = service_finish(&mut owner, &key, admission).unwrap();
@@ -724,7 +736,7 @@ fn service_completed_cache_read_and_typed_actor_charge_once_per_operation() {
 }
 #[test]
 fn service_reader_cannot_write_and_held_provider_revocations_cannot_complete() {
-    for revoke in ["key", "grantor", "scope"] {
+    for revoke in ["key", "subject", "scope"] {
         let (_dir, mut owner, cookies, proof, _uid) = setup();
         let id = register(&mut owner, &proof);
         let (reader, _, reader_credential) = service(&mut owner, &cookies, &proof, "reader");
@@ -770,8 +782,10 @@ fn service_reader_cannot_write_and_held_provider_revocations_cannot_complete() {
                             .execute("UPDATE apikey SET enabled=0 WHERE id=?1", [&credential])
                             .unwrap();
                     }
-                    "grantor" => {
-                        control.execute_batch("INSERT INTO rm_workspace_user_access_events(user_id,event_type,workspace_role,actor)VALUES('u','disable',NULL,'user:u')").unwrap();
+                    "subject" => {
+                        // A service is its own explicitly granted principal; its
+                        // creator is historical attribution, not inherited authority.
+                        control.execute("INSERT INTO rm_workspace_user_access_events(user_id,event_type,workspace_role,actor)VALUES(?1,'disable',NULL,'user:u')", [&subject]).unwrap();
                     }
                     _ => {
                         control.execute("INSERT INTO rm_company_membership_events(user_id,company_slug,event_type,company_role,actor)VALUES(?1,'a','revoke',NULL,'user:u')", [&subject]).unwrap();

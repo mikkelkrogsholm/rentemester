@@ -205,6 +205,7 @@ pub fn prepare_registered_upload(
         None,
     )
 }
+#[allow(clippy::too_many_arguments)]
 fn prepare_inner(
     control: &mut Connection,
     company: &mut Connection,
@@ -295,7 +296,9 @@ pub fn finish(
         context.selection,
         admission.origin.permission(),
         |tx, subject| {
-            finish_tx(tx, guard, workspace, slug, subject, admission, completion, &stamp, "user")
+            finish_tx(
+                tx, guard, workspace, slug, subject, admission, completion, &stamp, "user",
+            )
         },
     )
 }
@@ -318,8 +321,302 @@ pub fn read(
         context.selection,
         Permission::CompanyDocumentsRead,
         true,
-        |tx, _| {
-            read_tx(tx, guard, document_id, false)
+        |tx, _| read_tx(tx, guard, document_id, false),
+    )
+}
+
+
+fn assert_actor(expected: Option<&str>, actual: &str) -> Result<(), Error> {
+    if expected.is_some_and(|value| value != actual) {
+        return Err(Error::new(
+            "access_denied",
+            "Current actor assertion did not match",
+        ));
+    }
+    Ok(())
+}
+pub fn prepare_original(
+    control: &mut Connection,
+    company: &mut Connection,
+    guard: &mut NamespaceGuard,
+    context: Context<'_>,
+    document_id: i64,
+    identity: Option<ProviderIdentity>,
+    expected_actor: Option<&str>,
+) -> Result<Committed<Admission>, Failure> {
+    prepare_inner(
+        control,
+        company,
+        guard,
+        context,
+        document_id,
+        identity,
+        None,
+        expected_actor,
+    )
+}
+#[allow(clippy::too_many_arguments)]
+fn finish_tx(
+    tx: &Transaction<'_>,
+    guard: &mut NamespaceGuard,
+    workspace: &str,
+    slug: &str,
+    subject: &str,
+    admission: Admission,
+    completion: Option<Completion>,
+    stamp: &str,
+    principal: &str,
+) -> Result<Value, Error> {
+    if workspace != admission.workspace
+        || slug != admission.slug
+        || subject != admission.subject
+        || ledger(tx)? != admission.ledger
+    {
+        return Err(changed());
+    }
+    let current = source(tx, admission.prepared.document_id(), true)?;
+    if current != admission.source || physical(guard, &current, true)? != admission.bytes {
+        return Err(changed());
+    }
+    store::recheck(tx, &admission.prepared)?;
+    let extraction = if let Some(cached) = admission.prepared.cached() {
+        if completion.is_some() {
+            return Err(Error::new(
+                "invalid_input",
+                "Cached extraction cannot accept provider output",
+            ));
+        }
+        cached.clone()
+    } else {
+        let completion = completion
+            .ok_or_else(|| Error::new("invalid_input", "Provider completion required"))?;
+        let outcome = if &completion.identity == admission.prepared.identity() {
+            completion.outcome
+        } else {
+            Err(ProviderFailure::Unavailable)
+        };
+        store::finish(
+            tx,
+            &admission.prepared,
+            &outcome,
+            &format!("{principal}:{subject}"),
+            stamp,
+        )?
+    };
+    Ok(json!({"ok":true,"extraction":extraction}))
+}
+fn read_tx(
+    tx: &Transaction<'_>,
+    guard: &mut NamespaceGuard,
+    document_id: i64,
+    missing_null: bool,
+) -> Result<Value, Error> {
+    store::validate_history(tx)?;
+    let extraction = store::inspect(tx, document_id)?;
+    let original = match source(tx, document_id, extraction.is_some()) {
+        Err(e) if missing_null && e.code == "document_not_found" && extraction.is_none() => {
+            return Ok(json!({"ok":true,"extraction":null}));
+        }
+        value => value?,
+    };
+    let bytes = physical(guard, &original, extraction.is_some())?;
+    for retained in store::sources(tx)? {
+        if retained.document_id == document_id
+            && (retained.sha256 != original.hash || retained.pdf_bytes != bytes)
+        {
+            return Err(changed());
+        }
+    }
+    Ok(json!({"ok":true,"extraction":extraction}))
+}
+pub fn read_original(
+    control: &mut Connection,
+    company: &mut Connection,
+    guard: &mut NamespaceGuard,
+    context: Context<'_>,
+    document_id: i64,
+) -> Result<Committed<Value>, Failure> {
+    control_fence::execute_cookie_subject_mode(
+        control,
+        company,
+        CookieAuthorization {
+            cookie: context.cookie,
+            clock: context.clock,
+            requirement: SessionRequirement::Current,
+        },
+        context.selection,
+        Permission::CompanyDocumentsRead,
+        true,
+        |tx, _| read_tx(tx, guard, document_id, true),
+    )
+}
+
+pub fn prepare_service(
+    control: &mut Connection,
+    company: &mut Connection,
+    guard: &mut NamespaceGuard,
+    context: crate::service_company::Context<'_>,
+    document_id: i64,
+    identity: Option<ProviderIdentity>,
+    expected_actor: Option<&str>,
+) -> Result<crate::service_company::ServiceResult<Admission>, crate::service_company::ServiceFailure>
+{
+    let workspace = context.selection.workspace.to_owned();
+    let slug = context.selection.slug.to_owned();
+    let clock = context.clock;
+    // Equality-only preflight before metering; the normal fences still establish
+    // authority and repeat this assertion before any extraction evidence.
+    if let Some(expected) = expected_actor {
+        let check = (|| {
+            let catalog = rentemester_storage::workspace_context::Catalog {
+                workspace: workspace.clone(),
+                companies: if context.selection.registered {
+                    vec![rentemester_storage::workspace_context::RegisteredCompany {
+                        slug: slug.clone(),
+                        name: slug.clone(),
+                        archived: context.selection.archived,
+                    }]
+                } else {
+                    vec![]
+                },
+            };
+            let tx = control
+                .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
+                .map_err(|_| unavailable())?;
+            let observed = rentemester_storage::service_context::observe(
+                &tx,
+                context.key.lookup_hash(),
+                clock.now_unix_ms().map_err(|_| unavailable())?,
+                &catalog,
+            )?;
+            assert_actor(
+                Some(expected),
+                &format!("service_account:{}", observed.subject()),
+            )?;
+            tx.rollback().map_err(|_| unavailable())
+        })();
+        check.map_err(|error| crate::service_company::ServiceFailure {
+            usage: crate::service_company::UsageStage::NotCommitted,
+            business: crate::service_company::BusinessStage::NotAttempted,
+            error,
+            control_reusable: control.is_autocommit(),
+            company_reusable: company.is_autocommit(),
+            rejection: None,
+        })?;
+    }
+    let result = crate::service_company::precharged::prepare(
+        control,
+        company,
+        context,
+        Permission::CompanyMasterData,
+        |tx, subject| {
+            assert_actor(expected_actor, &format!("service_account:{subject}"))?;
+            let stamp = rentemester_engine::company_knowledge::timestamp(
+                clock.now_unix_ms().map_err(|_| unavailable())?,
+            )?;
+            let identity = identity.ok_or_else(|| {
+                Error::new(
+                    "EXTRACTION_PROVIDER_UNAVAILABLE",
+                    "Invoice extraction provider is not configured",
+                )
+            })?;
+            let source = source(tx, document_id, true)?;
+            let bytes = physical(guard, &source, true)?;
+            let ledger = ledger(tx)?;
+            let prepared = store::prepare(
+                tx,
+                document_id,
+                &bytes,
+                &identity,
+                &format!("service_account:{subject}"),
+                &stamp,
+            )?;
+            Ok(Admission {
+                origin: Origin::Explicit,
+                service_permit: None,
+                workspace,
+                slug,
+                subject: subject.into(),
+                ledger,
+                source,
+                bytes,
+                prepared,
+            })
+        },
+    )?;
+    if !result.control_reusable || !control.is_autocommit() || !company.is_autocommit() {
+        return Err(service_failed());
+    }
+    let (mut admission, permit) = result.result;
+    admission.service_permit = Some(permit);
+    Ok(crate::service_company::ServiceResult {
+        result: admission,
+        usage: result.usage,
+        business: result.business,
+        receipt: result.receipt,
+        control_reusable: result.control_reusable,
+    })
+}
+fn service_failed() -> crate::service_company::ServiceFailure {
+    crate::service_company::ServiceFailure {
+        usage: crate::service_company::UsageStage::Committed,
+        business: crate::service_company::BusinessStage::NotAttempted,
+        error: unavailable(),
+        control_reusable: false,
+        company_reusable: false,
+        rejection: None,
+    }
+}
+pub fn finish_service(
+    control: &mut Connection,
+    company: &mut Connection,
+    guard: &mut NamespaceGuard,
+    context: crate::service_company::Context<'_>,
+    mut admission: Admission,
+    completion: Option<Completion>,
+) -> Result<crate::service_company::ServiceResult<Value>, crate::service_company::ServiceFailure> {
+    guard
+        .ensure_connections(control, company)
+        .map_err(|_| service_failed())?;
+    let permit = admission.service_permit.take().ok_or_else(service_failed)?;
+    let workspace = context.selection.workspace.to_owned();
+    let slug = context.selection.slug.to_owned();
+    let clock = context.clock;
+    crate::service_company::precharged::finish(control, company, context, permit, |tx, subject| {
+        let stamp = rentemester_engine::company_knowledge::timestamp(
+            clock.now_unix_ms().map_err(|_| unavailable())?,
+        )?;
+        finish_tx(
+            tx,
+            guard,
+            &workspace,
+            &slug,
+            subject,
+            admission,
+            completion,
+            &stamp,
+            "service_account",
+        )
+    })
+}
+pub fn read_service(
+    control: &mut Connection,
+    company: &mut Connection,
+    guard: &mut NamespaceGuard,
+    context: crate::service_company::Context<'_>,
+    document_id: i64,
+) -> Result<crate::service_company::ServiceResult<Value>, crate::service_company::ServiceFailure> {
+    crate::service_company::execute_operation(
+        control,
+        company,
+        context,
+        Permission::CompanyDocumentsRead,
+        false,
+        |tx, _, _| {
+            Ok(crate::service_company::OperationResult {
+                result: read_tx(tx, guard, document_id, true)?,
+                receipt: None,
+            })
         },
     )
 }
@@ -335,184 +632,4 @@ mod upload_origin_tests {
             Permission::CompanyDocumentsUpload
         );
     }
-}
-
-fn assert_actor(expected: Option<&str>, actual: &str) -> Result<(), Error> {
-    if expected.is_some_and(|value| value != actual) {
-        return Err(Error::new("access_denied", "Current actor assertion did not match"));
-    }
-    Ok(())
-}
-pub fn prepare_original(
-    control: &mut Connection, company: &mut Connection, guard: &mut NamespaceGuard,
-    context: Context<'_>, document_id: i64, identity: Option<ProviderIdentity>,
-    expected_actor: Option<&str>,
-) -> Result<Committed<Admission>, Failure> {
-    prepare_inner(control, company, guard, context, document_id, identity, None, expected_actor)
-}
-#[allow(clippy::too_many_arguments)]
-fn finish_tx(
-    tx: &Transaction<'_>, guard: &mut NamespaceGuard, workspace: &str, slug: &str,
-    subject: &str, admission: Admission, completion: Option<Completion>, stamp: &str,
-    principal: &str,
-) -> Result<Value, Error> {
-            if workspace != admission.workspace
-                || slug != admission.slug
-                || subject != admission.subject
-                || ledger(tx)? != admission.ledger
-            {
-                return Err(changed());
-            }
-            let current = source(tx, admission.prepared.document_id(), true)?;
-            if current != admission.source || physical(guard, &current, true)? != admission.bytes {
-                return Err(changed());
-            }
-            store::recheck(tx, &admission.prepared)?;
-            let extraction = if let Some(cached) = admission.prepared.cached() {
-                if completion.is_some() {
-                    return Err(Error::new(
-                        "invalid_input",
-                        "Cached extraction cannot accept provider output",
-                    ));
-                }
-                cached.clone()
-            } else {
-                let completion = completion
-                    .ok_or_else(|| Error::new("invalid_input", "Provider completion required"))?;
-                let outcome = if &completion.identity == admission.prepared.identity() {
-                    completion.outcome
-                } else {
-                    Err(ProviderFailure::Unavailable)
-                };
-                store::finish(tx, &admission.prepared, &outcome, &format!("{principal}:{subject}"), &stamp)?
-            };
-            Ok(json!({"ok":true,"extraction":extraction}))
-}
-fn read_tx(tx: &Transaction<'_>, guard: &mut NamespaceGuard, document_id: i64, missing_null: bool) -> Result<Value, Error> {
-            store::validate_history(tx)?;
-            let extraction = store::inspect(tx, document_id)?;
-            let original = match source(tx, document_id, extraction.is_some()) {
-                Err(e) if missing_null && e.code == "document_not_found" && extraction.is_none() => {
-                    return Ok(json!({"ok":true,"extraction":null}));
-                }
-                value => value?,
-            };
-            let bytes = physical(guard, &original, extraction.is_some())?;
-            for retained in store::sources(tx)? {
-                if retained.document_id == document_id
-                    && (retained.sha256 != original.hash || retained.pdf_bytes != bytes)
-                {
-                    return Err(changed());
-                }
-            }
-            Ok(json!({"ok":true,"extraction":extraction}))
-}
-pub fn read_original(
-    control: &mut Connection, company: &mut Connection, guard: &mut NamespaceGuard,
-    context: Context<'_>, document_id: i64,
-) -> Result<Committed<Value>, Failure> {
-    control_fence::execute_cookie_subject_mode(control, company,
-        CookieAuthorization { cookie: context.cookie, clock: context.clock, requirement: SessionRequirement::Current },
-        context.selection, Permission::CompanyDocumentsRead, true,
-        |tx, _| read_tx(tx, guard, document_id, true))
-}
-
-pub fn prepare_service(
-    control: &mut Connection, company: &mut Connection, guard: &mut NamespaceGuard,
-    context: crate::service_company::Context<'_>, document_id: i64,
-    identity: Option<ProviderIdentity>, expected_actor: Option<&str>,
-) -> Result<crate::service_company::ServiceResult<Admission>, crate::service_company::ServiceFailure> {
-    let workspace = context.selection.workspace.to_owned();
-    let slug = context.selection.slug.to_owned();
-    let clock = context.clock;
-    // Equality-only preflight before metering; the normal fences still establish
-    // authority and repeat this assertion before any extraction evidence.
-    if let Some(expected) = expected_actor {
-        let check = (|| {
-            let catalog = rentemester_storage::workspace_context::Catalog {
-                workspace: workspace.clone(),
-                companies: if context.selection.registered {
-                    vec![rentemester_storage::workspace_context::RegisteredCompany {
-                        slug: slug.clone(), name: slug.clone(), archived: context.selection.archived,
-                    }]
-                } else { vec![] },
-            };
-            let tx = control.transaction().map_err(|_| unavailable())?;
-            let observed = rentemester_storage::service_context::observe(
-                &tx, context.key.lookup_hash(), clock.now_unix_ms().map_err(|_| unavailable())?, &catalog)?;
-            assert_actor(Some(expected), &format!("service_account:{}", observed.subject()))?;
-            tx.rollback().map_err(|_| unavailable())
-        })();
-        check.map_err(|error| crate::service_company::ServiceFailure {
-            usage: crate::service_company::UsageStage::NotCommitted,
-            business: crate::service_company::BusinessStage::NotAttempted,
-            error, control_reusable: control.is_autocommit(), company_reusable: company.is_autocommit(), rejection: None,
-        })?;
-    }
-    let result = crate::service_company::precharged::prepare(control, company, context,
-        Permission::CompanyMasterData, |tx, subject| {
-            assert_actor(expected_actor, &format!("service_account:{subject}"))?;
-            let stamp = rentemester_engine::company_knowledge::timestamp(clock.now_unix_ms().map_err(|_| unavailable())?)?;
-            let identity = identity.ok_or_else(|| {
-                Error::new(
-                    "EXTRACTION_PROVIDER_UNAVAILABLE",
-                    "Invoice extraction provider is not configured",
-                )
-            })?;
-            let source = source(tx, document_id, true)?;
-            let bytes = physical(guard, &source, true)?;
-            let ledger = ledger(tx)?;
-            let prepared =
-                store::prepare(tx, document_id, &bytes, &identity, &format!("service_account:{subject}"), &stamp)?;
-            Ok(Admission {
-                origin: Origin::Explicit,
-                service_permit: None,
-                workspace,
-                slug,
-                subject: subject.into(),
-                ledger,
-                source,
-                bytes,
-                prepared,
-            })
-        })?;
-    if !result.control_reusable || !control.is_autocommit() || !company.is_autocommit() {
-        return Err(service_failed());
-    }
-    let (mut admission, permit) = result.result;
-    admission.service_permit = Some(permit);
-    Ok(crate::service_company::ServiceResult {
-        result: admission, usage: result.usage, business: result.business,
-        receipt: result.receipt, control_reusable: result.control_reusable,
-    })
-}
-fn service_failed() -> crate::service_company::ServiceFailure {
-    crate::service_company::ServiceFailure {
-        usage: crate::service_company::UsageStage::Committed,
-        business: crate::service_company::BusinessStage::NotAttempted,
-        error: unavailable(), control_reusable: false, company_reusable: false, rejection: None,
-    }
-}
-pub fn finish_service(
-    control: &mut Connection, company: &mut Connection, guard: &mut NamespaceGuard,
-    context: crate::service_company::Context<'_>, mut admission: Admission, completion: Option<Completion>,
-) -> Result<crate::service_company::ServiceResult<Value>, crate::service_company::ServiceFailure> {
-    guard.ensure_connections(control, company).map_err(|_| service_failed())?;
-    let permit = admission.service_permit.take().ok_or_else(service_failed)?;
-    let workspace = context.selection.workspace.to_owned();
-    let slug = context.selection.slug.to_owned();
-    let clock = context.clock;
-    crate::service_company::precharged::finish(control, company, context, permit, |tx, subject| {
-        let stamp = rentemester_engine::company_knowledge::timestamp(clock.now_unix_ms().map_err(|_| unavailable())?)?;
-        finish_tx(tx, guard, &workspace, &slug, subject, admission, completion, &stamp, "service_account")
-    })
-}
-pub fn read_service(
-    control: &mut Connection, company: &mut Connection, guard: &mut NamespaceGuard,
-    context: crate::service_company::Context<'_>, document_id: i64,
-) -> Result<crate::service_company::ServiceResult<Value>, crate::service_company::ServiceFailure> {
-    crate::service_company::execute_operation(control, company, context,
-        Permission::CompanyDocumentsRead, false, |tx, _, _| {
-            Ok(crate::service_company::OperationResult { result: read_tx(tx, guard, document_id, true)?, receipt: None })
-        })
 }
