@@ -1,15 +1,15 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "Group151 all11 original overdue claims interfaces, causal correction and full receipt lifecycle accepted",
-  "code_revision": "f27ae2af2949b16eca2f251eaeda76d7fe7b7bd3",
+  "current_increment": "Group152 original bad-debt, offline invoice validation and imported receivables accepted",
+  "code_revision": "4a093d2d83cf95b3bfd206c61aeee634ed8fffe6",
   "spec_revision": "sha256:bc98636be4a972407adce0f817a76bb9d4bb7200cb292a70965e75ab62fae250",
-  "state": "Group151 ACCEPTED all11 original reminder/compensation/interest/causal-correction/claim-receipt operations in one whole journey. Shared native writers unchanged in arithmetic/history; typed-principal wrappers retain old human APIs and version/bind service audit subject+journal, fixed non-null bank-source collection includes every actual source. Original CLI flags/flat MCP interfaces, eight strict disjoint native body:string alternatives, source defaults100/310/earliest reminder/statutory omitted CLI rate and exact claim/causal date omissions retained. Explicit compatible accounts and correction reason replace hidden chart defaults/optional reason; no new schema or engine. Client6/principal6/backend3 focused cases PASS; initial zero-selected lib server command corrected to actual binary1, not counted. Equivalent guard/let-chain/shorthand Clippy corrections plus definite-rollback-only original foreign-interest refusal mapping tested2wire cases; final integrated seven-package all-target strict check and normal three binaries PASS. Actual all11 operations first executed successfully: original1000 invoice, reminder100, compensation310, interest2.47, real bank partial500 backdated, causal correction0.69, final principal500, claim receipts100+311.78. Full audit30/VAT469.39 and principal/claims zero. First report stopped only at extra nonexistent claimCurrency field assertion in compensation read; source/native use principalCurrency plus compensationAmountDkk. Immutable failed report/scripts/trace retained. Targeted same-code continuation verified source units without changing code or repeating finance, exact five foreign-interest code refusals, existing native MCP body, current retained member read, immutable originals, signed current-owner export/offline verification and persisted-auth restart. Independent SQL/hash/source/artifact/backup-ledger proof PASS: nine new journals/nineteen lines/two docs/four banks; net revenue800/VAT200/reminder100/comp310/interest1.78/bank1411.78, debt/claims zero; all prior rows/files unchanged. Signed archive includes exact terminal selected-company SQL and independently validates both companies. Existing member remained currently authorized (200); no new membership/service revocation, new credentials or fresh MFA claimed. All processes stopped; three completed worker trees integrated/hash-verified/recoverably removed. Entire epic and remaining717 scope remain OPEN.",
+  "state": "Group152 ACCEPTED original financial invoice family adapters. Shared pure Rust invoice validator returns original verdict/rules/error ordering, no company/database/provider/number allocation,36 synthetic full source-verdict cases pass. Original bad-debt CLI payload and strict disjoint original/native MCP use existing native loss writer and held human/service sales admission. Explicit expense account replaces hidden3080 default; original debtor/VAT assertions, ID preferred when both selectors supplied, current-vs-historical VAT-role mismatch refuses before posting under existing native schema restriction. Typed service proof binds exact audit subject+journal; old human API/arithmetic unchanged. Original imported CLI optional date resolved UTC on server; fixed boundary test caught Copenhagen helper misuse and corrected to actual UTC. MCP additive direct schedule fields retain native ok/importedReceivables members, nonempty/settled rows proven. Final integrated strict seven-package all-target check and normal three binaries pass; normal build initially reused stale pre-module engine artifact, targeted guarded engine-cache clean resolved without source change. Actual retained MFA profile: pure valid/invalid CLI/MCP and imported explicit/default reads unchanged; invoice125, human originalCLI loss50(net40/VAT10), original serviceMCP remaining75(net60/VAT15), wrong historic debtor and repeat refusals unchanged; full audit33/VAT469.39, unchanged bank/payments/old rows/originals, persisted-auth restart. Independent SQL/hash/artifact verification proves exact3journals9lines2docs,100revenue/100expense/zero net VAT/debtor effect. No new MFA/service/revocation/backup claim; prior qualified recovery evidence retained. Three worker trees integrated, verified recoverable snapshots and removed. Remaining original public invoice four CLI commands and full whole-product epic scope OPEN.",
   "issues_closed": [
     701
   ],
   "next": [
-    "Finish original invoice family in two grouped journeys:152 original bad-debt + pure validate + imported-receivables contracts;153 both public XML artifacts + PEPPOL preparation + synthetic Digisense delivery/status. Then remaining original whole-product R44/R45 parity including actor/env/company-path/default launcher/errors, historical receipts, recovery/automation, signed release/cutover/TypeScript retirement and final installed desktop. Preserve all original epic requirements and all accepted evidence; no whole717 closure.",
+    "Complete original public invoice family153: both distinct XML exports, PEPPOL preparation/explicit acknowledgement and configured synthetic Digisense delivery/status, without inventing CLI-only MCP tools. Financial original family152 accepted. Then all remaining R44/R45 actor/env/company-path/default launcher/error/receipt/recovery/automation/release/cutover/TypeScript retirement requirements and installed desktop last. Preserve all original scope and accepted evidence.",
     "Installed desktop acceptance is explicitly deferred to the very end by the user. Preserve prepared Group100 profile; collect remaining native automation, closure, recovery and packaging checks for final installed acceptance without requesting screen unlock during development.",
     "J03/R50 and remaining R54 scope: only still-supported operation closure/recovery, nonempty scheduler handoff, hostile/older clone and post-cutover rollback requirements. Group99 qualifies managed installed J06 flow, not every R54 acceptance item.",
     "Signed distribution/update/cutover evidence must match actual full Rust replacement; retain all existing completion gates and TypeScript retirement gate.",
@@ -8613,6 +8613,64 @@
         ".git/rentemester-recovery/archived151-core.json"
       ],
       "remaining": "Finish original invoice family in two grouped journeys:152 original bad-debt + pure validate + imported-receivables contracts;153 both public XML artifacts + PEPPOL preparation + synthetic Digisense delivery/status. Then remaining original whole-product R44/R45 parity including actor/env/company-path/default launcher/errors, historical receipts, recovery/automation, signed release/cutover/TypeScript retirement and final installed desktop. Preserve all original epic requirements and all accepted evidence; no whole717 closure."
+    },
+    "invoice_financial_original152": {
+      "issue": 717,
+      "status": "accepted",
+      "source_revision": "4a093d2d83cf95b3bfd206c61aeee634ed8fffe6",
+      "contract": "/tmp/rm152-financial-family-contract.md",
+      "worker_commits": {
+        "validation": "61e36335",
+        "backend": "95e21658",
+        "clients": "fe99196c"
+      },
+      "integrated_commits": {
+        "validation": "c29cb4cf",
+        "backend": "32a9728e",
+        "clients": "4a093d2d",
+        "helper": "08aa9af9"
+      },
+      "report": "/tmp/rentemester-rust-reports/invoice-financial152.json",
+      "report_sha256": "032715aec273bc88ee511dbae7fc261ef4a53d57dbac28b22826856383356697",
+      "independent_verifier": "/tmp/rm152-independent.py",
+      "independent_verifier_sha256": "da79f6f624b248329b80a5b3b13c1b8b97ca4210dea4231c38f4a5b28bfb2e8e",
+      "independent_verification": "/tmp/rm152-independent.log",
+      "initial_independent_expectation": "/tmp/rm152-independent-initial.log",
+      "independent_expectation_correction": "Trusted human journal program is rentemester-rust from journal_post.rs actor.program fallback, not NULL input field. Corrected verifier only after exact SQL/source inspection; no product change or financial repeat.",
+      "source_verdict_cases": 36,
+      "focused_client_tests": 9,
+      "focused_native_loss_cases": 6,
+      "focused_service_loss_case": 1,
+      "server_parser_case": 1,
+      "server_date_cases": 2,
+      "integrated_selector_case": 1,
+      "strict_clippy": "/tmp/rm152-integrated-clippy.log",
+      "normal_build": "/tmp/rm152-integrated-normal-build-fixed.log",
+      "initial_normal_build": "/tmp/rm152-integrated-normal-build.log",
+      "cache_recovery": "/tmp/rm152-stale-engine-clean.log",
+      "actual": {
+        "invoice_gross": 125,
+        "partial_loss": 50,
+        "remaining_loss": 75,
+        "new_journals": 3,
+        "new_lines": 9,
+        "new_documents": 2,
+        "audit_entries": 33,
+        "vat_payable": 469.39,
+        "old_rows_and_originals_unchanged": true,
+        "bank_and_payments_unchanged": true,
+        "persisted_normal_mfa_restart": true,
+        "fresh_mfa": false,
+        "new_service_or_revocation": false,
+        "new_signed_backup": false
+      },
+      "worktree_recovery": [
+        "/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/.git/rentemester-recovery/archived152-validation.json",
+        "/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/.git/rentemester-recovery/archived152-backend.json",
+        "/Users/mikkelfreltoftkrogsholm/Projekter/rentemester/.git/rentemester-recovery/archived152-clients.json"
+      ],
+      "worker_worktrees_removed": true,
+      "remaining": "All four original public invoice CLI artifacts/preparation/synthetic transport commands, then full remaining R44/R45 parity/recovery/automation/release/TS retirement and final installed desktop; entire epic remains open."
     }
   },
   "verified_history": [

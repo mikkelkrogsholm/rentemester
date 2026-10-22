@@ -3348,3 +3348,31 @@ og DKK-kompensation holdes adskilt; kompensationsberegningen angiver
 med `unsupported_foreign_interest`, uden regnskabseffekter. Disse kendte
 forretningsafvisninger bevarer den maskinlæsbare kode efter sikker rollback;
 ukendt udfald kræver fortsat afstemning før et nyt forsøg.
+
+## Oprindelige finansielle fakturakommandoer (Group152)
+
+`invoice validate --input FILE|- [--json]` bruger den fælles Rust-motors rene
+validator uden virksomhed, server, PDF eller nummerallokering. MCP
+`invoice_validate {payload}` bruger samme funktion og returnerer det oprindelige
+valideringssvar i `data`. Ugyldig faktura giver CLI-exit1; brugsfejl giver2.
+
+`invoice write-off-bad-debt --input FILE|-` og MCP
+`invoice_write_off_bad_debt {company,payload,confirm:true}` bruger den eksisterende
+native tabsføring. Angiv faktura-id eller nummer, `writeOffDate` og en eksplicit
+`expenseAccountNo`; beløb kan udelades for resthovedstolen. Ved begge selectors
+vinder id. Debitor-/momskontoassertioner kontrolleres mod originalposteringen.
+Ændret momskontorolle afvises under den eksisterende native schema-kontrol.
+Den tidligere MCP-form `{company,body:string,confirm:true}` bevares som en
+adskilt variant; blandede former afvises. Serviceaudit bindes til autentificeret
+identitet og journal; menneskelige posteringers eksisterende format bevares.
+
+`invoice imported-receivables --company SLUG [--as-of DATE]` bruger serverens
+UTC-dato ved udeladelse. CLI returnerer den direkte oversigt med `ok:true`.
+MCP beholder `company/asOf` og tilføjer oversigtens felter direkte under `data`,
+samtidig med at native `data.ok` og `data.importedReceivables` bevares. Dette er
+en dokumenteret additiv udvidelse; HTTP-resultatet ændres ikke. Importerede
+fakturaer forbliver adskilt fra native fakturaer, også når de er betalt.
+
+Group152 er accepteret med faktisk delvis/fuld tabsføring, global audit/moms,
+uændrede originaler og genstart. Offentlig e-fakturering og det samlede
+omskrivningsmål er fortsat åbne; installeret desktopaccept udføres til sidst.
