@@ -165,16 +165,16 @@ fn parse(args: &[String]) -> Result<(BTreeMap<&str, &str>, Value), Output> {
 }
 pub fn preflight(args: &[String]) -> Result<(), Output> {
     let (flags, _) = parse(args)?;
-    if !flags.contains_key("--help") {
-        if let Some(workspace) = flags.get("--workspace") {
-            let profile=flags.get("--local-profile").ok_or_else(||usage("--workspace is only a local profile equality assertion; requires --local-profile"))?;
-            let local = rentemester_client::LocalRuntime::load(std::path::Path::new(profile))
-                .map_err(|_| usage("Could not validate local profile"))?;
-            if std::path::Path::new(workspace) != local.workspace_root() {
-                return Err(usage(
-                    "--workspace differs from verified local profile workspace",
-                ));
-            }
+    if !flags.contains_key("--help")
+        && let Some(workspace) = flags.get("--workspace")
+    {
+        let profile=flags.get("--local-profile").ok_or_else(||usage("--workspace is only a local profile equality assertion; requires --local-profile"))?;
+        let local = rentemester_client::LocalRuntime::load(std::path::Path::new(profile))
+            .map_err(|_| usage("Could not validate local profile"))?;
+        if std::path::Path::new(workspace) != local.workspace_root() {
+            return Err(usage(
+                "--workspace differs from verified local profile workspace",
+            ));
         }
     }
     Ok(())
