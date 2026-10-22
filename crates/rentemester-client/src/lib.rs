@@ -536,3 +536,6 @@ mod recurring_original;
 pub use recurring_original::{OriginalRecurringKind,recurring_original_schema,recurring_original_invoice_schema,validate_recurring_original,recurring_workspace_schema,validate_recurring_workspace};
 
 mod journal_original;
+
+mod documents_original;
+pub use documents_original::{DocumentsOriginalMutation, documents_original_schema, documents_original_file};

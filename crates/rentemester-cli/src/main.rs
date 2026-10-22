@@ -27,6 +27,7 @@ mod journal_history;
 mod journal_original;
 mod local_binding;
 mod original_args;
+mod documents_original;
 mod master_data_original;
 mod original_discovery;
 mod period_original;
@@ -315,6 +316,18 @@ fn main() -> ExitCode {
         eprint!("{}", output.stderr);
         return ExitCode::from(output.exit);
     }
+    if args == ["documents"] || args == ["documents", "--help"] {
+        println!("{}", documents_original::help());
+        return ExitCode::SUCCESS;
+    }
+    if documents_original::accepts(&args) {
+        if let Err(output) = documents_original::preflight(&args) {
+            eprint!("{}", output.stderr); return ExitCode::from(output.exit);
+        }
+        if args.iter().any(|s| s == "--help") {
+            println!("{}", documents_original::help()); return ExitCode::SUCCESS;
+        }
+    }
     if args.first().is_some_and(|s| matches!(s.as_str(), "customer" | "vendor")) {
         if args.len() == 1 || args.get(1).is_some_and(|s| s == "--help") {
             println!("{}", master_data_original::help());
@@ -385,13 +398,19 @@ fn main() -> ExitCode {
     let args = match local_binding::prepare(args) {
         Ok(args) => args,
         Err((code, error)) => {
-            println!(
-                "{}",
-                json!({"ok":false,"code":error.code,"errors":[error.message]})
-            );
+            if code == 2 && std::env::args().any(|s| s == "documents") {
+                eprintln!("{}: {}", error.code, error.message);
+            } else {
+                println!("{}", json!({"ok":false,"code":error.code,"errors":[error.message]}));
+            }
             return ExitCode::from(code);
         }
     };
+    if documents_original::accepts(&args) {
+        let output = documents_original::execute(&args);
+        print!("{}", output.stdout); eprint!("{}", output.stderr);
+        return ExitCode::from(output.exit);
+    }
     if master_data_original::accepts(&args) {
         let output = master_data_original::execute(&args);
         print!("{}", output.stdout); eprint!("{}", output.stderr);

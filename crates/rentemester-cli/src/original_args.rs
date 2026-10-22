@@ -40,7 +40,8 @@ fn boolean(name: &str) -> bool {
 }
 
 fn migrated(args: &[String]) -> bool {
-    crate::master_data_original::accepts(args)
+    crate::documents_original::accepts(args)
+        || crate::master_data_original::accepts(args)
         || crate::exceptions_original::accepts(args)
         || crate::journal_original::accepts(args)
         || crate::period_original::accepts(args)
@@ -128,6 +129,7 @@ pub fn prepare(args: Vec<String>) -> Result<Vec<String>, (u8, Error)> {
             matches!(
                 s.as_str(),
                 "customer"
+                    | "documents"
                     | "vendor"
                     | "exceptions"
                     | "period"
@@ -209,7 +211,7 @@ pub fn prepare(args: Vec<String>) -> Result<Vec<String>, (u8, Error)> {
         && format == Some("human")
         && output
             .first()
-            .is_some_and(|s| matches!(s.as_str(), "exceptions" | "customer" | "vendor"))
+            .is_some_and(|s| matches!(s.as_str(), "exceptions" | "customer" | "vendor" | "documents"))
     {
         output.extend(["--format".into(), "human".into()]);
     }
