@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PublicEInvoicePreview xmlns="urn:rentemester:dk:public-einvoice-preview:v1">
+  <InvoiceNumber>PRE&lt;&amp;&gt;&quot;&apos;001</InvoiceNumber>
+  <IssueDate>2026-10-01</IssueDate>
+  <DueDate>2026-11-01</DueDate>
+  <Currency>EUR</Currency>
+  <Profile>public-recipient-preview-only</Profile>
+  <Transport>out_of_scope_peppol_access_point_required</Transport>
+  <Seller>
+    <Name>Sælger &amp; &lt;værk&gt;</Name>
+    <Address> Vej &quot;A&quot;
+2 </Address>
+    <VatOrCvr>foreign-id</VatOrCvr>
+  </Seller>
+  <Buyer>
+    <Name>Køber&apos;s</Name>
+    <Address>  </Address>
+    <VatOrCvr>EU-456</VatOrCvr>
+    <EanNumber>1234567890123</EanNumber>
+  </Buyer>
+  <Delivery>
+    <DeliveryDate>2026-10-02</DeliveryDate>
+    <DeliveryPeriodStart>2026-10-01</DeliveryPeriodStart>
+    <DeliveryPeriodEnd>2026-10-31</DeliveryPeriodEnd>
+  </Delivery>
+  <Totals>
+    <NetAmount>1.01</NetAmount>
+    <VatRate>0</VatRate>
+    <VatAmount>0.00</VatAmount>
+    <GrossAmount>100.00</GrossAmount>
+  </Totals>
+  <Lines>
+      <Line>
+        <LineNumber>1</LineNumber>
+        <Description>&lt;rådgivning&gt; &amp; &quot;hjælp&quot;</Description>
+        <Quantity>3</Quantity>
+        <UnitPriceExVat>0.34</UnitPriceExVat>
+        <LineTotalExVat>1.01</LineTotalExVat>
+        <TaxClassification>exempt</TaxClassification>
+        <VatRate>0</VatRate>
+      </Line>
+      <Line>
+        <LineNumber>2</LineNumber>
+        <Description>negative</Description>
+        <Quantity>0.000001</Quantity>
+        <UnitPriceExVat>-1.01</UnitPriceExVat>
+        <LineTotalExVat>2.34</LineTotalExVat>
+        <TaxClassification>taxable</TaxClassification>
+        <VatRate>0.2</VatRate>
+      </Line>
+  </Lines>
+</PublicEInvoicePreview>

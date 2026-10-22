@@ -1,0 +1,27 @@
+{
+  "name": "sparse",
+  "invoiceNumber": "PRE002",
+  "payload": {
+    "buyer": {
+      "eanNumber": "1234567890123",
+      "publicRecipient": true
+    },
+    "currency": null,
+    "totals": {
+      "netAmount": "",
+      "vatRate": null,
+      "vatAmount": "NaN",
+      "grossAmount": "  "
+    },
+    "lines": [
+      {
+        "description": "",
+        "quantity": "2",
+        "unitPriceExVat": null,
+        "lineTotalExVat": "Infinity",
+        "vatRate": "0.25"
+      },
+      {}
+    ]
+  }
+}

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PublicEInvoicePreview xmlns="urn:rentemester:dk:public-einvoice-preview:v1">
+  <InvoiceNumber>PRE002</InvoiceNumber>
+  <Currency>DKK</Currency>
+  <Profile>public-recipient-preview-only</Profile>
+  <Transport>out_of_scope_peppol_access_point_required</Transport>
+  <Seller>
+  </Seller>
+  <Buyer>
+    <EanNumber>1234567890123</EanNumber>
+  </Buyer>
+  <Delivery>
+  </Delivery>
+  <Totals>
+    <GrossAmount>0.00</GrossAmount>
+  </Totals>
+  <Lines>
+      <Line>
+        <LineNumber>1</LineNumber>
+      </Line>
+      <Line>
+        <LineNumber>2</LineNumber>
+      </Line>
+  </Lines>
+</PublicEInvoicePreview>

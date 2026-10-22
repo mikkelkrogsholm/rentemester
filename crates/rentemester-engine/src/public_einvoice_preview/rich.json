@@ -1,0 +1,50 @@
+{
+  "name": "rich",
+  "invoiceNumber": "PRE<&>\"'001",
+  "payload": {
+    "invoiceNumber": "PRE<&>\"'001",
+    "issueDate": "2026-10-01",
+    "dueDate": "2026-11-01",
+    "currency": "EUR",
+    "seller": {
+      "name": "Sælger & <værk>",
+      "address": " Vej \"A\"\n2 ",
+      "vatOrCvr": "foreign-id"
+    },
+    "buyer": {
+      "name": "Køber's",
+      "address": "  ",
+      "vatOrCvr": "EU-456",
+      "eanNumber": " ﻿123 4567\t890123 ",
+      "publicRecipient": false
+    },
+    "deliveryDate": "2026-10-02",
+    "deliveryPeriodStart": "2026-10-01",
+    "deliveryPeriodEnd": "2026-10-31",
+    "vatTreatment": "foreign_reverse_charge",
+    "totals": {
+      "netAmount": 1.005,
+      "vatRate": 0,
+      "vatAmount": 0,
+      "grossAmount": 99.999
+    },
+    "lines": [
+      {
+        "description": "<rådgivning> & \"hjælp\"",
+        "quantity": 3,
+        "unitPriceExVat": 0.335,
+        "lineTotalExVat": 1.005,
+        "taxClassification": "exempt",
+        "vatRate": 0
+      },
+      {
+        "description": "negative",
+        "quantity": 0.000001,
+        "unitPriceExVat": -1.005,
+        "lineTotalExVat": "2.335",
+        "taxClassification": "taxable",
+        "vatRate": 0.2
+      }
+    ]
+  }
+}
