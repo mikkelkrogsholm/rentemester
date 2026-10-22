@@ -316,10 +316,13 @@ fn documents_original_enrichment_defaults_are_canonical_and_original_bytes_retai
     let tx = db
         .transaction_with_behavior(TransactionBehavior::Immediate)
         .unwrap();
-    let initial: Metadata =
-        serde_json::from_value(json!({"source":"synthetic-original","currency":" dkk "})).unwrap();
+    let mut initial = metadata(false);
+    initial.document_type = None;
+    initial.currency = Some(" dkk ".into());
     let id = register(&tx, &initial);
-    let incoming: Metadata = serde_json::from_value(json!({"source":"synthetic-original","documentType":"purchase_sale","currency":"DKK","deliveryDescription":"Supplies"})).unwrap();
+    let mut incoming = metadata(false);
+    incoming.currency = Some("DKK".into());
+    incoming.payment_details = Some("Synthetic reviewed payment details".into());
     enrich(&tx, id, &incoming, "user:synthetic").unwrap();
     let (raw, current): (String,String) = tx.query_row("SELECT original_payload_json,enriched_metadata_json FROM document_metadata_enrichments WHERE document_id=?1",[id],|r|Ok((r.get(0)?,r.get(1)?))).unwrap();
     assert_eq!(raw, serde_json::to_string(&initial).unwrap());
@@ -351,5 +354,48 @@ fn documents_original_blocked_dedup_only_open_exceptions() {
             .get::<_, i64>(0))
             .unwrap(),
         2
+    );
+}
+
+#[test]
+fn documents_original_legacy_incomplete_payload_can_be_enriched_without_weakening_new_ingest() {
+    let (_dir, _control, mut db) = fixture();
+    let tx = db
+        .transaction_with_behavior(TransactionBehavior::Immediate)
+        .unwrap();
+    let complete = metadata(false);
+    let id = register(&tx, &complete);
+    let mut old: Value = serde_json::to_value(&complete).unwrap();
+    old.as_object_mut().unwrap().remove("recipient");
+    let legacy: Metadata = serde_json::from_value(old.clone()).unwrap();
+    assert!(
+        legacy.validate().is_err(),
+        "fresh ingest still requires complete purchase facts"
+    );
+    // Explicit synthetic legacy corpus, not an application ingestion shortcut.
+    tx.execute("UPDATE documents SET payload_json=?1,recipient_name=NULL,recipient_address=NULL,recipient_vat_cvr=NULL WHERE id=?2",params![old.to_string(),id]).unwrap();
+    assert_eq!(
+        enrich(&tx, id, &complete, "user:synthetic").unwrap()["enriched"],
+        true
+    );
+    validate_history(&tx).unwrap();
+    let retained: String = tx
+        .query_row(
+            "SELECT original_payload_json FROM document_metadata_enrichments WHERE document_id=?1",
+            [id],
+            |row| row.get(0),
+        )
+        .unwrap();
+    assert_eq!(retained, old.to_string());
+    assert!(
+        decode(
+            &tx.query_row::<String, _, _>(
+                "SELECT payload_json FROM documents WHERE id=?1",
+                [id],
+                |row| row.get(0)
+            )
+            .unwrap()
+        )
+        .is_ok()
     );
 }
