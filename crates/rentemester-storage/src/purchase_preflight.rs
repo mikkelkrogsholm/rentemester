@@ -112,6 +112,8 @@ pub fn inspect(tx: &Transaction<'_>, document_id: i64, now: &str) -> Result<Valu
         json!({"ok":errors.is_empty(),"documentId":document_id,"classification":region,"cached":cached,"evidenceExpiresAt":expires,"wouldCallProvider":region=="EU"&&!cached,"errors":errors,"derivedRegion":region,"requiredValidation":if region=="EU" {Some("EU VAT provider validation")} else {None},"cache":{"reused":cached,"freshUntil":expires},"applyWouldCallProvider":region=="EU"&&!cached,"evidence":evidence,"exception":exception}),
     )
 }
+// One fixed append-only SQL row; preserve the explicit source evidence fields.
+#[allow(clippy::too_many_arguments)]
 fn event(
     tx: &Transaction<'_>,
     id: i64,

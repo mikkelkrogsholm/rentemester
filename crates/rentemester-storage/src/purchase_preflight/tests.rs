@@ -107,7 +107,7 @@ fn local_completion_has_no_missing_observation_and_no_event_but_conflict_is_dura
         0
     );
     tx.execute(
-        "UPDATE documents SET supplier_identity_status='needs_resolution' WHERE id=1",
+        "UPDATE documents SET supplier_identity_status='human_resolution_required' WHERE id=1",
         [],
     )
     .unwrap();
