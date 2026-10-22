@@ -89,7 +89,9 @@ fn verified_counters(
     let income: Vec<_> = original.iter().filter(|row| row.revenue).collect();
     if income.len() != expected.len()
         || income.iter().zip(expected).any(|(row, line)| {
-            row.original != line.net || row.code.as_deref() != Some(line.vat_code)
+            line.vat_code.is_none()
+                || row.original != line.net
+                || row.code.as_deref() != line.vat_code
         })
     {
         return Err(refused(

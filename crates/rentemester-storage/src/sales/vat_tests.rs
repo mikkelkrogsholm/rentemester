@@ -270,3 +270,69 @@ fn invalid_classification_and_missing_required_mapping_leave_no_posting() {
         0
     );
 }
+
+#[test]
+fn unmapped_full_rate_remains_issued_without_inventing_danish_vat_posting() {
+    let mut db = fixture(true);
+    let tx = db
+        .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
+        .unwrap();
+    let (payload, id) = issue(
+        &tx,
+        input(json!([
+            {"description":"Synthetic mapped rate","quantity":1,"unitPriceExVat":100,"taxClassification":"taxable","vatRate":0.25},
+            {"description":"Synthetic unmapped rate","quantity":1,"unitPriceExVat":100,"taxClassification":"taxable","vatRate":0.2}
+        ])),
+    );
+    assert_eq!(payload["totals"]["vatAmount"], 45.0);
+    assert_eq!(payload["totals"]["grossAmount"], 245.0);
+    let before = tx.total_changes();
+    let report = crate::vat_report::read(&tx, "synthetic", "2026-10-20", None).unwrap();
+    assert_eq!(
+        post_invoice(&tx, id).unwrap_err().code,
+        "unsupported_invoice_vat_classification"
+    );
+    assert_eq!(tx.total_changes(), before);
+    assert_eq!(
+        crate::vat_report::read(&tx, "synthetic", "2026-10-20", None).unwrap(),
+        report
+    );
+    assert_eq!(
+        tx.query_row("SELECT count(*) FROM journal_entries", [], |row| row
+            .get::<_, i64>(0))
+            .unwrap(),
+        0
+    );
+    assert_eq!(
+        tx.query_row(
+            "SELECT count(*) FROM documents WHERE document_type='issued_invoice'",
+            [],
+            |row| row.get::<_, i64>(0)
+        )
+        .unwrap(),
+        1
+    );
+    let saved: String = tx
+        .query_row(
+            "SELECT payload_json FROM documents WHERE id=?1",
+            [id],
+            |row| row.get(0),
+        )
+        .unwrap();
+    assert_eq!(serde_json::from_str::<Value>(&saved).unwrap(), payload);
+    let mut reverse =
+        input(json!([{"description":"Synthetic no custom note","quantity":1,"unitPriceExVat":60}]));
+    reverse["vatTreatment"] = json!("domestic_reverse_charge");
+    reverse["reverseChargeBasis"] = json!("DK_MOMSLOVEN_§46_STK_1_NR_7");
+    let (payload, id) = issue(&tx, reverse);
+    assert!(payload.get("reverseChargeNote").is_none());
+    let result = post_invoice(&tx, id).unwrap();
+    let rows = posted(&tx, result["entryId"].as_i64().unwrap());
+    assert_eq!(rows.len(), 2);
+    assert_eq!(rows[1].1.as_deref(), Some("DOMESTIC_REVERSE_CHARGE_EXEMPT"));
+    let report = crate::vat_report::read(&tx, "synthetic", "2026-10-20", None).unwrap();
+    assert_eq!(report["outputVat"], 0.0);
+    assert_eq!(report["vatReportErrors"], json!([]));
+    assert_eq!(crate::audit_invoice::verify(&tx).unwrap()["ok"], true);
+    crate::portable_backup::company(&tx).unwrap();
+}

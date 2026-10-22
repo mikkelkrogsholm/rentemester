@@ -169,7 +169,11 @@ fn posted_invoice(tx: &Transaction<'_>, d: &Value, p: &Value) -> Result<(), Erro
     let mut bases = BTreeMap::<String, Money>::new();
     for line in &projection.lines {
         bases
-            .entry(line.vat_code.to_owned())
+            .entry(
+                line.vat_code
+                    .ok_or_else(|| refused("posted invoice has an unsupported VAT classification"))?
+                    .to_owned(),
+            )
             .or_default()
             .add(&line.net);
     }

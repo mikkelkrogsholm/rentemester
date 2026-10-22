@@ -454,20 +454,33 @@ pub fn prepare(
         let t = source.get("totals").cloned();
         if let Some(rate) = t.as_ref().and_then(|t| t.get("vatRate"))
             && source["vatTreatment"].as_str().unwrap_or("standard") == "standard"
-            && !source["lines"].as_array().is_some_and(|lines| {
-                lines
-                    .iter()
-                    .any(|line| line.get("taxClassification").is_some())
-            })
         {
-            // The common issuance engine currently admits only25 percent taxable VAT.
-            // Preserve this assertion explicitly rather than falling back to its default.
-            if rate.as_f64() != Some(0.25) {
-                return Err(input_error(
-                    "native taxable invoices currently support 25% VAT",
-                ));
+            if source["invoiceType"].as_str().unwrap_or("full") == "full" {
+                if rate.as_f64().is_none_or(|rate| rate <= 0.0) {
+                    return Err(input_error(
+                        "positive numeric taxable VAT fallback required",
+                    ));
+                }
+                // Source totals.vatRate is a fallback. Explicit line decisions win;
+                // the shared engine freezes each actual rate and validates amounts.
+                if let Some(lines) = source["lines"].as_array_mut() {
+                    for line in lines {
+                        if line.get("vatRate").is_none()
+                            && line["taxClassification"]
+                                .as_str()
+                                .is_none_or(|c| c == "taxable")
+                        {
+                            line["vatRate"] = rate.clone();
+                        }
+                    }
+                }
+            } else {
+                // Reduced simplified invoices retain the contained25% contract.
+                if rate.as_f64() != Some(0.25) {
+                    return Err(input_error("simplified taxable invoices require 25% VAT"));
+                }
+                source["vatRatePercent"] = json!(25);
             }
-            source["vatRatePercent"] = json!(25);
         }
         if let Some(rate) = t.as_ref().and_then(|t| t.get("fxRateToDkk")) {
             source["fxRateToDkk"] = rate.clone();
@@ -510,6 +523,19 @@ pub fn prepare(
         if let Some(totals) = supplied["totals"].as_object() {
             for (key, value) in totals {
                 match key.as_str() {
+                    "vatRate"
+                        if supplied["invoiceType"].as_str().unwrap_or("full") == "full"
+                            && supplied["vatTreatment"].as_str().unwrap_or("standard")
+                                == "standard" =>
+                    {
+                        // Already validated and propagated only where no line override exists.
+                        // A fallback need not equal a canonical uniform effective rate.
+                        if value.as_f64().is_none_or(|rate| rate <= 0.0) {
+                            return Err(input_error(
+                                "positive numeric taxable VAT fallback required",
+                            ));
+                        }
+                    }
                     "vatRate" | "fxRateToDkk" => {
                         if value.as_f64().is_none()
                             || value.as_f64() != computed["totals"][key].as_f64()

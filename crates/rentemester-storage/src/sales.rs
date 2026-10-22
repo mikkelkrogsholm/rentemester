@@ -688,6 +688,16 @@ fn post_mode(
     let payload: Value = serde_json::from_str(&payload).map_err(invalid)?;
     validate_foreign_buyer(&payload)?;
     let original_projection = sales_invoice::project(&payload)?;
+    if original_projection
+        .lines
+        .iter()
+        .any(|line| line.vat_code.is_none())
+    {
+        return Err(Error::new(
+            "unsupported_invoice_vat_classification",
+            "Invoice VAT rate has no supported posting classification; no journal was created",
+        ));
+    }
     let projection = rentemester_engine::sales_fx::project(&payload)?;
     let foreign = payload["currency"] != "DKK";
     let existing: bool = tx
@@ -736,7 +746,7 @@ fn post_mode(
                 revenue,
                 Money::default(),
                 source_line.net.clone(),
-                Some(source_line.vat_code),
+                source_line.vat_code,
             )?);
         }
     }

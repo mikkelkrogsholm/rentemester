@@ -423,7 +423,7 @@ mod tests {
         );
     }
     #[test]
-    fn source_twenty_percent_template_is_retained_but_native_generation_refuses_without_effects() {
+    fn source_twenty_percent_generation_preserves_rate_and_claim_without_posting() {
         let mut db = fixture();
         let tx = db
             .transaction_with_behavior(TransactionBehavior::Immediate)
@@ -433,7 +433,7 @@ mod tests {
             json!({"netAmount":100,"vatRate":0.2,"vatAmount":20,"grossAmount":120});
         let created = create(&tx, &i, "u", PrincipalKind::User).unwrap();
         assert_eq!(created["ok"], true);
-        let error = match prepare(
+        let Prepared::Issue(pending) = prepare(
             &tx,
             &Generate {
                 template_id: created["templateId"].as_i64().unwrap(),
@@ -442,13 +442,30 @@ mod tests {
             },
             "2024-02-29",
             "2024-02-29T12:00:00Z",
-        ) {
-            Err(error) => error,
-            Ok(_) => panic!("20 percent must not be silently issued at25 percent"),
+        )
+        .unwrap() else {
+            panic!("new generation required")
         };
-        assert!(error.message.contains("25% VAT"));
+        assert_eq!(pending.payload["lines"][0]["vatRate"], 0.2);
+        assert_eq!(pending.payload["totals"]["vatAmount"], 20.0);
+        assert_eq!(pending.payload["totals"]["grossAmount"], 120.0);
+        assert!(
+            rentemester_engine::sales_invoice::project(&pending.payload)
+                .unwrap()
+                .lines[0]
+                .vat_code
+                .is_none()
+        );
+        assert_eq!(
+            tx.query_row(
+                "SELECT count(*) FROM recurring_invoice_generation_claims",
+                [],
+                |row| row.get::<_, i64>(0)
+            )
+            .unwrap(),
+            1
+        );
         for table in [
-            "recurring_invoice_generation_claims",
             "recurring_invoice_generations",
             "documents",
             "journal_entries",
@@ -463,7 +480,7 @@ mod tests {
         assert_eq!(
             tx.query_row("SELECT count(*) FROM sequences", [], |r| r.get::<_, i64>(0))
                 .unwrap(),
-            0
+            1
         );
     }
 }

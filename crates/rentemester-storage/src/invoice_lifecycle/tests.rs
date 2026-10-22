@@ -111,3 +111,43 @@ fn original_supplied_totals_lines_fx_terms_selectors_and_accounts_are_authoritat
     assert!(assert_accounts(&tx, &json!({"receivableAccountNo":"R2"}), 1, bank).is_err());
     assert!(assert_accounts(&tx, &json!({"bankAccountNo":"R"}), 1, bank).is_err());
 }
+
+#[test]
+fn original_full_tax_rate_fallback_overrides_and_omitted_reverse_note_are_preserved() {
+    let mut db = crate::credit_note::tests::fixture();
+    let tx = db
+        .transaction_with_behavior(TransactionBehavior::Immediate)
+        .unwrap();
+    let body = json!({"confirm":true,"payload":{"invoiceType":"full","issueDate":"2026-10-18","buyer":{"name":"Synthetic rate buyer","address":"Synthetic street","vatOrCvr":"DK12345678"},"lines":[{"description":"Synthetic 20 percent","quantity":1,"unitPriceExVat":100,"lineTotalExVat":100}],"totals":{"netAmount":100,"vatRate":0.2,"vatAmount":20,"grossAmount":120}}});
+    let (payload, computed, _) = prepare(&tx, Kind::Issue, &body, "2026-10-18T12:00:00Z").unwrap();
+    assert_eq!(payload["lines"][0]["vatRate"], 0.2);
+    assert_eq!(computed["totals"]["vatAmount"], 20.0);
+    assert_eq!(computed["totals"]["grossAmount"], 120.0);
+    let before = tx.total_changes();
+    let mut wrong = body.clone();
+    wrong["payload"]["totals"]["vatAmount"] = json!(25);
+    assert!(prepare(&tx, Kind::Issue, &wrong, "2026-10-18T12:00:00Z").is_err());
+    assert_eq!(tx.total_changes(), before);
+    let mut mixed = body.clone();
+    mixed["payload"]["lines"][0]["vatRate"] = json!(0.25);
+    mixed["payload"]["lines"].as_array_mut().unwrap().push(json!({"description":"Synthetic fallback","quantity":1,"unitPriceExVat":100,"lineTotalExVat":100}));
+    mixed["payload"]["totals"] =
+        json!({"netAmount":200,"vatRate":0.2,"vatAmount":45,"grossAmount":245});
+    let (payload, _, _) = prepare(&tx, Kind::Issue, &mixed, "2026-10-18T12:00:00Z").unwrap();
+    assert_eq!(payload["lines"][0]["vatRate"], 0.25);
+    assert_eq!(payload["lines"][1]["vatRate"], 0.2);
+    assert!(payload["totals"].get("vatRate").is_none());
+    assert_eq!(payload["totals"]["vatAmount"], 45.0);
+    let mut reverse = body;
+    reverse["payload"]["vatTreatment"] = json!("domestic_reverse_charge");
+    reverse["payload"]["reverseChargeBasis"] = json!("DK_MOMSLOVEN_§46_STK_1_NR_6");
+    reverse["payload"]["totals"] = json!({"netAmount":100,"grossAmount":100});
+    let (payload, _, _) = prepare(&tx, Kind::Issue, &reverse, "2026-10-18T12:00:00Z").unwrap();
+    assert!(payload.get("reverseChargeNote").is_none());
+    assert_eq!(payload["reverseChargeBasis"], "DK_MOMSLOVEN_§46_STK_1_NR_6");
+    assert_eq!(payload["totals"]["grossAmount"], 100.0);
+    let before = tx.total_changes();
+    reverse["payload"]["totals"]["vatRate"] = json!(0.25);
+    assert!(prepare(&tx, Kind::Issue, &reverse, "2026-10-18T12:00:00Z").is_err());
+    assert_eq!(tx.total_changes(), before);
+}
