@@ -346,7 +346,9 @@ fn documents_original_list_exact_nineteen_fields_and_pure_pagination() {
 }
 #[test]
 fn documents_original_ingest_local_bytes_exact_wire_and_flat_result() {
-    let file = Cookie::new();
+    let mut file = Cookie::new();
+    // macOS temp_dir crosses /var -> /private/var; exercise real regular bytes.
+    file.0 = file.0.canonicalize().unwrap();
     std::fs::write(&file.0, [0, 255, 1, 2, 3]).unwrap();
     let metadata = json!({"source":"synthetic","amountIncVat":125.5,"vatAmount":25.1,"exemptionCode":null,"recipient":{"name":"Synthetic buyer","countryCode":"DK","identifierKind":"dk_cvr"}});
     let core = json!({"ok":true,"documentId":7,"documentNo":"B-7","sha256":"a".repeat(64),"storedPath":null,"message":"Bilag B-7 er indlæst."});
