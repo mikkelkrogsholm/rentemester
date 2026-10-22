@@ -31,7 +31,15 @@ fn invoke(
                         "owner_unavailable",
                     ))
                 })?;
-            super::documents::outcome(attempt)
+            let retired = attempt.retired;
+            match attempt.outcome {
+                Ok(value) => admit_output(value.value, retired, value.control_reusable),
+                Err(f) => Err(Box::new(original_failure(
+                    &f.error,
+                    f.stage == FailureStage::OutcomeUnknown,
+                    f.control_reusable && f.company_reusable,
+                ))),
+            }
         }
         Credential::Service(key) => {
             let attempt = owner
@@ -42,8 +50,37 @@ fn invoke(
                         "owner_unavailable",
                     ))
                 })?;
-            super::documents::service_outcome(attempt)
+            let retired = attempt.retired;
+            match attempt.outcome {
+                Ok(value) => admit_output(value.result, retired, value.control_reusable),
+                Err(f) => Err(Box::new(original_failure(&f.error, f.usage == rentemester_application::service_company::UsageStage::OutcomeUnknown || f.business == rentemester_application::service_company::BusinessStage::OutcomeUnknown, f.control_reusable && f.company_reusable))),
+            }
         }
+    }
+}
+// Retirement after a known final commit does not erase that success. A
+// preparatory admission, however, must never authorize new provider work.
+fn admit_output(value: Output, retired: bool, reusable: bool) -> Result<Output, Box<Response>> {
+    if matches!(&value, Output::Admission(_)) && (retired || !reusable) {
+        Err(Box::new(refused(
+            StatusCode::SERVICE_UNAVAILABLE,
+            "owner_unavailable",
+        )))
+    } else {
+        Ok(value)
+    }
+}
+fn original_failure(error: &rentemester_engine::Error, unknown: bool, reusable: bool) -> Response {
+    if unknown || !reusable {
+        return refused(StatusCode::SERVICE_UNAVAILABLE, "outcome_unconfirmed");
+    }
+    match error.code {
+        "invalid_credentials" => refused(StatusCode::UNAUTHORIZED, "unauthorized"),
+        "access_denied" => refused(StatusCode::FORBIDDEN, "access_denied"),
+        _ => response(
+            StatusCode::UNPROCESSABLE_ENTITY,
+            json!({"ok":false,"code":error.code,"errors":[error.message]}),
+        ),
     }
 }
 fn execute(
@@ -186,5 +223,36 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
         Ok(Ok(value)) => response(StatusCode::OK, value),
         Ok(Err(r)) => *r,
         _ => refused(StatusCode::SERVICE_UNAVAILABLE, "outcome_unconfirmed"),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[tokio::test]
+    async fn master_data_original_flat_business_errors_and_known_final_success() {
+        let e = rentemester_engine::Error::new("contact_refused", "actual source business refusal");
+        let r = original_failure(&e, false, true);
+        assert_eq!(r.status(), StatusCode::UNPROCESSABLE_ENTITY);
+        let body: Value =
+            serde_json::from_slice(&to_bytes(r.into_body(), 4096).await.unwrap()).unwrap();
+        assert_eq!(
+            body,
+            json!({"ok":false,"code":"contact_refused","errors":["actual source business refusal"]})
+        );
+        for (unknown, reusable) in [(true, true), (false, false)] {
+            assert_eq!(
+                original_failure(&e, unknown, reusable).status(),
+                StatusCode::SERVICE_UNAVAILABLE
+            );
+        }
+        assert!(
+            admit_output(
+                Output::Value(json!({"ok":true,"customerId":1})),
+                true,
+                false
+            )
+            .is_ok()
+        );
     }
 }

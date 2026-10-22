@@ -214,6 +214,21 @@ pub fn execute(
     request: Request<'_>,
 ) -> Result<Committed<Output>, Failure> {
     let permission = permission(&request);
+    let requirement = if matches!(
+        &request,
+        Request::PrepareVat(_)
+            | Request::Finish(
+                Admission {
+                    pending: Pending::Vat(_),
+                    ..
+                },
+                _
+            )
+    ) {
+        SessionRequirement::Fresh
+    } else {
+        SessionRequirement::Current
+    };
     let workspace = context.selection.workspace;
     let slug = context.selection.slug;
     let now = stamp(context.clock).map_err(|error| Failure {
@@ -247,7 +262,7 @@ pub fn execute(
         CookieAuthorization {
             cookie: context.cookie,
             clock: context.clock,
-            requirement: SessionRequirement::Current,
+            requirement,
         },
         context.selection,
         permission,

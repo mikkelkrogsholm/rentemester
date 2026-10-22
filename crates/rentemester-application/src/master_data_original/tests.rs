@@ -292,3 +292,57 @@ fn master_data_original_composed_create_fill_override_and_revocation_no_cache_pu
         1
     );
 }
+
+#[test]
+fn master_data_original_vat_requires_fresh_mfa_at_prepare_and_finish() {
+    struct Older;
+    impl Clock for Older {
+        fn now_unix_ms(&self) -> Result<i64, AuthError> {
+            Ok(1767225600000 + 2 * 60 * 60 * 1000)
+        }
+    }
+    let mut f = fixture("bookkeeper");
+    let admission = match execute(
+        &mut f.control,
+        &mut f.company,
+        context(&f.cookie),
+        Request::PrepareVat("DK12345678"),
+    )
+    .unwrap()
+    .value
+    {
+        Output::Admission(a) => a,
+        _ => panic!("admission expected"),
+    };
+    let mut old = context(&f.cookie);
+    old.clock = &Older;
+    assert!(
+        execute(
+            &mut f.control,
+            &mut f.company,
+            old,
+            Request::List(Kind::Customer, false)
+        )
+        .is_ok()
+    );
+    let mut old = context(&f.cookie);
+    old.clock = &Older;
+    assert!(
+        execute(
+            &mut f.control,
+            &mut f.company,
+            old,
+            Request::PrepareVat("DK12345678")
+        )
+        .is_err()
+    );
+    let mut old = context(&f.cookie);
+    old.clock = &Older;
+    assert!(execute(&mut f.control,&mut f.company,old,Request::Finish(admission,&json!({"countryCode":"DK","vatNumber":"12345678","normalized":"DK12345678","valid":true,"name":null,"address":null,"rawResponse":null}))).is_err());
+    assert_eq!(
+        f.company
+            .query_row::<i64, _, _>("SELECT count(*) FROM vies_validations", [], |r| r.get(0))
+            .unwrap(),
+        0
+    );
+}
