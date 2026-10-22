@@ -103,67 +103,100 @@ pub fn list(tx: &Transaction<'_>, slug: &str) -> Result<Value, Error> {
         json!({"slug":slug,"company":company,"periods":rows,"byStatus":counts,"reportingAvailable":true}),
     )
 }
-pub fn review(tx: &Transaction<'_>, packet: &Value, actor: &str) -> Result<Value, Error> {
+pub fn review<'a>(
+    tx: &Transaction<'_>,
+    packet: &Value,
+    actor: impl Into<Principal<'a>>,
+) -> Result<Value, Error> {
+    let actor = actor.into();
     review_principal(tx, packet, actor)
 }
 
-fn audit_actor(actor: &str) -> String {
-    if actor.starts_with("service-account:") {
-        actor.to_owned()
-    } else {
-        format!("user:{actor}")
+/// Trusted caller identity; raw user IDs have no reserved string prefixes.
+#[derive(Clone, Copy)]
+pub enum Principal<'a> {
+    Human(&'a str),
+    ServiceAccount(&'a str),
+}
+impl<'a> From<&'a str> for Principal<'a> {
+    fn from(subject: &'a str) -> Self {
+        Self::Human(subject)
     }
 }
-fn event(
+impl<'a> Principal<'a> {
+    fn subject(self) -> &'a str {
+        match self {
+            Self::Human(s) | Self::ServiceAccount(s) => s,
+        }
+    }
+    fn record(self) -> Value {
+        match self {
+            Self::Human(subject) => json!({"kind":"user","subjectId":subject}),
+            Self::ServiceAccount(subject) => json!({"kind":"service-account","subjectId":subject}),
+        }
+    }
+}
+fn audit_actor<'a>(actor: impl Into<Principal<'a>>) -> String {
+    match actor.into() {
+        Principal::Human(s) => format!("user:{s}"),
+        Principal::ServiceAccount(s) => format!("service-account:{s}"),
+    }
+}
+fn event<'a>(
     tx: &Transaction<'_>,
     id: i64,
     event: &str,
-    actor: &str,
+    actor: impl Into<Principal<'a>>,
     message: &str,
 ) -> Result<(), Error> {
+    let actor = actor.into();
     tx.execute("INSERT INTO audit_log(event_type,entity_type,entity_id,message,actor) VALUES(?1,'accounting_period',?2,?3,?4)",params![event,id.to_string(),message,audit_actor(actor)]).map_err(invalid)?;
     Ok(())
 }
-fn decision(
+fn decision<'a>(
     tx: &Transaction<'_>,
     id: i64,
     packet: &Value,
     value: &str,
-    actor: &str,
+    actor: impl Into<Principal<'a>>,
     reason: Option<&str>,
 ) -> Result<(), Error> {
+    let actor = actor.into();
     tx.execute("INSERT INTO period_close_decisions(period_id,packet_hash,decision,actor,reason,supersedes_decision_id) VALUES(?1,?2,?3,?4,?5,(SELECT id FROM period_close_decisions WHERE period_id=?1 ORDER BY id DESC LIMIT 1))",params![id,packet["hash"].as_str(),value,audit_actor(actor),reason]).map_err(invalid)?;
     Ok(())
 }
-pub fn close(
+pub fn close<'a>(
     tx: &Transaction<'_>,
     input: &Close,
     packet: &Value,
-    actor: &str,
+    actor: impl Into<Principal<'a>>,
     today: &str,
 ) -> Result<Value, Error> {
+    let actor = actor.into();
     close_with_status(tx, input, packet, actor, today, false)
 }
-fn close_with_status(
+fn close_with_status<'a>(
     tx: &Transaction<'_>,
     input: &Close,
     packet: &Value,
-    actor: &str,
+    actor: impl Into<Principal<'a>>,
     today: &str,
     reported: bool,
 ) -> Result<Value, Error> {
+    let actor = actor.into();
     close_authorized(tx, input, packet, actor, today, reported, false)
 }
 #[allow(clippy::too_many_arguments)]
-fn close_authorized(
+fn close_authorized<'a>(
     tx: &Transaction<'_>,
     input: &Close,
     packet: &Value,
-    actor: &str,
+    actor: impl Into<Principal<'a>>,
     today: &str,
     reported: bool,
     trusted_force: bool,
 ) -> Result<Value, Error> {
+    let actor = actor.into();
     crate::journal_post::require_current(tx)?;
     bounds(&input.period_start, &input.period_end)?;
     if !input.confirm || (input.force == Some(true) && !trusted_force) {
@@ -266,12 +299,13 @@ fn close_authorized(
         json!({"id":id,"periodStart":input.period_start,"periodEnd":input.period_end,"kind":kind,"status":if reported { "reported" } else { "closed" },"reference":input.reference}),
     )
 }
-pub fn reopen(
+pub fn reopen<'a>(
     tx: &Transaction<'_>,
     input: &Reopen,
     packet: &Value,
-    actor: &str,
+    actor: impl Into<Principal<'a>>,
 ) -> Result<Value, Error> {
+    let actor = actor.into();
     crate::journal_post::require_current(tx)?;
     bounds(&input.period_start, &input.period_end)?;
     let kind = kind(input.kind.as_deref())?;
@@ -318,7 +352,12 @@ pub fn reopen(
 
 /// Record an already completed external filing against its original close proof.
 /// The locked period cannot be evaluated against a new readiness packet.
-pub fn report(tx: &Transaction<'_>, input: &Report, actor: &str) -> Result<Value, Error> {
+pub fn report<'a>(
+    tx: &Transaction<'_>,
+    input: &Report,
+    actor: impl Into<Principal<'a>>,
+) -> Result<Value, Error> {
+    let actor = actor.into();
     crate::journal_post::require_current(tx)?;
     bounds(&input.period_start, &input.period_end)?;
     let kind = kind(input.kind.as_deref())?;

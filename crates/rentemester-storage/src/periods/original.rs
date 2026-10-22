@@ -44,12 +44,13 @@ pub fn persisted_review(tx: &Transaction<'_>, id: i64) -> Result<Option<Value>, 
         Ok(json!({"id":id,"packet":packet,"reviewerActor":actor,"reviewerPrincipal":principal,"createdAt":created}))
     }).transpose()
 }
-pub fn review_expected(
+pub fn review_expected<'a>(
     tx: &Transaction<'_>,
     input: &Review,
     packet: &Value,
-    actor: &str,
+    actor: impl Into<Principal<'a>>,
 ) -> Result<Value, Error> {
+    let actor = actor.into();
     if !input.confirm || !hash_valid(&input.packet_hash) {
         return Err(refused("confirmation and exact packet hash required"));
     }
@@ -113,11 +114,12 @@ pub fn atomic(
     }
 }
 /// A locked period's report must be resolved before any current readiness read.
-pub fn report_existing(
+pub fn report_existing<'a>(
     tx: &Transaction<'_>,
     input: &CloseInput,
-    actor: &str,
+    actor: impl Into<Principal<'a>>,
 ) -> Result<Option<Value>, Error> {
+    let actor = actor.into();
     if input.status.as_deref() != Some("reported") {
         return Ok(None);
     }
@@ -163,13 +165,14 @@ pub fn report_existing(
     value["readinessPacket"] = serde_json::from_str::<Value>(&packet).map_err(invalid)?;
     Ok(Some(value))
 }
-pub fn close_current(
+pub fn close_current<'a>(
     tx: &Transaction<'_>,
     input: &CloseInput,
     packet: &Value,
-    actor: &str,
+    actor: impl Into<Principal<'a>>,
     today: &str,
 ) -> Result<Value, Error> {
+    let actor = actor.into();
     if !matches!(input.status.as_deref(), None | Some("closed" | "reported")) {
         return Err(refused("status must be closed or reported"));
     }
@@ -216,16 +219,24 @@ pub fn close_current(
         reason: input.reason.clone(),
         confirm: input.confirm,
     };
-    let mut value = close_with_status(tx, &native, packet, actor, today, input.status.as_deref() == Some("reported"))?;
+    let mut value = close_with_status(
+        tx,
+        &native,
+        packet,
+        actor,
+        today,
+        input.status.as_deref() == Some("reported"),
+    )?;
     value["readinessPacket"] = packet.clone();
     Ok(envelope(value))
 }
-pub fn reopen_current(
+pub fn reopen_current<'a>(
     tx: &Transaction<'_>,
     input: &Reopen,
     packet: &Value,
-    actor: &str,
+    actor: impl Into<Principal<'a>>,
 ) -> Result<Value, Error> {
+    let actor = actor.into();
     reopen(tx, input, packet, actor).map(envelope)
 }
 
@@ -246,7 +257,9 @@ mod tests {
     #[test]
     fn expected_hash_stale_has_no_effect_and_history_is_persisted_nullable() {
         let mut db = setup();
-        let tx = db.transaction_with_behavior(rusqlite::TransactionBehavior::Immediate).unwrap();
+        let tx = db
+            .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
+            .unwrap();
         let first = compute(&tx, "2026-07-01", "2026-09-30", Ok(vec![])).unwrap();
         let input = Review {
             period_start: "2026-07-01".into(),
@@ -277,7 +290,9 @@ mod tests {
         let legacy: i64 = tx.query_row("INSERT INTO period_close_reviews(packet_id,packet_hash,reviewer_actor,reviewer_principal) SELECT packet_id,packet_hash,'legacy',NULL FROM period_close_reviews WHERE id=?1 RETURNING id",[id],|r|r.get(0)).unwrap();
         assert!(status(&tx, legacy).unwrap()["review"]["reviewerPrincipal"].is_null());
         tx.commit().unwrap();
-        let tx = db.transaction_with_behavior(rusqlite::TransactionBehavior::Immediate).unwrap();
+        let tx = db
+            .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
+            .unwrap();
         assert_eq!(status(&tx, id).unwrap()["review"], review);
     }
     fn close_input(
@@ -292,7 +307,9 @@ mod tests {
     fn fresh_report_optional_receipt_and_existing_report_exact_replay() {
         for direct in [false, true] {
             let mut db = setup();
-            let tx = db.transaction_with_behavior(rusqlite::TransactionBehavior::Immediate).unwrap();
+            let tx = db
+                .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
+                .unwrap();
             let packet = compute(&tx, "2026-07-01", "2026-09-30", Ok(vec![])).unwrap();
             assert_eq!(packet["blockers"], 0, "{packet}");
             let review = review(&tx, &packet, "synthetic").unwrap();
@@ -309,7 +326,14 @@ mod tests {
             assert_eq!(closed["ok"], true, "{closed}");
             assert!(!closed.as_object().unwrap().contains_key("id"));
             let audit_events: Vec<String> = tx.prepare("SELECT event_type FROM audit_log WHERE entity_type='accounting_period' ORDER BY id").unwrap().query_map([], |r| r.get(0)).unwrap().collect::<Result<_,_>>().unwrap();
-            assert_eq!(audit_events, vec![if direct { "period_report" } else { "period_close" }]);
+            assert_eq!(
+                audit_events,
+                vec![if direct {
+                    "period_report"
+                } else {
+                    "period_close"
+                }]
+            );
             let report_input = close_input(
                 &packet,
                 &review,
@@ -367,7 +391,9 @@ mod tests {
     #[test]
     fn nested_late_refusal_rolls_back_all_effects() {
         let mut db = setup();
-        let tx = db.transaction_with_behavior(rusqlite::TransactionBehavior::Immediate).unwrap();
+        let tx = db
+            .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
+            .unwrap();
         let packet = compute(&tx, "2026-07-01", "2026-09-30", Ok(vec![])).unwrap();
         let review = review(&tx, &packet, "synthetic").unwrap();
         let input = close_input(&packet, &review, "reported", None);

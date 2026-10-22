@@ -1,13 +1,14 @@
 //! Narrow authenticated MCP storage adapters; native/CLI force remains refused.
 use super::*;
-pub fn review_principal(tx: &Transaction<'_>, packet: &Value, actor: &str) -> Result<Value, Error> {
+pub fn review_principal<'a>(
+    tx: &Transaction<'_>,
+    packet: &Value,
+    actor: impl Into<Principal<'a>>,
+) -> Result<Value, Error> {
+    let actor = actor.into();
     crate::journal_post::require_current(tx)?;
     tx.execute("INSERT OR IGNORE INTO period_close_readiness_packets(packet_hash,period_start,period_end,cutoff,packet_json) VALUES(?1,?2,?3,?4,?5)",params![packet["hash"].as_str(),packet["periodStart"].as_str(),packet["periodEnd"].as_str(),packet["cutoff"].as_str(),packet.to_string()]).map_err(invalid)?;
-    let principal = if let Some(subject) = actor.strip_prefix("service-account:") {
-        json!({"kind":"service-account","subjectId":subject})
-    } else {
-        json!({"kind":"user","subjectId":actor})
-    };
+    let principal = actor.record();
     let actor = audit_actor(actor);
     let (id,created):(i64,String)=tx.query_row("INSERT INTO period_close_reviews(packet_id,packet_hash,reviewer_actor,reviewer_principal) VALUES((SELECT id FROM period_close_readiness_packets WHERE packet_hash=?1),?1,?2,?3) RETURNING id,created_at",params![packet["hash"].as_str(),actor,principal.to_string()],|r|Ok((r.get(0)?,r.get(1)?))).map_err(invalid)?;
     Ok(
@@ -19,26 +20,24 @@ pub fn list_original(tx: &Transaction<'_>) -> Result<Value, Error> {
     let periods = q.query_map([], |r| Ok(json!({"id":r.get::<_,i64>(0)?,"periodStart":r.get::<_,String>(1)?,"periodEnd":r.get::<_,String>(2)?,"kind":r.get::<_,String>(3)?,"status":r.get::<_,String>(4)?,"reference":r.get::<_,Option<String>>(5)?,"createdAt":r.get::<_,String>(6)?}))).map_err(invalid)?.collect::<Result<Vec<_>,_>>().map_err(invalid)?;
     Ok(json!({"ok":true,"count":periods.len(),"periods":periods}))
 }
-pub fn close_mcp(
+pub fn close_mcp<'a>(
     tx: &Transaction<'_>,
     input: &original::CloseInput,
     packet: &Value,
-    actor: &str,
+    actor: impl Into<Principal<'a>>,
     today: &str,
 ) -> Result<Value, Error> {
+    let actor = actor.into();
     if input.force != Some(true) {
         return original::close_current(tx, input, packet, actor, today);
     }
     if !input.confirm
-        || actor.trim().is_empty()
+        || actor.subject().trim().is_empty()
         || input.reason.as_deref().is_none_or(|r| r.trim().is_empty())
     {
         return Err(refused(
             "FORCED_CLOSE_REQUIRES_COMPANY_PERIOD_FORCE_CLOSE_PERMISSION_CONFIRM_ACTOR_AND_REASON",
         ));
-    }
-    if input.status.as_deref() == Some("reported") {
-        return Err(refused("PERIOD_REPORT_DOES_NOT_ALLOW_FORCE"));
     }
     let items = packet["items"]
         .as_array()
@@ -59,17 +58,26 @@ pub fn close_mcp(
         reason: input.reason.as_deref().map(|r| r.trim().to_owned()),
         confirm: input.confirm,
     };
-    let mut value = close_authorized(tx, &native, packet, actor, today, false, true)?;
+    let mut value = close_authorized(
+        tx,
+        &native,
+        packet,
+        actor,
+        today,
+        input.status.as_deref() == Some("reported"),
+        true,
+    )?;
     value["readinessPacket"] = packet.clone();
     Ok(original::envelope(value))
 }
-pub(super) fn obligations(
+pub(super) fn obligations<'a>(
     tx: &Transaction<'_>,
     period: i64,
     packet: &Value,
-    actor: &str,
+    actor: impl Into<Principal<'a>>,
     reason: &str,
 ) -> Result<(), Error> {
+    let actor = actor.into();
     let decision: i64 = tx
         .query_row(
             "SELECT id FROM period_close_decisions WHERE period_id=?1 ORDER BY id DESC LIMIT 1",
@@ -115,21 +123,36 @@ mod period_mcp_tests {
     #[test]
     fn period_mcp_zero_block_force_preserves_service_principal_and_native_refusal() {
         let mut db = setup();
-        let tx = db.transaction().unwrap();
+        let tx = db
+            .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
+            .unwrap();
         let packet = compute(&tx, "2026-07-01", "2026-09-30", Ok(vec![])).unwrap();
         assert_eq!(packet["blockers"], 0, "{packet}");
-        let review = review_principal(&tx, &packet, "service-account:synthetic").unwrap();
+        let review =
+            review_principal(&tx, &packet, Principal::ServiceAccount("synthetic")).unwrap();
         assert_eq!(
             review["reviewerPrincipal"],
             json!({"kind":"service-account","subjectId":"synthetic"})
         );
         let i = input(&packet, &review);
         assert!(
-            original::close_current(&tx, &i, &packet, "service-account:synthetic", "2026-08-01")
-                .is_err()
+            original::close_current(
+                &tx,
+                &i,
+                &packet,
+                Principal::ServiceAccount("synthetic"),
+                "2026-08-01"
+            )
+            .is_err()
         );
         let closed = original::atomic(&tx, Some(&packet), || {
-            close_mcp(&tx, &i, &packet, "service-account:synthetic", "2026-08-01")
+            close_mcp(
+                &tx,
+                &i,
+                &packet,
+                Principal::ServiceAccount("synthetic"),
+                "2026-08-01",
+            )
         })
         .unwrap();
         assert_eq!(closed["ok"], true, "{closed}");
@@ -157,9 +180,90 @@ mod period_mcp_tests {
         assert_eq!(list_original(&tx).unwrap()["count"], 1);
     }
     #[test]
+    fn period_mcp_fresh_forced_report_is_terminal_and_existing_report_refuses_force() {
+        let mut db = setup();
+        let tx = db
+            .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
+            .unwrap();
+        let packet = compute(&tx, "2026-07-01", "2026-09-30", Ok(vec![])).unwrap();
+        let review =
+            review_principal(&tx, &packet, Principal::ServiceAccount("synthetic")).unwrap();
+        let mut i = input(&packet, &review);
+        i.status = Some("reported".into());
+        let closed = original::atomic(&tx, Some(&packet), || {
+            close_mcp(
+                &tx,
+                &i,
+                &packet,
+                Principal::ServiceAccount("synthetic"),
+                "2026-08-01",
+            )
+        })
+        .unwrap();
+        assert_eq!(closed["ok"], true, "{closed}");
+        assert_eq!(closed["status"], "reported");
+        assert_eq!(
+            tx.query_row::<String, _, _>("SELECT decision FROM period_close_decisions", [], |r| r
+                .get(0))
+                .unwrap(),
+            "forced_closed"
+        );
+        assert_eq!(
+            original::report_existing(&tx, &i, Principal::ServiceAccount("synthetic"))
+                .unwrap_err()
+                .message,
+            "PERIOD_REPORT_DOES_NOT_ALLOW_FORCE"
+        );
+        let reopen_input = Reopen {
+            period_start: i.period_start,
+            period_end: i.period_end,
+            kind: None,
+            reason: "Must remain terminal".into(),
+            confirm: true,
+        };
+        assert!(
+            reopen(
+                &tx,
+                &reopen_input,
+                &packet,
+                Principal::ServiceAccount("synthetic")
+            )
+            .is_err()
+        );
+    }
+    #[test]
+    fn period_mcp_human_subject_service_prefix_preserves_human_provenance() {
+        let mut db = setup();
+        let tx = db
+            .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
+            .unwrap();
+        let packet = compute(&tx, "2026-07-01", "2026-09-30", Ok(vec![])).unwrap();
+        let principal = Principal::Human("service-account:synthetic");
+        let review = review_principal(&tx, &packet, principal).unwrap();
+        assert_eq!(
+            review["reviewerPrincipal"],
+            json!({"kind":"user","subjectId":"service-account:synthetic"})
+        );
+        assert_eq!(review["reviewerActor"], "user:service-account:synthetic");
+        let i = input(&packet, &review);
+        let closed = original::atomic(&tx, Some(&packet), || {
+            close_mcp(&tx, &i, &packet, principal, "2026-10-22")
+        })
+        .unwrap();
+        assert_eq!(closed["ok"], true);
+        assert_eq!(
+            tx.query_row::<String, _, _>("SELECT actor FROM period_close_decisions", [], |r| r
+                .get(0))
+                .unwrap(),
+            "user:service-account:synthetic"
+        );
+    }
+    #[test]
     fn period_mcp_waiver_exact_obligation_source_exception_stays_open() {
         let mut db = setup();
-        let tx = db.transaction().unwrap();
+        let tx = db
+            .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
+            .unwrap();
         tx.execute_batch("INSERT INTO documents(id,source,sha256_hash,invoice_date,status,document_type) VALUES(91,'synthetic','synthetic-source-hash','2026-08-01','ingested','other'); INSERT INTO exceptions(id,type,severity,status,related_document_id,message) VALUES(92,'synthetic-review','high','open',91,'Human review remains necessary');").unwrap();
         let packet = compute(&tx, "2026-07-01", "2026-09-30", Ok(vec![])).unwrap();
         let blocked: Vec<_> = packet["items"]
@@ -170,10 +274,17 @@ mod period_mcp_tests {
             .collect();
         assert_eq!(blocked.len(), 1, "{packet}");
         assert_eq!(blocked[0]["code"], "EXCEPTIONS_OPEN");
-        let review = review_principal(&tx, &packet, "service-account:synthetic").unwrap();
+        let review =
+            review_principal(&tx, &packet, Principal::ServiceAccount("synthetic")).unwrap();
         let i = input(&packet, &review);
         let closed = original::atomic(&tx, Some(&packet), || {
-            close_mcp(&tx, &i, &packet, "service-account:synthetic", "2026-10-22")
+            close_mcp(
+                &tx,
+                &i,
+                &packet,
+                Principal::ServiceAccount("synthetic"),
+                "2026-10-22",
+            )
         })
         .unwrap();
         assert_eq!(closed["ok"], true, "{closed}");
@@ -207,7 +318,9 @@ mod period_mcp_tests {
     #[test]
     fn period_mcp_force_nonwaivable_stale_and_late_failure_are_atomic() {
         let mut db = setup();
-        let tx = db.transaction().unwrap();
+        let tx = db
+            .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
+            .unwrap();
         let packet = compute(&tx, "2026-07-01", "2026-09-30", Ok(vec![])).unwrap();
         let review = review_principal(&tx, &packet, "synthetic").unwrap();
         let i = input(&packet, &review);
@@ -236,7 +349,11 @@ mod period_mcp_tests {
             .unwrap()["ok"],
             false
         );
-        tx.execute_batch("CREATE TEMP TRIGGER fail_period_decision BEFORE INSERT ON period_close_decisions BEGIN SELECT RAISE(ABORT,'synthetic late failure'); END;").unwrap();
+        tx.execute_batch("INSERT INTO documents(id,source,sha256_hash,invoice_date,status,document_type) VALUES(91,'synthetic','synthetic-source-hash','2026-08-01','ingested','other'); INSERT INTO exceptions(id,type,severity,status,related_document_id,message) VALUES(92,'synthetic-review','high','open',91,'Keep open');").unwrap();
+        let packet = compute(&tx, "2026-07-01", "2026-09-30", Ok(vec![])).unwrap();
+        let review = review_principal(&tx, &packet, "synthetic").unwrap();
+        let i = input(&packet, &review);
+        tx.execute_batch("CREATE TEMP TRIGGER fail_period_final_audit BEFORE INSERT ON audit_log WHEN NEW.event_type='PERIOD_CLOSED_WITH_OPEN_ITEMS' BEGIN SELECT RAISE(ABORT,'synthetic late failure after obligations'); END;").unwrap();
         assert!(
             original::atomic(&tx, Some(&packet), || close_mcp(
                 &tx,
@@ -247,6 +364,14 @@ mod period_mcp_tests {
             ))
             .is_err()
         );
+        for table in ["period_close_open_items", "period_close_decisions"] {
+            assert_eq!(
+                tx.query_row::<i64, _, _>(&format!("SELECT count(*) FROM {table}"), [], |r| r
+                    .get(0))
+                    .unwrap(),
+                0
+            );
+        }
         assert_eq!(
             tx.query_row::<i64, _, _>("SELECT count(*) FROM accounting_periods", [], |r| r.get(0))
                 .unwrap(),

@@ -186,7 +186,7 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
         let _permit = permit;
         let mut owner = state.native.lock_company(&slug).map_err(|_| ())?;
         let action = match &command {
-            Command::Readiness(a, b) => Action::Readiness(a, b),
+            Command::Readiness(a, b) => Action::OriginalReadiness(a, b),
             Command::List => Action::OriginalList,
             Command::ReviewCurrent(i) => Action::McpReview(i),
             Command::McpClose(i) => Action::McpClose(i),

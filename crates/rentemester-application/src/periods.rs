@@ -11,6 +11,7 @@ use serde_json::{Value, json};
 pub enum Action<'a> {
     List,
     OriginalList,
+    OriginalReadiness(&'a str, &'a str),
     McpReview(&'a rentemester_storage::periods::Bounds),
     McpClose(&'a rentemester_storage::periods::original::CloseInput),
     OriginalStatus(i64),
@@ -195,9 +196,21 @@ pub fn execute(
         permission,
         matches!(
             action,
-            Action::List | Action::OriginalList | Action::Readiness(..) | Action::OriginalStatus(_)
+            Action::OriginalList
+                | Action::OriginalReadiness(..)
+                | Action::Readiness(..)
+                | Action::OriginalStatus(_)
         ),
-        |tx, actor| apply(tx, guard, action, today, slug, actor),
+        |tx, subject| {
+            apply(
+                tx,
+                guard,
+                action,
+                today,
+                slug,
+                rentemester_storage::periods::Principal::Human(subject),
+            )
+        },
     )
 }
 
@@ -213,9 +226,10 @@ pub fn verify_sources(
 
 fn permission(action: &Action<'_>) -> Permission {
     match action {
-        Action::List | Action::OriginalList | Action::Readiness(..) | Action::OriginalStatus(_) => {
-            Permission::CompanyRead
-        }
+        Action::List
+        | Action::OriginalList
+        | Action::OriginalReadiness(..)
+        | Action::OriginalStatus(_) => Permission::CompanyRead,
         Action::McpClose(i) if i.force == Some(true) => Permission::CompanyPeriodForceClose,
         _ => Permission::CompanyReview,
     }
@@ -226,7 +240,7 @@ fn apply(
     action: Action<'_>,
     today: &str,
     slug: &str,
-    actor: &str,
+    actor: rentemester_storage::periods::Principal<'_>,
 ) -> Result<Value, Error> {
     let (start, end) = match action {
         Action::OriginalStatus(id) => {
@@ -263,7 +277,7 @@ fn apply(
         Action::Report(input) => {
             return rentemester_storage::periods::report(tx, input, actor);
         }
-        Action::Readiness(start, end) => (start, end),
+        Action::Readiness(start, end) | Action::OriginalReadiness(start, end) => (start, end),
         Action::Review(input) | Action::McpReview(input) => {
             if !input.confirm {
                 return Err(Error::new(
@@ -286,7 +300,7 @@ fn apply(
                 rentemester_storage::periods::original::reopen_current(tx, input, &packet, actor)
             })
         }
-        Action::Readiness(..) => Ok(packet),
+        Action::Readiness(..) | Action::OriginalReadiness(..) => Ok(packet),
         Action::McpReview(_) => {
             Ok(json!({"ok":true,"review":rentemester_storage::periods::review(tx,&packet,actor)?}))
         }
@@ -315,7 +329,7 @@ pub fn execute_service(
     let permission = permission(&action);
     let mutation = !matches!(
         action,
-        Action::OriginalList | Action::Readiness(..) | Action::OriginalStatus(_)
+        Action::OriginalList | Action::OriginalReadiness(..) | Action::OriginalStatus(_)
     );
     let slug = context.selection.slug;
     crate::service_company::execute_operation(
@@ -325,8 +339,8 @@ pub fn execute_service(
         permission,
         mutation,
         |tx, subject, _| {
-            let actor = format!("service-account:{subject}");
-            let result = apply(tx, guard, action, today, slug, &actor)?;
+            let actor = rentemester_storage::periods::Principal::ServiceAccount(subject);
+            let result = apply(tx, guard, action, today, slug, actor)?;
             Ok(crate::service_company::OperationResult {
                 result,
                 receipt: None,
