@@ -110,12 +110,12 @@ fn parse(args: &[String]) -> Result<BTreeMap<&str, &str>, Output> {
     {
         return Err(usage("--document-id must be a positive safe integer"));
     }
-    if let Some(actor) = flags.get("--actor") {
-        if args[1] != "extract-invoice" || actor.trim() != *actor || actor.chars().count() > 160 {
-            return Err(usage(
-                "--actor must be a trimmed nonblank assertion of at most 160 characters on extraction writes only",
-            ));
-        }
+    if let Some(actor) = flags.get("--actor")
+        && (args[1] != "extract-invoice" || actor.trim() != *actor || actor.chars().count() > 160)
+    {
+        return Err(usage(
+            "--actor must be a trimmed nonblank assertion of at most 160 characters on extraction writes only",
+        ));
     }
     Ok(flags)
 }

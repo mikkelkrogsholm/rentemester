@@ -306,10 +306,10 @@ fn service_key_uses_existing_auth_and_never_infers_actor() {
             let n = s.read(&mut chunk).unwrap();
             assert!(n > 0);
             bytes.extend_from_slice(&chunk[..n]);
-            if let Some(end) = bytes.windows(4).position(|w| w == b"\r\n\r\n") {
-                if bytes.len() >= end + 4 + b"{\"confirm\":true}".len() {
-                    break;
-                }
+            if let Some(end) = bytes.windows(4).position(|w| w == b"\r\n\r\n")
+                && bytes.len() >= end + 4 + b"{\"confirm\":true}".len()
+            {
+                break;
             }
         }
         let request = String::from_utf8(bytes).unwrap();
