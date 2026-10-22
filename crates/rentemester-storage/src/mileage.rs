@@ -1,6 +1,6 @@
 //! Append-only mileage documentation. Never writes journal entries or tax treatment.
 //! Every Err requires the owning transaction to roll back.
-use crate::{invalid, legacy_money};
+use crate::{idempotency::PrincipalKind, invalid, legacy_money};
 use rentemester_engine::{
     Error,
     fiscal_year::{self, Date, LabelStrategy, StartMonth},
@@ -31,6 +31,15 @@ fn optional(s: &Option<String>) -> Option<&str> {
     s.as_deref().map(str::trim).filter(|v| !v.is_empty())
 }
 pub fn register(tx: &Transaction<'_>, input: &Register, actor: &str) -> Result<Value, Error> {
+    register_with_principal(tx, input, actor, PrincipalKind::User)
+}
+/// Shared insertion path; identity kind is supplied by current authenticated admission.
+pub fn register_with_principal(
+    tx: &Transaction<'_>,
+    input: &Register,
+    actor: &str,
+    kind: PrincipalKind,
+) -> Result<Value, Error> {
     crate::journal_post::require_current(tx)?;
     if !input.confirm
         || [
@@ -84,7 +93,7 @@ pub fn register(tx: &Transaction<'_>, input: &Register, actor: &str) -> Result<V
     let entry_no = format!("MIL-{year}-{n:06}");
 
     let id:i64=tx.query_row("INSERT INTO mileage_entries(entry_no,trip_date,purpose,from_location,to_location,kilometers,vehicle,driver,rate_per_km,amount_basis,rate_basis,rate_source,notes) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13) RETURNING id",params![entry_no,date,input.purpose.trim(),input.from_location.trim(),input.to_location.trim(),km_number,input.vehicle.trim(),input.driver.trim(),persisted_rate,amount_number,input.rate_basis.trim(),optional(&input.rate_source),optional(&input.notes)],|r|r.get(0)).map_err(invalid)?;
-    tx.execute("INSERT INTO audit_log(event_type,entity_type,entity_id,message,actor) VALUES('mileage_entry_create','mileage_entry',?1,?2,?3)",params![id.to_string(),format!("Recorded mileage entry {entry_no} ({date}, {} km, {} -> {})",km.decimal(),input.from_location.trim(),input.to_location.trim()),format!("user:{actor}")]).map_err(invalid)?;
+    tx.execute("INSERT INTO audit_log(event_type,entity_type,entity_id,message,actor) VALUES('mileage_entry_create','mileage_entry',?1,?2,?3)",params![id.to_string(),format!("Recorded mileage entry {entry_no} ({date}, {} km, {} -> {})",km.decimal(),input.from_location.trim(),input.to_location.trim()),format!("{}:{actor}", match kind { PrincipalKind::User => "user", PrincipalKind::ServiceAccount => "service_account" })]).map_err(invalid)?;
     Ok(
         json!({"mileageEntryId":id,"entryNo":entry_no,"amountBasis":wire(&amount)?,"warnings":mileage::warnings(&rate)?,"appliedRules":[mileage::RULE]}),
     )
