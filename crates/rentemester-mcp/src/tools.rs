@@ -193,6 +193,7 @@ pub fn list() -> Value {
     tools.extend(crate::reminder_claims::tools());
     tools.extend(crate::invoice_compensation::tools());
     tools.extend(crate::invoice_bad_debt::tools());
+    tools.push(crate::invoice_validation::tool());
     tools.extend(crate::invoice_interest::tools());
     tools.extend(crate::company_creation::tools());
     tools.extend(crate::saft::tools());
@@ -265,6 +266,8 @@ pub async fn call(api: &ApiClient, name: &str, args: Value) -> Result<Value, &'s
     if !args.is_object() {
         return Err("expected arguments object");
     }
+    if name=="invoice_validate" {return crate::invoice_validation::call(args);}
+    if name=="invoice_write_off_bad_debt" && args.get("body").is_none() {return crate::invoice_bad_debt::call_original(api,args).await;}
     if crate::invoice_claims_original::accepts(name,&args) {return crate::invoice_claims_original::call(api,name,args).await;}
     if matches!(name,"invoice_issue"|"invoice_render"|"invoice_post"|"invoice_settle_bank"|"invoice_credit_note"|"invoice_refund_bank"|"invoice_apply_payment") {return crate::invoice_lifecycle::call(api,name,args).await;}
     if matches!(name,"invoice_list"|"invoice_find"|"invoice_status"|"invoice_overdue") {return crate::invoice_original::call(api,name,args).await;}

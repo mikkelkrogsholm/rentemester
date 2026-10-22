@@ -17,6 +17,7 @@ mod portfolio_overview;
 mod journal_history;
 mod dashboard_artifact;
 mod invoice_bad_debt;
+mod invoice_validation;
 mod invoice_interest;
 mod invoice_compensation;
 mod audit_verify;

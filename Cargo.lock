@@ -6977,6 +6977,7 @@ name = "rentemester-mcp"
 version = "0.2.0"
 dependencies = [
  "rentemester-client",
+ "rentemester-engine",
  "serde",
  "serde_json",
  "tokio",

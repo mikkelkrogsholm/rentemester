@@ -475,7 +475,7 @@ mod invoice_interest;
 pub use invoice_interest::{InvoiceInterestOperation,MAX_INVOICE_INTEREST_BODY,invoice_interest_body_schema};
 
 mod invoice_bad_debt;
-pub use invoice_bad_debt::{MAX_INVOICE_BAD_DEBT_BODY,invoice_bad_debt_body_schema};
+pub use invoice_bad_debt::{invoice_bad_debt_original_schema,validate_invoice_bad_debt_original,MAX_INVOICE_BAD_DEBT_BODY,invoice_bad_debt_body_schema};
 
 mod dinero_import;
 pub use dinero_import::{MAX_DINERO_IMPORT_BODY,MAX_DINERO_ORIGINAL,dinero_import_body_schema};

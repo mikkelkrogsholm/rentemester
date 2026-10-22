@@ -30,7 +30,7 @@ pub fn tools() -> Vec<Value> {
     }
     out.push(tool("dinero_imports","Read canonical accepted latest-year Dinero imports and receipts; never retries an import.",json!({"type":"object","properties":{"company":company_schema()},"required":["company"],"additionalProperties":false}),true));
     out.push(tool("dinero_import_original","Read exact retained source package envelope original.contentType/application/json and original.bytes integers, max25MiB; current CompanyDocumentsRead.",json!({"type":"object","properties":{"company":company_schema(),"attemptId":{"type":"integer","minimum":1,"maximum":9007199254740991u64}},"required":["company","attemptId"],"additionalProperties":false}),true));
-    out.push(tool("invoice_imported_receivables","Read externally issued source receivables as of an explicit date, including settled rows. No native issue, send or settlement actions; declared source hashes are not proof of physical invoice originals.",json!({"type":"object","properties":{"company":company_schema(),"asOf":{"type":"string","format":"date"}},"required":["company","asOf"],"additionalProperties":false}),true));
+    out.push(tool("invoice_imported_receivables","Read externally issued source receivables as of an explicit date, including settled rows. Result retains ok/importedReceivables and adds identical schedule fields directly for original callers. No native issue, send or settlement actions; declared source hashes are not proof of physical invoice originals.",json!({"type":"object","properties":{"company":company_schema(),"asOf":{"type":"string","format":"date"}},"required":["company","asOf"],"additionalProperties":false}),true));
     out
 }
 #[derive(Deserialize)]
@@ -88,7 +88,9 @@ pub async fn call(
         "invoice_imported_receivables" => {
             let v: Receivables =
                 serde_json::from_value(args).map_err(|_| "exact company and asOf date required")?;
-            api.imported_receivables(&v.company, &v.as_of).await
+            api.imported_receivables(&v.company, &v.as_of)
+                .await
+                .map(flatten_receivables)
         }
         "dinero_import_original" => {
             let v: Original =
@@ -127,5 +129,86 @@ mod tests {
             .is_err()
         );
         assert!(serde_json::from_value::<Receivables>(json!({"company":"synthetic"})).is_err());
+    }
+}
+
+fn flatten_receivables(mut value: Value) -> Value {
+    if let Some(schedule) = value
+        .get("importedReceivables")
+        .and_then(Value::as_object)
+        .cloned()
+    {
+        for (key, field) in schedule {
+            if key != "ok" && key != "importedReceivables" {
+                value[key] = field;
+            }
+        }
+    }
+    value
+}
+
+#[cfg(test)]
+mod source_mapping_tests {
+    use super::*;
+    #[test]
+    fn actual_tool_adds_exact_nonempty_schedule_and_retains_settled_rows() {
+        use std::{
+            io::{Read, Write},
+            net::TcpListener,
+        };
+        let schedule = json!({"asOfDate":"2026-10-20","boundary":"imported","count":2,"totalOpen":17.25,"rows":[{"invoiceNumber":"SYN-7","openAmount":17.25},{"invoiceNumber":"SYN-SETTLED","openAmount":0,"status":"paid"}]});
+        let response = json!({"ok":true,"importedReceivables":schedule}).to_string();
+        let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+        let origin = format!("http://{}", listener.local_addr().unwrap());
+        let server = std::thread::spawn(move || {
+            let (mut socket, _) = listener.accept().unwrap();
+            socket
+                .set_read_timeout(Some(std::time::Duration::from_secs(5)))
+                .unwrap();
+            let mut request = vec![];
+            loop {
+                let mut buf = [0; 1024];
+                let n = socket.read(&mut buf).unwrap();
+                assert!(n > 0);
+                request.extend_from_slice(&buf[..n]);
+                if request.windows(4).any(|b| b == b"\r\n\r\n") {
+                    break;
+                }
+            }
+            assert!(request.starts_with(b"GET /api/companies/synthetic/invoices/imported-receivables?asOf=2026-10-20 HTTP/1.1"));
+            write!(
+                socket,
+                "HTTP/1.1 200 OK\r\nContent-Length:{}\r\nConnection:close\r\n\r\n{}",
+                response.len(),
+                response
+            )
+            .unwrap();
+        });
+        let api = ApiClient::new(&origin, true, None).unwrap();
+        let runtime = tokio::runtime::Runtime::new().unwrap();
+        let result = runtime
+            .block_on(crate::tools::call(
+                &api,
+                "invoice_imported_receivables",
+                json!({"company":"synthetic","asOf":"2026-10-20"}),
+            ))
+            .unwrap();
+        server.join().unwrap();
+        let data = &result["structuredContent"]["data"];
+        assert_eq!(data["ok"], true);
+        assert_eq!(data["importedReceivables"], schedule);
+        for (key, value) in schedule.as_object().unwrap() {
+            assert_eq!(&data[key], value);
+        }
+    }
+    #[test]
+    fn additive_fields_retain_native_envelope_and_exact_schedule() {
+        let schedule = json!({"asOfDate":"2026-10-20","boundary":"imported","count":2,"totalOpen":17.25,"rows":[{"invoiceNumber":"SYN-7","openAmount":17.25},{"invoiceNumber":"SYN-SETTLED","openAmount":0,"status":"paid"}]});
+        let result = flatten_receivables(json!({"ok":true,"importedReceivables":schedule}));
+        assert_eq!(result["ok"], true);
+        assert_eq!(result["importedReceivables"], schedule);
+        for (key, value) in schedule.as_object().unwrap() {
+            assert_eq!(&result[key], value);
+        }
     }
 }

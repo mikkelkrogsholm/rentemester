@@ -133,12 +133,22 @@ impl ApiClient {
             .await
     }
     pub async fn imported_receivables(&self, company: &str, as_of: &str) -> Result<Value, Error> {
-        if !valid_date(as_of) {
-            return Err(Error::InvalidInput("explicit valid as-of date required"));
+        self.imported_receivables_optional(company, Some(as_of))
+            .await
+    }
+    /// Omitted date is the server's UTC today, with no query parameter sent.
+    pub async fn imported_receivables_optional(
+        &self,
+        company: &str,
+        as_of: Option<&str>,
+    ) -> Result<Value, Error> {
+        if as_of.is_some_and(|date| !valid_date(date)) {
+            return Err(Error::InvalidInput("valid as-of date required"));
         }
+        let query = as_of.map(|date| vec![("asOf", date)]).unwrap_or_default();
         self.dinero_read(
             &company_path(company, "invoices/imported-receivables")?,
-            &[("asOf", as_of)],
+            &query,
             false,
         )
         .await

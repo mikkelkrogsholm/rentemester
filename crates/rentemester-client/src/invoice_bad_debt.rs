@@ -100,6 +100,56 @@ impl ApiClient {
         .await
     }
 }
+/// Original structured payload; selectors and account assertions are resolved only by the server.
+pub fn invoice_bad_debt_original_schema() -> Value {
+    let mut payload = invoice_bad_debt_body_schema();
+    payload["properties"]
+        .as_object_mut()
+        .unwrap()
+        .remove("confirm");
+    for key in ["invoiceNumber", "receivableAccountNo", "vatAccountNo"] {
+        payload["properties"][key] = json!({"type":"string","minLength":1});
+    }
+    payload["properties"]["grossAmount"]["type"] = json!("number");
+    payload["properties"]["note"]["type"] = json!("string");
+    payload["required"] = json!(["writeOffDate", "expenseAccountNo"]);
+    payload["anyOf"] = json!([{"required":["invoiceDocumentId"]},{"required":["invoiceNumber"]}]);
+    object(
+        json!({"payload":payload,"confirm":{"const":true}}),
+        &["payload", "confirm"],
+    )
+}
+pub fn validate_invoice_bad_debt_original(bytes: &[u8]) -> Result<(), Error> {
+    if bytes.len() > MAX_INVOICE_BAD_DEBT_BODY {
+        return Err(invalid());
+    }
+    body(bytes, &invoice_bad_debt_original_schema())?;
+    let value: Value = serde_json::from_slice(bytes).map_err(|_| invalid())?;
+    let p = &value["payload"];
+    if (p.get("invoiceDocumentId").is_none() && p.get("invoiceNumber").is_none())
+        || !date(p["writeOffDate"].as_str().ok_or_else(invalid)?)
+        || !account(p["expenseAccountNo"].as_str().ok_or_else(invalid)?)
+    {
+        return Err(invalid());
+    }
+    Ok(())
+}
+impl ApiClient {
+    pub async fn invoice_bad_debt_original(
+        &self,
+        company: &str,
+        bytes: Vec<u8>,
+    ) -> Result<Value, Error> {
+        validate_invoice_bad_debt_original(&bytes)?;
+        self.request(
+            Method::POST,
+            &company_path(company, "invoices/original/write-off-bad-debt")?,
+            &[],
+            Some(bytes),
+        )
+        .await
+    }
+}
 #[cfg(test)]
 mod tests {
     use super::*;
