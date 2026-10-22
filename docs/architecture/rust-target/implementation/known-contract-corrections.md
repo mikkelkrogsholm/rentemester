@@ -302,3 +302,29 @@ resterende saldo på nul. Asset-motorens positive periodelogik er ikke ændret.
 Tekniske crate-header-, float-literal- og ækvivalente prædikatfejl blev rettet
 afgrænset med bevarede checkkvitteringer før den første faktiske prøve.
 Ingen finansielle skrivninger blev gentaget for at teste transporten.
+
+### Dokumenteret kapitalisering og straksafskrivning (Group170)
+
+Oprindelig aktivregistrering genbruger den eksisterende Rust-motors kontrol
+af dokumenteret, ufordelt kapitalisering. Nettoberegningen medregner fortsat
+korrektionsposters omvendte linjer; et filter på kun `posted` ville fejlagtigt
+fjerne deres krediteringer og tillade for stor fordeling. Registrering
+opretter kun aktivets metadata. Native afskrivning før anskaffelsesdato
+forbliver afvist. Kildens nulperioder kan planlægges og læses; fælles
+journalvalidering afviser stadig en faktisk nulpostering.
+
+Straksafskrivning har ingen opfundet relativ datogrænse før kildens
+durable undtagelser. Fælles journalvalidering håndhæver fortsat aktuel
+bogføringshorisont, konti, låste perioder og bilag ved faktisk postering.
+Beløb som afrundes til nul afvises før bilagsopslag med samme positive
+pengeinvariant som lagringen. Kun en positivt konstateret manglende
+bilagsrække må give dokumentationsundtagelsen; en ændret eller ulæselig
+fysisk original afvises uden en sådan undtagelse. Den fysiske kontrol
+bevares også før en rådgiverundtagelse om beløbsgrænsen.
+
+MCP's ydre `confirm` er valgfri i schemaet, men manglende eller falsk
+bekræftelse afvises før serverkald. Den indre `confirmImmediateWriteOff`
+er en påkrævet boolean; falsk er en legitim forretningsafvisning.
+Fejlede checks og reviewrettelser blev bevaret, og den første faktiske
+prøve bestod uden gentagelse af finansielle skrivninger. Ingen prøve
+påstår juridisk egnethed eller udleder momsfradrag af de syntetiske køb.

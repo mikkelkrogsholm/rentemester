@@ -1,15 +1,15 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "Group169 original accrual3CLI3MCP register/recognize/exposure accepted",
-  "code_revision": "d207aef5c4b6a4f97a8f71f17173e37ef8e256e8",
+  "current_increment": "Group170 original asset4CLI4MCP register/depreciate/writeoff/bookvalue accepted",
+  "code_revision": "5ab798dca6c0237035d9ac66ad23e4ed99ec5fc8",
   "spec_revision": "sha256:8979030956647a0f03266c50d42786b5d33ab71a59c78528203d223226171e72",
-  "state": "Group169 ACCEPTED: source3CLI3MCP sameRustaccrual/journalengine currenthuman/service, serverdefaults nullableevidence source-compatiblezero/datepolicy andstrictsource receipts/report.16unique targetedtests+eightpackagestrict/build+firstactualPASS.2originals/3accruals/5recognitions/8journals16lines/32audits; total315.09 recognized220.09 remaining95. NormalMFArestart/signedsourcefreefreshownerrestore/reopen exactplus1manifestboundaudit.2509source/3binary/8web/helperpins independentlymatched, typedservicejournals3;processesstopped/runtimecleaned. Failedchecks/receipts preserved. Full55/672/716/717OPEN; nextoriginalassetwholeflow, finaldesktoplast.",
+  "state": "Group170 ACCEPTED: original4CLI4MCP sharedRustasset/journalengine currenthuman/service.20unique targetedtests eightpackagestrict/build firstactualPASS.2originals/1asset/3depreciations/1writeoff/5journals10lines/4exceptions/26audits; asset125 fullydepreciated/net0, separate250writeoff. Nativecapitalisation/reversal/period/evidence controls retained. NormalMFArestart/signedsourcefreefreshownerrestore/reopen exactplus1boundaudit.2521source/3binary/8web/helperpins independentlymatched, service2journals/audits, runtimecleaned. Full55/672/716/717OPEN; nextoriginalmileage, finaldesktoplast.",
   "issues_closed": [
     701
   ],
   "next": [
-    "Next170 originalasset wholeflow4CLI4MCP: documentedpurchase/capitalisation -> register -> explicitdepreciation -> bookvalue; eligibleimmediatewriteoff withdurable sourceexceptions/currentauthority. Reuse sharedRustasset/journalengine/nativealiases/accountingguards, no providers/newframework; fourboundedindependentowners. All55missionretained.",
+    "Next171 originalmileage wholeflow4CLI4MCP: append-only human/service trips, all-yearlist, inclusive datedreport anddeterministiclocalJSON/CSVexport withfixedtargetreplacement. Reuse sharedRustmileageengine/currentauthority/typedprovenance, no journals/VAT/providers/newframework. Full55missionretained.",
     "Original invoice interface inventory now has all31CLI and25MCP bindings, with explicit compatibility corrections documented; do not mistake that family inventory for full product parity. Reconcile remaining original whole-product R44/R45 acceptance from existing epic/issues: actor/env/company-path/default launcher/errors/historical receipts, closure/recovery/automation, signed distribution/update/cutover and TypeScript backend retirement. Continue next necessary whole journey, preserve all accepted evidence/full original scope; installed desktop acceptance last.",
     "Installed desktop acceptance is explicitly deferred to the very end by the user. Preserve prepared Group100 profile; collect remaining native automation, closure, recovery and packaging checks for final installed acceptance without requesting screen unlock during development.",
     "J03/R50 and remaining R54 scope: only still-supported operation closure/recovery, nonempty scheduler handoff, hostile/older clone and post-cutover rollback requirements. Group99 qualifies managed installed J06 flow, not every R54 acceptance item.",
@@ -25,9 +25,9 @@
   ],
   "all_goal_requirements_complete": false,
   "previous_verified_increment": {
-    "name": "Group168 original expense and purchaseVAT2CLI3MCP accepted",
-    "code_revision": "7206d199320a9878165a691e95ce87a4413b133c",
-    "evidence_key": "original_expense168"
+    "name": "Group169 original accrual3CLI3MCP register/recognize/exposure accepted",
+    "code_revision": "d207aef5c4b6a4f97a8f71f17173e37ef8e256e8",
+    "evidence_key": "original_accrual169"
   },
   "evidence": {
     "combined_browser_log": "/tmp/rm-platform5-combined.log",
@@ -10259,6 +10259,215 @@
         "/tmp/rentemester-rust-reports/idle-root-binary-cleanup169.json",
         "/tmp/rentemester-rust-reports/accepted166-idle-worker-cache-cleanup169.json"
       ]
+    },
+    "original_asset170": {
+      "issue": 717,
+      "status": "ACCEPTED finite original4CLI4MCP asset journey; entireissue/epicOPEN",
+      "source_revision": "5ab798dca6c0237035d9ac66ad23e4ed99ec5fc8",
+      "sgd_run": "rust-original-asset170-20261022T223509.950072000",
+      "engine_phase": "done",
+      "sgd_published": true,
+      "source_blob_count": 26,
+      "actual_report": "/tmp/rentemester-rust-reports/original-asset170-actual.json",
+      "actual_report_sha256": "e313e01fff0e827cfa96e5f5208fb3e524333d23439ca3f20dd0a5ab5ae1ff9b",
+      "unique_targeted_tests": 20,
+      "test_counts": {
+        "engine": 1,
+        "storage_including_native_regressions": 6,
+        "application": 2,
+        "host_filter": 0,
+        "sdk": 5,
+        "cli": 2,
+        "mcp_stdio": 2,
+        "additional_server_contract": 2
+      },
+      "strict": "Eightpackages --all-targets --locked -Dwarnings PASS",
+      "checks": [
+        {
+          "check": "domain",
+          "key": "20a2a5b68c82acf98cf922458a47830ecdd785cb01efcc4bcf295785bb73b6c9",
+          "argv": [
+            "python3",
+            "-c",
+            "import subprocess,sys; [subprocess.run([sys.executable,'scripts/rust/cargo-guard.py','cargo','test','-p',p,'--lib',f,'--locked'],check=True) for p,f in [('rentemester-engine','asset'),('rentemester-storage','asset')]]"
+          ],
+          "exit_code": 0,
+          "passed": true,
+          "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/rust-original-asset170-20261022T223509.950072000/acceptance/20a2a5b68c82acf98cf922458a47830ecdd785cb01efcc4bcf295785bb73b6c9/domain.log"
+        },
+        {
+          "check": "authority",
+          "key": "a0ca6638e48be87eb097cd8fd0670e227222e170f3d31b1c09a24a77f1ea8add",
+          "argv": [
+            "python3",
+            "scripts/rust/cargo-guard.py",
+            "cargo",
+            "test",
+            "--lib",
+            "-p",
+            "rentemester-application",
+            "-p",
+            "rentemester-host",
+            "asset_original",
+            "--locked"
+          ],
+          "exit_code": 0,
+          "passed": true,
+          "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/rust-original-asset170-20261022T223509.950072000/acceptance/a0ca6638e48be87eb097cd8fd0670e227222e170f3d31b1c09a24a77f1ea8add/authority.log"
+        },
+        {
+          "check": "client-cli",
+          "key": "7f733f156bb72b298e239e005b046edffb46756110479949a83e2d3a9fa86ba0",
+          "argv": [
+            "python3",
+            "-c",
+            "import subprocess,sys; [subprocess.run([sys.executable,'scripts/rust/cargo-guard.py','cargo','test','-p',p,'--test','asset_original','--locked'],check=True) for p in ['rentemester-client','rentemester-cli']]"
+          ],
+          "exit_code": 0,
+          "passed": true,
+          "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/rust-original-asset170-20261022T223509.950072000/acceptance/7f733f156bb72b298e239e005b046edffb46756110479949a83e2d3a9fa86ba0/client-cli.log"
+        },
+        {
+          "check": "mcp",
+          "key": "24c62c61cc3c315afbce4d0cf8e94166cf633a57952322b1471d4e302dd160da",
+          "argv": [
+            "python3",
+            "scripts/rust/cargo-guard.py",
+            "cargo",
+            "test",
+            "-p",
+            "rentemester-mcp",
+            "--test",
+            "stdio",
+            "asset_original",
+            "--locked"
+          ],
+          "exit_code": 0,
+          "passed": true,
+          "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/rust-original-asset170-20261022T223509.950072000/acceptance/24c62c61cc3c315afbce4d0cf8e94166cf633a57952322b1471d4e302dd160da/mcp.log"
+        },
+        {
+          "check": "strict",
+          "key": "b74d08ea2fb91c136a380457464c26a152042409ccc63c4e2bc2da375bef45b9",
+          "argv": [
+            "python3",
+            "scripts/rust/cargo-guard.py",
+            "cargo",
+            "clippy",
+            "-p",
+            "rentemester-engine",
+            "-p",
+            "rentemester-storage",
+            "-p",
+            "rentemester-client",
+            "-p",
+            "rentemester-cli",
+            "-p",
+            "rentemester-mcp",
+            "-p",
+            "rentemester-application",
+            "-p",
+            "rentemester-host",
+            "-p",
+            "rentemester-server",
+            "--all-targets",
+            "--locked",
+            "--",
+            "-D",
+            "warnings"
+          ],
+          "exit_code": 0,
+          "passed": true,
+          "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/rust-original-asset170-20261022T223509.950072000/acceptance/b74d08ea2fb91c136a380457464c26a152042409ccc63c4e2bc2da375bef45b9/strict.log"
+        },
+        {
+          "check": "build",
+          "key": "9f059cf914e590748b202b9f6609932bae3a99881ab44e6320661bc06009f46b",
+          "argv": [
+            "python3",
+            "scripts/rust/cargo-guard.py",
+            "cargo",
+            "build",
+            "-p",
+            "rentemester-server",
+            "-p",
+            "rentemester-cli",
+            "-p",
+            "rentemester-mcp",
+            "--locked"
+          ],
+          "exit_code": 0,
+          "passed": true,
+          "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/rust-original-asset170-20261022T223509.950072000/acceptance/9f059cf914e590748b202b9f6609932bae3a99881ab44e6320661bc06009f46b/build.log"
+        },
+        {
+          "check": "actual",
+          "key": "ef8ce1cba07321ad5aec9a25711e58acd8d74235ad58d508f805e5aabdd97496",
+          "argv": [
+            "python3",
+            "-c",
+            "import os,subprocess; from pathlib import Path; b=Path(os.environ['CARGO_TARGET_DIR'])/'debug'; rev=subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(); evidence=Path(os.environ['CARGO_TARGET_DIR'])/('original-asset170-'+rev+'.json'); subprocess.run(['python3','scripts/rust/run-bookkeeping-batch.py','--original-asset','--server-binary',str(b/'rentemester-server'),'--cli-binary',str(b/'rentemester-rust'),'--mcp-binary',str(b/'rentemester-mcp'),'--web-dir',os.environ['RM_REWRITE_WEB_DIR'],'--evidence',str(evidence)],check=True)"
+          ],
+          "exit_code": 0,
+          "passed": true,
+          "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/rust-original-asset170-20261022T223509.950072000/acceptance/ef8ce1cba07321ad5aec9a25711e58acd8d74235ad58d508f805e5aabdd97496/actual.log"
+        }
+      ],
+      "additional_server_contract_log": "/tmp/rm170-server-contract-tests.log",
+      "actual_sql_counts": {
+        "documents": 2,
+        "document_party_link_events": 0,
+        "document_party_resolution_events": 0,
+        "internal_voucher_evidence": 0,
+        "audit_log": 26,
+        "journal_entries": 5,
+        "journal_lines": 10,
+        "assets": 1,
+        "asset_depreciation_entries": 3,
+        "asset_writeoffs": 1,
+        "exceptions": 4
+      },
+      "restored_audits": 27,
+      "provider_calls": 0,
+      "scanner_calls": 2,
+      "exact_asset_totals": {
+        "accumulatedDepreciation": 125,
+        "cost": 125,
+        "netBookValue": 0
+      },
+      "typed_service_journals": 2,
+      "source_artifact_web_pins": {
+        "source_files": 2521,
+        "binaries": 3,
+        "web_files": 8,
+        "helpers": 2,
+        "independently_matched": true
+      },
+      "normal_mfa_source_restart": true,
+      "signed_source_free_fresh_owner_restore": true,
+      "restored_fresh_mfa_reopen": true,
+      "current_service_role_and_credential_revocation_refused": true,
+      "exact_manifest_bound_restore_audit_append": 1,
+      "owned_processes_stopped": true,
+      "runtime_cleaned": true,
+      "scope_limits": [
+        "Actual covers125capitalisation/metadataregister/3depreciations/250writeoff andtwoassetexceptions pluspreservedtwoexistingbankexceptions. Closedperiod, zero-slice, thresholdedgeyears andphysicalintegrity refusal aretargetedfixtures.",
+        "Native depreciation>=acquisition policy intentionally retained; source writeoff hasnoinventedchronology beforemetadataexception, actualsharedjournal postinghorizon retained.",
+        "No productioneligibility/VATinference, provider or installeddesktop qualification; desktop remainslast. No screenshot produced or claimed."
+      ],
+      "preserved_failures": [
+        "Actualdiffreview caughtcapitalisation reversalcredits beingfilteredout; restored pre170netquery before runtime. Sourceexceptionorder/MCPouterconfirm/proofstringentryNo andbaselinebankexceptions repaired beforefirstactual.",
+        "Firstcombined applicationpreflight test caught0.001roundingtozero beforedocumentlookup. Scopedpositivequantizedmoney invariant matchesstorage; unchanged exactregression isolatedPASS beforefullrerun.",
+        "Secondcombined18behaviorPASS, strictClippycollapsible_if refused nested boundedbody/JSONerrorprojection; equivalentletchain repair withnoresponse/testpolicy change.",
+        "No170actualfailure or financialwrite replay: firstactualPASS afterbehavior/strict/build.",
+        "Diskguardcorrectlyblocked at27.64GiB beforecompile; onlyidlecodegenobjects/oldacceptedworkerASToutputs cleaned, recordsretained.",
+        "SGDpublish initially refused generateduntrackedPythoncache; movedexactcachefileto/tmp, thenpublishPASS. No userchanges removed."
+      ],
+      "cleanup_evidence": [
+        "/tmp/rentemester-rust-reports/idle-codegen-object-cleanup170.json",
+        "/tmp/rentemester-rust-reports/idle-codegen-object-cleanup170-second.json",
+        "/tmp/rentemester-rust-reports/accepted164-166-worker-observation-cleanup170.json"
+      ]
     }
   },
   "verified_history": [
@@ -12009,6 +12218,12 @@
       "code_revision": "d207aef5c4b6a4f97a8f71f17173e37ef8e256e8",
       "evidence_key": "original_accrual169",
       "status": "ACCEPTED finite original accrual journey; entiremissionOPEN"
+    },
+    {
+      "increment": "Group170",
+      "code_revision": "5ab798dca6c0237035d9ac66ad23e4ed99ec5fc8",
+      "evidence_key": "original_asset170",
+      "status": "ACCEPTED finite originalasset journey; entiremissionOPEN"
     }
   ],
   "scope_clarifications": [

@@ -3838,3 +3838,31 @@ otte webfiler og hjælperne er uafhængigt hashkontrolleret; processerne er stop
 Bilagsløse registreringer, nulbeløbsperioder og lukkede perioder er kvalificeret
 med målrettede fixtures. Installeret desktop ligger fortsat til sidst.
 Næste forløb er aktiver, afskrivninger og straksafskrivning.
+
+### Oprindelige aktiver og afskrivninger (Group170)
+
+`asset register`, `asset depreciate`, `asset write-off` og `asset register-report`
+samt de fire oprindelige MCP-navne bruger samme Rust-motor og journal som de
+bevarede native kommandoer. Registrering kræver dokumenteret, endnu ikke
+fordelt kapitalisering og opretter ingen ny journalpost. Serveren vælger
+standardkonti og bekræftet bankrolle under aktuel bruger- eller serviceadgang.
+Straksafskrivning kræver både transportbekræftelse og brugerens udtrykkelige
+bekræftelse af behandlingen og dens satsgrundlag.
+
+20 målrettede tests, streng Clippy for otte pakker, bygning og den første
+faktiske prøve består på `5ab798dc`. Et aktiv på 125 kr. fordeles på
+41,66, 41,66 og 41,68 kr.; rapporten viser anskaffelse og afskrivninger på
+125 kr. og bogført værdi nul. Et separat dokumenteret køb på 250 kr.
+straksafskrives. Præcis fem journalposter med ti linjer, to originale bilag
+og 26 auditposter bevares. Manglende bilag og overskredet beløbsgrænse giver
+to deduplikerede rådgiverundtagelser; de to eksisterende bankundtagelser
+bevares uændret. Aktuel tilbagekaldt rolle eller nøgle må ikke skabe nye
+bogføringer eller undtagelser. To journalposter har faktisk serviceidentitet.
+
+Normal MFA-genstart og signeret gendannelse uden kilde eller privat signer,
+efterfulgt af genåbning, bevarer alle forretningsrækker og auditpræfikset med
+præcis én manifestbundet restorepost. 2521 kildefiler, tre binære filer,
+otte webfiler og hjælperne er uafhængigt hashkontrolleret; processerne er stoppet.
+Lukkede perioder, nulperioder og grænseår er dækket af målrettede fixtures.
+Næste forløb er kørselsregnskabets oprindelige CLI/MCP og lokale eksport.
+Installeret desktopaccept ligger fortsat til allersidst.
