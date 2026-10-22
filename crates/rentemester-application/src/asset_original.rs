@@ -176,8 +176,11 @@ fn validate_write_off(input: &WriteOff) -> Result<(), Error> {
             "Invalid original asset write-off request",
         ));
     }
-    rentemester_engine::document::money(&input.cost)
+    let cost = rentemester_engine::document::money(&input.cost)
         .map_err(|_| Error::new("invalid_input", "Invalid asset cost precision"))?;
+    if cost == rentemester_engine::money::Money::default() || cost.is_negative() {
+        return Err(Error::new("invalid_input", "Asset cost must be positive"));
+    }
     Ok(())
 }
 pub fn execute(
