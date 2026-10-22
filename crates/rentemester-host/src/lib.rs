@@ -1417,3 +1417,5 @@ mod dashboard_json;
 
 #[cfg(all(test, target_os = "macos"))]
 mod recurring_original_tests;
+
+mod recurring_workspace;

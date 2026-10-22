@@ -6,6 +6,25 @@ use rentemester_application::workspace_context::{Catalog, RegisteredCompany};
 use rentemester_runtime::auth::CookieVerifier;
 use serde_json::{Value, json};
 impl Owner {
+    pub(super) fn recurring_company_initialized(&self, slug: &str) -> Result<bool, OwnerError> {
+        let mut path = self.root.clone();
+        for (part, directory) in [(slug, true), ("data", true), ("ledger.sqlite", false)] {
+            path.push(part);
+            match std::fs::symlink_metadata(&path) {
+                Err(e) if e.kind() == std::io::ErrorKind::NotFound => return Ok(false),
+                Err(_) => return Err(OwnerError::Context),
+                Ok(m)
+                    if m.file_type().is_symlink()
+                        || (directory && !m.is_dir())
+                        || (!directory && !m.is_file()) =>
+                {
+                    return Err(OwnerError::Context);
+                }
+                Ok(_) => {}
+            }
+        }
+        Ok(true)
+    }
     pub fn catalog(&mut self) -> Result<Catalog, OwnerError> {
         self.admit()?;
         let result = self

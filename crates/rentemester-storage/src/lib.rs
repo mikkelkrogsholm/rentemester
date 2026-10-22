@@ -677,3 +677,5 @@ pub mod invoice_repair;
 pub mod invoice_claims_original;
 
 pub mod invoice_bad_debt_original;
+
+pub mod recurring_workspace;

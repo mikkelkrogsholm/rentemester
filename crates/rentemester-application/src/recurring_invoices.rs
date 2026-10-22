@@ -84,7 +84,23 @@ fn original_generate(
     actor: &str,
     principal: rentemester_storage::idempotency::PrincipalKind,
 ) -> Result<Value, rentemester_engine::Error> {
-    match recurring::original::prepare(tx, input, today, now)? {
+    original_prepared(
+        tx,
+        guard,
+        recurring::original::prepare(tx, input, today, now)?,
+        actor,
+        principal,
+    )
+}
+
+pub(crate) fn original_prepared(
+    tx: &rusqlite::Transaction<'_>,
+    guard: &mut NamespaceGuard,
+    prepared: Prepared,
+    actor: &str,
+    principal: rentemester_storage::idempotency::PrincipalKind,
+) -> Result<Value, rentemester_engine::Error> {
+    match prepared {
         Prepared::Existing(value) => {
             crate::sales::verify_invoice(
                 tx,

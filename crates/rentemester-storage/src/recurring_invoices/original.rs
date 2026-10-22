@@ -139,6 +139,16 @@ pub fn prepare(
     today: &str,
     now: &str,
 ) -> Result<Prepared, Error> {
+    prepare_period(tx, input, today, now, None)
+}
+/// Internal runner selector; validated against the same due boundary, never a public decoder.
+pub fn prepare_period(
+    tx: &Transaction<'_>,
+    input: &Generate,
+    today: &str,
+    now: &str,
+    selected: Option<u32>,
+) -> Result<Prepared, Error> {
     crate::journal_post::require_current(tx)?;
     if !input.confirm
         || input.template_id <= 0
@@ -153,20 +163,28 @@ pub fn prepare(
     if !t.active {
         return Err(refused("recurring template is retired"));
     }
+    let latest = period(&t, &input.as_of_date)?;
+    let index = selected.unwrap_or(latest);
+    if index > latest {
+        return Err(refused("periodIndex must be a due non-negative integer"));
+    }
     // Native templates continue through their existing input and calendar contract.
     if t.payload.get("invoiceType").is_none() {
         return super::prepare(
             tx,
             input.template_id,
             &super::Generate {
-                as_of_date: input.as_of_date.clone(),
+                as_of_date: if selected.is_some() {
+                    issue_date(&t.first, &t.interval, t.count, index)?
+                } else {
+                    input.as_of_date.clone()
+                },
                 confirm: true,
             },
             today,
             now,
         );
     }
-    let index = period(&t, &input.as_of_date)?;
     let existing:Option<Value>=tx.query_row("SELECT g.document_id,g.invoice_number,g.issue_date,g.delivery_period_start,g.delivery_period_end,d.payload_json FROM recurring_invoice_generations g JOIN documents d ON d.id=g.document_id AND d.document_type='issued_invoice' WHERE g.template_id=?1 AND g.period_index=?2",params![t.id,index],|r|{
         let payload:String=r.get(5)?;let payload:Value=serde_json::from_str(&payload).map_err(|_|rusqlite::Error::InvalidQuery)?;
         let mut value=json!({"created":false,"templateId":t.id,"periodIndex":index,"documentId":r.get::<_,i64>(0)?,"invoiceNumber":r.get::<_,String>(1)?,"issueDate":r.get::<_,String>(2)?,"dueDate":payload["dueDate"]});
