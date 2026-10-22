@@ -459,7 +459,7 @@ def main():
                                 if isinstance(value, bytes):
                                     row[field] = {'bytesBase64': base64.b64encode(value).decode(), 'sha256': hashlib.sha256(value).hexdigest()}
                 if args.original_budget:
-                    if len(rows['budget_lines']) != 2 or len(rows['journal_entries']) != 3 or len(rows['journal_lines']) != 6 or len(rows['payables']) != 1 or len(rows['supplier_commitment_events']) != 1 or len(rows['recurring_invoice_templates']) != 1 or rows['recurring_invoice_generations'] or rows['supplier_commitment_occurrence_matches'] or any(rows[t] for t in ['payable_payments', 'recurring_invoice_generation_claims', 'recurring_invoice_delivery_events', 'bank_transactions', 'bank_journal_reconciliations', 'issued_invoice_postings']):
+                    if len(rows['documents']) != 5 or len(rows['budget_lines']) != 2 or len(rows['journal_entries']) != 3 or len(rows['journal_lines']) != 6 or len(rows['payables']) != 1 or len(rows['supplier_commitment_events']) != 1 or len(rows['recurring_invoice_templates']) != 1 or rows['recurring_invoice_generations'] or rows['supplier_commitment_occurrence_matches'] or any(rows[t] for t in ['payable_payments', 'recurring_invoice_generation_claims', 'recurring_invoice_delivery_events', 'bank_transactions', 'bank_journal_reconciliations', 'issued_invoice_postings']):
                         raise RuntimeError('Exact budget fixture financial/generation/revision inventory differs')
                     proof = report['results']['original-budget']
                     budgets = rows['budget_lines']
@@ -678,7 +678,7 @@ def main():
                 report['providerRequests'] = list(vies_requests)
                 report['scannerRequests'] = list(scanner_requests)
                 save()
-                if len(scanner_requests) != (0 if (args.original_mileage or args.original_budget) else 2 if (args.original_accrual or args.original_asset) else 6 if args.original_expense else 3):
+                if len(scanner_requests) != (3 if args.original_budget else 0 if args.original_mileage else 2 if (args.original_accrual or args.original_asset) else 6 if args.original_expense else 3):
                     raise RuntimeError('Actual originals must traverse scanner exactly once')
                 if args.original_expense and ([r['vatNumber'] for r in vies_requests] != ['168000001', '168000001', '987654321', '987654321', '168000003']):
                     raise RuntimeError('Original expense exact failure/recovery/held provider trace differs')

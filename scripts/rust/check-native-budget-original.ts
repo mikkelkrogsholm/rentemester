@@ -69,7 +69,7 @@ export function createOriginalBudgetProof(base: string, work: string, onStep: (n
   async function parity(){for(const kind of ['cli','mcp'] as const){
     for(const [op,args,field]of [['list',{},'list'],['vs-actual',{from:period,to:period},'compare'],['forecast',{startDate:start,months:1},'monthly'],['forecast-13-week',{startDate:start,weeks:1},'weekly']] as const)need(equal(invoke(kind,op,args),stable[field]),kind+' exact '+op+' source parity');
   }}
-  async function journal(date:string,text:string,lines:any[]){const j=(await http(root+'journal')).journal;return post(root+'manual-journal',{confirm:true,input:{format:'rentemester-manual-journal-post/1',expectedRuleVersion:j.nativePosting.ruleVersion,idempotencyKey:randomUUID(),request:{transactionDate:date,text,currency:'DKK',lines}}});}
+  async function journal(date:string,text:string,lines:any[],documentId?:number){const j=(await http(root+'journal')).journal;return post(root+'manual-journal',{confirm:true,input:{format:'rentemester-manual-journal-post/1',expectedRuleVersion:j.nativePosting.ruleVersion,idempotencyKey:randomUUID(),request:{...(documentId===undefined?{}:{documentId:String(documentId)}),transactionDate:date,text,currency:'DKK',lines}}});}
   const line=(accountNo:string,debitAmount:string,creditAmount:string)=>({accountNo,debitAmount,creditAmount});
   async function run(page:Page,reviewer:Page){
     need(!ran,'one run, no budget resend');ran=true;owner=page;await cookies();
@@ -87,11 +87,12 @@ export function createOriginalBudgetProof(base: string, work: string, onStep: (n
     await post(root+'account-roles',{role:'creditors',accountNo:'6800',confirm:true});
     await post(root+'bank-accounts',{slug:'synthetic-budget172',name:'Synthetic confirmed budget bank',currency:'DKK',ledgerAccountNo:'1800'});
     await journal(openingDate,'Synthetic budget opening contributed capital',[line('1800','1000.00','0.00'),line('8872','0.00','1000.00')]);
-    await journal(start,'Synthetic budget known actual owner funded',[line('3720','60.00','0.00'),line('8872','0.00','60.00')]);
-    const vendor=(await post(root+'vendors',{name:'Synthetic Budget Supplier'})).vendor.id;
+    const vendor=(await post(root+'vendors',{name:'Synthetic Budget Supplier',vatOrCvr:'DK12345678'})).vendor.id;
     async function document(name:string,amount:number,type='cash_register_receipt'){
       return (await post(root+'documents/ingest',{confirm:true,fileName:name+'.txt',fileBase64:Buffer.from(`Synthetic budget172 ${name} DKK ${amount}, VAT zero.\n`).toString('base64'),metadata:{source:'Synthetic source reviewed budget fixture',documentType:type,issueDate:start,invoiceNo:name,currency:'DKK',amountIncVat:amount,vatAmount:0,sender:{name:'Synthetic Budget Supplier',address:'Synthetic Supplier 2',vatOrCvr:'DK12345678'},recipient:{name:'Synthetic Batch Company',address:'Synthetic Budget Street 1',vatOrCvr:'DK87654321'}}})).document.id;
     }
+    const actualDoc=await document('synthetic-budget172-actual',60);
+    await journal(start,'Synthetic budget known actual owner funded',[line('3720','60.00','0.00'),line('8872','0.00','60.00')],actualDoc);
     const payableDoc=await document('synthetic-budget172-payable',40);
     await post(root+'payables/register',{documentId:payableDoc,billDate:start,dueDate:start,expenseAccountNo:'3721',vatTreatment:'exempt',vendorId:vendor,confirm:true});
     const source=await document('synthetic-budget172-commitment',30);
@@ -133,7 +134,7 @@ export function createOriginalBudgetProof(base: string, work: string, onStep: (n
     need(m.openingBalance===1000&&m.closingBalance===1085&&m.periods.length===1,'monthly independent rollforward');
     need(equal(m.periods[0],{period,openingBalance:1000,invoiceInflow:125,recurringInflow:50,budgetedCostOutflow:90,netChange:85,closingBalance:1085}),'exact monthly source buckets');
     need(w.openingCash===1000&&w.lowestPoint===1000&&w.periods.length===1&&p.weekStart===start&&p.receivables===125&&p.payables===40&&p.commitments===30&&p.undatedBudgetAssumptions===-90&&p.budgets===0&&p.obligations===0&&p.scenarios===0&&p.intercompany===75&&p.closingCash===1055&&p.scenarioClosingCash===1130,'weekly base/scenario independent arithmetic');
-    need(p.sources.some((s:any)=>s.source==='approved_intercompany_disposition'&&s.amount===75&&s.reference===`intercompany-approved:${disposition.dispositionId}:${planned.payloadHash}`)&&p.sources.some((s:any)=>s.source==='approved_commitment'&&s.amount===-30&&s.reference===commitment.commitmentId),'current approved source references');
+    need(p.sources.some((s:any)=>s.source==='approved_intercompany_disposition'&&s.amount===75&&s.reference===`intercompany-disposition:${disposition.dispositionId}:${planned.payloadHash}`)&&p.sources.some((s:any)=>s.source==='approved_commitment'&&s.amount===-30&&s.reference===commitment.commitmentId),'current approved source references');
     need(equal(invoke('cli','list',{period,accountNo:'3720'}),stable.list),'exact list filters');
     need(invoke('cli','list',{accountNo:'missing'}).count===0,'unmatched source filter empty');
     need(invoke('cli','forecast',{startDate:start,months:18}).periods.length===18,'18-month upper bound');
