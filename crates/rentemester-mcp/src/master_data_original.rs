@@ -65,10 +65,12 @@ pub fn tools() -> Vec<Value> {
 // Validate before confirmation and transport. In particular, null is never omission,
 // and unknown contact/authority fields cannot pass through to HTTP.
 fn valid(value: &Value, schema: &Value) -> bool {
-    if let Some(options) = schema.get("enum").and_then(Value::as_array) {
-        if !options.contains(value) {
-            return false;
-        }
+    if schema
+        .get("enum")
+        .and_then(Value::as_array)
+        .is_some_and(|options| !options.contains(value))
+    {
+        return false;
     }
     match schema.get("type").and_then(Value::as_str) {
         Some("object") => value.as_object().is_some_and(|fields| {
