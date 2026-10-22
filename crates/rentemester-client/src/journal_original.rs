@@ -106,7 +106,7 @@ fn result(v: &Value, op: Operation, strict: bool) -> bool {
             || !["balanceBefore", "balanceAfter", "delta"]
                 .iter()
                 .all(|k| effect[*k].is_number())
-            || !effect.as_object().is_some_and(|o| o.len() == 5)
+            || effect.as_object().is_none_or(|o| o.len() != 5)
         {
             return false;
         }
