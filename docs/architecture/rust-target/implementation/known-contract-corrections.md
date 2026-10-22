@@ -99,3 +99,21 @@ miljøassertion skal stemme. Det giver samme servervej for lokal og ekstern drif
 med en tydelig afvisning af stier, som serveren ikke har optaget. Det er en
 bevidst arkitekturtilpasning; ikke en påstand om identisk lokal actor- eller
 standardlauncheradfærd. Øvrig kildeparitet og cutover skal fortsat accepteres.
+
+## Periodepacket og lokal CLI-force
+
+Det eksisterende native close-packet har version4 og format
+`rentemester.native-period-close.v1`. Det binder også lukningen til den
+faktiske journal-/audithovedrevision og de native fysiske kontroller. Den
+oprindelige version3 genindføres ikke som en parallel, svagere beregning.
+De originale periodeklienter bevarer hele det versionerede native packet og
+hash. Gemte version3-reviews kan læses uændret; et historisk review giver ikke
+automatisk tilladelse til en ny lukning.
+
+Kildens lokale CLI har desuden et force-mismatch: parseren behandler flaget
+som boolesk, mens handleren spørger efter teksten yes/true. Lokal actor giver
+aldrig trusted force-authorisation. Rust afviser derfor eksplicitte CLI-force-
+forespørgsler med brugsfejl, så de ikke ignoreres og bliver til en almindelig
+lukning. Den oprindelige autentificerede MCP-vej kan have en levende force-
+rettighed. Dens positive waiver-/obligationsforløb er stadig et åbent
+porteringskrav; CLI-rettelsen fjerner det ikke fra epicens scope.

@@ -2,6 +2,7 @@
 pub(crate) mod audit;
 pub(crate) mod bank_audit;
 mod readiness;
+pub mod original;
 use crate::invalid;
 pub use readiness::compute;
 use rentemester_engine::{Error, fiscal_year::Date, sales_invoice::refused, vat_period};
@@ -137,6 +138,16 @@ pub fn close(
     actor: &str,
     today: &str,
 ) -> Result<Value, Error> {
+    close_with_status(tx, input, packet, actor, today, false)
+}
+fn close_with_status(
+    tx: &Transaction<'_>,
+    input: &Close,
+    packet: &Value,
+    actor: &str,
+    today: &str,
+    reported: bool,
+) -> Result<Value, Error> {
     crate::journal_post::require_current(tx)?;
     bounds(&input.period_start, &input.period_end)?;
     if !input.confirm || input.force == Some(true) {
@@ -191,20 +202,24 @@ pub fn close(
         {
             return Err(refused("period overlaps an existing locked period"));
         }
+        if reported {
+            tx.execute("UPDATE accounting_periods SET status='reported',reported_at=CURRENT_TIMESTAMP,reference=COALESCE(?2,reference) WHERE id=?1",params![id,input.reference]).map_err(invalid)?;
+        }
         id
     } else {
-        tx.query_row("INSERT INTO accounting_periods(period_start,period_end,kind,status,closed_at,closed_by,reference) VALUES(?1,?2,?3,'closed',CURRENT_TIMESTAMP,?4,?5) RETURNING id",params![input.period_start,input.period_end,kind,format!("user:{actor}"),input.reference],|r|r.get(0)).map_err(invalid)?
+        let status = if reported { "reported" } else { "closed" };
+        tx.query_row("INSERT INTO accounting_periods(period_start,period_end,kind,status,closed_at,closed_by,reference,reported_at) VALUES(?1,?2,?3,?4,CURRENT_TIMESTAMP,?5,?6,CASE WHEN ?4='reported' THEN CURRENT_TIMESTAMP ELSE NULL END) RETURNING id",params![input.period_start,input.period_end,kind,status,format!("user:{actor}"),input.reference],|r|r.get(0)).map_err(invalid)?
     };
     event(
         tx,
         id,
-        "period_close",
+        if reported { "period_report" } else { "period_close" },
         actor,
         &format!("Closed {kind} {}..{}", input.period_start, input.period_end),
     )?;
     decision(tx, id, packet, "closed", actor, None)?;
     Ok(
-        json!({"id":id,"periodStart":input.period_start,"periodEnd":input.period_end,"kind":kind,"status":"closed","reference":input.reference}),
+        json!({"id":id,"periodStart":input.period_start,"periodEnd":input.period_end,"kind":kind,"status":if reported { "reported" } else { "closed" },"reference":input.reference}),
     )
 }
 pub fn reopen(

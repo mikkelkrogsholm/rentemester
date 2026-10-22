@@ -1,15 +1,15 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "Group158 original CLI global invocation, company selection and pure discovery accepted",
-  "code_revision": "a9f32b342bc0f51d282fa250fa33b156197e0bc2",
+  "current_increment": "Group159 five original period CLI commands and actual reviewed close/reopen/reported/restart journey accepted",
+  "code_revision": "e572df13e2ebd9b832cf47a573350a44c8a8b5d0",
   "spec_revision": "sha256:bc98636be4a972407adce0f817a76bb9d4bb7200cb292a70965e75ab62fae250",
-  "state": "Group158 ACCEPTED bounded original CLI entry/selection: migrated original families support global options before/between/after command words, first-equals attached literal values, explicit json/human format, pure root help/version and explicit trimmed company or RENTEMESTER_COMPANY fallback. Verified local-profile bridge admits only canonical direct-child company paths; remote remains slug-only with current server-owned identity and no local ledger fallback. Five scoped product workers integrated in625ab79d; final combined214 CLI tests across66 target summaries and strict all-target Clippy PASS ata9f32b342bc0f51d282fa250fa33b156197e0bc2. Existing extraction test socket mode defect repaired by one line; failed receipts/cancelled prior run retained without product or financial replay. All26 owned source blobs exactly match accepted SGD source. Full #716/#672, original55/J01-J07, remaining original command families/default launcher/output defaults, release/cutover/rollback/TypeScript retirement and final installed desktop acceptance remain OPEN.",
+  "state": "Group159 ACCEPTED original period readiness/review/status/close/reopen through the same current-human Rust owner: exact caller hash checked before review writes, historical persisted nullable-principal status unchanged after source change/restart, original flat/bare envelopes, closed-period posting refused, justified reopen/correct/same-ID reclose, original-close-proof receipt/report replay with no effects, conflicting receipt/reported reopen/current revoked access refused, direct reported close with/without receipt atomic and one terminal source audit. Native4 format/sourceRevision/controls/hash retained and historical3 readable. Actual ordinary-MFA fixture has2 posted journals/4lines,0docs/0bank,3reported periods,6reviews/6decisions/6lifecycle events and identical restart fingerprint. Root independently matched15 source blobs, pinned binaries/runner/helper hashes and terminal facts. Combined33 period +217 full CLI tests, five-package strict and actual pinned build/flow PASS. Old socket-fixture failures and cancelled product run retained; no accepted156-158 financial/provider replay. Full #716/#717/#672/original55/J01-J07, original MCP list/aliases/force obligations, manual journal numeric/dry-run/selector adapters, default launcher/release/cutover/rollback/TS retirement/final installed desktop remain OPEN.",
   "issues_closed": [
     701
   ],
   "next": [
-    "Next necessary whole original period lifecycle under #716: readiness → caller-hash-asserted atomic review → exact persisted review status → close → justified reopen/correct/reclose, including original reported-close atomicity and stale/current-access refusals. Same Rust engine/server; no actor impersonation, default launcher flip or repetition of accepted156–158. Preserve all original55/J01-J07 and all other open whole-product CLI/MCP/release/cutover/rollback/TypeScript retirement obligations.",
+    "Next necessary R44 whole original manual journal journey: numeric file input → genuine insertion-and-full-rollback dry-run → unkeyed same-engine post → original period close/post refusal → reopen → atomic source-selected reversal → duplicate reversal refusal and normal-MFA restart. Existing native keyed writers remain; do not invent hidden keys or substitute advisory validation for dry-run. Reuse accepted159 period primitives and existing standalone bootstrap; no repeat of accepted financial/provider journeys. Original MCP period list/aliases/envelopes/authorized-force obligations remain separately open under717.",
     "Original invoice interface inventory now has all31CLI and25MCP bindings, with explicit compatibility corrections documented; do not mistake that family inventory for full product parity. Reconcile remaining original whole-product R44/R45 acceptance from existing epic/issues: actor/env/company-path/default launcher/errors/historical receipts, closure/recovery/automation, signed distribution/update/cutover and TypeScript backend retirement. Continue next necessary whole journey, preserve all accepted evidence/full original scope; installed desktop acceptance last.",
     "Installed desktop acceptance is explicitly deferred to the very end by the user. Preserve prepared Group100 profile; collect remaining native automation, closure, recovery and packaging checks for final installed acceptance without requesting screen unlock during development.",
     "J03/R50 and remaining R54 scope: only still-supported operation closure/recovery, nonempty scheduler handoff, hostile/older clone and post-cutover rollback requirements. Group99 qualifies managed installed J06 flow, not every R54 acceptance item.",
@@ -25,9 +25,9 @@
   ],
   "all_goal_requirements_complete": false,
   "previous_verified_increment": {
-    "name": "Group157 original invoice refusal/recovery adapters accepted through four parallel SGD workers",
-    "code_revision": "fec6b7081c644153cbd17d085a8bb88be9063a07",
-    "evidence_key": "original_invoice_refusals157"
+    "name": "Group158 original CLI global invocation, company selection and pure discovery accepted",
+    "code_revision": "a9f32b342bc0f51d282fa250fa33b156197e0bc2",
+    "evidence_key": "original_cli_entry158"
   },
   "evidence": {
     "combined_browser_log": "/tmp/rm-platform5-combined.log",
@@ -9041,6 +9041,41 @@
         "Remote slug only. A raw company path requires an admitted verified local-profile direct child and matching optional workspace assertion. Authenticated server principal owns identity; actor env is not an authority.",
         "Full original55/J01-J07, other CLI/MCP contracts, release/cutover/rollback/TypeScript retirement/final installed desktop acceptance remain open."
       ]
+    },
+    "original_period159": {
+      "issue": 716,
+      "status": "ACCEPTED finite original period CLI lifecycle; full issue/epic OPEN",
+      "source_revision": "e572df13e2ebd9b832cf47a573350a44c8a8b5d0",
+      "sgd_run": "rust-period159-integrated-acceptance-20261022T130747.227008000",
+      "product_run": "rust-original-period159-20261022T123157.036908000",
+      "engine_phase": "done",
+      "report": "/tmp/rentemester-rust-reports/original-period159.json",
+      "report_sha256": "cd91592c31977d37ef9ec315bf8092c963f34ad4299ee71a125ab5c0b3cf5dce",
+      "actual_report": "/tmp/rentemester-rust-reports/original-period159-actual.json",
+      "actual_report_sha256": "8c0ca3ef610ce97ad98d50f7078e48ebc489fd0ad61ed643eae82f3ab78a05c6",
+      "period_tests": 33,
+      "full_cli_tests": 217,
+      "strict": "client/cli/application/storage/server --all-targets -D warnings",
+      "actual_counts": {
+        "documents": 0,
+        "bank_transactions": 0,
+        "journal_entries": 2,
+        "journal_lines": 4
+      },
+      "persisted_reviews": 6,
+      "periods": 3,
+      "decisions": 6,
+      "lifecycle_events": 6,
+      "exact_normal_mfa_restart": true,
+      "current_revocation_refused": true,
+      "source_blob_count": 15,
+      "scope_limits": [
+        "Current native packet version4/format/sourceRevision preserved; legacy3 readable, never relabelled or weakened.",
+        "Source local force parser/authority defect corrected as explicit CLI usage refusal; original authenticated MCP forced close/obligations remain open.",
+        "Original MCP missing period aliases/list/envelopes remain open; existing native tools unchanged.",
+        "No new document/VAT/FX original journal posting parity, signed restore, external filing, default launcher, release/cutover/rollback/TypeScript retirement or final installed desktop claim.",
+        "All original55 issues/J01-J07 and full epic retained; accepted156/157/158 financial/provider effects not replayed."
+      ]
     }
   },
   "verified_history": [
@@ -10446,6 +10481,13 @@
         "src/core/opening-balance.ts:153",
         "docs/architecture/rust-target/epic/issues/R26.md:13"
       ]
+    },
+    {
+      "id": "original-period-native-packet-and-cli-force-159",
+      "status": "finite_cli_journey_accepted_e572df13",
+      "source_defect": "Source packet3 lacks native4 physical/sourceRevision proof; source local force is boolean but handler reads string and supplies no trusted force authorization.",
+      "decision": "Preserve versioned native4 packet/control/hash unchanged, allow historical3 reads; explicit CLI force requests refuse usage2 and actor never grants authority. Original authenticated MCP force/obligation parity remains an open requirement, not removed.",
+      "evidence": "original_period159"
     }
   ],
   "verified_increment_history": [
@@ -10718,6 +10760,12 @@
       "code_revision": "fec6b7081c644153cbd17d085a8bb88be9063a07",
       "state": "Group157 ACCEPTED bounded original invoice refusal/recovery transport: four invoice GET reads, eleven claims, original recurring create/generate/list and four original public invoice operations preserve validated server-owned HTTP422 code/errors through existing CLI and original MCP where present. Recurring MCP prioritizes authoritative code before legacy code-less200 inference. Malformed, blank-code, success/artifact-shaped and nonbusiness errors remain generic; response bounds, confirmation, read/write policies, no retry on unknown writes and exact output-file preservation retained. Four real isolated Docker workers/commits/reviews integrated through deterministic SGD; all seven focused combined checks (44 tests) plus three-package all-target strict Clippy PASS first attempt. Four Cargo processes actually overlapped in independent outputs. No financial or external effects replayed; existing156 actual accounting/restart evidence retained. Full #717/#672, original55/J01-J07, launcher/global company selection, release/cutover/TypeScript retirement and final installed desktop acceptance remain OPEN.",
       "evidence_key": "original_invoice_refusals157"
+    },
+    {
+      "name": "Group158 original CLI global invocation, company selection and pure discovery accepted",
+      "code_revision": "a9f32b342bc0f51d282fa250fa33b156197e0bc2",
+      "state": "Group158 ACCEPTED bounded original CLI entry/selection: migrated original families support global options before/between/after command words, first-equals attached literal values, explicit json/human format, pure root help/version and explicit trimmed company or RENTEMESTER_COMPANY fallback. Verified local-profile bridge admits only canonical direct-child company paths; remote remains slug-only with current server-owned identity and no local ledger fallback. Five scoped product workers integrated in625ab79d; final combined214 CLI tests across66 target summaries and strict all-target Clippy PASS ata9f32b342bc0f51d282fa250fa33b156197e0bc2. Existing extraction test socket mode defect repaired by one line; failed receipts/cancelled prior run retained without product or financial replay. All26 owned source blobs exactly match accepted SGD source. Full #716/#672, original55/J01-J07, remaining original command families/default launcher/output defaults, release/cutover/rollback/TypeScript retirement and final installed desktop acceptance remain OPEN.",
+      "evidence_key": "original_cli_entry158"
     }
   ],
   "scope_clarifications": [

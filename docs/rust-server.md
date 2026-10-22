@@ -3517,3 +3517,44 @@ kaldsformer for allerede migrerede familier; alle265 oprindelige CLI-nøgler,
 oprindelige automatiske outputdefaults og skift af `bin/rentemester` er endnu
 ikke accepteret. Hele epic'en og sidste installerede desktopaccept er åbne.
 Evidens: progress.json → original_cli_entry158.
+
+## Oprindelige periodekommandoer (Group159)
+
+`period readiness --from DATE --to DATE`, `period review` med samme datoer,
+`--packet-hash HASH --confirm yes`, og `period status --review-id N` bruger
+samme Rust-ejer som web. Angiv virksomhed, server/lokal profil og privat
+menneskelig cookie som ved øvrige originale kommandoer. Globale flag,
+tilknyttede værdier og JSON/human-format understøttes. Identitet følger den
+aktuelle session. En angivet actor eller servicecredential giver ingen adgang.
+
+Readiness returnerer `{ok:true,packet}`. Review kontrollerer den præcise hash i
+samme transaktion, før packet/review gemmes, og returnerer det bare reviewobjekt
+med `id`, packet og den autentificerede reviewer. Status giver
+`{ok:true,review}` med den gemte historik eller null; den genberegner intet.
+Native packetformatet er `rentemester.native-period-close.v1`, version4, med
+sourceRevision. De stærkere kontroller og den fulde hash bevares. Historiske
+version3-packets kan læses uden omskrivning eller ny lukketilladelse.
+
+`period close --from DATE --to DATE --packet-hash HASH --review-id N
+--confirm yes` kræver stadig det aktuelle, gemte review og alle native
+kontroller. `--kind` vælger vat_period, fiscal_year eller custom; vat_quarter er
+legacy-alias. `period reopen --from DATE --to DATE --reason TEXT` genåbner en
+lukket, ikke-indberettet periode og tilføjer auditspor. Selve genåbningskaldet
+bekræfter handlingen; der er ikke et ekstra confirm-flag. Resultaterne er de
+flade kilde-envelopes med periodId, appliedRules og errors; review er særskilt.
+
+Med `--status reported` bindes en eksisterende lukket periodes kvittering til
+dens oprindelige close-packet. Den samme hash/reference kan læses igen uden
+nye effekter; en modstridende reference afvises. En direkte indberettet lukning
+kan have valgfri reference og er én atomisk handling med én terminal
+audithændelse. En indberettet periode kan ikke genåbnes. Eksplicit CLI-force
+afvises; den oprindelige autentificerede MCP-force og obligationsforløbet er
+fortsat åbent arbejde.
+
+Den faktiske prøve har verificeret source-change/stale-afvisning uden effekter,
+lukningsspærre, genåbning/rettelse/genlukning, begge indberetningsformer,
+aktuel medlemsrevokation og identisk historik efter normal MFA-genstart.
+Sluttilstanden har2 journaler/4 linjer,3 perioder og6 reviews/beslutninger.
+33 periodetests,217 CLI-tests og strict Clippy bestod. Oprindelige MCP-aliaser,
+manual journal-CLI, standardlauncher, hele epic'en og endelig installeret
+desktopaccept er fortsat åbne. Evidens: progress.json → original_period159.

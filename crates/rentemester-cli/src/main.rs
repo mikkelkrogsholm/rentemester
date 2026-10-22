@@ -27,6 +27,7 @@ mod journal_history;
 mod local_binding;
 mod original_args;
 mod original_discovery;
+mod period_original;
 mod oss_report;
 mod payable_original;
 mod recurring_original;
@@ -311,6 +312,21 @@ fn main() -> ExitCode {
         eprint!("{}", output.stderr);
         return ExitCode::from(output.exit);
     }
+    if args.first().is_some_and(|s| s == "period") {
+        if args == ["period"] || args == ["period", "--help"] {
+            println!("{}", period_original::help());
+            return ExitCode::SUCCESS;
+        }
+        if !period_original::accepts(&args) {
+            eprintln!("Unknown period command; see period --help");
+            return ExitCode::from(2);
+        }
+        if let Err(output) = period_original::preflight(&args) {
+            print!("{}", output.stdout);
+            eprint!("{}", output.stderr);
+            return ExitCode::from(output.exit);
+        }
+    }
     let args = match local_binding::prepare(args) {
         Ok(args) => args,
         Err((code, error)) => {
@@ -321,6 +337,12 @@ fn main() -> ExitCode {
             return ExitCode::from(code);
         }
     };
+    if period_original::accepts(&args) {
+        let output = period_original::execute(&args);
+        print!("{}", output.stdout);
+        eprint!("{}", output.stderr);
+        return ExitCode::from(output.exit);
+    }
     if recurring_original::accepts(&args) {
         let output = recurring_original::execute(&args);
         print!("{}", output.stdout);

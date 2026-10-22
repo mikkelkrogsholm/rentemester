@@ -58,6 +58,7 @@ mod obligations;
 mod payables;
 mod payable_original;
 mod periods;
+mod periods_original;
 mod portable_backup;
 mod backup_destinations;
 mod backup_remote;
@@ -409,6 +410,11 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
             "/api/companies/{slug}/supplier-commitments/matches",
             get(supplier_commitments::handle),
         )
+        .route("/api/companies/{slug}/periods/original/readiness", get(periods_original::handle))
+        .route("/api/companies/{slug}/periods/original/status", get(periods_original::handle))
+        .route("/api/companies/{slug}/periods/original/review", post(periods_original::handle))
+        .route("/api/companies/{slug}/periods/original/close", post(periods_original::handle))
+        .route("/api/companies/{slug}/periods/original/reopen", post(periods_original::handle))
         .route("/api/companies/{slug}/periods", get(periods::handle))
         .route(
             "/api/companies/{slug}/periods/report",

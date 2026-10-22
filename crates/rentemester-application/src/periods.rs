@@ -10,6 +10,10 @@ use rusqlite::{Connection, Transaction};
 use serde_json::{Value, json};
 pub enum Action<'a> {
     List,
+    OriginalStatus(i64),
+    OriginalReview(&'a rentemester_storage::periods::original::Review),
+    OriginalClose(&'a rentemester_storage::periods::original::CloseInput),
+    OriginalReopen(&'a rentemester_storage::periods::Reopen),
     Readiness(&'a str, &'a str),
     Review(&'a rentemester_storage::periods::Bounds),
     Close(&'a rentemester_storage::periods::Close),
@@ -175,7 +179,7 @@ pub fn execute(
     today: &str,
 ) -> Result<Committed<Value>, Failure> {
     let slug = context.selection.slug;
-    let permission = if matches!(action, Action::List) {
+    let permission = if matches!(action, Action::List | Action::OriginalStatus(_)) {
         Permission::CompanyRead
     } else {
         Permission::CompanyReview
@@ -190,9 +194,37 @@ pub fn execute(
         },
         context.selection,
         permission,
-        matches!(action, Action::Readiness(..)),
+        matches!(action, Action::Readiness(..) | Action::OriginalStatus(_)),
         |tx, actor| {
             let (start, end) = match action {
+                Action::OriginalStatus(id) => {
+                    return rentemester_storage::periods::original::status(tx, id);
+                }
+                Action::OriginalClose(input) => {
+                    use rentemester_storage::periods::original;
+                    return original::atomic(tx, None, || {
+                        if !input.confirm {
+                            return Err(Error::new(
+                                "confirmation_required",
+                                "confirmation required",
+                            ));
+                        }
+                        if let Some(value) = original::report_existing(tx, input, actor)? {
+                            return Ok(value);
+                        }
+                        let packet = rentemester_storage::periods::compute(
+                            tx,
+                            &input.period_start,
+                            &input.period_end,
+                            evidence(tx, guard),
+                        )?;
+                        original::atomic(tx, Some(&packet), || {
+                            original::close_current(tx, input, &packet, actor, today)
+                        })
+                    });
+                }
+                Action::OriginalReview(input) => (&*input.period_start, &*input.period_end),
+                Action::OriginalReopen(input) => (&*input.period_start, &*input.period_end),
                 Action::List => return rentemester_storage::periods::list(tx, slug),
                 Action::Report(input) => {
                     return rentemester_storage::periods::report(tx, input, actor);
@@ -213,6 +245,18 @@ pub fn execute(
             let packet =
                 rentemester_storage::periods::compute(tx, start, end, evidence(tx, guard))?;
             match action {
+                Action::OriginalReview(input) => {
+                    rentemester_storage::periods::original::review_expected(
+                        tx, input, &packet, actor,
+                    )
+                }
+                Action::OriginalReopen(input) => {
+                    rentemester_storage::periods::original::atomic(tx, None, || {
+                        rentemester_storage::periods::original::reopen_current(
+                            tx, input, &packet, actor,
+                        )
+                    })
+                }
                 Action::Readiness(..) => Ok(packet),
                 Action::Review(_) => rentemester_storage::periods::review(tx, &packet, actor),
                 Action::Close(input) => {
@@ -221,7 +265,10 @@ pub fn execute(
                 Action::Reopen(input) => {
                     rentemester_storage::periods::reopen(tx, input, &packet, actor)
                 }
-                Action::List | Action::Report(_) => unreachable!(),
+                Action::List
+                | Action::Report(_)
+                | Action::OriginalStatus(_)
+                | Action::OriginalClose(_) => unreachable!(),
             }
         },
     )

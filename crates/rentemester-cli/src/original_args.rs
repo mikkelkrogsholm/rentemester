@@ -39,7 +39,8 @@ fn boolean(name: &str) -> bool {
 }
 
 fn migrated(args: &[String]) -> bool {
-    crate::recurring_original::accepts(args)
+    crate::period_original::accepts(args)
+        || crate::recurring_original::accepts(args)
         || crate::invoice_financial_original::accepts(args)
         || crate::invoice_public_original::accepts(args)
         || crate::invoice_claims_original::accepts(args)
@@ -71,7 +72,10 @@ fn migrated(args: &[String]) -> bool {
 pub fn requires_company(args: &[String]) -> bool {
     let taxonomy = args.first().is_some_and(|s| s == "report")
         && args.get(1).is_some_and(|s| s == "annual")
-        && args.iter().skip(2).take_while(|s| s.as_str() != "--")
+        && args
+            .iter()
+            .skip(2)
+            .take_while(|s| s.as_str() != "--")
             .any(|s| s == "--ixbrl-taxonomy");
     migrated(args)
         && !taxonomy
@@ -119,7 +123,8 @@ pub fn prepare(args: Vec<String>) -> Result<Vec<String>, (u8, Error)> {
         && command.first().is_some_and(|s| {
             matches!(
                 s.as_str(),
-                "invoice"
+                "period"
+                    | "invoice"
                     | "bank"
                     | "bank-account"
                     | "reconcile"
@@ -133,6 +138,8 @@ pub fn prepare(args: Vec<String>) -> Result<Vec<String>, (u8, Error)> {
         return Ok(args); // Native remote and experimental local dialects are opaque.
     }
     let command_indices: Vec<usize> = words.into_iter().take(2).collect();
+    let period = command.first().is_some_and(|s| s == "period");
+    let mut seen = std::collections::BTreeSet::new();
     let mut output = command;
     let mut format = None;
     let mut json = false;
@@ -159,6 +166,9 @@ pub fn prepare(args: Vec<String>) -> Result<Vec<String>, (u8, Error)> {
             continue;
         }
         let (name, attached) = option(token);
+        if period && !seen.insert(name) {
+            return Err(usage(format!("Duplicate {name}")));
+        }
         if boolean(name) {
             if attached.is_some() {
                 return Err(usage(format!("Flag {name} does not take a value")));
@@ -355,7 +365,13 @@ mod tests {
             vec!["invoice", "validate"],
             vec!["recurring-invoice", "run-workspace"],
             vec!["report", "annual", "--ixbrl-taxonomy"],
-            vec!["report", "annual", "--ixbrl-taxonomy", "--company", "/private/not-opened"],
+            vec![
+                "report",
+                "annual",
+                "--ixbrl-taxonomy",
+                "--company",
+                "/private/not-opened",
+            ],
             vec!["--help"],
             vec!["invoice", "unknown"],
         ] {
