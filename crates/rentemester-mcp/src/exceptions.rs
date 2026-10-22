@@ -128,8 +128,13 @@ pub async fn call(api: &ApiClient, name: &str, args: Value) -> Result<Value, &'s
 #[cfg(test)]
 mod tests {
     use super::*;
-    #[tokio::test]
-    async fn exception_source_confirm_and_null_note() {
+    #[test]
+    fn exception_source_confirm_and_null_note() {
+        tokio::runtime::Builder::new_multi_thread()
+            .enable_all()
+            .build()
+            .unwrap()
+            .block_on(async {
         let api = ApiClient::new("http://127.0.0.1:9", true, None).unwrap();
         for confirm in [None, Some(false)] {
             let mut args = json!({"company":"synthetic","id":1});
@@ -157,6 +162,7 @@ mod tests {
                 .extend(extra.as_object().unwrap().clone());
             assert!(call(&api, "exception_resolve", args).await.is_err());
         }
+            });
     }
     #[test]
     fn exception_source_annotations_and_envelopes() {
