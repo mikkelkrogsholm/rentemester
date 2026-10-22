@@ -69,10 +69,8 @@ pub fn prepare(
             "nonempty bounded acknowledgement metadata required",
         ));
     }
-    let receiver = &export.receiver_endpoint_id;
-    let digits = receiver
-        .strip_prefix("GLN:")
-        .ok_or_else(|| refused("GLN receiver required"))?;
+    let digits = &export.receiver_endpoint_id;
+    let receiver = format!("GLN:{digits}");
     if digits.len() != 13
         || !digits.bytes().all(|b| b.is_ascii_digit())
         || export.sha256 != hash(export.xml.as_bytes())
@@ -87,7 +85,7 @@ pub fn prepare(
             &export.sha256,
             access.access_point_id.trim(),
             access.sender_endpoint_id.trim(),
-            receiver,
+            &receiver,
         ]
         .join("|")
         .as_bytes(),
@@ -119,7 +117,7 @@ pub fn prepare(
         tag("AccessPointId", &access.access_point_id, "    "),
         tag("EndpointUrl", &access.endpoint_url, "    "),
         tag("SenderEndpointId", &access.sender_endpoint_id, "    "),
-        tag("ReceiverEndpointId", receiver, "    "),
+        tag("ReceiverEndpointId", &receiver, "    "),
         "  </AccessPoint>".into(),
     ]);
     if let Some(a) = acknowledgement {
@@ -149,7 +147,7 @@ mod tests {
         Export {
             xml: "<Invoice/>".into(),
             sha256: hash(b"<Invoice/>"),
-            receiver_endpoint_id: "GLN:5790000000000".into(),
+            receiver_endpoint_id: "5790000000000".into(),
         }
     }
     fn access() -> AccessPoint {

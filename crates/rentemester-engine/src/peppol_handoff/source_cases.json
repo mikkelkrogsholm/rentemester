@@ -4,7 +4,7 @@
     "export": {
       "xml": "<Invoice><cbc:EndpointID schemeID=\"GLN\">5790000000000</cbc:EndpointID></Invoice>",
       "sha256": "fb8770cbb1421c1eea1f3cc5898f23fc6dacd8dd2bcc7defb81ee021001c49f8",
-      "receiverEndpointId": "GLN:5790000000000"
+      "receiverEndpointId": "5790000000000"
     },
     "accessPoint": {
       "accessPointId": " synthetic & point ",
@@ -26,7 +26,7 @@
     "export": {
       "xml": "<Invoice><cbc:EndpointID schemeID=\"GLN\">5790000000000</cbc:EndpointID></Invoice>",
       "sha256": "fb8770cbb1421c1eea1f3cc5898f23fc6dacd8dd2bcc7defb81ee021001c49f8",
-      "receiverEndpointId": "GLN:5790000000000"
+      "receiverEndpointId": "5790000000000"
     },
     "accessPoint": {
       "accessPointId": " synthetic & point ",
