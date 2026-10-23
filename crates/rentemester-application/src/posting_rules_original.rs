@@ -105,13 +105,13 @@ fn parse(r: &Request<'_>, op: Operation, actor: &str) -> Result<Value, Error> {
     let o = v.as_object_mut().ok_or_else(invalid)?;
     if write(op) {
         for k in ["actor", "principal"] {
-            if let Some(assertion) = o.remove(k) {
-                if assertion.as_str() != Some(actor) {
-                    return Err(Error::new(
-                        "access_denied",
-                        "Current principal assertion did not match",
-                    ));
-                }
+            if let Some(assertion) = o.remove(k)
+                && assertion.as_str() != Some(actor)
+            {
+                return Err(Error::new(
+                    "access_denied",
+                    "Current principal assertion did not match",
+                ));
             }
         }
         if o.get("confirm") != Some(&Value::Bool(true)) {
