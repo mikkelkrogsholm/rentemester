@@ -50,8 +50,11 @@ export function createOriginalBudgetProof(base: string, work: string, onStep: (n
     if(mode==='invalid'){need(response?.error?.code===-32602,'strict RPC selectors');return;}
     const result=response?.result,v=result?.structuredContent;
     need(!response?.error&&result.content.length===1&&equal(JSON.parse(result.content[0].text),v),'MCP text/structured equality');
+    if(op==='vs-actual'&&Object.hasOwn(args,'year')&&mode==='ok'){
+      need(v?.ok===true&&result.isError===false&&v.data?.ok===true,'native year envelope preserved');
+      return v.data;
+    }
     need(v?.ok===(mode==='ok')&&result.isError===(mode!=='ok')&&Array.isArray(v.errors),'MCP source envelope');
-    if(op==='vs-actual'&&Object.hasOwn(args,'year')&&mode==='ok')return v.data;
     // Domain false reports legitimately retain their report fields in data.
     return {ok:v.ok,...v.data,errors:v.errors,...(v.appliedRules?{appliedRules:v.appliedRules}:{})};
   }
