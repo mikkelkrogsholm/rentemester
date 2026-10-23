@@ -149,7 +149,16 @@ pub fn execute_scoped(
             Action::Read {
                 as_of,
                 include_proposed,
-            } => storage::read(&tx, slug, as_of.unwrap_or(&stamp), include_proposed),
+            } => {
+                let mut value =
+                    storage::read(&tx, slug, as_of.unwrap_or(&stamp), include_proposed)?;
+                if access::workspace_role_allows(workspace, Permission::WorkspaceManage) {
+                    if let Some(diagnostic) = storage::legacy_scope_diagnostic(&tx)? {
+                        value["scopeDiagnostics"] = json!([diagnostic]);
+                    }
+                }
+                Ok(value)
+            }
             Action::Propose(i) => storage::propose(&tx, slug, i, &id, &current.subject, &stamp)
                 .map(|v| json!({"assertion":v})),
             Action::Review(i) => storage::review(&tx, slug, i, &current.subject, &stamp)

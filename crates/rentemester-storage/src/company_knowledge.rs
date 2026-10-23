@@ -323,3 +323,18 @@ pub fn supersede(
 ) -> Result<Value, Error> {
     supersede_attributed(tx, slug, i, id, Principal::User(subject), now)
 }
+
+/// Administrative observation only. Call after current workspace-owner authorization.
+/// Never reveal historical filesystem paths or silently re-key assertions.
+pub fn legacy_scope_diagnostic(tx: &Transaction<'_>) -> Result<Option<Value>, Error> {
+    let count: i64 = tx.query_row(
+        "SELECT COUNT(*) FROM rm_company_knowledge_assertions WHERE instr(company_slug,'/')>0 OR instr(company_slug,char(92))>0",
+        [], |r| r.get(0),
+    ).map_err(sql)?;
+    Ok((count > 0).then(|| json!({
+        "code":"knowledge_legacy_company_identity",
+        "assertionCount":count,
+        "message":"Historical path-keyed knowledge requires separate controlled administrator reconciliation; no automatic repair was performed.",
+        "automaticRepair":false
+    })))
+}

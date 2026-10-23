@@ -1016,3 +1016,74 @@ fn service_backup_and_expiry_fences_leave_history_and_usage_uncommitted() {
         );
     }
 }
+
+#[test]
+fn canonical_owner_read_reports_legacy_scope_without_exposing_it_to_member_or_service() {
+    fn seed(c: &Connection) {
+        c.execute("INSERT INTO rm_company_knowledge_assertions(assertion_id,company_slug,predicate,value_json,value_hash,source_kind,source_ref,valid_from,certainty,actor,principal_kind,principal_id,created_at) VALUES('historical','/synthetic/companies/a','business_description','\"historical\"',?,'user','synthetic','2026-01-01T00:00:00.000Z','confirmed','user:u','user','u','2026-01-01T00:00:00.000Z')", ["a".repeat(64)]).unwrap();
+    }
+    fn stored(c: &Connection) -> (String, i64) {
+        (c.query_row("SELECT company_slug || value_json || value_hash || source_ref || actor || principal_kind || principal_id FROM rm_company_knowledge_assertions WHERE assertion_id='historical'", [], |r| r.get(0)).unwrap(),
+         c.query_row("SELECT COUNT(*) FROM rm_company_knowledge_events", [], |r| r.get(0)).unwrap())
+    }
+    let (_d, mut c, cookies, proof, cat) = fixture();
+    seed(&c);
+    let before = stored(&c);
+    let member = execute(
+        &mut c,
+        &cookies,
+        &Fixed,
+        &proof,
+        &cat,
+        "a",
+        Action::Read {
+            as_of: None,
+            include_proposed: true,
+        },
+    )
+    .unwrap();
+    assert!(member.get("scopeDiagnostics").is_none());
+    c.execute("INSERT INTO rm_workspace_user_access_events(user_id,event_type,workspace_role,actor) VALUES('u','activate','workspace_owner','system:synthetic-test')", []).unwrap();
+    let changes = c.total_changes();
+    let owner = execute(
+        &mut c,
+        &cookies,
+        &Fixed,
+        &proof,
+        &cat,
+        "a",
+        Action::Read {
+            as_of: None,
+            include_proposed: true,
+        },
+    )
+    .unwrap();
+    assert_eq!(owner["scopeDiagnostics"][0]["assertionCount"], 1);
+    assert_eq!(
+        owner["scopeDiagnostics"][0]["code"],
+        "knowledge_legacy_company_identity"
+    );
+    assert_eq!(owner["scopeDiagnostics"][0]["automaticRepair"], false);
+    assert!(!owner.to_string().contains("/synthetic/companies/a"));
+    assert!(owner["history"].as_array().unwrap().is_empty());
+    assert_eq!(c.total_changes(), changes);
+    assert_eq!(stored(&c), before);
+    let (_d, mut c, cat, key, _, _) = service_fixture();
+    seed(&c);
+    let before = stored(&c);
+    let value = execute_service_scoped(
+        &mut c,
+        &Fixed,
+        &key,
+        &cat,
+        "a",
+        Action::Read {
+            as_of: None,
+            include_proposed: true,
+        },
+        &mut crate::backup_status::UnlockedTestScopes,
+    )
+    .unwrap();
+    assert!(value.get("scopeDiagnostics").is_none());
+    assert_eq!(stored(&c), before);
+}
