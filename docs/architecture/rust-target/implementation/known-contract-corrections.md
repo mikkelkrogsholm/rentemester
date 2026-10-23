@@ -628,3 +628,21 @@ og afbrudt udfald uden automatisk retry; hjælpen åbnes uden et API-kald.
 Det eksisterende kildefri restore-/transferbevis genbruges uden nye
 regnskabseffekter. #707's fulde kriterier er accepteret; #726's eksplicitte
 rester og den afsluttende installerede desktopaccept bevares.
+
+### Beslutningsaccept og observeret R02-kontraktmodsigelse
+
+R04 vælger eksisterende native identitet og præcis firefaset ekstern autoritet.
+Det er ikke runtimeaccept af alle auth-/scheduler-/driftsgates. Errorcases i den
+aktuelle GDD-beslutning peger på negative/boundary-scenarier; concurrency-risikoen
+beholder sit særskilte concurrency-scenarie. Intet krav eller scenarie fjernes
+for at få readiness. Den ældre54rapport bruger ok:true og konkrete13MFA/reset/
+genstartsfelter, ikke et statusfelt; hash- og versionskontrol bevares ved genbrug.
+
+R02's oprindelige typed-contract-kriterium er endnu ikke opfyldt. Det bevarede
+182-gdd-context (d62037b6) beskriver i typede postconditions ingen bogføring,
+mens dens korrekte behavior (3f18fff9) og faktisk accepteret kode laver to
+journaler/seks linjer. Stale preconditions/effekter/risici og167-komponenttekst
+bevares som observeret historisk fejl; readiness-PASS er ikke produktbevis.
+Ingen historisk ledger omskrives, og accepterede finansielle handlinger
+gentages ikke. Aktuelle R04-kontrakter korrigeres fremadrettet; R02 kræver
+fortsat effektiv kontrakt-/effekt-/risikoafstemning samt klient/storage-negativkontrol.

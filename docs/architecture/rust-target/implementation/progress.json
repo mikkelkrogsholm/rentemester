@@ -1,12 +1,13 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "R33 backup/recovery full scope accepted and issue707closed",
-  "code_revision": "a45a028ac4d9487f182133d15b3a7c0d41743f28",
+  "current_increment": "R04 native identity/fencing/external-job decision accepted;676closed",
+  "code_revision": "596347c244f1619663c939b425c999f7d0200724",
   "spec_revision": "sha256:8979030956647a0f03266c50d42786b5d33ab71a59c78528203d223226171e72",
-  "state": "18of55 original issues fully accepted/closed,37open with concrete triage gaps. R33owner/operator lost-device/missing-trust guidance completed in shared React at a45a028a; SGD3componenttests/18assertions PASS, existing52/56/99/109-117 restore/transfer evidence reused. Fullmission/release/cutover/manualdesktoplast remain OPEN.",
+  "state": "19of55 original issues fullyacceptedclosed36open. R04selectednativeidentity and allfour external-job authority phases documented/reviewed at596347c2, source/reference/evidencepinsPASS. R02notclosed: actualeffectivecontract contradiction found in frozen182context, in addition to missingclientstorage negativecontrol. Product/accountingaccepted effects preserved; fullmission/release/cutover/manualdesktoplast OPEN.",
   "issues_closed": [
     675,
+    676,
     681,
     682,
     683,
@@ -26,7 +27,7 @@
     710
   ],
   "next": [
-    "Next necessary full issue R02#674: add/qualify specifically required client-to-storage forbidden-dependency negative control in existing boundary checker; reuse accepted typed contracts/risk/readiness evidence, no new platform design or broad tests. Rust compile guard remains30GiB; independent JS/contract closure work can proceed without bypassing it.",
+    "Next necessary complete product acceptance existingR13#685: actual two-connection last-effective-owner removal race, reusing accepted authorization/currentfence evidence. Restore >=30GiB safe build headroom before anyRustcompile; no bypass. R07isnotcloseableunderunchangedpolicy:393hostmetadata has requiredMPL2/Unicode3/CDLA2/Zlib outside existingJSallowlist and75uncachedallplatformpackages; policy/inventory reconciliation retained rather than installnewtools. R02fullcontractreconciliation/negativecontrol remainsopen.",
     "Original invoice interface inventory now has all31CLI and25MCP bindings, with explicit compatibility corrections documented; do not mistake that family inventory for full product parity. Reconcile remaining original whole-product R44/R45 acceptance from existing epic/issues: actor/env/company-path/default launcher/errors/historical receipts, closure/recovery/automation, signed distribution/update/cutover and TypeScript backend retirement. Continue next necessary whole journey, preserve all accepted evidence/full original scope; installed desktop acceptance last.",
     "Installed desktop acceptance is explicitly deferred to the very end by the user. Preserve prepared Group100 profile; collect remaining native automation, closure, recovery and packaging checks for final installed acceptance without requesting screen unlock during development.",
     "J03/R50 and remaining R54 scope: only still-supported operation closure/recovery, nonempty scheduler handoff, hostile/older clone and post-cutover rollback requirements. Group99 qualifies managed installed J06 flow, not every R54 acceptance item.",
@@ -42,9 +43,9 @@
   ],
   "all_goal_requirements_complete": false,
   "previous_verified_increment": {
-    "name": "Issue closure183:17of55 original issues fully accepted and closed",
-    "code_revision": "1ee2c1ff34bcfe04706acbf95927084888a42426",
-    "evidence_key": "issue_closure183"
+    "name": "R33 backup/recovery full scope accepted and issue707closed",
+    "code_revision": "a45a028ac4d9487f182133d15b3a7c0d41743f28",
+    "evidence_key": "owner_recovery707_completion"
   },
   "evidence": {
     "combined_browser_log": "/tmp/rm-platform5-combined.log",
@@ -13792,6 +13793,108 @@
         "No new backend/provider/signature/storage/credential behavior and no unchanged broad restore rerun.",
         "Hostile/older clone/nonempty scheduler/post-cutover rollback remain required under726; full epic/J01-J07 and final installed desktop acceptance remain open."
       ]
+    },
+    "r04_identity_decision676": {
+      "issue": 676,
+      "status": "CLOSED full original decision scope and allfourcriteria",
+      "source_revision": "596347c244f1619663c939b425c999f7d0200724",
+      "sgd_run": "rust-r04-identity-decision676-qualified-20261023T075833.564089000",
+      "engine_phase": "done",
+      "sgd_published": true,
+      "github_evidence": "https://github.com/mikkelkrogsholm/rentemester/issues/676#issuecomment-6360319040",
+      "report": "/tmp/rentemester-rust-reports/r04-identity-decision676.json",
+      "checks": [
+        {
+          "check": "decision-pins",
+          "key": "06aca0e1191b6ea9783b02d55066c9d4716095fe3a87d7a3e688d391f3e1f5ef",
+          "argv": [
+            "python3",
+            "-c",
+            "import json,re,hashlib;from pathlib import Path\np=Path.cwd();doc=p/'docs/architecture/rust-target/IDENTITY-DECISION.md';text=doc.read_text();links=re.findall(r'\\]\\((implementation/[^)]+)\\)',text);assert len(links)==11;files=[doc,p/'docs/architecture/rust-target/ARCHITECTURE.md']+[doc.parent/x for x in links];assert all(x.is_file()for x in files);d=json.loads((p/'docs/architecture/rust-target/implementation/progress.json').read_text());keys=['scheduler_backup_restored_authority','platform53_hosted_actual','platform54_https_identity_actual','service_mail102']\nfor key in keys:\n e=d['evidence'][key];q=Path(e['report']);assert hashlib.sha256(q.read_bytes()).hexdigest()==e['sha256'],key;r=json.loads(q.read_text());assert (r.get('ok')is True and r['sourceRevision']=='fd33e4134f4cde23008fc3f80d3a72d0b2081148' and all(r[x]is True for x in ['normalEmailVerification','ordinaryInvitationClaim','distinctNormalMfaUsers','secureHttpOnlyCookie','timeoutAcceptedResetLinkUsable','oldSessionRefused','oldPasswordRefused','replayedResetTokenRefused','newPasswordWithExistingMfa','noResetSession','restartVerified','existingMfaAfterRestart','canonicalReadbackUnchanged']))if key=='platform54_https_identity_actual'else r['status']in['passed','pass'],key\nsources=['crates/rentemester-application/src/control_fence.rs','crates/rentemester-application/src/invoice_email.rs','crates/rentemester-application/src/hosted_recurring.rs'];files += [p/x for x in sources];assert all(x.is_file()for x in files);print(json.dumps({'ok':True,'scope':'R04source/reference/evidencepin qualification; semanticacceptance is explicit main+independent review, not automatic runtime proof','source_revision':__import__('subprocess').check_output(['git','rev-parse','HEAD'],text=True).strip(),'files':{str(x.relative_to(p)):hashlib.sha256(x.read_bytes()).hexdigest()for x in files},'reused_actual_evidence':keys}))\n"
+          ],
+          "exit_code": 0,
+          "passed": true,
+          "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/rust-r04-identity-decision676-qualified-20261023T075833.564089000/acceptance/06aca0e1191b6ea9783b02d55066c9d4716095fe3a87d7a3e688d391f3e1f5ef/decision-pins.log"
+        }
+      ],
+      "decision": "docs/architecture/rust-target/IDENTITY-DECISION.md",
+      "independent_review": "adoption_stage89 fullfourcriteria/fourphases, no materialfinding;11relativecontractlinks resolve. Main current source/contracts reviewed.",
+      "selected_identity": "Existing Rust-native identity/session/password/MFA/recovery/service stack for local/hosted; legacyBetterAuth allowed onlytransitional, no nativefallback. R41/R55remove/qualifygates explicit.",
+      "phase_table": [
+        "revoke before finaldispatch admission denies",
+        "revoke duringprovider call cannotretracthandoff; failedfinalization unknown/noresend",
+        "expired lease is notworkerdrain; requireactualfence/providerqualifiedreconciliation",
+        "restoredhistory/jobs/receipts areevidence, notcredentials/consent; explicitreprovision/reconsent/catchup andstablemapping"
+      ],
+      "reused_evidence": [
+        "scheduler50",
+        "source-free52",
+        "hosted53",
+        "HTTPSidentity54",
+        "SMTP55",
+        "service102",
+        "transfer56/99"
+      ],
+      "no_unchanged_runtime_tests_repeated": true,
+      "no_new_auth_engine_or_runtime_change": true,
+      "prospective_gdd": "Current doc-only input/context/output/effects/postconditions andfive distinctauthorization/idempotency/boundary/concurrency/atomicity scenarios; oldfrozenledgers untouched.",
+      "preserved_diagnostics": [
+        "/tmp/rm676-plan-unready1.json",
+        "/tmp/rm676-plan-unready2.json",
+        "/tmp/rm676-report-shape-recovery.json"
+      ],
+      "diagnosed_recovery": [
+        "Initial GDD errorcases referenced concurrency category, which readiness forbids forerrors. Read exact validator predicate; retained concurrency risk/scenario and mapped errors to existingnegative/boundary cases. Bothunreadyoutputs preserved.",
+        "One exact evidencepin check assumed54status field; capturedraw54 usesok:true plus13normalMFA/reset/restart flags. All4hashes/11links alreadycorrect. Explicitcancel/snapshot/replan unchangedcode with version-specific54check; qualifiedPASS, no model/runtime retry."
+      ],
+      "scope_limits": [
+        "This closes an identity/authority DECISION issue, not actualcompleteR13/R35/R41/R54/R55 runtimequalification.",
+        "No universalexactlyonce, atomicnetworkrevocation, leasedrain, physicaloffsite or fullmissionclaim."
+      ]
+    },
+    "r02_effective_contract_gap": {
+      "issue": 674,
+      "status": "OPEN; negativecontrol alone cannotclose fullscope",
+      "frozen_run": "rust-original-bookkeeping-batch182-accept-20261023T064936.742098000",
+      "context_sha256": "d62037b60f9d1c59fdde70298303ebe09604e4e3ab53dec8776be71bcfc7c42c",
+      "model_revision": "sha256:5b6b0dbc5ead773c9f1b9bfee8381a092cab51778ecb4afcbd8acd6609043b0a",
+      "node": "/packages/batch182-integrated-repair/nodes/action.backend",
+      "contradiction": "Current correctbatchbehavior but typedpostconditions/effects/preconditions/5riskrationales fromdocumentpartyresolution inclno bookkeeping effects; actualaccepted182posts2journals6lines. Componentresponsibility saysinvoiceextraction167.",
+      "correct_behavior_sha256": "3f18fff9ab47554337566241375997220fccc8476a266327d83c398e2471b434",
+      "correct_contract": "/tmp/rm182-contract.md and accepted1ee2c1ff source/nativeABI/actualreport",
+      "remaining": "Requiredsourceclientstorage negativecontrol plus boundedreconciliation of EACH effectiveimplementedcontract/effects/distinctrisk cases. Do notinfer from nonemptyfields/readinessPASS.",
+      "preserve": "Neverrewrite frozenreadinessreceipts orreplay acceptedbusiness actions; R23functionalacceptance remains supported by realdiff+execution. CurrentR04model correctedprospectively; no claim globalR02done.",
+      "github_evidence": "https://github.com/mikkelkrogsholm/rentemester/issues/674#issuecomment-6360154971"
+    },
+    "r07_license_scope_observation": {
+      "issue": 679,
+      "status": "OPEN notqualified byJS-onlypolicy/PDFlicensepresence",
+      "source_revision": "596347c244f1619663c939b425c999f7d0200724",
+      "cargo_lock_sha256": "d3b76890c989642fec4d72426d8da954f21af5c174b80ddd82f062db5f411704",
+      "readonly_scout": "adoption_company89",
+      "existing_check": "scripts/release/check-production-licenses.ts usesbunpmlicenses--prod; no installedcargo-deny/license/about",
+      "metadata": "393packages macOS-arm64 offline metadata, no compile/download. Fullplatform75uncachedregistrypackages inclatk0.18.2. All11ownworkspacecrates license:null must be classifiedasown, notunknownthirdparty.",
+      "unapproved_required_licenses": {
+        "MPL-2.0": [
+          "cssparser0.37.0",
+          "selectors0.38.0",
+          "option-ext0.2.0"
+        ],
+        "Unicode-3.0": [
+          "ICU/yoke/zerovec",
+          "unicode-ident1.0.27 (MIT OR Apache2) AND Unicode3"
+        ],
+        "CDLA-Permissive-2.0": [
+          "webpki-roots1.0.9",
+          "webpki-root-certs1.0.9"
+        ],
+        "Zlib": [
+          "foldhash0.2.0",
+          "zlib-rs0.6.8"
+        ]
+      },
+      "scope": "SPDXORcanselectapprovedbranch;ANDmustretainallobligations. PDFiumoutsideCargo hasseparatepins/licensefiles, presence!=policyapproval. No policyexpanded or legalapprovalinvented.",
+      "next_requirement": "One adapter ofexistinglicensepolicy usinglockedmetadata/distributedtargets with properSPDX/failclosed; explicitreviewedpolicy/dependencydecision andcompletemetadata beforefullR07closure."
     }
   },
   "verified_history": [

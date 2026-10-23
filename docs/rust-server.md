@@ -4147,3 +4147,22 @@ komponenttests/18assertions. R33's fem kriterier og J05/J06 er afstemt med
 52/56/99/109–117; #707 er lukket. Ingen backendkontrol ændres, og uændrede
 store restoreprøver er ikke gentaget. Der er nu18lukkede originale issues
 og37åbne. Faktisk fysisk offsite-opbevaring og hele epic'ens slutaccept påstås ikke.
+
+### Valgt identitet og ekstern jobautoritet (R04 afsluttet)
+
+[IDENTITY-DECISION.md](architecture/rust-target/IDENTITY-DECISION.md) vælger
+den eksisterende Rust-identitet for lokal og hosted drift. Dokumentet binder
+MFA/recovery/session/servicebeskyttelser, kontrol-/selskabslåsenes rækkefølge
+og de fire eksterne jobfaser: før dispatch, under providerkald, udløbet lease
+og gendannelse. Et udløb beviser ikke worker-drain, og et providerkald kan
+ikke trækkes tilbage ved en senere revokation. Ukendt udfald må ikke gensendes blindt.
+
+596347c2 er reviewet af hovedagenten og en uafhængig reviewer.11kontraktlinks,
+aktuelle kildepins og fire eksisterende actual-rapporters hash er kvalificeret
+gennem SGD. R04/#676 er lukket; R13/R35/R41/R54/R55 beholder deres runtimekrav.
+Better Auth på den gamle TS-backend har de eksplicitte R41/R55-fjernelsesgates
+og tæller ikke som all-Rust-backend. Ingen uændrede runtimeprøver er gentaget.
+
+Der er nu19lukkede issues og36åbne. R02 er fortsat åbent: et konkret bevaret
+182-planudtræk har korrekte behavior-krav, men forældede typede effekter og
+risikobeskrivelser. Det ændrer ikke de faktiske accepterede bogføringsbeviser.
