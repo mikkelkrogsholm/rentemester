@@ -423,8 +423,12 @@ mod paired_admission_tests {
     use super::*;
     #[test]
     fn paired_service_keeps_workspace_check_before_callback_or_charge() {
-        let mut control = Connection::open_in_memory().unwrap();
-        let mut company = Connection::open_in_memory().unwrap();
+        let dir = tempfile::tempdir().unwrap();
+        let mut control = Connection::open(dir.path().join("control.sqlite")).unwrap();
+        let mut company = Connection::open(dir.path().join("company.sqlite")).unwrap();
+        for db in [&control, &company] {
+            db.execute_batch("PRAGMA foreign_keys=ON;PRAGMA synchronous=FULL").unwrap();
+        }
         let key = ServiceKey::new("other", "synthetic-secret").unwrap();
         let context = Context {
             key: &key, clock: &rentemester_runtime::auth::SystemClock,
