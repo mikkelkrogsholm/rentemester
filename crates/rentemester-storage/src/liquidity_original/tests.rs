@@ -210,3 +210,27 @@ fn ungenerated_schedule_due_month_uses_gross_and_skips_materialized_periods() {
         0
     );
 }
+
+#[test]
+fn monthly_foreign_recurring_inflow_is_not_added_to_dkk_cash() {
+    let (_, mut db) = fixture();
+    let tx = db
+        .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
+        .unwrap();
+    let payload = json!({"invoiceType":"full","invoiceNumber":"SYN-EUR","issueDate":"2026-02-01","dueDate":"2026-02-01","currency":"EUR","seller":{"name":"Synthetic Seller","address":"Synthetic Road 1","vatOrCvr":"12345678"},"buyer":{"name":"Synthetic Buyer","address":"Synthetic Road 2"},"lines":[{"description":"Synthetic service","quantity":1,"unitPriceExVat":40,"lineTotalExVat":40}],"totals":{"netAmount":40,"vatRate":0.25,"vatAmount":10,"grossAmount":50}});
+    // Historical imported schedule in its original currency; no future FX fact.
+    tx.execute("INSERT INTO recurring_invoice_templates(name,interval,interval_count,first_issue_date,next_issue_date,payment_terms_days,delivery_channel,payload_json) VALUES('Synthetic EUR schedule','monthly',1,'2026-02-01','2026-02-01',0,'manual',?1)",[payload.to_string()]).unwrap();
+    let before = tx.total_changes();
+    let report = monthly(
+        &tx,
+        &Monthly {
+            start_date: "2026-02-15".into(),
+            months: "1".into(),
+        },
+    )
+    .unwrap();
+    assert_eq!(report["ok"], false);
+    assert_eq!(report["periods"], json!([]));
+    assert!(report["errors"][0].as_str().unwrap().contains("dated FX"));
+    assert_eq!(tx.total_changes(), before);
+}

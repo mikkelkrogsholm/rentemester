@@ -163,6 +163,16 @@ pub fn monthly(tx: &Transaction<'_>, input: &Monthly) -> Result<Value, Error> {
     };
     let invoices = Facts::receivables(tx, "", &input.start_date, &company)?;
     let recurring = recurring(tx, &start, &end)?;
+    // Original currencies cannot be added to DKK cash without dated settlement FX.
+    if invoices
+        .iter()
+        .chain(recurring.iter())
+        .any(|f| f.date >= start && f.date <= end && f.currency != "DKK")
+    {
+        result["errors"] =
+            json!(["Foreign-currency inflows require dated FX; monthly cash forecast unavailable"]);
+        return Ok(result);
+    }
     let budgets = budgets(tx, &start, &end)?;
     let mut cash = opening.clone();
     let mut periods = vec![];
