@@ -69,6 +69,7 @@ mod reviewed_bookkeeping;
 mod annual_reports;
 mod bank_payables;
 mod commitments;
+mod supplier_commitment_original;
 mod periods;
 mod receivables;
 mod tools;
