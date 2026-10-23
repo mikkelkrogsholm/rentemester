@@ -287,7 +287,7 @@ pub fn finish_ingest_registered(
         .map_err(|_| failed("document_namespace_changed", false))?;
     let workspace = context.selection.workspace;
     let slug = context.selection.slug;
-    control_fence::execute_cookie_subject(
+    let result = control_fence::execute_cookie_subject(
         control,
         company,
         CookieAuthorization {
@@ -309,13 +309,39 @@ pub fn finish_ingest_registered(
                 0,
             )
             .map_err(|error| Error::new(error.code(), "trusted document date unavailable"))?;
-            if admission.original_options.original_api && let Some(message)=rentemester_storage::documents_original::intake_duplicate(tx,admission.file.hash(),&admission.metadata,admission.original_options.force)? {
-                let receipt=rentemester_storage::documents_original::blocked(tx,admission.file.filename(),admission.file.hash(),&admission.metadata,&message)?;
-                return Ok(RegisteredIngest { receipt, upload:RegisteredUpload {workspace:workspace.into(),slug:slug.into(),subject:subject.into(),ledger:ledger_identity(tx)?,document_id:0,hash:admission.file.hash().into(),eligible:false} });
+            if admission.original_options.original_api
+                && let Some(message) = rentemester_storage::documents_original::intake_duplicate(
+                    tx,
+                    admission.file.hash(),
+                    &admission.metadata,
+                    admission.original_options.force,
+                )?
+            {
+                let receipt = rentemester_storage::documents_original::blocked(
+                    tx,
+                    admission.file.filename(),
+                    admission.file.hash(),
+                    &admission.metadata,
+                    &message,
+                )?;
+                return Ok(RegisteredIngest {
+                    receipt,
+                    upload: RegisteredUpload {
+                        workspace: workspace.into(),
+                        slug: slug.into(),
+                        subject: subject.into(),
+                        ledger: ledger_identity(tx)?,
+                        document_id: 0,
+                        hash: admission.file.hash().into(),
+                        eligible: false,
+                    },
+                });
             }
             let path = guard
                 .publish_document(&admission.file)
                 .map_err(|_| unavailable())?;
+            #[cfg(all(test, target_os = "macos"))]
+            crash_tests::checkpoint("published");
             let receipt = rentemester_storage::documents::register_original(
                 tx,
                 rentemester_storage::documents::Original {
@@ -348,6 +374,8 @@ pub fn finish_ingest_registered(
                     Err(error)
                 }
             })?;
+            #[cfg(all(test, target_os = "macos"))]
+            crash_tests::checkpoint("registered");
             rentemester_storage::unmatched_bank::sync(tx)?;
             if receipt["ok"] == false {
                 return Ok(RegisteredIngest {
@@ -380,8 +408,14 @@ pub fn finish_ingest_registered(
                 },
             })
         },
-    )
+    );
+    #[cfg(all(test, target_os = "macos"))]
+    if result.is_ok() {
+        crash_tests::checkpoint("committed");
+    }
+    result
 }
+
 pub fn ingest(
     control: &mut Connection,
     company: &mut Connection,
@@ -490,3 +524,6 @@ pub use service::{
 
 #[cfg(test)]
 mod tests;
+
+#[cfg(all(test, target_os = "macos"))]
+mod crash_tests;

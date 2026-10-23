@@ -103,8 +103,21 @@ pub fn finish_service(
             0,
         )
         .map_err(|_| unavailable())?;
-        if admission.original_options.original_api && let Some(message)=rentemester_storage::documents_original::intake_duplicate(tx,admission.file.hash(),&admission.metadata,admission.original_options.force)? {
-            return rentemester_storage::documents_original::blocked(tx,admission.file.filename(),admission.file.hash(),&admission.metadata,&message);
+        if admission.original_options.original_api
+            && let Some(message) = rentemester_storage::documents_original::intake_duplicate(
+                tx,
+                admission.file.hash(),
+                &admission.metadata,
+                admission.original_options.force,
+            )?
+        {
+            return rentemester_storage::documents_original::blocked(
+                tx,
+                admission.file.filename(),
+                admission.file.hash(),
+                &admission.metadata,
+                &message,
+            );
         }
         let path = guard
             .publish_document(&admission.file)

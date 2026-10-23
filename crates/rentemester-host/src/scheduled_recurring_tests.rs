@@ -418,7 +418,20 @@ fn restored_scheduler_requires_current_admin_review_and_preserves_originals() {
 
 #[test]
 fn access_audit_original_pdf_denial_and_audit_failure_leave_originals_and_journal_unchanged() {
-    let count=|owner:&Owner, table:&str|owner.held.0.as_ref().unwrap().company.as_ref().unwrap().query_row(&format!("SELECT count(*) FROM {table}"),[],|r|r.get::<_,i64>(0)).unwrap();
+    let count = |owner: &Owner, table: &str| {
+        owner
+            .held
+            .0
+            .as_ref()
+            .unwrap()
+            .company
+            .as_ref()
+            .unwrap()
+            .query_row(&format!("SELECT count(*) FROM {table}"), [], |r| {
+                r.get::<_, i64>(0)
+            })
+            .unwrap()
+    };
 
     let (_dir, mut owner, _cookies, proof, _uid) = setup();
     let id = template(&mut owner, &proof, "2026-01-01");
@@ -535,4 +548,101 @@ fn access_audit_original_pdf_denial_and_audit_failure_leave_originals_and_journa
             assert_eq!(original, bytes);
         }
     }
+}
+
+#[test]
+fn service_access_audit_invoice_pdf_served_denied_and_failure_never_reissues() {
+    let (_dir, mut owner, cookies, proof, _uid) = setup();
+    let template_id = template(&mut owner, &proof, "2026-01-01");
+    enable(&mut owner, &proof, template_id);
+    let issued = dispatch(&mut owner, &proof, template_id, 0).unwrap();
+    let doc = issued["generation"]["documentId"].as_i64().unwrap();
+    let before: (i64, i64) = owner
+        .held
+        .0
+        .as_ref()
+        .unwrap()
+        .company
+        .as_ref()
+        .unwrap()
+        .query_row(
+            "SELECT (SELECT count(*) FROM documents),(SELECT count(*) FROM journal_entries)",
+            [],
+            |r| Ok((r.get(0)?, r.get(1)?)),
+        )
+        .unwrap();
+    let (key, subject) = {
+        let control = owner.held.0.as_mut().unwrap().control.as_mut().unwrap();
+        let issued = rentemester_application::service_lifecycle::execute(
+            control,
+            &cookies,
+            &Fixed(NOW),
+            &proof,
+            &rentemester_application::service_lifecycle::Operation::Create {
+                display_name: "Synthetic PDF reader".into(),
+                operation_id: None,
+                expires_in_seconds: None,
+            },
+        )
+        .unwrap();
+        let value: serde_json::Value = serde_json::from_str(issued.as_json()).unwrap();
+        let subject = value["serviceAccountId"].as_str().unwrap().to_owned();
+        let key = rentemester_runtime::service_key::ServiceKey::new(
+            "w",
+            value["secret"].as_str().unwrap(),
+        )
+        .unwrap();
+        control.execute("INSERT INTO rm_workspace_user_access_events(user_id,event_type,workspace_role,actor)VALUES(?1,'activate','member','user:u')", [&subject]).unwrap();
+        control.execute("INSERT INTO rm_company_membership_events(user_id,company_slug,event_type,company_role,actor)VALUES(?1,'a','grant','bookkeeper','user:u')", [&subject]).unwrap();
+        (key, subject)
+    };
+    let read = |owner: &mut Owner| {
+        owner
+            .sales_service(
+                &key,
+                &Fixed(NOW),
+                rentemester_application::sales::Request {
+                    action: rentemester_application::sales::Action::Pdf(doc),
+                    today: "2026-01-01",
+                    now: "2026-01-01T00:00:00Z",
+                    year: None,
+                },
+            )
+            .unwrap()
+            .outcome
+    };
+    let bytes = match read(&mut owner).unwrap().result {
+        rentemester_application::sales::Output::Pdf(bytes) => bytes,
+        _ => panic!("actual service PDF response required"),
+    };
+    assert!(bytes.starts_with(b"%PDF-"));
+    {
+        let control = owner.held.0.as_mut().unwrap().control.as_mut().unwrap();
+        let actor: String = control.query_row("SELECT actor FROM native_service_document_access_events WHERE resource_type='issued_invoice_pdf' AND resource_id=?1 AND outcome='served'", [doc], |r| r.get(0)).unwrap();
+        assert_eq!(actor, format!("service_account:{subject}"));
+        control.execute("INSERT INTO rm_company_membership_events(user_id,company_slug,event_type,company_role,actor)VALUES(?1,'a','revoke',NULL,'user:u')", [&subject]).unwrap();
+    }
+    assert!(read(&mut owner).is_err());
+    {
+        let control = owner.held.0.as_mut().unwrap().control.as_mut().unwrap();
+        assert_eq!(control.query_row("SELECT count(*) FROM native_service_document_access_events WHERE resource_type='issued_invoice_pdf' AND outcome='denied'", [], |r| r.get::<_,i64>(0)).unwrap(), 1);
+        control.execute("INSERT INTO rm_company_membership_events(user_id,company_slug,event_type,company_role,actor)VALUES(?1,'a','grant','bookkeeper','user:u')", [&subject]).unwrap();
+        control.execute_batch("INSERT INTO native_service_document_access_events(id,actor,company_slug,resource_type,resource_id,outcome,reason_code)VALUES(9223372036854775807,'service_account:synthetic','a','issued_invoice_pdf',1,'served','authorized')").unwrap();
+    }
+    assert!(read(&mut owner).is_err());
+    let after: (i64, i64) = owner
+        .held
+        .0
+        .as_ref()
+        .unwrap()
+        .company
+        .as_ref()
+        .unwrap()
+        .query_row(
+            "SELECT (SELECT count(*) FROM documents),(SELECT count(*) FROM journal_entries)",
+            [],
+            |r| Ok((r.get(0)?, r.get(1)?)),
+        )
+        .unwrap();
+    assert_eq!(after, before);
 }
