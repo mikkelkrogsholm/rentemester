@@ -597,3 +597,19 @@ SDK-fixturrettelse bevares. De syv gyldige native prøver på `33e89762` genbrug
 med eksplicit kilde-/afhængighedslighed; første faktiske182forløb består.
 R23-matricen bruger57til historisk batchbevis og180til kladder;58's bankkorrektion
 er ikke batchsamtidighedsbevis. Ingen adgangs-, regnskabs- eller restorekontrol svækkes.
+
+### Fuld issueaccept frem for permanente delacceptmarkeringer (Group183)
+
+En tidlig rapport kan korrekt afgrænse sig fra fuld issueaccept. Senere
+leverede interfaces, fysisk opener, guards og faktiske brugerforløb kan
+opfylde resten; den gamle afgrænsning er ikke i sig selv en permanent blokering.
+Hovedreviewet har derfor samlet kriteriebunden evidens og lukket17af55issues.
+Historiske rapporter, fejl, præcise begrænsninger og revisioner bevares.
+
+Omvendt ændres ikke et oprindeligt krav til at passe med en delimplementering:
+aktivers disposal kræver afhændelse af et eksisterende aktiv, og kørselsbogføring
+kræver satsversion og reel journal. Publication-crash, concurrency, capability-
+forhandling og manglende inbound-poll holdes åbne, hvor bevis eller kode mangler.
+Global R44-selector/default-launcher forbliver en R44-rest; det reducerer ikke
+R32's færdige rapportkort eller fjerner et eksportformat. Installeret manuel
+desktopaccept og alle oprindelige slutkrav bevares.

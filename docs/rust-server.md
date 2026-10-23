@@ -4112,3 +4112,19 @@ R23's fulde kriteriematrice samler57/180/182: versionsbundne kladder, uafhængig
 review, præcis replay, samtidighed og atomisk fejl-/crashudfald. Den ligger i
 `progress.json` under `r23_completion_review182`. Hele epic'en, fuld grænsefladeparitet,
 produktionens omlægning og installeret desktopaccept er fortsat åbne.
+
+### Målrettet afslutning af de oprindelige issues (Group183)
+
+Alle55 oprindelige underissues er gennemgået mod deres fulde scope og konkrete
+acceptkriterier.17er nu accepteret og lukket;38har observerede, konkrete rester.
+R03/R09–R12/R14/R16/R19–R21/R23/R27–R29/R31–R32/R37 er afsluttet ved at samle
+gyldig eksisterende evidens og senere leverede forbrugere. Det er15nye lukninger
+i denne runde, inklusive182's R23. Uændrede prøver blev ikke kørt igen.
+
+GitHub har beslutningsmatricer og afkrydsede kriterier; progress.json gemmer
+referencerne under issue_closure183. Triagekommentarerne erstatter ikke oprindelige
+krav. Afhændelse af aktiver er fx ikke straksafskrivning, mileage-log/eksport er
+ikke bogføring, og serielle tests er ikke samtidighedsbevis. Disse rester bevares.
+Næste afgrænsede recoveryforløb er R33's forståelige ejer-/operatørvej ved
+manglende adgang eller tillidsmateriale; de beståede restoreprøver genbruges.
+Hele epic'en, live omlægning og installeret desktopaccept er fortsat åbne.

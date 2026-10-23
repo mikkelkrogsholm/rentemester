@@ -1,15 +1,31 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "Group182 original bookkeeping batch accepted; R23 ready for closure",
+  "current_increment": "Issue closure183:17of55 original issues fully accepted and closed",
   "code_revision": "1ee2c1ff34bcfe04706acbf95927084888a42426",
   "spec_revision": "sha256:8979030956647a0f03266c50d42786b5d33ab71a59c78528203d223226171e72",
-  "state": "Full R23 draft/batch acceptance supported by57/180/182 completion matrix. All seven frozen182 checks PASS, actual two purchases with independent review/exact replay/normal restart/signed source-free fresh-owner restore. Whole epic and final desktop remain OPEN.",
+  "state": "All55 original children triaged;17closed38open. Reused accepted evidence after main scope/criterion review and independent read-only scouts. Remaining original scope and all final release/cutover/desktop requirements retained. Next smallest whole recovery flow R33#707 owner/operator handoff; no new backup engine/full restore rerun.",
   "issues_closed": [
-    701
+    675,
+    681,
+    682,
+    683,
+    684,
+    687,
+    688,
+    693,
+    694,
+    695,
+    697,
+    701,
+    702,
+    703,
+    704,
+    706,
+    710
   ],
   "next": [
-    "Issue-closure focus: continuously triage existing55issues against accepted evidence; close fully satisfied issues immediately, then choose smallest necessary whole journey that completes next issue. Preserve all original criteria; no extra perfection tests. Original batch182 accepted, R23 closure first.",
+    "Next necessary complete issue R33#707: clear backup download/recovery status and missing-access/trust owner/operator handoff in shared React; reuse52/56/99/109-117 source-free/signature/placement/restore evidence. No new backup engine, physical-offsite claim or repeated broad restore test. Close707 only after its remaining user guidance accepted. All remaining observed issue gaps are evidence observations, not a new local queue.",
     "Original invoice interface inventory now has all31CLI and25MCP bindings, with explicit compatibility corrections documented; do not mistake that family inventory for full product parity. Reconcile remaining original whole-product R44/R45 acceptance from existing epic/issues: actor/env/company-path/default launcher/errors/historical receipts, closure/recovery/automation, signed distribution/update/cutover and TypeScript backend retirement. Continue next necessary whole journey, preserve all accepted evidence/full original scope; installed desktop acceptance last.",
     "Installed desktop acceptance is explicitly deferred to the very end by the user. Preserve prepared Group100 profile; collect remaining native automation, closure, recovery and packaging checks for final installed acceptance without requesting screen unlock during development.",
     "J03/R50 and remaining R54 scope: only still-supported operation closure/recovery, nonempty scheduler handoff, hostile/older clone and post-cutover rollback requirements. Group99 qualifies managed installed J06 flow, not every R54 acceptance item.",
@@ -7529,12 +7545,12 @@
       "pending": [
         {
           "original": "Original filesystem workspace selection and environment/default local launcher",
-          "finding": "Configured-server portfolio_overview qualified in134. Nonempty filesystem workspace deliberately refuses before HTTP. Full original selector/launcher contract and wider transport parity retained for R44; #703 remains open, parked with evidence."
+          "finding": "Configured-server portfolio_overview qualified in134. Nonempty filesystem workspace deliberately refuses before HTTP. Full original selector/launcher contract and wider transport parity remain required under R44; R32 report surface itself accepted and #703 closed by criterion-bound183review."
         }
       ],
       "excluded_owned_elsewhere": "R31 annual/tax/iXBRL; otherdomainreports; globalR44transport/envelope/local-launcher requirements remain required",
       "no_additional_missing_export_format_found": true,
-      "r32_complete": false
+      "r32_complete": true
     },
     "portfolio_overview134": {
       "issue": 703,
@@ -13345,7 +13361,7 @@
     },
     "r23_completion_review182": {
       "issue": 697,
-      "verdict": "All original scope/three acceptance criteria supported; close after evidence publication",
+      "verdict": "CLOSED697 with full acceptance and completion comment",
       "evidence_key": "original_bookkeeping_batch182",
       "criteria": {
         "stale_changed_self_review": "Draft180 actual and native late append rollback; current batch changed_evidence_and_new_candidate_refuse_first_approval_without_history_effects and prepare_with_review",
@@ -13354,7 +13370,378 @@
         "draft_lifecycle": "180 fcc8435bf166c504077a8f5d99c7eec2fa4ac4d9 create/revise/submit/reject/revise/submit/approve, precise replay, signed source-free restore",
         "batch_lifecycle": "182 six original CLI/six source MCP plus retained native body forms; actual exact immutable history and signed source-free restore",
         "historical_evidence": "57 36d1f7388f343b14dc0c64ea64bc40c7f907f656 plus historical validators f1fcbcc5fbbb7b93bc7197f48a0ac7c2ef1a31b2 retained; unversioned legacy partial history inspect-only, no native resume"
-      }
+      },
+      "github_evidence": "https://github.com/mikkelkrogsholm/rentemester/issues/697#issuecomment-6359598787"
+    },
+    "issue_closure183": {
+      "observed_at": "2026-10-23T07:27:51.835322+00:00",
+      "scope": "All55 original epic children; derived review observation, not an execution queue",
+      "closed_total": 17,
+      "remaining_total": 38,
+      "closed_this_pass": [
+        697,
+        681,
+        682,
+        683,
+        684,
+        687,
+        693,
+        694,
+        695,
+        702,
+        703,
+        704,
+        706,
+        675,
+        710
+      ],
+      "closure_decisions": [
+        {
+          "issue": 681,
+          "title": "[Rust R09] Implement exact accounting value types and invariant evaluation",
+          "comment": "https://github.com/mikkelkrogsholm/rentemester/issues/681#issuecomment-6359642253",
+          "criteria": [
+            [
+              "Exact values and cross-language rounding",
+              "exact-arithmetic/evidence.json hash-bound99893a7c:1074 independent Decimal vectors; fiscal-calendar5690cases and manual-journal revision7b253462:210 fixed expectations/171actual source cases."
+            ],
+            [
+              "Fail-closed typed validation",
+              "Overflow/resource/scale/currency/date/unbalanced vectors refuse without coercion; manual-journal covers IDs/rule-version/debit-credit invariants."
+            ],
+            [
+              "Pure domain boundary",
+              "read-only/evidence/report.json records passing dependency/I/O negative controls; engine checks reject SQL/OS/network/UI/credential coupling. No whole transport/release claim."
+            ]
+          ],
+          "closed_at": "2026-10-23T07:17:14Z"
+        },
+        {
+          "issue": 682,
+          "title": "[Rust R10] Implement a strictly read-only SQLite/workspace adapter",
+          "comment": "https://github.com/mikkelkrogsholm/rentemester/issues/682#issuecomment-6359644966",
+          "criteria": [
+            [
+              "Byte-preserving consistent reads",
+              "read-only/evidence/report.json codehash9bfda445, committed f1929829; parity.json34PASS including WAL/SHM source before/after inventories, copied recovery and coherent concurrent capture/bounded refusal."
+            ],
+            [
+              "Unsupported sources fail closed",
+              "Future/pending/checksum/gapped schema, corruption, missing ledger, symlink and traversal controls all pass without source writes."
+            ],
+            [
+              "Explicit company isolation",
+              "Two synthetic ledgers and slug/path reuse are distinct; typed snapshot reads deterministic and handles bounded. Later writer work does not change this original read-only-slice claim."
+            ]
+          ],
+          "closed_at": "2026-10-23T07:17:24Z"
+        },
+        {
+          "issue": 683,
+          "title": "[Rust R11] Deliver the first Rust vertical slice: read-only trial-balance parity",
+          "comment": "https://github.com/mikkelkrogsholm/rentemester/issues/683#issuecomment-6359647147",
+          "criteria": [
+            [
+              "Trial-balance totals and deterministic output",
+              "read-only/evidence/parity.json34PASS, report codehash9bfda445/f1929829: fixed+actual legacy period/opening/foreign/reversal, empty/negative/rounding/UTF16 ordering and two-company fixtures."
+            ],
+            [
+              "Read-only refusals",
+              "Invalid periods/schema/access and path selection refuse with unchanged source byte inventories."
+            ],
+            [
+              "Revision-bound comparison and no live writer",
+              "read-only/evidence/report.json binds exact assets and actual executed comparisons; this completed first-slice acceptance enabled no live posting. Whole cutover remains separate."
+            ]
+          ],
+          "closed_at": "2026-10-23T07:17:33Z"
+        },
+        {
+          "issue": 684,
+          "title": "[Rust R12] Implement workspace ownership, transactional storage and safe migrations",
+          "comment": "https://github.com/mikkelkrogsholm/rentemester/issues/684#issuecomment-6359649264",
+          "criteria": [
+            [
+              "One owner and verified recovery",
+              "workspace-lease and host-owner evidence: real process contenders, death, aliases/stale metadata/PID-not-authority. Native local-runtime138b.json revision7211a112: competing owner refusal, one same shared Rust owner, private IPC/peer UID/no TCPfallback and restart."
+            ],
+            [
+              "Atomic company/control migration",
+              "company-baseline, migration-rehearsal and control-migrations evidence: killed processes at SQL/history/commit boundaries leave complete prefixes; bootstrap_and_early_step_crashes_leave_complete_prefixes and real_history_insert_failure_rolls_back_entire_suffix_including_sessions."
+            ],
+            [
+              "Tamper/downgrade/immutable guards",
+              "Unsupported future/downgrade and altered histories refuse; append-only update/delete guarded. Native company creation/adoption90 supply real consumers; no platform power-loss/distributed-filesystem guarantees are invented."
+            ]
+          ],
+          "closed_at": "2026-10-23T07:17:42Z"
+        },
+        {
+          "issue": 687,
+          "title": "[Rust R14] Port atomic posting, reversal, idempotency and shared mutation gates",
+          "comment": "https://github.com/mikkelkrogsholm/rentemester/issues/687#issuecomment-6359651701",
+          "criteria": [
+            [
+              "Journal/reversal atomicity",
+              "journal-post/evidence.json127 source/process checks and journal-reversal/evidence.json111: real late SQL faults/killed WAL+DELETE writers, atomic header/lines/audit/sequence/receipt, append-only swapped reversal and unchanged originals."
+            ],
+            [
+              "Same-key/current authority",
+              "idempotency/evidence.json132 checks plus service-company/evidence.json92 at0c05fba0: concurrent key election/changed payload conflict/tombstones/expiry/revoked replay nondisclosure, real human/service posting consumers."
+            ],
+            [
+              "Mandatory gates before financial effects",
+              "Original journal160/161 (d1a0af7c, original-journal-mcp161-actual.json) and backup lock111b actual (45d362cd): closed period, missing confirm, invalid source/backup denial preserve financial state. Primitive reports' former missing route/physical consumers are supplied by later accepted native/public journeys; no release claim."
+            ]
+          ],
+          "closed_at": "2026-10-23T07:17:51Z"
+        },
+        {
+          "issue": 693,
+          "title": "[Rust R21] Port canonical bank import, matching and reconciliation corrections",
+          "comment": "https://github.com/mikkelkrogsholm/rentemester/issues/693#issuecomment-6359653798",
+          "criteria": [
+            [
+              "Canonical imports and observations",
+              "bank-original-bytes-integrated83-run2.json revision5bdc17eb; bank-import142 at71fbe50c: overlap/duplicate/changed-source byte identity and observations produce canonical retained rows."
+            ],
+            [
+              "Reviewed bank/journal relations",
+              "bank-matching144b.json at97feb31f: principal assertions/changed source/incompatible links/duplicate replay cannot add a second invalid relation."
+            ],
+            [
+              "Correction/replay/rollback/isolation",
+              "direct-bank-correction-integrated58-conflict2.json actual sourceRevision8f670370: immutable correction history, unchanged balances and exact replay/restore; direct_bank_payable_correction tests include rollback/concurrency. Native multi-company22 at9a0c12c8 plus common current company fence preserves independent ledgers. Adjacent643/642 are not silently waived or claimed by this port."
+            ]
+          ],
+          "closed_at": "2026-10-23T07:18:00Z"
+        },
+        {
+          "issue": 694,
+          "title": "[Rust R19] Port receivables, settlement, credits, FX and overdue claims",
+          "comment": "https://github.com/mikkelkrogsholm/rentemester/issues/694#issuecomment-6359656769",
+          "criteria": [
+            [
+              "Complete receivable reconciliation",
+              "invoice-lifecycle148-continuation.json at6b6ed161 and invoice-payment149.json ata613612f: partial/full/overpay/credit/refund; dated FX130 and native-invoice-bad-debt122b.json at1ca1e318: DKK/EUR loss and journal/bank evidence."
+            ],
+            [
+              "Exact claim/reversal relationships",
+              "invoice-repair150.json at6b34f0a3 and invoice-claims151-continuation.json atf27ae2af: claim components/corrections/partial+final receipts, duplicate and invalid references refuse without overstated balances. Configured rules and documented unsupported foreign-interest refusal retained."
+            ],
+            [
+              "Imported originals remain externally issued",
+              "Adoption90 preserves active/archived issued originals; native-imported-portfolio128c.json at561d1ae0 proves imported open balances without reissue/resend. #612 is separately retained per original issue reconciliation rule; no live migration claim."
+            ]
+          ],
+          "closed_at": "2026-10-23T07:18:12Z"
+        },
+        {
+          "issue": 695,
+          "title": "[Rust R20] Port purchases, payables and supplier commitments",
+          "comment": "https://github.com/mikkelkrogsholm/rentemester/issues/695#issuecomment-6359658949",
+          "criteria": [
+            [
+              "Direct/payable consistent liability",
+              "Accepted58 native corrected direct-bank and direct-original145.json ate517e6f3 preserve intended expense/VAT without duplicate liabilities, dated correction and immutable evidence."
+            ],
+            [
+              "Payment/tax/commitment replay",
+              "payable-original146b.json atc2c9caac: partial/full payment and current revocation; original-commitment176-actual.json at5d89e7b4: versioned schedules/matching/correction, exact occurrence replay,12.34actual vs10.01plan/2.33variance, restart/sourcefree restore."
+            ],
+            [
+              "Ambiguity and VAT blockers",
+              "original-expense168-actual.json at7206d199 and original-vat-purchase174-actual.json atc1f15aa3 plus purchase-preflight tests: ambiguous/duplicate identity and unsupported VAT remain review blockers. #625 separately reconciled scope, not automatically a new feature prerequisite."
+            ]
+          ],
+          "closed_at": "2026-10-23T07:18:21Z"
+        },
+        {
+          "issue": 702,
+          "title": "[Rust R28] Port dimensions, budgets, commitments and CFO analytics",
+          "comment": "https://github.com/mikkelkrogsholm/rentemester/issues/702#issuecomment-6359661073",
+          "criteria": [
+            [
+              "Revisioned dimensions/budgets preserve facts",
+              "original-dimensions177-actual.json at0733e5ac: assignment/lifecycle/conflict/history, budget20 vs actual5+7.5 and exact variance; original-budget172-actual.json at5a1c6f55: revision80→90/actual100, stale review refusal."
+            ],
+            [
+              "Reconciled analytics with uncertainty",
+              "CFO61 and budget172 use actual ledger/13week liquidity/scenario evidence; original-commitment176-actual.json at5d89e7b4: canonical12.34/plan10.01/variance2.33 and no financial mutations."
+            ],
+            [
+              "Sources and projections labelled truthfully",
+              "Missing sources/stale plans/scenario assumptions marked explicitly;177/172/176 actual, normal MFA restart and signed source-free restore all pass. These are authoritative-source projections, no fabricated verified forecast."
+            ]
+          ],
+          "closed_at": "2026-10-23T07:18:29Z"
+        },
+        {
+          "issue": 703,
+          "title": "[Rust R32] Port financial reports, dashboard and read projections",
+          "comment": "https://github.com/mikkelkrogsholm/rentemester/issues/703#issuecomment-6359663080",
+          "criteria": [
+            [
+              "Canonical report totals/drill-down",
+              "Read-only first slice plus journal131, dated-reports132 at066c7563 (six source-differential cases), archive63, multi-year and portfolio/cashflow128/130."
+            ],
+            [
+              "Full mapped report/export surface",
+              "progress.json evidence.r32_original_report_surface_map maps journal/trial/P&L/balance/multiyear/overview/portfolio/cashflow/dashboard JSON+HTML,4CSV/3statementPDF and original portfolio_overview134. No additional missing export format found. Global filesystem selector/default launcher remains explicitly required under R44, not dropped."
+            ],
+            [
+              "Deterministic authorized reads",
+              "dashboard133 atf4193c18, portfolio134 atd6360c8a, static HTML129/archive63: current company rights, fixed as-of, exact source snapshots and no financial/provider effect from report reads."
+            ],
+            [
+              "Honest statutory task state",
+              "Accepted annual/VAT task projections distinguish calculated/prepared/reviewed/locked/recorded from external submission and show source/blocker/next action. The same React UI is used for web/Tauri; final installed desktop and R17's explicit native VAT journey remain separately open."
+            ]
+          ],
+          "closed_at": "2026-10-23T07:18:39Z"
+        },
+        {
+          "issue": 704,
+          "title": "[Rust R29] Port ownership graphs, intercompany and consolidation reporting",
+          "comment": "https://github.com/mikkelkrogsholm/rentemester/issues/704#issuecomment-6359665427",
+          "criteria": [
+            [
+              "Effective-dated explained membership",
+              "Ownership44/backup actual and ownership/tests:60percent to31May, corrected70percent from1June; append-only facts with exact historical boundary."
+            ],
+            [
+              "Explicit balanced read-only consolidation",
+              "Consolidation45/elimination46 actual: two explicitly applied eliminations, report assets1/debt0/equity1, underlying company ledgers unchanged. Intercompany59 ata3de4259 binds separately posted source/target journals and exact settlement/source evidence."
+            ],
+            [
+              "Per-entity rights, not workspace-owner inference",
+              "Application ownership and host consolidation tests refuse unauthorized group/entity even for workspace owner;44/59 signed source-free restore/reopen preserve graph/disposition histories. Concrete group mapping stays workspace configuration."
+            ]
+          ],
+          "closed_at": "2026-10-23T07:18:48Z"
+        },
+        {
+          "issue": 706,
+          "title": "[Rust R31] Port annual accounts, tax and statutory export formats",
+          "comment": "https://github.com/mikkelkrogsholm/rentemester/issues/706#issuecomment-6359667721",
+          "criteria": [
+            [
+              "Annual/tax totals",
+              "annual-exports135.json at6454cd13: result881.25/addback89.06/taxable970.31 and exact iXBRL fields; unknownform gives review/null rather than invented tax. PositiveApS22percent has focused fixed test, not falsely actual qualified."
+            ],
+            [
+              "Validated export packages and fail closed",
+              "authority-export136b.json ate96c2ba4 and saft-artifact137.json atb026a97a: independent tar/manifest/XML/source hash checks and omitted/inconsistent required ledger/context/evidence refusals. Repaired136 fixture results retained with actual successful logs."
+            ],
+            [
+              "Generated does not mean submitted",
+              "Supported annual/authority/SAF-T artifacts retain explicit unavailable provenance/submission status and no regulatory approval claim; missing release provenance remains unavailable until actual release."
+            ],
+            [
+              "Task basis/status/next action",
+              "Accepted annual11/12/J04 source tasks, period159/162 and historicalVAT175 show calculated vs reviewed/locked vs recorded, source period/evidence/blockers/next manual action; no invented legal guarantee. Normal MFA restart verifies135/136/137. Final installed desktop/R17 native journey and entire epic remain open."
+            ]
+          ],
+          "closed_at": "2026-10-23T07:18:57Z"
+        },
+        {
+          "issue": 675,
+          "title": "[Rust R03] Define exact money, schema, audit and wire compatibility",
+          "comment": "https://github.com/mikkelkrogsholm/rentemester/issues/675#issuecomment-6359738349",
+          "criteria": [
+            [
+              "Exact values and historical canonicalization",
+              "Checked-in exact-arithmetic/fiscal-calendar/manual-journal corpora cover boundaries/negative+tie rounding/dates/IDs; journal-hashes and idempotency evidence cover Unicode/null/omitted fields and canonical bytes. Original legacy history/hash validation and fail-closed incompatible schema are preserved by adoption90."
+            ],
+            [
+              "Legacy hash/signature preservation",
+              "Journal-hashes/migration/catalogue contracts and legacy-adoption90-accounting-sourcefree-v2.json preserve existing history rather than rewriting it; signed archive/source-free restore revalidates exact bytes."
+            ],
+            [
+              "Explicit compatibility and rollback matrix",
+              "baseline/TRIAL_BALANCE.md plus schemas separate legacy numeric wires from exact strings; rust-legacy-adoption.md states supported schema/adoption direction; ARCHITECTURE.md rollback constraints prohibit silently returning an accepted native schema to an incompatible legacy writer. Unknown mappings/formats fail closed."
+            ],
+            [
+              "Stable replay after credential/host movement",
+              "service-company/CONTRACT.md binds stable service receipt scope across credential rotation; workspace-transfer-integrated56-wire6.json at1d043dee preserves lost-response journal receipt across host/identity mapping and refuses changed payload without reposting. Transfer99 additionally preserves installed mapped receipt and source tombstone. Unsupported identity mapping blocks transfer; whole cutover remains open."
+            ]
+          ],
+          "closed_at": "2026-10-23T07:23:44Z"
+        },
+        {
+          "issue": 710,
+          "title": "[Rust R37] Port bilagsmail, EML and IMAP intake",
+          "comment": "https://github.com/mikkelkrogsholm/rentemester/issues/710#issuecomment-6359740477",
+          "criteria": [
+            [
+              "One evidenced intake and actionable failures",
+              "mail-intake-integrated73.json at62c085a4:28actual actions, synthetic TLS IMAP, manual/service polling, duplicate UID/changed observations, stable original/dedup and explicit routing classification. Host/storage intake tests cover interrupted reads, source tamper, uncertain routing and transactional rollback."
+            ],
+            [
+              "Bounded secret-safe handling",
+              "Same73 actual and host mail_intake tests at105/132/332 plus storage tests79/128/277 prove malformed/oversize mail, credential/config change/revocation and no partial ingestion or disclosed secrets."
+            ],
+            [
+              "Passive status and retained scope",
+              "Actual HTTP/CLI/MCP read parity performs no mailbox poll or implicit import; explicit poll only. Normal restart and signed source-free fresh-owner restore pass. Gmail OAuth/attachmentless #543/#566 remain separately tracked enhancements under the original reconciliation boundary; they are not claimed implemented by this closure."
+            ]
+          ],
+          "closed_at": "2026-10-23T07:23:53Z"
+        }
+      ],
+      "remaining_observed_acceptance": {
+        "673": "Reconcile per-operation R01 owner/oracle/negative-case/interface and exact success/failure envelope mapping; current inventory proves module ownership only.",
+        "674": "Add the required client-to-storage forbidden-dependency negative control; existing domain SQL/OS controls do not cover it.",
+        "676": "Consolidate the actual Rust/retained-Better-Auth decision and external-job before-dispatch/during-call/lease-expiry/restore table from existing contracts.",
+        "677": "Complete advertised-operation schema/retry matrix and a demonstrated version/capability compatibility handshake.",
+        "678": "Final Tauri-specific keyboard/screen-reader/large-table/preview and claimed-platform prototype acceptance; GPUI evidence is not substituted.",
+        "679": "Bind whole Rust dependency/license verification to an actual candidate; foundation/architecture/fresh-build evidence is already reusable.",
+        "680": "Demonstrate that intentionally omitted gates and injected partial commits cause the acceptance harness itself to fail; reuse existing valid comparator negatives.",
+        "685": "Actual two-connection concurrent last-effective-owner removal proof; serial last-owner and concurrent revoke/post evidence already accepted.",
+        "686": "Process death at original-file/database publication boundaries with staged/orphan reconciliation; existing SQL-error rollback tests are insufficient alone.",
+        "689": "Explicit native J04 VAT draft/reviewed-locked/recorded-or-unsupported task-state acceptance; API/shared-web/VAT/restore evidence retained.",
+        "690": "Local shared-UI scheduler close/sleep to missed-paused to explicit catch-up without duplicates, including timezone/DST policy acceptance.",
+        "691": "Bind PDFium results to original benchmark-pdf-parser corpus and document PDF.js semantic differences and actual memory-bound limitations.",
+        "692": "Executed whole concurrent/interrupted invoice issuance proof covering immutable JSON/PDF publication plus DB outcome; sequence-only tests do not prove it.",
+        "696": "Source-supported non-DKK/reverse-charge workbench/batch acceptance beyond current native DKK/three-VAT boundary; accepted DKK flow must not be repeated.",
+        "698": "Implement and qualify disposal/derecognition of an already capitalized asset. Immediate small-purchase writeoff is not disposal.",
+        "699": "Implement and qualify version-bound mileage rate selection and actual duplicate-protected accounting posting; accepted supplied-rate log/export has zero journals.",
+        "700": "Executed simultaneous posting versus close/reopen allowed-outcome proof; existing ordered stale-review/close/reopen tests already accepted.",
+        "705": "Resolve existing #641 knowledge service/path-company scope with current company/service refusals; existing knowledge/corporate/inbox flows retained.",
+        "707": "Replace ambiguous backup download/recovery wording and provide actionable missing-access/trust owner-to-operator recovery handoff; retain source-free restore/placement evidence, no physical-offsite claim.",
+        "708": "Port regulatory coverage/provision/source-version report and bind legal-hold parity acceptance; fixed retention citation is insufficient.",
+        "709": "Bind local shared-UI scheduler closure/sleep/missed/paused/catch-up/DST acceptance without duplicate delivery; existing durable/unknown-provider outcomes retained.",
+        "711": "Port and qualify implemented source DigiSense inbound paginated poll/signed XML/stable internalId/dedup; outbound registration with inbound direction is insufficient.",
+        "712": "Bind current Tauri login cancellation and OS-secret-storage acceptance, retaining actual normal MFA/rotation/revocation/origin/transfer proof.",
+        "713": "Classify all original BYO provider/consent-secret-generation/prepared-plan cases as baseline, contract preparation or separately pending #363, with required fake checks; do not build pending roadmap features.",
+        "714": "Health/readiness must explicitly represent unsupported schema/migration state without company disclosure; current connected/setup booleans and startup rejection do not prove it.",
+        "715": "Implement/qualify version negotiation/server mismatch and connection-switch cancellation/cache scope/outcome; existing no-retry/redaction/binary/local transport tests retained.",
+        "716": "Complete R01 original command and per-operation actor/selector/output/exit compatibility; private181 candidate is not live standard-entrypoint replacement.",
+        "717": "Complete original discovery/workflow/annotation/resource/transport and per-operation schema/error/envelope/service/reconnect acceptance;370tool names are not full parity.",
+        "718": "Map every original React screen/capability with local/hosted keyboard/accessibility, actionable failures/uncertain outcomes and large-file acceptance.",
+        "719": "Final desktop full lifecycle faults, fresh offline install, VAT/non-VAT/shifted-year onboarding and sleep/closure automation acceptance.",
+        "720": "Final desktop whole read-entrypoint map, measured large tables, keyboard/screen-reader/loading/error and backup/recovery-point display acceptance.",
+        "721": "Final desktop complete supported write/admin entrypoints and J01/J02/J05 owner-recovery scenarios or explicit agreed specialist boundaries.",
+        "722": "Reconcile per-server account/credential-store/capability-aware profiles with current shared React/origin contract; installed95/98/99 behavior proof retained.",
+        "723": "Full baseline and J01-J07 on qualified profiles, full-year lifecycle and required independent usability/interface/security/provider acceptance; remaining concrete issues not waived.",
+        "724": "Actual signing/notarization, supported OS/CPU installation/update matrix, offline GUI update, downgrade/migration fences and data-retaining uninstall;103 is partial.",
+        "725": "HTTPS/reverse-proxy/cookie/client-IP smoke, recovery/reproducibility/registry-SBOM-attestation and reviewed promotion of same digest;105Linux and107local package evidence retained.",
+        "726": "Hostile/older clones, nonempty scheduler transfer, post-cutover rollback, corrupt/wrong-identity/migration/activation-crash matrix and measured recovery point/time;90/99 remain accepted partials.",
+        "727": "After all parity/release/cutover gates, replace live entrypoints/remove replaced TS/Bun/Node backend and finish owner/operator support handover/privacy-safe support bundles."
+      },
+      "evidence_method": "Main reviewed original issue scope/criteria plus independent read-only scoped reviews; existing actual report hashes matched, no unchanged tests rerun. Old finite-report fullissueopen disclaimers retained historically; later named consumers fill those scope gaps.",
+      "goal": "Close existing issues immediately on full accepted scope, then choose smallest necessary whole journey. No optional polish or reduced acceptance.",
+      "disk_observation": {
+        "free_gib": 26.37,
+        "minimum_gib": 30,
+        "compilation_allowed": false,
+        "action": "Accepted182two worktrees snapshot/blob-verified and removed;407idle intermediate objects removed. No Rust compile dispatched below30GiB; independent noncompile issue closure work continued."
+      },
+      "reports": [
+        "/tmp/rentemester-rust-reports/issue-closure183.json",
+        "/tmp/rentemester-rust-reports/issue-closure184.json"
+      ],
+      "scope_retained": "No closure waives remaining prerequisite issue criteria, J01-J07, live cutover, release signing/provenance or final installed desktop."
     }
   },
   "verified_history": [
