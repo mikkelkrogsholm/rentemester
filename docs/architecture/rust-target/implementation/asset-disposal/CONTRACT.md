@@ -1,6 +1,6 @@
 # Capitalized asset derecognition — R24 / #698
 
-Status: implementation contract; not execution or closure evidence. Original170 acquisition/depreciation/immediate-small-purchase-writeoff evidence remains preserved. Neither source TypeScript nor native Rust currently has this disposal operation. It is additive requiredR24scope; never rename asset_write_off or claim an old ABI.
+Status: the following is the original preimplementation contract, not execution or closure evidence; its original observation that disposal was absent is historical, not the current implementation status. Actual R24 / #698 acceptance is recorded at source `295a40ade6788d89b70a6ff9bd9885c81bb884e4` in [progress.json](../progress.json), `evidence.r24_assets698` (accepted report SHA-256 `3fa3c45ca54b4c41c408f14b18d2e9de2c1d31b27e84322d271be80acb9996ac`). Original170 acquisition/depreciation/immediate-small-purchase-writeoff evidence remains preserved. Disposal is the additive required R24 scope specified below; never rename asset_write_off or claim an old ABI. All full-scope accounting, authorization, evidence, replay, rollback and recovery controls below remain binding; this status correction adds no feature and replays no accepted action.
 
 ## User result and accounting
 
