@@ -60,7 +60,7 @@ fn server(status: u16, value: Value) -> (ApiClient, thread::JoinHandle<(String, 
 }
 
 fn report() -> Value {
-    let mut v = json!({"ok":true,"errors":[],"warnings":[],"appliedRules":["DK-VAT-REPORT-001"],"periodStart":"2026-01-01","periodEnd":"2026-03-31","vatPeriodType":"quarterly","filingDeadline":"2026-06-01","outputVat":300,"inputVat":50,"netVatPayable":250,"ossConsumerSalesEntryCount":1,"journalEntryCount":2,"reversedJournalEntryCount":1,"reversalJournalEntryCount":1,"totalJournalEntryCount":4,"linesConsidered":6,"reversedLinesConsidered":2,"reversalLinesConsidered":2,"totalLinesConsidered":10,"rubrikker":{"salgsmoms":250,"momsAfVarekobUdland":25,"momsAfYdelseskobUdland":25,"kobsmoms":50,"momstilsvar":250,"rubrikA":200,"rubrikB":200,"rubrikC":90}});
+    let mut v = json!({"ok":true,"errors":[],"warnings":[],"appliedRules":["DK-VAT-REPORT-001"],"periodStart":"2026-01-01","periodEnd":"2026-03-31","vatPeriodType":"quarter","filingDeadline":"2026-06-01","outputVat":300,"inputVat":50,"netVatPayable":250,"ossConsumerSalesEntryCount":1,"journalEntryCount":2,"reversedJournalEntryCount":1,"reversalJournalEntryCount":1,"totalJournalEntryCount":4,"linesConsidered":6,"reversedLinesConsidered":2,"reversalLinesConsidered":2,"totalLinesConsidered":10,"rubrikker":{"salgsmoms":250,"momsAfVarekobUdland":25,"momsAfYdelseskobUdland":25,"kobsmoms":50,"momstilsvar":250,"rubrikA":200,"rubrikB":200,"rubrikC":90}});
     for (k, n) in [
         ("purchaseBase25", 200),
         ("salesBase25", 1000),
@@ -87,7 +87,7 @@ async fn four_nonempty_routes_and_preserved_domain_refusals() {
     let r = report();
     let eu = json!({"ok":true,"errors":[],"warnings":[],"appliedRules":["DK-VAT-EU-SALES-LIST-001"],"periodStart":"2026-01-01","periodEnd":"2026-03-31","customers":[{"vatNumber":"DE123456789","countryCode":"DE","customerName":"Synthetic customer","invoiceCount":1,"totalValue":200,"invoiceNumbers":["S-1"],"creditNoteCount":0,"creditNoteNumbers":[]}],"totalValue":200,"invoiceCount":1,"creditNoteCount":0,"sources":[]});
     let oss = json!({"ok":true,"errors":[],"warnings":["preview"],"appliedRules":["DK-VAT-OSS-001"],"periodStart":"2026-01-01","periodEnd":"2026-03-31","ossConsumerSalesBase":120,"entryCount":1,"submission":false,"vatReport":r});
-    let filing = json!({"ok":true,"errors":[],"warnings":[],"appliedRules":["DK-VAT-FILING-001"],"periodStart":"2026-01-01","periodEnd":"2026-03-31","vatPeriodType":"quarterly","periodStatus":"closed","periodReference":"Q1","filingDeadline":"2026-06-01","rubrikker":r["rubrikker"],"vatReport":r});
+    let filing = json!({"ok":true,"errors":[],"warnings":[],"appliedRules":["DK-VAT-FILING-001"],"periodStart":"2026-01-01","periodEnd":"2026-03-31","vatPeriodType":"quarter","periodStatus":"closed","periodReference":"Q1","filingDeadline":"2026-06-01","rubrikker":r["rubrikker"],"vatReport":r});
     for (op, v) in [
         ("report", r),
         ("eu-sales-list", eu),
@@ -95,6 +95,18 @@ async fn four_nonempty_routes_and_preserved_domain_refusals() {
         ("filing", filing),
     ] {
         assert!(validate_original_vat_result(op, &v, true), "{op}");
+        if op == "eu-sales-list" {
+            let mut bad = v.clone();
+            bad["appliedRules"] = json!(["DK-VAT-REPORT-001"]);
+            assert!(!validate_original_vat_result(op, &bad, true));
+        }
+        if op == "filing" {
+            let mut bad = v.clone();
+            bad.as_object_mut().unwrap().remove("periodReference");
+            assert!(!validate_original_vat_result(op, &bad, true));
+            bad["periodReference"] = Value::Null;
+            assert!(validate_original_vat_result(op, &bad, true));
+        }
         let (api, t) = server(200, v.clone());
         let got = match op {
             "report" => {

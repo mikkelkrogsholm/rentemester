@@ -1,6 +1,6 @@
 use super::*;
 fn report() -> Value {
-    let mut v = json!({"ok":true,"errors":[],"warnings":[],"appliedRules":["DK-VAT-REPORT-001"],"periodStart":"2026-01-01","periodEnd":"2026-03-31","vatPeriodType":"quarterly","filingDeadline":"2026-06-01","outputVat":300,"inputVat":50,"netVatPayable":250,"ossConsumerSalesEntryCount":1,"journalEntryCount":2,"reversedJournalEntryCount":1,"reversalJournalEntryCount":1,"totalJournalEntryCount":4,"linesConsidered":6,"reversedLinesConsidered":2,"reversalLinesConsidered":2,"totalLinesConsidered":10,"rubrikker":{"salgsmoms":250,"momsAfVarekobUdland":25,"momsAfYdelseskobUdland":25,"kobsmoms":50,"momstilsvar":250,"rubrikA":200,"rubrikB":200,"rubrikC":90}});
+    let mut v = json!({"ok":true,"errors":[],"warnings":[],"appliedRules":["DK-VAT-REPORT-001"],"periodStart":"2026-01-01","periodEnd":"2026-03-31","vatPeriodType":"quarter","filingDeadline":"2026-06-01","outputVat":300,"inputVat":50,"netVatPayable":250,"ossConsumerSalesEntryCount":1,"journalEntryCount":2,"reversedJournalEntryCount":1,"reversalJournalEntryCount":1,"totalJournalEntryCount":4,"linesConsidered":6,"reversedLinesConsidered":2,"reversalLinesConsidered":2,"totalLinesConsidered":10,"rubrikker":{"salgsmoms":250,"momsAfVarekobUdland":25,"momsAfYdelseskobUdland":25,"kobsmoms":50,"momstilsvar":250,"rubrikA":200,"rubrikB":200,"rubrikC":90}});
     for (k, n) in [
         ("purchaseBase25", 200),
         ("salesBase25", 1000),

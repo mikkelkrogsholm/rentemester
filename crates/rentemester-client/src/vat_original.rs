@@ -177,7 +177,9 @@ pub fn validate_original_vat_result(op: &str, v: &Value, success: bool) -> bool 
                 count = next;
                 total += n(r, "totalValue");
             }
-            eq(total, n(v, "totalValue")) && v["invoiceCount"].as_u64() == Some(count)
+            v["appliedRules"] == serde_json::json!(["DK-VAT-EU-SALES-LIST-001"])
+                && eq(total, n(v, "totalValue"))
+                && v["invoiceCount"].as_u64() == Some(count)
         }
         "oss-report" | "filing" => {
             let r = &v["vatReport"];
@@ -198,6 +200,7 @@ pub fn validate_original_vat_result(op: &str, v: &Value, success: bool) -> bool 
                     && matches!(v["periodStatus"].as_str(), Some("closed" | "reported"))
                     && v["vatPeriodType"] == r["vatPeriodType"]
                     && v["filingDeadline"] == r["filingDeadline"]
+                    && v.get("periodReference").is_some()
                     && (v["periodReference"].is_null() || v["periodReference"].is_string())
                     && v["rubrikker"] == r["rubrikker"]
             }
