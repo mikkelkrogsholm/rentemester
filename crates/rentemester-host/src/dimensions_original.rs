@@ -1,4 +1,4 @@
-//! Fixed original supplier commitments on the admitted current Owner namespace.
+//! Original dimensions on the admitted current Owner namespace.
 use super::*;
 use rentemester_application::dimensions_original::{self as app, Operation, Request};
 impl Owner {

@@ -1,4 +1,4 @@
-//! Seven fixed original commitment routes; decoding follows current company authority.
+//! Fourteen original dimension routes; decoding follows current company authority.
 use super::*;
 use rentemester_application::dimensions_original::{self as app, Operation};
 fn domain_error(code: &str, unknown: bool) -> Response {
@@ -98,13 +98,20 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
         .unwrap_or("")
         .to_owned();
     let operation = match request.uri().path().rsplit('/').next().unwrap_or("") {
-        "define"=>Operation::Define,"member"=>Operation::Member,
-        "definition-lifecycle"=>Operation::DefinitionLifecycle,"member-lifecycle"=>Operation::MemberLifecycle,
-        "definitions"=>Operation::Definitions,"members"=>Operation::Members,
-        "plan"=>Operation::Plan,"apply"=>Operation::Apply,"replace"=>Operation::Replace,
-        "supersede"=>Operation::Supersede,"assignments"=>Operation::List,
-        "budget-plan"=>Operation::BudgetPlan,"budget-apply"=>Operation::BudgetApply,
-        _=>Operation::Budgets,
+        "define" => Operation::Define,
+        "member" => Operation::Member,
+        "definition-lifecycle" => Operation::DefinitionLifecycle,
+        "member-lifecycle" => Operation::MemberLifecycle,
+        "definitions" => Operation::Definitions,
+        "members" => Operation::Members,
+        "plan" => Operation::Plan,
+        "apply" => Operation::Apply,
+        "replace" => Operation::Replace,
+        "supersede" => Operation::Supersede,
+        "assignments" => Operation::List,
+        "budget-plan" => Operation::BudgetPlan,
+        "budget-apply" => Operation::BudgetApply,
+        _ => Operation::Budgets,
     };
     let post = operation.post();
     // GET may omit Origin; POST must prove same origin. Use the credential proofs
