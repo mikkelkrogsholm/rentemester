@@ -1,3 +1,5 @@
+mod common;
+use common::TcpListener;
 use rentemester_client::{
     ApiClient, DocumentsOriginalMutation as Mutation, Error, documents_original_file,
     documents_original_schema,
@@ -6,7 +8,6 @@ use serde_json::json;
 use std::{
     fs,
     io::{Read, Write},
-    net::TcpListener,
     thread,
     time::{Duration, Instant},
 };

@@ -268,7 +268,7 @@ mod tests {
     async fn exact_bodyless_cookie_get_preserves_server_value() {
         use std::{
             io::{Read, Write},
-            net::TcpListener,
+
             thread,
         };
         let listener = TcpListener::bind("127.0.0.1:0").unwrap();
@@ -305,3 +305,6 @@ mod tests {
         assert_eq!(request.split("\r\n\r\n").nth(1), Some(""));
     }
 }
+
+#[cfg(test)]
+use crate::test_transport::TcpListener;

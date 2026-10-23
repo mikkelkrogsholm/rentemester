@@ -1,10 +1,11 @@
+mod common;
+use common::TcpListener;
 use rentemester_client::{ApiClient, Error, write_handoff_package};
 use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
 use std::{
     collections::BTreeMap,
     io::{Read, Write},
-    net::TcpListener,
     thread,
 };
 fn tar(files: &BTreeMap<String, Vec<u8>>) -> Vec<u8> {

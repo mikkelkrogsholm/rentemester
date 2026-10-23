@@ -1,7 +1,8 @@
+mod common;
+use common::TcpListener;
 use rentemester_client::{ApiClient, Error, JournalMutation, Report};
 use std::{
     io::{Read, Write},
-    net::TcpListener,
     sync::mpsc,
     thread,
     time::Duration,

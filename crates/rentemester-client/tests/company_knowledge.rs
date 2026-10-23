@@ -1,7 +1,8 @@
+mod common;
+use common::TcpListener;
 use rentemester_client::{ApiClient, Error, KnowledgeMutation, MAX_KNOWLEDGE_BODY};
 use std::{
     io::{Read, Write},
-    net::TcpListener,
     thread,
     time::Duration,
 };

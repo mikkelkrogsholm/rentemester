@@ -1,9 +1,10 @@
 //! The obligations adapter forwards scope and raw canonical facts; it never writes.
+mod common;
+use common::TcpListener;
 use rentemester_client::{ApiClient, Error};
 use serde_json::{Value, json};
 use std::{
     io::{Read, Write},
-    net::TcpListener,
     thread,
     time::Duration,
 };

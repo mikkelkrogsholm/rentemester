@@ -1,6 +1,7 @@
 //! Origin-bound HTTP adapter shared by interactive and agent clients. No ledger logic.
 //! Supply a browser session's Cookie request-header value, never a Set-Cookie header.
 //! Authentication/enrollment is currently performed by the server's browser UI.
+mod protocol;
 mod agent_discovery;
 mod backup_destinations;
 mod backup_remote;
@@ -352,6 +353,7 @@ impl ApiClient {
         cookie: Option<&str>,
     ) -> Result<reqwest::Response, Error> {
         let mutation = body.is_some();
+        let manifest_id = self.negotiate(&method, path).await?;
         let mut url = self
             .base
             .join(path)
@@ -362,6 +364,9 @@ impl ApiClient {
         let mut request = self
             .http
             .request(method, url)
+            .header("x-rentemester-protocol", "1")
+            .header("x-rentemester-manifest", manifest_id)
+            .header("x-rentemester-wire-profile", "rust-http-v1")
             .header("origin", &self.origin)
             .header("accept", "application/json");
         if let Some(key) = &self.service_key {
@@ -594,3 +599,7 @@ mod mileage_posting;
 pub use mileage_posting::{MileagePostingOperation, MAX_MILEAGE_POSTING_BODY, mileage_posting_body_schema, validate_mileage_posting_body};
 mod asset_disposal;
 pub use asset_disposal::{asset_disposal_schema, validate_asset_disposal};
+
+#[cfg(test)]
+#[path = "../tests/common/mod.rs"]
+mod test_transport;

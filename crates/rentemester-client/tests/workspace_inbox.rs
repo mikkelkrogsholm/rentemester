@@ -1,7 +1,8 @@
+mod common;
+use common::TcpListener;
 use rentemester_client::{ApiClient, Error, MAX_WORKSPACE_INBOX_BODY, WorkspaceInboxMutation};
 use std::{
     io::{Read, Write},
-    net::TcpListener,
     thread,
     time::Duration,
 };

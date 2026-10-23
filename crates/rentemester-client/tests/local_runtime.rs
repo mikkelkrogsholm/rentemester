@@ -1,4 +1,6 @@
 #![cfg(unix)]
+mod common;
+use common::TcpListener;
 use rentemester_client::{
     ApiClient, Error, JournalMutation, LocalRuntime, LoginProgress, MfaFactor,
 };
@@ -6,7 +8,6 @@ use serde_json::{Value, json};
 use std::{
     fs,
     io::{Read, Write},
-    net::TcpListener,
     os::unix::{
         fs::{DirBuilderExt, PermissionsExt, symlink},
         net::UnixListener,
@@ -75,7 +76,7 @@ async fn real_unix_login_read_and_mutation_preserve_headers_credentials_and_exac
             (None, json!({"ok":true,"user":"synthetic"})),
             (None, json!({"ok":true,"posted":true})),
         ] {
-            let (mut s, _) = listener.accept().unwrap();
+            let (mut s, _) = common::unix_accept(&listener).unwrap();
             s.set_read_timeout(Some(std::time::Duration::from_secs(5)))
                 .unwrap();
             requests.push(request(&mut s));
@@ -198,9 +199,9 @@ async fn every_new_client_revalidates_and_stopped_socket_never_uses_live_tcp_ori
     assert!(ApiClient::new_local(&local, None).is_err());
     descriptor(&path, &origin);
     drop(listener);
-    assert_eq!(api.me().await.unwrap_err(), Error::Transport);
+    assert_eq!(api.me().await.unwrap_err(), Error::Protocol);
     let service = ApiClient::with_local_service_key(&local, "synthetic-key".into()).unwrap();
-    assert_eq!(service.me().await.unwrap_err(), Error::Transport);
+    assert_eq!(service.me().await.unwrap_err(), Error::Protocol);
     tcp.set_nonblocking(true).unwrap();
     assert!(tcp.accept().is_err());
     fs::remove_dir_all(path).unwrap();

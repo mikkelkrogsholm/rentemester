@@ -1,16 +1,18 @@
+mod common;
+use common::TcpListener;
 use rentemester_client::{ApiClient, Error};
 use std::{
     io::{Read, Write},
-    net::TcpListener,
     thread,
     time::Duration,
 };
 
 #[tokio::test]
 async fn parsing_is_confirmed_once_and_ambiguous_writes_are_not_retried() {
-    for (status, expected) in [
-        ("200 OK", None),
-        ("503 Unavailable", Some(Error::OutcomeUnknown)),
+    for (status, complete, expected) in [
+        ("200 OK", true, None),
+        ("503 Unavailable", true, Some(Error::OutcomeUnknown)),
+        ("200 OK", false, Some(Error::OutcomeUnknown)),
     ] {
         let listener = TcpListener::bind("127.0.0.1:0").unwrap();
         let api = ApiClient::new(
@@ -50,7 +52,11 @@ async fn parsing_is_confirmed_once_and_ambiguous_writes_are_not_retried() {
                     }
                 }
             }
-            let body = r#"{"ok":true,"parse":{"cached":false}}"#;
+            let body = if complete {
+                r#"{"ok":true,"parse":{"documentId":7,"status":"parsed","errorCode":null,"pageCount":1,"itemCount":2,"textLength":10,"resultHash":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","cached":false}}"#
+            } else {
+                r#"{"ok":true,"parse":{"cached":false}}"#
+            };
             write!(
                 stream,
                 "HTTP/1.1 {status}\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{body}",

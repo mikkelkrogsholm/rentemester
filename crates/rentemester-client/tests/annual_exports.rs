@@ -1,9 +1,10 @@
+mod common;
+use common::TcpListener;
 use rentemester_client::{ApiClient, Error};
 use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
 use std::{
     io::{Read, Write},
-    net::TcpListener,
     thread,
 };
 fn server(value: Value, status: u16) -> (String, thread::JoinHandle<String>) {

@@ -1,7 +1,8 @@
+mod common;
+use common::TcpListener;
 use rentemester_client::{ApiClient, AssetMutation as Op, Error, MAX_ASSET_BODY};
 use std::{
     io::{Read, Write},
-    net::TcpListener,
     thread,
     time::Duration,
 };

@@ -1,7 +1,8 @@
+mod common;
+use common::TcpListener;
 use rentemester_client::{ApiClient, DASHBOARD_CONTENT_TYPE, Error};
 use std::{
     io::{Read, Write},
-    net::TcpListener,
     thread,
 };
 fn server(reply: &'static [u8], mime: &'static str) -> (String, thread::JoinHandle<String>) {

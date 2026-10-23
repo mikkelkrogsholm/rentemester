@@ -1,3 +1,5 @@
+mod common;
+use common::TcpListener;
 use rentemester_client::{
     ApiClient, DimensionsOriginalOperation as Op, Error, original_dimensions_schema,
     validate_original_dimensions,
@@ -5,7 +7,6 @@ use rentemester_client::{
 use serde_json::{Value, json};
 use std::{
     io::{Read, Write},
-    net::TcpListener,
     thread,
 };
 const OPS: [Op; 14] = [

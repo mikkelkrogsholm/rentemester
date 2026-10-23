@@ -1,6 +1,8 @@
+mod common;
+use common::TcpListener;
 use rentemester_client::{ApiClient, Error};
 use serde_json::{Value,json};
-use std::{io::{Read,Write},net::TcpListener,sync::{Arc,atomic::{AtomicUsize,Ordering}},thread,time::{Duration,Instant}};
+use std::{io::{Read,Write},sync::{Arc,atomic::{AtomicUsize,Ordering}},thread,time::{Duration,Instant}};
 fn packet(version:u32)->Value {
     let mut v=json!({"version":version,"periodStart":"2025-01-01","periodEnd":"2025-03-31","cutoff":"2025-03-31","controlsRun":["AUDIT_CHAIN"],"items":[{"code":"AUDIT_CHAIN","status":"passed","waivable":false,"count":0,"amount":0,"evidence":[],"sourceHash":"b".repeat(64)}],"blockers":0,"warnings":0,"hash":"a".repeat(64)});
     if version==4 {v["format"]=json!("rentemester.native-period-close.v1");v["sourceRevision"]=json!({"journal":[],"journalCount":[{"n":0}],"audit":[{"n":0,"head":null}]});} v

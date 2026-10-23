@@ -1,3 +1,5 @@
+mod common;
+use common::TcpListener;
 use rentemester_client::{
     ApiClient, Error, OriginalPublicInvoiceKind as Kind, public_invoice_artifact,
     validate_invoice_public_original,
@@ -6,7 +8,6 @@ use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
 use std::{
     io::{Read, Write},
-    net::TcpListener,
     thread,
 };
 fn server(status: u16, value: Value) -> (String, thread::JoinHandle<(String, Value)>) {

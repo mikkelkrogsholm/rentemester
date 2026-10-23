@@ -1,9 +1,10 @@
+mod common;
+use common::TcpListener;
 use rentemester_client::{
     ApiClient, Error, MAX_WORKSPACE_BACKUP_BYTES, WORKSPACE_BACKUP_CONTENT_TYPE,
 };
 use std::{
     io::{Read, Write},
-    net::TcpListener,
     thread,
     time::Duration,
 };

@@ -1,9 +1,10 @@
+mod common;
+use common::TcpListener;
 use rentemester_client::{
     ApiClient, ConsolidationMutation, Error, MAX_CONSOLIDATION_BODY, MAX_CONSOLIDATION_PROPOSE_BODY,
 };
 use std::{
     io::{Read, Write},
-    net::TcpListener,
     thread,
     time::Duration,
 };

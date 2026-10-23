@@ -95,7 +95,7 @@ mod tests {
     use super::*;
     use std::{
         io::{Read, Write},
-        net::TcpListener,
+
         sync::mpsc,
         thread,
         time::Duration,
@@ -261,3 +261,6 @@ mod tests {
         }
     }
 }
+
+#[cfg(test)]
+use crate::test_transport::TcpListener;

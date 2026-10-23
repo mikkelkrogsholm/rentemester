@@ -1,10 +1,11 @@
+mod common;
+use common::TcpListener;
 use rentemester_client::{
     ApiClient, CorporateRecordMutation, Error, MAX_CORPORATE_BODY, MAX_CORPORATE_INGEST_BODY,
     MAX_CORPORATE_ORIGINAL_JSON,
 };
 use std::{
     io::{Read, Write},
-    net::TcpListener,
     thread,
     time::Duration,
 };

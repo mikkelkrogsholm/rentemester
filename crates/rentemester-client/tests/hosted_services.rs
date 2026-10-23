@@ -1,3 +1,5 @@
+mod common;
+use common::TcpListener;
 use rentemester_client::{
     ApiClient, Error, HostedRecurringMutation as Hosted, MAX_HOSTED_RECURRING_BODY,
     MAX_SERVICE_PRINCIPAL_BODY, ServicePrincipalMutation as Service,
@@ -5,7 +7,6 @@ use rentemester_client::{
 use serde_json::{Value, json};
 use std::{
     io::{Read, Write},
-    net::TcpListener,
     sync::mpsc,
     thread,
     time::Duration,

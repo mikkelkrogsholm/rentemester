@@ -1,8 +1,9 @@
+mod common;
+use common::TcpListener;
 use rentemester_client::{ApiClient, BankAccountOriginalMutation, Error};
 use serde_json::{Value, json};
 use std::{
     io::{Read, Write},
-    net::TcpListener,
     thread,
 };
 fn server(status: u16, value: Value) -> (String, thread::JoinHandle<Value>) {

@@ -1,8 +1,9 @@
+mod common;
+use common::TcpListener;
 use rentemester_client::{ApiClient, Error};
 use serde_json::{Value, json};
 use std::{
     io::{Read, Write},
-    net::TcpListener,
     sync::mpsc,
     thread,
     time::Duration,
@@ -181,11 +182,18 @@ async fn opening_bad_controls_size_duplicate_fields_and_extra_authority_never_co
         Err(Error::InvalidInput(_))
     ));
     let schema = rentemester_client::opening_balance_body_schema(true);
-    assert_eq!(schema["properties"]["input"]["additionalProperties"], false);
+    let alternatives = schema["properties"]["input"]["oneOf"].as_array().unwrap();
+    assert_eq!(alternatives.len(), 2);
+    for alternative in alternatives {
+        assert_eq!(alternative["additionalProperties"], false);
+    }
+    assert_eq!(
+        alternatives[1]["properties"]["sourceSystem"]["const"],
+        "synthetic-csv"
+    );
     assert_eq!(schema["properties"]["confirm"]["const"], true);
     assert_eq!(
-        schema["properties"]["input"]["properties"]["lines"]["items"]["properties"]["debitAmount"]
-            ["type"],
+        alternatives[0]["properties"]["lines"]["items"]["properties"]["debitAmount"]["type"],
         "string"
     );
 }

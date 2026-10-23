@@ -1,9 +1,10 @@
+mod common;
+use common::TcpListener;
 use rentemester_client::{
     ApiClient, Error, MAX_OWNERSHIP_BODY, MAX_OWNERSHIP_PROPOSE_BODY, OwnershipMutation,
 };
 use std::{
     io::{Read, Write},
-    net::TcpListener,
     thread,
     time::Duration,
 };

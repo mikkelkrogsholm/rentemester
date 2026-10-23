@@ -1,8 +1,9 @@
+mod common;
+use common::TcpListener;
 use rentemester_client::{ApiClient, Error, LoginProgress, MfaFactor};
 use serde_json::{Value, json};
 use std::{
     io::{Read, Write},
-    net::TcpListener,
     sync::mpsc,
     thread,
 };

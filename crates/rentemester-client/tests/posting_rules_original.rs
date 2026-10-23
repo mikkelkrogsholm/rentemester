@@ -1,3 +1,5 @@
+mod common;
+use common::TcpListener;
 use rentemester_client::{
     ApiClient, Error, PostingRulesOriginalOperation as Op, original_posting_rules_schema,
     validate_original_posting_rules,
@@ -5,7 +7,6 @@ use rentemester_client::{
 use serde_json::{Value, json};
 use std::{
     io::{Read, Write},
-    net::TcpListener,
     thread,
     time::{Duration, Instant},
 };

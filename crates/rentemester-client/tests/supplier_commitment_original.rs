@@ -1,3 +1,5 @@
+mod common;
+use common::TcpListener;
 use rentemester_client::{
     ApiClient, Error, SupplierCommitmentOriginalOperation as Op,
     original_supplier_commitment_schema, validate_original_supplier_commitment,
@@ -5,7 +7,6 @@ use rentemester_client::{
 use serde_json::{Value, json};
 use std::{
     io::{Read, Write},
-    net::TcpListener,
     thread,
 };
 fn commitment() -> Value {

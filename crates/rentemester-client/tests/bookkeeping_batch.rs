@@ -1,10 +1,11 @@
+mod common;
+use common::TcpListener;
 use rentemester_client::{
     ApiClient, BookkeepingBatchMutation as Op, Error, MAX_BOOKKEEPING_BATCH_BODY,
 };
 use serde_json::{Value, json};
 use std::{
     io::{Read, Write},
-    net::TcpListener,
     sync::mpsc,
     thread,
     time::Duration,

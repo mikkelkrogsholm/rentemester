@@ -108,7 +108,7 @@ mod tests {
     use serde_json::json;
     use std::{
         io::{Read, Write},
-        net::TcpListener,
+
         thread,
     };
     fn report(kind: &str) -> Value {
@@ -229,3 +229,6 @@ mod tests {
         );
     }
 }
+
+#[cfg(test)]
+use crate::test_transport::TcpListener;
