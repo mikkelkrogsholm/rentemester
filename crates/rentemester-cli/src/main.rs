@@ -19,6 +19,7 @@ mod dated_reports;
 mod direct_bank_original;
 mod document_party_original;
 mod budget_original;
+mod vat_original;
 mod documents_original;
 mod eu_sales;
 mod exceptions_original;
@@ -358,6 +359,11 @@ fn main() -> ExitCode {
             return ExitCode::SUCCESS;
         }
     }
+    if args == ["vat"] || args == ["vat", "--help"] { println!("{}", vat_original::help()); return ExitCode::SUCCESS; }
+    if vat_original::accepts(&args) {
+        if let Err(output) = vat_original::preflight(&args) { eprint!("{}", output.stderr); return ExitCode::from(output.exit); }
+        if args.iter().any(|s|s=="--help") {println!("{}",vat_original::help());return ExitCode::SUCCESS;}
+    }
     if args == ["budget"] || args == ["budget", "--help"] { println!("{}", budget_original::help()); return ExitCode::SUCCESS; }
     if budget_original::accepts(&args) {
         if let Err(output) = budget_original::preflight(&args) { eprint!("{}", output.stderr); return ExitCode::from(output.exit); }
@@ -492,6 +498,9 @@ fn main() -> ExitCode {
         print!("{}", output.stdout);
         eprint!("{}", output.stderr);
         return ExitCode::from(output.exit);
+    }
+    if vat_original::accepts(&args) {
+        let output=vat_original::execute(&args);print!("{}",output.stdout);eprint!("{}",output.stderr);return ExitCode::from(output.exit);
     }
     if budget_original::accepts(&args) {
         let output=budget_original::execute(&args);print!("{}",output.stdout);eprint!("{}",output.stderr);return ExitCode::from(output.exit);
