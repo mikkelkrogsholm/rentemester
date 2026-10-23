@@ -61,24 +61,23 @@ pub fn resolve_document(
             "invoiceNo is not supported for representation purchases",
         ));
     }
-    if operation == Operation::EuService {
-        if let Some(no) = input
+    if operation == Operation::EuService
+        && let Some(no) = input
             .invoice_no
             .as_deref()
             .map(str::trim)
             .filter(|s| !s.is_empty())
-        {
-            return tx
-                .query_row(
-                    "SELECT id FROM documents WHERE invoice_no=?1 ORDER BY id DESC LIMIT 1",
-                    [no],
-                    |r| r.get(0),
-                )
-                .optional()
-                .map_err(sql)?
-                .ok_or_else(|| fail(format!("Could not resolve document for invoiceNo {no}")))
-                .and_then(positive_id);
-        }
+    {
+        return tx
+            .query_row(
+                "SELECT id FROM documents WHERE invoice_no=?1 ORDER BY id DESC LIMIT 1",
+                [no],
+                |r| r.get(0),
+            )
+            .optional()
+            .map_err(sql)?
+            .ok_or_else(|| fail(format!("Could not resolve document for invoiceNo {no}")))
+            .and_then(positive_id);
     }
     positive_id(
         input
@@ -342,12 +341,12 @@ fn prepare(
         (&input.amount_foreign, &gross),
         (&input.amount_dkk, &gross_dkk),
     ] {
-        if let Some(n) = provided {
-            if exact(n)? != *expected {
-                return Err(fail(
-                    "FX amounts must match original and documented payment",
-                ));
-            }
+        if let Some(n) = provided
+            && exact(n)? != *expected
+        {
+            return Err(fail(
+                "FX amounts must match original and documented payment",
+            ));
         }
     }
     if currency != "DKK" && (input.amount_foreign.is_none() || input.amount_dkk.is_none()) {
@@ -355,10 +354,10 @@ fn prepare(
             "non-DKK purchase requires amountForeign and amountDkk",
         ));
     }
-    if let Some(n) = &input.fx_rate_to_dkk {
-        if FxRate::parse(&n.to_string())? != rate {
-            return Err(fail("FX rate must match documented payment"));
-        }
+    if let Some(n) = &input.fx_rate_to_dkk
+        && FxRate::parse(&n.to_string())? != rate
+    {
+        return Err(fail("FX rate must match documented payment"));
     }
     // Shared expense order is expense/input/output/payment; preserve source VAT ABI order.
     if operation == Operation::EuService && input.source_bank_transaction_id.is_some() {
