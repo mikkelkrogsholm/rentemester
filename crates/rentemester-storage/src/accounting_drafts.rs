@@ -312,6 +312,19 @@ pub fn change(
     actor: &str,
     latest: Date,
 ) -> Result<Value, Error> {
+    change_with_receipt(tx, id, action, input, actor, latest, &mut None)
+}
+/// Internal source seam: capture the actual post result without changing native DTOs.
+#[allow(clippy::too_many_arguments)] // Native arguments plus an optional actual receipt sink.
+pub(crate) fn change_with_receipt(
+    tx: &Transaction<'_>,
+    id: &str,
+    action: &str,
+    input: &Input,
+    actor: &str,
+    latest: Date,
+    receipt: &mut Option<Value>,
+) -> Result<Value, Error> {
     crate::journal_post::require_current(tx)?;
     if id.is_empty()
         || id.len() > 64
@@ -460,6 +473,7 @@ pub fn change(
     let journal = result["entryId"]
         .as_i64()
         .ok_or_else(|| refused("posting receipt unavailable"))?;
+    *receipt = Some(result);
     append(
         tx,
         &all,
