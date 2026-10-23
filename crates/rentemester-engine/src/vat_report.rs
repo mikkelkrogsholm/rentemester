@@ -34,6 +34,11 @@ pub struct Rubrics {
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Report {
+    /// Source-contract categories from this same reconciled accumulation. Not native wire fields.
+    #[serde(skip)]
+    pub canonical_bases: BTreeMap<String, Money>,
+    #[serde(skip)]
+    pub reverse_charge_purchase_output_vat: Money,
     pub output_vat: Money,
     pub output_vat_adjustment: Money,
     pub input_vat: Money,
@@ -116,6 +121,7 @@ pub fn build(lines: &[Line]) -> Result<Report, Error> {
     let mut exact_sales_vat = Money::default();
     let mut allocated_reverse = Money::default();
     let mut total_expected_reverse = Money::default();
+    let mut goods_output = Money::default();
     let mut dedicated_present = BTreeSet::new();
     let reverse_codes = [
         "EU_SERVICE_REVERSE_CHARGE",
@@ -182,6 +188,9 @@ pub fn build(lines: &[Line]) -> Result<Report, Error> {
             };
             if code == "OSS_EU_CONSUMER" {
                 oss_entries.insert(id);
+            }
+            if code == "EU_GOODS_ACQUISITION" {
+                goods_output.add(&amount.percent("25")?);
             }
             if reverse_codes.contains(&code) {
                 expected_reverse.add(&amount.percent("25")?);
@@ -295,7 +304,31 @@ pub fn build(lines: &[Line]) -> Result<Report, Error> {
     let mut gross_output = output.clone();
     gross_output.add(&relief);
     let payable = output.subtract(&input);
+    let mut canonical_bases: BTreeMap<String, Money> = [
+        ("purchaseBase25", "DK_PURCHASE_25"),
+        ("salesBase25", "DK_SALE_25"),
+        ("foreignReverseChargeSalesBase", "REVERSE_CHARGE_EXEMPT"),
+        (
+            "domesticReverseChargeSalesBase",
+            "DOMESTIC_REVERSE_CHARGE_EXEMPT",
+        ),
+        ("reverseChargePurchaseBase", "EU_SERVICE_REVERSE_CHARGE"),
+        ("euGoodsAcquisitionPurchaseBase", "EU_GOODS_ACQUISITION"),
+        (
+            "nonEuServiceReverseChargePurchaseBase",
+            "NON_EU_SERVICE_REVERSE_CHARGE",
+        ),
+        ("representationPurchaseBase", "REPRESENTATION_SPECIAL"),
+        ("badDebtReliefBase25", "DK_BAD_DEBT_25"),
+        ("exemptSalesBase", "DK_SALE_EXEMPT"),
+    ]
+    .into_iter()
+    .map(|(name, code)| (name.to_owned(), sum(&bases, &[code])))
+    .collect();
+    canonical_bases.insert("euGoodsAcquisitionOutputVat".into(), goods_output);
     Ok(Report {
+        canonical_bases,
+        reverse_charge_purchase_output_vat: allocated_reverse.clone(),
         output_vat: gross_output,
         output_vat_adjustment: Money::default().subtract(&relief),
         input_vat: input.clone(),
@@ -349,6 +382,68 @@ mod tests {
             historical: false,
             exact_sales_vat: None,
         }
+    }
+    #[test]
+    fn canonical_categories_share_native_accumulation_without_expanding_serialization() {
+        let report = build(&[
+            line(
+                1,
+                "expense",
+                Some("EU_SERVICE_REVERSE_CHARGE"),
+                "100",
+                "0",
+                None,
+            ),
+            line(1, "vat", None, "25", "0", Some("input")),
+            line(1, "vat", None, "0", "25", Some("output")),
+            line(
+                2,
+                "expense",
+                Some("NON_EU_SERVICE_REVERSE_CHARGE"),
+                "200",
+                "0",
+                None,
+            ),
+            line(2, "vat", None, "50", "0", Some("input")),
+            line(2, "vat", None, "0", "50", Some("output")),
+            line(3, "expense", Some("EU_GOODS_ACQUISITION"), "300", "0", None),
+            line(3, "vat", None, "75", "0", Some("input")),
+            line(3, "vat", None, "0", "75", Some("output")),
+            line(4, "income", Some("REVERSE_CHARGE_EXEMPT"), "0", "40", None),
+            line(
+                5,
+                "income",
+                Some("DOMESTIC_REVERSE_CHARGE_EXEMPT"),
+                "0",
+                "60",
+                None,
+            ),
+        ])
+        .unwrap();
+        assert!(report.errors.is_empty(), "{:?}", report.errors);
+        for (key, expected) in [
+            ("reverseChargePurchaseBase", "100.00"),
+            ("nonEuServiceReverseChargePurchaseBase", "200.00"),
+            ("euGoodsAcquisitionPurchaseBase", "300.00"),
+            ("euGoodsAcquisitionOutputVat", "75.00"),
+            ("foreignReverseChargeSalesBase", "40.00"),
+            ("domesticReverseChargeSalesBase", "60.00"),
+        ] {
+            assert_eq!(report.canonical_bases[key].decimal(), expected);
+        }
+        assert_eq!(
+            report.reverse_charge_purchase_output_vat.decimal(),
+            "150.00"
+        );
+        assert_eq!(
+            report.rubrikker.moms_af_ydelseskob_udland.decimal(),
+            "75.00"
+        );
+        assert_eq!(report.rubrikker.rubrik_a.decimal(), "400.00");
+        let wire = serde_json::to_value(report).unwrap();
+        assert!(wire.get("canonicalBases").is_none());
+        assert!(wire.get("reverseChargePurchaseOutputVat").is_none());
+        assert_eq!(wire.as_object().unwrap().len(), 9);
     }
     #[test]
     fn tax_representation_base_reuses_classification_without_changing_vat_wire() {

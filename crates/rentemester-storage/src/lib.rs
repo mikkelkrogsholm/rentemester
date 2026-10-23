@@ -693,3 +693,5 @@ pub mod documents_original;
 
 pub mod budget_original;
 pub mod liquidity_original;
+
+pub mod vat_original;
