@@ -6,6 +6,8 @@ rust-version.workspace = true
 publish.workspace = true
 
 [dependencies]
+# Bounded pure XML parsing for existing versioned legal-source corpus.
+roxmltree = "=0.20.0"
 base64 = "=0.22.1"
 zip = { version = "=9.0.5", default-features = false, features = ["deflate-flate2", "deflate-flate2-zlib-rs"] }
 mail-parser = { version = "=0.11.9", features = ["full_encoding"] }

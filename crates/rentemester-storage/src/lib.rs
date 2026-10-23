@@ -706,3 +706,6 @@ pub mod dimensions_original;
 pub mod accounts_original;
 
 pub mod document_access;
+
+pub mod legal_holds;
+pub mod compliance;

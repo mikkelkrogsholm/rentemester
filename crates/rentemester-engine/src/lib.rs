@@ -106,3 +106,6 @@ pub mod dashboard_html;
 pub mod tax_return;
 
 pub mod ixbrl;
+
+pub mod regulatory;
+pub mod compliance_report;

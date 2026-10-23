@@ -182,3 +182,5 @@ pub mod accounts_original;
 pub mod accounting_draft_original;
 
 mod document_access;
+
+pub mod compliance;

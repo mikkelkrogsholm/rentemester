@@ -14,7 +14,7 @@ function checkDependencies(crate: string, names: string[]) {
   const allowed = new Set(
     crate === "rentemester-engine"
       ? ["num-bigint", "serde", "serde_json", "sha2", "ryu-js", "time",
-          "base64", "zip", "mail-parser", "unicode-properties", "unicode-normalization"]
+          "base64", "zip", "mail-parser", "unicode-properties", "unicode-normalization", "roxmltree"]
       : ["serde", "serde_json", "rentemester-engine", "rentemester-storage", "rentemester-runtime", "rusqlite"],
   );
   assert(

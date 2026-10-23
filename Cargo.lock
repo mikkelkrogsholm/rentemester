@@ -6949,6 +6949,7 @@ dependencies = [
  "base64 0.22.1",
  "mail-parser",
  "num-bigint 0.5.1",
+ "roxmltree 0.20.0",
  "ryu-js",
  "serde",
  "serde_json",
