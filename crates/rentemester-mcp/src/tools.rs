@@ -135,6 +135,7 @@ pub fn list() -> Value {
     tools.extend(crate::periods::tools());
     tools.extend(crate::receivables::tools());
     tools.extend(crate::commitments::tools());
+    tools.extend(crate::supplier_commitment_original::tools());
     tools.extend(crate::annual_reports::tools());
     tools.extend(crate::annual_exports::tools());
     tools.extend(crate::handoff_export::tools());
@@ -295,6 +296,7 @@ pub async fn call(api: &ApiClient, name: &str, args: Value) -> Result<Value, &'s
     if crate::asset_original::accepts(name) {return crate::asset_original::call(api,name,args).await;}
     if crate::mileage_original::accepts(name) {return crate::mileage_original::call(api,name,args).await;}
     if crate::accrual_original::accepts(name) {return crate::accrual_original::call(api,name,args).await;}
+    if crate::supplier_commitment_original::accepts(name) { return crate::supplier_commitment_original::call(api, name, args).await; }
     if crate::recurring_original::accepts(name) {return crate::recurring_original::call(api,name,args).await;}
     if name=="invoice_write_off_bad_debt" && args.get("body").is_none() {return crate::invoice_bad_debt::call_original(api,args).await;}
     if crate::invoice_claims_original::accepts(name,&args) {return crate::invoice_claims_original::call(api,name,args).await;}

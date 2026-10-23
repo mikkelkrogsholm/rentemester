@@ -10,7 +10,7 @@ pub fn accepts(name: &str) -> bool {
     matches!(
         name,
         "supplier_commitments"
-            | "supplier_commitment_matches"
+            | "native_supplier_commitment_matches"
             | "plan_supplier_commitment"
             | "approve_supplier_commitment"
             | "change_supplier_commitment"
@@ -27,7 +27,7 @@ pub fn tools() -> Vec<Value> {
             true,
         ),
         tool(
-            "supplier_commitment_matches",
+            "native_supplier_commitment_matches",
             "Read persisted canonical occurrence/evidence links and immutable variance; CompanyRead, no selectors",
             json!({"type":"object","required":["company"],"properties":{"company":company},"additionalProperties":false}),
             true,
@@ -99,7 +99,7 @@ pub async fn call(
             api.supplier_commitments(&a.company, a.start_date.as_deref())
                 .await
         }
-        "supplier_commitment_matches" => {
+        "native_supplier_commitment_matches" => {
             let a: Company =
                 serde_json::from_value(args).map_err(|_| "matches read accepts company only")?;
             api.supplier_commitment_matches(&a.company).await
