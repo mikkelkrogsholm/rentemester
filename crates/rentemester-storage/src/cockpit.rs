@@ -33,7 +33,7 @@ fn inventory(
     let current = fiscal_year::for_date(Date::parse(today)?, start, strategy_value)?;
     years.insert(current.display_label.clone(), current);
     let mut statement = tx
-        .prepare("SELECT DISTINCT transaction_date FROM journal_entries ORDER BY transaction_date")
+        .prepare("SELECT transaction_date FROM journal_entries UNION SELECT transaction_date FROM bank_transactions ORDER BY transaction_date")
         .map_err(invalid)?;
     let dates = statement
         .query_map([], |r| r.get::<_, String>(0))
@@ -45,7 +45,7 @@ fn inventory(
     }
     Ok(years)
 }
-/// The actual native inventory only: current year plus years with journal evidence.
+/// Native inventory: current year and actual journal or unposted bank-source years.
 pub fn live_years(tx: &Transaction<'_>, today: &str) -> Result<Value, Error> {
     crate::validate(tx)?;
     let (month, strategy): (i32, String) = tx
@@ -297,6 +297,22 @@ mod tests {
         }
         company.execute_batch("INSERT INTO journal_entries(id,entry_no,transaction_date,text,rule_version,entry_hash) VALUES(2,'S-2','2026-06-01','Synthetic current expense','fixture','synthetic-hash-2');INSERT INTO journal_lines(journal_entry_id,account_id,debit_amount,credit_amount)VALUES(2,3,40,0),(2,1,0,40);").unwrap();
         (root, company)
+    }
+    #[test]
+    fn unposted_bank_source_year_is_selectable_for_vat_without_inventing_postings() {
+        let (_root, mut company) = fixture_with_prior(1, "end-year", false);
+        company.execute_batch("UPDATE companies SET vat_period_type='quarter' WHERE id=1; INSERT INTO bank_transactions(transaction_date,text,amount,currency) VALUES('2024-03-31','Synthetic unposted VAT source',-125,'DKK');").unwrap();
+        let tx = company.transaction().unwrap();
+        let before: i64 = tx.query_row("SELECT COUNT(*) FROM journal_entries", [], |r| r.get(0)).unwrap();
+        let report = crate::vat_report::read(&tx, "synthetic", "2026-10-23", Some("2024")).unwrap();
+        assert_eq!(report["selectedYear"], "2024");
+        assert_eq!(report["periodStart"], "2024-01-01");
+        assert_eq!(report["periodStatus"], "open");
+        assert_eq!(report["momsangivelseReady"], false);
+        assert_eq!(tx.query_row("SELECT COUNT(*) FROM journal_entries WHERE transaction_date LIKE '2024-%'", [], |r| r.get::<_, i64>(0)).unwrap(), 0);
+        assert_eq!(report["inputVat"].as_f64(), Some(0.0));
+        assert_eq!(tx.query_row("SELECT COUNT(*) FROM journal_entries", [], |r| r.get::<_, i64>(0)).unwrap(), before);
+        assert!(super::read(&tx, "synthetic", "2026-10-23", Some("2023"), None).is_err());
     }
     #[test]
     fn snapshot_identity_survives_reopen_and_distinguishes_ledgers() {
