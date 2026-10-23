@@ -1,10 +1,10 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "R17 VAT/source evidence/filing lifecycle and complete shared-UI J04 fully accepted;689closed",
-  "code_revision": "7cb6692c2047b5d6929192328ecc1aabf746f562",
-  "spec_revision": "sha256:23d02cd7c90e8f117071770126ebaff327309ba834154d03bf4789d94d0051d9",
-  "state": "24of55 original issues fully accepted and actually closed;31open. FullR17/all4criteria accepted: retained revision-bound VAT rules/source/refusal/legacy/EU/OSS proofs plus actual shared React/native J04 source blocker->draft->reviewed/locked->explicit recorded reference, signed exact reported image and normal-cookie restart. Failed/cancelled receipts and partial effects retained; no replay or control/scope waiver. Reported-specific source-free restore combination remains later integrated/release gate, never claimed newly executed. Full mission/release/platform/cutover/TypeScript retirement and installed manual desktop acceptance last remain OPEN.",
+  "current_increment": "R25 accruals and explicit version-bound mileage accounting fully accepted;699closed",
+  "code_revision": "5141affe4f12b327f688cb85f8997952ae8cd862",
+  "spec_revision": "sha256:b76dad1692007876a8c73cc2742e599990989ce0d696f4e234d1d15c609d453d",
+  "state": "25of55 original issues fully accepted and actually closed;30open. FullR25/all3criteria accepted: retained original169 accrual and171 documentation-only mileage, immutable explicit company rate versions and server preview/confirmed real accounting; actual shared React/native one-trip posting, current-authority refusals, exact original-key replay, fresh-MFA restart and independently signed source-free fresh-owner restore. Failed/cancelled receipts and partial effects retained; no replay or scope/control waiver. Full mission/release/platform/cutover/TypeScript retirement and installed manual desktop acceptance last remain OPEN.",
   "issues_closed": [
     675,
     676,
@@ -21,6 +21,7 @@
     694,
     695,
     697,
+    699,
     701,
     702,
     703,
@@ -32,8 +33,8 @@
     710
   ],
   "next": [
-    "Next whole existing R25#699: retained accrual169 is accepted; mileage171 qualifies supplied-rate log/export/restart with ZERO journals only. Complete explicit effective-date/rate-version/config evidence and reviewed duplicate-protected native mileage posting through existing journal/mutation gates; replay returns same posting, closed/missing/mismatched evidence refuses unchanged books. Preserve historical supplied-rate logs/wire; no invented statutory-rate defaults. #700 awaits698/699 and actual concurrent posting-vs-close/reopen proof. One common Rust motor/shared React UI; manual installed desktop last.",
-    "R24#698reviewedcandidateee9d941bretained; actualtrialbankcontrol-125ledger vs0statementblockedcorrectly. No unchangedfullretry; finaldisposal/restart/restoreacceptance remainopen; original#689prerequisite is now accepted/closed. Allpartialfinancialeffects/failedreceipts retained.",
+    "Next whole existing R24#698: resume preserved reviewed ee9d941b candidate and same synthetic profile; nine journals/four depreciation entries/two disposals already committed. Missing three-row bank statement explains -125 ledger versus0 statement. Import explicit synthetic -30/-60/-35 statement through ordinary bank API and reviewed-link only existing acquisition journals1/2/3; require unchanged prefix, no new acquisition/depreciation/replayed disposal. Then unrun close/refusal/reopen/third-disposal and restart/signed-restore tail. No full fixture setup or control bypass.",
+    "R26#700 follows full698/699. Reuse accepted opening/period evidence; still require actual concurrent posting-vs-close/reopen allowed-order proof. One common Rust engine/server and same React web/Tauri UI, final installed desktop acceptance last.",
     "Original invoice interface inventory now has all31CLI and25MCP bindings, with explicit compatibility corrections documented; do not mistake that family inventory for full product parity. Reconcile remaining original whole-product R44/R45 acceptance from existing epic/issues: actor/env/company-path/default launcher/errors/historical receipts, closure/recovery/automation, signed distribution/update/cutover and TypeScript backend retirement. Continue next necessary whole journey, preserve all accepted evidence/full original scope; installed desktop acceptance last.",
     "Installed desktop acceptance is explicitly deferred to the very end by the user. Preserve prepared Group100 profile; collect remaining native automation, closure, recovery and packaging checks for final installed acceptance without requesting screen unlock during development.",
     "J03/R50 and remaining R54 scope: only still-supported operation closure/recovery, nonempty scheduler handoff, hostile/older clone and post-cutover rollback requirements. Group99 qualifies managed installed J06 flow, not every R54 acceptance item.",
@@ -49,9 +50,9 @@
   ],
   "all_goal_requirements_complete": false,
   "previous_verified_increment": {
-    "name": "R34 retention/GDPR/legal holds and versioned regulatory evidence fully accepted;708closed",
-    "code_revision": "3163c419765caa14254f5a12c71e52e4c4982afe",
-    "evidence_key": "r34_privacy708"
+    "name": "R17 VAT/source evidence/filing lifecycle and complete shared-UI J04 fully accepted;689closed",
+    "code_revision": "7cb6692c2047b5d6929192328ecc1aabf746f562",
+    "evidence_key": "r17_vat689"
   },
   "evidence": {
     "combined_browser_log": "/tmp/rm-platform5-combined.log",
@@ -14707,6 +14708,303 @@
       "whole_issue_accepted": true,
       "full_epic_accepted": false,
       "closed_at_observed": "2026-10-23T17:28:12.744297+00:00"
+    },
+    "r25_mileage699": {
+      "issue": 699,
+      "status": "ACCEPTED full original R25/all3criteria; GitHub699 actually CLOSED flow:done",
+      "revision": "5141affe4f12b327f688cb85f8997952ae8cd862",
+      "source_revision": "5141affe4f12b327f688cb85f8997952ae8cd862",
+      "report": "/tmp/rentemester-rust-reports/r25-mileage699-accepted.json",
+      "report_sha256": "e9210c775a384a4db05bbe9ecc4a843a65664a613b01b4733e60f453f80154fc",
+      "sgd_run_id": "rust-r25-mileage699-final-20261023T181533.205281000",
+      "sgd_phase": "done",
+      "gdd_revision": "sha256:b76dad1692007876a8c73cc2742e599990989ce0d696f4e234d1d15c609d453d",
+      "criteria": {
+        "accrualExactAllocation": "Original169 retained fixed three-type source-backed allocation/recognition/reversal/closed/refusal/recovery evidence; relevant source modules unchanged, not rerun.",
+        "mileageRateDateConfigAndDuplicatePost": "Pure boundaries + immutable explicitcompanyconfig + exactstoredtrip/rate/vehicle/date/evidence match; no rerating or statutory default. Actual normalMFA one12.35km*explicit2.00=24.70DKK expense3699debit/liability7399credit, noVAT/payment; actualsharedUI preview→review→confirm once. CLI/MCP canonicalpreview/readback and exact originalprincipal/key replay return durable receipt with NOsecondjournal. Differentkey and reader refuse.",
+        "closedInvalidMissingNoPartialWrites": "Integrated6backend tests and targeted strengthened directclosedNEWpost proof: validpreviewthenclose→realpostrefused withzerojournal/lines/receipt/auditwrites; missingoriginal/hash/invalidinterval/vehicle/rate/config/stale/currentrole/revocation and outerrollback retained exact. Serverstrictwire1 + SDK3/CLI2/MCP2 + UI14. Actual missingdoc/stalepreview/reader/differentkey refusals leave snapshotsunchanged."
+      },
+      "checks": [
+        {
+          "check": "retained-inputs",
+          "key": "df07fb88da3b400a86e87a33554c21eff4c55a16e296298a73ed102f156504f4",
+          "argv": [
+            "python3",
+            "-c",
+            "import json,hashlib,subprocess,re\nfrom pathlib import Path\nr=Path('/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd')\np=json.loads((r/'observations/r25-699-components-proof.json').read_text());assert p['phase']=='done'\nchanged=subprocess.check_output(['git','diff','--name-only',p['source_revision'],'HEAD'],text=True).splitlines()\nassert changed==['crates/rentemester-storage/src/mileage_posting/tests.rs','scripts/rust/check-native-mileage-posting.ts'],changed\nfor x in p['logs']:assert hashlib.sha256(Path(x['path']).read_bytes()).hexdigest()==x['sha256']\nclosed=Path('/tmp/rentemester-rust-reports/r25-699-closed-post.log').read_text();assert '1 passed; 0 failed' in closed\nw=json.loads((r/'observations/r25-699-web-proof.json').read_text());assert w['exit_code']==0\nfor path,sha in w['app_source_files'].items():assert hashlib.sha256(Path(path).read_bytes()).hexdigest()==sha,path\nfor path,sha in w['web_files'].items():assert hashlib.sha256((Path(w['archived_web_dir'])/path).read_bytes()).hexdigest()==sha,path\nfor path,sha in [('original-accrual169-actual.json','884d17905a32188197676059c6b1a0b2a29c6e7f9aaeb7cd4eff38604f690f1a'),('original-mileage171-actual.json','a8e32e95887637b0fa34aafe8abe141468d7bd11ae3a43533557ae7e0b6dbe16')]:assert hashlib.sha256((Path('/tmp/rentemester-rust-reports')/path).read_bytes()).hexdigest()==sha\nprint('Exact integrated6backend/7adapter/14UI rawproofs, changed targetedclosedNEWpost proof, unchangedbuiltUI and retained169/171 source pins PASS; no broad rerun or actualPASS substitution')\n"
+          ],
+          "exit_code": 0,
+          "passed": true,
+          "log": "/private/tmp/rentemester-r34-708-clean/.sgd/runs/rust-r25-mileage699-final-20261023T181533.205281000/acceptance/df07fb88da3b400a86e87a33554c21eff4c55a16e296298a73ed102f156504f4/retained-inputs.log",
+          "log_sha256": "10d208ea020630cc68295d99dc4f35677db2c8801f6ad549c72ed1739f03f738"
+        },
+        {
+          "check": "native-build",
+          "key": "cbcd092c74217e1f0604d9e365ce9404691f27f7dab3c6f492536d95772afb17",
+          "argv": [
+            "python3",
+            "-c",
+            "import os,subprocess,re\nos.environ['CARGO_TARGET_DIR']='/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/builds/checks/acceptance'\nos.environ['CARGO_BUILD_JOBS']='2'\np=subprocess.run(['python3','scripts/rust/cargo-guard.py','cargo','test','-p','rentemester-server','mileage_posting_strict_wire','--','--nocapture'],stdout=subprocess.PIPE,stderr=subprocess.STDOUT,text=True);print(p.stdout,flush=True);assert p.returncode==0;assert sum(int(n) for n in re.findall(r'test result: ok\\. (\\d+) passed',p.stdout))==1\nsubprocess.run(['python3','scripts/rust/cargo-guard.py','cargo','build','-p','rentemester-server','-p','rentemester-cli','-p','rentemester-mcp'],check=True)\nprint('Exactly1server strictwire test + guarded actual3binary build PASS')\n"
+          ],
+          "exit_code": 0,
+          "passed": true,
+          "log": "/private/tmp/rentemester-r34-708-clean/.sgd/runs/rust-r25-mileage699-final-20261023T181533.205281000/acceptance/cbcd092c74217e1f0604d9e365ce9404691f27f7dab3c6f492536d95772afb17/native-build.log",
+          "log_sha256": "30601a84eddcfd25a324b10a9adb2e8cb7e89c34ca93c11762b419a93e5206db"
+        },
+        {
+          "check": "actual-mileage699",
+          "key": "389d6885d8594c8e6b5ddb8b17b73284ccd9805480c34abb27531d3d446f8e62",
+          "argv": [
+            "python3",
+            "-c",
+            "import subprocess\nfrom pathlib import Path\nrevision=subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip();base=Path('/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/builds/checks/acceptance/debug');web=Path('/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/observations/r25-699-accepted-web-dist')\nargs=['python3','scripts/rust/run-bookkeeping-batch.py','--server-binary',str(base/'rentemester-server'),'--cli-binary',str(base/'rentemester-rust'),'--mcp-binary',str(base/'rentemester-mcp'),'--web-dir',str(web),'--mileage-posting','--evidence','/tmp/rentemester-rust-reports/mileage699-actual-'+revision[:12]+'.json']\nsubprocess.run(args,check=True)\n"
+          ],
+          "exit_code": 0,
+          "passed": true,
+          "log": "/private/tmp/rentemester-r34-708-clean/.sgd/runs/rust-r25-mileage699-final-20261023T181533.205281000/rechecks/20261023T181920.822703000/389d6885d8594c8e6b5ddb8b17b73284ccd9805480c34abb27531d3d446f8e62/actual-mileage699.log",
+          "log_sha256": "81677f775c6edeea3a1248b2e003afe1f0e9d5c8ee5904fd8b577707d6512132"
+        }
+      ],
+      "component_proof": {
+        "run_id": "rust-r25-mileage699-20261023T174248.419189000",
+        "phase": "done",
+        "source_revision": "809f1a7e521dd442260e5f7eddaf0be2f84364bf",
+        "gdd_revision": "sha256:350a61e737cf8db5eacf3081ac62da4b327ebc8aca0613b7b82dc1fe46f65459",
+        "logs": [
+          {
+            "check": "helper",
+            "path": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/rust-r25-mileage699-20261023T174248.419189000/acceptance/01566eb8ac10919d0ab25a37de97a16dbadf1efc770a96bdf17b74a7a0da04b7/helper.log",
+            "sha256": "cf563ae29501e22a9ed1b12cfc6186bda8979593cfddedf97dfbe4f6ab8aa2e0",
+            "executed_rust_tests": 0,
+            "zero_groups_not_claimed": 0
+          },
+          {
+            "check": "adapters",
+            "path": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/rust-r25-mileage699-20261023T174248.419189000/acceptance/7fc1bdfda3faf17c9c570dcc049bec7e12739fbdaa2a7957c5f353497fe945ce/adapters.log",
+            "sha256": "ac60bb29ed9696d9e62d48e0c65138a24b7f50f1e3aeafee8ee178a6e28db924",
+            "executed_rust_tests": 7,
+            "zero_groups_not_claimed": 180
+          },
+          {
+            "check": "ui",
+            "path": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/rust-r25-mileage699-20261023T174248.419189000/acceptance/2aebfee3ea37face9555d7d4561db73d0aa9e9e3c607881373289774329fbb52/ui.log",
+            "sha256": "a0ad3971e805c20b81d38d1a254cc846c512e1e685b7d4a18a98f28ee086a465",
+            "executed_rust_tests": 0,
+            "zero_groups_not_claimed": 0
+          },
+          {
+            "check": "backend",
+            "path": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/rust-r25-mileage699-20261023T174248.419189000/acceptance/59dbc0ec6f6debc820dbb76139fb33ba154e8888162d9d73aa10fce10c7f0b1c/backend.log",
+            "sha256": "4cc57f831c63842d3150441714fa7e91807936af0e47dda4083640a6189bcce4",
+            "executed_rust_tests": 6,
+            "zero_groups_not_claimed": 1
+          }
+        ],
+        "actual_qualified": false,
+        "scope": "Integrated component acceptance only; full original699 current-native/sharedUI/source/signed-recovery remains."
+      },
+      "web_proof": {
+        "path": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/observations/r25-699-web-proof.json",
+        "sha256": "2dd4617ee7bc5570f0c2248bbd91165a4eb080ab24c3b14311806a2d04db2bc0",
+        "source_revision": "809f1a7e521dd442260e5f7eddaf0be2f84364bf",
+        "subsequent_ui_changes": false
+      },
+      "retained_evidence": [
+        {
+          "report": "/tmp/rentemester-rust-reports/original-accrual169-actual.json",
+          "sha256": "884d17905a32188197676059c6b1a0b2a29c6e7f9aaeb7cd4eff38604f690f1a",
+          "source_revision": "d207aef5c4b6a4f97a8f71f17173e37ef8e256e8",
+          "scope": "Actual original three accrual types, allocation/recognition/reversal/refusal,8journals/16lines and signedrecovery. Relevant accrual source modules unchanged through5141affe."
+        },
+        {
+          "report": "/tmp/rentemester-rust-reports/original-mileage171-actual.json",
+          "sha256": "a8e32e95887637b0fa34aafe8abe141468d7bd11ae3a43533557ae7e0b6dbe16",
+          "source_revision": "b9d8b74f8c56b65085fc8c4b554f22aa26546a39",
+          "scope": "Four originalCLI/fourMCP source-backed supplied-rate log/export, crossyear/exactrounding/refusal/restart/signedrecovery; ZEROjournals and not posting proof. Original/native legacy mileage modules unchanged."
+        }
+      ],
+      "actual": {
+        "report": "/tmp/rentemester-rust-reports/mileage699-actual-5141affe4f12.json",
+        "sha256": "3494f11f6e1f0e7321226f3b7eb97cda24f11532456e068f7d4aaa7e93591652",
+        "workflow": "mileage_posting699",
+        "actions": [
+          {
+            "action": "authenticate",
+            "status": "complete"
+          },
+          {
+            "action": "mileage-posting",
+            "status": "complete"
+          },
+          {
+            "action": "mileage-posting-readonly",
+            "status": "complete"
+          },
+          {
+            "action": "reopen",
+            "status": "complete"
+          },
+          {
+            "action": "archive",
+            "status": "complete"
+          },
+          {
+            "action": "restored",
+            "status": "complete"
+          },
+          {
+            "action": "restored-reopen",
+            "status": "complete"
+          },
+          {
+            "action": "finish",
+            "status": "complete"
+          }
+        ],
+        "mileage": {
+          "config": {
+            "version": "synthetic-mileage699-v1",
+            "validFrom": "2026-01-01",
+            "validTo": "2026-12-31",
+            "vehicle": "Synthetic private car",
+            "ratePerKm": "2.00",
+            "basis": "Explicit synthetic company reimbursement configuration, not statutory eligibility",
+            "source": "Synthetic mileage claim #699; company decision",
+            "expenseAccountNo": "3699",
+            "liabilityAccountNo": "7399",
+            "confirm": true
+          },
+          "intent": {
+            "mileageEntryId": 1,
+            "rateVersion": "synthetic-mileage699-v1",
+            "documentId": 1
+          },
+          "preview": {
+            "amount": 24.7,
+            "appliedRules": [
+              "NATIVE-MILEAGE-POST-1"
+            ],
+            "documentHash": "27ab752ad147065864122333ac2fa79476619b3eaac0cd5f177dde9ba83ea8d6",
+            "documentId": 1,
+            "entryNo": "MIL-2026-000001",
+            "expenseAccountNo": "3699",
+            "kilometers": 12.35,
+            "liabilityAccountNo": "7399",
+            "mileageEntryId": 1,
+            "previewHash": "579e998d62349fd8e07f155fd350f432c1b7be4f963e427ffb4380811e1db0e4",
+            "ratePerKm": "2.00",
+            "rateVersion": "synthetic-mileage699-v1",
+            "tripDate": "2026-01-01",
+            "vehicle": "Synthetic private car"
+          },
+          "receipt": {
+            "amount": 24.7,
+            "appliedRules": [
+              "NATIVE-MILEAGE-POST-1"
+            ],
+            "documentHash": "27ab752ad147065864122333ac2fa79476619b3eaac0cd5f177dde9ba83ea8d6",
+            "documentId": 1,
+            "entryNo": "MIL-2026-000001",
+            "expenseAccountNo": "3699",
+            "journalEntryId": 1,
+            "journalEntryNo": "2026-00001",
+            "kilometers": 12.35,
+            "liabilityAccountNo": "7399",
+            "mileageEntryId": 1,
+            "previewHash": "579e998d62349fd8e07f155fd350f432c1b7be4f963e427ffb4380811e1db0e4",
+            "ratePerKm": "2.00",
+            "rateVersion": "synthetic-mileage699-v1",
+            "replayed": false,
+            "tripDate": "2026-01-01",
+            "vehicle": "Synthetic private car"
+          },
+          "originalSha256": "27ab752ad147065864122333ac2fa79476619b3eaac0cd5f177dde9ba83ea8d6",
+          "noAutomaticWriteRetry": true,
+          "journals": 1,
+          "lines": 2,
+          "amount": 24.7,
+          "actualLimitations": [
+            "SDK is exercised transitively by native CLI/MCP, no independent SDK executable",
+            "closed NEW-post refusal and fault/concurrency matrix require targeted component evidence; not qualified by this one-trip actual",
+            "retained original-accrual169 and mileage171 acceptance unchanged, not rerun"
+          ]
+        },
+        "terminal_counts": {
+          "mileage_entries": 1,
+          "native_mileage_posting_versions": 1,
+          "native_mileage_posting_receipts": 1,
+          "documents": 1,
+          "journal_entries": 1,
+          "journal_lines": 2,
+          "audit_log": 6,
+          "bank_transactions": 0,
+          "payables": 0
+        },
+        "normalMfaSource": {
+          "ownerId": "z5ew61Ai_vAcXwRDu7gL5K_sjNoLjS4GoNVYCo5mAmA",
+          "memberId": "hi5ZSqgLuLSDiz_x-L9t4fdFras6z6C3GSjP7BqAcvQ",
+          "invitationId": "3cb10ccf-1641-4ea4-aec3-b83f82a012c6",
+          "ordinaryInvitationClaim": true,
+          "distinctNormalMfaUsers": true
+        },
+        "normalFreshMfaRestart": {
+          "restartNormalMfa": true,
+          "exactHistoricalApprovalReceiptsAndOriginals": true,
+          "noNewJournalEffects": true
+        },
+        "signedSnapshot": {
+          "supported": true,
+          "sha256": "677e45ad71db0462e629d88437d042eb2f68c80e79ea47fe2c8de05fa8e7183b",
+          "bytes": 2216305,
+          "sourceFreeRestoreQualified": false
+        },
+        "independentArchiveVerification": true,
+        "signed_exact_all_company_tables": true,
+        "source_free_restore": {
+          "sourceFreeRestoreQualified": true,
+          "freshOwnerMfa": true,
+          "ledgerUuid": null,
+          "historicalBatchAndOriginalsExact": true,
+          "noRestoreMutationOrAuthorityImported": true
+        },
+        "restoredReopen": {
+          "restoredReopenNormalMfa": true
+        },
+        "exact_restored_all_company_tables": true,
+        "source_workspace_and_private_signer_removed": true,
+        "original_file_and_rate_trip_receipt_exact": true,
+        "source_and_artifact_pins": true,
+        "noUnknownWriteRetry": true,
+        "ownedProcessesStopped": true
+      },
+      "review": {
+        "backend": "Main inspected actual app/host admission+physicaloriginal; independentc651 engine/storage/schema review found receipt/journal binding defect. Main reproduced two valid swappedjournals with canonicalhashgate stillPASS, repairedc378 exactheader/orderedfinancialcontent checks; independentdelta review accepted. Frozen6backend testsPASS includes prior failing regression.",
+        "adapters": "Main actualserver/CLIregistrationdiff plus independent exact1345commit SDK/CLI/MCP review;7actualcomponenttests. Strictservertest and full3binbuild nowpassed and actual HTTP/nativeclients exercised.",
+        "ui": "Main actual1c4diff: nativeonly sharedpanel, preserveoldlog, explicit serverpreview/confirmation/stableunknownblock and canonicalreadback;14tests and realheadlesssharedReactUIactualPASS.",
+        "helper": "Main reviewed488helper/runner additivebranch, exactrealclaimPDF/scanner/rawalltableinventory/signedrestore; fixed2observedUIlabels BEFORE actualsetup. No genericretry/no financialeffectsreplayed."
+      },
+      "preserved_failures": [
+        {
+          "rejected_commit": "c6514cc31f35f4deb3ca0133963ed2d547ec3ec5",
+          "reproduction_log": "/tmp/rentemester-rust-reports/r25-699-binding-before.log",
+          "sha256": "4c1ba8eb6212273f9666a4c6967de40ec02254a24640ebbc75dd962865bff0ac",
+          "repair_commit": "c3788b824d1758ea0f4d99fae4404074d38d9c94",
+          "reason": "Actual isolated regression found unboundvalidjournal receipt; exactfinancialbinding repair, no modelretry."
+        },
+        {
+          "report": "/tmp/rentemester-rust-reports/mileage699-actual-5141affe4f12-setup1.json",
+          "sha256": "4036fdf65fd7f296658ab67517889846858d360ed567414467d39db4a2a7ac8f",
+          "reason": "Firstsetup stopped beforebrowser/actions due ignored modulelinkmissing in newfinalintegration. Failedprofile/report/rawfailedreceipt retained; exactexistingdepslinkfixed, onlyfailedactual rechecked, native/retainedPASS reused; zero completedactions orfinancialeffects to replay."
+        }
+      ],
+      "limits": [
+        "Explicit company-configured synthetic rates/accounts, no authoritative statutory-rate defaults, tax eligibility, payroll, automaticpayment or legalapproval claim.",
+        "Legacy supplied-rate log/register/export remains documentation-only and unchanged; accounting is separate explicit confirmed operation.",
+        "New additive mileage accounting routes are current human-cookie only; service credentials explicitly refused. Existing171service-backed original documentation evidence is retained; no new service-account posting grant or credentialfallback.",
+        "SDK exercised transitively through actual nativeCLI/MCP and directly by3SDKHTTPtests, no independentSDKexecutable claim.",
+        "Actual one-trip posted/restored journey plus targetedcomponentclosed/rate/mismatch/atomicity/receiptmatrix; not every fault/concurrency scenario newly run in browser.",
+        "Installed manualdesktop/platformdistribution/livecutover/TypeScriptretirement/all55scope remain binding; no fullmigration completion."
+      ]
     }
   },
   "verified_history": [
@@ -15209,6 +15507,13 @@
       "spec_revision": "sha256:dc5d0253dd61dc07fcc16e878314bfd88f7d5f3f107cb521d751f5952eea8bce",
       "state": "23of55 original issues fully accepted and actually closed;32open. FullR34 accepted: same React UI and native clients, current authority/retention/legal-hold refusals, eligible scoped forgetting with original bytes/journals/prior audit preserved, independent signed audit/backup and retained signed hold-history restore proof, exact rule/source versions and truthful compliance reports. Failed/cancelled receipts and prior effects retained; no replay or scope/control waiver. Full mission, release/platform/cutover/TypeScript retirement and installed manual desktop acceptance last remain OPEN.",
       "evidence_key": "r34_privacy708"
+    },
+    {
+      "current_increment": "R17 VAT/source evidence/filing lifecycle and complete shared-UI J04 fully accepted;689closed",
+      "code_revision": "7cb6692c2047b5d6929192328ecc1aabf746f562",
+      "spec_revision": "sha256:23d02cd7c90e8f117071770126ebaff327309ba834154d03bf4789d94d0051d9",
+      "state": "24of55 original issues fully accepted and actually closed;31open. FullR17/all4criteria accepted: retained revision-bound VAT rules/source/refusal/legacy/EU/OSS proofs plus actual shared React/native J04 source blocker->draft->reviewed/locked->explicit recorded reference, signed exact reported image and normal-cookie restart. Failed/cancelled receipts and partial effects retained; no replay or control/scope waiver. Reported-specific source-free restore combination remains later integrated/release gate, never claimed newly executed. Full mission/release/platform/cutover/TypeScript retirement and installed manual desktop acceptance last remain OPEN.",
+      "evidence_key": "r17_vat689"
     }
   ],
   "active_work": [
@@ -16573,6 +16878,12 @@
       "code_revision": "7cb6692c2047b5d6929192328ecc1aabf746f562",
       "state": "24of55 original issues fully accepted and actually closed;31open. FullR17/all4criteria accepted: retained revision-bound VAT rules/source/refusal/legacy/EU/OSS proofs plus actual shared React/native J04 source blocker->draft->reviewed/locked->explicit recorded reference, signed exact reported image and normal-cookie restart. Failed/cancelled receipts and partial effects retained; no replay or control/scope waiver. Reported-specific source-free restore combination remains later integrated/release gate, never claimed newly executed. Full mission/release/platform/cutover/TypeScript retirement and installed manual desktop acceptance last remain OPEN.",
       "evidence_key": "r17_vat689"
+    },
+    {
+      "current_increment": "R25 accruals and explicit version-bound mileage accounting fully accepted;699closed",
+      "code_revision": "5141affe4f12b327f688cb85f8997952ae8cd862",
+      "state": "25of55 original issues fully accepted and actually closed;30open. FullR25/all3criteria accepted: retained original169 accrual and171 documentation-only mileage, immutable explicit company rate versions and server preview/confirmed real accounting; actual shared React/native one-trip posting, current-authority refusals, exact original-key replay, fresh-MFA restart and independently signed source-free fresh-owner restore. Failed/cancelled receipts and partial effects retained; no replay or scope/control waiver. Full mission/release/platform/cutover/TypeScript retirement and installed manual desktop acceptance last remain OPEN.",
+      "evidence_key": "r25_mileage699"
     }
   ],
   "scope_clarifications": [
@@ -16614,6 +16925,6 @@
       "product_acceptance_unchanged": true
     },
     "local_execution": "State Graph Development with GDD contracts, Graphify observations and isolated Docker Agent workers",
-    "last_closed_issue": 689
+    "last_closed_issue": 699
   }
 }
