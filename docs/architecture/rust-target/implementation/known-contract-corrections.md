@@ -538,3 +538,25 @@ giver ingen adgang i dag. Inputnormalisering bevarer trimmede kontofelter og
 kildens case-insensitive true/false. MCP Add har appliedRules på ydre niveau;
 role-confirm bevarer coreok i data.ok, og CLI-afvisninger bevarer rollediagnostik.
 Begge CLI-skrivninger kræver eksplicit --confirm yes.
+
+### Oprindelige kladder og præcis godkendelseskvittering (Group180)
+
+Source-adapteren genbruger accounting_drafts::change/list og journal_post.
+En lille intern receiptsink bevarer det faktiske første postresultat uden at
+ændre den native DTO. Replay læser samme journal-id/nummer/hash og returnerer
+tomme appliedRules som kilden; der foretages ingen ny postering for at
+rekonstruere en kvittering. Den native strengere replayregel bevares: kun
+den oprindelige aktuelle reviewer med præcis submitted-hash og confirmation.
+
+Fem CLI-skrivninger kræver nu --confirm yes, og businessfalse giver exit1.
+--input læser en begrænset, rekursivt unik lokal JSON-fil; stien sendes aldrig
+til serveren. Actor/principal er kun nutidige credentialassertioner. Bevaret
+agent/system-attribution kan læses uden at give adgang eller omskrive historiske
+hashes. Native payload-/eventhashkæde og kildeevidens er fortsat autoritative.
+Sourceprojektionen udelader native nullreason/journal-id, og missing show er null.
+
+Sourceforløbet er syv CLI-kommandoer og ingen oprindelige MCP-tools. Create/revise/
+submit kræver DraftWrite, reject/approve Review og reads Read, altid før parsing.
+Kendte strukturelle afvisninger er400; native businessafvisninger er422, og
+usikkert commitudfald forbliver503uden automatisk retry. Savepointen bevarer
+hele-operationens rollback selv ved sen fejl efter journalinsert.

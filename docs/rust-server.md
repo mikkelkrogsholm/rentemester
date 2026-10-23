@@ -4058,3 +4058,17 @@ femten menneskelige) og ingen finansielle posteringer. Genstart og signeret
 kildefri gendannelse til ny ejer/genåbning bevarer konti, flags og historik
 (18→19audits).369MCP-navne er entydige. Hele migrationen og installeret
 desktopaccept er fortsat åben.
+
+### Oprindelige regnskabskladder (Group180)
+
+Syv CLI-kommandoer deler den eksisterende native kladde- og journalmotor:
+opret, revider, indsend, afvis, godkend/bogfør, vis og list. Forfatter og
+indsender må ikke reviewe deres egen version. En gentaget godkendelse fra
+samme aktuelle reviewer returnerer den eksisterende postering.
+
+19 tests, streng Clippy på otte pakker, build og første faktiske prøve består
+på `fcc8435b`. Syv hændelser i tre versioner giver én12,50kr.-postering
+med to linjer.18audits og det originale bilag bevares ved genstart og signeret
+kildefri gendannelse til ny ejer/genåbning (19audits efter restoreboundary).
+Der er ingen nye MCP-navne;369består uændret. Hele migrationen, standardlauncherens
+omlægning og den afsluttende installerede desktopaccept er fortsat åbne.
