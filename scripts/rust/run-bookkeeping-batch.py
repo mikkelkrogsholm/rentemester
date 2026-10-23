@@ -583,7 +583,7 @@ def main():
             if args.original_expense:
                 config['invoiceExtractor'] = {'provider': 'http-json-v1', 'url': f'https://127.0.0.1:{mail_port}/extract', 'bearerToken': scanner_token, 'timeoutMs': 10000, 'trustedCaFile': str(ca)}
                 config['vies'] = {'baseUrl': f'https://127.0.0.1:{mail_port}/vies', 'trustedCaPem': ca.read_text()}
-            if args.original_document_parties or args.original_expense or args.original_accrual or args.original_asset:
+            if args.original_document_parties or args.original_expense or args.original_accrual or args.original_asset or args.original_budget:
                 config['documentScanner'] = {'policy': 'required', 'provider': 'http-json-v1', 'url': f'https://127.0.0.1:{mail_port}/scan', 'bearerToken': scanner_token, 'timeoutMs': 10000, 'trustedCaFile': str(ca)}
             write_config()
             start(create=True)
