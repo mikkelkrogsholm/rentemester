@@ -196,6 +196,25 @@ fn ready(
         "grossAmount":prepared.gross.decimal(),"netAmount":prepared.net.decimal(),
         "vatAmount":prepared.deductible.decimal(),"grossAmountDkk":prepared.basis.gross_dkk.decimal()}});
     if foreign {
+        // The original-document VAT can be zero for reverse charge. The new
+        // review proof shows the deductible VAT already in the canonical plan.
+        if matches!(
+            input.vat_treatment.as_deref(),
+            Some("reverse_charge" | "eu_goods_acquisition")
+        ) {
+            let input_account = expense::role(tx, "input_vat")?;
+            let mut deductible = rentemester_engine::money::Money::default();
+            for line in prepared
+                .request
+                .lines
+                .iter()
+                .filter(|line| line.account_no.as_str() == input_account)
+            {
+                deductible.add(&line.debit_amount);
+                deductible = deductible.subtract(&line.credit_amount);
+            }
+            result["plan"]["vatAmount"] = json!(deductible.decimal());
+        }
         result["country"] = json!(supplier.country);
         result["providerStatus"] = json!(if cache.is_some() {
             "valid"

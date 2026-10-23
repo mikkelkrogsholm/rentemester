@@ -183,6 +183,7 @@ fn workbench696_foreign_reviewed_atomic_apply() {
     assert_eq!(vat["providerReference"], "synthetic696");
     assert_eq!(vat["plan"]["grossAmount"], "100.00");
     assert_eq!(vat["plan"]["netAmount"], "746.25");
+    assert_eq!(vat["plan"]["vatAmount"], "186.56");
     assert_eq!(vat["plan"]["rateSource"], "derived_dkk_settlement");
     assert_applied(&tx, &exact, "746.25", "186.56");
     tx.commit().unwrap();
