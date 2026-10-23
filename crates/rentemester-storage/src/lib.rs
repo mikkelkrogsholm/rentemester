@@ -1,4 +1,5 @@
 //! Source-read-only reports/rehearsals and caller-owned transactional primitives.
+pub mod vat_purchase_original;
 pub mod purchase_preflight;
 pub mod expense_original;
 pub mod journal_original;
