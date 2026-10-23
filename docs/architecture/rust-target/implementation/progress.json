@@ -1,10 +1,10 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "R22 posting rules, exceptions and reviewed bank workbench fully accepted including foreign/reverse-charge purchases;696closed",
-  "code_revision": "963179bfb3bb3e8b92df87c83fb16c9722d0c47d",
-  "spec_revision": "sha256:f5b8948eb366dc91f291d669d4afe13cd41ed7b024f9d2dcdfe1fc31bf95d2ef",
-  "state": "28of55 original issues fully accepted and actually closed;27open. Full original R22/all3criteria accepted at963179bf: retained posting-rule/exception/DKK batch evidence plus current foreign/reverse-charge workbench using the same Rust engine and shared React UI. Seven current backend tests and26 unchanged UI tests, source-bound builds and actual normal-MFA independent review/apply passed: exactly one EUR100 purchase paidDKK746, input/reverseVAT186.50, four journal lines, bank/VAT reconciliation, stale/authority refusals, known-result replay and current-MFA restart. Failed/cancelled receipts and completed effects preserved; no blind replay. Source published and GitHub696 CLOSED flow:done. Full mission/release/platform/cutover/TypeScript retirement and manual installed desktop last remain OPEN.",
+  "current_increment": "R35 durable jobs, explicit local/hosted scheduling and restart recovery fully accepted;690closed",
+  "code_revision": "e94be0723d31e36c3bb6edf06c75bc163f7888d3",
+  "spec_revision": "sha256:05054264a8de6ec6d56d23d4642138f7ea1bb03590ab9e232c8a976a3ce4fcfa",
+  "state": "29of55 original issues fully accepted and actually closed;26open. Full original R35/all5technicalcriteria accepted using retained provider/authority/cancellation/restore/hosted proof plus current real sharedReact activation, actualbrowserclose/reopeninert, missedperiod stop, explicitcatchup/skip/dispatch,3exactstale/resolvedrefusals andexactnative restart. Exactly2newunpostedunsent immutableJSON/PDFpairs; prior696onejournal/fourlines andfinancialreportsunchanged. Current13UI+2Copenhagen/DST/calendar checksPASS. Managedstop/Dropbyteexactretainedactual99shutdownproof. Only post-successBuncontrollerexitwait failed; rawfailure/effects retained andverifiedreadonlywithoutreplay; SGDcombineddone. GitHub690CLOSEDflow:done. Fullmission/release/platform/cutover/TypeScriptretirement andmanualinstalleddesktop/physicalOSsleep finalJ07 remainOPENandlast.",
   "issues_closed": [
     675,
     676,
@@ -17,6 +17,7 @@
     687,
     688,
     689,
+    690,
     693,
     694,
     695,
@@ -36,8 +37,8 @@
     710
   ],
   "next": [
-    "Next necessary existing foundation chain673 ->674 ->679: bounded read-only triage confirms673 still requires complete source-to-contract inventory reconciliation (domain owner/oracle/negative case/interfaces/wire schemas/status, all18namedhistoricalissue dispositions and delta/knownbug review). Reuse extensive accepted family receipts without replay. This is inventory acceptance, not a new runtime engine/infrastructure project. Select a finite actual scope before dispatch; do not close on registry counts or generic interface ownership.",
-    "Existing R22#696, R24#698, R25#699 and R26#700 fully closed. Preserve accepted financial effects, exact retained evidence, failed/cancelled receipts and snapshots. One shared Rust motor/server and same React web/Tauri UI; manual installed desktop acceptance last.",
+    "Next only independent existing issue673/R01: complete truthful source-to-contract inventory, not newproduct/provider/harness infrastructure. Fresh clean e94be072 capture preserves265CLI/214MCP/208HTTP, now56screens/738corefunctions/67migrations,103sourcehashdeltas. New eu-sales andworkspace-transfer screens,4legacyfence/schemafunctions andworkspace-mailmigration require explicitdelta review; everybehavior needsactualdomainowner/oracle/negativecase/interface/wirecontract/status andall18historicalissue dispositions. FreshGitHub shows641CLOSED,17othernamedissuesOPEN; do notdeclare pendingenhancements delivered. Reuseacceptedfamilycontracts/receipts without replay. Originalfrozencapture preserved; no registrycount/moduleownership shortcut.",
+    "Existing R22#696,R24#698,R25#699,R26#700 andR35#690 fullyclosed. Preserveallfinancialeffects/failurechains/receipt/sourceproofs. Foundation673->674->679 unlocks remaining691/contract/distribution gates; oneRustmotor/server andsameReactweb/TauriUI, finalmanualinstalleddesktoplast.",
     "Original invoice interface inventory now has all31CLI and25MCP bindings, with explicit compatibility corrections documented; do not mistake that family inventory for full product parity. Reconcile remaining original whole-product R44/R45 acceptance from existing epic/issues: actor/env/company-path/default launcher/errors/historical receipts, closure/recovery/automation, signed distribution/update/cutover and TypeScript backend retirement. Continue next necessary whole journey, preserve all accepted evidence/full original scope; installed desktop acceptance last.",
     "Installed desktop acceptance is explicitly deferred to the very end by the user. Preserve prepared Group100 profile; collect remaining native automation, closure, recovery and packaging checks for final installed acceptance without requesting screen unlock during development.",
     "J03/R50 and remaining R54 scope: only still-supported operation closure/recovery, nonempty scheduler handoff, hostile/older clone and post-cutover rollback requirements. Group99 qualifies managed installed J06 flow, not every R54 acceptance item.",
@@ -53,9 +54,9 @@
   ],
   "all_goal_requirements_complete": false,
   "previous_verified_increment": {
-    "name": "R26 fiscal readiness, close/reopen and shifted-year opening/reversal fully accepted;700closed",
-    "code_revision": "b5b97641abbd56fb56b1c6c070349ded216293c3",
-    "evidence_key": "r26_periods700"
+    "name": "R22 posting rules, exceptions and reviewed bank workbench fully accepted including foreign/reverse-charge purchases;696closed",
+    "code_revision": "963179bfb3bb3e8b92df87c83fb16c9722d0c47d",
+    "evidence_key": "r22_workbench696"
   },
   "evidence": {
     "combined_browser_log": "/tmp/rm-platform5-combined.log",
@@ -15500,6 +15501,162 @@
       },
       "sgd_phase": "done",
       "all_goal_requirements_complete": false
+    },
+    "r35_jobs690": {
+      "issue": 690,
+      "status": "ACCEPTED full original R35/all5technicalcriteria; actual GitHub690 CLOSED flow:done",
+      "source_revision": "e94be0723d31e36c3bb6edf06c75bc163f7888d3",
+      "runtime_source_revision": "963179bfb3bb3e8b92df87c83fb16c9722d0c47d",
+      "gdd_revision": "sha256:05054264a8de6ec6d56d23d4642138f7ea1bb03590ab9e232c8a976a3ce4fcfa",
+      "sgd_run": "rust-r35-j07-690-accept-20261023T203803.843776000",
+      "report": "/tmp/rentemester-rust-reports/r35-jobs690-accepted.json",
+      "report_sha256": "26aca9cf2721ef4b8013eca46d4defb0e190a51d2e32ee7f87bdd6dac1feb5fc",
+      "criteria": {
+        "crashAndLeaseRecovery": "Retained50/55/102 actual committed attempt/generation records, definite failure and accepted reply loss/process crash/restart. Cooperative company/process ownership and in-flight attempt retain durable outcome; release/expiry never authorizes blind re-delivery. Current real browserclosure and native restart preserve2known-generations/history/originals with exactreadonlydurablecounts. Generation is separate from posting/delivery.",
+        "ambiguityAndSafeRetry": "Retained55/102 actual accepted-unknown TLS provider outcome remains visible and prevents resend until explicit current-principal reconciliation; definite provider550 safe retry distinct. Current three exact stale/resolved-period422 outcomes preserve history and no duplicate. No crossprovider exactlyonce claim or automaticunknown retry.",
+        "inspectionIsInert": "Current actual normalMFA GET/status/plan/sharedUIopen, actualactivebrowserclose/newbrowserreopen and native restart leave scheduler inactive and financialbaseline unchanged. Current13UItests include inertreopen/missed/unknown/restore/hosted/currentworkspace fences. Hosted53 explicitly opted-inservice serverruns independently with browserclosed; status never startsit.",
+        "authorityCancelAndRestoreOrder": "Retained50 currentgrants/wrongowner/revoke/cancel/explicitqueue; retained52 three independently signed source-free restores preservehistory but deactivateimportedauthority/queue, newcurrentownerconsent and selectionrequired; retained53 hostedservice rotation/revoke/suspendedrestores; retained102 in-flight pre-handoff revocation focused proof, with fullR04/#676 orderunchanged. Current pause/catchup/skip source-boundsharedUI controls operateunder currentnormalMFAowner.",
+        "localLifecycleMissedAndCalendar": "Current actual generation-only sharedReact enable/start, close ACTUAL activebrowser, reopen inert, durablelast/next/missed/queue/paused/error reviewed, missedstopsdriver, explicitcatchupone+skipone+dispatchone, two originalJSON/PDFpairs unpostedunsent, original696journal/bank/VATunchanged, exactnativerestart. Retained99 actualownedmanagedchildshutdown and unchangedcurrentstop/Drop supportsTauri localshutdown. CopenhagenUTC conversion verified atmidnight/spring/fallDST, plusboundedmissedread-onlycalendar atbothDSTdates; no OSclockmanipulation. PhysicalOSsleep and final installedfullJ07 are separately retainedfinalepicgates, not newexecutedGUIclaims."
+      },
+      "current_checks": "13UItests +1trustedUTC/Copenhagenmidnight/DST+horizon +1boundedmissed/read-onlycalendar; allactuallyPASS. Actual7sharedUIactions,1automaticTODAYgeneration,3exactrefusals,2immutableoriginalpairs, actualbrowserclose/reopen andnormalnativestop/restart; exactSQLreadonlycounts1journal4lines2generations. No newproductcode/buildorunchangedacceptedprovider/restorejourney rerun.",
+      "retained_evidence": {
+        "platform50_scheduled_actual": {
+          "report": "/tmp/rentemester-rust-reports/native-scheduled-recurring-integrated50.json",
+          "sha256": "cfa509aac4f81316d403f153db2b5b296d06d8a7169fc45e0da2020bcf9981bf",
+          "source_revision": null,
+          "scope": "Explicitactive-app TODAYissue, reviewedqueue/skip/pause/resume/cancel, sameprincipal/currentgrantrefusals includingexact422access_denied, rolledbackknownfailure, acceptedlostresponse(oneintercepted realdispatch) withunknownUIblock+reloadnoresend;4exactJSON/PDF originals,unposted/unsent,fullHTTPCLI/MCPcurrent/planparity and unchangedzero-entryjournal afterrestart. NoactualOScrash/DSTtime-travelclaim; typedcalendarchecksseparate.",
+          "retained_not_rerun": true
+        },
+        "scheduler_backup_restored_authority": {
+          "report": "/tmp/rentemester-rust-reports/native-portable-backup-scheduled-integrated52.json",
+          "sha256": "fff151555878dd2e388cb486a8c7cbed81fdf5f831fcc8ad06aa7154bde7d4b0",
+          "source_revision": "29b6ae709c92d48d8932fa79c62da8244ebccccc",
+          "scope": "Three separate web/CLI/MCP signed archives, all independently verified after source/key deletion and each fresh normal-MFA new-owner restore+reopen. Exact source history15events/5templates/1generation and JSON+PDF preserved; imported authority/queue inactive. One browser+oneCLI+oneMCP reconsent each adds only V2 consent; explicit new catchup/dispatch adds one original/PDF, repeated old/new resolved periods refuse. Exact21event history on each reopen; bothUUIDs/ledger/bank/old-key refusal/fresh intent preserved; owned fixture absent.",
+          "retained_not_rerun": true
+        },
+        "platform53_hosted_actual": {
+          "report": "/tmp/rentemester-rust-reports/hosted-scheduled-integrated53-keyshape6.json",
+          "sha256": "e6ae3d07869aea280d1c47508ff5d8dcd1230a03ca255e8a089f2c7c2acb2aac",
+          "source_revision": "9d4538c93bb3c4f102ecd3260d4879ac7b9dfe65",
+          "scope": "Actual Group53 PASS: normal web owner verification/MFA, web service creation/activation/company grant, CLI rotation/revoke and MCP inventory/lost-response recovery. Explicit reviewed hosted consent then browser-closed server issuance creates exactly one unposted/unsent JSON/PDF with distinct service actor and human grantor; restart with fresh key injection and ordinary MFA preserves exact state without replay. Signed V3 archive independently verified after source/private-key deletion, restored with fresh owner/normal MFA, preserves originals/history/UUID while service inventory is empty, old key refuses and hosted consent/queue stay inactive; closed-browser observation produces no generation. Owned cleanup verified. Web19PASS/build, native191PASS/1existingignored/build; core/server/SDK/CLI/MCP focused tests and strict checks pass,158tools. Actual native financial GUI remains unqualified after bounded keyboard/focus attempt. External delivery/other hosted jobs/J06/full mission/epic672/J01-J07 remain OPEN.",
+          "retained_not_rerun": true
+        },
+        "service_mail102": {
+          "report": "/tmp/rentemester-rust-reports/native-service-mail102.json",
+          "sha256": "25545093ad9b62fb0ebf9bf754fb1d4ff388bcf3fb3f5abafff176defb1f61ec",
+          "source_revision": "ab113e476f0a7afe506fd7156208b9363bca0d41",
+          "scope": "All four service delivery operations plus real TLS SMTP, unknown crash/restart and signed source-free restore. Native UI not claimed; in-flight pre-handoff revocation is focused domain evidence.",
+          "retained_not_rerun": true
+        },
+        "provider_effect55": {
+          "report": "/tmp/rentemester-rust-reports/invoice-mail-integrated55-framing-eof3.json",
+          "sha256": "d8e46b8599cd7d2ed7ce667bd91728eb302762e285cec9e76260733439886ac5",
+          "scope": "Actual accepted and lost provider reply/crash, visible ambiguous persisted attempt, no implicit resend, safe definite refusal and explicit reconciliation; signed restore.",
+          "retained_not_rerun": true
+        },
+        "managed_child99": {
+          "report": "/tmp/rentemester-rust-reports/installed-transfer99.json",
+          "sha256": "e65abda8c8864624fc53e36d77690c159aa9777495fa992bcd100ea07b15072a",
+          "original_runtime_source": "a36617cd",
+          "current_stop_and_drop_sha256": "73d44553245fda540c227be99fef2ce920f77ffeee43674860784c0f0dda6b32",
+          "scope": "Retain actual ownedsourcechild stop on switch and independentserver survivesnativequit; currentstop/Dropbyteexactunchanged. Later startup adds local-runtime descriptor arguments only. No newinstalledGUI/physicalOSsleep claim.",
+          "retained_not_rerun": true
+        }
+      },
+      "preserved_failures": [
+        "Static GDDscenario categories diagnosedandfixed; no claimplanvalidityisbehavior. Generatedcleanbasecachelinkremovedwithoutcache deletion; original696doneinputs archived.",
+        "Firsttargetedclockcheck accidentallyusedmaincache andPASS; secondduplicatecachecompile stopped, reusingcorrectacceptancecache forsinglecalendarPASS; no repeatedclocktest or financialaction.",
+        "All actualrun/reopen/finish phases returnedok; Bun readlinecontrollerremainedalive after successfulfinish. Rawfailedreceipt509c6e... andall2known generations retained. Scopedreadonlyverification ofpinned actual/restart proof/currentoriginalJSON/counts corrected onlyterminalwait oracle; no newservers/auth/provider/businessmutation."
+      ],
+      "limits": [
+        "No newphysicalOSsleep/installedGUI/manualdesktop claim; currenttypedcalendar andactualbrowserlifecycle+retainedmanagedchildstopqualifytechnicalR35behavior. FullinstalledJ07/wholemission remains openandlast.",
+        "CurrentnormalMFAcookie was legitimatelycreated/enrolled in696 and revalidated; no additionalfreshfactorclaimed.",
+        "Supported app scheduler is generation-only; externalmail explicitlyseparate, supportedhostedconsent/providercapability/restore controls retained. No newgenericjobframework/unsupportedintake/backupservice introduced.",
+        "No change to original55scope, financial/security/backup/diskguards, release/platform/cutover/TypeScriptretirement gates."
+      ],
+      "actual_report": {
+        "status": "passed",
+        "issue": 690,
+        "sourceRevision": "e94be0723d31e36c3bb6edf06c75bc163f7888d3",
+        "runtimeSourceRevision": "963179bfb3bb3e8b92df87c83fb16c9722d0c47d",
+        "originalFailedRawReport": "/tmp/rentemester-rust-reports/r35-690-actual-e94be072.json",
+        "originalFailedRawSha256": "509c6e3ed673e3397508a58951073c5af701a012266f38ed56ac6f7466445247",
+        "successfulReopenProof": "/Users/mikkelfreltoftkrogsholm/Library/Application Support/Rentemester-Synthetic-Batch-1f8f73b7eb2f46c2b1586e3f20ec0efd/j07-690-reopen-result.json",
+        "successfulReopenProofSha256": "dd7a7a6a45241c315e864434e9f847ff7433b08af7d2e2b360e4216860a0427e",
+        "diagnosis": "Both actual browser lifecycle and exact native restart phases and finish receipt succeeded. Bun readline/stdin controller remained alive after successful finish; only terminal10secondprocess-exitwait failed. All ownedprocesses then stopped. Reused all successful proof/effects; zero newauth/servers/provider/financialactions.",
+        "actualSharedUiActions": [
+          "enable",
+          "pause",
+          "enable",
+          "catch-up",
+          "skip",
+          "dispatch",
+          "pause"
+        ],
+        "actualKnownRefusals": 3,
+        "nativeRestartQualified": true,
+        "actualBrowserClosureReopenQualified": true,
+        "currentNormalMfaCookieReopen": true,
+        "freshFactorClaimed": false,
+        "physicalOsSleepQualified": false,
+        "manualInstalledDesktopQualified": false,
+        "counts": {
+          "journal_entries": 1,
+          "journal_lines": 4,
+          "recurring_invoice_generations": 2
+        },
+        "originals": [
+          {
+            "documentId": 2,
+            "templateId": 1,
+            "periodIndex": 0,
+            "jsonSha256": "8036cd95cb7b59c7ce2836a5db0ebe5becb8a40d7c8de2b703d735658df2e937",
+            "pdfSha256": "51d53643f90ff330fb206a8c735d899e0868297599702dbb6fbd010e6032f6fb"
+          },
+          {
+            "documentId": 4,
+            "templateId": 2,
+            "periodIndex": 0,
+            "jsonSha256": "f89049fdd26bf5987f427fab2553c2059328b3e216056ddefc1f952e46980211",
+            "pdfSha256": "eb25fbc4ceeca88d597de3c7f3c7b3e11617dd01d2319931e1ef4546a3f492a4"
+          }
+        ],
+        "noNewBusinessMutationOrServerRuns": true,
+        "fullEpicAccepted": false
+      },
+      "sgd_phase": "done",
+      "all_goal_requirements_complete": false
+    },
+    "r01_current_source_triage": {
+      "issue": 673,
+      "status": "OPEN: actual freshcapture+18namedissuequery only; wholeperoperationcontract/oracle/refusal/delta matrix incomplete",
+      "source_revision": "e94be0723d31e36c3bb6edf06c75bc163f7888d3",
+      "source_capture": "/tmp/r01-673-current-source-e94be072.json",
+      "source_capture_sha256": "a27521637d283d358b8f4c818d3eeba289fe3d066c420aff6b590f7743253a57",
+      "named_issues_snapshot": "/tmp/r01-673-named-issues-current.json",
+      "named_issues_sha256": "4d9f89ad253608f48d922efc2e155ec22c46f28ceb932aa166a6517cabdbe3e4",
+      "counts": {
+        "cli": 265,
+        "mcp": 214,
+        "http": 208,
+        "screens": 56,
+        "core_exported_functions": 738,
+        "migrations": 67,
+        "changed_planning_source_hashes": 103
+      },
+      "added_capabilities": [
+        "companyscreen:eu-sales",
+        "staticroute:/flytning",
+        "core:assertLegacySourceActive",
+        "core:assertLegacyWorkspaceActive",
+        "core:finalizeCompanySchema",
+        "core:normalizeCompanyBaseline",
+        "workspace-migration:0031-workspace-mail-intake-v31.json"
+      ],
+      "current_named_issues": "641closed;17otheroriginalnamedissuesopen; classification/reconciliation required, not automatic scopes/closures.",
+      "original_inventory_preserved": true,
+      "no_runtime_handlers_invoked": true,
+      "all_goal_requirements_complete": false
     }
   },
   "verified_history": [
@@ -17404,6 +17561,12 @@
       "code_revision": "963179bfb3bb3e8b92df87c83fb16c9722d0c47d",
       "state": "28of55 original issues fully accepted and actually closed;27open. Full original R22/all3criteria accepted at963179bf: retained posting-rule/exception/DKK batch evidence plus current foreign/reverse-charge workbench using the same Rust engine and shared React UI. Seven current backend tests and26 unchanged UI tests, source-bound builds and actual normal-MFA independent review/apply passed: exactly one EUR100 purchase paidDKK746, input/reverseVAT186.50, four journal lines, bank/VAT reconciliation, stale/authority refusals, known-result replay and current-MFA restart. Failed/cancelled receipts and completed effects preserved; no blind replay. Source published and GitHub696 CLOSED flow:done. Full mission/release/platform/cutover/TypeScript retirement and manual installed desktop last remain OPEN.",
       "evidence_key": "r22_workbench696"
+    },
+    {
+      "current_increment": "R35 durable jobs, explicit local/hosted scheduling and restart recovery fully accepted;690closed",
+      "code_revision": "e94be0723d31e36c3bb6edf06c75bc163f7888d3",
+      "state": "29of55 original issues fully accepted and actually closed;26open. Full original R35/all5technicalcriteria accepted using retained provider/authority/cancellation/restore/hosted proof plus current real sharedReact activation, actualbrowserclose/reopeninert, missedperiod stop, explicitcatchup/skip/dispatch,3exactstale/resolvedrefusals andexactnative restart. Exactly2newunpostedunsent immutableJSON/PDFpairs; prior696onejournal/fourlines andfinancialreportsunchanged. Current13UI+2Copenhagen/DST/calendar checksPASS. Managedstop/Dropbyteexactretainedactual99shutdownproof. Only post-successBuncontrollerexitwait failed; rawfailure/effects retained andverifiedreadonlywithoutreplay; SGDcombineddone. GitHub690CLOSEDflow:done. Fullmission/release/platform/cutover/TypeScriptretirement andmanualinstalleddesktop/physicalOSsleep finalJ07 remainOPENandlast.",
+      "evidence_key": "r35_jobs690"
     }
   ],
   "scope_clarifications": [
@@ -17445,6 +17608,6 @@
       "product_acceptance_unchanged": true
     },
     "local_execution": "State Graph Development with GDD contracts, Graphify observations and isolated Docker Agent workers",
-    "last_closed_issue": 696
+    "last_closed_issue": 690
   }
 }
