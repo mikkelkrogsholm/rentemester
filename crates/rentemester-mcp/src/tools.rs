@@ -188,6 +188,7 @@ pub fn list() -> Value {
     tools.extend(crate::bank_queries::tools());
     tools.extend(crate::bank_import::tools());
     tools.extend(crate::bank_accounts_original::tools());
+    tools.extend(crate::accounts_original::tools());
     tools.extend(crate::cvr::tools());
     tools.extend(crate::exceptions::tools());
     tools.extend(crate::mileage::tools());
@@ -311,6 +312,7 @@ pub async fn call(api: &ApiClient, name: &str, args: Value) -> Result<Value, &'s
     if crate::expense_original::accepts(name) { return crate::expense_original::call(api,name,args).await; }
     if matches!(name,"direct_bank_purchase_payable_correction_plan"|"direct_bank_purchase_payable_correction_apply") {return crate::direct_bank_original::call(api,name,args).await;}
     if matches!(name,"bank_suggest_matches"|"bank_reconciliation_correction_plan"|"bank_reconciliation_correction_apply") {return crate::bank_original::call(api,name,args).await;}
+    if crate::accounts_original::accepts(name) {return crate::accounts_original::call(api,name,args).await;}
     if name=="bank_account_update" {return crate::bank_accounts_original::call(api,args).await;}
     if name=="bank_import" {return crate::bank_import::call(api,args).await;}
     if matches!(name,"bank_list"|"reconcile_bank"|"bank_account_list") {return crate::bank_queries::call(api,name,args).await;}

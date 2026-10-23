@@ -575,3 +575,6 @@ pub use dimensions_original::{DimensionsOriginalOperation, original_dimensions_s
 
 mod posting_rules_original;
 pub use posting_rules_original::{PostingRulesOriginalOperation, original_posting_rules_schema, parse_original_posting_rules_json, validate_original_posting_rules};
+
+mod accounts_original;
+pub use accounts_original::{AccountsOriginalOperation, original_accounts_schema, validate_original_accounts};

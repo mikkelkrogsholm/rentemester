@@ -10,7 +10,7 @@ fn posting_rules_original_three_only_discovery_365_and_offline_gate() {
         ],
     ));
     let tools = rows[1]["result"]["tools"].as_array().unwrap();
-    assert_eq!(tools.len(), 365);
+    assert_eq!(tools.len(), 369);
     for (name, op) in [
         (
             "posting_rule_propose",

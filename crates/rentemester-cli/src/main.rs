@@ -1,3 +1,4 @@
+mod accounts_original;
 mod dimensions_original;
 mod supplier_commitment_original;
 mod vat_purchase_original;
@@ -400,6 +401,11 @@ fn main() -> ExitCode {
         if let Err(output)=posting_rules_original::preflight(&args) {eprint!("{}",output.stderr);return ExitCode::from(output.exit);}
         if args.len()==1 || args.iter().any(|s|s=="--help") {println!("{}",posting_rules_original::help());return ExitCode::SUCCESS;}
     }
+    if accounts_original::accepts(&args) && (args.len()==1 || args.iter().any(|s|s=="--help")) {
+        println!("{}",accounts_original::help()); return ExitCode::SUCCESS;
+    }
+    if accounts_original::accepts(&args)
+        && let Err(output)=accounts_original::preflight(&args) {eprint!("{}",output.stderr);return ExitCode::from(output.exit);}
     if document_party_original::accepts(&args) {
         if let Err(output) = document_party_original::preflight(&args) {
             eprint!("{}", output.stderr);
@@ -637,6 +643,11 @@ fn main() -> ExitCode {
         let output = bank_original::execute(&args);
         print!("{}", output.stdout);
         eprint!("{}", output.stderr);
+        return ExitCode::from(output.exit);
+    }
+    if accounts_original::accepts(&args) {
+        let output=accounts_original::execute(&args);
+        print!("{}",output.stdout); eprint!("{}",output.stderr);
         return ExitCode::from(output.exit);
     }
     if bank_accounts_original::accepts(&args) {
