@@ -1,10 +1,10 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "R26 fiscal readiness, close/reopen and shifted-year opening/reversal fully accepted;700closed",
-  "code_revision": "b5b97641abbd56fb56b1c6c070349ded216293c3",
-  "spec_revision": "sha256:34ef3a93b965bb9ac5ec28f09f3c9fa0287393ffc3c5bc45635a2aadbfa266ef",
-  "state": "27of55 original issues fully accepted and actually closed;28open. Full original R26/all3criteria accepted: retained159/162/opening64 proof plus five real file-backed independent-writer ordering and ordinary shifted-year post-close reversal tests. Exact stale/locked refusals, financial/sequence/audit/decision invariants and successful current operations verified. Only test code changed; original bank-mismatch failure retained, synthetic account corrected without weakening controls. Lead reviewed actual diff; SGD combined acceptance passed and source published. Full mission/release/platform/cutover/TypeScript retirement and manual installed desktop last remain OPEN.",
+  "current_increment": "R22 posting rules, exceptions and reviewed bank workbench fully accepted including foreign/reverse-charge purchases;696closed",
+  "code_revision": "963179bfb3bb3e8b92df87c83fb16c9722d0c47d",
+  "spec_revision": "sha256:f5b8948eb366dc91f291d669d4afe13cd41ed7b024f9d2dcdfe1fc31bf95d2ef",
+  "state": "28of55 original issues fully accepted and actually closed;27open. Full original R22/all3criteria accepted at963179bf: retained posting-rule/exception/DKK batch evidence plus current foreign/reverse-charge workbench using the same Rust engine and shared React UI. Seven current backend tests and26 unchanged UI tests, source-bound builds and actual normal-MFA independent review/apply passed: exactly one EUR100 purchase paidDKK746, input/reverseVAT186.50, four journal lines, bank/VAT reconciliation, stale/authority refusals, known-result replay and current-MFA restart. Failed/cancelled receipts and completed effects preserved; no blind replay. Source published and GitHub696 CLOSED flow:done. Full mission/release/platform/cutover/TypeScript retirement and manual installed desktop last remain OPEN.",
   "issues_closed": [
     675,
     676,
@@ -20,6 +20,7 @@
     693,
     694,
     695,
+    696,
     697,
     698,
     699,
@@ -35,8 +36,8 @@
     710
   ],
   "next": [
-    "Next whole existing R22#696: all three dependencies689/695/693 closed. Retain original178 posting-rule lifecycle/provenance,163exceptions and57/182 DKK grouping/batch/replay/stale evidence. Concrete gap: source-supported non-DKK/reverse-charge bank-to-evidence workbench and confirmed batch posting currently refused/excluded. Complete the smallest coherent foreign purchase path, retain current-source/valuation/VAT/period/authority controls and exact plan invalidation; no unchanged DKK journey replay.",
-    "Existing R24#698, R25#699 and R26#700 fully closed. Preserve all accepted effects/recovery/failure chains and exact retained evidence; no fixture or financial replay. One shared Rust motor/server and same React web/Tauri UI; manual installed desktop acceptance last.",
+    "Next necessary existing foundation chain673 ->674 ->679: bounded read-only triage confirms673 still requires complete source-to-contract inventory reconciliation (domain owner/oracle/negative case/interfaces/wire schemas/status, all18namedhistoricalissue dispositions and delta/knownbug review). Reuse extensive accepted family receipts without replay. This is inventory acceptance, not a new runtime engine/infrastructure project. Select a finite actual scope before dispatch; do not close on registry counts or generic interface ownership.",
+    "Existing R22#696, R24#698, R25#699 and R26#700 fully closed. Preserve accepted financial effects, exact retained evidence, failed/cancelled receipts and snapshots. One shared Rust motor/server and same React web/Tauri UI; manual installed desktop acceptance last.",
     "Original invoice interface inventory now has all31CLI and25MCP bindings, with explicit compatibility corrections documented; do not mistake that family inventory for full product parity. Reconcile remaining original whole-product R44/R45 acceptance from existing epic/issues: actor/env/company-path/default launcher/errors/historical receipts, closure/recovery/automation, signed distribution/update/cutover and TypeScript backend retirement. Continue next necessary whole journey, preserve all accepted evidence/full original scope; installed desktop acceptance last.",
     "Installed desktop acceptance is explicitly deferred to the very end by the user. Preserve prepared Group100 profile; collect remaining native automation, closure, recovery and packaging checks for final installed acceptance without requesting screen unlock during development.",
     "J03/R50 and remaining R54 scope: only still-supported operation closure/recovery, nonempty scheduler handoff, hostile/older clone and post-cutover rollback requirements. Group99 qualifies managed installed J06 flow, not every R54 acceptance item.",
@@ -52,9 +53,9 @@
   ],
   "all_goal_requirements_complete": false,
   "previous_verified_increment": {
-    "name": "R24 fixed assets, depreciation and capitalized disposal fully accepted;698closed",
-    "code_revision": "295a40ade6788d89b70a6ff9bd9885c81bb884e4",
-    "evidence_key": "r24_assets698"
+    "name": "R26 fiscal readiness, close/reopen and shifted-year opening/reversal fully accepted;700closed",
+    "code_revision": "b5b97641abbd56fb56b1c6c070349ded216293c3",
+    "evidence_key": "r26_periods700"
   },
   "evidence": {
     "combined_browser_log": "/tmp/rm-platform5-combined.log",
@@ -15422,6 +15423,83 @@
         "Ordinary shifted-year equity-transfer test intentionally has no bankstatement/VAT source; banking/VAT/controlcarry proof is retained from original source-scoped journeys. No control bypass.",
         "Full55/J01-J07/distribution/platform/livecutover/TypeScriptretirement/manualinstalleddesktoplast remainbinding; no wholemigrationcompletion."
       ]
+    },
+    "r22_workbench696": {
+      "issue": 696,
+      "status": "ACCEPTED full original R22/all3criteria; actual GitHub696 CLOSED flow:done",
+      "source_revision": "963179bfb3bb3e8b92df87c83fb16c9722d0c47d",
+      "gdd_revision": "sha256:f5b8948eb366dc91f291d669d4afe13cd41ed7b024f9d2dcdfe1fc31bf95d2ef",
+      "sgd_run": "rust-r22-foreign696-final-20261023T201355.352555000",
+      "report": "/tmp/rentemester-rust-reports/r22-workbench696-accepted.json",
+      "report_sha256": "5e310f750908338bb673853aa7703b8f9793b926f5de06744bb83dd95e76c04c",
+      "criteria": {
+        "pureProvenance": "Retained178 independent rule lifecycle/provenance and57/182 DKK batch. Current typedforeign rules and immutable source/cache/FX/role hash; actual before-VIES plan nonready, after explicit configuredprovider sourcecached ready; suggestion/nativeCLI read exact/pure; no lookup during plan/apply.",
+        "actionableExceptionsAndNoDuplicates": "Retained163 queues and57/182 conflict/grouping/replay controls. Current7targetedtests show linked missing FX/cache/negative/stale/canonical buyer/VAT refusals and rollback. Actual EUR100 same scanned original + bank DKK-746 at imported7.46, sameReact independent review+explicitapply commits onejournal4lines (expense746,inputVAT186.50,reverseVAT186.50,bank746), exact bankdifference0 and VATnet0, one rule/purchase application and canonicalbank relation; exactsuccessreceipt replay without anotherjournal.",
+        "changedPlanInvalidatesReview": "Actualpersistedindependentlyapproved v1 invalidated by realrule disable; staleapply422/noeffects. Independentlyreviewedv2 and newrun then actualsharedReact approval/apply200; currentreader403 and selfreview422. Currenttests coverFX/source/cache/expirychangesandnow-stablehash.",
+        "fullOriginalScope": "Existing postingrules, exceptionqueues, deterministicworkbench/suggestions/purchasegrouping/dryruns/review/confirmedaccounting retained. Concreteforeign/reverse-charge gap now complete using sameengine/nativeAPIandReact. OriginalTSbatch itself omittedforeigncandidateuniverse; corrected explicitly, not falsely claimed oldforeignbatchparity."
+      },
+      "current_checks": "7executedpositive/refusal/rollback/expiry tests after last19lineproofcorrection, retained26unchangedUItests with exactsource/rawlogpins; currentnative3binarybuild; currentsharedUIbuild/designcheck/typecheck; explicitmain+independentreviewofactualdiff.",
+      "retained_evidence": {
+        "original_posting_rules178": {
+          "source_revision": "fdce3e34d404be42a41f5c192d1573a9f6b21786",
+          "report": "/tmp/rentemester-rust-reports/original-posting-rules178-actual.json",
+          "sha256": "934a4b4d03a46235eba945ddb7e2bab2d956c382a8fa6d65ec7b2730e85a4206",
+          "status": "ACCEPTED finite original posting rule proposal/independent approval/explanation/terminal lifecycle; full R22 and whole mission OPEN",
+          "retained_not_rerun": true
+        },
+        "original_exceptions163": {
+          "source_revision": "d5caea35aba2a6dc46e9c9fef577791814aacaa4",
+          "report": "/tmp/rentemester-rust-reports/original-exceptions163-actual.json",
+          "sha256": "d919dc56aec175d0c713b47167773df97cc8209da10fbb81dbab4e9ad0a01577",
+          "status": "ACCEPTED finite original exception CLI/MCP review-only flow; full issue/epic OPEN",
+          "retained_not_rerun": true
+        },
+        "platform57_atomic_purchase_batch": {
+          "source_revision": null,
+          "report": "/tmp/rentemester-rust-reports/bookkeeping-batch-integrated57-proof-file2.json",
+          "sha256": null,
+          "status": null,
+          "retained_not_rerun": true
+        },
+        "original_bookkeeping_batch182": {
+          "source_revision": "1ee2c1ff34bcfe04706acbf95927084888a42426",
+          "report": "/tmp/rentemester-rust-reports/original-bookkeeping-batch182-actual.json",
+          "sha256": "05421aaffc8b51f7c86a920a76459d215c311257e2b887f3f1dc092af29962b0",
+          "status": "ACCEPTED full R23 completion matrix across native57/draft180/original batch182; full epic and release/desktop remain OPEN",
+          "retained_not_rerun": true
+        },
+        "original_vat_purchase174": {
+          "source_revision": "c1f15aa3644db872b1625715af2ba9de1d8ef1f6",
+          "report": "/tmp/rentemester-rust-reports/original-vat-purchase174-actual.json",
+          "sha256": "819c281cd90d7c7b5af35dc9b1084665fb409d4a2c9dc54c6ccb4926be91ce86",
+          "status": "ACCEPTED finite original EU-service/representation purchase journey; entire mission OPEN",
+          "retained_not_rerun": true
+        }
+      },
+      "preserved_failures": [
+        "Initialbackend30a diagnostic green explicitlyrejected, notaccepted; unownedclockseam then explicitlyaddedandimplemented. Cancelledrun/receipts/snapshots retained.",
+        "UI missingexistingrootBabelmap diagnosed, no install; currentrule-refusal renderingfixed and26testsPASS.",
+        "Initialactualfixture correctlycommittedv1proposal buthelperexpectedwronglegacywriteenvelope; allsource/import/normalMFA preserved.",
+        "Continuation omittedtoplevelbrowserdeclarations; setupgrowthstopped andexistingnormalMFAsessions reused, no newfixture/identity/sessionseed.",
+        "Actualproductdefect foreignreviewVAT0 vs canonicaljournallines186.50 correctedonlynewv2proof; tested7PASS. OneMoneyAPIcompilemistakefixedbyverifyingmutatingadd/subtract, no changedfinancialengine.",
+        "Actualfullflow succeededthroughsharedUI/replay/originalandscreenshot; helperfailedonlyfinalcsvreturnmetadata afterremovedsetup. Preserved47observations andallfinancialeffects; only exactreadback/restartremained.",
+        "Both current-MFAreadback/restartphasespassed; supplementalSQLexpectedmanual-linkeventinsteadcanonicalauto-reconciliationview. Correctview1 exactbank1->journal1verifiedreadonly,manualevents0; bothphasesreusedwithoutrepeat."
+      ],
+      "limits": [
+        "Current actualforeignsource is EU/EUR invoice paidDKK; sameforeignbank and DKKforeignsupplier are targetedstorageproofs, not a new actualnetworkfixture. Existing174sourceVAT/valuation/noneurefusalsandDKK177/182controlsretained.",
+        "Initialtwohumansnormalemail/invitation/MFAenrollmentandfollowingfreshrecoveryfactoractual; finalreadback/restart revalidatesretainedcurrentMFAcookies, no additionalfreshfactorclaim. Recoveryreads only existingencryptedownsyntheticbackupcodes; no identity/session/factorrowsseededoffline.",
+        "No new signedsourcefreerestore claim. Existing174/178/182signedproofretained; finalintegrated/release/55scope/manualinstalleddesktoplast remainbinding/open."
+      ],
+      "actual_report": "/tmp/rentemester-rust-reports/r22-696-verified-963179bf.json",
+      "financial_effects": {
+        "journal_entries": 1,
+        "journal_lines": 4,
+        "bank_journal_reconciliations": 1,
+        "purchase_posting_applications": 1,
+        "posting_rule_applications": 1
+      },
+      "sgd_phase": "done",
+      "all_goal_requirements_complete": false
     }
   },
   "verified_history": [
@@ -17320,6 +17398,12 @@
       "code_revision": "b5b97641abbd56fb56b1c6c070349ded216293c3",
       "state": "27of55 original issues fully accepted and actually closed;28open. Full original R26/all3criteria accepted: retained159/162/opening64 proof plus five real file-backed independent-writer ordering and ordinary shifted-year post-close reversal tests. Exact stale/locked refusals, financial/sequence/audit/decision invariants and successful current operations verified. Only test code changed; original bank-mismatch failure retained, synthetic account corrected without weakening controls. Lead reviewed actual diff; SGD combined acceptance passed and source published. Full mission/release/platform/cutover/TypeScript retirement and manual installed desktop last remain OPEN.",
       "evidence_key": "r26_periods700"
+    },
+    {
+      "current_increment": "R22 posting rules, exceptions and reviewed bank workbench fully accepted including foreign/reverse-charge purchases;696closed",
+      "code_revision": "963179bfb3bb3e8b92df87c83fb16c9722d0c47d",
+      "state": "28of55 original issues fully accepted and actually closed;27open. Full original R22/all3criteria accepted at963179bf: retained posting-rule/exception/DKK batch evidence plus current foreign/reverse-charge workbench using the same Rust engine and shared React UI. Seven current backend tests and26 unchanged UI tests, source-bound builds and actual normal-MFA independent review/apply passed: exactly one EUR100 purchase paidDKK746, input/reverseVAT186.50, four journal lines, bank/VAT reconciliation, stale/authority refusals, known-result replay and current-MFA restart. Failed/cancelled receipts and completed effects preserved; no blind replay. Source published and GitHub696 CLOSED flow:done. Full mission/release/platform/cutover/TypeScript retirement and manual installed desktop last remain OPEN.",
+      "evidence_key": "r22_workbench696"
     }
   ],
   "scope_clarifications": [
@@ -17361,6 +17445,6 @@
       "product_acceptance_unchanged": true
     },
     "local_execution": "State Graph Development with GDD contracts, Graphify observations and isolated Docker Agent workers",
-    "last_closed_issue": 700
+    "last_closed_issue": 696
   }
 }
