@@ -107,14 +107,14 @@ export function createMileagePostingProof(base: string, work: string, onStep: (n
     await panel.getByLabel('Takstversion', { exact: true }).selectOption(config.version);
     await panel.getByLabel('Bilags-id', { exact: true }).fill(String(documentId));
     const previewResponse = page.waitForResponse(r => r.url() === base + api + 'post-preview' && r.request().method() === 'POST');
-    await panel.getByRole('button', { name: 'Vis bogføringsforslag', exact: true }).click();
+    await panel.getByRole('button', { name: 'Forhåndsvis bogføring', exact: true }).click();
     const uiPreview = await previewResponse; record({ uiPreview: await uiPreview.text(), status: uiPreview.status() });
     need(uiPreview.ok() && equal((await uiPreview.json()).mileagePosting, preview), 'shared UI exact server preview');
     need((await panel.innerText()).includes('3699') && (await panel.innerText()).includes('7399') && /24[,.]70/.test(await panel.innerText()), 'human amount and account review');
     await panel.getByRole('button', { name: 'Bogfør kørsel', exact: true }).click();
     const dialog = page.getByRole('dialog', { name: 'Bogfør kørsel', exact: true }); await dialog.waitFor();
     const pending = page.waitForResponse(r => r.url() === base + api + 'post' && r.request().method() === 'POST');
-    await dialog.getByRole('button', { name: 'Bogfør kørsel', exact: true }).click();
+    await dialog.getByRole('button', { name: 'Bekræft bogføring', exact: true }).click();
     const posted = await pending, body = posted.request().postDataJSON(), text = await posted.text();
     record({ uiPost: { body, status: posted.status(), text } });
     need(posted.ok(), 'one explicit UI post failed; preserve profile, read canonical postings, NEVER resend');
