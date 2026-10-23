@@ -76,7 +76,7 @@ export function createOriginalPostingRulesProof(base:string,work:string,onStep:(
     const imported=await http(root+'bank/import',{confirm:true,csvContent:csv,account:'synthetic-batch-bank'});need(imported.import.imported===1&&imported.import.skippedDuplicates===0,'one actual archived bank source');
     service=await admin('service-principals',{displayName:'Synthetic posting rules178',operationId:randomUUID(),confirm:true});writeFileSync(key,service.secret+'\n',{mode:0o600,flag:'wx'});
     await admin('members/access',{userId:service.serviceAccountId,action:'set-role',workspaceRole:'member'});
-    await admin('members/company',{userId:service.serviceAccountId,companySlug:'synthetic',action:'grant',role:'bookkeeper'});
+    await admin('members/company',{userId:service.serviceAccountId,companySlug:'synthetic',action:'grant',role:'reviewer'});
     await cookies();
     context={supplierIdentity:'Synthetic supplier',documentType:'purchase_sale',supplierCountry:'DK',supplierVat:'DK12345678',currency:'DKK',amount:125,vatAmount:25,attributes:{bankText:'SYN-BATCH-1'},documentId:document};
     proposal={ruleId,effectiveFrom:date,conditions:{supplierIdentity:'Synthetic supplier',documentType:'purchase_sale',supplierCountry:'DK',supplierVat:'DK12345678',currency:'DKK',vat:'positive',amount:{min:100,max:150},attributes:{bankText:'SYN-BATCH-1'}},outcome:{account:'6000',vatTreatment:'standard',textTemplate:'Synthetic source purchase'},provenance:'Synthetic ordinary scanned original178',rationale:'Synthetic reviewed broad source rule v1'};
