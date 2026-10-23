@@ -112,7 +112,18 @@ fn usage(message: String) -> (u8, Error) {
     (2, Error::new("invalid_input", message))
 }
 
+// Existing deterministic argv fixtures intentionally retain adapter defaults.
+#[cfg(test)]
 pub fn prepare(args: Vec<String>) -> Result<Vec<String>, (u8, Error)> {
+    prepare_inner(args, None)
+}
+
+/// Resolve the source stdout default once, before family parsing or local binding.
+pub fn prepare_with_output(args: Vec<String>, stdout_is_terminal: bool) -> Result<Vec<String>, (u8, Error)> {
+    prepare_inner(args, Some(stdout_is_terminal))
+}
+
+fn prepare_inner(args: Vec<String>, stdout_is_terminal: Option<bool>) -> Result<Vec<String>, (u8, Error)> {
     // Locate command words without mistaking option values for commands. Retain
     // their indices so only command words move, not search words or literal data.
     let mut words = Vec::new();
@@ -195,7 +206,7 @@ pub fn prepare(args: Vec<String>) -> Result<Vec<String>, (u8, Error)> {
             continue;
         }
         let (name, attached) = option(token);
-        if period && !seen.insert(name) {
+        if period && !matches!(name, "--format" | "--json") && !seen.insert(name) {
             return Err(usage(format!("Duplicate {name}")));
         }
         if boolean(name) {
@@ -222,16 +233,27 @@ pub fn prepare(args: Vec<String>) -> Result<Vec<String>, (u8, Error)> {
             cursor = next;
         }
     }
+    // Offline discovery must not acquire runtime output flags. Explicit flags
+    // retain their existing normalization and validation.
+    let offline = root_help || output.iter().take_while(|s| s.as_str() != "--")
+        .any(|s| matches!(s.as_str(), "--help" | "--example" | "--schema"));
+    if format.is_none() && !offline {
+        format = stdout_is_terminal.map(|tty| if tty { "human" } else { "json" });
+    }
     // Source precedence: --json wins regardless of its position; the last
     // --format otherwise wins. Human is the adapters' existing no-json mode.
     // Preserve explicit human intent for source families whose
     // default distinguishes a terminal report from piped flat JSON.
     if !json
         && format == Some("human")
-        && output.first().is_some_and(|s| {
+        && (crate::document_party_original::accepts(&output)
+            || crate::invoice_extraction_original::accepts(&output)
+            || crate::vat_purchase_original::accepts(&output)
+            || output.first().is_some_and(|s| {
             matches!(
                 s.as_str(),
                 "exceptions"
+                    | "budget"
                     | "accounting-draft" | "accounts" | "posting-rules" | "dimensions" | "supplier-commitment" | "vat" | "customer"
                     | "vendor"
                     | "documents"
@@ -240,9 +262,10 @@ pub fn prepare(args: Vec<String>) -> Result<Vec<String>, (u8, Error)> {
                     | "accrual"
                     | "mileage"
             )
-        })
+        }))
     {
-        output.extend(["--format".into(), "human".into()]);
+        let end = output.iter().position(|s| s == "--").unwrap_or(output.len());
+        output.splice(end..end, ["--format".into(), "human".into()]);
     }
     if json || format == Some("json") {
         let end = output
@@ -259,6 +282,29 @@ mod tests {
     use super::*;
     fn args(values: &[&str]) -> Vec<String> {
         values.iter().map(|v| (*v).into()).collect()
+    }
+    #[test]
+    fn stdout_default_is_central_bounded_and_does_not_consume_literal_flags() {
+        for tty in [false, true] {
+            let expected = if tty { args(&["journal", "list"]) }
+                else { args(&["journal", "list", "--json"]) };
+            assert_eq!(prepare_with_output(args(&["journal", "list"]), tty).unwrap(), expected);
+            for input in [
+                vec!["remote", "report-export", "--format=csv"],
+                vec!["trial-balance", "--company=x"],
+                vec!["journal", "list", "--help"],
+                vec!["invoice", "create", "--example"],
+            ] {
+                let input = args(&input);
+                assert_eq!(prepare_with_output(input.clone(), tty).unwrap(), input);
+            }
+            let prepared = prepare_with_output(args(&["invoice", "find", "--", "--json"]), tty).unwrap();
+            let end = prepared.iter().position(|s| s == "--").unwrap();
+            assert_eq!(&prepared[end..], &args(&["--", "--json"]));
+            assert_eq!(prepared[..end].iter().any(|s| s == "--json"), !tty);
+            assert_eq!(prepare_with_output(args(&["period", "status", "--format=json", "--format=human", "--json"]), tty).unwrap(), args(&["period", "status", "--json"]));
+            assert_eq!(prepare_with_output(args(&["budget", "list", "--format=human"]), tty).unwrap(), args(&["budget", "list", "--format", "human"]));
+        }
     }
     #[test]
     fn only_original_asset_writeoff_consumes_valued_confirmation() {
