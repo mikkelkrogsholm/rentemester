@@ -1,3 +1,4 @@
+mod mileage_posting;
 mod bookkeeping_batch_original;
 mod accounting_draft_original;
 mod accounts_original;
@@ -89,6 +90,7 @@ mod reviewed_bookkeeping;
 mod saft;
 mod workspace_inbox;
 fn run(args: Vec<String>) -> Result<serde_json::Value, (u8, Error)> {
+    if args.first().is_some_and(|s|mileage_posting::accepts(s)) { return remote::run(&args); }
     if args.first().is_some_and(|s|s=="reg") { return regulatory::run(&args); }
     if args.first().is_some_and(|s|privacy::accepts(s)||s=="compliance-report") { return remote::run(&args); }
     if args.first().map(String::as_str) == Some("journal")
@@ -307,8 +309,12 @@ fn run(args: Vec<String>) -> Result<serde_json::Value, (u8, Error)> {
     Ok(json!({"ok":true,"format":"rentemester-trial-balance/1","data":report}))
 }
 fn main() -> ExitCode {
+    let raw: Vec<String> = std::env::args().skip(1).collect();
+    let raw = if raw.first().is_some_and(|s| mileage_posting::accepts(s)) {
+        std::iter::once("remote".to_owned()).chain(raw).collect()
+    } else { raw };
     let args = match original_args::prepare_with_output(
-        std::env::args().skip(1).collect(),
+        raw,
         std::io::IsTerminal::is_terminal(&std::io::stdout()),
     ) {
         Ok(args) => args,

@@ -176,6 +176,7 @@ pub fn list() -> Value {
     tools.extend(crate::scheduled_recurring::tools());
     tools.extend(crate::assets::tools());
     tools.extend(crate::accruals::tools());
+    tools.extend(crate::mileage_posting::tools());
     tools.extend(crate::budget::tools());
     tools.extend(crate::bank_matches::tools().into_iter().filter(|tool|tool["name"]!="bank_suggest_matches"));
     tools.extend(crate::bank_original::tools());
@@ -369,6 +370,7 @@ pub async fn call(api: &ApiClient, name: &str, args: Value) -> Result<Value, &'s
         name if crate::bank_matches::accepts(name) => crate::bank_matches::call(api,name,args).await?,
         name if crate::cvr::accepts(name) => crate::cvr::call(api,name,args).await?,
         name if crate::mileage::accepts(name) => crate::mileage::call(api,name,args).await?,
+        name if crate::mileage_posting::accepts(name) => crate::mileage_posting::call(api,name,args).await?,
         name if crate::accruals::accepts(name) => crate::accruals::call(api,name,args).await?,
         name if crate::assets::accepts(name) => crate::assets::call(api,name,args).await?,
         name if crate::service_principals::accepts(name)=>crate::service_principals::call(api,name,args).await?,
