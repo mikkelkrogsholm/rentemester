@@ -1,7 +1,7 @@
 use super::*;
 use crate::posting_rules::{self, Input};
 use rusqlite::{Connection, TransactionBehavior};
-fn fixture() -> Connection {
+pub(crate) fn fixture() -> Connection {
     fixture_with_bank(true)
 }
 fn fixture_with_bank(with_bank: bool) -> Connection {
@@ -46,7 +46,7 @@ fn proposal(id: &str, vat: bool) -> Input {
     }
     serde_json::from_value(json!({"confirm":true,"proposal":{"ruleId":id,"effectiveFrom":"2000-01-01","conditions":{"currency":"DKK","attributes":{"bankText":"Synthetic supplier debit"},"supplierIdentity":"Synthetic supplier","supplierCountry":"DK","supplierVat":"DK12345678","documentType":"purchase_sale","vat":"positive"},"outcome":outcome,"provenance":"synthetic reviewed source","rationale":"Synthetic reviewed purchase allocation"}})).unwrap()
 }
-fn approved_rule(tx: &Transaction<'_>, id: &str, vat: bool) {
+pub(crate) fn approved_rule(tx: &Transaction<'_>, id: &str, vat: bool) {
     let day = today(tx);
     let created =
         posting_rules::change(tx, "propose", &proposal(id, vat), "user:author", &day).unwrap();
@@ -200,7 +200,7 @@ fn approved_unsupported_legacy_family_blocks_fallback_to_otherwise_matching_nati
     tx.rollback().unwrap();
 }
 
-fn replace_immutable(db: &Connection, table: &str, statement: &str) {
+pub(crate) fn replace_immutable(db: &Connection, table: &str, statement: &str) {
     let triggers = db
         .prepare("SELECT name,sql FROM sqlite_schema WHERE type='trigger' AND tbl_name=?1")
         .unwrap()

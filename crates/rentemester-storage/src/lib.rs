@@ -592,6 +592,7 @@ pub mod dimensions;
 pub mod accounting_drafts;
 
 pub mod posting_rules;
+pub mod posting_rules_original;
 
 pub mod bookkeeping_queue;
 pub mod gdpr;
