@@ -646,6 +646,13 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
         .route("/api/companies/{slug}/original/posting-rules/supersede", post(posting_rules_original::handle))
         .route("/api/companies/{slug}/original/posting-rules/explain", post(posting_rules_original::handle))
         .route("/api/companies/{slug}/original/posting-rules/test", post(posting_rules_original::handle))
+        .route("/api/companies/{slug}/original/accounting-draft/create", post(accounting_draft_original::handle))
+        .route("/api/companies/{slug}/original/accounting-draft/revise", post(accounting_draft_original::handle))
+        .route("/api/companies/{slug}/original/accounting-draft/submit", post(accounting_draft_original::handle))
+        .route("/api/companies/{slug}/original/accounting-draft/reject", post(accounting_draft_original::handle))
+        .route("/api/companies/{slug}/original/accounting-draft/approve-and-post", post(accounting_draft_original::handle))
+        .route("/api/companies/{slug}/original/accounting-draft/show", get(accounting_draft_original::handle))
+        .route("/api/companies/{slug}/original/accounting-draft/list", get(accounting_draft_original::handle))
         .with_state(state)
 }
 fn response(status: StatusCode, value: Value) -> Response {
@@ -1047,3 +1054,5 @@ mod dimensions_original;
 mod posting_rules_original;
 
 mod accounts_original;
+
+mod accounting_draft_original;
