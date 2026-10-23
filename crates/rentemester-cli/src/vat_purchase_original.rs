@@ -202,16 +202,16 @@ pub fn execute(args: &[String], input: Value) -> Output {
     });
     match result {
         Ok(v) => {
-            if args[1] == "post-eu-service-purchase" && v["ok"] == false {
-                if let Some(invoice) = input["invoiceNo"]
+            if args[1] == "post-eu-service-purchase"
+                && v["ok"] == false
+                && let Some(invoice) = input["invoiceNo"]
                     .as_str()
                     .map(str::trim)
                     .filter(|s| !s.is_empty())
-                {
-                    let message = format!("Could not resolve document for invoiceNo {invoice}");
-                    if v["errors"] == json!([message]) {
-                        return usage(&message);
-                    }
+            {
+                let message = format!("Could not resolve document for invoiceNo {invoice}");
+                if v["errors"] == json!([message]) {
+                    return usage(&message);
                 }
             }
             let exit = if v["ok"] == true { 0 } else { 1 };
