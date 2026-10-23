@@ -3,6 +3,7 @@ use serde_json::{Value, json};
 
 pub fn help() -> Value {
     json!({"ok":true,"localBinding":"Existing migrated commands may select --local-profile ABS_PRIVATE_PROFILE instead of --server/--allow-loopback-http. Join only: same server via private Unix socket with normal cookie/service authentication. Bounded company selection supports explicit slug or verified workspace path and RENTEMESTER_COMPANY fallback for migrated company commands only. Identity remains server-owned; no caller-selected actor. Whole-product parity is unfinished and the default launcher is unchanged.","commands":[
+        {"name":"accounting-draft create|revise|submit|reject|approve-and-post|show|list","usage":"accounting-draft --help","scope":"local JSON-FILE input, five explicitly confirmed writes, current typed credential assertions, independent review and exact replay; no retry"},
         {"name":"accounts list|add|roles-status|role-confirm","usage":"accounts --help","scope":"original chart and eight required roles; explicit confirmation, current credential authority, no retries"},
         {"name":"posting-rules propose|approve|disable|supersede|explain|test","usage":"posting-rules --help","scope":"inline JSON; four explicitly confirmed writes; two flat read-only dry runs; credential assertions only; no automatic retry"},
         {"name":"dimensions define|member|definition-lifecycle|member-lifecycle|definitions|members|plan|apply|replace|supersede|list|budget-plan|budget-apply|budgets","usage":"dimensions --help","scope":"original immutable journal dimensions and exact reviewed dimension budgets; credential equality assertions only; no retry"},
@@ -153,7 +154,7 @@ fn invalid(message: &str) -> crate::dated_reports::Output {
 fn recognized(root: &str) -> bool {
     matches!(
         root,
-        "accounts" | "posting-rules" | "dimensions" | "supplier-commitment" | "vat" | "asset"
+        "accounting-draft" | "accounts" | "posting-rules" | "dimensions" | "supplier-commitment" | "vat" | "asset"
             | "accrual"
             | "mileage"
             | "budget"
