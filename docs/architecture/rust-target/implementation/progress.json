@@ -1,10 +1,10 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "R24 fixed assets, depreciation and capitalized disposal fully accepted;698closed",
-  "code_revision": "295a40ade6788d89b70a6ff9bd9885c81bb884e4",
-  "spec_revision": "sha256:64784c6b66c9323ec5914bb2ec3688486b05c21b5b927b24bd465818f62dca60",
-  "state": "26of55 original issues fully accepted and actually closed;29open. FullR24/all3criteria accepted: retained original170 acquisition/register/schedule/depreciation/refusal evidence plus actual partial/full/no-depreciation capitalized disposal through sameReact/native clients. Missing statement repaired through ordinary import/reviewed existing-journal links and matched-source task resolution, normal period close/refusal/reopen and one remaining disposal;10journals21lines/history exact. Current native restart, independently signed all-company image, actual source-free fresh-MFA-owner restore, explicit3historical receipt mappings and restored current-MFA restart passed. All failed/cancelled receipts/effects retained; no replay or scope/control waiver. Full mission/release/platform/cutover/TypeScript retirement and manual installed desktop last remain OPEN.",
+  "current_increment": "R26 fiscal readiness, close/reopen and shifted-year opening/reversal fully accepted;700closed",
+  "code_revision": "b5b97641abbd56fb56b1c6c070349ded216293c3",
+  "spec_revision": "sha256:34ef3a93b965bb9ac5ec28f09f3c9fa0287393ffc3c5bc45635a2aadbfa266ef",
+  "state": "27of55 original issues fully accepted and actually closed;28open. Full original R26/all3criteria accepted: retained159/162/opening64 proof plus five real file-backed independent-writer ordering and ordinary shifted-year post-close reversal tests. Exact stale/locked refusals, financial/sequence/audit/decision invariants and successful current operations verified. Only test code changed; original bank-mismatch failure retained, synthetic account corrected without weakening controls. Lead reviewed actual diff; SGD combined acceptance passed and source published. Full mission/release/platform/cutover/TypeScript retirement and manual installed desktop last remain OPEN.",
   "issues_closed": [
     675,
     676,
@@ -23,6 +23,7 @@
     697,
     698,
     699,
+    700,
     701,
     702,
     703,
@@ -34,8 +35,8 @@
     710
   ],
   "next": [
-    "Next whole existing R26#700: all7prerequisites now accepted/closed. Reuse original_period159/162 and opening64 evidence; fill independent real file-backed SQLite connection posting-vs-close/reopen ordering, including actual writer contention, stale prior review, locked-period no-financial-effects and preserved decisions. Bind ordinary post-close reversal across a shifted fiscal year to valid retained proof or add that compact case; opening64 opening-reversal refusal alone does not satisfy it. No new engine, broad repeated journeys or weakened controls.",
-    "Existing R24#698 and R25#699 now fully closed. Preserve their actual effects/recovery/failure chains and exact original170/169/171 evidence; no fixture or financial replay. One common Rust motor/server and same React web/Tauri UI; manual installed desktop acceptance last.",
+    "Next whole existing R22#696: all three dependencies689/695/693 closed. Retain original178 posting-rule lifecycle/provenance,163exceptions and57/182 DKK grouping/batch/replay/stale evidence. Concrete gap: source-supported non-DKK/reverse-charge bank-to-evidence workbench and confirmed batch posting currently refused/excluded. Complete the smallest coherent foreign purchase path, retain current-source/valuation/VAT/period/authority controls and exact plan invalidation; no unchanged DKK journey replay.",
+    "Existing R24#698, R25#699 and R26#700 fully closed. Preserve all accepted effects/recovery/failure chains and exact retained evidence; no fixture or financial replay. One shared Rust motor/server and same React web/Tauri UI; manual installed desktop acceptance last.",
     "Original invoice interface inventory now has all31CLI and25MCP bindings, with explicit compatibility corrections documented; do not mistake that family inventory for full product parity. Reconcile remaining original whole-product R44/R45 acceptance from existing epic/issues: actor/env/company-path/default launcher/errors/historical receipts, closure/recovery/automation, signed distribution/update/cutover and TypeScript backend retirement. Continue next necessary whole journey, preserve all accepted evidence/full original scope; installed desktop acceptance last.",
     "Installed desktop acceptance is explicitly deferred to the very end by the user. Preserve prepared Group100 profile; collect remaining native automation, closure, recovery and packaging checks for final installed acceptance without requesting screen unlock during development.",
     "J03/R50 and remaining R54 scope: only still-supported operation closure/recovery, nonempty scheduler handoff, hostile/older clone and post-cutover rollback requirements. Group99 qualifies managed installed J06 flow, not every R54 acceptance item.",
@@ -51,9 +52,9 @@
   ],
   "all_goal_requirements_complete": false,
   "previous_verified_increment": {
-    "name": "R25 accruals and explicit version-bound mileage accounting fully accepted;699closed",
-    "code_revision": "5141affe4f12b327f688cb85f8997952ae8cd862",
-    "evidence_key": "r25_mileage699"
+    "name": "R24 fixed assets, depreciation and capitalized disposal fully accepted;698closed",
+    "code_revision": "295a40ade6788d89b70a6ff9bd9885c81bb884e4",
+    "evidence_key": "r24_assets698"
   },
   "evidence": {
     "combined_browser_log": "/tmp/rm-platform5-combined.log",
@@ -15331,6 +15332,96 @@
         "Known-keyreplay may append required diagnostic audit, never anotherjournal. No unknown financialmutation retried.",
         "Manual installed desktop/platformdistribution/livecutover/TypeScriptretirement/full55mission remain binding and open."
       ]
+    },
+    "r26_periods700": {
+      "issue": 700,
+      "status": "ACCEPTED full original R26/all3criteria; actual GitHub700 CLOSED flow:done",
+      "source_revision": "b5b97641abbd56fb56b1c6c070349ded216293c3",
+      "gdd_revision": "sha256:34ef3a93b965bb9ac5ec28f09f3c9fa0287393ffc3c5bc45635a2aadbfa266ef",
+      "sgd_run": "rust-r26-periodrace700-20261023T191016.290012000",
+      "report": "/tmp/rentemester-rust-reports/r26-periods700-accepted.json",
+      "report_sha256": "43fa4e8816b28d57eb2abbf761db695d47a4630e2340e7a3a0cbff143dc08812",
+      "criteria": {
+        "unresolvedAndStaleEvidencePolicy": "Retained33period core/actual159 and original162 core30/MCP14/CLI3 with explicit operational open bank/exception scope, native4 source-bound readiness/review, authorized documented forced waivable obligations, nonwaivable/stale/late-rollback/human-vs-service guard proofs. Current real independent post commits before prior reviewedclose: hash changes, exact PERIOD_CLOSE_PACKET_STALE_OR_MISSING and unchanged financial/sequence/audit/decision snapshot. No blanket assertion that every waived task is automatically resolved.",
+        "specifiedPostingCloseReopenOrders": "Four real file-backed tests, two separately opened SQLite connections, an admitted Immediate writer and actual SQLITE_BUSY on contender BEGIN prove overlapping writer attempts. Post-first stales previous close; close-first actual post refuses exact locked-period reason with zero changes; post-before-reopen refuses then deliberate newpost succeeds; reopen-first post succeeds in current effective state with priorcloseddecision/periodrow bytes preserved. Only mutation-free known BEGIN reattempted after acknowledged release, no unknown business retry. Exact journal/line/sequence/audit/decision counts and canonical journalhash verified.",
+        "openingAndShiftedPostCloseReversal": "Retained opening64 actual reviewed adoption/opening reconciliation, Julyshiftedcalendar, exactsignedsourcefree restore/manual mapping and refusal to reverse opening. New separate ordinary originalposting2025-08-01 in configured July-June fiscalyear, full fiscalclose, reversal2026-07-01: exact2025-2026/2026-2027 numbering, olddatedreport unchanged, nextyearbalanced10/10 oneentry, combinedtwoentriesallbalances0. Originalentry/lines/closedperiod/decisionbytes and auditprefix unchanged; canonical journalhashvalid. Opening reversal refusal is never substituted for ordinary subsequent-year reversal."
+      },
+      "checks": [
+        {
+          "check": "period-ordering700",
+          "key": "af2890e8cf9a68c790af787e30aa91b54aec0c1d53b80ab52803df02708239bc",
+          "argv": [
+            "python3",
+            "-c",
+            "import subprocess,re; p=subprocess.run(['python3','scripts/rust/cargo-guard.py','cargo','test','-p','rentemester-storage','period_race700','--','--nocapture'],stdout=subprocess.PIPE,stderr=subprocess.STDOUT,text=True);print(p.stdout,flush=True);assert p.returncode==0;assert sum(map(int,re.findall(r'test result: ok\\. (\\d+) passed',p.stdout)))>=2, 'Need at least2 actual tests, not zero-test groups'"
+          ],
+          "exit_code": 0,
+          "passed": true,
+          "log": "/private/tmp/rentemester-r34-708-clean/.sgd/runs/rust-r26-periodrace700-20261023T191016.290012000/periodrace700-lead-7092ce71db03-20261023T192012.937508000/checks/af2890e8cf9a68c790af787e30aa91b54aec0c1d53b80ab52803df02708239bc/period-ordering700.log",
+          "log_sha256": "8dbd9a60b9e33e48e253da51a14e1db2dadc588a708a7667884227dc4597ea65"
+        }
+      ],
+      "retained_evidence": {
+        "original_period159": {
+          "source_revision": "e572df13e2ebd9b832cf47a573350a44c8a8b5d0",
+          "report": "/tmp/rentemester-rust-reports/original-period159-actual.json",
+          "sha256": "8c0ca3ef610ce97ad98d50f7078e48ebc489fd0ad61ed643eae82f3ab78a05c6",
+          "scope": [
+            "Current native packet version4/format/sourceRevision preserved; legacy3 readable, never relabelled or weakened.",
+            "Source local force parser/authority defect corrected as explicit CLI usage refusal; original authenticated MCP forced close/obligations remain open.",
+            "Original MCP missing period aliases/list/envelopes remain open; existing native tools unchanged.",
+            "No new document/VAT/FX original journal posting parity, signed restore, external filing, default launcher, release/cutover/rollback/TypeScript retirement or final installed desktop claim.",
+            "All original55 issues/J01-J07 and full epic retained; accepted156/157/158 financial/provider effects not replayed."
+          ],
+          "retained_not_rerun": true
+        },
+        "original_period_mcp162": {
+          "source_revision": "8a014d233d6f00b38cb17c220c88f02b784974b9",
+          "report": "/tmp/rentemester-rust-reports/original-period-mcp162-actual.json",
+          "sha256": "6db7233bb462592d90fde666f53c94ec2eb1a6929142bc0a681132f8293e0b1e",
+          "scope": [
+            "Operational bank/exception fixture and independent closing balance are explicitly synthetic; no exception-creation UI or real bank import qualification. No identity/session/grant/control proof seed.",
+            "Reader/reviewer/Owner service paths and membership revocation are actual; zero-block force, fresh forcedreported terminal state, nonwaivable/stale/late rollback and human reserved-prefix provenance use focused storage proof. No new signed-restore or final installed desktop claim.",
+            "Remaining original CLI/MCP families/default launcher/265commands, all55 original issues/release/cutover/rollback/TypeScript retirement/final installed desktop remain open."
+          ],
+          "retained_not_rerun": true
+        },
+        "platform64_opening_balance": {
+          "source_revision": "69712e26f5dfad0047e3d5d1dffb4eb906f51a79",
+          "report": "/tmp/rentemester-rust-reports/opening-balance-integrated64-receipt5.json",
+          "sha256": "015c2a5d9a37575180302a47969d2ca8d6dfa5036c1198e5a4fbee1764a3f62a",
+          "scope": [],
+          "retained_not_rerun": true
+        }
+      },
+      "review": {
+        "actualDiff": "Main inspected full newfixture/testcode and exact96c24ccc..7092diff: only3line cfg(test) module and368line5testfile, no production edits. Locking uses independently opened real file connections and actual DatabaseBusy while first writer held; positives reach realclose/reopen/post/reversal, not just genericrefusals. Each refuses exact canonicalcurrenterror and rawtypedrow snapshots, checks totals/sequences/hash/history. Shiftedyear uses configured realcalendar and date-aware report/reversal.",
+        "diagnosedRepair": "Worker delivered2eb3408b with4PASS/1FAIL because synthetic ordinarytransfer incorrectly debitedbankB without statement. Main retained exact failure, changedone owned testline to existingequityE1 matching original ready-periodfixture. No bank/period check waived or productionchange; isolated ordinaryreversal1PASS then frozen5PASS via submit-repair without anothermodelcall.",
+        "integration": "SGDexplicit leadapproval bound7092 then integratedb5b97641 and full agreedcheckPASS. Exact entirecode tree equals checkedworker; valid unchanged receipt reused rather than a repeated fulltest. Retained originalruntime/actualreports unchanged, no newbuild/UI/restore claim."
+      },
+      "preserved_failures": {
+        "original_worker_commit": "2eb3408bbe8149e278925a0eff0b2b527d26d944",
+        "failed_receipt": {
+          "path": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/rust-r26-periodrace700-20261023T191016.290012000/periodrace700-1/result.json",
+          "sha256": "9838aa5055db7ba63d06dd1233900c91ff28e51dacf65243bf87fa33c00a16b0"
+        },
+        "failed_test_log": {
+          "path": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/builds/rust-r26-periodrace700-20261023T191016.290012000/periodrace700/period_race700-test.log",
+          "sha256": "7ca92b7540cd119732dc1d760453f403b55e2fa72b8c7ff984c95567d83c9394"
+        },
+        "repair_commit": "7092ce71db03091051633cb175a41c55a2015f16",
+        "repair_receipt": {
+          "path": "/tmp/r26-700-submit-repair.json",
+          "sha256": "68b54b49486e8f808256f04f0bfabc33407bf828fa6f0dfa75d82569e1e1472b"
+        },
+        "no_model_retry": true
+      },
+      "limits": [
+        "New concurrency proof is authoritative storage/SQLite writer ordering, not a new multi-server or installed desktop GUI test. Prior current authorization/API/CLI/MCP readiness and ordinary ledger evidence retained.",
+        "Only unit/testmodule source changes; runtime binaries/UI/recovery behavior not changed or newly qualified. Exact historical native4 packets and legacy3reads remain unchanged.",
+        "Ordinary shifted-year equity-transfer test intentionally has no bankstatement/VAT source; banking/VAT/controlcarry proof is retained from original source-scoped journeys. No control bypass.",
+        "Full55/J01-J07/distribution/platform/livecutover/TypeScriptretirement/manualinstalleddesktoplast remainbinding; no wholemigrationcompletion."
+      ]
     }
   },
   "verified_history": [
@@ -17223,6 +17314,12 @@
       "code_revision": "295a40ade6788d89b70a6ff9bd9885c81bb884e4",
       "state": "26of55 original issues fully accepted and actually closed;29open. FullR24/all3criteria accepted: retained original170 acquisition/register/schedule/depreciation/refusal evidence plus actual partial/full/no-depreciation capitalized disposal through sameReact/native clients. Missing statement repaired through ordinary import/reviewed existing-journal links and matched-source task resolution, normal period close/refusal/reopen and one remaining disposal;10journals21lines/history exact. Current native restart, independently signed all-company image, actual source-free fresh-MFA-owner restore, explicit3historical receipt mappings and restored current-MFA restart passed. All failed/cancelled receipts/effects retained; no replay or scope/control waiver. Full mission/release/platform/cutover/TypeScript retirement and manual installed desktop last remain OPEN.",
       "evidence_key": "r24_assets698"
+    },
+    {
+      "current_increment": "R26 fiscal readiness, close/reopen and shifted-year opening/reversal fully accepted;700closed",
+      "code_revision": "b5b97641abbd56fb56b1c6c070349ded216293c3",
+      "state": "27of55 original issues fully accepted and actually closed;28open. Full original R26/all3criteria accepted: retained159/162/opening64 proof plus five real file-backed independent-writer ordering and ordinary shifted-year post-close reversal tests. Exact stale/locked refusals, financial/sequence/audit/decision invariants and successful current operations verified. Only test code changed; original bank-mismatch failure retained, synthetic account corrected without weakening controls. Lead reviewed actual diff; SGD combined acceptance passed and source published. Full mission/release/platform/cutover/TypeScript retirement and manual installed desktop last remain OPEN.",
+      "evidence_key": "r26_periods700"
     }
   ],
   "scope_clarifications": [
@@ -17264,6 +17361,6 @@
       "product_acceptance_unchanged": true
     },
     "local_execution": "State Graph Development with GDD contracts, Graphify observations and isolated Docker Agent workers",
-    "last_closed_issue": 698
+    "last_closed_issue": 700
   }
 }
