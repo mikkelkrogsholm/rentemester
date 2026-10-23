@@ -4166,3 +4166,21 @@ og tæller ikke som all-Rust-backend. Ingen uændrede runtimeprøver er gentaget
 Der er nu19lukkede issues og36åbne. R02 er fortsat åbent: et konkret bevaret
 182-planudtræk har korrekte behavior-krav, men forældede typede effekter og
 risikobeskrivelser. Det ændrer ikke de faktiske accepterede bogføringsbeviser.
+
+
+### Sidste effektive ejer under samtidige ændringer (R13 afsluttet)
+
+570d7491 er nu faktisk kvalificeret gennem den oprindeligt forberedte SGD-accept:
+fire workspace_access-tests bestod. Den nye regression afprøver otte reelle
+SQLite-kontentioner: workspace/selskab, fjernelse/degradering og begge ejerrækkefølger.
+En endnu ikke adgangsklar ejerrolle kan ikke erstatte den sidste effektive ejer.
+Den anden ændring afvises med last_owner uden ekstra audit-/adgangseffekter;
+selskabets database/WAL er uændret, og den resterende ejer bevares efter genåbning.
+
+Hovedagentens og den uafhængige reviewers kode-/kriteriereview er samlet med
+de bevarede policy-, revokations-, fil-, portfolio-, lokal- og servicebeviser.
+Alle tre oprindelige R13-kriterier er accepteret; #685 er lukket. Der er nu
+20 lukkede og 35 åbne originale issues. Pladsgrænsen var faktisk opfyldt før
+kompilering; det tidligere afviste privilegerede Docker-værktøj blev ikke kørt.
+Hele epic'en, fuld interface-/release-/cutoveraccept og manuel desktopaccept
+forbliver åbne. Næste sammenhængende restforløb er R35/R36's lokale scheduler-J07.

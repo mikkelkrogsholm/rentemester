@@ -1,10 +1,10 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "R13 final-effective-owner race test written/reviewed; execution blocked by required disk headroom",
+  "current_increment": "R13 authorization/revocation/fullfinal-owner acceptance complete;685closed",
   "code_revision": "570d749114843c2ae94c51b9e6f4d5d0e0b808e5",
   "spec_revision": "sha256:0126654d934bedc29ba6999af447162394594f6c591f159b4a0281aad9529b63",
-  "state": "19of55closed36open;685test source reviewed and rustfmtchecked, NOTexecuted/accepted/closed. Required30GiBcompileheadroom unavailable after qualified cachecleanup; privilegedDockerreclaim rejected byautomaticapproval and explicit userapproval pending. No guard bypass or repeated failedcompile.",
+  "state": "20of55originalissuesfullyacceptedclosed35open. R13all3criteriaaccepted withretainedfullpolicy/company/file/portfolio/local/service/currentactorproof plusnewactual4testsPASS/8realcontentioncases. Spaceblock resolvedexternally to>=122GiBbeforeguardedcompile; no privilegedDockerhelperexecuted. Fullmission/release/cutover/manualdesktoplast remainsOPEN.",
   "issues_closed": [
     675,
     676,
@@ -12,6 +12,7 @@
     682,
     683,
     684,
+    685,
     687,
     688,
     693,
@@ -27,7 +28,7 @@
     710
   ],
   "next": [
-    "Finish existingSGDrun rust-r13-last-owner685-20261023T084126.874859000 once source/outputguard actually has>=30GiB. Actualtest and fullcriterionreview required before685closure. PrivilegedDockerDesktopreclaim awaiting explicitapproval afterautomaticrejection; do not retry or bypass. No newRustcompile whilebelow30GiB. R02effectivecontracts+clientstorage andR07licensepolicy/alltargetinventory retain their precise gaps.",
+    "Next necessary coherentwholeflow is existingR35#690 (andR36#709consumer) J07 localsharedUI lifecycle: shutdown/sleep,missed/paused/last/next,explicitcatchup/skip,DST/timezone withnoduplicateproviderhandoff. Two boundedread-onlyscouts reconcile actualexisting implementation/evidence before exactworkpackage. No newqueue/infrastructure; one Rustmotor/sharedReact preserved; installedmanualdesktopacceptlast. R02effectivecontracts+clientstorage andR07licensepolicy/alltargetinventory retain precisegaps.",
     "Original invoice interface inventory now has all31CLI and25MCP bindings, with explicit compatibility corrections documented; do not mistake that family inventory for full product parity. Reconcile remaining original whole-product R44/R45 acceptance from existing epic/issues: actor/env/company-path/default launcher/errors/historical receipts, closure/recovery/automation, signed distribution/update/cutover and TypeScript backend retirement. Continue next necessary whole journey, preserve all accepted evidence/full original scope; installed desktop acceptance last.",
     "Installed desktop acceptance is explicitly deferred to the very end by the user. Preserve prepared Group100 profile; collect remaining native automation, closure, recovery and packaging checks for final installed acceptance without requesting screen unlock during development.",
     "J03/R50 and remaining R54 scope: only still-supported operation closure/recovery, nonempty scheduler handoff, hostile/older clone and post-cutover rollback requirements. Group99 qualifies managed installed J06 flow, not every R54 acceptance item.",
@@ -13911,7 +13912,9 @@
         "runtime": "not started:24.94GiB<required30GiB"
       },
       "scope": "8cases:real twoSQLitewritercontention,workspace/company revoke/demote,bothownerorders,nonreadyownerdecoy,exactevent/audit/securitydeltas,unchangedcompany/WALbytes,reopen. Existing authorization/revocation/actor evidence retained.",
-      "next": "When guard actually allows, drive existingSGDrun next once; review real result and fullR13criteria before closing685. Do not replan/replay676 or accept this regression without execution."
+      "next": "When guard actually allows, drive existingSGDrun next once; review real result and fullR13criteria before closing685. Do not replan/replay676 or accept this regression without execution.",
+      "superseded_by": "r13_authorization685_complete",
+      "historical_record": true
     },
     "targeted_build_cache_recovery676": {
       "status": "COMPLETED qualified cleanup,30GiBminimumstillnotmet",
@@ -13928,6 +13931,47 @@
       "additional_finite_inventory": "No further qualified >=5GiB project-only output; do not delete Docker.raw/sharedcaches/otherworkloads.",
       "approval_block": "Automaticapproval rejected unavailable privilegedhostPID docker/desktop-reclaim-space image due broadunverifiedexecution access. Directuserapproval requested; no workaround or retry absentapproval.",
       "reclaim_executed": false
+    },
+    "r13_authorization685_complete": {
+      "issue": 685,
+      "status": "CLOSED fulloriginalscope/all3criteriaaccepted",
+      "source_revision": "570d749114843c2ae94c51b9e6f4d5d0e0b808e5",
+      "sgd_run": "rust-r13-last-owner685-20261023T084126.874859000",
+      "phase": "done",
+      "published": true,
+      "report": "/tmp/rentemester-rust-reports/r13-last-owner685-accepted.json",
+      "sha256": "76d2a00054c6b0cd4a876d2bf948eef7deddffbcda848f188c564520c71f2dc0",
+      "github_evidence": "https://github.com/mikkelkrogsholm/rentemester/issues/685#issuecomment-6362555272",
+      "checks": [
+        {
+          "check": "last-owner",
+          "key": "a4d84929d00241e4e90bbe9cae9804ff2d068d07b61ef919c18429d452a1cbe2",
+          "argv": [
+            "env",
+            "CARGO_TARGET_DIR=/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/builds/checks/r13-final-owner685",
+            "CARGO_BUILD_JOBS=4",
+            "python3",
+            "scripts/rust/cargo-guard.py",
+            "cargo",
+            "test",
+            "--locked",
+            "--offline",
+            "-p",
+            "rentemester-application",
+            "--lib",
+            "workspace_access::tests",
+            "--",
+            "--test-threads=1"
+          ],
+          "exit_code": 0,
+          "passed": true,
+          "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/rust-r13-last-owner685-20261023T084126.874859000/acceptance/a4d84929d00241e4e90bbe9cae9804ff2d068d07b61ef919c18429d452a1cbe2/last-owner.log"
+        }
+      ],
+      "log_sha256": "1792160d706f7e7ca3226ded242c0215a55f5982513597077a50ef5849a56f5d",
+      "scope": "4applicationtestsPASS; newtestexecutes8actualcontendedtwoSQLiteconnectioncases workspace/company revoke/demote inbothownerorders,nonreadydecoy,last_ownerrefusal/noeventresidue/company+WALbytesunchanged/reopen. Mainandindependentreview completed; alloriginalR13criteria composedwithretainedpolicy/process/productproof; no wholeR44/R45orcutoverclaim.",
+      "privileged_reclaim_executed": false,
+      "prior_approval_question_no_longer_blocks_compilation": true
     }
   },
   "verified_history": [
