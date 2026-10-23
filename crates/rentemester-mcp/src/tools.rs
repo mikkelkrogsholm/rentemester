@@ -303,6 +303,7 @@ pub async fn call(api: &ApiClient, name: &str, args: Value) -> Result<Value, &'s
     if crate::accrual_original::accepts(name) {return crate::accrual_original::call(api,name,args).await;}
     if crate::supplier_commitment_original::accepts(name) { return crate::supplier_commitment_original::call(api, name, args).await; }
     if crate::recurring_original::accepts(name) {return crate::recurring_original::call(api,name,args).await;}
+    if crate::bookkeeping_batch::is_original(name, &args) {return crate::bookkeeping_batch::call_original(api,name,args).await;}
     if name=="invoice_write_off_bad_debt" && args.get("body").is_none() {return crate::invoice_bad_debt::call_original(api,args).await;}
     if crate::invoice_claims_original::accepts(name,&args) {return crate::invoice_claims_original::call(api,name,args).await;}
     if matches!(name,"invoice_issue"|"invoice_render"|"invoice_post"|"invoice_settle_bank"|"invoice_credit_note"|"invoice_refund_bank"|"invoice_apply_payment") {return crate::invoice_lifecycle::call(api,name,args).await;}
