@@ -189,3 +189,42 @@ fn mileage_posting_rollback_closed_missing_mismatch_no_partial_effects() {
     assert!(preview(&tx, &request(), HASH, latest()).is_err());
     assert_eq!(count(&tx, "journal_entries"), 0);
 }
+
+#[test]
+fn mileage_posting_refuses_swapped_valid_journal_bindings() {
+    let mut db = rusqlite::Connection::open_in_memory().unwrap();
+    setup(&mut db);
+    let tx = db.transaction_with_behavior(rusqlite::TransactionBehavior::Immediate).unwrap();
+    configure(&tx, &config(), "owner", PrincipalKind::User).unwrap();
+    let trip:crate::mileage::Register=serde_json::from_value(json!({"tripDate":"2026-01-02","purpose":"Different synthetic trip","fromLocation":"Origin","toLocation":"Destination","kilometers":1,"vehicle":"Synthetic car","driver":"Synthetic driver","ratePerKm":2,"rateBasis":"Explicit synthetic basis","confirm":true})).unwrap();
+    crate::mileage::register(&tx, &trip, "owner").unwrap();
+    let mut requests = Vec::new();
+    let mut receipts = Vec::new();
+    for id in [1, 2] {
+        let p = Preview { mileage_entry_id:id, rate_version:"synthetic-v1".into(), document_id:1 };
+        let v = preview(&tx, &p, HASH, latest()).unwrap();
+        let request = Post { mileage_entry_id:id, rate_version:p.rate_version, document_id:1, expected_preview_hash:v["previewHash"].as_str().unwrap().into(), operation_key:format!("binding-{id}"), confirm:true };
+        receipts.push(post(&tx, &request, "owner", PrincipalKind::User, HASH, latest()).unwrap());
+        requests.push(request);
+    }
+    assert_eq!(postings(&tx, latest()).unwrap()["postings"].as_array().unwrap().len(), 2);
+    assert_ne!(receipts[0]["amount"], receipts[1]["amount"]);
+    // Deliberately corrupt only a disposable receipt image, then restore the exact
+    // immutable DDL. Both real financial journals and their hash chains stay intact.
+    let trigger:String=tx.query_row("SELECT sql FROM sqlite_schema WHERE name='native_mileage_posting_receipts_no_delete'",[],|r|r.get(0)).unwrap();
+    tx.execute_batch("DROP TRIGGER native_mileage_posting_receipts_no_delete; DELETE FROM native_mileage_posting_receipts;").unwrap();
+    tx.execute_batch(&trigger).unwrap();
+    for index in 0..2 {
+        let other=&receipts[1-index];
+        let mut swapped=receipts[index].clone();
+        swapped["journalEntryId"]=other["journalEntryId"].clone();
+        swapped["journalEntryNo"]=other["journalEntryNo"].clone();
+        let payload=serde_json::to_string(&swapped).unwrap();
+        let entry_hash:String=tx.query_row("SELECT entry_hash FROM journal_entries WHERE id=?1",[other["journalEntryId"].as_i64().unwrap()],|r|r.get(0)).unwrap();
+        tx.execute("INSERT INTO native_mileage_posting_receipts(mileage_entry_id,operation_key,principal,intent,payload,payload_hash,journal_entry_id,journal_hash)VALUES(?1,?2,'user:owner',?3,?4,?5,?6,?7)",params![requests[index].mileage_entry_id,requests[index].operation_key,serde_json::to_string(&requests[index]).unwrap(),payload,hash(&payload),other["journalEntryId"].as_i64(),entry_hash]).unwrap();
+    }
+    crate::journal_preview::require_current(&tx).unwrap();
+    assert_eq!(count(&tx,"journal_entries"),2);
+    assert!(postings(&tx, latest()).is_err(), "valid journal hashes do not prove a receipt matches its trip's real financial effect");
+    assert!(post(&tx,&requests[0],"owner",PrincipalKind::User,HASH,latest()).is_err(), "mismatched receipt cannot be replayed as valid");
+}

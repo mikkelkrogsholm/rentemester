@@ -410,6 +410,44 @@ pub fn posting_documents(tx: &Transaction<'_>) -> Result<Vec<i64>, Error> {
     }
     Ok(ids)
 }
+/// A valid journal hash proves the journal itself, not that it belongs to this
+/// mileage claim. Bind the actual financial content to the reconstructed request.
+fn require_journal_binding(tx: &Transaction<'_>, id: i64, request: &ManualJournal) -> Result<(), Error> {
+    let actual: Value = tx.query_row(
+        "SELECT transaction_date,text,currency,document_id,source_bank_transaction_id,amount_foreign,amount_dkk,fx_rate_to_dkk,rule_version,reversal_of_entry_id FROM journal_entries WHERE id=?1",
+        [id], |r| Ok(json!([
+            r.get::<_,String>(0)?,r.get::<_,String>(1)?,r.get::<_,String>(2)?,
+            r.get::<_,Option<i64>>(3)?,r.get::<_,Option<i64>>(4)?,
+            r.get::<_,Option<f64>>(5)?,r.get::<_,Option<f64>>(6)?,r.get::<_,Option<f64>>(7)?,
+            r.get::<_,String>(8)?,r.get::<_,Option<i64>>(9)?
+        ])),
+    ).map_err(invalid)?;
+    let expected = json!([
+        request.transaction_date.to_string(),request.text,request.currency.as_str(),
+        request.document_id.map(|v|v.value()),null,null,null,null,
+        crate::journal_preview::manual_journal_rule_version()?,null
+    ]);
+    if actual != expected { return Err(refused("Mileage receipt journal header differs from its source request")); }
+    let mut q=tx.prepare("SELECT a.account_no,l.debit_amount,l.credit_amount,l.vat_code,l.text,l.currency FROM journal_lines l JOIN accounts a ON a.id=l.account_id WHERE l.journal_entry_id=?1 ORDER BY l.id").map_err(invalid)?;
+    let mut rows=q.query([id]).map_err(invalid)?;
+    let mut index=0;
+    while let Some(row)=rows.next().map_err(invalid)? {
+        let Some(line)=request.lines.get(index) else { return Err(refused("Mileage receipt journal has extra lines")); };
+        let no:String=row.get(0).map_err(invalid)?;
+        let debit=crate::legacy_money(row.get_ref(1).map_err(invalid)?)?;
+        let credit=crate::legacy_money(row.get_ref(2).map_err(invalid)?)?;
+        let vat:Option<String>=row.get(3).map_err(invalid)?;
+        let text:Option<String>=row.get(4).map_err(invalid)?;
+        let currency:String=row.get(5).map_err(invalid)?;
+        if no!=line.account_no.as_str() || debit!=line.debit_amount || credit!=line.credit_amount || vat!=line.vat_code || text!=line.text || currency!=request.currency.as_str() {
+            return Err(refused("Mileage receipt journal lines differ from its source request"));
+        }
+        index+=1;
+    }
+    if index!=request.lines.len() { return Err(refused("Mileage receipt journal is missing lines")); }
+    Ok(())
+}
+
 pub fn postings(tx: &Transaction<'_>, latest: Date) -> Result<Value, Error> {
     if !gate(tx)? {
         return Ok(json!({"postings":[]}));
@@ -443,6 +481,7 @@ pub fn postings(tx: &Transaction<'_>, latest: Date) -> Result<Value, Error> {
             latest,
             false,
         )?;
+        require_journal_binding(tx, journal, &current.request)?;
         let mut expected = current.preview;
         expected["journalEntryId"] = json!(journal);
         let (number,created_by,program,document):(String,String,String,Option<i64>)=tx.query_row("SELECT entry_no,created_by,created_by_program,document_id FROM journal_entries WHERE id=?1",[journal],|r|Ok((r.get(0)?,r.get(1)?,r.get(2)?,r.get(3)?))).map_err(invalid)?;
