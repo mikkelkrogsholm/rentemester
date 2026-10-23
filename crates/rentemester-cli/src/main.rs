@@ -1,3 +1,4 @@
+mod bookkeeping_batch_original;
 mod accounting_draft_original;
 mod accounts_original;
 mod dimensions_original;
@@ -322,6 +323,12 @@ fn main() -> ExitCode {
         eprint!("{}", output.stderr);
         return ExitCode::from(output.exit);
     }
+    if args.first().is_some_and(|s|s=="bookkeeping-batch") {
+        if args==["bookkeeping-batch"] || args==["bookkeeping-batch","--help"] {println!("{}",bookkeeping_batch_original::help());return ExitCode::SUCCESS;}
+        if !bookkeeping_batch_original::accepts(&args) {eprintln!("Unknown bookkeeping-batch command; see bookkeeping-batch --help");return ExitCode::from(2);}
+        if let Err(o)=bookkeeping_batch_original::preflight(&args) {eprint!("{}",o.stderr);return ExitCode::from(o.exit);}
+        if args.iter().any(|s|matches!(s.as_str(),"--help"|"--example")) {println!("{}",bookkeeping_batch_original::help());return ExitCode::SUCCESS;}
+    }
     if args.first().is_some_and(|s|s=="accounting-draft") {
         if args==["accounting-draft"] || args==["accounting-draft","--help"] {println!("{}",accounting_draft_original::help());return ExitCode::SUCCESS;}
         if !accounting_draft_original::accepts(&args) {eprintln!("Unknown accounting-draft command; see accounting-draft --help");return ExitCode::from(2);}
@@ -522,6 +529,10 @@ fn main() -> ExitCode {
             return ExitCode::from(code);
         }
     };
+    if bookkeeping_batch_original::accepts(&args) {
+        let output=bookkeeping_batch_original::execute(&args);
+        print!("{}",output.stdout);eprint!("{}",output.stderr);return ExitCode::from(output.exit);
+    }
     if accounting_draft_original::accepts(&args) {
         let output=accounting_draft_original::execute(&args);
         print!("{}",output.stdout);eprint!("{}",output.stderr);return ExitCode::from(output.exit);
