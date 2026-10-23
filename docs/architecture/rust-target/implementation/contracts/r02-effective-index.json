@@ -1,0 +1,1161 @@
+{
+  "format": "rentemester-r02-effective-contract-index/1",
+  "sourceRevision": "115326a1ef298e0c6f7b1f40623cb9a3d732dac2",
+  "rows": [
+    {
+      "path": "docs/architecture/rust-target/epic/gdd.json",
+      "sha256": "c5f8bc03bb0b7730e30520c458b57961472a5b94db732e2428e1422af7ab9d38",
+      "actionIds": [
+        "action.negotiate",
+        "action.authenticate",
+        "action.validate",
+        "action.report",
+        "action.post",
+        "action.store",
+        "action.deliver",
+        "action.connect",
+        "action.web_request",
+        "action.agent_request",
+        "action.migrate",
+        "action.delivery.r01",
+        "action.delivery.r02",
+        "action.delivery.r03",
+        "action.delivery.r04",
+        "action.delivery.r05",
+        "action.delivery.r06",
+        "action.delivery.r07",
+        "action.delivery.r08",
+        "action.delivery.r09",
+        "action.delivery.r10",
+        "action.delivery.r11",
+        "action.delivery.r12",
+        "action.delivery.r13",
+        "action.delivery.r14",
+        "action.delivery.r15",
+        "action.delivery.r16",
+        "action.delivery.r17",
+        "action.delivery.r18",
+        "action.delivery.r19",
+        "action.delivery.r20",
+        "action.delivery.r21",
+        "action.delivery.r22",
+        "action.delivery.r23",
+        "action.delivery.r24",
+        "action.delivery.r25",
+        "action.delivery.r26",
+        "action.delivery.r27",
+        "action.delivery.r28",
+        "action.delivery.r29",
+        "action.delivery.r30",
+        "action.delivery.r31",
+        "action.delivery.r32",
+        "action.delivery.r33",
+        "action.delivery.r34",
+        "action.delivery.r35",
+        "action.delivery.r36",
+        "action.delivery.r37",
+        "action.delivery.r38",
+        "action.delivery.r39",
+        "action.delivery.r40",
+        "action.delivery.r41",
+        "action.delivery.r42",
+        "action.delivery.r43",
+        "action.delivery.r44",
+        "action.delivery.r45",
+        "action.delivery.r46",
+        "action.delivery.r47",
+        "action.delivery.r48",
+        "action.delivery.r49",
+        "action.delivery.r50",
+        "action.delivery.r51",
+        "action.delivery.r52",
+        "action.delivery.r53",
+        "action.delivery.r54",
+        "action.delivery.r55"
+      ],
+      "classification": "nonexecutable-planning-sketch",
+      "sourceRef": {
+        "path": "docs/architecture/rust-target/epic/gdd.json",
+        "sha256": "c5f8bc03bb0b7730e30520c458b57961472a5b94db732e2428e1422af7ab9d38",
+        "location": "Original model bytes and stable action/node IDs"
+      },
+      "effectiveStatus": "unready-sketch",
+      "reason": "Original broad architecture/55issue planning graph preserves stable IDs and scope, not typed runtime authorization/readiness or proof that implementations exist. R01baseline contract bindings and selected implementation amendment are required before execution."
+    },
+    {
+      "path": "docs/architecture/rust-target/gdd.json",
+      "sha256": "efe0002c21516740913497d33d996ba6db252edbe074f341e564036211d374b1",
+      "actionIds": [
+        "action.negotiate",
+        "action.authenticate",
+        "action.validate",
+        "action.report",
+        "action.post",
+        "action.store",
+        "action.deliver",
+        "action.connect",
+        "action.web_request",
+        "action.agent_request",
+        "action.migrate"
+      ],
+      "classification": "nonexecutable-planning-sketch",
+      "sourceRef": {
+        "path": "docs/architecture/rust-target/gdd.json",
+        "sha256": "efe0002c21516740913497d33d996ba6db252edbe074f341e564036211d374b1",
+        "location": "Original model bytes and stable action/node IDs"
+      },
+      "effectiveStatus": "unready-sketch",
+      "reason": "Original broad architecture/55issue planning graph preserves stable IDs and scope, not typed runtime authorization/readiness or proof that implementations exist. R01baseline contract bindings and selected implementation amendment are required before execution."
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/access-policy/gdd.json",
+      "sha256": "28a323965e278ef62bdbd5c3b4114b76e2afdd929003d226cf57f997a11a9354",
+      "actionIds": [
+        "action.access_policy"
+      ],
+      "classification": "current-contract",
+      "sourceRef": {
+        "path": "docs/architecture/rust-target/implementation/access-policy/gdd.json",
+        "sha256": "28a323965e278ef62bdbd5c3b4114b76e2afdd929003d226cf57f997a11a9354",
+        "location": "Original model bytes and stable action/node IDs"
+      },
+      "amendmentArtifact": "docs/architecture/rust-target/implementation/contracts/r02-foundation-amendments.json",
+      "effectiveStatus": "effective-prospective",
+      "reason": "Preserve original scoped action.access_policy bytes/IDs and accepted historical evidence. Prospective typed/current-effect refinements below bind current Rust at frozen revision; the original source-only specification is not an executed receipt. R01 is legacy source compatibility/owner evidence, not current Rust transport qualification."
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/auth-mail/gdd.json",
+      "sha256": "009a93ca8a5b4858c38ce84aa346eda3c9241d9c2597e06e48bb83575a30b1ba",
+      "actionIds": [
+        "action.auth_mail"
+      ],
+      "classification": "current-contract",
+      "sourceRef": {
+        "path": "docs/architecture/rust-target/implementation/auth-mail/gdd.json",
+        "sha256": "009a93ca8a5b4858c38ce84aa346eda3c9241d9c2597e06e48bb83575a30b1ba",
+        "location": "Original model bytes and stable action/node IDs"
+      },
+      "amendmentArtifact": "docs/architecture/rust-target/implementation/contracts/r02-foundation-amendments.json",
+      "effectiveStatus": "effective-prospective",
+      "reason": "Preserve original scoped action.auth_mail bytes/IDs and accepted historical evidence. Prospective typed/current-effect refinements below bind current Rust at frozen revision; the original source-only specification is not an executed receipt. R01 is legacy source compatibility/owner evidence, not current Rust transport qualification."
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/backup-login/gdd.json",
+      "sha256": "52a4af0fefcc7eeac25285fface818842f419dcc4cf269296a2c2de63f3d5ae2",
+      "actionIds": [
+        "action.backup_login"
+      ],
+      "classification": "current-contract",
+      "sourceRef": {
+        "path": "docs/architecture/rust-target/implementation/backup-login/gdd.json",
+        "sha256": "52a4af0fefcc7eeac25285fface818842f419dcc4cf269296a2c2de63f3d5ae2",
+        "location": "Original model bytes and stable action/node IDs"
+      },
+      "amendmentArtifact": "docs/architecture/rust-target/implementation/contracts/r02-foundation-amendments.json",
+      "effectiveStatus": "effective-prospective",
+      "reason": "Preserve original scoped action.backup_login bytes/IDs and accepted historical evidence. Prospective typed/current-effect refinements below bind current Rust at frozen revision; the original source-only specification is not an executed receipt. R01 is legacy source compatibility/owner evidence, not current Rust transport qualification."
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/backup-management/gdd.json",
+      "sha256": "efe90cc07c3ccb86aeac6cf0677f0a01dddbce0fa6c8a6accd389f93f89a8148",
+      "actionIds": [
+        "action.backup_management"
+      ],
+      "classification": "current-contract",
+      "sourceRef": {
+        "path": "docs/architecture/rust-target/implementation/backup-management/gdd.json",
+        "sha256": "efe90cc07c3ccb86aeac6cf0677f0a01dddbce0fa6c8a6accd389f93f89a8148",
+        "location": "Original model bytes and stable action/node IDs"
+      },
+      "amendmentArtifact": "docs/architecture/rust-target/implementation/contracts/r02-foundation-amendments.json",
+      "effectiveStatus": "effective-prospective",
+      "reason": "Preserve original scoped action.backup_management bytes/IDs and accepted historical evidence. Prospective typed/current-effect refinements below bind current Rust at frozen revision; the original source-only specification is not an executed receipt. R01 is legacy source compatibility/owner evidence, not current Rust transport qualification."
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/backup-management/history/v1/gdd.json",
+      "sha256": "fd3a536a8669197c362c32d976454f47b99a1f7b728b8aa0431d66bfe6abecd9",
+      "actionIds": [
+        "action.backup_management"
+      ],
+      "classification": "preserved-history",
+      "sourceRef": {
+        "path": "docs/architecture/rust-target/implementation/backup-management/history/v1/gdd.json",
+        "sha256": "fd3a536a8669197c362c32d976454f47b99a1f7b728b8aa0431d66bfe6abecd9",
+        "location": "Original model bytes and stable action/node IDs"
+      },
+      "effectiveStatus": "preserved-only",
+      "reason": "Historical/initial contract and receipts are immutable; it cannot authorize new execution. A current prospective amendment applies to any newly selected work."
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/backup-management/history/v2/gdd.json",
+      "sha256": "8ce3c39f1be74e9e3e898a34b7565e7d9ff27f8d3e371ef60b0edf0aa67a0189",
+      "actionIds": [
+        "action.backup_management"
+      ],
+      "classification": "preserved-history",
+      "sourceRef": {
+        "path": "docs/architecture/rust-target/implementation/backup-management/history/v2/gdd.json",
+        "sha256": "8ce3c39f1be74e9e3e898a34b7565e7d9ff27f8d3e371ef60b0edf0aa67a0189",
+        "location": "Original model bytes and stable action/node IDs"
+      },
+      "effectiveStatus": "preserved-only",
+      "reason": "Historical/initial contract and receipts are immutable; it cannot authorize new execution. A current prospective amendment applies to any newly selected work."
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/broker-owner/gdd.json",
+      "sha256": "057cbe96b8589797e092bd8664208d0e653e3264433c02173aa7dd5a453e055c",
+      "actionIds": [
+        "action.broker_namespace"
+      ],
+      "classification": "current-contract",
+      "sourceRef": {
+        "path": "docs/architecture/rust-target/implementation/broker-owner/gdd.json",
+        "sha256": "057cbe96b8589797e092bd8664208d0e653e3264433c02173aa7dd5a453e055c",
+        "location": "Original model bytes and stable action/node IDs"
+      },
+      "amendmentArtifact": "docs/architecture/rust-target/implementation/contracts/r02-foundation-amendments.json",
+      "effectiveStatus": "effective-prospective",
+      "reason": "Preserve original scoped action.broker_namespace bytes/IDs and accepted historical evidence. Prospective typed/current-effect refinements below bind current Rust at frozen revision; the original source-only specification is not an executed receipt. R01 is legacy source compatibility/owner evidence, not current Rust transport qualification."
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/company-baseline/gdd.json",
+      "sha256": "db7516e7d4123a28bf986f55a0e727a3265eba1e4f5894378b0904011faecc6d",
+      "actionIds": [
+        "action.rehearse_company_baseline"
+      ],
+      "classification": "current-contract",
+      "sourceRef": {
+        "path": "docs/architecture/rust-target/implementation/company-baseline/gdd.json",
+        "sha256": "db7516e7d4123a28bf986f55a0e727a3265eba1e4f5894378b0904011faecc6d",
+        "location": "Original model bytes and stable action/node IDs"
+      },
+      "amendmentArtifact": "docs/architecture/rust-target/implementation/contracts/r02-domain-amendments.json",
+      "effectiveStatus": "effective-prospective",
+      "reason": "Original stable action and bytes preserved. Prospectively refine missing native typed facts/effects/five-risk distinctions without replacing good original controls. This is the internal stage of the full company rehearsal, not a new product endpoint or independent migration authority."
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/company-baseline/history/v1/gdd.json",
+      "sha256": "023a420be4521f530107ca9917799eebf8c935b491113e32834f6403e391e735",
+      "actionIds": [
+        "action.rehearse_company_baseline"
+      ],
+      "classification": "preserved-history",
+      "sourceRef": {
+        "path": "docs/architecture/rust-target/implementation/company-baseline/history/v1/gdd.json",
+        "sha256": "023a420be4521f530107ca9917799eebf8c935b491113e32834f6403e391e735",
+        "location": "Original model bytes and stable action/node IDs"
+      },
+      "effectiveStatus": "preserved-only",
+      "reason": "Historical/initial contract and receipts are immutable; it cannot authorize new execution. A current prospective amendment applies to any newly selected work."
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/company-normalization/gdd.json",
+      "sha256": "b419a5d372c8cda0d36afc64c4246fb2860fecdabe5c28dad4686fa467d2cd07",
+      "actionIds": [
+        "action.normalize_company_data"
+      ],
+      "classification": "current-contract",
+      "sourceRef": {
+        "path": "docs/architecture/rust-target/implementation/company-normalization/gdd.json",
+        "sha256": "b419a5d372c8cda0d36afc64c4246fb2860fecdabe5c28dad4686fa467d2cd07",
+        "location": "Original model bytes and stable action/node IDs"
+      },
+      "amendmentArtifact": "docs/architecture/rust-target/implementation/contracts/r02-domain-amendments.json",
+      "effectiveStatus": "effective-prospective",
+      "reason": "Original stable action and bytes preserved. Prospectively refine missing native typed facts/effects/five-risk distinctions without replacing good original controls. This is the internal stage of the full company rehearsal, not a new product endpoint or independent migration authority."
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/company-normalization/history/v1/gdd.json",
+      "sha256": "c08fd886b16eb66a249403946958aa6ff94d77e94b170fe1ecea3ee3473af7c5",
+      "actionIds": [
+        "action.normalize_company_data"
+      ],
+      "classification": "preserved-history",
+      "sourceRef": {
+        "path": "docs/architecture/rust-target/implementation/company-normalization/history/v1/gdd.json",
+        "sha256": "c08fd886b16eb66a249403946958aa6ff94d77e94b170fe1ecea3ee3473af7c5",
+        "location": "Original model bytes and stable action/node IDs"
+      },
+      "effectiveStatus": "preserved-only",
+      "reason": "Historical/initial contract and receipts are immutable; it cannot authorize new execution. A current prospective amendment applies to any newly selected work."
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/company-physical/gdd.json",
+      "sha256": "3a0f550da240d01981530cb80146d5ebe7aa603279ac4da6b67bd7ebffb9c66a",
+      "actionIds": [
+        "action.rehearse_company_physical"
+      ],
+      "classification": "current-contract",
+      "sourceRef": {
+        "path": "docs/architecture/rust-target/implementation/company-physical/gdd.json",
+        "sha256": "3a0f550da240d01981530cb80146d5ebe7aa603279ac4da6b67bd7ebffb9c66a",
+        "location": "Original model bytes and stable action/node IDs"
+      },
+      "amendmentArtifact": "docs/architecture/rust-target/implementation/contracts/r02-domain-amendments.json",
+      "effectiveStatus": "effective-prospective",
+      "reason": "Original stable action and bytes preserved. Prospectively refine missing native typed facts/effects/five-risk distinctions without replacing good original controls. This bounded contract is not blanket present product exposure or runtime qualification; later accepted domain flows remain independently evidenced."
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/company-vat/gdd.json",
+      "sha256": "0e85add4a519f0488d53caee19851db746d8873cceebdbbfac309b19bca91571",
+      "actionIds": [
+        "action.normalize_company_vat"
+      ],
+      "classification": "current-contract",
+      "sourceRef": {
+        "path": "docs/architecture/rust-target/implementation/company-vat/gdd.json",
+        "sha256": "0e85add4a519f0488d53caee19851db746d8873cceebdbbfac309b19bca91571",
+        "location": "Original model bytes and stable action/node IDs"
+      },
+      "amendmentArtifact": "docs/architecture/rust-target/implementation/contracts/r02-domain-amendments.json",
+      "effectiveStatus": "effective-prospective",
+      "reason": "Original stable action and bytes preserved. Prospectively refine missing native typed facts/effects/five-risk distinctions without replacing good original controls. This is the internal stage of the full company rehearsal, not a new product endpoint or independent migration authority."
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/company-vat/history/v1/gdd.json",
+      "sha256": "1350b76e3b702d5a091a0252fc896caec8bcd5e51880e0c5857e0f387e7b7a6d",
+      "actionIds": [
+        "action.normalize_company_vat"
+      ],
+      "classification": "preserved-history",
+      "sourceRef": {
+        "path": "docs/architecture/rust-target/implementation/company-vat/history/v1/gdd.json",
+        "sha256": "1350b76e3b702d5a091a0252fc896caec8bcd5e51880e0c5857e0f387e7b7a6d",
+        "location": "Original model bytes and stable action/node IDs"
+      },
+      "effectiveStatus": "preserved-only",
+      "reason": "Historical/initial contract and receipts are immutable; it cannot authorize new execution. A current prospective amendment applies to any newly selected work."
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/control-fence/gdd.json",
+      "sha256": "d9cc071aaa369930c8de3224bad78520bd0d2230affda6bb2ef3dda73832f1e8",
+      "actionIds": [
+        "action.control_fence"
+      ],
+      "classification": "current-contract",
+      "sourceRef": {
+        "path": "docs/architecture/rust-target/implementation/control-fence/gdd.json",
+        "sha256": "d9cc071aaa369930c8de3224bad78520bd0d2230affda6bb2ef3dda73832f1e8",
+        "location": "Original model bytes and stable action/node IDs"
+      },
+      "amendmentArtifact": "docs/architecture/rust-target/implementation/contracts/r02-foundation-amendments.json",
+      "effectiveStatus": "effective-prospective",
+      "reason": "Preserve original scoped action.control_fence bytes/IDs and accepted historical evidence. Prospective typed/current-effect refinements below bind current Rust at frozen revision; the original source-only specification is not an executed receipt. R01 is legacy source compatibility/owner evidence, not current Rust transport qualification. Precedence: this base row is the effective prospective control-fence contract; qualified-spec row is preserved-only historical qualification context, not another effective action. Neither snapshot waives current revocation, backup/recovery or uncertain-commit controls."
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/control-fence/initial-spec/gdd.json",
+      "sha256": "097e2c465c296f5fcf3fa0ae68df0c73ef1125edbe4707bf1c1a22c008744424",
+      "actionIds": [
+        "action.control_fence"
+      ],
+      "classification": "preserved-history",
+      "sourceRef": {
+        "path": "docs/architecture/rust-target/implementation/control-fence/initial-spec/gdd.json",
+        "sha256": "097e2c465c296f5fcf3fa0ae68df0c73ef1125edbe4707bf1c1a22c008744424",
+        "location": "Original model bytes and stable action/node IDs"
+      },
+      "effectiveStatus": "preserved-only",
+      "reason": "Historical/initial contract and receipts are immutable; it cannot authorize new execution. A current prospective amendment applies to any newly selected work."
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/control-fence/qualified-spec/gdd.json",
+      "sha256": "1c95d6e399d02d72d7acca022980315ad066683528a2ac38bbc86818a012d2f0",
+      "actionIds": [
+        "action.control_fence"
+      ],
+      "classification": "current-contract",
+      "sourceRef": {
+        "path": "docs/architecture/rust-target/implementation/control-fence/qualified-spec/gdd.json",
+        "sha256": "1c95d6e399d02d72d7acca022980315ad066683528a2ac38bbc86818a012d2f0",
+        "location": "Original model bytes and stable action/node IDs"
+      },
+      "amendmentArtifact": "docs/architecture/rust-target/implementation/contracts/r02-foundation-amendments.json",
+      "effectiveStatus": "preserved-only",
+      "reason": "Qualified-spec is the retained historical qualification snapshot with coarser fence_refused/outcome_unknown vocabulary; it is NOT a second independently effective action. Current base control-fence/gdd.json preserves the more precise NotCommitted/OutcomeUnknown and reuse semantics, refined by this amendment/current Rust. Retain qualified snapshot and all accepted receipts unchanged; its name does not promote runtime readiness or supersede precise base errors."
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/control-migrations/gdd.json",
+      "sha256": "eeb555179a328b1718558c189700c02e3a43e5b00f4845d55e512131a958b8ec",
+      "actionIds": [
+        "action.rehearse_control_migration"
+      ],
+      "classification": "current-contract",
+      "sourceRef": {
+        "path": "docs/architecture/rust-target/implementation/control-migrations/gdd.json",
+        "sha256": "eeb555179a328b1718558c189700c02e3a43e5b00f4845d55e512131a958b8ec",
+        "location": "Original model bytes and stable action/node IDs"
+      },
+      "amendmentArtifact": "docs/architecture/rust-target/implementation/contracts/r02-domain-amendments.json",
+      "effectiveStatus": "effective-prospective",
+      "reason": "Original stable action and bytes preserved. Prospectively refine missing native typed facts/effects/five-risk distinctions without replacing good original controls. This bounded contract is not blanket present product exposure or runtime qualification; later accepted domain flows remain independently evidenced."
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/email-token/gdd.json",
+      "sha256": "423bb83fe60e6df04393125f0dd92f8c8021b792197ddf168451e1c51cfc7654",
+      "actionIds": [
+        "action.email_token"
+      ],
+      "classification": "current-contract",
+      "sourceRef": {
+        "path": "docs/architecture/rust-target/implementation/email-token/gdd.json",
+        "sha256": "423bb83fe60e6df04393125f0dd92f8c8021b792197ddf168451e1c51cfc7654",
+        "location": "Original model bytes and stable action/node IDs"
+      },
+      "amendmentArtifact": "docs/architecture/rust-target/implementation/contracts/r02-foundation-amendments.json",
+      "effectiveStatus": "effective-prospective",
+      "reason": "Preserve original scoped action.email_token bytes/IDs and accepted historical evidence. Prospective typed/current-effect refinements below bind current Rust at frozen revision; the original source-only specification is not an executed receipt. R01 is legacy source compatibility/owner evidence, not current Rust transport qualification."
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/email-verification/gdd.json",
+      "sha256": "f0f319e0f48c2a91c79fef220b20f1df0f9bd4fbb61269eadf7c05160f468f38",
+      "actionIds": [
+        "action.email_verification"
+      ],
+      "classification": "current-contract",
+      "sourceRef": {
+        "path": "docs/architecture/rust-target/implementation/email-verification/gdd.json",
+        "sha256": "f0f319e0f48c2a91c79fef220b20f1df0f9bd4fbb61269eadf7c05160f468f38",
+        "location": "Original model bytes and stable action/node IDs"
+      },
+      "amendmentArtifact": "docs/architecture/rust-target/implementation/contracts/r02-foundation-amendments.json",
+      "effectiveStatus": "effective-prospective",
+      "reason": "Preserve original scoped action.email_verification bytes/IDs and accepted historical evidence. Prospective typed/current-effect refinements below bind current Rust at frozen revision; the original source-only specification is not an executed receipt. R01 is legacy source compatibility/owner evidence, not current Rust transport qualification."
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/event-order/gdd.json",
+      "sha256": "29e744c2c51464deb5df019cb22ec624352f4082e9b93bbd76e7d3528a9f8604",
+      "actionIds": [
+        "action.event_order"
+      ],
+      "classification": "current-contract",
+      "sourceRef": {
+        "path": "docs/architecture/rust-target/implementation/event-order/gdd.json",
+        "sha256": "29e744c2c51464deb5df019cb22ec624352f4082e9b93bbd76e7d3528a9f8604",
+        "location": "Original model bytes and stable action/node IDs"
+      },
+      "amendmentArtifact": "docs/architecture/rust-target/implementation/contracts/r02-foundation-amendments.json",
+      "effectiveStatus": "effective-prospective",
+      "reason": "Preserve original scoped action.event_order bytes/IDs and accepted historical evidence. Prospective typed/current-effect refinements below bind current Rust at frozen revision; the original source-only specification is not an executed receipt. R01 is legacy source compatibility/owner evidence, not current Rust transport qualification."
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/exact-arithmetic/gdd.json",
+      "sha256": "5a4fa3958b86df028a3a35a8f2c1e344f1b3e52e3debc131cfb43780833aaea8",
+      "actionIds": [
+        "action.exact_arithmetic",
+        "action.canonical_values"
+      ],
+      "classification": "current-contract",
+      "sourceRef": {
+        "path": "docs/architecture/rust-target/implementation/exact-arithmetic/gdd.json",
+        "sha256": "5a4fa3958b86df028a3a35a8f2c1e344f1b3e52e3debc131cfb43780833aaea8",
+        "location": "Original model bytes and stable action/node IDs"
+      },
+      "amendmentArtifact": "docs/architecture/rust-target/implementation/contracts/r02-domain-amendments.json",
+      "effectiveStatus": "effective-prospective",
+      "reason": "Original stable action and bytes preserved. Prospectively refine missing native typed facts/effects/five-risk distinctions without replacing good original controls. This bounded contract is not blanket present product exposure or runtime qualification; later accepted domain flows remain independently evidenced."
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/exact-arithmetic/history/v1/gdd.json",
+      "sha256": "647bb48ee002f2af00705f5158eb2c70fa1af2dca95f87ca484a3038a6f6423c",
+      "actionIds": [
+        "action.exact_arithmetic",
+        "action.canonical_values"
+      ],
+      "classification": "preserved-history",
+      "sourceRef": {
+        "path": "docs/architecture/rust-target/implementation/exact-arithmetic/history/v1/gdd.json",
+        "sha256": "647bb48ee002f2af00705f5158eb2c70fa1af2dca95f87ca484a3038a6f6423c",
+        "location": "Original model bytes and stable action/node IDs"
+      },
+      "effectiveStatus": "preserved-only",
+      "reason": "Historical/initial contract and receipts are immutable; it cannot authorize new execution. A current prospective amendment applies to any newly selected work."
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/fiscal-calendar/gdd.json",
+      "sha256": "cd754086c30a894ce2d10b5d919e0504cb1244ee807c14cb3dad688bbb488b2a",
+      "actionIds": [
+        "action.fiscal_year",
+        "action.annual_deadline"
+      ],
+      "classification": "current-contract",
+      "sourceRef": {
+        "path": "docs/architecture/rust-target/implementation/fiscal-calendar/gdd.json",
+        "sha256": "cd754086c30a894ce2d10b5d919e0504cb1244ee807c14cb3dad688bbb488b2a",
+        "location": "Original model bytes and stable action/node IDs"
+      },
+      "amendmentArtifact": "docs/architecture/rust-target/implementation/contracts/r02-domain-amendments.json",
+      "effectiveStatus": "effective-prospective",
+      "reason": "Original stable action and bytes preserved. Prospectively refine missing native typed facts/effects/five-risk distinctions without replacing good original controls. This bounded contract is not blanket present product exposure or runtime qualification; later accepted domain flows remain independently evidenced."
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/fresh-workspace/gdd.json",
+      "sha256": "b117a77401420ed538a47010bae98933248904bc325f0ad5e530df732fb4cfd8",
+      "actionIds": [
+        "action.fresh_workspace"
+      ],
+      "classification": "current-contract",
+      "sourceRef": {
+        "path": "docs/architecture/rust-target/implementation/fresh-workspace/gdd.json",
+        "sha256": "b117a77401420ed538a47010bae98933248904bc325f0ad5e530df732fb4cfd8",
+        "location": "Original model bytes and stable action/node IDs"
+      },
+      "amendmentArtifact": "docs/architecture/rust-target/implementation/contracts/r02-foundation-amendments.json",
+      "effectiveStatus": "effective-prospective",
+      "reason": "Preserve original scoped action.fresh_workspace bytes/IDs and accepted historical evidence. Prospective typed/current-effect refinements below bind current Rust at frozen revision; the original source-only specification is not an executed receipt. R01 is legacy source compatibility/owner evidence, not current Rust transport qualification."
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/host-owner/gdd.json",
+      "sha256": "76e153ff9752e6faceeec0c498e04abcaa8f6d5ed6e76a35d9602e327e08f0bc",
+      "actionIds": [
+        "action.host_owner"
+      ],
+      "classification": "current-contract",
+      "sourceRef": {
+        "path": "docs/architecture/rust-target/implementation/host-owner/gdd.json",
+        "sha256": "76e153ff9752e6faceeec0c498e04abcaa8f6d5ed6e76a35d9602e327e08f0bc",
+        "location": "Original model bytes and stable action/node IDs"
+      },
+      "amendmentArtifact": "docs/architecture/rust-target/implementation/contracts/r02-foundation-amendments.json",
+      "effectiveStatus": "effective-prospective",
+      "reason": "Preserve original scoped action.host_owner bytes/IDs and accepted historical evidence. Prospective typed/current-effect refinements below bind current Rust at frozen revision; the original source-only specification is not an executed receipt. R01 is legacy source compatibility/owner evidence, not current Rust transport qualification."
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/http-backup-management/gdd.json",
+      "sha256": "25c35f4bee8056301abf536dc835147da31c17d8d418ddde07c6d9a7542fb5b9",
+      "actionIds": [
+        "action.http_backup_management"
+      ],
+      "classification": "current-contract",
+      "sourceRef": {
+        "path": "docs/architecture/rust-target/implementation/http-backup-management/gdd.json",
+        "sha256": "25c35f4bee8056301abf536dc835147da31c17d8d418ddde07c6d9a7542fb5b9",
+        "location": "Original model bytes and stable action/node IDs"
+      },
+      "amendmentArtifact": "docs/architecture/rust-target/implementation/contracts/r02-foundation-amendments.json",
+      "effectiveStatus": "effective-prospective",
+      "reason": "Preserve original scoped action.http_backup_management bytes/IDs and accepted historical evidence. Prospective typed/current-effect refinements below bind current Rust at frozen revision; the original source-only specification is not an executed receipt. R01 is legacy source compatibility/owner evidence, not current Rust transport qualification."
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/http-enrollment/gdd.json",
+      "sha256": "63067e26a1fba95227526e6b8ed87562f8846f1c3f44bc462d0db571a9a8bf2c",
+      "actionIds": [
+        "action.http_enrollment"
+      ],
+      "classification": "current-contract",
+      "sourceRef": {
+        "path": "docs/architecture/rust-target/implementation/http-enrollment/gdd.json",
+        "sha256": "63067e26a1fba95227526e6b8ed87562f8846f1c3f44bc462d0db571a9a8bf2c",
+        "location": "Original model bytes and stable action/node IDs"
+      },
+      "amendmentArtifact": "docs/architecture/rust-target/implementation/contracts/r02-foundation-amendments.json",
+      "effectiveStatus": "effective-prospective",
+      "reason": "Preserve original scoped action.http_enrollment bytes/IDs and accepted historical evidence. Prospective typed/current-effect refinements below bind current Rust at frozen revision; the original source-only specification is not an executed receipt. R01 is legacy source compatibility/owner evidence, not current Rust transport qualification."
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/http-login/gdd.json",
+      "sha256": "57ad42046e5d3e7481f0a91460e8cdc3adcd704297a02045681686e898cdcbb3",
+      "actionIds": [
+        "action.http_login"
+      ],
+      "classification": "current-contract",
+      "sourceRef": {
+        "path": "docs/architecture/rust-target/implementation/http-login/gdd.json",
+        "sha256": "57ad42046e5d3e7481f0a91460e8cdc3adcd704297a02045681686e898cdcbb3",
+        "location": "Original model bytes and stable action/node IDs"
+      },
+      "amendmentArtifact": "docs/architecture/rust-target/implementation/contracts/r02-foundation-amendments.json",
+      "effectiveStatus": "effective-prospective",
+      "reason": "Preserve original scoped action.http_login bytes/IDs and accepted historical evidence. Prospective typed/current-effect refinements below bind current Rust at frozen revision; the original source-only specification is not an executed receipt. R01 is legacy source compatibility/owner evidence, not current Rust transport qualification."
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/http-recovery/gdd.json",
+      "sha256": "a4eb4370e3f618b34b1232c6b3ff12dc5f3cf383c22b4512e109f5000b3fe45c",
+      "actionIds": [
+        "action.http_recovery"
+      ],
+      "classification": "current-contract",
+      "sourceRef": {
+        "path": "docs/architecture/rust-target/implementation/http-recovery/gdd.json",
+        "sha256": "a4eb4370e3f618b34b1232c6b3ff12dc5f3cf383c22b4512e109f5000b3fe45c",
+        "location": "Original model bytes and stable action/node IDs"
+      },
+      "amendmentArtifact": "docs/architecture/rust-target/implementation/contracts/r02-foundation-amendments.json",
+      "effectiveStatus": "effective-prospective",
+      "reason": "Preserve original scoped action.http_recovery bytes/IDs and accepted historical evidence. Prospective typed/current-effect refinements below bind current Rust at frozen revision; the original source-only specification is not an executed receipt. R01 is legacy source compatibility/owner evidence, not current Rust transport qualification."
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/http-reset/gdd.json",
+      "sha256": "de2bdeeed2a35280fb2a6ebdc7587842162be4c571c0d7352c0c9abecde69440",
+      "actionIds": [
+        "action.http_reset"
+      ],
+      "classification": "current-contract",
+      "sourceRef": {
+        "path": "docs/architecture/rust-target/implementation/http-reset/gdd.json",
+        "sha256": "de2bdeeed2a35280fb2a6ebdc7587842162be4c571c0d7352c0c9abecde69440",
+        "location": "Original model bytes and stable action/node IDs"
+      },
+      "amendmentArtifact": "docs/architecture/rust-target/implementation/contracts/r02-foundation-amendments.json",
+      "effectiveStatus": "effective-prospective",
+      "reason": "Preserve original scoped action.http_reset bytes/IDs and accepted historical evidence. Prospective typed/current-effect refinements below bind current Rust at frozen revision; the original source-only specification is not an executed receipt. R01 is legacy source compatibility/owner evidence, not current Rust transport qualification."
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/http-sessions/gdd.json",
+      "sha256": "f34b62d0678edc0936a0187707311ce73e8b2229aeaae52209e33cefcd6fcf71",
+      "actionIds": [
+        "action.http_sessions"
+      ],
+      "classification": "current-contract",
+      "sourceRef": {
+        "path": "docs/architecture/rust-target/implementation/http-sessions/gdd.json",
+        "sha256": "f34b62d0678edc0936a0187707311ce73e8b2229aeaae52209e33cefcd6fcf71",
+        "location": "Original model bytes and stable action/node IDs"
+      },
+      "amendmentArtifact": "docs/architecture/rust-target/implementation/contracts/r02-foundation-amendments.json",
+      "effectiveStatus": "effective-prospective",
+      "reason": "Preserve original scoped action.http_sessions bytes/IDs and accepted historical evidence. Prospective typed/current-effect refinements below bind current Rust at frozen revision; the original source-only specification is not an executed receipt. R01 is legacy source compatibility/owner evidence, not current Rust transport qualification."
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/http-verification/gdd.json",
+      "sha256": "333b86ed40976e7bb1fcfda6dbafca6518e446f2760229ccda3ffb5b334ac77c",
+      "actionIds": [
+        "action.http_verification"
+      ],
+      "classification": "current-contract",
+      "sourceRef": {
+        "path": "docs/architecture/rust-target/implementation/http-verification/gdd.json",
+        "sha256": "333b86ed40976e7bb1fcfda6dbafca6518e446f2760229ccda3ffb5b334ac77c",
+        "location": "Original model bytes and stable action/node IDs"
+      },
+      "amendmentArtifact": "docs/architecture/rust-target/implementation/contracts/r02-foundation-amendments.json",
+      "effectiveStatus": "effective-prospective",
+      "reason": "Preserve original scoped action.http_verification bytes/IDs and accepted historical evidence. Prospective typed/current-effect refinements below bind current Rust at frozen revision; the original source-only specification is not an executed receipt. R01 is legacy source compatibility/owner evidence, not current Rust transport qualification."
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/idempotency/gdd.json",
+      "sha256": "46f9eae44e34f33be2d72dca26096efaa19506def03ae05296f4a790d62635af",
+      "actionIds": [
+        "action.idempotency"
+      ],
+      "classification": "current-contract",
+      "sourceRef": {
+        "path": "docs/architecture/rust-target/implementation/idempotency/gdd.json",
+        "sha256": "46f9eae44e34f33be2d72dca26096efaa19506def03ae05296f4a790d62635af",
+        "location": "Original model bytes and stable action/node IDs"
+      },
+      "amendmentArtifact": "docs/architecture/rust-target/implementation/contracts/r02-domain-amendments.json",
+      "effectiveStatus": "effective-prospective",
+      "reason": "Original stable action and bytes preserved. Prospectively refine missing native typed facts/effects/five-risk distinctions without replacing good original controls. This bounded contract is not blanket present product exposure or runtime qualification; later accepted domain flows remain independently evidenced."
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/journal-hashes/gdd.json",
+      "sha256": "38f7ed9aecda04fe7ff9306a913e272edf8cbbfc0c27a8a906aa21aa1ffe7a5d",
+      "actionIds": [
+        "action.verify_journal_hashes"
+      ],
+      "classification": "current-contract",
+      "sourceRef": {
+        "path": "docs/architecture/rust-target/implementation/journal-hashes/gdd.json",
+        "sha256": "38f7ed9aecda04fe7ff9306a913e272edf8cbbfc0c27a8a906aa21aa1ffe7a5d",
+        "location": "Original model bytes and stable action/node IDs"
+      },
+      "amendmentArtifact": "docs/architecture/rust-target/implementation/contracts/r02-domain-amendments.json",
+      "effectiveStatus": "effective-prospective",
+      "reason": "Original stable action and bytes preserved. Prospectively refine missing native typed facts/effects/five-risk distinctions without replacing good original controls. This bounded contract is not blanket present product exposure or runtime qualification; later accepted domain flows remain independently evidenced."
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/journal-hashes/history/v1/gdd.json",
+      "sha256": "e9b9ca9ec5ea361aff823cf071f1452009f056249517a136728af70ffa9b333d",
+      "actionIds": [
+        "action.verify_journal_hashes"
+      ],
+      "classification": "preserved-history",
+      "sourceRef": {
+        "path": "docs/architecture/rust-target/implementation/journal-hashes/history/v1/gdd.json",
+        "sha256": "e9b9ca9ec5ea361aff823cf071f1452009f056249517a136728af70ffa9b333d",
+        "location": "Original model bytes and stable action/node IDs"
+      },
+      "effectiveStatus": "preserved-only",
+      "reason": "Historical/initial contract and receipts are immutable; it cannot authorize new execution. A current prospective amendment applies to any newly selected work."
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/journal-post/gdd.json",
+      "sha256": "2034978546b9a10c9cda5b8625ed230eebbdbfc18baab91336efcc05a1cb91c7",
+      "actionIds": [
+        "action.journal_post"
+      ],
+      "classification": "current-contract",
+      "sourceRef": {
+        "path": "docs/architecture/rust-target/implementation/journal-post/gdd.json",
+        "sha256": "2034978546b9a10c9cda5b8625ed230eebbdbfc18baab91336efcc05a1cb91c7",
+        "location": "Original model bytes and stable action/node IDs"
+      },
+      "amendmentArtifact": "docs/architecture/rust-target/implementation/contracts/r02-domain-amendments.json",
+      "effectiveStatus": "effective-prospective",
+      "reason": "Original stable action and bytes preserved. Prospectively refine missing native typed facts/effects/five-risk distinctions without replacing good original controls. This bounded contract is not blanket present product exposure or runtime qualification; later accepted domain flows remain independently evidenced."
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/journal-preview/gdd.json",
+      "sha256": "b8c538d7fa5a2f8fbf7fe6da8fa8568640ef8ed5d893401311088911a93fdd0b",
+      "actionIds": [
+        "action.journal_preview"
+      ],
+      "classification": "current-contract",
+      "sourceRef": {
+        "path": "docs/architecture/rust-target/implementation/journal-preview/gdd.json",
+        "sha256": "b8c538d7fa5a2f8fbf7fe6da8fa8568640ef8ed5d893401311088911a93fdd0b",
+        "location": "Original model bytes and stable action/node IDs"
+      },
+      "amendmentArtifact": "docs/architecture/rust-target/implementation/contracts/r02-domain-amendments.json",
+      "effectiveStatus": "effective-prospective",
+      "reason": "Original stable action and bytes preserved. Prospectively refine missing native typed facts/effects/five-risk distinctions without replacing good original controls. This bounded contract is not blanket present product exposure or runtime qualification; later accepted domain flows remain independently evidenced."
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/journal-reversal/gdd.json",
+      "sha256": "ead358a9c578eace609dc90a278dd9d7612b9e7f76686e1e3f324ed896e41328",
+      "actionIds": [
+        "action.journal_reversal"
+      ],
+      "classification": "current-contract",
+      "sourceRef": {
+        "path": "docs/architecture/rust-target/implementation/journal-reversal/gdd.json",
+        "sha256": "ead358a9c578eace609dc90a278dd9d7612b9e7f76686e1e3f324ed896e41328",
+        "location": "Original model bytes and stable action/node IDs"
+      },
+      "amendmentArtifact": "docs/architecture/rust-target/implementation/contracts/r02-domain-amendments.json",
+      "effectiveStatus": "effective-prospective",
+      "reason": "Original stable action and bytes preserved. Prospectively refine missing native typed facts/effects/five-risk distinctions without replacing good original controls. This bounded contract is not blanket present product exposure or runtime qualification; later accepted domain flows remain independently evidenced."
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/manual-journal/gdd.json",
+      "sha256": "e3335c8eb37d7b8813ab6ab3c6a44256f2c35721b5d43461ebba3f08e21d159d",
+      "actionIds": [
+        "action.manual_journal",
+        "action.rule_version"
+      ],
+      "classification": "current-contract",
+      "sourceRef": {
+        "path": "docs/architecture/rust-target/implementation/manual-journal/gdd.json",
+        "sha256": "e3335c8eb37d7b8813ab6ab3c6a44256f2c35721b5d43461ebba3f08e21d159d",
+        "location": "Original model bytes and stable action/node IDs"
+      },
+      "amendmentArtifact": "docs/architecture/rust-target/implementation/contracts/r02-domain-amendments.json",
+      "effectiveStatus": "effective-prospective",
+      "reason": "Original stable action and bytes preserved. Prospectively refine missing native typed facts/effects/five-risk distinctions without replacing good original controls. This bounded contract is not blanket present product exposure or runtime qualification; later accepted domain flows remain independently evidenced."
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/mfa-crypto/gdd.json",
+      "sha256": "f5817318f2b0ebe211a48a72192f6118580c9896f7793bbc582f0c8099cdec42",
+      "actionIds": [
+        "action.mfa_crypto"
+      ],
+      "classification": "current-contract",
+      "sourceRef": {
+        "path": "docs/architecture/rust-target/implementation/mfa-crypto/gdd.json",
+        "sha256": "f5817318f2b0ebe211a48a72192f6118580c9896f7793bbc582f0c8099cdec42",
+        "location": "Original model bytes and stable action/node IDs"
+      },
+      "amendmentArtifact": "docs/architecture/rust-target/implementation/contracts/r02-foundation-amendments.json",
+      "effectiveStatus": "effective-prospective",
+      "reason": "Preserve original scoped action.mfa_crypto bytes/IDs and accepted historical evidence. Prospective typed/current-effect refinements below bind current Rust at frozen revision; the original source-only specification is not an executed receipt. R01 is legacy source compatibility/owner evidence, not current Rust transport qualification."
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/mfa-enrollment/gdd.json",
+      "sha256": "13c244ddc470d8e1622983a92d1e07803558bacf855821125fae3d33afb422a8",
+      "actionIds": [
+        "action.mfa_enrollment"
+      ],
+      "classification": "current-contract",
+      "sourceRef": {
+        "path": "docs/architecture/rust-target/implementation/mfa-enrollment/gdd.json",
+        "sha256": "13c244ddc470d8e1622983a92d1e07803558bacf855821125fae3d33afb422a8",
+        "location": "Original model bytes and stable action/node IDs"
+      },
+      "amendmentArtifact": "docs/architecture/rust-target/implementation/contracts/r02-foundation-amendments.json",
+      "effectiveStatus": "effective-prospective",
+      "reason": "Preserve original scoped action.mfa_enrollment bytes/IDs and accepted historical evidence. Prospective typed/current-effect refinements below bind current Rust at frozen revision; the original source-only specification is not an executed receipt. R01 is legacy source compatibility/owner evidence, not current Rust transport qualification."
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/mfa-login/gdd.json",
+      "sha256": "c111ceed0d9c964c14aadff5f7ccadbeb0d6853003e2b7b0ccbb09e04534cb87",
+      "actionIds": [
+        "action.mfa_login"
+      ],
+      "classification": "current-contract",
+      "sourceRef": {
+        "path": "docs/architecture/rust-target/implementation/mfa-login/gdd.json",
+        "sha256": "c111ceed0d9c964c14aadff5f7ccadbeb0d6853003e2b7b0ccbb09e04534cb87",
+        "location": "Original model bytes and stable action/node IDs"
+      },
+      "amendmentArtifact": "docs/architecture/rust-target/implementation/contracts/r02-foundation-amendments.json",
+      "effectiveStatus": "effective-prospective",
+      "reason": "Preserve original scoped action.mfa_login bytes/IDs and accepted historical evidence. Prospective typed/current-effect refinements below bind current Rust at frozen revision; the original source-only specification is not an executed receipt. R01 is legacy source compatibility/owner evidence, not current Rust transport qualification."
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/migration-rehearsal/gdd.json",
+      "sha256": "611cea2d0d3cbb80c60e780a66891381c7c8b00d55909cc7f0d2689c384ee163",
+      "actionIds": [
+        "action.rehearse_company_migration"
+      ],
+      "classification": "current-contract",
+      "sourceRef": {
+        "path": "docs/architecture/rust-target/implementation/migration-rehearsal/gdd.json",
+        "sha256": "611cea2d0d3cbb80c60e780a66891381c7c8b00d55909cc7f0d2689c384ee163",
+        "location": "Original model bytes and stable action/node IDs"
+      },
+      "amendmentArtifact": "docs/architecture/rust-target/implementation/contracts/r02-domain-amendments.json",
+      "effectiveStatus": "effective-prospective",
+      "reason": "Original stable action and bytes preserved. Prospectively refine missing native typed facts/effects/five-risk distinctions without replacing good original controls. This bounded contract is not blanket present product exposure or runtime qualification; later accepted domain flows remain independently evidenced."
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/password-change/gdd.json",
+      "sha256": "e3ba04f1bfd6030fb239d617b0a891f6d50d8854bee7799240714b1099410c61",
+      "actionIds": [
+        "action.password_change"
+      ],
+      "classification": "current-contract",
+      "sourceRef": {
+        "path": "docs/architecture/rust-target/implementation/password-change/gdd.json",
+        "sha256": "e3ba04f1bfd6030fb239d617b0a891f6d50d8854bee7799240714b1099410c61",
+        "location": "Original model bytes and stable action/node IDs"
+      },
+      "amendmentArtifact": "docs/architecture/rust-target/implementation/contracts/r02-foundation-amendments.json",
+      "effectiveStatus": "effective-prospective",
+      "reason": "Preserve original scoped action.password_change bytes/IDs and accepted historical evidence. Prospective typed/current-effect refinements below bind current Rust at frozen revision; the original source-only specification is not an executed receipt. R01 is legacy source compatibility/owner evidence, not current Rust transport qualification."
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/password-crypto/gdd.json",
+      "sha256": "9b712a8b1a1f6cdd02c475e5b684ec7bf8063bfa623fc9a867b877cbc93f98c5",
+      "actionIds": [
+        "action.password_crypto"
+      ],
+      "classification": "current-contract",
+      "sourceRef": {
+        "path": "docs/architecture/rust-target/implementation/password-crypto/gdd.json",
+        "sha256": "9b712a8b1a1f6cdd02c475e5b684ec7bf8063bfa623fc9a867b877cbc93f98c5",
+        "location": "Original model bytes and stable action/node IDs"
+      },
+      "amendmentArtifact": "docs/architecture/rust-target/implementation/contracts/r02-foundation-amendments.json",
+      "effectiveStatus": "effective-prospective",
+      "reason": "Preserve original scoped action.password_crypto bytes/IDs and accepted historical evidence. Prospective typed/current-effect refinements below bind current Rust at frozen revision; the original source-only specification is not an executed receipt. R01 is legacy source compatibility/owner evidence, not current Rust transport qualification."
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/password-login/gdd.json",
+      "sha256": "8fec3afe54c2b9f062e8ff2bac0b214f786c9c7d82497fc0f558bc63e0e2cd33",
+      "actionIds": [
+        "action.password_login"
+      ],
+      "classification": "current-contract",
+      "sourceRef": {
+        "path": "docs/architecture/rust-target/implementation/password-login/gdd.json",
+        "sha256": "8fec3afe54c2b9f062e8ff2bac0b214f786c9c7d82497fc0f558bc63e0e2cd33",
+        "location": "Original model bytes and stable action/node IDs"
+      },
+      "amendmentArtifact": "docs/architecture/rust-target/implementation/contracts/r02-foundation-amendments.json",
+      "effectiveStatus": "effective-prospective",
+      "reason": "Preserve original scoped action.password_login bytes/IDs and accepted historical evidence. Prospective typed/current-effect refinements below bind current Rust at frozen revision; the original source-only specification is not an executed receipt. R01 is legacy source compatibility/owner evidence, not current Rust transport qualification."
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/password-reset/gdd.json",
+      "sha256": "d9057947a8b8f735d11d8656958cedbbc84a3125d5eacfb5dcfc37db2c2217fe",
+      "actionIds": [
+        "action.password_reset"
+      ],
+      "classification": "current-contract",
+      "sourceRef": {
+        "path": "docs/architecture/rust-target/implementation/password-reset/gdd.json",
+        "sha256": "d9057947a8b8f735d11d8656958cedbbc84a3125d5eacfb5dcfc37db2c2217fe",
+        "location": "Original model bytes and stable action/node IDs"
+      },
+      "amendmentArtifact": "docs/architecture/rust-target/implementation/contracts/r02-foundation-amendments.json",
+      "effectiveStatus": "effective-prospective",
+      "reason": "Preserve original scoped action.password_reset bytes/IDs and accepted historical evidence. Prospective typed/current-effect refinements below bind current Rust at frozen revision; the original source-only specification is not an executed receipt. R01 is legacy source compatibility/owner evidence, not current Rust transport qualification."
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/read-only/gdd.json",
+      "sha256": "5cd566f064ba9d658ad67488a43406eae5e89fb51e66bc967a77be72da7a2469",
+      "actionIds": [
+        "action.report"
+      ],
+      "classification": "current-contract",
+      "sourceRef": {
+        "path": "docs/architecture/rust-target/implementation/read-only/gdd.json",
+        "sha256": "5cd566f064ba9d658ad67488a43406eae5e89fb51e66bc967a77be72da7a2469",
+        "location": "Original model bytes and stable action/node IDs"
+      },
+      "amendmentArtifact": "docs/architecture/rust-target/implementation/contracts/r02-domain-amendments.json",
+      "effectiveStatus": "effective-prospective",
+      "reason": "Original stable action and bytes preserved. Prospectively refine missing native typed facts/effects/five-risk distinctions without replacing good original controls. This bounded contract is not blanket present product exposure or runtime qualification; later accepted domain flows remain independently evidenced."
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/read-only/history/v1/gdd.json",
+      "sha256": "706b62692aaaf038d467dbb4d6ef94e6f20e914f3ce0112063e60334f21e2781",
+      "actionIds": [
+        "action.report"
+      ],
+      "classification": "preserved-history",
+      "sourceRef": {
+        "path": "docs/architecture/rust-target/implementation/read-only/history/v1/gdd.json",
+        "sha256": "706b62692aaaf038d467dbb4d6ef94e6f20e914f3ce0112063e60334f21e2781",
+        "location": "Original model bytes and stable action/node IDs"
+      },
+      "effectiveStatus": "preserved-only",
+      "reason": "Historical/initial contract and receipts are immutable; it cannot authorize new execution. A current prospective amendment applies to any newly selected work."
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/reset-request/gdd.json",
+      "sha256": "5f45b132dbe357915ce1ff2490fb7fdaf64afc8eb715ddd1deb026d0bbbffa8e",
+      "actionIds": [
+        "action.reset_request",
+        "action.reset_callback"
+      ],
+      "classification": "current-contract",
+      "sourceRef": {
+        "path": "docs/architecture/rust-target/implementation/reset-request/gdd.json",
+        "sha256": "5f45b132dbe357915ce1ff2490fb7fdaf64afc8eb715ddd1deb026d0bbbffa8e",
+        "location": "Original model bytes and stable action/node IDs"
+      },
+      "amendmentArtifact": "docs/architecture/rust-target/implementation/contracts/r02-foundation-amendments.json",
+      "effectiveStatus": "effective-prospective",
+      "reason": "Preserve original scoped action.reset_callback bytes/IDs and accepted historical evidence. Prospective typed/current-effect refinements below bind current Rust at frozen revision; the original source-only specification is not an executed receipt. R01 is legacy source compatibility/owner evidence, not current Rust transport qualification."
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/sequences/gdd.json",
+      "sha256": "36dcdd93821e9ba49219cc9d91b2754d4ba74cdfd7a6d9fcd27004a42c68d327",
+      "actionIds": [
+        "action.allocate_sequence",
+        "action.reserve_sequence"
+      ],
+      "classification": "current-contract",
+      "sourceRef": {
+        "path": "docs/architecture/rust-target/implementation/sequences/gdd.json",
+        "sha256": "36dcdd93821e9ba49219cc9d91b2754d4ba74cdfd7a6d9fcd27004a42c68d327",
+        "location": "Original model bytes and stable action/node IDs"
+      },
+      "amendmentArtifact": "docs/architecture/rust-target/implementation/contracts/r02-domain-amendments.json",
+      "effectiveStatus": "effective-prospective",
+      "reason": "Original stable action and bytes preserved. Prospectively refine missing native typed facts/effects/five-risk distinctions without replacing good original controls. This bounded contract is not blanket present product exposure or runtime qualification; later accepted domain flows remain independently evidenced."
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/sequences/history/v1/gdd.json",
+      "sha256": "e876b3698b5390a7a75e832390bde91756cb748b73e6737f2ba90ecc3f545a1e",
+      "actionIds": [
+        "action.allocate_sequence"
+      ],
+      "classification": "preserved-history",
+      "sourceRef": {
+        "path": "docs/architecture/rust-target/implementation/sequences/history/v1/gdd.json",
+        "sha256": "e876b3698b5390a7a75e832390bde91756cb748b73e6737f2ba90ecc3f545a1e",
+        "location": "Original model bytes and stable action/node IDs"
+      },
+      "effectiveStatus": "preserved-only",
+      "reason": "Historical/initial contract and receipts are immutable; it cannot authorize new execution. A current prospective amendment applies to any newly selected work."
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/service-company/gdd.json",
+      "sha256": "bb2ac1a2b3b29b7adb15db31550afac7ecb8e79300e3393586495c7833e51ae7",
+      "actionIds": [
+        "action.service_company"
+      ],
+      "classification": "current-contract",
+      "sourceRef": {
+        "path": "docs/architecture/rust-target/implementation/service-company/gdd.json",
+        "sha256": "bb2ac1a2b3b29b7adb15db31550afac7ecb8e79300e3393586495c7833e51ae7",
+        "location": "Original model bytes and stable action/node IDs"
+      },
+      "amendmentArtifact": "docs/architecture/rust-target/implementation/contracts/r02-foundation-amendments.json",
+      "effectiveStatus": "effective-prospective",
+      "reason": "Preserve original scoped action.service_company bytes/IDs and accepted historical evidence. Prospective typed/current-effect refinements below bind current Rust at frozen revision; the original source-only specification is not an executed receipt. R01 is legacy source compatibility/owner evidence, not current Rust transport qualification."
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/service-context/gdd.json",
+      "sha256": "15091e64e982fa0260628bd96e105def1f02a08fe3afe78e97386c5fb0458b95",
+      "actionIds": [
+        "action.service_context"
+      ],
+      "classification": "current-contract",
+      "sourceRef": {
+        "path": "docs/architecture/rust-target/implementation/service-context/gdd.json",
+        "sha256": "15091e64e982fa0260628bd96e105def1f02a08fe3afe78e97386c5fb0458b95",
+        "location": "Original model bytes and stable action/node IDs"
+      },
+      "amendmentArtifact": "docs/architecture/rust-target/implementation/contracts/r02-foundation-amendments.json",
+      "effectiveStatus": "effective-prospective",
+      "reason": "Preserve original scoped action.service_context bytes/IDs and accepted historical evidence. Prospective typed/current-effect refinements below bind current Rust at frozen revision; the original source-only specification is not an executed receipt. R01 is legacy source compatibility/owner evidence, not current Rust transport qualification."
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/service-lifecycle/gdd.json",
+      "sha256": "3dc6bdcaadb9e0d93a07abfd8dd72b8990eb5864d1d1a9b89a545f403b53f001",
+      "actionIds": [
+        "action.service_lifecycle"
+      ],
+      "classification": "current-contract",
+      "sourceRef": {
+        "path": "docs/architecture/rust-target/implementation/service-lifecycle/gdd.json",
+        "sha256": "3dc6bdcaadb9e0d93a07abfd8dd72b8990eb5864d1d1a9b89a545f403b53f001",
+        "location": "Original model bytes and stable action/node IDs"
+      },
+      "amendmentArtifact": "docs/architecture/rust-target/implementation/contracts/r02-foundation-amendments.json",
+      "effectiveStatus": "effective-prospective",
+      "reason": "Preserve original scoped action.service_lifecycle bytes/IDs and accepted historical evidence. Prospective typed/current-effect refinements below bind current Rust at frozen revision; the original source-only specification is not an executed receipt. R01 is legacy source compatibility/owner evidence, not current Rust transport qualification."
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/session-control/gdd.json",
+      "sha256": "0a226630782e57c9cebd32833531db4f765cbe3c0006668a39efff79d137c8f8",
+      "actionIds": [
+        "action.session_control"
+      ],
+      "classification": "current-contract",
+      "sourceRef": {
+        "path": "docs/architecture/rust-target/implementation/session-control/gdd.json",
+        "sha256": "0a226630782e57c9cebd32833531db4f765cbe3c0006668a39efff79d137c8f8",
+        "location": "Original model bytes and stable action/node IDs"
+      },
+      "amendmentArtifact": "docs/architecture/rust-target/implementation/contracts/r02-foundation-amendments.json",
+      "effectiveStatus": "effective-prospective",
+      "reason": "Preserve original scoped action.session_control bytes/IDs and accepted historical evidence. Prospective typed/current-effect refinements below bind current Rust at frozen revision; the original source-only specification is not an executed receipt. R01 is legacy source compatibility/owner evidence, not current Rust transport qualification."
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/session-cookie/gdd.json",
+      "sha256": "f5264452aad21c402783f64cc69aea37b12daeed1279b8b0e514c880f4b4f642",
+      "actionIds": [
+        "action.session_cookie"
+      ],
+      "classification": "current-contract",
+      "sourceRef": {
+        "path": "docs/architecture/rust-target/implementation/session-cookie/gdd.json",
+        "sha256": "f5264452aad21c402783f64cc69aea37b12daeed1279b8b0e514c880f4b4f642",
+        "location": "Original model bytes and stable action/node IDs"
+      },
+      "amendmentArtifact": "docs/architecture/rust-target/implementation/contracts/r02-foundation-amendments.json",
+      "effectiveStatus": "effective-prospective",
+      "reason": "Preserve original scoped action.session_cookie bytes/IDs and accepted historical evidence. Prospective typed/current-effect refinements below bind current Rust at frozen revision; the original source-only specification is not an executed receipt. R01 is legacy source compatibility/owner evidence, not current Rust transport qualification."
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/sqlite-identity/gdd.json",
+      "sha256": "4c0a99cad7e180aed17f2a204555929cc55f4476908a1cc838d629d479bb6474",
+      "actionIds": [
+        "action.sqlite_identity"
+      ],
+      "classification": "current-contract",
+      "sourceRef": {
+        "path": "docs/architecture/rust-target/implementation/sqlite-identity/gdd.json",
+        "sha256": "4c0a99cad7e180aed17f2a204555929cc55f4476908a1cc838d629d479bb6474",
+        "location": "Original model bytes and stable action/node IDs"
+      },
+      "amendmentArtifact": "docs/architecture/rust-target/implementation/contracts/r02-foundation-amendments.json",
+      "effectiveStatus": "effective-prospective",
+      "reason": "Preserve original scoped action.sqlite_identity bytes/IDs and accepted historical evidence. Prospective typed/current-effect refinements below bind current Rust at frozen revision; the original source-only specification is not an executed receipt. R01 is legacy source compatibility/owner evidence, not current Rust transport qualification."
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/verification-request/gdd.json",
+      "sha256": "98bba8e5997a74d0b3826249a1e3c54f44eec422ce9d2b078be001d6f6d3e945",
+      "actionIds": [
+        "action.verification_request"
+      ],
+      "classification": "current-contract",
+      "sourceRef": {
+        "path": "docs/architecture/rust-target/implementation/verification-request/gdd.json",
+        "sha256": "98bba8e5997a74d0b3826249a1e3c54f44eec422ce9d2b078be001d6f6d3e945",
+        "location": "Original model bytes and stable action/node IDs"
+      },
+      "amendmentArtifact": "docs/architecture/rust-target/implementation/contracts/r02-foundation-amendments.json",
+      "effectiveStatus": "effective-prospective",
+      "reason": "Preserve original scoped action.verification_request bytes/IDs and accepted historical evidence. Prospective typed/current-effect refinements below bind current Rust at frozen revision; the original source-only specification is not an executed receipt. R01 is legacy source compatibility/owner evidence, not current Rust transport qualification."
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/workspace-context/gdd.json",
+      "sha256": "ca76d8d9596f340da1dda1137c0172d1704648449cc819fa16f57b28f041c9ad",
+      "actionIds": [
+        "action.workspace_context"
+      ],
+      "classification": "current-contract",
+      "sourceRef": {
+        "path": "docs/architecture/rust-target/implementation/workspace-context/gdd.json",
+        "sha256": "ca76d8d9596f340da1dda1137c0172d1704648449cc819fa16f57b28f041c9ad",
+        "location": "Original model bytes and stable action/node IDs"
+      },
+      "amendmentArtifact": "docs/architecture/rust-target/implementation/contracts/r02-foundation-amendments.json",
+      "effectiveStatus": "effective-prospective",
+      "reason": "Preserve original scoped action.workspace_context bytes/IDs and accepted historical evidence. Prospective typed/current-effect refinements below bind current Rust at frozen revision; the original source-only specification is not an executed receipt. R01 is legacy source compatibility/owner evidence, not current Rust transport qualification."
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/workspace-layout/gdd.json",
+      "sha256": "9384034a78a290aa8645ee8c45b908c247f67bf6713aa3cac2b5733742332f8e",
+      "actionIds": [
+        "action.workspace_layout"
+      ],
+      "classification": "current-contract",
+      "sourceRef": {
+        "path": "docs/architecture/rust-target/implementation/workspace-layout/gdd.json",
+        "sha256": "9384034a78a290aa8645ee8c45b908c247f67bf6713aa3cac2b5733742332f8e",
+        "location": "Original model bytes and stable action/node IDs"
+      },
+      "amendmentArtifact": "docs/architecture/rust-target/implementation/contracts/r02-foundation-amendments.json",
+      "effectiveStatus": "effective-prospective",
+      "reason": "Preserve original scoped action.workspace_layout bytes/IDs and accepted historical evidence. Prospective typed/current-effect refinements below bind current Rust at frozen revision; the original source-only specification is not an executed receipt. R01 is legacy source compatibility/owner evidence, not current Rust transport qualification."
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/workspace-lease/gdd.json",
+      "sha256": "21e7c86c0474f1758973ee731ab629e5a89724016f30e932ad6a847829d7ca8e",
+      "actionIds": [
+        "action.acquire_workspace_lease"
+      ],
+      "classification": "current-contract",
+      "sourceRef": {
+        "path": "docs/architecture/rust-target/implementation/workspace-lease/gdd.json",
+        "sha256": "21e7c86c0474f1758973ee731ab629e5a89724016f30e932ad6a847829d7ca8e",
+        "location": "Original model bytes and stable action/node IDs"
+      },
+      "amendmentArtifact": "docs/architecture/rust-target/implementation/contracts/r02-foundation-amendments.json",
+      "effectiveStatus": "effective-prospective",
+      "reason": "Preserve original scoped action.acquire_workspace_lease bytes/IDs and accepted historical evidence. Prospective typed/current-effect refinements below bind current Rust at frozen revision; the original source-only specification is not an executed receipt. R01 is legacy source compatibility/owner evidence, not current Rust transport qualification."
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/workspace-lease/history/v1/gdd.json",
+      "sha256": "c943b92be98b758dfa3d4320833100ce7196cd07f1b883a3ebf1198453e090e7",
+      "actionIds": [
+        "action.acquire_workspace_lease"
+      ],
+      "classification": "preserved-history",
+      "sourceRef": {
+        "path": "docs/architecture/rust-target/implementation/workspace-lease/history/v1/gdd.json",
+        "sha256": "c943b92be98b758dfa3d4320833100ce7196cd07f1b883a3ebf1198453e090e7",
+        "location": "Original model bytes and stable action/node IDs"
+      },
+      "effectiveStatus": "preserved-only",
+      "reason": "Historical/initial contract and receipts are immutable; it cannot authorize new execution. A current prospective amendment applies to any newly selected work."
+    },
+    {
+      "path": "docs/architecture/rust-target/implementation/workspace-lease/history/v2/gdd.json",
+      "sha256": "1a0e0cf69f376c5a097b1977e70620c271329fb18ef289c1f47a1a3623069940",
+      "actionIds": [
+        "action.acquire_workspace_lease"
+      ],
+      "classification": "preserved-history",
+      "sourceRef": {
+        "path": "docs/architecture/rust-target/implementation/workspace-lease/history/v2/gdd.json",
+        "sha256": "1a0e0cf69f376c5a097b1977e70620c271329fb18ef289c1f47a1a3623069940",
+        "location": "Original model bytes and stable action/node IDs"
+      },
+      "effectiveStatus": "preserved-only",
+      "reason": "Historical/initial contract and receipts are immutable; it cannot authorize new execution. A current prospective amendment applies to any newly selected work."
+    }
+  ],
+  "frozenOriginals": 67,
+  "currentCandidateModelFiles": 53,
+  "currentActionDeclarations": 58,
+  "historyOrInitialFiles": 12,
+  "nonExecutablePlanningRoots": 2,
+  "remaining": "Whole R02 acceptance is separately recorded in progress.json with actual source/receipt/lead review. Root/epic sketches and future selected scopes remain unready until independently refined.",
+  "allOriginalIssuesReady": false,
+  "frozen182": {
+    "run": "rust-original-bookkeeping-batch182-accept-20261023T064936.742098000",
+    "contextSHA256": "d62037b60f9d1c59fdde70298303ebe09604e4e3ab53dec8776be71bcfc7c42c",
+    "modelRevision": "sha256:5b6b0dbc5ead773c9f1b9bfee8381a092cab51778ecb4afcbd8acd6609043b0a",
+    "prospectiveSuperseder": "r02-domain-amendments.json#/frozen182Superseder",
+    "preservedFinancialEffects": "Two journals/six lines; retained accepted evidence, no execution replay."
+  },
+  "scopeDefinitionOnly": true,
+  "acceptanceRecord": "../progress.json#/evidence/r02_effective_contracts674"
+}

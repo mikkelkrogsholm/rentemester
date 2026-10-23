@@ -1,0 +1,308 @@
+{
+  "format": "rentemester-r02-boundary-readiness-contract/1",
+  "sourceRevision": "115326a1ef298e0c6f7b1f40623cb9a3d732dac2",
+  "stableComponentIdsPreserved": true,
+  "components": [
+    {
+      "id": "component.domain",
+      "sourceRefs": [
+        {
+          "path": "crates/rentemester-engine/Cargo.toml",
+          "sha256": "55c375edfc4e0e5c5e00e36dbc4c36b1fb22bcbc08291b7090176a97a759a80c",
+          "location": "Current crate dependency declaration / documented boundary / actual scanner"
+        },
+        {
+          "path": "docs/architecture/rust-target/ARCHITECTURE.md",
+          "sha256": "f0b847920dbbc36af8bcac38e1d73942cb1f5a8aed38aedaac71c4568affcb72",
+          "location": "Current crate dependency declaration / documented boundary / actual scanner"
+        },
+        {
+          "path": "scripts/rust/check-boundaries.ts",
+          "sha256": "e7e86371ae6240ecac2eb166f34cc5ef63ac7e45d75186a03a34e060d88591e6",
+          "location": "Current crate dependency declaration / documented boundary / actual scanner"
+        }
+      ],
+      "responsibility": "Pure accounting/value policies and byte codecs; explicit exactmoney/date/hash/source evidence contracts.",
+      "forbidden": "No SQL, filesystem, process, environment, thread or network authority; supplied byte parsing does not grant those capabilities.",
+      "implementationClaim": "Source-bound prospective boundary; exact scanner coverage/limitations and independent runtime evidence remain separate."
+    },
+    {
+      "id": "component.application",
+      "sourceRefs": [
+        {
+          "path": "crates/rentemester-application/Cargo.toml",
+          "sha256": "0fca1bf29a7f7ea822a61f52839365131180932871337f3bdd95841ce2cd309e",
+          "location": "Current crate dependency declaration / documented boundary / actual scanner"
+        },
+        {
+          "path": "docs/architecture/rust-target/ARCHITECTURE.md",
+          "sha256": "f0b847920dbbc36af8bcac38e1d73942cb1f5a8aed38aedaac71c4568affcb72",
+          "location": "Current crate dependency declaration / documented boundary / actual scanner"
+        },
+        {
+          "path": "scripts/rust/check-boundaries.ts",
+          "sha256": "e7e86371ae6240ecac2eb166f34cc5ef63ac7e45d75186a03a34e060d88591e6",
+          "location": "Current crate dependency declaration / documented boundary / actual scanner"
+        }
+      ],
+      "responsibility": "Use-case/authority/policy/domain orchestration and ordered transaction requests. Admitted contexts required, actor strings are audit labels.",
+      "forbidden": "No client UI or caller-asserted authorization. Pure access-policy subset remains separately guarded; application may use explicit storage/runtime/SQLite dependencies listed by actual boundary check.",
+      "implementationClaim": "Source-bound prospective boundary; exact scanner coverage/limitations and independent runtime evidence remain separate."
+    },
+    {
+      "id": "component.storage",
+      "sourceRefs": [
+        {
+          "path": "crates/rentemester-storage/Cargo.toml",
+          "sha256": "1589eae98410e2029a7318988b2ffea7d84b3ea2d4e6bacb513c24b51fcc859a",
+          "location": "Current crate dependency declaration / documented boundary / actual scanner"
+        },
+        {
+          "path": "docs/architecture/rust-target/ARCHITECTURE.md",
+          "sha256": "f0b847920dbbc36af8bcac38e1d73942cb1f5a8aed38aedaac71c4568affcb72",
+          "location": "Current crate dependency declaration / documented boundary / actual scanner"
+        },
+        {
+          "path": "scripts/rust/check-boundaries.ts",
+          "sha256": "e7e86371ae6240ecac2eb166f34cc5ef63ac7e45d75186a03a34e060d88591e6",
+          "location": "Current crate dependency declaration / documented boundary / actual scanner"
+        }
+      ],
+      "responsibility": "Company/control SQLite schemas, transactions, immutable evidence/receipts/audit and constrained adapters under admitted context.",
+      "forbidden": "No independent browser/client authority or hidden provider send; a raw DB handle is not authenticated company permission.",
+      "implementationClaim": "Source-bound prospective boundary; exact scanner coverage/limitations and independent runtime evidence remain separate."
+    },
+    {
+      "id": "component.integrations",
+      "sourceRefs": [
+        {
+          "path": "crates/rentemester-runtime/Cargo.toml",
+          "sha256": "9b203af5a28a6878c8fb7980dcf048631cbe588ee0e703c45e0bfab1401ec92a",
+          "location": "Current crate dependency declaration / documented boundary / actual scanner"
+        },
+        {
+          "path": "docs/architecture/rust-target/ARCHITECTURE.md",
+          "sha256": "f0b847920dbbc36af8bcac38e1d73942cb1f5a8aed38aedaac71c4568affcb72",
+          "location": "Current crate dependency declaration / documented boundary / actual scanner"
+        },
+        {
+          "path": "scripts/rust/check-boundaries.ts",
+          "sha256": "e7e86371ae6240ecac2eb166f34cc5ef63ac7e45d75186a03a34e060d88591e6",
+          "location": "Current crate dependency declaration / documented boundary / actual scanner"
+        }
+      ],
+      "responsibility": "Provider/import/effect adapters using committed intent and current-phase authority.",
+      "forbidden": "No independent accounting engine or universal exactly-once guarantee; ambiguous external effects require explicit reconciliation.",
+      "implementationClaim": "Source-bound prospective boundary; exact scanner coverage/limitations and independent runtime evidence remain separate."
+    },
+    {
+      "id": "component.runtime",
+      "sourceRefs": [
+        {
+          "path": "crates/rentemester-server/Cargo.toml",
+          "sha256": "cffc4594be947e1e93612d5f8909eee069d167a1206a03db62a84b0ff23b5c5b",
+          "location": "Current crate dependency declaration / documented boundary / actual scanner"
+        },
+        {
+          "path": "crates/rentemester-runtime/Cargo.toml",
+          "sha256": "9b203af5a28a6878c8fb7980dcf048631cbe588ee0e703c45e0bfab1401ec92a",
+          "location": "Current crate dependency declaration / documented boundary / actual scanner"
+        },
+        {
+          "path": "crates/rentemester-host/Cargo.toml",
+          "sha256": "7040e30232593abc964735a3a7e0345f76ce36ab0bc54d8074f14a0965408a99",
+          "location": "Current crate dependency declaration / documented boundary / actual scanner"
+        },
+        {
+          "path": "docs/architecture/rust-target/ARCHITECTURE.md",
+          "sha256": "f0b847920dbbc36af8bcac38e1d73942cb1f5a8aed38aedaac71c4568affcb72",
+          "location": "Current crate dependency declaration / documented boundary / actual scanner"
+        },
+        {
+          "path": "scripts/rust/check-boundaries.ts",
+          "sha256": "e7e86371ae6240ecac2eb166f34cc5ef63ac7e45d75186a03a34e060d88591e6",
+          "location": "Current crate dependency declaration / documented boundary / actual scanner"
+        }
+      ],
+      "responsibility": "HTTP/native lifecycle, authentication translation, namespace/host admission, capability discovery, server-owned scheduling and external-effect execution.",
+      "forbidden": "No duplicated accounting decisions or remote-to-local fallback; separate admission/transaction/current-phase authorization remains explicit.",
+      "implementationClaim": "Source-bound prospective boundary; exact scanner coverage/limitations and independent runtime evidence remain separate."
+    },
+    {
+      "id": "component.agent",
+      "sourceRefs": [
+        {
+          "path": "crates/rentemester-client/Cargo.toml",
+          "sha256": "1da2147e5e8da08584d452eebe57051e6ab8a8c4fad4f188353e69011ce175df",
+          "location": "Current crate dependency declaration / documented boundary / actual scanner"
+        },
+        {
+          "path": "crates/rentemester-cli/Cargo.toml",
+          "sha256": "d9cac5dd87eb1e31bd9a961d42c88e82e6b029a0a77cf60877786c392805221b",
+          "location": "Current crate dependency declaration / documented boundary / actual scanner"
+        },
+        {
+          "path": "crates/rentemester-mcp/Cargo.toml",
+          "sha256": "41971c852318eccc3fd5ad88df3af04bfe8772ac7ebd74bd29a8d8c734559410",
+          "location": "Current crate dependency declaration / documented boundary / actual scanner"
+        },
+        {
+          "path": "docs/architecture/rust-target/ARCHITECTURE.md",
+          "sha256": "f0b847920dbbc36af8bcac38e1d73942cb1f5a8aed38aedaac71c4568affcb72",
+          "location": "Current crate dependency declaration / documented boundary / actual scanner"
+        },
+        {
+          "path": "scripts/rust/check-boundaries.ts",
+          "sha256": "e7e86371ae6240ecac2eb166f34cc5ef63ac7e45d75186a03a34e060d88591e6",
+          "location": "Current crate dependency declaration / documented boundary / actual scanner"
+        }
+      ],
+      "responsibility": "Shared SDK/service contracts, explicit local-profile or remote connection, CLI/MCP serialization/confirmation/discovery.",
+      "forbidden": "SDK/MCP manifests and recursive imports cannot reference application/storage/host/rusqlite. Legacy CLI local advisory/rehearsal and Tauri lifecycle are explicitly narrower exceptions, not blanket permission for product writes; final R44/R55 gates remain.",
+      "implementationClaim": "Source-bound prospective boundary; exact scanner coverage/limitations and independent runtime evidence remain separate."
+    },
+    {
+      "id": "component.desktop",
+      "sourceRefs": [
+        {
+          "path": "crates/rentemester-desktop/Cargo.toml",
+          "sha256": "26e4b808a3009363e2707bdf315869977a7e4a58ea0828bd4630b80cf1fc7757",
+          "location": "Current crate dependency declaration / documented boundary / actual scanner"
+        },
+        {
+          "path": "docs/architecture/rust-target/ARCHITECTURE.md",
+          "sha256": "f0b847920dbbc36af8bcac38e1d73942cb1f5a8aed38aedaac71c4568affcb72",
+          "location": "Current crate dependency declaration / documented boundary / actual scanner"
+        },
+        {
+          "path": "scripts/rust/check-boundaries.ts",
+          "sha256": "e7e86371ae6240ecac2eb166f34cc5ef63ac7e45d75186a03a34e060d88591e6",
+          "location": "Current crate dependency declaration / documented boundary / actual scanner"
+        }
+      ],
+      "responsibility": "Rust/Tauri lifecycle embeds sameReact, starts/stops one managed localRustserver or uses selectedremote service.",
+      "forbidden": "No desktop ledger engine/screens, SQL authority, implicitoffline edit/sync or privileged host authority for remotecontent.",
+      "implementationClaim": "Source-bound prospective boundary; exact scanner coverage/limitations and independent runtime evidence remain separate."
+    },
+    {
+      "id": "component.web",
+      "sourceRefs": [
+        {
+          "path": "docs/architecture/rust-target/ARCHITECTURE.md",
+          "sha256": "f0b847920dbbc36af8bcac38e1d73942cb1f5a8aed38aedaac71c4568affcb72",
+          "location": "Current crate dependency declaration / documented boundary / actual scanner"
+        },
+        {
+          "path": "scripts/rust/check-boundaries.ts",
+          "sha256": "e7e86371ae6240ecac2eb166f34cc5ef63ac7e45d75186a03a34e060d88591e6",
+          "location": "Current crate dependency declaration / documented boundary / actual scanner"
+        }
+      ],
+      "responsibility": "SameReact app/src interfaces consume service API, capability/auth/context gating and server-derived accounting results.",
+      "forbidden": "No directledger/storage/OS authority or clientderived financial approval. Mounted/navigable page does not establish authorized mutation.",
+      "implementationClaim": "Source-bound prospective boundary; exact scanner coverage/limitations and independent runtime evidence remain separate."
+    }
+  ],
+  "decisionSeparation": [
+    {
+      "decision": "model-validity",
+      "meaning": "Schema/references/types/graph identities are internally coherent.",
+      "proofRefs": [
+        {
+          "path": "docs/architecture/rust-target/model-report.json",
+          "sha256": "2be5df599da2f0ba136b56c9b2f644a8f4d2d63c9175222e786ebd9178f665fc",
+          "location": "Actual original model semantics PASS"
+        },
+        {
+          "path": "docs/architecture/rust-target/VERIFICATION.md",
+          "sha256": "0d41e879bb8e25067c4dd9fb92c047373ac5e30a78001572728d3baef8eab4b8",
+          "location": "Planning verification: modelPASS/readinessFAIL expected"
+        }
+      ],
+      "doesNotGrant": [
+        "User/task authorization",
+        "Currentprincipal namespace/company permission",
+        "Readiness of any selected action",
+        "Executed product acceptance"
+      ]
+    },
+    {
+      "decision": "authorization",
+      "meaning": "User mandate selects work; actual authenticated principal/provider observation and current membership/scope/phase authorize runtime use. A GDDnode, actor label or staticPASS cannot grant access.",
+      "proofRefs": [
+        {
+          "path": "docs/architecture/rust-target/IDENTITY-DECISION.md",
+          "sha256": "a33b1c43af83f5a8ae135fcc43828891e1265b1c08b8fea7c1a741c15de8738d",
+          "location": "Selected native identity and four-phase external job authorization"
+        },
+        {
+          "path": "scripts/workflow/rewrite.py",
+          "sha256": "6534a393be5587b3e9803eae9942c52fb4ad12e76ea7abcb9f2ca2a428f00e7a",
+          "location": "ExactlyoneWork-Issue/scopedpacket and actualGitHubworkflow statuses"
+        }
+      ],
+      "doesNotGrant": [
+        "A future current-principal authorization after revocation",
+        "Approval of a changed plan/payload",
+        "Proof that code executed"
+      ]
+    },
+    {
+      "decision": "scope-readiness",
+      "meaning": "Selected exactrevision scope has concrete input/context/output/error/effect/pre/post contracts, all5risk decisions and independently stated scenarios/checkplans, closed necessary dependencies, declared unsupported gates and explicit validownership. Current amendment supersedes stale fields prospectively; old frozenbytes remain.",
+      "proofRefs": [
+        {
+          "path": "docs/architecture/rust-target/readiness-report.json",
+          "sha256": "3a900fe18658c12f7110089e816fa287dc45e5b26bf213750fcebfcde75e4ee4",
+          "location": "Preserved expected originalsketch readinessFAIL"
+        },
+        {
+          "path": "docs/architecture/rust-target/implementation/workspace-lease/change.json",
+          "sha256": "542169ac29faf06ec9383394ddb119edbcc34d9c4d27f93c2e2dd79fac2c4d4f",
+          "location": "Explicit stableID/modelrevision/history refinements"
+        }
+      ],
+      "doesNotGrant": [
+        "Business execution",
+        "Runtimecorrectness",
+        "Provider/OSavailability or deployment/cutover approval"
+      ]
+    },
+    {
+      "decision": "executed-acceptance",
+      "meaning": "Actual committed source/diff, concrete executedchecklogs/negativecontrols and applicable end-to-end current/retained receipts satisfy selectedissue scope. Leadreviews semanticmeaning and integrates before acceptance; cancellations/unknownresults/completed effects remain.",
+      "proofRefs": [
+        {
+          "path": "docs/architecture/rust-target/implementation/baseline/CONTRACT_INVENTORY.md",
+          "sha256": "20545ce3f54ba011d525429ac1ce10c195f57a043da0bc77e311513efbd3414c",
+          "location": "Source-reviewed/planned inventory is not runtimePASS"
+        }
+      ],
+      "doesNotGrant": [
+        "Any other issue or wholeepic closure",
+        "A retry of unknownfinancial/provider effects",
+        "Removal of release/backup/access/accounting guards"
+      ]
+    }
+  ],
+  "readinessForNextSelectedSlice": [
+    "Read effective index by original(sourcePath,nodeId) and verify frozen originalSHA and prospective amendment source hashes.",
+    "Keep root/epic sketches and historical/private cancelled contexts as preserved-only; never automaticallydispatch them because fields are nonempty.",
+    "Bind relevant accepted R01 behavior and currentnative source contract/correctedtarget; declare actual local/remote/provider/environment boundaries.",
+    "Explicitly refine all required input/context/output/error/effect/pre/post facts and5risks with source-backed independent scenarios before selecting work. Missing facts block only that scope, never permit fabricatedreadiness.",
+    "SGDplan checks actualmodel/readiness and dispatch scope; validplan remains separate from currentruntime authorization and actualexecuted acceptance.",
+    "Run smallest meaningful changed-source checks first; reuse exact validreceipts, no repeated accepted effects. Integrate reviewed diffs then wholeissueacceptance."
+  ],
+  "boundaryEvidence": {
+    "retainedReport": "/tmp/rentemester-rust-reports/r02-client-storage674-accepted.json",
+    "retainedSHA256": "54ba9c116cf78edcfda13d7fc6892294c674b7b9dbb5f853502ba49415982dc1",
+    "currentReport": "/tmp/rentemester-rust-reports/r02-current-boundaries115326a1.json",
+    "currentSHA256": "22c132fa357e01d88d509f5e28e3712ce7d54415222f84e143a450d4137994be",
+    "currentReason": "ChangedSDK/MCP/engineadmission source sincepriorproof; oneactualcurrent scanner/metadata invocation PASS, no compilation/businessreplay.",
+    "limits": "Dependencychecks anddirect-source scanners supplement review, not full Rustsemantic analysis. Actual on-disk SDK/MCPstorage use andextern-crate alias negatives were executed. CLIadvisory/Tauri lifecycle are not falsely included as networkonly."
+  },
+  "limits": "This document defines specification/readiness responsibility, not new runtime/product capability or execution evidence. All55/J01-J07/oneRustengine/sameReact/finalmanualdesktop requirements remain.",
+  "runtimeQualificationClaim": false,
+  "scopeDefinitionOnly": true,
+  "acceptanceRecord": "../progress.json#/evidence/r02_effective_contracts674"
+}
