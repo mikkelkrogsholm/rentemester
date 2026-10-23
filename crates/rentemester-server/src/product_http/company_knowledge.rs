@@ -16,7 +16,7 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
         .unwrap_or("")
         .to_owned();
     let mutation = request.method() != axum::http::Method::GET;
-    let cookie = match proof(&state, &request, mutation) {
+    let credential = match documents::credential(&state, &request, mutation) {
         Ok(p) => p,
         Err(r) => return *r,
     };
@@ -35,22 +35,9 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
         let Ok(bytes) = to_bytes(request.into_body(), 256 * 1024).await else {
             return refused(StatusCode::PAYLOAD_TOO_LARGE, "invalid_input");
         };
-        let Ok(mut body) = serde_json::from_slice::<serde_json::Map<String, Value>>(&bytes) else {
-            return refused(StatusCode::BAD_REQUEST, "invalid_input");
-        };
-        if body.remove("confirm") != Some(json!(true)) {
-            return refused(StatusCode::BAD_REQUEST, "confirmation_required");
-        }
-        let body = Value::Object(body);
-        let parsed = match path.rsplit('/').next() {
-            Some("propose") => serde_json::from_value(body).map(Command::Propose),
-            Some("review") => serde_json::from_value(body).map(Command::Review),
-            Some("supersede") => serde_json::from_value(body).map(Command::Supersede),
-            _ => return refused(StatusCode::NOT_FOUND, "not_found"),
-        };
-        match parsed {
-            Ok(c) => c,
-            Err(_) => return refused(StatusCode::BAD_REQUEST, "invalid_input"),
+        match parse_mutation(&path, &bytes) {
+            Ok(command) => command,
+            Err((status, code)) => return refused(status, code),
         }
     } else {
         let mut as_of = None;
@@ -85,9 +72,15 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
             Command::Supersede(i) => Action::Supersede(i),
         };
         let mut owner = state.native.lock_company(&slug).map_err(|_| ())?;
-        owner
-            .company_knowledge(&state.native.cookies, &SystemClock, &cookie, action)
-            .map_err(|_| ())
+        match credential {
+            documents::Credential::Human(cookie) => {
+                owner.company_knowledge(&state.native.cookies, &SystemClock, &cookie, action)
+            }
+            documents::Credential::Service(key) => {
+                owner.company_knowledge_service(&key, &SystemClock, action)
+            }
+        }
+        .map_err(|_| ())
     })
     .await;
     match result {
@@ -120,3 +113,22 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
         _ => refused(StatusCode::SERVICE_UNAVAILABLE, "internal"),
     }
 }
+
+fn parse_mutation(path: &str, bytes: &[u8]) -> Result<Command, (StatusCode, &'static str)> {
+    let mut body = serde_json::from_slice::<serde_json::Map<String, Value>>(bytes)
+        .map_err(|_| (StatusCode::BAD_REQUEST, "invalid_input"))?;
+    if body.remove("confirm") != Some(json!(true)) {
+        return Err((StatusCode::BAD_REQUEST, "confirmation_required"));
+    }
+    let body = Value::Object(body);
+    let parsed = match path.rsplit('/').next() {
+        Some("propose") => serde_json::from_value(body).map(Command::Propose),
+        Some("review") => serde_json::from_value(body).map(Command::Review),
+        Some("supersede") => serde_json::from_value(body).map(Command::Supersede),
+        _ => return Err((StatusCode::NOT_FOUND, "not_found")),
+    };
+    parsed.map_err(|_| (StatusCode::BAD_REQUEST, "invalid_input"))
+}
+#[cfg(test)]
+#[path = "company_knowledge_tests.rs"]
+mod tests;
