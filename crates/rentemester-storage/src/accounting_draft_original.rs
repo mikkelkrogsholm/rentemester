@@ -179,7 +179,7 @@ pub fn execute(
     crate::journal_post::require_current(tx)?;
     tx.execute_batch("SAVEPOINT original_accounting_draft")
         .map_err(invalid)?;
-    let result = (|| {
+    let result: Result<Value, Error> = (|| {
         let mut receipt = None;
         let mut state = source_state(native::change_with_receipt(
             tx,
