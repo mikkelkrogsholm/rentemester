@@ -4,7 +4,7 @@ use rusqlite::{OptionalExtension, Transaction, params};
 use serde::Deserialize;
 use serde_json::{Value, json};
 pub mod source_chart;
-const ROLES: [(&str, &str, &str); 8] = [
+pub(crate) const ROLES: [(&str, &str, &str); 8] = [
     ("bank", "asset", "debit"),
     ("debtors", "asset", "debit"),
     ("creditors", "liability", "credit"),
@@ -31,7 +31,16 @@ fn audit(
     message: &str,
     actor: &str,
 ) -> Result<(), Error> {
-    tx.execute("INSERT INTO audit_log(event_type,entity_type,entity_id,message,actor) VALUES(?1,'company_setup',?2,?3,?4)",params![event,entity,message,format!("user:{actor}")]).map_err(sql)?;
+    audit_typed(tx, event, entity, message, &format!("user:{actor}"))
+}
+fn audit_typed(
+    tx: &Transaction<'_>,
+    event: &str,
+    entity: &str,
+    message: &str,
+    actor: &str,
+) -> Result<(), Error> {
+    tx.execute("INSERT INTO audit_log(event_type,entity_type,entity_id,message,actor) VALUES(?1,'company_setup',?2,?3,?4)",params![event,entity,message,actor]).map_err(sql)?;
     Ok(())
 }
 fn expected(role: &str) -> Result<(&'static str, &'static str), Error> {
@@ -42,7 +51,7 @@ fn expected(role: &str) -> Result<(&'static str, &'static str), Error> {
         .map(|r| (r.1, r.2))
         .ok_or_else(|| fail("unsupported account role"))
 }
-fn compatible(tx: &Transaction<'_>, role: &str, account: &str) -> Result<(), Error> {
+pub(crate) fn compatible(tx: &Transaction<'_>, role: &str, account: &str) -> Result<(), Error> {
     let (kind, balance) = expected(role)?;
     let yes:bool=tx.query_row("SELECT EXISTS(SELECT 1 FROM accounts WHERE account_no=?1 AND type=?2 AND normal_balance=?3 AND active=1)",params![account,kind,balance],|r|r.get(0)).map_err(sql)?;
     if !yes {
@@ -118,6 +127,17 @@ pub struct Account {
     pub default_vat_code: Option<String>,
 }
 pub fn create_account(tx: &Transaction<'_>, input: &Account, actor: &str) -> Result<Value, Error> {
+    create_account_typed(tx, input, true, &format!("user:{actor}"))
+}
+/// Shared writer: the source direct flag is part of the INSERT, never a second update.
+/// Retains the native `account_created` event (source TS called it `accounts_add`),
+/// with exactly one audit event and no caller-supplied program identity.
+pub(crate) fn create_account_typed(
+    tx: &Transaction<'_>,
+    input: &Account,
+    allow_direct_posting: bool,
+    actor: &str,
+) -> Result<Value, Error> {
     crate::journal_post::require_current(tx)?;
     let no = input.account_no.trim();
     let name = input.name.trim();
@@ -150,8 +170,8 @@ pub fn create_account(tx: &Transaction<'_>, input: &Account, actor: &str) -> Res
             "account number already exists; historical accounts are not overwritten",
         ));
     }
-    tx.execute("INSERT INTO accounts(account_no,name,type,normal_balance,default_vat_code) VALUES(?1,?2,?3,?4,?5)",params![no,name,input.r#type,input.normal_balance,input.default_vat_code]).map_err(sql)?;
-    audit(
+    tx.execute("INSERT INTO accounts(account_no,name,type,normal_balance,default_vat_code,allow_direct_posting) VALUES(?1,?2,?3,?4,?5,?6)",params![no,name,input.r#type,input.normal_balance,input.default_vat_code,allow_direct_posting]).map_err(sql)?;
+    audit_typed(
         tx,
         "account_created",
         no,
@@ -184,8 +204,31 @@ pub fn confirm_role(tx: &Transaction<'_>, input: &Role, actor: &str) -> Result<V
         )?;
         return resolution(tx, &input.role);
     }
+    confirm_required_role(tx, input, &format!("user:{actor}"), false)
+}
+/// Source reconfirmation is a fixed private policy, not a public request flag.
+pub(crate) fn confirm_source_role(
+    tx: &Transaction<'_>,
+    input: &Role,
+    actor: &str,
+) -> Result<Value, Error> {
+    confirm_required_role(tx, input, actor, true)
+}
+fn confirm_required_role(
+    tx: &Transaction<'_>,
+    input: &Role,
+    actor: &str,
+    reconfirm: bool,
+) -> Result<Value, Error> {
+    crate::journal_post::require_current(tx)?;
+    if !input.confirm || !ROLES.iter().any(|r| r.0 == input.role) {
+        return Err(fail(
+            "explicit confirmation of a required account role required",
+        ));
+    }
+    compatible(tx, &input.role, &input.account_no)?;
     let current = resolution(tx, &input.role)?;
-    if current["ok"] == true && current["accountNo"] == input.account_no {
+    if !reconfirm && current["ok"] == true && current["accountNo"] == input.account_no {
         return Ok(current);
     }
     let previous: i64 = tx
@@ -204,9 +247,9 @@ pub fn confirm_role(tx: &Transaction<'_>, input: &Role, actor: &str) -> Result<V
         [&input.role],
     )
     .map_err(sql)?;
-    tx.execute("INSERT INTO account_role_mappings(role,account_no,version,confirmed_by,confirmation_source) VALUES(?1,?2,?3,?4,'explicit')",params![input.role,input.account_no,version,format!("user:{actor}")]).map_err(sql)?;
+    tx.execute("INSERT INTO account_role_mappings(role,account_no,version,confirmed_by,confirmation_source) VALUES(?1,?2,?3,?4,'explicit')",params![input.role,input.account_no,version,actor]).map_err(sql)?;
     tx.execute("UPDATE account_role_proposals SET status=CASE WHEN account_no=?2 THEN 'accepted' ELSE 'rejected' END WHERE role=?1 AND status='proposed'",params![input.role,input.account_no]).map_err(sql)?;
-    audit(
+    audit_typed(
         tx,
         "account_role_confirmed",
         &input.role,

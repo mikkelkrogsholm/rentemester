@@ -452,3 +452,52 @@ fn original_loss_adapter_uses_number_historical_assertions_and_exact_service_aud
     tx.execute("INSERT INTO audit_log(event_type,entity_type,entity_id,message,actor)VALUES('invoice_bad_debt_writeoff','invoice_bad_debt_writeoff',?1,'forged','service_account:svc:exact')",[wid.to_string()]).unwrap();
     assert!(crate::audit_invoice::bad_debt_evidence(&tx, wid).is_err());
 }
+
+#[test]
+fn accounts_original_false_expense_is_refused_by_existing_bad_debt_guard_without_effects() {
+    use crate::accounts_original::{Operation, execute};
+    let (mut db, id) = fixture("DKK");
+    let tx = db
+        .transaction_with_behavior(TransactionBehavior::Immediate)
+        .unwrap();
+    let created = execute(&tx, Operation::Add, &json!({"input":{"accountNo":"CONTROL","name":"Synthetic controlled expense","type":"expense","allowDirectPosting":false},"confirm":true}), "service_account:synthetic").unwrap();
+    assert_eq!(created["ok"], true);
+    let stored: (String, bool) = tx
+        .query_row(
+            "SELECT normal_balance,allow_direct_posting FROM accounts WHERE account_no='CONTROL'",
+            [],
+            |r| Ok((r.get(0)?, r.get(1)?)),
+        )
+        .unwrap();
+    assert_eq!(stored, ("debit".into(), false));
+    let inventory = || -> Vec<i64> {
+        [
+            "journal_entries",
+            "journal_lines",
+            "invoice_bad_debt_writeoffs",
+            "audit_log",
+        ]
+        .iter()
+        .map(|table| {
+            tx.query_row(&format!("SELECT COUNT(*) FROM {table}"), [], |r| r.get(0))
+                .unwrap()
+        })
+        .collect()
+    };
+    let before = inventory();
+    let mut controlled = request(id, Some(100.0), "2026-01-10");
+    controlled.expense_account_no = "CONTROL".into();
+    let error = write_off(&tx, &controlled, "synthetic", latest()).unwrap_err();
+    assert!(
+        error.message.contains("active") && error.message.contains("compatible"),
+        "{error}"
+    );
+    assert_eq!(inventory(), before);
+    // The very same valid invoice/date/amount succeeds with the regular expense:
+    // refusal above is the targeted direct flag guard, not an invalid fixture.
+    controlled.expense_account_no = "E".into();
+    let result = write_off(&tx, &controlled, "synthetic", latest()).unwrap();
+    assert_eq!(result["grossAmountDkk"], json!(100.0));
+    assert_eq!(inventory()[2], before[2] + 1);
+    audit(&tx);
+}
