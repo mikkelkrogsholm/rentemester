@@ -355,7 +355,8 @@ fn accounting_draft_original_service_current_typed_authority_precedes_parse() {
             "access_denied"
         );
     }
-    for op in [Operation::List] {
+    {
+        let op = Operation::List;
         let value = execute_service(
             &mut f.control,
             &mut f.company,
