@@ -10,7 +10,7 @@ fn payload(rep: bool) -> Value {
     v
 }
 #[test]
-fn registry_341_unique_strict_two_writes_and_confirmation_before_http() {
+fn registry_348_unique_strict_two_writes_and_confirmation_before_http() {
     let rows = parsed(&run(
         "http://127.0.0.1:9",
         &[
@@ -24,8 +24,8 @@ fn registry_341_unique_strict_two_writes_and_confirmation_before_http() {
         .iter()
         .map(|t| t["name"].as_str().unwrap())
         .collect::<std::collections::BTreeSet<_>>();
-    assert_eq!(names.len(), 341);
-    assert_eq!(tools.len(), 341);
+    assert_eq!(names.len(), 348);
+    assert_eq!(tools.len(), 348);
     for name in [
         "vat_report",
         "vat_eu_sales_list",
