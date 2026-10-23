@@ -29,7 +29,15 @@ function sourceRecord(value: unknown): Record<string, unknown> {
 function sourceText(value: unknown, missing = "Ikke oplyst") {
   return typeof value === "string" || typeof value === "number" ? String(value) : missing;
 }
-const VAT_LABELS: Record<string, string> = { standard: "Almindeligt momsfradrag", exempt: "Momsfrit", non_deductible: "Ingen fradragsret" };
+const VAT_LABELS: Record<string, string> = { standard: "Almindeligt momsfradrag", exempt: "Momsfrit", non_deductible: "Ingen fradragsret", representation: "Repræsentation", reverse_charge: "Omvendt betalingspligt", eu_goods_acquisition: "EU-varekøb" };
+const RATE_SOURCE_LABELS: Record<string, string> = { imported_bank: "Importeret bankkurs", derived_dkk_settlement: "Afledt af DKK-afregning" };
+function sourceReasons(value: unknown): string[] {
+  return (Array.isArray(value) ? value : value == null ? [] : [value]).map(reason => {
+    if (typeof reason === "string") return reason;
+    const record = sourceRecord(reason);
+    return [record.code, record.message].filter(part => typeof part === "string").join(": ");
+  }).filter(Boolean);
+}
 const PARTITION_LABELS: Record<string, string> = { ready: "Klar til gennemgang", suggestedMatch: "Match skal gennemgås", missingDocument: "Bilag mangler", humanDecision: "Kræver faglig gennemgang" };
 /** Display the frozen server summary. Amounts and readiness are never calculated here. */
 export function BookkeepingPlanSummary({ plan, slug }: { plan: BookkeepingBatchPlan; slug: string }) {
@@ -39,7 +47,10 @@ export function BookkeepingPlanSummary({ plan, slug }: { plan: BookkeepingBatchP
     <div className="table-scroll"><table className="data"><caption>Posterne i den gennemgåede plan</caption><thead><tr><th>Bilag</th><th>Bankbetaling</th><th>Konto og momsbehandling</th><th>Planens beløb</th><th>Klarhed</th></tr></thead><tbody>
       {plan.items.map(item => {
         const bank = sourceRecord(item.detail.bank), doc = sourceRecord(item.detail.document), proposed = sourceRecord(item.detail.proposed);
-        const amounts = sourceRecord(sourceRecord(item.detail.vat).plan);
+        const vat = sourceRecord(item.detail.vat), amounts = sourceRecord(vat.plan);
+        const request = sourceRecord(amounts.request);
+        const originalCurrency = sourceText(request.currency, sourceText(doc.currency, "Valuta ikke oplyst"));
+        const reasons = [...sourceReasons(item.detail.reason), ...sourceReasons(sourceRecord(item.detail.rule).reasons), ...sourceReasons(vat.errors)];
         const currency = sourceText(bank.currency, "Valuta ikke oplyst");
         const amount = (value: unknown, unit = currency) => value === null || value === undefined ? "Ikke oplyst" : `${sourceText(value)} ${unit}`;
         const account = sourceText(proposed.account), treatment = sourceText(proposed.vatTreatment);
@@ -47,9 +58,9 @@ export function BookkeepingPlanSummary({ plan, slug }: { plan: BookkeepingBatchP
         return <tr key={item.actionKey}>
           <td>{item.documentId ? <Link to={`/companies/${encodeURIComponent(slug)}/bilag?documentId=${item.documentId}`}>{sourceText(doc.invoiceNo, `Bilag #${item.documentId}`)}</Link> : "Bilag mangler"}<div>{sourceText(doc.senderName, "Leverandør ikke oplyst")}</div><div>Bilagets beløb: {amount(doc.amountIncVat, sourceText(doc.currency, "Valuta ikke oplyst"))}</div></td>
           <td>{item.bankTransactionId ? <Link to={`/companies/${encodeURIComponent(slug)}/bank?transactionId=${item.bankTransactionId}`}>{sourceText(bank.text, `Bankpost #${item.bankTransactionId}`)}</Link> : "Bankpost ikke oplyst"}<div>{sourceText(bank.date, "Dato ikke oplyst")}</div><div>{amount(bank.amount)}</div></td>
-          <td>Konto: {account}<div>{VAT_LABELS[treatment] ?? treatment}</div>{dimensions.length > 0 && <div>Dimensioner: {dimensions.map(([name, member]) => `${name}: ${sourceText(member)}`).join(", ")}</div>}</td>
-          <td>Samlet: {amount(amounts.grossAmount)}<div>Netto: {amount(amounts.netAmount)}</div><div>Momsfradrag: {amount(amounts.vatAmount)}</div></td>
-          <td>{PARTITION_LABELS[item.partition] ?? "Klarhed ikke oplyst"}</td>
+          <td>Konto: {account}<div>{VAT_LABELS[treatment] ?? treatment}</div><div>Momsklassifikation: {sourceText(vat.classification)}</div><div>Leverandørland: {sourceText(vat.country)}</div><div>Providerstatus: {sourceText(vat.providerStatus)}</div><div>Valideret: {sourceText(vat.validatedAt)}</div><div>Udløber: {sourceText(vat.evidenceExpiresAt)}</div><div>Providerreference: {sourceText(vat.providerReference)}</div>{dimensions.length > 0 && <div>Dimensioner: {dimensions.map(([name, member]) => `${name}: ${sourceText(member)}`).join(", ")}</div>}</td>
+          <td>Samlet: {amount(amounts.grossAmount, originalCurrency)}<div>Netto: {amount(amounts.netAmount, "DKK")}</div><div>Momsfradrag: {amount(amounts.vatAmount, "DKK")}</div><div>Bogført brutto: {amount(amounts.grossAmountDkk, "DKK")}</div><div>Kurs til DKK: {sourceText(request.fxRateToDkk)}</div><div>Kurskilde: {RATE_SOURCE_LABELS[sourceText(amounts.rateSource)] ?? sourceText(amounts.rateSource)}</div></td>
+          <td>{PARTITION_LABELS[item.partition] ?? "Klarhed ikke oplyst"}{vat.ready === false && <div>Moms og værdiansættelse kræver afklaring.</div>}{reasons.map((reason, index) => <div key={index}>{reason}</div>)}</td>
         </tr>;
       })}
       {plan.items.length === 0 && <tr><td colSpan={5}>Planen indeholder ingen poster.</td></tr>}
