@@ -1,10 +1,10 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "R04 native identity/fencing/external-job decision accepted;676closed",
-  "code_revision": "596347c244f1619663c939b425c999f7d0200724",
-  "spec_revision": "sha256:8979030956647a0f03266c50d42786b5d33ab71a59c78528203d223226171e72",
-  "state": "19of55 original issues fullyacceptedclosed36open. R04selectednativeidentity and allfour external-job authority phases documented/reviewed at596347c2, source/reference/evidencepinsPASS. R02notclosed: actualeffectivecontract contradiction found in frozen182context, in addition to missingclientstorage negativecontrol. Product/accountingaccepted effects preserved; fullmission/release/cutover/manualdesktoplast OPEN.",
+  "current_increment": "R13 final-effective-owner race test written/reviewed; execution blocked by required disk headroom",
+  "code_revision": "570d749114843c2ae94c51b9e6f4d5d0e0b808e5",
+  "spec_revision": "sha256:0126654d934bedc29ba6999af447162394594f6c591f159b4a0281aad9529b63",
+  "state": "19of55closed36open;685test source reviewed and rustfmtchecked, NOTexecuted/accepted/closed. Required30GiBcompileheadroom unavailable after qualified cachecleanup; privilegedDockerreclaim rejected byautomaticapproval and explicit userapproval pending. No guard bypass or repeated failedcompile.",
   "issues_closed": [
     675,
     676,
@@ -27,7 +27,7 @@
     710
   ],
   "next": [
-    "Next necessary complete product acceptance existingR13#685: actual two-connection last-effective-owner removal race, reusing accepted authorization/currentfence evidence. Restore >=30GiB safe build headroom before anyRustcompile; no bypass. R07isnotcloseableunderunchangedpolicy:393hostmetadata has requiredMPL2/Unicode3/CDLA2/Zlib outside existingJSallowlist and75uncachedallplatformpackages; policy/inventory reconciliation retained rather than installnewtools. R02fullcontractreconciliation/negativecontrol remainsopen.",
+    "Finish existingSGDrun rust-r13-last-owner685-20261023T084126.874859000 once source/outputguard actually has>=30GiB. Actualtest and fullcriterionreview required before685closure. PrivilegedDockerDesktopreclaim awaiting explicitapproval afterautomaticrejection; do not retry or bypass. No newRustcompile whilebelow30GiB. R02effectivecontracts+clientstorage andR07licensepolicy/alltargetinventory retain their precise gaps.",
     "Original invoice interface inventory now has all31CLI and25MCP bindings, with explicit compatibility corrections documented; do not mistake that family inventory for full product parity. Reconcile remaining original whole-product R44/R45 acceptance from existing epic/issues: actor/env/company-path/default launcher/errors/historical receipts, closure/recovery/automation, signed distribution/update/cutover and TypeScript backend retirement. Continue next necessary whole journey, preserve all accepted evidence/full original scope; installed desktop acceptance last.",
     "Installed desktop acceptance is explicitly deferred to the very end by the user. Preserve prepared Group100 profile; collect remaining native automation, closure, recovery and packaging checks for final installed acceptance without requesting screen unlock during development.",
     "J03/R50 and remaining R54 scope: only still-supported operation closure/recovery, nonempty scheduler handoff, hostile/older clone and post-cutover rollback requirements. Group99 qualifies managed installed J06 flow, not every R54 acceptance item.",
@@ -43,9 +43,9 @@
   ],
   "all_goal_requirements_complete": false,
   "previous_verified_increment": {
-    "name": "R33 backup/recovery full scope accepted and issue707closed",
-    "code_revision": "a45a028ac4d9487f182133d15b3a7c0d41743f28",
-    "evidence_key": "owner_recovery707_completion"
+    "name": "R04 native identity and external-job decision accepted;676closed",
+    "code_revision": "596347c244f1619663c939b425c999f7d0200724",
+    "evidence_key": "r04_identity_decision676"
   },
   "evidence": {
     "combined_browser_log": "/tmp/rm-platform5-combined.log",
@@ -13895,6 +13895,39 @@
       },
       "scope": "SPDXORcanselectapprovedbranch;ANDmustretainallobligations. PDFiumoutsideCargo hasseparatepins/licensefiles, presence!=policyapproval. No policyexpanded or legalapprovalinvented.",
       "next_requirement": "One adapter ofexistinglicensepolicy usinglockedmetadata/distributedtargets with properSPDX/failclosed; explicitreviewedpolicy/dependencydecision andcompletemetadata beforefullR07closure."
+    },
+    "r13_last_owner685_pending": {
+      "issue": 685,
+      "status": "IMPLEMENTED_REVIEWED_NOT_EXECUTED_NOT_ACCEPTED",
+      "source_revision": "570d749114843c2ae94c51b9e6f4d5d0e0b808e5",
+      "source_sha256": "40a105479cc21da67df02803348d38120caf544de2afd52ecd56adf5e981d375",
+      "sgd_run": "rust-r13-last-owner685-20261023T084126.874859000",
+      "engine_phase": "active",
+      "execution_started": false,
+      "review": "Main inspected actualdiff; independentread-only adoption_stage89 no concrete findings; neitherreviewcountsasexecution.",
+      "checks": {
+        "rustfmt": "passed fullownedfile",
+        "diff_check": "passed",
+        "runtime": "not started:24.94GiB<required30GiB"
+      },
+      "scope": "8cases:real twoSQLitewritercontention,workspace/company revoke/demote,bothownerorders,nonreadyownerdecoy,exactevent/audit/securitydeltas,unchangedcompany/WALbytes,reopen. Existing authorization/revocation/actor evidence retained.",
+      "next": "When guard actually allows, drive existingSGDrun next once; review real result and fullR13criteria before closing685. Do not replan/replay676 or accept this regression without execution."
+    },
+    "targeted_build_cache_recovery676": {
+      "status": "COMPLETED qualified cleanup,30GiBminimumstillnotmet",
+      "report": "/tmp/rentemester-rust-reports/rust-build-cache-recovery676.json",
+      "sha256": "8e96119f781fddbea272c899fd6a439baaadb8ce2c7cda4217a398b5050885cb",
+      "receipts_preserved": 44,
+      "data_volume_preserved": "rm-native-web-b02a9ef095-data",
+      "actions": [
+        "Removed only stopped container without -v",
+        "Removed sole-reference derived /build cache volume",
+        "Removed idle regeneratable .sgd/builds/checks/acceptance/debug",
+        "Removed idle regeneratable .sgd/builds/checks/native-cli-candidate-output/debug"
+      ],
+      "additional_finite_inventory": "No further qualified >=5GiB project-only output; do not delete Docker.raw/sharedcaches/otherworkloads.",
+      "approval_block": "Automaticapproval rejected unavailable privilegedhostPID docker/desktop-reclaim-space image due broadunverifiedexecution access. Directuserapproval requested; no workaround or retry absentapproval.",
+      "reclaim_executed": false
     }
   },
   "verified_history": [
