@@ -191,8 +191,8 @@ export function createAssetDisposalProof(base: string, work: string, onStep: (na
         await owner.getByRole('button',{name:'Afhænd Synthetic disposal698 partial',exact:true}).click();
         const dialog = owner.getByRole('dialog',{name:'Afhænd anlæg: Synthetic disposal698 partial',exact:true});
         await dialog.getByLabel('Bogføringsdato',{exact:true}).fill(today);
-        await dialog.getByLabel('Bilag for afhændelse',{exact:true}).selectOption(String(originals[3].id));
-        await dialog.getByLabel('Tabskonto (påkrævet ved positiv restværdi)',{exact:true}).selectOption('3000');
+        await dialog.getByLabel('Bilag for afhændelse',{exact:false}).selectOption(String(originals[3].id));
+        await dialog.getByLabel('Tabskonto (påkrævet ved positiv restværdi)',{exact:false}).selectOption('3000');
         await dialog.getByLabel('Begrundelse',{exact:true}).fill(c.input.reason);
         await dialog.getByRole('button',{name:'Forhåndsvis afhændelse',exact:true}).click();
         await dialog.getByText(c.preview.planHash,{exact:true}).waitFor();
