@@ -3,6 +3,7 @@
 //! https://modelcontextprotocol.io/specification/2025-11-25/basic/lifecycle
 //! https://modelcontextprotocol.io/specification/2025-11-25/server/tools
 mod vat_purchase_original;
+mod asset_disposal;
 mod asset_original;
 mod accrual_original;
 mod mileage_original;

@@ -584,3 +584,6 @@ pub use accounting_draft_original::{AccountingDraftOriginalOperation, MAX_ACCOUN
 
 mod bookkeeping_batch_original;
 pub use bookkeeping_batch_original::{OriginalBatchOperation, bookkeeping_batch_original_schema, validate_bookkeeping_batch_original};
+
+mod asset_disposal;
+pub use asset_disposal::{asset_disposal_schema, validate_asset_disposal};

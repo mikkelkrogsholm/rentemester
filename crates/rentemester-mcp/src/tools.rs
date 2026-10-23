@@ -158,6 +158,7 @@ pub fn list() -> Value {
     tools.extend(crate::bank_correction::tools());
     tools.extend(crate::recurring_invoices::tools());
     tools.extend(crate::asset_original::tools());
+    tools.extend(crate::asset_disposal::tools());
     tools.extend(crate::accrual_original::tools());
     tools.extend(crate::mileage_original::tools());
     tools.extend(crate::recurring_original::tools());
@@ -298,6 +299,7 @@ pub async fn call(api: &ApiClient, name: &str, args: Value) -> Result<Value, &'s
     if crate::journal_original::accepts(name) { return crate::journal_original::call(api,name,args).await; }
     if matches!(name,"documents_extract_invoice"|"documents_invoice_extraction") {return crate::invoice_extraction::call(api,name,args).await;}
     if name=="invoice_validate" {return crate::invoice_validation::call(args);}
+    if crate::asset_disposal::accepts(name) {return crate::asset_disposal::call(api,name,args).await;}
     if crate::asset_original::accepts(name) {return crate::asset_original::call(api,name,args).await;}
     if crate::mileage_original::accepts(name) {return crate::mileage_original::call(api,name,args).await;}
     if crate::accrual_original::accepts(name) {return crate::accrual_original::call(api,name,args).await;}

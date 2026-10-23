@@ -1,3 +1,4 @@
+import { AssetDisposalDialog } from "../components/AssetDisposalDialog";
 import { useMutationOutcome } from "../lib/useMutationOutcome";
 import { parseDanishAmount } from "../lib/format";
 import { useDiscardGuard } from "../lib/useDiscardGuard";
@@ -282,6 +283,7 @@ function AssetRowView({
 }) {
   const [busy, setBusy] = useState(false);
   const [preview, setPreview] = useState<AssetNextDepreciation | null>(null);
+  const [disposalOpen, setDisposalOpen] = useState(false);
   const canDepreciate = row.status === "active" && row.remainingPeriods > 0;
 
   async function doDepreciate() {
@@ -322,10 +324,12 @@ function AssetRowView({
         >
           {row.status === "active"
             ? `${row.postedPeriods}/${row.usefulLifeMonths} afskrevet`
-            : "Fuldt afskrevet"}
+            : row.status === "disposed" ? "Afhændet" : "Fuldt afskrevet"}
         </span>
       </td>
       <td>
+        {row.status === "disposed" ? <><p>Afhændet {row.disposalDate} · Postering {row.disposalJournalEntryNo ?? row.disposalJournalEntryId} · Ingen senere afskrivning</p><Button variant="secondary" onClick={() => setDisposalOpen(true)}>Hent afhændelseskvittering</Button></> : <Button requiredPermission="company.ledger.post" variant="secondary" onClick={() => setDisposalOpen(true)}>Afhænd {row.name}</Button>}
+        {disposalOpen && <AssetDisposalDialog slug={slug} asset={row} currency={currency} onClose={() => setDisposalOpen(false)} onPosted={onPosted} />}
         <Button requiredPermission="company.ledger.post" variant="secondary"
           type="button"
           className="btn secondary"

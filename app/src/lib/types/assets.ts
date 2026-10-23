@@ -13,7 +13,11 @@ export type AssetRow = {
   postedPeriods: number;
   accumulatedDepreciation: number;
   netBookValue: number;
-  status: "active" | "fully-depreciated";
+  status: "active" | "fully-depreciated" | "disposed";
+  disposalDate?: string;
+  disposalId?: number;
+  disposalJournalEntryId?: number;
+  disposalJournalEntryNo?: string;
   remainingPeriods: number;
 };
 
@@ -124,4 +128,17 @@ export type AssetWriteOffSummary = {
   entryId: number | null;
   cost: number | null;
   thresholdDkk: number | null;
+};
+
+/** Frozen capitalized derecognition intent; no caller amounts. */
+export type AssetDisposalInput = { transactionDate: string; documentId: number; reason: string; lossAccountNo?: string };
+export type AssetDisposalApplyInput = AssetDisposalInput & { expectedPlanHash: string; idempotencyKey: string; confirm: true };
+export type AssetDisposalPreview = Omit<AssetDisposalInput, "lossAccountNo"> & {
+  assetId: number; lossAccountNo: string | null; cost: number; accumulatedDepreciation: number;
+  carryingValue: number; planHash: string; lines: { accountNo: string; debit: number; credit: number }[];
+};
+export type AssetDisposalReceipt = {
+  disposalId: number; assetId: number; transactionDate: string; documentId: number; reason: string;
+  cost: number; accumulatedDepreciation: number; carryingValueWrittenOff: number; remainingCarryingValue: 0;
+  journalEntryId: number; journalEntryNo: string; journalEntryHash: string; replayed: boolean;
 };
