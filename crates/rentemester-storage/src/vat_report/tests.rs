@@ -79,7 +79,9 @@ fn install(tx: &Transaction<'_>, bytes: &[u8]) {
 fn accepted_native_import_uses_same_qualified_vat_for_range_read_and_portfolio() {
     let (_control, mut db) = db();
     let bytes = source();
-    let tx = db.transaction().unwrap();
+    let tx = db
+        .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
+        .unwrap();
     install(&tx, &bytes);
     let before = tx.total_changes();
     let projected = rows(&tx).unwrap();
@@ -159,7 +161,9 @@ fn corrupt_attestation_or_source_binding_refuses_all_vat_paths() {
         ),
     ] {
         let (_control, mut db) = db();
-        let tx = db.transaction().unwrap();
+        let tx = db
+            .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
+            .unwrap();
         install(&tx, &source());
         corrupt(&tx, table, mutation);
         assert!(range_report(&tx, "2025-01-01", "2025-03-31").is_err());
@@ -172,7 +176,9 @@ fn corrupt_attestation_or_source_binding_refuses_all_vat_paths() {
 #[test]
 fn marker_only_manual_journal_never_qualifies_as_accepted_history() {
     let (_control, mut db) = db();
-    let tx = db.transaction().unwrap();
+    let tx = db
+        .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
+        .unwrap();
     for (no, kind, normal) in [
         ("2000", "expense", "debit"),
         ("5510", "asset", "debit"),
