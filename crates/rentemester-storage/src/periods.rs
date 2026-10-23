@@ -436,6 +436,9 @@ pub fn verify_sources(tx: &Transaction<'_>) -> Result<Vec<Value>, Error> {
 }
 
 #[cfg(test)]
+mod period_race700;
+
+#[cfg(test)]
 mod tests {
     use super::*;
     #[test]
