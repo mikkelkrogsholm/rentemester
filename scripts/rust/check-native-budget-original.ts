@@ -23,8 +23,9 @@ export function createOriginalBudgetProof(base: string, work: string, onStep: (n
   async function http(path:string,data?:any,status=200,page=owner,method='POST') {
     onStep((data===undefined?'GET:':method+':')+path);
     const r=data===undefined?await page.request.get(base+path):await page.request.fetch(base+path,{method,headers:{origin:base,'content-type':'application/json'},data});
+    const value=await r.json();record({path,status:r.status(),value:path==='/api/workspace/service-principals'?{...value,secret:'[redacted]'}:value});
     need(r.status()===status,path+' expected HTTP'+status+' got '+r.status());
-    const value=await r.json();record({path,status:r.status(),value:path==='/api/workspace/service-principals'?{...value,secret:'[redacted]'}:value});return value;
+    return value;
   }
   const post=(path:string,data:any,status=200,page=owner)=>http(path,data,status,page);
   const admin=(path:string,data:any)=>post('/api/workspace/'+path,data,path==='service-principals'?201:200);
@@ -94,7 +95,7 @@ export function createOriginalBudgetProof(base: string, work: string, onStep: (n
     const actualDoc=await document('synthetic-budget172-actual',60);
     await journal(start,'Synthetic budget known actual owner funded',[line('3720','60.00','0.00'),line('8872','0.00','60.00')],actualDoc);
     const payableDoc=await document('synthetic-budget172-payable',40);
-    await post(root+'payables/register',{documentId:payableDoc,billDate:start,dueDate:start,expenseAccountNo:'3721',vatTreatment:'exempt',vendorId:vendor,confirm:true});
+    await post(root+'payables',{documentId:payableDoc,billDate:start,dueDate:start,expenseAccountNo:'3721',vatTreatment:'exempt',vendorId:vendor,confirm:true});
     const source=await document('synthetic-budget172-commitment',30);
     const commitment={commitmentId:'synthetic-budget172-commitment',vendorPartyId:'vendor:'+vendor,type:'subscription',description:'Synthetic unmatched planning source',businessPurpose:'Synthetic planning only',amount:30,currency:'DKK',frequency:'monthly',nextDate:start,endDate:start,evidenceRefs:['document:'+source]};
     const plan=(await post(root+'supplier-commitments/plan',{commitment})).plan;
