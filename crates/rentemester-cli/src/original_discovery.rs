@@ -3,6 +3,7 @@ use serde_json::{Value, json};
 
 pub fn help() -> Value {
     json!({"ok":true,"localBinding":"Existing migrated commands may select --local-profile ABS_PRIVATE_PROFILE instead of --server/--allow-loopback-http. Join only: same server via private Unix socket with normal cookie/service authentication. Bounded company selection supports explicit slug or verified workspace path and RENTEMESTER_COMPANY fallback for migrated company commands only. Identity remains server-owned; no caller-selected actor. Whole-product parity is unfinished and the default launcher is unchanged.","commands":[
+        {"name":"vat post-eu-service-purchase|post-representation-purchase","usage":"vat post-eu-service-purchase --input FILE.json","scope":"original confirmed-by-invocation purchase writes; representation omission requires unique active configured REPRESENTATION_SPECIAL expense account, never fixed 3070; optional actor asserts current credential only"},
         {"name":"vat report|eu-sales-list|oss-report|momsangivelse|filing","usage":"vat --help","scope":"read-only source VAT reports and closed-period filing preparation; no submission"},
         {"name":"budget set|list|vs-actual|forecast|forecast-13-week","usage":"budget --help","scope":"original flat budget revisions and read-only source cash planning; native aliases retained"},
         {"name":"asset register|depreciate|write-off|register-report","usage":"asset --help","scope":"original source asset lifecycle; native remote aliases retained"},

@@ -563,3 +563,6 @@ pub use budget_original::{original_budget_set_schema, validate_original_budget_r
 
 mod vat_original;
 pub use vat_original::validate_original_vat_result;
+
+mod vat_purchase_original;
+pub use vat_purchase_original::{original_vat_purchase_schema, validate_original_vat_purchase};
