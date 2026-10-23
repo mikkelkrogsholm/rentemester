@@ -143,6 +143,7 @@ pub fn list() -> Value {
     tools.extend(crate::dashboard_artifact::tools());
     tools.extend(crate::eu_sales::tools());
     tools.extend(crate::oss_report::tools());
+    tools.extend(crate::vat_original::tools());
     tools.extend(crate::reviewed_bookkeeping::tools());
     tools.extend(crate::documents_original::tools());
     tools.extend(crate::document_party_original::tools());
@@ -276,6 +277,7 @@ pub async fn call(api: &ApiClient, name: &str, args: Value) -> Result<Value, &'s
     if !args.is_object() {
         return Err("expected arguments object");
     }
+    if crate::vat_original::accepts(name) { return crate::vat_original::call(api,name,args).await; }
     if crate::budget_original::accepts(name) || name=="budget_vs_actual" && (args.get("from").is_some() || args.get("to").is_some()) {
         return crate::budget_original::call(api,name,args).await;
     }
@@ -362,7 +364,7 @@ pub async fn call(api: &ApiClient, name: &str, args: Value) -> Result<Value, &'s
         name if crate::opening_balance::accepts(name)=>crate::opening_balance::call(api,name,args).await?,
         name if crate::dinero_import::accepts(name)=>crate::dinero_import::call(api,name,args).await?,
         name if crate::archive_import::accepts(name)=>crate::archive_import::call(api,name,args).await?,
-        "vat_oss_report"=>crate::oss_report::call(api,args).await?,
+
         name if crate::eu_sales::accepts(name)=>crate::eu_sales::call(api,name,args).await?,
         name if crate::portfolio_cashflow::accepts(name)=>crate::portfolio_cashflow::call(api,name,args).await?,
         name if crate::cfo_analytics::accepts(name)=>crate::cfo_analytics::call(api,name,args).await?,

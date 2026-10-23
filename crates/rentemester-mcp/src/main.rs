@@ -34,6 +34,7 @@ mod backup_governance;
 mod backup_registration;
 mod eu_sales;
 mod oss_report;
+mod vat_original;
 mod reminder_claims;
 mod company_creation;
 mod saft;

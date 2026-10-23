@@ -560,3 +560,6 @@ pub use mileage_original::{validate_original_mileage_shape, original_mileage_log
 
 mod budget_original;
 pub use budget_original::{original_budget_set_schema, validate_original_budget_result};
+
+mod vat_original;
+pub use vat_original::validate_original_vat_result;
