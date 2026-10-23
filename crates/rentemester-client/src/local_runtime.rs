@@ -198,12 +198,83 @@ impl ApiClient {
         let socket = local.endpoint()?;
         let mut client = Self::new(local.origin(), true, cookie)?;
         client.http = Self::construct(client.base.clone(), None, Some(&socket))?.http;
+        client.local = Some(local.clone());
         Ok(client)
     }
     pub fn with_local_service_key(local: &LocalRuntime, key: String) -> Result<Self, Error> {
         let socket = local.endpoint()?;
         let mut client = Self::with_service_key(local.origin(), true, key)?;
         client.http = Self::construct(client.base.clone(), None, Some(&socket))?.http;
+        client.local = Some(local.clone());
         Ok(client)
     }
 }
+
+/// Canonical knowledge selector. Paths are transport metadata, never authority.
+/// Only an explicit, freshly verified local profile may translate an absolute root.
+pub fn knowledge_company_selector(local: Option<&LocalRuntime>, value: &str) -> Result<String, Error> {
+    fn slug(s: &str) -> bool {
+        !s.is_empty() && s.bytes().all(|b| b.is_ascii_lowercase() || b.is_ascii_digit() || b == b'-')
+    }
+    if slug(value) { return Ok(value.to_owned()); }
+    let refuse = || Error::InvalidInput("knowledge company requires a canonical slug or registered absolute root under explicit verified --local-profile");
+    let local = local.ok_or_else(refuse)?;
+    local.endpoint()?;
+    let path = Path::new(value);
+    if !path.is_absolute() || value.contains('\\') || value.chars().any(char::is_control)
+        || path.components().any(|c| matches!(c, std::path::Component::ParentDir | std::path::Component::CurDir)) {
+        return Err(refuse());
+    }
+    let mut checked = PathBuf::new();
+    for component in path.components() {
+        checked.push(component.as_os_str());
+        let meta = fs::symlink_metadata(&checked).map_err(|_| refuse())?;
+        if !meta.is_dir() || meta.file_type().is_symlink() { return Err(refuse()); }
+    }
+    if fs::canonicalize(path).map_err(|_| refuse())?.as_os_str() != path.as_os_str()
+        || path.parent() != Some(local.workspace_root()) { return Err(refuse()); }
+    let name = path.file_name().and_then(|s| s.to_str()).filter(|s| slug(s)).ok_or_else(refuse)?;
+    // Read the existing runtime registration, bounded and without following aliases.
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::{MetadataExt, OpenOptionsExt};
+        let manifest = local.workspace_root().join("workspace.json");
+        let before = fs::symlink_metadata(&manifest).map_err(|_| refuse())?;
+        let uid = rustix::process::getuid().as_raw();
+        if !before.is_file() || before.uid() != uid || before.mode() & 0o022 != 0 || before.nlink() != 1 || before.len() > 1024 * 1024 { return Err(refuse()); }
+        let mut options = OpenOptions::new(); options.read(true);
+        #[cfg(target_os = "linux")]
+        options.custom_flags(0x20000 | 0x800);
+        #[cfg(target_os = "macos")]
+        options.custom_flags(0x100 | 0x4);
+        let file = options.open(&manifest).map_err(|_| refuse())?;
+        let opened = file.metadata().map_err(|_| refuse())?;
+        if !identity(&before, &opened) { return Err(refuse()); }
+        let mut bytes = Vec::new();
+        file.take(1024 * 1024 + 1).read_to_end(&mut bytes).map_err(|_| refuse())?;
+        #[derive(Deserialize)]
+        #[serde(deny_unknown_fields)]
+        struct Manifest { version: u32, companies: Vec<Entry> }
+        #[derive(Deserialize)]
+        #[serde(deny_unknown_fields, rename_all = "camelCase")]
+        struct Entry { slug: String, name: String, created_at: String, archived: bool }
+        let m: Manifest = serde_json::from_slice(&bytes).map_err(|_| refuse())?;
+        if m.version != 1 || m.companies.len() > 1000 { return Err(refuse()); }
+        let mut seen = std::collections::BTreeSet::new();
+        let mut found = false;
+        for e in m.companies {
+            if !slug(&e.slug) || !seen.insert(e.slug.clone()) || e.name.trim().is_empty() || e.name.len() > 1024 || e.created_at.trim().is_empty() || e.created_at.len() > 128
+                || e.name.chars().any(char::is_control) || e.created_at.chars().any(char::is_control) { return Err(refuse()); }
+            if e.slug == name && !e.archived { found = true; }
+        }
+        if !found { return Err(refuse()); }
+        let after = fs::symlink_metadata(&manifest).map_err(|_| refuse())?;
+        if !identity(&opened, &after) || after.len() != bytes.len() as u64 { return Err(refuse()); }
+        local.endpoint()?;
+        Ok(name.to_owned())
+    }
+    #[cfg(not(unix))]
+    { Err(refuse()) }
+}
+
+pub(crate) fn process_local() -> Option<LocalRuntime> { PROCESS.get().cloned() }

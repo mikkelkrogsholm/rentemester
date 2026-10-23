@@ -300,3 +300,34 @@ fn stopped_or_missing_socket_and_unsafe_metadata_never_fall_back_to_live_tcp() {
     assert!(tcp.accept().is_err());
     fs::remove_dir_all(path).unwrap();
 }
+
+#[test]
+fn knowledge_alias_and_native_root_share_service_route_and_reject_hostile_selectors() {
+    let (path, listener) = profile("knowledge705", "http://127.0.0.1:9");
+    let company = path.join("workspace/synthetic");
+    fs::create_dir(&company).unwrap();
+    fs::create_dir(path.join("workspace/unregistered")).unwrap();
+    fs::write(path.join("workspace/workspace.json"),json!({"version":1,"companies":[{"slug":"synthetic","name":"Synthetic","createdAt":"2026-01-01","archived":false}]}).to_string()).unwrap();
+    fs::write(path.join("key"), "synthetic-scoped-key").unwrap();
+    fs::write(path.join("cookie"), "session=synthetic").unwrap();
+    for name in ["key", "cookie"] { fs::set_permissions(path.join(name),fs::Permissions::from_mode(0o600)).unwrap(); }
+    let task = serve(listener, vec![reply("200 OK",None,json!({"ok":true})),reply("200 OK",None,json!({"ok":true}))]);
+    for (prefix, selector) in [(vec!["remote","company-knowledge"],"synthetic".to_owned()),(vec!["company-knowledge","context"],company.to_str().unwrap().to_owned())] {
+        let out = Command::new(BIN).args(prefix).args(["--local-profile",path.to_str().unwrap(),"--company",&selector,"--service-key-file",path.join("key").to_str().unwrap()]).output().unwrap();
+        assert!(out.status.success(),"{}",String::from_utf8_lossy(&out.stdout));
+    }
+    for request in task.join().unwrap() {
+        assert!(request.starts_with("GET /api/companies/synthetic/knowledge?includeProposed=false HTTP/1.1"));
+        let lower = request.to_lowercase();
+        assert!(lower.contains("x-rentemester-service-key: synthetic-scoped-key"));
+        assert!(!lower.contains("cookie:"));
+    }
+    std::os::unix::fs::symlink(&company,path.join("workspace/alias")).unwrap();
+    for selector in [path.join("workspace/unregistered"),path.join("workspace/alias"),path.clone()] {
+        let out=Command::new(BIN).args(["remote","company-knowledge","--local-profile",path.to_str().unwrap(),"--company",selector.to_str().unwrap(),"--service-key-file",path.join("key").to_str().unwrap()]).output().unwrap();
+        assert_eq!(out.status.code(),Some(2));
+    }
+    let out=Command::new(BIN).args(["remote","company-knowledge","--local-profile",path.to_str().unwrap(),"--company","synthetic","--service-key-file",path.join("key").to_str().unwrap(),"--cookie-file",path.join("cookie").to_str().unwrap()]).output().unwrap();
+    assert_eq!(out.status.code(),Some(2));
+    fs::remove_dir_all(path).unwrap();
+}

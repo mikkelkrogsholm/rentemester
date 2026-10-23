@@ -1,4 +1,7 @@
-use crate::tools::{company_schema, native_body, tool};
+use crate::tools::{native_body, tool};
+fn company_schema() -> Value {
+    json!({"type":"string","minLength":1,"description":"Canonical company slug; registered absolute company root only with explicit verified --local-profile. No basename guessing or authority override; current server service/human permissions apply."})
+}
 use rentemester_client::{
     ApiClient, Error, KnowledgeMutation, MAX_KNOWLEDGE_BODY, knowledge_body_schema,
 };

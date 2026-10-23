@@ -365,3 +365,59 @@ fn ordinary_tcp_and_pure_help_catalogue_contracts_are_retained() {
             .contains("cookie: session=synthetic-private")
     );
 }
+
+#[test]
+fn knowledge_service_root_slug_exact_writes_and_discovery() {
+    let fixture = Fixture::new("http://127.0.0.1:9");
+    fs::create_dir(fixture.path.join("workspace/synthetic")).unwrap();
+    fs::create_dir(fixture.path.join("workspace/b")).unwrap();
+    fixture.file("workspace/workspace.json",json!({"version":1,"companies":[{"slug":"synthetic","name":"Synthetic","createdAt":"2026-01-01","archived":false}]}).to_string().as_bytes());
+    std::os::unix::fs::symlink(fixture.path.join("workspace/synthetic"),fixture.path.join("workspace/alias")).unwrap();
+    let listener=fixture.listener.as_ref().unwrap().try_clone().unwrap();
+    let task=thread::spawn(move || {
+        let mut requests=vec![];
+        for _ in 0..5 {
+            let (mut stream,_)=listener.accept().unwrap();
+            requests.push(request(&mut stream));
+            response(&mut stream,json!({"ok":true,"history":[]}));
+        }
+        listener.set_nonblocking(true).unwrap();
+        assert!(listener.accept().is_err());
+        requests
+    });
+    let root=fixture.path.join("workspace/synthetic").to_str().unwrap().to_owned();
+    let proposal = r#"{ "predicate":"markets", "value":["DK"], "source":{"kind":"user","ref":"synthetic"}, "validFrom":"2026-01-01", "confirm":true }"#;
+    let review = r#"{ "assertionId":"assertion705", "decision":"approved", "confirm":true }"#;
+    let supersede = r#"{ "assertionId":"assertion705", "replacement":{"predicate":"markets","value":"EU","source":{"kind":"user","ref":"synthetic"},"validFrom":"2026-01-01"}, "confirm":true }"#;
+    let output=run(&fixture.args("service-key"),&messages(vec![
+        json!({"jsonrpc":"2.0","id":2,"method":"tools/list"}),
+        call(3,"company_knowledge",json!({"company":"synthetic"})),
+        call(4,"company_knowledge",json!({"company":root})),
+        call(5,"propose_company_knowledge",json!({"company":root,"body":proposal,"confirm":true})),
+        call(6,"review_company_knowledge",json!({"company":root,"body":review,"confirm":true})),
+        call(7,"supersede_company_knowledge",json!({"company":root,"body":supersede,"confirm":true})),
+        call(8,"company_knowledge",json!({"company":fixture.path.join("workspace/b")})),
+        call(9,"company_knowledge",json!({"company":fixture.path.join("workspace/alias")})),
+        call(10,"company_knowledge",json!({"company":fixture.path})),
+        call(11,"review_company_knowledge",json!({"company":root,"body":r#"{"assertionId":"assertion705","decision":"approved","actor":"user:forged","confirm":true}"#,"confirm":true})),
+    ]));
+    let parsed=rows(&output);
+    let tools=parsed[1]["result"]["tools"].as_array().unwrap();
+    for name in ["company_knowledge","propose_company_knowledge","review_company_knowledge","supersede_company_knowledge"] {
+        let tool=tools.iter().find(|t|t["name"]==name).unwrap();
+        assert_eq!(tool["inputSchema"]["additionalProperties"],false);
+        assert!(tool["inputSchema"]["properties"]["company"]["description"].as_str().unwrap().contains("--local-profile"));
+    }
+    for row in &parsed[2..7] { assert_eq!(row["result"]["isError"],false,"{row}"); }
+    for row in &parsed[7..] { assert!(row["result"]["isError"]==true || row.get("error").is_some(),"{row}"); }
+    let requests=task.join().unwrap();
+    assert_eq!(requests[0].lines().next(),requests[1].lines().next());
+    for (i,suffix,body) in [(2,"propose",proposal),(3,"review",review),(4,"supersede",supersede)] {
+        assert!(requests[i].starts_with(&format!("POST /api/companies/synthetic/knowledge/{suffix} HTTP/1.1")));
+        assert!(requests[i].ends_with(body));
+    }
+    for wire in requests {
+        assert!(wire.to_lowercase().contains("x-rentemester-service-key: synthetic-service-private"));
+        assert!(!wire.to_lowercase().contains("cookie:"));
+    }
+}

@@ -116,6 +116,7 @@ impl std::error::Error for Error {}
 
 /// Intentionally does not implement Debug: request Cookie/service key are secrets.
 pub struct ApiClient {
+    local: Option<LocalRuntime>,
     http: Client,
     base: Url,
     origin: String,
@@ -209,6 +210,7 @@ impl ApiClient {
             origin,
             cookie: cookie.map(Zeroizing::new),
             service_key: None,
+            local: local_runtime::process_local(),
         })
     }
     /// Explicit service credential; never combined with a browser Cookie or Bearer header.
@@ -584,3 +586,5 @@ pub use accounting_draft_original::{AccountingDraftOriginalOperation, MAX_ACCOUN
 
 mod bookkeeping_batch_original;
 pub use bookkeeping_batch_original::{OriginalBatchOperation, bookkeeping_batch_original_schema, validate_bookkeeping_batch_original};
+
+pub use local_runtime::knowledge_company_selector;
