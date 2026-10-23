@@ -4029,3 +4029,18 @@ er8/−0,50. Historikken har2dimensions-,4medlems-,5tildelings- og6budgethændel
 Genstart og signeret kildefri gendannelse til ny ejer bevarer alt med én
 gendannelses-audit (6→7).2596kilde-,3binær-,8web- og3hjælperpins er verificeret.
 Der findes362unikke MCP-navne. Fuld migration og installeret desktopaccept er åben.
+
+### Oprindelige bogføringsregler (Group178)
+
+Seks CLI-kommandoer og tre MCP-tools bruger de eksisterende Rust-regeltabeller:
+forslag, uafhængig godkendelse af præcis hash, forklaring/test og afslutning via
+disable/supersede. Generelle kildebetingelser forklares deterministisk; de giver
+fortsat ingen automatisk purchaseautoritet, når den native motor ikke kan
+bevise alle betingelser.
+
+206 tests, streng Clippy på otte pakker, build og første faktiske prøve består
+på `fdce3e34`. To versioner har seks livscyklushændelser og seks nye audits.
+Ét scannet125kr.-bilag og én bankpost bevares; regelforløbet opretter ingen
+journaler, regelanvendelser eller nye exceptions. Genstart og signeret kildefri
+gendannelse til ny ejer/genåbning består (16→17audits).365MCP-navne er entydige.
+Fuld migration og installeret desktopaccept er fortsat åben.

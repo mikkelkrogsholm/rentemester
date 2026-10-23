@@ -491,3 +491,27 @@ SDK'en normaliserer valuta som native motor og bevarer gyldige historiske
 rækker, hvor aktør og principal er forskellige. Nye mutationer afleder begge
 fra aktuelle credentials. Den samlede request inklusive identitetsassertioner
 begrænses til65KiB. Ingen klient kan vælge autoritet gennem disse felter.
+
+### Regelforslag, historik og hypotetisk forklaring (Group178)
+
+Den native kanoniske regelpayload er autoritativ og kan genberegnes fra den
+bevarede version. Creator og createdAt indgår ikke: TypeScript-kildens Pick-type
+fjernede ikke disse runtimefelter fra hashinputtet. Klientstyret createdAt
+afvises; serveruret bestemmer audit. Lifecycle effectiveAt og læsningens at
+understøtter validerede UTC-datoer/timestamps og en samlet gyldig historik.
+Supersede afslutter en godkendt version uden implicit efterfølger. Identisk
+payload genfinder samme version uden nye hændelser.
+
+Alle fire CLI-skrivninger kræver nu eksplicit --confirm yes. Nye aktører kommer
+fra aktuelle credentials; actor/principal kan kun være lighedsassertioner.
+En afvist kerneoperation bliver en præcis422fejl gennem authority-fencen.
+Forklaring/test beholder kildens flade form uden ok/errors; human_decision er
+en vellykket læsning. MCP har kun propose/approve/explain og bevarer deres
+kildeenvelopes. Historisk null/rejected tilstand er legitim; matched kræver
+godkendt tilstand og tomme mismatchgrunde. Bodygrænsen er65536bytes i alle lag.
+
+Generelle regler deler eksisterende historik og backupkontroller. Den native
+purchaseparser forbliver streng: amount, reverse-charge, andre attributes og
+textTemplate må ikke accepteres og derefter ignoreres ved faktisk bogføring.
+Forklaring af en hypotese er ingen postingautoritet; understøttede faktiske
+purchases bruger stadig deres uændrede bevis- og anvendelseskontrol.
