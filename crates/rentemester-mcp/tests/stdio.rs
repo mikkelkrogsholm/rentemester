@@ -1,7 +1,7 @@
 use serde_json::{Value, json};
 
 // Existing 348 bindings plus fourteen original dimension tools.
-const EXPECTED_NATIVE_TOOLS: usize = 362;
+const EXPECTED_NATIVE_TOOLS: usize = 365;
 
 #[test]
 fn pdf_tools_require_confirmation_and_keep_reads_bounded() {
@@ -2266,3 +2266,6 @@ mod supplier_commitment_original;
 
 #[path = "stdio/dimensions_original.rs"]
 mod dimensions_original;
+
+#[path = "stdio/posting_rules_original.rs"]
+mod posting_rules_original;

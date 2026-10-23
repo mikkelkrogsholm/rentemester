@@ -45,10 +45,10 @@ fn supplier_commitment_original_discovery_has_362_unique_tools_and_explicit_nati
         ],
     ));
     let tools = rows[1]["result"]["tools"].as_array().unwrap();
-    assert_eq!(tools.len(), 362);
+    assert_eq!(tools.len(), 365);
     let names: std::collections::BTreeSet<_> =
         tools.iter().map(|t| t["name"].as_str().unwrap()).collect();
-    assert_eq!(names.len(), 362);
+    assert_eq!(names.len(), 365);
     for (name, read) in [
         ("supplier_commitment_plan", true),
         ("supplier_commitment_apply", false),

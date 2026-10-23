@@ -148,6 +148,7 @@ pub fn list() -> Value {
     tools.extend(crate::reviewed_bookkeeping::tools());
     tools.extend(crate::documents_original::tools());
     tools.extend(crate::document_party_original::tools());
+    tools.extend(crate::posting_rules_original::tools());
     tools.extend(crate::budget_original::tools());
     tools.extend(crate::dimensions_original::tools());
     tools.extend(crate::documents::tools());
@@ -285,6 +286,7 @@ pub async fn call(api: &ApiClient, name: &str, args: Value) -> Result<Value, &'s
     if crate::budget_original::accepts(name) || name=="budget_vs_actual" && (args.get("from").is_some() || args.get("to").is_some()) {
         return crate::budget_original::call(api,name,args).await;
     }
+    if crate::posting_rules_original::accepts(name) {return crate::posting_rules_original::call(api,name,args).await;}
     if crate::document_party_original::accepts(name) {
         return crate::document_party_original::call(api, name, args).await;
     }
