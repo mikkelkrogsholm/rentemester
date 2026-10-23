@@ -3919,3 +3919,30 @@ med præcis én restore-auditpost. Tre obligatoriske scanninger er verificeret.
 2546 kildefiler, tre binære filer, otte webfiler og hjælperne er uafhængigt
 hashkontrolleret. Tidligere fejlede prøver og deres effekter er bevaret.
 Næste forløb er momsrapportering og forberedelse af en lukket momsperiode.
+
+### Oprindelige momsrapporter og klargøring af momsangivelse (Group173)
+
+`vat report`, `vat eu-sales-list`, `vat oss-report`, `vat momsangivelse` og
+`vat filing` bruger samme Rust-beregninger. De sidste to er identiske aliaser
+til klargøring af en præcist afgrænset, lukket eller indberettet momsperiode.
+De indberetter intet. MCP har rapport/EU/OSS; det eksisterende OSS-navn
+genbruges, så registret har 339 entydige værktøjer.
+
+Rapporten viser alle oprindelige grundlag, rubrikker og periodeafhængige
+optællinger af aktive, tilbageførte og modposterende posteringer. Native
+serialisering og kilde-/kurs-/kreditnotakontroller bevares. EU-adapteren
+bevarer sin særskilte external-lookup-adgang uden at kalde en leverandør.
+
+189 målrettede tests inklusive hele stdio-suitens 170 tests, streng Clippy
+for otte pakker og den første samlede prøve består på `4c3a3990`. Et normalt
+scannet bilag på 125 kr. giver grundlag 100 kr., købsmoms 25 kr. og tilsvar
+−25 kr. Bankafstemningens løste opgave bevarer sin historik. Almindeligt
+review/lukning, begge filing-aliaser, aktuelle menneske-/serviceadgange,
+afvisninger, MFA-genstart og signeret kildefri gendannelse til ny ejer består.
+Én scanning, nul providerkald; 2558 kildefiler samt binære/web-/hjælperfiler
+er uafhængigt hashkontrolleret.
+
+EU/OSS er tomme projektioner i denne faktiske prøve; tidligere accepteret
+ikke-tom EU-/kurs-/kreditnota- og OSS-evidens genbruges uden ny kvalificering.
+De to oprindelige købsskriveadaptere og historisk importvalidering udestår;
+den historiske kontrol afviser fortsat eksplicit. Hele omskrivningen er åben.

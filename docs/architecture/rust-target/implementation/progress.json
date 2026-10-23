@@ -1,15 +1,15 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "Group172 original budget targets, actual variance and monthly/weekly cash planning accepted",
-  "code_revision": "5a1c6f55aa541f225f5d5dbc406269b6a76e6433",
+  "current_increment": "Group173 original VAT reports and closed-period filing preparation accepted",
+  "code_revision": "4c3a39907a430cbe58c971d88316d95820573110",
   "spec_revision": "sha256:8979030956647a0f03266c50d42786b5d33ab71a59c78528203d223226171e72",
-  "state": "Group172 ACCEPTED: original5CLI5MCP with one shared budget writer/current human/service authority and held current control history. 197 unique targeted tests including all168MCPstdio, strict8packages/build and final actual PASS. Two budget revisions80→90, actual100/totalvariance10, expensevariance30; opening1000/monthly1085/weeklybase1055/scenario1130.5docs3journals6lines25audits; approvedintercompany1/2events and corporate4events/1BLOB/3links. Required3scans/0providers, normalMFArestart/signedsourcefreefreshownerrestore/reopen exactplus1audit26.2546source/3binary/8web/helperpins independentlymatched, ownedruntimecleaned. Failedprofiles/receipts/restoreeffects retained. Full55/672/716/717 OPEN, desktop last.",
+  "state": "Group173 ACCEPTED:5CLI/3MCP source VAT reporting/EU/OSS/exact filing aliases, shared canonical engine and current human/service physicalsource controls.189unique tests/full170MCP/strict8packages/build/firstactual PASS.1ordinary DK125 purchase/net100/inputVAT25/netpayable-25; one reconciled bank row and resolved source task, ordinary review/exact VATperiodclose.16audits+1signedrestore17,1requiredscan0providers. NormalMFArestart/sourcefreefreshownerrestore/reopen exact;2558source3binary8web/helperpins independentlymatched andruntimecleaned. EU/OSS nonempty unchanged evidence reused explicitly; two original purchasewrites/historical source assurance stillrequired. All55missionOPEN desktoplast.",
   "issues_closed": [
     701
   ],
   "next": [
-    "Next173 original VAT report/EU-sales/OSS and exact closed-period filing preparation:5CLI/3MCP contracts, only2newnames337→339 (existing OSS aligned), shared complete VAT bases/counts/rubrics/native stronger originals/FX/credit checks; no submission or newMCPfiling tool. Preserve source ExternalLookup permission for new EU adapter; native alias unchanged. Two original VAT purchase write adapters and historical source validation remain separate required scope. Narrow automatic worker Rust checks in parallel; validate every actual flag/route/envelope/inventory before first full run.",
+    "Next174 complete the actual registered original VAT writes: post-eu-service-purchase and post-representation-purchase (two corresponding MCP tools), using existing shared native expense/category writers and current human/service/source controls. EU-specific write must refuse domestic and non-EU suppliers; no invented non-EU command. Historical source validation remains separate required scope. Full55 mission/manualdesktop OPEN.",
     "Original invoice interface inventory now has all31CLI and25MCP bindings, with explicit compatibility corrections documented; do not mistake that family inventory for full product parity. Reconcile remaining original whole-product R44/R45 acceptance from existing epic/issues: actor/env/company-path/default launcher/errors/historical receipts, closure/recovery/automation, signed distribution/update/cutover and TypeScript backend retirement. Continue next necessary whole journey, preserve all accepted evidence/full original scope; installed desktop acceptance last.",
     "Installed desktop acceptance is explicitly deferred to the very end by the user. Preserve prepared Group100 profile; collect remaining native automation, closure, recovery and packaging checks for final installed acceptance without requesting screen unlock during development.",
     "J03/R50 and remaining R54 scope: only still-supported operation closure/recovery, nonempty scheduler handoff, hostile/older clone and post-cutover rollback requirements. Group99 qualifies managed installed J06 flow, not every R54 acceptance item.",
@@ -25,9 +25,9 @@
   ],
   "all_goal_requirements_complete": false,
   "previous_verified_increment": {
-    "name": "Group171 original mileage4CLI4MCP log/list/datedreport/localJSONCSV accepted",
-    "code_revision": "b9d8b74f8c56b65085fc8c4b554f22aa26546a39",
-    "evidence_key": "original_mileage171"
+    "name": "Group172 original budget targets, actual variance and monthly/weekly cash planning accepted",
+    "code_revision": "5a1c6f55aa541f225f5d5dbc406269b6a76e6433",
+    "evidence_key": "original_budget172"
   },
   "evidence": {
     "combined_browser_log": "/tmp/rm-platform5-combined.log",
@@ -10908,6 +10908,219 @@
         "/tmp/rentemester-rust-reports/budget172-scanner-config-isolated.json",
         "/tmp/rentemester-rust-reports/budget172-scanner-protocol-isolated.json"
       ]
+    },
+    "original_vat173": {
+      "issue": 717,
+      "status": "ACCEPTED finite original VAT reporting and filing preparation journey; entire mission OPEN",
+      "source_revision": "4c3a39907a430cbe58c971d88316d95820573110",
+      "sgd_run": "rust-original-vat173-20261023T004822.250090000",
+      "engine_phase": "done",
+      "sgd_published": true,
+      "source_blob_count": 26,
+      "actual_report": "/tmp/rentemester-rust-reports/original-vat173-actual.json",
+      "actual_report_sha256": "47ca024100c0b052c8ed986113a7440ab282fae8d672abf3ae9738e281452753",
+      "unique_targeted_tests": 189,
+      "test_counts": {
+        "engine_vat": 8,
+        "storage_original_vat": 4,
+        "application_permission": 1,
+        "host_filter": 0,
+        "server": 2,
+        "sdk": 2,
+        "cli": 2,
+        "all_mcp_stdio": 170
+      },
+      "strict": "Eight packages alltargets locked -D warnings PASS",
+      "checks": [
+        {
+          "check": "domain",
+          "key": "8b2db465875e6df44b142db75062412f9f1c2662feea28b7d4d6b30fa161d444",
+          "argv": [
+            "python3",
+            "-c",
+            "import subprocess,sys; [subprocess.run([sys.executable,'scripts/rust/cargo-guard.py','cargo',*a,'--locked'],check=True) for a in [['test', '-p', 'rentemester-engine', '--lib', 'vat_report'], ['test', '-p', 'rentemester-storage', '--lib', 'vat_original']]]"
+          ],
+          "exit_code": 0,
+          "passed": true,
+          "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/rust-original-vat173-20261023T004822.250090000/acceptance/8b2db465875e6df44b142db75062412f9f1c2662feea28b7d4d6b30fa161d444/domain.log"
+        },
+        {
+          "check": "authority",
+          "key": "0de081c6c6cb1f49c665f27c0aef5ea497ac1e276aecb7337de18d96db8f3f01",
+          "argv": [
+            "python3",
+            "-c",
+            "import subprocess,sys; [subprocess.run([sys.executable,'scripts/rust/cargo-guard.py','cargo',*a,'--locked'],check=True) for a in [['test', '--lib', '-p', 'rentemester-application', 'vat_original'], ['test', '--lib', '-p', 'rentemester-host', 'vat_original'], ['test', '-p', 'rentemester-server', '--bin', 'rentemester-server', 'product_http::vat_original']]]"
+          ],
+          "exit_code": 0,
+          "passed": true,
+          "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/rust-original-vat173-20261023T004822.250090000/acceptance/0de081c6c6cb1f49c665f27c0aef5ea497ac1e276aecb7337de18d96db8f3f01/authority.log"
+        },
+        {
+          "check": "client-cli",
+          "key": "a7b64f167eccc0233572213733768643adcbb579d29e8573bbd549eba5243db3",
+          "argv": [
+            "python3",
+            "-c",
+            "import subprocess,sys; [subprocess.run([sys.executable,'scripts/rust/cargo-guard.py','cargo',*a,'--locked'],check=True) for a in [['test', '-p', 'rentemester-client', '--test', 'vat_original'], ['test', '-p', 'rentemester-cli', '--test', 'vat_original']]]"
+          ],
+          "exit_code": 0,
+          "passed": true,
+          "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/rust-original-vat173-20261023T004822.250090000/acceptance/a7b64f167eccc0233572213733768643adcbb579d29e8573bbd549eba5243db3/client-cli.log"
+        },
+        {
+          "check": "mcp",
+          "key": "6aea2c189bf627b6cd7d99c9162f65ab3eeb44ff2a08c6e8716a4f8df8c7ad73",
+          "argv": [
+            "python3",
+            "scripts/rust/cargo-guard.py",
+            "cargo",
+            "test",
+            "-p",
+            "rentemester-mcp",
+            "--test",
+            "stdio",
+            "--locked"
+          ],
+          "exit_code": 0,
+          "passed": true,
+          "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/rust-original-vat173-20261023T004822.250090000/acceptance/6aea2c189bf627b6cd7d99c9162f65ab3eeb44ff2a08c6e8716a4f8df8c7ad73/mcp.log"
+        },
+        {
+          "check": "strict",
+          "key": "b3e5af12aaa0f69a26cbd90b27fa006f98b396cc4814b19aada2ea04a6af4fa2",
+          "argv": [
+            "python3",
+            "scripts/rust/cargo-guard.py",
+            "cargo",
+            "clippy",
+            "-p",
+            "rentemester-engine",
+            "-p",
+            "rentemester-storage",
+            "-p",
+            "rentemester-client",
+            "-p",
+            "rentemester-cli",
+            "-p",
+            "rentemester-mcp",
+            "-p",
+            "rentemester-application",
+            "-p",
+            "rentemester-host",
+            "-p",
+            "rentemester-server",
+            "--all-targets",
+            "--locked",
+            "--",
+            "-D",
+            "warnings"
+          ],
+          "exit_code": 0,
+          "passed": true,
+          "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/rust-original-vat173-20261023T004822.250090000/acceptance/b3e5af12aaa0f69a26cbd90b27fa006f98b396cc4814b19aada2ea04a6af4fa2/strict.log"
+        },
+        {
+          "check": "build",
+          "key": "d717b3bd23bb71c4216d8affd0ec4a86130ad84e93d5558d59a35f9bd502b1ca",
+          "argv": [
+            "python3",
+            "scripts/rust/cargo-guard.py",
+            "cargo",
+            "build",
+            "-p",
+            "rentemester-server",
+            "-p",
+            "rentemester-cli",
+            "-p",
+            "rentemester-mcp",
+            "--locked"
+          ],
+          "exit_code": 0,
+          "passed": true,
+          "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/rust-original-vat173-20261023T004822.250090000/acceptance/d717b3bd23bb71c4216d8affd0ec4a86130ad84e93d5558d59a35f9bd502b1ca/build.log"
+        },
+        {
+          "check": "actual",
+          "key": "e4ac546520abdaf00f0b04b48986184986bf5a5c038b454fa1bc8c09365dec4e",
+          "argv": [
+            "python3",
+            "-c",
+            "import os,subprocess; from pathlib import Path; b=Path(os.environ['CARGO_TARGET_DIR'])/'debug'; rev=subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(); evidence=Path(os.environ['CARGO_TARGET_DIR'])/('original-vat173-'+rev+'.json'); subprocess.run(['python3','scripts/rust/run-bookkeeping-batch.py','--original-vat','--server-binary',str(b/'rentemester-server'),'--cli-binary',str(b/'rentemester-rust'),'--mcp-binary',str(b/'rentemester-mcp'),'--web-dir',os.environ['RM_REWRITE_WEB_DIR'],'--evidence',str(evidence)],check=True)"
+          ],
+          "exit_code": 0,
+          "passed": true,
+          "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/rust-original-vat173-20261023T004822.250090000/acceptance/e4ac546520abdaf00f0b04b48986184986bf5a5c038b454fa1bc8c09365dec4e/actual.log"
+        }
+      ],
+      "company_counts": {
+        "documents": 1,
+        "document_party_link_events": 0,
+        "document_party_resolution_events": 0,
+        "internal_voucher_evidence": 0,
+        "audit_log": 16,
+        "journal_entries": 1,
+        "journal_lines": 3,
+        "accounting_periods": 1,
+        "period_close_decisions": 1,
+        "period_close_reviews": 1,
+        "period_close_readiness_packets": 1,
+        "vat_validation_events": 0,
+        "exceptions": 1,
+        "bank_transactions": 1,
+        "bank_journal_reconciliations": 1
+      },
+      "control_business_counts": {
+        "rm_intercompany_dispositions": 0,
+        "rm_intercompany_disposition_events": 0,
+        "rm_intercompany_disposition_lifecycle_events": 0,
+        "rm_intercompany_disposition_journal_links": 0,
+        "rm_corporate_record_events": 0,
+        "rm_corporate_record_bytes": 0,
+        "rm_corporate_record_links": 0
+      },
+      "restored_audits": 17,
+      "required_scanner_calls": 1,
+      "provider_calls": 0,
+      "gross": 125,
+      "purchase_base25": 100,
+      "input_vat": 25,
+      "output_vat": 0,
+      "net_vat_payable": -25,
+      "resolved_source_linked_bank_tasks": 1,
+      "unique_mcp_tools": 339,
+      "original_cli_contracts": 5,
+      "original_mcp_contracts": 3,
+      "new_mcp_names": 2,
+      "native_vat_serialization_preserved": true,
+      "source_artifact_web_pins": {
+        "source_files": 2558,
+        "binaries": 3,
+        "web_files": 8,
+        "helpers": 2,
+        "independently_matched": true
+      },
+      "normal_mfa_restart": true,
+      "signed_source_free_fresh_owner_restore": true,
+      "fresh_mfa_restored_reopen": true,
+      "exact_manifest_bound_restore_audit_append": 1,
+      "owned_processes_stopped": true,
+      "runtime_cleaned": true,
+      "first_combined_acceptance_passed": true,
+      "independent_verification_log": "/tmp/rm173-independent-verification.log",
+      "scope_limits": [
+        "New actual has one ordinary DK purchase, reviewed exact VAT-period closure and all CLI/MCP/access/refusal paths. EU/OSS projections are empty here; unchanged accepted nonempty EU/datedFX/credit and OSS/reversal evidence is reused, not rerun or newly claimed.",
+        "New source EU adapter retains CompanyExternalLookup for human/service. Native EU CompanyRead alias remains unchanged. No report invokes a provider or writes business/audit/VAT/period state.",
+        "No filing submission or MCP filing tool. Two original purchase-write adapters and historical-import VAT source validation remain required later scope; historical validation keeps native explicit fail-closed behavior.",
+        "Pinned runner verifies exact full signed archive/restored inventory and one manifest-bound restore audit. Main independently verifies source/helper/binary/web hashes, expected captured company/control rows and stopped processes/removed owned runtime.",
+        "All55/J01-J07, TypeScript retirement/distribution and final installed manual desktop requirements remain OPEN."
+      ],
+      "preacceptance_repairs": [
+        "Engine8 tests passed; SQLite COUNT read attempted unsupported u64 FromSql. Scoped signed i64 repair preserved formulas/native serialization; storage4 tests pass.",
+        "Actual diff review caught SDK accepting wrong EU appliedRules family and omitted nullable filing reference; exact guards plus focused positive/negative fixtures added. Quarter fixtures now use source quarter.",
+        "Before any actual writes, independent source review found missing fixtureyear selectors and impossible zero-exception oracle. Year-2 facts now explicitly selected; exact one source-linked resolved unmatched bank task and entry_no-bound resolution are retained and checked through restore. No product control changed."
+      ],
+      "failed_actual_attempts": 0
     }
   },
   "verified_history": [
@@ -12676,6 +12889,12 @@
       "code_revision": "5a1c6f55aa541f225f5d5dbc406269b6a76e6433",
       "evidence_key": "original_budget172",
       "status": "ACCEPTED finite original budget/liquidity journey; entire mission OPEN"
+    },
+    {
+      "increment": "Group173",
+      "code_revision": "4c3a39907a430cbe58c971d88316d95820573110",
+      "evidence_key": "original_vat173",
+      "status": "ACCEPTED finite original VAT reporting and filing preparation journey; entire mission OPEN"
     }
   ],
   "scope_clarifications": [

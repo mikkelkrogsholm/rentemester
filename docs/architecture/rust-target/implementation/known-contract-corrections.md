@@ -381,3 +381,21 @@ invoice_document_id som nøgle; den eksisterende private scanner skal både
 aktiveres og kende præcis de tre syntetiske filnavne. Kravet om tre scanninger
 er bevaret. Hver fejlet kvittering og private profil er bevaret, inklusive
 allerede udført bogføring eller signeret gendannelse.
+
+### Momsprojektioner og fastholdt kildehistorik (Group173)
+
+Source-salgsmoms inkluderer bad-debt-justeringen; native bruttofelt alene
+ville vise et forkert tilsvar. De fulde source-grundlag udledes derfor af
+samme native akkumulering uden at ændre den eksisterende serialisering.
+Optælling af tilbageførte originaler afhænger af modposteringer i det
+valgte interval, så en senere tilbageførsel ikke omskriver en tidligere rapport.
+
+Source MCP-fejl udelader data. EU-success kræver sin præcise regel, og filing
+kræver det tilstedeværende nullable referencefelt. Et eksisterende OSS-navn
+får én source-binding. Historisk import er fortsat en eksplicit manglende
+kildevalidering, som afviser sikkert; ingen ny feltprojektion ophæver den.
+
+Før den faktiske prøve blev to opsætningsforventninger rettet mod koden:
+ældre fixtureår vælges eksplicit, og en bogført bankpost efterlader en løst
+opgave med kildehenvisninger og resolutionshistorik. Den må ikke forventes
+slettet. Samlet accept bestod første gang uden at svække nogen kontrol.
