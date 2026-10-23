@@ -57,6 +57,15 @@ describe("passive protocol admission", () => {
     expect(fetchMock.mock.calls.filter(([url]) => url !== "/api/protocol")).toHaveLength(1);
   });
 
+  it("accepts the explicit legacy API root route in a real Bun manifest", async () => {
+    const fetchMock = vi.fn(async (url: RequestInfo | URL) => url === "/api/protocol"
+      ? protocolResponse({ operations: [{ method: "GET", path: "/api", capability: "GET /api" }, { method: "GET", path: "/api/health", capability: "GET /api/health" }] })
+      : Response.json({ ok: true }));
+    stubGlobal("fetch", fetchMock);
+    await expect(request("/api/health")).resolves.toEqual({ ok: true });
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
   it("does not retry a server admission rejection", async () => {
     const fetchMock = vi.fn(async (url: RequestInfo | URL) => url === "/api/protocol" ? protocolResponse() : Response.json({ ok: false, code: "protocol_incompatible", errors: ["Changed manifest"] }, { status: 409 }));
     stubGlobal("fetch", fetchMock);

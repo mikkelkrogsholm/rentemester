@@ -18,6 +18,7 @@ function record(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === "object" && !Array.isArray(value);
 }
 function routeSegments(path: string): string[] {
+  if (path === "/api") return ["api"];
   if (!path.startsWith("/api/") || /[?#*\\]/.test(path)) refuse();
   const segments = path.slice(1).split("/");
   if (segments.some(segment => !segment || segment === "." || segment === ".." || (/[{}]/.test(segment) && !/^\{[A-Za-z_][A-Za-z0-9_]*\}$/.test(segment)))) refuse();
@@ -67,7 +68,7 @@ export async function protocolHeaders(path: string, method: string, signal?: Abo
     signal?.throwIfAborted();
     // Relative calls remain relative, preserving the browser's configured origin.
     const absolute = /^https?:\/\//.test(path);
-    if (!absolute && !path.startsWith("/api/")) refuse();
+    if (!absolute && path !== "/api" && !path.startsWith("/api/")) refuse();
     const url = absolute ? new URL(path) : undefined;
     if (url?.username || url?.password || path.startsWith("//")) refuse();
     const pathname = url ? url.pathname : path.split(/[?#]/)[0]!;
