@@ -318,6 +318,7 @@ fn payload(args: &[String], flags: &BTreeMap<&str, &str>) -> Result<(Value, Opti
                 | "--local-profile"
                 | "--workspace"
                 | "--asset-id"
+                | "--actor"
                 | "--json"
                 | "--format"
                 | "--help"
@@ -335,9 +336,9 @@ fn payload(args: &[String], flags: &BTreeMap<&str, &str>) -> Result<(Value, Opti
         }
         if op == "disposal-receipt" {
             if input != json!({})
-                || !flags
-                    .get("--key")
-                    .is_some_and(|s| (8..=160).contains(&s.len()) && !s.trim().is_empty())
+                || !flags.get("--key").is_some_and(|s| {
+                    (8..=160).contains(&s.encode_utf16().count()) && !s.trim().is_empty()
+                })
             {
                 return Err(usage("receipt requires only --asset-id and --key"));
             }
@@ -479,6 +480,9 @@ mod asset_disposal_tests {
         .collect();
         assert!(accepts(&args));
         assert!(parse(&args).is_ok());
+        let mut asserted = args.clone();
+        asserted.extend(["--actor".to_owned(), "user:synthetic".to_owned()]);
+        assert!(parse(&asserted).is_ok());
         let mut bad = args.clone();
         bad[1] = "disposal-preview".into();
         assert!(parse(&bad).is_err());

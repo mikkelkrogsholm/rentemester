@@ -18,6 +18,7 @@ export function AssetDisposalDialog({ slug, asset, currency, onClose, onPosted }
     try {
       const saved = sessionStorage.getItem(storageKey);
       if (saved) return saved;
+      if (asset.status === "disposed") return "";
       const next = crypto.randomUUID();
       sessionStorage.setItem(storageKey, next);
       return sessionStorage.getItem(storageKey) === next ? next : "";
@@ -41,7 +42,7 @@ export function AssetDisposalDialog({ slug, asset, currency, onClose, onPosted }
   };
   const outcome = useMutationOutcome(readback, "asset-disposal", scope);
   const sendLock = useMutationBlock(`${scope}:outcome:asset-disposal`);
-  const locked = outcome.blocked || busy || !!receipt;
+  const locked = outcome.blocked || busy || !!receipt || asset.status === "disposed";
   const previewBody = review && <>
     <p>Kostpris: {formatKroner(review.preview.cost, currency)} · Akkumuleret afskrivning: {formatKroner(review.preview.accumulatedDepreciation, currency)} · Restværdi til udgift: {formatKroner(review.preview.carryingValue, currency)}</p>
     <table><thead><tr><th>Konto</th><th>Debet</th><th>Kredit</th></tr></thead><tbody>{review.preview.lines.map((line,i) => <tr key={i}><td>{line.accountNo}</td><td>{formatKroner(line.debit,currency)}</td><td>{formatKroner(line.credit,currency)}</td></tr>)}</tbody></table>
@@ -51,11 +52,11 @@ export function AssetDisposalDialog({ slug, asset, currency, onClose, onPosted }
   return <Dialog title={`Afhænd anlæg: ${asset.name}`} onClose={onClose} busy={busy}>
     <p>Afhændelse fjerner det kapitaliserede anlæg fra balancen. Salgsindtægt og moms er ikke med; bogfør eventuelt salg og moms særskilt. Dette er ikke straksafskrivning af en småanskaffelse.</p>
     {outcome.feedback}
-    {!key && <p role="alert">Handlingen er blokeret: kvitteringsnøglen kunne ikke gemmes i browseren.</p>}
+    {!key && <p role="alert">Ingen gemt kvitteringsnøgle er tilgængelig i denne browser. Ny bogføring er blokeret.</p>}
     {error && <p role="alert">{error}</p>}
     {(docs.error || chart.error) && <p role="alert">{docs.error || chart.error}</p>}
     <form onSubmit={async e => {
-      e.preventDefault(); if (outcome.isBlocked() || !key) return;
+      e.preventDefault(); if (locked || outcome.isBlocked() || !key) return;
       setBusy(true); setError(null); setReview(null);
       const input: AssetDisposalInput = { transactionDate, documentId: Number(documentId), reason, ...(lossAccountNo ? {lossAccountNo} : {}) };
       try { setReview({ input, preview: await api.assetDisposalPreview(slug,asset.assetId,input) }); }

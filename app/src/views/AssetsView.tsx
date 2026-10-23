@@ -328,7 +328,7 @@ function AssetRowView({
         </span>
       </td>
       <td>
-        {row.status === "disposed" ? <p>Afhændet {row.disposalDate} · Postering {row.disposalJournalEntryNo ?? row.disposalJournalEntryId} · Ingen senere afskrivning</p> : <Button requiredPermission="company.ledger.post" variant="secondary" onClick={() => setDisposalOpen(true)}>Afhænd {row.name}</Button>}
+        {row.status === "disposed" ? <><p>Afhændet {row.disposalDate} · Postering {row.disposalJournalEntryNo ?? row.disposalJournalEntryId} · Ingen senere afskrivning</p><Button variant="secondary" onClick={() => setDisposalOpen(true)}>Hent afhændelseskvittering</Button></> : <Button requiredPermission="company.ledger.post" variant="secondary" onClick={() => setDisposalOpen(true)}>Afhænd {row.name}</Button>}
         {disposalOpen && <AssetDisposalDialog slug={slug} asset={row} currency={currency} onClose={() => setDisposalOpen(false)} onPosted={onPosted} />}
         <Button requiredPermission="company.ledger.post" variant="secondary"
           type="button"

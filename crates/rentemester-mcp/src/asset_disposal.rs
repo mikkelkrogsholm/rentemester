@@ -79,10 +79,12 @@ mod tests {
         assert!(!accepts("asset_write_off"));
         assert!(accepts("asset_dispose"));
     }
-    #[tokio::test]
-    async fn asset_disposal_mcp_requires_confirm_without_network() {
+    #[test]
+    fn asset_disposal_mcp_requires_confirm_without_network() {
+        tokio::runtime::Runtime::new().unwrap().block_on(async {
         let api = ApiClient::new("http://127.0.0.1:1", true, None).unwrap();
         let v=call(&api,"asset_dispose",json!({"company":"synthetic","assetId":3,"transactionDate":"2026-10-20","documentId":7,"reason":"Retired","expectedPlanHash":"a".repeat(64),"idempotencyKey":"synthetic-key"})).await.unwrap();
         assert_eq!(v["structuredContent"]["code"], "invalid_input");
+        });
     }
 }

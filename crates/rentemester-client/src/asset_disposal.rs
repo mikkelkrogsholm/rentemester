@@ -71,7 +71,13 @@ pub fn validate_asset_disposal(input: &Value, apply: bool) -> Result<(), Error> 
     if bytes.len() > 16384 {
         return Err(Error::InvalidInput("disposal exceeds16KiB"));
     }
-    body(&bytes, &asset_disposal_schema(apply))?;
+    let mut schema = asset_disposal_schema(apply);
+    // The existing shape checker counts bytes; this wire boundary counts UTF16.
+    if apply {
+        schema["properties"]["idempotencyKey"]["minLength"] = json!(1);
+        schema["properties"]["idempotencyKey"]["maxLength"] = json!(640);
+    }
+    body(&bytes, &schema)?;
     for k in ["reason", "lossAccountNo", "idempotencyKey"] {
         if input
             .get(k)
@@ -79,6 +85,13 @@ pub fn validate_asset_disposal(input: &Value, apply: bool) -> Result<(), Error> 
         {
             return Err(Error::InvalidInput("blank disposal field"));
         }
+    }
+    if apply
+        && !input["idempotencyKey"]
+            .as_str()
+            .is_some_and(|s| (8..=160).contains(&s.encode_utf16().count()))
+    {
+        return Err(Error::InvalidInput("bounded receipt key required"));
     }
     if !valid_date(&input["transactionDate"]) || (apply && !valid_hash(&input["expectedPlanHash"]))
     {
@@ -171,11 +184,62 @@ fn validate_output(
                 return Err(bad());
             }
         }
-        if preview && p["lossAccountNo"] != i.get("lossAccountNo").cloned().unwrap_or(Value::Null) {
+        if preview
+            && p["carryingValue"].as_f64().is_some_and(|n| n > 0.0)
+            && p["lossAccountNo"] != i.get("lossAccountNo").cloned().unwrap_or(Value::Null)
+        {
             return Err(bad());
         }
     }
+    if preview && p["carryingValue"].as_f64() == Some(0.0) && !p["lossAccountNo"].is_null() {
+        return Err(bad());
+    }
+    for k in [
+        "cost",
+        "accumulatedDepreciation",
+        if preview {
+            "carryingValue"
+        } else {
+            "carryingValueWrittenOff"
+        },
+    ] {
+        if !exact_money(&p[k]) {
+            return Err(bad());
+        }
+    }
+    if preview
+        && !p["lines"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .all(|l| exact_money(&l["debit"]) && exact_money(&l["credit"]))
+    {
+        return Err(bad());
+    }
     Ok(v)
+}
+fn exact_money(v: &Value) -> bool {
+    if !v.is_number() {
+        return false;
+    }
+    let s = v.to_string();
+    let (w, f) = s.split_once('.').unwrap_or((&s, ""));
+    if f.len() > 2 || s.starts_with('-') {
+        return false;
+    }
+    let fraction = if f.is_empty() {
+        0
+    } else {
+        let Ok(n) = f.parse::<u64>() else {
+            return false;
+        };
+        n * if f.len() == 1 { 10 } else { 1 }
+    };
+    w.parse::<u64>()
+        .ok()
+        .and_then(|n| n.checked_mul(100))
+        .and_then(|n| n.checked_add(fraction))
+        .is_some_and(|n| n <= 9007199254740991)
 }
 impl ApiClient {
     pub async fn asset_disposal_preview(
@@ -208,7 +272,7 @@ impl ApiClient {
         id: i64,
         key: &str,
     ) -> Result<Value, Error> {
-        if !(8..=160).contains(&key.len()) || key.trim().is_empty() {
+        if !(8..=160).contains(&key.encode_utf16().count()) || key.trim().is_empty() {
             return Err(Error::InvalidInput("bounded receipt key required"));
         }
         self.disposal_request(company, id, None, false, Some(key))
@@ -278,5 +342,35 @@ mod tests {
             validate_output(json!({"ok":true}), false, 1, None, true),
             Err(Error::OutcomeUnknown)
         ));
+    }
+    #[test]
+    fn asset_disposal_zero_carrying_and_exact_money() {
+        let i = json!({"transactionDate":"2026-10-20","documentId":7,"reason":"Retired","lossAccountNo":"6100"});
+        let p = json!({"ok":true,"disposalPreview":{"assetId":3,"transactionDate":"2026-10-20","documentId":7,"reason":"Retired","lossAccountNo":null,"cost":120,"accumulatedDepreciation":120,"carryingValue":0,"planHash":"a".repeat(64),"lines":[{"accountNo":"5800","debit":0,"credit":120},{"accountNo":"5810","debit":120,"credit":0}]}});
+        assert!(validate_output(p.clone(), true, 3, Some(&i), false).is_ok());
+        let mut bad = p;
+        bad["disposalPreview"]["cost"] = json!(0.001);
+        assert!(matches!(
+            validate_output(bad, true, 3, Some(&i), false),
+            Err(Error::Protocol)
+        ));
+        let bad_receipt = json!({"ok":true,"disposal":{"disposalId":1,"assetId":3,"transactionDate":"2026-10-20","documentId":7,"reason":"Retired","cost":0.001,"accumulatedDepreciation":0,"carryingValueWrittenOff":0,"remainingCarryingValue":0,"journalEntryId":5,"journalEntryNo":"2026-5","journalEntryHash":"b".repeat(64),"replayed":false}});
+        assert!(matches!(
+            validate_output(bad_receipt, false, 3, None, true),
+            Err(Error::OutcomeUnknown)
+        ));
+        assert!(exact_money(&json!(0.29)));
+        assert!(!exact_money(&json!(0.001)));
+    }
+    #[test]
+    fn asset_disposal_key_boundary_uses_utf16() {
+        let mut v = json!({"transactionDate":"2026-10-20","documentId":7,"reason":"Retired","expectedPlanHash":"a".repeat(64),"confirm":true,"idempotencyKey":"😀".repeat(80)});
+        assert!(validate_asset_disposal(&v, true).is_ok());
+        v["idempotencyKey"] = json!("😀".repeat(81));
+        assert!(validate_asset_disposal(&v, true).is_err());
+        v["idempotencyKey"] = json!("😀".repeat(4));
+        assert!(validate_asset_disposal(&v, true).is_ok());
+        v["idempotencyKey"] = json!("short");
+        assert!(validate_asset_disposal(&v, true).is_err());
     }
 }

@@ -135,7 +135,7 @@ const safeId = (v: unknown): v is number => typeof v === "number" && Number.isSa
 const bounded = (v: unknown, max: number, min = 1): v is string => typeof v === "string" && v.length >= min && v.length <= max && Boolean(v.trim());
 const hash = (v: unknown) => typeof v === "string" && /^[0-9a-f]{64}$/.test(v);
 const date = (v: unknown) => typeof v === "string" && /^\d{4}-\d{2}-\d{2}$/.test(v) && v.slice(0,4) !== "0000" && Number.isFinite(Date.parse(`${v}T00:00:00Z`)) && new Date(`${v}T00:00:00Z`).toISOString().slice(0,10) === v;
-const money = (v: unknown) => typeof v === "number" && Number.isFinite(v) && v >= 0 && v <= 90071992547409.9;
+const money = (v: unknown) => typeof v === "number" && Number.isFinite(v) && v >= 0 && v <= 90071992547409.9 && /^\d+(?:\.\d{1,2})?$/.test(String(v));
 const obj = (v: unknown): v is Record<string, unknown> => !!v && typeof v === "object" && !Array.isArray(v);
 function exact(v: Record<string, unknown>, keys: string[]) { return Object.keys(v).length === keys.length && keys.every(k => Object.hasOwn(v,k)); }
 function validateDisposalInput(input: AssetDisposalInput, apply: boolean) {
@@ -152,7 +152,7 @@ function disposalOutput(value: unknown, preview: boolean, id: number, input?: As
   if (!exact(p,[...common,...(preview ? ["lossAccountNo","carryingValue","planHash","lines"] : ["disposalId","carryingValueWrittenOff","remainingCarryingValue","journalEntryId","journalEntryNo","journalEntryHash","replayed"])]) || p.assetId !== id || !date(p.transactionDate) || !safeId(p.documentId) || !bounded(p.reason,4096) || !money(p.cost) || !money(p.accumulatedDepreciation)) return fail();
   if (input && (p.transactionDate !== input.transactionDate || p.documentId !== input.documentId || p.reason !== input.reason)) return fail();
   if (preview) {
-    if (!money(p.carryingValue) || !hash(p.planHash) || !(p.lossAccountNo === null || bounded(p.lossAccountNo,128)) || (input && p.lossAccountNo !== (input.lossAccountNo ?? null)) || !Array.isArray(p.lines) || p.lines.length < 2 || p.lines.length > 3 || !p.lines.every(l => obj(l) && exact(l,["accountNo","debit","credit"]) && bounded(l.accountNo,128) && money(l.debit) && money(l.credit))) return fail();
+    if (!money(p.carryingValue) || !hash(p.planHash) || !(p.lossAccountNo === null || bounded(p.lossAccountNo,128)) || (p.carryingValue === 0 ? p.lossAccountNo !== null : (input && p.lossAccountNo !== (input.lossAccountNo ?? null))) || !Array.isArray(p.lines) || p.lines.length < 2 || p.lines.length > 3 || !p.lines.every(l => obj(l) && exact(l,["accountNo","debit","credit"]) && bounded(l.accountNo,128) && money(l.debit) && money(l.credit))) return fail();
   } else if (!safeId(p.disposalId) || !safeId(p.journalEntryId) || !bounded(p.journalEntryNo,128) || !hash(p.journalEntryHash) || !money(p.carryingValueWrittenOff) || p.remainingCarryingValue !== 0 || typeof p.replayed !== "boolean") return fail();
   return p as unknown as AssetDisposalPreview | AssetDisposalReceipt;
 }
