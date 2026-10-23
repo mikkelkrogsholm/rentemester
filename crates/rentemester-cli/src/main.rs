@@ -1,3 +1,4 @@
+mod dimensions_original;
 mod supplier_commitment_original;
 mod vat_purchase_original;
 mod asset_original;
@@ -315,6 +316,12 @@ fn main() -> ExitCode {
         eprint!("{}", output.stderr);
         return ExitCode::from(output.exit);
     }
+    if args.first().is_some_and(|s|s=="dimensions") {
+        if args==["dimensions"] || args==["dimensions","--help"] {println!("{}",dimensions_original::help());return ExitCode::SUCCESS;}
+        if !dimensions_original::accepts(&args) {eprintln!("Unknown dimensions command; see dimensions --help");return ExitCode::from(2);}
+        if let Err(o)=dimensions_original::preflight(&args) {eprint!("{}",o.stderr);return ExitCode::from(o.exit);}
+        if args.iter().any(|s|s=="--help") {println!("{}",dimensions_original::help());return ExitCode::SUCCESS;}
+    }
     if args.first().is_some_and(|s|s=="supplier-commitment") {
         if args==["supplier-commitment"] || args==["supplier-commitment","--help"] {println!("{}",supplier_commitment_original::help());return ExitCode::SUCCESS;}
         if !supplier_commitment_original::accepts(&args) {eprintln!("Unknown supplier-commitment command; see supplier-commitment --help");return ExitCode::from(2);}
@@ -494,6 +501,10 @@ fn main() -> ExitCode {
             return ExitCode::from(code);
         }
     };
+    if dimensions_original::accepts(&args) {
+        let output=dimensions_original::execute(&args);
+        print!("{}",output.stdout);eprint!("{}",output.stderr);return ExitCode::from(output.exit);
+    }
     if supplier_commitment_original::accepts(&args) {
         let output=supplier_commitment_original::execute(&args);
         print!("{}",output.stdout);eprint!("{}",output.stderr);return ExitCode::from(output.exit);
