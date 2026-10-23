@@ -1,10 +1,10 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "Issue closure183:17of55 original issues fully accepted and closed",
-  "code_revision": "1ee2c1ff34bcfe04706acbf95927084888a42426",
+  "current_increment": "R33 backup/recovery full scope accepted and issue707closed",
+  "code_revision": "a45a028ac4d9487f182133d15b3a7c0d41743f28",
   "spec_revision": "sha256:8979030956647a0f03266c50d42786b5d33ab71a59c78528203d223226171e72",
-  "state": "All55 original children triaged;17closed38open. Reused accepted evidence after main scope/criterion review and independent read-only scouts. Remaining original scope and all final release/cutover/desktop requirements retained. Next smallest whole recovery flow R33#707 owner/operator handoff; no new backup engine/full restore rerun.",
+  "state": "18of55 original issues fully accepted/closed,37open with concrete triage gaps. R33owner/operator lost-device/missing-trust guidance completed in shared React at a45a028a; SGD3componenttests/18assertions PASS, existing52/56/99/109-117 restore/transfer evidence reused. Fullmission/release/cutover/manualdesktoplast remain OPEN.",
   "issues_closed": [
     675,
     681,
@@ -22,10 +22,11 @@
     703,
     704,
     706,
+    707,
     710
   ],
   "next": [
-    "Next necessary complete issue R33#707: clear backup download/recovery status and missing-access/trust owner/operator handoff in shared React; reuse52/56/99/109-117 source-free/signature/placement/restore evidence. No new backup engine, physical-offsite claim or repeated broad restore test. Close707 only after its remaining user guidance accepted. All remaining observed issue gaps are evidence observations, not a new local queue.",
+    "Next necessary full issue R02#674: add/qualify specifically required client-to-storage forbidden-dependency negative control in existing boundary checker; reuse accepted typed contracts/risk/readiness evidence, no new platform design or broad tests. Rust compile guard remains30GiB; independent JS/contract closure work can proceed without bypassing it.",
     "Original invoice interface inventory now has all31CLI and25MCP bindings, with explicit compatibility corrections documented; do not mistake that family inventory for full product parity. Reconcile remaining original whole-product R44/R45 acceptance from existing epic/issues: actor/env/company-path/default launcher/errors/historical receipts, closure/recovery/automation, signed distribution/update/cutover and TypeScript backend retirement. Continue next necessary whole journey, preserve all accepted evidence/full original scope; installed desktop acceptance last.",
     "Installed desktop acceptance is explicitly deferred to the very end by the user. Preserve prepared Group100 profile; collect remaining native automation, closure, recovery and packaging checks for final installed acceptance without requesting screen unlock during development.",
     "J03/R50 and remaining R54 scope: only still-supported operation closure/recovery, nonempty scheduler handoff, hostile/older clone and post-cutover rollback requirements. Group99 qualifies managed installed J06 flow, not every R54 acceptance item.",
@@ -41,9 +42,9 @@
   ],
   "all_goal_requirements_complete": false,
   "previous_verified_increment": {
-    "name": "Group181 private standard-named Rust CLI/MCP accepted",
-    "code_revision": "2e746fe009521b74063c1a77a177ede89d0904c4",
-    "evidence_key": "native_cli_candidate181"
+    "name": "Issue closure183:17of55 original issues fully accepted and closed",
+    "code_revision": "1ee2c1ff34bcfe04706acbf95927084888a42426",
+    "evidence_key": "issue_closure183"
   },
   "evidence": {
     "combined_browser_log": "/tmp/rm-platform5-combined.log",
@@ -13742,6 +13743,55 @@
         "/tmp/rentemester-rust-reports/issue-closure184.json"
       ],
       "scope_retained": "No closure waives remaining prerequisite issue criteria, J01-J07, live cutover, release signing/provenance or final installed desktop."
+    },
+    "owner_recovery707_completion": {
+      "issue": 707,
+      "status": "CLOSED full original R33 scope/fivecriteria/J05-J06 supported by composed existing backend proof and final sharedUI guidance",
+      "source_revision": "a45a028ac4d9487f182133d15b3a7c0d41743f28",
+      "sgd_run": "rust-owner-recovery707-completion-20261023T073413.283459000",
+      "engine_phase": "done",
+      "sgd_published": true,
+      "check": {
+        "check": "shared-ui",
+        "key": "959093a75d19793d737488a7f698ff009c61e73c7529852054496019c5b6cb0e",
+        "argv": [
+          "bun",
+          "--cwd",
+          "app",
+          "test",
+          "--isolate",
+          "src/components/NativeBackupCard.test.tsx"
+        ],
+        "exit_code": 0,
+        "passed": true,
+        "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/rust-owner-recovery707-completion-20261023T073413.283459000/acceptance/959093a75d19793d737488a7f698ff009c61e73c7529852054496019c5b6cb0e/shared-ui.log"
+      },
+      "test_counts": {
+        "component_tests": 3,
+        "assertions": 18
+      },
+      "github_evidence": "https://github.com/mikkelkrogsholm/rentemester/issues/707#issuecomment-6359961281",
+      "report": "/tmp/rentemester-rust-reports/owner-recovery707-completion.json",
+      "change": "Text-only shared React guidance and existing component-test assertions. No requests on reading help; exact confirmed download/no retry retained. Owner holds separately saved archive+trusted public key; operator verifies/restores fresh target and reprovisions MFA. Local owner is operator. Missing material has specific handoff, no new/embedded key as trust substitute.",
+      "reused_evidence": [
+        "52signed portable/sourcefree restore29b6ae70",
+        "56stable receipt mapping1d043dee",
+        "99installedlostresponse/unknownSMTP transfera36617cd",
+        "109-117truthful destination/region/governance/history/freshowner recovery"
+      ],
+      "r33_criteria": {
+        "unsafe_publication": "52runtime/restore and109-117signature/hash/inventory/path/target/confirmation controls",
+        "fresh_recovery": "52/117 source and private signer removed; independently trusted public key, fresh distinct normalMFAowner, exact business and originals",
+        "local_hosted_and_placement": "56/99credentialfree identity/receipt mapping, source tombstone and destination guards;114-117retain actual provider/region/declaration verification status",
+        "source_device_lost": "52/117sourcefree loss simulation and separate package/key; sharedUI requires material outside sourcecomputer; no actual physicaloffsite/providerSSH claim",
+        "missing_access_or_trust": "a45a028a owner/operator/local roles, specific administrator handoff, no new/embedded trust; component help assertion before zeroHTTPcalls"
+      },
+      "preflight_recovery": "First clean-base plan refused3generatedGraphifyoutputs. Exact bytes/hashmanifest preserved in ignored output then unchangedcode plan passed; no model retry or business effect. Existing installed dependency link reused before exact integrated test.",
+      "scope_limits": [
+        "Download is not proof this particular copy is recoverable; public-key verification and fresh restore still required.",
+        "No new backend/provider/signature/storage/credential behavior and no unchanged broad restore rerun.",
+        "Hostile/older clone/nonempty scheduler/post-cutover rollback remain required under726; full epic/J01-J07 and final installed desktop acceptance remain open."
+      ]
     }
   },
   "verified_history": [
@@ -15570,6 +15620,12 @@
       "code_revision": "1ee2c1ff34bcfe04706acbf95927084888a42426",
       "evidence_key": "original_bookkeeping_batch182",
       "status": "ACCEPTED full R23 completion matrix across native57/draft180/original batch182; full epic and release/desktop remain OPEN"
+    },
+    {
+      "increment": "R33 owner recovery completion",
+      "code_revision": "a45a028ac4d9487f182133d15b3a7c0d41743f28",
+      "evidence_key": "owner_recovery707_completion",
+      "status": "CLOSED full original R33 scope/fivecriteria/J05-J06 supported by composed existing backend proof and final sharedUI guidance"
     }
   ],
   "scope_clarifications": [

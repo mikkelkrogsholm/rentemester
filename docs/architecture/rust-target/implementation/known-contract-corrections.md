@@ -613,3 +613,18 @@ forhandling og manglende inbound-poll holdes åbne, hvor bevis eller kode mangle
 Global R44-selector/default-launcher forbliver en R44-rest; det reducerer ikke
 R32's færdige rapportkort eller fjerner et eksportformat. Installeret manuel
 desktopaccept og alle oprindelige slutkrav bevares.
+
+### Downloadstatus og uafhængig recoverytillid (R33 afsluttet)
+
+Den generelle tekst »Gendannelse er endnu ikke testet« er erstattet med den
+præcise downloadafgrænsning: downloadet er ikke en gendannelsesprøve. Det
+påstår ingen verificering af brugerens egen kopi. Hjælpen adskiller ejerens
+separat opbevarede fil/offentlige nøgle fra operatørens verification/fresh-target
+restore/ny MFA. Private nøgler og loginhemmeligheder skal ikke udleveres.
+Manglende uafhængig tillid kan ikke erstattes med en ny eller indlejret nøgle.
+
+Tre eksisterende komponenttests bevarer confirmation, eksakte bytes, fejl
+og afbrudt udfald uden automatisk retry; hjælpen åbnes uden et API-kald.
+Det eksisterende kildefri restore-/transferbevis genbruges uden nye
+regnskabseffekter. #707's fulde kriterier er accepteret; #726's eksplicitte
+rester og den afsluttende installerede desktopaccept bevares.

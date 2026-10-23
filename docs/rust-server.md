@@ -4128,3 +4128,22 @@ ikke bogføring, og serielle tests er ikke samtidighedsbevis. Disse rester bevar
 Næste afgrænsede recoveryforløb er R33's forståelige ejer-/operatørvej ved
 manglende adgang eller tillidsmateriale; de beståede restoreprøver genbruges.
 Hele epic'en, live omlægning og installeret desktopaccept er fortsat åbne.
+
+### Ejerens recoveryvej ved mistet computer eller adgang (R33 afsluttet)
+
+Backupkortets recoveryhjælp kan åbnes uden netværkskald. Ejeren skal have
+backup og den separat betroede offentlige verifikationsnøgle uden for den
+computer, der kan mistes. Ved manglende materiale eller adgang gives en
+konkret vej til den ansvarlige administrator. En ny eller arkivets egen
+nøgle erstatter ikke uafhængig tillid.
+
+Operatøren verificerer pakken, gendanner til ny mappe og genopretter login/MFA,
+hvorefter regnskaber og originaler kontrolleres. I lokal drift er ejeren selv
+operatør. Downloadbeskeden siger udtrykkeligt, at download ikke er en
+gendannelsesprøve; den påstår heller ikke, at produktets restore er uprøvet.
+
+`a45a028a` er reviewet og accepteret gennem SGD med tre eksisterende
+komponenttests/18assertions. R33's fem kriterier og J05/J06 er afstemt med
+52/56/99/109–117; #707 er lukket. Ingen backendkontrol ændres, og uændrede
+store restoreprøver er ikke gentaget. Der er nu18lukkede originale issues
+og37åbne. Faktisk fysisk offsite-opbevaring og hele epic'ens slutaccept påstås ikke.
