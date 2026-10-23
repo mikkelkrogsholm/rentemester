@@ -171,10 +171,8 @@ fn execute_tx(
     if !r.valid_transport || r.body.len() > MAX_BODY {
         return Err(invalid());
     }
-    if op.write() || matches!(op, Operation::Plan) {
-        if r.query.is_some() {
-            return Err(invalid());
-        }
+    if (op.write() || matches!(op, Operation::Plan)) && r.query.is_some() {
+        return Err(invalid());
     }
     let now = rentemester_engine::company_knowledge::timestamp(
         clock.now_unix_ms().map_err(|_| invalid())?,
