@@ -326,3 +326,125 @@ fn unauthenticated_or_stale_owner_cannot_manage_or_disclose() {
     .unwrap();
     assert!(members::change(&tx, &catalog, "owner", None, None, "user:owner").is_err());
 }
+
+#[test]
+fn concurrent_last_effective_owner_removals_serialize() {
+    use std::sync::atomic::{AtomicBool, Ordering};
+    use std::time::{Duration, Instant};
+    // Only this test installs this handler. It proves real SQLite contention,
+    // rather than assuming that two spawned threads happened to overlap.
+    static CONTENDED: AtomicBool = AtomicBool::new(false);
+    for company in [false, true] {
+        for demote in [false, true] {
+            for first in ["owner", "other"] {
+                let (root, mut db, catalog) = fixture();
+                let date = "2026-01-01T00:00:00.000Z";
+                for (user, ready) in [("other", 1), ("pending", 0)] {
+                    db.execute("INSERT INTO user(id,name,email,emailVerified,twoFactorEnabled,createdAt,updatedAt) VALUES(?1,?1,?2,?3,?3,?4,?4)",params![user,format!("{user}@example.invalid"),ready,date]).unwrap();
+                    db.execute("INSERT INTO rm_workspace_user_access_events(user_id,event_type,workspace_role,actor) VALUES(?1,'activate','workspace_owner','user:owner')",[user]).unwrap();
+                    db.execute("INSERT INTO rm_company_membership_events(user_id,company_slug,event_type,company_role,actor) VALUES(?1,'a','grant','owner','user:owner')",[user]).unwrap();
+                }
+                let count = |db: &Connection, table: &str| -> i64 {
+                    db.query_row(&format!("SELECT count(*) FROM {table}"), [], |r| r.get(0))
+                        .unwrap()
+                };
+                let tables = [
+                    "rm_workspace_user_access_events",
+                    "rm_company_membership_events",
+                    "rm_workspace_security_events",
+                    "workspace_audit",
+                ];
+                let before = tables.map(|t| count(&db, t));
+                let company_bytes = || {
+                    ["company", "company-wal"].map(|name| {
+                        let path = root.path().join(name);
+                        path.exists().then(|| std::fs::read(path).unwrap())
+                    })
+                };
+                let company_before = company_bytes();
+                let second = if first == "owner" { "other" } else { "owner" };
+                let slug = company.then_some("a");
+                let role = demote.then_some(if company { "reader" } else { "member" });
+                let mut other = Connection::open(root.path().join("control")).unwrap();
+                other.pragma_update(None, "foreign_keys", true).unwrap();
+                other.pragma_update(None, "synchronous", "FULL").unwrap();
+                other
+                    .busy_handler(Some(|attempt| {
+                        CONTENDED.store(true, Ordering::SeqCst);
+                        std::thread::sleep(Duration::from_millis(1));
+                        attempt < 5000
+                    }))
+                    .unwrap();
+                CONTENDED.store(false, Ordering::SeqCst);
+                let tx = db
+                    .transaction_with_behavior(TransactionBehavior::Immediate)
+                    .unwrap();
+                std::thread::scope(|scope| {
+                    let pending = scope.spawn(|| {
+                        transact(&mut other, |t| {
+                            members::change(
+                                t,
+                                &catalog,
+                                second,
+                                slug,
+                                role,
+                                &format!("user:{second}"),
+                            )
+                        })
+                    });
+                    let deadline = Instant::now() + Duration::from_secs(5);
+                    while !CONTENDED.load(Ordering::SeqCst) && Instant::now() < deadline {
+                        std::thread::yield_now();
+                    }
+                    assert!(
+                        CONTENDED.load(Ordering::SeqCst),
+                        "second connection must contend on the held writer"
+                    );
+                    members::change(&tx, &catalog, first, slug, role, &format!("user:{first}"))
+                        .unwrap();
+                    tx.commit().unwrap();
+                    let failure = pending
+                        .join()
+                        .unwrap()
+                        .err()
+                        .expect("final effective owner must remain");
+                    assert_eq!(failure.error.code, "last_owner");
+                    assert!(failure.connection_reusable);
+                });
+                drop(other);
+                drop(db);
+                let mut reopened = Connection::open(root.path().join("control")).unwrap();
+                let after = tables.map(|t| count(&reopened, t));
+                assert_eq!(
+                    after,
+                    [
+                        before[0] + i64::from(!company),
+                        before[1] + i64::from(company),
+                        before[2] + i64::from(!company && !demote),
+                        before[3] + 1
+                    ]
+                );
+                let tx = reopened
+                    .transaction_with_behavior(TransactionBehavior::Immediate)
+                    .unwrap();
+                let effective = |user| {
+                    let ready: bool = tx
+                        .query_row(
+                            "SELECT emailVerified=1 AND twoFactorEnabled=1 FROM user WHERE id=?1",
+                            [user],
+                            |r| r.get(0),
+                        )
+                        .unwrap();
+                    ready
+                        && members::access(&tx, user).unwrap().as_deref() == Some("workspace_owner")
+                        && members::membership(&tx, user, "a").unwrap().as_deref() == Some("owner")
+                };
+                assert!(!effective(first));
+                assert!(effective(second));
+                assert!(!effective("pending"));
+                tx.rollback().unwrap();
+                assert_eq!(company_bytes(), company_before);
+            }
+        }
+    }
+}
