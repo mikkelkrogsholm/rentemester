@@ -106,9 +106,15 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
         "alerts" => Operation::Alerts,
         _ => Operation::List,
     };
-    // mutation=true skips the read-only structural preflight in credential();
-    // transport/body parsing therefore remains after current authority in post_tx.
-    let credential = match documents::credential(&state, &request, true) {
+    let post = operation.write() || matches!(operation, Operation::Plan);
+    // GET may omit Origin; POST must prove same origin. Use the credential proofs
+    // directly so structural errors still reach the held current-authority fence.
+    let credential = if service_company::requested(&request) {
+        service_company::proof(&state, &request, post).map(documents::Credential::Service)
+    } else {
+        proof(&state, &request, post).map(documents::Credential::Human)
+    };
+    let credential = match credential {
         Ok(c) => c,
         Err(r) => return *r,
     };
@@ -116,7 +122,6 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
         return refused(StatusCode::NOT_FOUND, "company_not_found");
     }
     let query = request.uri().query().map(str::to_owned);
-    let post = operation.write() || matches!(operation, Operation::Plan);
     let valid_transport = request.method()
         == if post {
             axum::http::Method::POST
@@ -124,6 +129,7 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
             axum::http::Method::GET
         }
         && !request.headers().contains_key("content-encoding")
+        && !request.headers().contains_key("transfer-encoding")
         && !request.headers().contains_key("idempotency-key")
         && (!post
             || one(request.headers(), "content-type")
