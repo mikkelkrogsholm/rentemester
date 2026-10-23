@@ -58,7 +58,19 @@ pub fn validate_original_accounts(
     if bytes.len() > 65536 {
         return Err(Error::InvalidInput("accounts input exceeds 65536 bytes"));
     }
-    crate::domain::body(&bytes, &original_accounts_schema(op))?;
+    // The source trims chart fields before checking their shape. Validate the
+    // normalized view while retaining the original wire payload and byte bound.
+    let mut normalized = input.clone();
+    if op == Add {
+        for key in ["accountNo", "name", "type"] {
+            if let Some(s) = input["input"][key].as_str() {
+                normalized["input"][key] = json!(s.trim());
+            }
+        }
+    }
+    let normalized_bytes = serde_json::to_vec(&normalized)
+        .map_err(|_| Error::InvalidInput("invalid accounts input"))?;
+    crate::domain::body(&normalized_bytes, &original_accounts_schema(op))?;
     let v = if op == Add { &input["input"] } else { input };
     if matches!(op, Add | RoleConfirm)
         && (!clean(&v["accountNo"], 64) || op == Add && !clean(&v["name"], 256))

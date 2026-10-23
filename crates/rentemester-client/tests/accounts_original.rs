@@ -9,7 +9,7 @@ use std::{
     thread,
 };
 fn add() -> Value {
-    json!({"input":{"accountNo":" 1790 ","name":" Synthetic bank ","type":"asset","normalBalance":" ","defaultVatCode":"","allowDirectPosting":false},"confirm":true})
+    json!({"input":{"accountNo":" 1790 ","name":" Synthetic bank ","type":" asset ","normalBalance":" ","defaultVatCode":"","allowDirectPosting":false},"confirm":true})
 }
 #[test]
 fn accounts_original_strict_input_and_discovery() {
