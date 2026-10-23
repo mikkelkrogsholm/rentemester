@@ -3946,3 +3946,28 @@ EU/OSS er tomme projektioner i denne faktiske prøve; tidligere accepteret
 ikke-tom EU-/kurs-/kreditnota- og OSS-evidens genbruges uden ny kvalificering.
 De to oprindelige købsskriveadaptere og historisk importvalidering udestår;
 den historiske kontrol afviser fortsat eksplicit. Hele omskrivningen er åben.
+
+### Oprindelige EU-service- og repræsentationskøb (Group174)
+
+`vat post-eu-service-purchase --input FILE.json` og
+`vat post-representation-purchase --input FILE.json` samt de tilsvarende
+MCP-værktøjer bruger samme native Rust-allokering og journal-writer.
+CLI-invokationen autoriserer skrivningen; MCP kræver confirm:true. Aktører
+udledes af aktuelle credentials. Ingen automatisk gentagelse af skriverier.
+
+EU-kommandoen kræver en EU-leverandør og allerede valideret VIES-evidens;
+den foretager intet automatisk opslag og understøtter køb uden bankreference.
+InvoiceNo vælges præcist/nyeste først og overstyrer documentId i den samme
+admitterede transaktion. Repræsentationskonto angives eksplicit eller findes
+via én aktiv konto med konfigureret REPRESENTATION_SPECIAL; intet fast3070-
+fallback. Manglende eller flertydig mapping afvises.
+
+186 målrettede tests inklusive alle172MCPstdio, streng Clippy for otte pakker,
+build og første faktiske prøve består på `c1f15aa3`. Tre scannede originaler
+giver to journaler/otte linjer: EU-net100 med købsmoms25/omvendt moms25, og
+repræsentation125 med udgift118,75/fradrag6,25. Bankposten afstemmes kun for
+repræsentation. Ét eksplicit eksisterende VIES-preflight og tre scanninger er
+verificeret. Aktuelle adgange, afvisninger, normal MFA-genstart og signeret
+kildefri gendannelse til ny ejer/reopen bevarer præcise kvitteringer og rækker
+med én restore-auditpost.2570kildefiler/binære/web-/hjælperfiler er uafhængigt
+hashkontrolleret. Hele omskrivningen og historisk moms-kildevalidering er åbne.

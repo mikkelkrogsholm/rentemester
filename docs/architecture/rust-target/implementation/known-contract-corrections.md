@@ -399,3 +399,23 @@ Før den faktiske prøve blev to opsætningsforventninger rettet mod koden:
 ældre fixtureår vælges eksplicit, og en bogført bankpost efterlader en løst
 opgave med kildehenvisninger og resolutionshistorik. Den må ikke forventes
 slettet. Samlet accept bestod første gang uden at svække nogen kontrol.
+
+### Eksplicit EU-køb og konfigureret repræsentationskonto (Group174)
+
+Der findes to oprindelige moms-skriveadaptere: EU-servicekøb og repræsentation.
+Non-EU-køb har ingen separat original CLI/MCP-registrering. EU-adapteren må
+derfor ikke blot auto-vælge den generelle expense-adapters udenlandske
+behandling; den har en eksplicit EU-leverandørkontrol og læser cached VIES.
+
+Source3070-defaultet er erstattet med en unik aktiv, eksplicit konfigureret
+REPRESENTATION_SPECIAL-konto eller krav om expenseAccountNo. Det bevarer
+inputformatet uden at indbygge en bestemt kontoplan. Betaling bruger fortsat
+bekræftet bankrolle, og ingen bankpost opfindes ved køb uden bankreference.
+
+En successfuld SDK-kvittering skal indeholde operationens kanoniske momsregel;
+et generisk journalresultat må ikke anerkendes som afsluttet momsbehandling.
+Falske resultater bevarer tomme regler og udelader MCP-data. Ugyldige
+dubletleverandør-/VIES-testidentiteter og obligatoriske compile/lint-fejl blev
+rettet uden svagere kilde-/regnskabskontroller. En fejlagtig hovedagent-
+indvending om credential-rækkefølge er eksplicit trukket tilbage; den
+oprindelige funktionelle adgangskontrol var korrekt og er bevaret.

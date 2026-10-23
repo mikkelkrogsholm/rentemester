@@ -1,15 +1,15 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "Group173 original VAT reports and closed-period filing preparation accepted",
-  "code_revision": "4c3a39907a430cbe58c971d88316d95820573110",
+  "current_increment": "Group174 original EU-service and representation VAT purchase writes accepted",
+  "code_revision": "c1f15aa3644db872b1625715af2ba9de1d8ef1f6",
   "spec_revision": "sha256:8979030956647a0f03266c50d42786b5d33ab71a59c78528203d223226171e72",
-  "state": "Group173 ACCEPTED:5CLI/3MCP source VAT reporting/EU/OSS/exact filing aliases, shared canonical engine and current human/service physicalsource controls.189unique tests/full170MCP/strict8packages/build/firstactual PASS.1ordinary DK125 purchase/net100/inputVAT25/netpayable-25; one reconciled bank row and resolved source task, ordinary review/exact VATperiodclose.16audits+1signedrestore17,1requiredscan0providers. NormalMFArestart/sourcefreefreshownerrestore/reopen exact;2558source3binary8web/helperpins independentlymatched andruntimecleaned. EU/OSS nonempty unchanged evidence reused explicitly; two original purchasewrites/historical source assurance stillrequired. All55missionOPEN desktoplast.",
+  "state": "Group174 ACCEPTED:2CLI/2MCP original EU-service/representation purchases,341unique registry, sharednativeallocation/journal writer/currenthumanservice/sourcefences.186unique tests/full172MCP/strict8packages/build/firstactual PASS.3scanned originals2journals8lines, no-bankEU100/input25/reverse25; linkedbankrepresentation125/expense118.75/input6.25; totalinput31.25/payable-6.25.1resolvedbanktask/1cachedVIES/3validationevents/18audits; exactly1explicitpreflightprovider and3scans. NormalMFA/signedsourcefreefreshownerrestore/reopen exactplus1audit19.2570source3binary8web/helperpins matched independently, ownedruntimecleaned. Priorcompile/lint/fixture/reviewfailures preserved; historicalVATsourcevalidation/full55missionOPEN desktoplast.",
   "issues_closed": [
     701
   ],
   "next": [
-    "Next174 complete the actual registered original VAT writes: post-eu-service-purchase and post-representation-purchase (two corresponding MCP tools), using existing shared native expense/category writers and current human/service/source controls. EU-specific write must refuse domestic and non-EU suppliers; no invented non-EU command. Historical source validation remains separate required scope. Full55 mission/manualdesktop OPEN.",
+    "Next175 necessary imported-bookkeeping→VAT/filing journey: safely port historical-import VAT source assurance behind the explicit native unported refusal, reusing existing importer/evidence/canonical calculation and ordinary synthetic source-backed acceptance. Freeze finite contracts/ownership after bounded Graphify/source survey; no weakening category/FX/source guards or newprovider/framework. Full55 mission/manualdesktop OPEN.",
     "Original invoice interface inventory now has all31CLI and25MCP bindings, with explicit compatibility corrections documented; do not mistake that family inventory for full product parity. Reconcile remaining original whole-product R44/R45 acceptance from existing epic/issues: actor/env/company-path/default launcher/errors/historical receipts, closure/recovery/automation, signed distribution/update/cutover and TypeScript backend retirement. Continue next necessary whole journey, preserve all accepted evidence/full original scope; installed desktop acceptance last.",
     "Installed desktop acceptance is explicitly deferred to the very end by the user. Preserve prepared Group100 profile; collect remaining native automation, closure, recovery and packaging checks for final installed acceptance without requesting screen unlock during development.",
     "J03/R50 and remaining R54 scope: only still-supported operation closure/recovery, nonempty scheduler handoff, hostile/older clone and post-cutover rollback requirements. Group99 qualifies managed installed J06 flow, not every R54 acceptance item.",
@@ -25,9 +25,9 @@
   ],
   "all_goal_requirements_complete": false,
   "previous_verified_increment": {
-    "name": "Group172 original budget targets, actual variance and monthly/weekly cash planning accepted",
-    "code_revision": "5a1c6f55aa541f225f5d5dbc406269b6a76e6433",
-    "evidence_key": "original_budget172"
+    "name": "Group173 original VAT reports and closed-period filing preparation accepted",
+    "code_revision": "4c3a39907a430cbe58c971d88316d95820573110",
+    "evidence_key": "original_vat173"
   },
   "evidence": {
     "combined_browser_log": "/tmp/rm-platform5-combined.log",
@@ -11121,6 +11121,228 @@
         "Before any actual writes, independent source review found missing fixtureyear selectors and impossible zero-exception oracle. Year-2 facts now explicitly selected; exact one source-linked resolved unmatched bank task and entry_no-bound resolution are retained and checked through restore. No product control changed."
       ],
       "failed_actual_attempts": 0
+    },
+    "original_vat_purchase174": {
+      "issue": 717,
+      "status": "ACCEPTED finite original EU-service/representation purchase journey; entire mission OPEN",
+      "source_revision": "c1f15aa3644db872b1625715af2ba9de1d8ef1f6",
+      "sgd_run": "rust-original-vat-purchase174-20261023T011343.037300000",
+      "engine_phase": "done",
+      "sgd_published": true,
+      "source_blob_count": 26,
+      "actual_report": "/tmp/rentemester-rust-reports/original-vat-purchase174-actual.json",
+      "actual_report_sha256": "819c281cd90d7c7b5af35dc9b1084665fb409d4a2c9dc54c6ccb4926be91ce86",
+      "unique_targeted_tests": 186,
+      "test_counts": {
+        "storage_vat_purchase": 7,
+        "application_parser": 2,
+        "host_filter": 0,
+        "server_filter": 0,
+        "sdk": 3,
+        "cli": 2,
+        "all_mcp_stdio": 172
+      },
+      "strict": "Eight packages alltargets locked -D warnings PASS",
+      "checks": [
+        {
+          "check": "domain",
+          "key": "6e8b7ad4a4627be0f8654aff8df9a7a0e7879daf3b0d57ceae6e579057ec8f38",
+          "argv": [
+            "python3",
+            "scripts/rust/cargo-guard.py",
+            "cargo",
+            "test",
+            "-p",
+            "rentemester-storage",
+            "--lib",
+            "vat_purchase_original",
+            "--locked"
+          ],
+          "exit_code": 0,
+          "passed": true,
+          "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/rust-original-vat-purchase174-20261023T011343.037300000/acceptance/6e8b7ad4a4627be0f8654aff8df9a7a0e7879daf3b0d57ceae6e579057ec8f38/domain.log"
+        },
+        {
+          "check": "authority",
+          "key": "0f7e2ab87f1da8f1f613065d40b1b73cf756849b0dfe0898d6c3540cb31ce27b",
+          "argv": [
+            "python3",
+            "-c",
+            "import subprocess,sys; [subprocess.run([sys.executable,'scripts/rust/cargo-guard.py','cargo',*a,'--locked'],check=True)for a in [['test', '--lib', '-p', 'rentemester-application', 'vat_purchase_original'], ['test', '--lib', '-p', 'rentemester-host', 'vat_purchase_original'], ['test', '-p', 'rentemester-server', '--bin', 'rentemester-server', 'product_http::vat_purchase_original']]]"
+          ],
+          "exit_code": 0,
+          "passed": true,
+          "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/rust-original-vat-purchase174-20261023T011343.037300000/acceptance/0f7e2ab87f1da8f1f613065d40b1b73cf756849b0dfe0898d6c3540cb31ce27b/authority.log"
+        },
+        {
+          "check": "client-cli",
+          "key": "c467146652dc0f17b4e16b0827cf37142c76677a32543226b643d2a95e177131",
+          "argv": [
+            "python3",
+            "-c",
+            "import subprocess,sys; [subprocess.run([sys.executable,'scripts/rust/cargo-guard.py','cargo',*a,'--locked'],check=True)for a in [['test', '-p', 'rentemester-client', '--test', 'vat_purchase_original'], ['test', '-p', 'rentemester-cli', '--test', 'vat_purchase_original']]]"
+          ],
+          "exit_code": 0,
+          "passed": true,
+          "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/rust-original-vat-purchase174-20261023T011343.037300000/acceptance/c467146652dc0f17b4e16b0827cf37142c76677a32543226b643d2a95e177131/client-cli.log"
+        },
+        {
+          "check": "mcp",
+          "key": "7f4bc5400cddffa0ad1677c3e2cae0ec18b16d93a2cdd091eecce3787b179d01",
+          "argv": [
+            "python3",
+            "scripts/rust/cargo-guard.py",
+            "cargo",
+            "test",
+            "-p",
+            "rentemester-mcp",
+            "--test",
+            "stdio",
+            "--locked"
+          ],
+          "exit_code": 0,
+          "passed": true,
+          "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/rust-original-vat-purchase174-20261023T011343.037300000/acceptance/7f4bc5400cddffa0ad1677c3e2cae0ec18b16d93a2cdd091eecce3787b179d01/mcp.log"
+        },
+        {
+          "check": "strict",
+          "key": "ae7d136561d534c6a7908fabffbd7324c582c61a16e1751eb9744cf3202242b4",
+          "argv": [
+            "python3",
+            "scripts/rust/cargo-guard.py",
+            "cargo",
+            "clippy",
+            "-p",
+            "rentemester-engine",
+            "-p",
+            "rentemester-storage",
+            "-p",
+            "rentemester-client",
+            "-p",
+            "rentemester-cli",
+            "-p",
+            "rentemester-mcp",
+            "-p",
+            "rentemester-application",
+            "-p",
+            "rentemester-host",
+            "-p",
+            "rentemester-server",
+            "--all-targets",
+            "--locked",
+            "--",
+            "-D",
+            "warnings"
+          ],
+          "exit_code": 0,
+          "passed": true,
+          "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/rust-original-vat-purchase174-20261023T011343.037300000/acceptance/ae7d136561d534c6a7908fabffbd7324c582c61a16e1751eb9744cf3202242b4/strict.log"
+        },
+        {
+          "check": "build",
+          "key": "cbc2dc786c946d49b94644e38ec3f5d82e5166c9607c45eb6df3f098cec016df",
+          "argv": [
+            "python3",
+            "scripts/rust/cargo-guard.py",
+            "cargo",
+            "build",
+            "-p",
+            "rentemester-server",
+            "-p",
+            "rentemester-cli",
+            "-p",
+            "rentemester-mcp",
+            "--locked"
+          ],
+          "exit_code": 0,
+          "passed": true,
+          "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/rust-original-vat-purchase174-20261023T011343.037300000/acceptance/cbc2dc786c946d49b94644e38ec3f5d82e5166c9607c45eb6df3f098cec016df/build.log"
+        },
+        {
+          "check": "actual",
+          "key": "d681819c6b2990a98e4e6ce0640ad717696dd19911e44cbce9552dbe4b84b2bc",
+          "argv": [
+            "python3",
+            "-c",
+            "import os,subprocess;from pathlib import Path;b=Path(os.environ['CARGO_TARGET_DIR'])/'debug';rev=subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip();evidence=Path(os.environ['CARGO_TARGET_DIR'])/('original-vat-purchase174-'+rev+'.json');subprocess.run(['python3','scripts/rust/run-bookkeeping-batch.py','--original-vat-purchase','--server-binary',str(b/'rentemester-server'),'--cli-binary',str(b/'rentemester-rust'),'--mcp-binary',str(b/'rentemester-mcp'),'--web-dir',os.environ['RM_REWRITE_WEB_DIR'],'--evidence',str(evidence)],check=True)"
+          ],
+          "exit_code": 0,
+          "passed": true,
+          "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/rust-original-vat-purchase174-20261023T011343.037300000/acceptance/d681819c6b2990a98e4e6ce0640ad717696dd19911e44cbce9552dbe4b84b2bc/actual.log"
+        }
+      ],
+      "company_counts": {
+        "documents": 3,
+        "document_party_link_events": 0,
+        "document_party_resolution_events": 0,
+        "internal_voucher_evidence": 0,
+        "audit_log": 18,
+        "journal_entries": 2,
+        "journal_lines": 8,
+        "vat_validation_events": 3,
+        "vies_validations": 1,
+        "exceptions": 1,
+        "bank_transactions": 1,
+        "bank_journal_reconciliations": 1
+      },
+      "control_business_counts": {
+        "rm_intercompany_dispositions": 0,
+        "rm_intercompany_disposition_events": 0,
+        "rm_intercompany_disposition_lifecycle_events": 0,
+        "rm_intercompany_disposition_journal_links": 0,
+        "rm_corporate_record_events": 0,
+        "rm_corporate_record_bytes": 0,
+        "rm_corporate_record_links": 0
+      },
+      "restored_audits": 19,
+      "required_scanner_calls": 3,
+      "explicit_provider_calls": 1,
+      "cached_vies_validations": 1,
+      "vat_validation_events": 3,
+      "eu_no_bank": true,
+      "eu_net_dkk": 100,
+      "eu_input_vat": 25,
+      "eu_reverse_charge_vat": 25,
+      "representation_expense": 118.75,
+      "representation_input_vat": 6.25,
+      "representation_payment": 125,
+      "combined_input_vat": 31.25,
+      "combined_net_vat_payable": -6.25,
+      "original_cli_contracts": 2,
+      "original_mcp_contracts": 2,
+      "unique_mcp_tools": 341,
+      "source_artifact_web_pins": {
+        "source_files": 2570,
+        "binaries": 3,
+        "web_files": 8,
+        "helpers": 2,
+        "independently_matched": true
+      },
+      "normal_mfa_restart": true,
+      "signed_source_free_fresh_owner_restore": true,
+      "fresh_mfa_restored_reopen": true,
+      "exact_manifest_bound_restore_audit_append": 1,
+      "owned_processes_stopped": true,
+      "runtime_cleaned": true,
+      "first_actual_acceptance_passed": true,
+      "failed_actual_attempts": 0,
+      "independent_verification_log": "/tmp/rm174-independent-verification.log",
+      "scope_limits": [
+        "One shared native expense allocation/journal writer, current physical original/extraction/party/bank source checks, credential-derived typed human/service actors. No original non-EU command invented.",
+        "Representation omitted expense account uses unique active explicitly configured REPRESENTATION_SPECIAL mapping; source3070 hardcoding intentionally replaced under generic-product boundary. Explicit banksemantic role remains default.",
+        "Non-DKK explicit source valuation and configured omission positive/refusal covered in narrow domain fixtures, not a new actual network fixture. Actual EU cached/current evidence, no-bank success and DK representation bank success are nonempty.",
+        "The actual non-EU document also has structured VAT metadata. Its refusal is observed; the distinct EU-only supplier guard is verified in actual code, while domestic/uncached/structured controls have targeted tests. No isolated clean non-EU success or new command is claimed.",
+        "Pinned runner verifies exact signed/restored company/control inventory and one manifest-bound restore audit. Main independently matches source/helper/binary/web hashes, captured raw journal identity/typedactors/8lineallocation/receipt hashes, cachedVIES/provider/scanner counts and process cleanup.",
+        "Historical-import VAT source validation remains explicit fail-closed separate required scope. Full55/J01-J07/TypeScript retirement/distribution/manual installed desktop remain OPEN."
+      ],
+      "preserved_review_and_check_history": [
+        "First domain gate5/7: native supplier invoice uniqueness and VIES identity guards correctly refused invalid fixtures. Different supplier identities for shared invoiceNo and exact synthetic national number fixed; all7PASS without weaker guards.",
+        "SDK review found generic/empty successful treatment rules accepted; operation-specific canonical rule now required, sourceorder preserved, wrong/empty/otheroperation tests refuse unknown acknowledgement.",
+        "Lead incorrectly rejected backend authority ordering by overlooking credential helper !mutation guard. Diagnosis retracted explicitly; original functional authority code retained with2line clarification.",
+        "First combined MCP compile E0753 newmod before crate //!docs; exact declaration move fixed. Mandatory strict found new nested guard lint in storage/application/server/CLI; equivalent letchains preserve every predicate and expectation. Allfailedreceipts retained.",
+        "One backend-only diagnostic still checked unchanged dependency errors, added no new evidence and was stopped. No expanding test infrastructure, new model retry, changed expected financial result or actual replay.",
+        "Final186tests/full172MCP/strict/build pass; first actual completes3scans/1explicitpreflightVIES,18audits plus bound restore19, normalMFA/sourcefreefreshowner/reopen and cleanup."
+      ]
     }
   },
   "verified_history": [
@@ -12895,6 +13117,12 @@
       "code_revision": "4c3a39907a430cbe58c971d88316d95820573110",
       "evidence_key": "original_vat173",
       "status": "ACCEPTED finite original VAT reporting and filing preparation journey; entire mission OPEN"
+    },
+    {
+      "increment": "Group174",
+      "code_revision": "c1f15aa3644db872b1625715af2ba9de1d8ef1f6",
+      "evidence_key": "original_vat_purchase174",
+      "status": "ACCEPTED finite original EU-service/representation purchase journey; entire mission OPEN"
     }
   ],
   "scope_clarifications": [
