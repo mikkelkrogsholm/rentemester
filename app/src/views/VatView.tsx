@@ -217,6 +217,7 @@ export function VatView() {
             if (periodEndsInFuture && !futureEndAcknowledged) {
               throw {
                 code: "bad_request",
+                status: 400,
                 message:
                   "Bekræft først at du vil lukke en periode der ikke er afsluttet endnu — sæt flueben i feltet ovenfor.",
               };

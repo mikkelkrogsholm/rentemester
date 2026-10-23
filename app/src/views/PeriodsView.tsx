@@ -173,7 +173,7 @@ export function PeriodsView() {
         noteLabel="Kvitteringsreference" operationKey={String(reportTarget.id)}
         onClose={() => setReportTarget(null)} onRefresh={state.reload}
         onConfirm={async (reference) => {
-          if (!reference) throw new Error("Angiv kvitteringsreferencen.");
+          if (!reference) throw { code: "bad_request", status: 400, message: "Angiv kvitteringsreferencen." };
           await api.reportPeriod(slug, { periodStart: reportTarget.periodStart, periodEnd: reportTarget.periodEnd, kind: reportTarget.kind, packetHash: reportTarget.closePacketHash!, reference });
           state.reload();
         }}
