@@ -12,7 +12,7 @@ import { isDeepStrictEqual as equal } from 'node:util';
  * This actual is nonempty ordinary DK purchase only; EU and OSS projections empty.
  * Historical-import parity, submission and installed desktop remain unqualified.
  */
-export const originalVatExpected = Object.freeze({ gross:125, purchaseBase25:100, inputVat:25, outputVat:0, netVatPayable:-25, journalEntryCount:1, linesConsidered:3, scannerRequests:1, providerRequests:0, euTotalValue:0, ossConsumerSalesBase:0 });
+export const originalVatExpected = Object.freeze({ gross:125, purchaseBase25:100, inputVat:25, outputVat:0, netVatPayable:-25, journalEntryCount:1, linesConsidered:3, scannerRequests:1, providerRequests:0, resolvedExceptions:1, euTotalValue:0, ossConsumerSalesBase:0 });
 export function createOriginalVatProof(base:string,work:string,onStep:(s:string)=>void) {
   const root='/api/companies/synthetic/', api=root+'original/vat/', cookie=join(work,'vat173.cookie'), key=join(work,'vat173.key');
   const observations:any[]=[];let owner:Page, reviewer:Page, service:any, stable:any, from:string,to:string,document:any,ran=false;
@@ -45,7 +45,7 @@ export function createOriginalVatProof(base:string,work:string,onStep:(s:string)
     if(!ok){need(!Object.hasOwn(v,'data')&&v.errors.length>0,'ALL source false omit data');return v;}
     need(!Object.hasOwn(v.data,'ok'),'source not native envelope');return {ok:true,...v.data,errors:v.errors,...(v.appliedRules?{appliedRules:v.appliedRules}:{})};
   }
-  async function snapshot(){const v:any={};for(const p of ['journal','trial-balance','bank','documents','periods'])v[p]=await http(root+p);for(const op of ['report','eu-sales-list','oss-report','filing'])v[op]=await http(api+op+'?'+query());return v;}
+  async function snapshot(){const v:any={};for(const p of ['journal','trial-balance','bank','documents','periods'])v[p]=await http(root+p+(['journal','trial-balance','bank'].includes(p)?'?year='+from.slice(0,4):''));for(const op of ['report','eu-sales-list','oss-report','filing'])v[op]=await http(api+op+'?'+query());return v;}
   async function originals(){const r=await owner.request.get(base+root+`documents/${document.id}/file`);need(r.status()===200&&createHash('sha256').update(await r.body()).digest('hex')===document.sha256,'immutable scanned original');}
   async function parity(){for(const op of ['report','eu-sales-list','oss-report','filing','momsangivelse'])need(equal(cli('vat',op,{from,to}),stable[op==='momsangivelse'?'filing':op]),'flat CLI exact '+op);for(const op of ['report','eu-sales-list','oss-report'])need(equal(mcp(op),stable[op]),'source MCP exact '+op);}
   async function run(page:Page,member:Page){
@@ -61,7 +61,7 @@ export function createOriginalVatProof(base:string,work:string,onStep:(s:string)
     document={id:ingested.document.id,sha256:createHash('sha256').update(bytes).digest('hex')};
     const csv=`dato;tekst;beløb;valuta;saldo\n${to};SYN-VAT173;-125,00;DKK;-125,00\n`;
     await http(root+'bank/import',{confirm:true,csvContent:csv,account:'synthetic-vat173'});
-    const bank=(await http(root+'bank')).bank;need(bank.transactions.length===1,'one independent statement row');
+    const bank=(await http(root+'bank?year='+year)).bank;need(bank.transactions.length===1,'one independent statement row');
     await http(root+'expense/original/book',{documentId:document.id,bankTransactionId:bank.transactions[0].id,expenseAccount:'3000',vatTreatment:'standard',confirm:true});
     const report=await http(api+'report?'+query());
     for(const k of ['purchaseBase25','inputVat','outputVat','netVatPayable','journalEntryCount','linesConsidered'] as const)need(report[k]===originalVatExpected[k],'independent report '+k);

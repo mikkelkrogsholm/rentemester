@@ -466,9 +466,21 @@ def main():
                                 if isinstance(value, bytes):
                                     row[field] = {'bytesBase64': base64.b64encode(value).decode(), 'sha256': hashlib.sha256(value).hexdigest()}
                 if args.original_vat:
-                    expected = {'documents': 1, 'journal_entries': 1, 'journal_lines': 3, 'bank_transactions': 1, 'bank_journal_reconciliations': 1, 'accounting_periods': 1, 'period_close_decisions': 1, 'period_close_reviews': 1}
-                    if any(len(rows[t]) != n for t, n in expected.items()) or rows['exceptions']:
+                    expected = {'documents': 1, 'journal_entries': 1, 'journal_lines': 3, 'bank_transactions': 1, 'bank_journal_reconciliations': 1, 'accounting_periods': 1, 'period_close_decisions': 1, 'period_close_reviews': 1, 'exceptions': 1}
+                    if any(len(rows[t]) != n for t, n in expected.items()):
                         raise RuntimeError('Exact original VAT source/journal/reconciliation/review/close inventory differs')
+                    exception = rows['exceptions'][0]
+                    journal = rows['journal_entries'][0]
+                    bank = rows['bank_transactions'][0]
+                    document = rows['documents'][0]
+                    evidence = json.loads(exception['source_evidence'])
+                    if (exception['type'] != 'UNMATCHED_BANK_TRANSACTION' or exception['status'] != 'resolved'
+                            or exception['related_bank_transaction_id'] != bank['id']
+                            or exception['related_document_id'] != document['id']
+                            or evidence['bankTransactionId'] != bank['id'] or evidence['candidateBilagId'] != document['id']
+                            or not exception['resolved_at'] or not exception['resolved_by']
+                            or exception['resolution_note'] != 'Resolved automatically by posted journal entry ' + journal['journal_entry_no']):
+                        raise RuntimeError('Original VAT resolved bank task must retain exact source links and posting resolution')
                     return rows
                 if args.original_budget:
                     if len(rows['documents']) != 5 or len(rows['budget_lines']) != 2 or len(rows['journal_entries']) != 3 or len(rows['journal_lines']) != 6 or len(rows['payables']) != 1 or len(rows['supplier_commitment_events']) != 1 or len(rows['recurring_invoice_templates']) != 1 or rows['recurring_invoice_generations'] or rows['supplier_commitment_occurrence_matches'] or any(rows[t] for t in ['payable_payments', 'recurring_invoice_generation_claims', 'recurring_invoice_delivery_events', 'bank_transactions', 'bank_journal_reconciliations', 'issued_invoice_postings']):
@@ -577,7 +589,7 @@ def main():
                 report['reviewedLegacyActualPositiveQualified'] = False
             report['webFiles'] = {str(p.relative_to(web)): digest(p) for p in sorted(web.rglob('*')) if p.is_file()}
             if args.original_vat:
-                report['independentExpectedFacts'] = {'gross': 125, 'purchaseBase25': 100, 'inputVat': 25, 'outputVat': 0, 'netVatPayable': -25, 'journalEntries': 1, 'journalLines': 3, 'scannerRequests': 1, 'providerRequests': 0, 'euTotalValue': 0, 'ossConsumerSalesBase': 0}
+                report['independentExpectedFacts'] = {'gross': 125, 'purchaseBase25': 100, 'inputVat': 25, 'outputVat': 0, 'netVatPayable': -25, 'journalEntries': 1, 'journalLines': 3, 'scannerRequests': 1, 'providerRequests': 0, 'resolvedExceptions': 1, 'euTotalValue': 0, 'ossConsumerSalesBase': 0}
                 report['reusedUnchangedNonemptyEvidence'] = ['scripts/rust/run-eu-sales.py: EUR740, dated partial592/final0 credits, FX gain3', 'scripts/rust/run-oss.py: manual OSS base and dated reversal']
                 report['newNonemptyActual'] = 'ordinary DK purchase; EU/OSS projections empty, accepted nonempty journeys reused, not rerun'
                 save()
