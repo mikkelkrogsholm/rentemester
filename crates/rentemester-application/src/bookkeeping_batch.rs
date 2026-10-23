@@ -52,6 +52,7 @@ pub fn execute(
             let now = clock
                 .now_unix_ms()
                 .map_err(|e| Error::new(e.code(), "trusted batch clock unavailable"))?;
+            let at = rentemester_engine::company_knowledge::timestamp(now)?;
             let today = rentemester_runtime::posting_time::latest_date(now, 0)
                 .map_err(|e| Error::new(e.code(), "trusted Copenhagen date unavailable"))?;
             let latest = Date::parse(
@@ -64,28 +65,28 @@ pub fn execute(
                     Ok(json!({"ok":true,"state":store::status_by_key(tx,key)?}))
                 }
                 Action::Plan(scope) => {
-                    let p = store::plan(tx, scope, latest, &today)?;
+                    let p = store::plan_at(tx, scope, latest, &today, &at)?;
                     verify_plan(tx, guard, &p)?;
                     Ok(json!({"ok":true,"dryRun":true,"plan":p}))
                 }
                 Action::Persist(input) => {
                     input.validate()?;
-                    let p = store::plan(tx, &input.scope(), latest, &today)?;
+                    let p = store::plan_at(tx, &input.scope(), latest, &today, &at)?;
                     verify_plan(tx, guard, &p)?;
-                    store::persist(tx, input, subject, latest, &today)
+                    store::persist_at(tx, input, subject, latest, &today, &at)
                 }
                 Action::Approve(input) => {
                     let p = store::stored_plan(tx, input)?;
                     verify_plan(tx, guard, &p)?;
-                    store::approve(tx, input, subject, latest, &today)
+                    store::approve_at(tx, input, subject, latest, &today, &at)
                 }
                 Action::Apply(input) => {
                     let p = store::stored_plan(tx, input)?;
                     verify_plan(tx, guard, &p)?;
-                    store::apply(tx, input, subject, latest, &today)
+                    store::apply_at(tx, input, subject, latest, &today, &at)
                 }
                 Action::Workbench(input) => {
-                    let p = store::plan(tx, &input.scope(), latest, &today)?;
+                    let p = store::plan_at(tx, &input.scope(), latest, &today, &at)?;
                     verify_plan(tx, guard, &p)?;
                     let evidence = crate::periods::verify_sources(tx, guard);
                     let period = rentemester_storage::periods::compute(
@@ -99,7 +100,7 @@ pub fn execute(
                         Some(n) => json!({"status":"available","blockers":n,"hash":period["hash"]}),
                         None => json!({"status":"unavailable","blockers":null}),
                     };
-                    store::workbench(tx, input, latest, &today, close)
+                    store::workbench_at(tx, input, latest, &today, close, &at)
                 }
             }
         },

@@ -708,6 +708,33 @@ pub fn post_with_principal(
     latest: Date,
     principal_kind: crate::idempotency::PrincipalKind,
 ) -> Result<Value, Error> {
+    post_mode_at(tx, input, subject, latest, principal_kind, None)
+}
+/// Canonical posting with the caller's admitted trusted timestamp.
+pub fn post_at(
+    tx: &Transaction<'_>,
+    input: &Input,
+    subject: &str,
+    latest: Date,
+    now: &str,
+) -> Result<Value, Error> {
+    post_mode_at(
+        tx,
+        input,
+        subject,
+        latest,
+        crate::idempotency::PrincipalKind::User,
+        Some(now),
+    )
+}
+fn post_mode_at(
+    tx: &Transaction<'_>,
+    input: &Input,
+    subject: &str,
+    latest: Date,
+    principal_kind: crate::idempotency::PrincipalKind,
+    now: Option<&str>,
+) -> Result<Value, Error> {
     crate::journal_post::require_current(tx)?;
     let Prepared {
         request,
@@ -716,7 +743,10 @@ pub fn post_with_principal(
         deductible,
         treatment,
         basis,
-    } = prepare(tx, input)?;
+    } = match now {
+        Some(now) => prepare_at(tx, input, now)?,
+        None => prepare(tx, input)?,
+    };
     let (prefix, program) = match principal_kind {
         crate::idempotency::PrincipalKind::User => ("user", "rentemester-rust"),
         crate::idempotency::PrincipalKind::ServiceAccount => {
