@@ -103,14 +103,12 @@ fn date(v: &Value) -> bool {
             .ok()
             .filter(|y| (1..=9999).contains(y))
             .and_then(|y| {
-                Some(
-                    time::Date::from_calendar_date(
-                        y,
-                        time::Month::try_from(s[5..7].parse::<u8>().ok()?).ok()?,
-                        s[8..].parse().ok()?,
-                    )
-                    .ok()?,
+                time::Date::from_calendar_date(
+                    y,
+                    time::Month::try_from(s[5..7].parse::<u8>().ok()?).ok()?,
+                    s[8..].parse().ok()?,
                 )
+                .ok()
             })
             .is_some();
     }
