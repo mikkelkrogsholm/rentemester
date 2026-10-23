@@ -21,6 +21,7 @@ mod dashboard_artifact;
 mod dated_reports;
 mod direct_bank_original;
 mod document_party_original;
+mod posting_rules_original;
 mod budget_original;
 mod vat_original;
 mod documents_original;
@@ -395,6 +396,10 @@ fn main() -> ExitCode {
         if let Err(output) = budget_original::preflight(&args) { eprint!("{}", output.stderr); return ExitCode::from(output.exit); }
         if args.iter().any(|s|s=="--help") {println!("{}",budget_original::help());return ExitCode::SUCCESS;}
     }
+    if posting_rules_original::accepts(&args) {
+        if let Err(output)=posting_rules_original::preflight(&args) {eprint!("{}",output.stderr);return ExitCode::from(output.exit);}
+        if args.len()==1 || args.iter().any(|s|s=="--help") {println!("{}",posting_rules_original::help());return ExitCode::SUCCESS;}
+    }
     if document_party_original::accepts(&args) {
         if let Err(output) = document_party_original::preflight(&args) {
             eprint!("{}", output.stderr);
@@ -543,6 +548,7 @@ fn main() -> ExitCode {
     if budget_original::accepts(&args) {
         let output=budget_original::execute(&args);print!("{}",output.stdout);eprint!("{}",output.stderr);return ExitCode::from(output.exit);
     }
+    if posting_rules_original::accepts(&args) {let output=posting_rules_original::execute(&args);print!("{}",output.stdout);eprint!("{}",output.stderr);return ExitCode::from(output.exit);}
     if document_party_original::accepts(&args) {
         let output = document_party_original::execute(&args);
         print!("{}", output.stdout);

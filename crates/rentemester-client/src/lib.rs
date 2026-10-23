@@ -572,3 +572,6 @@ pub use supplier_commitment_original::{SupplierCommitmentOriginalOperation, orig
 
 mod dimensions_original;
 pub use dimensions_original::{DimensionsOriginalOperation, original_dimensions_schema, validate_original_dimensions};
+
+mod posting_rules_original;
+pub use posting_rules_original::{PostingRulesOriginalOperation, original_posting_rules_schema, validate_original_posting_rules};

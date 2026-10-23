@@ -40,7 +40,8 @@ fn boolean(name: &str) -> bool {
 }
 
 fn migrated(args: &[String]) -> bool {
-    crate::dimensions_original::accepts(args)
+    crate::posting_rules_original::accepts(args)
+        || crate::dimensions_original::accepts(args)
         || crate::supplier_commitment_original::accepts(args)
         || crate::vat_purchase_original::accepts(args)
         || crate::vat_original::accepts(args)
@@ -139,7 +140,7 @@ pub fn prepare(args: Vec<String>) -> Result<Vec<String>, (u8, Error)> {
         && command.first().is_some_and(|s| {
             matches!(
                 s.as_str(),
-                "dimensions" | "supplier-commitment" | "vat" | "customer"
+                "posting-rules" | "dimensions" | "supplier-commitment" | "vat" | "customer"
                     | "budget"
                     | "asset"
                     | "accrual"
@@ -229,7 +230,7 @@ pub fn prepare(args: Vec<String>) -> Result<Vec<String>, (u8, Error)> {
             matches!(
                 s.as_str(),
                 "exceptions"
-                    | "dimensions" | "supplier-commitment" | "vat" | "customer"
+                    | "posting-rules" | "dimensions" | "supplier-commitment" | "vat" | "customer"
                     | "vendor"
                     | "documents"
                     | "expense"
