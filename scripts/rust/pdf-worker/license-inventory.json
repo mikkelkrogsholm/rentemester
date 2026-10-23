@@ -1,0 +1,487 @@
+{
+  "format": "rentemester-pdfium-license-inventory/1",
+  "pinsSha256": "e4a02f731da3bea8926deaf694233f83c5e29b3923f040a79a275e9e07f02897",
+  "artifacts": [
+    {
+      "archive": "pdfium-mac-arm64.tgz",
+      "archiveSha256": "52e94ca5aa8847934330daf3f8150c190682c5ca93831468794f8b90d4392e40",
+      "library": "lib/libpdfium.dylib",
+      "librarySha256": "1bc45b15466b34cef96641ce25c77a876e70010c6b114f909dda2f5325fc5bd7",
+      "notices": [
+        {
+          "path": "LICENSE",
+          "sha256": "ba26c1263131696b86c10496b5066b918a20b7161822a80c274d0080105f6c93",
+          "size": 1177,
+          "licenseExpression": "MIT",
+          "review": "Benoit Blanchon package MIT grant, copyright 2014-2025. Include copyright and permission notice in all copies/substantial portions; package explicitly refers to third-party licenses, not a blanket MIT grant. Factual notice-text review only; policy approval and distribution compliance remain lead responsibilities."
+        },
+        {
+          "path": "licenses/abseil.txt",
+          "sha256": "c79a7fea0e3cac04cd43f20e7b648e5a0ff8fa5344e644b0ee09ca1162b62747",
+          "size": 11361,
+          "licenseExpression": "Apache-2.0",
+          "review": "Apache 2.0 full terms: supply license, mark modified files, retain applicable source attributions and upstream NOTICE if present; patent termination and trademark limitations apply. Factual notice-text review only; policy approval and distribution compliance remain lead responsibilities."
+        },
+        {
+          "path": "licenses/agg23.txt",
+          "sha256": "c110d3ea2ad77467ce0dcff7d3337e6c8be8049a5103f4b9bd5fd911a77972e5",
+          "size": 725,
+          "licenseExpression": "LicenseRef-AGG-2.3-notice",
+          "review": "Anti-Grain Geometry 2.3 Maxim Shemanarev grant to copy/use/modify/sell/distribute conditioned on copyright notice appearing in all copies. As-is disclaimer. This is not an inferred GPL license from other AGG versions; exact license identifier requires lead review. Factual notice-text review only; policy approval and distribution compliance remain lead responsibilities."
+        },
+        {
+          "path": "licenses/fast_float.txt",
+          "sha256": "e562f3f974ced7e69dd1db77b820b36bcf8f30377f1aa105723fba449c53c4e6",
+          "size": 1079,
+          "licenseExpression": "MIT",
+          "review": "2021 fast_float authors MIT grant: retain copyright and permission notice in copies/substantial portions. Factual notice-text review only; policy approval and distribution compliance remain lead responsibilities."
+        },
+        {
+          "path": "licenses/freetype.txt",
+          "sha256": "f4b133e25df1f86ad3ffea453aa0e613f0474f34778dbbb3e437e7b2724937d8",
+          "size": 6741,
+          "licenseExpression": "FTL",
+          "review": "FreeType Project LICENSE 2006-Jan-27. Source: retain FTL unaltered, preserve original copyrights, document changes. Binary documentation must acknowledge software based in part on FreeType Team work. No unauthorized promotional use of names. Contains single-byte 0xa9 copyright byte: retain raw bytes, do not UTF-8-normalize. Files with explicit other licenses excluded from this grant; component coverage is not proven here. Factual notice-text review only; policy approval and distribution compliance remain lead responsibilities."
+        },
+        {
+          "path": "licenses/icu.txt",
+          "sha256": "e55522d81edc687a341a4411e0776e54ca654e90147f354a90458aaced4116af",
+          "size": 27718,
+          "licenseExpression": null,
+          "review": "Composite ICU notice, not Unicode-only approval. Unicode-3.0 primary text; historical ICU permission terms; cjdict Google/TaBE BSD-3-Clause, Tsai attribution and IPADIC/NAIST with ICOT no-warranty and distribution-law condition; Lao BSD-2-Clause, Burmese BSD-3-Clause; TZ public-domain statement; double-conversion BSD-3-Clause; nlohmann/json MIT. Also ICU4C aclocal.m4 pkg.m4 GPL-2.0-or-later with Autoconf distribution exception, config.guess GPL-3.0-or-later with Autoconf exception (notice asserts configure fulfills exception), install-sh MIT-style no-publicity grant; ICU4J sorttable.js MIT-style text. Preserve all sections, copyright/disclaimers and no-endorsement restrictions. Included notices do not establish which build scripts/data/code are linked or distributed; GPL/exceptions, IPADIC/ICOT, public-domain and mixed applicability require explicit lead policy review. No blanket SPDX OR/AND or policy approval inferred. Factual notice-text review only; policy approval and distribution compliance remain lead responsibilities."
+        },
+        {
+          "path": "licenses/lcms.txt",
+          "sha256": "7312b68c5b25e9bf2b828706fb4e29588f22705112f411fd42e1f7d84c3d139a",
+          "size": 1353,
+          "licenseExpression": "MIT",
+          "review": "Little CMS version 2.19, Marti Maria Saguer copyright 1998-2026; MIT notice retention in copies/substantial portions. Factual notice-text review only; policy approval and distribution compliance remain lead responsibilities."
+        },
+        {
+          "path": "licenses/libjpeg_turbo.ijg",
+          "sha256": "75815e3bf6484201a3c3d17a1bbf10f2e8e3237f84df10a2357ea896db2a81d6",
+          "size": 12799,
+          "licenseExpression": "IJG",
+          "review": "Modified IJG reference README, legal terms copyright 1991-2020 Lane/Vollbeding. Source distribution requires unaltered copyright/no-warranty README and change documentation; executable documentation must state software is based in part on work of Independent JPEG Group. No unauthorized author/company publicity; user assumes responsibility. References to external noncommercial ACM/IEEE article are not a grant for that article or evidence it is bundled. Factual notice-text review only; policy approval and distribution compliance remain lead responsibilities."
+        },
+        {
+          "path": "licenses/libjpeg_turbo.md",
+          "sha256": "96f5b328adbb78eeaaec6980d73fd558cb1e4d62560ed615646bc3cf5e532430",
+          "size": 5620,
+          "licenseExpression": null,
+          "review": "Multiple component-specific terms: IJG for libjpeg API, zlib for SIMD, BSD-3-Clause for TurboJPEG API/build system; document says both IJG and BSD apply to overall TurboJPEG API. Binary documentation needs IJG acknowledgment and BSD terms when TurboJPEG used; source changes/notices preserved; no endorsement. Do not collapse into an OR choice or infer which APIs were linked. Lead must resolve applicability. Factual notice-text review only; policy approval and distribution compliance remain lead responsibilities."
+        },
+        {
+          "path": "licenses/libopenjpeg.txt",
+          "sha256": "c5ab0890a737c2dfa7ba675036554f6d17741d98629b0c2a145354d00617e6b2",
+          "size": 1794,
+          "licenseExpression": "BSD-2-Clause",
+          "review": "Two-condition BSD grant, retain copyright/conditions/disclaimer in source and binary accompanying materials. Intro expressly does not grant other third-party/contributor patent rights. Factual notice-text review only; policy approval and distribution compliance remain lead responsibilities."
+        },
+        {
+          "path": "licenses/libpng.txt",
+          "sha256": "bdb0a645ea18c60507d0368379b1ac5474b92255fcc2d115e07486a7672ba526",
+          "size": 5345,
+          "licenseExpression": null,
+          "review": "PNG Reference Library License version 2 (libpng-2.0 identification) followed by version 1 historical terms (Libpng identification). No origin misrepresentation, altered source marked, copyright notice retained in source/altered source; acknowledgment appreciated not required. Mentions contrib/configure-generated files under other unspecified open-source licenses; coverage cannot be resolved from this notice. Lead must review multiple terms and actual applicability. Factual notice-text review only; policy approval and distribution compliance remain lead responsibilities."
+        },
+        {
+          "path": "licenses/libtiff.txt",
+          "sha256": "92b72ba97e6c2749c2a94bc0ef646b47080217f1e772a482b33cf5a5f98a6506",
+          "size": 1139,
+          "licenseExpression": "libtiff",
+          "review": "Sam Leffler/Silicon Graphics grant: retain copyright and permission notice in software and related documentation; no names in advertising/publicity without specific prior written permission. Factual notice-text review only; policy approval and distribution compliance remain lead responsibilities."
+        },
+        {
+          "path": "licenses/llvm-libc.txt",
+          "sha256": "ebcd9bbf783a73d05c53ba4d586b8d5813dcdf3bbec50265860ccc885e606f47",
+          "size": 15140,
+          "licenseExpression": null,
+          "review": "Multiple sections: Apache-2.0 WITH LLVM-exception, third-party coverage caveat, and legacy University of Illinois/NCSA license. LLVM exception waives sections 4(a),4(b),4(d) for embedded object portions from compilation and permits specified GPLv2 conflict waivers; do not assume exception applies to all uses. Legacy NCSA requires source/binary notices and no endorsement. Third-party code may have separate file/directory terms. Lead must resolve coverage rather than treating all text as an OR grant. Factual notice-text review only; policy approval and distribution compliance remain lead responsibilities."
+        },
+        {
+          "path": "licenses/pdfium.txt",
+          "sha256": "1fe9dea718fbd75cf149adaf4d8a22a4335604d964ddb76d1b45383dec8668c9",
+          "size": 12896,
+          "licenseExpression": null,
+          "review": "Contains PDFium Authors BSD-3-Clause conditions followed by full Apache-2.0 text; does not state an explicit OR choice. Retain BSD source and binary documentation notices and no-endorsement condition; Apache redistribution, modification/NOTICE and patent terms also need applicability review. macOS BSD section has // comment prefixes; Linux does not. Preserve each pinned variant exactly; relationship/coverage needs lead decision. Factual notice-text review only; policy approval and distribution compliance remain lead responsibilities."
+        },
+        {
+          "path": "licenses/simdutf.txt",
+          "sha256": "fc8dbc04e03ad4efc08a647ffe7f995b811a95bc04c0e85a56d5277c6593fa5f",
+          "size": 1059,
+          "licenseExpression": "MIT",
+          "review": "2021 simdutf authors MIT grant: retain copyright and permission notice in copies/substantial portions. Factual notice-text review only; policy approval and distribution compliance remain lead responsibilities."
+        },
+        {
+          "path": "licenses/zlib.txt",
+          "sha256": "33fd641c9f3b0e0be64bc78fea9e94807674cdd70c48477599226cb8956565fe",
+          "size": 1332,
+          "licenseExpression": "Zlib",
+          "review": "zlib 1.3.2.1 header: do not misrepresent origin, plainly mark altered source, do not remove/alter notice from source distributions. Product acknowledgment appreciated, not mandatory. Factual notice-text review only; policy approval and distribution compliance remain lead responsibilities."
+        }
+      ]
+    },
+    {
+      "archive": "pdfium-mac-x64.tgz",
+      "archiveSha256": "6dedf83990e0e3d6b7c93c9e7589c5a126b0ae14b7464d76120cff7a26afb18b",
+      "library": "lib/libpdfium.dylib",
+      "librarySha256": "4eaad6c3e8d786cf6f66a45d7d014edf5c65f372f98c3070e66595ebb50e43d9",
+      "notices": [
+        {
+          "path": "LICENSE",
+          "sha256": "ba26c1263131696b86c10496b5066b918a20b7161822a80c274d0080105f6c93",
+          "size": 1177,
+          "licenseExpression": "MIT",
+          "review": "Benoit Blanchon package MIT grant, copyright 2014-2025. Include copyright and permission notice in all copies/substantial portions; package explicitly refers to third-party licenses, not a blanket MIT grant. Factual notice-text review only; policy approval and distribution compliance remain lead responsibilities."
+        },
+        {
+          "path": "licenses/abseil.txt",
+          "sha256": "c79a7fea0e3cac04cd43f20e7b648e5a0ff8fa5344e644b0ee09ca1162b62747",
+          "size": 11361,
+          "licenseExpression": "Apache-2.0",
+          "review": "Apache 2.0 full terms: supply license, mark modified files, retain applicable source attributions and upstream NOTICE if present; patent termination and trademark limitations apply. Factual notice-text review only; policy approval and distribution compliance remain lead responsibilities."
+        },
+        {
+          "path": "licenses/agg23.txt",
+          "sha256": "c110d3ea2ad77467ce0dcff7d3337e6c8be8049a5103f4b9bd5fd911a77972e5",
+          "size": 725,
+          "licenseExpression": "LicenseRef-AGG-2.3-notice",
+          "review": "Anti-Grain Geometry 2.3 Maxim Shemanarev grant to copy/use/modify/sell/distribute conditioned on copyright notice appearing in all copies. As-is disclaimer. This is not an inferred GPL license from other AGG versions; exact license identifier requires lead review. Factual notice-text review only; policy approval and distribution compliance remain lead responsibilities."
+        },
+        {
+          "path": "licenses/fast_float.txt",
+          "sha256": "e562f3f974ced7e69dd1db77b820b36bcf8f30377f1aa105723fba449c53c4e6",
+          "size": 1079,
+          "licenseExpression": "MIT",
+          "review": "2021 fast_float authors MIT grant: retain copyright and permission notice in copies/substantial portions. Factual notice-text review only; policy approval and distribution compliance remain lead responsibilities."
+        },
+        {
+          "path": "licenses/freetype.txt",
+          "sha256": "f4b133e25df1f86ad3ffea453aa0e613f0474f34778dbbb3e437e7b2724937d8",
+          "size": 6741,
+          "licenseExpression": "FTL",
+          "review": "FreeType Project LICENSE 2006-Jan-27. Source: retain FTL unaltered, preserve original copyrights, document changes. Binary documentation must acknowledge software based in part on FreeType Team work. No unauthorized promotional use of names. Contains single-byte 0xa9 copyright byte: retain raw bytes, do not UTF-8-normalize. Files with explicit other licenses excluded from this grant; component coverage is not proven here. Factual notice-text review only; policy approval and distribution compliance remain lead responsibilities."
+        },
+        {
+          "path": "licenses/icu.txt",
+          "sha256": "e55522d81edc687a341a4411e0776e54ca654e90147f354a90458aaced4116af",
+          "size": 27718,
+          "licenseExpression": null,
+          "review": "Composite ICU notice, not Unicode-only approval. Unicode-3.0 primary text; historical ICU permission terms; cjdict Google/TaBE BSD-3-Clause, Tsai attribution and IPADIC/NAIST with ICOT no-warranty and distribution-law condition; Lao BSD-2-Clause, Burmese BSD-3-Clause; TZ public-domain statement; double-conversion BSD-3-Clause; nlohmann/json MIT. Also ICU4C aclocal.m4 pkg.m4 GPL-2.0-or-later with Autoconf distribution exception, config.guess GPL-3.0-or-later with Autoconf exception (notice asserts configure fulfills exception), install-sh MIT-style no-publicity grant; ICU4J sorttable.js MIT-style text. Preserve all sections, copyright/disclaimers and no-endorsement restrictions. Included notices do not establish which build scripts/data/code are linked or distributed; GPL/exceptions, IPADIC/ICOT, public-domain and mixed applicability require explicit lead policy review. No blanket SPDX OR/AND or policy approval inferred. Factual notice-text review only; policy approval and distribution compliance remain lead responsibilities."
+        },
+        {
+          "path": "licenses/lcms.txt",
+          "sha256": "7312b68c5b25e9bf2b828706fb4e29588f22705112f411fd42e1f7d84c3d139a",
+          "size": 1353,
+          "licenseExpression": "MIT",
+          "review": "Little CMS version 2.19, Marti Maria Saguer copyright 1998-2026; MIT notice retention in copies/substantial portions. Factual notice-text review only; policy approval and distribution compliance remain lead responsibilities."
+        },
+        {
+          "path": "licenses/libjpeg_turbo.ijg",
+          "sha256": "75815e3bf6484201a3c3d17a1bbf10f2e8e3237f84df10a2357ea896db2a81d6",
+          "size": 12799,
+          "licenseExpression": "IJG",
+          "review": "Modified IJG reference README, legal terms copyright 1991-2020 Lane/Vollbeding. Source distribution requires unaltered copyright/no-warranty README and change documentation; executable documentation must state software is based in part on work of Independent JPEG Group. No unauthorized author/company publicity; user assumes responsibility. References to external noncommercial ACM/IEEE article are not a grant for that article or evidence it is bundled. Factual notice-text review only; policy approval and distribution compliance remain lead responsibilities."
+        },
+        {
+          "path": "licenses/libjpeg_turbo.md",
+          "sha256": "96f5b328adbb78eeaaec6980d73fd558cb1e4d62560ed615646bc3cf5e532430",
+          "size": 5620,
+          "licenseExpression": null,
+          "review": "Multiple component-specific terms: IJG for libjpeg API, zlib for SIMD, BSD-3-Clause for TurboJPEG API/build system; document says both IJG and BSD apply to overall TurboJPEG API. Binary documentation needs IJG acknowledgment and BSD terms when TurboJPEG used; source changes/notices preserved; no endorsement. Do not collapse into an OR choice or infer which APIs were linked. Lead must resolve applicability. Factual notice-text review only; policy approval and distribution compliance remain lead responsibilities."
+        },
+        {
+          "path": "licenses/libopenjpeg.txt",
+          "sha256": "c5ab0890a737c2dfa7ba675036554f6d17741d98629b0c2a145354d00617e6b2",
+          "size": 1794,
+          "licenseExpression": "BSD-2-Clause",
+          "review": "Two-condition BSD grant, retain copyright/conditions/disclaimer in source and binary accompanying materials. Intro expressly does not grant other third-party/contributor patent rights. Factual notice-text review only; policy approval and distribution compliance remain lead responsibilities."
+        },
+        {
+          "path": "licenses/libpng.txt",
+          "sha256": "bdb0a645ea18c60507d0368379b1ac5474b92255fcc2d115e07486a7672ba526",
+          "size": 5345,
+          "licenseExpression": null,
+          "review": "PNG Reference Library License version 2 (libpng-2.0 identification) followed by version 1 historical terms (Libpng identification). No origin misrepresentation, altered source marked, copyright notice retained in source/altered source; acknowledgment appreciated not required. Mentions contrib/configure-generated files under other unspecified open-source licenses; coverage cannot be resolved from this notice. Lead must review multiple terms and actual applicability. Factual notice-text review only; policy approval and distribution compliance remain lead responsibilities."
+        },
+        {
+          "path": "licenses/libtiff.txt",
+          "sha256": "92b72ba97e6c2749c2a94bc0ef646b47080217f1e772a482b33cf5a5f98a6506",
+          "size": 1139,
+          "licenseExpression": "libtiff",
+          "review": "Sam Leffler/Silicon Graphics grant: retain copyright and permission notice in software and related documentation; no names in advertising/publicity without specific prior written permission. Factual notice-text review only; policy approval and distribution compliance remain lead responsibilities."
+        },
+        {
+          "path": "licenses/llvm-libc.txt",
+          "sha256": "ebcd9bbf783a73d05c53ba4d586b8d5813dcdf3bbec50265860ccc885e606f47",
+          "size": 15140,
+          "licenseExpression": null,
+          "review": "Multiple sections: Apache-2.0 WITH LLVM-exception, third-party coverage caveat, and legacy University of Illinois/NCSA license. LLVM exception waives sections 4(a),4(b),4(d) for embedded object portions from compilation and permits specified GPLv2 conflict waivers; do not assume exception applies to all uses. Legacy NCSA requires source/binary notices and no endorsement. Third-party code may have separate file/directory terms. Lead must resolve coverage rather than treating all text as an OR grant. Factual notice-text review only; policy approval and distribution compliance remain lead responsibilities."
+        },
+        {
+          "path": "licenses/pdfium.txt",
+          "sha256": "1fe9dea718fbd75cf149adaf4d8a22a4335604d964ddb76d1b45383dec8668c9",
+          "size": 12896,
+          "licenseExpression": null,
+          "review": "Contains PDFium Authors BSD-3-Clause conditions followed by full Apache-2.0 text; does not state an explicit OR choice. Retain BSD source and binary documentation notices and no-endorsement condition; Apache redistribution, modification/NOTICE and patent terms also need applicability review. macOS BSD section has // comment prefixes; Linux does not. Preserve each pinned variant exactly; relationship/coverage needs lead decision. Factual notice-text review only; policy approval and distribution compliance remain lead responsibilities."
+        },
+        {
+          "path": "licenses/simdutf.txt",
+          "sha256": "fc8dbc04e03ad4efc08a647ffe7f995b811a95bc04c0e85a56d5277c6593fa5f",
+          "size": 1059,
+          "licenseExpression": "MIT",
+          "review": "2021 simdutf authors MIT grant: retain copyright and permission notice in copies/substantial portions. Factual notice-text review only; policy approval and distribution compliance remain lead responsibilities."
+        },
+        {
+          "path": "licenses/zlib.txt",
+          "sha256": "33fd641c9f3b0e0be64bc78fea9e94807674cdd70c48477599226cb8956565fe",
+          "size": 1332,
+          "licenseExpression": "Zlib",
+          "review": "zlib 1.3.2.1 header: do not misrepresent origin, plainly mark altered source, do not remove/alter notice from source distributions. Product acknowledgment appreciated, not mandatory. Factual notice-text review only; policy approval and distribution compliance remain lead responsibilities."
+        }
+      ]
+    },
+    {
+      "archive": "pdfium-linux-x64.tgz",
+      "archiveSha256": "1470e21b8b4a3b4ad7f85684e2da11d94f3b69a86d81dee11b9b6709d927ac1d",
+      "library": "lib/libpdfium.so",
+      "librarySha256": "f728930966f503652b92acc89b9374a2eeca00ce42e26dccd3e4b5c5161b2d64",
+      "notices": [
+        {
+          "path": "LICENSE",
+          "sha256": "ba26c1263131696b86c10496b5066b918a20b7161822a80c274d0080105f6c93",
+          "size": 1177,
+          "licenseExpression": "MIT",
+          "review": "Benoit Blanchon package MIT grant, copyright 2014-2025. Include copyright and permission notice in all copies/substantial portions; package explicitly refers to third-party licenses, not a blanket MIT grant. Factual notice-text review only; policy approval and distribution compliance remain lead responsibilities."
+        },
+        {
+          "path": "licenses/abseil.txt",
+          "sha256": "c79a7fea0e3cac04cd43f20e7b648e5a0ff8fa5344e644b0ee09ca1162b62747",
+          "size": 11361,
+          "licenseExpression": "Apache-2.0",
+          "review": "Apache 2.0 full terms: supply license, mark modified files, retain applicable source attributions and upstream NOTICE if present; patent termination and trademark limitations apply. Factual notice-text review only; policy approval and distribution compliance remain lead responsibilities."
+        },
+        {
+          "path": "licenses/agg23.txt",
+          "sha256": "c110d3ea2ad77467ce0dcff7d3337e6c8be8049a5103f4b9bd5fd911a77972e5",
+          "size": 725,
+          "licenseExpression": "LicenseRef-AGG-2.3-notice",
+          "review": "Anti-Grain Geometry 2.3 Maxim Shemanarev grant to copy/use/modify/sell/distribute conditioned on copyright notice appearing in all copies. As-is disclaimer. This is not an inferred GPL license from other AGG versions; exact license identifier requires lead review. Factual notice-text review only; policy approval and distribution compliance remain lead responsibilities."
+        },
+        {
+          "path": "licenses/fast_float.txt",
+          "sha256": "e562f3f974ced7e69dd1db77b820b36bcf8f30377f1aa105723fba449c53c4e6",
+          "size": 1079,
+          "licenseExpression": "MIT",
+          "review": "2021 fast_float authors MIT grant: retain copyright and permission notice in copies/substantial portions. Factual notice-text review only; policy approval and distribution compliance remain lead responsibilities."
+        },
+        {
+          "path": "licenses/freetype.txt",
+          "sha256": "f4b133e25df1f86ad3ffea453aa0e613f0474f34778dbbb3e437e7b2724937d8",
+          "size": 6741,
+          "licenseExpression": "FTL",
+          "review": "FreeType Project LICENSE 2006-Jan-27. Source: retain FTL unaltered, preserve original copyrights, document changes. Binary documentation must acknowledge software based in part on FreeType Team work. No unauthorized promotional use of names. Contains single-byte 0xa9 copyright byte: retain raw bytes, do not UTF-8-normalize. Files with explicit other licenses excluded from this grant; component coverage is not proven here. Factual notice-text review only; policy approval and distribution compliance remain lead responsibilities."
+        },
+        {
+          "path": "licenses/icu.txt",
+          "sha256": "e55522d81edc687a341a4411e0776e54ca654e90147f354a90458aaced4116af",
+          "size": 27718,
+          "licenseExpression": null,
+          "review": "Composite ICU notice, not Unicode-only approval. Unicode-3.0 primary text; historical ICU permission terms; cjdict Google/TaBE BSD-3-Clause, Tsai attribution and IPADIC/NAIST with ICOT no-warranty and distribution-law condition; Lao BSD-2-Clause, Burmese BSD-3-Clause; TZ public-domain statement; double-conversion BSD-3-Clause; nlohmann/json MIT. Also ICU4C aclocal.m4 pkg.m4 GPL-2.0-or-later with Autoconf distribution exception, config.guess GPL-3.0-or-later with Autoconf exception (notice asserts configure fulfills exception), install-sh MIT-style no-publicity grant; ICU4J sorttable.js MIT-style text. Preserve all sections, copyright/disclaimers and no-endorsement restrictions. Included notices do not establish which build scripts/data/code are linked or distributed; GPL/exceptions, IPADIC/ICOT, public-domain and mixed applicability require explicit lead policy review. No blanket SPDX OR/AND or policy approval inferred. Factual notice-text review only; policy approval and distribution compliance remain lead responsibilities."
+        },
+        {
+          "path": "licenses/lcms.txt",
+          "sha256": "7312b68c5b25e9bf2b828706fb4e29588f22705112f411fd42e1f7d84c3d139a",
+          "size": 1353,
+          "licenseExpression": "MIT",
+          "review": "Little CMS version 2.19, Marti Maria Saguer copyright 1998-2026; MIT notice retention in copies/substantial portions. Factual notice-text review only; policy approval and distribution compliance remain lead responsibilities."
+        },
+        {
+          "path": "licenses/libjpeg_turbo.ijg",
+          "sha256": "75815e3bf6484201a3c3d17a1bbf10f2e8e3237f84df10a2357ea896db2a81d6",
+          "size": 12799,
+          "licenseExpression": "IJG",
+          "review": "Modified IJG reference README, legal terms copyright 1991-2020 Lane/Vollbeding. Source distribution requires unaltered copyright/no-warranty README and change documentation; executable documentation must state software is based in part on work of Independent JPEG Group. No unauthorized author/company publicity; user assumes responsibility. References to external noncommercial ACM/IEEE article are not a grant for that article or evidence it is bundled. Factual notice-text review only; policy approval and distribution compliance remain lead responsibilities."
+        },
+        {
+          "path": "licenses/libjpeg_turbo.md",
+          "sha256": "96f5b328adbb78eeaaec6980d73fd558cb1e4d62560ed615646bc3cf5e532430",
+          "size": 5620,
+          "licenseExpression": null,
+          "review": "Multiple component-specific terms: IJG for libjpeg API, zlib for SIMD, BSD-3-Clause for TurboJPEG API/build system; document says both IJG and BSD apply to overall TurboJPEG API. Binary documentation needs IJG acknowledgment and BSD terms when TurboJPEG used; source changes/notices preserved; no endorsement. Do not collapse into an OR choice or infer which APIs were linked. Lead must resolve applicability. Factual notice-text review only; policy approval and distribution compliance remain lead responsibilities."
+        },
+        {
+          "path": "licenses/libopenjpeg.txt",
+          "sha256": "c5ab0890a737c2dfa7ba675036554f6d17741d98629b0c2a145354d00617e6b2",
+          "size": 1794,
+          "licenseExpression": "BSD-2-Clause",
+          "review": "Two-condition BSD grant, retain copyright/conditions/disclaimer in source and binary accompanying materials. Intro expressly does not grant other third-party/contributor patent rights. Factual notice-text review only; policy approval and distribution compliance remain lead responsibilities."
+        },
+        {
+          "path": "licenses/libpng.txt",
+          "sha256": "bdb0a645ea18c60507d0368379b1ac5474b92255fcc2d115e07486a7672ba526",
+          "size": 5345,
+          "licenseExpression": null,
+          "review": "PNG Reference Library License version 2 (libpng-2.0 identification) followed by version 1 historical terms (Libpng identification). No origin misrepresentation, altered source marked, copyright notice retained in source/altered source; acknowledgment appreciated not required. Mentions contrib/configure-generated files under other unspecified open-source licenses; coverage cannot be resolved from this notice. Lead must review multiple terms and actual applicability. Factual notice-text review only; policy approval and distribution compliance remain lead responsibilities."
+        },
+        {
+          "path": "licenses/libtiff.txt",
+          "sha256": "92b72ba97e6c2749c2a94bc0ef646b47080217f1e772a482b33cf5a5f98a6506",
+          "size": 1139,
+          "licenseExpression": "libtiff",
+          "review": "Sam Leffler/Silicon Graphics grant: retain copyright and permission notice in software and related documentation; no names in advertising/publicity without specific prior written permission. Factual notice-text review only; policy approval and distribution compliance remain lead responsibilities."
+        },
+        {
+          "path": "licenses/llvm-libc.txt",
+          "sha256": "ebcd9bbf783a73d05c53ba4d586b8d5813dcdf3bbec50265860ccc885e606f47",
+          "size": 15140,
+          "licenseExpression": null,
+          "review": "Multiple sections: Apache-2.0 WITH LLVM-exception, third-party coverage caveat, and legacy University of Illinois/NCSA license. LLVM exception waives sections 4(a),4(b),4(d) for embedded object portions from compilation and permits specified GPLv2 conflict waivers; do not assume exception applies to all uses. Legacy NCSA requires source/binary notices and no endorsement. Third-party code may have separate file/directory terms. Lead must resolve coverage rather than treating all text as an OR grant. Factual notice-text review only; policy approval and distribution compliance remain lead responsibilities."
+        },
+        {
+          "path": "licenses/pdfium.txt",
+          "sha256": "961eacd9633fff6d051db7208b755e9210e30efac7adec3e6a6d52798f0ccf0e",
+          "size": 12818,
+          "licenseExpression": null,
+          "review": "Contains PDFium Authors BSD-3-Clause conditions followed by full Apache-2.0 text; does not state an explicit OR choice. Retain BSD source and binary documentation notices and no-endorsement condition; Apache redistribution, modification/NOTICE and patent terms also need applicability review. macOS BSD section has // comment prefixes; Linux does not. Preserve each pinned variant exactly; relationship/coverage needs lead decision. Factual notice-text review only; policy approval and distribution compliance remain lead responsibilities."
+        },
+        {
+          "path": "licenses/simdutf.txt",
+          "sha256": "fc8dbc04e03ad4efc08a647ffe7f995b811a95bc04c0e85a56d5277c6593fa5f",
+          "size": 1059,
+          "licenseExpression": "MIT",
+          "review": "2021 simdutf authors MIT grant: retain copyright and permission notice in copies/substantial portions. Factual notice-text review only; policy approval and distribution compliance remain lead responsibilities."
+        },
+        {
+          "path": "licenses/zlib.txt",
+          "sha256": "33fd641c9f3b0e0be64bc78fea9e94807674cdd70c48477599226cb8956565fe",
+          "size": 1332,
+          "licenseExpression": "Zlib",
+          "review": "zlib 1.3.2.1 header: do not misrepresent origin, plainly mark altered source, do not remove/alter notice from source distributions. Product acknowledgment appreciated, not mandatory. Factual notice-text review only; policy approval and distribution compliance remain lead responsibilities."
+        }
+      ]
+    },
+    {
+      "archive": "pdfium-linux-arm64.tgz",
+      "archiveSha256": "ee7f7b7d5468958336a818c1cd580bdd20972846b7377b13f9a923d92d1d4674",
+      "library": "lib/libpdfium.so",
+      "librarySha256": "6252fce3da45e7f0dc5b27f4d4e1a1456ca3f7734cdb04f927967df772127478",
+      "notices": [
+        {
+          "path": "LICENSE",
+          "sha256": "ba26c1263131696b86c10496b5066b918a20b7161822a80c274d0080105f6c93",
+          "size": 1177,
+          "licenseExpression": "MIT",
+          "review": "Benoit Blanchon package MIT grant, copyright 2014-2025. Include copyright and permission notice in all copies/substantial portions; package explicitly refers to third-party licenses, not a blanket MIT grant. Factual notice-text review only; policy approval and distribution compliance remain lead responsibilities."
+        },
+        {
+          "path": "licenses/abseil.txt",
+          "sha256": "c79a7fea0e3cac04cd43f20e7b648e5a0ff8fa5344e644b0ee09ca1162b62747",
+          "size": 11361,
+          "licenseExpression": "Apache-2.0",
+          "review": "Apache 2.0 full terms: supply license, mark modified files, retain applicable source attributions and upstream NOTICE if present; patent termination and trademark limitations apply. Factual notice-text review only; policy approval and distribution compliance remain lead responsibilities."
+        },
+        {
+          "path": "licenses/agg23.txt",
+          "sha256": "c110d3ea2ad77467ce0dcff7d3337e6c8be8049a5103f4b9bd5fd911a77972e5",
+          "size": 725,
+          "licenseExpression": "LicenseRef-AGG-2.3-notice",
+          "review": "Anti-Grain Geometry 2.3 Maxim Shemanarev grant to copy/use/modify/sell/distribute conditioned on copyright notice appearing in all copies. As-is disclaimer. This is not an inferred GPL license from other AGG versions; exact license identifier requires lead review. Factual notice-text review only; policy approval and distribution compliance remain lead responsibilities."
+        },
+        {
+          "path": "licenses/fast_float.txt",
+          "sha256": "e562f3f974ced7e69dd1db77b820b36bcf8f30377f1aa105723fba449c53c4e6",
+          "size": 1079,
+          "licenseExpression": "MIT",
+          "review": "2021 fast_float authors MIT grant: retain copyright and permission notice in copies/substantial portions. Factual notice-text review only; policy approval and distribution compliance remain lead responsibilities."
+        },
+        {
+          "path": "licenses/freetype.txt",
+          "sha256": "f4b133e25df1f86ad3ffea453aa0e613f0474f34778dbbb3e437e7b2724937d8",
+          "size": 6741,
+          "licenseExpression": "FTL",
+          "review": "FreeType Project LICENSE 2006-Jan-27. Source: retain FTL unaltered, preserve original copyrights, document changes. Binary documentation must acknowledge software based in part on FreeType Team work. No unauthorized promotional use of names. Contains single-byte 0xa9 copyright byte: retain raw bytes, do not UTF-8-normalize. Files with explicit other licenses excluded from this grant; component coverage is not proven here. Factual notice-text review only; policy approval and distribution compliance remain lead responsibilities."
+        },
+        {
+          "path": "licenses/icu.txt",
+          "sha256": "e55522d81edc687a341a4411e0776e54ca654e90147f354a90458aaced4116af",
+          "size": 27718,
+          "licenseExpression": null,
+          "review": "Composite ICU notice, not Unicode-only approval. Unicode-3.0 primary text; historical ICU permission terms; cjdict Google/TaBE BSD-3-Clause, Tsai attribution and IPADIC/NAIST with ICOT no-warranty and distribution-law condition; Lao BSD-2-Clause, Burmese BSD-3-Clause; TZ public-domain statement; double-conversion BSD-3-Clause; nlohmann/json MIT. Also ICU4C aclocal.m4 pkg.m4 GPL-2.0-or-later with Autoconf distribution exception, config.guess GPL-3.0-or-later with Autoconf exception (notice asserts configure fulfills exception), install-sh MIT-style no-publicity grant; ICU4J sorttable.js MIT-style text. Preserve all sections, copyright/disclaimers and no-endorsement restrictions. Included notices do not establish which build scripts/data/code are linked or distributed; GPL/exceptions, IPADIC/ICOT, public-domain and mixed applicability require explicit lead policy review. No blanket SPDX OR/AND or policy approval inferred. Factual notice-text review only; policy approval and distribution compliance remain lead responsibilities."
+        },
+        {
+          "path": "licenses/lcms.txt",
+          "sha256": "7312b68c5b25e9bf2b828706fb4e29588f22705112f411fd42e1f7d84c3d139a",
+          "size": 1353,
+          "licenseExpression": "MIT",
+          "review": "Little CMS version 2.19, Marti Maria Saguer copyright 1998-2026; MIT notice retention in copies/substantial portions. Factual notice-text review only; policy approval and distribution compliance remain lead responsibilities."
+        },
+        {
+          "path": "licenses/libjpeg_turbo.ijg",
+          "sha256": "75815e3bf6484201a3c3d17a1bbf10f2e8e3237f84df10a2357ea896db2a81d6",
+          "size": 12799,
+          "licenseExpression": "IJG",
+          "review": "Modified IJG reference README, legal terms copyright 1991-2020 Lane/Vollbeding. Source distribution requires unaltered copyright/no-warranty README and change documentation; executable documentation must state software is based in part on work of Independent JPEG Group. No unauthorized author/company publicity; user assumes responsibility. References to external noncommercial ACM/IEEE article are not a grant for that article or evidence it is bundled. Factual notice-text review only; policy approval and distribution compliance remain lead responsibilities."
+        },
+        {
+          "path": "licenses/libjpeg_turbo.md",
+          "sha256": "96f5b328adbb78eeaaec6980d73fd558cb1e4d62560ed615646bc3cf5e532430",
+          "size": 5620,
+          "licenseExpression": null,
+          "review": "Multiple component-specific terms: IJG for libjpeg API, zlib for SIMD, BSD-3-Clause for TurboJPEG API/build system; document says both IJG and BSD apply to overall TurboJPEG API. Binary documentation needs IJG acknowledgment and BSD terms when TurboJPEG used; source changes/notices preserved; no endorsement. Do not collapse into an OR choice or infer which APIs were linked. Lead must resolve applicability. Factual notice-text review only; policy approval and distribution compliance remain lead responsibilities."
+        },
+        {
+          "path": "licenses/libopenjpeg.txt",
+          "sha256": "c5ab0890a737c2dfa7ba675036554f6d17741d98629b0c2a145354d00617e6b2",
+          "size": 1794,
+          "licenseExpression": "BSD-2-Clause",
+          "review": "Two-condition BSD grant, retain copyright/conditions/disclaimer in source and binary accompanying materials. Intro expressly does not grant other third-party/contributor patent rights. Factual notice-text review only; policy approval and distribution compliance remain lead responsibilities."
+        },
+        {
+          "path": "licenses/libpng.txt",
+          "sha256": "bdb0a645ea18c60507d0368379b1ac5474b92255fcc2d115e07486a7672ba526",
+          "size": 5345,
+          "licenseExpression": null,
+          "review": "PNG Reference Library License version 2 (libpng-2.0 identification) followed by version 1 historical terms (Libpng identification). No origin misrepresentation, altered source marked, copyright notice retained in source/altered source; acknowledgment appreciated not required. Mentions contrib/configure-generated files under other unspecified open-source licenses; coverage cannot be resolved from this notice. Lead must review multiple terms and actual applicability. Factual notice-text review only; policy approval and distribution compliance remain lead responsibilities."
+        },
+        {
+          "path": "licenses/libtiff.txt",
+          "sha256": "92b72ba97e6c2749c2a94bc0ef646b47080217f1e772a482b33cf5a5f98a6506",
+          "size": 1139,
+          "licenseExpression": "libtiff",
+          "review": "Sam Leffler/Silicon Graphics grant: retain copyright and permission notice in software and related documentation; no names in advertising/publicity without specific prior written permission. Factual notice-text review only; policy approval and distribution compliance remain lead responsibilities."
+        },
+        {
+          "path": "licenses/llvm-libc.txt",
+          "sha256": "ebcd9bbf783a73d05c53ba4d586b8d5813dcdf3bbec50265860ccc885e606f47",
+          "size": 15140,
+          "licenseExpression": null,
+          "review": "Multiple sections: Apache-2.0 WITH LLVM-exception, third-party coverage caveat, and legacy University of Illinois/NCSA license. LLVM exception waives sections 4(a),4(b),4(d) for embedded object portions from compilation and permits specified GPLv2 conflict waivers; do not assume exception applies to all uses. Legacy NCSA requires source/binary notices and no endorsement. Third-party code may have separate file/directory terms. Lead must resolve coverage rather than treating all text as an OR grant. Factual notice-text review only; policy approval and distribution compliance remain lead responsibilities."
+        },
+        {
+          "path": "licenses/pdfium.txt",
+          "sha256": "961eacd9633fff6d051db7208b755e9210e30efac7adec3e6a6d52798f0ccf0e",
+          "size": 12818,
+          "licenseExpression": null,
+          "review": "Contains PDFium Authors BSD-3-Clause conditions followed by full Apache-2.0 text; does not state an explicit OR choice. Retain BSD source and binary documentation notices and no-endorsement condition; Apache redistribution, modification/NOTICE and patent terms also need applicability review. macOS BSD section has // comment prefixes; Linux does not. Preserve each pinned variant exactly; relationship/coverage needs lead decision. Factual notice-text review only; policy approval and distribution compliance remain lead responsibilities."
+        },
+        {
+          "path": "licenses/simdutf.txt",
+          "sha256": "fc8dbc04e03ad4efc08a647ffe7f995b811a95bc04c0e85a56d5277c6593fa5f",
+          "size": 1059,
+          "licenseExpression": "MIT",
+          "review": "2021 simdutf authors MIT grant: retain copyright and permission notice in copies/substantial portions. Factual notice-text review only; policy approval and distribution compliance remain lead responsibilities."
+        },
+        {
+          "path": "licenses/zlib.txt",
+          "sha256": "33fd641c9f3b0e0be64bc78fea9e94807674cdd70c48477599226cb8956565fe",
+          "size": 1332,
+          "licenseExpression": "Zlib",
+          "review": "zlib 1.3.2.1 header: do not misrepresent origin, plainly mark altered source, do not remove/alter notice from source distributions. Product acknowledgment appreciated, not mandatory. Factual notice-text review only; policy approval and distribution compliance remain lead responsibilities."
+        }
+      ]
+    }
+  ],
+  "policyApprovalClaim": false
+}
