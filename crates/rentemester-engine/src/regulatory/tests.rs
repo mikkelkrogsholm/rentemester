@@ -116,7 +116,7 @@ fn scope_variants() {
     }
 }
 #[test]
-fn bundled_existing_errors_remain_visible() {
+fn bundled_valid_corpus_and_actual_errors_remain_visible() {
     let result = bundled_coverage().unwrap();
     eprintln!(
         "native corpus overall={} closure={} drift={} scope={} sourceErrors={}",
@@ -133,12 +133,11 @@ fn bundled_existing_errors_remain_visible() {
     assert_eq!(result["closureErrors"], json!([]));
     assert_eq!(result["driftErrors"], json!([]));
     assert_eq!(result["scopeErrors"], json!([]));
-    assert_eq!(
-        result["sourceErrors"],
-        json!([{"kind":"unknown_rule_source","ruleId":"DK-VAT-OSS-001","sourceId":""}])
-    );
-    assert_eq!(result["ok"], false);
-    assert!(result["errorCount"].as_u64().unwrap() > 0);
+    assert_eq!(result["sourceErrors"], json!([]));
+    assert_eq!(result["ok"], true);
+    assert_eq!(result["errorCount"], 0);
+    assert_eq!(result["uncitedRules"].as_array().unwrap().len(), 10);
+    assert!(result["uncitedRules"].as_array().unwrap().contains(&json!("DK-VAT-OSS-001")));
     assert_eq!(result["sources"].as_array().unwrap().len(), 9);
     assert_eq!(result["bundleVersions"].as_object().unwrap().len(), 12);
     let bad_index = assets::INDEX.replace(
@@ -168,4 +167,16 @@ fn bundled_existing_errors_remain_visible() {
             .unwrap()
             .contains("self-attestation")
     );
+}
+
+#[test]
+fn deliberately_uncited_rule_is_not_an_unknown_source_but_declared_sources_validate() {
+    let plain = "version: test-v1\nrules:\n  - rule_id: DK-UNCITED-001\n    name: No claimed citation\n    severity: hard_stop\n";
+    let valid = run(XML, SCOPE, plain).unwrap();
+    assert_eq!(valid["ok"], true);
+    assert_eq!(valid["uncitedRules"], json!(["DK-UNCITED-001"]));
+    let declared = plain.replace("    severity:", "    source_id: DK-UNKNOWN\n    severity:");
+    let invalid = run(XML, SCOPE, &declared).unwrap();
+    assert_eq!(invalid["ok"], false);
+    assert_eq!(invalid["sourceErrors"][0]["kind"], "unknown_rule_source");
 }

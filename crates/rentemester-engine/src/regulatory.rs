@@ -104,7 +104,9 @@ fn compute(
         let id = s(rule, "ruleId");
         let source = s(rule, "sourceId");
         let citations = rule["provisions"].as_array().unwrap();
-        if !catalog.iter().any(|c| s(c, "id") == source) {
+        if (!source.is_empty() || !citations.is_empty())
+            && !catalog.iter().any(|c| s(c, "id") == source)
+        {
             source_errors.push(json!({"kind":"unknown_rule_source","ruleId":id,"sourceId":source}));
         }
         if citations.is_empty() {
