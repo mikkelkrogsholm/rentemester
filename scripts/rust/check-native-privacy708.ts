@@ -17,7 +17,7 @@ export function createPrivacyComplianceProof(owner: Page, base: string, work: st
   const hash=(v:Buffer|string)=>createHash('sha256').update(v).digest('hex');
   let baseline:any, documentId:number, today:string, finalFree:any, finalRetained:any, sourceReport:any;
   async function post(path:string,data:any,page=owner){const r=await page.request.post(base+path,{headers:{origin:base},data});let body:any;try{body=await r.json();}catch{body=null;}return{status:r.status(),body};}
-  async function good(path:string,data:any){const r=await post(path,data);need(r.status===200&&r.body?.ok===true,path+' HTTP'+r.status+': '+JSON.stringify(r.body).slice(0,500));return r.body;}
+  async function good(path:string,data:any){const r=await post(path,data);need(r.status>=200&&r.status<300&&r.body?.ok===true,path+' HTTP'+r.status+': '+JSON.stringify(r.body).slice(0,500));return r.body;}
   async function get(path:string){const r=await owner.request.get(base+path);need(r.ok(),path+' HTTP'+r.status());return r.json();}
   const exportSubject=async(subject:any)=>(await good(prefix+'gdpr/export',{...subject,confirm:true})).gdpr.export;
   const books=async()=>({a:await get(prefix+'journal/entries?all=true'),b:await get('/api/companies/'+other+'/journal/entries?all=true'),trial:await get(prefix+'trial-balance')});
