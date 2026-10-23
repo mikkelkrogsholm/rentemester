@@ -1436,3 +1436,5 @@ mod accrual_original;
 mod asset_original;
 
 mod mileage_original;
+
+mod vat_purchase_original;
