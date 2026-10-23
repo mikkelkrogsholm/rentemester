@@ -534,14 +534,14 @@ def main():
                         raise RuntimeError('Original VAT resolved bank task must retain exact source links and posting resolution')
                     return rows
                 if args.original_commitment:
-                    if len(rows['vendors']) != 1 or len(rows['documents']) != 1 or len(rows['supplier_commitment_events']) != 3 or len(rows['supplier_commitment_occurrence_matches']) != 1 or any(rows[t] for t in ['journal_entries', 'journal_lines', 'payables', 'payable_payments', 'bank_transactions', 'bank_journal_reconciliations', 'document_party_link_events', 'document_party_resolution_events', 'internal_voucher_evidence']):
+                    if len(rows['vendors']) != 1 or len(rows['documents']) != 1 or len(rows['supplier_commitment_events']) != 4 or len(rows['supplier_commitment_occurrence_matches']) != 1 or any(rows[t] for t in ['journal_entries', 'journal_lines', 'payables', 'payable_payments', 'bank_transactions', 'bank_journal_reconciliations', 'document_party_link_events', 'document_party_resolution_events', 'internal_voucher_evidence']):
                         raise RuntimeError('Frozen commitment original/history/match and zero financial inventory differs')
                     proof = report['results']['original-commitment']
                     events = rows['supplier_commitment_events']
                     match = rows['supplier_commitment_occurrence_matches'][0]
-                    if [r['event_type'] for r in events] != ['approved', 'paused', 'ended'] or [r['actor'] for r in events] != [proof['humanActor'], proof['serviceActor'], proof['humanActor']] or match['actor'] != proof['serviceActor']:
+                    if [r['event_type'] for r in events] != ['approved', 'paused', 'approved', 'ended'] or [r['actor'] for r in events] != [proof['humanActor'], proof['serviceActor'], proof['humanActor'], proof['humanActor']] or match['actor'] != proof['serviceActor']:
                         raise RuntimeError('Exact commitment typed human/service mutation provenance differs')
-                    if [r['principal'] for r in events] != [proof['humanPrincipal'], proof['servicePrincipal'], proof['humanPrincipal']] or match['principal'] != proof['servicePrincipal']:
+                    if [r['principal'] for r in events] != [proof['humanPrincipal'], proof['servicePrincipal'], proof['humanPrincipal'], proof['humanPrincipal']] or match['principal'] != proof['servicePrincipal']:
                         raise RuntimeError('Exact commitment principal provenance differs')
                     if events[0]['payload_hash'] != proof['approvalHash'] or match['payload_hash'] != proof['matchHash']:
                         raise RuntimeError('Immutable source commitment receipts differ')
@@ -657,7 +657,7 @@ def main():
                 report['reviewedLegacyActualPositiveQualified'] = False
             report['webFiles'] = {str(p.relative_to(web)): digest(p) for p in sorted(web.rglob('*')) if p.is_file()}
             if args.original_commitment:
-                report['independentExpectedFacts'] = {'amount': 10.01, 'canonicalAmount': 12.34, 'variance': 2.33, 'documents': 1, 'commitmentEvents': 3, 'matches': 1, 'scannerRequests': 1, 'providerRequests': 0, 'journalEntries': 0, 'journalLines': 0, 'payables': 0, 'payments': 0, 'bankTransactions': 0}
+                report['independentExpectedFacts'] = {'amount': 10.01, 'canonicalAmount': 12.34, 'variance': 2.33, 'documents': 1, 'commitmentEvents': 4, 'matches': 1, 'scannerRequests': 1, 'providerRequests': 0, 'journalEntries': 0, 'journalLines': 0, 'payables': 0, 'payments': 0, 'bankTransactions': 0}
                 save()
             if args.historical_vat:
                 report['independentExpectedFacts'] = {'gross': 125, 'purchaseBase25': 100, 'inputVat': 25, 'outputVat': 0, 'netVatPayable': -25, 'scannerRequests': 0, 'providerRequests': 0, 'inventory': {'documents': 0, 'journal_entries': 2, 'journal_lines': 5, 'bank_transactions': 0, 'bank_journal_reconciliations': 0, 'accounting_periods': 1, 'period_close_decisions': 1, 'period_close_reviews': 1, 'exceptions': 0, 'dinero_import_sources': 1, 'dinero_import_inventories': 1, 'dinero_import_inventory_entries': 4, 'dinero_import_attempts': 1, 'imported_receivable_headers': 0, 'imported_receivable_events': 0}}

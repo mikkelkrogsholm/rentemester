@@ -7,7 +7,7 @@ import { isDeepStrictEqual as equal } from 'node:util';
 
 // Frozen before the first actual. Native source-bound hashes and nextDate+90
 // schedules are deliberately NOT aliases of the legacy pure-TS proposal.
-export const originalCommitmentFacts = Object.freeze({ amount:10.01, canonicalAmount:12.34, variance:2.33, documents:1, events:3, matches:1, scannerRequests:1, providerRequests:0, journals:0, payables:0, payments:0, bank:0 });
+export const originalCommitmentFacts = Object.freeze({ amount:10.01, canonicalAmount:12.34, variance:2.33, documents:1, events:4, matches:1, scannerRequests:1, providerRequests:0, journals:0, payables:0, payments:0, bank:0 });
 export function createOriginalCommitmentProof(base:string,work:string,onStep:(name:string)=>void){
   const root='/api/companies/synthetic/',api=root+'original/supplier-commitments',id='synthetic-original-commitment176';
   const cookie=join(work,'commitment176.cookie'),key=join(work,'commitment176.key'),observations:any[]=[];
@@ -123,8 +123,14 @@ export function createOriginalCommitmentProof(base:string,work:string,onStep:(na
     invoke('mcp','match',{...match,occurrenceDate:feb},true,'refused');
     invoke('mcp','change',{commitmentId:id,action:'paused',reason:'Synthetic reviewed pause',confirm:true},true);
     need(projected(await native())===0&&invoke('cli','list').rows.length===0&&invoke('mcp','alerts',{asOf:date}).rows.length===0,'pause removes current list/alerts/future forecast');
+    invoke('cli','change',{commitmentId:id,action:'ended',reason:'Paused is not active',confirm:true},false,'refused');
+    const resumed=invoke('cli','plan',{input:commitment}).proposal;
+    need(resumed.previousPayloadHash&&resumed.payloadHash!==p.payloadHash,'fresh reviewed source-bound reactivation');
+    invoke('cli','apply',{input:commitment,payloadHash:resumed.payloadHash,idempotencyKey:'synthetic-commitment176-reviewed-resume',confirm:true});
     invoke('cli','change',{commitmentId:id,action:'ended',reason:'Synthetic reviewed end',confirm:true});
-    const n=await native();need(n.history.length===3&&n.matches.length===1&&n.commitments[0].status==='ended'&&projected(n)===0,'terminal history retained');
+    const recovered=invoke('cli','apply',{input:commitment,payloadHash:p.payloadHash,idempotencyKey:'synthetic-commitment176-reviewed',confirm:true});
+    need(recovered.idempotent===true&&recovered.payloadHash===p.payloadHash,'explicit original-key receipt recovery after end, no replan/reapplication');
+    const n=await native();need(n.history.length===4&&n.matches.length===1&&n.commitments[0].status==='ended'&&projected(n)===0,'terminal history retained');
     stable=await snapshot();need(equal(stable.financial,baseline),'no additional journal/payable/payment/bank effects');await physical();await parity();
     await admin('members/company',{userId:service.serviceAccountId,companySlug:'synthetic',action:'grant',role:'reader'});
     invoke('mcp','change',{commitmentId:id,action:'ended',reason:'Reader forbidden',confirm:true},true,'refused');
