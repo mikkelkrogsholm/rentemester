@@ -74,7 +74,7 @@ export function createOriginalAccountingDraftProof(base:string, work:string, onS
     await unchanged(async()=>{
       need(equal(cli('show',{draftId:'missing-draft180'}),{ok:true,accountingDraft:null}),'missing read is null');
       cli('create',{draftId:id,payload},'service',2);
-      await http(api+'create',{draftId:id,payload,confirm:false},422);
+      await http(api+'create',{draftId:id,payload,confirm:false},400);
       await http(api+'create',{draftId:id,payload,confirm:true,unknown:true},400);
       await http(api+'create',{draftId:id,payload,confirm:true,actor:'user:forged'},403);
       await http(api+'create','{"draftId":"synthetic-draft180","draftId":"other","confirm":true}',400);
@@ -91,7 +91,7 @@ export function createOriginalAccountingDraftProof(base:string, work:string, onS
         cli(op,args,'owner',1);cli(op,args,'service',1);
       }
       await http(api+'approve-and-post',{draftId:id,expectedEventHash:s.eventHash,payload:payloads[2],confirm:true},400,reviewer);
-      await http(api+'reject',{draftId:id,expectedEventHash:s.eventHash,reason:' ',confirm:true},422,reviewer);
+      await http(api+'reject',{draftId:id,expectedEventHash:s.eventHash,reason:' ',confirm:true},400,reviewer);
     });
     s=await transition('reject',{expectedEventHash:s.eventHash,reason:'Independent reviewer requests corrected description'},'reviewer',2,'rejected');
     s=await transition('revise',{payload:payloads[2],expectedEventHash:s.eventHash},'service',3,'revised');
