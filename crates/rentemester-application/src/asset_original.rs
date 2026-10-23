@@ -23,6 +23,9 @@ pub enum Action<'a> {
     Register(&'a Register),
     Depreciate(i64, &'a Depreciate),
     WriteOff(&'a WriteOff),
+    DisposalPreview(i64, &'a rentemester_storage::asset_disposal::Preview),
+    Dispose(i64, &'a rentemester_storage::asset_disposal::Dispose),
+    DisposalReceipt(i64, &'a str),
     /// Transport validation is evaluated only after current authority admission.
     Invalid,
     InvalidRegister,
@@ -79,7 +82,13 @@ fn apply(
     let now = clock
         .now_unix_ms()
         .map_err(|_| Error::new("clock_unavailable", "Asset clock unavailable"))?;
-    let days = if matches!(action, Action::Register(_)) {
+    let days = if matches!(
+        action,
+        Action::Register(_)
+            | Action::DisposalPreview(..)
+            | Action::Dispose(..)
+            | Action::DisposalReceipt(..)
+    ) {
         0
     } else {
         45
@@ -90,7 +99,10 @@ fn apply(
     let document = match action {
         Action::Report => return store::report(tx),
         Action::Register(input) => Some(input.document_id),
-        Action::Depreciate(id, _) => {
+        Action::DisposalPreview(id, _)
+        | Action::Dispose(id, _)
+        | Action::DisposalReceipt(id, _)
+        | Action::Depreciate(id, _) => {
             if !(1..=9_007_199_254_740_991).contains(&id) {
                 return Err(Error::new(
                     "invalid_input",
@@ -144,12 +156,60 @@ fn apply(
             }
         }
     }
+    if let Action::DisposalPreview(_, i) = &action {
+        verify_disposal_original(tx, guard, i.document_id)?;
+    }
+    if let Action::Dispose(_, i) = &action {
+        verify_disposal_original(tx, guard, i.document_id)?;
+    }
+    if let Action::DisposalReceipt(id, _) = &action {
+        if let Some(record) = rentemester_storage::asset_disposal::record(tx, *id)? {
+            verify_disposal_original(
+                tx,
+                guard,
+                record["documentId"].as_i64().ok_or_else(|| {
+                    Error::new("asset_refused", "Invalid retained disposal original")
+                })?,
+            )?;
+        }
+    }
     match action {
+        Action::DisposalPreview(id, i) => {
+            rentemester_storage::asset_disposal::preview(tx, id, i, latest)
+        }
+        Action::Dispose(id, i) => {
+            rentemester_storage::asset_disposal::dispose(tx, id, i, subject, kind, now, latest)
+        }
+        Action::DisposalReceipt(id, key) => {
+            rentemester_storage::asset_disposal::receipt(tx, id, key, subject, kind)
+        }
         Action::Register(input) => store::register(tx, input, subject, kind, latest),
         Action::Depreciate(id, input) => store::depreciate(tx, id, input, subject, kind, latest),
         Action::WriteOff(input) => store::write_off(tx, input, subject, kind, latest),
         _ => unreachable!(),
     }
+}
+fn verify_disposal_original(
+    tx: &Transaction<'_>,
+    guard: &mut NamespaceGuard,
+    id: i64,
+) -> Result<(), Error> {
+    if !(1..=9_007_199_254_740_991).contains(&id) {
+        return Err(Error::new(
+            "invalid_input",
+            "positive safe disposal document required",
+        ));
+    }
+    let original = rentemester_storage::documents::evidence(tx, id)?;
+    guard
+        .read_document(&original.path, &original.hash)
+        .map_err(|_| {
+            Error::new(
+                "document_evidence_unavailable",
+                "Disposal original unavailable or changed",
+            )
+        })?;
+    Ok(())
 }
 fn validate_write_off(input: &WriteOff) -> Result<(), Error> {
     let text =
@@ -223,7 +283,10 @@ pub fn execute_service(
     expected: Option<&str>,
 ) -> Result<service_company::ServiceResult<Value>, service_company::ServiceFailure> {
     let clock = context.clock;
-    let mutation = !matches!(action, Action::Report);
+    let mutation = !matches!(
+        action,
+        Action::Report | Action::DisposalPreview(..) | Action::DisposalReceipt(..)
+    );
     // execute_operation commits exactly one usage charge, then rechecks the live
     // typed service key/scope/permission under its company/backup/schema fence.
     service_company::execute_operation(
@@ -296,5 +359,117 @@ mod tests {
         // Source accepts explicit dates independently; shared journal controls
         // still reject any actual posting beyond the admitted horizon.
         assert!(validate_write_off(&input).is_ok());
+    }
+    #[test]
+    fn asset_disposal_permission_is_current_ledger_post_for_preview_apply_and_receipt() {
+        let p = rentemester_storage::asset_disposal::Preview {
+            transaction_date: "2026-01-01".into(),
+            document_id: 1,
+            reason: "Synthetic retirement".into(),
+            loss_account_no: None,
+        };
+        assert_eq!(
+            permission(&Action::DisposalPreview(1, &p)),
+            Permission::CompanyLedgerPost
+        );
+        assert_eq!(
+            permission(&Action::DisposalReceipt(1, "synthetic-key")),
+            Permission::CompanyLedgerPost
+        );
+        let i = rentemester_storage::asset_disposal::Dispose {
+            transaction_date: p.transaction_date.clone(),
+            document_id: 1,
+            reason: p.reason.clone(),
+            loss_account_no: None,
+            expected_plan_hash: "a".repeat(64),
+            idempotency_key: "synthetic-key".into(),
+            confirm: true,
+        };
+        assert_eq!(
+            permission(&Action::Dispose(1, &i)),
+            Permission::CompanyLedgerPost
+        );
+    }
+    #[test]
+    fn asset_disposal_current_authority_precedes_receipt_or_original_access() {
+        use rentemester_runtime::auth::{AuthError, Clock, CookieProfile, CookieVerifier};
+        struct Fixed;
+        impl Clock for Fixed {
+            fn now_unix_ms(&self) -> Result<i64, AuthError> {
+                Ok(1_767_225_600_000)
+            }
+        }
+        let dir = tempfile::tempdir().unwrap();
+        let mut control = Connection::open(dir.path().join("control.sqlite")).unwrap();
+        let mut company = Connection::open(dir.path().join("company.sqlite")).unwrap();
+        rentemester_storage::fresh::initialize_empty_pair(
+            &mut control,
+            &mut company,
+            "Synthetic disposal authority",
+        )
+        .unwrap();
+        control.execute_batch("INSERT INTO user(id,name,email,emailVerified,twoFactorEnabled,createdAt,updatedAt)VALUES('u','Synthetic','u@example.invalid',1,1,'2026-01-01','2026-01-01');INSERT INTO twoFactor(id,secret,backupCodes,userId,verified)VALUES('f','synthetic','[]','u',1);INSERT INTO session(id,userId,token,createdAt,updatedAt,expiresAt)VALUES('s','u','synthetic-token','2026-01-01T00:00:00.000Z','2026-01-01T00:00:00.000Z','2026-01-01T12:00:00.000Z');INSERT INTO rm_workspace_user_access_events(user_id,event_type,workspace_role,actor)VALUES('u','activate','member','user:u');INSERT INTO rm_company_membership_events(user_id,company_slug,event_type,company_role,actor)VALUES('u','a','grant','reader','user:u');").unwrap();
+        let verifier = CookieVerifier::new(
+            "w",
+            CookieProfile::Development,
+            "QUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUE",
+        )
+        .unwrap();
+        let issued = verifier.issue_session("synthetic-token").unwrap();
+        let cookie = verifier
+            .verify(Some(issued.request_header()), None)
+            .unwrap();
+        let selection = || control_fence::CompanySelection {
+            workspace: "w",
+            slug: "a",
+            registered: true,
+            archived: false,
+        };
+        let auth = || CookieAuthorization {
+            cookie: &cookie,
+            clock: &Fixed,
+            requirement: SessionRequirement::Current,
+        };
+        let before = company.total_changes();
+        let error = control_fence::execute_cookie_subject(
+            &mut control,
+            &mut company,
+            auth(),
+            selection(),
+            permission(&Action::DisposalReceipt(1, "synthetic-key")),
+            |_, _| -> Result<Value, Error> { panic!("reader must not reach receipt/original") },
+        )
+        .unwrap_err();
+        assert_eq!(error.error.code, "access_denied");
+        assert_eq!(company.total_changes(), before);
+        control.execute_batch("INSERT INTO rm_company_membership_events(user_id,company_slug,event_type,company_role,actor)VALUES('u','a','grant','bookkeeper','user:u')").unwrap();
+        let error = control_fence::execute_cookie_subject(
+            &mut control,
+            &mut company,
+            auth(),
+            selection(),
+            permission(&Action::DisposalReceipt(1, "synthetic-key")),
+            |_, _| -> Result<Value, Error> {
+                Err(Error::new(
+                    "synthetic_reached",
+                    "authorized source callback",
+                ))
+            },
+        )
+        .unwrap_err();
+        assert_eq!(error.error.code, "synthetic_reached");
+        control.execute_batch("INSERT INTO rm_company_membership_events(user_id,company_slug,event_type,actor)VALUES('u','a','revoke','user:u')").unwrap();
+        let error = control_fence::execute_cookie_subject(
+            &mut control,
+            &mut company,
+            auth(),
+            selection(),
+            permission(&Action::DisposalReceipt(1, "synthetic-key")),
+            |_, _| -> Result<Value, Error> {
+                panic!("revoked actor must not reach receipt/original")
+            },
+        )
+        .unwrap_err();
+        assert_eq!(error.error.code, "access_denied");
     }
 }

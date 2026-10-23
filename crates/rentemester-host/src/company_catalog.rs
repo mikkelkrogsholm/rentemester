@@ -6,6 +6,9 @@ use rentemester_application::workspace_context::{Catalog, RegisteredCompany};
 use rentemester_runtime::auth::CookieVerifier;
 use serde_json::{Value, json};
 impl Owner {
+    pub fn recurring_company_initialized_for_schema(&self, slug: &str) -> Result<bool, OwnerError> {
+        self.recurring_company_initialized(slug)
+    }
     pub(super) fn recurring_company_initialized(&self, slug: &str) -> Result<bool, OwnerError> {
         let mut path = self.root.clone();
         for (part, directory) in [(slug, true), ("data", true), ("ledger.sqlite", false)] {

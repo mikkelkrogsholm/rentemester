@@ -62,9 +62,9 @@ pub(crate) struct Asset {
     pub(crate) cost: Money,
     pub(crate) months: u32,
     pub(crate) acquisition: String,
-    expense: String,
-    accumulated: String,
-    document: i64,
+    pub(crate) expense: String,
+    pub(crate) accumulated: String,
+    pub(crate) document: i64,
 }
 pub(crate) fn load(tx: &Transaction<'_>, id: i64) -> Result<Asset, Error> {
     tx.query_row("SELECT id,name,cost,useful_life_months,acquisition_date,depreciation_expense_account_no,accumulated_depreciation_account_no,purchase_document_id FROM assets WHERE id=?1",[id],|r|Ok((r.get::<_,i64>(0)?,r.get::<_,String>(1)?,legacy_money(r.get_ref(2)?),r.get::<_,u32>(3)?,r.get::<_,String>(4)?,r.get::<_,String>(5)?,r.get::<_,String>(6)?,r.get::<_,i64>(7)?))).optional().map_err(invalid)?.ok_or_else(||refused("asset not found")).and_then(|(id,name,cost,months,acquisition,expense,accumulated,document)|Ok(Asset{id,name,cost:cost?,months,acquisition,expense,accumulated,document}))
@@ -97,9 +97,14 @@ pub(crate) fn posted(tx: &Transaction<'_>, a: &Asset) -> Result<(Vec<u32>, Money
 pub fn next(tx: &Transaction<'_>, id: i64) -> Result<Value, Error> {
     let a = load(tx, id)?;
     let (indices, _) = posted(tx, &a)?;
-    let next = (1..=a.months).find(|i| !indices.contains(i));
+    let disposed = crate::asset_disposal::record(tx, id)?;
+    let next = if disposed.is_some() {
+        None
+    } else {
+        (1..=a.months).find(|i| !indices.contains(i))
+    };
     Ok(
-        json!({"assetId":id,"totalPeriods":a.months,"postedPeriods":indices.len(),"remainingPeriods":a.months as usize-indices.len(),"nextPeriodIndex":next,"nextPeriodAmount":next.map(|i|asset::source_amount(&a.cost,a.months,i).and_then(|v|wire(&v))).transpose()?}),
+        json!({"assetId":id,"totalPeriods":a.months,"postedPeriods":indices.len(),"remainingPeriods":if disposed.is_some(){0}else{a.months as usize-indices.len()},"status":if disposed.is_some(){"disposed"}else{if next.is_some(){"active"}else{"fully-depreciated"}},"nextPeriodIndex":next,"nextPeriodAmount":next.map(|i|asset::source_amount(&a.cost,a.months,i).and_then(|v|wire(&v))).transpose()?}),
     )
 }
 pub fn register(
@@ -241,6 +246,7 @@ pub(crate) fn depreciate_resolved(
     if !i.confirm {
         return Err(refused("depreciation confirmation required"));
     }
+    crate::asset_disposal::ensure_active(tx, id)?;
     let a = load(tx, id)?;
     let preview = next(tx, id)?;
     let index = i
@@ -333,16 +339,24 @@ pub fn list(tx: &Transaction<'_>, slug: &str) -> Result<Value, Error> {
     let mut cost = Money::default();
     let mut accumulated = Money::default();
     let mut active = 0;
+    let mut disposed_count = 0;
+    let mut carrying = Money::default();
     for (id, category) in references {
         let a = load(tx, id)?;
         let (indices, total) = posted(tx, &a)?;
         let remaining = a.months as usize - indices.len();
-        if remaining > 0 {
+        let disposal = crate::asset_disposal::record(tx, id)?;
+        if disposal.is_some() {
+            disposed_count += 1;
+        } else {
+            carrying.add(&a.cost.subtract(&total));
+        }
+        if remaining > 0 && disposal.is_none() {
             active += 1;
         }
         cost.add(&a.cost);
         accumulated.add(&total);
-        rows.push(json!({"assetId":id,"name":a.name,"category":category,"acquisitionDate":a.acquisition,"cost":wire(&a.cost)?,"usefulLifeMonths":a.months,"postedPeriods":indices.len(),"accumulatedDepreciation":wire(&total)?,"netBookValue":wire(&a.cost.subtract(&total))?,"status":if remaining==0{"fully-depreciated"}else{"active"},"remainingPeriods":remaining}));
+        rows.push(json!({"assetId":id,"name":a.name,"category":category,"acquisitionDate":a.acquisition,"cost":wire(&a.cost)?,"usefulLifeMonths":a.months,"postedPeriods":indices.len(),"accumulatedDepreciation":wire(&total)?,"netBookValue":wire(&if disposal.is_some(){Money::default()}else{a.cost.subtract(&total)})?,"status":if disposal.is_some(){"disposed"}else{if remaining==0{"fully-depreciated"}else{"active"}},"remainingPeriods":if disposal.is_some(){0}else{remaining},"disposalDate":disposal.as_ref().map(|d|&d["transactionDate"]),"disposalId":disposal.as_ref().map(|d|&d["disposalId"]),"disposalJournalEntryId":disposal.as_ref().map(|d|&d["journalEntryId"])}));
     }
     let mut q=tx.prepare("SELECT id,name,category,acquisition_date,writeoff_date,cost,expense_account_no,threshold_dkk,threshold_rule_source,note,purchase_document_id,journal_entry_id FROM asset_writeoffs ORDER BY writeoff_date,id").map_err(invalid)?;
     let mut writeoffs = vec![];
@@ -354,7 +368,7 @@ pub fn list(tx: &Transaction<'_>, slug: &str) -> Result<Value, Error> {
         writeoffs.push(json!({"id":r.get::<_,i64>(0).map_err(invalid)?,"name":r.get::<_,String>(1).map_err(invalid)?,"category":r.get::<_,String>(2).map_err(invalid)?,"acquisitionDate":r.get::<_,String>(3).map_err(invalid)?,"writeOffDate":r.get::<_,String>(4).map_err(invalid)?,"cost":wire(&value)?,"expenseAccountNo":r.get::<_,String>(6).map_err(invalid)?,"thresholdDkk":wire(&legacy_money(r.get_ref(7).map_err(invalid)?)?)?,"thresholdRuleSource":r.get::<_,String>(8).map_err(invalid)?,"note":r.get::<_,Option<String>>(9).map_err(invalid)?,"purchaseDocumentId":r.get::<_,i64>(10).map_err(invalid)?,"journalEntryId":r.get::<_,i64>(11).map_err(invalid)?}));
     }
     Ok(
-        json!({"slug":slug,"company":company,"nativeAssetAccounts":true,"writeOffAvailable":false,"assets":rows,"writeOffs":writeoffs,"totals":{"cost":wire(&cost)?,"accumulatedDepreciation":wire(&accumulated)?,"netBookValue":wire(&cost.subtract(&accumulated))?,"activeCount":active,"fullyDepreciatedCount":rows.len()-active,"writeOffCount":writeoffs.len(),"writeOffTotal":wire(&total)?}}),
+        json!({"slug":slug,"company":company,"nativeAssetAccounts":true,"writeOffAvailable":false,"assets":rows,"writeOffs":writeoffs,"totals":{"cost":wire(&cost)?,"accumulatedDepreciation":wire(&accumulated)?,"netBookValue":wire(&carrying)?,"activeCount":active,"disposedCount":disposed_count,"fullyDepreciatedCount":rows.len()-active-disposed_count,"writeOffCount":writeoffs.len(),"writeOffTotal":wire(&total)?}}),
     )
 }
 

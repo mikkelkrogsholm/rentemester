@@ -168,6 +168,7 @@ pub(super) fn initialize_empty(db: &mut Connection, company_name: &str) -> Resul
     if schema(&tx)? != current || strict_history(&tx, "schema_migrations", &expected)?.len() != 36 {
         return Err(unsupported("fresh company schema or history differs"));
     }
+    crate::asset_disposal_schema::install(&tx)?;
     tx.commit().map_err(failed)
 }
 fn reference(images: &Images, steps: &[Step], version: usize) -> Result<Vec<SchemaObject>, Error> {
