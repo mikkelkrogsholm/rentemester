@@ -150,7 +150,7 @@ fn exact(v: &Value, keys: &[&str]) -> bool {
 }
 fn date(v: &Value) -> bool {
     v.as_str().is_some_and(|s| {
-        time::format_description::parse("[year]-[month]-[day]")
+        time::format_description::parse_borrowed::<2>("[year]-[month]-[day]")
             .is_ok_and(|f| s.len() == 10 && time::Date::parse(s, &f).is_ok())
     })
 }
@@ -395,28 +395,30 @@ fn valid(op: SupplierCommitmentOriginalOperation, v: &Value, input: &Value) -> b
                                         .contains(&r["kind"].as_str().unwrap_or(""))
                                     && ["due", "upcoming"]
                                         .contains(&r["severity"].as_str().unwrap_or(""))
-                                    && time::format_description::parse("[year]-[month]-[day]")
-                                        .is_ok_and(|f| {
-                                            let start = input["asOf"]
-                                                .as_str()
-                                                .and_then(|s| time::Date::parse(s, &f).ok());
-                                            let day = r["date"]
-                                                .as_str()
-                                                .and_then(|s| time::Date::parse(s, &f).ok());
-                                            match (start, day) {
-                                                (Some(start), Some(day)) => {
-                                                    day >= start
-                                                        && (day - start).whole_days() <= 30
-                                                        && r["severity"]
-                                                            == if day == start {
-                                                                "due"
-                                                            } else {
-                                                                "upcoming"
-                                                            }
-                                                }
-                                                _ => false,
+                                    && time::format_description::parse_borrowed::<2>(
+                                        "[year]-[month]-[day]",
+                                    )
+                                    .is_ok_and(|f| {
+                                        let start = input["asOf"]
+                                            .as_str()
+                                            .and_then(|s| time::Date::parse(s, &f).ok());
+                                        let day = r["date"]
+                                            .as_str()
+                                            .and_then(|s| time::Date::parse(s, &f).ok());
+                                        match (start, day) {
+                                            (Some(start), Some(day)) => {
+                                                day >= start
+                                                    && (day - start).whole_days() <= 30
+                                                    && r["severity"]
+                                                        == if day == start {
+                                                            "due"
+                                                        } else {
+                                                            "upcoming"
+                                                        }
                                             }
-                                        })
+                                            _ => false,
+                                        }
+                                    })
                             }
                             _ => false,
                         })
