@@ -92,7 +92,10 @@ fn state(v: &Value) -> bool {
     v.is_object()
         && id(&v["run"]["runId"])
         && hash(&v["run"]["planHash"])
-        && plan(&v["run"]["plan"])
+        && v["run"]["plan"]
+            .as_str()
+            .and_then(|text| serde_json::from_str::<Value>(text).ok())
+            .is_some_and(|stored| plan(&stored) && stored["planHash"] == v["run"]["planHash"])
         && [
             "revisions",
             "attempts",

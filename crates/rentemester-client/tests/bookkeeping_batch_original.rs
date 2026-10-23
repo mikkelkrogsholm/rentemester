@@ -75,13 +75,13 @@ fn plan() -> Value {
     json!({"executionPolicy":"atomic_v1","planHash":"a".repeat(64),"candidateSetHash":"b".repeat(64),"items":[{"actionKey":"bank:9","partition":"ready"}]})
 }
 fn state() -> Value {
-    json!({"run":{"runId":7,"runKey":" exact key=one ","planHash":"a".repeat(64),"plan":plan()},"revisions":[{"plannerActor":"agent:historical","approverActor":"user:reviewer"}],"attempts":[{"attemptId":12,"actor":"user:owner"}],"receipts":[{"actionKey":"bank:9","receipt":{"journalEntryId":31,"journalEntryHash":"c".repeat(64)}}],"finalChecks":[{"name":"trialBalance","ok":1}],"legacyEvents":[{"actor":"system:old"}],"legacyFinalChecks":[]})
+    json!({"run":{"runId":7,"runKey":" exact key=one ","planHash":"a".repeat(64),"plan":plan().to_string()},"revisions":[{"plannerActor":"agent:historical","approverActor":"user:reviewer"}],"attempts":[{"attemptId":12,"actor":"user:owner"}],"receipts":[{"actionKey":"bank:9","receipt":json!({"journalEntryId":31,"journalEntryHash":"c".repeat(64)}).to_string()}],"finalChecks":[{"name":"trialBalance","ok":1}],"legacyEvents":[{"actor":"system:old"}],"legacyFinalChecks":[]})
 }
 fn reply(op: Op) -> Value {
     match op {
-        Op::Plan => json!({"ok":true,"dryRun":true,"plan":plan()}),
+        Op::Plan => json!({"ok":true,"dryRun":true,"plan":plan().to_string()}),
         Op::Persist | Op::DryRun => {
-            json!({"ok":true,"dryRun":true,"runId":7,"duplicate":true,"plan":plan(),"state":state()})
+            json!({"ok":true,"dryRun":true,"runId":7,"duplicate":true,"plan":plan().to_string(),"state":state()})
         }
         Op::Apply => {
             json!({"ok":true,"runId":7,"planHash":"a".repeat(64),"results":[{"actionKey":"bank:9","receipt":{"journalEntryId":31,"outcome":"applied"}}],"checks":[{"ok":true,"name":"trialBalance"}],"state":state(),"applyAttemptId":12,"duplicate":true})
@@ -197,6 +197,15 @@ async fn refusal_status_first_unknown_and_malformed_success_never_retry() {
             true,
         ),
         ("200 OK", json!({"ok":true,"state":{}}), true),
+        (
+            "200 OK",
+            {
+                let mut v = reply(Op::Apply);
+                v["state"]["run"]["plan"] = json!("{bad");
+                v
+            },
+            true,
+        ),
     ] {
         let (origin, rx, t) = server(status, v.to_string(), "application/json");
         let api = ApiClient::new(&origin, true, Some("session=synthetic".into())).unwrap();

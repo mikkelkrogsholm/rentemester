@@ -107,7 +107,7 @@ fn six_offline_discovery_and_usage_before_credentials() {
 fn exact_confirmed_persist_flat_projection_and_pipe_format() {
     let hash = "a".repeat(64);
     let plan = json!({"planHash":hash,"items":[],"executionPolicy":"atomic_v1"});
-    let state = json!({"run":{"runId":7,"planHash":hash,"plan":plan},"revisions":[{"plannerActor":"system:legacy"}],"attempts":[],"receipts":[],"finalChecks":[],"legacyEvents":[],"legacyFinalChecks":[]});
+    let state = json!({"run":{"runId":7,"planHash":hash,"plan":plan.to_string()},"revisions":[{"plannerActor":"system:legacy"}],"attempts":[],"receipts":[],"finalChecks":[],"legacyEvents":[],"legacyFinalChecks":[]});
     let reply =
         json!({"ok":true,"dryRun":true,"runId":7,"duplicate":false,"plan":plan,"state":state});
     let (origin, rx, t) = server("200 OK", reply.to_string(), "application/json");
