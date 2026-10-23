@@ -40,3 +40,11 @@ fn privacy_wire_refuses_forged_attribution_dates_missing_confirmation_and_unknow
         }
     }
 }
+
+#[test]
+fn existing_export_and_erase_preserve_business_confirmation_refusal() {
+ for operation in ["export", "erase"] {
+  assert!(valid_input(operation, &json!({"cvr":"SYN","confirm":false})));
+  assert!(!valid_input(operation, &json!({"cvr":"SYN"})));
+ }
+}

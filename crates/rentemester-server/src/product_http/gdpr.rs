@@ -59,7 +59,7 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
     // Parse exact typed JSON before entering the worker; malformed requests are not unknown commits.
     if let Some(v) = &input {
         let valid = valid_input(&operation, v);
-        if !valid || v.get("confirm") != Some(&json!(true)) {
+        if !valid {
             return refused(StatusCode::BAD_REQUEST, "invalid_input");
         }
     }
@@ -122,7 +122,7 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
 
 fn valid_input(operation: &str, v: &Value) -> bool {
     use rentemester_storage::gdpr::*;
-    if v.get("confirm") != Some(&json!(true)) {
+    if !matches!(operation, "export" | "erase") && v.get("confirm") != Some(&json!(true)) {
         return false;
     }
     match operation {
