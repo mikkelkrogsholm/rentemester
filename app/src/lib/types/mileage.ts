@@ -79,3 +79,45 @@ export type MileageEntrySummary = {
   amountBasis: number | null;
   warnings?: string[];
 };
+
+/** Additive native accounting contract; decimal rates remain exact strings. */
+export type MileageRateInput = {
+  version: string;
+  validFrom: string;
+  validTo: string;
+  vehicle: string;
+  ratePerKm: string;
+  basis: string;
+  source: string;
+  expenseAccountNo: string;
+  liabilityAccountNo: string;
+};
+export type MileageRateVersion = MileageRateInput & { actor: string; createdAt: string };
+export type MileagePostPreviewInput = {
+  mileageEntryId: number;
+  rateVersion: string;
+  documentId: number;
+};
+export type MileagePostPreview = MileagePostPreviewInput & {
+  entryNo: string;
+  tripDate: string;
+  vehicle: string;
+  kilometers: number;
+  ratePerKm: string;
+  amount: number;
+  expenseAccountNo: string;
+  liabilityAccountNo: string;
+  documentHash: string;
+  previewHash: string;
+  appliedRules: ["NATIVE-MILEAGE-POST-1"];
+};
+export type MileagePostInput = MileagePostPreviewInput & {
+  expectedPreviewHash: string;
+  operationKey: string;
+  confirm: true;
+};
+export type MileagePostResult = MileagePostPreview & {
+  journalEntryId: number;
+  journalEntryNo: string;
+  replayed: boolean;
+};
