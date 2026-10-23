@@ -1,11 +1,12 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "R35 durable jobs, explicit local/hosted scheduling and restart recovery fully accepted;690closed",
-  "code_revision": "e94be0723d31e36c3bb6edf06c75bc163f7888d3",
-  "spec_revision": "sha256:05054264a8de6ec6d56d23d4642138f7ea1bb03590ab9e232c8a976a3ce4fcfa",
-  "state": "29of55 original issues fully accepted and actually closed;26open. Full original R35/all5technicalcriteria accepted using retained provider/authority/cancellation/restore/hosted proof plus current real sharedReact activation, actualbrowserclose/reopeninert, missedperiod stop, explicitcatchup/skip/dispatch,3exactstale/resolvedrefusals andexactnative restart. Exactly2newunpostedunsent immutableJSON/PDFpairs; prior696onejournal/fourlines andfinancialreportsunchanged. Current13UI+2Copenhagen/DST/calendar checksPASS. Managedstop/Dropbyteexactretainedactual99shutdownproof. Only post-successBuncontrollerexitwait failed; rawfailure/effects retained andverifiedreadonlywithoutreplay; SGDcombineddone. GitHub690CLOSEDflow:done. Fullmission/release/platform/cutover/TypeScriptretirement andmanualinstalleddesktop/physicalOSsleep finalJ07 remainOPENandlast.",
+  "current_increment": "R01 whole static baseline/contract inventory accepted and673actuallyclosed; nextR02 effectivecontract reconciliation",
+  "code_revision": "2a477ef0cfa611e5a2d83c716b4cc588a85babd2",
+  "spec_revision": "sha256:0b5712e48ff8acc39c9c101fb1c34f9d42af7dd6b2078302216b235a48b61d6e",
+  "state": "30of55 original issues actuallyclosed,25open. R01fulloriginalstaticinventory/all3criteria accepted/published2a477ef0:265CLI214MCP208HTTP55unique screens269core/schema/releaserows738functions67migrations28providers;1114frozenanchors18named/520historicaldispositions295explicitdeltas. Source-reviewed/planned oracles are not runtimePASS; existingdefectcorrections/full55/J01-J07 kept. No financial/provider effects replayed. Initialfailed/rejectedreceipts andboundedrepairs preserved;4completedworkerworktrees cleanedwithverifiedsnapshots. NextR02#674 prospectiveeffectivespec reconciliation reusesacceptedR01/architecture boundaryevidence; no newgenericarchitecture/productframework. Manualinstalleddesktopallersidst, allremainingruntime/release/cutover/retirement gatesOPEN.",
   "issues_closed": [
+    673,
     675,
     676,
     681,
@@ -37,13 +38,8 @@
     710
   ],
   "next": [
-    "Next only independent existing issue673/R01: complete truthful source-to-contract inventory, not newproduct/provider/harness infrastructure. Fresh clean e94be072 capture preserves265CLI/214MCP/208HTTP, now56screens/738corefunctions/67migrations,103sourcehashdeltas. New eu-sales andworkspace-transfer screens,4legacyfence/schemafunctions andworkspace-mailmigration require explicitdelta review; everybehavior needsactualdomainowner/oracle/negativecase/interface/wirecontract/status andall18historicalissue dispositions. FreshGitHub shows641CLOSED,17othernamedissuesOPEN; do notdeclare pendingenhancements delivered. Reuseacceptedfamilycontracts/receipts without replay. Originalfrozencapture preserved; no registrycount/moduleownership shortcut.",
-    "Existing R22#696,R24#698,R25#699,R26#700 andR35#690 fullyclosed. Preserveallfinancialeffects/failurechains/receipt/sourceproofs. Foundation673->674->679 unlocks remaining691/contract/distribution gates; oneRustmotor/server andsameReactweb/TauriUI, finalmanualinstalleddesktoplast.",
-    "Original invoice interface inventory now has all31CLI and25MCP bindings, with explicit compatibility corrections documented; do not mistake that family inventory for full product parity. Reconcile remaining original whole-product R44/R45 acceptance from existing epic/issues: actor/env/company-path/default launcher/errors/historical receipts, closure/recovery/automation, signed distribution/update/cutover and TypeScript backend retirement. Continue next necessary whole journey, preserve all accepted evidence/full original scope; installed desktop acceptance last.",
-    "Installed desktop acceptance is explicitly deferred to the very end by the user. Preserve prepared Group100 profile; collect remaining native automation, closure, recovery and packaging checks for final installed acceptance without requesting screen unlock during development.",
-    "J03/R50 and remaining R54 scope: only still-supported operation closure/recovery, nonempty scheduler handoff, hostile/older clone and post-cutover rollback requirements. Group99 qualifies managed installed J06 flow, not every R54 acceptance item.",
-    "Signed distribution/update/cutover evidence must match actual full Rust replacement; retain all existing completion gates and TypeScript retirement gate.",
-    "Do not repeat unchanged accepted Group88–99 journeys. Current-package GUI smoke and installed managed transfer are now qualified. Extend only for required missing flows or diagnosed defects."
+    "R02#674: identify effective versus historical/sketch GDDcontracts withoutchangingstableIDs/frozenbytes; bind currenttypedcontext/effects/errors/postconditions/fiverisks toacceptedR01/source andexistingboundaryreceipts. Correct frozen182prospectively andassetdisposalpreimplementationstatus; original execution/financialproofsretained. No newproductfeature or unchangedbroadtestreplay.",
+    "After wholeR02acceptance choose smallestexistingneededissue, preserveall55scope/J01-J07. One sharedRustmotor/server/sameReactweb/Tauri. Manualinstalleddesktopfinal; release/platform/cutover/TypeScriptretirement remainopen."
   ],
   "preserve_unrelated_paths": [
     ".claude/settings.json",
@@ -54,9 +50,9 @@
   ],
   "all_goal_requirements_complete": false,
   "previous_verified_increment": {
-    "name": "R22 posting rules, exceptions and reviewed bank workbench fully accepted including foreign/reverse-charge purchases;696closed",
-    "code_revision": "963179bfb3bb3e8b92df87c83fb16c9722d0c47d",
-    "evidence_key": "r22_workbench696"
+    "name": "R35 durable jobs, explicit local/hosted scheduling and restart recovery fully accepted;690closed",
+    "code_revision": "e94be0723d31e36c3bb6edf06c75bc163f7888d3",
+    "evidence_key": "r35_jobs690"
   },
   "evidence": {
     "combined_browser_log": "/tmp/rm-platform5-combined.log",
@@ -15656,7 +15652,35 @@
       "current_named_issues": "641closed;17otheroriginalnamedissuesopen; classification/reconciliation required, not automatic scopes/closures.",
       "original_inventory_preserved": true,
       "no_runtime_handlers_invoked": true,
-      "all_goal_requirements_complete": false
+      "all_goal_requirements_complete": false,
+      "resolution": "Superseded by full r01_contract_inventory673 accepted static reconciliation; preserve this historical initialcapture and limitations."
+    },
+    "r01_contract_inventory673": {
+      "issue": 673,
+      "status": "whole original static inventory accepted;GitHubCLOSEDflow:done",
+      "source_revision": "2a477ef0cfa611e5a2d83c716b4cc588a85babd2",
+      "frozen_source_revision": "8866e33b49023a02e8f82fe9e69b5e8d2a412b7e",
+      "report": "/tmp/rentemester-rust-reports/r01-baseline673-accepted.json",
+      "sha256": "54819f22644b9c1c90093502f80f1ac5a62c54022e3699c6f5bbe9cf76ff74e8",
+      "entry": "docs/architecture/rust-target/implementation/baseline/CONTRACT_INVENTORY.md",
+      "sgd_run": "rust-r01-whole673-accept-20261023T213644.377420000",
+      "sgd_phase": "done",
+      "counts": {
+        "cli": 265,
+        "mcp": 214,
+        "http": 208,
+        "unique_screen_paths": 55,
+        "core_schema_release_rows": 269,
+        "functions": 738,
+        "migrations": 67,
+        "provider_job_modules": 28,
+        "frozen_source_anchor_files": 1114,
+        "named_dispositions": 18,
+        "historical_issues": 520,
+        "source_deltas": 295
+      },
+      "limits": "Source-reviewed/planned contracts and oracles do not establish runtimeparity/provideravailability or closeotheroriginalissues. Historical495/520closed is notRustepiccount. Allfailedreceipts/knowncorrections/originalscopes/finaldesktopgates retained.",
+      "graph_preservation": "ScopedAST/new10documentsemantic merge preserved1982semanticIDs; two normalCLIrefresh alias-loss refusals retained, no forcedoverwrite."
     }
   },
   "verified_history": [
@@ -17567,6 +17591,21 @@
       "code_revision": "e94be0723d31e36c3bb6edf06c75bc163f7888d3",
       "state": "29of55 original issues fully accepted and actually closed;26open. Full original R35/all5technicalcriteria accepted using retained provider/authority/cancellation/restore/hosted proof plus current real sharedReact activation, actualbrowserclose/reopeninert, missedperiod stop, explicitcatchup/skip/dispatch,3exactstale/resolvedrefusals andexactnative restart. Exactly2newunpostedunsent immutableJSON/PDFpairs; prior696onejournal/fourlines andfinancialreportsunchanged. Current13UI+2Copenhagen/DST/calendar checksPASS. Managedstop/Dropbyteexactretainedactual99shutdownproof. Only post-successBuncontrollerexitwait failed; rawfailure/effects retained andverifiedreadonlywithoutreplay; SGDcombineddone. GitHub690CLOSEDflow:done. Fullmission/release/platform/cutover/TypeScriptretirement andmanualinstalleddesktop/physicalOSsleep finalJ07 remainOPENandlast.",
       "evidence_key": "r35_jobs690"
+    },
+    {
+      "current_increment": "R35 durable jobs, explicit local/hosted scheduling and restart recovery fully accepted;690closed",
+      "code_revision": "e94be0723d31e36c3bb6edf06c75bc163f7888d3",
+      "spec_revision": "sha256:05054264a8de6ec6d56d23d4642138f7ea1bb03590ab9e232c8a976a3ce4fcfa",
+      "state": "29of55 original issues fully accepted and actually closed;26open. Full original R35/all5technicalcriteria accepted using retained provider/authority/cancellation/restore/hosted proof plus current real sharedReact activation, actualbrowserclose/reopeninert, missedperiod stop, explicitcatchup/skip/dispatch,3exactstale/resolvedrefusals andexactnative restart. Exactly2newunpostedunsent immutableJSON/PDFpairs; prior696onejournal/fourlines andfinancialreportsunchanged. Current13UI+2Copenhagen/DST/calendar checksPASS. Managedstop/Dropbyteexactretainedactual99shutdownproof. Only post-successBuncontrollerexitwait failed; rawfailure/effects retained andverifiedreadonlywithoutreplay; SGDcombineddone. GitHub690CLOSEDflow:done. Fullmission/release/platform/cutover/TypeScriptretirement andmanualinstalleddesktop/physicalOSsleep finalJ07 remainOPENandlast.",
+      "next": [
+        "Next only independent existing issue673/R01: complete truthful source-to-contract inventory, not newproduct/provider/harness infrastructure. Fresh clean e94be072 capture preserves265CLI/214MCP/208HTTP, now56screens/738corefunctions/67migrations,103sourcehashdeltas. New eu-sales andworkspace-transfer screens,4legacyfence/schemafunctions andworkspace-mailmigration require explicitdelta review; everybehavior needsactualdomainowner/oracle/negativecase/interface/wirecontract/status andall18historicalissue dispositions. FreshGitHub shows641CLOSED,17othernamedissuesOPEN; do notdeclare pendingenhancements delivered. Reuseacceptedfamilycontracts/receipts without replay. Originalfrozencapture preserved; no registrycount/moduleownership shortcut.",
+        "Existing R22#696,R24#698,R25#699,R26#700 andR35#690 fullyclosed. Preserveallfinancialeffects/failurechains/receipt/sourceproofs. Foundation673->674->679 unlocks remaining691/contract/distribution gates; oneRustmotor/server andsameReactweb/TauriUI, finalmanualinstalleddesktoplast.",
+        "Original invoice interface inventory now has all31CLI and25MCP bindings, with explicit compatibility corrections documented; do not mistake that family inventory for full product parity. Reconcile remaining original whole-product R44/R45 acceptance from existing epic/issues: actor/env/company-path/default launcher/errors/historical receipts, closure/recovery/automation, signed distribution/update/cutover and TypeScript backend retirement. Continue next necessary whole journey, preserve all accepted evidence/full original scope; installed desktop acceptance last.",
+        "Installed desktop acceptance is explicitly deferred to the very end by the user. Preserve prepared Group100 profile; collect remaining native automation, closure, recovery and packaging checks for final installed acceptance without requesting screen unlock during development.",
+        "J03/R50 and remaining R54 scope: only still-supported operation closure/recovery, nonempty scheduler handoff, hostile/older clone and post-cutover rollback requirements. Group99 qualifies managed installed J06 flow, not every R54 acceptance item.",
+        "Signed distribution/update/cutover evidence must match actual full Rust replacement; retain all existing completion gates and TypeScript retirement gate.",
+        "Do not repeat unchanged accepted Group88–99 journeys. Current-package GUI smoke and installed managed transfer are now qualified. Extend only for required missing flows or diagnosed defects."
+      ]
     }
   ],
   "scope_clarifications": [
