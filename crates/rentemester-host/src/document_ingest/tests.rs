@@ -802,3 +802,60 @@ fn documents_original_duplicate_refusal_deduplicated_and_force_never_content_has
     assert_eq!(count(&owner, "documents"), 1);
     assert_eq!(count(&owner, "exceptions"), 1);
 }
+
+#[test]
+fn service_access_audit_served_denied_and_fail_closed_with_actual_principal() {
+    let (_dir, mut owner, cookies, proof, _uid) = setup();
+    let (key, subject, _credential) = service(&mut owner, &cookies, &proof, "bookkeeper");
+    let receipt = owner
+        .ingest_document(
+            &proof,
+            &Fixed(NOW),
+            rentemester_application::documents::Ingest {
+                file: &file("audited service"),
+                metadata: &metadata(),
+                today: "2026-01-01",
+            },
+        )
+        .unwrap()
+        .outcome
+        .unwrap()
+        .value;
+    let id = receipt["document"]["id"].as_i64().unwrap();
+    let bytes = owner
+        .document_original_service(&key, &Fixed(NOW), id)
+        .unwrap()
+        .outcome
+        .unwrap()
+        .result
+        .bytes;
+    assert_eq!(bytes, file("audited service").bytes());
+    {
+        let c = owner.held.0.as_mut().unwrap().control.as_mut().unwrap();
+        let actor=c.query_row("SELECT actor FROM native_service_document_access_events WHERE outcome='served' AND resource_id=?1",[id],|r|r.get::<_,String>(0)).unwrap();
+        assert_eq!(actor, format!("service_account:{subject}"));
+        c.execute("INSERT INTO rm_company_membership_events(user_id,company_slug,event_type,company_role,actor)VALUES(?1,'a','revoke',NULL,'user:u')",[&subject]).unwrap();
+    }
+    assert!(
+        owner
+            .document_original_service(&key, &Fixed(NOW), id)
+            .unwrap()
+            .outcome
+            .is_err()
+    );
+    {
+        let c = owner.held.0.as_mut().unwrap().control.as_mut().unwrap();
+        assert_eq!(c.query_row("SELECT count(*) FROM native_service_document_access_events WHERE outcome='denied' AND reason_code='authorization_denied'",[],|r|r.get::<_,i64>(0)).unwrap(),1);
+        c.execute("INSERT INTO rm_company_membership_events(user_id,company_slug,event_type,company_role,actor)VALUES(?1,'a','grant','bookkeeper','user:u')",[&subject]).unwrap();
+        c.execute_batch("INSERT INTO native_service_document_access_events(id,actor,company_slug,resource_type,resource_id,outcome,reason_code)VALUES(9223372036854775807,'service_account:synthetic','a','document_file',1,'served','authorized')").unwrap();
+    }
+    assert!(
+        owner
+            .document_original_service(&key, &Fixed(NOW), id)
+            .unwrap()
+            .outcome
+            .is_err()
+    );
+    assert_eq!(count(&owner, "documents"), 1);
+    assert_eq!(count(&owner, "journal_entries"), 0);
+}

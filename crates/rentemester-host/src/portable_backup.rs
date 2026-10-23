@@ -1010,6 +1010,32 @@ mod tests {
             "Synthetic backup coverage",
         )
         .unwrap();
+        {
+            let tx = control
+                .transaction_with_behavior(TransactionBehavior::Immediate)
+                .unwrap();
+            rentemester_storage::document_access::append(
+                &tx,
+                "historical-user",
+                false,
+                "synthetic",
+                "document_file",
+                7,
+                true,
+            )
+            .unwrap();
+            rentemester_storage::document_access::append(
+                &tx,
+                "historical-service",
+                true,
+                "synthetic",
+                "issued_invoice_pdf",
+                8,
+                false,
+            )
+            .unwrap();
+            tx.commit().unwrap();
+        }
         if parties {
             let tx = control
                 .transaction_with_behavior(TransactionBehavior::Immediate)
@@ -1542,6 +1568,38 @@ mod tests {
         // Valid cryptographic signature is insufficient: unsupported section
         // codec must fail the pre-publication semantic validator.
         assert!(validate(&signed(false, true, false, true, false, None)).is_err());
+    }
+    #[test]
+    fn signed_source_free_access_events_preserve_actual_principals_without_authority() {
+        let archive = signed(false, false, false, false, false, None);
+        validate(&archive).unwrap();
+        let mut restored = Connection::open_in_memory().unwrap();
+        restore_business(&mut restored, &archive, &"a".repeat(64)).unwrap();
+        assert_eq!(
+            restored
+                .query_row(
+                    "SELECT actor FROM rm_workspace_document_access_events WHERE resource_id=7",
+                    [],
+                    |r| r.get::<_, String>(0)
+                )
+                .unwrap(),
+            "user:historical-user"
+        );
+        assert_eq!(restored.query_row("SELECT actor FROM native_service_document_access_events WHERE resource_id=8 AND outcome='denied'",[],|r|r.get::<_,String>(0)).unwrap(),"service_account:historical-service");
+        for table in ["user", "session", "apikey", "rm_company_membership_events"] {
+            assert_eq!(
+                restored
+                    .query_row(&format!("SELECT count(*) FROM {table}"), [], |r| r
+                        .get::<_, i64>(0))
+                    .unwrap(),
+                0
+            );
+        }
+        assert!(
+            restored
+                .execute("DELETE FROM native_service_document_access_events", [])
+                .is_err()
+        );
     }
     #[test]
     fn signed_party_codec_is_required_validated_and_preserves_facts_without_authority() {

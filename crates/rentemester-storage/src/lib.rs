@@ -704,3 +704,5 @@ pub mod supplier_commitment_original;
 pub mod dimensions_original;
 
 pub mod accounts_original;
+
+pub mod document_access;

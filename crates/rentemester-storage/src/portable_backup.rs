@@ -154,7 +154,7 @@ pub fn export_control(tx: &Transaction<'_>) -> Result<Control, Error> {
     }
     knowledge_shape(tx)?;
     Ok(Control {
-        bytes: export_tables(tx, &AUDIT_TABLES, "rentemester-native-business-control/1")?,
+        bytes: export_access_tables(tx)?,
         knowledge_bytes: export_tables(tx, &KNOWLEDGE_TABLES, KNOWLEDGE_FORMAT)?,
         parties_bytes: parties::export(tx)?,
         inbox_bytes: inbox::export(tx)?,
@@ -235,14 +235,36 @@ pub fn initialize_control(
     tx.commit().map_err(sql)?;
     crate::control_migration::validate_current_control(db)
 }
+fn export_access_tables(tx: &Transaction<'_>) -> Result<Vec<u8>, Error> {
+    let exists: bool = tx
+        .query_row(
+            "SELECT EXISTS(SELECT 1 FROM sqlite_schema WHERE name=?1)",
+            [crate::document_access::table()],
+            |r| r.get(0),
+        )
+        .map_err(sql)?;
+    let mut names = AUDIT_TABLES.to_vec();
+    if exists {
+        names.push(crate::document_access::table());
+    }
+    export_tables(tx, &names, "rentemester-native-business-control/1")
+}
 /// Credential-free audit codec only, under the caller's current control writer.
 /// Provenance of adoption versus native restore belongs to the distinct caller.
 pub(crate) fn initialize_audit_business(tx: &Transaction<'_>, bytes: &[u8]) -> Result<(), Error> {
     let b: Business = serde_json::from_slice(bytes).map_err(sql)?;
-    if b.format != "rentemester-native-business-control/1" || b.tables.len() != AUDIT_TABLES.len() {
+    let service = b.tables.contains_key(crate::document_access::table());
+    if b.format != "rentemester-native-business-control/1"
+        || b.tables.len() != AUDIT_TABLES.len() + usize::from(service)
+    {
         return Err(refused("unsupported business codec"));
     }
-    insert_tables(tx, &b, &AUDIT_TABLES)?;
+    let mut names = AUDIT_TABLES.to_vec();
+    if service {
+        crate::document_access::install(tx)?;
+        names.push(crate::document_access::table());
+    }
+    insert_tables(tx, &b, &names)?;
     crate::backup_registration::validate_history(tx)?;
     crate::workspace_transfer::current(tx)?;
     Ok(())

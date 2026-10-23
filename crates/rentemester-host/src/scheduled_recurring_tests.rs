@@ -415,3 +415,124 @@ fn restored_scheduler_requires_current_admin_review_and_preserves_originals() {
 
     assert!(rentemester_storage::scheduled_recurring::validate_backup(db).is_err());
 }
+
+#[test]
+fn access_audit_original_pdf_denial_and_audit_failure_leave_originals_and_journal_unchanged() {
+    let count=|owner:&Owner, table:&str|owner.held.0.as_ref().unwrap().company.as_ref().unwrap().query_row(&format!("SELECT count(*) FROM {table}"),[],|r|r.get::<_,i64>(0)).unwrap();
+
+    let (_dir, mut owner, _cookies, proof, _uid) = setup();
+    let id = template(&mut owner, &proof, "2026-01-01");
+    enable(&mut owner, &proof, id);
+    let issued = dispatch(&mut owner, &proof, id, 0).unwrap();
+    let doc = issued["generation"]["documentId"].as_i64().unwrap();
+    let company_before = {
+        let db = owner.held.0.as_ref().unwrap().company.as_ref().unwrap();
+        let mut q = db
+            .prepare("SELECT id,sha256_hash,stored_path FROM documents ORDER BY id")
+            .unwrap();
+        q.query_map([], |r| {
+            Ok((
+                r.get::<_, i64>(0)?,
+                r.get::<_, String>(1)?,
+                r.get::<_, String>(2)?,
+            ))
+        })
+        .unwrap()
+        .collect::<Result<Vec<_>, _>>()
+        .unwrap()
+    };
+    let journal_before = count(&owner, "journal_entries");
+    let bytes = owner
+        .document_original(&proof, &Fixed(NOW), doc)
+        .unwrap()
+        .outcome
+        .unwrap()
+        .value
+        .bytes;
+    let pdf = owner
+        .sales(
+            &proof,
+            &Fixed(NOW),
+            rentemester_application::sales::Action::Pdf(doc),
+            "2026-01-01",
+            "2026-01-01T00:00:00Z",
+            None,
+        )
+        .unwrap()
+        .outcome
+        .unwrap()
+        .value;
+    assert!(
+        matches!(pdf,rentemester_application::sales::Output::Pdf(ref b) if b.starts_with(b"%PDF-"))
+    );
+    {
+        let control = owner.held.0.as_mut().unwrap().control.as_mut().unwrap();
+        assert_eq!(control.query_row("SELECT count(*) FROM rm_workspace_document_access_events WHERE actor='user:u' AND company_slug='a' AND resource_id=?1 AND outcome='served'",[doc],|r|r.get::<_,i64>(0)).unwrap(),2);
+        control.execute_batch("INSERT INTO rm_workspace_user_access_events(user_id,event_type,workspace_role,actor)VALUES('u','activate','member','user:u');INSERT INTO rm_company_membership_events(user_id,company_slug,event_type,company_role,actor)VALUES('u','a','revoke',NULL,'user:u');").unwrap();
+    }
+    assert!(
+        owner
+            .document_original(&proof, &Fixed(NOW), doc)
+            .unwrap()
+            .outcome
+            .is_err()
+    );
+    assert!(
+        owner
+            .sales(
+                &proof,
+                &Fixed(NOW),
+                rentemester_application::sales::Action::Pdf(doc),
+                "2026-01-01",
+                "2026-01-01T00:00:00Z",
+                None
+            )
+            .unwrap()
+            .outcome
+            .is_err()
+    );
+    {
+        let control = owner.held.0.as_mut().unwrap().control.as_mut().unwrap();
+        assert_eq!(control.query_row("SELECT count(*) FROM rm_workspace_document_access_events WHERE outcome='denied' AND reason_code='authorization_denied'",[],|r|r.get::<_,i64>(0)).unwrap(),2);
+        control.execute_batch("INSERT INTO rm_company_membership_events(user_id,company_slug,event_type,company_role,actor)VALUES('u','a','grant','owner','user:u');INSERT INTO rm_workspace_document_access_events(id,actor,company_slug,resource_type,resource_id,outcome,reason_code)VALUES(9223372036854775807,'user:synthetic','a','document_file',1,'served','authorized');").unwrap();
+    }
+    // Exhaustion is an admitted-schema audit write failure, not a weakened physical/schema check.
+    assert!(
+        owner
+            .document_original(&proof, &Fixed(NOW), doc)
+            .unwrap()
+            .outcome
+            .is_err()
+    );
+    assert!(
+        owner
+            .sales(
+                &proof,
+                &Fixed(NOW),
+                rentemester_application::sales::Action::Pdf(doc),
+                "2026-01-01",
+                "2026-01-01T00:00:00Z",
+                None
+            )
+            .unwrap()
+            .outcome
+            .is_err()
+    );
+    assert_eq!(count(&owner, "journal_entries"), journal_before);
+    let slots = owner.held.0.as_mut().unwrap();
+    let db = slots.company.as_ref().unwrap();
+    for (id, hash, path) in company_before {
+        let current: (String, String) = db
+            .query_row(
+                "SELECT sha256_hash,stored_path FROM documents WHERE id=?1",
+                [id],
+                |r| Ok((r.get(0)?, r.get(1)?)),
+            )
+            .unwrap();
+        assert_eq!(current, (hash.clone(), path.clone()));
+        let original = slots.guard.read_document(&path, &hash).unwrap();
+        if id == doc {
+            assert_eq!(original, bytes);
+        }
+    }
+}

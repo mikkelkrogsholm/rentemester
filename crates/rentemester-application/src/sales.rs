@@ -123,7 +123,13 @@ pub fn execute(
     };
     let slug = context.selection.slug;
     let clock = context.clock;
-    control_fence::execute_cookie_subject_mode(
+    let cookie = context.cookie;
+    let audit_id = if let Action::Pdf(id) = &action {
+        Some(*id)
+    } else {
+        None
+    };
+    let result = control_fence::execute_cookie_subject_mode(
         control,
         company,
         CookieAuthorization {
@@ -270,7 +276,20 @@ pub fn execute(
                 Action::Pdf(id) => Output::Pdf(original(tx, guard, sales::pdf_id(tx, id)?)?),
             })
         },
-    )
+    );
+    if let Some(id) = audit_id {
+        crate::document_access::human(
+            control,
+            cookie,
+            clock,
+            slug,
+            "issued_invoice_pdf",
+            id,
+            result,
+        )
+    } else {
+        result
+    }
 }
 
 /// Publish the same immutable JSON/PDF pair for ordinary and recurring issuance.
@@ -372,7 +391,15 @@ pub fn execute_service(
     };
     let slug = context.selection.slug;
     let clock = context.clock;
-    service_company::execute_operation(
+    let key = context.key;
+    let registered = context.selection.registered;
+    let archived = context.selection.archived;
+    let audit_id = if let Action::Pdf(id) = &action {
+        Some(*id)
+    } else {
+        None
+    };
+    let result = service_company::execute_operation(
         control,
         company,
         context,
@@ -502,7 +529,22 @@ pub fn execute_service(
                 receipt: None,
             })
         },
-    )
+    );
+    if let Some(id) = audit_id {
+        crate::document_access::service(
+            control,
+            key,
+            clock,
+            slug,
+            registered,
+            archived,
+            "issued_invoice_pdf",
+            id,
+            result,
+        )
+    } else {
+        result
+    }
 }
 
 #[cfg(test)]
