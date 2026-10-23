@@ -70,7 +70,7 @@ fn actor() -> Actor<'static> {
     }
 }
 fn post(tx: &Transaction<'_>, date: &str) -> Value {
-    let request = serde_json::from_value(json!({"transactionDate":date,"text":"Synthetic ordinary transfer","currency":"DKK","lines":[{"accountNo":"B","debitAmount":"10.00"},{"accountNo":"E2","creditAmount":"10.00"}]})).unwrap();
+    let request = serde_json::from_value(json!({"transactionDate":date,"text":"Synthetic ordinary transfer","currency":"DKK","lines":[{"accountNo":"E1","debitAmount":"10.00"},{"accountNo":"E2","creditAmount":"10.00"}]})).unwrap();
     journal_post::post(
         tx,
         &request,
