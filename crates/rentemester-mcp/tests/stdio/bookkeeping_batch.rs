@@ -20,10 +20,19 @@ fn five_batch_tools_have_explicit_read_scope_and_confirmed_exact_bodies() {
     ] {
         let t = tools.iter().find(|t| t["name"] == name).unwrap();
         assert_eq!(t["annotations"]["readOnlyHint"], read);
-        assert_eq!(t["inputSchema"]["additionalProperties"], false);
+        let input_schema = &t["inputSchema"];
+        let schema = if name == "bookkeeping_batch_status" {
+            input_schema
+        } else {
+            input_schema
+                .get("oneOf")
+                .and_then(|variants| variants.get(0))
+                .unwrap_or(input_schema)
+        };
+        assert_eq!(schema["additionalProperties"], false);
         if !read {
-            assert_eq!(t["inputSchema"]["properties"]["body"]["maxLength"], 32768);
-            assert_eq!(t["inputSchema"]["properties"]["confirm"]["const"], true);
+            assert_eq!(schema["properties"]["body"]["maxLength"], 32768);
+            assert_eq!(schema["properties"]["confirm"]["const"], true);
         }
     }
     for (name, args) in [
