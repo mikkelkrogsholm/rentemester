@@ -70,6 +70,10 @@ export function createAssetDisposalProof(base: string, work: string, onStep: (na
       value = result.structuredContent;
       if (!failure && value.data && typeof value.data === "object") value = {ok:true,...value.data,errors:value.errors,...(value.appliedRules ? {appliedRules:value.appliedRules} : {})};
     }
+    if (kind === 'cli' && group === 'period' && op === 'review' && !failure) {
+      need(value.ok === undefined && Number.isSafeInteger(value.id) && value.id > 0 && /^[a-f0-9]{64}$/.test(value.packet?.hash), 'source period review is a verified bare record');
+      return {ok:true,...value};
+    }
     need(value.ok === !failure, 'explicit client outcome'); return value;
   }
   const path = (id: number, suffix: string) => root + `assets/${id}/` + suffix;
