@@ -1,0 +1,37 @@
+# Capitalized asset derecognition — R24 / #698
+
+Status: implementation contract; not execution or closure evidence. Original170 acquisition/depreciation/immediate-small-purchase-writeoff evidence remains preserved. Neither source TypeScript nor native Rust currently has this disposal operation. It is additive requiredR24scope; never rename asset_write_off or claim an old ABI.
+
+## User result and accounting
+
+Retire an existing capitalized asset after zero, partial or full booked depreciation. The Rust server derives cost, validated unreversed booked depreciation and remaining carrying value from persisted evidence. Validate the actual acquisition/depreciation journal lines, accounts, date and source; assets::posted() summaries alone are insufficient. Credit the original asset account for cost; debit its accumulated-depreciation account for booked depreciation; debit the explicitly chosen active directly-postable expense account for positive remaining carrying value. Omit zero lines. The journal balances exactly and remaining carrying value becomes zero.
+
+This operation records asset derecognition, not sale revenue or VAT. Any sale and VAT are separately recorded through existing sales/journal workflows; do not invent a net-proceeds/tax contract or claim that those are included here. The UI must state this distinction plainly when choosing disposal. Use general configurable accounts/synthetic fixtures only.
+
+## Frozen HTTP/wire contract
+
+All routes use current admitted company context and the same Rust motor in local/remote web/Tauri. Asset IDs are positive safe integers. Existing JSON money convention is retained, but all arithmetic stays exact on the server. Max body16KiB; unknown keys refuse. No new dependencies.
+
+- POST `/api/companies/{company}/assets/{assetId}/disposal/preview`: body `transactionDate` (canonical YYYY-MM-DD), `documentId` (positive safe ID), `reason` (nonblank bounded4096), optional `lossAccountNo` (required when carrying value is positive; preview returns explicit null when unused). Strict read-only: no journal/business-audit/receipt or document writes (existing access/usage-audit policy remains unchanged), no scheduler/network activation. Require current LedgerPost permission and verify physical purchase/disposal originals under current namespace.
+- Preview success envelope is `{ok:true,disposalPreview:payload}`; payload is `{assetId,transactionDate,documentId,reason,lossAccountNo,cost,accumulatedDepreciation,carryingValue,planHash,lines:[{accountNo,debit,credit}]}`. Monetary values and lines are server-derived. planHash is64lowercasehex stable SHA256 of canonical intent and current asset/depreciation/mapping/evidence basis; no caller-auth claims.
+- POST `/api/companies/{company}/assets/{assetId}/dispose`: preview-input fields plus `expectedPlanHash`, `idempotencyKey` (bounded8..160 nonblank), `confirm:true`. Recheck current authority, evidence, mappings, periods and plan under the existing control-before-company writer. Persist journal+immutable disposal+audit+receipt atomically; no partial change. Exact same principal/company/operation/key+intent returns original receipt even after the asset is disposed; changed intent/key on a disposed asset refuses. Authorization precedes receipt replay. Use existing stable receipt identity/mapping semantics; do not invent a new principal namespace.
+- GET `/api/companies/{company}/assets/{assetId}/disposal-receipt?key=...`: explicit read-back of the same principal-scoped receipt under current authority; no writes. Unknown key is a clear not-found response, not successful disposal.
+- Apply/read-back success envelope is `{ok:true,disposal:receipt}`. Receipt: `{disposalId,assetId,transactionDate,documentId,reason,cost,accumulatedDepreciation,carryingValueWrittenOff,remainingCarryingValue:0,journalEntryId,journalEntryNo,journalEntryHash,replayed}`. Receipt lookup/replay identifies the same disposal/journal. Existing standard error/envelope conventions remain; lost or malformed success is outcome-unknown and never auto-retried.
+
+## History and controls
+
+New native schema state must use the existing admitted migration/catalogue/backup pipeline, never CREATE-on-first-call or weaker schema checks. Signed source-free backup/restore must retain disposal/history/receipt. Preserve acquisition, depreciation, originals and their IDs. Reject negative/inconsistent residuals, future/out-of-order disposal dates (including before any booked depreciation), closed periods, inactive/wrong-kind/overlapping mappings, missing/tampered evidence, stale plans and revoked authority. Preserve current accounting/backup/namespace/service/actor gates.
+
+Both native and original asset reports must reflect disposal honestly: status `disposed`, zero remaining net book value and additive disposal date/id/journal reference. Historical cost/depreciation stay visible; totals reconcile and do not classify disposed assets as active or fully depreciated. Original four operations keep their meanings and input shapes. Both native/original depreciation refuse after disposal; next schedule must not promise a future posting. Protect disposal journals under existing asset-related generic-reversal refusal so corrections cannot erase/bypass history. Do not silently re-activate an asset after corrupt/reversed disposal evidence.
+
+## Shared UI and agent interfaces
+
+Add SDK preview/apply/receipt methods and additive CLI `asset disposal-preview`, `asset dispose`, `asset disposal-receipt`; MCP `asset_disposal_preview`, `asset_dispose`, `asset_disposal_receipt`. Use existing connection/actor/output/confirmation/error conventions. Dry-run/preview/receipt are inert; explicit apply requires original reviewed hash/key and existing CLI/MCP write confirmation. Preserve four original asset commands/tools unchanged.
+
+React adds an action on the existing asset row, normal date/evidence/account/reason controls, server journal preview, ConfirmDialog and durable unknown-outcome/read-back handling via existing useMutationOutcome. No JSON textarea, client arithmetic, new desktop screen or engine. Show disposal journal/status and disable later depreciation.
+
+## Acceptance and split
+
+Backend owns engine/storage/schema/reversal/backup/application/host/server implementation and focused tests. Client worker owns SDK/CLI/MCP/sharedReact and focused tests against the frozen wire. They are independent writers and must not revert each other. Acceptance follows both integrations: actual shared server with ordinary admitted identity → capitalized fixture → partial depreciation → serverpreview → explicitdisposal → exactjournal/read-back/zero carrying → exactreplay/no duplicate → laterdepreciation/correction/closedperiod/stale/evidence/authority refusals → restart and signedsource-freerestore. Fully depreciated and zero-depreciation cases also pass. Reuse accepted170 rather than rerunning its unchanged entire matrix. No installedmanualdesktopaccept before the final migration stage.
+
+Five required risks are distinct: authorization/currentprincipal; idempotency/lostreply/keycollision; boundaries/exactmoney/date/evidence/accounts; concurrency/staleplan or competing disposal/depreciation; atomicity/journal+history+receipt+audit rollback and restore. Model validity/readiness are separate from actual execution. Full #698 criteria and epic #672 requirements stay binding; no close on partial acceptance.
