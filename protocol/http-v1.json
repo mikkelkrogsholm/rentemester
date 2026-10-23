@@ -1,0 +1,3186 @@
+{
+  "format": "rentemester-http-protocol/1",
+  "protocolMajor": 1,
+  "wireProfiles": [
+    "legacy-react-v1",
+    "rust-http-v1"
+  ],
+  "operations": [
+    {
+      "method": "GET",
+      "path": "/api/agent-about",
+      "capability": "GET /api/agent-about"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/agent-about",
+      "capability": "HEAD /api/agent-about"
+    },
+    {
+      "method": "GET",
+      "path": "/api/agent-capabilities",
+      "capability": "GET /api/agent-capabilities"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/agent-capabilities",
+      "capability": "HEAD /api/agent-capabilities"
+    },
+    {
+      "method": "GET",
+      "path": "/api/agent-workflows/{id}",
+      "capability": "GET /api/agent-workflows/{id}"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/agent-workflows/{id}",
+      "capability": "HEAD /api/agent-workflows/{id}"
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/change-password",
+      "capability": "POST /api/auth/change-password"
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/get-session",
+      "capability": "GET /api/auth/get-session"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/auth/get-session",
+      "capability": "HEAD /api/auth/get-session"
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/list-sessions",
+      "capability": "GET /api/auth/list-sessions"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/auth/list-sessions",
+      "capability": "HEAD /api/auth/list-sessions"
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/mfa-enrollment/begin",
+      "capability": "POST /api/auth/mfa-enrollment/begin"
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/mfa-enrollment/confirm",
+      "capability": "POST /api/auth/mfa-enrollment/confirm"
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/request-password-reset",
+      "capability": "POST /api/auth/request-password-reset"
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/reset-password",
+      "capability": "POST /api/auth/reset-password"
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/reset-password/{token}",
+      "capability": "GET /api/auth/reset-password/{token}"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/auth/reset-password/{token}",
+      "capability": "HEAD /api/auth/reset-password/{token}"
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/revoke-other-sessions",
+      "capability": "POST /api/auth/revoke-other-sessions"
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/revoke-session",
+      "capability": "POST /api/auth/revoke-session"
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/revoke-sessions",
+      "capability": "POST /api/auth/revoke-sessions"
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/send-verification-email",
+      "capability": "POST /api/auth/send-verification-email"
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/sign-in/email",
+      "capability": "POST /api/auth/sign-in/email"
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/sign-out",
+      "capability": "POST /api/auth/sign-out"
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/two-factor/generate-backup-codes",
+      "capability": "POST /api/auth/two-factor/generate-backup-codes"
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/two-factor/verify-backup-code",
+      "capability": "POST /api/auth/two-factor/verify-backup-code"
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/two-factor/verify-totp",
+      "capability": "POST /api/auth/two-factor/verify-totp"
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/two-factor/view-backup-codes",
+      "capability": "POST /api/auth/two-factor/view-backup-codes"
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/verify-email",
+      "capability": "GET /api/auth/verify-email"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/auth/verify-email",
+      "capability": "HEAD /api/auth/verify-email"
+    },
+    {
+      "method": "GET",
+      "path": "/api/cfo-analytics",
+      "capability": "GET /api/cfo-analytics"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/cfo-analytics",
+      "capability": "HEAD /api/cfo-analytics"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies",
+      "capability": "GET /api/companies"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies",
+      "capability": "HEAD /api/companies"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies",
+      "capability": "POST /api/companies"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/account-roles",
+      "capability": "POST /api/companies/{slug}/account-roles"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/accountant-export",
+      "capability": "POST /api/companies/{slug}/accountant-export"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/accounting-drafts",
+      "capability": "GET /api/companies/{slug}/accounting-drafts"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/accounting-drafts",
+      "capability": "HEAD /api/companies/{slug}/accounting-drafts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/accounting-drafts",
+      "capability": "POST /api/companies/{slug}/accounting-drafts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/accounting-drafts/{id}/{action}",
+      "capability": "POST /api/companies/{slug}/accounting-drafts/{id}/{action}"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/accounts",
+      "capability": "GET /api/companies/{slug}/accounts"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/accounts",
+      "capability": "HEAD /api/companies/{slug}/accounts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/accounts",
+      "capability": "POST /api/companies/{slug}/accounts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/accrual/original/register",
+      "capability": "POST /api/companies/{slug}/accrual/original/register"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/accrual/original/register-report",
+      "capability": "GET /api/companies/{slug}/accrual/original/register-report"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/accrual/original/register-report",
+      "capability": "HEAD /api/companies/{slug}/accrual/original/register-report"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/accrual/original/{id}/recognize",
+      "capability": "POST /api/companies/{slug}/accrual/original/{id}/recognize"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/accruals",
+      "capability": "GET /api/companies/{slug}/accruals"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/accruals",
+      "capability": "HEAD /api/companies/{slug}/accruals"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/accruals",
+      "capability": "POST /api/companies/{slug}/accruals"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/accruals/{id}/recognize",
+      "capability": "POST /api/companies/{slug}/accruals/{id}/recognize"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/accruals/{id}/schedule",
+      "capability": "GET /api/companies/{slug}/accruals/{id}/schedule"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/accruals/{id}/schedule",
+      "capability": "HEAD /api/companies/{slug}/accruals/{id}/schedule"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/annual-exports",
+      "capability": "GET /api/companies/{slug}/annual-exports"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/annual-exports",
+      "capability": "HEAD /api/companies/{slug}/annual-exports"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/annual-report",
+      "capability": "GET /api/companies/{slug}/annual-report"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/annual-report",
+      "capability": "HEAD /api/companies/{slug}/annual-report"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/archive-import/apply",
+      "capability": "POST /api/companies/{slug}/archive-import/apply"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/archive-import/plan",
+      "capability": "POST /api/companies/{slug}/archive-import/plan"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/archive-import/{importId}/original",
+      "capability": "GET /api/companies/{slug}/archive-import/{importId}/original"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/archive-import/{importId}/original",
+      "capability": "HEAD /api/companies/{slug}/archive-import/{importId}/original"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/archives",
+      "capability": "GET /api/companies/{slug}/archives"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/archives",
+      "capability": "HEAD /api/companies/{slug}/archives"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/archives/{fiscalYear}",
+      "capability": "GET /api/companies/{slug}/archives/{fiscalYear}"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/archives/{fiscalYear}",
+      "capability": "HEAD /api/companies/{slug}/archives/{fiscalYear}"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/asset/original/register",
+      "capability": "POST /api/companies/{slug}/asset/original/register"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/asset/original/register-report",
+      "capability": "GET /api/companies/{slug}/asset/original/register-report"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/asset/original/register-report",
+      "capability": "HEAD /api/companies/{slug}/asset/original/register-report"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/asset/original/write-off",
+      "capability": "POST /api/companies/{slug}/asset/original/write-off"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/asset/original/{id}/depreciate",
+      "capability": "POST /api/companies/{slug}/asset/original/{id}/depreciate"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/assets",
+      "capability": "GET /api/companies/{slug}/assets"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/assets",
+      "capability": "HEAD /api/companies/{slug}/assets"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/assets",
+      "capability": "POST /api/companies/{slug}/assets"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/assets/{id}/depreciate",
+      "capability": "POST /api/companies/{slug}/assets/{id}/depreciate"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/assets/{id}/disposal-receipt",
+      "capability": "GET /api/companies/{slug}/assets/{id}/disposal-receipt"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/assets/{id}/disposal-receipt",
+      "capability": "HEAD /api/companies/{slug}/assets/{id}/disposal-receipt"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/assets/{id}/disposal/preview",
+      "capability": "POST /api/companies/{slug}/assets/{id}/disposal/preview"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/assets/{id}/dispose",
+      "capability": "POST /api/companies/{slug}/assets/{id}/dispose"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/assets/{id}/next-depreciation",
+      "capability": "GET /api/companies/{slug}/assets/{id}/next-depreciation"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/assets/{id}/next-depreciation",
+      "capability": "HEAD /api/companies/{slug}/assets/{id}/next-depreciation"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/audit-log",
+      "capability": "GET /api/companies/{slug}/audit-log"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/audit-log",
+      "capability": "HEAD /api/companies/{slug}/audit-log"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/audit-verify",
+      "capability": "GET /api/companies/{slug}/audit-verify"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/audit-verify",
+      "capability": "HEAD /api/companies/{slug}/audit-verify"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/authority-export",
+      "capability": "POST /api/companies/{slug}/authority-export"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/backup-governance",
+      "capability": "GET /api/companies/{slug}/backup-governance"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/backup-governance",
+      "capability": "HEAD /api/companies/{slug}/backup-governance"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/backup-lock",
+      "capability": "POST /api/companies/{slug}/backup-lock"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/backup-registrations",
+      "capability": "GET /api/companies/{slug}/backup-registrations"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/backup-registrations",
+      "capability": "HEAD /api/companies/{slug}/backup-registrations"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/backup-registrations",
+      "capability": "POST /api/companies/{slug}/backup-registrations"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/backup-registrations/operations/{operation}",
+      "capability": "GET /api/companies/{slug}/backup-registrations/operations/{operation}"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/backup-registrations/operations/{operation}",
+      "capability": "HEAD /api/companies/{slug}/backup-registrations/operations/{operation}"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/backup-status",
+      "capability": "GET /api/companies/{slug}/backup-status"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/backup-status",
+      "capability": "HEAD /api/companies/{slug}/backup-status"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/balance",
+      "capability": "GET /api/companies/{slug}/balance"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/balance",
+      "capability": "HEAD /api/companies/{slug}/balance"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/bank",
+      "capability": "GET /api/companies/{slug}/bank"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/bank",
+      "capability": "HEAD /api/companies/{slug}/bank"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/bank-accounts",
+      "capability": "GET /api/companies/{slug}/bank-accounts"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/bank-accounts",
+      "capability": "HEAD /api/companies/{slug}/bank-accounts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/bank-accounts",
+      "capability": "POST /api/companies/{slug}/bank-accounts"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/companies/{slug}/bank-accounts/{account}",
+      "capability": "PATCH /api/companies/{slug}/bank-accounts/{account}"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/bank/accounts",
+      "capability": "GET /api/companies/{slug}/bank/accounts"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/bank/accounts",
+      "capability": "HEAD /api/companies/{slug}/bank/accounts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/bank/accounts-original/create",
+      "capability": "POST /api/companies/{slug}/bank/accounts-original/create"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/bank/accounts-original/update",
+      "capability": "POST /api/companies/{slug}/bank/accounts-original/update"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/bank/import",
+      "capability": "POST /api/companies/{slug}/bank/import"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/bank/import-original",
+      "capability": "POST /api/companies/{slug}/bank/import-original"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/bank/match-suggestions",
+      "capability": "GET /api/companies/{slug}/bank/match-suggestions"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/bank/match-suggestions",
+      "capability": "HEAD /api/companies/{slug}/bank/match-suggestions"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/bank/original/correction-apply",
+      "capability": "POST /api/companies/{slug}/bank/original/correction-apply"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/bank/original/correction-plan",
+      "capability": "GET /api/companies/{slug}/bank/original/correction-plan"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/bank/original/correction-plan",
+      "capability": "HEAD /api/companies/{slug}/bank/original/correction-plan"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/bank/original/direct-payable-apply",
+      "capability": "POST /api/companies/{slug}/bank/original/direct-payable-apply"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/bank/original/direct-payable-plan",
+      "capability": "POST /api/companies/{slug}/bank/original/direct-payable-plan"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/bank/original/link-journal",
+      "capability": "POST /api/companies/{slug}/bank/original/link-journal"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/bank/original/suggestions",
+      "capability": "GET /api/companies/{slug}/bank/original/suggestions"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/bank/original/suggestions",
+      "capability": "HEAD /api/companies/{slug}/bank/original/suggestions"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/bank/reconciliation",
+      "capability": "GET /api/companies/{slug}/bank/reconciliation"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/bank/reconciliation",
+      "capability": "HEAD /api/companies/{slug}/bank/reconciliation"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/bank/reconciliation-candidates",
+      "capability": "GET /api/companies/{slug}/bank/reconciliation-candidates"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/bank/reconciliation-candidates",
+      "capability": "HEAD /api/companies/{slug}/bank/reconciliation-candidates"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/bank/reconciliation-correction",
+      "capability": "POST /api/companies/{slug}/bank/reconciliation-correction"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/bank/reconciliation-correction-plan",
+      "capability": "GET /api/companies/{slug}/bank/reconciliation-correction-plan"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/bank/reconciliation-correction-plan",
+      "capability": "HEAD /api/companies/{slug}/bank/reconciliation-correction-plan"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/bank/reconciliation-link",
+      "capability": "POST /api/companies/{slug}/bank/reconciliation-link"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/bank/transactions",
+      "capability": "GET /api/companies/{slug}/bank/transactions"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/bank/transactions",
+      "capability": "HEAD /api/companies/{slug}/bank/transactions"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/bilagsmail",
+      "capability": "GET /api/companies/{slug}/bilagsmail"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/bilagsmail",
+      "capability": "HEAD /api/companies/{slug}/bilagsmail"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/companies/{slug}/bilagsmail/alias",
+      "capability": "PATCH /api/companies/{slug}/bilagsmail/alias"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/companies/{slug}/bilagsmail/imap-config",
+      "capability": "DELETE /api/companies/{slug}/bilagsmail/imap-config"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/bilagsmail/imap-config",
+      "capability": "POST /api/companies/{slug}/bilagsmail/imap-config"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/bilagsmail/poll",
+      "capability": "POST /api/companies/{slug}/bilagsmail/poll"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/bookkeeping-batch",
+      "capability": "GET /api/companies/{slug}/bookkeeping-batch"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/bookkeeping-batch",
+      "capability": "HEAD /api/companies/{slug}/bookkeeping-batch"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/bookkeeping-batch/apply",
+      "capability": "POST /api/companies/{slug}/bookkeeping-batch/apply"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/bookkeeping-batch/approve",
+      "capability": "POST /api/companies/{slug}/bookkeeping-batch/approve"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/bookkeeping-batch/persist",
+      "capability": "POST /api/companies/{slug}/bookkeeping-batch/persist"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/bookkeeping-batch/runs",
+      "capability": "GET /api/companies/{slug}/bookkeeping-batch/runs"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/bookkeeping-batch/runs",
+      "capability": "HEAD /api/companies/{slug}/bookkeeping-batch/runs"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/bookkeeping-batch/runs/{runId}",
+      "capability": "GET /api/companies/{slug}/bookkeeping-batch/runs/{runId}"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/bookkeeping-batch/runs/{runId}",
+      "capability": "HEAD /api/companies/{slug}/bookkeeping-batch/runs/{runId}"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/bookkeeping-workbench",
+      "capability": "GET /api/companies/{slug}/bookkeeping-workbench"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/bookkeeping-workbench",
+      "capability": "HEAD /api/companies/{slug}/bookkeeping-workbench"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/budget",
+      "capability": "GET /api/companies/{slug}/budget"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/budget",
+      "capability": "HEAD /api/companies/{slug}/budget"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/budget",
+      "capability": "POST /api/companies/{slug}/budget"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/budget-dimension-actuals",
+      "capability": "GET /api/companies/{slug}/budget-dimension-actuals"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/budget-dimension-actuals",
+      "capability": "HEAD /api/companies/{slug}/budget-dimension-actuals"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/budget-vs-actual",
+      "capability": "GET /api/companies/{slug}/budget-vs-actual"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/budget-vs-actual",
+      "capability": "HEAD /api/companies/{slug}/budget-vs-actual"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/cashflow",
+      "capability": "GET /api/companies/{slug}/cashflow"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/cashflow",
+      "capability": "HEAD /api/companies/{slug}/cashflow"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/company",
+      "capability": "GET /api/companies/{slug}/company"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/company",
+      "capability": "HEAD /api/companies/{slug}/company"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/companies/{slug}/company",
+      "capability": "PATCH /api/companies/{slug}/company"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/compliance-report",
+      "capability": "GET /api/companies/{slug}/compliance-report"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/compliance-report",
+      "capability": "HEAD /api/companies/{slug}/compliance-report"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/consolidation",
+      "capability": "GET /api/companies/{slug}/consolidation"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/consolidation",
+      "capability": "HEAD /api/companies/{slug}/consolidation"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/consolidation/{action}",
+      "capability": "POST /api/companies/{slug}/consolidation/{action}"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/contacts",
+      "capability": "GET /api/companies/{slug}/contacts"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/contacts",
+      "capability": "HEAD /api/companies/{slug}/contacts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/corporate-records",
+      "capability": "GET /api/companies/{slug}/corporate-records"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/corporate-records",
+      "capability": "HEAD /api/companies/{slug}/corporate-records"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/corporate-records",
+      "capability": "POST /api/companies/{slug}/corporate-records"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/corporate-records/{id}",
+      "capability": "GET /api/companies/{slug}/corporate-records/{id}"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/corporate-records/{id}",
+      "capability": "HEAD /api/companies/{slug}/corporate-records/{id}"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/corporate-records/{id}/download",
+      "capability": "GET /api/companies/{slug}/corporate-records/{id}/download"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/corporate-records/{id}/download",
+      "capability": "HEAD /api/companies/{slug}/corporate-records/{id}/download"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/corporate-records/{id}/enrich",
+      "capability": "POST /api/companies/{slug}/corporate-records/{id}/enrich"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/corporate-records/{id}/link",
+      "capability": "POST /api/companies/{slug}/corporate-records/{id}/link"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/corporate-records/{id}/supersede",
+      "capability": "POST /api/companies/{slug}/corporate-records/{id}/supersede"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/customers",
+      "capability": "POST /api/companies/{slug}/customers"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/companies/{slug}/customers/{id}",
+      "capability": "DELETE /api/companies/{slug}/customers/{id}"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/companies/{slug}/customers/{id}",
+      "capability": "PATCH /api/companies/{slug}/customers/{id}"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/cvr-lookup",
+      "capability": "GET /api/companies/{slug}/cvr-lookup"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/cvr-lookup",
+      "capability": "HEAD /api/companies/{slug}/cvr-lookup"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/dashboard",
+      "capability": "GET /api/companies/{slug}/dashboard"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/dashboard",
+      "capability": "HEAD /api/companies/{slug}/dashboard"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/dashboard/export",
+      "capability": "GET /api/companies/{slug}/dashboard/export"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/dashboard/export",
+      "capability": "HEAD /api/companies/{slug}/dashboard/export"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/dimensions",
+      "capability": "GET /api/companies/{slug}/dimensions"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/dimensions",
+      "capability": "HEAD /api/companies/{slug}/dimensions"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/dimensions/apply",
+      "capability": "POST /api/companies/{slug}/dimensions/apply"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/dimensions/define",
+      "capability": "POST /api/companies/{slug}/dimensions/define"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/dimensions/definition-lifecycle",
+      "capability": "POST /api/companies/{slug}/dimensions/definition-lifecycle"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/dimensions/member",
+      "capability": "POST /api/companies/{slug}/dimensions/member"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/dimensions/member-lifecycle",
+      "capability": "POST /api/companies/{slug}/dimensions/member-lifecycle"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/dimensions/members",
+      "capability": "GET /api/companies/{slug}/dimensions/members"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/dimensions/members",
+      "capability": "HEAD /api/companies/{slug}/dimensions/members"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/dimensions/plan",
+      "capability": "POST /api/companies/{slug}/dimensions/plan"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/dimensions/replace",
+      "capability": "POST /api/companies/{slug}/dimensions/replace"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/dimensions/supersede",
+      "capability": "POST /api/companies/{slug}/dimensions/supersede"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/dimensions/{line}",
+      "capability": "GET /api/companies/{slug}/dimensions/{line}"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/dimensions/{line}",
+      "capability": "HEAD /api/companies/{slug}/dimensions/{line}"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/documents",
+      "capability": "GET /api/companies/{slug}/documents"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/documents",
+      "capability": "HEAD /api/companies/{slug}/documents"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/documents/book-expense",
+      "capability": "POST /api/companies/{slug}/documents/book-expense"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/documents/ingest",
+      "capability": "POST /api/companies/{slug}/documents/ingest"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/documents/original/ingest",
+      "capability": "POST /api/companies/{slug}/documents/original/ingest"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/documents/original/list",
+      "capability": "GET /api/companies/{slug}/documents/original/list"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/documents/original/list",
+      "capability": "HEAD /api/companies/{slug}/documents/original/list"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/documents/original/party-links",
+      "capability": "GET /api/companies/{slug}/documents/original/party-links"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/documents/original/party-links",
+      "capability": "HEAD /api/companies/{slug}/documents/original/party-links"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/documents/original/party-links/{action}",
+      "capability": "GET /api/companies/{slug}/documents/original/party-links/{action}"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/documents/original/party-links/{action}",
+      "capability": "HEAD /api/companies/{slug}/documents/original/party-links/{action}"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/documents/original/party-links/{action}",
+      "capability": "POST /api/companies/{slug}/documents/original/party-links/{action}"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/documents/original/{id}/company-context",
+      "capability": "POST /api/companies/{slug}/documents/original/{id}/company-context"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/documents/original/{id}/enrich",
+      "capability": "POST /api/companies/{slug}/documents/original/{id}/enrich"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/documents/original/{id}/extract-invoice",
+      "capability": "POST /api/companies/{slug}/documents/original/{id}/extract-invoice"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/documents/original/{id}/invoice-extraction",
+      "capability": "GET /api/companies/{slug}/documents/original/{id}/invoice-extraction"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/documents/original/{id}/invoice-extraction",
+      "capability": "HEAD /api/companies/{slug}/documents/original/{id}/invoice-extraction"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/documents/parse-pending",
+      "capability": "POST /api/companies/{slug}/documents/parse-pending"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/documents/party-links",
+      "capability": "GET /api/companies/{slug}/documents/party-links"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/documents/party-links",
+      "capability": "HEAD /api/companies/{slug}/documents/party-links"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/documents/party-links/{action}",
+      "capability": "POST /api/companies/{slug}/documents/party-links/{action}"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/documents/{id}/booking-options",
+      "capability": "GET /api/companies/{slug}/documents/{id}/booking-options"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/documents/{id}/booking-options",
+      "capability": "HEAD /api/companies/{slug}/documents/{id}/booking-options"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/documents/{id}/extract-invoice",
+      "capability": "POST /api/companies/{slug}/documents/{id}/extract-invoice"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/documents/{id}/file",
+      "capability": "GET /api/companies/{slug}/documents/{id}/file"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/documents/{id}/file",
+      "capability": "HEAD /api/companies/{slug}/documents/{id}/file"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/documents/{id}/invoice-extraction",
+      "capability": "GET /api/companies/{slug}/documents/{id}/invoice-extraction"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/documents/{id}/invoice-extraction",
+      "capability": "HEAD /api/companies/{slug}/documents/{id}/invoice-extraction"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/documents/{id}/parse",
+      "capability": "POST /api/companies/{slug}/documents/{id}/parse"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/documents/{id}/parse-status",
+      "capability": "GET /api/companies/{slug}/documents/{id}/parse-status"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/documents/{id}/parse-status",
+      "capability": "HEAD /api/companies/{slug}/documents/{id}/parse-status"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/documents/{id}/parsed-text",
+      "capability": "GET /api/companies/{slug}/documents/{id}/parsed-text"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/documents/{id}/parsed-text",
+      "capability": "HEAD /api/companies/{slug}/documents/{id}/parsed-text"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/documents/{id}/party-links",
+      "capability": "GET /api/companies/{slug}/documents/{id}/party-links"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/documents/{id}/party-links",
+      "capability": "HEAD /api/companies/{slug}/documents/{id}/party-links"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/eliminations",
+      "capability": "GET /api/companies/{slug}/eliminations"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/eliminations",
+      "capability": "HEAD /api/companies/{slug}/eliminations"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/eliminations/{action}",
+      "capability": "POST /api/companies/{slug}/eliminations/{action}"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/eu-sales",
+      "capability": "GET /api/companies/{slug}/eu-sales"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/eu-sales",
+      "capability": "HEAD /api/companies/{slug}/eu-sales"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/exceptions",
+      "capability": "GET /api/companies/{slug}/exceptions"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/exceptions",
+      "capability": "HEAD /api/companies/{slug}/exceptions"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/exceptions/original",
+      "capability": "GET /api/companies/{slug}/exceptions/original"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/exceptions/original",
+      "capability": "HEAD /api/companies/{slug}/exceptions/original"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/exceptions/original/{id}/resolve",
+      "capability": "POST /api/companies/{slug}/exceptions/original/{id}/resolve"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/exceptions/{id}/resolve",
+      "capability": "POST /api/companies/{slug}/exceptions/{id}/resolve"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/expense/original/book",
+      "capability": "POST /api/companies/{slug}/expense/original/book"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/expense/original/vat-preflight/{id}",
+      "capability": "GET /api/companies/{slug}/expense/original/vat-preflight/{id}"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/expense/original/vat-preflight/{id}",
+      "capability": "HEAD /api/companies/{slug}/expense/original/vat-preflight/{id}"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/expense/original/vat-preflight/{id}",
+      "capability": "POST /api/companies/{slug}/expense/original/vat-preflight/{id}"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/fiscal-years",
+      "capability": "GET /api/companies/{slug}/fiscal-years"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/fiscal-years",
+      "capability": "HEAD /api/companies/{slug}/fiscal-years"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/gdpr/audit-log",
+      "capability": "POST /api/companies/{slug}/gdpr/audit-log"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/gdpr/discover",
+      "capability": "POST /api/companies/{slug}/gdpr/discover"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/gdpr/erase",
+      "capability": "POST /api/companies/{slug}/gdpr/erase"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/gdpr/export",
+      "capability": "POST /api/companies/{slug}/gdpr/export"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/gdpr/forget",
+      "capability": "POST /api/companies/{slug}/gdpr/forget"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/gdpr/legal-hold",
+      "capability": "POST /api/companies/{slug}/gdpr/legal-hold"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/group-dispositions/{action}",
+      "capability": "POST /api/companies/{slug}/group-dispositions/{action}"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/import",
+      "capability": "POST /api/companies/{slug}/import"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/imports/dinero",
+      "capability": "GET /api/companies/{slug}/imports/dinero"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/imports/dinero",
+      "capability": "HEAD /api/companies/{slug}/imports/dinero"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/imports/dinero/apply",
+      "capability": "POST /api/companies/{slug}/imports/dinero/apply"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/imports/dinero/plan",
+      "capability": "POST /api/companies/{slug}/imports/dinero/plan"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/imports/dinero/{attemptId}/original",
+      "capability": "GET /api/companies/{slug}/imports/dinero/{attemptId}/original"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/imports/dinero/{attemptId}/original",
+      "capability": "HEAD /api/companies/{slug}/imports/dinero/{attemptId}/original"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/income-statement",
+      "capability": "GET /api/companies/{slug}/income-statement"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/income-statement",
+      "capability": "HEAD /api/companies/{slug}/income-statement"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/integrity",
+      "capability": "GET /api/companies/{slug}/integrity"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/integrity",
+      "capability": "HEAD /api/companies/{slug}/integrity"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/intercompany",
+      "capability": "GET /api/companies/{slug}/intercompany"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/intercompany",
+      "capability": "HEAD /api/companies/{slug}/intercompany"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/intercompany/{action}",
+      "capability": "POST /api/companies/{slug}/intercompany/{action}"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/invoices",
+      "capability": "GET /api/companies/{slug}/invoices"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/invoices",
+      "capability": "HEAD /api/companies/{slug}/invoices"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/invoices/bad-debt/write-off",
+      "capability": "POST /api/companies/{slug}/invoices/bad-debt/write-off"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/invoices/claims/settle",
+      "capability": "POST /api/companies/{slug}/invoices/claims/settle"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/invoices/compensation/calculate",
+      "capability": "POST /api/companies/{slug}/invoices/compensation/calculate"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/invoices/compensation/post",
+      "capability": "POST /api/companies/{slug}/invoices/compensation/post"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/invoices/compensation/register",
+      "capability": "POST /api/companies/{slug}/invoices/compensation/register"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/invoices/credit-note",
+      "capability": "POST /api/companies/{slug}/invoices/credit-note"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/invoices/email-deliveries",
+      "capability": "GET /api/companies/{slug}/invoices/email-deliveries"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/invoices/email-deliveries",
+      "capability": "HEAD /api/companies/{slug}/invoices/email-deliveries"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/invoices/email-deliveries/reconcile",
+      "capability": "POST /api/companies/{slug}/invoices/email-deliveries/reconcile"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/invoices/email-deliveries/retry",
+      "capability": "POST /api/companies/{slug}/invoices/email-deliveries/retry"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/invoices/imported-receivables",
+      "capability": "GET /api/companies/{slug}/invoices/imported-receivables"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/invoices/imported-receivables",
+      "capability": "HEAD /api/companies/{slug}/invoices/imported-receivables"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/invoices/interest/calculate",
+      "capability": "POST /api/companies/{slug}/invoices/interest/calculate"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/invoices/interest/correction",
+      "capability": "POST /api/companies/{slug}/invoices/interest/correction"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/invoices/interest/post",
+      "capability": "POST /api/companies/{slug}/invoices/interest/post"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/invoices/interest/post-correction",
+      "capability": "POST /api/companies/{slug}/invoices/interest/post-correction"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/invoices/interest/register",
+      "capability": "POST /api/companies/{slug}/invoices/interest/register"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/invoices/issue",
+      "capability": "POST /api/companies/{slug}/invoices/issue"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/invoices/original/apply-payment",
+      "capability": "POST /api/companies/{slug}/invoices/original/apply-payment"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/invoices/original/claim-compensation",
+      "capability": "POST /api/companies/{slug}/invoices/original/claim-compensation"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/invoices/original/claim-interest",
+      "capability": "POST /api/companies/{slug}/invoices/original/claim-interest"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/invoices/original/compensation",
+      "capability": "POST /api/companies/{slug}/invoices/original/compensation"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/invoices/original/create",
+      "capability": "POST /api/companies/{slug}/invoices/original/create"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/invoices/original/credit-note",
+      "capability": "POST /api/companies/{slug}/invoices/original/credit-note"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/invoices/original/export-public",
+      "capability": "POST /api/companies/{slug}/invoices/original/export-public"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/invoices/original/export-public-oioubl",
+      "capability": "POST /api/companies/{slug}/invoices/original/export-public-oioubl"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/invoices/original/find",
+      "capability": "GET /api/companies/{slug}/invoices/original/find"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/invoices/original/find",
+      "capability": "HEAD /api/companies/{slug}/invoices/original/find"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/invoices/original/interest",
+      "capability": "POST /api/companies/{slug}/invoices/original/interest"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/invoices/original/interest-correction",
+      "capability": "POST /api/companies/{slug}/invoices/original/interest-correction"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/invoices/original/issue",
+      "capability": "POST /api/companies/{slug}/invoices/original/issue"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/invoices/original/list",
+      "capability": "GET /api/companies/{slug}/invoices/original/list"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/invoices/original/list",
+      "capability": "HEAD /api/companies/{slug}/invoices/original/list"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/invoices/original/overdue",
+      "capability": "GET /api/companies/{slug}/invoices/original/overdue"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/invoices/original/overdue",
+      "capability": "HEAD /api/companies/{slug}/invoices/original/overdue"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/invoices/original/post",
+      "capability": "POST /api/companies/{slug}/invoices/original/post"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/invoices/original/post-compensation",
+      "capability": "POST /api/companies/{slug}/invoices/original/post-compensation"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/invoices/original/post-interest",
+      "capability": "POST /api/companies/{slug}/invoices/original/post-interest"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/invoices/original/post-interest-correction",
+      "capability": "POST /api/companies/{slug}/invoices/original/post-interest-correction"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/invoices/original/post-reminder",
+      "capability": "POST /api/companies/{slug}/invoices/original/post-reminder"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/invoices/original/refund-bank",
+      "capability": "POST /api/companies/{slug}/invoices/original/refund-bank"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/invoices/original/remind",
+      "capability": "POST /api/companies/{slug}/invoices/original/remind"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/invoices/original/render",
+      "capability": "POST /api/companies/{slug}/invoices/original/render"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/invoices/original/repair-posting",
+      "capability": "POST /api/companies/{slug}/invoices/original/repair-posting"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/invoices/original/settle-bank",
+      "capability": "POST /api/companies/{slug}/invoices/original/settle-bank"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/invoices/original/settle-claim-bank",
+      "capability": "POST /api/companies/{slug}/invoices/original/settle-claim-bank"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/invoices/original/status",
+      "capability": "GET /api/companies/{slug}/invoices/original/status"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/invoices/original/status",
+      "capability": "HEAD /api/companies/{slug}/invoices/original/status"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/invoices/original/submit-public-peppol",
+      "capability": "POST /api/companies/{slug}/invoices/original/submit-public-peppol"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/invoices/original/transmit-digisense",
+      "capability": "POST /api/companies/{slug}/invoices/original/transmit-digisense"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/invoices/original/write-off-bad-debt",
+      "capability": "POST /api/companies/{slug}/invoices/original/write-off-bad-debt"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/invoices/post",
+      "capability": "POST /api/companies/{slug}/invoices/post"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/invoices/preview",
+      "capability": "POST /api/companies/{slug}/invoices/preview"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/invoices/public-config",
+      "capability": "GET /api/companies/{slug}/invoices/public-config"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/invoices/public-config",
+      "capability": "HEAD /api/companies/{slug}/invoices/public-config"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/invoices/public-register",
+      "capability": "POST /api/companies/{slug}/invoices/public-register"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/invoices/public-submissions",
+      "capability": "GET /api/companies/{slug}/invoices/public-submissions"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/invoices/public-submissions",
+      "capability": "HEAD /api/companies/{slug}/invoices/public-submissions"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/invoices/refund",
+      "capability": "POST /api/companies/{slug}/invoices/refund"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/invoices/reminders/post",
+      "capability": "POST /api/companies/{slug}/invoices/reminders/post"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/invoices/reminders/register",
+      "capability": "POST /api/companies/{slug}/invoices/reminders/register"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/invoices/send-email",
+      "capability": "POST /api/companies/{slug}/invoices/send-email"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/invoices/send-public",
+      "capability": "POST /api/companies/{slug}/invoices/send-public"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/invoices/send-public/status",
+      "capability": "POST /api/companies/{slug}/invoices/send-public/status"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/invoices/settle",
+      "capability": "POST /api/companies/{slug}/invoices/settle"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/invoices/{id}/pdf",
+      "capability": "GET /api/companies/{slug}/invoices/{id}/pdf"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/invoices/{id}/pdf",
+      "capability": "HEAD /api/companies/{slug}/invoices/{id}/pdf"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/invoices/{id}/reminder-claims",
+      "capability": "GET /api/companies/{slug}/invoices/{id}/reminder-claims"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/invoices/{id}/reminder-claims",
+      "capability": "HEAD /api/companies/{slug}/invoices/{id}/reminder-claims"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/journal",
+      "capability": "GET /api/companies/{slug}/journal"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/journal",
+      "capability": "HEAD /api/companies/{slug}/journal"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/journal/entries",
+      "capability": "GET /api/companies/{slug}/journal/entries"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/journal/entries",
+      "capability": "HEAD /api/companies/{slug}/journal/entries"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/journal/original/dry-run",
+      "capability": "POST /api/companies/{slug}/journal/original/dry-run"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/journal/original/keyed-post",
+      "capability": "POST /api/companies/{slug}/journal/original/keyed-post"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/journal/original/keyed-reverse",
+      "capability": "POST /api/companies/{slug}/journal/original/keyed-reverse"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/journal/original/post",
+      "capability": "POST /api/companies/{slug}/journal/original/post"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/journal/original/reverse",
+      "capability": "POST /api/companies/{slug}/journal/original/reverse"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/knowledge",
+      "capability": "GET /api/companies/{slug}/knowledge"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/knowledge",
+      "capability": "HEAD /api/companies/{slug}/knowledge"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/knowledge/propose",
+      "capability": "POST /api/companies/{slug}/knowledge/propose"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/knowledge/review",
+      "capability": "POST /api/companies/{slug}/knowledge/review"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/knowledge/supersede",
+      "capability": "POST /api/companies/{slug}/knowledge/supersede"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/manual-journal",
+      "capability": "POST /api/companies/{slug}/manual-journal"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/manual-journal-reversal",
+      "capability": "POST /api/companies/{slug}/manual-journal-reversal"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/manual-journal/recovery",
+      "capability": "GET /api/companies/{slug}/manual-journal/recovery"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/manual-journal/recovery",
+      "capability": "HEAD /api/companies/{slug}/manual-journal/recovery"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/manual-journal/recovery",
+      "capability": "POST /api/companies/{slug}/manual-journal/recovery"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/master-data/original/customer-validate-vat",
+      "capability": "POST /api/companies/{slug}/master-data/original/customer-validate-vat"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/master-data/original/customers",
+      "capability": "GET /api/companies/{slug}/master-data/original/customers"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/master-data/original/customers",
+      "capability": "HEAD /api/companies/{slug}/master-data/original/customers"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/master-data/original/customers",
+      "capability": "POST /api/companies/{slug}/master-data/original/customers"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/master-data/original/cvr-lookup",
+      "capability": "GET /api/companies/{slug}/master-data/original/cvr-lookup"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/master-data/original/cvr-lookup",
+      "capability": "HEAD /api/companies/{slug}/master-data/original/cvr-lookup"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/master-data/original/vendors",
+      "capability": "GET /api/companies/{slug}/master-data/original/vendors"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/master-data/original/vendors",
+      "capability": "HEAD /api/companies/{slug}/master-data/original/vendors"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/master-data/original/vendors",
+      "capability": "POST /api/companies/{slug}/master-data/original/vendors"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/mileage",
+      "capability": "GET /api/companies/{slug}/mileage"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/mileage",
+      "capability": "HEAD /api/companies/{slug}/mileage"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/mileage",
+      "capability": "POST /api/companies/{slug}/mileage"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/mileage/post",
+      "capability": "POST /api/companies/{slug}/mileage/post"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/mileage/post-preview",
+      "capability": "POST /api/companies/{slug}/mileage/post-preview"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/mileage/postings",
+      "capability": "GET /api/companies/{slug}/mileage/postings"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/mileage/postings",
+      "capability": "HEAD /api/companies/{slug}/mileage/postings"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/mileage/rate-versions",
+      "capability": "GET /api/companies/{slug}/mileage/rate-versions"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/mileage/rate-versions",
+      "capability": "HEAD /api/companies/{slug}/mileage/rate-versions"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/mileage/rate-versions",
+      "capability": "POST /api/companies/{slug}/mileage/rate-versions"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/multi-year",
+      "capability": "GET /api/companies/{slug}/multi-year"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/multi-year",
+      "capability": "HEAD /api/companies/{slug}/multi-year"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/obligations",
+      "capability": "GET /api/companies/{slug}/obligations"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/obligations",
+      "capability": "HEAD /api/companies/{slug}/obligations"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/opening-balance",
+      "capability": "GET /api/companies/{slug}/opening-balance"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/opening-balance",
+      "capability": "HEAD /api/companies/{slug}/opening-balance"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/opening-balance/apply",
+      "capability": "POST /api/companies/{slug}/opening-balance/apply"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/opening-balance/plan",
+      "capability": "POST /api/companies/{slug}/opening-balance/plan"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/original/accounting-draft/approve-and-post",
+      "capability": "POST /api/companies/{slug}/original/accounting-draft/approve-and-post"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/original/accounting-draft/create",
+      "capability": "POST /api/companies/{slug}/original/accounting-draft/create"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/original/accounting-draft/list",
+      "capability": "GET /api/companies/{slug}/original/accounting-draft/list"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/original/accounting-draft/list",
+      "capability": "HEAD /api/companies/{slug}/original/accounting-draft/list"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/original/accounting-draft/reject",
+      "capability": "POST /api/companies/{slug}/original/accounting-draft/reject"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/original/accounting-draft/revise",
+      "capability": "POST /api/companies/{slug}/original/accounting-draft/revise"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/original/accounting-draft/show",
+      "capability": "GET /api/companies/{slug}/original/accounting-draft/show"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/original/accounting-draft/show",
+      "capability": "HEAD /api/companies/{slug}/original/accounting-draft/show"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/original/accounting-draft/submit",
+      "capability": "POST /api/companies/{slug}/original/accounting-draft/submit"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/original/accounts/add",
+      "capability": "POST /api/companies/{slug}/original/accounts/add"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/original/accounts/list",
+      "capability": "GET /api/companies/{slug}/original/accounts/list"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/original/accounts/list",
+      "capability": "HEAD /api/companies/{slug}/original/accounts/list"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/original/accounts/role-confirm",
+      "capability": "POST /api/companies/{slug}/original/accounts/role-confirm"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/original/accounts/roles-status",
+      "capability": "GET /api/companies/{slug}/original/accounts/roles-status"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/original/accounts/roles-status",
+      "capability": "HEAD /api/companies/{slug}/original/accounts/roles-status"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/original/budget/forecast",
+      "capability": "GET /api/companies/{slug}/original/budget/forecast"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/original/budget/forecast",
+      "capability": "HEAD /api/companies/{slug}/original/budget/forecast"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/original/budget/forecast-13-week",
+      "capability": "GET /api/companies/{slug}/original/budget/forecast-13-week"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/original/budget/forecast-13-week",
+      "capability": "HEAD /api/companies/{slug}/original/budget/forecast-13-week"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/original/budget/list",
+      "capability": "GET /api/companies/{slug}/original/budget/list"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/original/budget/list",
+      "capability": "HEAD /api/companies/{slug}/original/budget/list"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/original/budget/set",
+      "capability": "POST /api/companies/{slug}/original/budget/set"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/original/budget/vs-actual",
+      "capability": "GET /api/companies/{slug}/original/budget/vs-actual"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/original/budget/vs-actual",
+      "capability": "HEAD /api/companies/{slug}/original/budget/vs-actual"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/original/dimensions/apply",
+      "capability": "POST /api/companies/{slug}/original/dimensions/apply"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/original/dimensions/assignments",
+      "capability": "GET /api/companies/{slug}/original/dimensions/assignments"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/original/dimensions/assignments",
+      "capability": "HEAD /api/companies/{slug}/original/dimensions/assignments"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/original/dimensions/budget-apply",
+      "capability": "POST /api/companies/{slug}/original/dimensions/budget-apply"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/original/dimensions/budget-plan",
+      "capability": "POST /api/companies/{slug}/original/dimensions/budget-plan"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/original/dimensions/budgets",
+      "capability": "GET /api/companies/{slug}/original/dimensions/budgets"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/original/dimensions/budgets",
+      "capability": "HEAD /api/companies/{slug}/original/dimensions/budgets"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/original/dimensions/define",
+      "capability": "POST /api/companies/{slug}/original/dimensions/define"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/original/dimensions/definition-lifecycle",
+      "capability": "POST /api/companies/{slug}/original/dimensions/definition-lifecycle"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/original/dimensions/definitions",
+      "capability": "GET /api/companies/{slug}/original/dimensions/definitions"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/original/dimensions/definitions",
+      "capability": "HEAD /api/companies/{slug}/original/dimensions/definitions"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/original/dimensions/member",
+      "capability": "POST /api/companies/{slug}/original/dimensions/member"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/original/dimensions/member-lifecycle",
+      "capability": "POST /api/companies/{slug}/original/dimensions/member-lifecycle"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/original/dimensions/members",
+      "capability": "GET /api/companies/{slug}/original/dimensions/members"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/original/dimensions/members",
+      "capability": "HEAD /api/companies/{slug}/original/dimensions/members"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/original/dimensions/plan",
+      "capability": "POST /api/companies/{slug}/original/dimensions/plan"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/original/dimensions/replace",
+      "capability": "POST /api/companies/{slug}/original/dimensions/replace"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/original/dimensions/supersede",
+      "capability": "POST /api/companies/{slug}/original/dimensions/supersede"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/original/mileage/export",
+      "capability": "POST /api/companies/{slug}/original/mileage/export"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/original/mileage/list",
+      "capability": "GET /api/companies/{slug}/original/mileage/list"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/original/mileage/list",
+      "capability": "HEAD /api/companies/{slug}/original/mileage/list"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/original/mileage/log",
+      "capability": "POST /api/companies/{slug}/original/mileage/log"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/original/mileage/report",
+      "capability": "GET /api/companies/{slug}/original/mileage/report"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/original/mileage/report",
+      "capability": "HEAD /api/companies/{slug}/original/mileage/report"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/original/posting-rules/approve",
+      "capability": "POST /api/companies/{slug}/original/posting-rules/approve"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/original/posting-rules/disable",
+      "capability": "POST /api/companies/{slug}/original/posting-rules/disable"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/original/posting-rules/explain",
+      "capability": "POST /api/companies/{slug}/original/posting-rules/explain"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/original/posting-rules/propose",
+      "capability": "POST /api/companies/{slug}/original/posting-rules/propose"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/original/posting-rules/supersede",
+      "capability": "POST /api/companies/{slug}/original/posting-rules/supersede"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/original/posting-rules/test",
+      "capability": "POST /api/companies/{slug}/original/posting-rules/test"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/original/supplier-commitments",
+      "capability": "GET /api/companies/{slug}/original/supplier-commitments"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/original/supplier-commitments",
+      "capability": "HEAD /api/companies/{slug}/original/supplier-commitments"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/original/supplier-commitments/alerts",
+      "capability": "GET /api/companies/{slug}/original/supplier-commitments/alerts"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/original/supplier-commitments/alerts",
+      "capability": "HEAD /api/companies/{slug}/original/supplier-commitments/alerts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/original/supplier-commitments/apply",
+      "capability": "POST /api/companies/{slug}/original/supplier-commitments/apply"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/original/supplier-commitments/change",
+      "capability": "POST /api/companies/{slug}/original/supplier-commitments/change"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/original/supplier-commitments/match",
+      "capability": "POST /api/companies/{slug}/original/supplier-commitments/match"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/original/supplier-commitments/matches",
+      "capability": "GET /api/companies/{slug}/original/supplier-commitments/matches"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/original/supplier-commitments/matches",
+      "capability": "HEAD /api/companies/{slug}/original/supplier-commitments/matches"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/original/supplier-commitments/plan",
+      "capability": "POST /api/companies/{slug}/original/supplier-commitments/plan"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/original/vat/eu-sales-list",
+      "capability": "GET /api/companies/{slug}/original/vat/eu-sales-list"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/original/vat/eu-sales-list",
+      "capability": "HEAD /api/companies/{slug}/original/vat/eu-sales-list"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/original/vat/eu-service-purchase",
+      "capability": "POST /api/companies/{slug}/original/vat/eu-service-purchase"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/original/vat/filing",
+      "capability": "GET /api/companies/{slug}/original/vat/filing"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/original/vat/filing",
+      "capability": "HEAD /api/companies/{slug}/original/vat/filing"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/original/vat/oss-report",
+      "capability": "GET /api/companies/{slug}/original/vat/oss-report"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/original/vat/oss-report",
+      "capability": "HEAD /api/companies/{slug}/original/vat/oss-report"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/original/vat/report",
+      "capability": "GET /api/companies/{slug}/original/vat/report"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/original/vat/report",
+      "capability": "HEAD /api/companies/{slug}/original/vat/report"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/original/vat/representation-purchase",
+      "capability": "POST /api/companies/{slug}/original/vat/representation-purchase"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/oss-report",
+      "capability": "GET /api/companies/{slug}/oss-report"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/oss-report",
+      "capability": "HEAD /api/companies/{slug}/oss-report"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/overview",
+      "capability": "GET /api/companies/{slug}/overview"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/overview",
+      "capability": "HEAD /api/companies/{slug}/overview"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/ownership",
+      "capability": "GET /api/companies/{slug}/ownership"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/ownership",
+      "capability": "HEAD /api/companies/{slug}/ownership"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/ownership/apply",
+      "capability": "POST /api/companies/{slug}/ownership/apply"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/ownership/history",
+      "capability": "GET /api/companies/{slug}/ownership/history"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/ownership/history",
+      "capability": "HEAD /api/companies/{slug}/ownership/history"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/ownership/propose",
+      "capability": "POST /api/companies/{slug}/ownership/propose"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/ownership/review",
+      "capability": "POST /api/companies/{slug}/ownership/review"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/payables",
+      "capability": "GET /api/companies/{slug}/payables"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/payables",
+      "capability": "HEAD /api/companies/{slug}/payables"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/payables",
+      "capability": "POST /api/companies/{slug}/payables"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/payables/direct-bank-correction/apply",
+      "capability": "POST /api/companies/{slug}/payables/direct-bank-correction/apply"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/payables/direct-bank-correction/plan",
+      "capability": "POST /api/companies/{slug}/payables/direct-bank-correction/plan"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/payables/original/list",
+      "capability": "GET /api/companies/{slug}/payables/original/list"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/payables/original/list",
+      "capability": "HEAD /api/companies/{slug}/payables/original/list"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/payables/original/pay",
+      "capability": "POST /api/companies/{slug}/payables/original/pay"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/payables/original/register",
+      "capability": "POST /api/companies/{slug}/payables/original/register"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/payables/{id}/pay",
+      "capability": "POST /api/companies/{slug}/payables/{id}/pay"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/periods",
+      "capability": "GET /api/companies/{slug}/periods"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/periods",
+      "capability": "HEAD /api/companies/{slug}/periods"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/periods/close",
+      "capability": "POST /api/companies/{slug}/periods/close"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/periods/close-readiness",
+      "capability": "GET /api/companies/{slug}/periods/close-readiness"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/periods/close-readiness",
+      "capability": "HEAD /api/companies/{slug}/periods/close-readiness"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/periods/close-review",
+      "capability": "POST /api/companies/{slug}/periods/close-review"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/periods/original/close",
+      "capability": "POST /api/companies/{slug}/periods/original/close"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/periods/original/list",
+      "capability": "GET /api/companies/{slug}/periods/original/list"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/periods/original/list",
+      "capability": "HEAD /api/companies/{slug}/periods/original/list"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/periods/original/mcp-close",
+      "capability": "POST /api/companies/{slug}/periods/original/mcp-close"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/periods/original/readiness",
+      "capability": "GET /api/companies/{slug}/periods/original/readiness"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/periods/original/readiness",
+      "capability": "HEAD /api/companies/{slug}/periods/original/readiness"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/periods/original/reopen",
+      "capability": "POST /api/companies/{slug}/periods/original/reopen"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/periods/original/review",
+      "capability": "POST /api/companies/{slug}/periods/original/review"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/periods/original/review-current",
+      "capability": "POST /api/companies/{slug}/periods/original/review-current"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/periods/original/status",
+      "capability": "GET /api/companies/{slug}/periods/original/status"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/periods/original/status",
+      "capability": "HEAD /api/companies/{slug}/periods/original/status"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/periods/reopen",
+      "capability": "POST /api/companies/{slug}/periods/reopen"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/periods/report",
+      "capability": "POST /api/companies/{slug}/periods/report"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/posting-rules",
+      "capability": "GET /api/companies/{slug}/posting-rules"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/posting-rules",
+      "capability": "HEAD /api/companies/{slug}/posting-rules"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/posting-rules/{action}",
+      "capability": "POST /api/companies/{slug}/posting-rules/{action}"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/recurring-invoices",
+      "capability": "GET /api/companies/{slug}/recurring-invoices"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/recurring-invoices",
+      "capability": "HEAD /api/companies/{slug}/recurring-invoices"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/recurring-invoices",
+      "capability": "POST /api/companies/{slug}/recurring-invoices"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/recurring-invoices/original/create",
+      "capability": "POST /api/companies/{slug}/recurring-invoices/original/create"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/recurring-invoices/original/generate",
+      "capability": "POST /api/companies/{slug}/recurring-invoices/original/generate"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/recurring-invoices/original/list",
+      "capability": "GET /api/companies/{slug}/recurring-invoices/original/list"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/recurring-invoices/original/list",
+      "capability": "HEAD /api/companies/{slug}/recurring-invoices/original/list"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/recurring-invoices/{id}/generate",
+      "capability": "POST /api/companies/{slug}/recurring-invoices/{id}/generate"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/recurring-invoices/{id}/retire",
+      "capability": "POST /api/companies/{slug}/recurring-invoices/{id}/retire"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/reports/{report}",
+      "capability": "GET /api/companies/{slug}/reports/{report}"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/reports/{report}",
+      "capability": "HEAD /api/companies/{slug}/reports/{report}"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/restore/receipts",
+      "capability": "GET /api/companies/{slug}/restore/receipts"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/restore/receipts",
+      "capability": "HEAD /api/companies/{slug}/restore/receipts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/restore/receipts/reconcile",
+      "capability": "POST /api/companies/{slug}/restore/receipts/reconcile"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/retention",
+      "capability": "GET /api/companies/{slug}/retention"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/retention",
+      "capability": "HEAD /api/companies/{slug}/retention"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/reviewed-bank",
+      "capability": "GET /api/companies/{slug}/reviewed-bank"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/reviewed-bank",
+      "capability": "HEAD /api/companies/{slug}/reviewed-bank"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/reviewed-bank",
+      "capability": "POST /api/companies/{slug}/reviewed-bank"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/saft-export",
+      "capability": "POST /api/companies/{slug}/saft-export"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/scheduled-recurring",
+      "capability": "GET /api/companies/{slug}/scheduled-recurring"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/scheduled-recurring",
+      "capability": "HEAD /api/companies/{slug}/scheduled-recurring"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/scheduled-recurring/cancel",
+      "capability": "POST /api/companies/{slug}/scheduled-recurring/cancel"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/scheduled-recurring/catch-up",
+      "capability": "POST /api/companies/{slug}/scheduled-recurring/catch-up"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/scheduled-recurring/dispatch",
+      "capability": "POST /api/companies/{slug}/scheduled-recurring/dispatch"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/scheduled-recurring/enable",
+      "capability": "POST /api/companies/{slug}/scheduled-recurring/enable"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/scheduled-recurring/hosted-consent",
+      "capability": "POST /api/companies/{slug}/scheduled-recurring/hosted-consent"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/scheduled-recurring/hosted-revoke",
+      "capability": "POST /api/companies/{slug}/scheduled-recurring/hosted-revoke"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/scheduled-recurring/pause",
+      "capability": "POST /api/companies/{slug}/scheduled-recurring/pause"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/scheduled-recurring/reconsent",
+      "capability": "POST /api/companies/{slug}/scheduled-recurring/reconsent"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/scheduled-recurring/resume",
+      "capability": "POST /api/companies/{slug}/scheduled-recurring/resume"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/scheduled-recurring/skip",
+      "capability": "POST /api/companies/{slug}/scheduled-recurring/skip"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/scheduled-recurring/{id}/hosted-plan",
+      "capability": "GET /api/companies/{slug}/scheduled-recurring/{id}/hosted-plan"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/scheduled-recurring/{id}/hosted-plan",
+      "capability": "HEAD /api/companies/{slug}/scheduled-recurring/{id}/hosted-plan"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/scheduled-recurring/{id}/plan",
+      "capability": "GET /api/companies/{slug}/scheduled-recurring/{id}/plan"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/scheduled-recurring/{id}/plan",
+      "capability": "HEAD /api/companies/{slug}/scheduled-recurring/{id}/plan"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/supplier-commitments",
+      "capability": "GET /api/companies/{slug}/supplier-commitments"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/supplier-commitments",
+      "capability": "HEAD /api/companies/{slug}/supplier-commitments"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/supplier-commitments",
+      "capability": "POST /api/companies/{slug}/supplier-commitments"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/supplier-commitments/change",
+      "capability": "POST /api/companies/{slug}/supplier-commitments/change"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/supplier-commitments/match",
+      "capability": "POST /api/companies/{slug}/supplier-commitments/match"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/supplier-commitments/matches",
+      "capability": "GET /api/companies/{slug}/supplier-commitments/matches"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/supplier-commitments/matches",
+      "capability": "HEAD /api/companies/{slug}/supplier-commitments/matches"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/supplier-commitments/plan",
+      "capability": "POST /api/companies/{slug}/supplier-commitments/plan"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/sync-cvr",
+      "capability": "POST /api/companies/{slug}/sync-cvr"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/trial-balance",
+      "capability": "GET /api/companies/{slug}/trial-balance"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/trial-balance",
+      "capability": "HEAD /api/companies/{slug}/trial-balance"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/vat",
+      "capability": "GET /api/companies/{slug}/vat"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/vat",
+      "capability": "HEAD /api/companies/{slug}/vat"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/vat/export",
+      "capability": "GET /api/companies/{slug}/vat/export"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/vat/export",
+      "capability": "HEAD /api/companies/{slug}/vat/export"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/vendors",
+      "capability": "POST /api/companies/{slug}/vendors"
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/companies/{slug}/vendors/{id}",
+      "capability": "DELETE /api/companies/{slug}/vendors/{id}"
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/companies/{slug}/vendors/{id}",
+      "capability": "PATCH /api/companies/{slug}/vendors/{id}"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/vies/validate",
+      "capability": "POST /api/companies/{slug}/vies/validate"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/workspace-inbox",
+      "capability": "GET /api/companies/{slug}/workspace-inbox"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/workspace-inbox",
+      "capability": "HEAD /api/companies/{slug}/workspace-inbox"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/workspace-inbox",
+      "capability": "POST /api/companies/{slug}/workspace-inbox"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/workspace-inbox/{source}",
+      "capability": "GET /api/companies/{slug}/workspace-inbox/{source}"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/workspace-inbox/{source}",
+      "capability": "HEAD /api/companies/{slug}/workspace-inbox/{source}"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/workspace-inbox/{source}/assign",
+      "capability": "POST /api/companies/{slug}/workspace-inbox/{source}/assign"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/workspace-inbox/{source}/complete",
+      "capability": "POST /api/companies/{slug}/workspace-inbox/{source}/complete"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/workspace-inbox/{source}/original",
+      "capability": "GET /api/companies/{slug}/workspace-inbox/{source}/original"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/workspace-inbox/{source}/original",
+      "capability": "HEAD /api/companies/{slug}/workspace-inbox/{source}/original"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/workspace-inbox/{source}/review",
+      "capability": "POST /api/companies/{slug}/workspace-inbox/{source}/review"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/workspace-parties",
+      "capability": "GET /api/companies/{slug}/workspace-parties"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/workspace-parties",
+      "capability": "HEAD /api/companies/{slug}/workspace-parties"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/workspace-parties",
+      "capability": "POST /api/companies/{slug}/workspace-parties"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/workspace-parties/{id}",
+      "capability": "GET /api/companies/{slug}/workspace-parties/{id}"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/workspace-parties/{id}",
+      "capability": "HEAD /api/companies/{slug}/workspace-parties/{id}"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/workspace-parties/{id}/alias",
+      "capability": "POST /api/companies/{slug}/workspace-parties/{id}/alias"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/workspace-parties/{id}/assertion",
+      "capability": "POST /api/companies/{slug}/workspace-parties/{id}/assertion"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/workspace-parties/{id}/role",
+      "capability": "POST /api/companies/{slug}/workspace-parties/{id}/role"
+    },
+    {
+      "method": "GET",
+      "path": "/api/companies/{slug}/{report}/export",
+      "capability": "GET /api/companies/{slug}/{report}/export"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/{report}/export",
+      "capability": "HEAD /api/companies/{slug}/{report}/export"
+    },
+    {
+      "method": "GET",
+      "path": "/api/group-consolidated-report",
+      "capability": "GET /api/group-consolidated-report"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/group-consolidated-report",
+      "capability": "HEAD /api/group-consolidated-report"
+    },
+    {
+      "method": "GET",
+      "path": "/api/group-dispositions/{id}",
+      "capability": "GET /api/group-dispositions/{id}"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/group-dispositions/{id}",
+      "capability": "HEAD /api/group-dispositions/{id}"
+    },
+    {
+      "method": "GET",
+      "path": "/api/group-eliminations",
+      "capability": "GET /api/group-eliminations"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/group-eliminations",
+      "capability": "HEAD /api/group-eliminations"
+    },
+    {
+      "method": "GET",
+      "path": "/api/group-reconciliation",
+      "capability": "GET /api/group-reconciliation"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/group-reconciliation",
+      "capability": "HEAD /api/group-reconciliation"
+    },
+    {
+      "method": "GET",
+      "path": "/api/group-report-profiles",
+      "capability": "GET /api/group-report-profiles"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/group-report-profiles",
+      "capability": "HEAD /api/group-report-profiles"
+    },
+    {
+      "method": "GET",
+      "path": "/api/health",
+      "capability": "GET /api/health"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/health",
+      "capability": "HEAD /api/health"
+    },
+    {
+      "method": "POST",
+      "path": "/api/invitations/claim",
+      "capability": "POST /api/invitations/claim"
+    },
+    {
+      "method": "GET",
+      "path": "/api/me",
+      "capability": "GET /api/me"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/me",
+      "capability": "HEAD /api/me"
+    },
+    {
+      "method": "GET",
+      "path": "/api/portfolio",
+      "capability": "GET /api/portfolio"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/portfolio",
+      "capability": "HEAD /api/portfolio"
+    },
+    {
+      "method": "GET",
+      "path": "/api/portfolio/overview",
+      "capability": "GET /api/portfolio/overview"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/portfolio/overview",
+      "capability": "HEAD /api/portfolio/overview"
+    },
+    {
+      "method": "GET",
+      "path": "/api/protocol",
+      "capability": "GET /api/protocol"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/protocol",
+      "capability": "HEAD /api/protocol"
+    },
+    {
+      "method": "POST",
+      "path": "/api/recurring-invoices/run-workspace",
+      "capability": "POST /api/recurring-invoices/run-workspace"
+    },
+    {
+      "method": "GET",
+      "path": "/api/regulatory/citations",
+      "capability": "GET /api/regulatory/citations"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/regulatory/citations",
+      "capability": "HEAD /api/regulatory/citations"
+    },
+    {
+      "method": "GET",
+      "path": "/api/regulatory/coverage",
+      "capability": "GET /api/regulatory/coverage"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/regulatory/coverage",
+      "capability": "HEAD /api/regulatory/coverage"
+    },
+    {
+      "method": "POST",
+      "path": "/api/setup/first-owner",
+      "capability": "POST /api/setup/first-owner"
+    },
+    {
+      "method": "GET",
+      "path": "/api/system/cvr-status",
+      "capability": "GET /api/system/cvr-status"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/system/cvr-status",
+      "capability": "HEAD /api/system/cvr-status"
+    },
+    {
+      "method": "POST",
+      "path": "/api/workspace/backup",
+      "capability": "POST /api/workspace/backup"
+    },
+    {
+      "method": "GET",
+      "path": "/api/workspace/backup-destinations",
+      "capability": "GET /api/workspace/backup-destinations"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/workspace/backup-destinations",
+      "capability": "HEAD /api/workspace/backup-destinations"
+    },
+    {
+      "method": "POST",
+      "path": "/api/workspace/backup-destinations/{id}/place",
+      "capability": "POST /api/workspace/backup-destinations/{id}/place"
+    },
+    {
+      "method": "GET",
+      "path": "/api/workspace/backup-destinations/{id}/placements/{operation}",
+      "capability": "GET /api/workspace/backup-destinations/{id}/placements/{operation}"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/workspace/backup-destinations/{id}/placements/{operation}",
+      "capability": "HEAD /api/workspace/backup-destinations/{id}/placements/{operation}"
+    },
+    {
+      "method": "POST",
+      "path": "/api/workspace/backup-destinations/{id}/remote-verifications",
+      "capability": "POST /api/workspace/backup-destinations/{id}/remote-verifications"
+    },
+    {
+      "method": "GET",
+      "path": "/api/workspace/backup-destinations/{id}/remote-verifications/{operation}",
+      "capability": "GET /api/workspace/backup-destinations/{id}/remote-verifications/{operation}"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/workspace/backup-destinations/{id}/remote-verifications/{operation}",
+      "capability": "HEAD /api/workspace/backup-destinations/{id}/remote-verifications/{operation}"
+    },
+    {
+      "method": "GET",
+      "path": "/api/workspace/invitations",
+      "capability": "GET /api/workspace/invitations"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/workspace/invitations",
+      "capability": "HEAD /api/workspace/invitations"
+    },
+    {
+      "method": "POST",
+      "path": "/api/workspace/invitations",
+      "capability": "POST /api/workspace/invitations"
+    },
+    {
+      "method": "POST",
+      "path": "/api/workspace/invitations/cancel",
+      "capability": "POST /api/workspace/invitations/cancel"
+    },
+    {
+      "method": "GET",
+      "path": "/api/workspace/members",
+      "capability": "GET /api/workspace/members"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/workspace/members",
+      "capability": "HEAD /api/workspace/members"
+    },
+    {
+      "method": "POST",
+      "path": "/api/workspace/members/access",
+      "capability": "POST /api/workspace/members/access"
+    },
+    {
+      "method": "POST",
+      "path": "/api/workspace/members/company",
+      "capability": "POST /api/workspace/members/company"
+    },
+    {
+      "method": "GET",
+      "path": "/api/workspace/service-principals",
+      "capability": "GET /api/workspace/service-principals"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/workspace/service-principals",
+      "capability": "HEAD /api/workspace/service-principals"
+    },
+    {
+      "method": "POST",
+      "path": "/api/workspace/service-principals",
+      "capability": "POST /api/workspace/service-principals"
+    },
+    {
+      "method": "POST",
+      "path": "/api/workspace/service-principals/recover",
+      "capability": "POST /api/workspace/service-principals/recover"
+    },
+    {
+      "method": "POST",
+      "path": "/api/workspace/service-principals/revoke",
+      "capability": "POST /api/workspace/service-principals/revoke"
+    },
+    {
+      "method": "POST",
+      "path": "/api/workspace/service-principals/rotate",
+      "capability": "POST /api/workspace/service-principals/rotate"
+    },
+    {
+      "method": "GET",
+      "path": "/api/workspace/transfer",
+      "capability": "GET /api/workspace/transfer"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/workspace/transfer",
+      "capability": "HEAD /api/workspace/transfer"
+    },
+    {
+      "method": "POST",
+      "path": "/api/workspace/transfer/{action}",
+      "capability": "POST /api/workspace/transfer/{action}"
+    }
+  ],
+  "manifestId": "4151f2c03ddce74b956fa08c188fe16fa86bcf1b211b75f9f555f2ed1f9b1eb8"
+}
