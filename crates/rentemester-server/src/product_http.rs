@@ -90,6 +90,7 @@ mod invoice_bad_debt_original;
 mod invoice_email;
 mod supplier_commitments;
 mod vat;
+mod vat_original;
 use crate::backend::Backend;
 use axum::{
     Router,
@@ -127,6 +128,10 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
         pdf_workers: Arc::new(Semaphore::new(4)),
     };
     Router::new()
+        .route("/api/companies/{slug}/original/vat/report", get(vat_original::handle))
+        .route("/api/companies/{slug}/original/vat/eu-sales-list", get(vat_original::handle))
+        .route("/api/companies/{slug}/original/vat/oss-report", get(vat_original::handle))
+        .route("/api/companies/{slug}/original/vat/filing", get(vat_original::handle))
         .route("/api/companies/{slug}/original/budget/set", post(budget_original::handle))
         .route("/api/companies/{slug}/original/budget/list", get(budget_original::handle))
         .route("/api/companies/{slug}/original/budget/vs-actual", get(budget_original::handle))
