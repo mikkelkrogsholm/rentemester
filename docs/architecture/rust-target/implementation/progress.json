@@ -1,14 +1,15 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "Whole original R07#679 foundation/tooling/license accepted and actually CLOSED; next R05#677 client/server compatibility admission",
-  "code_revision": "a6eb2b5dc709457ac246de239bb944629f67854c",
+  "current_increment": "R05#677 protocol-admission component accepted; whole677 remainsOPEN for full operation schemas/retrymatrix. Next wholeissue680:three negative harness controls.",
+  "code_revision": "9c85079f432ee2fa4ca16e46d00371fc6a8a14fb",
   "spec_revision": "sha256:73b6036e3b99feaf547ff3881dd7ef2ea6ea6ec5743bb139d362f97570ca8da6",
-  "state": "32of55 originalissues actuallyclosed,23open. R07#679fullscope/all3criteria accepted/publisheda6eb2b5d:1043allfeatureslockedpackages(11own/1032third),exact4PDFiumarchives/16noticeseach/separatepolicy/credits/candidatecontentadmission,54targetedtests+actualCargo/PDFchecksPASS,currentTypeScriptand131BunlicensechecksPASS. Current boundarysourcepins and genuinehistoricalcold105/minimalengine/CLIproofretainedhonestly; no currentcoldbuild claim. No Cargo orproductionRustlogic changed; no financial/provider/desktop/buildreplay. Fourcompletedworker/integrationworktrees removedafterverifiedsnapshots. NextR05#677protocol/capabilityrefusal-before-mutation+advertisedschema/retrymatrix, preservingwire/envelopecompatibility. Full55/J01-J07/R53/R55/cutover/finalinstalleddesktop requirements remain.",
+  "state": "32of55 originalissues actuallyCLOSED,23OPEN. R05#677 compatible sharedReact/RustSDK/server admission component accepted9c85079f: passive publicmanifest, exactroute/profile/header binding, predispatchrefusals, oldReactmajor1compatibility and safe unknownwrite/cancellation/binary behavior. 395SDK/4nativeprotocol/67ReactAPI/4Bunchecks andfrontendtypesPASS; actualRustbinary/sharedReactHTTPcrossPASS withoutworkspace/financialeffects. Whole677 remainsOPEN: contractinventory29eb failed,1137gaprows are not completion. Next680 has3boundednegativeharnesscontrols; reuse validpriorproof. All55scope/J01-J07/R53/R55/cutover/finalinstalleddesktop remain.",
   "issues_closed": 32,
   "next": [
-    "R05#677: complete advertised native operation-by-operation schemas/retry classes with existingR01baseline, explicit React/numeric-wire compatibility policy, actual supported protocol/capability admission before dependent mutation across sameReact/sharedSDK; preserve safe unknown outcomes and auth/cancellation/binary refusals.",
-    "One commonRustmotor/server/sameReactweb/Tauri; finalinstalledmanualdesktoplast. Noextraarchitecture/testframework; reusevalidreceipts andretainall55scope/finalgates."
+    "Close existing#680 after its same acceptance function rejects omittedgate, injectedpartialcommit and crosscompanysubstitution using preservedsynthetic snapshots; no newserver/MFA/provider/framework.",
+    "Preserve accepted#677protocolcomponent and complete remaining exact advertisedoperation input/success/refusal/parseprotocol schemas and per-operation retry/key/readback/provider contracts. No scope reduction or genericretry promise.",
+    "One commonRustmotor/server andsameReactweb/Tauri; installedmanualdesktoplast."
   ],
   "preserve_unrelated_paths": [
     ".claude/settings.json",
@@ -18,7 +19,7 @@
     ".gitattributes"
   ],
   "all_goal_requirements_complete": false,
-  "previous_verified_increment": "Whole original R02#674 effective contracts/readiness accepted and actually CLOSED; next R07#679 locked Rust/PDFium license scope",
+  "previous_verified_increment": "Whole original R07#679 foundation/tooling/license accepted and actually CLOSED; next R05#677 client/server compatibility admission",
   "evidence": {
     "combined_browser_log": "/tmp/rm-platform5-combined.log",
     "combined_browser_exit": 0,
@@ -15816,6 +15817,32 @@
       },
       "limits": "Full original R07 foundation/tooling/license responsibility accepted. Existing cold105Linuxbuild and minimalhosttests are genuine separate historical evidence, not a current-lock cold/no-cache build claim. No Cargo dependencies or production Rust logic changed. Metadata/license engineering policy is not independent legal certification; fulldistribution/source/target notices and R53/R55/release/cutover/J01-J07/finalmanualdesktop remain binding. No financial/provider/desktop/build effects replayed.",
       "next": "R05#677 complete advertised-operation schemas/retry policy and actual protocol/capability refusal before mutation; legacy envelope/amount compatibility retained."
+    },
+    "r05_protocol677_component": {
+      "issue": 677,
+      "status": "Accepted protocol-admission component only; whole issue OPEN for exactschemas/retrymatrix",
+      "whole_issue_accepted": false,
+      "source_revision": "9c85079f432ee2fa4ca16e46d00371fc6a8a14fb",
+      "report": "/tmp/rentemester-rust-reports/r05-protocol677-component-accepted.json",
+      "report_sha256": "6863245275bea3ce4625708498de78da15a78804d4b7eea640a232c2cad2472c",
+      "run_id": "rust-r05-protocol677-component-accept-20261023T231745.317191000",
+      "model_revision": "sha256:c3c752b2b17349325fd248c5c278ace07df989c7204f78aa08d2678eecc1d2e3",
+      "checks": {
+        "sdkTests": 395,
+        "nativeProtocolTests": 4,
+        "reactApiTests": 67,
+        "bunProtocolTests": 4,
+        "frontendTypes": "PASS",
+        "actualNativeSharedReactHttp": "PASS",
+        "financialEffects": false,
+        "workspaceCreated": false
+      },
+      "remaining": "Complete every actuallyadvertisedHTTP/MCP/CLI exact input/success/refusal/parseprotocol schema and operationretry contract including keyscope/TTL/tombstones/naturaldedup/authoritativereadback/unresolvedprovider. Fulloriginal677scope preserved.",
+      "preserved_failed_cancelled_run": "rust-r05-protocol677-checked-20261023T224435.863681000",
+      "unaccepted_inventory_review": {
+        "path": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/observations/r05-677-contracts-review.json",
+        "sha256": "49bd423563a942df4fa9ffb3c4d17cce6e63b3cca0acd62d8d582c5f986b1664"
+      }
     }
   },
   "verified_history": [
@@ -17741,6 +17768,32 @@
         "Signed distribution/update/cutover evidence must match actual full Rust replacement; retain all existing completion gates and TypeScript retirement gate.",
         "Do not repeat unchanged accepted Group88–99 journeys. Current-package GUI smoke and installed managed transfer are now qualified. Extend only for required missing flows or diagnosed defects."
       ]
+    },
+    {
+      "issue": 677,
+      "status": "Accepted protocol-admission component only; whole issue OPEN for exactschemas/retrymatrix",
+      "whole_issue_accepted": false,
+      "source_revision": "9c85079f432ee2fa4ca16e46d00371fc6a8a14fb",
+      "report": "/tmp/rentemester-rust-reports/r05-protocol677-component-accepted.json",
+      "report_sha256": "6863245275bea3ce4625708498de78da15a78804d4b7eea640a232c2cad2472c",
+      "run_id": "rust-r05-protocol677-component-accept-20261023T231745.317191000",
+      "model_revision": "sha256:c3c752b2b17349325fd248c5c278ace07df989c7204f78aa08d2678eecc1d2e3",
+      "checks": {
+        "sdkTests": 395,
+        "nativeProtocolTests": 4,
+        "reactApiTests": 67,
+        "bunProtocolTests": 4,
+        "frontendTypes": "PASS",
+        "actualNativeSharedReactHttp": "PASS",
+        "financialEffects": false,
+        "workspaceCreated": false
+      },
+      "remaining": "Complete every actuallyadvertisedHTTP/MCP/CLI exact input/success/refusal/parseprotocol schema and operationretry contract including keyscope/TTL/tombstones/naturaldedup/authoritativereadback/unresolvedprovider. Fulloriginal677scope preserved.",
+      "preserved_failed_cancelled_run": "rust-r05-protocol677-checked-20261023T224435.863681000",
+      "unaccepted_inventory_review": {
+        "path": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/observations/r05-677-contracts-review.json",
+        "sha256": "49bd423563a942df4fa9ffb3c4d17cce6e63b3cca0acd62d8d582c5f986b1664"
+      }
     }
   ],
   "scope_clarifications": [
