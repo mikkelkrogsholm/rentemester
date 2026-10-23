@@ -256,11 +256,11 @@ def main():
                     return
                 try:
                     length = int(self.headers.get('content-length', '0'))
-                    if (args.original_document_parties or args.original_expense or args.original_accrual or args.original_asset) and self.path == '/scan':
+                    if (args.original_document_parties or args.original_expense or args.original_accrual or args.original_asset or args.original_budget) and self.path == '/scan':
                         if not 0 < length <= 35 * 1024 * 1024 or self.headers.get('authorization') != 'Bearer ' + scanner_token:
                             raise ValueError('Private scanner authority/size')
                         request = json.loads(self.rfile.read(length))
-                        if set(request) != {'sha256', 'mimeType', 'filename', 'bytesBase64'} or not re.fullmatch((r'synthetic-(?:batch-purchase-[12]|expense168-(?:eu-human|eu-service|held)|expense168-conflict)\.(?:txt|pdf)' if args.original_expense else r'synthetic-(?:batch-purchase-[12]|party166-internal)\.txt'), request['filename']):
+                        if set(request) != {'sha256', 'mimeType', 'filename', 'bytesBase64'} or not re.fullmatch((r'synthetic-(?:batch-purchase-[12]|expense168-(?:eu-human|eu-service|held)|expense168-conflict)\.(?:txt|pdf)' if args.original_expense else r'synthetic-budget172-(?:actual|payable|commitment)\.txt' if args.original_budget else r'synthetic-(?:batch-purchase-[12]|party166-internal)\.txt'), request['filename']):
                             raise ValueError('Private scanner envelope')
                         raw = base64.b64decode(request['bytesBase64'], validate=True)
                         if request['sha256'] != hashlib.sha256(raw).hexdigest() or request['mimeType'] != ('application/pdf' if request['filename'].endswith('.pdf') else 'text/plain'):
