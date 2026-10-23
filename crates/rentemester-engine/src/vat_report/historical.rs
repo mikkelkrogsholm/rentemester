@@ -244,7 +244,7 @@ pub fn build(
             if !register(&mut known, "64040", "output", id, &mut context.errors) {
                 continue;
             }
-            if canonical && !register(&mut known, "64060", "input", id, &mut context.errors) {
+            if !register(&mut known, "64060", "input", id, &mut context.errors) {
                 continue;
             }
             for row in &bases {
@@ -289,10 +289,10 @@ pub fn build(
             }
             let inp = choose(matches(entry, &expected, "input"), &known, "input");
             let out = choose(matches(entry, &expected, "output"), &known, "output");
-            if let (Some(inp), Some(out)) = (inp, out) {
-                if inp.0 != out.0 && inp.1 == out.1 {
-                    shapes.push((*base, expected, inp, out));
-                }
+            if let (Some(inp), Some(out)) = (inp, out)
+                && inp.0 != out.0
+            {
+                shapes.push((*base, expected, inp, out));
             }
         }
         if shapes.len() > 1 {
@@ -314,7 +314,12 @@ pub fn build(
         }
         dedicated.insert(out.0.clone());
         if in_range(entry[0], start, end) {
-            allowance(&mut context, id, difference(expected, &inp.1), "reverse");
+            allowance(
+                &mut context,
+                id,
+                difference(expected, &inp.1).max(difference(expected, &out.1)),
+                "reverse",
+            );
         }
     }
     for (&id, entry) in &entries {
@@ -361,8 +366,16 @@ pub fn build(
     let mut lines = Vec::new();
     for row in rows.iter().filter(|r| in_range(r, start, end)) {
         let mut line = row.line.clone();
-        if context.qualified.contains(&line.entry_id) && row.status == "posted" {
+        if context.qualified.contains(&line.entry_id) {
             line.vat_code = effective(row, &inferred).map(str::to_owned);
+        }
+        // Proven account meaning also applies to explicit native journals. It
+        // neither qualifies their provenance nor supplies their VAT base code.
+        if let Some(side) = known.get(&line.account_no) {
+            line.amount_side = Some(*side);
+        }
+        line.dedicated_reverse_charge |= dedicated.contains(&line.account_no);
+        if context.qualified.contains(&line.entry_id) {
             if trusted_input.contains(&row.line_id) {
                 line.amount_side = Some("input");
             } else if trusted_output.contains(&row.line_id) {
@@ -563,7 +576,8 @@ mod tests {
     #[test]
     fn dinero_pair_requires_qualification_equal_controls_and_consistent_explicit_code() {
         let mut rows = reverse();
-        rows[2].line.amount_side = Some("output"); // legacy credit-normal chart
+        // Liability credit-normal alone supplies no confirmed semantic side.
+        rows[2].line.amount_side = None;
         let r = report(&rows, &[1]);
         assert!(r.errors.is_empty(), "{:?}", r.errors);
         assert_eq!(r.rubrikker.rubrik_a.decimal(), "100.00");
@@ -581,6 +595,65 @@ mod tests {
         rows[2].line.debit = Money::parse("25").unwrap();
         rows[0].line.vat_code = Some("DK_PURCHASE_25".into());
         assert!(!report(&rows, &[1]).errors.is_empty());
+    }
+    #[test]
+    fn proven_legacy_pair_learns_input_for_later_qualified_correction() {
+        let mut rows = reverse();
+        for row in &mut rows {
+            row.date = "2026-01-01".into();
+        }
+        rows.extend([
+            row(2, 20, "64060", "liability", None, "5", "0"),
+            row(2, 21, "finance", "asset", None, "0", "5"),
+        ]);
+        let r = report(&rows, &[1, 2]);
+        assert!(r.errors.is_empty(), "{:?}", r.errors);
+        assert_eq!(r.input_vat.decimal(), "5.00");
+        assert_eq!(r.payable.decimal(), "-5.00");
+        assert!(!r.warnings.is_empty());
+        rows[2].line.amount_side = Some("output");
+        assert!(
+            report(&rows, &[1, 2])
+                .errors
+                .iter()
+                .any(|e| e.contains("modstridende"))
+        );
+    }
+    #[test]
+    fn learned_account_meaning_serves_native_explicit_bases_without_native_defaults() {
+        let mut rows = purchase(1);
+        for row in &mut rows {
+            row.date = "2026-01-01".into();
+        }
+        let mut native = purchase(2);
+        for row in &mut native {
+            row.line.historical = false;
+        }
+        rows.extend(native);
+        let r = report(&rows, &[1]);
+        assert!(r.errors.is_empty(), "{:?}", r.errors);
+        assert_eq!(r.input_vat.decimal(), "25.00");
+        rows[3].line.vat_code = None;
+        rows[3].default_vat_code = Some("DK_PURCHASE_25".into());
+        assert!(!report(&rows, &[1]).errors.is_empty());
+    }
+    #[test]
+    fn generic_reverse_independent_rounding_preserves_base_and_rubric() {
+        let mut rows = vec![
+            row(1, 10, "cost", "expense", None, "100", "0"),
+            row(1, 11, "input", "vat", None, "25", "0"),
+            row(1, 12, "output", "vat", None, "0", "25.01"),
+            row(1, 13, "finance", "asset", None, "0", "99.99"),
+        ];
+        rows[1].line.amount_side = Some("input");
+        rows[2].line.amount_side = Some("output");
+        let r = report(&rows, &[1]);
+        assert!(r.errors.is_empty(), "{:?}", r.errors);
+        assert_eq!(r.rubrikker.rubrik_a.decimal(), "100.00");
+        assert_eq!(r.input_vat.decimal(), "25.00");
+        assert_eq!(r.reverse_charge_purchase_output_vat.decimal(), "25.01");
+        assert_eq!(r.payable.decimal(), "0.01");
+        assert!(r.warnings.is_empty());
     }
     #[test]
     fn collapsed_representation_changes_only_reported_base() {

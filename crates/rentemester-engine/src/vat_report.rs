@@ -158,7 +158,7 @@ fn accumulate(lines: &[Line], context: &Context) -> Result<Report, Error> {
             continue;
         }
         if lines.iter().any(|l| l.historical) && !context.qualified.contains(&id) {
-            errors.push(format!("Postering {id}: historisk import kræver den endnu ikke porterede kildevalidering før momsangivelse"));
+            errors.push(format!("Postering {id}: historisk import mangler verificeret kildevalidering før momsangivelse"));
         }
         let mut classified = false;
         let mut expected_reverse = Money::default();
