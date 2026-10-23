@@ -20,6 +20,7 @@ fn error() -> Error {
 pub(crate) fn validate(db: &Connection, base: &[SchemaObject]) -> Result<bool, Error> {
     let actual = crate::native_fx_roles::strip_schema(db, &schema(db)?)?;
     let actual = crate::invoice_compensation_schema::strip_schema(db, &actual)?;
+    let actual = crate::asset_disposal_schema::strip_schema(db, &actual)?;
     if actual == base {
         return Ok(false);
     }

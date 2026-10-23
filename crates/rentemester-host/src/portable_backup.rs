@@ -1381,7 +1381,7 @@ mod tests {
         };
         verified(context, entries)
     }
-    fn verified(
+    pub(super) fn verified(
         context: artifact::Context,
         entries: Vec<artifact::Snapshot>,
     ) -> artifact::VerifiedArtifact {
@@ -1769,3 +1769,6 @@ fn archive_transfer_state(
 
 #[cfg(test)]
 mod recurring_workspace_tests;
+
+#[cfg(test)]
+mod asset_disposal_tests;

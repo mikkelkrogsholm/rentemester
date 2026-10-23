@@ -435,6 +435,18 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
             post(accruals::handle),
         )
         .route(
+            "/api/companies/{slug}/assets/{id}/disposal/preview",
+            post(asset_original::handle),
+        )
+        .route(
+            "/api/companies/{slug}/assets/{id}/dispose",
+            post(asset_original::handle),
+        )
+        .route(
+            "/api/companies/{slug}/assets/{id}/disposal-receipt",
+            get(asset_original::handle),
+        )
+        .route(
             "/api/companies/{slug}/assets",
             get(assets::handle).post(assets::handle),
         )

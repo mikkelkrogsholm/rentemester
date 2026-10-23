@@ -15,6 +15,7 @@ pub enum Operation {
     ClosedHistoryArchiveImport,
     DineroImport,
     JournalPost,
+    AssetDispose,
     JournalReverse,
     ExpenseBook,
     PayableRegister,
@@ -29,6 +30,7 @@ impl Operation {
             Self::ClosedHistoryArchiveImport => "closed_history_archive_import",
             Self::DineroImport => "dinero_import",
             Self::JournalPost => "journal_post",
+            Self::AssetDispose => "asset_dispose",
             Self::JournalReverse => "journal_reverse",
             Self::ExpenseBook => "expense_book",
             Self::PayableRegister => "payable_register",
@@ -118,7 +120,7 @@ pub(crate) fn writer(tx: &Transaction<'_>) -> Result<(), Error> {
 fn hash(value: &[u8]) -> String {
     format!("{:x}", Sha256::digest(value))
 }
-fn whitespace(c: char) -> bool {
+pub(crate) fn whitespace(c: char) -> bool {
     matches!(c,'\u{9}'..='\u{d}'|'\u{20}'|'\u{a0}'|'\u{1680}'|'\u{2000}'..='\u{200a}'|'\u{2028}'|'\u{2029}'|'\u{202f}'|'\u{205f}'|'\u{3000}'|'\u{feff}')
 }
 pub fn validate_key(key: &str) -> Result<(), Error> {

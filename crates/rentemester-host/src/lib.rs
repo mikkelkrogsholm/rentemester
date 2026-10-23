@@ -319,6 +319,22 @@ impl Owner {
         self.finish(result.is_ok());
         result
     }
+    /// Explicit native schema migration before serving requests.
+    pub fn upgrade_asset_disposal_schema(&mut self) -> Result<(), OwnerError> {
+        self.admit()?;
+        let result = rentemester_storage::asset_disposal_schema::upgrade(
+            self.held
+                .0
+                .as_mut()
+                .expect("live owner")
+                .company
+                .as_mut()
+                .unwrap(),
+        )
+        .map_err(|_| OwnerError::Database);
+        self.finish(result.is_ok());
+        result
+    }
     fn observe(&mut self) -> Result<(), OwnerError> {
         let slots = self.held.0.as_mut().expect("live owner");
         slots
