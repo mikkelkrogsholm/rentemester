@@ -114,6 +114,7 @@ export function createOriginalVatProof(base:string,work:string,onStep:(s:string)
     await parity(); // Filing-ready working report is NOT a recorded filing.
     await owner.goto(base+'/companies/synthetic/periodelas');
     const row=owner.getByRole('row').filter({hasText:from}).filter({hasText:to});
+    await row.waitFor({state:'visible'});
     need(await row.count()===1,'exact canonical period row in existing PeriodsView');
     await row.getByRole('button',{name:'Registrér indberetning',exact:true}).click();
     const receiptDialog=owner.getByRole('dialog',{name:'Registrér indberetning',exact:true});
