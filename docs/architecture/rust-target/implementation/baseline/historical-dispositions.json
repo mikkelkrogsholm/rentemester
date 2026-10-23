@@ -1,0 +1,577 @@
+{
+  "format": "rentemester-r01-historical-dispositions/1",
+  "sourceRevision": "8866e33b49023a02e8f82fe9e69b5e8d2a412b7e",
+  "observedAt": "2026-10-23T20:58:49.887719+00:00",
+  "githubSnapshotSha256": "4d9f89ad253608f48d922efc2e155ec22c46f28ceb932aa166a6517cabdbe3e4",
+  "rows": [
+    {
+      "issue": 328,
+      "url": "https://github.com/mikkelkrogsholm/rentemester/issues/328",
+      "title": "Billy import: invoice line items for recreating invoices in Rentemester",
+      "githubState": "OPEN",
+      "githubClosedAt": null,
+      "githubBodySha256": "2916b70445befa066e1183ac8e9795d1f45a01679bbdb728f1fb708204781d7d",
+      "classification": "separately-pending-enhancement",
+      "deliveryOwners": [
+        {
+          "id": "R27",
+          "issue": 701
+        }
+      ],
+      "decision": "Billy invoice/bill line recreation is not a registered baseline parser/command. Preserve supported Dinero/syntheticCSV/archive evidence; do not invent invoice issuance from sourcejournal rows.",
+      "boundary": "No Billy CLI key, native source-format limitation explicitly retained; invoice line/customer mapping remains existingissue328.",
+      "sourceRefs": [
+        {
+          "path": "docs/rust-dinero-import.md",
+          "sha256": "5399af166efb4e92e246ce2887d7cd6bca68d792075a52a0052d154d55cc0bd4",
+          "location": "Relevant source/contract section reviewed for namedissue 328"
+        }
+      ],
+      "runtimeProofClaim": "No runtime action rerun; preserve existing exact accepted scope, do not infer wholehistoricalissueclosure from relatedfamily acceptance."
+    },
+    {
+      "issue": 329,
+      "url": "https://github.com/mikkelkrogsholm/rentemester/issues/329",
+      "title": "Billy import: VAT return history (momsindberetninger)",
+      "githubState": "OPEN",
+      "githubClosedAt": null,
+      "githubBodySha256": "fbe43cfc91b9f2ea5275274235f4591fe75318e5584e4a5c86608f9523a4e463",
+      "classification": "separately-pending-enhancement",
+      "deliveryOwners": [
+        {
+          "id": "R27",
+          "issue": 701
+        },
+        {
+          "id": "R17",
+          "issue": 689
+        }
+      ],
+      "decision": "Billy VAT-return history import is not a registered baseline. Preserve actual imported VAT/source reconciliation without asserting source filed status.",
+      "boundary": "Do not mark unknown imported periods filed or add unimplemented salesTaxReturns adapter to rewrite scope.",
+      "sourceRefs": [
+        {
+          "path": "docs/rust-dinero-import.md",
+          "sha256": "5399af166efb4e92e246ce2887d7cd6bca68d792075a52a0052d154d55cc0bd4",
+          "location": "Relevant source/contract section reviewed for namedissue 329"
+        }
+      ],
+      "runtimeProofClaim": "No runtime action rerun; preserve existing exact accepted scope, do not infer wholehistoricalissueclosure from relatedfamily acceptance."
+    },
+    {
+      "issue": 330,
+      "url": "https://github.com/mikkelkrogsholm/rentemester/issues/330",
+      "title": "Billy import: bank account metadata and reconciliation history",
+      "githubState": "OPEN",
+      "githubClosedAt": null,
+      "githubBodySha256": "9837d9bcb73ac30c3d2980197062aeb0741a5fac1680f3ad56039edf92dbd639",
+      "classification": "separately-pending-enhancement",
+      "deliveryOwners": [
+        {
+          "id": "R27",
+          "issue": 701
+        },
+        {
+          "id": "R21",
+          "issue": 693
+        }
+      ],
+      "decision": "Billy-specific bankmetadata/match history import remains pending; preserve genericconfiguredcanonicalaccounts and registeredsourceimports.",
+      "boundary": "No new Billybank adapter or inferred historicalbank links; manualsourceconfiguration remains explicit.",
+      "sourceRefs": [
+        {
+          "path": "docs/rust-dinero-import.md",
+          "sha256": "5399af166efb4e92e246ce2887d7cd6bca68d792075a52a0052d154d55cc0bd4",
+          "location": "Relevant source/contract section reviewed for namedissue 330"
+        }
+      ],
+      "runtimeProofClaim": "No runtime action rerun; preserve existing exact accepted scope, do not infer wholehistoricalissueclosure from relatedfamily acceptance."
+    },
+    {
+      "issue": 363,
+      "url": "https://github.com/mikkelkrogsholm/rentemester/issues/363",
+      "title": "EPIC: Bring-your-own Open Banking for sikker bank-sync på tværs af virksomheder",
+      "githubState": "OPEN",
+      "githubClosedAt": null,
+      "githubBodySha256": "bb8a56770d10aed4ec3e6b8badd22ef63430894b15152be2ea1800b8c5327fca",
+      "classification": "preserved-unavailable-roadmap",
+      "deliveryOwners": [
+        {
+          "id": "R40",
+          "issue": 713
+        },
+        {
+          "id": "R21",
+          "issue": 693
+        },
+        {
+          "id": "R13",
+          "issue": 685
+        }
+      ],
+      "decision": "ExistingBYO-bank epic remains authoritative, but frozen original/currentTS265CLI/214MCP/208HTTP catalogs expose no bank_connection_* or bank_sync_* operations. company_sync_cvr is unrelated. Preserve existing canonicalCSVbank/reconciliation; record futureprovider contracts/status without inventing an implemented baseline.",
+      "boundary": "OriginalR40ports only actuallyimplementedbehavior and explicitly binds laterupstreamdeltas. No missingBYOimplementation is silently imported as requirednewrewritefeature or declared complete. Separateprovider/sandbox/business/hosted gates remain under363/children.",
+      "sourceRefs": [
+        {
+          "path": "docs/architecture/rust-target/epic/plan.json",
+          "sha256": "adf000360e7388a8131a6b09a20ac3b1ca8fefd95fd319899c37f1c38167255a",
+          "location": "Relevant source/contract section reviewed for namedissue 363"
+        }
+      ],
+      "runtimeProofClaim": "No runtime action rerun; preserve existing exact accepted scope, do not infer wholehistoricalissueclosure from relatedfamily acceptance."
+    },
+    {
+      "issue": 511,
+      "url": "https://github.com/mikkelkrogsholm/rentemester/issues/511",
+      "title": "Track website agent-discovery surface (.well-known, MCP card, modelContext)",
+      "githubState": "OPEN",
+      "githubClosedAt": null,
+      "githubBodySha256": "31083398e6173dccf47549ca58d01e17c0a003106d7f8343b74167b27102b4b0",
+      "classification": "separately-pending-enhancement",
+      "deliveryOwners": [
+        {
+          "id": "R45",
+          "issue": 717
+        },
+        {
+          "id": "R55",
+          "issue": 727
+        }
+      ],
+      "decision": "Website/public discovery and deployment is a distinct existing workstream. Preserve current localCLI/MCP/capabilitydiscovery; do not claim public descriptors/deployment finished.",
+      "boundary": "Public-site machine-readable claims remain separately reviewable; source filepresence does not qualify published website.",
+      "sourceRefs": [
+        {
+          "path": "docs/architecture/rust-target/epic/plan.json",
+          "sha256": "adf000360e7388a8131a6b09a20ac3b1ca8fefd95fd319899c37f1c38167255a",
+          "location": "Relevant source/contract section reviewed for namedissue 511"
+        }
+      ],
+      "runtimeProofClaim": "No runtime action rerun; preserve existing exact accepted scope, do not infer wholehistoricalissueclosure from relatedfamily acceptance."
+    },
+    {
+      "issue": 512,
+      "url": "https://github.com/mikkelkrogsholm/rentemester/issues/512",
+      "title": "Mobilepay (GetPaid) integration - både short term (uafhængigt) og long term (partner)",
+      "githubState": "OPEN",
+      "githubClosedAt": null,
+      "githubBodySha256": "02406d8b463faee77182367046f92864a5548866a058c48d0af365e06e38ce12",
+      "classification": "separately-pending-enhancement",
+      "deliveryOwners": [
+        {
+          "id": "R27",
+          "issue": 701
+        },
+        {
+          "id": "R40",
+          "issue": 713
+        }
+      ],
+      "decision": "MobilePay GetPaid settlement/clearing and partner integration are proposed additional sourceadapters, not registered original accounting capabilities.",
+      "boundary": "Do not import new clearing/import/provider productscope or fabricate merchant credentials while rewriting existing engine.",
+      "sourceRefs": [
+        {
+          "path": "docs/architecture/rust-target/epic/plan.json",
+          "sha256": "adf000360e7388a8131a6b09a20ac3b1ca8fefd95fd319899c37f1c38167255a",
+          "location": "Relevant source/contract section reviewed for namedissue 512"
+        }
+      ],
+      "runtimeProofClaim": "No runtime action rerun; preserve existing exact accepted scope, do not infer wholehistoricalissueclosure from relatedfamily acceptance."
+    },
+    {
+      "issue": 524,
+      "url": "https://github.com/mikkelkrogsholm/rentemester/issues/524",
+      "title": "Chart of accounts: seed is one-size-fits-all — needs templates/profiles (holding ApS as concrete example)",
+      "githubState": "OPEN",
+      "githubClosedAt": null,
+      "githubBodySha256": "cb58aaaf3548ab9149a2a2f15d79d32a04a08f5e1a6479f0fa19c65aeaf311ec",
+      "classification": "separately-pending-enhancement",
+      "deliveryOwners": [
+        {
+          "id": "R16",
+          "issue": 688
+        }
+      ],
+      "decision": "Selectablecharttemplate/profile feature remains separate from ported confirmedroles, supportedaccountCRUD and local chart/importmapping. R16closure did not declare524complete.",
+      "boundary": "No company-specific chart/accountdefaults or proposedtemplatelist silently injected. Preserve existing manualgeneric chartsetup.",
+      "sourceRefs": [
+        {
+          "path": "docs/architecture/rust-target/implementation/known-contract-corrections.md",
+          "sha256": "66742a6477dc049fd89ff3f3005f1414d83de277951f6f4aa8b36b55305ce9ef",
+          "location": "Relevant source/contract section reviewed for namedissue 524"
+        }
+      ],
+      "runtimeProofClaim": "No runtime action rerun; preserve existing exact accepted scope, do not infer wholehistoricalissueclosure from relatedfamily acceptance."
+    },
+    {
+      "issue": 525,
+      "url": "https://github.com/mikkelkrogsholm/rentemester/issues/525",
+      "title": "Backup destinations: add `proton-drive` as a first-class kind",
+      "githubState": "OPEN",
+      "githubClosedAt": null,
+      "githubBodySha256": "ea0223df24ac1cc8dd333a7461fc3cade2d7b09ce9577b5011b03a13fdced183",
+      "classification": "separately-pending-enhancement",
+      "deliveryOwners": [
+        {
+          "id": "R33",
+          "issue": 707
+        }
+      ],
+      "decision": "Proton typed destination/provider is additional to existing fivelegacydestination kinds and supportedgenericplacement/declaration.",
+      "boundary": "No new Proton runtime/SDK dependency or implicit compliance/provideravailability claim. Existing other/manualplacement remains.",
+      "sourceRefs": [
+        {
+          "path": "src/core/backup-governance.ts",
+          "sha256": "ff443817e4cf7750cb2ee7bb513e226ca2cb05f66d8bc1fd83afe7e35b41a6f4",
+          "location": "Relevant source/contract section reviewed for namedissue 525"
+        },
+        {
+          "path": "docs/rust-backup-destinations.md",
+          "sha256": "e83cf716a829fc7d0ae2af0946cff55ebc55675f633794513b38a87b1141fc33",
+          "location": "Relevant source/contract section reviewed for namedissue 525"
+        }
+      ],
+      "runtimeProofClaim": "No runtime action rerun; preserve existing exact accepted scope, do not infer wholehistoricalissueclosure from relatedfamily acceptance."
+    },
+    {
+      "issue": 543,
+      "url": "https://github.com/mikkelkrogsholm/rentemester/issues/543",
+      "title": "Google Workspace Gmail OAuth transport for the existing mail-intake pipeline",
+      "githubState": "OPEN",
+      "githubClosedAt": null,
+      "githubBodySha256": "38d43a417dcf55d5557d85b11375ef181c51522c93b22e33cc2ae92c8a8e4823",
+      "classification": "separately-pending-enhancement",
+      "deliveryOwners": [
+        {
+          "id": "R37",
+          "issue": 710
+        }
+      ],
+      "decision": "GmailOAuth transport/onboarding remains existingpendingwork; preserve current localEML/IMAP and independent message/attachment/routing/dedup sourceevidence.",
+      "boundary": "Do not declare Gmail OAuth/API/project/token/branding gates qualified from genericmail-intake success.",
+      "sourceRefs": [
+        {
+          "path": "src/core/mail-intake.ts",
+          "sha256": "bd01025a60dacbe73591f7ca59849ead915fbffa5dbf98529020085f31a1a762",
+          "location": "Relevant source/contract section reviewed for namedissue 543"
+        },
+        {
+          "path": "docs/architecture/rust-target/epic/plan.json",
+          "sha256": "adf000360e7388a8131a6b09a20ac3b1ca8fefd95fd319899c37f1c38167255a",
+          "location": "Relevant source/contract section reviewed for namedissue 543"
+        }
+      ],
+      "runtimeProofClaim": "No runtime action rerun; preserve existing exact accepted scope, do not infer wholehistoricalissueclosure from relatedfamily acceptance."
+    },
+    {
+      "issue": 566,
+      "url": "https://github.com/mikkelkrogsholm/rentemester/issues/566",
+      "title": "Support attachmentless EML receipts as immutable accounting evidence",
+      "githubState": "OPEN",
+      "githubClosedAt": null,
+      "githubBodySha256": "419a0cef1da1cbe7e1ee3d4ce8de41d643874604a2505401bce089b6aa010e56",
+      "classification": "separately-pending-enhancement",
+      "deliveryOwners": [
+        {
+          "id": "R37",
+          "issue": 710
+        },
+        {
+          "id": "R15",
+          "issue": 686
+        }
+      ],
+      "decision": "Immutable rawEML retention in inbox is supported; attachmentless EML as an accountingdocument is a distinct pending extension. Currentnative ingress records MAIL_INTAKE_NO_ATTACHMENT.",
+      "boundary": "Retaining originalEMLsource is not proof it can substitute supplierPDF in controlledexpense/journalpost. Keep existingfail-closed documenteligibility.",
+      "sourceRefs": [
+        {
+          "path": "crates/rentemester-storage/src/mail_intake/ingress.rs",
+          "sha256": "0fcffbf70d6d870de0fb258a09c7bc4a7a43f3c49ac06395943fa8d44e6360c2",
+          "location": "Relevant source/contract section reviewed for namedissue 566"
+        },
+        {
+          "path": "crates/rentemester-engine/src/mail_intake/tests.rs",
+          "sha256": "bd70eef63652b1e87fdde1328fc65eb82e775a7907fc77db5b1d53d4a3bc9ace",
+          "location": "Relevant source/contract section reviewed for namedissue 566"
+        }
+      ],
+      "runtimeProofClaim": "No runtime action rerun; preserve existing exact accepted scope, do not infer wholehistoricalissueclosure from relatedfamily acceptance."
+    },
+    {
+      "issue": 611,
+      "url": "https://github.com/mikkelkrogsholm/rentemester/issues/611",
+      "title": "Sikker reel e-mailafsendelse for fakturaer og recurring invoices via udskiftelig transport",
+      "githubState": "OPEN",
+      "githubClosedAt": null,
+      "githubBodySha256": "01d7f2aed2bb74ea14918299574fe6b38cd2432640a3371a844c48d7e98f7daf",
+      "classification": "required-correction-partially-delivered",
+      "deliveryOwners": [
+        {
+          "id": "R36",
+          "issue": 709
+        },
+        {
+          "id": "R35",
+          "issue": 690
+        }
+      ],
+      "decision": "Original source dry-run-only transport gap is explicit inR36. ExistingRust SMTP/provideracceptance/crash/reconciliation and serviceproof55/102 are delivered components; currentfull611GitHub remainsOPEN.",
+      "boundary": "Do not infer fullallinterface/recurringdelivery/distribution acceptance from provider55/102 or add schedulercron. Preserve dry-rundefault/no implicitfallback; explicit currentconfirmed providerdispatch.",
+      "sourceRefs": [
+        {
+          "path": "docs/rust-server.md",
+          "sha256": "a361c52b2a15926e111330afef77d7c45786ef172e936191eabcb167f73a0ac8",
+          "location": "Relevant source/contract section reviewed for namedissue 611"
+        },
+        {
+          "path": "docs/architecture/rust-target/epic/plan.json",
+          "sha256": "adf000360e7388a8131a6b09a20ac3b1ca8fefd95fd319899c37f1c38167255a",
+          "location": "Relevant source/contract section reviewed for namedissue 611"
+        }
+      ],
+      "runtimeProofClaim": "No runtime action rerun; preserve existing exact accepted scope, do not infer wholehistoricalissueclosure from relatedfamily acceptance."
+    },
+    {
+      "issue": 612,
+      "url": "https://github.com/mikkelkrogsholm/rentemester/issues/612",
+      "title": "Importér allerede eksternt udstedte post-cutover-fakturaer uden genudstedelse eller gensendelse",
+      "githubState": "OPEN",
+      "githubClosedAt": null,
+      "githubBodySha256": "9471475402cb91bbfe14367a85659df6a66a57cfb7f7a2179971525630a14ca7",
+      "classification": "separately-pending-enhancement",
+      "deliveryOwners": [
+        {
+          "id": "R18",
+          "issue": 692
+        },
+        {
+          "id": "R19",
+          "issue": 694
+        },
+        {
+          "id": "R27",
+          "issue": 701
+        }
+      ],
+      "decision": "General already-externally-issued post-cutover invoiceimport is distinct from supportedhistoricalarchive/importedreceivable and nativeissuance.",
+      "boundary": "Do not reissue/resend an alreadyexternalinvoice to claimparity. Keep unsupportedpostcutover inputs explicit and source-series/number/accounting controls intact.",
+      "sourceRefs": [
+        {
+          "path": "docs/architecture/rust-target/epic/plan.json",
+          "sha256": "adf000360e7388a8131a6b09a20ac3b1ca8fefd95fd319899c37f1c38167255a",
+          "location": "Relevant source/contract section reviewed for namedissue 612"
+        },
+        {
+          "path": "docs/architecture/rust-target/implementation/known-contract-corrections.md",
+          "sha256": "66742a6477dc049fd89ff3f3005f1414d83de277951f6f4aa8b36b55305ce9ef",
+          "location": "Relevant source/contract section reviewed for namedissue 612"
+        }
+      ],
+      "runtimeProofClaim": "No runtime action rerun; preserve existing exact accepted scope, do not infer wholehistoricalissueclosure from relatedfamily acceptance."
+    },
+    {
+      "issue": 624,
+      "url": "https://github.com/mikkelkrogsholm/rentemester/issues/624",
+      "title": "Hash-bundet metadata-supersession for ubogførte, ulinkede bilag",
+      "githubState": "OPEN",
+      "githubClosedAt": null,
+      "githubBodySha256": "4476256efa5bec4533d115d952cf92e0cd8af8162fe733a934055c1c78839ffd",
+      "classification": "separately-pending-enhancement",
+      "deliveryOwners": [
+        {
+          "id": "R16",
+          "issue": 688
+        },
+        {
+          "id": "R15",
+          "issue": 686
+        }
+      ],
+      "decision": "General unposted/unlinked documentmetadata supersession remains separatelypending. Party-link decision supersession/additiveenrichment are narrower existingcapabilities.",
+      "boundary": "Never claim partydecision supersession as complete624 or overwrite originaldocumentmetadata/bytes/hash; source/VAT stale review gates remain.",
+      "sourceRefs": [
+        {
+          "path": "docs/architecture/rust-target/implementation/known-contract-corrections.md",
+          "sha256": "66742a6477dc049fd89ff3f3005f1414d83de277951f6f4aa8b36b55305ce9ef",
+          "location": "Relevant source/contract section reviewed for namedissue 624"
+        },
+        {
+          "path": "crates/rentemester-storage/src/documents_original.rs",
+          "sha256": "7fd338b3eb066473c2991f79bcf37ebd2cc66cf6beaf70f378fc404bdacea4db",
+          "location": "Relevant source/contract section reviewed for namedissue 624"
+        }
+      ],
+      "runtimeProofClaim": "No runtime action rerun; preserve existing exact accepted scope, do not infer wholehistoricalissueclosure from relatedfamily acceptance."
+    },
+    {
+      "issue": 625,
+      "url": "https://github.com/mikkelkrogsholm/rentemester/issues/625",
+      "title": "Købsflow: særskilt pålagt moms som kostpris og reverse charge på dokumenteret nettoydelse",
+      "githubState": "OPEN",
+      "githubClosedAt": null,
+      "githubBodySha256": "58fbf824fe27c9c00252135a4bac1fc6dbd9c6c7aa2ef43939b18a91fc2ebd2d",
+      "classification": "separately-pending-enhancement",
+      "deliveryOwners": [
+        {
+          "id": "R17",
+          "issue": 689
+        },
+        {
+          "id": "R20",
+          "issue": 695
+        }
+      ],
+      "decision": "Supplier-charged non-deductible foreignVATplus independently assessed reversecharge-on-net is a distinct pendingenhancement with explicit source/legal review. CurrentacceptedstandardRCzeroVAT/sourcebuyer/valuation refusals are retained.",
+      "boundary": "Do not zero sourceVAT, chooseexempt or treat RCgross differently to bypass documentedmissinggrounds. No new taxrule/automatic B2Bconversion added.",
+      "sourceRefs": [
+        {
+          "path": "docs/architecture/rust-target/epic/plan.json",
+          "sha256": "adf000360e7388a8131a6b09a20ac3b1ca8fefd95fd319899c37f1c38167255a",
+          "location": "Relevant source/contract section reviewed for namedissue 625"
+        },
+        {
+          "path": "docs/architecture/rust-target/implementation/known-contract-corrections.md",
+          "sha256": "66742a6477dc049fd89ff3f3005f1414d83de277951f6f4aa8b36b55305ce9ef",
+          "location": "Relevant source/contract section reviewed for namedissue 625"
+        }
+      ],
+      "runtimeProofClaim": "No runtime action rerun; preserve existing exact accepted scope, do not infer wholehistoricalissueclosure from relatedfamily acceptance."
+    },
+    {
+      "issue": 641,
+      "url": "https://github.com/mikkelkrogsholm/rentemester/issues/641",
+      "title": "Canonical company scope for company-knowledge MCP and cross-surface parity",
+      "githubState": "CLOSED",
+      "githubClosedAt": "2026-10-23T14:02:35Z",
+      "githubBodySha256": "9f9a560039b5b0dbe892a6ba7f36c9ff4c138decc66b2641ac90dd5765de3fde",
+      "classification": "delivered-baseline",
+      "deliveryOwners": [
+        {
+          "id": "R30",
+          "issue": 705
+        }
+      ],
+      "decision": "Canonical companyknowledge service/slug/supportedlocalroot scope andcrosssurfaceprovenance/replay were fullyaccepted and actual641CLOSED inR30closure.",
+      "boundary": "EarlierGroup181doc text describing641open is historical; currentGitHub and laterR30evidence takeprecedence. No migration ofpath-keyed historicalassertions onreads.",
+      "sourceRefs": [
+        {
+          "path": "docs/architecture/rust-target/implementation/progress.json",
+          "sha256": "6bcdc8168dc25c9da0e5257fe76f3b2e97779ed13a31f0b3d6251589628592b9",
+          "location": "Relevant source/contract section reviewed for namedissue 641"
+        },
+        {
+          "path": "docs/architecture/rust-target/implementation/known-contract-corrections.md",
+          "sha256": "66742a6477dc049fd89ff3f3005f1414d83de277951f6f4aa8b36b55305ce9ef",
+          "location": "Relevant source/contract section reviewed for namedissue 641"
+        }
+      ],
+      "runtimeProofClaim": "No runtime action rerun; preserve existing exact accepted scope, do not infer wholehistoricalissueclosure from relatedfamily acceptance."
+    },
+    {
+      "issue": 642,
+      "url": "https://github.com/mikkelkrogsholm/rentemester/issues/642",
+      "title": "Prevent one journal entry from reconciling multiple bank transactions",
+      "githubState": "OPEN",
+      "githubClosedAt": null,
+      "githubBodySha256": "4c57ddf90eba773dff9ee60081a48465c9e742ae330eb2b248d7c98e06d29ec0",
+      "classification": "required-defect-correction",
+      "deliveryOwners": [
+        {
+          "id": "R21",
+          "issue": 693
+        },
+        {
+          "id": "R40",
+          "issue": 713
+        }
+      ],
+      "decision": "A sharedjournal mustnot falselyreconcile multipledistinctbankrows. NativeR21accepted controls must preserve one-to-one/sum invariants and truthfullegacyconflictprojection, not bug-for-bugfalsegreen behavior.",
+      "boundary": "Existing642is stillOPEN onGitHub; nativecomponent/fullR21acceptance is distinct from separatelyreviewing andclosing thishistoricalissue. Do not rewrite/delete legacyconflicts or guesscorrection.",
+      "sourceRefs": [
+        {
+          "path": "docs/bank-import-idempotency.md",
+          "sha256": "35e3f081171e7acc053feee1509f6df6269323eae697ed525fe445cabc5a4e6c",
+          "location": "Relevant source/contract section reviewed for namedissue 642"
+        },
+        {
+          "path": "docs/architecture/rust-target/epic/plan.json",
+          "sha256": "adf000360e7388a8131a6b09a20ac3b1ca8fefd95fd319899c37f1c38167255a",
+          "location": "Relevant source/contract section reviewed for namedissue 642"
+        }
+      ],
+      "runtimeProofClaim": "No runtime action rerun; preserve existing exact accepted scope, do not infer wholehistoricalissueclosure from relatedfamily acceptance."
+    },
+    {
+      "issue": 643,
+      "url": "https://github.com/mikkelkrogsholm/rentemester/issues/643",
+      "title": "Bank import: Canonical source identity og fail-closed overlap før writes",
+      "githubState": "OPEN",
+      "githubClosedAt": null,
+      "githubBodySha256": "49e4ed0322923bd695d70e94cdfb0a3e3a062be6dd684077a23d88cc79bf43a6",
+      "classification": "required-defect-correction",
+      "deliveryOwners": [
+        {
+          "id": "R21",
+          "issue": 693
+        },
+        {
+          "id": "R40",
+          "issue": 713
+        }
+      ],
+      "decision": "Separate versionedsourceidentity/accountingcontent/evidence; ambiguous overlap mustrefusebeforewrites and preserve canonicalbank/evidence/id/reconciliation history.",
+      "boundary": "Keep existing643authoritative; no fuzzy amount/date/textmerge or fakeCSVprovider source. NativeR21done is not automatic historicalissueclosure or providerlivequalification.",
+      "sourceRefs": [
+        {
+          "path": "docs/bank-import-idempotency.md",
+          "sha256": "35e3f081171e7acc053feee1509f6df6269323eae697ed525fe445cabc5a4e6c",
+          "location": "Relevant source/contract section reviewed for namedissue 643"
+        },
+        {
+          "path": "docs/architecture/rust-target/epic/plan.json",
+          "sha256": "adf000360e7388a8131a6b09a20ac3b1ca8fefd95fd319899c37f1c38167255a",
+          "location": "Relevant source/contract section reviewed for namedissue 643"
+        }
+      ],
+      "runtimeProofClaim": "No runtime action rerun; preserve existing exact accepted scope, do not infer wholehistoricalissueclosure from relatedfamily acceptance."
+    },
+    {
+      "issue": 664,
+      "url": "https://github.com/mikkelkrogsholm/rentemester/issues/664",
+      "title": "Restore: Bring runtime og dokumenteret overwrite-kontrakt i overensstemmelse",
+      "githubState": "OPEN",
+      "githubClosedAt": null,
+      "githubBodySha256": "c609b39df2771bba01f069ff117b689931323822d2759526569b24b0b1685df7",
+      "classification": "required-defect-correction",
+      "deliveryOwners": [
+        {
+          "id": "R33",
+          "issue": 707
+        },
+        {
+          "id": "R54",
+          "issue": 726
+        }
+      ],
+      "decision": "Canonicalfail-closed restorecontract mustagree inruntime/CLI/MCP/help. Supportedfresh-target signedworkspace recovery and explicitstaged transfer/rollback distinctions are preserved.",
+      "boundary": "Never imply destructiveoverwrite or source-free recovery beyond signedverifiedacceptedproof. Existing664remainsOPEN; R33componentacceptance is not an automatic claim alllegacyhelp/futurecutoverrollbacks areclosed.",
+      "sourceRefs": [
+        {
+          "path": "docs/rust-backup-destinations.md",
+          "sha256": "e83cf716a829fc7d0ae2af0946cff55ebc55675f633794513b38a87b1141fc33",
+          "location": "Relevant source/contract section reviewed for namedissue 664"
+        },
+        {
+          "path": "docs/architecture/rust-target/epic/plan.json",
+          "sha256": "adf000360e7388a8131a6b09a20ac3b1ca8fefd95fd319899c37f1c38167255a",
+          "location": "Relevant source/contract section reviewed for namedissue 664"
+        }
+      ],
+      "runtimeProofClaim": "No runtime action rerun; preserve existing exact accepted scope, do not infer wholehistoricalissueclosure from relatedfamily acceptance."
+    }
+  ],
+  "original55ScopeUnchanged": true,
+  "noNewEnhancementScopeImported": true,
+  "remaining": "No missing named disposition; separate pending enhancements and existing runtime/cutover acceptance remain with their original issues.",
+  "reconciliationComplete": true
+}
