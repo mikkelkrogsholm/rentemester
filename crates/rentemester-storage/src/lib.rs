@@ -590,6 +590,7 @@ pub mod contact_delete;
 pub mod dimensions;
 
 pub mod accounting_drafts;
+pub mod accounting_draft_original;
 
 pub mod posting_rules;
 pub mod posting_rules_original;
