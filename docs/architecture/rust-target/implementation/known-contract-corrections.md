@@ -470,3 +470,24 @@ To misvisende testforventninger blev rettet fra konkrete resultater før
 godkendelse: historisk registry-tal341 efter syv nye bindings og antagelsen
 om direkte afslutning af en pause. Sidstnævnte blev rettet før første faktiske
 prøve ved at bevare afvisningen og kræve gennemgået genaktivering.
+
+### Dimensionsplaner, præcise beløb og historiske identiteter (Group177)
+
+MCP-planer bevarer kildens indlejrede succesform; en afvist kerneplan er nu
+også en ydre fejl, ikke en succes med indlejret `ok:false`. Liste- og
+skrivekvitteringer beholder deres egne kildeformer. Budgetbeløb afstemmes
+i præcise øre uden tolerancer eller afrunding. Kanoniske numeriske hashes
+stemmer med uafhængige kildefixtures; hele gamle budgetfordelinger afløses
+atomisk, og procent/underscore i idempotensnøgler behandles bogstaveligt.
+
+Både den gamle og den native klassifikation sletter `sourceRef` for reviewed.
+En identisk plan kan derfor ikke oprettes igen efter supersession med blot
+en ny reference. Prøven bevarer i stedet en virkelig ekstern fordelingsplan
+i samme original og gennemgår dens import eksplicit med originalens SHA.
+Det er import af klassifikation, ikke bogføring; den unikke immutable hash
+og femhændelsesforløbet er bevaret.
+
+SDK'en normaliserer valuta som native motor og bevarer gyldige historiske
+rækker, hvor aktør og principal er forskellige. Nye mutationer afleder begge
+fra aktuelle credentials. Den samlede request inklusive identitetsassertioner
+begrænses til65KiB. Ingen klient kan vælge autoritet gennem disse felter.

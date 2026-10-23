@@ -4013,3 +4013,19 @@ en påstand om identiske offlineforslag. MCP-navnet
 `native_supplier_commitment_matches` bevarer den tidligere native læseform;
 `supplier_commitment_matches` har den oprindelige kildeform.348unikke værktøjer
 er kontrolleret. Fuld migrations- og manuel desktopaccept er fortsat åben.
+
+### Dimensioner og gennemgåede dimensionsbudgetter (Group177)
+
+Fjorten oprindelige CLI-kommandoer og fjorten MCP-operationer bruger samme
+Rust-klassifikation og den eksisterende datamodel. En journalpost kan fordeles,
+rettes atomisk med begrundelse og læses med hele historikken. Dimensionsbudgetter
+kræver præcis afstemning med kontoens aktuelle månedsbudget og erstatter hele
+den gamle fordeling samlet; de ændrer ingen journaler.
+
+201tests, streng Clippy, build og første faktiske prøve består på `0733e5ac`.
+Et oprindeligt bilag på12,50kr. og én journal/to linjer fordeles først7,50/5,00,
+så5,00/7,50. Budget20fordeles først12/8, derefter13/7; tilbageværende råderum
+er8/−0,50. Historikken har2dimensions-,4medlems-,5tildelings- og6budgethændelser.
+Genstart og signeret kildefri gendannelse til ny ejer bevarer alt med én
+gendannelses-audit (6→7).2596kilde-,3binær-,8web- og3hjælperpins er verificeret.
+Der findes362unikke MCP-navne. Fuld migration og installeret desktopaccept er åben.

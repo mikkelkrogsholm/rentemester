@@ -1,15 +1,15 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "Group176 original supplier commitment lifecycle accepted",
-  "code_revision": "5d89e7b412fe33ce47aa03ad75d819a1fea6e73b",
+  "current_increment": "Group177 original dimensions and dimension budgets accepted",
+  "code_revision": "0733e5acd1bf777550f3a1452cde58e0280aa03e",
   "spec_revision": "sha256:8979030956647a0f03266c50d42786b5d33ab71a59c78528203d223226171e72",
-  "state": "Group176 ACCEPTED: original sevenCLI/sevenMCP share native source-bound plan/approval/canonicalmatch/variance/alerts/reasonedpause-reviewedreactivation-end and explicitoriginalkey receipt recovery.194tests/strict8packages/build/actualPASS;348uniqueMCP.1original1vendor4events1match,10.01planned/12.34canonical/2.33variance, noadditionalfinancialeffects. Currenthuman/service/physicalsources; normalMFA/signature/sourcefreefreshownerrestore/reopen and exact company/control inventories. Source/binary/web/helperpins independently matched; runtimecleaned. All prior failures/reviewcorrections retained. Full55/manualdesktoplast OPEN.",
+  "state": "Group177 ACCEPTED14CLI/14MCP originaldimensions share native classifier and exact reviewed budgetwriter;201tests/strict8packages/build/FIRSTactualPASS.1original1expensejournal2lines12.50/accountbudget20;2definition4member5assignment6budgetevents,actual5/7.50 budget13/7 variance8/-.50, noadditionalfinancialeffects. Genuine retained externalallocation schedule explicitlyreviewed/sourceSHA, same immutablehistory guards. Currenthuman/service,normalMFA/signature/sourcefreefreshownerrestore/reopen6audit+1restore7.2596source3binary8web/3helperpins independentlymatched;runtimecleaned. Failedformat/reviewreceipts preserved; full55/manualdesktoplast OPEN.",
   "issues_closed": [
     701
   ],
   "next": [
-    "Next necessary original whole journey: dimensions allocation -> exact replacement/history -> dimension budget/actuals under existing#702/#716/#717. Reuse native dimension assignment/lifecycle engine and current read projection; bounded missing dimension-budget writer port on existing schema. Freeze precise14CLI/14MCP inputs/envelopes and typedhumanserviceauthority before4disjointworkers. Do not rerun accepted175/176; full55/manualdesktoplast remain.",
+    "Next necessary original wholejourney: posting-rules6CLI/ONLY3MCP (propose/approve/explain), independent approval/exacthash/evaluate/disable/supersede and signed recovery under existing#696/#716/#717. Preserve old native purchase rule/hash/admission/backup controls; broad source evaluator must never cause new conditions to be ignored in actualpurchase. Freeze nextfinitecontracts,4disjointowners; no repeated177 proof ornewframework. Full55/manualdesktoplast remain.",
     "Original invoice interface inventory now has all31CLI and25MCP bindings, with explicit compatibility corrections documented; do not mistake that family inventory for full product parity. Reconcile remaining original whole-product R44/R45 acceptance from existing epic/issues: actor/env/company-path/default launcher/errors/historical receipts, closure/recovery/automation, signed distribution/update/cutover and TypeScript backend retirement. Continue next necessary whole journey, preserve all accepted evidence/full original scope; installed desktop acceptance last.",
     "Installed desktop acceptance is explicitly deferred to the very end by the user. Preserve prepared Group100 profile; collect remaining native automation, closure, recovery and packaging checks for final installed acceptance without requesting screen unlock during development.",
     "J03/R50 and remaining R54 scope: only still-supported operation closure/recovery, nonempty scheduler handoff, hostile/older clone and post-cutover rollback requirements. Group99 qualifies managed installed J06 flow, not every R54 acceptance item.",
@@ -25,9 +25,9 @@
   ],
   "all_goal_requirements_complete": false,
   "previous_verified_increment": {
-    "name": "Group175 verified imported books through VAT filing preparation accepted",
-    "code_revision": "41de907b2cf1e80692cebd7f86f1a6fe44dd8deb",
-    "evidence_key": "historical_vat175"
+    "name": "Group176 original supplier commitment lifecycle accepted",
+    "code_revision": "5d89e7b412fe33ce47aa03ad75d819a1fea6e73b",
+    "evidence_key": "original_commitment176"
   },
   "evidence": {
     "combined_browser_log": "/tmp/rm-platform5-combined.log",
@@ -11782,6 +11782,266 @@
         "Secondcombined178MCPPASS; strict captured one collapsible_if. Scoped boolean conjunction repair only, admission unchanged. No growing fixture setup, no newmodel attempts, all failedreceipts preserved.",
         "Thirdcombined194tests strict/build PASS; firstactualGET captured403 origin_refused because server used mutation=true for reads. Fixed GET/POST origin distinction with direct credential proof/currentauthority before structuralvalidation; POST SameOrigin and presentforeignOrigin checks retained. Failedprofile/observations preserved. Fourthcombined194tests strict/build and second actual PASS. Independently matched pins/raw inventories/typedactors/variance/unchangedfinancialbaseline/normalMFA/signedfreshownerrestore/processcleanup."
       ]
+    },
+    "original_dimensions177": {
+      "issue": 717,
+      "related_issues": [
+        716,
+        702
+      ],
+      "status": "ACCEPTED finite original dimensions and reviewed dimension budget lifecycle; full mission OPEN",
+      "source_revision": "0733e5acd1bf777550f3a1452cde58e0280aa03e",
+      "sgd_run": "rust-original-dimensions177-20261023T033510.446184000",
+      "engine_phase": "done",
+      "sgd_published": true,
+      "actual_report": "/tmp/rentemester-rust-reports/original-dimensions177-actual.json",
+      "actual_report_sha256": "b397b451c48b1938d5d5d2b1308981fa32d5db50c3f7f249fdb9151bbf1db985",
+      "source_blob_count": 27,
+      "unique_targeted_tests": 201,
+      "test_counts": {
+        "storage_dimensions": 8,
+        "sdk": 4,
+        "cli": 3,
+        "application": 2,
+        "mcp_full_stdio": 184
+      },
+      "checks": [
+        {
+          "check": "domain",
+          "key": "b91086723bc6bd0f2ef3083af569f1a54b21598a2630740e34531632846d2f3d",
+          "argv": [
+            "python3",
+            "scripts/rust/cargo-guard.py",
+            "cargo",
+            "test",
+            "-p",
+            "rentemester-storage",
+            "--lib",
+            "dimensions",
+            "--locked"
+          ],
+          "exit_code": 0,
+          "passed": true,
+          "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/rust-original-dimensions177-20261023T033510.446184000/acceptance/b91086723bc6bd0f2ef3083af569f1a54b21598a2630740e34531632846d2f3d/domain.log"
+        },
+        {
+          "check": "sdk",
+          "key": "ffa2331eb41df6ed30d23600694bacfb2b42487f87bcb10928fd2669762172a3",
+          "argv": [
+            "python3",
+            "scripts/rust/cargo-guard.py",
+            "cargo",
+            "test",
+            "-p",
+            "rentemester-client",
+            "--test",
+            "dimensions_original",
+            "--locked"
+          ],
+          "exit_code": 0,
+          "passed": true,
+          "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/rust-original-dimensions177-20261023T033510.446184000/acceptance/ffa2331eb41df6ed30d23600694bacfb2b42487f87bcb10928fd2669762172a3/sdk.log"
+        },
+        {
+          "check": "cli",
+          "key": "87b5170942596d08689a212c2a274f050d00d283aed13580596be40575417a3e",
+          "argv": [
+            "python3",
+            "scripts/rust/cargo-guard.py",
+            "cargo",
+            "test",
+            "-p",
+            "rentemester-cli",
+            "--test",
+            "dimensions_original",
+            "--locked"
+          ],
+          "exit_code": 0,
+          "passed": true,
+          "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/rust-original-dimensions177-20261023T033510.446184000/acceptance/87b5170942596d08689a212c2a274f050d00d283aed13580596be40575417a3e/cli.log"
+        },
+        {
+          "check": "authority",
+          "key": "3f4fbc230e2d0497933278437ccd0108516754f9b4736ea68ee0bbe63b5be13e",
+          "argv": [
+            "python3",
+            "scripts/rust/cargo-guard.py",
+            "cargo",
+            "test",
+            "-p",
+            "rentemester-application",
+            "--lib",
+            "dimensions",
+            "--locked"
+          ],
+          "exit_code": 0,
+          "passed": true,
+          "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/rust-original-dimensions177-20261023T033510.446184000/acceptance/3f4fbc230e2d0497933278437ccd0108516754f9b4736ea68ee0bbe63b5be13e/authority.log"
+        },
+        {
+          "check": "mcp",
+          "key": "2ee86481b10b3123864ef1a72e2cf378469c2f812939511455400d4dcc5cc8c1",
+          "argv": [
+            "python3",
+            "scripts/rust/cargo-guard.py",
+            "cargo",
+            "test",
+            "-p",
+            "rentemester-mcp",
+            "--test",
+            "stdio",
+            "--locked"
+          ],
+          "exit_code": 0,
+          "passed": true,
+          "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/rust-original-dimensions177-20261023T033510.446184000/acceptance/2ee86481b10b3123864ef1a72e2cf378469c2f812939511455400d4dcc5cc8c1/mcp.log"
+        },
+        {
+          "check": "strict",
+          "key": "17da9bfbae7f9ad7d9062597bde2ca100ad3fac67fc73d0bcf3be9658b7d5a4d",
+          "argv": [
+            "python3",
+            "scripts/rust/cargo-guard.py",
+            "cargo",
+            "clippy",
+            "-p",
+            "rentemester-engine",
+            "-p",
+            "rentemester-storage",
+            "-p",
+            "rentemester-client",
+            "-p",
+            "rentemester-cli",
+            "-p",
+            "rentemester-mcp",
+            "-p",
+            "rentemester-application",
+            "-p",
+            "rentemester-host",
+            "-p",
+            "rentemester-server",
+            "--all-targets",
+            "--locked",
+            "--",
+            "-D",
+            "warnings"
+          ],
+          "exit_code": 0,
+          "passed": true,
+          "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/rust-original-dimensions177-20261023T033510.446184000/acceptance/17da9bfbae7f9ad7d9062597bde2ca100ad3fac67fc73d0bcf3be9658b7d5a4d/strict.log"
+        },
+        {
+          "check": "build",
+          "key": "835d8c92739d5dba5f1c0708c1b36fdce614e4616120d78b07b942de6e2bfc3f",
+          "argv": [
+            "python3",
+            "scripts/rust/cargo-guard.py",
+            "cargo",
+            "build",
+            "-p",
+            "rentemester-server",
+            "-p",
+            "rentemester-cli",
+            "-p",
+            "rentemester-mcp",
+            "--locked"
+          ],
+          "exit_code": 0,
+          "passed": true,
+          "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/rust-original-dimensions177-20261023T033510.446184000/acceptance/835d8c92739d5dba5f1c0708c1b36fdce614e4616120d78b07b942de6e2bfc3f/build.log"
+        },
+        {
+          "check": "actual",
+          "key": "be8408c27d320209cf3cd63346ab80bc00f6b56c9fb7a0d86b5ac7f6b93722a4",
+          "argv": [
+            "python3",
+            "-c",
+            "import os,subprocess;from pathlib import Path;b=Path(os.environ['CARGO_TARGET_DIR'])/'debug';rev=subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip();e=Path(os.environ['CARGO_TARGET_DIR'])/('original-dimensions177-'+rev+'.json');subprocess.run(['python3','scripts/rust/run-bookkeeping-batch.py','--original-dimensions','--server-binary',str(b/'rentemester-server'),'--cli-binary',str(b/'rentemester-rust'),'--mcp-binary',str(b/'rentemester-mcp'),'--web-dir',os.environ['RM_REWRITE_WEB_DIR'],'--evidence',str(e)],check=True)"
+          ],
+          "exit_code": 0,
+          "passed": true,
+          "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/rust-original-dimensions177-20261023T033510.446184000/acceptance/be8408c27d320209cf3cd63346ab80bc00f6b56c9fb7a0d86b5ac7f6b93722a4/actual.log"
+        }
+      ],
+      "strict": "8packages alltargets locked -Dwarnings PASS",
+      "cli_operations": 14,
+      "original_mcp_operations": 14,
+      "unique_mcp_tools": 362,
+      "company_counts": {
+        "documents": 1,
+        "document_party_link_events": 0,
+        "document_party_resolution_events": 0,
+        "internal_voucher_evidence": 0,
+        "audit_log": 6,
+        "journal_entries": 1,
+        "journal_lines": 2,
+        "budget_lines": 1,
+        "accounting_dimension_definition_events": 2,
+        "accounting_dimension_member_events": 4,
+        "accounting_dimension_assignment_events": 5,
+        "accounting_dimension_budget_events": 6,
+        "payables": 0,
+        "payable_payments": 0,
+        "bank_transactions": 0,
+        "bank_journal_reconciliations": 0
+      },
+      "control_business_counts": {
+        "rm_intercompany_dispositions": 0,
+        "rm_intercompany_disposition_events": 0,
+        "rm_intercompany_disposition_lifecycle_events": 0,
+        "rm_intercompany_disposition_journal_links": 0,
+        "rm_corporate_record_events": 0,
+        "rm_corporate_record_bytes": 0,
+        "rm_corporate_record_links": 0
+      },
+      "restored_company_audits": 7,
+      "scanner_calls": 1,
+      "provider_calls": 0,
+      "planned_expense": 12.5,
+      "account_budget": 20,
+      "final_actuals": [
+        5,
+        7.5
+      ],
+      "final_budgets": [
+        13,
+        7
+      ],
+      "expense_budget_variances": [
+        8,
+        -0.5
+      ],
+      "additional_financial_effects": 0,
+      "source_artifact_web_pins": {
+        "source_files": 2596,
+        "binaries": 3,
+        "web_files": 8,
+        "helpers": 3,
+        "independently_matched": true
+      },
+      "first_actual_acceptance_passed": true,
+      "failed_actual_attempts": 0,
+      "normal_mfa_restart": true,
+      "signed_source_free_fresh_owner_restore": true,
+      "fresh_mfa_restored_reopen": true,
+      "owned_processes_stopped": true,
+      "runtime_cleaned": true,
+      "independent_verification_log": "/tmp/rm177-independent-verification.log",
+      "scope_limits": [
+        "One existing native dimension classifier and existing schema. Bounded missing dimension-budget writer now verifies exact current account/month budget/member meanings, supersedes whole prior set atomically and appends complete new set. No second engine/UI/provider/schema.",
+        "Fourteen CLI and fourteen MCP source operations, exact flat CLI 0/1/2/human output and distinct source plan/list/write MCP envelopes; source plan failure now outer false instead of false success.362unique bindings.",
+        "One retained original/one noVAT expense journal/two lines/one accountbudget;2definition+4member+5assignment+6dimensionbudgetevents,2currentbudgetrows. Exact matching5/7.50 actuals and13/7 budgets, variance8/-.50. No additional financial effects.",
+        "Both source and native reviewed classification deliberately omit sourceRef and immutable unique hash prevents identical reassignment after supersede. Genuine external allocation schedule is retained in SAME original; final classification explicitly imports and reviews that schedule with exact sourceSHA ref, without a bookkeeping-import claim. Five-event/final500/750 oracle preserved.",
+        "Exact nativeMoney cents correct floatingepsilon; independent sourcecanonical hashes73bbd87a/65c8a2f0 and actual match. Caller percent/underscore keys use literal prefix/complete indices; current set unchanged by explicit prior-key receipt recovery. Whitespace-alias keys refuse.",
+        "Canonical currency and legitimate unequal historical actor/principal are preserved bySDK; new mutations still derive both typedidentities solely from current credentials.65KiB input/finalwirebound beforeHTTP.",
+        "Current human/service permission/revocation/reader refusal, normalMFArestart/signedsourcefreefreshownerrestore/reopen,2596source3binary8web/3helperpins and processcleanup independentlyverified. Nonempty dimensionbudget history qualified. Full55/J01-J07/distribution/TypeScript retirement/installeddesktoplast remain OPEN."
+      ],
+      "preserved_review_and_check_history": [
+        "Domain first worker failed formatting only; stopped scoped repair d40200da retains literalkeys and exactsourcehash. Failedreceipt preserved, no modelretry.",
+        "Main realdiff review rejected initial SDK despite4testsPASS: native dkk normalization, historicalactor/principal equality assumption and66560bytebound fixedefe8deeb, existing4fixtures extended and PASS.",
+        "Main+readonlyproof review caught identical reviewed-plan hash collision beforefirstactual. Actual external schedule/sourcehash/explicitimportreview and CLI yes/no booladapter repair3b9ee393 preserve independent frozen effects without nativeguard/schema changes.",
+        "All4actualdiffs reviewed before integration; frozen201tests/strict/build and FIRSTactualPASS.6companyaudits+boundrestore1=7,7controlbusiness tablesempty. No accepted financial effects replayed."
+      ]
     }
   },
   "verified_history": [
@@ -13574,6 +13834,12 @@
       "code_revision": "5d89e7b412fe33ce47aa03ad75d819a1fea6e73b",
       "evidence_key": "original_commitment176",
       "status": "ACCEPTED finite original supplier commitment lifecycle; whole mission OPEN"
+    },
+    {
+      "increment": "Group177",
+      "code_revision": "0733e5acd1bf777550f3a1452cde58e0280aa03e",
+      "evidence_key": "original_dimensions177",
+      "status": "ACCEPTED finite original dimensions and reviewed dimension budget lifecycle; full mission OPEN"
     }
   ],
   "scope_clarifications": [
