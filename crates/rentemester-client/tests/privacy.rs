@@ -133,3 +133,32 @@ async fn erase_never_accepts_caller_date_keys_actor_or_missing_scope() {
         Err(Error::InvalidInput(_))
     ));
 }
+
+#[tokio::test]
+async fn new_operations_preserve_exact_bytes_once_and_refuse_service_and_bad_shapes() {
+    use rentemester_client::PrivacyOperation as Op;
+    for (op,path,body) in [
+        (Op::Discover,"POST /api/companies/synthetic/gdpr/discover HTTP/1.1","{ \"name\":\"Synthetic ø\", \"confirm\":true }\n"),
+        (Op::Forget,"POST /api/companies/synthetic/gdpr/forget HTTP/1.1",r#"{"cvr":"SYN","afterRetentionExpiry":true,"confirm":true}"#),
+        (Op::LegalHold,"POST /api/companies/synthetic/gdpr/legal-hold HTTP/1.1",r#"{"name":"SYN","holdId":"case-1","operation":"release","reason":"reviewed","confirm":true}"#),
+        (Op::AuditLog,"POST /api/companies/synthetic/gdpr/audit-log HTTP/1.1",r#"{"since":"2026-01-01","until":"2026-02-28","confirm":true}"#),
+    ] {
+        for status in ["200 OK","503 Unavailable"] {
+            let (origin,t)=server(path,body,status);
+            let api=ApiClient::new(&origin,true,Some("session=synthetic".into())).unwrap();
+            let out=api.privacy_operation("synthetic",op,body.as_bytes().to_vec(),true).await;
+            if status=="200 OK" {assert_eq!(out.unwrap()["coverage"]["complete"],false);}else{assert_eq!(out.unwrap_err(),Error::OutcomeUnknown);}
+            t.join().unwrap();
+        }
+    }
+    let api=ApiClient::new("http://127.0.0.1:9",true,Some("session=synthetic".into())).unwrap();
+    for (op,body) in [
+        (Op::Forget,r#"{"cvr":"SYN","asOf":null,"afterRetentionExpiry":true,"confirm":true}"#),
+        (Op::Forget,r#"{"cvr":"SYN","confirm":true}"#),
+        (Op::AuditLog,r#"{"since":"2026-02-30","confirm":true}"#),
+        (Op::AuditLog,r#"{"actor":"user:forged","confirm":true}"#),
+        (Op::LegalHold,r#"{"cvr":"SYN","holdId":"x","reason":" ","operation":"place","confirm":true}"#),
+    ] { assert!(matches!(api.privacy_operation("synthetic",op,body.as_bytes().to_vec(),true).await,Err(Error::InvalidInput(_)))); }
+    let service=ApiClient::with_service_key("http://127.0.0.1:9",true,"synthetic-service-key".into()).unwrap();
+    assert!(matches!(service.privacy_operation("synthetic",Op::AuditLog,br#"{"confirm":true}"#.to_vec(),true).await,Err(Error::InvalidInput(_))));
+}

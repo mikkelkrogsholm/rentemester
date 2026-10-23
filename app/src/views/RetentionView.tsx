@@ -1,10 +1,11 @@
-import { ButtonLink, PageHeader } from "../components/ui";
+import { Button, ButtonLink, PageHeader } from "../components/ui";
 // Retention status view (#343) — per-virksomhed read-only side der viser
 // hvor langt 5-års bogføringspligten er kommet for hver data-domæne. Bygger
 // på det eksisterende `buildRetentionStatusReport` i kernen (ingen
 // genimplementering) og deep-linker til Lovgrundlag-viewet (#347) for at
 // citere bogføringslovens § 12, stk. 1.
 
+import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { api } from "../lib/api";
 import { useAsync } from "../lib/useAsync";
@@ -19,6 +20,8 @@ const TABLE_LABELS: Record<string, string> = {
 
 export function RetentionView() {
   const { slug = "" } = useParams();
+  const [reportError, setReportError] = useState<string | null>(null);
+  const [reportBusy, setReportBusy] = useState(false);
   const state = useAsync<CompanyRetention>((signal) => api.retention(slug, { signal }), [slug]);
 
   if (state.loading) return <Loading />;
@@ -83,6 +86,21 @@ export function RetentionView() {
         </tbody>
       </table></div>
 
+      <section className="card">
+        <h3>Virksomhedens compliance-rapport</h3>
+        <p className="muted">Autoriseret HTML fra serveren med faktiske og utilgængelige evidensfelter. Kildehenvisninger er ikke juridisk godkendelse.</p>
+        <Button requiredPermission="company.read" disabled={reportBusy} onClick={async () => {
+          setReportBusy(true); setReportError(null);
+          try {
+            const report = await api.complianceReport(slug);
+            const url = URL.createObjectURL(new Blob([report.html], { type: report.contentType }));
+            const link = document.createElement("a"); link.href = url; link.download = "compliance-report.html"; link.click();
+            URL.revokeObjectURL(url);
+          } catch (e) { setReportError(e instanceof Error ? e.message : "Rapporten kunne ikke hentes."); }
+          finally { setReportBusy(false); }
+        }}>Hent compliance-rapport (HTML)</Button>
+        {reportError && <p role="alert">{reportError}</p>}
+      </section>
       <section className="card">
         <h3>Lovgrundlag</h3>
         <p>

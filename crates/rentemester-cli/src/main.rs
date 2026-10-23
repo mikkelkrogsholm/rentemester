@@ -78,6 +78,7 @@ mod ownership;
 mod parties;
 mod portable_backup;
 mod privacy;
+mod regulatory;
 mod public_einvoice;
 mod receivables;
 mod recurring_invoices;
@@ -88,6 +89,8 @@ mod reviewed_bookkeeping;
 mod saft;
 mod workspace_inbox;
 fn run(args: Vec<String>) -> Result<serde_json::Value, (u8, Error)> {
+    if args.first().is_some_and(|s|s=="reg") { return regulatory::run(&args); }
+    if args.first().is_some_and(|s|privacy::accepts(s)||s=="compliance-report") { return remote::run(&args); }
     if args.first().map(String::as_str) == Some("journal")
         && args.get(1).map(String::as_str) == Some("list")
     {
@@ -318,6 +321,17 @@ fn main() -> ExitCode {
             return ExitCode::from(code);
         }
     };
+    // Static repository reports bypass legacy discovery and all company/login binding.
+    if args.first().is_some_and(|s| s == "reg") {
+        return match regulatory::run(&args) {
+            Ok(value) => {
+                if args.iter().any(|s|s=="--json") { println!("{value}"); }
+                else { print!("{}",value["report"].as_str().unwrap_or("")); }
+                if value["ok"] == false { ExitCode::from(1) } else { ExitCode::SUCCESS }
+            }
+            Err((code,error)) => {println!("{}",json!({"ok":false,"code":error.code,"errors":[error.message]}));ExitCode::from(code)}
+        };
+    }
     if let Some(output) = original_discovery::execute(&args) {
         print!("{}", output.stdout);
         eprint!("{}", output.stderr);

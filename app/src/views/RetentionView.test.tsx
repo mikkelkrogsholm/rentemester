@@ -115,3 +115,9 @@ describe("RetentionView (#343)", () => {
     ).not.toBeInTheDocument();
   });
 });
+
+test("offers authorized HTML compliance report access without a new screen", async () => {
+  renderView();
+  expect(await screen.findByRole("button", { name: "Hent compliance-rapport (HTML)" })).toBeInTheDocument();
+  expect(screen.getByText(/Kildehenvisninger er ikke juridisk godkendelse/)).toBeInTheDocument();
+});
