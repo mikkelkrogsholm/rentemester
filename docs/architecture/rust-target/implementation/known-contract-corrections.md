@@ -560,3 +560,20 @@ submit kræver DraftWrite, reject/approve Review og reads Read, altid før parsi
 Kendte strukturelle afvisninger er400; native businessafvisninger er422, og
 usikkert commitudfald forbliver503uden automatisk retry. Savepointen bevarer
 hele-operationens rollback selv ved sen fejl efter journalinsert.
+
+### Normale native programnavne og fælles outputdefault (Group181)
+
+Kandidatens `rentemester` er en uafhængig bytekopi af Rust CLI-binæren. Der er ingen
+Bun-/Node-wrapper eller fallback. Den eksisterende Docker-buildidentity og
+desktopopdatering ændres ikke; kandidatens eget inventar er ikke en releasegodkendelse.
+Fælles original-argv-normalisering vælger human på stdout-TTY og JSON ved pipe.
+`--json` vinder; ellers vinder sidste `--format`. Offline discovery, native `remote`,
+eksperimentelle kommandoer og bogstavelige værdier efter `--` bevarer deres kontrakt.
+
+R16's sidste navnekollisionskriterium er nu prøvet gennem de normale native
+programnavne: samme leverandørnavn, forskellige juridiske ids, separate vendorIds,
+ingen overskrivning og præcis historik efter genstart. Kontoplan-/party-/reviewbeviser
+fra30/31/60/164/166/179 bevares på deres egne revisioner/snapshots. Historiske #524
+(chart-templates), #624 (generel bilagsmetadata-supersession) og #641 (knowledge
+service-/path-scope, fortsat under R30) er særskilt åbne og erklæres ikke implementeret
+ved afslutning af R16. Ingen regnskabs-, adgangs- eller restorekontrol svækkes.

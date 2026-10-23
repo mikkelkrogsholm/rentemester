@@ -4072,3 +4072,21 @@ med to linjer.18audits og det originale bilag bevares ved genstart og signeret
 kildefri gendannelse til ny ejer/genåbning (19audits efter restoreboundary).
 Der er ingen nye MCP-navne;369består uændret. Hele migrationen, standardlauncherens
 omlægning og den afsluttende installerede desktopaccept er fortsat åbne.
+
+### Privat prøveinstallation med normale programnavne (Group181)
+
+`assemble-native-cli.py` kopierer Rust-programmerne som `rentemester`,
+`rentemester-rust`, `rentemester-mcp` og `rentemester-server` sammen med web-UI'et
+til en ny mappe med præcist byteinventar. Den ændrer ikke en eksisterende installation.
+
+Prøven på `2e746fe0` består med tom PATH for produktprocesserne: normal MFA,
+eksplicit server og lokal forbindelse til samme ejer, én kildebunden 100kr.-postering,
+præcis replay og genstart. To leverandører med samme navn beholder hver sin
+juridiske identitet og hele oprindelige række i CLI/MCP og efter genstart.
+
+Migrerede originalkommandoer følger nu terminalens outputform: human på TTY,
+JSON ved pipe; eksplicit format har fortsat forrang. Det er verificeret med rigtig PTY
+og pipe. 72tests, streng CLI-Clippy, build og den faktiske prøve består.
+En manglende lokal browserafhængighed blev rettet uden kodeændring; fem beståede
+checks blev genbrugt. Dette er en privat kandidat, og fuld CLI-paritet, produktionens
+omlægning og den afsluttende installerede desktopaccept er fortsat åbne.
