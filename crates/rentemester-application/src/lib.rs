@@ -168,3 +168,5 @@ pub mod accrual_original;
 pub mod asset_original;
 
 pub mod mileage_original;
+
+pub mod vat_purchase_original;
