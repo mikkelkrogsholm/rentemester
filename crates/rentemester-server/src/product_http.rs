@@ -636,6 +636,10 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
         .route("/api/companies/{slug}/original/mileage/list", get(mileage_original::handle))
         .route("/api/companies/{slug}/original/mileage/report", get(mileage_original::handle))
         .route("/api/companies/{slug}/original/mileage/export", post(mileage_original::handle))
+        .route("/api/companies/{slug}/original/accounts/list", get(accounts_original::handle))
+        .route("/api/companies/{slug}/original/accounts/add", post(accounts_original::handle))
+        .route("/api/companies/{slug}/original/accounts/roles-status", get(accounts_original::handle))
+        .route("/api/companies/{slug}/original/accounts/role-confirm", post(accounts_original::handle))
         .route("/api/companies/{slug}/original/posting-rules/propose", post(posting_rules_original::handle))
         .route("/api/companies/{slug}/original/posting-rules/approve", post(posting_rules_original::handle))
         .route("/api/companies/{slug}/original/posting-rules/disable", post(posting_rules_original::handle))
@@ -1041,3 +1045,5 @@ mod supplier_commitment_original;
 mod dimensions_original;
 
 mod posting_rules_original;
+
+mod accounts_original;
