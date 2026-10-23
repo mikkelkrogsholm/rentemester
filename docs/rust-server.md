@@ -4090,3 +4090,25 @@ og pipe. 72tests, streng CLI-Clippy, build og den faktiske prøve består.
 En manglende lokal browserafhængighed blev rettet uden kodeændring; fem beståede
 checks blev genbrugt. Dette er en privat kandidat, og fuld CLI-paritet, produktionens
 omlægning og den afsluttende installerede desktopaccept er fortsat åbne.
+
+### Oprindelig samlet bogføring og afslutning af R23 (Group182)
+
+Seks oprindelige CLI-kommandoer og seks MCP-former bruger den samme native
+batchmotor: plan, persist, dry-run, approve, apply og status. Dry-run er en
+varig skrivning; persist/dry-run kræver den allerede reviewede planhash og
+samme run key. Godkendelse kræver en anden aktuel bruger, og alle fire
+CLI-skrivninger kræver eksplicit bekræftelse.
+
+På `1ee2c1ff` består SDK3/CLI3, alle MCP-tests (68+2+4 samt187stdio),
+streng klient/CLI/MCP-Clippy, build og første samlede prøve. Syv native
+batchtests genbruges fra `33e89762` med kontrolleret uændret motor og afhængigheder;
+de dækker samtidighed, ændret evidens, procesdød samt item-/slutkontrolrollback.
+To køb på125/250kr. giver præcis to posteringer, seks linjer,75kr. købsmoms,
+375kr. debet/kredit, én godkendelse, én anvendelse og to uforanderlige kvitteringer.
+Normal MFA-genstart og signeret kildefri gendannelse til ny ejer/genåbning består.
+2639kildefiler, tre binærer, otte webfiler og tre helpers er uafhængigt hashkontrolleret.
+
+R23's fulde kriteriematrice samler57/180/182: versionsbundne kladder, uafhængigt
+review, præcis replay, samtidighed og atomisk fejl-/crashudfald. Den ligger i
+`progress.json` under `r23_completion_review182`. Hele epic'en, fuld grænsefladeparitet,
+produktionens omlægning og installeret desktopaccept er fortsat åbne.

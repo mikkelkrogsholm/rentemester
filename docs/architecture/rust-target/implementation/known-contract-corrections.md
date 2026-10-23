@@ -577,3 +577,23 @@ fra30/31/60/164/166/179 bevares på deres egne revisioner/snapshots. Historiske 
 (chart-templates), #624 (generel bilagsmetadata-supersession) og #641 (knowledge
 service-/path-scope, fortsat under R30) er særskilt åbne og erklæres ikke implementeret
 ved afslutning af R16. Ingen regnskabs-, adgangs- eller restorekontrol svækkes.
+
+### Oprindelige batchformer og fuld R23-accept (Group182)
+
+Native `state.run.plan` er en JSON-streng; den parses og hashbindes uden at
+ændre den gemte historik. Topniveauets `plan` er fortsat et objekt. Persist og
+durable dry-run bruger eksplicit `expectedPlanHash`; ingen automatisk planrefresh,
+implicit company1 eller retry ved ukendt skriveudfald. Aktørflag er en kontrol af
+den aktuelle bruger, aldrig en selvvalgt autoritet.
+
+De fem eksisterende opaque MCP-bodyformer bevares; kildeformerne tilføjes med
+én nødvendig `bookkeeping_batch_dry_run`-alias (370entydige navne). Identisk
+statusinput med company/runId beholder den native envelope inklusive data.ok.
+Blandede inputformer afvises. Native `atomic_v1` kræver hel rollback; historiske
+unversionerede partial/resume-kørsler forbliver uændret læsbare uden native resume.
+
+Afbrudte ejerskabsreplaner, fejlkvitteringer og hovedagentens tolinjers
+SDK-fixturrettelse bevares. De syv gyldige native prøver på `33e89762` genbruges
+med eksplicit kilde-/afhængighedslighed; første faktiske182forløb består.
+R23-matricen bruger57til historisk batchbevis og180til kladder;58's bankkorrektion
+er ikke batchsamtidighedsbevis. Ingen adgangs-, regnskabs- eller restorekontrol svækkes.

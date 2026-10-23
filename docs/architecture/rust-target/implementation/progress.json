@@ -1,15 +1,15 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "Group181 private standard-named Rust CLI/MCP accepted",
-  "code_revision": "2e746fe009521b74063c1a77a177ede89d0904c4",
+  "current_increment": "Group182 original bookkeeping batch accepted; R23 ready for closure",
+  "code_revision": "1ee2c1ff34bcfe04706acbf95927084888a42426",
   "spec_revision": "sha256:8979030956647a0f03266c50d42786b5d33ab71a59c78528203d223226171e72",
-  "state": "Group181 ACCEPTED private native normal names/sourceTTYhuman-pipeJSON/sameowner/2same-name distinctlegalIDs/one100DKKpost/restart/pins/cleanup. Source-backed currentauthority andnoTCPfallback preserved. Fullmission/productioncutover/desktoplastOPEN.",
+  "state": "Full R23 draft/batch acceptance supported by57/180/182 completion matrix. All seven frozen182 checks PASS, actual two purchases with independent review/exact replay/normal restart/signed source-free fresh-owner restore. Whole epic and final desktop remain OPEN.",
   "issues_closed": [
     701
   ],
   "next": [
-    "Next necessary wholejourney existingR23#697/#716/#717: source bookkeeping-batch6CLI plan/persist/dry-run/independentapprove/atomicapply/status; reuse accepted native batch engine and existing runner. Preserve reviewed expectedPlanHash/companyauthority/atomic_v1/legacyinspect-only; source dry-run persists. Freeze actual6sourceMCP boundary (native5currently; dry_run missing), no newengine/provider/UI. Fullmission/productioncutover/desktoplastOPEN.",
+    "Issue-closure focus: continuously triage existing55issues against accepted evidence; close fully satisfied issues immediately, then choose smallest necessary whole journey that completes next issue. Preserve all original criteria; no extra perfection tests. Original batch182 accepted, R23 closure first.",
     "Original invoice interface inventory now has all31CLI and25MCP bindings, with explicit compatibility corrections documented; do not mistake that family inventory for full product parity. Reconcile remaining original whole-product R44/R45 acceptance from existing epic/issues: actor/env/company-path/default launcher/errors/historical receipts, closure/recovery/automation, signed distribution/update/cutover and TypeScript backend retirement. Continue next necessary whole journey, preserve all accepted evidence/full original scope; installed desktop acceptance last.",
     "Installed desktop acceptance is explicitly deferred to the very end by the user. Preserve prepared Group100 profile; collect remaining native automation, closure, recovery and packaging checks for final installed acceptance without requesting screen unlock during development.",
     "J03/R50 and remaining R54 scope: only still-supported operation closure/recovery, nonempty scheduler handoff, hostile/older clone and post-cutover rollback requirements. Group99 qualifies managed installed J06 flow, not every R54 acceptance item.",
@@ -25,9 +25,9 @@
   ],
   "all_goal_requirements_complete": false,
   "previous_verified_increment": {
-    "name": "Group180 original accounting draft lifecycle accepted",
-    "code_revision": "fcc8435bf166c504077a8f5d99c7eec2fa4ac4d9",
-    "evidence_key": "original_accounting_draft180"
+    "name": "Group181 private standard-named Rust CLI/MCP accepted",
+    "code_revision": "2e746fe009521b74063c1a77a177ede89d0904c4",
+    "evidence_key": "native_cli_candidate181"
   },
   "evidence": {
     "combined_browser_log": "/tmp/rm-platform5-combined.log",
@@ -13090,6 +13090,271 @@
         "641": "OPEN company-knowledge service/path scope bug remains required under original R30; humanpartyproof does not claim all scoped-service acceptance."
       },
       "scope_not_waived": "R01 says historical references not automatically prerequisites. All three issues preserved; #641 still required in whole mission. No extra product implementation required for R16 criteria after181."
+    },
+    "original_bookkeeping_batch182": {
+      "issue": 697,
+      "related_issues": [
+        716,
+        717
+      ],
+      "status": "ACCEPTED full R23 completion matrix across native57/draft180/original batch182; full epic and release/desktop remain OPEN",
+      "source_revision": "1ee2c1ff34bcfe04706acbf95927084888a42426",
+      "sgd_run": "rust-original-bookkeeping-batch182-accept-20261023T064936.742098000",
+      "engine_phase": "done",
+      "sgd_published": true,
+      "actual_report": "/tmp/rentemester-rust-reports/original-bookkeeping-batch182-actual.json",
+      "actual_report_sha256": "05421aaffc8b51f7c86a920a76459d215c311257e2b887f3f1dc092af29962b0",
+      "checks": [
+        {
+          "check": "native-batch",
+          "key": "77494ca06e437fa74b3446429ccee39c53c6a5561e25b2f23b3b6d1b5c682803",
+          "argv": [
+            "python3",
+            "-c",
+            "import subprocess;from pathlib import Path;assert not subprocess.check_output(['git','diff','--name-only','33e89762738e29f471c8529af79c675dd2673ff0','HEAD','--','crates/rentemester-engine','crates/rentemester-storage','crates/rentemester-runtime','vendor','Cargo.toml','Cargo.lock'],text=True).strip();assert 'test result: ok. 7 passed; 0 failed' in Path('/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/rust-original-bookkeeping-batch182-final-20261023T064356.326200000/acceptance/a780728f8eb724d11cb27eb68dca24274c940a7e3cc72cb054160009f782016e/native-batch.log').read_text();print('REUSED nativebatch7PASS at 33e89762738e29f471c8529af79c675dd2673ff0 with identical core sources/dependencies; concurrent/item/finalcheck/processdeath controls retained')"
+          ],
+          "exit_code": 0,
+          "passed": true,
+          "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/rust-original-bookkeeping-batch182-accept-20261023T064936.742098000/acceptance/77494ca06e437fa74b3446429ccee39c53c6a5561e25b2f23b3b6d1b5c682803/native-batch.log"
+        },
+        {
+          "check": "sdk",
+          "key": "8a430b23813af2ec0d1742af64f7686f0b9f8420e1ef895b04494f56e910671b",
+          "argv": [
+            "python3",
+            "scripts/rust/cargo-guard.py",
+            "cargo",
+            "test",
+            "-p",
+            "rentemester-client",
+            "--test",
+            "bookkeeping_batch_original",
+            "--locked"
+          ],
+          "exit_code": 0,
+          "passed": true,
+          "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/rust-original-bookkeeping-batch182-accept-20261023T064936.742098000/acceptance/8a430b23813af2ec0d1742af64f7686f0b9f8420e1ef895b04494f56e910671b/sdk.log"
+        },
+        {
+          "check": "cli",
+          "key": "132b504f4e89ca757d79d70dd3f5a289d3b5ae98cd78d34c585bfc33e53d8c3e",
+          "argv": [
+            "python3",
+            "scripts/rust/cargo-guard.py",
+            "cargo",
+            "test",
+            "-p",
+            "rentemester-cli",
+            "--test",
+            "bookkeeping_batch_original",
+            "--locked"
+          ],
+          "exit_code": 0,
+          "passed": true,
+          "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/rust-original-bookkeeping-batch182-accept-20261023T064936.742098000/acceptance/132b504f4e89ca757d79d70dd3f5a289d3b5ae98cd78d34c585bfc33e53d8c3e/cli.log"
+        },
+        {
+          "check": "mcp",
+          "key": "b01cd30eecd9b4147a228ac133930c4104db551bb2e9fca3babb6b34eab91172",
+          "argv": [
+            "python3",
+            "scripts/rust/cargo-guard.py",
+            "cargo",
+            "test",
+            "-p",
+            "rentemester-mcp",
+            "--locked"
+          ],
+          "exit_code": 0,
+          "passed": true,
+          "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/rust-original-bookkeeping-batch182-accept-20261023T064936.742098000/acceptance/b01cd30eecd9b4147a228ac133930c4104db551bb2e9fca3babb6b34eab91172/mcp.log"
+        },
+        {
+          "check": "strict",
+          "key": "c66b9f89c52aa56c39d9ea9b7351ed7e849730b1fd69cecee0b678e1d5e1cc4e",
+          "argv": [
+            "python3",
+            "scripts/rust/cargo-guard.py",
+            "cargo",
+            "clippy",
+            "-p",
+            "rentemester-client",
+            "-p",
+            "rentemester-cli",
+            "-p",
+            "rentemester-mcp",
+            "--all-targets",
+            "--locked",
+            "--",
+            "-D",
+            "warnings"
+          ],
+          "exit_code": 0,
+          "passed": true,
+          "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/rust-original-bookkeeping-batch182-accept-20261023T064936.742098000/acceptance/c66b9f89c52aa56c39d9ea9b7351ed7e849730b1fd69cecee0b678e1d5e1cc4e/strict.log"
+        },
+        {
+          "check": "build",
+          "key": "65df6c5f296312cc699f8d12162de4897a19e1589fb7c8947deb0db10de7481f",
+          "argv": [
+            "python3",
+            "scripts/rust/cargo-guard.py",
+            "cargo",
+            "build",
+            "-p",
+            "rentemester-server",
+            "-p",
+            "rentemester-cli",
+            "-p",
+            "rentemester-mcp",
+            "--locked"
+          ],
+          "exit_code": 0,
+          "passed": true,
+          "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/rust-original-bookkeeping-batch182-accept-20261023T064936.742098000/acceptance/65df6c5f296312cc699f8d12162de4897a19e1589fb7c8947deb0db10de7481f/build.log"
+        },
+        {
+          "check": "actual",
+          "key": "4c967b327a41f8b6112b248a57d275f71bd9eb5149e56667c812d446acb10108",
+          "argv": [
+            "python3",
+            "-c",
+            "import os,subprocess;from pathlib import Path;b=Path(os.environ['CARGO_TARGET_DIR'])/'debug';rev=subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip();e=Path(os.environ['CARGO_TARGET_DIR'])/('original-bookkeeping-batch182-'+rev+'.json');subprocess.run(['python3','scripts/rust/run-bookkeeping-batch.py','--original-bookkeeping-batch','--server-binary',str(b/'rentemester-server'),'--cli-binary',str(b/'rentemester-rust'),'--mcp-binary',str(b/'rentemester-mcp'),'--web-dir',os.environ['RM_REWRITE_WEB_DIR'],'--evidence',str(e)],check=True)"
+          ],
+          "exit_code": 0,
+          "passed": true,
+          "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/rust-original-bookkeeping-batch182-accept-20261023T064936.742098000/acceptance/4c967b327a41f8b6112b248a57d275f71bd9eb5149e56667c812d446acb10108/actual.log"
+        }
+      ],
+      "test_counts": {
+        "sdk": 3,
+        "cli": 3,
+        "mcp_unit": 68,
+        "mcp_binary": 2,
+        "mcp_additional": 4,
+        "mcp_stdio": 187,
+        "native_batch_reused": 7
+      },
+      "native_batch_reuse": {
+        "executed_revision": "33e89762738e29f471c8529af79c675dd2673ff0",
+        "reason": "All seven nativebatch tests passed on identical engine/storage/runtime/vendor/Cargo sources; frozen final check asserts no diff. Source-plan changes already present; final candidate changes only two SDK fixture top-level JSON objects.",
+        "controls": [
+          "changed evidence/new candidate refuses first approval",
+          "two real connections concurrent approve/apply one outcome",
+          "process dies at first item exit57: no prefix",
+          "second-item and final-check faults roll back entire prefix",
+          "stale universe/CAS and legacy inspect-only"
+        ]
+      },
+      "cli_commands": [
+        "plan",
+        "persist",
+        "dry-run",
+        "approve",
+        "apply",
+        "status"
+      ],
+      "source_mcp_forms": 6,
+      "unique_mcp_tools": 370,
+      "new_mcp_tools": [
+        "bookkeeping_batch_dry_run"
+      ],
+      "terminal_counts": {
+        "documents": 2,
+        "document_party_link_events": 2,
+        "document_party_resolution_events": 0,
+        "internal_voucher_evidence": 0,
+        "audit_log": 18,
+        "journal_entries": 2,
+        "journal_lines": 6,
+        "bookkeeping_batch_runs": 1,
+        "bookkeeping_batch_revisions": 1,
+        "bookkeeping_batch_revision_approvals": 1,
+        "bookkeeping_batch_events": 5,
+        "bookkeeping_batch_apply_attempts_v2": 1,
+        "bookkeeping_batch_apply_events_v2": 5,
+        "bookkeeping_batch_final_checks_v2": 4,
+        "bookkeeping_batch_item_receipts": 2,
+        "bookkeeping_batch_item_attempts": 2,
+        "bookkeeping_batch_applied_links": 2,
+        "bookkeeping_batch_final_checks": 0,
+        "posting_rule_versions": 1,
+        "posting_rule_lifecycle_events": 2,
+        "posting_rule_applications": 2,
+        "purchase_posting_applications": 2,
+        "vat_validation_events": 2,
+        "bank_transactions": 2,
+        "bank_journal_reconciliations": 2,
+        "exceptions": 2
+      },
+      "expected_financial_facts": {
+        "documents": 2,
+        "journalEntries": 2,
+        "journalLines": 6,
+        "trialDebit": 375,
+        "trialCredit": 375,
+        "inputVat": 75,
+        "receipts": 2,
+        "runs": 1,
+        "revisions": 1,
+        "approvals": 1,
+        "applyAttempts": 1,
+        "nativeMcpTools": 370,
+        "scannerRequests": 0,
+        "providerRequests": 0
+      },
+      "current_principals": "distinct normal MFA user planner/independent reviewer; current company authority before all routes, no service impersonation",
+      "lifecycle": "one reviewed run/revision/approval/application; CLI first apply, exact MCP replay/status; durable dry-run/persist duplicate without new effects",
+      "pins": {
+        "source_files": 2639,
+        "runtime_binaries": 3,
+        "web_files": 8,
+        "helpers": [
+          "runner",
+          "embedded browser",
+          "original batch helper"
+        ],
+        "independently_matched": true
+      },
+      "independent_verification_log": "/tmp/rm182-independent-verification.log",
+      "normal_mfa_restart": true,
+      "signed_source_free_fresh_owner_restore_reopen": true,
+      "owned_processes_stopped": true,
+      "owned_runtime_cleaned": true,
+      "scanner_requests": 0,
+      "provider_requests": 0,
+      "preserved_recovery": [
+        "Original run182 and two count/schema qualification replans explicitly cancelled with integrated code retained, snapshot-verified before worktree removal. Immutable ownership never edited.",
+        "Native SDK stored state.run.plan is JSON string and must parse/hash-bind. Main fix accidentally converted top-level test plan to string; failed SDK receipt preserved, two fixture lines repaired. Production validator unchanged.",
+        "MCP count fixtures reflect370 and native legacy schema tests inspect oneOf[0] without weakening32KiB/confirmation/unknownfield assertions.",
+        "All final seven checks pass; native7 reuse explicit. First business actual passes, no business effect replay."
+      ],
+      "r23_completion_matrix": {
+        "stale_changed_self_review": "Draft180 actual and native late append rollback; current batch changed_evidence_and_new_candidate_refuse_first_approval_without_history_effects and prepare_with_review",
+        "concurrency": "Draft180 concurrent_exact_approval_has_one_journal_effect; nativebatch two_real_connections_concurrent_approval_and_apply_commit_one_outcome",
+        "atomic_crash": "Nativebatch process_death_before_outer_commit_leaves_no_prefix; second_item_and_final_check_faults_roll_back_entire_prefix",
+        "draft_lifecycle": "180 fcc8435bf166c504077a8f5d99c7eec2fa4ac4d9 create/revise/submit/reject/revise/submit/approve, precise replay, signed source-free restore",
+        "batch_lifecycle": "182 six original CLI/six source MCP plus retained native body forms; actual exact immutable history and signed source-free restore",
+        "historical_evidence": "57 36d1f7388f343b14dc0c64ea64bc40c7f907f656 plus historical validators f1fcbcc5fbbb7b93bc7197f48a0ac7c2ef1a31b2 retained; unversioned legacy partial history inspect-only, no native resume"
+      },
+      "scope_limits": [
+        "No full CLI/MCP product parity or production cutover claim.",
+        "No installed desktop acceptance claim; same shared engine/server and React UI retained.",
+        "Native atomic_v1 intentionally fixes source legacy partial behavior; immutable legacy history retained inspect-only."
+      ]
+    },
+    "r23_completion_review182": {
+      "issue": 697,
+      "verdict": "All original scope/three acceptance criteria supported; close after evidence publication",
+      "evidence_key": "original_bookkeeping_batch182",
+      "criteria": {
+        "stale_changed_self_review": "Draft180 actual and native late append rollback; current batch changed_evidence_and_new_candidate_refuse_first_approval_without_history_effects and prepare_with_review",
+        "concurrency": "Draft180 concurrent_exact_approval_has_one_journal_effect; nativebatch two_real_connections_concurrent_approval_and_apply_commit_one_outcome",
+        "atomic_crash": "Nativebatch process_death_before_outer_commit_leaves_no_prefix; second_item_and_final_check_faults_roll_back_entire_prefix",
+        "draft_lifecycle": "180 fcc8435bf166c504077a8f5d99c7eec2fa4ac4d9 create/revise/submit/reject/revise/submit/approve, precise replay, signed source-free restore",
+        "batch_lifecycle": "182 six original CLI/six source MCP plus retained native body forms; actual exact immutable history and signed source-free restore",
+        "historical_evidence": "57 36d1f7388f343b14dc0c64ea64bc40c7f907f656 plus historical validators f1fcbcc5fbbb7b93bc7197f48a0ac7c2ef1a31b2 retained; unversioned legacy partial history inspect-only, no native resume"
+      }
     }
   },
   "verified_history": [
@@ -14912,6 +15177,12 @@
       "code_revision": "2e746fe009521b74063c1a77a177ede89d0904c4",
       "evidence_key": "native_cli_candidate181",
       "status": "ACCEPTED finite private normal-named native CLI/MCP candidate, explicit server/local same owner, output defaults and independent supplier identities; production cutover/full CLI parity OPEN"
+    },
+    {
+      "increment": "Group182",
+      "code_revision": "1ee2c1ff34bcfe04706acbf95927084888a42426",
+      "evidence_key": "original_bookkeeping_batch182",
+      "status": "ACCEPTED full R23 completion matrix across native57/draft180/original batch182; full epic and release/desktop remain OPEN"
     }
   ],
   "scope_clarifications": [
