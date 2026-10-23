@@ -441,3 +441,32 @@ importbevis kræver posted-original, og tilbageførsel sker med en spejlpost.
 Status-/hashkrav er bevaret. Ugyldige syntetiske transaktions-, dokument-,
 VAT-grundlags-, JSON-tal- og FK-antagelser blev diagnosticeret fra konkrete
 fejl og rettet i fixtures. Ingen regnskabskontrol blev lempet.
+
+### Kildebundne leverandørforpligtelser og entydige MCP-navne (Group176)
+
+Den tidligere TypeScript-plan brugte ren inputhash og en anden kalender.
+Det oprindelige CLI/MCP-interface anvender nu den eksisterende native plan:
+aktuel aktiv leverandør, originale kildebytes, proveniens, gennemgået input og
+forrige hash bindes sammen. Horisonten er næste dato plus90dage inklusive;
+månedsforekomster beholder deres oprindelige datoanker. Et angivet
+leverandørsnapshot er en lighedsassertion, aldrig autoritet. Ikke-aktiv
+startstatus afvises. Ingen native kilde- eller adgangskontrol svækkes.
+
+Kildens ændringskommando uden forventet hash slår den aktuelle aktive hash
+op i samme adgangskontrollerede transaktion. Pause kan derfor ikke afsluttes
+direkte via dette interface; ny aktivering kræver et nyt gennemgået forslag.
+Det native interface beholder sin udtrykkelige forventede hash.
+Kvitteringsgenfinding med kendt oprindelig nøgle går gennem native idempotens
+efter aktuel adgang og fysisk kildekontrol; en ny plan må ikke afskære en
+allerede gemt kvittering efter afslutning. Ingen automatisk mutation gentages.
+
+Den oprindelige `supplier_commitment_matches`-form og den tidligere native
+form får hver sit navn; nativeformen findes under
+`native_supplier_commitment_matches`. Discovery indeholder348unikke navne.
+Aktør og principal kommer fra aktuelle bruger-/servicecredentials og gemmes
+med korrekt type; gamle native brugerkald bevarer deres kontrakt.
+
+To misvisende testforventninger blev rettet fra konkrete resultater før
+godkendelse: historisk registry-tal341 efter syv nye bindings og antagelsen
+om direkte afslutning af en pause. Sidstnævnte blev rettet før første faktiske
+prøve ved at bevare afvisningen og kræve gennemgået genaktivering.

@@ -3990,3 +3990,26 @@ signeret kildefri gendannelse til ny ejer/reopen bevarer data med én audit-
 tilføjelse (19→20).2573kildefiler samt binære/web-/hjælperfiler er uafhængigt
 hashkontrolleret. Ældre ikke-attesterede importer og andre kildeformater får
 ingen ny tillid; hele migrations- og desktopaccepten er fortsat åben.
+
+### Leverandørforpligtelser via oprindelig CLI og MCP (Group176)
+
+Syv `supplier-commitment`-kommandoer og syv MCP-operationer bruger samme
+Rust-motor som web. Et kildebundet forslag godkendes med sin hash; et konkret
+bilag matches mod en forekomst, og beløbsafvigelse, varsler og historik kan
+læses. Begrundet pause, ny gennemgået aktivering og afslutning bevarer historik.
+En udtrykkelig forespørgsel med den oprindelige idempotensnøgle genfinder
+kvitteringen efter afslutning uden at genaktivere aftalen.
+
+Prøven giver én original/leverandør, fire hændelser og ét match: forventet
+10,01kr. mod bilagets12,34kr. giver2,33kr. i afvigelse. Prognosen ændres fra
+−40,04 til−30,03 og derefter0; bogføring, betalinger og bank forbliver uændret.
+194tests, streng Clippy, build og faktiske prøve består. Genstart og
+signeret kildefri gendannelse til ny ejer bevarer data og det særskilte
+gendannelses-auditspor. Kilde-, binær-, web- og hjælperfiler er hashkontrolleret.
+
+Forslagets hash og kalender følger den kildebundne native kontrakt. Det er
+en dokumenteret korrektion af den ældre inputbaserede hash og kalender, ikke
+en påstand om identiske offlineforslag. MCP-navnet
+`native_supplier_commitment_matches` bevarer den tidligere native læseform;
+`supplier_commitment_matches` har den oprindelige kildeform.348unikke værktøjer
+er kontrolleret. Fuld migrations- og manuel desktopaccept er fortsat åben.
