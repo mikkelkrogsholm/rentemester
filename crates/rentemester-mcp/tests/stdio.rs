@@ -1,7 +1,7 @@
 use serde_json::{Value, json};
 
-// Existing 348 bindings plus fourteen original dimension tools.
-const EXPECTED_NATIVE_TOOLS: usize = 369;
+// Registry includes the required bookkeeping_batch_dry_run alias.
+const EXPECTED_NATIVE_TOOLS: usize = 370;
 
 #[test]
 fn pdf_tools_require_confirmation_and_keep_reads_bounded() {

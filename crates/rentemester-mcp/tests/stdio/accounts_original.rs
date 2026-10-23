@@ -21,10 +21,10 @@ fn accounts_original_four_unique_tools_and_offline_confirmation() {
     );
     let rows = parsed(&out);
     let tools = rows[1]["result"]["tools"].as_array().unwrap();
-    assert_eq!(tools.len(), 369);
+    assert_eq!(tools.len(), 370);
     let names: std::collections::BTreeSet<_> =
         tools.iter().map(|t| t["name"].as_str().unwrap()).collect();
-    assert_eq!(names.len(), 369);
+    assert_eq!(names.len(), 370);
     for (name, read) in [
         ("accounts_list", true),
         ("accounts_add", false),

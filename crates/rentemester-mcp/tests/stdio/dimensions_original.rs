@@ -49,10 +49,10 @@ fn dimensions_original_discovery_362_unique_frozen_sdk_schemas_and_source_annota
         ],
     ));
     let tools = rows[1]["result"]["tools"].as_array().unwrap();
-    assert_eq!(tools.len(), 369);
+    assert_eq!(tools.len(), 370);
     let names: std::collections::BTreeSet<_> =
         tools.iter().map(|t| t["name"].as_str().unwrap()).collect();
-    assert_eq!(names.len(), 369);
+    assert_eq!(names.len(), 370);
     for (name, op, read) in bindings() {
         let tool = tools.iter().find(|t| t["name"] == name).unwrap();
         let mut expected = rentemester_client::original_dimensions_schema(op);
