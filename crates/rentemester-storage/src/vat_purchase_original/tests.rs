@@ -89,7 +89,7 @@ fn invoice_exact_latest_override_and_missing_lookup() {
     let tx = db
         .transaction_with_behavior(TransactionBehavior::Immediate)
         .unwrap();
-    let first = original(&tx, true, "SYN", "DKK");
+    let first = original(&tx, false, "SYN", "DKK");
     let last = original(&tx, true, "SYN", "DKK");
     let mut i = input(first);
     i.invoice_no = Some(" SYN ".into());
@@ -245,7 +245,7 @@ fn cached_eu_without_bank_and_representation_with_imported_payment() {
         .unwrap();
     let eu = original(&tx, true, "EU-CACHED", "DKK");
     let now = "2026-10-18T12:00:00Z";
-    let record = rentemester_engine::vies::record(&json!({"countryCode":"DE","vatNumber":"[REDACTED]","normalized":"DE123456789","valid":true,"name":null,"address":null,"rawResponse":"{}"}),now).unwrap();
+    let record = rentemester_engine::vies::record(&json!({"countryCode":"DE","vatNumber":"123456789","normalized":"DE123456789","valid":true,"name":null,"address":null,"rawResponse":"{}"}),now).unwrap();
     crate::vies::store(&tx, &record, "user:synthetic").unwrap();
     let mut i = input(eu);
     i.expense_account_no = Some("X".into());

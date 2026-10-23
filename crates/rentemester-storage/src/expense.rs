@@ -109,13 +109,29 @@ pub(crate) fn purchase(
     gross_dkk: &Money,
     rate: &FxRate,
 ) -> Result<Allocation, Error> {
-    purchase_at(tx, document_id, meta, expense, requested, gross_dkk, rate, None)
+    purchase_at(
+        tx,
+        document_id,
+        meta,
+        expense,
+        requested,
+        gross_dkk,
+        rate,
+        None,
+    )
 }
 /// Original VAT ABI supplies the admitted canonical clock; generic booking keeps
 /// its existing current-clock behavior.
+#[allow(clippy::too_many_arguments)]
 pub(crate) fn purchase_at(
-    tx: &Transaction<'_>, document_id: i64, meta: &Metadata, expense: &str,
-    requested: Option<&str>, gross_dkk: &Money, rate: &FxRate, now: Option<&str>,
+    tx: &Transaction<'_>,
+    document_id: i64,
+    meta: &Metadata,
+    expense: &str,
+    requested: Option<&str>,
+    gross_dkk: &Money,
+    rate: &FxRate,
+    now: Option<&str>,
 ) -> Result<Allocation, Error> {
     let (kind, active, default): (String, i64, Option<String>) = tx
         .query_row(
@@ -274,7 +290,11 @@ pub(crate) fn purchase_at(
         let code = if supplier.kind == "eu_vat" {
             let now: String = match now {
                 Some(now) => now.to_owned(),
-                None => tx.query_row("SELECT strftime('%Y-%m-%dT%H:%M:%fZ','now')", [], |r| r.get(0)).map_err(sql)?,
+                None => tx
+                    .query_row("SELECT strftime('%Y-%m-%dT%H:%M:%fZ','now')", [], |r| {
+                        r.get(0)
+                    })
+                    .map_err(sql)?,
             };
             crate::vies::require(
                 tx,
@@ -445,7 +465,11 @@ pub(crate) struct Prepared {
 pub(crate) fn prepare(tx: &Transaction<'_>, input: &Input) -> Result<Prepared, Error> {
     prepare_mode(tx, input, false)
 }
-pub(crate) fn prepare_at(tx: &Transaction<'_>, input: &Input, now: &str) -> Result<Prepared, Error> {
+pub(crate) fn prepare_at(
+    tx: &Transaction<'_>,
+    input: &Input,
+    now: &str,
+) -> Result<Prepared, Error> {
     prepare_mode_at(tx, input, false, Some(now))
 }
 /// Receipt admission checks current source without refusing the already accepted
@@ -477,7 +501,12 @@ pub(crate) fn prepare_for_receipt(
 fn prepare_mode(tx: &Transaction<'_>, input: &Input, receipt: bool) -> Result<Prepared, Error> {
     prepare_mode_at(tx, input, receipt, None)
 }
-fn prepare_mode_at(tx: &Transaction<'_>, input: &Input, receipt: bool, now: Option<&str>) -> Result<Prepared, Error> {
+fn prepare_mode_at(
+    tx: &Transaction<'_>,
+    input: &Input,
+    receipt: bool,
+    now: Option<&str>,
+) -> Result<Prepared, Error> {
     crate::journal_preview::require_current(tx)?;
     if input.document_id <= 0
         || input.bank_transaction_id <= 0
@@ -567,16 +596,27 @@ fn prepare_mode_at(tx: &Transaction<'_>, input: &Input, receipt: bool, now: Opti
             "bank transaction is already linked to a journal entry",
         ));
     }
-    let allocated = purchase_at(
-        tx,
-        input.document_id,
-        &meta,
-        &input.expense_account_no,
-        input.vat_treatment.as_deref(),
-        &basis.gross_dkk,
-        &basis.rate,
-        now,
-    )?;
+    let allocated = match now {
+        Some(now) => purchase_at(
+            tx,
+            input.document_id,
+            &meta,
+            &input.expense_account_no,
+            input.vat_treatment.as_deref(),
+            &basis.gross_dkk,
+            &basis.rate,
+            Some(now),
+        )?,
+        None => purchase(
+            tx,
+            input.document_id,
+            &meta,
+            &input.expense_account_no,
+            input.vat_treatment.as_deref(),
+            &basis.gross_dkk,
+            &basis.rate,
+        )?,
+    };
     let treatment = allocated.treatment.clone();
     let date = input.transaction_date.as_deref().unwrap_or(&bank_date);
     if meta.kind() == "internal_voucher" {
