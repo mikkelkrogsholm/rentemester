@@ -1,10 +1,10 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "R13 authorization/revocation/fullfinal-owner acceptance complete;685closed",
-  "code_revision": "570d749114843c2ae94c51b9e6f4d5d0e0b808e5",
+  "current_increment": "R15 immutable document recovery, physical race refusal and access audit fully accepted;686closed",
+  "code_revision": "c005059b74af9cf4bcceb3a5db3955ad28fd668a",
   "spec_revision": "sha256:0126654d934bedc29ba6999af447162394594f6c591f159b4a0281aad9529b63",
-  "state": "20of55originalissuesfullyacceptedclosed35open. R13all3criteriaaccepted withretainedfullpolicy/company/file/portfolio/local/service/currentactorproof plusnewactual4testsPASS/8realcontentioncases. Spaceblock resolvedexternally to>=122GiBbeforeguardedcompile; no privilegedDockerhelperexecuted. Fullmission/release/cutover/manualdesktoplast remainsOPEN.",
+  "state": "21of55originalissuesfullyacceptedclosed34open. R15completed: actualSIGKILL at5publication+3registration/commitboundaries; private stagingrecovery/canonicalorphan retry; finalpathreplacementrefusal; currenthuman/service original/PDF accessaudit/failclosed and signedsourcefreerestore. 31uniqueexecutedtests and retained165/166/65evidence. ApprovedofficialDockerreclaimtoolranexit0afterhumanapproval. Fullmission/release/platform/cutover/retirement/manualdesktoplastremainOPEN.",
   "issues_closed": [
     675,
     676,
@@ -13,6 +13,7 @@
     683,
     684,
     685,
+    686,
     687,
     688,
     693,
@@ -28,7 +29,8 @@
     710
   ],
   "next": [
-    "Next necessary coherentwholeflow is existingR35#690 (andR36#709consumer) J07 localsharedUI lifecycle: shutdown/sleep,missed/paused/last/next,explicitcatchup/skip,DST/timezone withnoduplicateproviderhandoff. Two boundedread-onlyscouts reconcile actualexisting implementation/evidence before exactworkpackage. No newqueue/infrastructure; one Rustmotor/sharedReact preserved; installedmanualdesktopacceptlast. R02effectivecontracts+clientstorage andR07licensepolicy/alltargetinventory retain precisegaps.",
+    "NextnecessaryR30#705 retains full existing#641canonical knowledge scope/service parity requirement (no R01exclusion found). Current human-onlyslug evidence is notcomplete641. Reuse verified --local-profile root binding; remote-onlyinput remains canonicalslug, never basename guesses. One bounded sharedknowledgeflow, no newwiki, financialfeature or livehistoricaldatarepair. Reuse acceptedcorporate/inboxcompetition/recovery; preservemanualdesktoplast.",
+    "R24#698reviewedcandidateee9d941bretained; actualtrialbankcontrol-125ledger vs0statementblockedcorrectly. No unchangedfullretry; finaldisposal/restart/restoreacceptance and original#689prerequisite remainopen. Allpartialfinancialeffects/failedreceipts retained.",
     "Original invoice interface inventory now has all31CLI and25MCP bindings, with explicit compatibility corrections documented; do not mistake that family inventory for full product parity. Reconcile remaining original whole-product R44/R45 acceptance from existing epic/issues: actor/env/company-path/default launcher/errors/historical receipts, closure/recovery/automation, signed distribution/update/cutover and TypeScript backend retirement. Continue next necessary whole journey, preserve all accepted evidence/full original scope; installed desktop acceptance last.",
     "Installed desktop acceptance is explicitly deferred to the very end by the user. Preserve prepared Group100 profile; collect remaining native automation, closure, recovery and packaging checks for final installed acceptance without requesting screen unlock during development.",
     "J03/R50 and remaining R54 scope: only still-supported operation closure/recovery, nonempty scheduler handoff, hostile/older clone and post-cutover rollback requirements. Group99 qualifies managed installed J06 flow, not every R54 acceptance item.",
@@ -13972,6 +13974,128 @@
       "scope": "4applicationtestsPASS; newtestexecutes8actualcontendedtwoSQLiteconnectioncases workspace/company revoke/demote inbothownerorders,nonreadydecoy,last_ownerrefusal/noeventresidue/company+WALbytesunchanged/reopen. Mainandindependentreview completed; alloriginalR13criteria composedwithretainedpolicy/process/productproof; no wholeR44/R45orcutoverclaim.",
       "privileged_reclaim_executed": false,
       "prior_approval_question_no_longer_blocks_compilation": true
+    },
+    "r15_documents686": {
+      "issue": 686,
+      "status": "ACCEPTED fulloriginalR15scope; GitHub686actuallyclosed",
+      "source_revision": "c005059b74af9cf4bcceb3a5db3955ad28fd668a",
+      "sgd_run": "rust-r15-document686-final-20261023T125358.270606000",
+      "engine_phase": "done",
+      "report": "/tmp/rentemester-rust-reports/r15-documents686-accepted.json",
+      "report_sha256": "d3fc9d06ecf2655c0e0fe8bc69125fcb1987bfadb67859d626e42ddf677f8b90",
+      "unique_executed_tests": 31,
+      "checks": {
+        "access-audit": {
+          "path": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/rust-r15-document686-final-20261023T125358.270606000/acceptance/cb4117d2a7a8d21ec4e2a2a7883276010df63e757e4e17806c5909a6c5b68f46/access-audit.log",
+          "sha256": "f55b8aa6d1c381bb50f128d61c02ccc9524e3487c307fe4da5948ec120a84c68",
+          "passed": 3,
+          "perPackageOrInvocationPassed": [
+            2,
+            0,
+            0,
+            1
+          ]
+        },
+        "application-crash": {
+          "path": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/rust-r15-document686-final-20261023T125358.270606000/acceptance/3a2ec1347a3844fe430c5246056af085f6e20f634bf7381e030d8e06391521ae/application-crash.log",
+          "sha256": "2d3ae627ebf54fdc5cbacd6fbbacc1151b18261b9598b408520d0cd86ff2cb99",
+          "passed": 1,
+          "perPackageOrInvocationPassed": [
+            1
+          ]
+        },
+        "runtime-docs": {
+          "path": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/rust-r15-document686-final-20261023T125358.270606000/acceptance/7ba547ef48a56a97e8fa65a042570dce6073f771306308a7d9bdf7fee8e30e4a/runtime-docs.log",
+          "sha256": "ac32aacc73d07d3ac4f3d615f7de2145d9d2755074df9da310aed6477829e971",
+          "passed": 12,
+          "perPackageOrInvocationPassed": [
+            12
+          ]
+        },
+        "host-access": {
+          "path": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/rust-r15-document686-final-20261023T125358.270606000/acceptance/f6aadc4bd9488bc0cfe229d260672a09514799741076608a181d513dc5e8543b/host-access.log",
+          "sha256": "3edabf2d4e76ce675396efba3d87da12c66c505c4f38a15b3b1203db6ec13b73",
+          "passed": 4,
+          "perPackageOrInvocationPassed": [
+            3,
+            1
+          ]
+        },
+        "ingest-regression": {
+          "path": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/rust-r15-document686-final-20261023T125358.270606000/acceptance/8575f2a3200443c25599871e56640fa765984c269fe5627e2a1b10c90664b2e0/ingest-regression.log",
+          "sha256": "6335b9eb51cd7a53167271bb15f994dc6208451d64380f15797b038c6d21ad79",
+          "passed": 12,
+          "perPackageOrInvocationPassed": [
+            12
+          ]
+        }
+      },
+      "criterion_matrix": [
+        {
+          "criterion": 1,
+          "accepted": true,
+          "proof": "Actual SIGKILL8boundaries: no dangling registered originals or lost registered bytes; exact private staged quarantine, canonical orphan retained/exportable and explicit deduplicated retry. Lease Busy prevents scavenging active writer."
+        },
+        {
+          "criterion": 2,
+          "accepted": true,
+          "proof": "Actual final-path rename refusal; runtime type/path/size/scanner regressions and exact current owner/service four-route read audits; required audit failure releases no bytes; retained165/65 physical-source/auth proofs."
+        },
+        {
+          "criterion": 3,
+          "accepted": true,
+          "proof": "Actual killed-registration retry no duplicate; unchanged metadata/context/enrichment/party-history source retains165/166 exact original and signedrestore evidence, plus currenthostintake regressions."
+        }
+      ],
+      "retained_evidence": [
+        {
+          "path": "/tmp/rentemester-rust-reports/original-documents165-actual.json",
+          "sha256": "71a887525dc8b357c4aae8984114f592cfeaa79ce0bf2666f4f096ef07f17703"
+        },
+        {
+          "path": "/tmp/rentemester-rust-reports/original-documents165.json",
+          "sha256": "2d37d78336264ad9cbb0b9d29084852e66e170652a1658e93e153125fa7f8245"
+        },
+        {
+          "path": "/tmp/rentemester-rust-reports/document-scanner-integrated65-space2.json",
+          "sha256": "f035f3f1793acfea499e2378db951972493787ddea222b2e04a5a59c13a67209"
+        }
+      ],
+      "native_profile": "LocalUserMacos/umask077, real parent-controlled SIGKILL and new-process reopen; no production crash controls",
+      "actual_crash_signal": 9,
+      "publication_phases": [
+        "created",
+        "written",
+        "synced",
+        "renamed",
+        "directory-synced"
+      ],
+      "registration_phases": [
+        "published",
+        "registered",
+        "committed"
+      ],
+      "access_matrix": [
+        "human document_file served/denied/audit failure",
+        "human issued_invoice_pdf served/denied/audit failure",
+        "service document_file served/denied/audit failure/current derived actor",
+        "service issued_invoice_pdf served/denied/audit failure/current derived actor",
+        "signed source-free access history restore excludes credentials/authority"
+      ],
+      "review": "Lead inspected actual16file integrated diff/raw logs; independent read-only review of both exactworkercommits and c005leadpatch found no blocker. Host/server0filtered in access-audit not counted; realhostaccess/signedrestore executed separately.",
+      "limitations": [
+        "Native executed SIGKILL qualification is macOS; no claim of Linux GUI/platform/release acceptance or power-loss simulation. Original cross-platform/release/cutover/retirement gates remain open.",
+        "Pinned external PDF-worker case remains explicitly ignored here; retained independent66PDFworker proof/release gates unchanged.",
+        "Manual installedTauriacceptance remains last. No realcompanydata, provider effect or new dependency."
+      ],
+      "closure": "https://github.com/mikkelkrogsholm/rentemester/issues/686#issuecomment-6365499904",
+      "code_anchors": [
+        "crates/rentemester-runtime/src/namespace/linux/documents/recovery.rs::reconcile_staging",
+        "crates/rentemester-runtime/src/namespace/linux/documents.rs::read_original",
+        "crates/rentemester-application/src/document_access.rs::human",
+        "crates/rentemester-application/src/document_access.rs::service",
+        "crates/rentemester-host/src/portable_backup.rs"
+      ]
     }
   },
   "verified_history": [
