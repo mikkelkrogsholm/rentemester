@@ -159,3 +159,49 @@ benchmark execution, new runtime journey or whole issue acceptance claimed. Rema
 main's exact nine-input PDFium combined benchmark, integrated batch4 receipts, accessible
 raw receipt hash verification, and lead semantic graph integration. All prior gates,
 unknown outcomes and original acceptance obligations remain binding.
+
+
+## Lead completion — actual combined acceptance
+
+The worker snapshot above is retained as history. Its pending items are resolved
+by the actual receipts below; full original #691 is accepted at `9c07b90820a5b089f3cac5b2e51fae65210930f9`.
+
+- SGD `rust-r38-pdf691-components-20261023T233831.523985000` reached done with
+  **4 server scheduler tests**, **9 host tests**, and the document check. The ignored
+  opt-in native test was then actually executed and passed. The initial review's
+  “8 batch tests” was a prose typo; the authoritative receipt has 4.
+- `/tmp/rentemester-rust-reports/r38-691-original-benchmark-source.json`: actual
+  unchanged original benchmark, 9 cold launches, 0 warm, max 4 active and cursors4/8/null.
+- `/tmp/rentemester-rust-reports/r38-691-native-original-nine-umask077.json`: actual
+  native Config supervisor + synthetic host preparation/publication/read, exact
+  nine byte-pinned inputs, 8 text successes + 1 cached malformed result, 9 results,
+  18 parse/cached attempts and zero journals. Warm admissions expose no worker input.
+  Cold9 Config calls took about5.62s; warm including protected reads about4.04s.
+  These are measured observations, not a speed-improvement or OS-child peak claim.
+- `/tmp/rentemester-rust-reports/r38-691-legacy-native-raw-comparison.json`: all9
+  actual PDF.js/native results agree on input/status/error/text/page geometry/rotation.
+  Valid pages have **2 PDF.js items versus40 PDFium items**; separate identity/layout
+  and evidence hashes remain explicit. The source-reviewed semantic differences above stand.
+- `/tmp/rentemester-rust-reports/r38-691-current-worker-adverse.json`: current
+  compiled worker passes exact text, deterministic geometry, image/no-text, malformed,
+  encrypted, empty/oversized and missing/corrupt artifact refusals.
+- `/tmp/rentemester-rust-reports/r38-691-supervisor-retained-source.json`: current
+  supervisor, its tests and worker source bytes exactly match21d1c245. Genuine retained
+  5 supervisor boundary tests plus1 actual bundle test are re-read and hash-bound.
+- `/tmp/rentemester-rust-reports/r38-691-retained-evidence-verified.json`: all5 raw
+  Group65/66/167/63/78 receipts exist, were re-read and match their recorded hashes.
+  No scanner/provider/rendering/MFA/booking/restore journey was replayed.
+
+Global four-child behavior is composed evidence: the real shared scheduler's global
+permits/overlap/competing-request/order/drain tests, one synchronous Config child per
+lane with reap before return, and actual native composition. No measured maximum
+OS-child telemetry is claimed. Mac sampled-RSS overshoot and absent hard macOS AS
+cap remain explicit; no new Linux hostile-memory qualification is claimed.
+
+The first native attempt inherited umask022 and correctly refused Namespace(Process)
+before opening the workspace. Its incomplete receipt/log are retained. Supplying
+the existing required kernel umask0077 resolved the environment; no gate was changed.
+Main and independent read-only review found no remaining original691 acceptance
+blocker after combined PASS. All other original issues and final gates remain open.
+
+Master: `/tmp/rentemester-rust-reports/r38-pdf691-accepted.json`, SHA256 `f55bdffa1b0d954471f57fffffb97e0fe025f935b7ab0579f34c68d75af7f6c1`.

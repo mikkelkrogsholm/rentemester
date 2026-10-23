@@ -1,15 +1,15 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "R08 #680 whole original scope and all3criteria accepted c258572a; next necessary wholeclosure #691 original PDF benchmark/PDFium semantic and boundedworker proof.714 healthproposal retained behind677/712 dependencies.",
-  "code_revision": "c258572acaff69b4bcc82c2833912c5998cd1a99",
+  "current_increment": "R38 #691 whole original scope/all3criteria accepted9c07b908: exact original9PDFbenchmark/nativeConfig-host/legacyrawparity, global4batchbehavior restored. ReadyforGitHubclosure.",
+  "code_revision": "9c07b90820a5b089f3cac5b2e51fae65210930f9",
   "spec_revision": "sha256:73b6036e3b99feaf547ff3881dd7ef2ea6ea6ec5743bb139d362f97570ca8da6",
-  "state": "R08#680 fully accepted:14 actual shared-harness negative/positive SQLite controls in WAL/DELETE plus retained34read-only/111source-native/1074Decimalvector/known-defect normalization proof. Omittedgate, dishonestrefusal, partialheader/line/companion, crosscompanysubstitution detected; checked-in sources/oracles unchanged.33of55 originalissues actuallyCLOSED,22OPEN;680 closedflow:done with fulloriginalacceptance. Full677 schemas/retry and all remaining original scope/J01-J07/finalmanualdesktop/release/cutover/retirement remain open.",
+  "state": "33of55 originalissues actuallyCLOSED,22OPEN;691fullyaccepted9c07b908 and readyforclosure ->34/55. Actual original9PDFsource/status/text/geometry/rotation parity; PDFjs2items/PDFium40items explicit; cold9nativeConfig/warm0/9results18attempts/nojournals. Global4slotsharedscheduler4tests andhost9tests+actualoptinPASS, fullSGDcombineddone. Realretained65/66/167/63/78hashesverified; umask022earlyrefusal retained/repaired0077 withoutgatechange. Macsampled512MiB/10msovershoot/nohardAS and noOSchildpeaktelemetry claim remain honest. All otheroriginalscope/J01-J07/677fullschemas/release/cutover/retirement/manualdesktoplast remain binding.",
   "issues_closed": 33,
   "next": [
-    "Close whole accepted680, then existing691 PDF benchmark/PDFium parity and boundedworker acceptance. Dependencies675/679/686/690 are closed; no new PDF framework or GUI.",
-    "Full677 exact advertised HTTP/MCP/CLI schemas and operation-specific retry/key/readback/provider contracts remain required; componentaccepted only.",
-    "One commonRustmotor/server andsameReactweb/Tauri; manualinstalleddesktoplast; preserve all55 originalscopes/finalgates."
+    "Close fullyaccepted691 with exactevidence; triage nextnecessary existingissue closure, preserving55originalscope.",
+    "Complete677 exactadvertisedHTTP/MCP/CLI schemas and operation-specific retry/key/readback/provider contracts; handshakealone notwholecompletion.",
+    "OnecommonRustmotor/server andsameReactweb/Tauri; manualinstalleddesktopacceptancelast."
   ],
   "preserve_unrelated_paths": [
     ".claude/settings.json",
@@ -19,7 +19,7 @@
     ".gitattributes"
   ],
   "all_goal_requirements_complete": false,
-  "previous_verified_increment": "R05#677 protocol-admission component accepted; whole677 remainsOPEN for full operation schemas/retrymatrix. Next wholeissue680:three negative harness controls.",
+  "previous_verified_increment": "R08 #680 whole original scope and all3criteria accepted c258572a; next necessary wholeclosure #691 original PDF benchmark/PDFium semantic and boundedworker proof.714 healthproposal retained behind677/712 dependencies.",
   "evidence": {
     "combined_browser_log": "/tmp/rm-platform5-combined.log",
     "combined_browser_exit": 0,
@@ -15877,6 +15877,28 @@
         "notReexecuted": true,
         "unavailableRaw50And55NotClaimedReRead": true
       }
+    },
+    "r38_pdf691": {
+      "issue": 691,
+      "whole_issue_accepted": true,
+      "source_revision": "9c07b90820a5b089f3cac5b2e51fae65210930f9",
+      "manifest": "/tmp/rentemester-rust-reports/r38-pdf691-accepted.json",
+      "sha256": "f55bdffa1b0d954471f57fffffb97e0fe025f935b7ab0579f34c68d75af7f6c1",
+      "sgd_run": "rust-r38-pdf691-components-20261023T233831.523985000",
+      "model_revision": "sha256:70cc287272d8641f20c9a93bdd33c608ea63ad14efcb4d2d39afe769535ff680",
+      "server_tests": 4,
+      "host_tests": 9,
+      "actual_native_original_nine_passed": true,
+      "actual_legacy_native_raw_comparison": true,
+      "retained_scope_receipts_reverified": 5,
+      "limits": [
+        "Mac512MiB sampledRSS/10ms mayovershoot; nohardMacaddressspace or hostilePDFpeak claim",
+        "Linux512MiB hardAS implementation source, no newLinuxhostilequalification",
+        "Global4child bound is composed code+scheduler+actualConfig evidence; no measuredmaxOSchildcount fabricated",
+        "Actualsource/financial/provider/desktop journeys65/66/167/63/78 retained, not repeated",
+        "Allotheroriginalissues/J01-J07/release/distribution/cutover/retirement/manualdesktoplast remain binding"
+      ],
+      "no_financial_provider_or_gui_replay": true
     }
   },
   "verified_history": [
@@ -17862,6 +17884,28 @@
         "notReexecuted": true,
         "unavailableRaw50And55NotClaimedReRead": true
       }
+    },
+    {
+      "issue": 691,
+      "whole_issue_accepted": true,
+      "source_revision": "9c07b90820a5b089f3cac5b2e51fae65210930f9",
+      "manifest": "/tmp/rentemester-rust-reports/r38-pdf691-accepted.json",
+      "sha256": "f55bdffa1b0d954471f57fffffb97e0fe025f935b7ab0579f34c68d75af7f6c1",
+      "sgd_run": "rust-r38-pdf691-components-20261023T233831.523985000",
+      "model_revision": "sha256:70cc287272d8641f20c9a93bdd33c608ea63ad14efcb4d2d39afe769535ff680",
+      "server_tests": 4,
+      "host_tests": 9,
+      "actual_native_original_nine_passed": true,
+      "actual_legacy_native_raw_comparison": true,
+      "retained_scope_receipts_reverified": 5,
+      "limits": [
+        "Mac512MiB sampledRSS/10ms mayovershoot; nohardMacaddressspace or hostilePDFpeak claim",
+        "Linux512MiB hardAS implementation source, no newLinuxhostilequalification",
+        "Global4child bound is composed code+scheduler+actualConfig evidence; no measuredmaxOSchildcount fabricated",
+        "Actualsource/financial/provider/desktop journeys65/66/167/63/78 retained, not repeated",
+        "Allotheroriginalissues/J01-J07/release/distribution/cutover/retirement/manualdesktoplast remain binding"
+      ],
+      "no_financial_provider_or_gui_replay": true
     }
   ],
   "scope_clarifications": [
