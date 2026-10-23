@@ -36,17 +36,17 @@ fn stable_id(value: &Value) -> Result<&str, Error> {
 }
 fn source_state(mut state: Value) -> Value {
     if let Some(object) = state.as_object_mut() {
-        if !object
+        if object
             .get("reason")
             .and_then(Value::as_str)
-            .is_some_and(|s| !s.is_empty())
+            .is_none_or(|s| s.is_empty())
         {
             object.remove("reason");
         }
-        if !object
+        if object
             .get("journalEntryId")
             .and_then(Value::as_i64)
-            .is_some_and(|id| id > 0)
+            .is_none_or(|id| id <= 0)
         {
             object.remove("journalEntryId");
         }
