@@ -175,7 +175,7 @@ fn source(db: &Connection, id: i64, bs: &[Boundary]) -> Result<Source, Error> {
         || !hex(&payload, 64)
         || !matches!(
             operation.as_str(),
-            "journal_post" | "journal_reverse" | "opening_balance_post"
+            "journal_post" | "journal_reverse" | "opening_balance_post" | "asset_dispose"
         )
         || !matches!(kind.as_str(), "user" | "service-account")
         || !text(&subject, 1, 256)
@@ -219,6 +219,16 @@ fn source(db: &Connection, id: i64, bs: &[Boundary]) -> Result<Source, Error> {
     })
 }
 pub(crate) fn verify_result(db: &Connection, operation: &str, result: &Value) -> Result<(), Error> {
+    if operation == "asset_dispose" {
+        let id = result["disposal"]["assetId"].as_i64().ok_or_else(refused)?;
+        let retained = crate::asset_disposal::record(db, id)?.ok_or_else(refused)?;
+        if crate::idempotency::outcome_json(result)?
+            != crate::idempotency::outcome_json(&json!({"ok":true,"disposal":retained}))?
+        {
+            return Err(refused());
+        }
+        return Ok(());
+    }
     if operation == "opening_balance_post" {
         let opening = crate::opening_balance::validate_history(db)
             .map_err(|_| refused())?
@@ -337,7 +347,7 @@ fn projection(s: &Source, m: Option<&Mapping>) -> Result<Value, Error> {
 pub fn inventory(db: &Connection) -> Result<Value, Error> {
     let bs = boundaries(db)?;
     let high = bs.last().map_or(0, |b| b.high);
-    let mut q=db.prepare("SELECT id FROM mutation_idempotency_tombstones WHERE id<=?1 AND operation IN ('journal_post','journal_reverse','opening_balance_post') ORDER BY id").map_err(sql)?;
+    let mut q=db.prepare("SELECT id FROM mutation_idempotency_tombstones WHERE id<=?1 AND operation IN ('journal_post','journal_reverse','opening_balance_post','asset_dispose') ORDER BY id").map_err(sql)?;
     let ids = q
         .query_map([high], |r| r.get::<_, i64>(0))
         .map_err(sql)?

@@ -110,6 +110,10 @@ fn domain_error(code: &str, unknown: bool) -> Response {
         "invalid_credentials" => StatusCode::UNAUTHORIZED,
         "access_denied" => StatusCode::FORBIDDEN,
         _ if unknown => StatusCode::SERVICE_UNAVAILABLE,
+        "not_found" => StatusCode::NOT_FOUND,
+        "IDEMPOTENCY_CONFLICT"
+        | "IDEMPOTENCY_OUTCOME_EXPIRED"
+        | "RESTORED_KEY_RECONCILIATION_REQUIRED" => StatusCode::CONFLICT,
         "invalid_input" | "confirmation_required" => StatusCode::BAD_REQUEST,
         "asset_refused"
         | "invalid_date"
@@ -127,6 +131,8 @@ fn domain_error(code: &str, unknown: bool) -> Response {
         StatusCode::UNAUTHORIZED => "unauthorized",
         StatusCode::FORBIDDEN => "access_denied",
         StatusCode::BAD_REQUEST => "invalid_input",
+        StatusCode::NOT_FOUND => "not_found",
+        StatusCode::CONFLICT => "disposal_receipt_conflict",
         StatusCode::UNPROCESSABLE_ENTITY => {
             "Asset operation refused by current accounting or evidence controls"
         }
@@ -142,6 +148,9 @@ enum Command {
     Register(Register),
     Depreciate(i64, Depreciate),
     WriteOff(WriteOff),
+    DisposalPreview(i64, rentemester_storage::asset_disposal::Preview),
+    Dispose(i64, rentemester_storage::asset_disposal::Dispose),
+    DisposalReceipt(i64, String),
     Invalid,
     InvalidRegister,
 }
@@ -152,6 +161,9 @@ impl Command {
             Self::Register(v) => Action::Register(v),
             Self::Depreciate(id, v) => Action::Depreciate(*id, v),
             Self::WriteOff(v) => Action::WriteOff(v),
+            Self::DisposalPreview(id, v) => Action::DisposalPreview(*id, v),
+            Self::Dispose(id, v) => Action::Dispose(*id, v),
+            Self::DisposalReceipt(id, key) => Action::DisposalReceipt(*id, key),
             Self::Invalid => Action::Invalid,
             Self::InvalidRegister => Action::InvalidRegister,
         }
@@ -251,6 +263,9 @@ fn parse(bytes: &[u8], operation: Operation, id: Option<i64>) -> (Command, Optio
     (command, wire.expected_actor)
 }
 pub(super) async fn handle(State(state): State<Product>, request: Request) -> Response {
+    let disposal_path = request.uri().path().contains("/assets/");
+    let preview = request.uri().path().ends_with("/disposal/preview");
+    let receipt = request.uri().path().ends_with("/disposal-receipt");
     let write = request.method() == axum::http::Method::POST;
     let credential = match documents::credential(&state, &request, write) {
         Ok(v) => v,
@@ -270,10 +285,20 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
     };
     let id = path
         .split('/')
-        .nth(6)
+        .nth(if disposal_path { 5 } else { 6 })
         .and_then(|s| s.parse::<i64>().ok())
         .filter(|n| (1..=9_007_199_254_740_991).contains(n));
-    let headers_valid = request.uri().query().is_none()
+    let receipt_key = if receipt {
+        let pairs: Vec<_> =
+            url::form_urlencoded::parse(request.uri().query().unwrap_or("").as_bytes()).collect();
+        match pairs.as_slice() {
+            [(key, value)] if key == "key" => Some(value.to_string()),
+            _ => None,
+        }
+    } else {
+        None
+    };
+    let headers_valid = (request.uri().query().is_none() || (receipt && receipt_key.is_some()))
         && !request.headers().contains_key("content-encoding")
         && !request.headers().contains_key("idempotency-key")
         && (!write
@@ -282,6 +307,21 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
     let bytes = to_bytes(request.into_body(), if write { 16_384 } else { 1 }).await;
     // Even malformed JSON is refused only after current authority is established.
     let (command, expected) = match bytes {
+        Ok(bytes) if headers_valid && disposal_path => {
+            let command = match id {
+                Some(id) if receipt && bytes.is_empty() => receipt_key
+                    .map(|key| Command::DisposalReceipt(id, key))
+                    .unwrap_or(Command::Invalid),
+                Some(id) if preview => serde_json::from_slice(&bytes)
+                    .map(|v| Command::DisposalPreview(id, v))
+                    .unwrap_or(Command::Invalid),
+                Some(id) if write => serde_json::from_slice(&bytes)
+                    .map(|v| Command::Dispose(id, v))
+                    .unwrap_or(Command::Invalid),
+                _ => Command::Invalid,
+            };
+            (command, None)
+        }
         Ok(bytes) if headers_valid && write => parse(&bytes, operation, id),
         Ok(bytes) if headers_valid && !write && bytes.is_empty() => (Command::Report, None),
         _ => (Command::Invalid, None),
@@ -464,5 +504,37 @@ mod tests {
         assert_eq!(r.status(), StatusCode::SERVICE_UNAVAILABLE);
         let b = to_bytes(r.into_body(), 4096).await.unwrap();
         assert!(!String::from_utf8_lossy(&b).contains("private SQL"));
+    }
+    #[test]
+    fn asset_disposal_strict_wire_preserves_preview_apply_and_receipt_boundaries() {
+        use rentemester_storage::asset_disposal::{Dispose, Preview, validate_key};
+        let preview = json!({"transactionDate":"2026-10-23","documentId":1,"reason":"Synthetic retirement","lossAccountNo":"L"});
+        assert!(serde_json::from_value::<Preview>(preview.clone()).is_ok());
+        let mut apply = preview.clone();
+        apply["confirm"] = json!(true);
+        apply["expectedPlanHash"] = json!("a".repeat(64));
+        apply["idempotencyKey"] = json!("😀".repeat(80));
+        let decoded = serde_json::from_value::<Dispose>(apply.clone()).unwrap();
+        assert!(validate_key(&decoded.idempotency_key).is_ok());
+        assert!(serde_json::from_value::<Preview>(apply.clone()).is_err());
+        for key in ["cost", "carryingValue", "lines", "principal", "actor"] {
+            let mut bad = apply.clone();
+            bad[key] = json!("forged");
+            assert!(serde_json::from_value::<Dispose>(bad).is_err());
+        }
+        assert!(
+            serde_json::from_slice::<Preview>(
+                br#"{"transactionDate":"2026-10-23","documentId":1,"reason":"a","reason":"b"}"#
+            )
+            .is_err()
+        );
+        assert_eq!(
+            domain_error("not_found", false).status(),
+            StatusCode::NOT_FOUND
+        );
+        assert_eq!(
+            domain_error("IDEMPOTENCY_CONFLICT", false).status(),
+            StatusCode::CONFLICT
+        );
     }
 }

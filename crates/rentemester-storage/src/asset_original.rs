@@ -341,15 +341,27 @@ pub fn report(tx: &Transaction<'_>) -> Result<Value, Error> {
     let mut rows = vec![];
     let mut cost = Money::default();
     let mut accumulated = Money::default();
+    let mut carrying = Money::default();
+    let mut active = 0;
+    let mut disposed_count = 0;
     for (id, category) in refs {
         let a = assets::load(tx, id)?;
         let (indices, total) = assets::posted(tx, &a)?;
         cost.add(&a.cost);
         accumulated.add(&total);
-        rows.push(json!({"assetId":id,"name":a.name,"category":category,"acquisitionDate":a.acquisition,"cost":wire(&a.cost)?,"usefulLifeMonths":a.months,"postedPeriods":indices.len(),"accumulatedDepreciation":wire(&total)?,"netBookValue":wire(&a.cost.subtract(&total))?}));
+        let disposal = crate::asset_disposal::record(tx, id)?;
+        if disposal.is_some() {
+            disposed_count += 1;
+        } else {
+            carrying.add(&a.cost.subtract(&total));
+            if indices.len() < a.months as usize {
+                active += 1;
+            }
+        }
+        rows.push(json!({"assetId":id,"name":a.name,"category":category,"acquisitionDate":a.acquisition,"cost":wire(&a.cost)?,"usefulLifeMonths":a.months,"postedPeriods":indices.len(),"accumulatedDepreciation":wire(&total)?,"netBookValue":wire(&if disposal.is_some(){Money::default()}else{a.cost.subtract(&total)})?,"status":if disposal.is_some(){"disposed"}else{if indices.len()==a.months as usize{"fully-depreciated"}else{"active"}},"disposalDate":disposal.as_ref().map(|d|&d["transactionDate"]),"disposalId":disposal.as_ref().map(|d|&d["disposalId"]),"disposalJournalEntryId":disposal.as_ref().map(|d|&d["journalEntryId"])}));
     }
     Ok(
-        json!({"ok":true,"assets":rows,"totals":{"cost":wire(&cost)?,"accumulatedDepreciation":wire(&accumulated)?,"netBookValue":wire(&cost.subtract(&accumulated))?},"errors":[]}),
+        json!({"ok":true,"assets":rows,"totals":{"cost":wire(&cost)?,"accumulatedDepreciation":wire(&accumulated)?,"netBookValue":wire(&carrying)?,"activeCount":active,"disposedCount":disposed_count,"fullyDepreciatedCount":rows.len()-active-disposed_count},"errors":[]}),
     )
 }
 

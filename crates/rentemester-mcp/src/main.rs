@@ -4,6 +4,7 @@
 //! https://modelcontextprotocol.io/specification/2025-11-25/server/tools
 mod mileage_posting;
 mod vat_purchase_original;
+mod asset_disposal;
 mod asset_original;
 mod accrual_original;
 mod mileage_original;

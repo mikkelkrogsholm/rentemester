@@ -22,6 +22,7 @@ pub(crate) fn validate(db: &Connection, base: &[SchemaObject]) -> Result<bool, E
     let actual = crate::native_fx_roles::strip_schema(db, &actual)?;
     let actual = crate::legal_holds::strip_schema(db, &actual)?;
     let actual = crate::invoice_compensation_schema::strip_schema(db, &actual)?;
+    let actual = crate::asset_disposal_schema::strip_schema(db, &actual)?;
     if actual == base {
         return Ok(false);
     }

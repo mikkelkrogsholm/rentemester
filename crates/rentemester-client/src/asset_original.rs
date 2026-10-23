@@ -219,7 +219,7 @@ fn receipt(v: &Value, operation: &str, expected: &Value, asset_id: Option<i64>) 
 fn report(v: &Value) -> bool {
     let m = money_schema();
     let row = object(
-        json!({"assetId":id(),"name":text(500),"category":text(500),"acquisitionDate":date_schema(),"cost":m,"usefulLifeMonths":count(),"postedPeriods":{"type":"integer","minimum":0,"maximum":12000},"accumulatedDepreciation":m,"netBookValue":m}),
+        json!({"assetId":id(),"name":text(500),"category":text(500),"acquisitionDate":date_schema(),"cost":m,"usefulLifeMonths":count(),"postedPeriods":{"type":"integer","minimum":0,"maximum":12000},"accumulatedDepreciation":m,"netBookValue":m,"status":{"type":"string","enum":["active","fully-depreciated","disposed"]},"disposalDate":{"type":["string","null"],"minLength":10,"maxLength":10},"disposalId":{"type":["integer","null"],"minimum":1,"maximum":MAX_ID},"disposalJournalEntryId":{"type":["integer","null"],"minimum":1,"maximum":MAX_ID}}),
         &[
             "assetId",
             "name",
@@ -233,7 +233,7 @@ fn report(v: &Value) -> bool {
         ],
     );
     let totals = object(
-        json!({"cost":m,"accumulatedDepreciation":m,"netBookValue":m}),
+        json!({"cost":m,"accumulatedDepreciation":m,"netBookValue":m,"activeCount":{"type":"integer","minimum":0,"maximum":MAX_ID},"fullyDepreciatedCount":{"type":"integer","minimum":0,"maximum":MAX_ID},"disposedCount":{"type":"integer","minimum":0,"maximum":MAX_ID}}),
         &["cost", "accumulatedDepreciation", "netBookValue"],
     );
     if !shape(
@@ -253,6 +253,7 @@ fn report(v: &Value) -> bool {
         return false;
     }
     let mut sums = [0i64; 3];
+    let mut classifications = [0u64; 3];
     for r in rows {
         if !date(&r["acquisitionDate"])
             || r["postedPeriods"].as_u64() > r["usefulLifeMonths"].as_u64()
@@ -273,9 +274,45 @@ fn report(v: &Value) -> bool {
             };
             sums[i] = sum;
         }
-        if amounts[0] <= 0 || amounts[1].checked_add(amounts[2]) != Some(amounts[0]) {
+        let disposed = r["status"] == "disposed";
+        if amounts[0] <= 0 || amounts[1] > amounts[0] {
             return false;
         }
+        if disposed {
+            if amounts[2] != 0
+                || !date(&r["disposalDate"])
+                || r["disposalDate"].as_str() < r["acquisitionDate"].as_str()
+                || !r["disposalId"].as_i64().is_some_and(|n| n > 0)
+                || !r["disposalJournalEntryId"].as_i64().is_some_and(|n| n > 0)
+            {
+                return false;
+            }
+            classifications[2] += 1;
+        } else {
+            if amounts[1].checked_add(amounts[2]) != Some(amounts[0])
+                || ["disposalDate", "disposalId", "disposalJournalEntryId"]
+                    .iter()
+                    .any(|k| r.get(*k).is_some_and(|v| !v.is_null()))
+            {
+                return false;
+            }
+            let fully = r["postedPeriods"] == r["usefulLifeMonths"];
+            if r.get("status")
+                .is_some_and(|v| v != if fully { "fully-depreciated" } else { "active" })
+            {
+                return false;
+            }
+            classifications[usize::from(fully)] += 1;
+        }
+    }
+    let count_names = ["activeCount", "fullyDepreciatedCount", "disposedCount"];
+    if count_names.iter().any(|k| v["totals"].get(*k).is_some())
+        && !count_names
+            .iter()
+            .enumerate()
+            .all(|(i, k)| v["totals"][*k].as_u64() == Some(classifications[i]))
+    {
+        return false;
     }
     ["cost", "accumulatedDepreciation", "netBookValue"]
         .iter()
@@ -459,5 +496,61 @@ impl ApiClient {
         } else {
             Err(unknown())
         }
+    }
+}
+
+#[cfg(test)]
+mod asset_disposal_report_tests {
+    use super::*;
+    fn disposed() -> Value {
+        json!({"ok":true,"assets":[{"assetId":4,"name":"Synthetic","category":"Equipment","acquisitionDate":"2026-01-01","cost":125,"usefulLifeMonths":3,"postedPeriods":1,"accumulatedDepreciation":25,"netBookValue":0,"status":"disposed","disposalDate":"2026-10-20","disposalId":2,"disposalJournalEntryId":7}],"totals":{"cost":125,"accumulatedDepreciation":25,"netBookValue":0,"activeCount":0,"disposedCount":1,"fullyDepreciatedCount":0},"errors":[]})
+    }
+    #[test]
+    fn asset_disposal_report_accepts_retained_cost_and_zero_carrying_without_weakening_totals() {
+        let v = disposed();
+        assert!(report(&v), "valid server disposed report refused");
+        for (field, bad) in [
+            ("netBookValue", json!(100)),
+            ("disposalId", Value::Null),
+            ("disposalDate", json!("2025-12-31")),
+            ("status", json!("invented")),
+        ] {
+            let mut bad_report = v.clone();
+            bad_report["assets"][0][field] = bad;
+            assert!(!report(&bad_report), "{field}");
+        }
+        let mut bad = v.clone();
+        bad["totals"]["disposedCount"] = json!(0);
+        assert!(!report(&bad));
+        let mut bad = v;
+        bad["totals"]["cost"] = json!(126);
+        assert!(!report(&bad));
+    }
+    #[test]
+    fn asset_disposal_report_preserves_active_and_legacy_report_compatibility() {
+        let mut v = disposed();
+        v["assets"][0]["status"] = json!("active");
+        v["assets"][0]["netBookValue"] = json!(100);
+        v["totals"]["netBookValue"] = json!(100);
+        v["totals"]["activeCount"] = json!(1);
+        v["totals"]["disposedCount"] = json!(0);
+        for k in ["disposalDate", "disposalId", "disposalJournalEntryId"] {
+            v["assets"][0][k] = Value::Null;
+        }
+        assert!(report(&v));
+        for k in [
+            "status",
+            "disposalDate",
+            "disposalId",
+            "disposalJournalEntryId",
+        ] {
+            v["assets"][0].as_object_mut().unwrap().remove(k);
+        }
+        for k in ["activeCount", "fullyDepreciatedCount", "disposedCount"] {
+            v["totals"].as_object_mut().unwrap().remove(k);
+        }
+        assert!(report(&v));
+        v["assets"][0]["netBookValue"] = json!(0);
+        assert!(!report(&v));
     }
 }

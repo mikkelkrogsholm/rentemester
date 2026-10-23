@@ -376,6 +376,7 @@ pub fn company(db: &Connection) -> Result<Company, Error> {
     crate::scheduled_recurring::validate_backup(db)?;
     crate::native_fx_roles::validate_history(db)?;
     crate::legal_holds::validate_history(db)?;
+    crate::asset_disposal::validate_backup(db)?;
     crate::invoice_email::validate_backup(db)?;
     crate::public_einvoice::validate_backup(db)?;
     crate::recurring_workspace::validate_history(db)?;

@@ -222,3 +222,15 @@ test("asset registration accepts Danish decimal and thousands separators", async
   expect(JSON.parse(String((create![1] as RequestInit).body)).cost).toBe(1234.56);
   expect(screen.queryByRole("dialog", { name: "Kassér ændringer?" })).not.toBeInTheDocument();
 });
+
+describe("asset_disposal report", () => {
+  test("disposed history is honest and later depreciation is disabled", async () => {
+    const base = assets();
+    mockFetch(route({assets:[{...base.assets[0],status:"disposed",netBookValue:0,remainingPeriods:0,disposalDate:"2026-10-20",disposalJournalEntryNo:"2026-20"}]}));
+    renderView();
+    expect(await screen.findByText("Afhændet")).toBeInTheDocument();
+    expect(screen.getByText(/Postering 2026-20/)).toBeInTheDocument();
+    expect(screen.getByRole("button",{name:/Beregn afskrivning for/})).toBeDisabled();
+    expect(screen.queryByRole("button",{name:/^Afhænd /})).toBeNull();
+  });
+});

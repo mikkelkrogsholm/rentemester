@@ -592,3 +592,5 @@ pub use local_runtime::knowledge_company_selector;
 
 mod mileage_posting;
 pub use mileage_posting::{MileagePostingOperation, MAX_MILEAGE_POSTING_BODY, mileage_posting_body_schema, validate_mileage_posting_body};
+mod asset_disposal;
+pub use asset_disposal::{asset_disposal_schema, validate_asset_disposal};

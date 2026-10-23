@@ -64,3 +64,19 @@ export function assets(
     ...over,
   };
 }
+
+/** Synthetic frozen disposal wire; values come from the mock server, not UI math. */
+export const disposalPreview = {
+  assetId: 1, transactionDate: "2026-10-20", documentId: 1, reason: "Retired equipment",
+  lossAccountNo: "6100", cost: 48000, accumulatedDepreciation: 8000, carryingValue: 40000,
+  planHash: "a".repeat(64), lines: [
+    { accountNo: "5800", debit: 0, credit: 48000 },
+    { accountNo: "5810", debit: 8000, credit: 0 },
+    { accountNo: "6100", debit: 40000, credit: 0 },
+  ],
+};
+export const disposalReceipt = {
+  disposalId: 1, assetId: 1, transactionDate: "2026-10-20", documentId: 1, reason: "Retired equipment",
+  cost: 48000, accumulatedDepreciation: 8000, carryingValueWrittenOff: 40000, remainingCarryingValue: 0 as const,
+  journalEntryId: 20, journalEntryNo: "2026-20", journalEntryHash: "b".repeat(64), replayed: false,
+};

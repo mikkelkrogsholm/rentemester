@@ -7,7 +7,7 @@ export type TransferFreeze = TransferReview & { destination: string; reason: str
 export type TransferChange = TransferReview & { reason: string };
 export type TransferRelease = TransferChange & { challenge: TransferChallenge };
 export type TransferActivate = TransferChange & { release: string };
-export type RestoredReceipt = { receiptId: number; operation: "journal_post" | "journal_reverse" | "opening_balance_post"; keyHash: string; payloadHash: string; ledgerUuid: string; sourcePrincipal: { kind: string; subject: string }; createdAt: string; expiresAt: string; archiveSha256: string; restoreBoundaryId: number | string; resultAvailable: boolean; result: unknown; stateHash: string; mapping: null | { targetUserId: string; actor: string; at: string; reason: string; archiveSha256: string; restoreBoundaryId: number | string } };
+export type RestoredReceipt = { receiptId: number; operation: "journal_post" | "journal_reverse" | "opening_balance_post" | "asset_dispose"; keyHash: string; payloadHash: string; ledgerUuid: string; sourcePrincipal: { kind: string; subject: string }; createdAt: string; expiresAt: string; archiveSha256: string; restoreBoundaryId: number | string; resultAvailable: boolean; result: unknown; stateHash: string; mapping: null | { targetUserId: string; actor: string; at: string; reason: string; archiveSha256: string; restoreBoundaryId: number | string } };
 function checked(value: { ok: true; transfer: Transfer }) {
   if (value?.ok !== true || !["active", "frozen", "moved", "staged"].includes(value.transfer?.mode)) throw new ApiError("internal", "Workspace-tilstanden kunne ikke bekræftes.", 200);
   return value.transfer;
