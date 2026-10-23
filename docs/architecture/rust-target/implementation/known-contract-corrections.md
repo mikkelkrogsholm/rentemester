@@ -354,3 +354,30 @@ Flere historiske MCP-discoverytests har stadig faste gamle totaler på bl.a.
 ved næste registrytilføjelse: genbrug den eksisterende fælles
 EXPECTED_NATIVE_TOOLS, og bevar kontrollen af alle navne, schemaer og kald.
 Den fulde stdio-suite påstås ikke bestået af denne afgrænsede delaccept.
+
+### Budgetprognoser, native overload og faktisk testopsætning (Group172)
+
+Det oprindelige forecast gættede bankkonti ud fra navne og kunne vise nul uden
+bevist mapping. Rust bevarer den eksisterende bekræftede mapping og afviser
+manglende åbningsgrundlag. Den månedlige kilde kunne også lægge udenlandske
+beløb til DKK. Uden dateret kurs afvises denne månedsprognose; den ugentlige
+prognoses eksplicitte udeladelser bevares. Ingen ny kursleverandør er indført.
+
+Ugebudgetter uden betalingsdato er information og påvirker ingen cashlinje.
+Mellemregningsscenarier læses fra aktuelt valideret kontrolhistorik i samme
+admitterede transaktion; godkendelse er ikke bevis for betaling eller
+finanspostering. Native årssammenligning bevarer sit eksisterende envelope,
+mens den oprindelige periodesammenligning bevarer sin source-kontrakt.
+
+Gamle stdio-totaler er erstattet med den eksisterende fælles forventning uden
+at fjerne navne-, schema- eller kaldskontroller. En gammel banktest pegede på
+det tidligere endpoint/envelope; den er korrigeret mod den faktiske binding
+og kontrollerer nu også hele fejlen, tekst og isError. Alle 168 tests består.
+
+Prøvernes opsætningsfejl er isoleret frem for at svække produktkontroller:
+parrede transaktionstests kræver normale filbaserede SQLite-forbindelser;
+native kreditorregistrering er POST /payables; en tabel bruger
+invoice_document_id som nøgle; den eksisterende private scanner skal både
+aktiveres og kende præcis de tre syntetiske filnavne. Kravet om tre scanninger
+er bevaret. Hver fejlet kvittering og private profil er bevaret, inklusive
+allerede udført bogføring eller signeret gendannelse.

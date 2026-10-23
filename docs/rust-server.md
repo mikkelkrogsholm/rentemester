@@ -3893,3 +3893,29 @@ tre binære filer, otte webfiler og hjælperne er uafhængigt hashkontrolleret.
 Den første prøves fejlagtige forventning om læserens eksportret er bevaret
 med dens data og kvitteringer; produktets politik er uændret.
 Næste forløb er budgetter, faktiske afvigelser og likviditetsprognoser.
+
+### Oprindelige budgetter og likviditetsprognoser (Group172)
+
+`budget set/list/vs-actual/forecast/forecast-13-week` og de fem tilsvarende
+MCP-kontrakter bruger samme Rust-server og budget-writer. En ændring tilføjer
+en revision; listen viser den seneste pr. konto/måned. Afvigelser følger
+kontotypens fortegn. Månedlige prognoser dækker 1–18 måneder, ugentlige 1–13
+uger. De opretter ingen posteringer, fakturaer eller budget-auditposter.
+
+Den ugentlige basis bruger tilgodehavender, kreditorer, godkendte forpligtelser
+og sikre momsforpligtelser. Udaterede budgetter er kun information; godkendte
+mellemregninger vises som scenarie. Bankmapping skal være bekræftet. Manglende
+uafhængigt kontoudtog oplyses, og beløb i andre valutaer må ikke summeres med
+DKK uden dokumenteret kurs. Det oprindelige `budget_vs_actual`-navn har to
+adskilte former: native `year` og oprindelig `from/to`. Blandinger afvises.
+
+197 målrettede tests, heraf hele stdio-suitens 168 tests, streng Clippy for
+otte pakker og den samlede prøve består på `5a1c6f55`. To revisioner på 80 og
+90 kr. sammenholdes med 100 kr. faktisk aktivitet. Fra 1.000 kr. giver
+månedsprognosen 1.085 kr., ugebasis 1.055 kr. og scenariet 1.130 kr.
+Normal MFA-genstart og signeret kildefri gendannelse til ny ejer bevarer fem
+bilag, tre posteringer, begge budgetrevisioner og mellemregnings-/aftalehistorik
+med præcis én restore-auditpost. Tre obligatoriske scanninger er verificeret.
+2546 kildefiler, tre binære filer, otte webfiler og hjælperne er uafhængigt
+hashkontrolleret. Tidligere fejlede prøver og deres effekter er bevaret.
+Næste forløb er momsrapportering og forberedelse af en lukket momsperiode.

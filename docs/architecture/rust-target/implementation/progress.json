@@ -1,15 +1,15 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "Group171 original mileage4CLI4MCP log/list/datedreport/localJSONCSV accepted",
-  "code_revision": "b9d8b74f8c56b65085fc8c4b554f22aa26546a39",
+  "current_increment": "Group172 original budget targets, actual variance and monthly/weekly cash planning accepted",
+  "code_revision": "5a1c6f55aa541f225f5d5dbc406269b6a76e6433",
   "spec_revision": "sha256:8979030956647a0f03266c50d42786b5d33ab71a59c78528203d223226171e72",
-  "state": "Group171 ACCEPTED: sameRustmileageengine/currenthumanservice, original4CLI4MCP withcaller-localdeterministicJSONCSV perfileatomicreplacement.15unique targetedtests strict8packages/build+secondactualPASS.3trips15.85km/71.63,2realexports,5typedbusinessaudits,0journals/VAT/docs/providers/scanners. NormalMFArestart/signedsourcefreefreshownerrestore/reopen exactplus1boundaudit.2533source/3binary/8web/helperpins independentlymatched, runtimecleaned. Firstfailedactualreaderexport200policycorrect/3logs3exports6audits preserved. HistoricalMCPcardinalityfixtures remainknowncompatibilitydebt, nofullstdioPASSclaimed. All55/672/716/717OPEN; nextbudget/liquidity, desktoplast.",
+  "state": "Group172 ACCEPTED: original5CLI5MCP with one shared budget writer/current human/service authority and held current control history. 197 unique targeted tests including all168MCPstdio, strict8packages/build and final actual PASS. Two budget revisions80→90, actual100/totalvariance10, expensevariance30; opening1000/monthly1085/weeklybase1055/scenario1130.5docs3journals6lines25audits; approvedintercompany1/2events and corporate4events/1BLOB/3links. Required3scans/0providers, normalMFArestart/signedsourcefreefreshownerrestore/reopen exactplus1audit26.2546source/3binary/8web/helperpins independentlymatched, ownedruntimecleaned. Failedprofiles/receipts/restoreeffects retained. Full55/672/716/717 OPEN, desktop last.",
   "issues_closed": [
     701
   ],
   "next": [
-    "Next172 originalbudget/liquidity5CLI5MCPcontracts (4newtools +disjointbudget_vs_actual year/from-to overload): revisions/actuals/monthly1-18 andweekly1-13 forecast/currenttypedservice/approvedselectedcompanyintercompany sourcebridge. Preserve nativeconfirmedbankmapping, no publicsupplements/newfeatures. UseexistingglobalMCPdiscoverycount acrossoldliteralfixtures; fullstdioaffectedchecks. Full55missionretained.",
+    "Next173 original VAT report/EU-sales/OSS and exact closed-period filing preparation:5CLI/3MCP contracts, only2newnames337→339 (existing OSS aligned), shared complete VAT bases/counts/rubrics/native stronger originals/FX/credit checks; no submission or newMCPfiling tool. Preserve source ExternalLookup permission for new EU adapter; native alias unchanged. Two original VAT purchase write adapters and historical source validation remain separate required scope. Narrow automatic worker Rust checks in parallel; validate every actual flag/route/envelope/inventory before first full run.",
     "Original invoice interface inventory now has all31CLI and25MCP bindings, with explicit compatibility corrections documented; do not mistake that family inventory for full product parity. Reconcile remaining original whole-product R44/R45 acceptance from existing epic/issues: actor/env/company-path/default launcher/errors/historical receipts, closure/recovery/automation, signed distribution/update/cutover and TypeScript backend retirement. Continue next necessary whole journey, preserve all accepted evidence/full original scope; installed desktop acceptance last.",
     "Installed desktop acceptance is explicitly deferred to the very end by the user. Preserve prepared Group100 profile; collect remaining native automation, closure, recovery and packaging checks for final installed acceptance without requesting screen unlock during development.",
     "J03/R50 and remaining R54 scope: only still-supported operation closure/recovery, nonempty scheduler handoff, hostile/older clone and post-cutover rollback requirements. Group99 qualifies managed installed J06 flow, not every R54 acceptance item.",
@@ -25,9 +25,9 @@
   ],
   "all_goal_requirements_complete": false,
   "previous_verified_increment": {
-    "name": "Group170 original asset4CLI4MCP register/depreciate/writeoff/bookvalue accepted",
-    "code_revision": "5ab798dca6c0237035d9ac66ad23e4ed99ec5fc8",
-    "evidence_key": "original_asset170"
+    "name": "Group171 original mileage4CLI4MCP log/list/datedreport/localJSONCSV accepted",
+    "code_revision": "b9d8b74f8c56b65085fc8c4b554f22aa26546a39",
+    "evidence_key": "original_mileage171"
   },
   "evidence": {
     "combined_browser_log": "/tmp/rm-platform5-combined.log",
@@ -10671,6 +10671,243 @@
       "preserved_failed_profile": "/Users/mikkelfreltoftkrogsholm/Library/Application Support/Rentemester-Synthetic-Batch-28ed2efe99fb4281b9b4eeec52f04484",
       "isolated_reader_export_evidence": "/tmp/rentemester-rust-reports/mileage171-reader-export-isolated.json",
       "known_remaining_compatibility_harness": "PreexistinghistoricalMCPdiscoveryassertions containliteral225/257/319/322/325/333 totals; runtimeallstdio suite notclaimedPASS here. Nextregistryaddition/finalaccept mustuseexistingglobalEXPECTED_NATIVE_TOOLS whilepreserving per-tool/schema checks."
+    },
+    "original_budget172": {
+      "issue": 717,
+      "status": "ACCEPTED finite original budget/liquidity journey; entire issue/epic OPEN",
+      "source_revision": "5a1c6f55aa541f225f5d5dbc406269b6a76e6433",
+      "sgd_run": "rust-original-budget172-20261022T234018.863633000",
+      "engine_phase": "done",
+      "sgd_published": true,
+      "source_blob_count": 50,
+      "actual_report": "/tmp/rentemester-rust-reports/original-budget172-actual.json",
+      "actual_report_sha256": "6ff196619e40c9c72a3a8c588ecce50ca1353ef417b6fb94db7f712cb696b7d5",
+      "unique_targeted_tests": 197,
+      "test_counts": {
+        "storage": 12,
+        "application_service": 8,
+        "application_budget_filter": 0,
+        "host_filter": 0,
+        "server": 2,
+        "sdk": 4,
+        "cli": 2,
+        "all_mcp_stdio": 168,
+        "additional_paired_control_callback": 1
+      },
+      "additional_paired_test_log": "/tmp/rm172-paired-fixtures-isolated.log",
+      "strict": "Eight packages all-targets locked -D warnings PASS",
+      "checks": [
+        {
+          "check": "domain",
+          "key": "e6beb3c9f1878ed2654a1d7dc37fab8a041dc9ee83d72f62f740ccf39148b7d5",
+          "argv": [
+            "python3",
+            "-c",
+            "import subprocess,sys; [subprocess.run([sys.executable,'scripts/rust/cargo-guard.py','cargo','test','-p','rentemester-storage','--lib',f,'--locked'],check=True) for f in ['budget','liquidity_original']]"
+          ],
+          "exit_code": 0,
+          "passed": true,
+          "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/rust-original-budget172-20261022T234018.863633000/acceptance/e6beb3c9f1878ed2654a1d7dc37fab8a041dc9ee83d72f62f740ccf39148b7d5/domain.log"
+        },
+        {
+          "check": "authority",
+          "key": "6454d334b89bd5a60dcd3068d2da56b977c5d72a56c36a71f2c6b2b453cadca5",
+          "argv": [
+            "python3",
+            "-c",
+            "import subprocess,sys; [subprocess.run([sys.executable,'scripts/rust/cargo-guard.py','cargo',*a,'--locked'],check=True) for a in [['test','--lib','-p','rentemester-application','budget_original'],['test','--lib','-p','rentemester-application','service_company'],['test','--lib','-p','rentemester-host','budget_original'],['test','-p','rentemester-server','--bin','rentemester-server','product_http::budget_original']]]"
+          ],
+          "exit_code": 0,
+          "passed": true,
+          "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/rust-original-budget172-20261022T234018.863633000/acceptance/6454d334b89bd5a60dcd3068d2da56b977c5d72a56c36a71f2c6b2b453cadca5/authority.log"
+        },
+        {
+          "check": "client-cli",
+          "key": "e16536d96844d6cd5cae9746f4c9bcdc39fa79befdf43d26b3dccafd893ecdee",
+          "argv": [
+            "python3",
+            "-c",
+            "import subprocess,sys; [subprocess.run([sys.executable,'scripts/rust/cargo-guard.py','cargo','test','-p',p,'--test','budget_original','--locked'],check=True) for p in ['rentemester-client','rentemester-cli']]"
+          ],
+          "exit_code": 0,
+          "passed": true,
+          "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/rust-original-budget172-20261022T234018.863633000/acceptance/e16536d96844d6cd5cae9746f4c9bcdc39fa79befdf43d26b3dccafd893ecdee/client-cli.log"
+        },
+        {
+          "check": "mcp",
+          "key": "6e2ca1202b96409d330701e21ac08643c0f9d743fcf4d8fa4db33e21c0ddb313",
+          "argv": [
+            "python3",
+            "scripts/rust/cargo-guard.py",
+            "cargo",
+            "test",
+            "-p",
+            "rentemester-mcp",
+            "--test",
+            "stdio",
+            "--locked"
+          ],
+          "exit_code": 0,
+          "passed": true,
+          "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/rust-original-budget172-20261022T234018.863633000/acceptance/6e2ca1202b96409d330701e21ac08643c0f9d743fcf4d8fa4db33e21c0ddb313/mcp.log"
+        },
+        {
+          "check": "strict",
+          "key": "893b782d47a46cc039a8b5987ee6ac383092476f416c6170de2fe51378afd5b3",
+          "argv": [
+            "python3",
+            "scripts/rust/cargo-guard.py",
+            "cargo",
+            "clippy",
+            "-p",
+            "rentemester-engine",
+            "-p",
+            "rentemester-storage",
+            "-p",
+            "rentemester-client",
+            "-p",
+            "rentemester-cli",
+            "-p",
+            "rentemester-mcp",
+            "-p",
+            "rentemester-application",
+            "-p",
+            "rentemester-host",
+            "-p",
+            "rentemester-server",
+            "--all-targets",
+            "--locked",
+            "--",
+            "-D",
+            "warnings"
+          ],
+          "exit_code": 0,
+          "passed": true,
+          "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/rust-original-budget172-20261022T234018.863633000/acceptance/893b782d47a46cc039a8b5987ee6ac383092476f416c6170de2fe51378afd5b3/strict.log"
+        },
+        {
+          "check": "build",
+          "key": "38d24a14494cfa8d2c903aae3448b29e32a98d9e2ee3bb9c35dd316553c2bee2",
+          "argv": [
+            "python3",
+            "scripts/rust/cargo-guard.py",
+            "cargo",
+            "build",
+            "-p",
+            "rentemester-server",
+            "-p",
+            "rentemester-cli",
+            "-p",
+            "rentemester-mcp",
+            "--locked"
+          ],
+          "exit_code": 0,
+          "passed": true,
+          "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/rust-original-budget172-20261022T234018.863633000/acceptance/38d24a14494cfa8d2c903aae3448b29e32a98d9e2ee3bb9c35dd316553c2bee2/build.log"
+        },
+        {
+          "check": "actual",
+          "key": "bc85457cc628cfaf887ae3613225a7e6a8554f12c227acfe033f4b18b54eaa7f",
+          "argv": [
+            "python3",
+            "-c",
+            "import os,subprocess; from pathlib import Path; b=Path(os.environ['CARGO_TARGET_DIR'])/'debug'; rev=subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(); evidence=Path(os.environ['CARGO_TARGET_DIR'])/('original-budget172-'+rev+'.json'); subprocess.run(['python3','scripts/rust/run-bookkeeping-batch.py','--original-budget','--server-binary',str(b/'rentemester-server'),'--cli-binary',str(b/'rentemester-rust'),'--mcp-binary',str(b/'rentemester-mcp'),'--web-dir',os.environ['RM_REWRITE_WEB_DIR'],'--evidence',str(evidence)],check=True)"
+          ],
+          "exit_code": 0,
+          "passed": true,
+          "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/rust-original-budget172-20261022T234018.863633000/acceptance/bc85457cc628cfaf887ae3613225a7e6a8554f12c227acfe033f4b18b54eaa7f/actual.log"
+        }
+      ],
+      "actual_sql_counts": {
+        "documents": 5,
+        "document_party_link_events": 0,
+        "document_party_resolution_events": 0,
+        "internal_voucher_evidence": 0,
+        "audit_log": 25,
+        "journal_entries": 3,
+        "journal_lines": 6,
+        "budget_lines": 2,
+        "payables": 1,
+        "payable_payments": 0,
+        "supplier_commitment_events": 1,
+        "supplier_commitment_occurrence_matches": 0,
+        "recurring_invoice_templates": 1,
+        "recurring_invoice_generations": 0,
+        "recurring_invoice_generation_claims": 0,
+        "recurring_invoice_delivery_events": 0,
+        "bank_transactions": 0,
+        "bank_journal_reconciliations": 0,
+        "issued_invoice_postings": 0
+      },
+      "control_sql_counts": {
+        "rm_intercompany_dispositions": 1,
+        "rm_intercompany_disposition_events": 2,
+        "rm_intercompany_disposition_lifecycle_events": 0,
+        "rm_intercompany_disposition_journal_links": 0,
+        "rm_corporate_record_events": 4,
+        "rm_corporate_record_bytes": 1,
+        "rm_corporate_record_links": 3
+      },
+      "restored_audits": 26,
+      "provider_calls": 0,
+      "required_scanner_calls": 3,
+      "budget_revisions": [
+        80,
+        90
+      ],
+      "total_actual": 100,
+      "total_budget": 90,
+      "total_variance": 10,
+      "expense_variance": 30,
+      "opening_cash": 1000,
+      "monthly_closing": 1085,
+      "weekly_base_closing": 1055,
+      "weekly_scenario_closing": 1130,
+      "weekly_base_lowest": 1000,
+      "intercompany_scenario": 75,
+      "native_year_overload_preserved": true,
+      "unique_mcp_tools": 337,
+      "typed_service_budget_audits": 1,
+      "source_artifact_web_pins": {
+        "source_files": 2546,
+        "binaries": 3,
+        "web_files": 8,
+        "helpers": 2,
+        "independently_matched": true
+      },
+      "normal_mfa_source_restart": true,
+      "signed_source_free_fresh_owner_restore": true,
+      "restored_fresh_mfa_reopen": true,
+      "current_reader_write_membership_and_key_revocation_refused": true,
+      "forecasts_no_journal_invoice_generation_or_budget_audit_effects": true,
+      "exact_manifest_bound_restore_audit_append": 1,
+      "owned_processes_stopped": true,
+      "runtime_cleaned": true,
+      "scope_limits": [
+        "No cash settlement, intercompany posting or external bank reconciliation claimed. Confirmed bank mapping required; missing independent bank statement is disclosed.",
+        "Undated budgets are informational only in weekly planning; approved intercompany is scenario only. Monthly foreign inflows without dated FX refuse instead of mixing currencies.",
+        "Four original names added; existing budget_vs_actual has disjoint year versus from/to selectors. Existing native aliases/permissions stay intact.",
+        "Source-free recovery checked by pinned runner against exact company/control rows and one bound restore audit; independent verification matches source/helper/binary/web hashes, raw source inventory and process cleanup.",
+        "Manual installed desktop last; all55 original requirements and TypeScript retirement/distribution gates remain open."
+      ],
+      "preserved_failures": [
+        "Actual diff review corrected unsupported success horizons/MCP descriptor object type and mixed-currency monthly arithmetic; production accounting and access controls retained.",
+        "First combined new paired-connection tests used invalid in-memory SQLite mode. File-backed FULL/FK fixtures preserve original assertions; two exact paired tests isolated PASS before combined acceptance.",
+        "Full stdio first found one stale bank suggestions mock/path after 167 passes. Correct current native/source envelope and exact full-text/isError/path checks isolated PASS; final all168 PASS.",
+        "First actual wrong /payables/register URL503: copied transaction proves body valid then rolls back byte-identically; actual router uses POST/payables. Original2journals/16audits untouched.",
+        "Second actual native-year response lacked source errors[] by design. Captured HTTP/MCP/text exact equality proves native branch; original assertions retained. Third actual whole business passed, then one inventory key incorrectly used id instead of invoice_document_id. Both actual inventory functions isolated read-only PASS.",
+        "Fourth actual normal restart and signed source-free restore passed, then scanner0 vs required3 exposed omitted budget scanner setup. Existing required scanner enabled; fifth actual correctly rejected missing private scanner flag/filename admission. Real gateway method positive3 and wrong-name/token/hash refusals isolated PASS; required3 never relaxed.",
+        "Sixth fresh actual passes complete workflow, required3 scans, exact signed restore/reopen and cleanup. All prior private profiles/receipts/effects retained; no unknown write replay."
+      ],
+      "isolated_evidence": [
+        "/tmp/rentemester-rust-reports/budget172-first-actual-isolated.json",
+        "/tmp/rentemester-rust-reports/budget172-native-year-isolated.json",
+        "/tmp/rentemester-rust-reports/budget172-second-actual-isolated.json",
+        "/tmp/rentemester-rust-reports/budget172-inventory-isolated.json",
+        "/tmp/rentemester-rust-reports/budget172-fourth-actual-isolated.json",
+        "/tmp/rentemester-rust-reports/budget172-scanner-config-isolated.json",
+        "/tmp/rentemester-rust-reports/budget172-scanner-protocol-isolated.json"
+      ]
     }
   },
   "verified_history": [
@@ -12433,6 +12670,12 @@
       "code_revision": "b9d8b74f8c56b65085fc8c4b554f22aa26546a39",
       "evidence_key": "original_mileage171",
       "status": "ACCEPTED finite originalmileage journey; entiremissionOPEN"
+    },
+    {
+      "increment": "Group172",
+      "code_revision": "5a1c6f55aa541f225f5d5dbc406269b6a76e6433",
+      "evidence_key": "original_budget172",
+      "status": "ACCEPTED finite original budget/liquidity journey; entire mission OPEN"
     }
   ],
   "scope_clarifications": [
