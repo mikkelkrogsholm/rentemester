@@ -2087,12 +2087,14 @@ fn bank_match_read_discovery_and_source_business_refusal_are_preserved() {
     let tool=tools.iter().find(|tool|tool["name"]=="bank_suggest_matches").unwrap();
     assert_eq!(tool["annotations"]["readOnlyHint"],true);assert_eq!(tool["inputSchema"]["additionalProperties"],false);
     for row in &rows[2..]{assert!(row.get("error").is_some() || row["result"]["isError"]==true);}
-    let reply=r#"{"ok":false,"count":0,"rows":[],"errors":["unmatched bank transaction 7 does not exist"]}"#;
+    let reply=r#"{"ok":false,"code":"NOT_FOUND","errors":["unmatched bank transaction 7 does not exist"]}"#;
     let response=format!("HTTP/1.1 200 OK\r\nContent-Length:{}\r\nConnection:close\r\n\r\n{reply}",reply.len());
     let(origin,wire,task)=http(Box::leak(response.into_boxed_str()));
     let rows=parsed(&run(&origin,&[init("2025-11-25"),ready(),call(2,"bank_suggest_matches",json!({"company":"synthetic","bankTransactionId":7,"max":2}))]));
-    assert_eq!(rows[1]["result"]["structuredContent"]["data"],serde_json::from_str::<Value>(reply).unwrap());
-    assert!(wire.recv().unwrap().starts_with(b"GET /api/companies/synthetic/bank/match-suggestions?bankTransactionId=7&max=2 HTTP/1.1"));task.join().unwrap();
+    assert_eq!(rows[1]["result"]["structuredContent"],serde_json::from_str::<Value>(reply).unwrap(),"{rows:?}");
+    assert_eq!(rows[1]["result"]["isError"],true);
+    assert_eq!(serde_json::from_str::<Value>(rows[1]["result"]["content"][0]["text"].as_str().unwrap()).unwrap(),serde_json::from_str::<Value>(reply).unwrap());
+    assert!(wire.recv().unwrap().starts_with(b"GET /api/companies/synthetic/bank/original/suggestions?bankTransactionId=7&max=2 HTTP/1.1"));task.join().unwrap();
 }
 
 #[test]
