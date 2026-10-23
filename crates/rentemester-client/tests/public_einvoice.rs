@@ -1,10 +1,11 @@
+mod common;
+use common::TcpListener;
 use rentemester_client::{
     ApiClient, Error, MAX_PUBLIC_INVOICE_BODY, PublicInvoiceMutation as Action,
 };
 use serde_json::json;
 use std::{
     io::{Read, Write},
-    net::TcpListener,
     thread,
     time::Duration,
 };

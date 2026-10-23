@@ -1,3 +1,5 @@
+mod common;
+use common::TcpListener;
 use rentemester_client::{
     ApiClient, Error, MAX_WORKSPACE_TRANSFER_BODY, MAX_WORKSPACE_TRANSFER_PROOF_BODY,
     WORKSPACE_BACKUP_CONTENT_TYPE,
@@ -5,7 +7,6 @@ use rentemester_client::{
 use serde_json::{Value, json};
 use std::{
     io::{Read, Write},
-    net::TcpListener,
     sync::mpsc,
     thread,
     time::Duration,

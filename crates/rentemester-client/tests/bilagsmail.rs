@@ -1,8 +1,9 @@
+mod common;
+use common::TcpListener;
 use rentemester_client::{ApiClient, BilagsmailMutation as Action, Error, MAX_BILAGSMAIL_BODY};
 use serde_json::json;
 use std::{
     io::{Read, Write},
-    net::TcpListener,
     thread,
     time::Duration,
 };

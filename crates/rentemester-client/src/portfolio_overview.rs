@@ -27,7 +27,7 @@ mod tests {
     use serde_json::json;
     use std::{
         io::{Read, Write},
-        net::TcpListener,
+
         thread,
     };
     fn server(reply: Value, status: u16) -> (String, thread::JoinHandle<String>) {
@@ -102,3 +102,6 @@ mod tests {
         }
     }
 }
+
+#[cfg(test)]
+use crate::test_transport::TcpListener;

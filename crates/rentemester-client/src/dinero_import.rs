@@ -357,7 +357,7 @@ mod container_tests {
     async fn original_transport_preserves_truthful_zip_or_json_and_refuses_other_mimes() {
         use std::{
             io::{Read, Write},
-            net::TcpListener,
+
             thread,
         };
         for mime in [
@@ -403,3 +403,6 @@ mod container_tests {
         }
     }
 }
+
+#[cfg(test)]
+use crate::test_transport::TcpListener;

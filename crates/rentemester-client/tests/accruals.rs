@@ -1,7 +1,8 @@
+mod common;
+use common::TcpListener;
 use rentemester_client::{AccrualMutation as Op, ApiClient, Error, MAX_ACCRUAL_BODY};
 use std::{
     io::{Read, Write},
-    net::TcpListener,
     thread,
     time::Duration,
 };

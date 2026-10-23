@@ -1,8 +1,9 @@
+mod common;
+use common::TcpListener;
 use rentemester_client::{ApiClient, Error, publish_original_mileage};
 use serde_json::{Value, json};
 use std::{
     io::{Read, Write},
-    net::TcpListener,
     thread,
 };
 fn server(status: u16, value: Value) -> (ApiClient, thread::JoinHandle<(String, Value)>) {

@@ -197,7 +197,7 @@ impl ApiClient {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::{io::{Read, Write}, net::TcpListener, sync::{Arc, atomic::{AtomicUsize, Ordering}}, thread, time::Duration};
+    use std::{io::{Read, Write},  sync::{Arc, atomic::{AtomicUsize, Ordering}}, thread, time::Duration};
 
     fn packet_fixture() -> Value {
         json!({"version":3,"periodStart":"2025-01-01","periodEnd":"2025-03-31","cutoff":"2025-03-31","controlsRun":["TEST"],"items":[{"code":"TEST","status":"passed","waivable":false,"count":0,"amount":0,"evidence":[],"sourceHash":"b".repeat(64)}],"blockers":0,"warnings":0,"hash":"a".repeat(64)})
@@ -381,3 +381,6 @@ mod tests {
         assert!(!success(&json!({"ok":true,"id":19,"errors":[],"appliedRules":[RULE]}),Operation::Close,&valid));
     }
 }
+
+#[cfg(test)]
+use crate::test_transport::TcpListener;

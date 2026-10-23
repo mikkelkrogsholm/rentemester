@@ -1,8 +1,9 @@
+mod common;
+use common::TcpListener;
 use rentemester_client::{ApiClient, Error};
 use serde_json::json;
 use std::{
     io::{Read, Write},
-    net::TcpListener,
     thread,
 };
 #[tokio::test]

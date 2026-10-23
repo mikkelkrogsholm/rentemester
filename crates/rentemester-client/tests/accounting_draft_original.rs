@@ -1,3 +1,5 @@
+mod common;
+use common::TcpListener;
 use rentemester_client::{
     AccountingDraftOriginalOperation as Op, ApiClient, Error, original_accounting_draft_schema,
     parse_original_accounting_draft_json, validate_original_accounting_draft,
@@ -5,7 +7,6 @@ use rentemester_client::{
 use serde_json::{Value, json};
 use std::{
     io::{Read, Write},
-    net::TcpListener,
     thread,
 };
 fn payload() -> Value {

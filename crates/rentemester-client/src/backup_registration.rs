@@ -484,7 +484,7 @@ mod tests {
     async fn mutation_sends_fixed_action_once_and_inspection_is_bodyless() {
         use std::{
             io::{Read, Write},
-            net::TcpListener,
+
             thread,
         };
         for inspect in [false, true] {
@@ -559,3 +559,6 @@ mod tests {
         }
     }
 }
+
+#[cfg(test)]
+use crate::test_transport::TcpListener;

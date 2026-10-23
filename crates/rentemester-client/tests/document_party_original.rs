@@ -1,3 +1,5 @@
+mod common;
+use common::TcpListener;
 use rentemester_client::{
     ApiClient, DocumentPartyOriginalOperation as Op, Error, document_party_original_schema,
     document_party_original_validate,
@@ -5,7 +7,6 @@ use rentemester_client::{
 use serde_json::{Value, json};
 use std::{
     io::{Read, Write},
-    net::TcpListener,
     thread,
     time::{Duration, Instant},
 };

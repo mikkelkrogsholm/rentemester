@@ -230,7 +230,7 @@ mod tests {
     use super::*;
     use std::{
         io::{Read, Write},
-        net::TcpListener,
+
         thread,
     };
     fn row(id: u64) -> Value {
@@ -373,3 +373,6 @@ mod tests {
         );
     }
 }
+
+#[cfg(test)]
+use crate::test_transport::TcpListener;

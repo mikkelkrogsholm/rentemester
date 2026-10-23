@@ -1,10 +1,11 @@
+mod common;
+use common::TcpListener;
 use rentemester_client::{
     ApiClient, Error, MasterDataOriginalKind as Kind, master_data_original_create_schema,
 };
 use serde_json::{Value, json};
 use std::{
     io::{Read, Write},
-    net::TcpListener,
     sync::{
         Arc,
         atomic::{AtomicUsize, Ordering},

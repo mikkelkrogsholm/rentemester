@@ -1,8 +1,9 @@
+mod common;
+use common::TcpListener;
 use rentemester_client::{ApiClient, Error, validate_original_vat_purchase};
 use serde_json::{Value, json};
 use std::{
     io::{Read, Write},
-    net::TcpListener,
     thread,
 };
 fn input() -> Value {
@@ -158,7 +159,7 @@ fn malformed_receipt_is_unknown_and_authority_is_not_reclassified() {
             api.original_vat_eu_service_purchase("synthetic", &input(), None)
                 .await
                 .unwrap_err(),
-            Error::OutcomeUnknown
+            Error::Protocol
         );
     });
 }

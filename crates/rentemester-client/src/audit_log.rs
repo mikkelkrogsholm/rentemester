@@ -246,7 +246,7 @@ mod tests {
     async fn cookie_and_service_reads_encode_filters_and_preserve_server_pagination() {
         use std::{
             io::{Read, Write},
-            net::TcpListener,
+
             thread,
         };
         for service in [false, true] {
@@ -320,3 +320,6 @@ mod tests {
         }
     }
 }
+
+#[cfg(test)]
+use crate::test_transport::TcpListener;
