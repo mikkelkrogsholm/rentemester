@@ -50,7 +50,7 @@ export function BookkeepingPlanSummary({ plan, slug }: { plan: BookkeepingBatchP
         const vat = sourceRecord(item.detail.vat), amounts = sourceRecord(vat.plan);
         const request = sourceRecord(amounts.request);
         const originalCurrency = sourceText(request.currency, sourceText(doc.currency, "Valuta ikke oplyst"));
-        const reasons = [...sourceReasons(item.detail.reason), ...sourceReasons(vat.errors)];
+        const reasons = [...sourceReasons(item.detail.reason), ...sourceReasons(sourceRecord(item.detail.rule).reasons), ...sourceReasons(vat.errors)];
         const currency = sourceText(bank.currency, "Valuta ikke oplyst");
         const amount = (value: unknown, unit = currency) => value === null || value === undefined ? "Ikke oplyst" : `${sourceText(value)} ${unit}`;
         const account = sourceText(proposed.account), treatment = sourceText(proposed.vatTreatment);
