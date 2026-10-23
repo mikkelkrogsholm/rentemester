@@ -155,6 +155,57 @@ fn one_parse(
         ),
     }
 }
+// The request's admission already owns one global PDF slot. Borrow only idle
+// slots for its remaining lanes: competing requests must never create 4 x 4
+// children. Each lane keeps its permit until all of its actual work has drained.
+// No owner/SQL guard crosses this boundary; one_parse owns both fenced phases.
+fn parse_batch<T: Send>(
+    ids: &[i64],
+    first: tokio::sync::OwnedSemaphorePermit,
+    slots: &std::sync::Arc<tokio::sync::Semaphore>,
+    parse: impl Fn(i64) -> T + Sync,
+) -> Result<Vec<T>, ()> {
+    let mut permits = vec![first];
+    while permits.len() < ids.len().min(4) {
+        match slots.clone().try_acquire_owned() {
+            Ok(permit) => permits.push(permit),
+            Err(_) => break,
+        }
+    }
+    let next = std::sync::atomic::AtomicUsize::new(0);
+    std::thread::scope(|scope| {
+        let mut lanes = Vec::new();
+        for permit in permits {
+            let (next, parse) = (&next, &parse);
+            lanes.push(scope.spawn(move || {
+                let _permit = permit;
+                let mut completed = Vec::new();
+                loop {
+                    let index = next.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+                    let Some(&id) = ids.get(index) else { break };
+                    completed.push((index, parse(id)));
+                }
+                completed
+            }));
+        }
+        let mut completed = Vec::new();
+        let mut panicked = false;
+        // Always join every lane, even after a panic/error. Successful effects
+        // are not replayed and no child is left running after the response.
+        for lane in lanes {
+            match lane.join() {
+                Ok(values) => completed.extend(values),
+                Err(_) => panicked = true,
+            }
+        }
+        if panicked {
+            return Err(());
+        }
+        completed.sort_by_key(|(index, _)| *index);
+        Ok(completed.into_iter().map(|(_, value)| value).collect())
+    })
+}
+
 enum Input {
     Parse(i64),
     Pending { cursor: i64, limit: usize },
@@ -280,9 +331,12 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
     };
     let result=tokio::task::spawn_blocking(move || {
         let _permit=permit;
-        let _pdf_permit=pdf_permit;
+        let pdf_permit=pdf_permit;
         match input {
-            Input::Parse(id)=>one_parse(&state,&cookie,&slug,id),
+            Input::Parse(id)=>{
+                let _pdf_permit=pdf_permit;
+                one_parse(&state,&cookie,&slug,id)
+            },
             Input::Read(read)=>{
                 let mut owner=state.native.lock_company(&slug).map_err(|_|refused(StatusCode::SERVICE_UNAVAILABLE,"owner_unavailable"))?;
                 read_authorized(&mut owner,&cookie,read)
@@ -293,11 +347,16 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
                     let mut owner=state.native.lock_company(&slug).map_err(|_|refused(StatusCode::SERVICE_UNAVAILABLE,"owner_unavailable"))?;
                     read_authorized(&mut owner,&cookie,Read::Pending{identity:parser.identity().clone(),cursor,limit})?
                 };
-                let ids=plan["documentIds"].as_array().ok_or_else(||Box::new(refused(StatusCode::SERVICE_UNAVAILABLE,"pdf_plan_unavailable")))?;
+                let ids=plan["documentIds"].as_array().ok_or_else(||Box::new(refused(StatusCode::SERVICE_UNAVAILABLE,"pdf_plan_unavailable")))?
+                    .iter().map(|id|id.as_i64().ok_or_else(||Box::new(refused(StatusCode::SERVICE_UNAVAILABLE,"pdf_plan_unavailable"))))
+                    .collect::<Result<Vec<_>,_>>()?;
+                let results=parse_batch(&ids,pdf_permit.expect("write admission"),&state.pdf_workers,|id|one_parse(&state,&cookie,&slug,id))
+                    .map_err(|()|Box::new(refused(StatusCode::SERVICE_UNAVAILABLE,"outcome_unknown")))?;
                 let mut failed=Vec::new();
-                for id in ids {
-                    let id=id.as_i64().ok_or_else(||Box::new(refused(StatusCode::SERVICE_UNAVAILABLE,"pdf_plan_unavailable")))?;
-                    match one_parse(&state,&cookie,&slug,id) {Ok(value) if value["ok"]==true=>{},Ok(_)=>failed.push(id),Err(r)=>return Err(r)}
+                // Publication results stay in plan order, regardless of child
+                // completion order. Errors are returned only after all lanes drain.
+                for (id,result) in ids.iter().zip(results) {
+                    match result {Ok(value) if value["ok"]==true=>{},Ok(_)=>failed.push(*id),Err(r)=>return Err(r)}
                 }
                 Ok(json!({"ok":true,"batch":{"requested":ids.len(),"parsed":ids.len()-failed.len(),"failed":failed.len(),"cursor":plan["cursor"],"nextCursor":plan["nextCursor"],"resume":if failed.is_empty(){Value::Null}else{json!({"documentIds":failed})}}}))
             }
@@ -339,6 +398,120 @@ fn read_authorized(
 #[cfg(test)]
 mod documents_original_tests {
     use super::*;
+    use std::sync::{
+        Arc, Barrier, Mutex,
+        atomic::{AtomicUsize, Ordering},
+        mpsc,
+    };
+    use std::time::Duration;
+
+    #[test]
+    fn document_pdf_batch_four_overlapping_lanes_and_ordered_failures() {
+        let slots = Arc::new(tokio::sync::Semaphore::new(4));
+        let first = slots.clone().try_acquire_owned().unwrap();
+        let gate = Arc::new(Barrier::new(5));
+        let owner = Mutex::new(Vec::new());
+        let (started, arrivals) = mpsc::channel();
+        std::thread::scope(|scope| {
+            let handle = scope.spawn(|| {
+                parse_batch(&[1, 2, 3, 4], first, &slots, |id| {
+                    // Model the two owner phases around a blocked child. The test
+                    // thread can acquire this mutex while all four children run.
+                    owner.lock().unwrap().push((id, "prepare"));
+                    started.send(id).unwrap();
+                    gate.wait();
+                    owner.lock().unwrap().push((id, "finish"));
+                    if id == 2 { Err("malformed") } else { Ok(id) }
+                })
+            });
+            for _ in 0..4 {
+                arrivals
+                    .recv_timeout(Duration::from_secs(10))
+                    .expect("four live lanes");
+            }
+            assert_eq!(slots.available_permits(), 0);
+            assert_eq!(
+                owner
+                    .try_lock()
+                    .expect("owner released during children")
+                    .len(),
+                4
+            );
+            gate.wait();
+            assert_eq!(
+                handle.join().unwrap().unwrap(),
+                vec![Ok(1), Err("malformed"), Ok(3), Ok(4)]
+            );
+        });
+        assert_eq!(owner.lock().unwrap().len(), 8);
+        assert_eq!(slots.available_permits(), 4);
+    }
+
+    #[test]
+    fn document_pdf_batch_competing_requests_share_four_global_slots() {
+        let slots = Arc::new(tokio::sync::Semaphore::new(4));
+        // Both requests are admitted before either fans out.
+        let first = slots.clone().try_acquire_owned().unwrap();
+        let second = slots.clone().try_acquire_owned().unwrap();
+        let gate = Barrier::new(5);
+        let active = AtomicUsize::new(0);
+        let peak = AtomicUsize::new(0);
+        let calls = AtomicUsize::new(0);
+        let (started, arrivals) = mpsc::channel();
+        std::thread::scope(|scope| {
+            let parse = |id| {
+                let current = active.fetch_add(1, Ordering::SeqCst) + 1;
+                peak.fetch_max(current, Ordering::SeqCst);
+                started.send(id).unwrap();
+                // Block the first four calls, independent of lane assignment.
+                if calls.fetch_add(1, Ordering::SeqCst) < 4 {
+                    gate.wait();
+                }
+                active.fetch_sub(1, Ordering::SeqCst);
+                id
+            };
+            // Four ids in each request; the first global wave blocks.
+            let shared_slots = &slots;
+            let a = scope.spawn(move || parse_batch(&[0, 4, 5, 6], first, shared_slots, parse));
+            let b = scope.spawn(move || parse_batch(&[1, 2, 3, 7], second, shared_slots, parse));
+            for _ in 0..4 {
+                arrivals
+                    .recv_timeout(Duration::from_secs(10))
+                    .expect("global overlap");
+            }
+            assert_eq!(active.load(Ordering::SeqCst), 4);
+            assert_eq!(slots.available_permits(), 0);
+            gate.wait();
+            assert_eq!(a.join().unwrap().unwrap(), vec![0, 4, 5, 6]);
+            assert_eq!(b.join().unwrap().unwrap(), vec![1, 2, 3, 7]);
+        });
+        assert_eq!(peak.load(Ordering::SeqCst), 4);
+        assert_eq!(active.load(Ordering::SeqCst), 0);
+        assert_eq!(slots.available_permits(), 4);
+    }
+
+    #[test]
+    fn document_pdf_batch_panic_drains_successes_without_replay_and_releases_permits() {
+        let slots = Arc::new(tokio::sync::Semaphore::new(4));
+        let first = slots.clone().try_acquire_owned().unwrap();
+        let gate = Barrier::new(4);
+        let effects = Mutex::new(Vec::new());
+        let result = parse_batch(&[1, 2, 3, 4, 5, 6], first, &slots, |id| {
+            if id <= 4 {
+                gate.wait();
+            }
+            if id == 2 {
+                panic!("synthetic lane panic");
+            }
+            effects.lock().unwrap().push(id);
+        });
+        assert!(result.is_err());
+        let mut effects = effects.into_inner().unwrap();
+        effects.sort();
+        assert_eq!(effects, vec![1, 3, 4, 5, 6]);
+        assert_eq!(slots.available_permits(), 4);
+    }
+
     #[test]
     fn documents_original_retired_preparation_never_releases_admission() {
         use rentemester_application::control_fence::{Failure, FailureStage};
