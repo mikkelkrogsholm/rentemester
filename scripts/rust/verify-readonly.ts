@@ -1,5 +1,6 @@
 /** Synthetic full-schema integration checks. Never opens a real workspace. */
 import assert from "node:assert/strict";
+import { assertCanonicalEqual as same } from "./acceptance";
 import { createHash } from "node:crypto";
 import {
   cpSync,
@@ -171,9 +172,6 @@ function normalize(report: any): any {
     totalDebit: formatAmount(report.totalDebit),
     totalCredit: formatAmount(report.totalCredit),
   };
-}
-function same(left: any, right: any) {
-  assert.deepEqual(left, right);
 }
 try {
   const alpha = fixture("alpha"),

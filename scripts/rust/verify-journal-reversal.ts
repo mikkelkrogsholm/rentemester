@@ -1,6 +1,8 @@
 /** Actual source/native append-only reversals on canonical synthetic company/control databases. */
 import { Database } from "bun:sqlite";
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
+import { assertCanonicalEqual, assertNotCommitted } from "./acceptance";
 import {
 	copyFileSync,
 	existsSync,
@@ -97,8 +99,9 @@ function build(packageName: string) {
 	assert.ok(helper);
 	return helper as string;
 }
-const application = build("rentemester-application"),
-	storage = build("rentemester-storage");
+const controlsOnly = process.argv.includes("--controls-only");
+const application = controlsOnly ? "" : build("rentemester-application"),
+	storage = controlsOnly ? "" : build("rentemester-storage");
 const controlSeed = join(temp, "control-seed"),
 	control = openWorkspaceControlDb(controlSeed);
 control.exec(
@@ -345,6 +348,62 @@ function originals(path:string) {
  const db=open(path);try {return encoded([db.query("SELECT * FROM journal_entries WHERE id=1").all(),db.query("SELECT * FROM journal_lines WHERE journal_entry_id=1 ORDER BY id").all()]);}finally{db.close(true);}
 }
 try {
+ if (controlsOnly) {
+  // Exercise the very assertions used above/below, with actual synthetic SQLite
+  // state and real source mutations. No Rust build, provider or real workspace.
+  for (const mode of ["wal", "delete"]) {
+   const f=prepared(mode), before=snapshot(f.path), p=oracle(f);
+   const oracleBefore=snapshot(p), originalEntries=originals(f.path);
+   const hash=(text:string)=>createHash("sha256").update(text).digest("hex");
+   checked(`${mode}/positive-refusal`,()=>{
+    const refusal=source(f.path,{...correction,entryId:"999"});
+    assert.equal(refusal.ok,false);
+    assertNotCommitted("not_committed",before,snapshot(f.path));
+   });
+   checked(`${mode}/omitted-gate-must-fail`,()=>{
+    // Substitute the actually committed valid operation for the expected
+    // missing-original refusal: model an adapter that skipped its gate.
+    const omitted=prepared(mode), original=snapshot(omitted.path);
+    assert.equal(source(omitted.path).ok,true);
+    assert.throws(()=>assertNotCommitted("committed",original,snapshot(omitted.path)),/expected refusal/);
+    // Even a dishonest refusal envelope cannot hide the persisted operation.
+    assert.throws(()=>assertNotCommitted("not_committed",original,snapshot(omitted.path)));
+   });
+   for (const point of ["header","line","companion"]) checked(`${mode}/partial-${point}-must-fail`,()=>{
+    const broken=prepared(mode), original=snapshot(broken.path), db=open(broken.path);
+    // Deliberately persist only one part of a mutation in a disposable copy.
+    // All normal schema/triggers remain installed; production code is unchanged.
+    if(point==="header") db.exec("INSERT INTO journal_entries(entry_no,transaction_date,text,rule_version,entry_hash,status) VALUES('SYN-PARTIAL','2026-01-02','Synthetic partial','synthetic-v1','synthetic-partial','posted')");
+    if(point==="line") db.exec("INSERT INTO journal_lines(journal_entry_id,account_id,debit_amount,credit_amount) SELECT 1,id,1,0 FROM accounts WHERE account_no='2000'");
+    if(point==="companion") db.exec("INSERT INTO audit_log(event_type,entity_type,entity_id,message) VALUES('synthetic_partial','journal_entry','1','Synthetic partial companion')");
+    db.close(true);
+    assert.throws(()=>assertNotCommitted("not_committed",original,snapshot(broken.path)));
+   });
+   checked(`${mode}/cross-company-swap-must-fail`,()=>{
+    const other=prepared(mode,{...base,text:"Synthetic second company",lines:[{accountNo:"2000",debitAmount:"20.00"},{accountNo:"5000",creditAmount:"20.00"}]}), otherBefore=snapshot(other.path);
+    const actual=source(f.path), expected=source(p), different=source(other.path);
+    assert.equal(actual.ok,true);assert.equal(expected.ok,true);assert.equal(different.ok,true);
+    assertCanonicalEqual(actual,expected);
+    assertCanonicalEqual(encoded(tables(f.path,true)),encoded(tables(p,true)));
+    assert.throws(()=>assertCanonicalEqual(encoded(tables(other.path,true)),encoded(tables(p,true))));
+    assert.notEqual(hash(otherBefore),hash(before));
+   });
+   checked(`${mode}/fixed-oracle-and-source-preservation`,()=>{
+    // The source fixture and separate oracle started with the same full state;
+    // each was mutated only by the explicitly requested synthetic operation.
+    assert.equal(before,oracleBefore);
+    assert.equal(count(f.path,"journal_entries"),2);
+    assert.equal(count(p,"journal_entries"),2);
+    assert.equal(originals(f.path),originalEntries);
+    assert.equal(originals(p),originalEntries);
+    const db=open(f.path);try {
+     const rows=db.query("SELECT a.account_no,l.debit_amount,l.credit_amount FROM journal_lines l JOIN accounts a ON a.id=l.account_id WHERE l.journal_entry_id=2 ORDER BY a.account_no").all();
+     assert.deepEqual(rows,[{account_no:"2000",debit_amount:0n,credit_amount:10n},{account_no:"5000",debit_amount:10n,credit_amount:0n}]);
+    } finally {db.close(true);}
+   });
+  }
+  console.log(JSON.stringify({ok:true,scope:"R08 actual shared harness negative controls on disposable synthetic SQLite copies; no Rust rebuild or product effects",checks:observations.length,observations},null,2));
+ } else {
  for(const mode of ["wal","delete"]) {
   const positives:[string,Journal,string?][]=[
    ["capital",base],
@@ -416,12 +475,12 @@ try {
    ["malformed-current-tail","journal_entries","UPDATE journal_entries SET entry_hash='GENESIS' WHERE id=1"],
    ["subcent-original","journal_lines","UPDATE journal_lines SET debit_amount=10.001 WHERE id=1"],
    ["unsafe-original-number","journal_lines","UPDATE journal_lines SET debit_amount=9007199254740992 WHERE id=1"],
-  ])checked(`${mode}/${name}`,()=>{const f=prepared(mode);mutate(f.path,table,sql);const before=snapshot(f.path);assert.equal(native(f).outcome,"not_committed");assert.equal(snapshot(f.path),before);});
+  ])checked(`${mode}/${name}`,()=>{const f=prepared(mode);mutate(f.path,table,sql);const before=snapshot(f.path);assertNotCommitted(native(f).outcome,before,snapshot(f.path));});
   checked(`${mode}/schema-before-receipt`,()=>{const f=prepared(mode);accepted(native(f,correction,"drift"));const db=open(f.path);db.exec("DROP TRIGGER journal_entries_no_update");db.close(true);const before=snapshot(f.path),n=native(f,correction,"drift");assert.equal(n.code,"unsupported_schema");assert.equal(n.result,undefined);assert.equal(snapshot(f.path),before);});
   checked(`${mode}/receipt-write-failure-undoes-real-reversal`,()=>{const f=prepared(mode),db=open(f.path);db.exec(`INSERT INTO mutation_idempotency_tombstones(id,client_key_hash,ledger_uuid,operation,principal_kind,principal_subject_id,payload_hash,created_at,expires_at)SELECT 9007199254740991,'${"0".repeat(64)}',ledger_uuid,'journal_reverse','user','other','${"a".repeat(64)}','2026-01-01T00:00:00.000Z','2026-01-31T00:00:00.000Z' FROM ledger_identity`);db.close(true);const before=snapshot(f.path),n=native(f,correction,"new");assert.equal(n.code,"IDEMPOTENCY_STORAGE_FAILURE");assert.equal(snapshot(f.path),before);});
-  for(const [name,extra]of Object.entries({archived:{archived:true},unregistered:{registered:false},wrong_workspace:{workspace:"other"},mixed:{service:"rms_synthetic"}}))checked(`${mode}/authority-${name}`,()=>{const f=prepared(mode),before=snapshot(f.path);assert.equal(native(f,correction,undefined,extra).outcome,"not_committed");assert.equal(snapshot(f.path),before);});
+  for(const [name,extra]of Object.entries({archived:{archived:true},unregistered:{registered:false},wrong_workspace:{workspace:"other"},mixed:{service:"rms_synthetic"}}))checked(`${mode}/authority-${name}`,()=>{const f=prepared(mode),before=snapshot(f.path);assertNotCommitted(native(f,correction,undefined,extra).outcome,before,snapshot(f.path));});
   for(const point of ["sequence","header","line-0","line-1","lines","audit"]){
-   checked(`${mode}/late-fault-${point}`,()=>{const f=prepared(mode),before=snapshot(f.path);assert.equal(native(f,correction,undefined,{},storage,{RM_POST_FAIL:point}).outcome,"not_committed");assert.equal(snapshot(f.path),before);assert.equal(accepted(native(f)).entryNo,"2026-00002");});
+   checked(`${mode}/late-fault-${point}`,()=>{const f=prepared(mode),before=snapshot(f.path);assertNotCommitted(native(f,correction,undefined,{},storage,{RM_POST_FAIL:point}).outcome,before,snapshot(f.path));assert.equal(accepted(native(f)).entryNo,"2026-00002");});
    const f=prepared(mode),before=snapshot(f.path),marker=join(temp,`death-${serial++}`),out=marker+".json";
    const child=Bun.spawn(args(storage),{cwd:root,env:processEnv(f,config(correction),out,{RM_POST_POINT:point,RM_POST_MARKER:marker}),stdin:"pipe",stdout:"pipe",stderr:"pipe"});await waitFor(marker);child.kill("SIGKILL");await child.exited;
    checked(`${mode}/death-${point}`,()=>{assert.equal(existsSync(out),false);assert.equal(snapshot(f.path),before);assert.equal(accepted(native(f)).entryNo,"2026-00002");});
@@ -440,6 +499,7 @@ try {
  }
  checked("actual-delete-reversal-commit-unknown",()=>{const f=prepared("delete"),reader=open(f.path);reader.exec("BEGIN");reader.query("SELECT * FROM ledger_identity").all();const n=native(f,correction,"unknown");assert.equal(n.outcome,"unknown",encoded(n));assert.equal(n.companyReusable,false);assert.equal(n.result,undefined);reader.exec("ROLLBACK");reader.close(true);});
  console.log(JSON.stringify({ok:true,scope:"actual source/native append-only manual reversal, original preservation, current human authority, receipt and process atomicity on admitted canonical connections",checks:observations.length,observations},null,2));
+}
 }finally{
  if(oldToday===undefined)delete process.env.RENTEMESTER_TODAY;else process.env.RENTEMESTER_TODAY=oldToday;
  if(oldFuture===undefined)delete process.env.RENTEMESTER_MAX_FUTURE_DAYS;else process.env.RENTEMESTER_MAX_FUTURE_DAYS=oldFuture;
