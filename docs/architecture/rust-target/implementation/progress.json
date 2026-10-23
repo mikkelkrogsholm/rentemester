@@ -1,15 +1,15 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "R05#677 protocol-admission component accepted; whole677 remainsOPEN for full operation schemas/retrymatrix. Next wholeissue680:three negative harness controls.",
-  "code_revision": "9c85079f432ee2fa4ca16e46d00371fc6a8a14fb",
+  "current_increment": "R08 #680 whole original scope and all3criteria accepted c258572a; next necessary wholeclosure #691 original PDF benchmark/PDFium semantic and boundedworker proof.714 healthproposal retained behind677/712 dependencies.",
+  "code_revision": "c258572acaff69b4bcc82c2833912c5998cd1a99",
   "spec_revision": "sha256:73b6036e3b99feaf547ff3881dd7ef2ea6ea6ec5743bb139d362f97570ca8da6",
-  "state": "32of55 originalissues actuallyCLOSED,23OPEN. R05#677 compatible sharedReact/RustSDK/server admission component accepted9c85079f: passive publicmanifest, exactroute/profile/header binding, predispatchrefusals, oldReactmajor1compatibility and safe unknownwrite/cancellation/binary behavior. 395SDK/4nativeprotocol/67ReactAPI/4Bunchecks andfrontendtypesPASS; actualRustbinary/sharedReactHTTPcrossPASS withoutworkspace/financialeffects. Whole677 remainsOPEN: contractinventory29eb failed,1137gaprows are not completion. Next680 has3boundednegativeharnesscontrols; reuse validpriorproof. All55scope/J01-J07/R53/R55/cutover/finalinstalleddesktop remain.",
-  "issues_closed": 32,
+  "state": "R08#680 fully accepted:14 actual shared-harness negative/positive SQLite controls in WAL/DELETE plus retained34read-only/111source-native/1074Decimalvector/known-defect normalization proof. Omittedgate, dishonestrefusal, partialheader/line/companion, crosscompanysubstitution detected; checked-in sources/oracles unchanged.33of55 originalissues actuallyCLOSED,22OPEN;680 closedflow:done with fulloriginalacceptance. Full677 schemas/retry and all remaining original scope/J01-J07/finalmanualdesktop/release/cutover/retirement remain open.",
+  "issues_closed": 33,
   "next": [
-    "Close existing#680 after its same acceptance function rejects omittedgate, injectedpartialcommit and crosscompanysubstitution using preservedsynthetic snapshots; no newserver/MFA/provider/framework.",
-    "Preserve accepted#677protocolcomponent and complete remaining exact advertisedoperation input/success/refusal/parseprotocol schemas and per-operation retry/key/readback/provider contracts. No scope reduction or genericretry promise.",
-    "One commonRustmotor/server andsameReactweb/Tauri; installedmanualdesktoplast."
+    "Close whole accepted680, then existing691 PDF benchmark/PDFium parity and boundedworker acceptance. Dependencies675/679/686/690 are closed; no new PDF framework or GUI.",
+    "Full677 exact advertised HTTP/MCP/CLI schemas and operation-specific retry/key/readback/provider contracts remain required; componentaccepted only.",
+    "One commonRustmotor/server andsameReactweb/Tauri; manualinstalleddesktoplast; preserve all55 originalscopes/finalgates."
   ],
   "preserve_unrelated_paths": [
     ".claude/settings.json",
@@ -19,7 +19,7 @@
     ".gitattributes"
   ],
   "all_goal_requirements_complete": false,
-  "previous_verified_increment": "Whole original R07#679 foundation/tooling/license accepted and actually CLOSED; next R05#677 client/server compatibility admission",
+  "previous_verified_increment": "R05#677 protocol-admission component accepted; whole677 remainsOPEN for full operation schemas/retrymatrix. Next wholeissue680:three negative harness controls.",
   "evidence": {
     "combined_browser_log": "/tmp/rm-platform5-combined.log",
     "combined_browser_exit": 0,
@@ -15843,6 +15843,40 @@
         "path": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/observations/r05-677-contracts-review.json",
         "sha256": "49bd423563a942df4fa9ffb3c4d17cce6e63b3cca0acd62d8d582c5f986b1664"
       }
+    },
+    "r08_harness680": {
+      "issue": 680,
+      "whole_issue_accepted": true,
+      "source_revision": "c258572acaff69b4bcc82c2833912c5998cd1a99",
+      "manifest": "/tmp/rentemester-rust-reports/r08-harness680-accepted.json",
+      "sha256": "5cce5ea7f7da5301d73fc60dd41e213e538229ea0b21f321df07b59dea2abfa6",
+      "sgd_run": "rust-r08-harness680-closure-20261023T232947.280038000",
+      "model_revision": "sha256:828680828e920149e7e0357c5bd2caf32a93e4dc8ec8b82cc2040d0c2cd1848d",
+      "actual_current_controls": 14,
+      "retained_historical_scope": {
+        "docs/architecture/rust-target/implementation/read-only/evidence/parity.json": "62919ec6e9b6f8a9e75cf14bd1b1d92976ff4878370c206a404d92758e9c0106",
+        "docs/architecture/rust-target/implementation/read-only/evidence/report.json": "c1620a8ffd37e09f0c4a28b3065395197d256335c30679038be92beae8bdd727",
+        "docs/architecture/rust-target/implementation/journal-reversal/parity.json": "55d59618ae1fd16d87ca95db202047f99d5eba247bfc29f3d9cfb5f1af592d58",
+        "docs/architecture/rust-target/implementation/journal-reversal/evidence.json": "b1ce96745d2de4f2323e246ade6f65ccaee8c674b36cf1c1c05e0d72603a947c",
+        "docs/architecture/rust-target/implementation/exact-arithmetic/parity.json": "7b8e1d85fe0c25fb889ee834d50ba3937efbbf956ed80ec39944abe94130c9c8",
+        "docs/architecture/rust-target/implementation/exact-arithmetic/evidence.json": "c1a9cb24505d729b52af44d7b52681ddd23ee255f662e9fd03f70b80fff75e7d",
+        "docs/architecture/rust-target/implementation/company-normalization/evidence.json": "3df2425a824e831d38aa457f960d0e0eba28f9e7cfeb26fdc4b3573d4f867891",
+        "docs/architecture/rust-target/implementation/company-normalization/calendar-red.txt": "f77ded56b70b93ce0feca655e5a9fa3211297b1515de00e925ae3632e3ef07ae",
+        "docs/architecture/rust-target/implementation/company-normalization/exact-id-red.txt": "e873794d101aac9965b24d07fc32f7444a9141203866be3ba4c5c712cd31b83f"
+      },
+      "prior_failed_fixture_log": "/tmp/r08-680-controls.log",
+      "independent_review": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/observations/r08-680-lead-and-independent-review.json",
+      "no_financial_provider_or_gui_effects": true,
+      "retained_provider_fake_transport": {
+        "path": "/tmp/rentemester-rust-reports/native-service-mail102.json",
+        "sha256": "25545093ad9b62fb0ebf9bf754fb1d4ff388bcf3fb3f5abafff176defb1f61ec",
+        "source": "ab113e476f0a7afe506fd7156208b9363bca0d41",
+        "currentHelper": "scripts/rust/check-native-service-mail.ts",
+        "currentHelperSha256": "8f29588df225b66b4d3859a82fa57932160063e277c8e6b6d78310ead32c1f12",
+        "scope": "Actual local synthetic TLS-SMTP .invalid 550refusal/explicitretry/MIMEPDF; killed-before-finalack unknown afterrestart; MCP replay refused withoutresend, CLIexternalqueue reconciliation. No externalmailforwarded.",
+        "notReexecuted": true,
+        "unavailableRaw50And55NotClaimedReRead": true
+      }
     }
   },
   "verified_history": [
@@ -17793,6 +17827,40 @@
       "unaccepted_inventory_review": {
         "path": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/observations/r05-677-contracts-review.json",
         "sha256": "49bd423563a942df4fa9ffb3c4d17cce6e63b3cca0acd62d8d582c5f986b1664"
+      }
+    },
+    {
+      "issue": 680,
+      "whole_issue_accepted": true,
+      "source_revision": "c258572acaff69b4bcc82c2833912c5998cd1a99",
+      "manifest": "/tmp/rentemester-rust-reports/r08-harness680-accepted.json",
+      "sha256": "5cce5ea7f7da5301d73fc60dd41e213e538229ea0b21f321df07b59dea2abfa6",
+      "sgd_run": "rust-r08-harness680-closure-20261023T232947.280038000",
+      "model_revision": "sha256:828680828e920149e7e0357c5bd2caf32a93e4dc8ec8b82cc2040d0c2cd1848d",
+      "actual_current_controls": 14,
+      "retained_historical_scope": {
+        "docs/architecture/rust-target/implementation/read-only/evidence/parity.json": "62919ec6e9b6f8a9e75cf14bd1b1d92976ff4878370c206a404d92758e9c0106",
+        "docs/architecture/rust-target/implementation/read-only/evidence/report.json": "c1620a8ffd37e09f0c4a28b3065395197d256335c30679038be92beae8bdd727",
+        "docs/architecture/rust-target/implementation/journal-reversal/parity.json": "55d59618ae1fd16d87ca95db202047f99d5eba247bfc29f3d9cfb5f1af592d58",
+        "docs/architecture/rust-target/implementation/journal-reversal/evidence.json": "b1ce96745d2de4f2323e246ade6f65ccaee8c674b36cf1c1c05e0d72603a947c",
+        "docs/architecture/rust-target/implementation/exact-arithmetic/parity.json": "7b8e1d85fe0c25fb889ee834d50ba3937efbbf956ed80ec39944abe94130c9c8",
+        "docs/architecture/rust-target/implementation/exact-arithmetic/evidence.json": "c1a9cb24505d729b52af44d7b52681ddd23ee255f662e9fd03f70b80fff75e7d",
+        "docs/architecture/rust-target/implementation/company-normalization/evidence.json": "3df2425a824e831d38aa457f960d0e0eba28f9e7cfeb26fdc4b3573d4f867891",
+        "docs/architecture/rust-target/implementation/company-normalization/calendar-red.txt": "f77ded56b70b93ce0feca655e5a9fa3211297b1515de00e925ae3632e3ef07ae",
+        "docs/architecture/rust-target/implementation/company-normalization/exact-id-red.txt": "e873794d101aac9965b24d07fc32f7444a9141203866be3ba4c5c712cd31b83f"
+      },
+      "prior_failed_fixture_log": "/tmp/r08-680-controls.log",
+      "independent_review": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/observations/r08-680-lead-and-independent-review.json",
+      "no_financial_provider_or_gui_effects": true,
+      "retained_provider_fake_transport": {
+        "path": "/tmp/rentemester-rust-reports/native-service-mail102.json",
+        "sha256": "25545093ad9b62fb0ebf9bf754fb1d4ff388bcf3fb3f5abafff176defb1f61ec",
+        "source": "ab113e476f0a7afe506fd7156208b9363bca0d41",
+        "currentHelper": "scripts/rust/check-native-service-mail.ts",
+        "currentHelperSha256": "8f29588df225b66b4d3859a82fa57932160063e277c8e6b6d78310ead32c1f12",
+        "scope": "Actual local synthetic TLS-SMTP .invalid 550refusal/explicitretry/MIMEPDF; killed-before-finalack unknown afterrestart; MCP replay refused withoutresend, CLIexternalqueue reconciliation. No externalmailforwarded.",
+        "notReexecuted": true,
+        "unavailableRaw50And55NotClaimedReRead": true
       }
     }
   ],
