@@ -10,7 +10,7 @@ describe("passive protocol admission", () => {
     const fetchMock = vi.fn(async (input: RequestInfo | URL) => String(input) === "/api/protocol"
       ? protocolResponse() : Response.json({ ok: true, amount: "9007199254740993" }));
     stubGlobal("fetch", fetchMock);
-    expect(await request("/api/write", { method: "POST", body: "{}", headers: { authorization: "secret", "x-rentemester-protocol": "99" } })).toEqual({ ok: true, amount: "9007199254740993" });
+    expect(await request<{ ok: boolean; amount: string }>("/api/write", { method: "POST", body: "{}", headers: { authorization: "secret", "x-rentemester-protocol": "99" } })).toEqual({ ok: true, amount: "9007199254740993" });
     expect(fetchMock).toHaveBeenCalledTimes(2);
     const preflight = fetchMock.mock.calls[0] as unknown as [string, RequestInit];
     expect(preflight).toEqual(["/api/protocol", { method: "GET", credentials: "omit", redirect: "error", signal: undefined }]);
