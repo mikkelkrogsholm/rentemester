@@ -48,7 +48,9 @@ pub fn prepare(args: Vec<String>) -> Result<Vec<String>, (u8, Error)> {
         cursor += 1;
     }
     // Native and experimental dialects retain their own company semantics.
-    let company_bound = crate::original_args::requires_company(&remaining)
+    let knowledge = remaining.first().is_some_and(|s| s == "remote")
+        && remaining.get(1).is_some_and(|s| crate::company_knowledge::accepts(s));
+    let company_bound = (knowledge || crate::original_args::requires_company(&remaining))
         && !remaining
             .iter()
             .take_while(|s| s.as_str() != "--")
@@ -93,7 +95,10 @@ pub fn prepare(args: Vec<String>) -> Result<Vec<String>, (u8, Error)> {
         .map_err(|e| (2, Error::new("invalid_input", e.to_string())))?;
     if let Some(company) = company {
         assert_workspace(&local)?;
-        let company = if slug(&company) {
+        let company = if knowledge {
+            rentemester_client::knowledge_company_selector(Some(&local), &company)
+                .map_err(|e| (2, Error::new("invalid_input", e.to_string())))?
+        } else if slug(&company) {
             company
         } else {
             local_company(&local, &company)?

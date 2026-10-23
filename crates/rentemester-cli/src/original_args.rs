@@ -125,6 +125,22 @@ pub fn prepare_with_output(args: Vec<String>, stdout_is_terminal: bool) -> Resul
 }
 
 fn prepare_inner(args: Vec<String>, stdout_is_terminal: Option<bool>) -> Result<Vec<String>, (u8, Error)> {
+    // Source knowledge aliases share the exact native transport/body contract.
+    if args.first().is_some_and(|s| s == "company-knowledge") {
+        let command = match args.get(1).map(String::as_str) {
+            Some("context") => Some("company-knowledge"),
+            Some("propose") => Some("propose-company-knowledge"),
+            Some("review") => Some("review-company-knowledge"),
+            Some("supersede") => Some("supersede-company-knowledge"),
+            _ => None,
+        };
+        if let Some(command) = command {
+            let mut native = vec!["remote".into(), command.into()];
+            native.extend(args.into_iter().skip(2));
+            return Ok(native);
+        }
+    }
+
     // Locate command words without mistaking option values for commands. Retain
     // their indices so only command words move, not search words or literal data.
     let mut words = Vec::new();

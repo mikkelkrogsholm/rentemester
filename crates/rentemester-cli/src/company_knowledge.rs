@@ -16,7 +16,7 @@ pub fn accepts(s: &str) -> bool {
     )
 }
 pub fn help() -> Value {
-    json!({"usage":"company-knowledge --company SLUG [--as-of ISO] [--include-proposed true|false]; propose-company-knowledge/review-company-knowledge/supersede-company-knowledge --company SLUG --confirm < exact-native.json. Explicit server/private MFA cookie required.","policy":"CompanyKnowledgeRead/Manage on current company. Native256KiB inner confirm. Source-backed advisory assertions never change accounting. Supersede creates proposed replacement requiring separate review; current context honors effective windows and conflicts. No actor/principal/company overrides, keys or automatic retries. Unknown writes require canonical context/history before further action.","bodySchemas":{"propose":knowledge_body_schema(KnowledgeMutation::Propose),"review":knowledge_body_schema(KnowledgeMutation::Review),"supersede":knowledge_body_schema(KnowledgeMutation::Supersede)}})
+    json!({"usage":"company-knowledge --company SLUG [--as-of ISO] [--include-proposed true|false]; propose-company-knowledge/review-company-knowledge/supersede-company-knowledge --company SLUG --confirm < exact-native.json. Explicit --server or verified --local-profile; exactly one private --cookie-file or --service-key-file required. Company is a canonical slug, or registered absolute company root only with --local-profile. Original aliases: company-knowledge context/propose/review/supersede (exact native stdin for writes). Server decides current service/human permissions.","policy":"CompanyKnowledgeRead/Manage on current company. Native256KiB inner confirm. Source-backed advisory assertions never change accounting. Supersede creates proposed replacement requiring separate review; current context honors effective windows and conflicts. No actor/principal/company overrides, keys or automatic retries. Unknown writes require canonical context/history before further action.","bodySchemas":{"propose":knowledge_body_schema(KnowledgeMutation::Propose),"review":knowledge_body_schema(KnowledgeMutation::Review),"supersede":knowledge_body_schema(KnowledgeMutation::Supersede)}})
 }
 pub fn run(
     command: &str,
@@ -29,7 +29,7 @@ pub fn run(
     if confirm == read
         || preview
         || flags.keys().any(|k| {
-            !(["--server", "--cookie-file", "--company"].contains(k)
+            !(["--server", "--cookie-file", "--service-key-file", "--company"].contains(k)
                 || read && ["--as-of", "--include-proposed"].contains(k))
         })
     {
@@ -43,17 +43,23 @@ pub fn run(
     let server = flags
         .get("--server")
         .ok_or_else(|| invalid("explicit server required"))?;
-    let cookie = flags
-        .get("--cookie-file")
-        .ok_or_else(|| invalid("private cookie file required"))?;
+    if flags.contains_key("--cookie-file") == flags.contains_key("--service-key-file") {
+        return Err(invalid("exactly one private cookie or scoped service-key file required"));
+    }
     let proposed = match flags.get("--include-proposed").copied() {
         None | Some("false") => false,
         Some("true") => true,
         _ => return Err(invalid("include-proposed must be true or false")),
     };
-    let cookie = rentemester_client::read_cookie_file(std::path::Path::new(cookie))
-        .map_err(crate::remote::client_error)?;
-    let api = ApiClient::new(server, allow, Some(cookie)).map_err(crate::remote::client_error)?;
+    let api = if let Some(cookie) = flags.get("--cookie-file") {
+        let cookie = rentemester_client::read_cookie_file(std::path::Path::new(cookie))
+            .map_err(crate::remote::client_error)?;
+        ApiClient::new(server, allow, Some(cookie))
+    } else {
+        let key = rentemester_client::read_service_key_file(std::path::Path::new(flags["--service-key-file"]))
+            .map_err(crate::remote::client_error)?;
+        ApiClient::with_service_key(server, allow, key)
+    }.map_err(crate::remote::client_error)?;
     let mut bytes = vec![];
     if !read {
         std::io::stdin()

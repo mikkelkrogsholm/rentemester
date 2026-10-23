@@ -53,6 +53,7 @@ impl ApiClient {
         as_of: Option<&str>,
         include_proposed: bool,
     ) -> Result<Value, Error> {
+        let company = crate::knowledge_company_selector(self.local.as_ref(), company)?;
         let mut query = vec![(
             "includeProposed",
             if include_proposed { "true" } else { "false" },
@@ -65,7 +66,7 @@ impl ApiClient {
             }
             query.push(("asOf", at));
         }
-        self.get(&company_path(company, "knowledge")?, &query).await
+        self.get(&company_path(&company, "knowledge")?, &query).await
     }
     /// Sends exact explicitly confirmed JSON once. Unknown outcomes require canonical history reads.
     pub async fn mutate_company_knowledge(
@@ -75,6 +76,7 @@ impl ApiClient {
         bytes: Vec<u8>,
         confirmed: bool,
     ) -> Result<Value, Error> {
+        let company = crate::knowledge_company_selector(self.local.as_ref(), company)?;
         if !confirmed {
             return Err(Error::InvalidInput(
                 "explicit knowledge confirmation required",
@@ -86,7 +88,7 @@ impl ApiClient {
         validate_body(&bytes, action)?;
         self.request(
             Method::POST,
-            &company_path(company, &format!("knowledge/{}", action.suffix()))?,
+            &company_path(&company, &format!("knowledge/{}", action.suffix()))?,
             &[],
             Some(bytes),
         )

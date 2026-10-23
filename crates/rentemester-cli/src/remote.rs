@@ -283,9 +283,10 @@ pub fn run(args: &[String]) -> Result<Value, Failure> {
             "documents", "document-original", "ingest-document", "expense-booking-options", "payables", "register-payable", "pay-payable",
         ]
         .contains(&command)
+        && !crate::company_knowledge::accepts(command)
     {
         return Err(invalid(
-            "service authentication supports context, reports, manual journals, customer/invoice flows, bank reads/import, document ingestion/originals, explicit invoice/payable settlement and invoice email delivery",
+            "service authentication supports scoped company knowledge, context, reports, manual journals, customer/invoice flows, bank reads/import, document ingestion/originals, explicit invoice/payable settlement and invoice email delivery",
         ));
     }
     if crate::invoice_extraction::accepts(command) {
