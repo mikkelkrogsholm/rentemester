@@ -28,6 +28,7 @@ import sqlite3
 import socket
 import ssl
 import subprocess
+import sys
 import threading
 import time
 import uuid
@@ -213,7 +214,10 @@ def main():
     parser.add_argument('--journal-mcp-original', action='store_true', help='Standalone original numeric MCP keyed post/reversal, source envelopes, period lifecycle and normal MFA receipt restart')
     parser.add_argument('--period-mcp-original', action='store_true', help='Standalone original five named period tools, owner-issued service force/open obligations and exact MFA restart')
     parser.add_argument('--exceptions-original', action='store_true', help='Standalone original exception CLI/MCP review-only, current service grants and exact normal MFA restart')
+    parser.add_argument('--native-cli-candidate', action='store_true', help='Standalone private normal-name candidate, same local owner and two legally distinct same-name vendors')
     args = parser.parse_args()
+    if args.native_cli_candidate and any(value for key,value in vars(args).items() if isinstance(value,bool) and key != 'native_cli_candidate'):
+        parser.error('--native-cli-candidate is standalone and excludes other extensions')
     if args.exceptions_original and any(value for key,value in vars(args).items() if isinstance(value,bool) and key != 'exceptions_original'):
         parser.error('--exceptions-original is standalone and excludes other extensions')
     if args.period_mcp_original and any(value for key,value in vars(args).items() if isinstance(value,bool) and key != 'period_mcp_original'):
@@ -228,7 +232,7 @@ def main():
         parser.error('--bank-queries is standalone and excludes other extensions')
     if args.local_runtime_join and args.local_runtime_mcp:
         parser.error('Choose exactly one local adapter')
-    if (args.local_runtime_join or args.local_runtime_mcp) and any(value for key,value in vars(args).items() if isinstance(value,bool) and key not in {'local_runtime_join','local_runtime_mcp'}):
+    if (args.local_runtime_join or args.local_runtime_mcp) and any(value for key,value in vars(args).items() if isinstance(value,bool) and key not in {'local_runtime_join','local_runtime_mcp','native_cli_candidate'}):
         parser.error('--local-runtime-join is standalone and excludes other extensions')
     if args.saft_artifact and any(value for key,value in vars(args).items() if isinstance(value,bool) and key != 'saft_artifact'):
         parser.error('--saft-artifact is standalone and excludes other extensions')
@@ -268,6 +272,8 @@ def main():
         parser.error('--backup-lock is mutually exclusive with --service-purchase/--backup-destinations')
     if args.backup_destinations and not args.service_purchase:
         parser.error('--backup-destinations requires --service-purchase')
+    if args.native_cli_candidate:
+        args.local_runtime_join = True
     if os.path.lexists(args.evidence) or os.path.lexists(args.evidence.with_suffix('.png')):
         parser.error('New evidence and screenshot paths required')
     if os.uname().sysname != 'Darwin' or os.getuid() == 0 or os.getuid() != os.geteuid():
@@ -466,7 +472,12 @@ def main():
                     raise RuntimeError('Fresh restore only; refuse overwrite')
                 argv += ['--restore-backup', str(work / 'scanner-source.native-backup.json'), '--trusted-backup-key', str(work / 'trusted.pub'), '--confirm-target', str(root), '--source-unavailable']
             log = (work / 'server.log').open('ab')
-            child = subprocess.Popen(argv, cwd=REPO, stdin=subprocess.DEVNULL, stdout=log, stderr=log)
+            product_env = None
+            if args.native_cli_candidate:
+                product_env = {key: value for key, value in os.environ.items()
+                               if not re.search(r'BUN|NODE|FALLBACK|LEGACY|RENTEMESTER|^RM_', key)}
+                product_env['PATH'] = str(work / 'empty-path')
+            child = subprocess.Popen(argv, cwd=REPO, env=product_env, stdin=subprocess.DEVNULL, stdout=log, stderr=log)
             report.setdefault('serverPids', []).append(child.pid)
             save()
             for _ in range(300):
@@ -659,6 +670,33 @@ def main():
             shutil.copytree(args.web_dir.resolve(strict=True), web)
             report['artifacts'] = {name: digest(path) for name, path in pinned.items()}
             report['webFiles'] = {str(p.relative_to(web)): digest(p) for p in sorted(web.rglob('*')) if p.is_file()}
+            if args.native_cli_candidate:
+                revision = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=REPO, text=True).strip()
+                candidate = work / 'candidate'
+                packaging = REPO / 'scripts/release/assemble-native-cli.py'
+                packaging_hash = digest(packaging)
+                subprocess.run([sys.executable, str(packaging), '--cli-binary', str(pinned['cli_binary']), '--mcp-binary', str(pinned['mcp_binary']), '--server-binary', str(pinned['server_binary']), '--web-dir', str(web), '--output', str(candidate), '--revision', revision], check=True, timeout=60, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                manifest_path = candidate / 'native-cli-candidate.json'
+                manifest = json.loads(manifest_path.read_bytes())
+                expected = {'bin/rentemester': pinned['cli_binary'], 'bin/rentemester-rust': pinned['cli_binary'], 'bin/rentemester-mcp': pinned['mcp_binary'], 'bin/rentemester-server': pinned['server_binary']}
+                expected.update({'web/'+name: web/name for name in report['webFiles']})
+                inventory = [{'path':name,'size':source.stat().st_size,'sha256':digest(source),'executable':bool(source.stat().st_mode & 0o111)} for name,source in sorted(expected.items())]
+                if manifest != {'format':'rentemester-native-cli-candidate/1','sourceRevision':revision,'candidateOnly':True,'files':inventory}:
+                    raise RuntimeError('Candidate exact manifest differs')
+                def verify_candidate():
+                    files = {str(path.relative_to(candidate)) for path in candidate.rglob('*') if path.is_file()}
+                    if files != set(expected) | {'native-cli-candidate.json'} or digest(manifest_path) != manifest_hash or digest(packaging) != packaging_hash:
+                        raise RuntimeError('Candidate inventory or packaging pin changed')
+                    for name,source in expected.items():
+                        target = candidate/name
+                        if target.is_symlink() or not target.is_file() or digest(target) != digest(source) or target.stat().st_size != source.stat().st_size or bool(target.stat().st_mode & 0o111) != bool(source.stat().st_mode & 0o111) or (target.stat().st_dev,target.stat().st_ino) == (source.stat().st_dev,source.stat().st_ino):
+                            raise RuntimeError('Candidate independent bytes/mode differ')
+                manifest_hash = digest(manifest_path)
+                verify_candidate()
+                report['nativeCliCandidate'] = {'manifest':manifest,'manifestSha256':manifest_hash,'packagingScriptSha256':packaging_hash,'path':str(candidate),'sourceByteEquality':True,'privateCandidateOnly':True}
+                pinned = {'cli_binary':candidate/'bin/rentemester','mcp_binary':candidate/'bin/rentemester-mcp','server_binary':candidate/'bin/rentemester-server'}
+                web = candidate/'web'
+                (work/'empty-path').mkdir(mode=0o700)
             progress('operator:private-auth-gateway-trust-and-backup-signer')
             ca, cert, private = work / 'ca.pem', work / 'tls.pem', work / 'tls.key'
             (work / 'tls.ext').write_text('basicConstraints=critical,CA:FALSE\nkeyUsage=critical,digitalSignature,keyEncipherment\nextendedKeyUsage=serverAuth\nsubjectAltName=DNS:localhost,IP:127.0.0.1\n')
@@ -725,7 +763,7 @@ def main():
                 start()
             script = work / 'browser.mjs'
             script.write_text(BROWSER)
-            controller = subprocess.Popen(['/opt/homebrew/bin/bun', str(script)], cwd=REPO, env={**os.environ, 'RM_IMPORTED_PORTFOLIO_HELPER': str(REPO / 'scripts/rust/check-native-imported-portfolio.ts'), 'RM_SYNTHETIC_IMPORT_HELPER': str(REPO / 'scripts/rust/check-native-synthetic-import.ts'), 'RM_DINERO_IMPORT_HELPER': str(REPO / 'scripts/rust/check-native-dinero-import.ts'), 'RM_INVOICE_BAD_DEBT_HELPER': str(REPO / 'scripts/rust/check-native-invoice-bad-debt.ts'), 'RM_INVOICE_INTEREST_HELPER': str(REPO / 'scripts/rust/check-native-invoice-interest.ts'), 'RM_INVOICE_COMPENSATION_HELPER': str(REPO / 'scripts/rust/check-native-invoice-compensation.ts'), 'RM_NATIVE_BACKUP_DESTINATION_PROOF':'1' if args.backup_destinations else '0', 'RM_NATIVE_REMOTE_BACKUP_PROOF':'1' if args.remote_backup else '0', 'RM_AUDIT_VERIFY_HELPER': str(REPO / 'scripts/rust/check-native-audit-verify.ts'), 'RM_AUDIT_HELPER': str(REPO / 'scripts/rust/check-native-audit-log.ts'), 'RM_BACKUP_RECOVERY_HELPER': str(REPO / 'scripts/rust/check-native-backup-recovery.ts'), 'RM_SERVICE_PURCHASE_HELPER': str(REPO / ('scripts/rust/check-native-exceptions-original.ts' if args.exceptions_original else 'scripts/rust/check-native-period-mcp.ts' if args.period_mcp_original else 'scripts/rust/check-native-journal-mcp.ts' if args.journal_mcp_original else 'scripts/rust/check-native-period-original.ts' if (args.period_original or args.journal_original or args.journal_mcp_original) else 'scripts/rust/check-native-bank-queries.ts' if args.bank_queries else 'scripts/rust/check-native-local-runtime.ts' if (args.local_runtime_join or args.local_runtime_mcp) else 'scripts/rust/check-native-saft.ts' if args.saft_artifact else 'scripts/rust/check-native-accountant.ts' if args.authority_export else 'scripts/rust/check-native-annual-clients.ts' if args.annual_exports else 'scripts/rust/check-native-dashboard-json.ts' if args.dashboard_json or args.portfolio_overview else 'scripts/rust/check-native-dated-reports.ts' if args.dated_reports else 'scripts/rust/check-native-journal-history.ts' if args.journal_history else 'scripts/rust/check-native-backup-lock.ts' if args.backup_lock else 'scripts/rust/check-native-service-purchase.ts')), 'RM_SCANNER_PROOF_FACTORY': 'createOriginalExceptionsProof' if args.exceptions_original else 'createOriginalPeriodMcpProof' if args.period_mcp_original else 'createOriginalJournalMcpProof' if args.journal_mcp_original else 'createOriginalJournalProof' if args.journal_original else 'createOriginalPeriodProof' if args.period_original else 'createBankQueriesProof' if args.bank_queries else 'createLocalRuntimeMcpProof' if args.local_runtime_mcp else 'createLocalRuntimeProof' if (args.local_runtime_join or args.local_runtime_mcp) else 'createSaftArtifactProof' if args.saft_artifact else 'createAuthorityExportProof' if args.authority_export else 'createAnnualExportsProof' if args.annual_exports else 'createPortfolioOverviewProof' if args.portfolio_overview else 'createDashboardJsonProof' if args.dashboard_json else 'createDatedReportsProof' if args.dated_reports else 'createJournalHistoryProof' if args.journal_history else 'createBackupLockProof' if args.backup_lock else 'createServicePurchaseProof', 'RM_SCANNER_BASE': origin, 'RM_SCANNER_WORK': str(work), 'RM_SCANNER_SCREENSHOT': str(args.evidence.with_suffix('.png')), 'RM_SCANNER_PLAYWRIGHT': str((REPO / 'node_modules/@playwright/test/index.mjs').resolve(strict=True))}, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True, bufsize=1, start_new_session=True)
+            controller = subprocess.Popen(['/opt/homebrew/bin/bun', str(script)], cwd=REPO, env={**os.environ, 'RM_IMPORTED_PORTFOLIO_HELPER': str(REPO / 'scripts/rust/check-native-imported-portfolio.ts'), 'RM_SYNTHETIC_IMPORT_HELPER': str(REPO / 'scripts/rust/check-native-synthetic-import.ts'), 'RM_DINERO_IMPORT_HELPER': str(REPO / 'scripts/rust/check-native-dinero-import.ts'), 'RM_INVOICE_BAD_DEBT_HELPER': str(REPO / 'scripts/rust/check-native-invoice-bad-debt.ts'), 'RM_INVOICE_INTEREST_HELPER': str(REPO / 'scripts/rust/check-native-invoice-interest.ts'), 'RM_INVOICE_COMPENSATION_HELPER': str(REPO / 'scripts/rust/check-native-invoice-compensation.ts'), 'RM_NATIVE_BACKUP_DESTINATION_PROOF':'1' if args.backup_destinations else '0', 'RM_NATIVE_REMOTE_BACKUP_PROOF':'1' if args.remote_backup else '0', 'RM_AUDIT_VERIFY_HELPER': str(REPO / 'scripts/rust/check-native-audit-verify.ts'), 'RM_AUDIT_HELPER': str(REPO / 'scripts/rust/check-native-audit-log.ts'), 'RM_BACKUP_RECOVERY_HELPER': str(REPO / 'scripts/rust/check-native-backup-recovery.ts'), 'RM_SERVICE_PURCHASE_HELPER': str(REPO / ('scripts/rust/check-native-exceptions-original.ts' if args.exceptions_original else 'scripts/rust/check-native-period-mcp.ts' if args.period_mcp_original else 'scripts/rust/check-native-journal-mcp.ts' if args.journal_mcp_original else 'scripts/rust/check-native-period-original.ts' if (args.period_original or args.journal_original or args.journal_mcp_original) else 'scripts/rust/check-native-bank-queries.ts' if args.bank_queries else 'scripts/rust/check-native-local-runtime.ts' if (args.local_runtime_join or args.local_runtime_mcp) else 'scripts/rust/check-native-saft.ts' if args.saft_artifact else 'scripts/rust/check-native-accountant.ts' if args.authority_export else 'scripts/rust/check-native-annual-clients.ts' if args.annual_exports else 'scripts/rust/check-native-dashboard-json.ts' if args.dashboard_json or args.portfolio_overview else 'scripts/rust/check-native-dated-reports.ts' if args.dated_reports else 'scripts/rust/check-native-journal-history.ts' if args.journal_history else 'scripts/rust/check-native-backup-lock.ts' if args.backup_lock else 'scripts/rust/check-native-service-purchase.ts')), 'RM_SCANNER_PROOF_FACTORY': 'createOriginalExceptionsProof' if args.exceptions_original else 'createOriginalPeriodMcpProof' if args.period_mcp_original else 'createOriginalJournalMcpProof' if args.journal_mcp_original else 'createOriginalJournalProof' if args.journal_original else 'createOriginalPeriodProof' if args.period_original else 'createBankQueriesProof' if args.bank_queries else 'createLocalRuntimeMcpProof' if args.local_runtime_mcp else 'createLocalRuntimeProof' if (args.local_runtime_join or args.local_runtime_mcp) else 'createSaftArtifactProof' if args.saft_artifact else 'createAuthorityExportProof' if args.authority_export else 'createAnnualExportsProof' if args.annual_exports else 'createPortfolioOverviewProof' if args.portfolio_overview else 'createDashboardJsonProof' if args.dashboard_json else 'createDatedReportsProof' if args.dated_reports else 'createJournalHistoryProof' if args.journal_history else 'createBackupLockProof' if args.backup_lock else 'createServicePurchaseProof', 'RM_NATIVE_CLI_CANDIDATE': '1' if args.native_cli_candidate else '0', 'RM_SCANNER_BASE': origin, 'RM_SCANNER_WORK': str(work), 'RM_SCANNER_SCREENSHOT': str(args.evidence.with_suffix('.png')), 'RM_SCANNER_PLAYWRIGHT': str((REPO / 'node_modules/@playwright/test/index.mjs').resolve(strict=True))}, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True, bufsize=1, start_new_session=True)
             report['browserControllerPid'] = controller.pid
             phase('authenticate')
             if args.exceptions_original:
@@ -881,6 +919,8 @@ def main():
                 helper_key = 'journalMcpOriginalHelperSha256' if args.journal_mcp_original else 'journalOriginalHelperSha256' if args.journal_original else 'periodOriginalHelperSha256' if args.period_original else 'bankQueriesHelperSha256' if args.bank_queries else 'localRuntimeMcpHelperSha256' if args.local_runtime_mcp else 'localRuntimeHelperSha256' if (args.local_runtime_join or args.local_runtime_mcp) else 'saftArtifactHelperSha256' if args.saft_artifact else 'authorityExportHelperSha256' if args.authority_export else 'annualExportsHelperSha256' if args.annual_exports else 'portfolioOverviewHelperSha256' if args.portfolio_overview else 'dashboardJsonHelperSha256' if args.dashboard_json else 'datedReportsHelperSha256' if args.dated_reports else 'journalHistoryHelperSha256'
                 report[helper_key] = digest(helper)
                 reference_files = [REPO / path for path in ['src/mcp/tools/journal.ts','src/mcp/tool-runtime.ts','src/mcp/envelope.ts','src/core/idempotency.ts','scripts/rust/check-native-period-original.ts']] if args.journal_mcp_original else [REPO / path for path in ['src/cli/journal.ts','src/cli-meta/journal-specs.ts','src/core/ledger.ts','src/cli/period.ts','src/core/period-close-readiness.ts']] if args.journal_original else [REPO / path for path in ['src/cli/period.ts','src/cli-meta/period-specs.ts','src/core/period-close-readiness.ts','src/core/periods.ts']] if args.period_original else [REPO / ('src/core/' + name + '.ts') for name in ['saft-export','tar']] if args.saft_artifact else [REPO / ('src/core/' + name + '.ts') for name in ['authority-export','tar']] if args.authority_export else [REPO / ('src/core/' + name + '.ts') for name in ['tax-return','ixbrl','annual-report']] if args.annual_exports else [REPO / ('src/core/' + name + '.ts') for name in ['financial-statements','account-classification','dates','money']] if args.dated_reports else []
+                if args.native_cli_candidate:
+                    reference_files += [REPO/path for path in ['src/cli/vendor.ts','src/core/master-data.ts','src/mcp/tools/vendor.ts','scripts/rust/check-native-master-data-original.ts']]
                 reference_hashes = {str(path.relative_to(REPO)):digest(path) for path in reference_files}
                 phase('service-run')
                 if digest(helper) != report[helper_key]:
@@ -1020,6 +1060,19 @@ def main():
                             raise RuntimeError('Local runtime exact authenticated posting audit differs')
                         if any(os.path.lexists(work/name) for name in ['r.json','r.sock']):
                             raise RuntimeError('Local runtime terminal endpoints not retired')
+                        if args.native_cli_candidate:
+                            vendor_rows = db.execute('SELECT id,name,vat_or_cvr,country_code,identifier_kind FROM vendors ORDER BY id').fetchall()
+                            retained = actual['vendors']['rows']
+                            expected_vendors = [(r['id'],r['name'],r['vatOrCvr'],r['countryCode'],r['identifierKind']) for r in retained]
+                            vendor_audits = db.execute("SELECT event_type,actor FROM audit_log WHERE event_type='vendor_create' ORDER BY id").fetchall()
+                            if vendor_rows != expected_vendors or vendor_audits != [('vendor_create','user:'+local_owner_id)]*2 or actual['vendors'] != reopened['vendors']:
+                                raise RuntimeError('Candidate exact vendor identities/restart/owner audits differ')
+                            fields = [('id','id'),('name','name'),('address','address'),('vat_or_cvr','vatOrCvr'),('country_code','countryCode'),('identifier_kind','identifierKind'),('identity_status','identityStatus'),('email','email'),('phone','phone'),('website','website'),('default_expense_account','defaultExpenseAccount'),('default_vat_treatment','defaultVatTreatment'),('notes','notes'),('archived','archived'),('created_at','createdAt')]
+                            raw_vendors = db.execute('SELECT '+','.join(column for column,_ in fields)+' FROM vendors ORDER BY id').fetchall()
+                            full_vendors = [{key:bool(value) if key == 'archived' else value for (_,key),value in zip(fields,row)} for row in raw_vendors]
+                            if full_vendors != retained:
+                                raise RuntimeError('Candidate entire raw vendor rows differ from retained source projection')
+                            report['terminalSql'].update(vendors=vendor_rows,vendorCreateAudits=vendor_audits,vendorSourceProjection=full_vendors)
                         report['terminalSql']['postingAudits'] = local_post_rows
                         local_amount_rows = db.execute("SELECT a.account_no,l.debit_amount,l.credit_amount FROM journal_lines l JOIN accounts a ON a.id=l.account_id ORDER BY l.id").fetchall()
                         if local_amount_rows != [('1738',100.0,0.0),('3738',0.0,100.0)]:
@@ -1072,6 +1125,9 @@ db.close();process.stdout.write(JSON.stringify(out));"""
                     report['originalSourceHashes'] = reference_hashes
                 if digest(helper) != report[helper_key] or any(digest(path) != report['artifacts'][name] or digest(getattr(args,name)) != report['artifacts'][name] for name,path in pinned.items()):
                     raise RuntimeError('Standalone report pinned helper or binaries changed')
+                if args.native_cli_candidate:
+                    verify_candidate()
+                    report['nativeCliCandidateQualified'] = True
                 source_web = {str(path.relative_to(args.web_dir)):digest(path) for path in sorted(args.web_dir.rglob('*')) if path.is_file()}
                 if source_web != report['webFiles']:
                     raise RuntimeError('Standalone report web artifacts changed')
