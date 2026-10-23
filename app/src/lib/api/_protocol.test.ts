@@ -18,7 +18,7 @@ describe("passive protocol admission", () => {
     expect(business[1].method).toBe("POST");
     expect(business[1].credentials).toBe("same-origin");
     const headers = new Headers(business[1].headers);
-    expect([...headers].filter(([k]) => k.startsWith("x-rentemester-"))).toEqual([
+    expect([...headers].filter(([k]) => k.startsWith("x-rentemester-")).sort(([a], [b]) => a.localeCompare(b))).toEqual([
       ["x-rentemester-manifest", "a".repeat(64)], ["x-rentemester-protocol", "1"], ["x-rentemester-wire-profile", "legacy-react-v1"],
     ]);
   });
@@ -64,6 +64,18 @@ describe("passive protocol admission", () => {
     stubGlobal("fetch", fetchMock);
     await expect(request("/api/health")).resolves.toEqual({ ok: true });
     expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it("preserves only an explicitly matched opaque inbox source with an encoded slash", async () => {
+    const route = { method: "GET", path: "/api/companies/{slug}/workspace-inbox/{source}", capability: "GET /api/companies/{slug}/workspace-inbox/{source}" };
+    const fetchMock = vi.fn(async (url: RequestInfo | URL) => url === "/api/protocol"
+      ? protocolResponse({ operations: [route] }) : Response.json({ source: { sourceId: "source/one" } }));
+    stubGlobal("fetch", fetchMock);
+    await expect(request<{source:{sourceId:string}}>("/api/companies/synthetic/workspace-inbox/source%2Fone")).resolves.toEqual({ source: { sourceId: "source/one" } });
+    for (const path of ["/api/companies/synthetic%2Fcompany/workspace-inbox/source%2Fone", "/api/companies/synthetic/workspace-inbox/source%5Cone", "/api/companies/synthetic/workspace-inbox/..%2Fone", "/api/companies/synthetic/workspace-inbox/source%2F%00one", "/api/companies/synthetic/workspace-inbox/source%2F%zz", "/api/companies/synthetic/workspace-inbox/source%2Fone/extra"]) {
+      await expect(request(path)).rejects.toMatchObject({ code: "protocol_incompatible" });
+    }
+    expect(fetchMock.mock.calls.filter(([url]) => url !== "/api/protocol")).toHaveLength(1);
   });
 
   it("does not retry a server admission rejection", async () => {

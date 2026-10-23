@@ -8,7 +8,7 @@ export function protocolResponse(overrides: Record<string, unknown> = {}): Respo
   return Response.json({ format: "rentemester-http-protocol/1", protocolMajor: 1,
     manifestId: "a".repeat(64), wireProfiles: ["legacy-react-v1"], operations: seamOperations, ...overrides });
 }
-export function withProtocol(handler: (input: RequestInfo | URL, init?: RequestInit) => Promise<unknown>) {
+export function withProtocol(handler: (input: RequestInfo | URL, init?: RequestInit) => Promise<unknown>, routes?: readonly (readonly [string, string])[]) {
   return async (input: RequestInfo | URL, init?: RequestInit): Promise<any> =>
-    String(input) === "/api/protocol" ? protocolResponse() : handler(input, init);
+    String(input) === "/api/protocol" ? protocolResponse(routes ? { operations: routes.map(([method, path]) => ({ method, path, capability: `${method} ${path}` })) } : {}) : handler(input, init);
 }

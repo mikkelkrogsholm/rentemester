@@ -1,3 +1,4 @@
+import { withProtocol } from "../../test/protocol";
 import { describe, expect, it, vi } from "bun:test";
 import { api } from "../api";
 import { workspaceInboxApi } from "./workspace-inbox";
@@ -11,7 +12,7 @@ describe("API read cancellation options", () => {
   it("accepts options as the first argument for parameterless reads", async () => {
     const controller = new AbortController();
     const fetchMock = vi.fn(async () => response({ service: "rentemester-cockpit" }));
-    stubGlobal("fetch", fetchMock);
+    stubFetch(fetchMock);
     await api.health({ signal: controller.signal });
     expect(fetchMock).toHaveBeenCalledWith("/api/health", expect.objectContaining({ signal: controller.signal }));
   });
@@ -20,11 +21,11 @@ describe("API read cancellation options", () => {
     const controller = new AbortController();
     const report = { company: { name: "Synthetic company" } };
     const fetchMock = vi.fn(async () => response({ annualReport: report }));
-    stubGlobal("fetch", fetchMock);
-    const received = await api.annualReport("synthetic/aps", "2026-01-01", "2026-12-31", { signal: controller.signal });
+    stubFetch(fetchMock);
+    const received = await api.annualReport("synthetic-aps", "2026-01-01", "2026-12-31", { signal: controller.signal });
     expect(received.company.name).toBe(report.company.name);
     expect(fetchMock).toHaveBeenCalledWith(
-      "/api/companies/synthetic%2Faps/annual-report?fiscalYearStart=2026-01-01&fiscalYearEnd=2026-12-31",
+      "/api/companies/synthetic-aps/annual-report?fiscalYearStart=2026-01-01&fiscalYearEnd=2026-12-31",
       expect.objectContaining({ signal: controller.signal }),
     );
   });
@@ -33,7 +34,7 @@ describe("API read cancellation options", () => {
     const controller = new AbortController();
     const source = { sourceId: "source/one", filename: "synthetic.pdf" };
     const fetchMock = vi.fn(async () => response({ source }));
-    stubGlobal("fetch", fetchMock);
+    stubFetch(fetchMock);
     const received = await workspaceInboxApi.inspect("synthetic", source.sourceId, { signal: controller.signal });
     expect(received.source.sourceId).toBe(source.sourceId);
     expect(received.source.filename).toBe(source.filename);
@@ -47,7 +48,7 @@ describe("API read cancellation options", () => {
     const controller = new AbortController();
     const input = { journalLineId: 7, allocations: [{ dimensionId: "project", memberId: "one", amountMinor: 500, currency: "DKK" }] };
     const fetchMock = vi.fn(async () => response({ plan: { planHash: "synthetic-hash" } }));
-    stubGlobal("fetch", fetchMock);
+    stubFetch(fetchMock);
     await api.planDimensionAssignment("synthetic", input, { signal: controller.signal });
     expect(fetchMock).toHaveBeenCalledWith(
       "/api/companies/synthetic/dimensions/plan",
@@ -59,13 +60,16 @@ describe("API read cancellation options", () => {
     const controller = new AbortController();
     controller.abort();
     const fetchMock = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) => response({}));
-    stubGlobal("fetch", fetchMock);
+    stubFetch(fetchMock);
     await expect(api.health({ signal: controller.signal })).rejects.toBe(controller.signal.reason);
     const scope = { companyId: 1, accountingFrom: "2026-01-01", accountingTo: "2026-12-31", bankFrom: "2026-01-01", bankTo: "2026-12-31", runKey: "synthetic-run" };
     await api.bookkeepingBatchPersist("synthetic", scope);
-    const mutationInit = fetchMock.mock.calls[1]?.[1] as RequestInit;
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const mutationInit = fetchMock.mock.calls[0]?.[1] as RequestInit;
     expect(mutationInit.signal).toBeUndefined();
     expect(mutationInit.method).toBe("POST");
     expect(mutationInit.body).toBe(JSON.stringify({ ...scope, confirm: true }));
   });
 });
+
+const stubFetch = (handler: Parameters<typeof withProtocol>[0]) => stubGlobal("fetch", withProtocol(handler, [["GET", "/api/health"], ["GET", "/api/companies/{slug}/annual-report"], ["GET", "/api/companies/{slug}/workspace-inbox/{source}"], ["POST", "/api/companies/{slug}/dimensions/plan"], ["POST", "/api/companies/{slug}/bookkeeping-batch/persist"]]));

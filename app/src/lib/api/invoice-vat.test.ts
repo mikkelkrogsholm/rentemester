@@ -1,10 +1,11 @@
+import { withProtocol } from "../../test/protocol";
 import {expect,test} from "bun:test";
 import {stubGlobal} from "../../test/globals";
 import {invoicesApi,type InvoiceIssueInput} from "./invoices";
 
 test("invoice preview and issue preserve explicit native tax facts without rewriting fractional rates",async()=>{
   const calls:Array<{path:string;body:unknown}>=[];
-  stubGlobal("fetch",async(input:RequestInfo|URL,init?:RequestInit)=>{
+  stubFetch(async(input:RequestInfo|URL,init?:RequestInit)=>{
     const path=String(input);calls.push({path,body:JSON.parse(String(init?.body))});
     return path.endsWith("/preview")?new Response("%PDF-synthetic",{headers:{"content-type":"application/pdf"}}):new Response(JSON.stringify({ok:true,invoice:{documentId:75,invoiceNumber:"synthetic-75",vatTreatment:"domestic_reverse_charge",netAmount:100,grossAmount:100,lines:[]}}),{headers:{"content-type":"application/json"}});
   });
@@ -22,14 +23,14 @@ test("invoice preview and issue preserve explicit native tax facts without rewri
 
 
 test("EU invoice wire retains explicit FX without a caller VIES claim",async()=>{
- const calls:unknown[]=[];stubGlobal("fetch",async(input:RequestInfo|URL,init?:RequestInit)=>{calls.push(JSON.parse(String(init?.body)));return String(input).endsWith("/preview")?new Response("%PDF",{headers:{"content-type":"application/pdf"}}):new Response(JSON.stringify({ok:true,invoice:{documentId:1,invoiceNumber:"S-1",lines:[],netAmount:100,vatAmount:0,grossAmount:100,fxRateToDkk:7.45,grossAmountDkk:745}}));});
+ const calls:unknown[]=[];stubFetch(async(input:RequestInfo|URL,init?:RequestInit)=>{calls.push(JSON.parse(String(init?.body)));return String(input).endsWith("/preview")?new Response("%PDF",{headers:{"content-type":"application/pdf"}}):new Response(JSON.stringify({ok:true,invoice:{documentId:1,invoiceNumber:"S-1",lines:[],netAmount:100,vatAmount:0,grossAmount:100,fxRateToDkk:7.45,grossAmountDkk:745}}));});
  const input:InvoiceIssueInput={issueDate:"2025-10-12",currency:"EUR",fxRateToDkk:7.45,vatTreatment:"foreign_reverse_charge",reverseChargeBasis:"EU_B2B_SERVICES",reverseChargeNote:"Reverse charge",buyer:{vatOrCvr:"DE123456789"},lines:[{description:"Synthetic EU service",quantity:1,unitPriceExVat:100,taxClassification:"reverse_charge",vatRate:0,reverseChargeBasis:"EU_B2B_SERVICES"}]};
  await invoicesApi.previewInvoice("synthetic",input);const issued=await invoicesApi.issueInvoice("synthetic",input);expect(calls).toEqual([input,input]);expect(issued.grossAmount).toBe(100);expect(issued.grossAmountDkk).toBe(745);
 });
 
 test("simplified preview and issue preserve reduced original-currency wire and server VAT",async()=>{
  const calls:unknown[]=[];
- stubGlobal("fetch",async(input:RequestInfo|URL,init?:RequestInit)=>{
+ stubFetch(async(input:RequestInfo|URL,init?:RequestInit)=>{
    calls.push(JSON.parse(String(init?.body)));
    return String(input).endsWith("/preview")?new Response("%PDF-simplified",{headers:{"content-type":"application/pdf"}}):new Response(JSON.stringify({ok:true,invoice:{invoiceType:"simplified",documentId:78,invoiceNumber:"S-78",currency:"EUR",netAmount:80.06,vatAmount:20.01,grossAmount:100.07,lines:[{description:"Synthetic service"}]}}));
  });
@@ -40,7 +41,7 @@ test("simplified preview and issue preserve reduced original-currency wire and s
 
 test("invoice metadata is serialized identically for preview and issue",async()=>{
  const calls:unknown[]=[];
- stubGlobal("fetch",async(input:RequestInfo|URL,init?:RequestInit)=>{
+ stubFetch(async(input:RequestInfo|URL,init?:RequestInit)=>{
   calls.push(JSON.parse(String(init?.body)));
   return String(input).endsWith("/preview")?new Response("%PDF",{headers:{"content-type":"application/pdf"}}):new Response(JSON.stringify({ok:true,invoice:{documentId:80,invoiceNumber:"S-80",netAmount:200,vatAmount:50,grossAmount:250,lines:[]}}));
  });
@@ -52,7 +53,7 @@ test("invoice metadata is serialized identically for preview and issue",async()=
 for (const basis of ["DK_MOMSLOVEN_§46_STK_1_NR_3", "EU_MOMSDIREKTIV_ART_196", "EU_MOMSDIREKTIV_ART_199"] as const) {
  test(`foreign basis ${basis} is retained identically on both invoice routes`,async()=>{
   const calls:unknown[]=[];
-  stubGlobal("fetch",async(input:RequestInfo|URL,init?:RequestInit)=>{
+  stubFetch(async(input:RequestInfo|URL,init?:RequestInit)=>{
    calls.push(JSON.parse(String(init?.body)));
    return String(input).endsWith("/preview")?new Response("%PDF",{headers:{"content-type":"application/pdf"}}):new Response(JSON.stringify({ok:true,invoice:{documentId:81,invoiceNumber:"S-81",netAmount:100,vatAmount:0,grossAmount:100,lines:[],reverseChargeBasis:basis}}));
   });
@@ -61,3 +62,5 @@ for (const basis of ["DK_MOMSLOVEN_§46_STK_1_NR_3", "EU_MOMSDIREKTIV_ART_196", 
   expect(calls).toEqual([input,input]);expect(issued.reverseChargeBasis).toBe(basis);
  });
 }
+
+const stubFetch = (handler: Parameters<typeof withProtocol>[0]) => stubGlobal("fetch", withProtocol(handler, [["POST", "/api/companies/{slug}/invoices/preview"], ["POST", "/api/companies/{slug}/invoices/issue"]]));

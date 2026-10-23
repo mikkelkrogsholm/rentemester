@@ -73,7 +73,11 @@ export async function protocolHeaders(path: string, method: string, signal?: Abo
     if (url?.username || url?.password || path.startsWith("//")) refuse();
     const pathname = url ? url.pathname : path.split(/[?#]/)[0]!;
     const segments = pathname.slice(1).split("/");
-    if (segments.some(s => !s || /%2f|%5c/i.test(s))) refuse();
+    // Company and all ordinary route parameters still reject encoded separators.
+    // Inbox source IDs alone are opaque DB values; the matched template below
+    // must explicitly identify that source parameter before admission.
+    if (segments.some((s, i) => !s || /%5c/i.test(s) || (/%2f/i.test(s)
+      && !(i === 4 && segments[0] === "api" && segments[1] === "companies" && segments[3] === "workspace-inbox")))) refuse();
     const res = await fetch(url ? `${url.origin}/api/protocol` : "/api/protocol", {
       method: "GET", credentials: "omit", redirect: "error", signal,
     });
@@ -81,7 +85,20 @@ export async function protocolHeaders(path: string, method: string, signal?: Abo
     signal?.throwIfAborted();
     if (!manifest.operations.some(op => op.method === method.toUpperCase() && (() => {
       const template = routeSegments(op.path);
-      return template.length === segments.length && template.every((s, i) => s.startsWith("{") || s === segments[i]);
+      return template.length === segments.length && template.every((s, i) => {
+        const actual = segments[i]!;
+        if (!s.startsWith("{")) return s === actual;
+        if (!/%2f/i.test(actual)) return true;
+        if (i !== 4 || template[0] !== "api" || template[1] !== "companies"
+          || template[3] !== "workspace-inbox" || !["{source}", "{sourceId}"].includes(s)
+          || ![5, 6].includes(template.length)
+          || (template.length === 6 && !["original", "review", "assign", "complete"].includes(template[5]!))) return false;
+        try {
+          const source = decodeURIComponent(actual);
+          return source.length > 0 && new TextEncoder().encode(source).length <= 100
+            && !/[\0-\x1f\x7f\\]/.test(source) && !source.split("/").some(p => p === "." || p === "..");
+        } catch { return false; }
+      });
     })())) refuse();
     return {
       "x-rentemester-protocol": "1",
