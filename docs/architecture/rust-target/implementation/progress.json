@@ -1,10 +1,10 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "R30 company knowledge/corporate/inbox fully accepted;705and641closed",
-  "code_revision": "ae060f28a63a49ec148c0bbfb5b5a616452e3b51",
-  "spec_revision": "sha256:0126654d934bedc29ba6999af447162394594f6c591f159b4a0281aad9529b63",
-  "state": "22of55originalissuesfullyacceptedclosed33open; existing641alsoclosed. FullR30accepted:26actualtargetedtests plus normalMFAserviceMCPproposal/humanreview/exactCLIHTTPcontext/root-slug/dedup/history/refusals and normalrestart; owner-onlyhistoricalpathdiagnostic withoutmigration/leakage. Retainedfullcorporate/inbox/party and signedhistoryevidence. Priorfailedchecks/rejectedbackend/cancelledcomponentrun retained; actualknownCLIgate/diagnosticrepaired. Fullmission/release/platform/cutover/retirement/manualdesktoplastremainOPEN.",
+  "current_increment": "R34 retention/GDPR/legal holds and versioned regulatory evidence fully accepted;708closed",
+  "code_revision": "3163c419765caa14254f5a12c71e52e4c4982afe",
+  "spec_revision": "sha256:dc5d0253dd61dc07fcc16e878314bfd88f7d5f3f107cb521d751f5952eea8bce",
+  "state": "23of55 original issues fully accepted and actually closed;32open. FullR34 accepted: same React UI and native clients, current authority/retention/legal-hold refusals, eligible scoped forgetting with original bytes/journals/prior audit preserved, independent signed audit/backup and retained signed hold-history restore proof, exact rule/source versions and truthful compliance reports. Failed/cancelled receipts and prior effects retained; no replay or scope/control waiver. Full mission, release/platform/cutover/TypeScript retirement and installed manual desktop acceptance last remain OPEN.",
   "issues_closed": [
     675,
     676,
@@ -27,10 +27,11 @@
     705,
     706,
     707,
+    708,
     710
   ],
   "next": [
-    "Nextnecessary dependency-ready wholeR34#708: port remaining regulatory-coverage/provision/source-version reports and bind actuallegalhold/discovery/forget/deletionauthority parity to retained GDPR/retention evidence. Preserve fixed source IDs/versions and distinguish product checks from actual external legal/regulatory approval. Do not close on fixed retention citation alone, invent legal claims or repair live data. Reuse accepted686/687/707; manualinstalleddesktoplast.",
+    "Next necessary dependency-ready whole R17#689 / J04 VAT: reuse accepted173–175 computation, source/current-access refusals, reviewed close/filing preparation, restart and signed restore. Complete shared UI source/blocker -> resolved -> draft -> reviewed/locked -> filing-ready -> explicit recorded external filing with receipt reference, using existing periods/report and one shared Rust engine. No automatic SKAT filing or legal approval claim. #625 remains separately open and is not silently waived. Preserve original full scope and manual installed desktop last.",
     "R24#698reviewedcandidateee9d941bretained; actualtrialbankcontrol-125ledger vs0statementblockedcorrectly. No unchangedfullretry; finaldisposal/restart/restoreacceptance and original#689prerequisite remainopen. Allpartialfinancialeffects/failedreceipts retained.",
     "Original invoice interface inventory now has all31CLI and25MCP bindings, with explicit compatibility corrections documented; do not mistake that family inventory for full product parity. Reconcile remaining original whole-product R44/R45 acceptance from existing epic/issues: actor/env/company-path/default launcher/errors/historical receipts, closure/recovery/automation, signed distribution/update/cutover and TypeScript backend retirement. Continue next necessary whole journey, preserve all accepted evidence/full original scope; installed desktop acceptance last.",
     "Installed desktop acceptance is explicitly deferred to the very end by the user. Preserve prepared Group100 profile; collect remaining native automation, closure, recovery and packaging checks for final installed acceptance without requesting screen unlock during development.",
@@ -47,9 +48,9 @@
   ],
   "all_goal_requirements_complete": false,
   "previous_verified_increment": {
-    "name": "R15 document recovery and access audit fully accepted;686closed",
-    "code_revision": "c005059b74af9cf4bcceb3a5db3955ad28fd668a",
-    "evidence_key": "r15_documents686"
+    "name": "R30 company knowledge/corporate/inbox fully accepted;705and641closed",
+    "code_revision": "ae060f28a63a49ec148c0bbfb5b5a616452e3b51",
+    "evidence_key": "r30_knowledge705"
   },
   "evidence": {
     "combined_browser_log": "/tmp/rm-platform5-combined.log",
@@ -14205,6 +14206,266 @@
         "All55originalissue scopes, remaining release/platform/cutover/TypeScript retirement and manual-desktop-last gates preserved.698financial blocker and effects unchanged."
       ],
       "failed_component_run_preserved": "rust-r30-knowledge705-service-scope-20261023T132012.160052000"
+    },
+    "r34_privacy708": {
+      "issue": 708,
+      "status": "ACCEPTED full original R34 scope; GitHub708 actually CLOSED flow:done",
+      "revision": "3163c419765caa14254f5a12c71e52e4c4982afe",
+      "source_revision": "3163c419765caa14254f5a12c71e52e4c4982afe",
+      "product_code_revision": "706a0becf5760837fa6775fe1c8251151fad790d",
+      "report": "/tmp/rentemester-rust-reports/r34-privacy708-accepted.json",
+      "report_sha256": "e6b1a667189450fb7acd2439e27546cdac38f2d67ebb82be086a955ab596966b",
+      "actual_report": "/tmp/rentemester-rust-reports/privacy708-existing-3163c419.json",
+      "actual_sha256": "d78cd99dfcd5fa429072b86260e8a0a4b6853990ed80ee9da0abc4777b8f51dd",
+      "sgd_run_id": "rust-r34-privacy708-existing-fixture-20261023T152454.394612000",
+      "sgd_phase": "done",
+      "gdd_revision": "sha256:dc5d0253dd61dc07fcc16e878314bfd88f7d5f3f107cb521d751f5952eea8bce",
+      "checks": [
+        {
+          "phase": "components",
+          "check": "privacy-backend",
+          "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/rust-r34-privacy708-20261023T143116.702233000/acceptance/20c58bf3bfdd5412abacddb98ac72d07fd2fe9ba29fb1ddda48015e63905b47b/privacy-backend.log",
+          "sha256": "b69136952d8ff013759c394a2d747bd0efff77d48447a2b0dc1cc4a5f1408099",
+          "passingGroups": [
+            1,
+            1,
+            14,
+            2
+          ],
+          "zeroGroupsNotClaimed": 0,
+          "exit_code": 0
+        },
+        {
+          "phase": "components",
+          "check": "privacy-surfaces",
+          "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/rust-r34-privacy708-20261023T143116.702233000/acceptance/38e037a1632019d1030ab56671098f3243fce75aad02692150f9daea07ba0967/privacy-surfaces.log",
+          "sha256": "d0a58e35148a1b6084da4025d40e901b585ffff2f9e43bfb264258cab6763e54",
+          "passingGroups": [
+            4,
+            4,
+            0
+          ],
+          "zeroGroupsNotClaimed": 1,
+          "exit_code": 0
+        },
+        {
+          "phase": "components",
+          "check": "privacy-ui",
+          "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/rust-r34-privacy708-20261023T143116.702233000/acceptance/5b1a2fb6d722378643bfc7aea0c8b9e4b2399161115a5069e0a6092c26bbac24/privacy-ui.log",
+          "sha256": "7a331d12566786edced972c6edc1292d006d8badfd06c815a003ea67a1cb9966",
+          "passingGroups": [],
+          "zeroGroupsNotClaimed": 0,
+          "exit_code": 0
+        },
+        {
+          "phase": "components",
+          "check": "regulatory-core",
+          "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/rust-r34-privacy708-20261023T143116.702233000/acceptance/b020bdc70449f304a732d74f894e108da525b1586dc3626d4f1fc4a3d887daaa/regulatory-core.log",
+          "sha256": "ca36a8bbde3f7562d1d352682615189761c0cef337f22167f955b860907dc1b2",
+          "passingGroups": [
+            6,
+            1,
+            1,
+            0,
+            1
+          ],
+          "zeroGroupsNotClaimed": 1,
+          "exit_code": 0
+        },
+        {
+          "phase": "native-web",
+          "check": "boundaries",
+          "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/rust-r34-privacy708-final-20261023T150058.071125000/acceptance/8ccb28b4b8c781c1fd747d36ea2593c610040b30b8ea37222d180dd40e2ef8bc/boundaries.log",
+          "sha256": "1b423bc59de3d12554b06b4ada6e8da5ff6dd749033876b18226ad731dbb648c",
+          "passingGroups": [],
+          "zeroGroupsNotClaimed": 0,
+          "exit_code": 0
+        },
+        {
+          "phase": "native-web",
+          "check": "web-build",
+          "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/rust-r34-privacy708-final-20261023T150058.071125000/acceptance/8f8086acc3754e9c138958431d710b11a63d4971eac3e83e16cc3bbbb38e755d/web-build.log",
+          "sha256": "46fa355276abb9432d55ba11a56d1a0142f54fb4fbcddc473c72a23ea0e3aaf0",
+          "passingGroups": [],
+          "zeroGroupsNotClaimed": 0,
+          "exit_code": 0
+        },
+        {
+          "phase": "native-web",
+          "check": "native-build",
+          "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/rust-r34-privacy708-final-20261023T150058.071125000/acceptance/9b3037789282b31360d1a0d83d5e46cb45e563966f3df16bae1f377d74d247a5/native-build.log",
+          "sha256": "0da2a8491e148cab8e2caa69b5856d5555d1755bbcd5fe20b4e4a07fdd829a1d",
+          "passingGroups": [
+            2,
+            1,
+            1,
+            1,
+            1
+          ],
+          "zeroGroupsNotClaimed": 0,
+          "exit_code": 0
+        },
+        {
+          "phase": "existing-final",
+          "check": "existing-fixture708",
+          "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/rust-r34-privacy708-existing-fixture-20261023T152454.394612000/acceptance/ce3a4acdf230c1b71786b0185145c632ec4f43c9b695be458d4389e647c52a11/existing-fixture708.log",
+          "sha256": "53f54e4bfdcefa183979fa4f6b6aad522aff94cecfbbcd00bd8644d7d410dfbc",
+          "passingGroups": [],
+          "zeroGroupsNotClaimed": 0,
+          "exit_code": 0
+        },
+        {
+          "phase": "existing-final",
+          "check": "retained-inputs",
+          "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/rust-r34-privacy708-existing-fixture-20261023T152454.394612000/acceptance/d214fe7fe2069fa4545d4e7fbfc834abc20f24925fcff383258e4dd051d76025/retained-inputs.log",
+          "sha256": "8a4028f0669a0ddfa6e2e1b2a30b7830b355c49f5daffe39724f657364399e9a",
+          "passingGroups": [],
+          "zeroGroupsNotClaimed": 0,
+          "exit_code": 0
+        },
+        {
+          "phase": "worker-signer",
+          "check": "gdpr_audit independent trusted-key/altered payload/wrong-key",
+          "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/builds/rust-r34-privacy708-20261023T143116.702233000/privacy708/seal-test.log",
+          "sha256": "42ea4f59181c2d89780ba45b65971b7266f657c55a44485f3990e8adf776731a",
+          "passingGroups": [
+            1
+          ],
+          "exit_code": 0
+        }
+      ],
+      "criteria": {
+        "prematureHoldMissingAuthorityWrongCompanyRefused": [
+          "actual held erase/forget422 and no overlays; current CompanyAdmin reader release403; revoked export/discovery403 and restart403; wrongcompany hold release422; callerfuturedate400; premature preserved original refused",
+          "application current-cookie/selected-company permission and revocation tests; strict unknown/date/input parser tests"
+        ],
+        "eligibleForgetPreservesMandatoryFinancialAuditEvidenceAndActualEffect": [
+          "actual same existing fixture: MCP explicit release then nativeCLI forget erases2eligible scoped records; six append-only field tombstones; old audit rows exact prefix preserved",
+          "1journal/2lines/2original documents and exact raw original bytes unchanged before/after/restart; active+released holdhistory3events retained",
+          "signed actual audit independently checked with trusted key, domain separation and changed payload rejection; actual signed snapshot independently verified; source-free signed history restore host test preserves all historical2rows and refuses missing immutable trigger"
+        ],
+        "consistentRuleSourceVersionsWithoutInventedLegalClaim": [
+          "actual unauthenticated HTTP/native CLI exact corpus/citations:9sources,1762operative/64cited,498in-scope/64cited,10uncited,0errors,12bundleversions,scope dk-scope-v0.0.1",
+          "positive and malformed/unknownsource/hash drift/closure/scope/parser tests; independent review corrected deliberately uncited OSS falseerror without suppressing actual unknown source",
+          "escaped deterministic-on-input company HTML with exact fingerprint, actual fiscal/retention/audit/period/localbackup facts and truthful unavailable physical-original/remote-governance evidence; legacy references explicitly not native execution, traceability not legal approval"
+        ]
+      },
+      "actual_actions": [
+        {
+          "step": "preserved-stage-verified",
+          "counts": {
+            "journal_entries": 1,
+            "journal_lines": 2,
+            "documents": 2,
+            "audit_log": 19,
+            "gdpr_erasures": 0,
+            "native_gdpr_legal_hold_events": 1
+          },
+          "noAcceptedEffectsReplayed": true
+        },
+        {
+          "step": "current-normal-mfa-policy",
+          "readerExportAllowedByExistingCompanyExport": true,
+          "readerAdminRefused": true,
+          "activeHoldBothDeletePathsRefused": true
+        },
+        {
+          "step": "current-revocation-company-retention-refusals",
+          "noAuthorityFallback": true
+        },
+        {
+          "step": "eligible-scoped-forget",
+          "erasedCount": 2,
+          "releaseViaMcp": true,
+          "forgetViaCli": true,
+          "priorHoldHistoryPreserved": true
+        },
+        {
+          "step": "native-signed-audit",
+          "sha256": "773306caa3b05b30227f4adca5e148b5f3480607c8f7b7fc1106fb602be84d0b",
+          "events": 21
+        },
+        {
+          "step": "exact-versioned-corpus-and-report",
+          "sources": 9,
+          "overall": {
+            "citedCount": 64,
+            "inScopeCitedCount": 64,
+            "inScopeOperativeCount": 498,
+            "operativeCount": 1762
+          },
+          "scopeVersion": "dk-scope-v0.0.1",
+          "bundleVersions": {
+            "annual-report": "dk-annual-report-v0.0.1",
+            "bank": "dk-bank-v0.0.2",
+            "bookkeeping": "dk-bookkeeping-v0.0.8",
+            "documents": "dk-documents-v0.0.3",
+            "email": "dk-email-v0.0.2",
+            "gdpr": "dk-gdpr-v0.0.1",
+            "invoices": "dk-invoices-v0.0.11",
+            "mail-intake": "dk-mail-intake-v0.0.3",
+            "mileage": "dk-mileage-v0.0.2",
+            "peppol": "dk-peppol-v0.0.4",
+            "tax-return": "dk-tax-return-v0.0.1",
+            "vat": "dk-vat-v0.0.5"
+          },
+          "htmlSha256": "154726d918ce9a07ec555608ffdcdc8b0a98b29e12e1d2901c2fc4ba615de520",
+          "legalApprovalClaimed": false
+        },
+        {
+          "step": "actual-signed-snapshot",
+          "sha256": "4c78d290aed4bf240b43d2d4d2c4d5dd5a94025b3e6fe2c84af2a728d663f9b9",
+          "activeAndReleasedHoldHistory": true,
+          "independentKeyVerified": true
+        },
+        {
+          "step": "normal-current-cookie-restart",
+          "exactBooksOriginalsHoldHistoryAndOverlay": true,
+          "revocationSurvives": true,
+          "freshMfaFactorClaimed": false
+        }
+      ],
+      "terminal_counts": {
+        "journal_entries": 1,
+        "journal_lines": 2,
+        "documents": 2,
+        "audit_log": 32,
+        "gdpr_erasures": 6,
+        "native_gdpr_legal_hold_events": 3
+      },
+      "review": {
+        "main": "Inspected actual worker diffs, exact optional schema/triggers/admission and restore, transaction-bound signing/current permissions, typed thin adapters and same React confirmations; inspected repaired deltas and raw logs. Full required actual effects/refusals plus retained unchanged components reviewed.",
+        "independent": "r15_closure_evidence reviewed parser/provisions/HTML and found falseunknown-source OSS regression; corrected in096033fd. No additional direct parser/HTML/legalclaim blocker observed."
+      },
+      "preserved_failures": [
+        {
+          "run": "rust-r34-privacy708-20261023T143116.702233000",
+          "detail": "583dac35 existing false-confirm HTTP compatibility regression rejected; cbdea8b9 scoped submit-repair. 9a8454f9 false unknown source rejected;096033fd scoped submit-repair; no extra model attempts."
+        },
+        {
+          "report": "/tmp/rentemester-rust-reports/privacy708-actual-706a0bec.json",
+          "detail": "helper expected200 but captured valid201company create;0fb77152isolated correction; owned effects retained"
+        },
+        {
+          "report": "/tmp/rentemester-rust-reports/privacy708-actual-0fb77152.json",
+          "detail": "missing existing factory users context;52c684a9isolated caller correction; two customers/oneoriginal/nojournals retained"
+        },
+        {
+          "report": "/tmp/rentemester-rust-reports/privacy708-actual-52c684a9.json",
+          "detail": "completed web hold/current deletes/MCPdiscovery/callerdate/retention/normalMFA localpost, then wrong reader-export expectation; original policy retained, source3163c419corrects helper. Whole failed factory never relabeledPASS; same fixture continuation completed required remaining effects without replay."
+        }
+      ],
+      "limits": [
+        "Existing normally MFA-issued cookies are revalidated after restart; no fresh MFA enrollment/factor claim.",
+        "Installed desktop and platform release acceptance remain last.",
+        "Source-free signed hold-history restore is independently covered by exact host test; this continuation verifies actual signed archive and current-cookie restart.",
+        "No live company migration, provider filing, new external legal approval, Linux/Windows or signed distribution claim.",
+        "Live backup checkedAt advances; report HTML is deterministic for its actual input, and source/rule corpus remains identical across reads.",
+        "Full55/epic/manualinstalleddesktop/cutover/retirement remaining requirements are unchanged."
+      ],
+      "github_url": "https://github.com/mikkelkrogsholm/rentemester/issues/708",
+      "source_published_branch": "codex/rust-platform",
+      "no_accepted_effects_replayed": true
     }
   },
   "verified_history": [
@@ -14693,6 +14954,13 @@
       "code_revision": "de2a3397ec558fff8e12b7e81142d55b52de9c21",
       "spec_revision": "sha256:9a7bc5653b14cf898d1040e766f7fae945771be89b83b07ee50f62ffc1234753",
       "state": "Group74 actual PASS atde2a3397 with exact independently matched server/CLI/MCP/web/helper hashes: 25 ordinary-MFA actions through existing web PDF preview/issuance and explicit legal-company/outbound registration, verified-TLS synthetic provider validation/delivery/status, frozen EAN despite contact edit, accepted terminal and ambiguous outcomes permanently blocking redelivery. Exactly3 delivery POSTs,5 validations,1 status GET; current revocation during held validation yields403 without reservation/delivery. Exact HTTP/CLI/MCP retained outcome/read parity, fresh-MFA restart and four independently verified signed source-free fresh-owner restore/reopens preserve10 originals/3 submissions/6 events/registration and audit prefix, credentials absent and no replay. Root independently audited exact domain tables, originals, provider XML hashes and only restore-boundary audit append. Owned cleanup true. No real external transmission or installed-native qualification. Full mission/epic672 OPEN; next75 mixed/exempt/domestic-reverse invoice lifecycle."
+    },
+    {
+      "current_increment": "R30 company knowledge/corporate/inbox fully accepted;705and641closed",
+      "code_revision": "ae060f28a63a49ec148c0bbfb5b5a616452e3b51",
+      "spec_revision": "sha256:0126654d934bedc29ba6999af447162394594f6c591f159b4a0281aad9529b63",
+      "state": "22of55originalissuesfullyacceptedclosed33open; existing641alsoclosed. FullR30accepted:26actualtargetedtests plus normalMFAserviceMCPproposal/humanreview/exactCLIHTTPcontext/root-slug/dedup/history/refusals and normalrestart; owner-onlyhistoricalpathdiagnostic withoutmigration/leakage. Retainedfullcorporate/inbox/party and signedhistoryevidence. Priorfailedchecks/rejectedbackend/cancelledcomponentrun retained; actualknownCLIgate/diagnosticrepaired. Fullmission/release/platform/cutover/retirement/manualdesktoplastremainOPEN.",
+      "evidence_key": "r30_knowledge705"
     }
   ],
   "active_work": [
@@ -16045,6 +16313,12 @@
       "code_revision": "ae060f28a63a49ec148c0bbfb5b5a616452e3b51",
       "state": "22of55originalissuesfullyacceptedclosed33open; existing641alsoclosed. FullR30accepted:26actualtargetedtests plus normalMFAserviceMCPproposal/humanreview/exactCLIHTTPcontext/root-slug/dedup/history/refusals and normalrestart; owner-onlyhistoricalpathdiagnostic withoutmigration/leakage. Retainedfullcorporate/inbox/party and signedhistoryevidence. Priorfailedchecks/rejectedbackend/cancelledcomponentrun retained; actualknownCLIgate/diagnosticrepaired. Fullmission/release/platform/cutover/retirement/manualdesktoplastremainOPEN.",
       "evidence_key": "r30_knowledge705"
+    },
+    {
+      "current_increment": "R34 retention/GDPR/legal holds and versioned regulatory evidence fully accepted;708closed",
+      "code_revision": "3163c419765caa14254f5a12c71e52e4c4982afe",
+      "state": "23of55 original issues fully accepted and actually closed;32open. FullR34 accepted: same React UI and native clients, current authority/retention/legal-hold refusals, eligible scoped forgetting with original bytes/journals/prior audit preserved, independent signed audit/backup and retained signed hold-history restore proof, exact rule/source versions and truthful compliance reports. Failed/cancelled receipts and prior effects retained; no replay or scope/control waiver. Full mission, release/platform/cutover/TypeScript retirement and installed manual desktop acceptance last remain OPEN.",
+      "evidence_key": "r34_privacy708"
     }
   ],
   "scope_clarifications": [
@@ -16063,7 +16337,7 @@
   "workflow": {
     "task_state_authority": "GitHub issues remain authoritative for delivery status; SGD Go state owns local scoped execution only",
     "policy": "docs/development-workflow.md",
-    "current_issue": 716,
+    "current_issue": null,
     "progress_file_role": "evidence/recovery facts only; no product or local execution queue",
     "product_acceptance_unchanged": true,
     "ci": {
@@ -16085,6 +16359,7 @@
       "rewrites_issue_status_automatically": false,
       "product_acceptance_unchanged": true
     },
-    "local_execution": "State Graph Development with GDD contracts, Graphify observations and isolated Docker Agent workers"
+    "local_execution": "State Graph Development with GDD contracts, Graphify observations and isolated Docker Agent workers",
+    "last_closed_issue": 708
   }
 }
