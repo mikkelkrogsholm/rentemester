@@ -4,7 +4,7 @@ mod forecast;
 #[cfg(test)]
 mod tests;
 use crate::{invalid, legacy_money};
-pub use evidence::{Match, evidence_document, match_occurrence};
+pub use evidence::{Match, evidence_document, match_occurrence, match_occurrence_principal};
 use rentemester_engine::{
     Error,
     calendar::valid_iso_date,
@@ -236,6 +236,25 @@ pub fn plan(tx: &Transaction<'_>, input: &Input) -> Result<Value, Error> {
     Ok(payload)
 }
 pub fn apply(tx: &Transaction<'_>, input: &Apply, actor: &str, now: &str) -> Result<Value, Error> {
+    apply_identity(tx, input, &format!("user:{actor}"), actor, now)
+}
+pub fn apply_principal(
+    tx: &Transaction<'_>,
+    input: &Apply,
+    subject: &str,
+    kind: crate::idempotency::PrincipalKind,
+    now: &str,
+) -> Result<Value, Error> {
+    let actor = principal_actor(subject, kind)?;
+    apply_identity(tx, input, &actor, &actor, now)
+}
+fn apply_identity(
+    tx: &Transaction<'_>,
+    input: &Apply,
+    actor: &str,
+    principal: &str,
+    now: &str,
+) -> Result<Value, Error> {
     crate::journal_post::require_current(tx)?;
     if !input.confirm {
         return Err(refused("confirmation required"));
@@ -260,7 +279,7 @@ pub fn apply(tx: &Transaction<'_>, input: &Apply, actor: &str, now: &str) -> Res
             "PLAN_HASH_MISMATCH: source or previous revision changed; review a new plan",
         ));
     }
-    tx.execute("INSERT INTO supplier_commitment_events(commitment_id,event_type,payload_json,payload_hash,previous_payload_hash,idempotency_key,actor,principal,created_at) VALUES(?1,'approved',?2,?3,?4,?5,?6,?7,?8)",params![input.commitment.commitment_id,canonical(&proposal),input.payload_hash,proposal["previousPayloadHash"].as_str(),input.idempotency_key,format!("user:{actor}"),actor,now]).map_err(invalid)?;
+    tx.execute("INSERT INTO supplier_commitment_events(commitment_id,event_type,payload_json,payload_hash,previous_payload_hash,idempotency_key,actor,principal,created_at) VALUES(?1,'approved',?2,?3,?4,?5,?6,?7,?8)",params![input.commitment.commitment_id,canonical(&proposal),input.payload_hash,proposal["previousPayloadHash"].as_str(),input.idempotency_key,actor,principal,now]).map_err(invalid)?;
     Ok(
         json!({"commitmentId":input.commitment.commitment_id,"payloadHash":input.payload_hash,"idempotent":false}),
     )
@@ -269,6 +288,25 @@ pub fn change(
     tx: &Transaction<'_>,
     input: &Change,
     actor: &str,
+    now: &str,
+) -> Result<Value, Error> {
+    change_identity(tx, input, &format!("user:{actor}"), actor, now)
+}
+pub fn change_principal(
+    tx: &Transaction<'_>,
+    input: &Change,
+    subject: &str,
+    kind: crate::idempotency::PrincipalKind,
+    now: &str,
+) -> Result<Value, Error> {
+    let actor = principal_actor(subject, kind)?;
+    change_identity(tx, input, &actor, &actor, now)
+}
+fn change_identity(
+    tx: &Transaction<'_>,
+    input: &Change,
+    actor: &str,
+    principal: &str,
     now: &str,
 ) -> Result<Value, Error> {
     crate::journal_post::require_current(tx)?;
@@ -283,7 +321,7 @@ pub fn change(
     }
     let payload = json!({"commitmentId":input.commitment_id,"reason":reason,"previousPayloadHash":input.expected_payload_hash});
     let digest = hash(&payload);
-    tx.execute("INSERT INTO supplier_commitment_events(commitment_id,event_type,payload_json,payload_hash,previous_payload_hash,actor,principal,created_at) VALUES(?1,?2,?3,?4,?5,?6,?7,?8)",params![input.commitment_id,input.action,canonical(&payload),digest,input.expected_payload_hash,format!("user:{actor}"),actor,now]).map_err(invalid)?;
+    tx.execute("INSERT INTO supplier_commitment_events(commitment_id,event_type,payload_json,payload_hash,previous_payload_hash,actor,principal,created_at) VALUES(?1,?2,?3,?4,?5,?6,?7,?8)",params![input.commitment_id,input.action,canonical(&payload),digest,input.expected_payload_hash,actor,principal,now]).map_err(invalid)?;
     Ok(json!({"commitmentId":input.commitment_id,"payloadHash":digest,"status":input.action}))
 }
 fn rows(tx: &Transaction<'_>, sql: &str) -> Result<Vec<Value>, Error> {
@@ -332,6 +370,7 @@ pub fn matches(tx: &Transaction<'_>) -> Result<Vec<Value>, Error> {
         }
         p["payloadHash"] = json!(r.get::<_, String>(1).map_err(invalid)?);
         p["actor"] = json!(r.get::<_, String>(2).map_err(invalid)?);
+        p["principal"] = json!(r.get::<_, String>(3).map_err(invalid)?);
         p["createdAt"] = json!(r.get::<_, String>(4).map_err(invalid)?);
         out.push(p);
     }
@@ -477,4 +516,47 @@ fn list_horizon(
     Ok(
         json!({"slug":slug,"company":crate::company_setup::profile(tx)?,"fiscalYears":context["fiscalYears"],"selectedYear":context["selectedYear"],"startDate":start,"commitments":commitments,"occurrences":occurrences,"history":history,"matches":matched,"alerts":alerts,"vendors":vendors,"documents":unique_documents.into_values().collect::<Vec<_>>(),"evidenceOptions":options,"forecast":forecast}),
     )
+}
+
+fn principal_actor(
+    subject: &str,
+    kind: crate::idempotency::PrincipalKind,
+) -> Result<String, Error> {
+    if subject.trim().is_empty() || subject.len() > 256 || subject.chars().any(char::is_control) {
+        return Err(refused("authenticated stable principal required"));
+    }
+    Ok(format!(
+        "{}:{subject}",
+        match kind {
+            crate::idempotency::PrincipalKind::User => "user",
+            crate::idempotency::PrincipalKind::ServiceAccount => "service_account",
+        }
+    ))
+}
+/// Original change resolves the current revision only inside the caller's admitted transaction.
+pub fn change_current_principal(
+    tx: &Transaction<'_>,
+    id: &str,
+    action: &str,
+    reason: &str,
+    subject: &str,
+    kind: crate::idempotency::PrincipalKind,
+    now: &str,
+) -> Result<Value, Error> {
+    crate::journal_post::require_current(tx)?;
+    let previous = latest(tx, id)?.ok_or_else(|| refused("COMMITMENT_NOT_ACTIVE"))?;
+    if previous["event"] != "approved" {
+        return Err(refused("COMMITMENT_NOT_ACTIVE"));
+    }
+    let input = Change {
+        commitment_id: id.into(),
+        action: action.into(),
+        reason: reason.into(),
+        confirm: true,
+        expected_payload_hash: previous["payloadHash"]
+            .as_str()
+            .ok_or_else(|| refused("stored hash missing"))?
+            .into(),
+    };
+    change_principal(tx, &input, subject, kind, now)
 }

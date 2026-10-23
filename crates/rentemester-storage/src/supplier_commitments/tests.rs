@@ -323,3 +323,101 @@ fn legacy_party_snapshots_latest_revision_and_unstored_variance_remain_readable(
     assert_eq!(read["matches"][0]["payloadHash"], "d".repeat(64));
     assert_eq!(read["occurrences"].as_array().unwrap().len(), 3);
 }
+
+#[test]
+fn original_projection_and_typed_provenance_reuse_native_guarded_lifecycle() {
+    use crate::{idempotency::PrincipalKind, supplier_commitment_original as original};
+    let mut db = fixture();
+    let tx = db
+        .transaction_with_behavior(TransactionBehavior::Immediate)
+        .unwrap();
+    let mut raw = serde_json::to_value(input()).unwrap();
+    raw["vendorSnapshot"] = json!("Synthetic Supplier");
+    raw["status"] = json!("active");
+    raw["noticeDate"] = json!("2026-01-31");
+    raw["renewalDate"] = json!("2026-03-02");
+    let source: original::Input = serde_json::from_value(raw.clone()).unwrap();
+    let native = source.native().unwrap();
+    let p = source.proposal(&tx).unwrap();
+    assert_eq!(p, plan(&tx, &native).unwrap());
+    raw["vendorSnapshot"] = json!("forged");
+    assert!(
+        serde_json::from_value::<original::Input>(raw.clone())
+            .unwrap()
+            .proposal(&tx)
+            .is_err()
+    );
+    raw["status"] = json!("paused");
+    assert!(
+        serde_json::from_value::<original::Input>(raw)
+            .unwrap()
+            .native()
+            .is_err()
+    );
+    let a = Apply {
+        commitment: native,
+        payload_hash: p["payloadHash"].as_str().unwrap().into(),
+        confirm: true,
+        idempotency_key: None,
+    };
+    apply_principal(
+        &tx,
+        &a,
+        "synthetic-service",
+        PrincipalKind::ServiceAccount,
+        "2026-01-31T00:00:00Z",
+    )
+    .unwrap();
+    let identity: (String, String) = tx
+        .query_row(
+            "SELECT actor,principal FROM supplier_commitment_events",
+            [],
+            |r| Ok((r.get(0)?, r.get(1)?)),
+        )
+        .unwrap();
+    assert_eq!(
+        identity,
+        (
+            "service_account:synthetic-service".into(),
+            "service_account:synthetic-service".into()
+        )
+    );
+    let rows = original::list(&tx).unwrap();
+    assert_eq!(rows.len(), 1);
+    assert!(rows[0]["payload_json"].is_string());
+    let alerts = original::alerts(&tx, "2026-01-31").unwrap();
+    assert_eq!(alerts.len(), 2);
+    assert_eq!(alerts[0]["severity"], "due");
+    assert_eq!(alerts[1]["date"], "2026-03-02");
+    assert!(original::alerts(&tx, "invalid").unwrap().is_empty());
+    change_current_principal(
+        &tx,
+        &a.commitment.commitment_id,
+        "paused",
+        "Synthetic reason",
+        "synthetic-human",
+        PrincipalKind::User,
+        "2026-02-01T00:00:00Z",
+    )
+    .unwrap();
+    assert!(original::list(&tx).unwrap().is_empty());
+    assert!(original::alerts(&tx, "2026-01-31").unwrap().is_empty());
+    assert!(
+        change_current_principal(
+            &tx,
+            &a.commitment.commitment_id,
+            "ended",
+            "Synthetic reason",
+            "synthetic-human",
+            PrincipalKind::User,
+            "now"
+        )
+        .is_err()
+    );
+    let count: i64 = tx
+        .query_row("SELECT COUNT(*) FROM supplier_commitment_events", [], |r| {
+            r.get(0)
+        })
+        .unwrap();
+    assert_eq!(count, 2);
+}

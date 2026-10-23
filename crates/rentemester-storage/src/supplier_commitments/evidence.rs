@@ -88,6 +88,25 @@ pub fn match_occurrence(
     actor: &str,
     now: &str,
 ) -> Result<Value, Error> {
+    match_identity(tx, input, &format!("user:{actor}"), actor, now)
+}
+pub fn match_occurrence_principal(
+    tx: &Transaction<'_>,
+    input: &Match,
+    subject: &str,
+    kind: crate::idempotency::PrincipalKind,
+    now: &str,
+) -> Result<Value, Error> {
+    let actor = principal_actor(subject, kind)?;
+    match_identity(tx, input, &actor, &actor, now)
+}
+fn match_identity(
+    tx: &Transaction<'_>,
+    input: &Match,
+    actor: &str,
+    principal: &str,
+    now: &str,
+) -> Result<Value, Error> {
     crate::journal_post::require_current(tx)?;
     if !input.confirm {
         return Err(refused("match confirmation required"));
@@ -169,7 +188,7 @@ pub fn match_occurrence(
             }
         }
     }
-    tx.execute("INSERT INTO supplier_commitment_occurrence_matches(commitment_id,occurrence_date,expected_payload_hash,evidence_kind,evidence_id,canonical_payload,payload_hash,actor,principal,created_at) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10)",params![input.commitment_id,input.occurrence_date,last["payloadHash"].as_str(),input.evidence.kind,evidence["id"].as_str(),canonical(&payload),digest,format!("user:{actor}"),actor,now]).map_err(invalid)?;
+    tx.execute("INSERT INTO supplier_commitment_occurrence_matches(commitment_id,occurrence_date,expected_payload_hash,evidence_kind,evidence_id,canonical_payload,payload_hash,actor,principal,created_at) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10)",params![input.commitment_id,input.occurrence_date,last["payloadHash"].as_str(),input.evidence.kind,evidence["id"].as_str(),canonical(&payload),digest,actor,principal,now]).map_err(invalid)?;
     Ok(json!({"idempotent":false,"payloadHash":digest,"variance":variance}))
 }
 
