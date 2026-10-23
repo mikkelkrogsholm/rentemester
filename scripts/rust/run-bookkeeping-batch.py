@@ -547,6 +547,8 @@ def main():
                     identities = [proof['serviceActor']] + [proof['humanActor']] * 4
                     if [r['actor'] for r in assignments] != identities or [r['principal'] for r in assignments] != identities or [r['event_type'] for r in assignments] != ['assigned', 'superseded', 'assigned', 'superseded', 'assigned']:
                         raise RuntimeError('Exact five typed assignment events required')
+                    if [r['source'] for r in assignments] != ['reviewed'] * 4 + ['imported'] or assignments[-1]['source_ref'] != proof['externalAllocationSourceRef'] or not proof['externalAllocationScheduleRetained'] or not proof['explicitImportReview']:
+                        raise RuntimeError('Final assignment must reference the actual retained external schedule and explicit review')
                     if [r['event_type'] for r in budgets] != ['allocated', 'allocated', 'superseded', 'superseded', 'allocated', 'allocated'] or [r['amount'] for r in budgets] != [12, 8, 12, 8, 13, 7] or any(r['actor'] != proof['humanActor'] or r['principal'] != proof['humanActor'] for r in budgets):
                         raise RuntimeError('Exact six human-reviewed budget events required')
                     current = db.execute('SELECT member_id,amount FROM current_accounting_dimension_budgets ORDER BY member_id').fetchall()

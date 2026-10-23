@@ -11,7 +11,8 @@ export function createOriginalDimensionsProof(base:string,work:string,onStep:(na
   const root='/api/companies/synthetic/',api=root+'original/dimensions',id='synthetic-original-dimensions177',account='3729';
   const toolsByOperation:Record<string,string>={define:'dimension_definition_create',member:'dimension_member_create','definition-lifecycle':'dimension_definition_lifecycle','member-lifecycle':'dimension_member_lifecycle',definitions:'dimension_definition_list',members:'dimension_member_list',plan:'dimension_assignment_plan',apply:'dimension_assignment_apply',replace:'dimension_assignment_replace',supersede:'dimension_assignment_supersede',list:'dimension_assignment_list','budget-plan':'dimension_budget_plan','budget-apply':'dimension_budget_apply',budgets:'dimension_budget_list'};
   const cookie=join(work,'dimensions177.cookie'),key=join(work,'dimensions177.key'),observations:any[]=[];
-  const original='Synthetic dimension budget expense: DKK12.50, no VAT, paid by owner.\n';
+  const original='Synthetic dimension budget expense: DKK12.50, no VAT, paid by owner.\nExternal allocation schedule: alpha DKK5.00; beta DKK7.50; total DKK12.50.\n';
+  const externalAllocationSourceRef='sha256:'+createHash('sha256').update(original).digest('hex')+'#allocation-schedule';
   let owner:Page,service:any,stable:any,baseline:any,date:string,period:string,year:string,line:number,doc:number,ran=false;
   const need=(v:unknown,s:string)=>{if(!v)throw Error('original_dimensions: '+s);};
   function record(value:any){observations.push(value);writeFileSync(join(work,'dimensions177-observations.json'),JSON.stringify(observations),{mode:0o600});}
@@ -31,7 +32,7 @@ export function createOriginalDimensionsProof(base:string,work:string,onStep:(na
     let argv:string[],input:string|undefined;
     if(kind==='cli'){
       const names:Record<string,string>={accountNo:'account'};
-      argv=['dimensions',op,...common,'--company','synthetic','--json',...Object.entries(args).filter(([k])=>k!=='confirm'||args.confirm!==undefined).flatMap(([k,v])=>['--'+(names[k]??k.replace(/[A-Z]/g,c=>'-'+c.toLowerCase())),typeof v==='object'?JSON.stringify(v):k==='confirm'?(v?'yes':'no'):String(v)])];
+      argv=['dimensions',op,...common,'--company','synthetic','--json',...Object.entries(args).filter(([k])=>k!=='confirm'||args.confirm!==undefined).flatMap(([k,v])=>['--'+(names[k]??k.replace(/[A-Z]/g,c=>'-'+c.toLowerCase())),typeof v==='object'?JSON.stringify(v):['confirm','reviewedImport'].includes(k)?(v?'yes':'no'):String(v)])];
     }else{
       argv=common;const name=toolsByOperation[op];
       input=[{jsonrpc:'2.0',id:1,method:'initialize',params:{protocolVersion:'2025-11-25',capabilities:{},clientInfo:{name:'original-dimensions177',version:'1'}}},{jsonrpc:'2.0',method:'notifications/initialized'},{jsonrpc:'2.0',id:2,method:op==='discovery'?'tools/list':'tools/call',params:op==='discovery'?{}:{name,arguments:{company:'synthetic',...args}}}].map(v=>JSON.stringify(v)).join('\n')+'\n';
@@ -102,7 +103,11 @@ export function createOriginalDimensionsProof(base:string,work:string,onStep:(na
     const changed=invoke('mcp','replace',{...corrected,expectedAssignmentId:assigned.id,reason:'Synthetic original reviewed correction',planHash:replacement.planHash,confirm:true});
     invoke('cli','replace',{...initial,expectedAssignmentId:assigned.id,reason:'Stale expected assignment',planHash:first.planHash,confirm:true},false,'refused');
     invoke('cli','supersede',{assignmentId:changed.id,reason:'Synthetic explicit fresh review',confirm:true});
-    const fresh={...corrected,sourceRef:'synthetic177:fresh-reviewed-source'};const final=checkedPlan(invoke('mcp','plan',fresh));
+    // A reviewed plan deliberately drops sourceRef. Re-import the actual external
+    // schedule retained in this same original, with explicit review and exact hash.
+    const fresh={...corrected,source:'imported',reviewedImport:true,sourceRef:externalAllocationSourceRef};
+    const final=checkedPlan(invoke('mcp','plan',fresh));
+    need(final.source==='imported'&&final.sourceRef===externalAllocationSourceRef&&final.planHash!==replacement.planHash,'actual retained external allocation schedule explicitly reviewed');
     invoke('mcp','apply',{...fresh,planHash:final.planHash,confirm:true});
     const budget=(a:number,b:number,sourceRef:string)=>({accountNo:account,period,allocations:[{dimensionId:id,memberId:'alpha',amount:a},{dimensionId:id,memberId:'beta',amount:b}],sourceRef});
     const b1=budget(12,8,'synthetic177:budget-initial'),b2=budget(13,7,'synthetic177:budget-replacement');
@@ -135,7 +140,7 @@ export function createOriginalDimensionsProof(base:string,work:string,onStep:(na
     invoke('mcp','budgets',{},true,'refused');
     await admin('service-principals/revoke',{serviceAccountId:service.serviceAccountId,credentialId:service.credentialId,operationId:randomUUID(),confirm:true});
     need(equal(await snapshot(),stable),'access refusals leave immutable state');
-    return {facts:originalDimensionsFacts,humanActor:'user:'+who.user.id,serviceActor:'service_account:'+service.serviceAccountId,baselineAfterSetup:true,noAutomaticWriteRetry:true,stable};
+    return {facts:originalDimensionsFacts,externalAllocationSourceRef,externalAllocationScheduleRetained:true,explicitImportReview:true,humanActor:'user:'+who.user.id,serviceActor:'service_account:'+service.serviceAccountId,baselineAfterSetup:true,noAutomaticWriteRetry:true,stable};
   }
   async function assertStable(page:Page){owner=page;need(equal(await snapshot(),stable),'exact nonempty history/actuals/accounting through restart and signed fresh-owner recovery');await physical();}
   async function reopen(page:Page){await assertStable(page);await cookies();await parity();invoke('mcp','budgets',{},true,'refused');}
