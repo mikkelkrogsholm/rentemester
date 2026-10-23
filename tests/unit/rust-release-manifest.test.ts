@@ -8,6 +8,8 @@ import { assertRustManifest, createRustManifest, type RustManifestMetadata } fro
 const hash = "a".repeat(64);
 const pinsRaw = readFileSync(new URL("../../scripts/rust/pdf-worker/artifacts.json", import.meta.url), "utf8");
 const pins = JSON.parse(pinsRaw);
+const pdfLicenses = JSON.parse(readFileSync(new URL("../../scripts/rust/pdf-worker/license-inventory.json", import.meta.url), "utf8"));
+const thirdPartyCredits = readFileSync(new URL("../../scripts/release/rust-third-party-notices.txt", import.meta.url), "utf8");
 const sha = (raw: string) => createHash("sha256").update(raw).digest("hex");
 const metadata: RustManifestMetadata = {
   version: "0.2.0", gitCommit: "b".repeat(40), builtAt: "2026-10-21T00:00:00Z",
@@ -17,7 +19,8 @@ const metadata: RustManifestMetadata = {
 };
 function fixture(target = "aarch64-unknown-linux-gnu") {
   const artifact = pins.artifacts.find((a: { archive: string }) => a.archive === (target.startsWith("aarch64") ? "pdfium-linux-arm64.tgz" : "pdfium-linux-x64.tgz"));
-  const paths = ["bin/rentemester-server", "bin/rentemester-rust", "bin/rentemester-mcp", "bin/rentemester-pdf-worker", "bin/rustc.txt", "bin/cargo.txt", "native-server.json", "native-mcp-catalogue.json", "web/index.html", "debian-packages.txt", "bin/pdfium/artifact.json", "bin/pdfium/LICENSE", "bin/pdfium/licenses/third-party.txt", `bin/pdfium/${artifact.library}`];
+  const notices: { path: string; size: number; sha256: string }[] = pdfLicenses.artifacts.find((row: { archive: string }) => row.archive === artifact.archive).notices;
+  const paths = ["THIRD-PARTY-NOTICES.txt", "bin/rentemester-server", "bin/rentemester-rust", "bin/rentemester-mcp", "bin/rentemester-pdf-worker", "bin/rustc.txt", "bin/cargo.txt", "native-server.json", "native-mcp-catalogue.json", "web/index.html", "debian-packages.txt", "bin/pdfium/artifact.json", `bin/pdfium/${artifact.library}`, ...notices.map(row => `bin/pdfium/${row.path}`)];
   return {
     format: "rentemester-rust-build/1",
     product: { ...metadataRelease(), sourceDateEpoch: Date.parse(metadata.builtAt) / 1000, sourceDirty: false },
@@ -26,13 +29,25 @@ function fixture(target = "aarch64-unknown-linux-gnu") {
     schemas: { apiEpoch: 1, controlSchema: 31, companySchema: 36 },
     inputs: { cargoLockSha256: hash, webLockSha256: hash, pdfPinsSha256: sha(pinsRaw), entrypointSha256: hash, vendor: [{ path: "crate/Cargo.toml", size: 1, sha256: hash, executable: false }] },
     pdf: { artifact, binding: pins.binding, release: pins.release },
-    files: paths.sort().map(path => ({ path, size: 1, sha256: path.endsWith(artifact.library) ? artifact.librarySha256 : hash, executable: path.startsWith("bin/rentemester-") })),
+    files: paths.sort().map(path => {
+      if (path === "THIRD-PARTY-NOTICES.txt") return { path, size: Buffer.byteLength(thirdPartyCredits), sha256: sha(thirdPartyCredits), executable: false };
+      const notice = notices.find(row => path === `bin/pdfium/${row.path}`);
+      return { path, size: notice?.size ?? 1, sha256: notice?.sha256 ?? (path.endsWith(artifact.library) ? artifact.librarySha256 : hash), executable: path.startsWith("bin/rentemester-") };
+    }),
   };
 }
 function metadataRelease() { return { version: metadata.version, gitCommit: metadata.gitCommit, builtAt: metadata.builtAt }; }
 function raw() { return JSON.stringify(fixture(), null, 2) + "\n"; }
 
 describe("Rust release manifest v2", () => {
+  test("nonempty but changed PDF license or notice cannot be promoted", () => {
+    for (const path of ["bin/pdfium/LICENSE", "bin/pdfium/licenses/pdfium.txt"]) {
+      const changed = fixture();
+      const notice = changed.files.find(file => file.path === path)!;
+      notice.sha256 = "f".repeat(64);
+      expect(() => createRustManifest(JSON.stringify(changed), metadata)).toThrow("PDF license content mismatch");
+    }
+  });
   test("CLI emits v2 from the external raw identity and existing release environment", () => {
     const dir = mkdtempSync(join(tmpdir(), "rm-rust-manifest-"));
     try {

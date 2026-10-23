@@ -39,6 +39,7 @@
     "container:reproducibility": "bun run scripts/release/verify-container-reproducibility.ts",
     "supply-chain:audit": "bun audit --audit-level=low",
     "supply-chain:licenses": "bun run scripts/release/check-production-licenses.ts",
+    "supply-chain:licenses:rust": "python3 scripts/release/verify-rust-licenses.py",
     "supply-chain:evidence": "bun run scripts/release/create-supply-chain-evidence.ts",
     "design:check": "bun run scripts/design-tokens.ts --check",
     "cockpit:test:browser": "bun run --filter rentemester-cockpit test:browser",

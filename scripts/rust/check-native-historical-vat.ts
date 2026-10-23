@@ -5,7 +5,7 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { isDeepStrictEqual as equal } from 'node:util';
 
-import { dineroFixture } from './check-native-dinero-import.ts';
+import { dineroFixture } from './check-native-dinero-import';
 
 /** Frozen from importer semantics: one two-line opening plus one three-line voucher.
  * Retained JSON source package only, no supporting invoices or scanner/provider calls.

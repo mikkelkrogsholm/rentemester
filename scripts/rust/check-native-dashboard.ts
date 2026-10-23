@@ -3,7 +3,12 @@ import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import type { CompanyOverview } from "../../app/src/lib/types/dashboard";
 type Overview = CompanyOverview & { asOfDate: string; periodStart: string; periodEnd: string };
 const saved = "/tmp/rentemester-rust-reports/native-dashboard.json";
-const cents = (n: number) => Math.round(n * 100);
+const cents = (n: number | string | null) => {
+  if (n === null || (typeof n === "string" && !/^-?\d+\.\d{2}$/.test(n))) throw new Error("Dashboard amount is unavailable or noncanonical");
+  const value = Number(n);
+  if (!Number.isFinite(value)) throw new Error("Dashboard amount is not finite");
+  return Math.round(value * 100);
+};
 export async function checkNativeDashboard(page: Page, base: string, restarted = false) {
   const url = `${base}/api/companies/synthetic`;
   async function get(path: string) {
@@ -21,6 +26,7 @@ export async function checkNativeDashboard(page: Page, base: string, restarted =
   const documents = (await get("documents")).documents;
   const payables = (await get(`payables?status=open&asOf=${overview.periodEnd}`)).payables;
   const journal = (await get(`journal${suffix}`)).journal;
+  if (!overview.documents || !overview.payables) throw new Error("Dashboard document/payable summaries are unavailable");
   if (!journal.entries.length || income.totalExpense === 0) throw new Error("Run dashboard after the synthetic bookkeeping journeys so parity has meaningful live amounts");
   if (overview.profitAndLoss.omsaetning !== income.totalIncome || overview.profitAndLoss.udgifter !== income.totalExpense || overview.profitAndLoss.resultat !== income.result) throw new Error("Dashboard P&L disagrees with financial report");
   if (overview.profitAndLoss.months.reduce((n, m) => n + cents(m.income), 0) !== cents(income.totalIncome) || overview.profitAndLoss.months.reduce((n, m) => n + cents(m.expense), 0) !== cents(income.totalExpense)) throw new Error("Dashboard monthly chart disagrees with yearly P&L");

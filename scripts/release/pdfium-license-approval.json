@@ -1,0 +1,17 @@
+{
+  "format": "rentemester-pdfium-license-approval/1",
+  "inventorySha256": "7c7e6058610f1ac5e9cefead13e19a2d9c1f529139dd363731d2eac2cfedd26e",
+  "pinsSha256": "e4a02f731da3bea8926deaf694233f83c5e29b3923f040a79a275e9e07f02897",
+  "decision": "accept exact unmodified pinned chromium/7881 dependency contents with full original notices and accompanying credits; no blanket SPDX approval",
+  "scope": "Four exact archive/library/complete-notice hashes only. Compound ICU/JPEG/PDFium/PNG identification remains compound; null is not silently assigned MIT/Unicode. Any artifact, notice, source modification or pin drift requires explicit new review.",
+  "reviewedBy": "Rentemester migration lead with independent source/content review, R07#679",
+  "obligations": [
+    "Keep complete root LICENSE and every licenses/ file as exact bytes, including FreeType legacy copyright byte.",
+    "Include explicit FreeType Team and Independent JPEG Group acknowledgments in accompanying product documentation; preserve applicable BSD/Apache disclaimers, attributions and no-endorsement conditions.",
+    "ICU composite Autoconf/GPL passages identify build helpers and explicit distribution exceptions; do not infer a blanket GPL or permissive grant for unrelated code. Full composite notices stay intact.",
+    "Retain source-origin/change restrictions and any upstream-source requirements. This exact dependency decision is not whole product, platform or release/cutover acceptance."
+  ],
+  "creditDocument": "scripts/release/rust-third-party-notices.txt",
+  "fullReleaseAccepted": false,
+  "dependencyApproved": true
+}

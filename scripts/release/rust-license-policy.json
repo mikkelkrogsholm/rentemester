@@ -1,0 +1,484 @@
+{
+  "format": "rentemester-rust-license-policy/1",
+  "allowedLicenses": [
+    "Apache-2.0",
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "ISC",
+    "MIT",
+    "OFL-1.1",
+    "Unicode-3.0",
+    "Zlib",
+    "CDLA-Permissive-2.0",
+    "0BSD",
+    "CC0-1.0",
+    "NCSA"
+  ],
+  "ownWorkspace": true,
+  "packageExceptions": [
+    {
+      "name": "cssparser",
+      "version": "0.37.0",
+      "expression": "MPL-2.0",
+      "reason": "Explicit engineering decision for this already consumed exact dependency only; retain all notices and unchanged upstream source availability under MPL2, or Apache2+LLVM exception text. No automatic approval of upgrades, modified files, other packages or product license.",
+      "sourceUrl": "https://crates.io/api/v1/crates/cssparser/0.37.0/download"
+    },
+    {
+      "name": "cssparser-macros",
+      "version": "0.7.1",
+      "expression": "MPL-2.0",
+      "reason": "Explicit engineering decision for this already consumed exact dependency only; retain all notices and unchanged upstream source availability under MPL2, or Apache2+LLVM exception text. No automatic approval of upgrades, modified files, other packages or product license.",
+      "sourceUrl": "https://crates.io/api/v1/crates/cssparser-macros/0.7.1/download"
+    },
+    {
+      "name": "dtoa-short",
+      "version": "0.3.5",
+      "expression": "MPL-2.0",
+      "reason": "Explicit engineering decision for this already consumed exact dependency only; retain all notices and unchanged upstream source availability under MPL2, or Apache2+LLVM exception text. No automatic approval of upgrades, modified files, other packages or product license.",
+      "sourceUrl": "https://crates.io/api/v1/crates/dtoa-short/0.3.5/download"
+    },
+    {
+      "name": "option-ext",
+      "version": "0.2.0",
+      "expression": "MPL-2.0",
+      "reason": "Explicit engineering decision for this already consumed exact dependency only; retain all notices and unchanged upstream source availability under MPL2, or Apache2+LLVM exception text. No automatic approval of upgrades, modified files, other packages or product license.",
+      "sourceUrl": "https://crates.io/api/v1/crates/option-ext/0.2.0/download"
+    },
+    {
+      "name": "selectors",
+      "version": "0.38.0",
+      "expression": "MPL-2.0",
+      "reason": "Explicit engineering decision for this already consumed exact dependency only; retain all notices and unchanged upstream source availability under MPL2, or Apache2+LLVM exception text. No automatic approval of upgrades, modified files, other packages or product license.",
+      "sourceUrl": "https://crates.io/api/v1/crates/selectors/0.38.0/download"
+    },
+    {
+      "name": "target-lexicon",
+      "version": "0.12.16",
+      "expression": "Apache-2.0 WITH LLVM-exception",
+      "reason": "Explicit engineering decision for this already consumed exact dependency only; retain all notices and unchanged upstream source availability under MPL2, or Apache2+LLVM exception text. No automatic approval of upgrades, modified files, other packages or product license.",
+      "sourceUrl": "https://crates.io/api/v1/crates/target-lexicon/0.12.16/download"
+    },
+    {
+      "name": "cbindgen",
+      "version": "0.28.0",
+      "expression": "MPL-2.0",
+      "reason": "Exact retained optional legacy-feature build dependency only; same source/notice requirements as other exact MPL approvals. No approval of changed covered source or other versions, no new production consumer or GPUI architecture restoration.",
+      "sourceUrl": "https://crates.io/api/v1/crates/cbindgen/0.28.0/download"
+    },
+    {
+      "name": "dwrote",
+      "version": "0.11.5",
+      "expression": "MPL-2.0",
+      "reason": "Exact retained optional legacy-feature build dependency only; same source/notice requirements as other exact MPL approvals. No approval of changed covered source or other versions, no new production consumer or GPUI architecture restoration.",
+      "sourceUrl": "https://crates.io/api/v1/crates/dwrote/0.11.5/download"
+    }
+  ],
+  "normalizations": [
+    {
+      "name": "bitflags",
+      "version": "1.3.2",
+      "from": "MIT/Apache-2.0",
+      "to": "MIT AND Apache-2.0",
+      "reason": "Exact historical Cargo slash metadata only. Conservatively retain obligations of both named permissive licenses; Unlicense/MIT selects actual bundled MIT grant. Never normalize another package/version/expression implicitly. Source package is checksum-bound by Cargo.lock."
+    },
+    {
+      "name": "brotli-decompressor",
+      "version": "6.0.1",
+      "from": "BSD-3-Clause/MIT",
+      "to": "BSD-3-Clause AND MIT",
+      "reason": "Exact historical Cargo slash metadata only. Conservatively retain obligations of both named permissive licenses; Unlicense/MIT selects actual bundled MIT grant. Never normalize another package/version/expression implicitly. Source package is checksum-bound by Cargo.lock."
+    },
+    {
+      "name": "bs58",
+      "version": "0.5.1",
+      "from": "MIT/Apache-2.0",
+      "to": "MIT AND Apache-2.0",
+      "reason": "Exact historical Cargo slash metadata only. Conservatively retain obligations of both named permissive licenses; Unlicense/MIT selects actual bundled MIT grant. Never normalize another package/version/expression implicitly. Source package is checksum-bound by Cargo.lock."
+    },
+    {
+      "name": "cesu8",
+      "version": "1.1.0",
+      "from": "Apache-2.0/MIT",
+      "to": "Apache-2.0 AND MIT",
+      "reason": "Exact historical Cargo slash metadata only. Conservatively retain obligations of both named permissive licenses; Unlicense/MIT selects actual bundled MIT grant. Never normalize another package/version/expression implicitly. Source package is checksum-bound by Cargo.lock."
+    },
+    {
+      "name": "cexpr",
+      "version": "0.6.0",
+      "from": "Apache-2.0/MIT",
+      "to": "Apache-2.0 AND MIT",
+      "reason": "Exact historical Cargo slash metadata only. Conservatively retain obligations of both named permissive licenses; Unlicense/MIT selects actual bundled MIT grant. Never normalize another package/version/expression implicitly. Source package is checksum-bound by Cargo.lock."
+    },
+    {
+      "name": "console_error_panic_hook",
+      "version": "0.1.7",
+      "from": "Apache-2.0/MIT",
+      "to": "Apache-2.0 AND MIT",
+      "reason": "Exact historical Cargo slash metadata only. Conservatively retain obligations of both named permissive licenses; Unlicense/MIT selects actual bundled MIT grant. Never normalize another package/version/expression implicitly. Source package is checksum-bound by Cargo.lock."
+    },
+    {
+      "name": "console_log",
+      "version": "1.1.0",
+      "from": "MIT/Apache-2.0",
+      "to": "MIT AND Apache-2.0",
+      "reason": "Exact historical Cargo slash metadata only. Conservatively retain obligations of both named permissive licenses; Unlicense/MIT selects actual bundled MIT grant. Never normalize another package/version/expression implicitly. Source package is checksum-bound by Cargo.lock."
+    },
+    {
+      "name": "core_detect",
+      "version": "1.0.0",
+      "from": "MIT/Apache-2.0",
+      "to": "MIT AND Apache-2.0",
+      "reason": "Exact historical Cargo slash metadata only. Conservatively retain obligations of both named permissive licenses; Unlicense/MIT selects actual bundled MIT grant. Never normalize another package/version/expression implicitly. Source package is checksum-bound by Cargo.lock."
+    },
+    {
+      "name": "dbus",
+      "version": "0.9.12",
+      "from": "Apache-2.0/MIT",
+      "to": "Apache-2.0 AND MIT",
+      "reason": "Exact historical Cargo slash metadata only. Conservatively retain obligations of both named permissive licenses; Unlicense/MIT selects actual bundled MIT grant. Never normalize another package/version/expression implicitly. Source package is checksum-bound by Cargo.lock."
+    },
+    {
+      "name": "fallible-iterator",
+      "version": "0.3.0",
+      "from": "MIT/Apache-2.0",
+      "to": "MIT AND Apache-2.0",
+      "reason": "Exact historical Cargo slash metadata only. Conservatively retain obligations of both named permissive licenses; Unlicense/MIT selects actual bundled MIT grant. Never normalize another package/version/expression implicitly. Source package is checksum-bound by Cargo.lock."
+    },
+    {
+      "name": "fallible-streaming-iterator",
+      "version": "0.1.9",
+      "from": "MIT/Apache-2.0",
+      "to": "MIT AND Apache-2.0",
+      "reason": "Exact historical Cargo slash metadata only. Conservatively retain obligations of both named permissive licenses; Unlicense/MIT selects actual bundled MIT grant. Never normalize another package/version/expression implicitly. Source package is checksum-bound by Cargo.lock."
+    },
+    {
+      "name": "fnv",
+      "version": "1.0.7",
+      "from": "Apache-2.0 / MIT",
+      "to": "Apache-2.0 AND MIT",
+      "reason": "Exact historical Cargo slash metadata only. Conservatively retain obligations of both named permissive licenses; Unlicense/MIT selects actual bundled MIT grant. Never normalize another package/version/expression implicitly. Source package is checksum-bound by Cargo.lock."
+    },
+    {
+      "name": "foreign-types",
+      "version": "0.5.0",
+      "from": "MIT/Apache-2.0",
+      "to": "MIT AND Apache-2.0",
+      "reason": "Exact historical Cargo slash metadata only. Conservatively retain obligations of both named permissive licenses; Unlicense/MIT selects actual bundled MIT grant. Never normalize another package/version/expression implicitly. Source package is checksum-bound by Cargo.lock."
+    },
+    {
+      "name": "foreign-types-macros",
+      "version": "0.2.4",
+      "from": "MIT/Apache-2.0",
+      "to": "MIT AND Apache-2.0",
+      "reason": "Exact historical Cargo slash metadata only. Conservatively retain obligations of both named permissive licenses; Unlicense/MIT selects actual bundled MIT grant. Never normalize another package/version/expression implicitly. Source package is checksum-bound by Cargo.lock."
+    },
+    {
+      "name": "foreign-types-shared",
+      "version": "0.3.1",
+      "from": "MIT/Apache-2.0",
+      "to": "MIT AND Apache-2.0",
+      "reason": "Exact historical Cargo slash metadata only. Conservatively retain obligations of both named permissive licenses; Unlicense/MIT selects actual bundled MIT grant. Never normalize another package/version/expression implicitly. Source package is checksum-bound by Cargo.lock."
+    },
+    {
+      "name": "ident_case",
+      "version": "1.0.1",
+      "from": "MIT/Apache-2.0",
+      "to": "MIT AND Apache-2.0",
+      "reason": "Exact historical Cargo slash metadata only. Conservatively retain obligations of both named permissive licenses; Unlicense/MIT selects actual bundled MIT grant. Never normalize another package/version/expression implicitly. Source package is checksum-bound by Cargo.lock."
+    },
+    {
+      "name": "ipconfig",
+      "version": "0.3.4",
+      "from": "MIT/Apache-2.0",
+      "to": "MIT AND Apache-2.0",
+      "reason": "Exact historical Cargo slash metadata only. Conservatively retain obligations of both named permissive licenses; Unlicense/MIT selects actual bundled MIT grant. Never normalize another package/version/expression implicitly. Source package is checksum-bound by Cargo.lock."
+    },
+    {
+      "name": "jni",
+      "version": "0.21.1",
+      "from": "MIT/Apache-2.0",
+      "to": "MIT AND Apache-2.0",
+      "reason": "Exact historical Cargo slash metadata only. Conservatively retain obligations of both named permissive licenses; Unlicense/MIT selects actual bundled MIT grant. Never normalize another package/version/expression implicitly. Source package is checksum-bound by Cargo.lock."
+    },
+    {
+      "name": "json-patch",
+      "version": "4.2.0",
+      "from": "MIT/Apache-2.0",
+      "to": "MIT AND Apache-2.0",
+      "reason": "Exact historical Cargo slash metadata only. Conservatively retain obligations of both named permissive licenses; Unlicense/MIT selects actual bundled MIT grant. Never normalize another package/version/expression implicitly. Source package is checksum-bound by Cargo.lock."
+    },
+    {
+      "name": "libdbus-sys",
+      "version": "0.2.7",
+      "from": "Apache-2.0/MIT",
+      "to": "Apache-2.0 AND MIT",
+      "reason": "Exact historical Cargo slash metadata only. Conservatively retain obligations of both named permissive licenses; Unlicense/MIT selects actual bundled MIT grant. Never normalize another package/version/expression implicitly. Source package is checksum-bound by Cargo.lock."
+    },
+    {
+      "name": "minimal-lexical",
+      "version": "0.2.1",
+      "from": "MIT/Apache-2.0",
+      "to": "MIT AND Apache-2.0",
+      "reason": "Exact historical Cargo slash metadata only. Conservatively retain obligations of both named permissive licenses; Unlicense/MIT selects actual bundled MIT grant. Never normalize another package/version/expression implicitly. Source package is checksum-bound by Cargo.lock."
+    },
+    {
+      "name": "same-file",
+      "version": "1.0.6",
+      "from": "Unlicense/MIT",
+      "to": "MIT",
+      "reason": "Exact historical Cargo slash metadata only. Conservatively retain obligations of both named permissive licenses; Unlicense/MIT selects actual bundled MIT grant. Never normalize another package/version/expression implicitly. Source package is checksum-bound by Cargo.lock."
+    },
+    {
+      "name": "tagptr",
+      "version": "0.2.0",
+      "from": "MIT/Apache-2.0",
+      "to": "MIT AND Apache-2.0",
+      "reason": "Exact historical Cargo slash metadata only. Conservatively retain obligations of both named permissive licenses; Unlicense/MIT selects actual bundled MIT grant. Never normalize another package/version/expression implicitly. Source package is checksum-bound by Cargo.lock."
+    },
+    {
+      "name": "unicode-properties",
+      "version": "0.1.4",
+      "from": "MIT/Apache-2.0",
+      "to": "MIT AND Apache-2.0",
+      "reason": "Exact historical Cargo slash metadata only. Conservatively retain obligations of both named permissive licenses; Unlicense/MIT selects actual bundled MIT grant. Never normalize another package/version/expression implicitly. Source package is checksum-bound by Cargo.lock."
+    },
+    {
+      "name": "vcpkg",
+      "version": "0.2.15",
+      "from": "MIT/Apache-2.0",
+      "to": "MIT AND Apache-2.0",
+      "reason": "Exact historical Cargo slash metadata only. Conservatively retain obligations of both named permissive licenses; Unlicense/MIT selects actual bundled MIT grant. Never normalize another package/version/expression implicitly. Source package is checksum-bound by Cargo.lock."
+    },
+    {
+      "name": "version_check",
+      "version": "0.9.5",
+      "from": "MIT/Apache-2.0",
+      "to": "MIT AND Apache-2.0",
+      "reason": "Exact historical Cargo slash metadata only. Conservatively retain obligations of both named permissive licenses; Unlicense/MIT selects actual bundled MIT grant. Never normalize another package/version/expression implicitly. Source package is checksum-bound by Cargo.lock."
+    },
+    {
+      "name": "walkdir",
+      "version": "2.5.0",
+      "from": "Unlicense/MIT",
+      "to": "MIT",
+      "reason": "Exact historical Cargo slash metadata only. Conservatively retain obligations of both named permissive licenses; Unlicense/MIT selects actual bundled MIT grant. Never normalize another package/version/expression implicitly. Source package is checksum-bound by Cargo.lock."
+    },
+    {
+      "name": "winapi",
+      "version": "0.3.9",
+      "from": "MIT/Apache-2.0",
+      "to": "MIT AND Apache-2.0",
+      "reason": "Exact historical Cargo slash metadata only. Conservatively retain obligations of both named permissive licenses; Unlicense/MIT selects actual bundled MIT grant. Never normalize another package/version/expression implicitly. Source package is checksum-bound by Cargo.lock."
+    },
+    {
+      "name": "winapi-i686-pc-windows-gnu",
+      "version": "0.4.0",
+      "from": "MIT/Apache-2.0",
+      "to": "MIT AND Apache-2.0",
+      "reason": "Exact historical Cargo slash metadata only. Conservatively retain obligations of both named permissive licenses; Unlicense/MIT selects actual bundled MIT grant. Never normalize another package/version/expression implicitly. Source package is checksum-bound by Cargo.lock."
+    },
+    {
+      "name": "winapi-x86_64-pc-windows-gnu",
+      "version": "0.4.0",
+      "from": "MIT/Apache-2.0",
+      "to": "MIT AND Apache-2.0",
+      "reason": "Exact historical Cargo slash metadata only. Conservatively retain obligations of both named permissive licenses; Unlicense/MIT selects actual bundled MIT grant. Never normalize another package/version/expression implicitly. Source package is checksum-bound by Cargo.lock."
+    },
+    {
+      "name": "arraydeque",
+      "version": "0.5.1",
+      "from": "MIT/Apache-2.0",
+      "to": "MIT AND Apache-2.0",
+      "reason": "Exact checksum-bound historical Cargo slash metadata; conservatively retain both permissive grants, never automatically normalize other releases or malformed expressions."
+    },
+    {
+      "name": "bit_field",
+      "version": "0.10.3",
+      "from": "Apache-2.0/MIT",
+      "to": "Apache-2.0 AND MIT",
+      "reason": "Exact checksum-bound historical Cargo slash metadata; conservatively retain both permissive grants, never automatically normalize other releases or malformed expressions."
+    },
+    {
+      "name": "bitstream-io",
+      "version": "4.10.0",
+      "from": "MIT/Apache-2.0",
+      "to": "MIT AND Apache-2.0",
+      "reason": "Exact checksum-bound historical Cargo slash metadata; conservatively retain both permissive grants, never automatically normalize other releases or malformed expressions."
+    },
+    {
+      "name": "downcast-rs",
+      "version": "1.2.1",
+      "from": "MIT/Apache-2.0",
+      "to": "MIT AND Apache-2.0",
+      "reason": "Exact checksum-bound historical Cargo slash metadata; conservatively retain both permissive grants, never automatically normalize other releases or malformed expressions."
+    },
+    {
+      "name": "etagere",
+      "version": "0.2.15",
+      "from": "MIT/Apache-2.0",
+      "to": "MIT AND Apache-2.0",
+      "reason": "Exact checksum-bound historical Cargo slash metadata; conservatively retain both permissive grants, never automatically normalize other releases or malformed expressions."
+    },
+    {
+      "name": "float-ord",
+      "version": "0.3.2",
+      "from": "MIT / Apache-2.0",
+      "to": "MIT AND Apache-2.0",
+      "reason": "Exact checksum-bound historical Cargo slash metadata; conservatively retain both permissive grants, never automatically normalize other releases or malformed expressions."
+    },
+    {
+      "name": "flume",
+      "version": "0.12.0",
+      "from": "Apache-2.0/MIT",
+      "to": "Apache-2.0 AND MIT",
+      "reason": "Exact checksum-bound historical Cargo slash metadata; conservatively retain both permissive grants, never automatically normalize other releases or malformed expressions."
+    },
+    {
+      "name": "futf",
+      "version": "0.1.5",
+      "from": "MIT / Apache-2.0",
+      "to": "MIT AND Apache-2.0",
+      "reason": "Exact checksum-bound historical Cargo slash metadata; conservatively retain both permissive grants, never automatically normalize other releases or malformed expressions."
+    },
+    {
+      "name": "khronos-egl",
+      "version": "6.0.0",
+      "from": "MIT/Apache-2.0",
+      "to": "MIT AND Apache-2.0",
+      "reason": "Exact checksum-bound historical Cargo slash metadata; conservatively retain both permissive grants, never automatically normalize other releases or malformed expressions."
+    },
+    {
+      "name": "mac",
+      "version": "0.1.1",
+      "from": "MIT/Apache-2.0",
+      "to": "MIT AND Apache-2.0",
+      "reason": "Exact checksum-bound historical Cargo slash metadata; conservatively retain both permissive grants, never automatically normalize other releases or malformed expressions."
+    },
+    {
+      "name": "mac-notification-sys",
+      "version": "0.6.15",
+      "from": "MIT/Apache-2.0",
+      "to": "MIT AND Apache-2.0",
+      "reason": "Exact checksum-bound historical Cargo slash metadata; conservatively retain both permissive grants, never automatically normalize other releases or malformed expressions."
+    },
+    {
+      "name": "num-bigint-dig",
+      "version": "0.9.1",
+      "from": "MIT/Apache-2.0",
+      "to": "MIT AND Apache-2.0",
+      "reason": "Exact checksum-bound historical Cargo slash metadata; conservatively retain both permissive grants, never automatically normalize other releases or malformed expressions."
+    },
+    {
+      "name": "pathfinder_geometry",
+      "version": "0.5.1",
+      "from": "MIT/Apache-2.0",
+      "to": "MIT AND Apache-2.0",
+      "reason": "Exact checksum-bound historical Cargo slash metadata; conservatively retain both permissive grants, never automatically normalize other releases or malformed expressions."
+    },
+    {
+      "name": "pollster",
+      "version": "0.4.0",
+      "from": "Apache-2.0/MIT",
+      "to": "Apache-2.0 AND MIT",
+      "reason": "Exact checksum-bound historical Cargo slash metadata; conservatively retain both permissive grants, never automatically normalize other releases or malformed expressions."
+    },
+    {
+      "name": "qoi",
+      "version": "0.4.1",
+      "from": "MIT/Apache-2.0",
+      "to": "MIT AND Apache-2.0",
+      "reason": "Exact checksum-bound historical Cargo slash metadata; conservatively retain both permissive grants, never automatically normalize other releases or malformed expressions."
+    },
+    {
+      "name": "quick-error",
+      "version": "2.0.1",
+      "from": "MIT/Apache-2.0",
+      "to": "MIT AND Apache-2.0",
+      "reason": "Exact checksum-bound historical Cargo slash metadata; conservatively retain both permissive grants, never automatically normalize other releases or malformed expressions."
+    },
+    {
+      "name": "rangemap",
+      "version": "1.8.0",
+      "from": "MIT/Apache-2.0",
+      "to": "MIT AND Apache-2.0",
+      "reason": "Exact checksum-bound historical Cargo slash metadata; conservatively retain both permissive grants, never automatically normalize other releases or malformed expressions."
+    },
+    {
+      "name": "rustc-demangle",
+      "version": "0.1.28",
+      "from": "MIT/Apache-2.0",
+      "to": "MIT AND Apache-2.0",
+      "reason": "Exact checksum-bound historical Cargo slash metadata; conservatively retain both permissive grants, never automatically normalize other releases or malformed expressions."
+    },
+    {
+      "name": "rustc-hash",
+      "version": "1.1.0",
+      "from": "Apache-2.0/MIT",
+      "to": "Apache-2.0 AND MIT",
+      "reason": "Exact checksum-bound historical Cargo slash metadata; conservatively retain both permissive grants, never automatically normalize other releases or malformed expressions."
+    },
+    {
+      "name": "scoped-tls",
+      "version": "1.0.1",
+      "from": "MIT/Apache-2.0",
+      "to": "MIT AND Apache-2.0",
+      "reason": "Exact checksum-bound historical Cargo slash metadata; conservatively retain both permissive grants, never automatically normalize other releases or malformed expressions."
+    },
+    {
+      "name": "serde_urlencoded",
+      "version": "0.7.1",
+      "from": "MIT/Apache-2.0",
+      "to": "MIT AND Apache-2.0",
+      "reason": "Exact checksum-bound historical Cargo slash metadata; conservatively retain both permissive grants, never automatically normalize other releases or malformed expressions."
+    },
+    {
+      "name": "shellexpand",
+      "version": "3.1.2",
+      "from": "MIT/Apache-2.0",
+      "to": "MIT AND Apache-2.0",
+      "reason": "Exact checksum-bound historical Cargo slash metadata; conservatively retain both permissive grants, never automatically normalize other releases or malformed expressions."
+    },
+    {
+      "name": "svg_fmt",
+      "version": "0.4.5",
+      "from": "MIT/Apache-2.0",
+      "to": "MIT AND Apache-2.0",
+      "reason": "Exact checksum-bound historical Cargo slash metadata; conservatively retain both permissive grants, never automatically normalize other releases or malformed expressions."
+    },
+    {
+      "name": "tendril",
+      "version": "0.4.3",
+      "from": "MIT/Apache-2.0",
+      "to": "MIT AND Apache-2.0",
+      "reason": "Exact checksum-bound historical Cargo slash metadata; conservatively retain both permissive grants, never automatically normalize other releases or malformed expressions."
+    },
+    {
+      "name": "unicode-bidi-mirroring",
+      "version": "0.4.0",
+      "from": "MIT/Apache-2.0",
+      "to": "MIT AND Apache-2.0",
+      "reason": "Exact checksum-bound historical Cargo slash metadata; conservatively retain both permissive grants, never automatically normalize other releases or malformed expressions."
+    },
+    {
+      "name": "unicode-ccc",
+      "version": "0.4.0",
+      "from": "MIT/Apache-2.0",
+      "to": "MIT AND Apache-2.0",
+      "reason": "Exact checksum-bound historical Cargo slash metadata; conservatively retain both permissive grants, never automatically normalize other releases or malformed expressions."
+    },
+    {
+      "name": "unicode-vo",
+      "version": "0.1.0",
+      "from": "MIT/Apache-2.0",
+      "to": "MIT AND Apache-2.0",
+      "reason": "Exact checksum-bound historical Cargo slash metadata; conservatively retain both permissive grants, never automatically normalize other releases or malformed expressions."
+    },
+    {
+      "name": "wio",
+      "version": "0.2.2",
+      "from": "MIT/Apache-2.0",
+      "to": "MIT AND Apache-2.0",
+      "reason": "Exact checksum-bound historical Cargo slash metadata; conservatively retain both permissive grants, never automatically normalize other releases or malformed expressions."
+    }
+  ]
+}

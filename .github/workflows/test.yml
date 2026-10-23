@@ -45,6 +45,9 @@ jobs:
       - name: Verify production dependency licenses
         run: bun run supply-chain:licenses
 
+      - name: Verify locked all-platform Rust dependency licenses
+        run: bun run supply-chain:licenses:rust
+
   app-production-build:
     name: cockpit production build
     runs-on: ubuntu-latest

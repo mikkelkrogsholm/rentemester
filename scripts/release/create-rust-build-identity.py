@@ -31,6 +31,43 @@ def inventory(root):
     return rows
 
 
+def verify_pdf_licenses(source, pdfium, artifact):
+    inventory_path = source / 'scripts/rust/pdf-worker/license-inventory.json'
+    approved = json.loads((source / 'scripts/release/pdfium-license-approval.json').read_text())
+    if (approved.get('format') != 'rentemester-pdfium-license-approval/1'
+            or approved.get('dependencyApproved') is not True
+            or approved.get('inventorySha256') != digest(inventory_path)):
+        raise ValueError('PDF license inventory lacks exact reviewed policy approval')
+    notices = json.loads(inventory_path.read_text())
+    if (notices.get('format') != 'rentemester-pdfium-license-inventory/1'
+            or notices.get('policyApprovalClaim') is not False
+            or notices.get('pinsSha256') != digest(source / 'scripts/rust/pdf-worker/artifacts.json')
+            or approved.get('pinsSha256') != notices['pinsSha256']):
+        raise ValueError('PDF license inventory/source pins mismatch')
+    rows = [r for r in notices['artifacts'] if r['archive'] == artifact['archive']]
+    if len(rows) != 1 or any(rows[0].get(k) != artifact[v] for k, v in [
+            ('archiveSha256', 'sha256'), ('library', 'library'), ('librarySha256', 'librarySha256')]):
+        raise ValueError('PDF license inventory artifact mismatch')
+    expected = {}
+    for row in rows[0]['notices']:
+        path = Path(row['path'])
+        if (path.is_absolute() or '..' in path.parts or path.as_posix() != row['path']
+                or not (row['path'] == 'LICENSE' or row['path'].startswith('licenses/'))
+                or row['path'] in expected or not re.fullmatch('[0-9a-f]{64}', row['sha256'])
+                or type(row['size']) is not int or row['size'] <= 0):
+            raise ValueError('PDF license inventory contains invalid notice')
+        expected[row['path']] = row
+    actual = {'LICENSE'} | {p.relative_to(pdfium).as_posix()
+                            for p in (pdfium / 'licenses').rglob('*') if not p.is_dir()}
+    if 'LICENSE' not in expected or len(expected) < 2 or actual != set(expected):
+        raise ValueError('PDF licenses must be retained: exact complete notice set required')
+    for name, row in expected.items():
+        path = pdfium / name
+        if (not path.is_file() or path.is_symlink() or path.stat().st_size != row['size']
+                or digest(path) != row['sha256']):
+            raise ValueError('PDF license content differs from reviewed pinned notice')
+
+
 def create(source, bundle, commit, epoch, dirty, images, version):
     if not re.fullmatch('[0-9a-f]{40}', commit):
         raise ValueError('full source commit required')
@@ -78,6 +115,11 @@ def create(source, bundle, commit, epoch, dirty, images, version):
     if not license_file.is_file() or license_file.stat().st_size == 0 or not any(
             p.is_file() and p.stat().st_size > 0 for p in (bundle / 'bin/pdfium/licenses').rglob('*')):
         raise ValueError('PDF licenses must be retained')
+    verify_pdf_licenses(source, bundle / 'bin/pdfium', artifact)
+    credits = bundle / 'THIRD-PARTY-NOTICES.txt'
+    if (not credits.is_file() or credits.is_symlink()
+            or digest(credits) != digest(source / 'scripts/release/rust-third-party-notices.txt')):
+        raise ValueError('required third-party credits differ from source')
     output = bundle / 'build-identity.json'
     if output.exists():
         raise ValueError('identity must not overwrite an existing build')

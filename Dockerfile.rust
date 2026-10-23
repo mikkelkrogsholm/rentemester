@@ -64,10 +64,14 @@ COPY --from=rust-build /out/ /bundle/bin/
 COPY --from=web /build/app/dist/ /bundle/web/
 COPY --from=pdf-artifact /pdfium/ /bundle/bin/pdfium/
 COPY --from=runtime-base /debian-packages.txt /bundle/debian-packages.txt
+COPY scripts/release/rust-third-party-notices.txt /bundle/THIRD-PARTY-NOTICES.txt
 COPY Cargo.toml Cargo.lock package.json bun.lock /identity-source/
 COPY app/package.json /identity-source/app/package.json
 COPY vendor/ /identity-source/vendor/
 COPY scripts/rust/pdf-worker/artifacts.json /identity-source/scripts/rust/pdf-worker/artifacts.json
+COPY scripts/rust/pdf-worker/license-inventory.json /identity-source/scripts/rust/pdf-worker/license-inventory.json
+COPY scripts/release/pdfium-license-approval.json /identity-source/scripts/release/pdfium-license-approval.json
+COPY scripts/release/rust-third-party-notices.txt /identity-source/scripts/release/rust-third-party-notices.txt
 COPY scripts/release/rust-entrypoint.sh /identity-source/scripts/release/rust-entrypoint.sh
 COPY scripts/release/create-rust-build-identity.py /create-identity.py
 RUN for file in /bundle/bin/rentemester-* /bundle/bin/pdfium/lib/libpdfium.so; do \

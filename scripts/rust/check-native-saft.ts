@@ -115,7 +115,10 @@ export function createSaftArtifactProof(page: Page, base: string, work: string, 
   async function projections() {
     const period = await download('period_end'), supplied = await download('caller_supplied'), nativeHttp = await download('trusted_runtime_clock');
     const results = [supplied.projection, nativeHttp.projection, localCli('period_end'), localCli('caller_supplied'), native('cli'), native('mcp')];
-    for (const result of results) need(JSON.stringify(result.accounting) === JSON.stringify(period.projection.accounting), 'All timestamp modes/native/original clients share accounting projection');
+    for (const result of results) {
+      if (result === null) throw Error('Successful SAF-T projection is missing');
+      need(JSON.stringify(result.accounting) === JSON.stringify(period.projection.accounting), 'All timestamp modes/native/original clients share accounting projection');
+    }
     await auditCount(); await unchanged(); return { period, supplied, nativeHttp };
   }
   return {

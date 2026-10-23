@@ -7,6 +7,10 @@ const SOURCE = "https://github.com/mikkelkrogsholm/rentemester";
 const IMAGE = "ghcr.io/mikkelkrogsholm/rentemester";
 const pinsRaw = readFileSync(new URL("../rust/pdf-worker/artifacts.json", import.meta.url), "utf8");
 const pins = JSON.parse(pinsRaw);
+const pdfLicensesRaw = readFileSync(new URL("../rust/pdf-worker/license-inventory.json", import.meta.url), "utf8");
+const pdfLicenses = JSON.parse(pdfLicensesRaw);
+const licensePolicy = JSON.parse(readFileSync(new URL("./pdfium-license-approval.json", import.meta.url), "utf8"));
+const thirdPartyCredits = readFileSync(new URL("./rust-third-party-notices.txt", import.meta.url), "utf8");
 type ObjectValue = Record<string, unknown>;
 export type RustManifestMetadata = {
   version: string; gitCommit: string; builtAt: string;
@@ -93,6 +97,9 @@ function identity(raw: string): { value: ObjectValue; platform: string } {
   requireValue(isDeepStrictEqual(pdf.artifact, artifact) && isDeepStrictEqual(pdf.binding, pins.binding) && pdf.release === pins.release, "PDF source artifact/binding pins mismatch");
   const files = inventory(value.files, "runtime");
   const byPath = new Map(files.map(file => [file.path, file]));
+  const credits = byPath.get("THIRD-PARTY-NOTICES.txt");
+  requireValue(credits && credits.sha256 === sha(thirdPartyCredits) &&
+    credits.size === Buffer.byteLength(thirdPartyCredits), "required third-party credits mismatch");
   for (const path of ["bin/rentemester-server", "bin/rentemester-rust", "bin/rentemester-mcp", "bin/rentemester-pdf-worker", "bin/rustc.txt", "bin/cargo.txt", "native-server.json", "native-mcp-catalogue.json", "web/index.html", "debian-packages.txt", "bin/pdfium/artifact.json", "bin/pdfium/LICENSE", `bin/pdfium/${artifact.library}`]) {
     const file = byPath.get(path);
     requireValue(file && Number(file.size) > 0, `missing runtime file ${path}`);
@@ -100,6 +107,28 @@ function identity(raw: string): { value: ObjectValue; platform: string } {
   }
   requireValue(byPath.get(`bin/pdfium/${artifact.library}`)!.sha256 === artifact.librarySha256, "PDF library hash mismatch");
   requireValue(files.some(file => String(file.path).startsWith("bin/pdfium/licenses/") && Number(file.size) > 0), "PDF third-party licenses missing");
+  requireValue(licensePolicy.format === "rentemester-pdfium-license-approval/1" &&
+    licensePolicy.dependencyApproved === true && pdfLicenses.format === "rentemester-pdfium-license-inventory/1" &&
+    pdfLicenses.policyApprovalClaim === false && licensePolicy.inventorySha256 === sha(pdfLicensesRaw) &&
+    licensePolicy.pinsSha256 === sha(pinsRaw) && pdfLicenses.pinsSha256 === sha(pinsRaw),
+  "PDF licenses lack exact reviewed inventory/policy binding");
+  const licenses = pdfLicenses.artifacts.filter((row: { archive: string }) => row.archive === archive);
+  requireValue(licenses.length === 1 && licenses[0].archiveSha256 === artifact.sha256 &&
+    licenses[0].library === artifact.library && licenses[0].librarySha256 === artifact.librarySha256,
+  "PDF license artifact mismatch");
+  const expectedNotices = licenses[0].notices.map((row: { path: string; size: number; sha256: string }) => {
+    safePath(row.path);
+    requireValue(row.path === "LICENSE" || row.path.startsWith("licenses/"), "invalid PDF notice path");
+    const path = `bin/pdfium/${row.path}`;
+    const file = byPath.get(path);
+    requireValue(file && file.size === row.size && file.sha256 === row.sha256,
+      `PDF license content mismatch ${row.path}`);
+    return path;
+  }).sort();
+  const actualNotices = files.filter(file => file.path === "bin/pdfium/LICENSE" ||
+    String(file.path).startsWith("bin/pdfium/licenses/")).map(file => file.path).sort();
+  requireValue(expectedNotices.length > 1 && new Set(expectedNotices).size === expectedNotices.length &&
+    isDeepStrictEqual(actualNotices, expectedNotices), "PDF complete license notice set mismatch");
   requireValue(!byPath.has("build-identity.json"), "self-referential inventory");
   return { value, platform: targets[toolchain.target]! };
 }

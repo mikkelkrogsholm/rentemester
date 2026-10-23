@@ -31,6 +31,18 @@ class IdentityTests(unittest.TestCase):
         put(self.bundle, 'bin/pdfium/artifact.json', json.dumps(artifact))
         put(self.bundle, 'bin/pdfium/LICENSE', 'synthetic license')
         put(self.bundle, 'bin/pdfium/licenses/test', 'synthetic third-party license')
+        license_inventory = {'format': 'rentemester-pdfium-license-inventory/1', 'policyApprovalClaim': False,
+            'pinsSha256': IDENTITY.digest(self.source / 'scripts/rust/pdf-worker/artifacts.json'),
+            'artifacts': [{'archive': artifact['archive'], 'archiveSha256': artifact['sha256'],
+                'library': artifact['library'], 'librarySha256': artifact['librarySha256'],
+                'notices': [{'path': name, 'sha256': IDENTITY.digest(self.bundle / 'bin/pdfium' / name),
+                             'size': (self.bundle / 'bin/pdfium' / name).stat().st_size}
+                            for name in ['LICENSE', 'licenses/test']]}]}
+        license_path = put(self.source, 'scripts/rust/pdf-worker/license-inventory.json', json.dumps(license_inventory))
+        self.policy = self.source / 'scripts/release/pdfium-license-approval.json'
+        put(self.source, 'scripts/release/pdfium-license-approval.json', json.dumps({
+            'format': 'rentemester-pdfium-license-approval/1', 'dependencyApproved': True,
+            'inventorySha256': IDENTITY.digest(license_path), 'pinsSha256': license_inventory['pinsSha256']}))
         put(self.bundle, 'native-server.json', json.dumps({'format': 'rentemester-native-server/1',
             'version': '0.2.0', 'platform': 'linux-aarch64', 'apiEpoch': 1, 'controlSchema': 31, 'companySchema': 36}))
         put(self.bundle, 'native-mcp-catalogue.json', json.dumps({'format': 'rentemester-native-mcp-catalogue/1',
@@ -41,6 +53,8 @@ class IdentityTests(unittest.TestCase):
             put(self.bundle, 'bin/rentemester-' + name, 'synthetic binary').chmod(0o700)
         put(self.bundle, 'web/index.html', 'synthetic UI')
         put(self.bundle, 'debian-packages.txt', 'synthetic OS packages')
+        put(self.bundle, 'THIRD-PARTY-NOTICES.txt', 'synthetic required credits')
+        put(self.source, 'scripts/release/rust-third-party-notices.txt', 'synthetic required credits')
         self.images = {k: 'synthetic@sha256:' + 'b' * 64 for k in ['rustBuilder', 'webBuilder', 'runtime']}
 
     def tearDown(self):
@@ -93,6 +107,28 @@ class IdentityTests(unittest.TestCase):
         (self.bundle / 'bin/pdfium/licenses/test').unlink()
         (self.bundle / 'bin/pdfium/licenses/empty').mkdir()
         with self.assertRaisesRegex(ValueError, 'licenses must be retained'):
+            self.create()
+
+    def test_nonempty_changed_license_is_refused_before_identity(self):
+        (self.bundle / 'bin/pdfium/LICENSE').write_text('nonempty but not reviewed license')
+        with self.assertRaisesRegex(ValueError, 'PDF license content'):
+            self.create()
+        self.assertFalse((self.bundle / 'build-identity.json').exists())
+
+    def test_unreviewed_inventory_is_refused(self):
+        self.policy.write_text('{}')
+        with self.assertRaisesRegex(ValueError, 'policy approval'):
+            self.create()
+        self.assertFalse((self.bundle / 'build-identity.json').exists())
+
+    def test_additional_unreviewed_notice_is_refused(self):
+        (self.bundle / 'bin/pdfium/licenses/extra').write_text('different terms')
+        with self.assertRaisesRegex(ValueError, 'complete notice set'):
+            self.create()
+
+    def test_missing_required_credits_are_refused(self):
+        (self.bundle / 'THIRD-PARTY-NOTICES.txt').unlink()
+        with self.assertRaisesRegex(ValueError, 'required third-party credits'):
             self.create()
 
 

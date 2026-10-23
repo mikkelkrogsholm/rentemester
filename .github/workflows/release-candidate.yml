@@ -98,6 +98,9 @@ jobs:
       - name: Verify production dependency licenses
         run: bun run supply-chain:licenses
 
+      - name: Verify locked all-platform Rust dependency licenses
+        run: bun run supply-chain:licenses:rust
+
       - name: Create lockfile-bound supply-chain evidence
         id: supply_chain
         run: |
