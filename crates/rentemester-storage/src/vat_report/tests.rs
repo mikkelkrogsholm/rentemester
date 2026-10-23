@@ -180,7 +180,7 @@ fn marker_only_manual_journal_never_qualifies_as_accepted_history() {
         .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
         .unwrap();
     for (no, kind, normal) in [
-        ("2000", "expense", "debit"),
+        ("2000", "equity", "credit"),
         ("5510", "asset", "debit"),
         ("64060", "vat", "debit"),
     ] {
@@ -197,7 +197,7 @@ fn marker_only_manual_journal_never_qualifies_as_accepted_history() {
         )
         .unwrap();
     }
-    let request = serde_json::from_value(json!({"transactionDate":"2025-03-20","text":"Synthetic marker spoof","currency":"DKK","lines":[{"accountNo":"64060","debitAmount":"25.00"},{"accountNo":"5510","creditAmount":"25.00"}]})).unwrap();
+    let request = serde_json::from_value(json!({"transactionDate":"2025-03-20","text":"Synthetic marker spoof","currency":"DKK","lines":[{"accountNo":"5510","debitAmount":"25.00"},{"accountNo":"2000","creditAmount":"25.00"}]})).unwrap();
     let posted = crate::journal_post::post(
         &tx,
         &request,
