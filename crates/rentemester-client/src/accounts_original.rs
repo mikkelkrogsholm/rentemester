@@ -91,6 +91,17 @@ fn real(v: &Value) -> bool {
 fn role(v: &Value) -> bool {
     v.as_str().is_some_and(|s| ROLES.contains(&s))
 }
+// Historical provenance is evidence, not a current credential assertion.
+fn historical_actor(actor: &Value, source: &Value) -> bool {
+    actor.as_str().is_some_and(|s| {
+        (s == "system" && source == "native_seed")
+            || s.split_once(':').is_some_and(|(kind, subject)| {
+                matches!(kind, "user" | "service_account" | "agent" | "system")
+                    && !subject.is_empty()
+                    && !subject.chars().any(|c| c.is_whitespace() || c.is_control())
+            })
+    })
+}
 fn resolution(v: &Value) -> bool {
     role(&v["role"])
         && if v["ok"] == true {
@@ -108,7 +119,7 @@ fn resolution(v: &Value) -> bool {
                 && v["version"]
                     .as_u64()
                     .is_some_and(|n| n > 0 && n <= 9007199254740991)
-                && v["confirmedBy"].as_str().is_some_and(identity)
+                && historical_actor(&v["confirmedBy"], &v["confirmationSource"])
                 && real(&v["confirmationSource"])
         } else {
             v["ok"] == false && exact(v, &["ok", "role", "error"]) && real(&v["error"])

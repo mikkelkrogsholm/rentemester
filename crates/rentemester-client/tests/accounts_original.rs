@@ -88,3 +88,19 @@ fn accounts_original_status_first_bound_receipts_and_order() {
     for v in [json!({"ok":true,"count":1,"rows":[]}),json!({"ok":true,"count":2,"rows":[{"account_no":"2","name":"Two","type":"asset","default_vat_code":null},{"account_no":"1","name":"One","type":"asset","default_vat_code":null}]})]{let(origin,t)=server(200,v);let api=ApiClient::new(&origin,true,None).unwrap();assert_eq!(api.original_accounts("synthetic",Op::List,&json!({}),None,None).await,Err(Error::Protocol));t.join().unwrap();}
 });
 }
+
+#[test]
+fn accounts_original_retained_native_seed_and_typed_history_are_readable() {
+    tokio::runtime::Runtime::new().unwrap().block_on(async {
+        let roles = ["bank", "debtors", "creditors", "output_vat", "input_vat", "reverse_charge_vat", "vat_settlement", "operational_default"];
+        for actor in ["system", "agent:retained", "system:retained", "user:old", "service_account:old", "forged", "agent:", "user:bad actor"] {
+            let resolutions: Vec<_> = roles.iter().map(|role| json!({"ok":true,"role":role,"accountNo":"1790","version":1,"confirmedBy":actor,"confirmationSource":if actor == "system" {"native_seed"} else {"explicit"}})).collect();
+            let v = json!({"ok":true,"status":"complete","missing":[],"ambiguous":[],"proposals":[],"candidates":[],"reasons":[],"roles":resolutions});
+            let (origin,t) = server(200,v.clone());
+            let api=ApiClient::new(&origin,true,None).unwrap();
+            let result=api.original_accounts("synthetic",Op::RolesStatus,&json!({}),None,None).await;
+            if matches!(actor,"forged"|"agent:"|"user:bad actor") {assert_eq!(result,Err(Error::Protocol));} else {assert_eq!(result.unwrap(),v);}
+            assert!(t.join().unwrap().starts_with("GET /api/companies/synthetic/original/accounts/roles-status "));
+        }
+    });
+}

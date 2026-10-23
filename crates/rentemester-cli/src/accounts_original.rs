@@ -117,10 +117,11 @@ fn parse(args: &[String]) -> Result<Parsed<'_>, Output> {
             }
         }
         if let Some(v) = p.flags.get("--allow-direct-posting") {
-            if !matches!(*v, "true" | "false") {
+            let normalized = v.to_ascii_lowercase();
+            if !matches!(normalized.as_str(), "true" | "false") {
                 return Err(fail("--allow-direct-posting must be true or false", 2));
             }
-            target["allowDirectPosting"] = json!(*v == "true");
+            target["allowDirectPosting"] = json!(normalized == "true");
         }
         for k in ["--actor", "--principal"] {
             if p.flags.get(k).is_some_and(|s| {
@@ -266,6 +267,34 @@ pub fn execute(args: &[String]) -> Output {
             } else {
                 fail(&e.message, exit)
             }
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn source_boolean_remains_case_insensitive() {
+        for (flag, expected) in [("TRUE", true), ("False", false), ("true", true)] {
+            let args: Vec<String> = [
+                "accounts",
+                "add",
+                "--account-no",
+                "1790",
+                "--name",
+                "Synthetic",
+                "--type",
+                "asset",
+                "--confirm",
+                "yes",
+                "--allow-direct-posting",
+                flag,
+            ]
+            .iter()
+            .map(|s| s.to_string())
+            .collect();
+            let parsed = super::parse(&args).unwrap_or_else(|_| panic!("source boolean refused"));
+            assert_eq!(parsed.body["input"]["allowDirectPosting"], expected);
         }
     }
 }
