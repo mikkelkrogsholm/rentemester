@@ -190,3 +190,10 @@ fn exact_server_body_text_date_and_empty_range_bounds() {
     v["context"]["attributes"] = attributes;
     assert!(validate_original_posting_rules(Op::Test, &v).is_ok());
 }
+
+#[test]
+fn shared_inline_parser_retains_nested_duplicate_refusal() {
+    use rentemester_client::parse_original_posting_rules_json as parse;
+    assert!(parse(r#"{"context":{"attributes":{"bankText":"one","bankText":"two"}}}"#).is_err());
+    assert!(parse(r#"{"context":{}}"#).is_ok());
+}

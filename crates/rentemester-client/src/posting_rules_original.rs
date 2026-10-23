@@ -533,3 +533,13 @@ impl ApiClient {
         Ok(v)
     }
 }
+
+/// Strict inline JSON shared with source CLI, before credentials or network access.
+pub fn parse_original_posting_rules_json(raw: &str) -> Result<Value, Error> {
+    if raw.len() > 65_536 {
+        return Err(Error::InvalidInput("original rule JSON exceeds body bound"));
+    }
+    serde_json::from_str::<UniqueJson>(raw)
+        .map(|v| v.0)
+        .map_err(|_| Error::InvalidInput("original rule JSON contains invalid or duplicate fields"))
+}
