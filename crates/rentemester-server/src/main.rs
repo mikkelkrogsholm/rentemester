@@ -13,6 +13,7 @@ mod mail_worker;
 mod local_runtime;
 mod portable_backup_cli;
 mod product_http;
+mod protocol;
 mod report_export;
 mod setup_http;
 mod shutdown;
@@ -420,7 +421,7 @@ fn cockpit_router(
     } else {
         router
     };
-    router
+    protocol::install(router, connected)
         .layer(SetResponseHeaderLayer::if_not_present(
             axum::http::header::CACHE_CONTROL,
             HeaderValue::from_static("no-cache"),

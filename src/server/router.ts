@@ -1,3 +1,4 @@
+import { createProtocolManifest, protocolAdmission } from "./protocol";
 // HTTP request handler for the cockpit backend (#170).
 //
 // `handleRequest` is the pure heart of the server: a `(Request, config) =>
@@ -265,6 +266,7 @@ export function validateRouteCatalog(entries: readonly RouteCatalogEntry[]): voi
 }
 
 const ROUTE_CATALOG_INPUT: readonly RouteCatalogInput[] = [
+  { scope: "public", effect: "read", permission: "public.read", method: "GET", pattern: "/api/protocol", summary: "Passive protocol-major-1 route support; never authorization." },
   { scope: "public", effect: "read", permission: "public.read", method: "GET", pattern: "/api", summary: "Sundhedstjek + rute-katalog." },
   { scope: "public", effect: "read", permission: "public.read", method: "GET", pattern: "/api/health", summary: "Alias for GET /api." },
   { scope: "public", effect: "read", permission: "public.read", method: "GET", pattern: "/api/ready", summary: "Read-only readiness for workspace, control DB and registered ledgers." },
@@ -477,6 +479,7 @@ const ROUTE_CATALOG_INPUT: readonly RouteCatalogInput[] = [
 
 export const ROUTE_CATALOG: readonly RouteCatalogEntry[] = ROUTE_CATALOG_INPUT;
 validateRouteCatalog(ROUTE_CATALOG);
+const HTTP_PROTOCOL = createProtocolManifest(ROUTE_CATALOG);
 
 export type MatchedCatalogRoute = {
   entry: RouteCatalogEntry;
@@ -657,6 +660,12 @@ export async function handleRequest(
     const url = new URL(request.url);
     const path = url.pathname.replace(/\/+$/, "") || "/";
     const method = request.method.toUpperCase();
+    // Metadata does not authenticate or touch workspace state. Exact path only.
+    if (url.pathname === "/api/protocol" && method === "GET") {
+      return Response.json(HTTP_PROTOCOL, { headers: { "cache-control": "no-store" } });
+    }
+    const refusal = protocolAdmission(request, HTTP_PROTOCOL);
+    if (refusal) return refusal;
     const route = matchCatalogRoute(method, path);
 
     // Better Auth owns only its documented `/api/auth/*` endpoints. Public
