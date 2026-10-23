@@ -430,11 +430,13 @@ pub fn export(
     let rs = collect(tx, &s)?;
     let erasures = erased(tx, &s)?;
     strengthen(tx, &s, &rs, &erasures)?;
+    let legal_holds = crate::legal_holds::state(tx, &s.references)?;
+    let held = !legal_holds["active"].as_array().unwrap().is_empty();
     let records=rs.iter().map(|r|{let fields=erasures.get(&(r.source,r.id));let mut personal=r.personal.clone();let mut label=r.label.clone();if let Some(f)=fields{if f.contains("name"){personal.name=Some("[redigeret — GDPR]".into());if label.is_some(){label=personal.name.clone();}}
 if f.contains("address"){personal.address=None}
 if f.contains("email"){personal.email=None}
 if f.contains("vatOrCvr"){personal.vat_or_cvr=None}}
- let retained=r.unknown||r.deadline.as_deref().is_some_and(|d|d>=as_of);json!({"source":r.source,"sourceRowId":r.id,"label":label,"personalData":personal,"retainUntil":r.deadline,"retentionUnknown":r.unknown,"underRetention":retained,"erased":fields.is_some_and(|f|!f.is_empty()),"erasable":!retained&&fields.is_none()&&r.redactable})}).collect::<Vec<_>>();
+ let retained=r.unknown||r.deadline.as_deref().is_some_and(|d|d>=as_of);json!({"source":r.source,"sourceRowId":r.id,"label":label,"personalData":personal,"retainUntil":r.deadline,"retentionUnknown":r.unknown,"underRetention":retained,"erased":fields.is_some_and(|f|!f.is_empty()),"underLegalHold":held,"erasable":!held&&!retained&&fields.is_none()&&r.redactable})}).collect::<Vec<_>>();
     audit(
         tx,
         "gdpr_export",
@@ -447,7 +449,7 @@ if f.contains("vatOrCvr"){personal.vat_or_cvr=None}}
         actor,
     )?;
     Ok(
-        json!({"slug":slug,"company":crate::company_setup::profile(tx)?,"export":{"ok":true,"asOf":as_of,"appliedRules":["GDPR-SUBJECT-EXPORT",retention::RULE],"subject":{"cvr":s.cvr,"name":s.name},"records":records,"errors":[],"coverage":coverage()}}),
+        json!({"slug":slug,"company":crate::company_setup::profile(tx)?,"export":{"ok":true,"asOf":as_of,"appliedRules":["GDPR-SUBJECT-EXPORT",retention::RULE],"subject":{"cvr":s.cvr,"name":s.name},"legalHolds":crate::legal_holds::state(tx, &s.references)?,"records":records,"errors":[],"coverage":coverage()}}),
     )
 }
 pub fn erase(tx: &Transaction<'_>, i: &Input, today: &str, actor: &str) -> Result<Value, Error> {
@@ -462,6 +464,10 @@ pub fn erase(tx: &Transaction<'_>, i: &Input, today: &str, actor: &str) -> Resul
         ));
     }
     let s = scope(tx, i)?;
+    let holds = crate::legal_holds::state(tx, &s.references)?;
+    if !holds["active"].as_array().unwrap().is_empty() {
+        return Err(refused("active legal hold prevents erasure"));
+    }
     let rs = collect(tx, &s)?;
     let existing = erased(tx, &s)?;
     let (mut erased, mut refused_rows, mut already) = (vec![], vec![], 0);
@@ -713,3 +719,134 @@ mod identity_tests;
 #[cfg(test)]
 #[path = "gdpr_tests.rs"]
 mod tests;
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ForgetInput {
+    pub cvr: Option<String>,
+    pub name: Option<String>,
+    pub after_retention_expiry: bool,
+    pub confirm: bool,
+}
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct LegalHoldInput {
+    pub cvr: Option<String>,
+    pub name: Option<String>,
+    pub hold_id: String,
+    pub operation: String,
+    pub reason: String,
+    pub confirm: bool,
+}
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct AuditInput {
+    pub since: Option<String>,
+    pub until: Option<String>,
+    pub as_of: Option<String>,
+    pub confirm: bool,
+}
+pub fn discover(
+    tx: &Transaction<'_>,
+    slug: &str,
+    i: &Input,
+    today: &str,
+    actor: &str,
+) -> Result<Value, Error> {
+    let result = export(tx, slug, i, today, actor)?;
+    let s = scope(tx, i)?;
+    audit(tx, "gdpr_discover", &s, "Explicit subject discovery", actor)?;
+    Ok(result)
+}
+pub fn forget(
+    tx: &Transaction<'_>,
+    i: &ForgetInput,
+    today: &str,
+    actor: &str,
+) -> Result<Value, Error> {
+    if !i.after_retention_expiry {
+        return Err(refused("afterRetentionExpiry:true required"));
+    }
+    erase(
+        tx,
+        &Input {
+            cvr: i.cvr.clone(),
+            name: i.name.clone(),
+            as_of: None,
+            confirm: i.confirm,
+        },
+        today,
+        actor,
+    )
+}
+pub fn legal_hold(
+    tx: &Transaction<'_>,
+    i: &LegalHoldInput,
+    today: &str,
+    actor: &str,
+) -> Result<Value, Error> {
+    crate::validate(tx)?;
+    Date::parse(today)?;
+    if !i.confirm {
+        return Err(refused("confirmation required"));
+    }
+    let s = scope(
+        tx,
+        &Input {
+            cvr: i.cvr.clone(),
+            name: i.name.clone(),
+            as_of: None,
+            confirm: true,
+        },
+    )?;
+    let state = crate::legal_holds::change(
+        tx,
+        &s.references,
+        &s.reference,
+        &i.hold_id,
+        &i.operation,
+        &i.reason,
+        today,
+        actor,
+    )?;
+    audit(
+        tx,
+        "gdpr_legal_hold",
+        &s,
+        &format!("Legal hold {} {}", i.hold_id, i.operation),
+        actor,
+    )?;
+    Ok(json!({"ok":true,"asOf":today,"legalHolds":state}))
+}
+pub fn audit_log(
+    tx: &Transaction<'_>,
+    slug: &str,
+    i: &AuditInput,
+    today: &str,
+    actor: &str,
+) -> Result<Value, Error> {
+    crate::validate(tx)?;
+    Date::parse(today)?;
+    if !i.confirm {
+        return Err(refused("confirmation required"));
+    }
+    for d in [&i.since, &i.until, &i.as_of].into_iter().flatten() {
+        Date::parse(d)?;
+    }
+    if i.since
+        .as_ref()
+        .zip(i.until.as_ref())
+        .is_some_and(|(s, u)| s > u)
+    {
+        return Err(refused("since must not exceed until"));
+    }
+    tx.execute("INSERT INTO audit_log(event_type,entity_type,entity_id,message,actor)VALUES('gdpr_audit_export','gdpr_audit',?1,'Explicit GDPR audit export',?2)",params![slug,format!("user:{actor}")]).map_err(invalid)?;
+    let events = rows(
+        tx,
+        "SELECT id,created_at,event_type,entity_type,entity_id,message,actor FROM audit_log WHERE substr(event_type,1,5)='gdpr_' AND (?1 IS NULL OR substr(created_at,1,10)>=?1) AND (?2 IS NULL OR substr(created_at,1,10)<=?2) ORDER BY id",
+        params![i.since, i.until],
+    )?;
+    Ok(
+        json!({"slug":slug,"generatedOn":today,"asOf":i.as_of.as_deref().unwrap_or(today),"since":i.since,"until":i.until,"actor":format!("user:{actor}"),"events":events}),
+    )
+}

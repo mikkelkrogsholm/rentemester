@@ -11,6 +11,13 @@ pub enum Action<'a> {
     Retention,
     Export(&'a Input),
     Erase(&'a Input),
+    Discover(&'a Input),
+    Forget(&'a rentemester_storage::gdpr::ForgetInput),
+    LegalHold(&'a rentemester_storage::gdpr::LegalHoldInput),
+    AuditLog(
+        &'a rentemester_storage::gdpr::AuditInput,
+        &'a rentemester_runtime::backup_artifact::SigningKey,
+    ),
 }
 pub fn execute(
     control: &mut Connection,
@@ -21,8 +28,10 @@ pub fn execute(
 ) -> Result<Committed<Value>, Failure> {
     let permission = match action {
         Action::Retention => Permission::CompanyRead,
-        Action::Export(_) => Permission::CompanyExport,
-        Action::Erase(_) => Permission::CompanyAdmin,
+        Action::Export(_) | Action::Discover(_) | Action::AuditLog(_, _) => {
+            Permission::CompanyExport
+        }
+        Action::Erase(_) | Action::Forget(_) | Action::LegalHold(_) => Permission::CompanyAdmin,
     };
     let slug = context.selection.slug;
     control_fence::execute_cookie_subject(
@@ -39,6 +48,14 @@ pub fn execute(
             Action::Retention => rentemester_storage::retention::read(tx, slug, today),
             Action::Export(i) => rentemester_storage::gdpr::export(tx, slug, i, today, actor),
             Action::Erase(i) => rentemester_storage::gdpr::erase(tx, i, today, actor),
+            Action::Discover(i) => rentemester_storage::gdpr::discover(tx, slug, i, today, actor),
+            Action::Forget(i) => rentemester_storage::gdpr::forget(tx, i, today, actor),
+            Action::LegalHold(i) => rentemester_storage::gdpr::legal_hold(tx, i, today, actor),
+            Action::AuditLog(i, key) => {
+                let payload = rentemester_storage::gdpr::audit_log(tx, slug, i, today, actor)?;
+                rentemester_runtime::gdpr_audit::seal(&payload, key)
+                    .map_err(|e| rentemester_engine::Error::new("gdpr_refused", e))
+            }
         },
     )
 }
@@ -176,6 +193,39 @@ mod tests {
             .unwrap(),
             "user:u"
         );
+        let held:rentemester_storage::gdpr::LegalHoldInput=serde_json::from_value(json!({"cvr":"SYN-GDPR","holdId":"authority-case","operation":"place","reason":"Synthetic authority test","confirm":true})).unwrap();
+        execute(
+            &mut c,
+            &mut l,
+            context("a"),
+            "2026-01-01",
+            Action::LegalHold(&held),
+        )
+        .unwrap();
+        assert!(
+            execute(
+                &mut c,
+                &mut l,
+                context("other"),
+                "2026-01-01",
+                Action::Discover(&input)
+            )
+            .is_err()
+        );
+        let forget: rentemester_storage::gdpr::ForgetInput = serde_json::from_value(
+            json!({"cvr":"SYN-GDPR","afterRetentionExpiry":true,"confirm":true}),
+        )
+        .unwrap();
+        assert!(
+            execute(
+                &mut c,
+                &mut l,
+                context("a"),
+                "2026-01-01",
+                Action::Forget(&forget)
+            )
+            .is_err()
+        );
         let before = l.total_changes();
         c.execute_batch("INSERT INTO rm_company_membership_events(user_id,company_slug,event_type,company_role,actor)VALUES('u','a','revoke',NULL,'agent:synthetic');").unwrap();
         assert!(
@@ -195,6 +245,26 @@ mod tests {
                 context("a"),
                 "2026-01-01",
                 Action::Export(&input)
+            )
+            .is_err()
+        );
+        assert!(
+            execute(
+                &mut c,
+                &mut l,
+                context("a"),
+                "2026-01-01",
+                Action::Discover(&input)
+            )
+            .is_err()
+        );
+        assert!(
+            execute(
+                &mut c,
+                &mut l,
+                context("a"),
+                "2026-01-01",
+                Action::LegalHold(&held)
             )
             .is_err()
         );

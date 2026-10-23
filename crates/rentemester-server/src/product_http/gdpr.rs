@@ -1,9 +1,22 @@
 use super::*;
 use rentemester_application::gdpr::Action;
 pub(super) async fn handle(State(state): State<Product>, request: Request) -> Response {
-    let company_slug=request.uri().path().split('/').nth(3).unwrap_or("").to_owned();
+    let company_slug = request
+        .uri()
+        .path()
+        .split('/')
+        .nth(3)
+        .unwrap_or("")
+        .to_owned();
     let mutation = request.method() != axum::http::Method::GET;
-    let erase = request.uri().path().ends_with("/erase");
+    let operation = request
+        .uri()
+        .path()
+        .rsplit('/')
+        .next()
+        .unwrap_or("")
+        .to_owned();
+    let erase = operation == "erase" || operation == "forget";
     let cookie = match proof(&state, &request, mutation) {
         Ok(c) => c,
         Err(r) => return *r,
@@ -30,10 +43,7 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
         if erase && value.get("asOf").is_some() {
             return refused(StatusCode::BAD_REQUEST, "erasure_does_not_accept_as_of");
         }
-        let Ok(input) = serde_json::from_value::<rentemester_storage::gdpr::Input>(value) else {
-            return refused(StatusCode::BAD_REQUEST, "invalid_input");
-        };
-        Some(input)
+        Some(value)
     } else {
         None
     };
@@ -46,13 +56,55 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
     let Ok(permit) = state.workers.clone().try_acquire_owned() else {
         return refused(StatusCode::SERVICE_UNAVAILABLE, "busy");
     };
+    // Parse exact typed JSON before entering the worker; malformed requests are not unknown commits.
+    if let Some(v) = &input {
+        let valid = valid_input(&operation, v);
+        if !valid || v.get("confirm") != Some(&json!(true)) {
+            return refused(StatusCode::BAD_REQUEST, "invalid_input");
+        }
+    }
+    let envelope = match operation.as_str() {
+        "retention" => "retention",
+        "erase" | "forget" => "gdprErasure",
+        "discover" => "gdprDiscovery",
+        "legal-hold" => "gdprLegalHold",
+        "audit-log" => "gdprAudit",
+        _ => "gdpr",
+    };
     let result = tokio::task::spawn_blocking(move || {
         let _permit = permit;
         let mut owner = state.native.lock_company(&company_slug).map_err(|_| ())?;
-        let action = match &input {
-            Some(i) if erase => Action::Erase(i),
-            Some(i) => Action::Export(i),
-            None => Action::Retention,
+        let subject;
+        let forget;
+        let hold;
+        let audit;
+        let action = match (operation.as_str(), &input) {
+            ("erase", Some(v)) => {
+                subject = serde_json::from_value(v.clone()).map_err(|_| ())?;
+                Action::Erase(&subject)
+            }
+            ("export", Some(v)) => {
+                subject = serde_json::from_value(v.clone()).map_err(|_| ())?;
+                Action::Export(&subject)
+            }
+            ("discover", Some(v)) => {
+                subject = serde_json::from_value(v.clone()).map_err(|_| ())?;
+                Action::Discover(&subject)
+            }
+            ("forget", Some(v)) => {
+                forget = serde_json::from_value(v.clone()).map_err(|_| ())?;
+                Action::Forget(&forget)
+            }
+            ("legal-hold", Some(v)) => {
+                hold = serde_json::from_value(v.clone()).map_err(|_| ())?;
+                Action::LegalHold(&hold)
+            }
+            ("audit-log", Some(v)) => {
+                audit = serde_json::from_value(v.clone()).map_err(|_| ())?;
+                Action::AuditLog(&audit, state.native.backup_signer.as_ref().ok_or(())?)
+            }
+            ("retention", None) => Action::Retention,
+            _ => return Err(()),
         };
         owner
             .gdpr(&cookie, &SystemClock, &today, action)
@@ -61,12 +113,27 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
     .await;
     match result {
         Ok(Ok(attempt)) => match super::documents::outcome(attempt) {
-            Ok(value) => response(
-                StatusCode::OK,
-                json!({"ok":true,(if !mutation{"retention"}else if erase{"gdprErasure"}else{"gdpr"}):value}),
-            ),
+            Ok(value) => response(StatusCode::OK, json!({"ok":true,(envelope):value})),
             Err(r) => *r,
         },
         _ => refused(StatusCode::SERVICE_UNAVAILABLE, "outcome_unconfirmed"),
     }
 }
+
+fn valid_input(operation: &str, v: &Value) -> bool {
+    use rentemester_storage::gdpr::*;
+    if v.get("confirm") != Some(&json!(true)) {
+        return false;
+    }
+    match operation {
+        "export" | "discover" => serde_json::from_value::<Input>(v.clone()).is_ok(),
+        "erase" => v.get("asOf").is_none() && serde_json::from_value::<Input>(v.clone()).is_ok(),
+        "forget" => serde_json::from_value::<ForgetInput>(v.clone()).is_ok(),
+        "legal-hold" => serde_json::from_value::<LegalHoldInput>(v.clone()).is_ok(),
+        "audit-log" => serde_json::from_value::<AuditInput>(v.clone()).is_ok(),
+        _ => false,
+    }
+}
+#[cfg(test)]
+#[path = "gdpr_tests.rs"]
+mod tests;

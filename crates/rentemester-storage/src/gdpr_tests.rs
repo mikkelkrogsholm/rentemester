@@ -255,3 +255,119 @@ fn unknown_retention_is_not_erasable_and_customer_creation_cannot_resurface_pii(
     );
     assert_eq!(tx.total_changes(), before);
 }
+
+#[test]
+fn legal_hold_lifecycle_refuses_before_overlays_and_preserves_history() {
+    let mut l = fixture();
+    l.execute_batch("INSERT INTO customers(name,vat_or_cvr)VALUES('Held Synthetic','HOLD-A'),('Other Synthetic','HOLD-B')").unwrap();
+    let tx = l
+        .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
+        .unwrap();
+    let hold = |cvr: &str, operation: &str| {
+        serde_json::from_value::<LegalHoldInput>(json!({"cvr":cvr,"holdId":"case-1","operation":operation,"reason":"Synthetic reviewed legal obligation","confirm":true})).unwrap()
+    };
+    legal_hold(&tx, &hold("HOLD-A", "place"), "2026-01-01", "owner").unwrap();
+    assert!(erase(&tx, &input(Some("HOLD-A"), None), "2026-01-01", "owner").is_err());
+    assert_eq!(
+        tx.query_row("SELECT count(*) FROM gdpr_erasures", [], |r| r
+            .get::<_, i64>(0))
+            .unwrap(),
+        0
+    );
+    assert!(legal_hold(&tx, &hold("HOLD-B", "release"), "2026-01-01", "owner").is_err());
+    let exported = export(
+        &tx,
+        "a",
+        &input(Some("HOLD-A"), None),
+        "2026-01-01",
+        "reader",
+    )
+    .unwrap();
+    assert_eq!(
+        exported["export"]["legalHolds"]["active"]
+            .as_array()
+            .unwrap()
+            .len(),
+        1
+    );
+    legal_hold(&tx, &hold("HOLD-A", "release"), "2026-01-01", "owner").unwrap();
+    assert!(legal_hold(&tx, &hold("HOLD-A", "release"), "2026-01-01", "owner").is_err());
+    assert!(
+        tx.execute("DELETE FROM native_gdpr_legal_hold_events", [])
+            .is_err()
+    );
+    crate::legal_holds::validate_history(&tx).unwrap();
+    assert_eq!(
+        erase(&tx, &input(Some("HOLD-A"), None), "2026-01-01", "owner").unwrap()["erasedCount"],
+        1
+    );
+    tx.commit().unwrap();
+    crate::portable_backup::company(&l).unwrap();
+    let dir = tempfile::tempdir().unwrap();
+    let path = dir.path().join("snapshot.sqlite");
+    l.execute("VACUUM INTO ?1", [path.to_str().unwrap()])
+        .unwrap();
+    let restored = Connection::open(path).unwrap();
+    crate::portable_backup::company(&restored).unwrap();
+    assert_eq!(
+        restored
+            .query_row(
+                "SELECT count(*) FROM native_gdpr_legal_hold_events",
+                [],
+                |r| r.get::<_, i64>(0)
+            )
+            .unwrap(),
+        2
+    );
+}
+#[test]
+fn gdpr_audit_is_literal_prefix_filtered_and_strict() {
+    let mut l = fixture();
+    let tx = l
+        .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
+        .unwrap();
+    tx.execute_batch("INSERT INTO audit_log(event_type,entity_type,message,actor)VALUES('gdprXsecret','other','unrelated','user:other')").unwrap();
+    let i: AuditInput = serde_json::from_value(json!({"confirm":true})).unwrap();
+    let result = audit_log(&tx, "a", &i, "2026-01-01", "current").unwrap();
+    assert_eq!(result["events"].as_array().unwrap().len(), 1);
+    assert_eq!(result["events"][0]["actor"], "user:current");
+    assert!(
+        serde_json::from_value::<ForgetInput>(
+            json!({"cvr":"X","asOf":null,"afterRetentionExpiry":true,"confirm":true})
+        )
+        .is_err()
+    );
+    assert!(serde_json::from_value::<AuditInput>(json!({"since":"2026-01-01"})).is_err());
+}
+#[test]
+fn legal_hold_and_audit_failure_roll_back_all_effects() {
+    let mut l = fixture();
+    l.execute_batch("INSERT INTO customers(name,vat_or_cvr)VALUES('Failure Subject','FAIL-A')")
+        .unwrap();
+    let i:LegalHoldInput=serde_json::from_value(json!({"cvr":"FAIL-A","holdId":"failure-case","operation":"place","reason":"Synthetic hold reason","confirm":true})).unwrap();
+    {
+        let tx = l
+            .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
+            .unwrap();
+        tx.execute_batch("CREATE TEMP TRIGGER refuse_gdpr_audit BEFORE INSERT ON main.audit_log WHEN NEW.event_type='gdpr_legal_hold' BEGIN SELECT RAISE(ABORT,'synthetic audit failure'); END").unwrap();
+        assert!(legal_hold(&tx, &i, "2026-01-01", "owner").is_err());
+        tx.rollback().unwrap();
+    }
+    assert_eq!(
+        l.query_row(
+            "SELECT count(*) FROM sqlite_schema WHERE name='native_gdpr_legal_hold_events'",
+            [],
+            |r| r.get::<_, i64>(0)
+        )
+        .unwrap(),
+        0
+    );
+    let tx = l
+        .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
+        .unwrap();
+    legal_hold(&tx, &i, "2026-01-01", "owner").unwrap();
+    tx.commit().unwrap();
+    l.execute_batch("DROP TRIGGER native_gdpr_legal_hold_events_no_update")
+        .unwrap();
+    assert!(crate::portable_backup::company(&l).is_err());
+}
