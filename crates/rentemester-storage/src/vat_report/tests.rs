@@ -111,11 +111,11 @@ fn accepted_native_import_uses_same_qualified_vat_for_range_read_and_portfolio()
     assert_eq!(report.payable.decimal(), "-25.00");
     assert_eq!(report.canonical_bases["purchaseBase25"].decimal(), "100.00");
     let native = read(&tx, "synthetic", "2025-04-01", Some("2025")).unwrap();
-    assert_eq!(native["inputVat"], 25);
-    assert_eq!(native["payable"], -25);
+    assert_eq!(native["inputVat"].as_f64(), Some(25.0));
+    assert_eq!(native["payable"].as_f64(), Some(-25.0));
     assert_eq!(native["vatReportErrors"], json!([]));
     let portfolio = crate::portfolio::company(&tx, "synthetic", "2025-03-31").unwrap();
-    assert_eq!(portfolio["netVatPayable"], -25);
+    assert_eq!(portfolio["netVatPayable"].as_f64(), Some(-25.0));
     assert_eq!(portfolio["vat"]["errors"], json!([]));
     assert_eq!(tx.total_changes(), before);
     assert!(crate::journal_hash::verify(&tx).unwrap().ok);
@@ -157,7 +157,7 @@ fn corrupt_attestation_or_source_binding_refuses_all_vat_paths() {
         ),
         (
             "dinero_import_sources",
-            "UPDATE dinero_import_sources SET raw_sha256=printf('%064d',0)",
+            "UPDATE dinero_import_sources SET raw_size_bytes=raw_size_bytes+1",
         ),
     ] {
         let (_control, mut db) = db();
@@ -197,7 +197,7 @@ fn marker_only_manual_journal_never_qualifies_as_accepted_history() {
         )
         .unwrap();
     }
-    let request = serde_json::from_value(json!({"transactionDate":"2025-03-20","text":"Synthetic marker spoof","currency":"DKK","lines":[{"accountNo":"2000","debitAmount":"100.00","vatCode":"DK_PURCHASE_25"},{"accountNo":"64060","debitAmount":"25.00"},{"accountNo":"5510","creditAmount":"125.00"}]})).unwrap();
+    let request = serde_json::from_value(json!({"transactionDate":"2025-03-20","text":"Synthetic marker spoof","currency":"DKK","lines":[{"accountNo":"64060","debitAmount":"25.00"},{"accountNo":"5510","creditAmount":"25.00"}]})).unwrap();
     let posted = crate::journal_post::post(
         &tx,
         &request,
@@ -217,6 +217,13 @@ fn marker_only_manual_journal_never_qualifies_as_accepted_history() {
     );
     assert!(dinero_import::accepted_journal_ids(&tx).unwrap().is_empty());
     let report = range_report(&tx, "2025-01-01", "2025-03-31").unwrap();
-    assert!(!report.errors.is_empty());
+    assert!(
+        report
+            .errors
+            .iter()
+            .any(|error| error.contains("historisk import mangler verificeret kildevalidering")),
+        "{:?}",
+        report.errors
+    );
     tx.rollback().unwrap();
 }
