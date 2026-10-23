@@ -1,11 +1,13 @@
 //! VAT display from current owned company state. No file opens or business writes.
 mod simplified;
+#[cfg(test)]
+mod tests;
 use crate::{cockpit::number, invalid, legacy_money};
 use rentemester_engine::{
     Error,
     money::Money,
     vat_period,
-    vat_report::{self, Line},
+    vat_report::{self, Line, historical::Row},
 };
 use rusqlite::{OptionalExtension, Transaction, params};
 use serde_json::{Value, json};
@@ -37,6 +39,14 @@ fn status(tx: &Transaction<'_>, start: &str, end: &str) -> Result<String, Error>
     Ok(state)
 }
 pub(crate) fn lines(tx: &Transaction<'_>) -> Result<Vec<(String, Line)>, Error> {
+    Ok(rows(tx)?
+        .into_iter()
+        .map(|row| (row.date, row.line))
+        .collect())
+}
+
+// Full current ledger: out-of-range posted evidence may explain in-range history.
+fn rows(tx: &Transaction<'_>) -> Result<Vec<Row>, Error> {
     let exact_sales = simplified::exact_vat(tx)?;
     let mut roles = BTreeMap::new();
     let mut query = tx
@@ -49,7 +59,7 @@ pub(crate) fn lines(tx: &Transaction<'_>) -> Result<Vec<(String, Line)>, Error> 
         let (role, account) = row.map_err(invalid)?;
         roles.insert(role, account);
     }
-    let mut query=tx.prepare("SELECT je.id,je.transaction_date,je.status,je.currency,je.created_by_program,a.account_no,a.type,a.normal_balance,jl.vat_code,jl.debit_amount,jl.credit_amount FROM journal_entries je JOIN journal_lines jl ON jl.journal_entry_id=je.id JOIN accounts a ON a.id=jl.account_id ORDER BY je.id,jl.id").map_err(invalid)?;
+    let mut query=tx.prepare("SELECT je.id,je.transaction_date,je.status,je.currency,je.created_by_program,a.account_no,a.type,a.normal_balance,jl.vat_code,jl.debit_amount,jl.credit_amount,jl.id,a.default_vat_code FROM journal_entries je JOIN journal_lines jl ON jl.journal_entry_id=je.id JOIN accounts a ON a.id=jl.account_id ORDER BY je.id,jl.id").map_err(invalid)?;
     let mut rows = query.query([]).map_err(invalid)?;
     let mut result = Vec::new();
     while let Some(r) = rows.next().map_err(invalid)? {
@@ -76,11 +86,15 @@ pub(crate) fn lines(tx: &Transaction<'_>) -> Result<Vec<(String, Line)>, Error> 
             None
         };
         let program: String = r.get(4).map_err(invalid)?;
-        // Import provenance/evidence rules are a separate migration flow. No guessed bases.
+        // A marker identifies history, but only checked accepted IDs qualify its evidence.
         let historical = program == "rentemester-import-postings";
-        result.push((
-            r.get(1).map_err(invalid)?,
-            Line {
+        result.push(Row {
+            date: r.get(1).map_err(invalid)?,
+            line_id: r.get(11).map_err(invalid)?,
+            status: state,
+            normal_balance: normal,
+            default_vat_code: r.get(12).map_err(invalid)?,
+            line: Line {
                 entry_id: r.get(0).map_err(invalid)?,
                 account_no: no.clone(),
                 account_type: kind,
@@ -97,7 +111,7 @@ pub(crate) fn lines(tx: &Transaction<'_>) -> Result<Vec<(String, Line)>, Error> 
                     .get(&(r.get(0).map_err(invalid)?, no.clone()))
                     .cloned(),
             },
-        ));
+        });
     }
     Ok(result)
 }
@@ -119,12 +133,20 @@ pub(crate) fn range_report(
     start: &str,
     end: &str,
 ) -> Result<vat_report::Report, Error> {
-    let chosen = lines(tx)?
-        .into_iter()
-        .filter(|(date, _)| date.as_str() >= start && date.as_str() <= end)
-        .map(|(_, line)| line)
-        .collect::<Vec<_>>();
-    vat_report::build(&chosen)
+    let rows = rows(tx)?;
+    build(tx, &rows, start, end)
+}
+
+fn build(
+    tx: &Transaction<'_>,
+    rows: &[Row],
+    start: &str,
+    end: &str,
+) -> Result<vat_report::Report, Error> {
+    // Qualification checks immutable source/parsed-voucher/journal bindings only.
+    // Current authority and physical originals remain the admitted caller's job.
+    let qualified = crate::dinero_import::accepted_journal_ids(tx)?;
+    vat_report::historical::build(rows, &qualified, start, end)
 }
 pub(crate) fn range(tx: &Transaction<'_>, start: &str, end: &str) -> Result<Value, Error> {
     let mut report = serde_json::to_value(range_report(tx, start, end)?).map_err(invalid)?;
@@ -167,13 +189,13 @@ pub fn read(
         .and_then(|s| s.parse().ok())
         .ok_or_else(|| invalid("invalid selected VAT year"))?;
     let span = vat_period::span(&cadence)?;
-    let lines = lines(tx)?;
+    let rows = rows(tx)?;
     let mut windows = Vec::new();
     for month in (1..=12).step_by(span as usize) {
         let window = vat_period::window(&format!("{year:04}-{month:02}-01"), &cadence)?;
-        let active = lines
+        let active = rows
             .iter()
-            .any(|(date, _)| *date >= window.start && *date <= window.end);
+            .any(|row| row.date >= window.start && row.date <= window.end);
         let state = status(tx, &window.start, &window.end)?;
         windows.push((window, active, state));
     }
@@ -204,12 +226,7 @@ pub fn read(
             }
         });
     let (window, _, state) = &windows[selected];
-    let selected_lines: Vec<_> = lines
-        .into_iter()
-        .filter(|(date, _)| *date >= window.start && *date <= window.end)
-        .map(|(_, line)| line)
-        .collect();
-    let report = vat_report::build(&selected_lines)?;
+    let report = build(tx, &rows, &window.start, &window.end)?;
     let ready = report.errors.is_empty() && ["closed", "reported"].contains(&state.as_str());
     let mut report = serde_json::to_value(report).map_err(invalid)?;
     numeric(&mut report)?;

@@ -88,12 +88,7 @@ pub fn company(tx: &Transaction<'_>, slug: &str, as_of: &str) -> Result<Value, E
             availability("unavailable", Some("archive_or_cutover_basis_unavailable"));
     } else if let Some(cadence) = cadence {
         let window = vat_period::window(as_of, &cadence)?;
-        let chosen = crate::vat_report::lines(tx)?
-            .into_iter()
-            .filter(|(date, _)| date >= &window.start && date.as_str() <= as_of)
-            .map(|(_, line)| line)
-            .collect::<Vec<_>>();
-        let report = rentemester_engine::vat_report::build(&chosen)?;
+        let report = crate::vat_report::range_report(tx, &window.start, as_of)?;
         card["vat"] = json!({"payable":wire(&report.payable)?,"deadline":window.deadline,"daysRemaining":(vat_period::date(&window.deadline)?-vat_period::date(as_of)?).whole_days(),"periodStart":window.start,"periodEnd":window.end,"cutoff":as_of,"errors":report.errors,"warnings":report.warnings});
         card["netVatPayable"] = wire(&report.payable)?;
         let partial_cutover = opening
