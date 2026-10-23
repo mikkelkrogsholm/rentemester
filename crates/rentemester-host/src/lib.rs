@@ -13,6 +13,7 @@ mod audit_log;
 mod eu_sales;
 mod service_sales;
 mod oss_report;
+mod vat_original;
 mod public_einvoice;
 use rentemester_application::{
     control_fence::{Committed, CompanySelection},

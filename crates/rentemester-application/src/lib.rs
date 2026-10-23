@@ -10,6 +10,7 @@ pub mod bank_matches;
 pub mod cvr;
 pub mod eu_sales;
 pub mod oss_report;
+pub mod vat_original;
 pub mod public_einvoice;
 pub mod mail_intake;
 pub mod corporate_records;
