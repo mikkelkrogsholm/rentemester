@@ -69,19 +69,51 @@ fn canonical(v: &Value, depth: usize) -> Result<String, Error> {
         _ => v.to_string(),
     })
 }
+/// Attribution is constructed by the authenticated application, never deserialized input.
+#[derive(Clone, Copy)]
+pub enum Principal<'a> {
+    User(&'a str),
+    ServiceAccount(&'a str),
+}
+impl Principal<'_> {
+    fn parts(self) -> (&'static str, String, String) {
+        let (kind, id) = match self {
+            Self::User(id) => ("user", id),
+            Self::ServiceAccount(id) => ("service_account", id),
+        };
+        (kind, id.to_owned(), format!("{kind}:{id}"))
+    }
+}
+fn canonical_slug(slug: &str) -> Result<(), Error> {
+    if slug.is_empty()
+        || slug.len() > 120
+        || !slug.as_bytes()[0].is_ascii_alphanumeric()
+        || !slug
+            .bytes()
+            .all(|b| b.is_ascii_lowercase() || b.is_ascii_digit() || b == b'-')
+    {
+        return Err(Error::new(
+            "knowledge_legacy_company_identity",
+            "use the registered canonical company slug; historical path-keyed knowledge requires explicit administrator reconciliation, not a read-time migration",
+        ));
+    }
+    Ok(())
+}
 fn event(
     tx: &Transaction<'_>,
     id: &str,
     kind: &str,
     reason: Option<&str>,
     replacement: Option<&str>,
-    subject: &str,
+    principal: Principal<'_>,
     now: &str,
 ) -> Result<(), Error> {
-    tx.execute("INSERT INTO main.rm_company_knowledge_events(assertion_id,event_type,reason,supersedes_assertion_id,actor,principal_kind,principal_id,created_at) VALUES(?,?,?,?,?,'user',?,?)",params![id,kind,reason.map(policy::trim).filter(|s|!s.is_empty()),replacement,format!("user:{subject}"),subject,now]).map_err(sql)?;
+    let (principal_kind, subject, actor) = principal.parts();
+    tx.execute("INSERT INTO main.rm_company_knowledge_events(assertion_id,event_type,reason,supersedes_assertion_id,actor,principal_kind,principal_id,created_at) VALUES(?,?,?,?,?,?,?,?)",params![id,kind,reason.map(policy::trim).filter(|s|!s.is_empty()),replacement,actor,principal_kind,subject,now]).map_err(sql)?;
     Ok(())
 }
 pub fn inspect(tx: &Transaction<'_>, slug: &str, id: &str) -> Result<Value, Error> {
+    canonical_slug(slug)?;
     let mut v=tx.query_row("SELECT assertion_id,company_slug,predicate,value_json,value_hash,source_kind,source_ref,valid_from,valid_to_exclusive,certainty,actor,principal_kind,principal_id FROM main.rm_company_knowledge_assertions WHERE assertion_id=? AND company_slug=?",[id,slug],|r|Ok(json!({"assertionId":r.get::<_,String>(0)?,"companySlug":r.get::<_,String>(1)?,"predicate":r.get::<_,String>(2)?,"value":serde_json::from_str::<Value>(&r.get::<_,String>(3)?).map_err(|_|rusqlite::Error::InvalidQuery)?,"valueHash":r.get::<_,String>(4)?,"source":{"kind":r.get::<_,String>(5)?,"ref":r.get::<_,String>(6)?},"validFrom":r.get::<_,String>(7)?,"validToExclusive":r.get::<_,Option<String>>(8)?,"certainty":r.get::<_,String>(9)?,"actor":r.get::<_,String>(10)?,"principal":{"kind":r.get::<_,String>(11)?,"id":r.get::<_,String>(12)?}}))).optional().map_err(sql)?.ok_or_else(||Error::new("knowledge_not_found","assertion not found in current company"))?;
     let mut q=tx.prepare("SELECT event_type,reason,supersedes_assertion_id,actor,principal_kind,principal_id,created_at FROM main.rm_company_knowledge_events WHERE assertion_id=? ORDER BY id").map_err(sql)?;
     let history=q.query_map([id],|r|Ok(json!({"event_type":r.get::<_,String>(0)?,"reason":r.get::<_,Option<String>>(1)?,"supersedes_assertion_id":r.get::<_,Option<String>>(2)?,"actor":r.get::<_,String>(3)?,"principal_kind":r.get::<_,String>(4)?,"principal_id":r.get::<_,String>(5)?,"created_at":r.get::<_,String>(6)?}))).map_err(sql)?.collect::<Result<Vec<_>,_>>().map_err(sql)?;
@@ -92,12 +124,12 @@ pub fn inspect(tx: &Transaction<'_>, slug: &str, id: &str) -> Result<Value, Erro
     v["history"] = json!(history);
     Ok(v)
 }
-pub fn propose(
+pub fn propose_attributed(
     tx: &Transaction<'_>,
     slug: &str,
     i: &Proposal,
     generated_id: &str,
-    subject: &str,
+    principal: Principal<'_>,
     now: &str,
 ) -> Result<Value, Error> {
     if !policy::PREDICATES.contains(&i.predicate.as_str())
@@ -105,9 +137,10 @@ pub fn propose(
     {
         return Err(refused("unsupported predicate or source kind"));
     }
-    text(&format!("user:{subject}"), 160)?;
-    text(subject, 160)?;
-    text(slug, 120)?;
+    canonical_slug(slug)?;
+    let (principal_kind, subject, actor) = principal.parts();
+    text(&actor, 160)?;
+    text(&subject, 160)?;
     let value = canonical(&i.value, 0)?;
     if value.encode_utf16().count() > 32768 {
         return Err(refused("knowledge value is too large"));
@@ -146,15 +179,15 @@ pub fn propose(
     if let Some(id) = existing {
         return inspect(tx, slug, &id);
     }
-    tx.execute("INSERT INTO main.rm_company_knowledge_assertions(assertion_id,company_slug,predicate,value_json,value_hash,source_kind,source_ref,valid_from,valid_to_exclusive,certainty,actor,principal_kind,principal_id,created_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,'user',?,?)",params![id,slug,i.predicate,value,hash,i.source.kind,source,from,to,certainty,format!("user:{subject}"),subject,now]).map_err(sql)?;
-    event(tx, &id, "proposed", None, None, subject, now)?;
+    tx.execute("INSERT INTO main.rm_company_knowledge_assertions(assertion_id,company_slug,predicate,value_json,value_hash,source_kind,source_ref,valid_from,valid_to_exclusive,certainty,actor,principal_kind,principal_id,created_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)",params![id,slug,i.predicate,value,hash,i.source.kind,source,from,to,certainty,actor,principal_kind,subject,now]).map_err(sql)?;
+    event(tx, &id, "proposed", None, None, principal, now)?;
     inspect(tx, slug, &id)
 }
-pub fn review(
+pub fn review_attributed(
     tx: &Transaction<'_>,
     slug: &str,
     i: &Review,
-    subject: &str,
+    principal: Principal<'_>,
     now: &str,
 ) -> Result<Value, Error> {
     if !["approved", "rejected"].contains(&i.decision.as_str()) {
@@ -173,24 +206,24 @@ pub fn review(
         &i.decision,
         i.reason.as_deref(),
         None,
-        subject,
+        principal,
         now,
     )?;
     inspect(tx, slug, &i.assertion_id)
 }
-pub fn supersede(
+pub fn supersede_attributed(
     tx: &Transaction<'_>,
     slug: &str,
     i: &Supersede,
     id: &str,
-    subject: &str,
+    principal: Principal<'_>,
     now: &str,
 ) -> Result<Value, Error> {
     let old = inspect(tx, slug, &i.assertion_id)?;
     if old["reviewState"] != "approved" {
         return Err(refused("only approved knowledge may be superseded"));
     }
-    let replacement = propose(tx, slug, &i.replacement, id, subject, now)?;
+    let replacement = propose_attributed(tx, slug, &i.replacement, id, principal, now)?;
     // Legacy proposal dedup can resolve to the original. Never append a self-link.
     if replacement["assertionId"] == i.assertion_id {
         return Err(refused("an assertion cannot supersede itself"));
@@ -201,7 +234,7 @@ pub fn supersede(
         "superseded",
         None,
         replacement["assertionId"].as_str(),
-        subject,
+        principal,
         now,
     )?;
     Ok(json!({"superseded":inspect(tx,slug,&i.assertion_id)?,"replacement":replacement}))
@@ -212,6 +245,7 @@ pub fn read(
     as_of: &str,
     include_proposed: bool,
 ) -> Result<Value, Error> {
+    canonical_slug(slug)?;
     let at = policy::iso(as_of)?;
     let mut q=tx.prepare("SELECT assertion_id FROM main.rm_company_knowledge_assertions WHERE company_slug=? ORDER BY id").map_err(sql)?;
     let ids = q
@@ -257,4 +291,50 @@ pub fn read(
     Ok(
         json!({"context":{"companySlug":slug,"asOf":at,"assertions":active,"conflicts":conflicts,"safeForProductBehavior":conflicts.is_empty()},"history":history}),
     )
+}
+
+// Legacy human entrypoints remain source-compatible.
+pub fn propose(
+    tx: &Transaction<'_>,
+    slug: &str,
+    i: &Proposal,
+    id: &str,
+    subject: &str,
+    now: &str,
+) -> Result<Value, Error> {
+    propose_attributed(tx, slug, i, id, Principal::User(subject), now)
+}
+pub fn review(
+    tx: &Transaction<'_>,
+    slug: &str,
+    i: &Review,
+    subject: &str,
+    now: &str,
+) -> Result<Value, Error> {
+    review_attributed(tx, slug, i, Principal::User(subject), now)
+}
+pub fn supersede(
+    tx: &Transaction<'_>,
+    slug: &str,
+    i: &Supersede,
+    id: &str,
+    subject: &str,
+    now: &str,
+) -> Result<Value, Error> {
+    supersede_attributed(tx, slug, i, id, Principal::User(subject), now)
+}
+
+/// Administrative observation only. Call after current workspace-owner authorization.
+/// Never reveal historical filesystem paths or silently re-key assertions.
+pub fn legacy_scope_diagnostic(tx: &Transaction<'_>) -> Result<Option<Value>, Error> {
+    let count: i64 = tx.query_row(
+        "SELECT COUNT(*) FROM rm_company_knowledge_assertions WHERE instr(company_slug,'/')>0 OR instr(company_slug,char(92))>0",
+        [], |r| r.get(0),
+    ).map_err(sql)?;
+    Ok((count > 0).then(|| json!({
+        "code":"knowledge_legacy_company_identity",
+        "assertionCount":count,
+        "message":"Historical path-keyed knowledge requires separate controlled administrator reconciliation; no automatic repair was performed.",
+        "automaticRepair":false
+    })))
 }

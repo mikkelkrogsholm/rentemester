@@ -149,7 +149,16 @@ pub fn execute_scoped(
             Action::Read {
                 as_of,
                 include_proposed,
-            } => storage::read(&tx, slug, as_of.unwrap_or(&stamp), include_proposed),
+            } => {
+                let mut value =
+                    storage::read(&tx, slug, as_of.unwrap_or(&stamp), include_proposed)?;
+                if access::workspace_role_allows(workspace, Permission::WorkspaceManage) {
+                    if let Some(diagnostic) = storage::legacy_scope_diagnostic(&tx)? {
+                        value["scopeDiagnostics"] = json!([diagnostic]);
+                    }
+                }
+                Ok(value)
+            }
             Action::Propose(i) => storage::propose(&tx, slug, i, &id, &current.subject, &stamp)
                 .map(|v| json!({"assertion":v})),
             Action::Review(i) => storage::review(&tx, slug, i, &current.subject, &stamp)
@@ -199,3 +208,157 @@ pub(crate) fn execute(
 }
 #[cfg(test)]
 mod tests;
+
+/// Control-owned knowledge uses the same current service admission and budget charge
+/// as service context. Authority, usage and append-only effects share this writer.
+#[allow(clippy::too_many_arguments)]
+pub fn execute_service_scoped(
+    db: &mut Connection,
+    clock: &dyn Clock,
+    key: &rentemester_runtime::service_key::ServiceKey,
+    catalog: &Catalog,
+    slug: &str,
+    action: Action<'_>,
+    backup: &mut dyn crate::backup_status::CompanyScopes,
+) -> Result<Value, Failure> {
+    crate::control_fence::connection_ready(db).map_err(|e| failure(e, false))?;
+    if key.workspace() != catalog.workspace {
+        return Err(failure(error("invalid_credentials"), true));
+    }
+    rentemester_storage::workspace_context::validate_catalog(catalog)
+        .map_err(|e| failure(e, true))?;
+    let write = !matches!(action, Action::Read { .. });
+    let tx = db
+        .transaction_with_behavior(TransactionBehavior::Immediate)
+        .map_err(|_| failure(error("control_busy_or_unavailable"), false))?;
+    let result = (|| {
+        if write {
+            rentemester_storage::workspace_transfer::require_business_write(&tx)?;
+        }
+        rentemester_storage::workspace_members::company(catalog, slug, !write)?;
+        let now = clock
+            .now_unix_ms()
+            .map_err(|_| error("invalid_auth_clock"))?;
+        let observed =
+            rentemester_storage::service_context::observe(&tx, key.lookup_hash(), now, catalog)?;
+        let role = rentemester_storage::control_access::observe_company_role(
+            &tx,
+            observed.subject(),
+            slug,
+        )?
+        .ok_or_else(|| error("access_denied"))?;
+        let role: CompanyRole =
+            serde_json::from_value(json!(role)).map_err(|_| error("invalid_control"))?;
+        let workspace: WorkspaceRole = serde_json::from_value(json!(observed.workspace_role()))
+            .map_err(|_| error("invalid_control"))?;
+        if !access::workspace_role_allows(workspace, Permission::WorkspaceRead)
+            || !access::company_role_allows(
+                role,
+                if write {
+                    Permission::CompanyKnowledgeManage
+                } else {
+                    Permission::CompanyKnowledgeRead
+                },
+            )
+        {
+            return Err(error("access_denied"));
+        }
+        let source = match &action {
+            Action::Propose(i) => Some((i.source.kind.clone(), i.source.r#ref.clone())),
+            Action::Supersede(i) => {
+                storage::inspect(&tx, slug, &i.assertion_id)?;
+                Some((
+                    i.replacement.source.kind.clone(),
+                    i.replacement.source.r#ref.clone(),
+                ))
+            }
+            Action::Review(i) => {
+                let old = storage::inspect(&tx, slug, &i.assertion_id)?;
+                Some((
+                    old["source"]["kind"]
+                        .as_str()
+                        .ok_or_else(|| error("invalid_control"))?
+                        .into(),
+                    old["source"]["ref"]
+                        .as_str()
+                        .ok_or_else(|| error("invalid_control"))?
+                        .into(),
+                ))
+            }
+            _ => None,
+        };
+        // Never inherit a grantor's or workspace-wide source visibility.
+        let selected = std::collections::BTreeSet::from([slug.to_owned()]);
+        if let Some((kind, reference)) = source {
+            let reference = rentemester_engine::company_knowledge::trim(&reference);
+            if kind == "party" && !rentemester_storage::parties::visible(&tx, reference, &selected)?
+            {
+                return Err(error("knowledge_source_unavailable"));
+            }
+            if kind == "corporate_record" {
+                crate::corporate_records::require_visible(&tx, reference, &selected, &selected)
+                    .map_err(|_| error("knowledge_source_unavailable"))?;
+            }
+        }
+        if write {
+            backup.require(&tx, clock, &[slug.to_owned()])?;
+        }
+        // Backup inspection can take time. Resolve expiry/quota at execution time,
+        // with the original exact credential still fenced by this held writer.
+        let now = clock
+            .now_unix_ms()
+            .map_err(|_| error("invalid_auth_clock"))?;
+        let current =
+            rentemester_storage::service_context::observe(&tx, key.lookup_hash(), now, catalog)?;
+        if !current.same_credential(&observed) {
+            return Err(error("invalid_credentials"));
+        }
+        let stamp = rentemester_engine::company_knowledge::timestamp(now)?;
+        let id = if matches!(action, Action::Propose(_) | Action::Supersede(_)) {
+            format!(
+                "knowledge-{}",
+                rentemester_runtime::auth::new_token()
+                    .map_err(|_| error("entropy_unavailable"))?
+                    .as_str()
+            )
+        } else {
+            String::new()
+        };
+        if rentemester_storage::workspace_transfer::current(&tx)?.mode == "active" {
+            let charged =
+                rentemester_storage::service_context::charge(&tx, key.lookup_hash(), now, catalog)?;
+            if !charged.same_credential(&observed) {
+                return Err(error("invalid_credentials"));
+            }
+        }
+        let principal = storage::Principal::ServiceAccount(observed.subject());
+        match action {
+            Action::Read {
+                as_of,
+                include_proposed,
+            } => storage::read(&tx, slug, as_of.unwrap_or(&stamp), include_proposed),
+            Action::Propose(i) => storage::propose_attributed(&tx, slug, i, &id, principal, &stamp)
+                .map(|v| json!({"assertion":v})),
+            Action::Review(i) => storage::review_attributed(&tx, slug, i, principal, &stamp)
+                .map(|v| json!({"assertion":v})),
+            Action::Supersede(i) => {
+                storage::supersede_attributed(&tx, slug, i, &id, principal, &stamp)
+            }
+        }
+    })();
+    match result {
+        Ok(value) => {
+            // Reads can consume service usage, but never change assertions/events.
+            tx.commit().map_err(|_| Failure {
+                stage: FailureStage::OutcomeUnknown,
+                error: error("commit_outcome_unknown"),
+                connection_reusable: false,
+            })?;
+            Ok(value)
+        }
+        Err(e) => {
+            let reusable = tx.rollback().is_ok();
+            Err(failure(e, reusable))
+        }
+    }
+}

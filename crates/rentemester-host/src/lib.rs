@@ -1342,6 +1342,20 @@ mod backup_destination;
 mod backup_remote;
 mod backup_scopes;
 impl Owner {
+    pub fn company_knowledge_service(
+        &mut self,
+        key: &ServiceKey,
+        clock: &dyn Clock,
+        action: rentemester_application::company_knowledge::Action<'_>,
+    ) -> AuthAttempt<serde_json::Value> {
+        let catalog = self.catalog()?;
+        let slug = self.slug.clone();
+        self.control_company_auth(key.workspace(), |control, backup| {
+            rentemester_application::company_knowledge::execute_service_scoped(
+                control, clock, key, &catalog, &slug, action, backup,
+            )
+        })
+    }
     /// Stable admitted company owner; all knowledge effects use its canonical control writer.
     pub fn company_knowledge(
         &mut self,
