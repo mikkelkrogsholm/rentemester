@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
-import { readFileSync, readdirSync } from "node:fs";
-import { homedir } from "node:os";
+import { readFileSync, readdirSync, mkdtempSync, writeFileSync, rmSync } from "node:fs";
+import { homedir, tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 const root = resolve(import.meta.dir, "../..");
 const cargo = Bun.which("cargo") ?? join(homedir(), ".cargo/bin/cargo");
@@ -13,7 +13,8 @@ const metadata = JSON.parse(result.stdout.toString());
 function checkDependencies(crate: string, names: string[]) {
   const allowed = new Set(
     crate === "rentemester-engine"
-      ? ["num-bigint", "serde"]
+      ? ["num-bigint", "serde", "serde_json", "sha2", "ryu-js", "time",
+          "base64", "zip", "mail-parser", "unicode-properties", "unicode-normalization"]
       : ["serde", "serde_json", "rentemester-engine", "rentemester-storage", "rentemester-runtime", "rusqlite"],
   );
   assert(
@@ -46,8 +47,9 @@ for (const crate of ["rentemester-engine", "rentemester-application"]) {
     if (crate === "rentemester-engine" || f === "access.rs")
       checkSource(readFileSync(join(dir, f), "utf8"));
 }
-// Application canonicalizes typed receipt fingerprints/results; JSON grants no I/O.
-assert.throws(() => checkDependencies("rentemester-engine", ["serde_json"]));
+// Accepted engine codecs operate on supplied bytes; JSON/hashing/calendar values
+// grant no SQL, filesystem or network authority. Keep explicit dependency admission.
+assert.throws(() => checkDependencies("rentemester-engine", ["reqwest"]));
 for (const crate of ["rentemester-engine", "rentemester-application"]) {
   if (crate === "rentemester-engine")
     assert.throws(() => checkDependencies(crate, ["serde", "rusqlite"]));
@@ -56,16 +58,57 @@ for (const crate of ["rentemester-engine", "rentemester-application"]) {
 assert.throws(() => checkSource("use std::fs::File;"));
 assert.throws(() => checkSource("use rusqlite::Connection;"));
 assert.throws(() => checkSource("rentemester_storage::control_access::observe_human();"));
+// The network SDK and MCP must never bypass the shared server with local storage.
+// Legacy CLI advisory/rehearsal commands intentionally remain outside this scope.
+const networkClients = ["rentemester-client", "rentemester-mcp"];
+const forbiddenClientDependencies = new Set([
+  "rentemester-storage", "rusqlite", "rentemester-application", "rentemester-host",
+]);
+function checkClientDependencies(crate: string, names: string[]) {
+  assert(!names.some(name => forbiddenClientDependencies.has(name)),
+    `${crate} bypasses the shared server with a local backend dependency`);
+}
+function checkClientSources(directory: string) {
+  for (const entry of readdirSync(directory, { withFileTypes: true })) {
+    const path = join(directory, entry.name);
+    if (entry.isDirectory()) checkClientSources(path);
+    else if (entry.name.endsWith(".rs")) {
+      const source = readFileSync(path, "utf8");
+      assert(!/\b(?:rentemester_storage|rusqlite|rentemester_application|rentemester_host)\s*::/.test(source)
+        && !/\bextern\s+crate\s+(?:rentemester_storage|rusqlite|rentemester_application|rentemester_host)\b/.test(source),
+        `Client source imports a local backend: ${path}`);
+    }
+  }
+}
+for (const crate of networkClients) {
+  const pkg = metadata.packages.find((p: any) => p.name === crate);
+  assert(pkg, `Missing network client package: ${crate}`);
+  checkClientDependencies(crate, pkg.dependencies.map((d: any) => d.name));
+  checkClientSources(join(root, "crates", crate, "src"));
+  assert.throws(() => checkClientDependencies(crate, ["rentemester-storage"]), /local backend dependency/);
+}
+// Read a real Rust file through the same recursive scanner, not graph labels.
+const negative = mkdtempSync(join(tmpdir(), "rentemester-client-boundary-"));
+try {
+  const injected = join(negative, "forbidden.rs");
+  for (const source of ["use rentemester_storage::CompanyDatabase;", "extern crate rentemester_storage as hidden;"]) {
+    writeFileSync(injected, source);
+    assert.throws(() => checkClientSources(negative), /Client source imports a local backend/);
+  }
+} finally {
+  rmSync(negative, { recursive: true, force: true });
+}
 console.log(
   JSON.stringify({
     ok: true,
     scope:
-      "current domain/application dependency boundaries and pure domain/access module imports",
+      "domain/application boundaries plus actual SDK/MCP manifests and recursive Rust source imports",
     negativeControls: [
       "forbidden domain SQL and unclassified OS dependencies",
       "direct filesystem/SQL/storage imports in pure modules",
+      "on-disk client-to-storage import and extern-crate alias refused by the actual scanner",
     ],
     limits:
-      "Direct import scan supplements dependency inspection and code review; it is not an exhaustive Rust semantic analyzer.",
+      "Direct import scan supplements dependency inspection and review; it is not a Rust semantic analyzer. Legacy CLI local advisory/rehearsal commands and Tauri host lifecycle are not claimed as network-only SDK/MCP.",
   }),
 );
