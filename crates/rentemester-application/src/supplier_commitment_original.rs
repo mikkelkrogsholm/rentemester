@@ -194,7 +194,7 @@ fn execute_tx(
             }
             let input = p.commitment.native().map_err(business)?;
             sources(tx, guard, &input).map_err(business)?;
-            p.commitment.proposal(tx).map_err(business)?;
+            p.commitment.assert_snapshot(tx).map_err(business)?;
             native::apply_principal(
                 tx,
                 &native::Apply {

@@ -42,19 +42,38 @@ impl Input {
         m.remove("status");
         serde_json::from_value(v).map_err(invalid)
     }
-    pub fn proposal(&self, tx: &Transaction<'_>) -> Result<Value, Error> {
-        let proposal = native::plan(tx, &self.native()?)?;
-        if self
-            .vendor_snapshot
-            .as_ref()
-            .is_some_and(|s| proposal["vendorSnapshot"].as_str() != Some(s.as_str()))
-        {
-            return Err(Error::new(
-                "supplier_commitment_refused",
-                "vendorSnapshot must equal current vendor name",
-            ));
+    pub fn assert_snapshot(&self, tx: &Transaction<'_>) -> Result<(), Error> {
+        if let Some(expected) = &self.vendor_snapshot {
+            let id = self
+                .vendor_party_id
+                .strip_prefix("vendor:")
+                .and_then(|s| s.parse::<i64>().ok())
+                .filter(|n| *n > 0)
+                .ok_or_else(|| {
+                    Error::new(
+                        "supplier_commitment_refused",
+                        "active local vendor required",
+                    )
+                })?;
+            let current: String = tx
+                .query_row(
+                    "SELECT name FROM vendors WHERE id=?1 AND archived=0",
+                    [id],
+                    |r| r.get(0),
+                )
+                .map_err(invalid)?;
+            if current != *expected {
+                return Err(Error::new(
+                    "supplier_commitment_refused",
+                    "vendorSnapshot must equal current vendor name",
+                ));
+            }
         }
-        Ok(proposal)
+        Ok(())
+    }
+    pub fn proposal(&self, tx: &Transaction<'_>) -> Result<Value, Error> {
+        self.assert_snapshot(tx)?;
+        native::plan(tx, &self.native()?)
     }
 }
 pub fn list(tx: &Transaction<'_>) -> Result<Vec<Value>, Error> {
