@@ -517,8 +517,12 @@ mod paired_callback_tests {
     use super::*;
     #[test]
     fn paired_callback_reads_current_control_and_cannot_write_it() {
-        let mut control = Connection::open_in_memory().unwrap();
-        let mut company = Connection::open_in_memory().unwrap();
+        let dir = tempfile::tempdir().unwrap();
+        let mut control = Connection::open(dir.path().join("control.sqlite")).unwrap();
+        let mut company = Connection::open(dir.path().join("company.sqlite")).unwrap();
+        for db in [&control, &company] {
+            db.execute_batch("PRAGMA foreign_keys=ON;PRAGMA synchronous=FULL").unwrap();
+        }
         control.execute_batch("CREATE TABLE current_fact(value INTEGER); INSERT INTO current_fact VALUES(7)").unwrap();
         company.execute_batch("CREATE TABLE effect(value INTEGER)").unwrap();
         let result = execute_authorized_both_with_backup(&mut control, &mut company, None,
