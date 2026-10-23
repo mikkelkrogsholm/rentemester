@@ -1,14 +1,14 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "Whole original R02#674 effective contracts/readiness accepted and actually CLOSED; next R07#679 locked Rust/PDFium license scope",
-  "code_revision": "aa5635c4364d9295a0eba36027ab3d1e96dceeb6",
-  "spec_revision": "sha256:49268cc62ffb3b3c0e2d8691a13b19178107c5f16a0ab01a975cc220eaedcbd3",
-  "state": "31of55 original issues actuallyclosed,24open. R02#674 whole static specification/readiness responsibility accepted/publishedaa5635c4:67immutable tracked models,53candidatefiles58typed/risk actiondeclarations,12history2unreadyroots,8componentboundaries4separate validity/authorization/readiness/execution decisions. Frozen182prospectivecorrection preserves actualtwojournals/sixlines andallfailed/cancelled evidence. Currentactualclientstorageimport/aliasnegative andwholeSGDchecksPASS; no businessruntime replays. Completedtwo worker+integrationworktrees cleanedafterverifiedsnapshots. NextR07#679 candidate-boundRust/PDFiumlicensing; existingbuild/architectureevidence reused. All55/J01-J07/finalmanualdesktop/release/cutover/retirementgates retained.",
-  "issues_closed": 31,
+  "current_increment": "Whole original R07#679 foundation/tooling/license accepted and actually CLOSED; next R05#677 client/server compatibility admission",
+  "code_revision": "a6eb2b5dc709457ac246de239bb944629f67854c",
+  "spec_revision": "sha256:73b6036e3b99feaf547ff3881dd7ef2ea6ea6ec5743bb139d362f97570ca8da6",
+  "state": "32of55 originalissues actuallyclosed,23open. R07#679fullscope/all3criteria accepted/publisheda6eb2b5d:1043allfeatureslockedpackages(11own/1032third),exact4PDFiumarchives/16noticeseach/separatepolicy/credits/candidatecontentadmission,54targetedtests+actualCargo/PDFchecksPASS,currentTypeScriptand131BunlicensechecksPASS. Current boundarysourcepins and genuinehistoricalcold105/minimalengine/CLIproofretainedhonestly; no currentcoldbuild claim. No Cargo orproductionRustlogic changed; no financial/provider/desktop/buildreplay. Fourcompletedworker/integrationworktrees removedafterverifiedsnapshots. NextR05#677protocol/capabilityrefusal-before-mutation+advertisedschema/retrymatrix, preservingwire/envelopecompatibility. Full55/J01-J07/R53/R55/cutover/finalinstalleddesktop requirements remain.",
+  "issues_closed": 32,
   "next": [
-    "R07#679: close existing concrete locked Rust/distributed PDFium license scope with explicit fail-closed SPDX/policy/dependency decisions; keep Bun policy and actual build/dependency/boundary consumers/evidence. No broad unchanged build/test replay.",
-    "Remaining issues/final gates retain their full original scope; one sharedRustmotor/server/sameReactweb/Tauri. Installed manual desktop acceptance last."
+    "R05#677: complete advertised native operation-by-operation schemas/retry classes with existingR01baseline, explicit React/numeric-wire compatibility policy, actual supported protocol/capability admission before dependent mutation across sameReact/sharedSDK; preserve safe unknown outcomes and auth/cancellation/binary refusals.",
+    "One commonRustmotor/server/sameReactweb/Tauri; finalinstalledmanualdesktoplast. Noextraarchitecture/testframework; reusevalidreceipts andretainall55scope/finalgates."
   ],
   "preserve_unrelated_paths": [
     ".claude/settings.json",
@@ -18,7 +18,7 @@
     ".gitattributes"
   ],
   "all_goal_requirements_complete": false,
-  "previous_verified_increment": "R01 whole static baseline/contract inventory accepted and673actuallyclosed; nextR02 effectivecontract reconciliation",
+  "previous_verified_increment": "Whole original R02#674 effective contracts/readiness accepted and actually CLOSED; next R07#679 locked Rust/PDFium license scope",
   "evidence": {
     "combined_browser_log": "/tmp/rm-platform5-combined.log",
     "combined_browser_exit": 0,
@@ -13871,7 +13871,12 @@
         ]
       },
       "scope": "SPDXORcanselectapprovedbranch;ANDmustretainallobligations. PDFiumoutsideCargo hasseparatepins/licensefiles, presence!=policyapproval. No policyexpanded or legalapprovalinvented.",
-      "next_requirement": "One adapter ofexistinglicensepolicy usinglockedmetadata/distributedtargets with properSPDX/failclosed; explicitreviewedpolicy/dependencydecision andcompletemetadata beforefullR07closure."
+      "next_requirement": "One adapter ofexistinglicensepolicy usinglockedmetadata/distributedtargets with properSPDX/failclosed; explicitreviewedpolicy/dependencydecision andcompletemetadata beforefullR07closure.",
+      "resolution": {
+        "accepted_evidence": "r07_foundation679",
+        "status": "Resolved with complete1043allfeatures graph/currentlockaa71928d/exactpolicy/PDFiumcontentandcredits; earlier393/offline75missing andd3b lock facts remain historical",
+        "source_revision": "a6eb2b5dc709457ac246de239bb944629f67854c"
+      }
     },
     "r13_last_owner685_pending": {
       "issue": 685,
@@ -15712,6 +15717,105 @@
       "scope_entry": "docs/architecture/rust-target/implementation/contracts/R02.md",
       "limits": "Full original R02 static specification/readiness responsibility accepted. This creates no new runtime capability, certifies no other issue/all55 readiness, and preserves all runtime/release/cutover/retirement/J01-J07/final manual desktop gates. Actual source/diff reviews and current on-disk import/alias negative logs supplement structural PASS; failed/cancelled receipts and known/unknown effects remain.",
       "next": "R07#679 actual locked Rust/PDFium license inventory and policy/dependency resolution; reuse accepted foundation/fresh-build/boundary evidence."
+    },
+    "r07_foundation679": {
+      "issue": 679,
+      "status": "CLOSED flow:done; full original foundation/tooling/license responsibility accepted",
+      "source_revision": "a6eb2b5dc709457ac246de239bb944629f67854c",
+      "report": "/tmp/rentemester-rust-reports/r07-foundation679-accepted.json",
+      "report_sha256": "d76bd8515278513f368d4e15252131845daddc62b5cb8d143049d55ac366f31b",
+      "run_id": "rust-r07-whole679-accept-20261023T223035.486586000",
+      "model_revision": "sha256:73b6036e3b99feaf547ff3881dd7ef2ea6ea6ec5743bb139d362f97570ca8da6",
+      "checks": [
+        {
+          "path": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/rust-r07-whole679-accept-20261023T223035.486586000/acceptance/1f26a4b0422ac81547908f91a4c652f56fd0b0f71c218ed34bd3c5896c84bf11/candidate_identity.log",
+          "sha256": "f2b7cdf24bb38094da8d1374d60e290ad23eb5733cbf544eb7e390233f1417cc",
+          "output": ".........\n----------------------------------------------------------------------\nRan 9 tests in 0.073s\n\nOK\n",
+          "observedExit": 0
+        },
+        {
+          "path": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/rust-r07-whole679-accept-20261023T223035.486586000/acceptance/9fec6d902d22eb5b6b74dff864ea1590b2590cbb57f773959170e738b9b83fa0/actual_pdfium.log",
+          "sha256": "009a4b85e2fd66943c54edd1fea57dd4497dfc38bc843a22298626e16498b0d2",
+          "output": "{\"artifacts\": [\"pdfium-linux-arm64.tgz\", \"pdfium-linux-x64.tgz\", \"pdfium-mac-arm64.tgz\", \"pdfium-mac-x64.tgz\"], \"format\": \"rentemester-pdfium-license-integrity/1\", \"integrityVerified\": true, \"inventorySha256\": \"7c7e6058610f1ac5e9cefead13e19a2d9c1f529139dd363731d2eac2cfedd26e\", \"mode\": \"archives\", \"pinsSha256\": \"e4a02f731da3bea8926deaf694233f83c5e29b3923f040a79a275e9e07f02897\", \"policyApprovalClaim\": false}\n",
+          "observedExit": 0
+        },
+        {
+          "path": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/rust-r07-whole679-accept-20261023T223035.486586000/acceptance/6eb17856edcf6da8af7d5ed2a4bb6e235a32466a7db068b13ee5acca84349a0c/promotion.log",
+          "sha256": "46eae522d2719aca825aea587eec6c06fac2d88849fb5660b3c38c420445cd6d",
+          "output": "bun test v1.4.0 (34cbb9a40)\n\ntests/unit/rust-release-manifest.test.ts:\n(pass) Rust release manifest v2 > nonempty but changed PDF license or notice cannot be promoted [1.38ms]\n(pass) Rust release manifest v2 > CLI emits v2 from the external raw identity and existing release environment [22.12ms]\n(pass) Rust release manifest v2 > approval CLI binds Rust identity, manifest bytes and human approval [111.32ms]\n(pass) Rust release manifest v2 > binds clean actual-shape identity, platform and exact raw bytes [0.80ms]\n(pass) Rust release manifest v2 > provenance equality ignores object key ordering, not values [0.82ms]\n(pass) Rust release manifest v2 > refuses wrong release version [0.38ms]\n(pass) Rust release manifest v2 > refuses wrong release gitCommit [0.22ms]\n(pass) Rust release manifest v2 > refuses wrong release builtAt [0.21ms]\n(pass) Rust release manifest v2 > dirty source, time drift, schemas, target and compiler are refused [0.52ms]\n(pass) Rust release manifest v2 > unsafe, duplicate, unsorted and missing required inventory refuses [1.18ms]\n(pass) Rust release manifest v2 > PDF source pins, library and digest inputs are bound [0.25ms]\n(pass) Rust release manifest v2 > mixed Bun and unknown fields fail closed [0.46ms]\n(pass) Rust release manifest v2 > manifest repository, source, platform, hash and workflow bindings refuse [3.71ms]\n\n 13 pass\n 0 fail\n 59 expect() calls\nRan 13 tests across 1 file. [161.00ms]\n",
+          "observedExit": 0
+        },
+        {
+          "path": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/rust-r07-whole679-accept-20261023T223035.486586000/acceptance/7f61054c36bf1a3a0ec92f5486277e504d90bef39ddbcf298507cb853d1aefb4/license_units.log",
+          "sha256": "c368dad6de6e45f6721b030d2ac86a5eb0ade001e18b15513b64903bafed239d",
+          "output": "................................\n----------------------------------------------------------------------\nRan 32 tests in 0.423s\n\nOK\n",
+          "observedExit": 0
+        },
+        {
+          "path": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/rust-r07-whole679-accept-20261023T223035.486586000/acceptance/7cbb9a52798ef1a4b76b0c20039da1d7aa932a7a036adc2bcbee5d01a9ea1399/retained_foundation_and_current_source.log",
+          "sha256": "fdd54a21c3554780e677e4762b66a8fae045e9d27b3b7a01e34b669a3903013d",
+          "output": "{\"status\": \"PASS\", \"currentSourceFiles\": 22, \"currentCargoLock\": \"aa71928d3ecbb6a2cb2e69b5998211c7fe9c55122691079da3cda3fd935d6fe4\", \"retainedBoundarySourcePins\": 5, \"typecheckAndBunLicenses\": true, \"historicalColdFoundationAndMinimalTestsPreserved\": true, \"limits\": \"Historical cold105build and historicalminimaltests are separate genuine evidence, not currentlock/clean-room claims. No business/provider/desktop/build replay. R53/release/finalplatform gates remain.\"}\n",
+          "observedExit": 0
+        },
+        {
+          "path": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/rust-r07-whole679-accept-20261023T223035.486586000/acceptance/a3f6421b4895fc4100e76c4e4fa41f6b38e81ac1ea3e5f2bbcef2fcb4bef7e69/actual_cargo.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "output": "",
+          "observedExit": 0
+        }
+      ],
+      "actual_cargo": {
+        "path": "/tmp/rentemester-rust-reports/r07-679-whole-cargo-a6eb2b5d.json",
+        "sha256": "1ab547cdf50c8780c9ed216a51f4e6914c8c3e3dd8513f20966405fc0a908fd5",
+        "packages": 1043,
+        "ownWorkspace": 11,
+        "thirdParty": 1032,
+        "cargoLockSHA256": "aa71928d3ecbb6a2cb2e69b5998211c7fe9c55122691079da3cda3fd935d6fe4",
+        "policySHA256": "d79552d982c8a798ae98c943ab4265673fb25336ea5b72353c9ec3dbefbe5b64"
+      },
+      "pdfium": {
+        "artifacts": 4,
+        "noticesPerArtifact": 16,
+        "inventorySHA256": "7c7e6058610f1ac5e9cefead13e19a2d9c1f529139dd363731d2eac2cfedd26e",
+        "approvalSHA256": "e71fe527c2c710ad6c1580df1016c8a5a538c58c098dd48771b8d95cb9894133",
+        "creditsSHA256": "a2fa85ce866bb9970cd47384a4792d302f707d19a85d54dcb7bfc22b35153475",
+        "originalArchiveBytesReused": true,
+        "wholeReleaseAccepted": false
+      },
+      "retained_foundation": {
+        "coldBuild": {
+          "path": "/tmp/rm105-image-build2.log",
+          "sha256": "2a0708ff37081b16a883c5e75adb087efe8f3f624ffc0db9f2111ffffaa4f70f",
+          "source": "historical105/0b36e959dirty+recorded105→9942afe5",
+          "limits": "218downloads223compilations in pinned Linuxarm64Rust1.94.1; not currentlock/coldcurrentbuild."
+        },
+        "minimalTests": {
+          "path": "docs/architecture/rust-target/implementation/read-only/evidence/report.json",
+          "sha256": "c1620a8ffd37e09f0c4a28b3065395197d256335c30679038be92beae8bdd727",
+          "limits": "Historicalminimal4engine3storage/34integration+CLIbinary/format/clippy; warmhost distinct from cold105build."
+        },
+        "minimalRawLog": {
+          "path": "docs/architecture/rust-target/implementation/read-only/evidence/rust-verify.txt",
+          "sha256": "252e956de948953e8c8ff21955f1692d9ea9c4c4a40819b7c937494f1d19e163"
+        },
+        "currentBoundaryReport": {
+          "path": "/tmp/rentemester-rust-reports/r02-current-boundaries115326a1.json",
+          "sha256": "22c132fa357e01d88d509f5e28e3712ce7d54415222f84e143a450d4137994be",
+          "all5SourcePinsUnchanged": true
+        }
+      },
+      "current_typecheck": {
+        "path": "/tmp/r07-679-typecheck-runtime.log",
+        "sha256": "ed610eeec05109b622c0caaf020301527703130595a8b15c454278cee8689e2d",
+        "observedExit": 0
+      },
+      "bun_licenses": {
+        "path": "/tmp/r07-679-bun-licenses.log",
+        "sha256": "45ca05969efeb82dddbdf2b117b8158549d38953259e9b6f6fdb251f0469dc18",
+        "observedExit": 0
+      },
+      "limits": "Full original R07 foundation/tooling/license responsibility accepted. Existing cold105Linuxbuild and minimalhosttests are genuine separate historical evidence, not a current-lock cold/no-cache build claim. No Cargo dependencies or production Rust logic changed. Metadata/license engineering policy is not independent legal certification; fulldistribution/source/target notices and R53/R55/release/cutover/J01-J07/finalmanualdesktop remain binding. No financial/provider/desktop/build effects replayed.",
+      "next": "R05#677 complete advertised-operation schemas/retry policy and actual protocol/capability refusal before mutation; legacy envelope/amount compatibility retained."
     }
   },
   "verified_history": [
