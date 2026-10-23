@@ -19,6 +19,7 @@ import { CompanyNav, useCompanyYear } from "../components/CompanyNav";
 import { ConfirmDialog } from "../components/ConfirmDialog";
 import { useOptionalAuth } from "../lib/auth-context";
 import { OssReportPanel } from "./OssReportPanel";
+import { VatTaskPanel } from "./VatTaskPanel";
 
 export function VatView() {
   const { slug = "" } = useParams();
@@ -65,6 +66,7 @@ export function VatView() {
           selectedYear={v.selectedYear}
           onYearChange={setYear}
         />
+        {native && <VatTaskPanel slug={slug} vat={v} verified={!state.loading && !state.error} onRefresh={state.reload} />}
         <Banner kind="warning">
           Denne virksomhed er ikke momsregistreret. Der er derfor ingen momsperiode,
           ingen momsangivelse og ingen SKAT-frist. Tilkøb af bilag med moms bogføres
@@ -146,6 +148,7 @@ export function VatView() {
         onYearChange={setYear}
       />
 
+      {native && <VatTaskPanel slug={slug} vat={v} verified={!state.loading && !state.error} onRefresh={state.reload} />}
       {native && <OssReportPanel key={slug} slug={slug} />}
 
       {closedNotice && <Banner kind="success">{closedNotice}</Banner>}

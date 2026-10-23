@@ -478,3 +478,25 @@ test("legacy VAT backend has no OSS report request or controls", async () => {
   await screen.findByRole("heading", { name: "Moms", level: 1 });
   expect(screen.queryByRole("region", { name: "OSS-rapport" })).not.toBeInTheDocument();
 });
+
+test("native VAT task consumes canonical readiness without submitting or reviewing", async () => {
+  mockFetch({ ...route(),
+    "GET /api/companies/acme-aps/periods": { periods: { slug: "acme-aps", periods: [] } },
+    "GET /api/companies/acme-aps/periods/close-readiness": { packet: { hash: "a".repeat(64), blockers: 1, warnings: 0, items: [{ code: "BANK_UNRECONCILED", status: "blocked", count: 1, waivable: true }] } },
+  });
+  renderAt(<AuthProvider hosted={false} backend="rust"><VatView /></AuthProvider>, { route: "/companies/acme-aps/moms", path: "/companies/:slug/moms" });
+  const source = await screen.findByRole("link", { name: "Gennemgå bank" });
+  expect(source).toHaveAttribute("href", "/companies/acme-aps/bank?year=2026");
+  const region = screen.getByRole("region", { name: "Momsopgave" });
+  expect(region).toHaveAttribute("data-state", "blocked");
+  expect(within(region).getByText("Rentemester sender ikke til SKAT.")).toBeInTheDocument();
+  expect((globalThis.fetch as unknown as { mock: { calls: [unknown, RequestInit?][] } }).mock.calls.every(([, init]) => !init?.method || init.method === "GET")).toBe(true);
+});
+
+test("legacy VAT adds no task readiness or period reads", async () => {
+  mockFetch(route()); renderView();
+  await screen.findByRole("heading", { name: "Moms", level: 1 });
+  expect(screen.queryByRole("region", { name: "Momsopgave" })).not.toBeInTheDocument();
+  const calls = (globalThis.fetch as unknown as { mock: { calls: [string, RequestInit?][] } }).mock.calls;
+  expect(calls.some(([url]) => String(url).includes("/periods"))).toBe(false);
+});
