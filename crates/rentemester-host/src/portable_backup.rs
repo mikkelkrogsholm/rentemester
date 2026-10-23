@@ -1426,6 +1426,37 @@ mod tests {
         let trust = artifact::TrustedPublicKey::from_bytes(&key.public_key_bytes()).unwrap();
         artifact::verify(&artifact::create(context, entries, &key).unwrap(), &trust).unwrap()
     }
+    #[test]
+    fn signed_gdpr_hold_history_restore_remains_complete() {
+        let base=signed(false,false,false,false,false,None);
+        let ledger=base.entries().iter().find(|e|matches!(e.kind(),artifact::EntryKind::CompanyLedger{..})).unwrap();
+        let mut company=Connection::open_in_memory().unwrap();
+        company.deserialize_read_exact(MAIN_DB,ledger.bytes(),ledger.bytes().len(),false).unwrap();
+        // A complete optional company-local history travels in the signed SQLite image.
+        {
+            let tx=company.transaction_with_behavior(TransactionBehavior::Immediate).unwrap();
+            for operation in ["place","release"] {
+                let i:rentemester_storage::gdpr::LegalHoldInput=serde_json::from_value(serde_json::json!({"cvr":"SYN-HISTORY","holdId":"snapshot-case","operation":operation,"reason":"Synthetic snapshot preservation","confirm":true})).unwrap();
+                rentemester_storage::gdpr::legal_hold(&tx,&i,"2026-01-01","historical-owner").unwrap();
+            }
+            tx.commit().unwrap();
+        }
+
+
+        let image=snapshot(&company).unwrap();
+        let entries=base.entries().iter().map(|e|artifact::Snapshot{kind:e.kind().clone(),path:e.path().into(),bytes:if matches!(e.kind(),artifact::EntryKind::CompanyLedger{..}){image.clone()}else{e.bytes().to_vec()}}).collect();
+        let archive=verified(base.manifest().context.clone(),entries);
+        validate(&archive).unwrap();
+        let ledger=archive.entries().iter().find(|e|matches!(e.kind(),artifact::EntryKind::CompanyLedger{..})).unwrap();
+        let mut db=Connection::open_in_memory().unwrap();
+        db.deserialize_read_exact(MAIN_DB,ledger.bytes(),ledger.bytes().len(),false).unwrap();
+        store::company(&db).unwrap();
+        store::restore_boundary(&mut db,&"a".repeat(64)).unwrap();
+        assert_eq!(db.query_row("SELECT count(*) FROM native_gdpr_legal_hold_events",[],|r|r.get::<_,i64>(0)).unwrap(),2);
+        assert_eq!(db.query_row("SELECT actor FROM native_gdpr_legal_hold_events WHERE operation='release'",[],|r|r.get::<_,String>(0)).unwrap(),"user:historical-owner");
+        db.execute_batch("DROP TRIGGER native_gdpr_legal_hold_events_no_delete").unwrap();
+        assert!(store::company(&db).is_err());
+    }
     fn mixed_company_archive(
         archived: Option<Value>,
         wrong_uuid: bool,

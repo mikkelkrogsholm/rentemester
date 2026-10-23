@@ -783,8 +783,12 @@ impl Owner {
         &mut self, cookie: &VerifiedCookie, clock: &dyn Clock, today: &str,
         action: rentemester_application::gdpr::Action<'_>,
     ) -> Result<Attempt<Result<Committed<serde_json::Value>, rentemester_application::control_fence::Failure>>, OwnerError> {
+        let trusted_today = rentemester_runtime::posting_time::latest_date(
+            clock.now_unix_ms().map_err(|_| OwnerError::Context)?, 0
+        ).map_err(|_| OwnerError::Context)?;
+        if today != trusted_today { return Err(OwnerError::Context); }
         self.document_action(cookie, clock, |c, l, _, context| {
-            rentemester_application::gdpr::execute(c, l, context, today, action)
+            rentemester_application::gdpr::execute(c, l, context, &trusted_today, action)
         })
     }
     pub fn dimensions(
