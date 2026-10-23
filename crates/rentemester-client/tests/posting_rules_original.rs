@@ -158,3 +158,35 @@ async fn all_fixed_routes_flat_reads_and_status_first_single_shot() {
         assert_eq!(result.unwrap()["errors"], json!(["exact current refusal"]));
     }
 }
+
+#[tokio::test]
+async fn historical_preproposal_and_rejected_explanations_are_valid_reads() {
+    for state in [Value::Null, json!("rejected")] {
+        let item = json!({"ruleId":"synthetic","version":1,"payloadHash":"a".repeat(64),
+            "state":state,"matched":false,"reasons":["not approved at cutoff"]});
+        let core = json!({"decision":"human_decision","matched":[],"explanations":[item],
+            "reasons":["no approved rule matched"],"dryRun":true});
+        assert_eq!(
+            invoke(Op::Explain, 200, &core.to_string()).await.0.unwrap(),
+            core
+        );
+    }
+}
+#[test]
+fn exact_server_body_text_date_and_empty_range_bounds() {
+    let mut p = input(Op::Propose);
+    p["proposal"]["conditions"]["amount"] = json!({});
+    assert!(validate_original_posting_rules(Op::Propose, &p).is_ok());
+    p["proposal"]["provenance"] = json!("x".repeat(257));
+    assert!(validate_original_posting_rules(Op::Propose, &p).is_err());
+    for at in ["2026-01-01T12:00:00+01:00", "2026-01-01T12:00:00.000123Z"] {
+        assert!(validate_original_posting_rules(Op::Test, &json!({"context":{},"at":at})).is_err());
+    }
+    let mut v = input(Op::Test);
+    let mut attributes = json!({});
+    for i in 0..12 {
+        attributes[format!("field{i}")] = json!("x".repeat(256));
+    }
+    v["context"]["attributes"] = attributes;
+    assert!(validate_original_posting_rules(Op::Test, &v).is_ok());
+}

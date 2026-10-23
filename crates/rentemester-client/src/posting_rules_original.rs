@@ -71,18 +71,18 @@ fn facts(context: bool) -> Value {
 }
 fn outcome() -> Value {
     object(
-        json!({"account":text(128),"vatTreatment":text(256),"textTemplate":text(4096),"dimensions":{"type":"object","maxProperties":12,"additionalProperties":text(256)}}),
+        json!({"account":text(128),"vatTreatment":text(256),"textTemplate":text(2000),"dimensions":{"type":"object","maxProperties":12,"additionalProperties":text(256)}}),
         &[],
     )
 }
 pub fn original_posting_rules_schema(op: PostingRulesOriginalOperation) -> Value {
     match op {
         Propose => object(
-            json!({"proposal":object(json!({"ruleId":text(128),"effectiveFrom":text(64),"effectiveTo":text(64),"conditions":facts(false),"outcome":outcome(),"provenance":text(4096),"rationale":text(4096)}),&["ruleId","effectiveFrom","conditions","outcome","provenance","rationale"]),"confirm":{"const":true}}),
+            json!({"proposal":object(json!({"ruleId":text(128),"effectiveFrom":text(24),"effectiveTo":text(24),"conditions":facts(false),"outcome":outcome(),"provenance":text(256),"rationale":text(2000)}),&["ruleId","effectiveFrom","conditions","outcome","provenance","rationale"]),"confirm":{"const":true}}),
             &["proposal", "confirm"],
         ),
         Approve | Disable | Supersede => object(
-            json!({"ruleId":text(128),"version":{"type":"integer","minimum":1,"maximum":9007199254740991u64},"expectedPayloadHash":{"type":"string","minLength":64,"maxLength":64,"pattern":"^[0-9a-fA-F]{64}$"},"rationale":text(4096),"provenance":text(4096),"effectiveAt":text(64),"confirm":{"const":true}}),
+            json!({"ruleId":text(128),"version":{"type":"integer","minimum":1,"maximum":9007199254740991u64},"expectedPayloadHash":{"type":"string","minLength":64,"maxLength":64,"pattern":"^[0-9a-fA-F]{64}$"},"rationale":text(2000),"provenance":text(256),"effectiveAt":text(24),"confirm":{"const":true}}),
             &[
                 "ruleId",
                 "version",
@@ -92,7 +92,7 @@ pub fn original_posting_rules_schema(op: PostingRulesOriginalOperation) -> Value
                 "confirm",
             ],
         ),
-        Explain | Test => object(json!({"context":facts(true),"at":text(64)}), &["context"]),
+        Explain | Test => object(json!({"context":facts(true),"at":text(24)}), &["context"]),
     }
 }
 fn date(v: &Value) -> bool {
@@ -114,7 +114,10 @@ fn date(v: &Value) -> bool {
             })
             .is_some();
     }
-    time::OffsetDateTime::parse(s, &time::format_description::well_known::Rfc3339).is_ok()
+    matches!(s.len(), 20 | 24)
+        && s.is_ascii()
+        && s.ends_with('Z')
+        && time::OffsetDateTime::parse(s, &time::format_description::well_known::Rfc3339).is_ok()
 }
 fn hash(v: &Value) -> bool {
     v.as_str()
@@ -194,7 +197,7 @@ pub fn validate_original_posting_rules(
     input: &Value,
 ) -> Result<(), Error> {
     let bad = || Error::InvalidInput("invalid original posting-rule input");
-    if serde_json::to_vec(input).map_err(|_| bad())?.len() > 65 * 1024
+    if serde_json::to_vec(input).map_err(|_| bad())?.len() > 65_536
         || !shape(input, &original_posting_rules_schema(op))
     {
         return Err(bad());
@@ -210,7 +213,12 @@ pub fn validate_original_posting_rules(
         }
     }
     if let (Some(a), Some(b)) = (p["effectiveFrom"].as_str(), p["effectiveTo"].as_str()) {
-        if a > b {
+        let normalize = |s: &str| match s.len() {
+            10 => format!("{s}T00:00:00.000Z"),
+            20 => format!("{}.000Z", &s[..19]),
+            _ => s.to_owned(),
+        };
+        if normalize(a) > normalize(b) {
             return Err(bad());
         }
     }
@@ -230,11 +238,10 @@ pub fn validate_original_posting_rules(
     }
     let a = &f["amount"];
     if a.is_object()
-        && (a.as_object().unwrap().is_empty()
-            || a["min"]
-                .as_f64()
-                .zip(a["max"].as_f64())
-                .is_some_and(|(a, b)| a > b))
+        && (a["min"]
+            .as_f64()
+            .zip(a["max"].as_f64())
+            .is_some_and(|(a, b)| a > b))
     {
         return Err(bad());
     }
@@ -316,9 +323,14 @@ fn valid(op: PostingRulesOriginalOperation, v: &Value) -> bool {
             && positive(&e["version"])
             && hash(&e["payloadHash"])
             && (e["state"].is_null()
-                || ["proposed", "approved", "disabled", "superseded"]
+                || ["proposed", "approved", "rejected", "disabled", "superseded"]
                     .contains(&e["state"].as_str().unwrap_or("")))
             && e["matched"].is_boolean()
+            && (if e["matched"] == true {
+                e["state"] == "approved" && e["reasons"] == json!([])
+            } else {
+                e["reasons"].as_array().is_some_and(|r| !r.is_empty())
+            })
             && strings(&e["reasons"])
     }) {
         return false;
@@ -438,7 +450,7 @@ impl ApiClient {
             wire["principal"] = json!(a);
         }
         let body = serde_json::to_vec(&wire).map_err(|_| Error::InvalidInput("invalid JSON"))?;
-        if body.len() > 65 * 1024 {
+        if body.len() > 65_536 {
             return Err(Error::InvalidInput(
                 "posting-rule final body exceeds 65 KiB",
             ));

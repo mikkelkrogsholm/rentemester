@@ -134,7 +134,7 @@ fn parse(args: &[String]) -> Result<(BTreeMap<&str, &str>, Value), Output> {
             wire[key] = json!(value);
         }
     }
-    if serde_json::to_vec(&wire).unwrap().len() > 65 * 1024 {
+    if serde_json::to_vec(&wire).unwrap().len() > 65_536 {
         return Err(usage("Posting-rule final body exceeds 65 KiB"));
     }
     Ok((flags, body))
