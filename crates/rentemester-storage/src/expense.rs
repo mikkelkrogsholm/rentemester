@@ -109,6 +109,14 @@ pub(crate) fn purchase(
     gross_dkk: &Money,
     rate: &FxRate,
 ) -> Result<Allocation, Error> {
+    purchase_at(tx, document_id, meta, expense, requested, gross_dkk, rate, None)
+}
+/// Original VAT ABI supplies the admitted canonical clock; generic booking keeps
+/// its existing current-clock behavior.
+pub(crate) fn purchase_at(
+    tx: &Transaction<'_>, document_id: i64, meta: &Metadata, expense: &str,
+    requested: Option<&str>, gross_dkk: &Money, rate: &FxRate, now: Option<&str>,
+) -> Result<Allocation, Error> {
     let (kind, active, default): (String, i64, Option<String>) = tx
         .query_row(
             "SELECT type,active,default_vat_code FROM accounts WHERE account_no=?1",
@@ -264,11 +272,10 @@ pub(crate) fn purchase(
             ));
         }
         let code = if supplier.kind == "eu_vat" {
-            let now: String = tx
-                .query_row("SELECT strftime('%Y-%m-%dT%H:%M:%fZ','now')", [], |r| {
-                    r.get(0)
-                })
-                .map_err(sql)?;
+            let now: String = match now {
+                Some(now) => now.to_owned(),
+                None => tx.query_row("SELECT strftime('%Y-%m-%dT%H:%M:%fZ','now')", [], |r| r.get(0)).map_err(sql)?,
+            };
             crate::vies::require(
                 tx,
                 supplier
@@ -438,6 +445,9 @@ pub(crate) struct Prepared {
 pub(crate) fn prepare(tx: &Transaction<'_>, input: &Input) -> Result<Prepared, Error> {
     prepare_mode(tx, input, false)
 }
+pub(crate) fn prepare_at(tx: &Transaction<'_>, input: &Input, now: &str) -> Result<Prepared, Error> {
+    prepare_mode_at(tx, input, false, Some(now))
+}
 /// Receipt admission checks current source without refusing the already accepted
 /// reconciliation. Only the shared keyed writer may return an accepted replay.
 pub(crate) fn prepare_for_receipt(
@@ -465,6 +475,9 @@ pub(crate) fn prepare_for_receipt(
     Ok(())
 }
 fn prepare_mode(tx: &Transaction<'_>, input: &Input, receipt: bool) -> Result<Prepared, Error> {
+    prepare_mode_at(tx, input, receipt, None)
+}
+fn prepare_mode_at(tx: &Transaction<'_>, input: &Input, receipt: bool, now: Option<&str>) -> Result<Prepared, Error> {
     crate::journal_preview::require_current(tx)?;
     if input.document_id <= 0
         || input.bank_transaction_id <= 0
@@ -554,7 +567,7 @@ fn prepare_mode(tx: &Transaction<'_>, input: &Input, receipt: bool) -> Result<Pr
             "bank transaction is already linked to a journal entry",
         ));
     }
-    let allocated = purchase(
+    let allocated = purchase_at(
         tx,
         input.document_id,
         &meta,
@@ -562,6 +575,7 @@ fn prepare_mode(tx: &Transaction<'_>, input: &Input, receipt: bool) -> Result<Pr
         input.vat_treatment.as_deref(),
         &basis.gross_dkk,
         &basis.rate,
+        now,
     )?;
     let treatment = allocated.treatment.clone();
     let date = input.transaction_date.as_deref().unwrap_or(&bank_date);
