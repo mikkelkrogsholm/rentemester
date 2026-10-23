@@ -8,12 +8,18 @@ pub fn accepts(args: &[String]) -> bool {
         && args.get(1).is_some_and(|s| {
             matches!(
                 s.as_str(),
-                "register" | "depreciate" | "write-off" | "register-report"
+                "register"
+                    | "depreciate"
+                    | "write-off"
+                    | "register-report"
+                    | "disposal-preview"
+                    | "dispose"
+                    | "disposal-receipt"
             )
         })
 }
 pub fn help() -> Value {
-    json!({"ok":true,"commands":["asset register --name TEXT --category TEXT --acquisition-date YYYY-MM-DD --cost DKK --useful-life-months N --document-id ID [--asset-account ACCOUNT] [--depreciation-account ACCOUNT] [--accumulated-account ACCOUNT] [--note TEXT]","asset depreciate --asset-id ID --period N --date YYYY-MM-DD","asset write-off --name TEXT --category TEXT --acquisition-date YYYY-MM-DD --cost DKK --document-id ID --expense-account ACCOUNT --date YYYY-MM-DD --threshold-source TEXT --confirm yes [--payment-account ACCOUNT] [--note TEXT]","asset register-report"],"connection":"--company SLUG or verified workspace path; RENTEMESTER_COMPANY fallback; --server ORIGIN or --local-profile ABS_PRIVATE_PROFILE; --cookie-file PATH or --service-key-file PATH; --allow-loopback-http; --json or --format json|human","authority":"Register/depreciate invocation confirms. Write-off requires exact --confirm yes. Optional --actor asserts current credential identity only; no environment authority, key or automatic retry. Unknown writes require canonical report/journal reconciliation.","defaults":"Server resolves assetAccount5800, accumulatedAccount5810, depreciationAccount5820 and current confirmed bank role. No missing account creation. Registration declares metadata only, creates no journal, and requires physical original plus proven unallocated capitalisation (intentionally stricter evidence compatibility than source registration). Depreciation requires selected period and date, no amount/default-next.","writeOff":"Existing workflow guardrail by acquisition year: through2024 33100 DKK,2025 34400,2026 onward36000. Explicit advisor/user threshold source and confirmation required; not a new legal assessment or inferred tax/VAT eligibility.","native":"remote register-asset/depreciate-asset/assets/next-asset-depreciation remain unchanged."})
+    json!({"ok":true,"disposalCommands":["asset disposal-preview --asset-id ID --transaction-date YYYY-MM-DD --document-id ID --reason TEXT [--loss-account-no ACCOUNT]","asset dispose (same preview fields) --expected-plan-hash HASH --idempotency-key KEY --confirm yes","asset disposal-receipt --asset-id ID --key KEY"],"commands":["asset register --name TEXT --category TEXT --acquisition-date YYYY-MM-DD --cost DKK --useful-life-months N --document-id ID [--asset-account ACCOUNT] [--depreciation-account ACCOUNT] [--accumulated-account ACCOUNT] [--note TEXT]","asset depreciate --asset-id ID --period N --date YYYY-MM-DD","asset write-off --name TEXT --category TEXT --acquisition-date YYYY-MM-DD --cost DKK --document-id ID --expense-account ACCOUNT --date YYYY-MM-DD --threshold-source TEXT --confirm yes [--payment-account ACCOUNT] [--note TEXT]","asset register-report"],"connection":"--company SLUG or verified workspace path; RENTEMESTER_COMPANY fallback; --server ORIGIN or --local-profile ABS_PRIVATE_PROFILE; --cookie-file PATH or --service-key-file PATH; --allow-loopback-http; --json or --format json|human","authority":"Register/depreciate invocation confirms. Write-off requires exact --confirm yes. Optional --actor asserts current credential identity only; no environment authority, key or automatic retry. Unknown writes require canonical report/journal reconciliation.","defaults":"Server resolves assetAccount5800, accumulatedAccount5810, depreciationAccount5820 and current confirmed bank role. No missing account creation. Registration declares metadata only, creates no journal, and requires physical original plus proven unallocated capitalisation (intentionally stricter evidence compatibility than source registration). Depreciation requires selected period and date, no amount/default-next.","writeOff":"Existing workflow guardrail by acquisition year: through2024 33100 DKK,2025 34400,2026 onward36000. Explicit advisor/user threshold source and confirmation required; not a new legal assessment or inferred tax/VAT eligibility.","native":"remote register-asset/depreciate-asset/assets/next-asset-depreciation remain unchanged."})
 }
 fn usage(message: &str) -> Output {
     Output {
@@ -29,7 +35,13 @@ fn parse(args: &[String]) -> Result<BTreeMap<&str, &str>, Output> {
         let (key, attached) = crate::original_args::option(&args[cursor]);
         if !matches!(
             key,
-            "--name"
+            "--transaction-date"
+                | "--reason"
+                | "--loss-account-no"
+                | "--expected-plan-hash"
+                | "--idempotency-key"
+                | "--key"
+                | "--name"
                 | "--category"
                 | "--acquisition-date"
                 | "--cost"
@@ -175,6 +187,18 @@ pub fn execute(args: &[String]) -> Output {
     };
     let result = runtime.block_on(async {
         match args[1].as_str() {
+            "disposal-preview" => {
+                api.asset_disposal_preview(flags["--company"], id.unwrap(), &input)
+                    .await
+            }
+            "dispose" => {
+                api.asset_dispose(flags["--company"], id.unwrap(), &input, true)
+                    .await
+            }
+            "disposal-receipt" => {
+                api.asset_disposal_receipt(flags["--company"], id.unwrap(), flags["--key"])
+                    .await
+            }
             "register" => {
                 api.original_asset_register(
                     flags["--company"],
@@ -267,6 +291,61 @@ fn render(value: Value, json_mode: bool, exit: u8, operation: &str) -> Output {
 
 fn payload(args: &[String], flags: &BTreeMap<&str, &str>) -> Result<(Value, Option<i64>), Output> {
     let op = args[1].as_str();
+    if matches!(op, "disposal-preview" | "dispose" | "disposal-receipt") {
+        let id = flags
+            .get("--asset-id")
+            .and_then(|v| v.parse::<i64>().ok())
+            .filter(|n| (1..=9007199254740991).contains(n))
+            .ok_or_else(|| usage("positive safe --asset-id required"))?;
+        let mut input = json!({});
+        for (k, v) in flags {
+            let field = match *k {
+                "--transaction-date" => "transactionDate",
+                "--document-id" => "documentId",
+                "--reason" => "reason",
+                "--loss-account-no" => "lossAccountNo",
+                "--expected-plan-hash" => "expectedPlanHash",
+                "--idempotency-key" => "idempotencyKey",
+                "--confirm" if op == "dispose" && *v == "yes" => {
+                    input["confirm"] = json!(true);
+                    continue;
+                }
+                "--key" if op == "disposal-receipt" => continue,
+                "--company"
+                | "--server"
+                | "--cookie-file"
+                | "--service-key-file"
+                | "--local-profile"
+                | "--workspace"
+                | "--asset-id"
+                | "--json"
+                | "--format"
+                | "--help"
+                | "--allow-loopback-http" => continue,
+                _ => return Err(usage("Flag not allowed for disposal command")),
+            };
+            input[field] = if field == "documentId" {
+                json!(
+                    v.parse::<i64>()
+                        .map_err(|_| usage("positive document ID required"))?
+                )
+            } else {
+                json!(v)
+            };
+        }
+        if op == "disposal-receipt" {
+            if input != json!({})
+                || !flags
+                    .get("--key")
+                    .is_some_and(|s| (8..=160).contains(&s.len()) && !s.trim().is_empty())
+            {
+                return Err(usage("receipt requires only --asset-id and --key"));
+            }
+        } else {
+            rentemester_client::validate_asset_disposal(&input,op=="dispose").map_err(|_|usage("Invalid disposal fields; dispose requires reviewed --expected-plan-hash, --idempotency-key and --confirm yes"))?;
+        }
+        return Ok((input, Some(id)));
+    }
     let common: &[(&str, &str)] = &[
         ("--name", "name"),
         ("--category", "category"),
@@ -366,4 +445,46 @@ fn payload(args: &[String], flags: &BTreeMap<&str, &str>) -> Result<(Value, Opti
             .map_err(|_| usage("Invalid asset fields; see asset --help"))?;
     }
     Ok((input, id))
+}
+
+#[cfg(test)]
+mod asset_disposal_tests {
+    use super::*;
+    #[test]
+    fn asset_disposal_cli_confirmation_and_frozen_fields() {
+        let args: Vec<String> = [
+            "asset",
+            "dispose",
+            "--asset-id",
+            "3",
+            "--transaction-date",
+            "2026-10-20",
+            "--document-id",
+            "7",
+            "--reason",
+            "Retired",
+            "--expected-plan-hash",
+            &"a".repeat(64),
+            "--idempotency-key",
+            "synthetic-key",
+            "--confirm",
+            "yes",
+            "--server",
+            "https://example.test",
+            "--cookie-file",
+            "/synthetic/cookie",
+        ]
+        .into_iter()
+        .map(str::to_owned)
+        .collect();
+        assert!(accepts(&args));
+        assert!(parse(&args).is_ok());
+        let mut bad = args.clone();
+        bad[1] = "disposal-preview".into();
+        assert!(parse(&bad).is_err());
+        let mut bad = args;
+        let i = bad.iter().position(|v| v == "--confirm").unwrap();
+        bad.drain(i..i + 2);
+        assert!(parse(&bad).is_err());
+    }
 }
