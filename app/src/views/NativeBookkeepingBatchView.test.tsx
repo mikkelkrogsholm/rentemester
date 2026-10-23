@@ -61,3 +61,32 @@ test("human summary reuses exact server source amounts, account and readiness wh
  expect(screen.getByText("Præcis plan, poster og kildebeviser").closest("details")).not.toHaveAttribute("open");
  await review();await userEvent.click(screen.getByRole("button",{name:"Gem eksakt plan"}));const dialog=await screen.findByRole("dialog",{name:"Gem præcis batchplan"});expect(within(dialog).getByRole("table",{name:"Posterne i den gennemgåede plan"})).toHaveTextContent("Momsfradrag: 18.11 DKK");expect(within(dialog).getByText("Præcis plan, poster og kildebeviser").closest("details")).not.toHaveAttribute("open");expect(writes()).toHaveLength(0);
 });
+
+function foreignPlan(paymentCurrency = "EUR", rateSource = "imported_bank") {
+ return {...plan, items: [{...plan.items[0]!, detail: {
+  bank: {...plan.items[0]!.detail.bank, amount: paymentCurrency === "DKK" ? "-928.17" : "-125.37", currency: paymentCurrency},
+  document: {...plan.items[0]!.detail.document, currency: "EUR"},
+  proposed: {...plan.items[0]!.detail.proposed, vatTreatment: "reverse_charge"},
+  vat: {ready: true, classification: "EU", country: "DE", providerStatus: "valid", validatedAt: "2026-01-21T09:00:00Z", evidenceExpiresAt: "2026-02-21T09:00:00Z", providerReference: "synthetic-cache-reference", plan: {grossAmount: "125.37", netAmount: "928.17", vatAmount: "232.04", grossAmountDkk: "928.17", request: {currency: "EUR", fxRateToDkk: "7.403442"}, rateSource}}
+ }}]};
+}
+test("foreign review and confirmation show original EUR, booked DKK and exact server rate/provenance without writes", async()=>{
+ const foreign=foreignPlan(); setup({"GET /api/companies/synthetic/bookkeeping-batch":{dryRun:true,plan:foreign}}); mount();
+ await userEvent.click(await screen.findByRole("button",{name:"Vis arbejdskø"})); await screen.findByText("Plan-hash:");
+ const table=screen.getByRole("table",{name:"Posterne i den gennemgåede plan"});
+ for(const text of ["Samlet: 125.37 EUR","Netto: 928.17 DKK","Momsfradrag: 232.04 DKK","Bogført brutto: 928.17 DKK","Kurs til DKK: 7.403442","Kurskilde: Importeret bankkurs","Omvendt betalingspligt","Momsklassifikation: EU","Leverandørland: DE","Providerstatus: valid","Providerreference: synthetic-cache-reference","Udløber: 2026-02-21T09:00:00Z"]) expect(within(table).getByText(text)).toBeInTheDocument();
+ expect(table).not.toHaveTextContent("Netto: 928.17 EUR"); expect(within(table).getByText("-125.37 EUR")).toBeInTheDocument();
+ expect(screen.getByRole("button",{name:"Gem eksakt plan"})).toBeDisabled(); await review(); await userEvent.click(screen.getByRole("button",{name:"Gem eksakt plan"}));
+ const dialog=await screen.findByRole("dialog",{name:"Gem præcis batchplan"}); expect(within(dialog).getByRole("table")).toHaveTextContent("Samlet: 125.37 EUR"); expect(within(dialog).getByRole("table")).toHaveTextContent("Netto: 928.17 DKK"); expect(writes()).toHaveLength(0);
+});
+test("foreign voucher paid in DKK retains original gross and server derived settlement provenance",async()=>{
+ const foreign=foreignPlan("DKK","derived_dkk_settlement"); setup({"GET /api/companies/synthetic/bookkeeping-batch":{dryRun:true,plan:foreign}}); mount(); await userEvent.click(await screen.findByRole("button",{name:"Vis arbejdskø"})); await screen.findByText("Plan-hash:");
+ const table=screen.getByRole("table",{name:"Posterne i den gennemgåede plan"}); expect(table).toHaveTextContent("Samlet: 125.37 EUR"); expect(table).toHaveTextContent("-928.17 DKK"); expect(table).toHaveTextContent("Kurskilde: Afledt af DKK-afregning"); expect(writes()).toHaveLength(0);
+});
+test("foreign missing VAT and valuation evidence displays server refusal without fabricated values or provider success",async()=>{
+ const foreign=foreignPlan(); const unready={...foreign,items:[{...foreign.items[0]!,partition:"humanDecision",detail:{...foreign.items[0]!.detail,reason:"Imported FX rate missing",vat:{ready:false,errors:[{code:"vat_cache_expired",message:"Current EU validation required"}]}}}]};
+ setup({"GET /api/companies/synthetic/bookkeeping-batch":{dryRun:true,plan:unready},"GET /api/companies/synthetic/bookkeeping-workbench":{workbench:{...workbench,population:{total:1,ready:0,blockers:1}}}}); mount(); await userEvent.click(await screen.findByRole("button",{name:"Vis arbejdskø"})); await screen.findByText("Plan-hash:");
+ const table=screen.getByRole("table",{name:"Posterne i den gennemgåede plan"});
+ for(const text of ["Samlet: Ikke oplyst","Netto: Ikke oplyst","Momsfradrag: Ikke oplyst","Bogført brutto: Ikke oplyst","Kurs til DKK: Ikke oplyst","Kurskilde: Ikke oplyst","Momsklassifikation: Ikke oplyst","Providerstatus: Ikke oplyst","Imported FX rate missing","vat_cache_expired: Current EU validation required","Moms og værdiansættelse kræver afklaring."]) expect(within(table).getByText(text)).toBeInTheDocument();
+ expect(table).not.toHaveTextContent("Klar til gennemgang"); expect(table).not.toHaveTextContent("0.00"); await review(); expect(screen.getByRole("button",{name:"Gem eksakt plan"})).toBeDisabled(); expect(writes()).toHaveLength(0);
+});

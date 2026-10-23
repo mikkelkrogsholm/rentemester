@@ -116,3 +116,15 @@ test("a read-only batch load failure never becomes an unknown mutation", async (
   expect(screen.queryByText(/Serverens resultat kunne ikke bekræftes/)).not.toBeInTheDocument();
   expect(screen.getByRole("button", { name: "Vis arbejdskø" })).toBeEnabled();
 });
+
+for (const [treatment, label] of [["representation", "Repræsentation"], ["reverse_charge", "Omvendt betalingspligt"], ["eu_goods_acquisition", "EU-varekøb"]]) test(`summary labels supported ${treatment} without inferring classification or rate`, async () => {
+  const { BookkeepingPlanSummary } = await import("./BookkeepingBatchView");
+  const source = { ...plan, items: [{ actionKey: "foreign:1", partition: "humanDecision", detail: { bank: { amount: "-12.34", currency: "EUR" }, document: { currency: "EUR" }, proposed: { vatTreatment: treatment }, vat: { plan: { grossAmount: "12.34", netAmount: "91.26", vatAmount: "0.00", request: { currency: "EUR" } } } } }] };
+  renderAt(<BookkeepingPlanSummary plan={source as any} slug="synthetic" />);
+  expect(screen.getByText(label!)).toBeInTheDocument();
+  expect(screen.getByText("Samlet: 12.34 EUR")).toBeInTheDocument();
+  expect(screen.getByText("Netto: 91.26 DKK")).toBeInTheDocument();
+  expect(screen.getByText("Momsklassifikation: Ikke oplyst")).toBeInTheDocument();
+  expect(screen.getByText("Kurs til DKK: Ikke oplyst")).toBeInTheDocument();
+  expect(screen.getByText("Kræver faglig gennemgang")).toBeInTheDocument();
+});
