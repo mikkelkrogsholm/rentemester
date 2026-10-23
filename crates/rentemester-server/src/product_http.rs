@@ -636,6 +636,12 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
         .route("/api/companies/{slug}/original/mileage/list", get(mileage_original::handle))
         .route("/api/companies/{slug}/original/mileage/report", get(mileage_original::handle))
         .route("/api/companies/{slug}/original/mileage/export", post(mileage_original::handle))
+        .route("/api/companies/{slug}/original/posting-rules/propose", post(posting_rules_original::handle))
+        .route("/api/companies/{slug}/original/posting-rules/approve", post(posting_rules_original::handle))
+        .route("/api/companies/{slug}/original/posting-rules/disable", post(posting_rules_original::handle))
+        .route("/api/companies/{slug}/original/posting-rules/supersede", post(posting_rules_original::handle))
+        .route("/api/companies/{slug}/original/posting-rules/explain", post(posting_rules_original::handle))
+        .route("/api/companies/{slug}/original/posting-rules/test", post(posting_rules_original::handle))
         .with_state(state)
 }
 fn response(status: StatusCode, value: Value) -> Response {
@@ -1033,3 +1039,5 @@ mod vat_purchase_original;
 mod supplier_commitment_original;
 
 mod dimensions_original;
+
+mod posting_rules_original;
