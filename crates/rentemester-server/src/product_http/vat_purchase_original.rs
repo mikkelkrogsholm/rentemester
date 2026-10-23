@@ -27,10 +27,11 @@ fn domain_error(code: &str, unknown: bool) -> Response {
     )
 }
 fn failure(error: &rentemester_engine::Error, unknown: bool) -> Response {
-    if !unknown && error.code == "vat_purchase_business" {
-        if let Ok(value) = serde_json::from_str::<Value>(&error.message) {
-            return response(StatusCode::UNPROCESSABLE_ENTITY, value);
-        }
+    if !unknown
+        && error.code == "vat_purchase_business"
+        && let Ok(value) = serde_json::from_str::<Value>(&error.message)
+    {
+        return response(StatusCode::UNPROCESSABLE_ENTITY, value);
     }
     domain_error(error.code, unknown)
 }
