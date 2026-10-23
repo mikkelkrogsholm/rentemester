@@ -303,7 +303,10 @@ fn run(args: Vec<String>) -> Result<serde_json::Value, (u8, Error)> {
     Ok(json!({"ok":true,"format":"rentemester-trial-balance/1","data":report}))
 }
 fn main() -> ExitCode {
-    let args = match original_args::prepare(std::env::args().skip(1).collect()) {
+    let args = match original_args::prepare_with_output(
+        std::env::args().skip(1).collect(),
+        std::io::IsTerminal::is_terminal(&std::io::stdout()),
+    ) {
         Ok(args) => args,
         Err((code, error)) => {
             if error.message == "Missing required --input <file.json>" {

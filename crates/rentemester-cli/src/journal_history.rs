@@ -223,7 +223,7 @@ mod tests {
                 .as_array()
                 .unwrap()
                 .iter()
-                .any(|c| c["name"] == "journal list")
+                .any(|c| c["name"] == "journal post|dry-run|reverse|list")
         );
         assert_eq!(
             crate::run(args(&["journal", "list", "--help"])).unwrap(),
