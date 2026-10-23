@@ -185,9 +185,16 @@ fn mileage_posting_rollback_closed_missing_mismatch_no_partial_effects() {
     let mut missing = request();
     missing.document_id = 999;
     assert!(preview(&tx, &missing, HASH, latest()).is_err());
+    let open_preview = preview(&tx, &request(), HASH, latest()).unwrap();
+    let closed_post = Post { mileage_entry_id:1, rate_version:"synthetic-v1".into(), document_id:1, expected_preview_hash:open_preview["previewHash"].as_str().unwrap().into(), operation_key:"closed-period-intent".into(), confirm:true };
     tx.execute_batch("INSERT INTO accounting_periods(period_start,period_end,kind,status) VALUES('2026-01-01','2026-12-31','fiscal_year','closed')").unwrap();
+    let audit_before = count(&tx, "audit_log");
     assert!(preview(&tx, &request(), HASH, latest()).is_err());
+    assert!(post(&tx, &closed_post, "owner", PrincipalKind::User, HASH, latest()).is_err());
     assert_eq!(count(&tx, "journal_entries"), 0);
+    assert_eq!(count(&tx, "journal_lines"), 0);
+    assert_eq!(count(&tx, "native_mileage_posting_receipts"), 0);
+    assert_eq!(count(&tx, "audit_log"), audit_before);
 }
 
 #[test]
