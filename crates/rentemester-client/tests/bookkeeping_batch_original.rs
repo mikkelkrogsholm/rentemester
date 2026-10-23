@@ -79,9 +79,9 @@ fn state() -> Value {
 }
 fn reply(op: Op) -> Value {
     match op {
-        Op::Plan => json!({"ok":true,"dryRun":true,"plan":plan().to_string()}),
+        Op::Plan => json!({"ok":true,"dryRun":true,"plan":plan()}),
         Op::Persist | Op::DryRun => {
-            json!({"ok":true,"dryRun":true,"runId":7,"duplicate":true,"plan":plan().to_string(),"state":state()})
+            json!({"ok":true,"dryRun":true,"runId":7,"duplicate":true,"plan":plan(),"state":state()})
         }
         Op::Apply => {
             json!({"ok":true,"runId":7,"planHash":"a".repeat(64),"results":[{"actionKey":"bank:9","receipt":{"journalEntryId":31,"outcome":"applied"}}],"checks":[{"ok":true,"name":"trialBalance"}],"state":state(),"applyAttemptId":12,"duplicate":true})
