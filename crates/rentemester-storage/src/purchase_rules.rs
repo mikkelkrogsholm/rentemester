@@ -534,4 +534,4 @@ pub fn validate_backup(db: &Connection) -> Result<(), Error> {
     Ok(())
 }
 #[cfg(test)]
-mod tests;
+pub(crate) mod tests;
