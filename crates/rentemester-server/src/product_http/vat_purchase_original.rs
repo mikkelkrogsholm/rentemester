@@ -101,6 +101,8 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
     } else {
         Operation::Representation
     };
+    // mutation=true skips the read-only structural preflight in credential();
+    // transport/body parsing therefore remains after current authority in post_tx.
     let credential = match documents::credential(&state, &request, true) {
         Ok(c) => c,
         Err(r) => return *r,
