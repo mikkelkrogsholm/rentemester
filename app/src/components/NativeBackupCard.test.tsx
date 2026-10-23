@@ -22,9 +22,14 @@ test("workspace backup requires review and downloads the exact server blob witho
     const button = screen.getByRole("button", {name:"Dan og download backup"});
     expect(button).toBeDisabled();
     expect(fetchMock).toHaveBeenCalledTimes(0);
+    await userEvent.click(screen.getByText("Hvis computeren eller adgangen mistes"));
+    expect(screen.getByText(/En kopi på den mistede disk/)).toBeVisible();
+    expect(screen.getByText(/Ved lokal drift er du selv operatør/)).toBeVisible();
+    expect(screen.getByText(/En ny nøgle eller en nøgle fra selve arkivet/)).toBeVisible();
+    expect(fetchMock).toHaveBeenCalledTimes(0);
     await userEvent.click(screen.getByRole("checkbox"));
     await userEvent.click(button);
-    await screen.findByText(/Gendannelse er endnu ikke testet/);
+    await screen.findByText(/Downloadet er ikke en gendannelsesprøve/);
     expect(fetchMock).toHaveBeenCalledTimes(1);
     const [path, init] = fetchMock.mock.calls[0] as unknown as [string, RequestInit];
     expect(path).toBe("/api/workspace/backup");
