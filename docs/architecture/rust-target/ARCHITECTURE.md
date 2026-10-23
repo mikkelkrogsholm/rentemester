@@ -73,7 +73,7 @@ No offline editing of a server-owned ledger followed by synchronization, multi-m
 
 ## Open decisions
 
-- Native and browser identity provider strategy: retain Better Auth temporarily behind an explicit auth boundary or replace it with a supported service/library. A temporary TypeScript auth service means the runtime is not yet entirely Rust; it must remain visible in completion criteria.
+- Identity strategy is selected in [IDENTITY-DECISION.md](IDENTITY-DECISION.md): existing Rust-native identity for local/hosted operation, with temporary legacy Better Auth behind explicit R41/R55 removal gates. The four external-job authorization phases and remaining runtime qualifications are stated there.
 - Exact schema range, monetary bounds/scales and audit/signature compatibility matrix.
 - Revocation serialization across workspace-control and company-ledger databases.
 - Tauri 2 host and embedded UI platform/accessibility/security qualification, signed packages and update lifecycle. Target macOS, Windows and Linux; claim support only after platform checks.
