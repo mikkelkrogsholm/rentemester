@@ -25,7 +25,8 @@ pub use company_creation::{MAX_COMPANY_CREATION_BODY, company_creation_body_sche
 mod company_setup;
 pub use company_setup::{CompanySetupMutation, MAX_COMPANY_SETUP_BODY, company_setup_body_schema};
 mod privacy;
-pub use privacy::{MAX_PRIVACY_BODY, privacy_body_schema};
+pub use privacy::{MAX_PRIVACY_BODY, privacy_body_schema, PrivacyOperation};
+mod regulatory;
 mod budget;
 pub use budget::{MAX_BUDGET_BODY, budget_body_schema};
 mod exceptions;

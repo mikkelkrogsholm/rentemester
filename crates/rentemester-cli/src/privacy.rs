@@ -1,4 +1,4 @@
-use rentemester_client::{ApiClient, MAX_PRIVACY_BODY, privacy_body_schema};
+use rentemester_client::{ApiClient, MAX_PRIVACY_BODY, privacy_body_schema, PrivacyOperation};
 use rentemester_engine::Error;
 use serde_json::{Value, json};
 use std::{collections::BTreeMap, io::Read};
@@ -7,10 +7,10 @@ fn invalid(s: &str) -> Failure {
     (2, Error::new("invalid_input", s))
 }
 pub fn accepts(s: &str) -> bool {
-    matches!(s, "retention" | "gdpr-export" | "gdpr-erase")
+    matches!(s, "retention" | "gdpr-export" | "gdpr-erase" | "gdpr-discover" | "gdpr-forget" | "gdpr-legal-hold" | "gdpr-audit-log")
 }
 pub fn help() -> Value {
-    json!({"usage":"retention --company SLUG; gdpr-export/gdpr-erase --company SLUG --confirm < exact-native.json. Explicit server/private cookie; no query/selectors. Native16KiB body with cvr?/name?/confirm:true; export additionally permits asOf?, erase forbids even asOf:null.","policy":"CompanyRead retention; CompanyExport audited export; CompanyAdmin overlay. Export is an audited mutation and can strengthen subject aliases. Review full subject export erasable/underRetention/retentionUnknown/retainUntil and coverage/refused rows before explicitly confirming same scoped subject. Server alone establishes trusted current erasure date/retention. Full coverage.complete:false and unknown facts retained. Overlay is not universal physical deletion, journal/original rewrite or backup erasure guarantee. No caller keys or automatic erase/retry. Unknown outcome requires canonical subject/contact/retention reads before further action; repeated export also creates audit evidence.","bodySchemas":{"export":privacy_body_schema(false),"erase":privacy_body_schema(true)}})
+    json!({"usage":"retention --company SLUG; gdpr-export/gdpr-erase/gdpr-discover/gdpr-forget/gdpr-legal-hold/gdpr-audit-log --company SLUG --confirm < exact-native.json. Explicit server/private cookie; no query/selectors. Native16KiB body with cvr?/name?/confirm:true; export additionally permits asOf?, erase forbids even asOf:null.","policy":"CompanyRead retention; CompanyExport audited export; CompanyAdmin overlay. Export is an audited mutation and can strengthen subject aliases. Review full subject export erasable/underRetention/retentionUnknown/retainUntil and coverage/refused rows before explicitly confirming same scoped subject. Server alone establishes trusted current erasure date/retention. Full coverage.complete:false and unknown facts retained. Overlay is not universal physical deletion, journal/original rewrite or backup erasure guarantee. No caller keys or automatic erase/retry. Unknown outcome requires canonical subject/contact/retention reads before further action; repeated export also creates audit evidence.","bodySchemas":{"export":privacy_body_schema(false),"erase":privacy_body_schema(true),"discover":PrivacyOperation::Discover.schema(),"forget":PrivacyOperation::Forget.schema(),"legalHold":PrivacyOperation::LegalHold.schema(),"auditLog":PrivacyOperation::AuditLog.schema()}})
 }
 pub fn run(
     command: &str,
@@ -55,7 +55,8 @@ pub fn run(
             match command {
                 "retention" => api.retention(company).await,
                 "gdpr-export" => api.gdpr_export(company, bytes, confirm).await,
-                _ => api.gdpr_erase(company, bytes, confirm).await,
+                "gdpr-erase" => api.gdpr_erase(company, bytes, confirm).await,
+                _ => api.privacy_operation(company, match command {"gdpr-discover"=>PrivacyOperation::Discover,"gdpr-forget"=>PrivacyOperation::Forget,"gdpr-legal-hold"=>PrivacyOperation::LegalHold,_=>PrivacyOperation::AuditLog}, bytes, confirm).await,
             }
         })
         .map_err(crate::remote::client_error)?;

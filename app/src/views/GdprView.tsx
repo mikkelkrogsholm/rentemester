@@ -145,6 +145,8 @@ export function GdprView() {
         </p>
       </section>
 
+      <PrivacyActions key={slug + cvr + name} slug={slug} subject={{ cvr: cvr.trim() || undefined, name: name.trim() || undefined }} />
+
       {error && (
         <div className="callout danger" role="alert">
           {error}
@@ -312,4 +314,56 @@ function ErasureSummary({ result }: { result: GdprErasureResult }) {
       )}
     </section>
   );
+}
+
+// Server owns current authority, legal hold history and trusted dates.
+function PrivacyActions({ slug, subject }: { slug: string; subject: { cvr?: string; name?: string } }) {
+  const { can } = useCapabilities(slug);
+  const outcome = useMutationOutcome();
+  const [holdId, setHoldId] = useState("");
+  const [reason, setReason] = useState("");
+  const [since, setSince] = useState("");
+  const [until, setUntil] = useState("");
+  const [result, setResult] = useState<unknown>(null);
+  const [error, setError] = useState<string | null>(null);
+  type Action = Parameters<typeof api.gdprAction>[1];
+  type Body = Parameters<typeof api.gdprAction>[2];
+  const [pending, setPending] = useState<{ action: Action; body: Body } | null>(null);
+  const [busy, setBusy] = useState(false);
+  const hasSubject = !!(subject.cvr || subject.name);
+  const blocked = busy || outcome.blocked;
+  const prepare = (action: Action, operation?: "place" | "release") => {
+    if (blocked || !can(action === "legal-hold" ? "company.admin" : "company.export")) return;
+    const body: Body = action === "audit-log" ? { since: since || undefined, until: until || undefined, confirm: true }
+      : action === "legal-hold" ? { ...subject, holdId, reason, operation: operation!, confirm: true }
+      : { ...subject, confirm: true };
+    setPending({ action, body });
+  };
+  return <section className="card">
+    {outcome.feedback}
+    <h3>Opdagelse, juridisk hold og audit</h3>
+    <p className="muted">Opdagelse og audit-eksport skriver auditspor. Hold ophæver aldrig andre opbevaringskrav. Ingen automatisk gentagelse ved ukendt udfald.</p>
+    <Button requiredPermission="company.export" disabled={blocked || !hasSubject} onClick={() => prepare("discover")}>Opdag personoplysninger</Button>
+    <div className="filter-bar">
+      <label>Hold-ID<Input value={holdId} maxLength={128} disabled={blocked} onChange={e => setHoldId(e.target.value)} /></label>
+      <label>Begrundelse<Input value={reason} maxLength={2000} disabled={blocked} onChange={e => setReason(e.target.value)} /></label>
+      <Button requiredPermission="company.admin" disabled={blocked || !hasSubject || !holdId.trim() || !reason.trim()} onClick={() => prepare("legal-hold", "place")}>Placér hold</Button>
+      <Button requiredPermission="company.admin" disabled={blocked || !hasSubject || !holdId.trim() || !reason.trim()} onClick={() => prepare("legal-hold", "release")}>Frigiv hold</Button>
+    </div>
+    <div className="filter-bar">
+      <label>Audit fra<Input type="date" value={since} disabled={blocked} onChange={e => setSince(e.target.value)} /></label>
+      <label>Audit til<Input type="date" value={until} disabled={blocked} onChange={e => setUntil(e.target.value)} /></label>
+      <Button requiredPermission="company.export" disabled={blocked} onClick={() => prepare("audit-log")}>Eksportér GDPR-audit</Button>
+    </div>
+    <p className="muted">En indlejret signaturnøgle er ikke uafhængig verifikation. Kontrollér audit-signaturen med en særskilt betroet nøgle.</p>
+    {error && <p className="callout danger" role="alert">{error}</p>}
+    {result !== null && <><h4>Seneste serverresultat (ikke automatisk opdateret)</h4><pre>{JSON.stringify(result, null, 2)}</pre></>}
+    {pending && <ConfirmDialog title="Bekræft GDPR-handling" confirmLabel="Udfør bekræftet handling" body={<><p>Gennemgå den præcise handling {pending.action}. Holdfrigivelse tillader ikke automatisk anonymisering.</p><pre>{JSON.stringify(pending.body, null, 2)}</pre></>} onClose={() => setPending(null)} onConfirm={async () => {
+      if (outcome.isBlocked()) return;
+      setBusy(true); setError(null); setResult(null);
+      try { setResult(await api.gdprAction(slug, pending.action, pending.body).catch(outcome.reject)); }
+      catch (e) { setError(e instanceof Error ? e.message : "GDPR-handlingen fejlede."); throw e; }
+      finally { setBusy(false); }
+    }} />}
+  </section>;
 }

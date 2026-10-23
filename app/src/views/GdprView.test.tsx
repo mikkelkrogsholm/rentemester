@@ -180,3 +180,39 @@ describe("GdprView (#334)", () => {
     ).toBeInTheDocument();
   });
 });
+
+test("discovery requires reviewed confirmation and preserves truthful hold state", async () => {
+  const requests: any[] = [];
+  stubGlobal("fetch", vi.fn(async (_url: RequestInfo | URL, init?: RequestInit) => {
+    requests.push(JSON.parse(String(init?.body)));
+    return new Response(JSON.stringify({ ok: true, gdprDiscovery: { legalHolds: { active: [{ holdId: "case-1" }] }, coverage: { complete: false } } }), { headers: { "content-type": "application/json" } });
+  }));
+  renderAt(<GdprView />, { route: "/companies/acme-aps/gdpr", path: "/companies/:slug/gdpr" });
+  expect(screen.getByRole("button", { name: "Placér hold" })).toBeDisabled();
+  await userEvent.type(screen.getByPlaceholderText("DK…"), "SYN");
+  await userEvent.click(screen.getByRole("button", { name: "Opdag personoplysninger" }));
+  expect(requests).toHaveLength(0);
+  await userEvent.click(screen.getByRole("button", { name: "Udfør bekræftet handling" }));
+  await screen.findByText(/Seneste serverresultat/);
+  expect(requests).toEqual([{ cvr: "SYN", confirm: true }]);
+  expect(screen.getByText(/"case-1"/)).toBeInTheDocument();
+});
+
+test("hold placement and release show exact subject, identity and reason before execution", async () => {
+  const requests: any[] = [];
+  stubGlobal("fetch", vi.fn(async (_url: RequestInfo | URL, init?: RequestInit) => {
+    requests.push(JSON.parse(String(init?.body)));
+    return new Response(JSON.stringify({ ok: true, gdprLegalHold: { active: [], history: requests } }), { headers: { "content-type": "application/json" } });
+  }));
+  renderAt(<GdprView />, { route: "/companies/acme-aps/gdpr", path: "/companies/:slug/gdpr" });
+  await userEvent.type(screen.getByPlaceholderText("DK…"), "SYN");
+  await userEvent.type(screen.getByLabelText("Hold-ID"), "case-1");
+  await userEvent.type(screen.getByLabelText("Begrundelse"), "reviewed");
+  for (const [label, operation] of [["Placér hold", "place"], ["Frigiv hold", "release"]]) {
+    await userEvent.click(screen.getByRole("button", { name: label }));
+    expect(requests).toHaveLength(operation === "place" ? 0 : 1);
+    await userEvent.click(screen.getByRole("button", { name: "Udfør bekræftet handling" }));
+    await screen.findByText(/Seneste serverresultat/);
+    expect(requests.at(-1)).toEqual({ cvr: "SYN", holdId: "case-1", reason: "reviewed", operation, confirm: true });
+  }
+});

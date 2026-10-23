@@ -125,6 +125,13 @@ pub fn prepare_with_output(args: Vec<String>, stdout_is_terminal: bool) -> Resul
 }
 
 fn prepare_inner(args: Vec<String>, stdout_is_terminal: Option<bool>) -> Result<Vec<String>, (u8, Error)> {
+    if args.first().is_some_and(|s| crate::privacy::accepts(s) || s == "compliance-report") {
+        let mut native=vec!["remote".into()];native.extend(args);return Ok(native);
+    }
+    if args.first().is_some_and(|s|s=="gdpr") {
+        let native=match args.get(1).map(String::as_str) {Some("discover")=>"gdpr-discover",Some("forget")=>"gdpr-forget",Some("audit-log")=>"gdpr-audit-log",_=>return Err(usage("gdpr discover|forget|audit-log with exact confirmed native stdin".into()))};
+        let mut out=vec!["remote".into(),native.into()];out.extend(args.into_iter().skip(2));return Ok(out);
+    }
     // Source knowledge aliases share the exact native transport/body contract.
     if args.first().is_some_and(|s| s == "company-knowledge") {
         let command = match args.get(1).map(String::as_str) {

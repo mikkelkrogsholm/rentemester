@@ -157,3 +157,13 @@ fn privacy_erase_cli_preserves_subject_bytes_and_unknown_outcome() {
     assert_eq!(value["code"], "outcome_unknown");
     task.join().unwrap();
 }
+
+#[test]
+fn native_and_original_privacy_commands_reach_confirmation_gate() {
+    for words in [vec!["gdpr-discover"],vec!["gdpr-forget"],vec!["gdpr-legal-hold"],vec!["gdpr-audit-log"],vec!["gdpr","discover"],vec!["gdpr","forget"],vec!["gdpr","audit-log"]] {
+        let out=Command::new(BIN).args(words).output().unwrap();
+        assert_eq!(out.status.code(),Some(2));
+        let text=String::from_utf8(out.stdout).unwrap();
+        assert!(text.contains("require --confirm"),"{text} {}",String::from_utf8_lossy(&out.stderr));
+    }
+}
