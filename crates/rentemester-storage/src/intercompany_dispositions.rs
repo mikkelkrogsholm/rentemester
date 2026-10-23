@@ -586,3 +586,166 @@ pub fn journal_entry(db: &Connection, id: i64) -> Result<Option<JournalEntry>, E
     }
     Ok(Some(value))
 }
+
+/// Selected-side approved cash evidence only. Does not claim journal settlement.
+#[derive(Debug)]
+pub struct LiquidityProjection {
+    pub due_date: String,
+    pub amount: Money,
+    pub currency: String,
+    pub inflow: bool,
+    pub reference: String,
+    pub approval_reference: String,
+}
+pub fn reviewed_liquidity(
+    db: &Connection,
+    slug: &str,
+    start: &str,
+    end: &str,
+) -> Result<Vec<LiquidityProjection>, Error> {
+    Date::parse(start)?;
+    Date::parse(end)?;
+    let mut out = vec![];
+    for (id, state) in history::states(db)? {
+        if !matches!(
+            state.status.as_str(),
+            "approved" | "partly_posted" | "posted"
+        ) {
+            continue;
+        }
+        let d = &state.disposition;
+        let side = if d.left.company_slug == slug {
+            &d.left
+        } else if d.right.company_slug == slug {
+            &d.right
+        } else {
+            continue;
+        };
+        let Some(date) = d.settlement_due_date.as_deref() else {
+            continue;
+        };
+        if Date::parse(date).is_err() || date < start || date > end {
+            continue;
+        }
+        out.push(LiquidityProjection {
+            due_date: date.into(),
+            amount: d.amount_money()?,
+            currency: d.currency.clone(),
+            inflow: side.expected_side == "receivable",
+            reference: format!("intercompany-disposition:{id}:{}", state.payload_hash),
+            approval_reference: format!("intercompany-approved:{id}:{}", state.payload_hash),
+        });
+    }
+    Ok(out)
+}
+
+#[cfg(test)]
+mod liquidity_projection_tests {
+    use super::*;
+    #[test]
+    fn current_review_scope_currency_dates_and_scenario_not_base() {
+        let mut control = super::tests::fixture();
+        let mut bootstrap = Connection::open_in_memory().unwrap();
+        let mut db = Connection::open_in_memory().unwrap();
+        crate::fresh::initialize_empty_pair(&mut bootstrap, &mut db, "Synthetic scoped forecast")
+            .unwrap();
+        db.execute_batch("INSERT INTO accounts(account_no,name,type,normal_balance) VALUES('B','Synthetic bank','asset','debit');INSERT INTO bank_accounts(slug,name,ledger_account_no,currency) VALUES('synthetic','Synthetic bank','B','DKK');").unwrap();
+        let ct = control
+            .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
+            .unwrap();
+        let tx = db.transaction().unwrap();
+        let now = "2026-10-20T12:00:00.000Z";
+        let author = Principal {
+            kind: "user".into(),
+            id: "synthetic-author".into(),
+        };
+        let reviewer = Principal {
+            kind: "user".into(),
+            id: "synthetic-reviewer".into(),
+        };
+        for (id, currency) in [("synthetic-dkk", "DKK"), ("synthetic-eur", "EUR")] {
+            let d:Disposition=serde_json::from_value(json!({"dispositionId":id,"type":"loan","economicDate":"2026-10-20","settlementDueDate":"2026-10-22","amount":75,"currency":currency,"partyIds":["synthetic-party"],"evidenceRecordIds":["synthetic-record"],"left":{"companySlug":"selected","role":"lender","expectedSide":"receivable"},"right":{"companySlug":"other","role":"borrower","expectedSide":"payable"}})).unwrap();
+            let p = execute(
+                &ct,
+                &Action::Propose(Propose {
+                    disposition: d,
+                    confirm: true,
+                }),
+                &[],
+                "author",
+                &author,
+                now,
+            )
+            .unwrap();
+            let exact = Exact {
+                disposition_id: id.into(),
+                payload_hash: p["payloadHash"].as_str().unwrap().into(),
+                confirm: true,
+            };
+            assert!(
+                reviewed_liquidity(&ct, "selected", "2026-10-20", "2026-10-30")
+                    .unwrap()
+                    .iter()
+                    .all(|f| !f.reference.contains(id))
+            );
+            assert!(
+                execute(
+                    &ct,
+                    &Action::Approve(exact.clone()),
+                    &[],
+                    "author",
+                    &author,
+                    now
+                )
+                .is_err()
+            );
+            execute(
+                &ct,
+                &Action::Approve(exact),
+                &[],
+                "reviewer",
+                &reviewer,
+                now,
+            )
+            .unwrap();
+        }
+        let before = ct.total_changes();
+        assert!(
+            reviewed_liquidity(&ct, "unrelated", "2026-10-20", "2026-10-30")
+                .unwrap()
+                .is_empty()
+        );
+        assert!(
+            reviewed_liquidity(&ct, "selected", "2026-10-23", "2026-10-30")
+                .unwrap()
+                .is_empty()
+        );
+        let facts = reviewed_liquidity(&ct, "selected", "2026-10-20", "2026-10-30").unwrap();
+        assert_eq!(facts.len(), 2);
+        assert!(facts[0].inflow);
+        assert!(
+            facts[0]
+                .approval_reference
+                .starts_with("intercompany-approved:synthetic-dkk:")
+        );
+        let opposite = reviewed_liquidity(&ct, "other", "2026-10-20", "2026-10-30").unwrap();
+        assert!(!opposite[0].inflow);
+        let w = crate::liquidity_original::weekly(
+            &ct,
+            &tx,
+            "selected",
+            &crate::liquidity_original::Weekly {
+                start_date: "2026-10-20".into(),
+                weeks: Some("1".into()),
+            },
+        )
+        .unwrap();
+        assert_eq!(w["ok"], true);
+        assert_eq!(w["periods"][0]["intercompany"], 75.0);
+        assert_eq!(w["periods"][0]["closingCash"], 0.0);
+        assert_eq!(w["periods"][0]["scenarioClosingCash"], 75.0);
+        assert_eq!(w["lowestPoint"], 0.0);
+        assert_eq!(w["periods"][0]["excluded"][0]["currency"], "EUR");
+        assert_eq!(ct.total_changes(), before);
+    }
+}

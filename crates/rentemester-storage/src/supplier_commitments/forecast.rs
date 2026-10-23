@@ -66,6 +66,15 @@ fn receivables(
     start: &str,
     company: &Value,
 ) -> Result<Vec<Flow>, Error> {
+    receivables_selected(tx, slug, start, company, false)
+}
+fn receivables_selected(
+    tx: &Transaction<'_>,
+    slug: &str,
+    start: &str,
+    company: &Value,
+    all: bool,
+) -> Result<Vec<Flow>, Error> {
     let month = StartMonth::new(
         company["fiscalYearStartMonth"]
             .as_i64()
@@ -77,9 +86,9 @@ fn receivables(
             .ok_or_else(|| refused("missing fiscal setup"))?,
     )?;
     let mut years = BTreeSet::new();
-    let mut q=tx.prepare("SELECT DISTINCT invoice_date FROM documents WHERE document_type='issued_invoice' AND invoice_date<=?1").map_err(invalid)?;
+    let mut q=tx.prepare("SELECT DISTINCT invoice_date FROM documents WHERE document_type='issued_invoice' AND (?2 OR invoice_date<=?1)").map_err(invalid)?;
     for date in q
-        .query_map([start], |r| r.get::<_, String>(0))
+        .query_map(params![start, all], |r| r.get::<_, String>(0))
         .map_err(invalid)?
     {
         years.insert(
@@ -94,7 +103,7 @@ fn receivables(
             .as_array()
             .ok_or_else(|| refused("invoice projection unavailable"))?
         {
-            if row["invoiceDate"].as_str().is_none_or(|date| date > start) {
+            if !all && row["invoiceDate"].as_str().is_none_or(|date| date > start) {
                 continue;
             }
             let amount = value_money(&row["openBalance"])?;
@@ -375,6 +384,51 @@ pub(super) fn intervals(start: &str, monthly: bool) -> Result<Vec<(String, Strin
         out.push((from, to));
     }
     Ok(out)
+}
+
+// Narrow shared fact seam: source projections retain native accounting arithmetic.
+impl crate::liquidity_original::Facts {
+    pub(crate) fn opening(
+        tx: &Transaction<'_>,
+        cutoff: &str,
+        currency: &str,
+        caveats: &mut Vec<String>,
+    ) -> Result<Option<Money>, Error> {
+        opening(tx, cutoff, currency, caveats)
+    }
+    pub(crate) fn receivables(
+        tx: &Transaction<'_>,
+        slug: &str,
+        start: &str,
+        company: &Value,
+    ) -> Result<Vec<crate::liquidity_original::Fact>, Error> {
+        Ok(receivables_selected(tx, slug, start, company, true)?
+            .into_iter()
+            .map(|f| crate::liquidity_original::Fact {
+                date: f.date,
+                amount: f.amount,
+                currency: f.currency,
+                reference: f.reference,
+                assumption: f.assumption,
+            })
+            .collect())
+    }
+    pub(crate) fn vat(
+        tx: &Transaction<'_>,
+        start: &str,
+        end: &str,
+    ) -> Result<Vec<crate::liquidity_original::Fact>, Error> {
+        Ok(vat_flows(tx, start, end)?
+            .into_iter()
+            .map(|f| crate::liquidity_original::Fact {
+                date: f.date,
+                amount: f.amount,
+                currency: f.currency,
+                reference: f.reference,
+                assumption: f.assumption,
+            })
+            .collect())
+    }
 }
 
 #[cfg(test)]

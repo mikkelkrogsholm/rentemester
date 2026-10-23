@@ -690,3 +690,6 @@ pub mod recurring_workspace;
 pub mod master_data_original;
 
 pub mod documents_original;
+
+pub mod budget_original;
+pub mod liquidity_original;
