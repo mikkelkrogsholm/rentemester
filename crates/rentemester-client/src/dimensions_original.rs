@@ -225,7 +225,7 @@ pub fn validate_original_dimensions(
     if serde_json::to_vec(input)
         .map_err(|_| Error::InvalidInput("invalid JSON"))?
         .len()
-        > 66560
+        > 65536
         || !schema_valid(&original_dimensions_schema(op), input)
     {
         return Err(Error::InvalidInput("invalid dimensions input"));
@@ -256,6 +256,8 @@ fn allocations_equal(a: &Value, b: &Value, budget: bool) -> bool {
             }
             if budget {
                 row["amount"] = json!(minor(&row["amount"])?);
+            } else {
+                row["currency"] = json!(row["currency"].as_str()?.trim().to_uppercase());
             }
             out.push(row.to_string());
         }
@@ -434,7 +436,7 @@ fn row(op: DimensionsOriginalOperation, r: &Value, input: &Value) -> bool {
     exact(r, keys)
         && positive(&r["id"])
         && nonblank(&r["actor"])
-        && r["actor"] == r["principal"]
+        && nonblank(&r["principal"])
         && nonblank(&r["created_at"])
         && match op {
             Definitions | Members => {
@@ -641,6 +643,16 @@ impl ApiClient {
                 })
                 .collect()
         };
+        let body = if post {
+            let bytes =
+                serde_json::to_vec(&wire).map_err(|_| Error::InvalidInput("invalid JSON"))?;
+            if bytes.len() > 65536 {
+                return Err(Error::InvalidInput("dimensions body exceeds byte limit"));
+            }
+            Some(bytes)
+        } else {
+            None
+        };
         let mut response = self
             .send(
                 if post { Method::POST } else { Method::GET },
@@ -652,14 +664,7 @@ impl ApiClient {
                     .iter()
                     .map(|(k, v)| (k.as_str(), v.as_str()))
                     .collect::<Vec<_>>(),
-                if post {
-                    Some(
-                        serde_json::to_vec(&wire)
-                            .map_err(|_| Error::InvalidInput("invalid JSON"))?,
-                    )
-                } else {
-                    None
-                },
+                body,
                 self.cookie.as_ref().map(|c| c.as_str()),
             )
             .await

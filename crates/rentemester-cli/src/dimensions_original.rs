@@ -387,7 +387,7 @@ fn payload(args: &[String], flags: &BTreeMap<&str, &str>) -> Result<Value, Outpu
                     .map_err(|_| usage("Positive safe integer required"))?
             ),
             "allocations" => {
-                if raw.len() > 66560 {
+                if raw.len() > 65536 {
                     return Err(usage("Inline allocations exceed byte limit"));
                 }
                 serde_json::from_str(raw)

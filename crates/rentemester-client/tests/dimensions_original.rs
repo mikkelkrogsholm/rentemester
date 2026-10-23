@@ -36,6 +36,17 @@ fn frozen_schema_and_strict_inputs() {
         }
     }
     assert!(validate_original_dimensions(Op::Definitions, &json!({})).is_ok());
+    let mut large = assignment();
+    large["allocations"] = json!([]);
+    let allocation = json!({"dimensionId":"d".repeat(64),"memberId":"m".repeat(64),"amountMinor":1,"currency":"DKK"});
+    while serde_json::to_vec(&large).unwrap().len() <= 65536 {
+        large["allocations"]
+            .as_array_mut()
+            .unwrap()
+            .push(allocation.clone());
+    }
+    assert!(serde_json::to_vec(&large).unwrap().len() < 66560);
+    assert!(validate_original_dimensions(Op::Plan, &large).is_err());
     assert!(
         validate_original_dimensions(Op::List, &json!({"journalLineId":9007199254740992u64}))
             .is_err()
@@ -103,6 +114,13 @@ async fn receipts_status_and_no_retry() {
             json!({}),
             200,
             json!({"ok":true,"definitions":[]}),
+            None,
+        ),
+        (
+            Op::Definitions,
+            json!({}),
+            200,
+            json!({"ok":true,"definitions":[{"id":1,"dimension_id":"project","kind":"project","name":"Projects","status":"active","event_type":"defined","supersedes_dimension_id":null,"actor":"agent:synthetic","principal":"user:reviewer","created_at":"2026-01-01T00:00:00Z"}]}),
             None,
         ),
         (
@@ -186,9 +204,13 @@ fn assignment() -> Value {
 #[tokio::test]
 async fn exact_native_plan_and_receipt_binding() {
     use sha2::{Digest, Sha256};
-    for tamper in 0..3 {
-        let input = assignment();
+    for tamper in 0..4 {
+        let mut input = assignment();
+        if tamper == 3 {
+            input["allocations"][0]["currency"] = json!("dkk");
+        }
         let mut p = json!({"schemaVersion":"rentemester-accounting-dimensions-v1","journalLineId":1,"journalEntryId":2,"journalEntryHash":"b".repeat(64),"lineCurrency":"DKK","lineAmountMinor":1250,"allocations":input["allocations"],"source":"reviewed","sourceRef":null});
+        p["allocations"][0]["currency"] = json!("DKK");
         p["planHash"] = json!(format!("{:x}", Sha256::digest(p.to_string().as_bytes())));
         if tamper == 1 {
             p["journalLineId"] = json!(3);
@@ -206,7 +228,7 @@ async fn exact_native_plan_and_receipt_binding() {
             .unwrap()
             .original_dimensions("synthetic", Op::Plan, &input, None, None)
             .await;
-        if tamper == 0 {
+        if tamper == 0 || tamper == 3 {
             assert_eq!(result.unwrap(), reply);
         } else {
             assert_eq!(result, Err(Error::Protocol));
