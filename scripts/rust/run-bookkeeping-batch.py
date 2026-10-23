@@ -479,7 +479,7 @@ def main():
                             or exception['related_document_id'] != document['id']
                             or evidence['bankTransactionId'] != bank['id'] or evidence['candidateBilagId'] != document['id']
                             or not exception['resolved_at'] or not exception['resolved_by']
-                            or exception['resolution_note'] != 'Resolved automatically by posted journal entry ' + journal['journal_entry_no']):
+                            or exception['resolution_note'] != 'Resolved automatically by posted journal entry ' + journal['entry_no']):
                         raise RuntimeError('Original VAT resolved bank task must retain exact source links and posting resolution')
                     return rows
                 if args.original_budget:
