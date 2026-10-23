@@ -1,3 +1,4 @@
+mod supplier_commitment_original;
 mod vat_purchase_original;
 mod asset_original;
 mod accrual_original;
@@ -314,6 +315,12 @@ fn main() -> ExitCode {
         eprint!("{}", output.stderr);
         return ExitCode::from(output.exit);
     }
+    if args.first().is_some_and(|s|s=="supplier-commitment") {
+        if args==["supplier-commitment"] || args==["supplier-commitment","--help"] {println!("{}",supplier_commitment_original::help());return ExitCode::SUCCESS;}
+        if !supplier_commitment_original::accepts(&args) {eprintln!("Unknown supplier-commitment command; see supplier-commitment --help");return ExitCode::from(2);}
+        if let Err(o)=supplier_commitment_original::preflight(&args) {eprint!("{}",o.stderr);return ExitCode::from(o.exit);}
+        if args.iter().any(|s|s=="--help") {println!("{}",supplier_commitment_original::help());return ExitCode::SUCCESS;}
+    }
     if args.first().is_some_and(|s|s=="asset") {
         if args==["asset"] || args==["asset","--help"] {println!("{}",asset_original::help());return ExitCode::SUCCESS;}
         if !asset_original::accepts(&args) {eprintln!("Unknown asset command; see asset --help");return ExitCode::from(2);}
@@ -487,6 +494,10 @@ fn main() -> ExitCode {
             return ExitCode::from(code);
         }
     };
+    if supplier_commitment_original::accepts(&args) {
+        let output=supplier_commitment_original::execute(&args);
+        print!("{}",output.stdout);eprint!("{}",output.stderr);return ExitCode::from(output.exit);
+    }
     if asset_original::accepts(&args) {
         let output=asset_original::execute(&args);
         print!("{}",output.stdout);eprint!("{}",output.stderr);return ExitCode::from(output.exit);

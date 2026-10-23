@@ -3,6 +3,7 @@ use serde_json::{Value, json};
 
 pub fn help() -> Value {
     json!({"ok":true,"localBinding":"Existing migrated commands may select --local-profile ABS_PRIVATE_PROFILE instead of --server/--allow-loopback-http. Join only: same server via private Unix socket with normal cookie/service authentication. Bounded company selection supports explicit slug or verified workspace path and RENTEMESTER_COMPANY fallback for migrated company commands only. Identity remains server-owned; no caller-selected actor. Whole-product parity is unfinished and the default launcher is unchanged.","commands":[
+        {"name":"supplier-commitment plan|apply|list|change|match|matches|alerts","usage":"supplier-commitment --help","scope":"inline JSON, flat native source-bound proposals/receipts, explicit approval; native 90-day schedule, not offline pure TS hash parity"},
         {"name":"vat post-eu-service-purchase|post-representation-purchase","usage":"vat post-eu-service-purchase --input FILE.json","scope":"original confirmed-by-invocation purchase writes; representation omission requires unique active configured REPRESENTATION_SPECIAL expense account, never fixed 3070; optional actor asserts current credential only"},
         {"name":"vat report|eu-sales-list|oss-report|momsangivelse|filing","usage":"vat --help","scope":"read-only source VAT reports and closed-period filing preparation; no submission"},
         {"name":"budget set|list|vs-actual|forecast|forecast-13-week","usage":"budget --help","scope":"original flat budget revisions and read-only source cash planning; native aliases retained"},
@@ -149,7 +150,7 @@ fn invalid(message: &str) -> crate::dated_reports::Output {
 fn recognized(root: &str) -> bool {
     matches!(
         root,
-        "vat" | "asset"
+        "supplier-commitment" | "vat" | "asset"
             | "accrual"
             | "mileage"
             | "budget"

@@ -566,3 +566,6 @@ pub use vat_original::validate_original_vat_result;
 
 mod vat_purchase_original;
 pub use vat_purchase_original::{original_vat_purchase_schema, validate_original_vat_purchase};
+
+mod supplier_commitment_original;
+pub use supplier_commitment_original::{SupplierCommitmentOriginalOperation, original_supplier_commitment_schema, validate_original_supplier_commitment};
