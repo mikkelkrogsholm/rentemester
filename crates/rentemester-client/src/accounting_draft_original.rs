@@ -63,6 +63,17 @@ fn typed(v: &Value) -> bool {
         })
     })
 }
+// Immutable historical attribution does not select a current credential.
+fn historical_actor(v: &Value) -> bool {
+    v.as_str().is_some_and(|s| {
+        s.len() <= 256
+            && s.split_once(':').is_some_and(|(kind, subject)| {
+                matches!(kind, "user" | "service_account" | "agent" | "system")
+                    && !subject.is_empty()
+                    && !subject.chars().any(|c| c.is_whitespace() || c.is_control())
+            })
+    })
+}
 fn exact(v: &Value, keys: &[&str]) -> bool {
     v.as_object()
         .is_some_and(|o| o.len() == keys.len() && keys.iter().all(|k| o.contains_key(*k)))
@@ -243,7 +254,7 @@ fn state(v: &Value) -> bool {
         && hash(&v["payloadHash"])
         && hash(&v["eventHash"])
         && payload(&v["payload"])
-        && typed(&v["actorId"])
+        && historical_actor(&v["actorId"])
         && [
             "created",
             "revised",

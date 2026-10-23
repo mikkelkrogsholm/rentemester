@@ -197,3 +197,47 @@ fn approval_binds_journal_and_list_is_ordered() {
  for rows in [json!([state("created"),second.clone()]),json!([second,state("created")]),json!([state("created"),state("created")])]{let sorted=rows[0]["id"]=="synthetic" && rows[1]["id"]=="z-draft";let body=json!({"ok":true,"accountingDrafts":rows});let(origin,t)=server(200,body.to_string());let api=ApiClient::new(&origin,true,None).unwrap();let r=api.original_accounting_draft("synthetic",Op::List,&json!({}),None,None).await;assert_eq!(r.is_ok(),sorted);let r=t.join().unwrap();assert!(r.starts_with("GET /api/companies/synthetic/original/accounting-draft/list "));}
  });
 }
+
+#[test]
+fn retained_source_actor_kinds_are_evidence_not_current_credentials() {
+    tokio::runtime::Runtime::new().unwrap().block_on(async {
+        for actor in [
+            "agent:retained",
+            "system:retained",
+            "user:old",
+            "service_account:old",
+        ] {
+            let mut retained = state("submitted");
+            retained["actorId"] = json!(actor);
+            for op in [Op::Show, Op::List] {
+                let body = if op == Op::List {
+                    json!({"ok":true,"accountingDrafts":[retained]})
+                } else {
+                    json!({"ok":true,"accountingDraft":retained})
+                };
+                let (origin, t) = server(200, body.to_string());
+                let api = ApiClient::new(&origin, true, None).unwrap();
+                let input = if op == Op::List {
+                    json!({})
+                } else {
+                    json!({"draftId":"synthetic"})
+                };
+                assert_eq!(
+                    api.original_accounting_draft("synthetic", op, &input, None, None)
+                        .await
+                        .unwrap(),
+                    body
+                );
+                t.join().unwrap();
+            }
+        }
+        let api = ApiClient::new("http://127.0.0.1:9", true, None).unwrap();
+        for actor in ["agent:retained", "system:retained"] {
+            assert!(matches!(
+                api.original_accounting_draft("synthetic", Op::Create, &input(), Some(actor), None)
+                    .await,
+                Err(Error::InvalidInput(_))
+            ));
+        }
+    });
+}
