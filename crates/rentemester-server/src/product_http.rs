@@ -128,6 +128,13 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
         pdf_workers: Arc::new(Semaphore::new(4)),
     };
     Router::new()
+        .route("/api/companies/{slug}/original/supplier-commitments/plan", post(supplier_commitment_original::handle))
+        .route("/api/companies/{slug}/original/supplier-commitments/apply", post(supplier_commitment_original::handle))
+        .route("/api/companies/{slug}/original/supplier-commitments", get(supplier_commitment_original::handle))
+        .route("/api/companies/{slug}/original/supplier-commitments/change", post(supplier_commitment_original::handle))
+        .route("/api/companies/{slug}/original/supplier-commitments/match", post(supplier_commitment_original::handle))
+        .route("/api/companies/{slug}/original/supplier-commitments/matches", get(supplier_commitment_original::handle))
+        .route("/api/companies/{slug}/original/supplier-commitments/alerts", get(supplier_commitment_original::handle))
         .route("/api/companies/{slug}/original/vat/eu-service-purchase", post(vat_purchase_original::handle))
         .route("/api/companies/{slug}/original/vat/representation-purchase", post(vat_purchase_original::handle))
         .route("/api/companies/{slug}/original/vat/report", get(vat_original::handle))
@@ -1008,3 +1015,5 @@ mod exceptions_original;
 mod expense_original;
 
 mod vat_purchase_original;
+
+mod supplier_commitment_original;
