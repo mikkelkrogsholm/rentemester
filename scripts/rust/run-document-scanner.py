@@ -163,7 +163,7 @@ async function backupRecoveryPhase(action){
  throw Error('Unknown recovery phase');
 }
 async function servicePhase(action){
- if(!servicePurchase){const module=await import(process.env.RM_SERVICE_PURCHASE_HELPER);const factory=module[process.env.RM_SCANNER_PROOF_FACTORY||'createServicePurchaseProof'];need(typeof factory==='function','configured proof factory required');servicePurchase=await factory(ownerPage,base,work,memberPage,['createLocalRuntimeProof','createLocalRuntimeMcpProof','createKnowledgeScopeProof'].includes(process.env.RM_SCANNER_PROOF_FACTORY)?{owner,member}:undefined);}
+ if(!servicePurchase){const module=await import(process.env.RM_SERVICE_PURCHASE_HELPER);const factory=module[process.env.RM_SCANNER_PROOF_FACTORY||'createServicePurchaseProof'];need(typeof factory==='function','configured proof factory required');servicePurchase=await factory(ownerPage,base,work,memberPage,['createLocalRuntimeProof','createLocalRuntimeMcpProof','createKnowledgeScopeProof','createPrivacyComplianceProof'].includes(process.env.RM_SCANNER_PROOF_FACTORY)?{owner,member}:undefined);}
  if(action==='service-reopen'){await ownerPage.context().clearCookies();await login(ownerPage,owner);return servicePurchase.reopen();}
  const result=await servicePurchase[{'service-run':'run','service-hold-begin':'holdBegin','service-revoke':'revoke','service-hold-finish':'holdFinish'}[action]]();if(action==='service-run')serviceRunResult=result;return result;
 }
