@@ -110,7 +110,7 @@ fn parse(args: &[String]) -> Result<(BTreeMap<&str, &str>, Value), Output> {
                         .ok_or_else(|| usage("positive exact version required"))?
                 )
             } else if matches!(*key, "proposal" | "context") {
-                strict_json(v).map_err(|_| {
+                rentemester_client::parse_original_posting_rules_json(v).map_err(|_| {
                     usage("Expected strict inline JSON object without duplicate keys")
                 })?
             } else {
@@ -303,67 +303,4 @@ fn render(v: Value, json_mode: bool, exit: u8, op: &str) -> Output {
         stderr: if exit != 0 { text } else { String::new() },
         exit,
     }
-}
-
-struct UniqueJson(Value);
-impl<'de> serde::Deserialize<'de> for UniqueJson {
-    fn deserialize<D: serde::Deserializer<'de>>(d: D) -> Result<Self, D::Error> {
-        struct Visitor;
-        impl<'de> serde::de::Visitor<'de> for Visitor {
-            type Value = UniqueJson;
-            fn expecting(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                f.write_str("JSON without duplicate keys")
-            }
-            fn visit_bool<E: serde::de::Error>(self, v: bool) -> Result<UniqueJson, E> {
-                Ok(UniqueJson(json!(v)))
-            }
-            fn visit_i64<E: serde::de::Error>(self, v: i64) -> Result<UniqueJson, E> {
-                Ok(UniqueJson(json!(v)))
-            }
-            fn visit_u64<E: serde::de::Error>(self, v: u64) -> Result<UniqueJson, E> {
-                Ok(UniqueJson(json!(v)))
-            }
-            fn visit_f64<E: serde::de::Error>(self, v: f64) -> Result<UniqueJson, E> {
-                Ok(UniqueJson(json!(v)))
-            }
-            fn visit_str<E: serde::de::Error>(self, v: &str) -> Result<UniqueJson, E> {
-                Ok(UniqueJson(json!(v)))
-            }
-            fn visit_none<E: serde::de::Error>(self) -> Result<UniqueJson, E> {
-                Ok(UniqueJson(Value::Null))
-            }
-            fn visit_unit<E: serde::de::Error>(self) -> Result<UniqueJson, E> {
-                Ok(UniqueJson(Value::Null))
-            }
-            fn visit_seq<A: serde::de::SeqAccess<'de>>(
-                self,
-                mut a: A,
-            ) -> Result<UniqueJson, A::Error> {
-                let mut out = vec![];
-                while let Some(v) = a.next_element::<UniqueJson>()? {
-                    out.push(v.0);
-                }
-                Ok(UniqueJson(Value::Array(out)))
-            }
-            fn visit_map<A: serde::de::MapAccess<'de>>(
-                self,
-                mut a: A,
-            ) -> Result<UniqueJson, A::Error> {
-                let mut out = serde_json::Map::new();
-                while let Some(k) = a.next_key::<String>()? {
-                    if out.contains_key(&k) {
-                        return Err(serde::de::Error::custom("duplicate key"));
-                    }
-                    let v = a.next_value::<UniqueJson>()?;
-                    out.insert(k, v.0);
-                }
-                Ok(UniqueJson(Value::Object(out)))
-            }
-        }
-        d.deserialize_any(Visitor)
-    }
-}
-
-fn strict_json(s: &str) -> Result<Value, serde_json::Error> {
-    serde_json::from_str::<UniqueJson>(s).map(|v| v.0)
 }
