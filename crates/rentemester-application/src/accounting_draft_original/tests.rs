@@ -280,7 +280,7 @@ fn accounting_draft_original_exact_core_business_failure_rolls_back() {
         expected
     );
     for table in [
-        "accounting_drafts",
+        "journal_lines",
         "accounting_draft_events",
         "journal_entries",
         "audit_log",
