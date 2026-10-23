@@ -384,7 +384,10 @@ fn accounts_original_core_false_is_exact_fence_failure_and_atomic() {
     let body = br#"{"role":"bank","accountNo":"missing","confirm":true}"#;
     let input: Value = serde_json::from_slice(body).unwrap();
     let expected = {
-        let tx = f.company.transaction().unwrap();
+        let tx = f
+            .company
+            .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
+            .unwrap();
         store::execute(&tx, Operation::RoleConfirm, &input, "user:u").unwrap()
     };
     assert_eq!(expected["ok"], false);
