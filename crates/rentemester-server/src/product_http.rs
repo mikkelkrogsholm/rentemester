@@ -128,6 +128,20 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
         pdf_workers: Arc::new(Semaphore::new(4)),
     };
     Router::new()
+        .route("/api/companies/{slug}/original/dimensions/define", post(dimensions_original::handle))
+        .route("/api/companies/{slug}/original/dimensions/member", post(dimensions_original::handle))
+        .route("/api/companies/{slug}/original/dimensions/definition-lifecycle", post(dimensions_original::handle))
+        .route("/api/companies/{slug}/original/dimensions/member-lifecycle", post(dimensions_original::handle))
+        .route("/api/companies/{slug}/original/dimensions/plan", post(dimensions_original::handle))
+        .route("/api/companies/{slug}/original/dimensions/apply", post(dimensions_original::handle))
+        .route("/api/companies/{slug}/original/dimensions/replace", post(dimensions_original::handle))
+        .route("/api/companies/{slug}/original/dimensions/supersede", post(dimensions_original::handle))
+        .route("/api/companies/{slug}/original/dimensions/budget-plan", post(dimensions_original::handle))
+        .route("/api/companies/{slug}/original/dimensions/budget-apply", post(dimensions_original::handle))
+        .route("/api/companies/{slug}/original/dimensions/definitions", get(dimensions_original::handle))
+        .route("/api/companies/{slug}/original/dimensions/members", get(dimensions_original::handle))
+        .route("/api/companies/{slug}/original/dimensions/assignments", get(dimensions_original::handle))
+        .route("/api/companies/{slug}/original/dimensions/budgets", get(dimensions_original::handle))
         .route("/api/companies/{slug}/original/supplier-commitments/plan", post(supplier_commitment_original::handle))
         .route("/api/companies/{slug}/original/supplier-commitments/apply", post(supplier_commitment_original::handle))
         .route("/api/companies/{slug}/original/supplier-commitments", get(supplier_commitment_original::handle))
@@ -1017,3 +1031,5 @@ mod expense_original;
 mod vat_purchase_original;
 
 mod supplier_commitment_original;
+
+mod dimensions_original;

@@ -528,3 +528,5 @@ pub fn supersede(tx: &Transaction<'_>, input: &Supersede, actor: &str) -> Result
 #[cfg(test)]
 #[path = "dimensions_tests.rs"]
 mod tests;
+
+pub mod original;
