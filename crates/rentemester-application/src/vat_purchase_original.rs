@@ -65,13 +65,12 @@ fn parse(request: Request<'_>, operation: Operation) -> Result<Wire, Error> {
     let raw: Value = serde_json::from_slice(request.body).map_err(|_| invalid())?;
     let payload = raw["payload"].as_object().ok_or_else(invalid)?;
     for key in ["documentId", "sourceBankTransactionId"] {
-        if let Some(value) = payload.get(key) {
-            if !value
+        if let Some(value) = payload.get(key)
+            && !value
                 .as_i64()
                 .is_some_and(|n| (1..=9_007_199_254_740_991).contains(&n))
-            {
-                return Err(invalid());
-            }
+        {
+            return Err(invalid());
         }
     }
     for key in [
