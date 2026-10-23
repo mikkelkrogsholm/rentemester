@@ -35,7 +35,7 @@ fn assert_envelope(result: &Value) {
     assert_eq!(result["isError"], result["structuredContent"]["ok"] != true);
 }
 #[test]
-fn supplier_commitment_original_discovery_has_348_unique_tools_and_explicit_native_alias() {
+fn supplier_commitment_original_discovery_has_362_unique_tools_and_explicit_native_alias() {
     let rows = parsed(&run(
         "http://127.0.0.1:9",
         &[
@@ -45,10 +45,10 @@ fn supplier_commitment_original_discovery_has_348_unique_tools_and_explicit_nati
         ],
     ));
     let tools = rows[1]["result"]["tools"].as_array().unwrap();
-    assert_eq!(tools.len(), 348);
+    assert_eq!(tools.len(), 362);
     let names: std::collections::BTreeSet<_> =
         tools.iter().map(|t| t["name"].as_str().unwrap()).collect();
-    assert_eq!(names.len(), 348);
+    assert_eq!(names.len(), 362);
     for (name, read) in [
         ("supplier_commitment_plan", true),
         ("supplier_commitment_apply", false),
