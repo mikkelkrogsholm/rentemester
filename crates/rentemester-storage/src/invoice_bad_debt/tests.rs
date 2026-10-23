@@ -454,7 +454,7 @@ fn original_loss_adapter_uses_number_historical_assertions_and_exact_service_aud
 }
 
 #[test]
-fn source_created_false_expense_is_refused_by_existing_bad_debt_guard_without_effects() {
+fn accounts_original_false_expense_is_refused_by_existing_bad_debt_guard_without_effects() {
     use crate::accounts_original::{Operation, execute};
     let (mut db, id) = fixture("DKK");
     let tx = db
