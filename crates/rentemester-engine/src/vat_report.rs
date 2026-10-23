@@ -4,6 +4,9 @@ use num_bigint::BigInt;
 use serde::Serialize;
 use std::collections::{BTreeMap, BTreeSet};
 
+pub mod historical;
+
+#[derive(Clone)]
 pub struct Line {
     pub entry_id: i64,
     pub account_no: String,
@@ -106,12 +109,25 @@ fn mismatch(
         ));
     }
 }
+#[derive(Default)]
+struct Context {
+    qualified: BTreeSet<i64>,
+    representation: BTreeMap<i64, Money>,
+    input_tolerance: usize,
+    ordinary_tolerance: usize,
+    reverse_tolerance: usize,
+    entry_tolerance: BTreeMap<i64, usize>,
+    errors: Vec<String>,
+}
 pub fn build(lines: &[Line]) -> Result<Report, Error> {
+    accumulate(lines, &Context::default())
+}
+fn accumulate(lines: &[Line], context: &Context) -> Result<Report, Error> {
     let mut entries: BTreeMap<i64, Vec<&Line>> = BTreeMap::new();
     for line in lines {
         entries.entry(line.entry_id).or_default().push(line);
     }
-    let mut errors = Vec::new();
+    let mut errors = context.errors.clone();
     let mut warnings = Vec::new();
     let mut output = Money::default();
     let mut input = Money::default();
@@ -128,6 +144,9 @@ pub fn build(lines: &[Line]) -> Result<Report, Error> {
         "NON_EU_SERVICE_REVERSE_CHARGE",
         "EU_GOODS_ACQUISITION",
     ];
+    let mut correction_output = Money::default();
+    let mut correction_input = Money::default();
+    let mut correction_reverse = Money::default();
     for (id, lines) in entries {
         let has_amount = lines.iter().any(|l| l.amount_side.is_some());
         let is_settlement = has_amount
@@ -138,20 +157,29 @@ pub fn build(lines: &[Line]) -> Result<Report, Error> {
         if is_settlement {
             continue;
         }
-        if lines.iter().any(|l| l.historical) {
+        if lines.iter().any(|l| l.historical) && !context.qualified.contains(&id) {
             errors.push(format!("Postering {id}: historisk import kræver den endnu ikke porterede kildevalidering før momsangivelse"));
         }
         let mut classified = false;
         let mut expected_reverse = Money::default();
+        let mut entry_output = Money::default();
+        let mut entry_input = Money::default();
+        let mut entry_reverse = Money::default();
+        let mut entry_bases = BTreeMap::new();
         for line in &lines {
             let net = line.debit.subtract(&line.credit);
             match line.amount_side {
-                Some("input") => input.add(&net),
+                Some("input") => {
+                    input.add(&net);
+                    entry_input.add(&net);
+                }
                 Some("output") => {
                     let amount = line.credit.subtract(&line.debit);
                     output.add(&amount);
+                    entry_output.add(&amount);
                     if line.dedicated_reverse_charge {
                         allocated_reverse.add(&amount);
+                        entry_reverse.add(&amount);
                         dedicated_present.insert(id);
                     }
                 }
@@ -186,6 +214,18 @@ pub fn build(lines: &[Line]) -> Result<Report, Error> {
             } else {
                 net
             };
+            let amount = if code == "REPRESENTATION_SPECIAL" {
+                context.representation.get(&id).cloned().unwrap_or(amount)
+            } else {
+                amount
+            };
+            add_base(
+                &mut entry_bases,
+                code,
+                amount.clone(),
+                line.foreign,
+                line.exact_sales_vat.is_some(),
+            );
             if code == "OSS_EU_CONSUMER" {
                 oss_entries.insert(id);
             }
@@ -213,10 +253,83 @@ pub fn build(lines: &[Line]) -> Result<Report, Error> {
                 line.exact_sales_vat.is_some(),
             );
         }
-        if has_amount && !classified {
+        if has_amount && !classified && context.qualified.contains(&id) {
+            correction_output.add(&entry_output);
+            correction_input.add(&entry_input);
+            correction_reverse.add(&entry_reverse);
+            warnings.push(format!(
+                "Postering {id}: verified historical amount-only VAT correction included"
+            ));
+        } else if has_amount && !classified {
             errors.push(format!(
                 "Postering {id}: momskonto uden eksplicit klassificeret momsgrundlag"
             ));
+        }
+        if classified && context.qualified.contains(&id) {
+            // Learned account roles never replace reconciliation of this voucher.
+            let allowance = context.entry_tolerance.get(&id).copied().unwrap_or(0);
+            let mut expected_input = sum(&entry_bases, &["DK_PURCHASE_25"]).percent("25")?;
+            expected_input.add(&expected_reverse);
+            expected_input.add(
+                &sum(&entry_bases, &["REPRESENTATION_SPECIAL"])
+                    .percent("25")?
+                    .percent("25")?,
+            );
+            let mut expected_ordinary = sum(&entry_bases, &["DK_SALE_25"]).percent("25")?;
+            expected_ordinary =
+                expected_ordinary.subtract(&sum(&entry_bases, &["DK_BAD_DEBT_25"]).percent("25")?);
+            for line in &lines {
+                if let Some(exact) = &line.exact_sales_vat {
+                    expected_ordinary = expected_ordinary
+                        .subtract(&line.credit.subtract(&line.debit).percent("25")?);
+                    expected_ordinary.add(exact);
+                }
+            }
+            let reverse = if dedicated_present.contains(&id) {
+                entry_reverse.clone()
+            } else {
+                expected_reverse.clone()
+            };
+            mismatch(
+                &mut errors,
+                &format!("Postering {id}: købsmoms"),
+                &entry_input,
+                &expected_input,
+                tolerance(
+                    &entry_bases,
+                    &[
+                        "DK_PURCHASE_25",
+                        "REPRESENTATION_SPECIAL",
+                        "EU_SERVICE_REVERSE_CHARGE",
+                        "NON_EU_SERVICE_REVERSE_CHARGE",
+                        "EU_GOODS_ACQUISITION",
+                    ],
+                ) + allowance,
+            );
+            mismatch(
+                &mut errors,
+                &format!("Postering {id}: almindelig salgsmoms"),
+                &entry_output.subtract(&reverse),
+                &expected_ordinary,
+                tolerance(&entry_bases, &["DK_SALE_25", "DK_BAD_DEBT_25"]) + allowance,
+            );
+            mismatch(
+                &mut errors,
+                &format!("Postering {id}: udenlandske køb"),
+                &reverse,
+                &expected_reverse,
+                allowance
+                    + lines
+                        .iter()
+                        .filter(|line| {
+                            line.foreign
+                                && line
+                                    .vat_code
+                                    .as_deref()
+                                    .is_some_and(|code| reverse_codes.contains(&code))
+                        })
+                        .count(),
+            );
         }
         total_expected_reverse.add(&expected_reverse);
         if !dedicated_present.contains(&id) {
@@ -233,11 +346,15 @@ pub fn build(lines: &[Line]) -> Result<Report, Error> {
     let mut expected_ordinary = sales.subtract(&exact_sales_base).percent("25")?;
     expected_ordinary.add(&exact_sales_vat);
     expected_ordinary = expected_ordinary.subtract(&relief);
+    expected_ordinary.add(&correction_output.subtract(&correction_reverse));
+    total_expected_reverse.add(&correction_reverse);
     let mut expected_output = expected_ordinary.clone();
+    expected_output.add(&correction_reverse);
     expected_output.add(&reverse_base.percent("25")?);
     let mut expected_input = purchases.percent("25")?;
     expected_input.add(&reverse_base.percent("25")?);
     expected_input.add(&representation);
+    expected_input.add(&correction_input);
     let output_codes = [
         "DK_SALE_25",
         "DK_BAD_DEBT_25",
@@ -257,14 +374,14 @@ pub fn build(lines: &[Line]) -> Result<Report, Error> {
         "Salgsmoms stemmer ikke",
         &output,
         &expected_output,
-        tolerance(&bases, &output_codes),
+        tolerance(&bases, &output_codes) + context.ordinary_tolerance + context.reverse_tolerance,
     );
     mismatch(
         &mut errors,
         "Købsmoms stemmer ikke",
         &input,
         &expected_input,
-        tolerance(&bases, &input_codes),
+        tolerance(&bases, &input_codes) + context.input_tolerance + context.reverse_tolerance,
     );
     let ordinary = output.subtract(&allocated_reverse);
     mismatch(
@@ -272,7 +389,7 @@ pub fn build(lines: &[Line]) -> Result<Report, Error> {
         "Almindelig salgsmoms stemmer ikke",
         &ordinary,
         &expected_ordinary,
-        tolerance(&bases, &["DK_SALE_25", "DK_BAD_DEBT_25"]),
+        tolerance(&bases, &["DK_SALE_25", "DK_BAD_DEBT_25"]) + context.ordinary_tolerance,
     );
     // The dedicated category cannot be hidden by an opposite ordinary-VAT error.
     let reverse_foreign: usize = reverse_codes
@@ -285,7 +402,7 @@ pub fn build(lines: &[Line]) -> Result<Report, Error> {
         "Moms af udenlandske køb stemmer ikke",
         &allocated_reverse,
         &total_expected_reverse,
-        reverse_foreign,
+        reverse_foreign + context.reverse_tolerance,
     );
     let exempt = sum(&bases, &["DK_SALE_EXEMPT"]);
     if !exempt.is_negative()
