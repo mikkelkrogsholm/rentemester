@@ -1,5 +1,8 @@
 //! Content-addressed originals under the protected broker root. No database inode opens.
 use super::{DIRECTORY, Error, NamespaceGuard, walk};
+#[cfg(all(test, target_os = "macos"))]
+mod crash_tests;
+mod recovery;
 use crate::namespace::PublishedDocument;
 use rustix::fs::{
     AtFlags, FileType, Mode, OFlags, RenameFlags, fstat, mkdirat, openat, renameat_with, statat,
@@ -34,11 +37,12 @@ impl NamespaceGuard {
                 return Err(Error::Invalid);
             }
         }
+        self.reconcile_staging(&directory, bank)?;
         let mut names = vec![];
         for item in rustix::fs::Dir::read_from(&directory).map_err(|_| Error::Invalid)? {
             let item = item.map_err(|_| Error::Invalid)?;
             let name = item.file_name().to_str().map_err(|_| Error::Invalid)?;
-            if name == "." || name == ".." {
+            if name == "." || name == ".." || name == ".recovery" {
                 continue;
             }
             if names.len() >= crate::backup_artifact::MAX_ENTRIES {
@@ -115,6 +119,7 @@ impl NamespaceGuard {
             }
             directory = next;
         }
+        self.reconcile_staging(&directory, bank)?;
         Ok(directory)
     }
     fn read_original(&self, directory: &File, name: &str, hash: &str) -> Result<Vec<u8>, Error> {
@@ -149,8 +154,23 @@ impl NamespaceGuard {
             .take(crate::document::MAX_BYTES as u64 + 1)
             .read_to_end(&mut bytes)
             .map_err(|_| Error::Invalid)?;
+        #[cfg(all(test, target_os = "macos"))]
+        crash_tests::after_read(directory, name);
+        let final_path =
+            statat(directory, name, AtFlags::SYMLINK_NOFOLLOW).map_err(|_| Error::Changed)?;
         let after = fstat(&file).map_err(|_| Error::Invalid)?;
-        if before.st_size != after.st_size
+        if final_path.st_dev != opened.st_dev
+            || final_path.st_ino != opened.st_ino
+            || final_path.st_mode != before.st_mode
+            || final_path.st_uid != before.st_uid
+            || final_path.st_size != after.st_size
+            || final_path.st_mtime != after.st_mtime
+            || final_path.st_mtime_nsec != after.st_mtime_nsec
+            || final_path.st_ctime != after.st_ctime
+            || final_path.st_ctime_nsec != after.st_ctime_nsec
+            || final_path.st_nlink != 1
+            || after.st_nlink != 1
+            || before.st_size != after.st_size
             || before.st_mtime != after.st_mtime
             || before.st_mtime_nsec != after.st_mtime_nsec
             || before.st_ctime != after.st_ctime
@@ -245,8 +265,14 @@ impl NamespaceGuard {
                 )
                 .map_err(|_| Error::Invalid)?,
             );
+            #[cfg(all(test, target_os = "macos"))]
+            crash_tests::checkpoint("created");
             file.write_all(input.bytes()).map_err(|_| Error::Invalid)?;
+            #[cfg(all(test, target_os = "macos"))]
+            crash_tests::checkpoint("written");
             file.sync_all().map_err(|_| Error::Invalid)?;
+            #[cfg(all(test, target_os = "macos"))]
+            crash_tests::checkpoint("synced");
             let identity = fstat(&file).map_err(|_| Error::Invalid)?;
             drop(file);
             match renameat_with(
@@ -257,6 +283,8 @@ impl NamespaceGuard {
                 RenameFlags::NOREPLACE,
             ) {
                 Ok(()) => {
+                    #[cfg(all(test, target_os = "macos"))]
+                    crash_tests::checkpoint("renamed");
                     owned = Some(PublishedDocument {
                         path: path.clone(),
                         hash: input.hash().into(),
@@ -270,6 +298,8 @@ impl NamespaceGuard {
                 Err(_) => return Err(Error::Invalid),
             }
             directory.sync_all().map_err(|_| Error::Invalid)?;
+            #[cfg(all(test, target_os = "macos"))]
+            crash_tests::checkpoint("directory-synced");
             Ok(path.clone())
         })();
         let _ = unlinkat(&directory, temporary.as_str(), AtFlags::empty());
