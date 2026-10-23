@@ -698,3 +698,5 @@ pub mod liquidity_original;
 pub mod vat_original;
 
 pub mod supplier_commitment_original;
+
+pub mod dimensions_original;

@@ -172,3 +172,5 @@ pub mod mileage_original;
 pub mod vat_purchase_original;
 
 pub mod supplier_commitment_original;
+
+pub mod dimensions_original;
