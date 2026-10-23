@@ -2,6 +2,7 @@
 
 import { vi } from "bun:test";
 import { stubGlobal } from "../globals";
+import { protocolResponse } from "../protocol";
 
 export const MONTHS = [
   "jan", "feb", "mar", "apr", "maj", "jun",
@@ -51,6 +52,14 @@ export function mockFetch(routes: RouteMap) {
       const url = typeof input === "string" ? input : input.toString();
       const path = url.replace(/^https?:\/\/[^/]+/, "").split("?")[0];
       const method = (init?.method ?? "GET").toUpperCase();
+      if (method === "GET" && path === "/api/protocol") {
+        const keys = [...new Set([...Object.keys(routes), "GET /api/health"].map(key => key.split("?")[0]!))];
+        return protocolResponse({ operations: keys.map(key => {
+          const [method, route] = key.split(" ");
+          const path = route!.split("?")[0];
+          return { method, path, capability: `${method} ${path}` };
+        }) });
+      }
       const key =
         Object.keys(routes).find((k) => {
           const [m, p] = k.split(" ");

@@ -1,3 +1,4 @@
+import { protocolHeaders, ProtocolAdmissionError } from "./_protocol";
 import { ordinaryWorkspaceWriteAllowed } from "../workspace-write-mode";
 // Shared primitives for the cockpit API client.
 //
@@ -41,11 +42,22 @@ function isWrite(init?: ApiRequestOptions): boolean {
 async function fetchResponse(path: string, init?: ApiRequestOptions): Promise<Response> {
   if (!ordinaryWorkspaceWriteAllowed(path, init?.method ?? "GET", init?.readOnly)) throw new ApiError("workspace_not_active", "Workspace er skrivebeskyttet. Kontrollér flytningens aktuelle tilstand.", 423);
   const { readOnly, ...fetchOptions } = init ?? {};
+  let admission: Record<string, string>;
+  try {
+    admission = await protocolHeaders(path, init?.method ?? "GET", init?.signal);
+  } catch (cause) {
+    if (cause instanceof ProtocolAdmissionError) throw new ApiError("protocol_incompatible", cause.message, 0);
+    throw cause;
+  }
+  init?.signal?.throwIfAborted();
+  const headers = new Headers(init?.headers);
+  if (!headers.has("content-type")) headers.set("content-type", "application/json");
+  for (const [name, value] of Object.entries(admission)) headers.set(name, value);
   try {
     return await fetch(path, {
       ...fetchOptions,
       credentials: "same-origin",
-      headers: { "content-type": "application/json", ...(init?.headers ?? {}) },
+      headers,
     });
   } catch (cause) {
     if (isAborted(cause, init?.signal)) throw cause;
@@ -99,10 +111,13 @@ export async function requestBlob(path: string, init?: ApiRequestOptions): Promi
     try { body = await res.json(); } catch (cause) {
       if (isAborted(cause, init?.signal)) throw cause;
     }
+    init?.signal?.throwIfAborted();
     throw responseError(res, body, `HTTP ${res.status}`);
   }
   try {
-    return { blob: await res.blob(), headers: res.headers };
+    const blob = await res.blob();
+    init?.signal?.throwIfAborted();
+    return { blob, headers: res.headers };
   } catch (cause) {
     throw bodyReadError(res, cause, init);
   }
