@@ -15,6 +15,7 @@ mod payable_original;
 mod direct_bank_original;
 mod bank_original;
 mod bank_accounts_original;
+mod accounts_original;
 mod bank_import;
 mod bank_queries;
 mod handoff_export;
