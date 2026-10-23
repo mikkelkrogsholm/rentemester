@@ -152,15 +152,15 @@ fn conditions(v: &Value, stored: bool) -> Result<(), Error> {
             return Err(refused("canonical three-letter currency required"));
         }
     }
-    if let Some(v) = o.get("vat") {
-        if !["zero", "positive"].contains(&text(v, 8)?) {
-            return Err(refused("VAT must be zero or positive"));
-        }
+    if let Some(v) = o.get("vat")
+        && !["zero", "positive"].contains(&text(v, 8)?)
+    {
+        return Err(refused("VAT must be zero or positive"));
     }
-    if let Some(v) = o.get("reverseChargeWording") {
-        if !v.is_boolean() {
-            return Err(refused("boolean required"));
-        }
+    if let Some(v) = o.get("reverseChargeWording")
+        && !v.is_boolean()
+    {
+        return Err(refused("boolean required"));
     }
     if let Some(v) = o.get("attributes") {
         flat(v, true)?;
@@ -170,10 +170,10 @@ fn conditions(v: &Value, stored: bool) -> Result<(), Error> {
         for v in range.values() {
             cents(v)?;
         }
-        if let (Some(a), Some(b)) = (range.get("min"), range.get("max")) {
-            if greater(&cents(a)?, &cents(b)?) {
-                return Err(refused("ordered amount bounds required"));
-            }
+        if let (Some(a), Some(b)) = (range.get("min"), range.get("max"))
+            && greater(&cents(a)?, &cents(b)?)
+        {
+            return Err(refused("ordered amount bounds required"));
         }
     }
     Ok(())
@@ -233,6 +233,7 @@ fn company(tx: &Transaction<'_>) -> Result<i64, Error> {
     }
     Ok(id.unwrap())
 }
+#[allow(clippy::too_many_arguments)]
 fn append(
     tx: &Transaction<'_>,
     id: i64,
