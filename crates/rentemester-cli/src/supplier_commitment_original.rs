@@ -3,12 +3,24 @@ use crate::dated_reports::Output;
 use serde_json::{Value, json};
 use std::{collections::BTreeMap, io::IsTerminal};
 
-use rentemester_client::{SupplierCommitmentOriginalOperation as Op, validate_original_supplier_commitment};
+use rentemester_client::{
+    SupplierCommitmentOriginalOperation as Op, validate_original_supplier_commitment,
+};
 fn operation(name: &str) -> Option<Op> {
-    Some(match name { "plan"=>Op::Plan,"apply"=>Op::Apply,"list"=>Op::List,"change"=>Op::Change,"match"=>Op::Match,"matches"=>Op::Matches,"alerts"=>Op::Alerts,_=>return None })
+    Some(match name {
+        "plan" => Op::Plan,
+        "apply" => Op::Apply,
+        "list" => Op::List,
+        "change" => Op::Change,
+        "match" => Op::Match,
+        "matches" => Op::Matches,
+        "alerts" => Op::Alerts,
+        _ => return None,
+    })
 }
 pub fn accepts(args: &[String]) -> bool {
-    args.first().is_some_and(|s|s=="supplier-commitment") && args.get(1).is_some_and(|s|operation(s).is_some())
+    args.first().is_some_and(|s| s == "supplier-commitment")
+        && args.get(1).is_some_and(|s| operation(s).is_some())
 }
 pub fn help() -> Value {
     json!({"ok":true,"commands":["supplier-commitment plan --input INLINE_JSON","supplier-commitment apply --input INLINE_JSON --plan-hash HASH [--idempotency-key KEY] --confirm yes","supplier-commitment list","supplier-commitment change --id ID --action paused|ended|superseded --reason TEXT --confirm yes","supplier-commitment match --input INLINE_JSON --confirm yes","supplier-commitment matches [--id ID]","supplier-commitment alerts --as-of DATE"],"connection":"--company SLUG --server ORIGIN or --local-profile PATH; --cookie-file PATH or --service-key-file PATH; --json or --format human; optional write --actor is credential equality assertion only","compatibility":"Native source-bound hashes bind current active vendor/provenance, immutable document source bytes, requested input and previousPayloadHash. Schedule is nextDate+90 inclusive, NOT offline pure TypeScript parity. vendorSnapshot asserts current vendor NAME; omitted status is active, non-active initial status refused. vendor:<id> and document:<id> remain native identifiers.","safety":"Planning only, no accounting effects. Explicit approval, no automatic retries. Reconcile unknown writes through canonical reads; native remote aliases unchanged."})
@@ -27,8 +39,14 @@ fn parse(args: &[String]) -> Result<BTreeMap<&str, &str>, Output> {
         let (key, attached) = crate::original_args::option(&args[cursor]);
         if !matches!(
             key,
-            "--input" | "--plan-hash" | "--idempotency-key" | "--confirm"
-                | "--id" | "--action" | "--reason" | "--as-of"
+            "--input"
+                | "--plan-hash"
+                | "--idempotency-key"
+                | "--confirm"
+                | "--id"
+                | "--action"
+                | "--reason"
+                | "--as-of"
                 | "--company"
                 | "--server"
                 | "--cookie-file"
@@ -157,7 +175,11 @@ pub fn execute(args: &[String]) -> Output {
         Err(o) => return o,
     };
     let result = runtime.block_on(api.original_supplier_commitment(
-        flags["--company"], operation(&args[1]).unwrap(), &input, flags.get("--actor").copied()));
+        flags["--company"],
+        operation(&args[1]).unwrap(),
+        &input,
+        flags.get("--actor").copied(),
+    ));
     match result {
         Ok(v) => {
             let exit = if v["ok"] == true { 0 } else { 1 };
@@ -193,49 +215,150 @@ fn render(value: Value, json_mode: bool, exit: u8, operation: &str) -> Output {
             exit,
         }
     } else if exit == 0 {
+        let detail = value.get("proposal").unwrap_or(&value);
+        let mut lines = vec![format!("✔ Supplier commitment {operation}")];
+        for (key, label) in [
+            ("commitmentId", "Commitment"),
+            ("payloadHash", "Plan hash"),
+            ("idempotent", "Existing receipt"),
+        ] {
+            if let Some(scalar) = detail
+                .get(key)
+                .filter(|v| v.is_string() || v.is_number() || v.is_boolean())
+            {
+                lines.push(format!(
+                    "  {label}: {}",
+                    scalar
+                        .as_str()
+                        .map(str::to_owned)
+                        .unwrap_or_else(|| scalar.to_string())
+                ));
+            }
+        }
+        if let Some(rows) = value["rows"].as_array() {
+            lines.push(format!("  Records: {}", rows.len()));
+            for row in rows {
+                if let Some(id) = row["commitment_id"]
+                    .as_str()
+                    .or_else(|| row["commitmentId"].as_str())
+                {
+                    lines.push(format!("  {id}"));
+                }
+            }
+        }
         Output {
-            stdout: format!("Supplier commitment {operation}\n{value}\n"),
+            stdout: format!("{}\n", lines.join("\n")),
             stderr: String::new(),
             exit,
         }
     } else {
+        let mut lines = vec![format!("✘ Supplier commitment {operation} failed")];
+        if let Some(errors) = value["errors"].as_array() {
+            for error in errors.iter().filter_map(Value::as_str) {
+                lines.push(format!("  → {error}"));
+            }
+        }
         Output {
             stdout: String::new(),
-            stderr: format!("Supplier commitment {operation} failed\n{value}\n"),
+            stderr: format!("{}\n", lines.join("\n")),
             exit,
         }
     }
 }
+
 fn payload(args: &[String], flags: &BTreeMap<&str, &str>) -> Result<Value, Output> {
-    let op=operation(&args[1]).ok_or_else(||usage("Unknown supplier-commitment operation"))?;
+    let op = operation(&args[1]).ok_or_else(|| usage("Unknown supplier-commitment operation"))?;
     let allowed: &[&str] = match op {
-        Op::Plan=> &["--input"], Op::Apply=> &["--input","--plan-hash","--idempotency-key","--confirm","--actor"],
-        Op::List=> &[], Op::Change=> &["--id","--action","--reason","--confirm","--actor"],
-        Op::Match=> &["--input","--confirm","--actor"], Op::Matches=> &["--id"], Op::Alerts=> &["--as-of"],
+        Op::Plan => &["--input"],
+        Op::Apply => &[
+            "--input",
+            "--plan-hash",
+            "--idempotency-key",
+            "--confirm",
+            "--actor",
+        ],
+        Op::List => &[],
+        Op::Change => &["--id", "--action", "--reason", "--confirm", "--actor"],
+        Op::Match => &["--input", "--confirm", "--actor"],
+        Op::Matches => &["--id"],
+        Op::Alerts => &["--as-of"],
     };
     for k in flags.keys() {
-        if !allowed.contains(k) && !["--company","--server","--cookie-file","--service-key-file","--local-profile","--workspace","--json","--format","--help","--allow-loopback-http"].contains(k) {return Err(usage("Flag not allowed for this supplier-commitment operation"));}
+        if !allowed.contains(k)
+            && ![
+                "--company",
+                "--server",
+                "--cookie-file",
+                "--service-key-file",
+                "--local-profile",
+                "--workspace",
+                "--json",
+                "--format",
+                "--help",
+                "--allow-loopback-http",
+            ]
+            .contains(k)
+        {
+            return Err(usage(
+                "Flag not allowed for this supplier-commitment operation",
+            ));
+        }
     }
-    let required=|k|flags.get(k).copied().filter(|s|!s.trim().is_empty()).ok_or_else(||usage(&format!("Missing required {k}")));
-    let mut input=json!({});
-    if matches!(op,Op::Plan|Op::Apply|Op::Match) {
-        let raw=required("--input")?;
-        if raw.len()>65536 {return Err(usage("Inline JSON exceeds byte limit"));}
-        let value:Value=serde_json::from_str(raw).map_err(|_|usage("--input requires INLINE JSON, not a filename"))?;
-        if op==Op::Match {if !value.is_object() {return Err(usage("Match input must be an object"));} input=value;} else {input["commitment"]=value;}
+    let required = |k| {
+        flags
+            .get(k)
+            .copied()
+            .filter(|s| !s.trim().is_empty())
+            .ok_or_else(|| usage(&format!("Missing required {k}")))
+    };
+    let mut input = json!({});
+    if matches!(op, Op::Plan | Op::Apply | Op::Match) {
+        let raw = required("--input")?;
+        if raw.len() > 65536 {
+            return Err(usage("Inline JSON exceeds byte limit"));
+        }
+        let value: Value = serde_json::from_str(raw)
+            .map_err(|_| usage("--input requires INLINE JSON, not a filename"))?;
+        if op == Op::Match {
+            if !value.is_object() {
+                return Err(usage("Match input must be an object"));
+            }
+            input = value;
+        } else {
+            input["commitment"] = value;
+        }
     }
     match op {
-        Op::Apply=> {input["payloadHash"]=json!(required("--plan-hash")?); if let Some(k)=flags.get("--idempotency-key") {input["idempotencyKey"]=json!(k);}},
-        Op::Change=> {input=json!({"commitmentId":required("--id")?,"action":required("--action")?,"reason":required("--reason")?});},
-        Op::Matches=> {if let Some(id)=flags.get("--id") {input["commitmentId"]=json!(id);}},
-        Op::Alerts=> {input["asOf"]=json!(required("--as-of")?);},
-        _=>{},
+        Op::Apply => {
+            input["payloadHash"] = json!(required("--plan-hash")?);
+            if let Some(k) = flags.get("--idempotency-key") {
+                input["idempotencyKey"] = json!(k);
+            }
+        }
+        Op::Change => {
+            input = json!({"commitmentId":required("--id")?,"action":required("--action")?,"reason":required("--reason")?});
+        }
+        Op::Matches => {
+            if let Some(id) = flags.get("--id") {
+                input["commitmentId"] = json!(id);
+            }
+        }
+        Op::Alerts => {
+            input["asOf"] = json!(required("--as-of")?);
+        }
+        _ => {}
     }
-    if matches!(op,Op::Apply|Op::Change|Op::Match) {
-        if required("--confirm")?!="yes" {return Err(usage("--confirm yes required"));}
-        if op==Op::Match && input.get("confirm").is_some() {return Err(usage("Match confirmation belongs in --confirm yes, not input"));}
-        input["confirm"]=json!(true);
+    if matches!(op, Op::Apply | Op::Change | Op::Match) {
+        if required("--confirm")? != "yes" {
+            return Err(usage("--confirm yes required"));
+        }
+        if op == Op::Match && input.get("confirm").is_some() {
+            return Err(usage(
+                "Match confirmation belongs in --confirm yes, not input",
+            ));
+        }
+        input["confirm"] = json!(true);
     }
-    validate_original_supplier_commitment(op,&input).map_err(|e|usage(&e.to_string()))?;
+    validate_original_supplier_commitment(op, &input).map_err(|e| usage(&e.to_string()))?;
     Ok(input)
 }
