@@ -472,7 +472,12 @@ def main():
                     raise RuntimeError('Fresh restore only; refuse overwrite')
                 argv += ['--restore-backup', str(work / 'scanner-source.native-backup.json'), '--trusted-backup-key', str(work / 'trusted.pub'), '--confirm-target', str(root), '--source-unavailable']
             log = (work / 'server.log').open('ab')
-            child = subprocess.Popen(argv, cwd=REPO, stdin=subprocess.DEVNULL, stdout=log, stderr=log)
+            product_env = None
+            if args.native_cli_candidate:
+                product_env = {key: value for key, value in os.environ.items()
+                               if not re.search(r'BUN|NODE|FALLBACK|LEGACY|RENTEMESTER|^RM_', key)}
+                product_env['PATH'] = str(work / 'empty-path')
+            child = subprocess.Popen(argv, cwd=REPO, env=product_env, stdin=subprocess.DEVNULL, stdout=log, stderr=log)
             report.setdefault('serverPids', []).append(child.pid)
             save()
             for _ in range(300):
