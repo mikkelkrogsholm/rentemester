@@ -1,4 +1,4 @@
-//! Reviewed domestic purchase-rule proofs. No VAT calculation, journal write or implied fallback.
+//! Reviewed purchase-rule proofs. No VAT calculation, journal write or implied fallback.
 use crate::{
     accounting_drafts, invalid,
     posting_rules::{Conditions, Outcome},
@@ -94,7 +94,7 @@ fn approved(tx: &Connection, r: &Rule, cutoff: &str) -> Result<bool, Error> {
     Ok(state.as_deref() == Some("approved"))
 }
 fn outcome(tx: &Transaction<'_>, o: &Outcome, date: &str) -> Result<Value, Error> {
-    let treatment=o.vat_treatment.as_deref().filter(|s|["standard","exempt","non_deductible"].contains(s)).ok_or_else(||refused("rule has no supported explicit purchase VAT outcome; bank hints are not purchase authority"))?;
+    let treatment=o.vat_treatment.as_deref().filter(|s|["standard","exempt","non_deductible","representation","reverse_charge","eu_goods_acquisition"].contains(s)).ok_or_else(||refused("rule has no supported explicit purchase VAT outcome; bank hints are not purchase authority"))?;
     let active:bool=tx.query_row("SELECT EXISTS(SELECT 1 FROM accounts WHERE account_no=?1 AND type='expense' AND active=1)",[&o.account],|r|r.get(0)).map_err(invalid)?;
     if !active {
         return Err(refused("rule expense account is unavailable or inactive"));
@@ -167,10 +167,12 @@ pub fn inspect(
         _ => reasons.push("valid original purchase metadata is unavailable".into()),
     }
     if !["purchase_sale", "cash_register_receipt"].contains(&kind.as_str())
-        || currency != "DKK"
-        || bank_currency != "DKK"
+        || rentemester_engine::currency::Currency::parse(&currency).is_err()
+        || rentemester_engine::currency::Currency::parse(&bank_currency).is_err()
     {
-        reasons.push("only explicit DKK purchase invoice/receipt evidence is supported".into())
+        reasons.push(
+            "explicit canonical currency and purchase invoice/receipt evidence required".into(),
+        )
     }
     if let Err(error) = crate::invoice_extraction::require_completed_or_absent(tx, document_id) {
         if error.code != "EXTRACTION_NEEDS_RESOLUTION" {
@@ -244,6 +246,16 @@ pub fn inspect(
                     if expected.is_some() && expected != actual {
                         mismatch.push(format!("{label} did not match exactly"))
                     }
+                }
+                if c.reverse_charge_wording.is_some()
+                    && c.reverse_charge_wording
+                        != metadata
+                            .as_ref()
+                            .and_then(|m| m.reverse_charge_wording_confirmed)
+                {
+                    mismatch.push(
+                        "reverseChargeWording did not match immutable metadata exactly".into(),
+                    );
                 }
                 if c.attributes
                     .as_ref()

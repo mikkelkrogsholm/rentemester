@@ -1,4 +1,4 @@
-//! Bounded provider-free DKK purchase proof. Physical originals and current grants
+//! Bounded provider-free canonical purchase proof. Physical originals and current grants
 //! remain the caller's held Owner fence; this module never opens files or commits.
 use crate::expense;
 use rentemester_engine::{Error, document, fiscal_year::Date, manual_journal};
@@ -61,32 +61,55 @@ fn canonical_input(
         text: None,
     }
 }
-fn ready(tx: &Transaction<'_>, input: &expense::Input, latest: Date) -> Result<Value, Error> {
-    if !["standard", "exempt", "non_deductible"]
-        .contains(&input.vat_treatment.as_deref().unwrap_or(""))
+fn ready(
+    tx: &Transaction<'_>,
+    input: &expense::Input,
+    latest: Date,
+    now: &str,
+) -> Result<Value, Error> {
+    if ![
+        "standard",
+        "exempt",
+        "non_deductible",
+        "representation",
+        "reverse_charge",
+        "eu_goods_acquisition",
+    ]
+    .contains(&input.vat_treatment.as_deref().unwrap_or(""))
     {
         return Err(fail(
             "unsupported native batch VAT treatment; human review required",
         ));
     }
     let meta = expense::metadata(tx, input.document_id)?;
-    if meta.currency() != "DKK"
-        || !["purchase_sale", "cash_register_receipt"].contains(&meta.kind())
-    {
+    if !["purchase_sale", "cash_register_receipt"].contains(&meta.kind()) {
         return Err(fail(
-            "native batch purchase proof supports DKK purchase invoices and cash receipts only",
+            "native batch purchase proof requires purchase invoices or cash receipts",
         ));
     }
     let supplier = document::supplier(
         meta.sender
             .as_ref()
-            .ok_or_else(|| fail("documented Danish supplier required"))?,
+            .ok_or_else(|| fail("documented supplier required"))?,
     )?;
-    if supplier.kind != "dk_cvr" || supplier.country != "DK" {
-        return Err(fail(
-            "EU, non-EU and unresolved supplier VAT families require separate authoritative evidence; not supported by this slice",
-        ));
-    }
+    let classification = match supplier.kind.as_str() {
+        "dk_cvr" => "DK",
+        "eu_vat" => "EU",
+        "non_eu" => "NON_EU",
+        _ => return Err(fail("resolved supplier required")),
+    };
+    let cache = if classification == "EU" {
+        Some(crate::vies::require(
+            tx,
+            supplier
+                .identifier
+                .as_deref()
+                .ok_or_else(|| fail("EU supplier identifier required"))?,
+            now,
+        )?)
+    } else {
+        None
+    };
     let identity: (Option<String>,Option<String>,Option<String>,Option<String>) = tx.query_row(
         "SELECT sender_vat_cvr,supplier_country_code,supplier_identifier_kind,supplier_identity_status FROM documents WHERE id=?1",[input.document_id],|r|Ok((r.get(0)?,r.get(1)?,r.get(2)?,r.get(3)?))).map_err(sql)?;
     let persisted = document::supplier(&document::Party {
@@ -117,17 +140,7 @@ fn ready(tx: &Transaction<'_>, input: &expense::Input, latest: Date) -> Result<V
             "purchase already has a posting application; reconcile its original receipt",
         ));
     }
-    let bank_currency: String = tx
-        .query_row(
-            "SELECT currency FROM bank_transactions WHERE id=?1",
-            [input.bank_transaction_id],
-            |r| r.get(0),
-        )
-        .map_err(sql)?;
-    if bank_currency != "DKK" {
-        return Err(fail("native batch requires a DKK bank source"));
-    }
-    let prepared = expense::prepare(tx, input)?;
+    let prepared = expense::prepare_at(tx, input, now)?;
     let version = crate::journal_preview::manual_journal_rule_version()?;
     let facts = crate::journal_preview::collect_facts(tx, &prepared.request, latest)?;
     let validation = manual_journal::validate(
@@ -149,18 +162,62 @@ fn ready(tx: &Transaction<'_>, input: &expense::Input, latest: Date) -> Result<V
         "bankAccount":rows(tx,"SELECT * FROM bank_accounts WHERE id=(SELECT bank_account_id FROM bank_transactions WHERE id=?1)", &[&input.bank_transaction_id])?,
         "accounts":rows(tx,"SELECT * FROM accounts WHERE account_no IN (SELECT value FROM json_each(?1)) ORDER BY account_no", &[&serde_json::to_string(&prepared.request.lines.iter().map(|l|l.account_no.as_str().to_owned()).collect::<Vec<_>>()).map_err(|_|fail("invalid account proof"))?])?,
         "roles":rows(tx,"SELECT * FROM account_role_mappings WHERE role IN ('input_vat','bank') ORDER BY role", &[])?,
-        "company":rows(tx,"SELECT * FROM companies WHERE id=1", &[])?,
+        "company":rows(tx,"SELECT * FROM companies ORDER BY id", &[])?,
         "periods":rows(tx,"SELECT * FROM accounting_periods ORDER BY id", &[])?,
         "documentJournals":rows(tx,"SELECT * FROM journal_entries WHERE document_id=?1 ORDER BY id", &[&input.document_id])?,
         "bankLinks":rows(tx,"SELECT * FROM bank_journal_reconciliations WHERE bank_transaction_id=?1 ORDER BY reconciliation_id", &[&input.bank_transaction_id])?
     });
-    let mut result = json!({"format":"rentemester-native-purchase-vat/1","ok":true,"ready":true,
+    let foreign = meta.currency() != "DKK" || classification != "DK";
+    let mut proof = proof;
+    if foreign {
+        proof["vies"] = json!(cache);
+        proof["extraction"] = json!(crate::invoice_extraction::inspect(tx, input.document_id)?);
+        proof["roles"] = rows(
+            tx,
+            "SELECT * FROM account_role_mappings WHERE role IN ('input_vat','bank','reverse_charge_vat') ORDER BY role",
+            &[],
+        )?;
+        proof["partyLinks"] = rows(
+            tx,
+            "SELECT * FROM current_document_party_links WHERE document_id=?1 ORDER BY id",
+            &[&input.document_id],
+        )?;
+        proof["partyResolution"] = rows(
+            tx,
+            "SELECT * FROM current_document_party_resolution_events WHERE document_id=?1 ORDER BY id",
+            &[&input.document_id],
+        )?;
+    }
+    let mut result = json!({"format":if foreign {"rentemester-native-purchase-vat/2"} else {"rentemester-native-purchase-vat/1"},"ok":true,"ready":true,
         "documentId":input.document_id,"bankTransactionId":input.bank_transaction_id,
         "account":input.expense_account_no,"vatTreatment":input.vat_treatment,
-        "classification":"DK","wouldCallProvider":false,"errors":[],"latestAllowedDate":latest,
+        "classification":classification,"wouldCallProvider":false,"errors":[],"latestAllowedDate":latest,
         "sourceProof":proof,"plan":{"request":prepared.request,"ruleVersion":version,
         "grossAmount":prepared.gross.decimal(),"netAmount":prepared.net.decimal(),
         "vatAmount":prepared.deductible.decimal(),"grossAmountDkk":prepared.basis.gross_dkk.decimal()}});
+    if foreign {
+        result["country"] = json!(supplier.country);
+        result["providerStatus"] = json!(if cache.is_some() {
+            "valid"
+        } else {
+            "not_required"
+        });
+        if let Some(cache) = &cache {
+            result["validatedAt"] = cache["validatedAt"].clone();
+            result["evidenceExpiresAt"] = cache["expiresAt"].clone();
+            let raw = cache["rawResponse"]
+                .as_str()
+                .and_then(|s| serde_json::from_str::<Value>(s).ok());
+            result["providerReference"] = raw
+                .as_ref()
+                .and_then(|r| r.get("reference").or_else(|| r.get("requestIdentifier")))
+                .cloned()
+                .unwrap_or(Value::Null);
+        }
+        if let Some(source) = prepared.basis.rate_source {
+            result["plan"]["rateSource"] = json!(source);
+        }
+    }
     result["proofHash"] = json!(format!(
         "{:x}",
         Sha256::digest(serde_json::to_vec(&result).map_err(|_| fail("invalid proof"))?)
@@ -169,18 +226,20 @@ fn ready(tx: &Transaction<'_>, input: &expense::Input, latest: Date) -> Result<V
 }
 /// Pure selected-source inspection. Unsupported business evidence is explicit, not
 /// an empty success. Malformed/unavailable storage remains a hard error.
-pub fn inspect(
+pub fn inspect_at(
     tx: &Transaction<'_>,
     document_id: i64,
     bank_transaction_id: i64,
     account: &str,
     vat_treatment: &str,
     latest: Date,
+    now: &str,
 ) -> Result<Value, Error> {
     match ready(
         tx,
         &canonical_input(document_id, bank_transaction_id, account, vat_treatment),
         latest,
+        now,
     ) {
         Ok(proof) => Ok(proof),
         Err(error) if error.code != "storage_failure" => Ok(
@@ -191,13 +250,14 @@ pub fn inspect(
 }
 /// All effects belong to the caller-owned outer transaction. Returning Err MUST
 /// roll back that whole transaction, including successful earlier batch items.
-pub fn apply(
+pub fn apply_at(
     tx: &Transaction<'_>,
     input: &expense::Input,
     expected: &Value,
     application_key: &str,
     actor: &str,
     latest: Date,
+    now: &str,
 ) -> Result<Value, Error> {
     if application_key.trim() != application_key
         || application_key.is_empty()
@@ -223,13 +283,14 @@ pub fn apply(
             treatment,
         ),
         latest,
+        now,
     )?;
     if &current != expected {
         return Err(fail(
             "purchase VAT source proof is stale or not ready; re-plan and review",
         ));
     }
-    let actual = expense::prepare(tx, input)?;
+    let actual = expense::prepare_at(tx, input, now)?;
     if serde_json::to_value(&actual.request).map_err(|_| fail("invalid purchase request"))?
         != current["plan"]["request"]
     {
@@ -237,18 +298,53 @@ pub fn apply(
             "purchase input differs from reviewed exact monetary plan",
         ));
     }
-    let mut result = expense::post(tx, input, subject, latest)?;
+    let mut result = expense::post_at(tx, input, subject, latest, now)?;
     let document_id = input.document_id;
     let sender = expense::metadata(tx, document_id)?
         .sender
         .ok_or_else(|| fail("supplier disappeared"))?;
     let supplier = document::supplier(&sender)?;
-    tx.execute("INSERT INTO vat_validation_events(document_id,event_type,supplier_country_code,supplier_identifier,classification,provider_status,actor,detail_json,created_at) VALUES(?1,'preflight_passed','DK',?2,'DK','local',?3,?4,strftime('%Y-%m-%dT%H:%M:%fZ','now'))",params![document_id,supplier.identifier,actor,serde_json::to_string(&current).map_err(|_|fail("invalid stored VAT proof"))?]).map_err(sql)?;
+    tx.execute("INSERT INTO vat_validation_events(document_id,event_type,supplier_country_code,supplier_identifier,classification,provider_status,actor,detail_json,evidence_expires_at,created_at) VALUES(?1,'preflight_passed',?5,?2,?6,?7,?3,?4,?8,strftime('%Y-%m-%dT%H:%M:%fZ','now'))",params![document_id,supplier.identifier,actor,serde_json::to_string(&current).map_err(|_|fail("invalid stored VAT proof"))?,supplier.country,current["classification"].as_str(),current["providerStatus"].as_str().unwrap_or("local"),current["evidenceExpiresAt"].as_str()]).map_err(sql)?;
     let vat_id = tx.last_insert_rowid();
     tx.execute("INSERT INTO purchase_posting_applications(document_id,application_key,journal_entry_id,bank_transaction_id,status) VALUES(?1,?2,?3,?4,'posted')",params![document_id,application_key,result["entryId"].as_i64().ok_or_else(||fail("journal result missing entry ID"))?,input.bank_transaction_id]).map_err(sql)?;
     result["vatPreflightId"] = json!(vat_id);
     result["purchaseApplicationId"] = json!(tx.last_insert_rowid());
     Ok(result)
+}
+
+fn wall_clock(tx: &Transaction<'_>) -> Result<String, Error> {
+    tx.query_row("SELECT strftime('%Y-%m-%dT%H:%M:%fZ','now')", [], |r| {
+        r.get(0)
+    })
+    .map_err(sql)
+}
+pub fn inspect(
+    tx: &Transaction<'_>,
+    document: i64,
+    bank: i64,
+    account: &str,
+    treatment: &str,
+    latest: Date,
+) -> Result<Value, Error> {
+    inspect_at(
+        tx,
+        document,
+        bank,
+        account,
+        treatment,
+        latest,
+        &wall_clock(tx)?,
+    )
+}
+pub fn apply(
+    tx: &Transaction<'_>,
+    input: &expense::Input,
+    expected: &Value,
+    key: &str,
+    actor: &str,
+    latest: Date,
+) -> Result<Value, Error> {
+    apply_at(tx, input, expected, key, actor, latest, &wall_clock(tx)?)
 }
 
 #[cfg(test)]
@@ -488,13 +584,18 @@ mod tests {
             tx.total_changes(),
             "deferred readonly inspection must not write"
         );
-        for treatment in ["reverse_charge", "representation", "eu_goods_acquisition"] {
+        for treatment in ["reverse_charge", "eu_goods_acquisition"] {
             let before = tx.total_changes();
             let blocked = inspect(&tx, 1, 1, "X", treatment, horizon()).unwrap();
             assert_eq!(blocked["ready"], false);
             assert!(!blocked["errors"].as_array().unwrap().is_empty());
             assert_eq!(before, tx.total_changes());
         }
+        let representation = inspect(&tx, 1, 1, "X", "representation", horizon()).unwrap();
+        assert_eq!(
+            representation["ready"], true,
+            "canonical representation supported: {representation}"
+        );
         tx.execute(
             "UPDATE documents SET supplier_identity_status='human_resolution_required' WHERE id=1",
             [],

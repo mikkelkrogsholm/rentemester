@@ -44,6 +44,8 @@ pub struct Conditions {
     pub supplier_vat: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub vat: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub reverse_charge_wording: Option<bool>,
 }
 #[derive(Deserialize, serde::Serialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -128,7 +130,7 @@ pub fn change(
             || p.conditions
                 .supplier_country
                 .as_deref()
-                .is_some_and(|s| s != "DK")
+                .is_some_and(|s| s.len() != 2 || !s.bytes().all(|b| b.is_ascii_uppercase()))
             || p.conditions
                 .vat
                 .as_deref()
@@ -138,11 +140,17 @@ pub fn change(
                 "unsupported purchase rule condition; explicit DKK domestic purchase review required",
             ));
         }
-        if p.outcome
-            .vat_treatment
-            .as_deref()
-            .is_some_and(|s| !["standard", "exempt", "non_deductible"].contains(&s))
-        {
+        if p.outcome.vat_treatment.as_deref().is_some_and(|s| {
+            ![
+                "standard",
+                "exempt",
+                "non_deductible",
+                "representation",
+                "reverse_charge",
+                "eu_goods_acquisition",
+            ]
+            .contains(&s)
+        }) {
             return Err(refused("unsupported purchase VAT treatment"));
         }
         if let Some(dimensions) = &p.outcome.dimensions {
@@ -161,9 +169,7 @@ pub fn change(
                 return Err(refused("ordered dates required"));
             }
         }
-        if p.conditions.currency != "DKK" {
-            return Err(refused("native bank rule hints currently support DKK only"));
-        }
+        rentemester_engine::currency::Currency::parse(&p.conditions.currency)?;
         let valid: bool = tx
             .query_row(
                 "SELECT EXISTS(SELECT 1 FROM accounts WHERE account_no=?1 AND active=1)",

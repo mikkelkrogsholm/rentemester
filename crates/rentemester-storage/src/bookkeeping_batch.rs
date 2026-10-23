@@ -1,4 +1,8 @@
-//! Native atomic_v1 batches. Every write below belongs to the caller's ONE company transaction.
+//! Native atomic_v1 batches.
+//! #696 semantic correction: the original TS candidate universe omitted foreign
+//! documents. This workbench deliberately includes them (even unready sources),
+//! valuing only through canonical expense_fx and admitting only reviewed proofs.
+//! Historical receipts/proofs are not reinterpreted. Every write below belongs to the caller's ONE company transaction.
 //! Legacy unversioned revisions remain inspectable and are never resumed by this writer.
 use rentemester_engine::{
     Error,
@@ -14,7 +18,7 @@ mod checks;
 mod tests;
 mod workbench;
 pub use checks::final_checks;
-pub use workbench::read as workbench;
+pub use workbench::{read as workbench, read_at as workbench_at};
 fn fail(s: impl Into<String>) -> Error {
     wire::refused(s)
 }
@@ -132,7 +136,7 @@ fn universe(tx: &Transaction<'_>, s: &Scope) -> Result<Value, Error> {
     )?;
     let docs = rows(
         tx,
-        "SELECT d.* FROM documents d WHERE d.document_type='purchase_sale' AND d.currency='DKK' AND NOT EXISTS(SELECT 1 FROM journal_entries je WHERE je.document_id=d.id AND je.status='posted') ORDER BY d.id",
+        "SELECT d.* FROM documents d WHERE d.document_type='purchase_sale' AND NOT EXISTS(SELECT 1 FROM journal_entries je WHERE je.document_id=d.id AND je.status='posted') ORDER BY d.id",
         [],
     )?;
     let ledger = rows(
@@ -148,6 +152,14 @@ fn universe(tx: &Transaction<'_>, s: &Scope) -> Result<Value, Error> {
         ("roles", "SELECT * FROM account_role_mappings ORDER BY role"),
         ("periods", "SELECT * FROM accounting_periods ORDER BY id"),
         ("rules", "SELECT * FROM posting_rule_versions ORDER BY id"),
+        (
+            "ruleLifecycle",
+            "SELECT * FROM posting_rule_lifecycle_events ORDER BY id",
+        ),
+        (
+            "dimensionDefinitions",
+            "SELECT * FROM current_accounting_dimension_definitions ORDER BY dimension_id",
+        ),
         (
             "enrichments",
             "SELECT * FROM document_metadata_enrichments ORDER BY document_id",
@@ -189,7 +201,13 @@ fn date_distance_near(a: &str, b: &str) -> bool {
         _ => false,
     }
 }
-pub fn plan(tx: &Transaction<'_>, s: &Scope, latest: Date, today: &str) -> Result<Value, Error> {
+pub fn plan_at(
+    tx: &Transaction<'_>,
+    s: &Scope,
+    latest: Date,
+    today: &str,
+    now: &str,
+) -> Result<Value, Error> {
     s.validate()?;
     crate::validate(tx)?;
     let company: i64 = tx
@@ -207,12 +225,44 @@ pub fn plan(tx: &Transaction<'_>, s: &Scope, latest: Date, today: &str) -> Resul
     let mut choices = vec![];
     for bank in banks.iter().filter(|b| b["reconciliation_id"].is_null()) {
         let mut matches = vec![];
-        if bank["currency"] == "DKK" && money(&bank["amount"])?.is_negative() {
+        if money(&bank["amount"])?.is_negative() {
             for doc in docs {
-                let Ok(gross) = money(&doc["amount_inc_vat"]) else {
-                    continue;
+                let gross = money(&doc["amount_inc_vat"]).ok();
+                let amount = money(&bank["amount"])?;
+                let amount_dkk = if bank["amount_dkk"].is_null() {
+                    None
+                } else {
+                    money(&bank["amount_dkk"]).ok()
                 };
-                if gross != Money::default().subtract(&money(&bank["amount"])?) {
+                let rate = if bank["fx_rate_to_dkk"].is_null() {
+                    None
+                } else {
+                    rentemester_engine::fx::FxRate::parse(&canonical(&bank["fx_rate_to_dkk"])).ok()
+                };
+                let valuation = gross
+                    .as_ref()
+                    .ok_or_else(|| fail("missing original gross"))
+                    .and_then(|gross| {
+                        rentemester_engine::expense_fx::resolve(
+                            doc["currency"].as_str().unwrap_or(""),
+                            gross,
+                            rentemester_engine::expense_fx::Payment {
+                                currency: bank["currency"].as_str().unwrap_or(""),
+                                amount: &amount,
+                                amount_dkk: amount_dkk.as_ref(),
+                                rate: rate.as_ref(),
+                            },
+                        )
+                    });
+                // Foreign missing/invalid FX remains visible with its linked original;
+                // only canonical preparation can make it actionable.
+                if valuation.is_err()
+                    && doc["currency"] == "DKK"
+                    && bank["currency"] == "DKK"
+                    && gross
+                        .as_ref()
+                        .is_some_and(|g| *g != Money::default().subtract(&amount))
+                {
                     continue;
                 }
                 let bank_text = ["text", "reference", "counterparty_name", "message"]
@@ -262,13 +312,14 @@ pub fn plan(tx: &Transaction<'_>, s: &Scope, latest: Date, today: &str) -> Resul
             let as_of = today;
             let rule = crate::purchase_rules::inspect(tx, doc_id, bank_id, as_of)?;
             let vat = if rule["decision"] == "proposed" {
-                crate::purchase_vat::inspect(
+                crate::purchase_vat::inspect_at(
                     tx,
                     doc_id,
                     bank_id,
                     text(&rule["outcome"], "account")?,
                     text(&rule["outcome"], "vatTreatment")?,
                     latest,
+                    now,
                 )?
             } else {
                 json!({"ok":false,"ready":false,"errors":["Explicit applicable independently reviewed purchase/VAT rule required"]})
@@ -300,15 +351,16 @@ fn event(
     tx.execute("INSERT INTO bookkeeping_batch_events(run_id,event_type,plan_hash,actor,detail_json,created_at) VALUES(?1,?2,?3,?4,?5,strftime('%Y-%m-%dT%H:%M:%fZ','now'))",params![run,kind,hash,actor,canonical(detail)]).map_err(sql)?;
     Ok(())
 }
-pub fn persist(
+pub fn persist_at(
     tx: &Transaction<'_>,
     i: &Persist,
     subject: &str,
     latest: Date,
     today: &str,
+    now: &str,
 ) -> Result<Value, Error> {
     i.validate()?;
-    let p = plan(tx, &i.scope(), latest, today)?;
+    let p = plan_at(tx, &i.scope(), latest, today, now)?;
     if p["planHash"] != i.expected_plan_hash {
         return Err(fail(
             "reviewed plan changed; read and review current complete plan",
@@ -423,12 +475,13 @@ fn saved(rev: &Value) -> Result<Value, Error> {
     }
     Ok(p)
 }
-pub fn approve(
+pub fn approve_at(
     tx: &Transaction<'_>,
     i: &Exact,
     subject: &str,
     latest: Date,
     today: &str,
+    now: &str,
 ) -> Result<Value, Error> {
     let rev = revision(tx, i)?;
     let reviewed = saved(&rev)?;
@@ -438,9 +491,6 @@ pub fn approve(
         ));
     }
     let existing:bool=tx.query_row("SELECT EXISTS(SELECT 1 FROM bookkeeping_batch_revision_approvals WHERE revision_id=?1 AND principal_kind='user' AND principal_subject_id=?2)",params![number(&rev,"id")?,subject],|r|r.get(0)).map_err(sql)?;
-    if existing {
-        return Ok(json!({"ok":true,"state":status(tx,i.run_id)?}));
-    }
     let scope = Scope {
         accounting_from: text(&reviewed, "accountingFrom")?.into(),
         accounting_to: text(&reviewed, "accountingTo")?.into(),
@@ -448,10 +498,13 @@ pub fn approve(
         bank_to: text(&reviewed, "bankTo")?.into(),
         company_id: reviewed["companyId"].as_i64(),
     };
-    if plan(tx, &scope, latest, today)? != reviewed {
+    if plan_at(tx, &scope, latest, today, now)? != reviewed {
         return Err(fail(
             "Complete candidate universe or reviewed evidence changed; review a fresh plan before approval",
         ));
+    }
+    if existing {
+        return Ok(json!({"ok":true,"state":status(tx,i.run_id)?}));
     }
     let actor = format!("user:{subject}");
     let n=tx.execute("INSERT INTO bookkeeping_batch_revision_approvals(revision_id,principal_kind,principal_subject_id,actor,created_at) SELECT ?1,'user',?2,?3,strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE NOT EXISTS(SELECT 1 FROM bookkeeping_batch_revision_approvals WHERE revision_id=?1 AND principal_kind='user' AND principal_subject_id=?2)",params![number(&rev,"id")?,subject,actor]).map_err(sql)?;
@@ -622,12 +675,13 @@ fn replay(
         json!({"ok":true,"runId":i.run_id,"planHash":i.plan_hash,"results":results,"checks":projected_checks,"applyAttemptId":attempts[0]["id"],"duplicate":true,"state":status(tx,i.run_id)?}),
     ))
 }
-pub fn apply(
+pub fn apply_at(
     tx: &Transaction<'_>,
     i: &Exact,
     subject: &str,
     latest: Date,
     today: &str,
+    now: &str,
 ) -> Result<Value, Error> {
     let rev = revision(tx, i)?;
     let p = saved(&rev)?;
@@ -645,7 +699,7 @@ pub fn apply(
         bank_to: text(&p, "bankTo")?.into(),
         company_id: p["companyId"].as_i64(),
     };
-    let current = plan(tx, &scope, latest, today)?;
+    let current = plan_at(tx, &scope, latest, today, now)?;
     if current != p {
         return Err(fail(
             "Complete candidate universe or reviewed evidence changed; persist and independently review a new revision",
@@ -703,13 +757,14 @@ pub fn apply(
             transaction_date: None,
             text: None,
         };
-        let posted = crate::purchase_vat::apply(
+        let posted = crate::purchase_vat::apply_at(
             tx,
             &input,
             &item["detail"]["vat"],
             &format!("{key}:purchase"),
             &actor,
             latest,
+            now,
         )?;
         let entry = number(&posted, "entryId")?;
         let dimensions = assign_dimensions(
@@ -888,3 +943,42 @@ pub fn validate_backup(db: &Connection) -> Result<(), Error> {
     }
     Ok(())
 }
+
+fn wall_clock(tx: &Transaction<'_>) -> Result<String, Error> {
+    tx.query_row("SELECT strftime('%Y-%m-%dT%H:%M:%fZ','now')", [], |r| {
+        r.get(0)
+    })
+    .map_err(sql)
+}
+pub fn plan(tx: &Transaction<'_>, s: &Scope, latest: Date, today: &str) -> Result<Value, Error> {
+    plan_at(tx, s, latest, today, &wall_clock(tx)?)
+}
+pub fn persist(
+    tx: &Transaction<'_>,
+    i: &Persist,
+    subject: &str,
+    latest: Date,
+    today: &str,
+) -> Result<Value, Error> {
+    persist_at(tx, i, subject, latest, today, &wall_clock(tx)?)
+}
+pub fn approve(
+    tx: &Transaction<'_>,
+    i: &Exact,
+    subject: &str,
+    latest: Date,
+    today: &str,
+) -> Result<Value, Error> {
+    approve_at(tx, i, subject, latest, today, &wall_clock(tx)?)
+}
+pub fn apply(
+    tx: &Transaction<'_>,
+    i: &Exact,
+    subject: &str,
+    latest: Date,
+    today: &str,
+) -> Result<Value, Error> {
+    apply_at(tx, i, subject, latest, today, &wall_clock(tx)?)
+}
+#[cfg(test)]
+mod workbench696;

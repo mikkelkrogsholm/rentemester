@@ -12,12 +12,13 @@ const STATUSES: [&str; 9] = [
     "stalePlan",
     "applyFailed",
 ];
-pub fn read(
+pub fn read_at(
     tx: &Transaction<'_>,
     input: &WorkbenchInput,
     latest: Date,
     today: &str,
     period_close: Value,
+    now: &str,
 ) -> Result<Value, Error> {
     crate::document_party_links::validate_backup(tx)?;
     input.validate()?;
@@ -28,7 +29,7 @@ pub fn read(
     {
         return Err(fail("invalid workbench status"));
     }
-    let plan = plan(tx, &input.scope(), latest, today)?;
+    let plan = plan_at(tx, &input.scope(), latest, today, now)?;
     let banks = plan["sourceIdentities"]["candidateUniverse"]["banks"]
         .as_array()
         .unwrap();
@@ -175,7 +176,7 @@ pub fn read(
     let state = if total == 0 { "zero" } else { "available" };
     let source_hash = hash(&json!({"planHash":plan["planHash"],"periodClose":period_close}));
     checked_plan(
-        json!({"ok":true,"workbench":{"scope":{"from":input.from,"to":input.to,"cutOverDate":cutover},"state":state,"completeness":{"state":state,"reasonCode":if total==0{"no_unmatched_bank_rows"}else{"complete_native_supported_purchase_slice"},"nextAction":"Review visible blockers; supported native DKK purchase proof only"},"rows":page,"page":{"cursor":cursor,"limit":limit,"total":selection_total,"nextCursor":next},"counts":counts,"population":{"total":total,"ready":ready,"blockers":total-ready},"selection":{"total":selection_total,"ready":selection_ready,"blockers":selection_total-selection_ready},"staleSources":stale,"sourceHash":source_hash,"periodClose":period_close,"plan":{"planHash":plan["planHash"],"candidateSetHash":plan["candidateSetHash"],"readyCount":plan["items"].as_array().unwrap().iter().filter(|i|i["partition"]=="ready").count()}}}),
+        json!({"ok":true,"workbench":{"scope":{"from":input.from,"to":input.to,"cutOverDate":cutover},"state":state,"completeness":{"state":state,"reasonCode":if total==0{"no_unmatched_bank_rows"}else{"complete_native_supported_purchase_slice"},"nextAction":"Review visible blockers; canonical current purchase/VAT/FX evidence required"},"rows":page,"page":{"cursor":cursor,"limit":limit,"total":selection_total,"nextCursor":next},"counts":counts,"population":{"total":total,"ready":ready,"blockers":total-ready},"selection":{"total":selection_total,"ready":selection_ready,"blockers":selection_total-selection_ready},"staleSources":stale,"sourceHash":source_hash,"periodClose":period_close,"plan":{"planHash":plan["planHash"],"candidateSetHash":plan["candidateSetHash"],"readyCount":plan["items"].as_array().unwrap().iter().filter(|i|i["partition"]=="ready").count()}}}),
     )
 }
 fn stale_sources(tx: &Transaction<'_>, current: &Value) -> Result<Vec<Value>, Error> {
@@ -208,4 +209,14 @@ fn stale_sources(tx: &Transaction<'_>, current: &Value) -> Result<Vec<Value>, Er
         }
     }
     Ok(out)
+}
+
+pub fn read(
+    tx: &Transaction<'_>,
+    input: &WorkbenchInput,
+    latest: Date,
+    today: &str,
+    close: Value,
+) -> Result<Value, Error> {
+    read_at(tx, input, latest, today, close, &super::wall_clock(tx)?)
 }
