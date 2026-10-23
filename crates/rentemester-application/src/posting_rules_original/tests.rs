@@ -370,3 +370,46 @@ fn posting_rules_original_service_current_typed_authority_precedes_parse() {
         "access_denied"
     );
 }
+
+#[test]
+fn posting_rules_original_refused_transition_is_fence_failure_with_exact_body() {
+    let mut f = fixture("reviewer");
+    let body = serde_json::to_vec(&json!({"ruleId":"synthetic-missing", "version":1,
+        "expectedPayloadHash":"a".repeat(64), "rationale":"Synthetic exact review",
+        "provenance":"Synthetic retained source", "confirm":true}))
+    .unwrap();
+    let failure = execute(
+        &mut f.control,
+        &mut f.company,
+        &mut f.guard,
+        context(&f.cookie),
+        request(&body),
+        Operation::Approve,
+    )
+    .err()
+    .unwrap();
+    assert_eq!(failure.error.code, "posting_rules_original_business");
+    let value: Value = serde_json::from_str(&failure.error.message).unwrap();
+    assert_eq!(value["ok"], false);
+    assert!(
+        value["errors"]
+            .as_array()
+            .is_some_and(|items| !items.is_empty()
+                && items.iter().all(|item| item
+                    .as_str()
+                    .is_some_and(|s| !s.trim().is_empty() && !s.starts_with('{'))))
+    );
+    for table in [
+        "posting_rule_versions",
+        "posting_rule_lifecycle_events",
+        "audit_log",
+    ] {
+        assert_eq!(
+            f.company
+                .query_row(&format!("SELECT count(*) FROM {table}"), [], |r| r
+                    .get::<_, i64>(0))
+                .unwrap(),
+            0
+        );
+    }
+}

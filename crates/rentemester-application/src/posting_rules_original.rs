@@ -217,7 +217,14 @@ fn execute_tx(
             .now_unix_ms()
             .map_err(|_| Error::new("clock_unavailable", "Current server time unavailable"))?,
     )?;
-    store::execute(tx, op, &v, &actor, &now).map_err(business)
+    let value = store::execute(tx, op, &v, &actor, &now).map_err(business)?;
+    if value.get("ok").and_then(Value::as_bool) == Some(false) {
+        return Err(Error::new(
+            "posting_rules_original_business",
+            value.to_string(),
+        ));
+    }
+    Ok(value)
 }
 pub fn execute(
     control: &mut Connection,
