@@ -1,3 +1,4 @@
+import { MileagePostingPanel } from "./MileagePostingPanel";
 import * as stylex from "@stylexjs/stylex";
 import { ButtonLink, Button, PageHeader } from "../components/ui";
 // Kørsel — the per-company mileage register (#335).
@@ -153,8 +154,8 @@ export function MileageView() {
             </table>
           </div>
           <p className="statement-check ok">
-            Kørselsregisteret er dokumentation. Rentemester bogfører aldrig
-            kørselsgodtgørelse direkte — vurdér med din rådgiver om turen er
+            Kørselsregisteret er dokumentation. Registrering bogfører aldrig
+            kørselsgodtgørelse automatisk — vurdér med din rådgiver om turen er
             fradragsberettiget, og brug fx en udlægspostering hvis du vil
             udbetale eller fratrække beløbet. Officielle satser findes på{" "}
             <a
@@ -168,6 +169,8 @@ export function MileageView() {
           </p>
         </>
       )}
+
+      <MileagePostingPanel key={`${slug}:${m.selectedYear}`} slug={slug} entries={m.entries} disabled={archived || state.loading || !!state.error} />
 
       {registering && (
         <MileageRegisterModal

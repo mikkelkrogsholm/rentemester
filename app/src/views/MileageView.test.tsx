@@ -236,3 +236,15 @@ describe("MileageView — Kørsel (#335)", () => {
     expect(body.rateBasis).toBe("SKAT 2026, høj sats");
   });
 });
+
+test("legacy register makes no additional accounting calls", async () => {
+  const calls: string[] = [];
+  globalThis.fetch = (async (input) => {
+    calls.push(String(input));
+    return Response.json({ ok: true, mileage: mileage() });
+  }) as typeof fetch;
+  renderView();
+  await screen.findByRole("heading", { name: "Kørsel", level: 1 });
+  expect(screen.queryByRole("region", { name: "Kørselsbogføring" })).toBeNull();
+  expect(calls).toHaveLength(1);
+});
