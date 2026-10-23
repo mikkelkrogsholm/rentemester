@@ -1,0 +1,757 @@
+{
+  "format": "rentemester-legacy-reference-attribution/1",
+  "notice": "Pinned TypeScript source/test references only; not proof of native execution or legal approval.",
+  "files": {
+    "src/agent/contract.ts": {
+      "sha256": "17cede3105a7d790f1ba38933b6ea44fdda22b5eedf6323c5fe30687df64da51",
+      "ruleIds": [
+        "DK-ASSET-WRITEOFF-001",
+        "DK-RUNTIME-AGENT-001"
+      ]
+    },
+    "src/core/accruals.ts": {
+      "sha256": "eacfc752ade8d1aa4b9270de13a5fa06804372901f81af6ba10a1987073798db",
+      "ruleIds": [
+        "DK-BOOKKEEPING-ACCRUAL-001"
+      ]
+    },
+    "src/core/annual-report.ts": {
+      "sha256": "fcbeddb7d0bf584e3717b113310fbf190c009dcbad7405c7315c4bc9b6f15f21",
+      "ruleIds": [
+        "DK-ANNUAL-REPORT-CLASS-B-001"
+      ]
+    },
+    "src/core/assets.ts": {
+      "sha256": "e22a3c0352054273c8289c245c47089eaba66c5100650a0c8d176eac166af1a1",
+      "ruleIds": [
+        "DK-ASSET-DEPR-001",
+        "DK-ASSET-WRITEOFF-001"
+      ]
+    },
+    "src/core/authority-export.ts": {
+      "sha256": "5bac9ff2bfdf66ba43d7a69713c54c5f4159bafecb44585a8437194a90b563e7",
+      "ruleIds": [
+        "DK-BOOKKEEPING-AUTHORITY-EXPORT-001"
+      ]
+    },
+    "src/core/backup-governance.ts": {
+      "sha256": "ff443817e4cf7750cb2ee7bb513e226ca2cb05f66d8bc1fd83afe7e35b41a6f4",
+      "ruleIds": [
+        "DK-BOOKKEEPING-BACKUP-001",
+        "DK-BOOKKEEPING-BACKUP-DEST-001"
+      ]
+    },
+    "src/core/bank-journal-reconciliation.ts": {
+      "sha256": "0249a7e7eb1b81c1f55cb8abcc9289e1a6fdc6c20a81cb624bdbadcbefae7800",
+      "ruleIds": [
+        "DK-BOOKKEEPING-RECONCILIATION-001"
+      ]
+    },
+    "src/core/bank.ts": {
+      "sha256": "aa7b915f6e4eedc6dd84a4abac555a003a62d77eb7598a08d77a20d06c8c4c12",
+      "ruleIds": [
+        "DK-BANK-BALANCE-CONTINUITY-001",
+        "DK-BOOKKEEPING-BANK-IMPORT-001",
+        "DK-BOOKKEEPING-FX-001"
+      ]
+    },
+    "src/core/chart-of-accounts.ts": {
+      "sha256": "0d06781b8598f52e82b1e61c90ad480734f38c3a9fb690df8c5614fb6fb0256a",
+      "ruleIds": [
+        "DK-CHART-OF-ACCOUNTS-ADD-001"
+      ]
+    },
+    "src/core/credit-notes.ts": {
+      "sha256": "3aab458313e41d4219429cddff8f9018f82661f8346e0f3468029c93f01e63d5",
+      "ruleIds": [
+        "DK-CREDIT-NOTE-001",
+        "DK-INVOICE-BOOKKEEPING-REVERSE-002"
+      ]
+    },
+    "src/core/documents.ts": {
+      "sha256": "c3310d09f85527d196d612bb44c0b7841de3b0f4a48e9741d2d9e36e80c321c7",
+      "ruleIds": [
+        "DK-DOCUMENT-CASH-RECEIPT-001",
+        "DK-DOCUMENT-FOREIGN-PHYSICAL-001",
+        "DK-DOCUMENT-INTEGRITY-001",
+        "DK-DOCUMENT-STORAGE-001",
+        "DK-INVOICE-SIMPLIFIED-001"
+      ]
+    },
+    "src/core/email.ts": {
+      "sha256": "a9066e9ff2f5a17e2a935a595301725b25a983be54cd9d03dfed9780ae281cd2",
+      "ruleIds": [
+        "DK-EMAIL-DELIVERY-001"
+      ]
+    },
+    "src/core/exceptions.ts": {
+      "sha256": "39caa898af49d669fb32b75f116f3a5f776d7b28bdeace22b553e7b175707932",
+      "ruleIds": [
+        "DK-BOOKKEEPING-ACCRUAL-001",
+        "DK-PAYABLE-001",
+        "DK-TAX-RETURN-CORP-001"
+      ]
+    },
+    "src/core/expense-booking.ts": {
+      "sha256": "dfba58b54cc9b2cf7318c3c60fb27d44563f0f515d47d29fcbb4855d5a429a58",
+      "ruleIds": [
+        "DK-VAT-NON-DEDUCTIBLE-001"
+      ]
+    },
+    "src/core/gdpr.ts": {
+      "sha256": "2420eb3408b4652f75af9c09fecee1f59239d86bd60b620d51d0a7d76250d490",
+      "ruleIds": [
+        "DK-BOOKKEEPING-RETENTION-001"
+      ]
+    },
+    "src/core/import/dinero-postings.ts": {
+      "sha256": "c1711a344f4d6252a668b1d007d3483021d7c7d9a0a631c5338fe8116ebe9388",
+      "ruleIds": [
+        "DK-IMPORT-POSTINGS-001"
+      ]
+    },
+    "src/core/import/framework.ts": {
+      "sha256": "8b03c0ad73d91528c92896df0843db4fcdfd92d2005906d16e9efd22220f01e5",
+      "ruleIds": [
+        "DK-BOOKKEEPING-BALANCED-001"
+      ]
+    },
+    "src/core/import/reconcile.ts": {
+      "sha256": "8dc117153d188b417da8244ef17a990e38b9fd1ee1a77218c39f83deef277b24",
+      "ruleIds": [
+        "DK-IMPORT-CHART-RECONCILE-001",
+        "DK-IMPORT-COMPANY-RECONCILE-001"
+      ]
+    },
+    "src/core/invoice-bad-debt.ts": {
+      "sha256": "cda5ed6f56011644d14ec81dce393127664b18228b9f0d942e330abb2c569686",
+      "ruleIds": [
+        "DK-INVOICE-BAD-DEBT-WRITEOFF-001",
+        "DK-VAT-BAD-DEBT-001"
+      ]
+    },
+    "src/core/invoice-booking.ts": {
+      "sha256": "6c5c18013c221f7a5b99ca8ed35924492b6a9870594d90e98f3d861283b57c3d",
+      "ruleIds": [
+        "DK-INVOICE-BOOKKEEPING-001",
+        "DK-INVOICE-BOOKKEEPING-REVERSE-002"
+      ]
+    },
+    "src/core/invoice-claim-settlement.ts": {
+      "sha256": "fd6d21447327b966bf32d11d468ae96b0c1f52799bbe1f215e5f3bc27ee5e0ae",
+      "ruleIds": [
+        "DK-INVOICE-CLAIM-SETTLEMENT-001"
+      ]
+    },
+    "src/core/invoice-compensation.ts": {
+      "sha256": "dc6a188302b6d9a3d668fcec7cdd2725c2510d0000f29a6f9eb73a9e0ead1a45",
+      "ruleIds": [
+        "DK-INVOICE-LATE-COMPENSATION-001",
+        "DK-INVOICE-LATE-COMPENSATION-BOOKKEEPING-001",
+        "DK-INVOICE-LATE-COMPENSATION-REGISTER-001"
+      ]
+    },
+    "src/core/invoice-interest.ts": {
+      "sha256": "9103ee35d3c1cd036d31640af6e9616201e52fe723d98087dd0355d63bddfd56",
+      "ruleIds": [
+        "DK-INVOICE-LATE-INTEREST-001",
+        "DK-INVOICE-LATE-INTEREST-BOOKKEEPING-001",
+        "DK-INVOICE-LATE-INTEREST-REGISTER-001"
+      ]
+    },
+    "src/core/invoice-payments.ts": {
+      "sha256": "a138ebc41b68da1ac729f66cc26f51e46b5a180ea01b3d84b45fab1c2c2458d6",
+      "ruleIds": [
+        "DK-INVOICE-CORRECTION-BALANCE-001",
+        "DK-INVOICE-DUE-DATE-001",
+        "DK-INVOICE-FX-REALISED-001",
+        "DK-INVOICE-PAYMENT-001"
+      ]
+    },
+    "src/core/invoice-pdf.ts": {
+      "sha256": "7ed3484eb172589dab1b6385c513d9d573b0c264aad36721f8e54c5e12c80279",
+      "ruleIds": [
+        "DK-INVOICE-ISSUE-001"
+      ]
+    },
+    "src/core/invoice-refunds.ts": {
+      "sha256": "548cf41c1d462764ae943a332eb9b42edf1bb16189c2db0e7173de2d2dd61492",
+      "ruleIds": [
+        "DK-INVOICE-REFUND-001"
+      ]
+    },
+    "src/core/invoice-reminders.ts": {
+      "sha256": "e7cf015733696eec5e226f7a40f6a63f10d3f7e40dd5f515eae13eee56de92c5",
+      "ruleIds": [
+        "DK-INVOICE-REMINDER-FEE-001",
+        "DK-INVOICE-REMINDER-FEE-BOOKKEEPING-001"
+      ]
+    },
+    "src/core/invoice-settlement.ts": {
+      "sha256": "0fcddec99e76496afc2b714266c6cfb8a4411dab5061c229cecb72f9ea6dc03c",
+      "ruleIds": [
+        "DK-INVOICE-COMBINED-SETTLEMENT-001",
+        "DK-INVOICE-SETTLEMENT-001"
+      ]
+    },
+    "src/core/invoice.ts": {
+      "sha256": "0a433c1ac1d52370952afc916a5e0551b3f369bd4cf4a7249a5c9498a7c2d29e",
+      "ruleIds": [
+        "DK-INVOICE-ARITHMETIC-001",
+        "DK-INVOICE-DELIVERY-DATE-001",
+        "DK-INVOICE-FULL-001",
+        "DK-INVOICE-PUBLIC-RECIPIENT-001",
+        "DK-INVOICE-REVERSE-CHARGE-001",
+        "DK-INVOICE-REVERSE-CHARGE-BASIS-001",
+        "DK-INVOICE-SIMPLIFIED-001",
+        "DK-VAT-SEPARATE-AMOUNT-001"
+      ]
+    },
+    "src/core/issued-invoices.ts": {
+      "sha256": "4183d97fa194faa4c49e5e71b87481756d06f8c5b7f9f62d86c73f965403d817",
+      "ruleIds": [
+        "DK-INVOICE-ISSUE-001",
+        "DK-INVOICE-LOCK-001",
+        "DK-INVOICE-PREVIEW-001"
+      ]
+    },
+    "src/core/ixbrl.ts": {
+      "sha256": "68d6df2fdf626bc636f9da04f23371310407a67ffbef823bf58244dcea54275c",
+      "ruleIds": [
+        "DK-ANNUAL-REPORT-IXBRL-002"
+      ]
+    },
+    "src/core/ledger.ts": {
+      "sha256": "605cfbe6b7800cf789d0a9b773f70fe43ebd54fdd965b4841f2e50ab4dd0cfbe",
+      "ruleIds": [
+        "DK-BOOKKEEPING-APPEND-ONLY-001",
+        "DK-BOOKKEEPING-BALANCED-001",
+        "DK-BOOKKEEPING-DOCUMENT-001",
+        "DK-BOOKKEEPING-FX-001",
+        "DK-BOOKKEEPING-PERIOD-LOCK-001",
+        "DK-BOOKKEEPING-REVERSAL-001"
+      ]
+    },
+    "src/core/mail-intake.ts": {
+      "sha256": "bd01025a60dacbe73591f7ca59849ead915fbffa5dbf98529020085f31a1a762",
+      "ruleIds": [
+        "DK-MAIL-INTAKE-DEDUP-001",
+        "DK-MAIL-INTAKE-EXCEPTION-001",
+        "DK-MAIL-INTAKE-TRANSPORT-001"
+      ]
+    },
+    "src/core/master-data.ts": {
+      "sha256": "9472961d8bb2eaa9dc447e4425381e43b46cf56233e0f5d1c4843d6a225fd154",
+      "ruleIds": [
+        "DK-MASTER-DATA-CUSTOMER-001",
+        "DK-MASTER-DATA-VENDOR-001"
+      ]
+    },
+    "src/core/mileage.ts": {
+      "sha256": "a9e8fdae9f022dcfa00d4bb5a67f6e12d805680b784630d39a0d007b75d645b9",
+      "ruleIds": [
+        "DK-MILEAGE-LOG-001"
+      ]
+    },
+    "src/core/opening-balance.ts": {
+      "sha256": "1e1a8d0382afb6066e166f02e4876b82dacf4551639eb0d1841406135d945331",
+      "ruleIds": [
+        "DK-BOOKKEEPING-BALANCED-001"
+      ]
+    },
+    "src/core/payables.ts": {
+      "sha256": "c9743011ed97c932f520b417b96fbd877bc3e6e317f4e8c2f50e1e48b1ddc6a7",
+      "ruleIds": [
+        "DK-PAYABLE-001",
+        "DK-PAYABLE-PAYMENT-001"
+      ]
+    },
+    "src/core/periods.ts": {
+      "sha256": "1f9cbcaf2d99a9235ef5123d874f98f0bcad91dbcc8bbafe428e67ce239e8cc2",
+      "ruleIds": [
+        "DK-BOOKKEEPING-PERIOD-LOCK-001",
+        "DK-VAT-REGISTRATION-001"
+      ]
+    },
+    "src/core/public-einvoice.ts": {
+      "sha256": "1411abc7cbbb075ba92f3dd6ff46b0c594e1beaff9433945696a651f334b498c",
+      "ruleIds": [
+        "DK-INVOICE-PUBLIC-EXPORT-001",
+        "DK-INVOICE-PUBLIC-OIOUBL-001",
+        "DK-PEPPOL-SUBMIT-001"
+      ]
+    },
+    "src/core/reconciliation.ts": {
+      "sha256": "0cdbb9a7e065afc7f7b5e27953e3def06ef9bc4f1eb071512d9b5147f069354b",
+      "ruleIds": [
+        "DK-BOOKKEEPING-RECONCILIATION-001"
+      ]
+    },
+    "src/core/recurring-invoices.ts": {
+      "sha256": "5598d85d62e329621dd0629bb5aa68c56fd3696a45d0eee3dca651ede6e396c3",
+      "ruleIds": [
+        "DK-RECURRING-INVOICE-GENERATE-001",
+        "DK-RECURRING-INVOICE-TEMPLATE-001"
+      ]
+    },
+    "src/core/regulatory-coverage.ts": {
+      "sha256": "0cd73610f7e070d79581804bb477ce30b3ac30e8ba399a0cbb6f1aa903884b6f",
+      "ruleIds": [
+        "DK-FOO-001"
+      ]
+    },
+    "src/core/retention.ts": {
+      "sha256": "f7c7fc4fcdf952065ca0c8ad39e0dc91014569d032e6e5d4e9fd95705aecaec6",
+      "ruleIds": [
+        "DK-BOOKKEEPING-RETENTION-001"
+      ]
+    },
+    "src/core/saft-export.ts": {
+      "sha256": "3f16ca04fe83274748822ea5e6fcdf3fdba38e65711bb21537fc2207e8884f05",
+      "ruleIds": [
+        "DK-BOOKKEEPING-SAFT-EXPORT-001"
+      ]
+    },
+    "src/core/system-backups.ts": {
+      "sha256": "f750e0af8939fc1bf763d3f72b8fe7b108669d7d83e6c3cc7e903503ca006341",
+      "ruleIds": [
+        "DK-BOOKKEEPING-BACKUP-001",
+        "DK-BOOKKEEPING-BACKUP-KEY-ROTATE-001"
+      ]
+    },
+    "src/core/system-restore.ts": {
+      "sha256": "a2b5eb51a0ab035b39bd102df59eeb9cda9d0ee19b57dd5636acb7c4e3a79354",
+      "ruleIds": [
+        "DK-BOOKKEEPING-RESTORE-001"
+      ]
+    },
+    "src/core/tax-return.ts": {
+      "sha256": "4b8053f6c12f4fcd0381af358025bf855a8473c4e3139861d27cdbdfba0c094a",
+      "ruleIds": [
+        "DK-TAX-RETURN-CORP-001"
+      ]
+    },
+    "src/core/vat-filing.ts": {
+      "sha256": "187a6cd815ac016195ef918b86d2891668c554cb7fc723b07ba268520336823b",
+      "ruleIds": [
+        "DK-VAT-FILING-001"
+      ]
+    },
+    "src/core/vat-oss.ts": {
+      "sha256": "9296c587d2cb4209947c3c57c1391cbafdea2a1d09567a5811426e8dd3df21c2",
+      "ruleIds": [
+        "DK-VAT-OSS-001"
+      ]
+    },
+    "src/core/vat-vies-list.ts": {
+      "sha256": "a25c091e9fce4c75d13a837aeec37a30cbcbc06eecd0c52c521be1cce242e3e9",
+      "ruleIds": [
+        "DK-VAT-EU-SALES-LIST-001"
+      ]
+    },
+    "src/core/vat.ts": {
+      "sha256": "017936a2dc8354badb499112d064f0bbc13b90a1938ac792884159fb0db81cee",
+      "ruleIds": [
+        "DK-VAT-NON-EU-SERVICE-REVERSE-CHARGE-001",
+        "DK-VAT-REGISTRATION-001",
+        "DK-VAT-REPORT-001",
+        "DK-VAT-REPRESENTATION-001",
+        "DK-VAT-REVERSE-CHARGE-001"
+      ]
+    },
+    "src/core/vies.ts": {
+      "sha256": "e31dc79c066cb564a9fb81c336eeebd1029661368232e676e72ac683bcf6de61",
+      "ruleIds": [
+        "DK-VAT-REVERSE-CHARGE-001"
+      ]
+    },
+    "src/mcp/tools/vat.ts": {
+      "sha256": "f9edc1df9dbbe61b3ec83cd336c95f33ca54797ab848cc5fcf5c056b3cc23c08",
+      "ruleIds": [
+        "DK-VAT-REGISTRATION-001"
+      ]
+    },
+    "src/server/data/agent-suggestions.ts": {
+      "sha256": "7ac20eb75d0198b7c69ae53e5115326e0a0868c8b56c088400c9a2ce82af5fa6",
+      "ruleIds": [
+        "DK-PAYABLE-001"
+      ]
+    },
+    "src/server/data/integrity-view.ts": {
+      "sha256": "6e81c5f019565d126a1593d22ab9aaeff24d82ffe55af95df7e62d763ede4377",
+      "ruleIds": [
+        "DK-BOGFORINGSLOVEN-2022-700"
+      ]
+    },
+    "src/server/data/retention-view.ts": {
+      "sha256": "635246f15d2a57b37d756b365bd6a0297adcc4f520a32a0829b1ca4a42a06d94",
+      "ruleIds": [
+        "DK-BOGFORINGSLOVEN-2022-700"
+      ]
+    },
+    "tests/unit/authority-export-cli.test.ts": {
+      "sha256": "c9c12a94820672ff9ca1fa0c724fcb9a67216a6f8d9257327e63a4f7358474f8",
+      "ruleIds": [
+        "DK-BOOKKEEPING-AUTHORITY-EXPORT-001"
+      ]
+    },
+    "tests/unit/compliance-report.test.ts": {
+      "sha256": "0762b509deeec8c81cdb5528982aacc20467477978f0aeb0007906928fac1fcf",
+      "ruleIds": [
+        "DK-BOGFORINGSLOVEN-2022-700",
+        "DK-BOOKKEEPING-BACKUP-001",
+        "DK-BOOKKEEPING-BALANCED-001",
+        "DK-BOOKKEEPING-RETENTION-001",
+        "DK-X-001",
+        "DK-Y-002"
+      ]
+    },
+    "tests/unit/credit-note-cli.test.ts": {
+      "sha256": "d07ec437401bc3fa9b73ac1332ba6549c085c5278730a23a7475b08fb9dd7376",
+      "ruleIds": [
+        "DK-CREDIT-NOTE-001"
+      ]
+    },
+    "tests/unit/credit-note.test.ts": {
+      "sha256": "7167539f9e4c971c2d94335d414a963e68597e6934567110f9c8b2c97b6de458",
+      "ruleIds": [
+        "DK-CREDIT-NOTE-001",
+        "DK-INVOICE-BOOKKEEPING-REVERSE-002"
+      ]
+    },
+    "tests/unit/dashboard-render.test.ts": {
+      "sha256": "1804ebc3a238e7fb6c9c75b3996e3da6e95c655e42829eca30e3d45d9366432c",
+      "ruleIds": [
+        "DK-BACKUP-001",
+        "DK-VAT-REPORT-001"
+      ]
+    },
+    "tests/unit/document-company-context.test.ts": {
+      "sha256": "3c70862d5d27f854eb41feff300cfb59f9e65bbdf98ffbe3aceb9a0e39d11572",
+      "ruleIds": [
+        "DK-PAYABLE-001"
+      ]
+    },
+    "tests/unit/document-ingest.test.ts": {
+      "sha256": "c80fd12908b977499d7f51d1e89b0159753bfe6eaec3534cd8f9246390e88de4",
+      "ruleIds": [
+        "DK-DOCUMENT-CASH-RECEIPT-001",
+        "DK-DOCUMENT-FOREIGN-PHYSICAL-001"
+      ]
+    },
+    "tests/unit/invoice-bad-debt-cli.test.ts": {
+      "sha256": "626221dfc85c6e0b64eb4c0444c0009aefad4d6ecc3e7a154e4b7be13fd491bf",
+      "ruleIds": [
+        "DK-INVOICE-BAD-DEBT-WRITEOFF-001",
+        "DK-VAT-BAD-DEBT-001"
+      ]
+    },
+    "tests/unit/invoice-bad-debt.test.ts": {
+      "sha256": "8ccdd665561a94541c1511f6a3a52b01060c1cd0849d98d94fcb4345303f95e9",
+      "ruleIds": [
+        "DK-INVOICE-BAD-DEBT-WRITEOFF-001",
+        "DK-VAT-BAD-DEBT-001"
+      ]
+    },
+    "tests/unit/invoice-booking-cli.test.ts": {
+      "sha256": "d8d9515a2148c674e4d0919a75e40528b9aefc30d74f45848515edc27b5fd3e0",
+      "ruleIds": [
+        "DK-INVOICE-BOOKKEEPING-001"
+      ]
+    },
+    "tests/unit/invoice-booking.test.ts": {
+      "sha256": "b2985fd99f6f3dbdfd83e8d100f0afbdec3429e728efe45aefdfbf1c3ba39269",
+      "ruleIds": [
+        "DK-INVOICE-BOOKKEEPING-001",
+        "DK-INVOICE-BOOKKEEPING-REVERSE-002"
+      ]
+    },
+    "tests/unit/invoice-claim-settlement-cli.test.ts": {
+      "sha256": "9c5783ac925676aab18bef74f6977c39f7589bbbfabfee652573df0ab325f10a",
+      "ruleIds": [
+        "DK-INVOICE-CLAIM-SETTLEMENT-001"
+      ]
+    },
+    "tests/unit/invoice-claim-settlement.test.ts": {
+      "sha256": "a0eb390a7a403ab2531038e6f1f3e00d70b5d7d4216303d0b2ab6843640d0fd2",
+      "ruleIds": [
+        "DK-INVOICE-CLAIM-SETTLEMENT-001"
+      ]
+    },
+    "tests/unit/invoice-compensation-cli.test.ts": {
+      "sha256": "ca9d148a189685d0def8a5d009a35399c083533c45b88c4f7526ccb73de8f320",
+      "ruleIds": [
+        "DK-INVOICE-LATE-COMPENSATION-001",
+        "DK-INVOICE-LATE-COMPENSATION-BOOKKEEPING-001",
+        "DK-INVOICE-LATE-COMPENSATION-REGISTER-001"
+      ]
+    },
+    "tests/unit/invoice-compensation.test.ts": {
+      "sha256": "6e2f69cb8c4c70e2912f09c22cd3fd769bdf6860a1791c4daec0f2c09981e6ab",
+      "ruleIds": [
+        "DK-INVOICE-LATE-COMPENSATION-001",
+        "DK-INVOICE-LATE-COMPENSATION-BOOKKEEPING-001",
+        "DK-INVOICE-LATE-COMPENSATION-REGISTER-001"
+      ]
+    },
+    "tests/unit/invoice-create-cli.test.ts": {
+      "sha256": "f336fe0163e114a04789f78742ab88f7eced8b40919f380e28c91759dd8006e8",
+      "ruleIds": [
+        "DK-INVOICE-ISSUE-001"
+      ]
+    },
+    "tests/unit/invoice-interest-cli.test.ts": {
+      "sha256": "77ee7955cf2d70828fa62b79b8547997ab294e5cf79f6361cf11f185b17c3bde",
+      "ruleIds": [
+        "DK-INVOICE-LATE-INTEREST-001",
+        "DK-INVOICE-LATE-INTEREST-BOOKKEEPING-001",
+        "DK-INVOICE-LATE-INTEREST-REGISTER-001"
+      ]
+    },
+    "tests/unit/invoice-interest.test.ts": {
+      "sha256": "7294266368b2324853c39050d0647cc37623884144db8e68a375cb66af3ac9fa",
+      "ruleIds": [
+        "DK-INVOICE-LATE-INTEREST-001",
+        "DK-INVOICE-LATE-INTEREST-BOOKKEEPING-001",
+        "DK-INVOICE-LATE-INTEREST-REGISTER-001"
+      ]
+    },
+    "tests/unit/invoice-issue-cli.test.ts": {
+      "sha256": "687754a8eba424d4cfbbda3852a9f199bb09aaa66b2cdc181670f3e8be820208",
+      "ruleIds": [
+        "DK-INVOICE-ISSUE-001"
+      ]
+    },
+    "tests/unit/invoice-issue.test.ts": {
+      "sha256": "e634646e2f3997db645864c9c4b5a7d6567dd9f000b21805e15b374ed9c600f9",
+      "ruleIds": [
+        "DK-INVOICE-ISSUE-001"
+      ]
+    },
+    "tests/unit/invoice-payments.test.ts": {
+      "sha256": "6ae7357868bb8c98ff9a57051a5b4607d606383f5a4320b65af3d18050081520",
+      "ruleIds": [
+        "DK-INVOICE-CORRECTION-BALANCE-001",
+        "DK-INVOICE-PAYMENT-001"
+      ]
+    },
+    "tests/unit/invoice-refund-cli.test.ts": {
+      "sha256": "e0b696663166f0ef011bdeb17d3384d0b1c50e5d44910f7480dd6ac20d58addd",
+      "ruleIds": [
+        "DK-INVOICE-REFUND-001"
+      ]
+    },
+    "tests/unit/invoice-refunds.test.ts": {
+      "sha256": "b222fe65ffd778455cf684e6d3b8956aa64df41e6ba37f2b99cd7f7fd550d8b4",
+      "ruleIds": [
+        "DK-INVOICE-REFUND-001"
+      ]
+    },
+    "tests/unit/invoice-reminders-cli.test.ts": {
+      "sha256": "76832c93cedbb593700467527e9b4dc0f66345f05f717f553488b4d372b680d3",
+      "ruleIds": [
+        "DK-INVOICE-REMINDER-FEE-001",
+        "DK-INVOICE-REMINDER-FEE-BOOKKEEPING-001"
+      ]
+    },
+    "tests/unit/invoice-reminders.test.ts": {
+      "sha256": "57be4d0cd7e4f997d95a3c52a39105a575723f6a513e0dd1498274dd1783b5b0",
+      "ruleIds": [
+        "DK-INVOICE-REMINDER-FEE-BOOKKEEPING-001"
+      ]
+    },
+    "tests/unit/invoice-settlement-cli.test.ts": {
+      "sha256": "90cbb6a94a74fc0bebf39a39ad800629063cf794a53700678bc6b95f604277a5",
+      "ruleIds": [
+        "DK-INVOICE-COMBINED-SETTLEMENT-001",
+        "DK-INVOICE-SETTLEMENT-001"
+      ]
+    },
+    "tests/unit/invoice-settlement.test.ts": {
+      "sha256": "e0aed2215fc21334654e8e248b790abedd5e490e186d47488c45c35d41354b25",
+      "ruleIds": [
+        "DK-INVOICE-COMBINED-SETTLEMENT-001",
+        "DK-INVOICE-SETTLEMENT-001"
+      ]
+    },
+    "tests/unit/invoice-validation.test.ts": {
+      "sha256": "0a9cc49b83e377c0c75fcec632d33a4d0462dabaae2adb0c856b992f6c9277f3",
+      "ruleIds": [
+        "DK-INVOICE-ARITHMETIC-001",
+        "DK-INVOICE-DELIVERY-DATE-001",
+        "DK-INVOICE-FULL-001",
+        "DK-INVOICE-PUBLIC-RECIPIENT-001",
+        "DK-INVOICE-REVERSE-CHARGE-001",
+        "DK-INVOICE-REVERSE-CHARGE-BASIS-001",
+        "DK-INVOICE-SIMPLIFIED-001"
+      ]
+    },
+    "tests/unit/journal-fx-cli.test.ts": {
+      "sha256": "e1fe20d64a890aafb79329493d016e5a3323a66ba5bc205320543fecc73e1f97",
+      "ruleIds": [
+        "DK-BOOKKEEPING-FX-001"
+      ]
+    },
+    "tests/unit/journal-post-fx.test.ts": {
+      "sha256": "91bc74ac827f68313c56eff1e83cfff39d6702ecaa0170c28cf103b672f9fd6a",
+      "ruleIds": [
+        "DK-BOOKKEEPING-DOCUMENT-001",
+        "DK-BOOKKEEPING-FX-001"
+      ]
+    },
+    "tests/unit/journal-reversal.test.ts": {
+      "sha256": "de4b2df41308edbc7aeb750b7984c945184ac989c5f9c6787c056aa9a23f6fb5",
+      "ruleIds": [
+        "DK-BOOKKEEPING-REVERSAL-001"
+      ]
+    },
+    "tests/unit/legal-provisions.test.ts": {
+      "sha256": "4a0cec8c304783c1d4b967c3ed834fd7bca4970dd3473433b437e68bb4f9f2dd",
+      "ruleIds": [
+        "DK-BILAG-OPBEVARING-AMEND-2025-302",
+        "DK-BOGFORINGSLOVEN-2022-700",
+        "DK-DIGITAL-BOGFORING-NONREGISTERED-2024-205",
+        "DK-MOMSLOVEN-2024-209",
+        "DK-RENTELOVEN-2014-459",
+        "DK-UDENRETLIGE-INDDRIVELSESOMKOSTNINGER-AMEND-2013-105"
+      ]
+    },
+    "tests/unit/legal-sources-download.test.ts": {
+      "sha256": "470b1b3be04af63b4871e44c862f55fd93384a1ef68c663089f912043965763b",
+      "ruleIds": [
+        "DK-FAIL-001",
+        "DK-KEEP-001",
+        "DK-TEST-001"
+      ]
+    },
+    "tests/unit/mileage.test.ts": {
+      "sha256": "f3838af538092e2048b514a637cf5d4fbfef569bbdb73ef23c1fc80e38276d55",
+      "ruleIds": [
+        "DK-MILEAGE-LOG-001"
+      ]
+    },
+    "tests/unit/public-einvoice.test.ts": {
+      "sha256": "0891eebab6bd1f8819d279366c84af57cf7e26a0af30af18c39da9bebe5b1883",
+      "ruleIds": [
+        "DK-PEPPOL-SUBMIT-001"
+      ]
+    },
+    "tests/unit/recurring-invoice-cli.test.ts": {
+      "sha256": "c0eb54ed57844231905e96ae8c7cff502bed997258bf8f561b9419032ef6ac13",
+      "ruleIds": [
+        "DK-RECURRING-INVOICE-GENERATE-001"
+      ]
+    },
+    "tests/unit/recurring-invoices.test.ts": {
+      "sha256": "12001b5dbaa28e5d89c37fddb52f5aacfd564b791758283958f43e0f91b47a29",
+      "ruleIds": [
+        "DK-RECURRING-INVOICE-GENERATE-001",
+        "DK-RECURRING-INVOICE-TEMPLATE-001"
+      ]
+    },
+    "tests/unit/reg-citations-cli.test.ts": {
+      "sha256": "340b627eb571efa42ad7b92f214bd891564edc8bc8a8d1a2f62c0fef754dad09",
+      "ruleIds": [
+        "DK-DOCUMENT-STORAGE-001"
+      ]
+    },
+    "tests/unit/regulatory-coverage.test.ts": {
+      "sha256": "49321401945a18776d2d79647de33428431332ca320ea4f6395508f4578a3aaa",
+      "ruleIds": [
+        "DK-ANNUAL-REPORT-CLASS-B-001",
+        "DK-ANNUAL-REPORT-IXBRL-002",
+        "DK-INVOICE-PUBLIC-EXPORT-001",
+        "DK-INVOICE-PUBLIC-OIOUBL-001",
+        "DK-INVOICE-PUBLIC-RECIPIENT-001",
+        "DK-OFFENTLIGE-BETALINGER-2007-798",
+        "DK-PEPPOL-SUBMIT-001",
+        "DK-RENTELOVEN-2014-459",
+        "DK-TAX-RETURN-CORP-001",
+        "DK-TEST-001",
+        "DK-VAT-OSS-001"
+      ]
+    },
+    "tests/unit/server-agent-suggestions.test.ts": {
+      "sha256": "b1fb605ae83ea9a4caa40b65b82d58486506fd725cb01ee2a2a5ed5421bc14cd",
+      "ruleIds": [
+        "DK-AGENT-001",
+        "DK-BOOKKEEPING-ACCRUAL-001",
+        "DK-PAYABLE-001"
+      ]
+    },
+    "tests/unit/server-integrity-view.test.ts": {
+      "sha256": "cd0ea381a7ad02887b3d6e200a798629b2df5e06321c0de1dc9540308add667a",
+      "ruleIds": [
+        "DK-BOGFORINGSLOVEN-2022-700"
+      ]
+    },
+    "tests/unit/server-retention-view.test.ts": {
+      "sha256": "39ba12bb8c2c2a7d4c94f095785a2733606cb58382a135140e017b803efc60ea",
+      "ruleIds": [
+        "DK-BOGFORINGSLOVEN-2022-700",
+        "DK-BOOKKEEPING-RETENTION-001"
+      ]
+    },
+    "tests/unit/system-backups-cli.test.ts": {
+      "sha256": "2f41f22d920402f13ceb71f60937853f7fdcd0add833bc813a5ed8562636efe5",
+      "ruleIds": [
+        "DK-BOOKKEEPING-BACKUP-001"
+      ]
+    },
+    "tests/unit/system-backups.test.ts": {
+      "sha256": "0859dba2a709ce745423050752752cbe8bb475365f938d61108ad94a08722bc9",
+      "ruleIds": [
+        "DK-BOOKKEEPING-BACKUP-001"
+      ]
+    },
+    "tests/unit/vat-domestic-reverse-charge.test.ts": {
+      "sha256": "58af78d1c34743d71d9c56d7d20bd990eb5cb8b25dceb8918c3827c4fc3f3a13",
+      "ruleIds": [
+        "DK-INVOICE-BOOKKEEPING-REVERSE-002"
+      ]
+    },
+    "tests/unit/vat-eu-sales-oss-cli.test.ts": {
+      "sha256": "e0893c2ccfa931e18f0da7beddabc535331b8419ae07d50bdb885bfad7a0b4b8",
+      "ruleIds": [
+        "DK-VAT-EU-SALES-LIST-001",
+        "DK-VAT-OSS-001"
+      ]
+    },
+    "tests/unit/vat-eu-sales-oss-mcp.test.ts": {
+      "sha256": "18fbdc0321ff4b173b43e2fa0bfcbaa0876cfe7702ca9d3a4c48113d1408fc76",
+      "ruleIds": [
+        "DK-VAT-REGISTRATION-001"
+      ]
+    },
+    "tests/unit/vat-oss-exempt.test.ts": {
+      "sha256": "ef178e454e7b5cb3ae626e8ae23b2a5e9ff82037515b3cc300853048e3ba5bc9",
+      "ruleIds": [
+        "DK-VAT-OSS-001"
+      ]
+    },
+    "tests/unit/vat-representation-cli.test.ts": {
+      "sha256": "5beddcc3409d3894ec8ac1a5f51ad484bbdce11da6bc5e0afeefdf78be7ebaef",
+      "ruleIds": [
+        "DK-VAT-REPRESENTATION-001"
+      ]
+    },
+    "tests/unit/vat-representation.test.ts": {
+      "sha256": "296e1a2420478ba562e2e1abee2ebb35bb99c8ac5b22422be55101209cc7d479",
+      "ruleIds": [
+        "DK-VAT-REPRESENTATION-001"
+      ]
+    },
+    "tests/unit/vat-reverse-charge-cli.test.ts": {
+      "sha256": "d2e149734718619445ff9a7546d7938222d3abeaaac2c42590e84529eb95ae84",
+      "ruleIds": [
+        "DK-VAT-REVERSE-CHARGE-001"
+      ]
+    },
+    "tests/unit/vat-reverse-charge.test.ts": {
+      "sha256": "ddd4f26845ee0acef4b896c253efcf2a3da08818aab93521a96fbf039cc0ee8c",
+      "ruleIds": [
+        "DK-VAT-REVERSE-CHARGE-001"
+      ]
+    }
+  }
+}
