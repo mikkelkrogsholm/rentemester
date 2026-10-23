@@ -102,7 +102,7 @@ fn registry_341_unique_strict_two_writes_and_confirmation_before_http() {
 fn source_receipt_and_false_without_data_or_invented_code() {
     for (core, code) in [
         (
-            json!({"ok":true,"entryId":8,"entryNo":"2026-8","entryHash":"a".repeat(64),"appliedRules":["synthetic-rule"],"errors":[]}),
+            json!({"ok":true,"entryId":8,"entryNo":"2026-8","entryHash":"a".repeat(64),"appliedRules":["DK-VAT-REVERSE-CHARGE-001"],"errors":[]}),
             None,
         ),
         (
@@ -114,7 +114,7 @@ fn source_receipt_and_false_without_data_or_invented_code() {
             Some("NOT_FOUND"),
         ),
         (
-            json!({"ok":false,"errors":["Date falls in closed period"],"appliedRules":["synthetic-rule"]}),
+            json!({"ok":false,"errors":["Date falls in closed period"],"appliedRules":["DK-VAT-REVERSE-CHARGE-001"]}),
             Some("PERIOD_CLOSED"),
         ),
     ] {

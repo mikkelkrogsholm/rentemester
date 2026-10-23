@@ -9,7 +9,7 @@ fn input() -> Value {
     json!({"transactionDate":"2026-01-01","text":"synthetic","netAmount":100,"expenseAccountNo":"synthetic-expense","invoiceNo":" INV "})
 }
 fn receipt() -> Value {
-    json!({"ok":true,"entryId":8,"entryNo":"2026-8","entryHash":"a".repeat(64),"appliedRules":["synthetic-rule"],"errors":[]})
+    json!({"ok":true,"entryId":8,"entryNo":"2026-8","entryHash":"a".repeat(64),"appliedRules":["DK-VAT-REVERSE-CHARGE-001"],"errors":[]})
 }
 fn server(status: u16, value: Value) -> (ApiClient, thread::JoinHandle<(String, Value)>) {
     let listener = TcpListener::bind("127.0.0.1:0").unwrap();
@@ -102,7 +102,8 @@ fn fixed_wire_and_real_false_preserved() {
     tokio::runtime::Runtime::new().unwrap().block_on(async {
     for rep in [false,true] {
         let mut payload=input();if rep {payload.as_object_mut().unwrap().remove("invoiceNo");payload["documentId"]=json!(3);}
-        for core in [receipt(),json!({"ok":false,"errors":["Could not resolve document for invoiceNo INV"],"appliedRules":[]})] {
+        for mut core in [receipt(),json!({"ok":false,"errors":["Could not resolve document for invoiceNo INV"],"appliedRules":[]})] {
+            if rep && core["ok"] == true { core["appliedRules"] = json!(["DK-VAT-REPRESENTATION-001"]); }
             let(api,t)=server(if core["ok"]==true {200}else{422},core.clone());
             let result=if rep {api.original_vat_representation_purchase("synthetic",&payload,Some("user:synthetic")).await} else {api.original_vat_eu_service_purchase("synthetic",&payload,Some("user:synthetic")).await};
             assert_eq!(result.unwrap(),core);let(header,body)=t.join().unwrap();
@@ -128,6 +129,9 @@ fn malformed_receipt_is_unknown_and_authority_is_not_reclassified() {
             ("entryHash", json!("a".repeat(63))),
             ("errors", json!(["error"])),
             ("appliedRules", json!([5])),
+            ("appliedRules", json!([])),
+            ("appliedRules", json!(["synthetic-rule"])),
+            ("appliedRules", json!(["DK-VAT-REPRESENTATION-001"])),
             ("privatePath", json!("/secret")),
         ] {
             let mut v = receipt();

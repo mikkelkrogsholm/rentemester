@@ -45,7 +45,7 @@ pub fn validate_original_vat_purchase(input: &Value, representation: bool) -> Re
     }
     Ok(())
 }
-fn receipt(value: &Value) -> bool {
+fn receipt(value: &Value, representation: bool) -> bool {
     let shape = value.as_object().is_some_and(|object| {
         object.keys().all(|key| {
             matches!(
@@ -68,7 +68,15 @@ fn receipt(value: &Value) -> bool {
             .as_array()
             .is_some_and(|a| a.is_empty() == (value["ok"] == true))
         && if value["ok"] == true {
-            value["entryId"].as_u64().is_some_and(|id| id > 0)
+            value["appliedRules"].as_array().is_some_and(|rules| {
+                rules.iter().any(|rule| {
+                    rule == if representation {
+                        "DK-VAT-REPRESENTATION-001"
+                    } else {
+                        "DK-VAT-REVERSE-CHARGE-001"
+                    }
+                })
+            }) && value["entryId"].as_u64().is_some_and(|id| id > 0)
                 && value["entryNo"]
                     .as_str()
                     .is_some_and(|s| !s.trim().is_empty())
@@ -159,7 +167,7 @@ impl ApiClient {
                 Error::OutcomeUnknown
             }
         })?;
-        if receipt(&value)
+        if receipt(&value, representation)
             && ((status == 200 && value["ok"] == true) || (status == 422 && value["ok"] == false))
         {
             Ok(value)

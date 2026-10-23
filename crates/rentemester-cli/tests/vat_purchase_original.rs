@@ -64,7 +64,7 @@ fn fixed_write_receipt_source_false_and_unresolved_invoice_usage() {
     for (op, core, exit) in [
         (
             "post-eu-service-purchase",
-            json!({"ok":true,"entryId":8,"entryNo":"2026-8","entryHash":"a".repeat(64),"errors":[],"appliedRules":["synthetic-rule"]}),
+            json!({"ok":true,"entryId":8,"entryNo":"2026-8","entryHash":"a".repeat(64),"errors":[],"appliedRules":["DK-VAT-REVERSE-CHARGE-001"]}),
             0,
         ),
         (
