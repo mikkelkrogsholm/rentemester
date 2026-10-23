@@ -109,3 +109,5 @@ pub mod ixbrl;
 
 pub mod regulatory;
 pub mod compliance_report;
+
+pub mod mileage_posting;
