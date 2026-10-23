@@ -1,10 +1,10 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "R15 immutable document recovery, physical race refusal and access audit fully accepted;686closed",
-  "code_revision": "c005059b74af9cf4bcceb3a5db3955ad28fd668a",
+  "current_increment": "R30 company knowledge/corporate/inbox fully accepted;705and641closed",
+  "code_revision": "ae060f28a63a49ec148c0bbfb5b5a616452e3b51",
   "spec_revision": "sha256:0126654d934bedc29ba6999af447162394594f6c591f159b4a0281aad9529b63",
-  "state": "21of55originalissuesfullyacceptedclosed34open. R15completed: actualSIGKILL at5publication+3registration/commitboundaries; private stagingrecovery/canonicalorphan retry; finalpathreplacementrefusal; currenthuman/service original/PDF accessaudit/failclosed and signedsourcefreerestore. 31uniqueexecutedtests and retained165/166/65evidence. ApprovedofficialDockerreclaimtoolranexit0afterhumanapproval. Fullmission/release/platform/cutover/retirement/manualdesktoplastremainOPEN.",
+  "state": "22of55originalissuesfullyacceptedclosed33open; existing641alsoclosed. FullR30accepted:26actualtargetedtests plus normalMFAserviceMCPproposal/humanreview/exactCLIHTTPcontext/root-slug/dedup/history/refusals and normalrestart; owner-onlyhistoricalpathdiagnostic withoutmigration/leakage. Retainedfullcorporate/inbox/party and signedhistoryevidence. Priorfailedchecks/rejectedbackend/cancelledcomponentrun retained; actualknownCLIgate/diagnosticrepaired. Fullmission/release/platform/cutover/retirement/manualdesktoplastremainOPEN.",
   "issues_closed": [
     675,
     676,
@@ -24,12 +24,13 @@
     702,
     703,
     704,
+    705,
     706,
     707,
     710
   ],
   "next": [
-    "NextnecessaryR30#705 retains full existing#641canonical knowledge scope/service parity requirement (no R01exclusion found). Current human-onlyslug evidence is notcomplete641. Reuse verified --local-profile root binding; remote-onlyinput remains canonicalslug, never basename guesses. One bounded sharedknowledgeflow, no newwiki, financialfeature or livehistoricaldatarepair. Reuse acceptedcorporate/inboxcompetition/recovery; preservemanualdesktoplast.",
+    "Nextnecessary dependency-ready wholeR34#708: port remaining regulatory-coverage/provision/source-version reports and bind actuallegalhold/discovery/forget/deletionauthority parity to retained GDPR/retention evidence. Preserve fixed source IDs/versions and distinguish product checks from actual external legal/regulatory approval. Do not close on fixed retention citation alone, invent legal claims or repair live data. Reuse accepted686/687/707; manualinstalleddesktoplast.",
     "R24#698reviewedcandidateee9d941bretained; actualtrialbankcontrol-125ledger vs0statementblockedcorrectly. No unchangedfullretry; finaldisposal/restart/restoreacceptance and original#689prerequisite remainopen. Allpartialfinancialeffects/failedreceipts retained.",
     "Original invoice interface inventory now has all31CLI and25MCP bindings, with explicit compatibility corrections documented; do not mistake that family inventory for full product parity. Reconcile remaining original whole-product R44/R45 acceptance from existing epic/issues: actor/env/company-path/default launcher/errors/historical receipts, closure/recovery/automation, signed distribution/update/cutover and TypeScript backend retirement. Continue next necessary whole journey, preserve all accepted evidence/full original scope; installed desktop acceptance last.",
     "Installed desktop acceptance is explicitly deferred to the very end by the user. Preserve prepared Group100 profile; collect remaining native automation, closure, recovery and packaging checks for final installed acceptance without requesting screen unlock during development.",
@@ -46,9 +47,9 @@
   ],
   "all_goal_requirements_complete": false,
   "previous_verified_increment": {
-    "name": "R04 native identity and external-job decision accepted;676closed",
-    "code_revision": "596347c244f1619663c939b425c999f7d0200724",
-    "evidence_key": "r04_identity_decision676"
+    "name": "R15 document recovery and access audit fully accepted;686closed",
+    "code_revision": "c005059b74af9cf4bcceb3a5db3955ad28fd668a",
+    "evidence_key": "r15_documents686"
   },
   "evidence": {
     "combined_browser_log": "/tmp/rm-platform5-combined.log",
@@ -14096,6 +14097,114 @@
         "crates/rentemester-application/src/document_access.rs::service",
         "crates/rentemester-host/src/portable_backup.rs"
       ]
+    },
+    "r30_knowledge705": {
+      "status": "ACCEPTED fulloriginalR30scope; GitHub705and641actuallyclosed",
+      "revision": "ae060f28a63a49ec148c0bbfb5b5a616452e3b51",
+      "report": "/tmp/rentemester-rust-reports/r30-knowledge705-accepted.json",
+      "report_sha256": "64093119bdd87ed6abcfb2a3081b9f4fc78d1b5f94e2c89b81b168287a92cb35",
+      "actual_report": "/tmp/rentemester-rust-reports/knowledge-scope705-actual-ae060f28.json",
+      "actual_sha256": "ab532593b7dc1f8cf9f0aabb9c5f68050c56aed0594070e06efc2f86f270ebad",
+      "sgd_run_id": "rust-r30-knowledge705-final-20261023T135214.326353000",
+      "checks": [
+        {
+          "check": "knowledge-http",
+          "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/rust-r30-knowledge705-final-20261023T135214.326353000/acceptance/290ea6c04b7ca6639f40d34d29514500228eb5086d73664453069d7472a191d2/knowledge-http.log",
+          "sha256": "b66d16f7366602e04585c0f59e7ace074cfa1db4977c16e2aa8f651ef44bd274",
+          "executedTests": 1,
+          "passingGroups": [
+            1
+          ],
+          "zeroGroupsNotClaimed": 0
+        },
+        {
+          "check": "native-build",
+          "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/rust-r30-knowledge705-final-20261023T135214.326353000/acceptance/42a9d399e30097fd1202260bc49c9df255f482db5fc83144afc7007f185b1157/native-build.log",
+          "sha256": "5b406ef47f331f8c1185ce8bf53edec95ce59ffb9454235028b23d4a5cc20749",
+          "executedTests": 0,
+          "passingGroups": [],
+          "zeroGroupsNotClaimed": 0
+        },
+        {
+          "check": "knowledge-adapters",
+          "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/rust-r30-knowledge705-final-20261023T135214.326353000/acceptance/4ce383e77e6cccc1f952e4afbd3be8de57b16158c0c6f47fb4eeefb2a8e2a271/knowledge-adapters.log",
+          "sha256": "d9f63ce3a8187a967cac4859be5d57edd8cd738ee7ff0aabe6a46770e83fadba",
+          "executedTests": 14,
+          "passingGroups": [
+            3,
+            2,
+            4,
+            0,
+            5
+          ],
+          "zeroGroupsNotClaimed": 1
+        },
+        {
+          "check": "actual641",
+          "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/rust-r30-knowledge705-final-20261023T135214.326353000/acceptance/9e581c8f844bcb8b5d43b76b2e3ce0b58ca07d3b49de42373ac157e4c5a5c449/actual641.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "executedTests": 0,
+          "passingGroups": [],
+          "zeroGroupsNotClaimed": 0
+        },
+        {
+          "check": "knowledge-backend",
+          "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/rust-r30-knowledge705-final-20261023T135214.326353000/acceptance/fac86f87f3fe9453ae4ef605dce4e97d00719c74e4a5d1814237c023c3e90aad/knowledge-backend.log",
+          "sha256": "bc1fc44f16a0b306b7422f419b72611da4e6a52521faef9093e3d8247c983308",
+          "executedTests": 11,
+          "passingGroups": [
+            11
+          ],
+          "zeroGroupsNotClaimed": 0
+        }
+      ],
+      "criteria": {
+        "705.concurrentAssignment": "Retained5 actual host inbox tests in113: competing callers have one assignment/event, same-document split recovery, current rights/source/backup refusals; unchanged inbox modules, plus actual two-company113clients/restart and signed36.",
+        "705.versionedKnowledgeCorporate": "Full actual641 service proposal/human review/supersession, original/replacement typed actors and exact restart; retained signed knowledge28/corporate38 source-free history and corporate sensitive/all-company112 controls.",
+        "705.scopeAnd641all6": "Actual scoped-service MCP proposal -> supported human review -> exact canonical CLI/HTTP; slug and verified root both clients; source dedup/review no-op/separate replacement review; B/forged/revoked/reader refusals; focused owner-only legacy diagnostic with no read-side writes/member/service leaks; synthetic adapter/discovery tests."
+      },
+      "retained_evidence": [
+        {
+          "report": "/tmp/rentemester-rust-reports/native-portable-backup-knowledge-integrated28.json",
+          "sha256": "69d13c018a5f1611a0b0d8f212fd002870f7895c762cc788931370509dbb84eb",
+          "sourceRevision": "4be20d2b92d63011f0e00303b11e5f83eefb733e"
+        },
+        {
+          "report": "/tmp/rentemester-rust-reports/native-portable-backup-inbox-integrated36.json",
+          "sha256": "f17782472fcd36ace1a8fca4f2dcf9512f87623f4914506862a5f3ad5e5d9654",
+          "sourceRevision": "b35c696235b64124465dd3174dd3a7071121a4a4"
+        },
+        {
+          "report": "/tmp/rentemester-rust-reports/native-portable-backup-corporate-integrated38.json",
+          "sha256": "eb977fd128e65cfcadd0c625ed7dfd316e73f94d21fac0f9e0dbbd2e54607a6b",
+          "sourceRevision": "538573fe3e4d4c55c8a5c20ecd655fb043b7b638"
+        },
+        {
+          "report": "/tmp/rentemester-rust-reports/native-backup-lock113.json",
+          "sha256": "b9f132dde8d62e465fa974812ce9cb4b9ab278070d3aec4f68f38efdcdcebbba",
+          "sourceRevision": "afe320db2a6732d394b4abde6e19e39e06e9827f"
+        },
+        {
+          "log": "/tmp/rm113-inbox-tests-final.log",
+          "sha256": "638e41099a9f0b16fe1bde57cc90c2781b2ddbbabb918dbf926dfbd6abb09d66"
+        },
+        {
+          "log": "/tmp/rm112-application-tests.log",
+          "sha256": "c694898622548328ea6cadec7ce95fc696d0272572d70ed6f13b4530933d1cdf"
+        }
+      ],
+      "closure_comments": [
+        "https://github.com/mikkelkrogsholm/rentemester/issues/705#issuecomment-6366684820",
+        "https://github.com/mikkelkrogsholm/rentemester/issues/641#issuecomment-6366689972"
+      ],
+      "limits": [
+        "Native macOS ordinary MFA/UDS/TCP and real Rust CLI/MCP; no Linux/Windows or installed desktop certification.",
+        "Current actual fixture retains one deliberate source-backed journal; knowledge actions change neither company books.",
+        "Actual641 does not itself prove new signed restore; retained generic unchanged knowledge codec28 and corporate/inbox36/38 proofs remain specifically attributed to their revisions.",
+        "Original CLI aliases use exact native stdin/confirmation; no claim of every legacy CLI flag parity.",
+        "All55originalissue scopes, remaining release/platform/cutover/TypeScript retirement and manual-desktop-last gates preserved.698financial blocker and effects unchanged."
+      ],
+      "failed_component_run_preserved": "rust-r30-knowledge705-service-scope-20261023T132012.160052000"
     }
   },
   "verified_history": [
@@ -15930,6 +16039,12 @@
       "code_revision": "a45a028ac4d9487f182133d15b3a7c0d41743f28",
       "evidence_key": "owner_recovery707_completion",
       "status": "CLOSED full original R33 scope/fivecriteria/J05-J06 supported by composed existing backend proof and final sharedUI guidance"
+    },
+    {
+      "current_increment": "R30 company knowledge/corporate/inbox fully accepted;705and641closed",
+      "code_revision": "ae060f28a63a49ec148c0bbfb5b5a616452e3b51",
+      "state": "22of55originalissuesfullyacceptedclosed33open; existing641alsoclosed. FullR30accepted:26actualtargetedtests plus normalMFAserviceMCPproposal/humanreview/exactCLIHTTPcontext/root-slug/dedup/history/refusals and normalrestart; owner-onlyhistoricalpathdiagnostic withoutmigration/leakage. Retainedfullcorporate/inbox/party and signedhistoryevidence. Priorfailedchecks/rejectedbackend/cancelledcomponentrun retained; actualknownCLIgate/diagnosticrepaired. Fullmission/release/platform/cutover/retirement/manualdesktoplastremainOPEN.",
+      "evidence_key": "r30_knowledge705"
     }
   ],
   "scope_clarifications": [
