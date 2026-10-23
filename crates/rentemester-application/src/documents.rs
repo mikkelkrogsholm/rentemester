@@ -435,7 +435,10 @@ pub fn read(
     context: Context<'_>,
     id: i64,
 ) -> Result<Committed<Original>, Failure> {
-    control_fence::execute_cookie_subject(
+    let cookie = context.cookie;
+    let clock = context.clock;
+    let slug = context.selection.slug;
+    let result = control_fence::execute_cookie_subject(
         control,
         company,
         CookieAuthorization {
@@ -456,8 +459,10 @@ pub fn read(
                 mime: evidence.mime,
             })
         },
-    )
+    );
+    crate::document_access::human(control, cookie, clock, slug, "document_file", id, result)
 }
+
 pub fn list(
     control: &mut Connection,
     company: &mut Connection,

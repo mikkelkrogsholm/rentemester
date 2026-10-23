@@ -180,3 +180,5 @@ pub mod posting_rules_original;
 pub mod accounts_original;
 
 pub mod accounting_draft_original;
+
+mod document_access;

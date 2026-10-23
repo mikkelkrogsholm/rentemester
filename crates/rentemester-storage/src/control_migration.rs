@@ -346,7 +346,7 @@ pub(crate) fn validate_current_control(db: &Connection) -> Result<(), Error> {
     let expected = catalogue()?;
     let steps = steps(&ARTIFACTS, &expected)?;
     if history(db, &expected)?.len() != expected.len()
-        || schema(db)? != reference(&steps, expected.len())?
+        || crate::document_access::strip_schema(db, &schema(db)?)? != reference(&steps, expected.len())?
     {
         return Err(unsupported(
             "complete current control schema/history required",

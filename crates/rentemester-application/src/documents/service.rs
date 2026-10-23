@@ -172,7 +172,12 @@ pub fn read_service(
     context: service_company::Context<'_>,
     id: i64,
 ) -> Result<ServiceResult<Original>, ServiceFailure> {
-    service_company::execute_operation(
+    let key = context.key;
+    let clock = context.clock;
+    let slug = context.selection.slug;
+    let registered = context.selection.registered;
+    let archived = context.selection.archived;
+    let result = service_company::execute_operation(
         control,
         company,
         context,
@@ -192,5 +197,16 @@ pub fn read_service(
                 receipt: None,
             })
         },
+    );
+    crate::document_access::service(
+        control,
+        key,
+        clock,
+        slug,
+        registered,
+        archived,
+        "document_file",
+        id,
+        result,
     )
 }
