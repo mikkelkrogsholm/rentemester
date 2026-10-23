@@ -180,15 +180,26 @@ mod tests {
         let value = json!({"ok":false,"errors":["Synthetic incompatible account"],
             "status":"incomplete","missing":["bank"],"ambiguous":[],
             "proposals":[],"candidates":[],"reasons":[],"roles":[]});
-        let error = rentemester_engine::Error::new(
-            "accounts_original_business", value.to_string());
+        let error = rentemester_engine::Error::new("accounts_original_business", value.to_string());
         let response = failure(&error, false);
         assert_eq!(response.status(), StatusCode::UNPROCESSABLE_ENTITY);
         let bytes = to_bytes(response.into_body(), app::MAX_BODY).await.unwrap();
         assert_eq!(serde_json::from_slice::<Value>(&bytes).unwrap(), value);
-        assert_eq!(failure(&error, true).status(), StatusCode::SERVICE_UNAVAILABLE);
-        assert_eq!(domain_error("invalid_credentials", true).status(), StatusCode::UNAUTHORIZED);
-        assert_eq!(domain_error("access_denied", true).status(), StatusCode::FORBIDDEN);
-        assert_eq!(domain_error("invalid_input", false).status(), StatusCode::BAD_REQUEST);
+        assert_eq!(
+            failure(&error, true).status(),
+            StatusCode::SERVICE_UNAVAILABLE
+        );
+        assert_eq!(
+            domain_error("invalid_credentials", true).status(),
+            StatusCode::UNAUTHORIZED
+        );
+        assert_eq!(
+            domain_error("access_denied", true).status(),
+            StatusCode::FORBIDDEN
+        );
+        assert_eq!(
+            domain_error("invalid_input", false).status(),
+            StatusCode::BAD_REQUEST
+        );
     }
 }

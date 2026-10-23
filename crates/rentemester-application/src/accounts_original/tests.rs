@@ -102,31 +102,80 @@ fn accounts_original_current_authority_precedes_all_parsing() {
     for role in ["reader", "bookkeeper", "reviewer"] {
         let mut f = fixture(role);
         for op in [Operation::Add, Operation::RoleConfirm] {
-            for body in [b"not json".as_slice(), br#"{"confirm":true,"confirm":true}"#] {
-                let failure = execute(&mut f.control, &mut f.company, &mut f.guard,
-                    context(&f.cookie), request(body), op).err().unwrap();
+            for body in [
+                b"not json".as_slice(),
+                br#"{"confirm":true,"confirm":true}"#,
+            ] {
+                let failure = execute(
+                    &mut f.control,
+                    &mut f.company,
+                    &mut f.guard,
+                    context(&f.cookie),
+                    request(body),
+                    op,
+                )
+                .err()
+                .unwrap();
                 assert_eq!(failure.error.code, "access_denied");
             }
         }
         for op in [Operation::List, Operation::RolesStatus] {
-            let value = execute(&mut f.control, &mut f.company, &mut f.guard,
-                context(&f.cookie), request(b""), op).unwrap().value;
+            let value = execute(
+                &mut f.control,
+                &mut f.company,
+                &mut f.guard,
+                context(&f.cookie),
+                request(b""),
+                op,
+            )
+            .unwrap()
+            .value;
             assert_eq!(value["ok"], true);
-            assert_eq!(execute(&mut f.control, &mut f.company, &mut f.guard,
-                context(&f.cookie), request(b"not json"), op).err().unwrap().error.code,
-                "invalid_input");
+            assert_eq!(
+                execute(
+                    &mut f.control,
+                    &mut f.company,
+                    &mut f.guard,
+                    context(&f.cookie),
+                    request(b"not json"),
+                    op
+                )
+                .err()
+                .unwrap()
+                .error
+                .code,
+                "invalid_input"
+            );
         }
         f.control.execute_batch("INSERT INTO rm_company_membership_events(user_id,company_slug,event_type,company_role,actor)VALUES('u','a','revoke',NULL,'user:u')").unwrap();
-        for op in [Operation::List, Operation::RolesStatus, Operation::Add, Operation::RoleConfirm] {
-            assert_eq!(execute(&mut f.control, &mut f.company, &mut f.guard,
-                context(&f.cookie), request(b"not json"), op).err().unwrap().error.code,
-                "access_denied");
+        for op in [
+            Operation::List,
+            Operation::RolesStatus,
+            Operation::Add,
+            Operation::RoleConfirm,
+        ] {
+            assert_eq!(
+                execute(
+                    &mut f.control,
+                    &mut f.company,
+                    &mut f.guard,
+                    context(&f.cookie),
+                    request(b"not json"),
+                    op
+                )
+                .err()
+                .unwrap()
+                .error
+                .code,
+                "access_denied"
+            );
         }
     }
 }
 #[test]
 fn accounts_original_recursive_parse_and_typed_assertions() {
-    let base = json!({"input":{"accountNo":" 1790 ","name":" Synthetic ","type":"asset"},"confirm":true});
+    let base =
+        json!({"input":{"accountNo":" 1790 ","name":" Synthetic ","type":"asset"},"confirm":true});
     for actor in ["user:u", "service_account:u"] {
         let mut value = base.clone();
         value["actor"] = json!(actor);
@@ -135,7 +184,12 @@ fn accounts_original_recursive_parse_and_typed_assertions() {
         let parsed = parse(&request(&bytes), Operation::Add, actor).unwrap();
         assert!(parsed.get("actor").is_none() && parsed.get("principal").is_none());
         assert_eq!(parsed["input"]["accountNo"], " 1790 ");
-        assert_eq!(parse(&request(&bytes), Operation::Add, "user:other").unwrap_err().code, "access_denied");
+        assert_eq!(
+            parse(&request(&bytes), Operation::Add, "user:other")
+                .unwrap_err()
+                .code,
+            "access_denied"
+        );
     }
     for body in [
         br#"{"input":{"accountNo":"1","accountNo":"2"},"confirm":true}"#.as_slice(),
@@ -147,8 +201,22 @@ fn accounts_original_recursive_parse_and_typed_assertions() {
     ] {
         assert!(parse(&request(body), Operation::Add, "user:u").is_err());
     }
-    assert!(parse(&request(br#"{"role":"bank","accountNo":"1790","confirm":true}"#), Operation::RoleConfirm, "user:u").is_ok());
-    assert!(parse(&request(br#"{"role":"bank","accountNo":"1790","confirm":true,"version":1}"#), Operation::RoleConfirm, "user:u").is_err());
+    assert!(
+        parse(
+            &request(br#"{"role":"bank","accountNo":"1790","confirm":true}"#),
+            Operation::RoleConfirm,
+            "user:u"
+        )
+        .is_ok()
+    );
+    assert!(
+        parse(
+            &request(br#"{"role":"bank","accountNo":"1790","confirm":true,"version":1}"#),
+            Operation::RoleConfirm,
+            "user:u"
+        )
+        .is_err()
+    );
     for op in [Operation::List, Operation::RolesStatus] {
         assert_eq!(parse(&request(b""), op, "user:u").unwrap(), json!({}));
         for body in [b"{}".as_slice(), br#"{"actor":"user:u"}"#] {
@@ -161,8 +229,18 @@ fn accounts_original_recursive_parse_and_typed_assertions() {
     assert!(parse(&request(&bounded), Operation::Add, "user:u").is_ok());
     bounded.push(b' ');
     assert!(parse(&request(&bounded), Operation::Add, "user:u").is_err());
-    for r in [Request { body: &bytes, query: Some(""), valid_transport: true },
-        Request { body: &bytes, query: None, valid_transport: false }] {
+    for r in [
+        Request {
+            body: &bytes,
+            query: Some(""),
+            valid_transport: true,
+        },
+        Request {
+            body: &bytes,
+            query: None,
+            valid_transport: false,
+        },
+    ] {
         assert!(parse(&r, Operation::Add, "user:u").is_err());
     }
 }
@@ -205,10 +283,7 @@ fn accounts_original_service_current_typed_authority_precedes_parse() {
             archived: false,
         },
     };
-    for op in [
-        Operation::Add,
-        Operation::RoleConfirm,
-    ] {
+    for op in [Operation::Add, Operation::RoleConfirm] {
         assert_eq!(
             execute_service(
                 &mut f.control,
@@ -256,11 +331,35 @@ fn accounts_original_service_current_typed_authority_precedes_parse() {
         .code,
         "access_denied"
     );
-    assert_eq!(execute_service(&mut f.control, &mut f.company, &mut f.guard,
-        service(), request(b"not json"), Operation::Add).err().unwrap().error.code, "invalid_input");
+    assert_eq!(
+        execute_service(
+            &mut f.control,
+            &mut f.company,
+            &mut f.guard,
+            service(),
+            request(b"not json"),
+            Operation::Add
+        )
+        .err()
+        .unwrap()
+        .error
+        .code,
+        "invalid_input"
+    );
     let valid = serde_json::to_vec(&json!({"input":{"accountNo":"1790","name":"Synthetic bank","type":"asset"},"confirm":true,"principal":format!("service_account:{subject}")})).unwrap();
-    assert_eq!(execute_service(&mut f.control, &mut f.company, &mut f.guard,
-        service(), request(&valid), Operation::Add).unwrap().result["ok"], true);
+    assert_eq!(
+        execute_service(
+            &mut f.control,
+            &mut f.company,
+            &mut f.guard,
+            service(),
+            request(&valid),
+            Operation::Add
+        )
+        .unwrap()
+        .result["ok"],
+        true
+    );
     f.control.execute("INSERT INTO rm_company_membership_events(user_id,company_slug,event_type,actor)VALUES(?1,'a','revoke','user:u')", [subject]).unwrap();
     assert_eq!(
         execute_service(
@@ -289,11 +388,33 @@ fn accounts_original_core_false_is_exact_fence_failure_and_atomic() {
         store::execute(&tx, Operation::RoleConfirm, &input, "user:u").unwrap()
     };
     assert_eq!(expected["ok"], false);
-    let failure = execute(&mut f.control, &mut f.company, &mut f.guard,
-        context(&f.cookie), request(body), Operation::RoleConfirm).err().unwrap();
+    let failure = execute(
+        &mut f.control,
+        &mut f.company,
+        &mut f.guard,
+        context(&f.cookie),
+        request(body),
+        Operation::RoleConfirm,
+    )
+    .err()
+    .unwrap();
     assert_eq!(failure.error.code, "accounts_original_business");
-    assert_eq!(serde_json::from_str::<Value>(&failure.error.message).unwrap(), expected);
-    assert!(expected["errors"].as_array().is_some_and(|errors| !errors.is_empty()
-        && errors.iter().all(|e| e.as_str().is_some_and(|s| !s.trim().is_empty() && !s.starts_with('{')))));
-    assert_eq!(f.company.query_row("SELECT count(*) FROM audit_log", [], |r| r.get::<_, i64>(0)).unwrap(), 0);
+    assert_eq!(
+        serde_json::from_str::<Value>(&failure.error.message).unwrap(),
+        expected
+    );
+    assert!(
+        expected["errors"]
+            .as_array()
+            .is_some_and(|errors| !errors.is_empty()
+                && errors.iter().all(|e| e
+                    .as_str()
+                    .is_some_and(|s| !s.trim().is_empty() && !s.starts_with('{'))))
+    );
+    assert_eq!(
+        f.company
+            .query_row("SELECT count(*) FROM audit_log", [], |r| r.get::<_, i64>(0))
+            .unwrap(),
+        0
+    );
 }

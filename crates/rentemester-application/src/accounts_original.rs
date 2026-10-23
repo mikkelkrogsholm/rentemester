@@ -8,7 +8,7 @@ use crate::{
 use rentemester_engine::Error;
 use rentemester_runtime::{auth::Clock, namespace::NamespaceGuard};
 pub use rentemester_storage::accounts_original::Operation;
-use rentemester_storage::{idempotency::PrincipalKind, accounts_original as store};
+use rentemester_storage::{accounts_original as store, idempotency::PrincipalKind};
 use rusqlite::{Connection, Transaction};
 use serde::{
     Deserialize,
@@ -127,10 +127,17 @@ fn parse(r: &Request<'_>, op: Operation, actor: &str) -> Result<Value, Error> {
     match op {
         Operation::Add => {
             keys(&v, &["input", "confirm"])?;
-            keys(&v["input"], &[
-                "accountNo", "name", "type", "normalBalance", "defaultVatCode",
-                "allowDirectPosting",
-            ])?;
+            keys(
+                &v["input"],
+                &[
+                    "accountNo",
+                    "name",
+                    "type",
+                    "normalBalance",
+                    "defaultVatCode",
+                    "allowDirectPosting",
+                ],
+            )?;
         }
         Operation::RoleConfirm => keys(&v, &["role", "accountNo", "confirm"])?,
         Operation::List | Operation::RolesStatus => unreachable!(),
@@ -156,10 +163,7 @@ fn execute_tx(
     let v = parse(&r, op, &actor)?;
     let value = store::execute(tx, op, &v, &actor).map_err(business)?;
     if value.get("ok").and_then(Value::as_bool) == Some(false) {
-        return Err(Error::new(
-            "accounts_original_business",
-            value.to_string(),
-        ));
+        return Err(Error::new("accounts_original_business", value.to_string()));
     }
     Ok(value)
 }
