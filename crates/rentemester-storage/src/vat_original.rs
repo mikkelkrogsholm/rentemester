@@ -51,7 +51,7 @@ fn counts(tx: &Transaction<'_>, from: &str, to: &str, result: &mut Value) -> Res
             Ok((
                 r.get::<_, i64>(0)?,
                 r.get::<_, Option<i64>>(1)?,
-                r.get::<_, u64>(2)?,
+                r.get::<_, i64>(2)?,
             ))
         })
         .map_err(invalid)?
@@ -61,8 +61,8 @@ fn counts(tx: &Transaction<'_>, from: &str, to: &str, result: &mut Value) -> Res
         .iter()
         .filter_map(|(_, original, _)| *original)
         .collect::<std::collections::BTreeSet<_>>();
-    let mut entries = [0u64; 3];
-    let mut lines = [0u64; 3];
+    let mut entries = [0i64; 3];
+    let mut lines = [0i64; 3];
     for (id, original, count) in rows {
         let group = if original.is_some() {
             2
