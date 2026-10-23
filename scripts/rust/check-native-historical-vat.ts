@@ -73,6 +73,7 @@ export function createHistoricalVatProof(base:string,work:string,onStep:(s:strin
     need(plan.controls.length===0,'zero real bank/debtor/creditor source controls');
     receipt=(await http(root+'imports/dinero/apply',{...fixture.body,planHash:plan.planHash,idempotencyKey:'synthetic-historical-vat175-once',confirm:true})).dineroImport;
     need(receipt.attemptId>0&&receipt.journalCount===1&&receipt.openingBalance,'ordinary accepted import with nonzero opening');
+    for(const [role,accountNo]of [['bank','5510'],['debtors','5520'],['creditors','6800']])await http(root+'account-roles',{role,accountNo,confirm:true});
     const native=(await http(root+'vat?year='+year)).vat;
     need(native.periodStart===from&&native.periodEnd===to&&native.inputVat===25&&native.outputVat===0&&native.outputVatAdjustment===0&&native.payable===-25&&native.vatReportErrors.length===0,'independent native HTTP VAT');
     const report=await http(api+'report?'+query());
