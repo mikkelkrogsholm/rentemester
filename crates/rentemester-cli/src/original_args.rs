@@ -40,7 +40,8 @@ fn boolean(name: &str) -> bool {
 }
 
 fn migrated(args: &[String]) -> bool {
-    crate::accounts_original::accepts(args)
+    crate::accounting_draft_original::accepts(args)
+        || crate::accounts_original::accepts(args)
         || crate::posting_rules_original::accepts(args)
         || crate::dimensions_original::accepts(args)
         || crate::supplier_commitment_original::accepts(args)
@@ -141,7 +142,7 @@ pub fn prepare(args: Vec<String>) -> Result<Vec<String>, (u8, Error)> {
         && command.first().is_some_and(|s| {
             matches!(
                 s.as_str(),
-                "accounts" | "posting-rules" | "dimensions" | "supplier-commitment" | "vat" | "customer"
+                "accounting-draft" | "accounts" | "posting-rules" | "dimensions" | "supplier-commitment" | "vat" | "customer"
                     | "budget"
                     | "asset"
                     | "accrual"
@@ -166,7 +167,7 @@ pub fn prepare(args: Vec<String>) -> Result<Vec<String>, (u8, Error)> {
         return Ok(args); // Native remote and experimental local dialects are opaque.
     }
     let command_indices: Vec<usize> = words.into_iter().take(2).collect();
-    let period = command.first().is_some_and(|s| s == "period");
+    let period = command.first().is_some_and(|s| matches!(s.as_str(), "period" | "accounting-draft"));
     let mut seen = std::collections::BTreeSet::new();
     let mut output = command;
     let mut format = None;
@@ -231,7 +232,7 @@ pub fn prepare(args: Vec<String>) -> Result<Vec<String>, (u8, Error)> {
             matches!(
                 s.as_str(),
                 "exceptions"
-                    | "accounts" | "posting-rules" | "dimensions" | "supplier-commitment" | "vat" | "customer"
+                    | "accounting-draft" | "accounts" | "posting-rules" | "dimensions" | "supplier-commitment" | "vat" | "customer"
                     | "vendor"
                     | "documents"
                     | "expense"

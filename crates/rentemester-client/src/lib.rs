@@ -578,3 +578,6 @@ pub use posting_rules_original::{PostingRulesOriginalOperation, original_posting
 
 mod accounts_original;
 pub use accounts_original::{AccountsOriginalOperation, original_accounts_schema, validate_original_accounts};
+
+mod accounting_draft_original;
+pub use accounting_draft_original::{AccountingDraftOriginalOperation, MAX_ACCOUNTING_DRAFT_BODY, original_accounting_draft_schema, validate_original_accounting_draft, parse_original_accounting_draft_json, original_accounting_draft_file};
