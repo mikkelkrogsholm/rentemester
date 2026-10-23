@@ -8,7 +8,14 @@ import { isDeepStrictEqual } from 'node:util';
 type User = { email: string; password: string; codes: string[] };
 /** One existing owner, normal MFA, one source-backed post through a selected local adapter. */
 export function createLocalRuntimeProof(page: Page, base: string, work: string, member: Page, users: { owner: User; member: User }, adapter: 'cli' | 'mcp' = 'cli') {
-  const prefix = '/api/companies/synthetic/', cli = join(work, 'rentemester-rust');
+  const candidate = process.env.RM_NATIVE_CLI_CANDIDATE === '1';
+  const program = (name: string) => join(work, ...(candidate ? ['candidate', 'bin', name === 'rentemester-rust' ? 'rentemester' : name] : [name]));
+  // Only product children receive this environment; the Bun/Playwright harness retains its PATH.
+  const childEnv = candidate ? Object.fromEntries(Object.entries(process.env).filter(([key]) => !/BUN|NODE|FALLBACK|LEGACY|RENTEMESTER|^RM_/.test(key))) : process.env;
+  if (candidate) childEnv.PATH = join(work, 'empty-path');
+  const prefix = '/api/companies/synthetic/', cli = program('rentemester-rust');
+  let retainedVendors: any;
+
   const ownerFile = join(work, 'uds-owner.cookie'), memberFile = join(work, 'uds-member.cookie');
   let proofStep = 'prelude';
   const need = (v: unknown, message: string) => { if (!v) { const error = Error(message); error.name = 'LocalRuntime_' + proofStep + '_' + message.split(':')[0].replace(/[^A-Za-z0-9_]/g, '_').slice(0, 70); throw error; } };
@@ -18,13 +25,14 @@ export function createLocalRuntimeProof(page: Page, base: string, work: string, 
   async function get(path: string, actor = page) { const r = await actor.request.get(base + path); need(r.ok(), 'Local runtime canonical read ' + path); return r.json(); }
   async function post(path: string, data: unknown) { const r = await page.request.post(base + path, { headers: { origin: base }, data }); const v = await r.json(); need(r.ok() && v.ok !== false, 'Local runtime setup ' + path); return v; }
   function invoke(args: string[], input = '', expected = 0) {
-    const r = spawnSync(cli, args, { input, encoding: 'utf8', timeout: 45000, maxBuffer: 16 * 1024 * 1024 });
+    const r = spawnSync(cli, args, { env: childEnv, input, encoding: 'utf8', timeout: 45000, maxBuffer: 16 * 1024 * 1024 });
     if (r.error || r.status !== expected) { const error = Error('Local CLI result differs'); error.name = 'LocalRuntime_' + proofStep + '_cli_exit_' + String(r.status ?? 'spawn') + '_expected_' + expected; throw error; }
     for (const user of [users.owner, users.member]) need(!r.stdout.includes(user.password) && !r.stderr.includes(user.password), 'No password in CLI output');
+    if (candidate && expected === 2 && !r.stdout) { need(!!r.stderr.trim(), 'Usage stderr only'); return; }
     return JSON.parse(r.stdout);
   }
   function invokeMcp(args: string[], input = '', expected = 0) {
-    const r = spawnSync(join(work, 'rentemester-mcp'), args, { input, encoding: 'utf8', timeout: 45000, maxBuffer: 16 * 1024 * 1024 });
+    const r = spawnSync(program('rentemester-mcp'), args, { env: childEnv, input, encoding: 'utf8', timeout: 45000, maxBuffer: 16 * 1024 * 1024 });
     need(!r.error && r.status === expected, 'MCP process expected exit ' + expected);
     for (const user of [users.owner, users.member]) need(!r.stdout.includes(user.password) && !r.stderr.includes(user.password), 'No password in MCP output');
     for (const file of [ownerFile, memberFile]) if (existsSync(file)) {
@@ -50,6 +58,30 @@ export function createLocalRuntimeProof(page: Page, base: string, work: string, 
     need(isDeepStrictEqual(JSON.parse(call.result.content[0].text), value), 'MCP text and structured content agree');
     if (expected !== 0) need(typeof value.error?.code === 'string' && typeof value.error?.message === 'string', 'MCP refusal retains typed error');
     return value;
+  }
+  function vendorCli(operation: string, transport: 'remote' | 'local', flags: string[] = [], file = ownerFile, expected = 0, company = 'synthetic') {
+    return invoke(['vendor', operation, ...(transport === 'remote' ? ['--server', base, '--allow-loopback-http'] : ['--local-profile', work]), '--cookie-file', file, '--company', company, '--json', ...flags], '', expected);
+  }
+  function vendorMcp() {
+    const wire = [
+      { jsonrpc: '2.0', id: 1, method: 'initialize', params: { protocolVersion: '2025-11-25', capabilities: {}, clientInfo: { name: 'synthetic-candidate181', version: '1' } } },
+      { jsonrpc: '2.0', method: 'notifications/initialized' },
+      { jsonrpc: '2.0', id: 2, method: 'tools/call', params: { name: 'vendor_list', arguments: { company: 'synthetic' } } },
+    ].map(v => JSON.stringify(v)).join('\n') + '\n';
+    const r = invokeMcp(['--local-profile', work, '--cookie-file', ownerFile], wire);
+    const responses = r.stdout.trim().split('\n').map(v => JSON.parse(v));
+    need(responses.find(v => v.id === 1)?.result?.protocolVersion === '2025-11-25', 'Vendor MCP initialization');
+    const call = responses.find(v => v.id === 2), value = call?.result?.structuredContent;
+    need(!call?.error && value?.ok && !call.result.isError && isDeepStrictEqual(JSON.parse(call.result.content[0].text), value), 'Vendor MCP source envelope');
+    return value.data;
+  }
+  async function vendors() {
+    const canonical = await get(prefix + 'master-data/original/vendors?archived=false');
+    need(canonical.ok && canonical.count === 2 && isDeepStrictEqual(canonical, vendorCli('list', 'remote')) && isDeepStrictEqual(canonical, vendorCli('list', 'local')), 'Vendor source remote/local exact projection');
+    need(canonical.rows.every((r: any) => r.name === 'Synthetic Shared Supplier' && r.countryCode === 'DK' && r.identifierKind === 'dk_cvr') && canonical.rows[0].id !== canonical.rows[1].id && isDeepStrictEqual(canonical.rows.map((r: any) => r.vatOrCvr), ['DK12345678', 'DK87654321']), 'Same name distinct legal identities');
+    need(isDeepStrictEqual(vendorMcp().rows, canonical.rows), 'Same candidate MCP exact vendor rows');
+    if (retainedVendors) need(isDeepStrictEqual(canonical, retainedVendors), 'Exact entire vendor rows retained');
+    return canonical;
   }
   function login(user: User, file: string) {
     proofStep = user === users.owner ? 'owner_login' : 'member_login';
@@ -80,9 +112,23 @@ export function createLocalRuntimeProof(page: Page, base: string, work: string, 
   return {
     async run() {
       need(!completed, 'Local runtime fixture once'); const initialDescriptor = descriptor(); proofStep = 'competing_owner';
-      const competing = spawnSync(join(work, 'rentemester-server'), ['--config', join(work, 'server.json'), '--web-dir', join(work, 'web'), '--listen', '127.0.0.1:0', '--local-runtime-dir', work], { encoding: 'utf8', timeout: 20000, maxBuffer: 1024 * 1024 });
+      const competing = spawnSync(program('rentemester-server'), ['--config', join(work, 'server.json'), '--web-dir', join(work, ...(candidate ? ['candidate', 'web'] : ['web'])), '--listen', '127.0.0.1:0', '--local-runtime-dir', work], { env: childEnv, encoding: 'utf8', timeout: 20000, maxBuffer: 1024 * 1024 });
       need(!competing.error && competing.status !== 0 && (competing.stdout + competing.stderr).includes('workspace_busy') && descriptor().descriptorSha256 === initialDescriptor.descriptorSha256, 'Competing server refused by same workspace lease without replacing endpoint');
       login(users.owner, ownerFile); login(users.member, memberFile);
+      if (candidate) {
+        proofStep = 'vendor_collision';
+        const create = (transport: 'remote' | 'local', cvr: string) => vendorCli('create', transport, ['--name', 'Synthetic Shared Supplier', '--cvr', cvr, '--country', 'DK', '--identifier-kind', 'dk_cvr']);
+        const first = create('remote', 'DK12345678');
+        need(first.ok && Number.isSafeInteger(first.vendorId), 'First source vendor receipt');
+        const firstRow = (await get(prefix + 'master-data/original/vendors')).rows[0];
+        const second = create('local', 'DK87654321');
+        need(second.ok && Number.isSafeInteger(second.vendorId) && first.vendorId !== second.vendorId, 'Second source vendor receipt distinct');
+        retainedVendors = await vendors();
+        need(isDeepStrictEqual(retainedVendors.rows[0], firstRow), 'Second creation never overwrites entire first row');
+        vendorCli('list', 'local', ['--bogus'], ownerFile, 2);
+        need(vendorCli('list', 'remote', [], ownerFile, 1, 'ungranted-synthetic').ok === false, 'Wrong company refused');
+        await vendors();
+      }
       proofStep = 'source_setup';
       const today = (await get('/api/portfolio')).portfolio.asOf;
       for (const [accountNo, type, normalBalance] of [['1738', 'asset', 'debit'], ['3738', 'income', 'credit']]) await post(prefix + 'accounts', { accountNo, name: 'Synthetic local CLI ' + accountNo, type, normalBalance });
@@ -98,6 +144,10 @@ export function createLocalRuntimeProof(page: Page, base: string, work: string, 
       const memberId = (await get('/api/me', member)).user.id; await post('/api/workspace/members/company', { userId: memberId, action: 'revoke', companySlug: 'synthetic' });
       need(local('journal', memberFile, undefined, 1).ok === false, 'Local retained-session revocation');
       need(local('post-journal', memberFile, { ...posting, input: { ...posting.input, idempotencyKey: 'synthetic-local-runtime-' + adapter + '-refused' } }, 1).ok === false, 'Local revoked mutation refuses');
+      if (candidate) {
+        for (const transport of ['remote', 'local'] as const) need(vendorCli('list', transport, [], memberFile, 1).ok === false, 'Revoked vendor read refused');
+        await vendors();
+      }
       proofStep = 'negative_binding';
       const binding = (profile: string, expected = 2, extra: string[] = []) => adapter === 'mcp'
         ? invokeMcp(['--local-profile', profile, '--cookie-file', ownerFile, ...extra], '', expected)
@@ -113,12 +163,13 @@ export function createLocalRuntimeProof(page: Page, base: string, work: string, 
       const socket = join(work, 'r.sock'), held = join(work, 'r-held.sock'); renameSync(socket, held);
       try { binding(work); need((await page.request.get(base + '/api/health')).ok(), 'TCP still available while UDS deliberately absent; no fallback'); } finally { renameSync(held, socket); }
       await unchanged(); const fullAudit = await get(prefix + 'audit-verify'); need(fullAudit.audit?.available && fullAudit.audit.ok && fullAudit.audit.entries === 1 && fullAudit.audit.components.length === 5 && fullAudit.audit.components.every((c: any) => c.available && c.ok), 'Complete accounting/source audit'); completed = true;
-      return { adapter, qualified: true, rpcTextStructuredAgreement: adapter === 'mcp', ordinaryMfa: true, normalLocalCliLogins: logins, oneSharedOwner: true, competingOwnerRefused: true, sourceBackedLocalPost: true, replaySameEntry: true, currentRevocationRefused: true, unsafeBindingRefused: true, noTcpFallback: true, adapterExitLeavesServerRunning: true, cliExitLeavesServerRunning: adapter === 'cli', projections: proof, fullAudit, postingReceipt: posted.data, accountingFingerprint: hash(JSON.stringify(stable)), installedNativeQualified: false, sourceFreeRestoreQualified: false };
+      return { adapter, ...(candidate ? { vendors: retainedVendors, packagedPrograms: ['rentemester', 'rentemester-mcp', 'rentemester-server'], emptyProductPath: childEnv.PATH, noLegacyFallback: true } : {}), qualified: true, rpcTextStructuredAgreement: adapter === 'mcp', ordinaryMfa: true, normalLocalCliLogins: logins, oneSharedOwner: true, competingOwnerRefused: true, sourceBackedLocalPost: true, replaySameEntry: true, currentRevocationRefused: true, unsafeBindingRefused: true, noTcpFallback: true, adapterExitLeavesServerRunning: true, cliExitLeavesServerRunning: adapter === 'cli', projections: proof, fullAudit, postingReceipt: posted.data, accountingFingerprint: hash(JSON.stringify(stable)), installedNativeQualified: false, sourceFreeRestoreQualified: false };
     },
     async reopen() {
       need(completed, 'Completed local CLI setup'); rmSync(ownerFile); login(users.owner, ownerFile); await unchanged(); const proof = await projections();
       const descriptorFilesPresent = existsSync(join(work, 'r.json')) && existsSync(join(work, 'r.sock')); need(descriptorFilesPresent, 'Normal restart republished local endpoint');
-      rmSync(ownerFile); rmSync(memberFile); return { adapter, qualified: true, rpcTextStructuredAgreement: adapter === 'mcp', ordinaryMfa: true, normalLocalCliLogins: logins, exactNormalMfaRestartState: true, projections: proof, accountingFingerprint: hash(JSON.stringify(stable)), installedNativeQualified: false, sourceFreeRestoreQualified: false };
+      if (candidate) await vendors();
+      rmSync(ownerFile); rmSync(memberFile); return { adapter, ...(candidate ? { vendors: retainedVendors, packagedPrograms: ['rentemester', 'rentemester-mcp', 'rentemester-server'], emptyProductPath: childEnv.PATH, noLegacyFallback: true } : {}), qualified: true, rpcTextStructuredAgreement: adapter === 'mcp', ordinaryMfa: true, normalLocalCliLogins: logins, exactNormalMfaRestartState: true, projections: proof, accountingFingerprint: hash(JSON.stringify(stable)), installedNativeQualified: false, sourceFreeRestoreQualified: false };
     },
   };
 }
