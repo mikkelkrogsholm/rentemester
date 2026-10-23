@@ -581,3 +581,6 @@ pub use accounts_original::{AccountsOriginalOperation, original_accounts_schema,
 
 mod accounting_draft_original;
 pub use accounting_draft_original::{AccountingDraftOriginalOperation, MAX_ACCOUNTING_DRAFT_BODY, original_accounting_draft_schema, validate_original_accounting_draft, parse_original_accounting_draft_json, original_accounting_draft_file};
+
+mod bookkeeping_batch_original;
+pub use bookkeeping_batch_original::{OriginalBatchOperation, bookkeeping_batch_original_schema, validate_bookkeeping_batch_original};

@@ -3,6 +3,7 @@ use serde_json::{Value, json};
 
 pub fn help() -> Value {
     json!({"ok":true,"localBinding":"Existing migrated commands may select --local-profile ABS_PRIVATE_PROFILE instead of --server/--allow-loopback-http. Join only: same server via private Unix socket with normal cookie/service authentication. Bounded company selection supports explicit slug or verified workspace path and RENTEMESTER_COMPANY fallback for migrated company commands only. Identity remains server-owned; no caller-selected actor. Whole-product parity is unfinished and the default launcher is unchanged.","commands":[
+        {"name":"bookkeeping-batch plan|persist|dry-run|approve|apply|status","usage":"bookkeeping-batch --help","scope":"reviewed expected hash, four explicitly confirmed writes including durable dry-run; current human cookie authority, atomic_v1 receipts and legacy inspect-only history; no retry"},
         {"name":"accounting-draft create|revise|submit|reject|approve-and-post|show|list","usage":"accounting-draft --help","scope":"local JSON-FILE input, five explicitly confirmed writes, current typed credential assertions, independent review and exact replay; no retry"},
         {"name":"accounts list|add|roles-status|role-confirm","usage":"accounts --help","scope":"original chart and eight required roles; explicit confirmation, current credential authority, no retries"},
         {"name":"posting-rules propose|approve|disable|supersede|explain|test","usage":"posting-rules --help","scope":"inline JSON; four explicitly confirmed writes; two flat read-only dry runs; credential assertions only; no automatic retry"},
@@ -154,7 +155,7 @@ fn invalid(message: &str) -> crate::dated_reports::Output {
 fn recognized(root: &str) -> bool {
     matches!(
         root,
-        "accounting-draft" | "accounts" | "posting-rules" | "dimensions" | "supplier-commitment" | "vat" | "asset"
+        "bookkeeping-batch" | "accounting-draft" | "accounts" | "posting-rules" | "dimensions" | "supplier-commitment" | "vat" | "asset"
             | "accrual"
             | "mileage"
             | "budget"
