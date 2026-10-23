@@ -1,15 +1,15 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "Group174 original EU-service and representation VAT purchase writes accepted",
-  "code_revision": "c1f15aa3644db872b1625715af2ba9de1d8ef1f6",
+  "current_increment": "Group175 verified imported books through VAT filing preparation accepted",
+  "code_revision": "41de907b2cf1e80692cebd7f86f1a6fe44dd8deb",
   "spec_revision": "sha256:8979030956647a0f03266c50d42786b5d33ab71a59c78528203d223226171e72",
-  "state": "Group174 ACCEPTED:2CLI/2MCP original EU-service/representation purchases,341unique registry, sharednativeallocation/journal writer/currenthumanservice/sourcefences.186unique tests/full172MCP/strict8packages/build/firstactual PASS.3scanned originals2journals8lines, no-bankEU100/input25/reverse25; linkedbankrepresentation125/expense118.75/input6.25; totalinput31.25/payable-6.25.1resolvedbanktask/1cachedVIES/3validationevents/18audits; exactly1explicitpreflightprovider and3scans. NormalMFA/signedsourcefreefreshownerrestore/reopen exactplus1audit19.2570source3binary8web/helperpins matched independently, ownedruntimecleaned. Priorcompile/lint/fixture/reviewfailures preserved; historicalVATsourcevalidation/full55missionOPEN desktoplast.",
+  "state": "Group175 ACCEPTED: retained attested Dinero history qualifies existing shared canonical VAT calculation, native/source/range/portfolio.22targeted tests/strict8packages/build/firstactualPASS.4sourcefiles9accounts2journals5lines/base100/input25/output0/payable-25, confirmedzero controls1review1closedperiod/filingpreparation. No scanner/provider, no submission. NormalMFA/signature/sourcefreefreshownerrestore/reopen exact19audit+1restore20.2573source3binary8web/3helperpins independently matched, runtimecleaned. Source qualification/physical/currentaccess/category controls preserved; all prior failedreceipts/reviewcorrections retained. Full55mission/manualdesktoplast OPEN.",
   "issues_closed": [
     701
   ],
   "next": [
-    "Next175 necessary imported-bookkeeping→VAT/filing journey: safely port historical-import VAT source assurance behind the explicit native unported refusal, reusing existing importer/evidence/canonical calculation and ordinary synthetic source-backed acceptance. Freeze finite contracts/ownership after bounded Graphify/source survey; no weakening category/FX/source guards or newprovider/framework. Full55 mission/manualdesktop OPEN.",
+    "Select next necessary original whole-product CLI/MCP journey from existing#716/#717/672, using actual source/native inventory and preserved accepted flows. Historical live Dinero VAT gap now accepted175; do not rerun accepted import/VAT flows, do not add newproviders/framework/polish. Full55/J01-J07/distribution/retirement/manualdesktoplast remain.",
     "Original invoice interface inventory now has all31CLI and25MCP bindings, with explicit compatibility corrections documented; do not mistake that family inventory for full product parity. Reconcile remaining original whole-product R44/R45 acceptance from existing epic/issues: actor/env/company-path/default launcher/errors/historical receipts, closure/recovery/automation, signed distribution/update/cutover and TypeScript backend retirement. Continue next necessary whole journey, preserve all accepted evidence/full original scope; installed desktop acceptance last.",
     "Installed desktop acceptance is explicitly deferred to the very end by the user. Preserve prepared Group100 profile; collect remaining native automation, closure, recovery and packaging checks for final installed acceptance without requesting screen unlock during development.",
     "J03/R50 and remaining R54 scope: only still-supported operation closure/recovery, nonempty scheduler handoff, hostile/older clone and post-cutover rollback requirements. Group99 qualifies managed installed J06 flow, not every R54 acceptance item.",
@@ -25,9 +25,9 @@
   ],
   "all_goal_requirements_complete": false,
   "previous_verified_increment": {
-    "name": "Group173 original VAT reports and closed-period filing preparation accepted",
-    "code_revision": "4c3a39907a430cbe58c971d88316d95820573110",
-    "evidence_key": "original_vat173"
+    "name": "Group174 original EU-service and representation VAT purchase writes accepted",
+    "code_revision": "c1f15aa3644db872b1625715af2ba9de1d8ef1f6",
+    "evidence_key": "original_vat_purchase174"
   },
   "evidence": {
     "combined_browser_log": "/tmp/rm-platform5-combined.log",
@@ -11343,6 +11343,201 @@
         "One backend-only diagnostic still checked unchanged dependency errors, added no new evidence and was stopped. No expanding test infrastructure, new model retry, changed expected financial result or actual replay.",
         "Final186tests/full172MCP/strict/build pass; first actual completes3scans/1explicitpreflightVIES,18audits plus bound restore19, normalMFA/sourcefreefreshowner/reopen and cleanup."
       ]
+    },
+    "historical_vat175": {
+      "issue": 689,
+      "status": "ACCEPTED finite attested Dinero history through VAT filing preparation; whole mission OPEN",
+      "source_revision": "41de907b2cf1e80692cebd7f86f1a6fe44dd8deb",
+      "sgd_run": "rust-historical-vat175-20261023T020120.151767000",
+      "engine_phase": "done",
+      "sgd_published": true,
+      "source_blob_count": 7,
+      "actual_report": "/tmp/rentemester-rust-reports/historical-vat175-actual.json",
+      "actual_report_sha256": "a068234d222237b38883866a3d695c59303a3746d8b2a199c7132909daf0877e",
+      "unique_targeted_tests": 22,
+      "test_counts": {
+        "engine_vat_report": 18,
+        "storage_vat_report": 4
+      },
+      "strict": "Eight packages alltargets locked -D warnings PASS",
+      "checks": [
+        {
+          "check": "domain",
+          "key": "a6583c781906331aca10bc65116b514d3f3d8c1ce0ee66ae8e28e1ff9fbc9095",
+          "argv": [
+            "python3",
+            "scripts/rust/cargo-guard.py",
+            "cargo",
+            "test",
+            "-p",
+            "rentemester-engine",
+            "--lib",
+            "vat_report",
+            "--locked"
+          ],
+          "exit_code": 0,
+          "passed": true,
+          "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/rust-historical-vat175-20261023T020120.151767000/acceptance/a6583c781906331aca10bc65116b514d3f3d8c1ce0ee66ae8e28e1ff9fbc9095/domain.log"
+        },
+        {
+          "check": "storage",
+          "key": "cc5943f2723c8fc82091ec566c77d7aab75922f9133a7bbfba20b646e9e416fe",
+          "argv": [
+            "python3",
+            "scripts/rust/cargo-guard.py",
+            "cargo",
+            "test",
+            "-p",
+            "rentemester-storage",
+            "--lib",
+            "vat_report",
+            "--locked"
+          ],
+          "exit_code": 0,
+          "passed": true,
+          "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/rust-historical-vat175-20261023T020120.151767000/acceptance/cc5943f2723c8fc82091ec566c77d7aab75922f9133a7bbfba20b646e9e416fe/storage.log"
+        },
+        {
+          "check": "strict",
+          "key": "85c101f0b886f1293ab0fbf2d52d3c7b2b27daa7d6816f8b5b43d5eda603adbf",
+          "argv": [
+            "python3",
+            "scripts/rust/cargo-guard.py",
+            "cargo",
+            "clippy",
+            "-p",
+            "rentemester-engine",
+            "-p",
+            "rentemester-storage",
+            "-p",
+            "rentemester-client",
+            "-p",
+            "rentemester-cli",
+            "-p",
+            "rentemester-mcp",
+            "-p",
+            "rentemester-application",
+            "-p",
+            "rentemester-host",
+            "-p",
+            "rentemester-server",
+            "--all-targets",
+            "--locked",
+            "--",
+            "-D",
+            "warnings"
+          ],
+          "exit_code": 0,
+          "passed": true,
+          "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/rust-historical-vat175-20261023T020120.151767000/acceptance/85c101f0b886f1293ab0fbf2d52d3c7b2b27daa7d6816f8b5b43d5eda603adbf/strict.log"
+        },
+        {
+          "check": "build",
+          "key": "46087e0e1c3b0e5dfc924e6b5ba92d42bb63710e294ba673a684a6489fd2d7e5",
+          "argv": [
+            "python3",
+            "scripts/rust/cargo-guard.py",
+            "cargo",
+            "build",
+            "-p",
+            "rentemester-server",
+            "-p",
+            "rentemester-cli",
+            "-p",
+            "rentemester-mcp",
+            "--locked"
+          ],
+          "exit_code": 0,
+          "passed": true,
+          "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/rust-historical-vat175-20261023T020120.151767000/acceptance/46087e0e1c3b0e5dfc924e6b5ba92d42bb63710e294ba673a684a6489fd2d7e5/build.log"
+        },
+        {
+          "check": "actual",
+          "key": "bae5bf276f15d7d43ff7899a121b3399bff93659ada1da5e4c2c2ce7e373d0e7",
+          "argv": [
+            "python3",
+            "-c",
+            "import os,subprocess;from pathlib import Path;b=Path(os.environ['CARGO_TARGET_DIR'])/'debug';rev=subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip();e=Path(os.environ['CARGO_TARGET_DIR'])/('historical-vat175-'+rev+'.json');subprocess.run(['python3','scripts/rust/run-bookkeeping-batch.py','--historical-vat','--server-binary',str(b/'rentemester-server'),'--cli-binary',str(b/'rentemester-rust'),'--mcp-binary',str(b/'rentemester-mcp'),'--web-dir',os.environ['RM_REWRITE_WEB_DIR'],'--evidence',str(e)],check=True)"
+          ],
+          "exit_code": 0,
+          "passed": true,
+          "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/rust-historical-vat175-20261023T020120.151767000/acceptance/bae5bf276f15d7d43ff7899a121b3399bff93659ada1da5e4c2c2ce7e373d0e7/actual.log"
+        }
+      ],
+      "company_counts": {
+        "documents": 0,
+        "document_party_link_events": 0,
+        "document_party_resolution_events": 0,
+        "internal_voucher_evidence": 0,
+        "audit_log": 19,
+        "journal_entries": 2,
+        "journal_lines": 5,
+        "accounting_periods": 1,
+        "period_close_decisions": 1,
+        "period_close_reviews": 1,
+        "period_close_readiness_packets": 1,
+        "vat_validation_events": 0,
+        "exceptions": 0,
+        "bank_transactions": 0,
+        "bank_journal_reconciliations": 0,
+        "dinero_import_sources": 1,
+        "dinero_import_inventories": 1,
+        "dinero_import_inventory_entries": 4,
+        "dinero_import_attempts": 1,
+        "imported_receivable_headers": 0,
+        "imported_receivable_events": 0
+      },
+      "control_business_counts": {
+        "rm_intercompany_dispositions": 0,
+        "rm_intercompany_disposition_events": 0,
+        "rm_intercompany_disposition_lifecycle_events": 0,
+        "rm_intercompany_disposition_journal_links": 0,
+        "rm_corporate_record_events": 0,
+        "rm_corporate_record_bytes": 0,
+        "rm_corporate_record_links": 0
+      },
+      "restored_audits": 20,
+      "scanner_calls": 0,
+      "provider_calls": 0,
+      "purchase_base25": 100,
+      "input_vat": 25,
+      "output_vat": 0,
+      "net_vat_payable": -25,
+      "reviewed_periods": 1,
+      "closed_periods": 1,
+      "filing_submission": false,
+      "source_artifact_web_pins": {
+        "source_files": 2573,
+        "binaries": 3,
+        "web_files": 8,
+        "helpers": 3,
+        "independently_matched": true
+      },
+      "normal_mfa_restart": true,
+      "signed_source_free_fresh_owner_restore": true,
+      "fresh_mfa_restored_reopen": true,
+      "exact_manifest_bound_restore_audit_append": 1,
+      "owned_processes_stopped": true,
+      "runtime_cleaned": true,
+      "first_actual_acceptance_passed": true,
+      "failed_actual_attempts": 0,
+      "independent_verification_log": "/tmp/rm175-independent-verification.log",
+      "scope_limits": [
+        "Only existing checked accepted native Dinero journal IDs qualify historical interpretation; markers/account numbers never establish provenance. Current authority/physical retained source verification remains separate and binding.",
+        "One same canonical VAT accumulator serves original/native/range/portfolio and filing. Explicit code/inferred evidence/qualified historical defaults preserve native explicit-only bases; no immutable journal or history writes.",
+        "DKK live Dinero import actual: four retained source files/nine accounts/nonzero two-line opening plus one purchase/three lines. Correct independent base100/input25/output0/payable-25. Bank/debtor/creditor genuine zero balances confirmed through ordinary roles.",
+        "Generic historical control learning, exact source-specific pair, collapsed representation, amount-only corrections/category checks/out-of-range learning covered in narrow pure fixtures. Source-specific account numbers never seeded as product defaults.",
+        "Report/CLI/MCP/currenthumanservice access/openfiling refusal and reviewedclose/filing preparation actual; no submission. EU/OSS actual empty, existing accepted nonempty provider/FX/credit journeys not repeated.",
+        "Native accepted import verifier requires original posted; native reversals mirror immutable originals. Do not broaden qualification to arbitrary externally supplied reversed rows or unverified migrated history. Archives/other formats/unattested legacy remain explicit bounded scope.",
+        "Full55/J01-J07/installed desktop/distribution/cutover/TypeScript retirement remain OPEN. No remote code publication implied."
+      ],
+      "preserved_review_and_check_history": [
+        "Actual diff review found three engine defects: learned legacy64060 meaning omitted for later corrections; learned semantics omitted for native explicit bases; generic reverse one-ore independent controls incorrectly required exact equality and could lose rubricA. Scoped lead repair0fbc0b61 adds exact behavioral regressions, keeps explicit conflicts failclosed and exact Dinero pair equality.",
+        "Initial reversed-status suspicion explicitly retracted after checked() original-posted/native mirror evidence. Original provenance/status verifier unchanged.",
+        "Proof review found missing confirmed control roles; ordinary3public role confirmations added before first actual, no readiness/control bypass.",
+        "First three narrow storage failures were fixture defects: deferred vs required Immediate transaction; JSON25.0 vs integer assertion; undocumented expense/native explicitVATbase guard; source rawsha foreign key preventing intended corruption. Captured exact failures retained, no expanding setup. Reused known-valid balance-sheet manual shape with explicit historical-source error; source-size corruption reaches binding verifier without FK bypass. No product/expected monetary outcome weakened.",
+        "Final18engine+4storage/strict/build PASS then first actual PASS,19audit plus boundrestore20, normalMFA/sourcefreefreshowner/reopen,2573source/3binary/8web/helperpins and processcleanup independently matched. No new model attempt or financial replay."
+      ]
     }
   },
   "verified_history": [
@@ -13123,6 +13318,12 @@
       "code_revision": "c1f15aa3644db872b1625715af2ba9de1d8ef1f6",
       "evidence_key": "original_vat_purchase174",
       "status": "ACCEPTED finite original EU-service/representation purchase journey; entire mission OPEN"
+    },
+    {
+      "increment": "Group175",
+      "code_revision": "41de907b2cf1e80692cebd7f86f1a6fe44dd8deb",
+      "evidence_key": "historical_vat175",
+      "status": "ACCEPTED finite attested Dinero history through VAT filing preparation; whole mission OPEN"
     }
   ],
   "scope_clarifications": [

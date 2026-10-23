@@ -419,3 +419,25 @@ dubletleverandør-/VIES-testidentiteter og obligatoriske compile/lint-fejl blev
 rettet uden svagere kilde-/regnskabskontroller. En fejlagtig hovedagent-
 indvending om credential-rækkefølge er eksplicit trukket tilbage; den
 oprindelige funktionelle adgangskontrol var korrekt og er bevaret.
+
+### Kvalificeret historisk moms og lærte kontroller (Group175)
+
+Den oprindelige globale programmarkør er utilstrækkelig som kildebevis. Kun
+eksisterende validerede Dinero-importjournaler kvalificeres. Momskode på linjen
+vinder; gennemgåede kontodefaults bruges kun for kvalificeret historik. Lært
+kontobetydning gælder også native journaler med eksplicit grundlag og giver
+hverken importtillid eller et automatisk grundlag.
+
+Det dokumenterede Dinero64040/64060-par fortolkes kun med attestering, korrekt
+kontotype og præcist lige modstående beløb. En bekræftet modstridende rolle
+afvises; kreditnormal liability alene er ingen outputrolle. Generisk omvendt
+moms følger kildens særskilte én-øre input/output-afvigelser og deres maksimum;
+det særskilte Dinero-par beholder sit lighedskrav. Repræsentationsgrundlag
+gendannes kun fra den verificerede form. Beløbskorrektioner og almindelig/
+omvendt moms afstemmes hver for sig uden at ændre den oprindelige journal.
+
+En indledende indvending om reversed-status blev trukket tilbage: native
+importbevis kræver posted-original, og tilbageførsel sker med en spejlpost.
+Status-/hashkrav er bevaret. Ugyldige syntetiske transaktions-, dokument-,
+VAT-grundlags-, JSON-tal- og FK-antagelser blev diagnosticeret fra konkrete
+fejl og rettet i fixtures. Ingen regnskabskontrol blev lempet.

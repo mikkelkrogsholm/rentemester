@@ -3971,3 +3971,22 @@ verificeret. Aktuelle adgange, afvisninger, normal MFA-genstart og signeret
 kildefri gendannelse til ny ejer/reopen bevarer præcise kvitteringer og rækker
 med én restore-auditpost.2570kildefiler/binære/web-/hjælperfiler er uafhængigt
 hashkontrolleret. Hele omskrivningen og historisk moms-kildevalidering er åbne.
+
+### Verificeret historisk bogføring frem til momsangivelse (Group175)
+
+Den tidligere generelle afvisning af historiske momsposteringer er afløst af
+kildevalideret fortolkning for accepterede native Dinero-importer. Eksisterende
+attestation binder kildepakke, parser og præcise journaler; programmarkør eller
+kontonummer giver aldrig tillid alene. Aktuel adgang og fysisk kildekontrol er
+fortsat særskilte krav. Samme Rust-beregning betjener momsrapport, portefølje
+og klargøring af angivelse. Journaler og originaler ændres ikke.
+
+På `41de907b` består22målrettede tests, streng Clippy, build og første faktiske
+prøve: fire kildefiler/ni konti giver en primo og et køb, to journaler/fem linjer.
+Grundlag100, købsmoms25 og tilsvar−25 stemmer i HTTP/CLI/MCP. Bekræftede nul-
+kontroller, gennemgang og periodelukning giver klargjort angivelse. Der udføres
+ingen indberetning, scanning eller eksterne leverandøropslag. Genstart og
+signeret kildefri gendannelse til ny ejer/reopen bevarer data med én audit-
+tilføjelse (19→20).2573kildefiler samt binære/web-/hjælperfiler er uafhængigt
+hashkontrolleret. Ældre ikke-attesterede importer og andre kildeformater får
+ingen ny tillid; hele migrations- og desktopaccepten er fortsat åben.
