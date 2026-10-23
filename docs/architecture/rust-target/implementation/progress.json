@@ -1,10 +1,10 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "R25 accruals and explicit version-bound mileage accounting fully accepted;699closed",
-  "code_revision": "5141affe4f12b327f688cb85f8997952ae8cd862",
-  "spec_revision": "sha256:b76dad1692007876a8c73cc2742e599990989ce0d696f4e234d1d15c609d453d",
-  "state": "25of55 original issues fully accepted and actually closed;30open. FullR25/all3criteria accepted: retained original169 accrual and171 documentation-only mileage, immutable explicit company rate versions and server preview/confirmed real accounting; actual shared React/native one-trip posting, current-authority refusals, exact original-key replay, fresh-MFA restart and independently signed source-free fresh-owner restore. Failed/cancelled receipts and partial effects retained; no replay or scope/control waiver. Full mission/release/platform/cutover/TypeScript retirement and installed manual desktop acceptance last remain OPEN.",
+  "current_increment": "R24 fixed assets, depreciation and capitalized disposal fully accepted;698closed",
+  "code_revision": "295a40ade6788d89b70a6ff9bd9885c81bb884e4",
+  "spec_revision": "sha256:64784c6b66c9323ec5914bb2ec3688486b05c21b5b927b24bd465818f62dca60",
+  "state": "26of55 original issues fully accepted and actually closed;29open. FullR24/all3criteria accepted: retained original170 acquisition/register/schedule/depreciation/refusal evidence plus actual partial/full/no-depreciation capitalized disposal through sameReact/native clients. Missing statement repaired through ordinary import/reviewed existing-journal links and matched-source task resolution, normal period close/refusal/reopen and one remaining disposal;10journals21lines/history exact. Current native restart, independently signed all-company image, actual source-free fresh-MFA-owner restore, explicit3historical receipt mappings and restored current-MFA restart passed. All failed/cancelled receipts/effects retained; no replay or scope/control waiver. Full mission/release/platform/cutover/TypeScript retirement and manual installed desktop last remain OPEN.",
   "issues_closed": [
     675,
     676,
@@ -21,6 +21,7 @@
     694,
     695,
     697,
+    698,
     699,
     701,
     702,
@@ -33,8 +34,8 @@
     710
   ],
   "next": [
-    "Next whole existing R24#698: resume preserved reviewed ee9d941b candidate and same synthetic profile; nine journals/four depreciation entries/two disposals already committed. Missing three-row bank statement explains -125 ledger versus0 statement. Import explicit synthetic -30/-60/-35 statement through ordinary bank API and reviewed-link only existing acquisition journals1/2/3; require unchanged prefix, no new acquisition/depreciation/replayed disposal. Then unrun close/refusal/reopen/third-disposal and restart/signed-restore tail. No full fixture setup or control bypass.",
-    "R26#700 follows full698/699. Reuse accepted opening/period evidence; still require actual concurrent posting-vs-close/reopen allowed-order proof. One common Rust engine/server and same React web/Tauri UI, final installed desktop acceptance last.",
+    "Next whole existing R26#700: all7prerequisites now accepted/closed. Reuse original_period159/162 and opening64 evidence; fill independent real file-backed SQLite connection posting-vs-close/reopen ordering, including actual writer contention, stale prior review, locked-period no-financial-effects and preserved decisions. Bind ordinary post-close reversal across a shifted fiscal year to valid retained proof or add that compact case; opening64 opening-reversal refusal alone does not satisfy it. No new engine, broad repeated journeys or weakened controls.",
+    "Existing R24#698 and R25#699 now fully closed. Preserve their actual effects/recovery/failure chains and exact original170/169/171 evidence; no fixture or financial replay. One common Rust motor/server and same React web/Tauri UI; manual installed desktop acceptance last.",
     "Original invoice interface inventory now has all31CLI and25MCP bindings, with explicit compatibility corrections documented; do not mistake that family inventory for full product parity. Reconcile remaining original whole-product R44/R45 acceptance from existing epic/issues: actor/env/company-path/default launcher/errors/historical receipts, closure/recovery/automation, signed distribution/update/cutover and TypeScript backend retirement. Continue next necessary whole journey, preserve all accepted evidence/full original scope; installed desktop acceptance last.",
     "Installed desktop acceptance is explicitly deferred to the very end by the user. Preserve prepared Group100 profile; collect remaining native automation, closure, recovery and packaging checks for final installed acceptance without requesting screen unlock during development.",
     "J03/R50 and remaining R54 scope: only still-supported operation closure/recovery, nonempty scheduler handoff, hostile/older clone and post-cutover rollback requirements. Group99 qualifies managed installed J06 flow, not every R54 acceptance item.",
@@ -50,9 +51,9 @@
   ],
   "all_goal_requirements_complete": false,
   "previous_verified_increment": {
-    "name": "R17 VAT/source evidence/filing lifecycle and complete shared-UI J04 fully accepted;689closed",
-    "code_revision": "7cb6692c2047b5d6929192328ecc1aabf746f562",
-    "evidence_key": "r17_vat689"
+    "name": "R25 accruals and explicit version-bound mileage accounting fully accepted;699closed",
+    "code_revision": "5141affe4f12b327f688cb85f8997952ae8cd862",
+    "evidence_key": "r25_mileage699"
   },
   "evidence": {
     "combined_browser_log": "/tmp/rm-platform5-combined.log",
@@ -15005,6 +15006,331 @@
         "Actual one-trip posted/restored journey plus targetedcomponentclosed/rate/mismatch/atomicity/receiptmatrix; not every fault/concurrency scenario newly run in browser.",
         "Installed manualdesktop/platformdistribution/livecutover/TypeScriptretirement/all55scope remain binding; no fullmigration completion."
       ]
+    },
+    "r24_assets698": {
+      "issue": 698,
+      "status": "ACCEPTED full original R24/all3criteria; actual GitHub698 CLOSED flow:done",
+      "revision": "295a40ade6788d89b70a6ff9bd9885c81bb884e4",
+      "source_revision": "295a40ade6788d89b70a6ff9bd9885c81bb884e4",
+      "report": "/tmp/rentemester-rust-reports/r24-assets698-accepted.json",
+      "report_sha256": "3fa3c45ca54b4c41c408f14b18d2e9de2c1d31b27e84322d271be80acb9996ac",
+      "sgd_run_id": "rust-r24-disposal698-restored-mapping-20261023T185826.233834000",
+      "sgd_phase": "done",
+      "gdd_revision": "sha256:64784c6b66c9323ec5914bb2ec3688486b05c21b5b927b24bd465818f62dca60",
+      "criteria": {
+        "acquisitionDepreciationDisposalReconcile": "Original170 source-backed125capitalisation/metadata/register/3depreciations/250writeoff and fixedtests retained. New actual three capitalized assets30/60/35, bookeddepreciation10/60/0, disposal loss20/0/35; historicalcost125/depreciation70/netbookvalue0. Exactly10journals21lines with all original source bytes/financialprefix retained. SameReact firstdisposal and nativeMCP othercases; current295aCLI/MCP report/receipt/replay exact.",
+        "dedupInvalidDatesNegativeResiduals": "Retain20original170 actual targeted tests incl engine/storage/application/source boundaries and knownoccurrence dedup; current5storage disposal tests cover zero/partial/full, validhashedbutwrongactualfinanciallines, stale/date/closed/account/evidence, atomic rollback and key/schema. Actual known original-key replay returnssamejournal; idempotency_replay audit is intentionally appended, never claimed zeroauditwrites. Disposed schedule cannotpost again; no negative residual or inventedVAT/tax eligibility.",
+        "correctionsClosedPeriodsPreserveHistory": "Actual ordinary0blocker readiness->review->close->closed third-disposal refusal->normal reopen->one committed third disposal. Laterdepreciation/reversal/changedintent/currentreader/revokedservice/missingevidence/staleplan refuse with financialprefix preserved. Signed exactcompletecompanyimage/current native restart/sourcefreefreshownerMFArestore and explicit originalreceiptmapping/replay+restoredrestart preserve all historicaljournals, originalsources and receipts."
+      },
+      "checks": [
+        {
+          "check": "retained-integrated698",
+          "key": "f0d3d052cb13e2179a144a2ca0ff0aefd71104d8439813c3697d784ca31862ab",
+          "argv": [
+            "python3",
+            "-c",
+            "import json,hashlib,re,subprocess;from pathlib import Path;r=Path('/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd');p=json.load(open('/tmp/rentemester-rust-reports/asset-disposal698-retained-components.json'));assert p['status']=='passed';assert all(hashlib.sha256(Path(x['log']).read_bytes()).hexdigest()==x['sha256'] for x in p['checks']);s=Path('/tmp/rentemester-rust-reports/r24-698-current-storage.log').read_text();assert '5 passed; 0 failed' in s;assert 'Finished `dev` profile' in Path('/tmp/rentemester-rust-reports/r24-698-current-build.log').read_text();assert hashlib.sha256(Path('/tmp/r24-698-finish-existing.py').read_bytes()).hexdigest()=='88097d010ee6836544c4889ee2b72c3005a6a3a58229635138cd4c98e6f9c768';print('Retained exact698 components and merged5storage tests/native3binary build verified; actual remains separate')"
+          ],
+          "exit_code": 0,
+          "passed": true,
+          "log": "/private/tmp/rentemester-r34-708-clean/.sgd/runs/rust-r24-disposal698-retained-finish-20261023T184631.954564000/acceptance/f0d3d052cb13e2179a144a2ca0ff0aefd71104d8439813c3697d784ca31862ab/retained-integrated698.log",
+          "log_sha256": "1cdb9f5b97ffee3ed74b883b58978cc14746e71036b3011c2d9b67b82c9523e7"
+        },
+        {
+          "check": "accepted-restore-prefix698",
+          "key": "52892dd0519822269e745948f00ad624d1a4a80aaa037ee57e41aa18b504fa72",
+          "argv": [
+            "python3",
+            "-c",
+            "import json,hashlib;from pathlib import Path;p=Path('/tmp/rentemester-rust-reports/r24-698-prepared-recovery-295a40ade678.json');assert hashlib.sha256(p.read_bytes()).hexdigest()=='6350ace0ebc7b7cf34598de4888fca57d18f44c9e2a33a9dc88a4345a3f7992d';d=json.loads(p.read_text());assert d['currentAction']=='disposal-reconcile' and d['ownedProcessesStopped'];assert all(d[k] for k in ['signedExactAllCompanyTables','independentArchiveVerification','exactRestoredAllCompanyTables','sourceWorkspaceAndPrivateSignerRemoved']);w=Path(d['profile']);assert not (w/'workspace').exists() and not (w/'signing.der').exists() and (w/'restored/synthetic/data/ledger.sqlite').is_file();print('Actual source-free/fresh-MFA exact restore prefix preserved; only original receipt mapping remains; no new restore')"
+          ],
+          "exit_code": 0,
+          "passed": true,
+          "log": "/private/tmp/rentemester-r34-708-clean/.sgd/runs/rust-r24-disposal698-restored-mapping-20261023T185826.233834000/acceptance/52892dd0519822269e745948f00ad624d1a4a80aaa037ee57e41aa18b504fa72/accepted-restore-prefix698.log",
+          "log_sha256": "be180da4c45115a9bf90fd6e23590ffb9cf56c54ed065225472f58e3ff3efdd5"
+        },
+        {
+          "check": "existing-fixture-recovery698",
+          "key": "909ccafdc4574713117e7e36c2e1facb74d6fec24060730b35d448da9cecaf3c",
+          "argv": [
+            "python3",
+            "/tmp/r24-698-finish-mapping.py",
+            "--out",
+            "/tmp/rentemester-rust-reports/r24-698-mapped-restart-295a40ade678.json"
+          ],
+          "exit_code": 0,
+          "passed": true,
+          "log": "/private/tmp/rentemester-r34-708-clean/.sgd/runs/rust-r24-disposal698-restored-mapping-20261023T185826.233834000/acceptance/909ccafdc4574713117e7e36c2e1facb74d6fec24060730b35d448da9cecaf3c/existing-fixture-recovery698.log",
+          "log_sha256": "f666bf5382dbb70a70094858257d277ceb014f1a318f1735b04786aed050abea"
+        }
+      ],
+      "current_native_checks": {
+        "storage": {
+          "path": "/tmp/rentemester-rust-reports/r24-698-current-storage.log",
+          "sha256": "e31282514b443b71f158b878eef0040669229dbd53aca29ca6d3341af9580acd"
+        },
+        "executed_tests": 5,
+        "build": {
+          "path": "/tmp/rentemester-rust-reports/r24-698-current-build.log",
+          "sha256": "bd58108a88d9d6fb0bd37e416bc9b64ecf54642c7e12a4b8ea2a7dfde1b96e3a"
+        },
+        "built_native_binaries": 3
+      },
+      "retained_original170": {
+        "evidence_key": "original_asset170",
+        "report": "/tmp/rentemester-rust-reports/original-asset170-actual.json",
+        "sha256": "e313e01fff0e827cfa96e5f5208fb3e524333d23439ca3f20dd0a5ab5ae1ff9b",
+        "source_revision": "5ab798dca6c0237035d9ac66ad23e4ed99ec5fc8",
+        "scope": "Original20targetedtests/acquisition/register/schedule/depreciation/writeoff/refusal/service/MFA/signedsourcefreerecovery unchanged; not rerun or expanded."
+      },
+      "retained_disposal_components": {
+        "status": "passed",
+        "scope": "Reused unchanged product/component proof; actual journey remains unaccepted until repaired trial passes",
+        "previousSource": "c578b91726aa40f72f3e137ec9c5a12630cafedb",
+        "failedActualReport": {
+          "path": "/tmp/rentemester-rust-reports/asset-disposal698-c578b91726aa40f72f3e137ec9c5a12630cafedb.json",
+          "sha256": "1facbd9d133a7a2e7fce17c2f7754dc717c0e966e4bafc5a59afe7b3b6dcc806"
+        },
+        "receipt": {
+          "path": "/tmp/rm698-final-acceptance.json",
+          "sha256": "fbbbe508695154f5852c7eee29f9d253dcb13be28c845eb676647de1191be1fd"
+        },
+        "checks": [
+          {
+            "name": "ui",
+            "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/rust-r24-disposal698-final-20261023T113725.584999000/acceptance/8b144256445e06b707bb4019601fcffe32b76e3fb3f8073ef84b43d37b529c74/ui.log",
+            "sha256": "bb71af1ba77e65baac9b85c3ec17a977bafdf77fdeb7fd0afdc6250c7b987f8b"
+          },
+          {
+            "name": "ui-build",
+            "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/rust-r24-disposal698-final-20261023T113725.584999000/acceptance/838053128e6215098f9270fae4730f57bcab2f0e67341c885ea3e00bd422bcd3/ui-build.log",
+            "sha256": "46fa355276abb9432d55ba11a56d1a0142f54fb4fbcddc473c72a23ea0e3aaf0"
+          },
+          {
+            "name": "backend",
+            "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/rust-r24-disposal698-final-20261023T113725.584999000/acceptance/9b15771d4c14c6d7eec763ef1fb64843be840b8a50f6a2fd04050ea50eb90dce/backend.log",
+            "sha256": "f1c17815e9e59158ef0807a2465e5249b9a89e1e43a6bcbd63dbcc4395d6472c"
+          },
+          {
+            "name": "clients",
+            "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/rust-r24-disposal698-final-20261023T113725.584999000/acceptance/2a659e54e8660070fd357ccae9948924093fc2a4db229401e521328e9e6e8194/clients.log",
+            "sha256": "9f27e31cbda863dbb3ee058fd410ddd572f9a03f5e07dbca312f44ff299d7f0c"
+          },
+          {
+            "name": "build",
+            "log": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/runs/rust-r24-disposal698-final-20261023T113725.584999000/acceptance/482b7e8d291b40b73182d86766cc6588d88e27c4545e592566962cdc6c9bcbf9/build.log",
+            "sha256": "48ae9853a45892408ea2830aa8c2090a845be90055bacf6f2dd20076cc295f24"
+          }
+        ],
+        "allowedHarnessChange": {
+          "scripts/rust/asset-disposal-journey.ts": "ce5cdd7f0f7509eeff1125a1572c8803442d5a012bb1df8a68e175390a490cd9"
+        },
+        "artifacts": {
+          "server_binary": "ca6b2bb87eee42a36a6bcfcfe41d12346f58c230969a519202c378a0ff52451f",
+          "cli_binary": "ae859cf3de82b7caa2d7d26610de8d6b300b9879c57f4bb08d0ab073e861a52a",
+          "mcp_binary": "65bef3ff616b314ad280e3d85869bb5241ba2119a21f00b644377e1b2f025db1"
+        },
+        "webDir": "/Users/mikkelfreltoftkrogsholm/Library/Application Support/Rentemester-Synthetic-Batch-92deb75dc4674adbbb95fbcba0c36268/web",
+        "binaryDir": "/Users/mikkelfreltoftkrogsholm/Library/Application Support/Rentemester-Synthetic-Batch-92deb75dc4674adbbb95fbcba0c36268",
+        "diagnosis": {
+          "path": "/tmp/rentemester-rust-reports/asset-disposal698-select-diagnosis.json",
+          "sha256": "c5d76c0ef7c6cec5fa41c22bb1a9176ab86d859ae384107caac3223d696977ea"
+        },
+        "at": "2026-10-23T11:56:43.791274+00:00"
+      },
+      "actual_chain": {
+        "initial_shared_ui_and_native": {
+          "path": "/tmp/rentemester-rust-reports/asset-disposal698-ee9d941b2cbc43463bca3127a9a4042c982870ba.json",
+          "sha256": "6ec6c5c1d4c6dcae2109522cf6b7bed51b978bd4a905e4340f661358638e7b2e"
+        },
+        "recovered_original_intents": {
+          "path": "/tmp/r24-698-continuation-state.json",
+          "sha256": "9bdd76a4725e0e01975ff86f2980ea2da8e7adba7df0e86a2de562e552e87e25"
+        },
+        "statement_and_existing_links": {
+          "path": "/tmp/rentemester-rust-reports/r24-698-bank-continuation.json",
+          "sha256": "0d809c702d32236731af2d833262ed67e92208e137d114de1e489865b7b0ad55"
+        },
+        "ordinary_close_and_third_disposal": {
+          "path": "/tmp/rentemester-rust-reports/r24-698-disposal-tail2.json",
+          "sha256": "6032c4d3c91c7ca00313aed4e3aa915caca4b3d8f8d0cbb00ccb5277d4ceb73f"
+        },
+        "signed_sourcefree_restore": {
+          "path": "/tmp/rentemester-rust-reports/r24-698-prepared-recovery-295a40ade678.json",
+          "sha256": "6350ace0ebc7b7cf34598de4888fca57d18f44c9e2a33a9dc88a4345a3f7992d"
+        },
+        "mapped_original_receipts_and_restart": {
+          "path": "/tmp/rentemester-rust-reports/r24-698-mapped-restart-295a40ade678.json",
+          "sha256": "40605849d36a50c5e6c1ed6ae17e6d378b247a23ae205b94c4d4c971c9383f8c"
+        }
+      },
+      "recovery": {
+        "sourceExactAllCompanyTables": true,
+        "signatureVerifiedBeforeSourceRemoval": true,
+        "sourceFreeFreshOwnerNormalMfa": {
+          "sourceFreeRestoreQualified": true,
+          "freshOwnerMfa": true,
+          "ledgerUuid": null,
+          "historicalBatchAndOriginalsExact": true,
+          "noRestoreMutationOrAuthorityImported": true
+        },
+        "exactRestoredAllCompanyTables": true,
+        "sourceWorkspaceAndPrivateSignerRemoved": true,
+        "independentTrustedVerificationAfterRemoval": true,
+        "freshOwnerExplicitMappingOfAllThreeOriginalReceipts": true,
+        "nativeCliReadAndMcpKnownKeyReplayExact": true,
+        "nonAuditCompanyTablesUnchangedAfterMapping": true,
+        "historicalAuditPrefixPreserved": true,
+        "restoredCurrentMfaRestart": true,
+        "exactAllCompanyTablesAfterRestart": true,
+        "signedSnapshotSha256": "5203a3aa089c59ad847ccbe264da80f1c0bb0fc77c4516f848bd70eb9ded5c15",
+        "terminalCounts": {
+          "account_role_mappings": 4,
+          "account_role_proposals": 0,
+          "accounting_dimension_assignment_events": 0,
+          "accounting_dimension_budget_events": 0,
+          "accounting_dimension_definition_events": 0,
+          "accounting_dimension_member_events": 0,
+          "accounting_draft_events": 0,
+          "accounting_periods": 1,
+          "accounts": 8,
+          "accrual_schedule_postings": 0,
+          "accruals": 0,
+          "asset_depreciation_entries": 4,
+          "asset_writeoffs": 0,
+          "assets": 3,
+          "audit_log": 66,
+          "bank_accounts": 1,
+          "bank_journal_reconciliation_links": 3,
+          "bank_reconciliation_correction_events": 0,
+          "bank_transactions": 3,
+          "bookkeeping_batch_applied_links": 0,
+          "bookkeeping_batch_apply_attempts_v2": 0,
+          "bookkeeping_batch_apply_events_v2": 0,
+          "bookkeeping_batch_approval_policy": 1,
+          "bookkeeping_batch_events": 0,
+          "bookkeeping_batch_final_checks": 0,
+          "bookkeeping_batch_final_checks_v2": 0,
+          "bookkeeping_batch_item_attempts": 0,
+          "bookkeeping_batch_item_receipts": 0,
+          "bookkeeping_batch_revision_approvals": 0,
+          "bookkeeping_batch_revisions": 0,
+          "bookkeeping_batch_runs": 0,
+          "budget_lines": 0,
+          "companies": 1,
+          "company_supplier_recognitions": 0,
+          "credit_note_postings": 0,
+          "customers": 0,
+          "cvr_lookups": 0,
+          "digisense_companies": 0,
+          "digisense_participants": 0,
+          "digisense_received_documents": 0,
+          "dinero_import_archive_evidence": 0,
+          "dinero_import_attempts": 0,
+          "dinero_import_document_links": 0,
+          "dinero_import_inventories": 0,
+          "dinero_import_inventory_entries": 0,
+          "dinero_import_sources": 0,
+          "direct_bank_purchase_payable_corrections": 0,
+          "document_company_contexts": 0,
+          "document_metadata_enrichments": 0,
+          "document_party_link_events": 0,
+          "document_party_resolution_events": 0,
+          "document_pdf_parse_attempts": 0,
+          "document_pdf_parse_pages": 0,
+          "document_pdf_parse_results": 0,
+          "document_scan_evidence": 4,
+          "document_vendor_identity_links": 0,
+          "documents": 4,
+          "email_send_log": 0,
+          "exceptions": 3,
+          "gdpr_erasures": 0,
+          "import_archive_balances": 0,
+          "import_archive_postings": 0,
+          "import_archive_years": 0,
+          "import_document_links": 0,
+          "imported_receivable_events": 0,
+          "imported_receivable_headers": 0,
+          "internal_voucher_evidence": 0,
+          "invoice_bad_debt_writeoffs": 0,
+          "invoice_claim_payments": 0,
+          "invoice_compensation_claims": 0,
+          "invoice_compensation_postings": 0,
+          "invoice_extraction_attempts": 0,
+          "invoice_extraction_documents": 0,
+          "invoice_extraction_fields": 0,
+          "invoice_extraction_resolutions": 0,
+          "invoice_extraction_results": 0,
+          "invoice_interest_claims": 0,
+          "invoice_interest_correction_plan_claims": 0,
+          "invoice_interest_correction_plan_lines": 0,
+          "invoice_interest_correction_plans": 0,
+          "invoice_interest_corrections": 0,
+          "invoice_interest_postings": 0,
+          "invoice_payments": 0,
+          "invoice_refunds": 0,
+          "invoice_reminder_postings": 0,
+          "invoice_reminders": 0,
+          "issued_invoice_postings": 0,
+          "journal_entries": 10,
+          "journal_lines": 21,
+          "ledger_identity": 1,
+          "mail_intake_messages": 0,
+          "migration_open_item_applications": 0,
+          "migration_open_item_batches": 0,
+          "migration_open_items": 0,
+          "mileage_entries": 0,
+          "mutation_idempotency_outcomes": 6,
+          "mutation_idempotency_tombstones": 6,
+          "native_asset_disposal_schema": 1,
+          "native_asset_disposals": 3,
+          "opening_balances": 0,
+          "payable_payments": 0,
+          "payables": 0,
+          "peppol_submission_events": 0,
+          "peppol_submissions": 0,
+          "period_close_decisions": 2,
+          "period_close_open_items": 0,
+          "period_close_readiness_packets": 2,
+          "period_close_reviews": 2,
+          "posting_rule_applications": 0,
+          "posting_rule_lifecycle_events": 0,
+          "posting_rule_versions": 0,
+          "purchase_posting_applications": 0,
+          "recurring_invoice_delivery_events": 0,
+          "recurring_invoice_generation_claims": 0,
+          "recurring_invoice_generations": 0,
+          "recurring_invoice_templates": 0,
+          "schema_migrations": 36,
+          "sequences": 2,
+          "supplier_commitment_events": 0,
+          "supplier_commitment_occurrence_matches": 0,
+          "vat_validation_events": 0,
+          "vendors": 0,
+          "vies_validations": 0
+        },
+        "ownedProcessesStopped": true
+      },
+      "review": {
+        "product": "Prior realbackend/SDK/UI actualdiff review retained. Main and independent read-only currentmerge review confirm additive clientexports and backup schema admission retain699mileage/708legalholds/705knowledge plus exactassetreceipt/journal/financialcontent validation. No meaningful compatibility defect found. Current5tests and3binarybuildPASS; currentassetUI/disposal/core modules unchanged fromee9d941b except additive sharedadmission.",
+        "recovery": "Main reviewed exact reports/assertions/rawresponse and all3mappings, and independent r15 reviewed preparedoperator/functions and signature/inventory/freshowner mapping gates. Source-free verification before deletion and restore after deletion attributed separately; final independent trusted verifier also actually ran after deletion."
+      },
+      "preserved_failures": [
+        "All original cancelled698runs/componentreviews and failedreports remain. No fullfixture replay.",
+        "Missing synthetic bankstatement correctlyblocked -125ledger vs0source. Imported three real synthetic rows and reviewed links to existingacquisitions, then resolved3matched-source tasks explicitly; no waiver or forcedclose.",
+        "Firsttail inspected exceptions wrapper instead of rows; stopped before mutations. Corrected exact source-shaped rows. Third-disposal committedonce; too-strong noaudit replay assertion failed because intentionalidempotency_replay audit appended. Actualfinancialfacts unchanged and alreadyaccepted effects reused.",
+        "Initial browser fetch relative /api/me on about:blank corrected by one canonical navigation; failed no-phase digest-helper omission repaired before serveractions. Prior reports/response namespace preserved.",
+        "Preparedsourcefreeactual succeeded through exactfreshownerrestore but testexpectedHTTP409 for unmappedreceipt, actualsafe422. Captured canonicalrefusal verified; only stillunrun3mappings/restart executed. No repeatrestore or newdisposal.",
+        "One hook-packet commit initially refused for missingconcretechecks; concrete retained/currentstorage/build/actual-tail checks supplied, requiredgates retained."
+      ],
+      "limits": [
+        "Configured companyaccounts/real synthetic originals only; no statutoryasseteligibility/VAT/payroll/livefinancialdata claim.",
+        "Actual composed698 sourceposting/UI prefix at ee9d941b and current295a merge verification/recovery; exact assetUI/domain/transportmodules unchanged across merge, current sharedadmission and oldaccepted controls reviewed/tested.",
+        "Source restart uses existing current normal-MFA session; fresh restored owner actually enrolls/validates normalMFA. Final mappedrestart revalidates that current restoredMFA cookie, no additionalfreshfactor claim.",
+        "Original170 invaliddate/zero/thresholdedge/closed/physicalsource cases are retained targeted proofs, not all rerun in browser.",
+        "Known-keyreplay may append required diagnostic audit, never anotherjournal. No unknown financialmutation retried.",
+        "Manual installed desktop/platformdistribution/livecutover/TypeScriptretirement/full55mission remain binding and open."
+      ]
     }
   },
   "verified_history": [
@@ -15514,6 +15840,13 @@
       "spec_revision": "sha256:23d02cd7c90e8f117071770126ebaff327309ba834154d03bf4789d94d0051d9",
       "state": "24of55 original issues fully accepted and actually closed;31open. FullR17/all4criteria accepted: retained revision-bound VAT rules/source/refusal/legacy/EU/OSS proofs plus actual shared React/native J04 source blocker->draft->reviewed/locked->explicit recorded reference, signed exact reported image and normal-cookie restart. Failed/cancelled receipts and partial effects retained; no replay or control/scope waiver. Reported-specific source-free restore combination remains later integrated/release gate, never claimed newly executed. Full mission/release/platform/cutover/TypeScript retirement and installed manual desktop acceptance last remain OPEN.",
       "evidence_key": "r17_vat689"
+    },
+    {
+      "current_increment": "R25 accruals and explicit version-bound mileage accounting fully accepted;699closed",
+      "code_revision": "5141affe4f12b327f688cb85f8997952ae8cd862",
+      "spec_revision": "sha256:b76dad1692007876a8c73cc2742e599990989ce0d696f4e234d1d15c609d453d",
+      "state": "25of55 original issues fully accepted and actually closed;30open. FullR25/all3criteria accepted: retained original169 accrual and171 documentation-only mileage, immutable explicit company rate versions and server preview/confirmed real accounting; actual shared React/native one-trip posting, current-authority refusals, exact original-key replay, fresh-MFA restart and independently signed source-free fresh-owner restore. Failed/cancelled receipts and partial effects retained; no replay or scope/control waiver. Full mission/release/platform/cutover/TypeScript retirement and installed manual desktop acceptance last remain OPEN.",
+      "evidence_key": "r25_mileage699"
     }
   ],
   "active_work": [
@@ -16884,6 +17217,12 @@
       "code_revision": "5141affe4f12b327f688cb85f8997952ae8cd862",
       "state": "25of55 original issues fully accepted and actually closed;30open. FullR25/all3criteria accepted: retained original169 accrual and171 documentation-only mileage, immutable explicit company rate versions and server preview/confirmed real accounting; actual shared React/native one-trip posting, current-authority refusals, exact original-key replay, fresh-MFA restart and independently signed source-free fresh-owner restore. Failed/cancelled receipts and partial effects retained; no replay or scope/control waiver. Full mission/release/platform/cutover/TypeScript retirement and installed manual desktop acceptance last remain OPEN.",
       "evidence_key": "r25_mileage699"
+    },
+    {
+      "current_increment": "R24 fixed assets, depreciation and capitalized disposal fully accepted;698closed",
+      "code_revision": "295a40ade6788d89b70a6ff9bd9885c81bb884e4",
+      "state": "26of55 original issues fully accepted and actually closed;29open. FullR24/all3criteria accepted: retained original170 acquisition/register/schedule/depreciation/refusal evidence plus actual partial/full/no-depreciation capitalized disposal through sameReact/native clients. Missing statement repaired through ordinary import/reviewed existing-journal links and matched-source task resolution, normal period close/refusal/reopen and one remaining disposal;10journals21lines/history exact. Current native restart, independently signed all-company image, actual source-free fresh-MFA-owner restore, explicit3historical receipt mappings and restored current-MFA restart passed. All failed/cancelled receipts/effects retained; no replay or scope/control waiver. Full mission/release/platform/cutover/TypeScript retirement and manual installed desktop last remain OPEN.",
+      "evidence_key": "r24_assets698"
     }
   ],
   "scope_clarifications": [
@@ -16925,6 +17264,6 @@
       "product_acceptance_unchanged": true
     },
     "local_execution": "State Graph Development with GDD contracts, Graphify observations and isolated Docker Agent workers",
-    "last_closed_issue": 699
+    "last_closed_issue": 698
   }
 }
