@@ -51,6 +51,7 @@ mod gdpr;
 mod dimensions;
 mod exceptions;
 mod mileage;
+mod mileage_posting;
 mod mileage_original;
 mod audit_verify;
 mod invoice_compensation;
@@ -385,6 +386,10 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
         .route("/api/companies/{slug}/overview", get(archive_reports::read))
         .route("/api/companies/{slug}/dashboard", get(dashboard_json::read))
         .route("/api/companies/{slug}/dashboard/export", get(dashboard_artifact::read))
+        .route("/api/companies/{slug}/mileage/rate-versions", get(mileage_posting::handle).post(mileage_posting::handle))
+        .route("/api/companies/{slug}/mileage/post-preview", post(mileage_posting::handle))
+        .route("/api/companies/{slug}/mileage/post", post(mileage_posting::handle))
+        .route("/api/companies/{slug}/mileage/postings", get(mileage_posting::handle))
         .route(
             "/api/companies/{slug}/mileage",
             get(mileage::handle).post(mileage::handle),

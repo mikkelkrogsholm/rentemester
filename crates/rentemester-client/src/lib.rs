@@ -589,3 +589,6 @@ mod bookkeeping_batch_original;
 pub use bookkeeping_batch_original::{OriginalBatchOperation, bookkeeping_batch_original_schema, validate_bookkeeping_batch_original};
 
 pub use local_runtime::knowledge_company_selector;
+
+mod mileage_posting;
+pub use mileage_posting::{MileagePostingOperation, MAX_MILEAGE_POSTING_BODY, mileage_posting_body_schema, validate_mileage_posting_body};

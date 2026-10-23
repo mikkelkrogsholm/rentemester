@@ -76,6 +76,8 @@ pub fn run(args: &[String]) -> Result<Value, Failure> {
         help["service_principals"]=crate::service_principals::help();
         help["commands"].as_array_mut().unwrap().extend([json!("overview"),json!("report-export"),json!("dashboard")]);
         help["reportReads"]=json!({"usage":"journal/trial-balance/income-statement/balance/overview --company SLUG [--year LABEL] [--source live|archive]; --account only journal. report-export --company SLUG --report journal|trial-balance|income-statement|balance --format csv|pdf [--year LABEL] [--source live|archive] [--account journalonly]. Read-only, explicit server/cookie. Server owns source selection and unavailable states. Preserve exact decimal strings. Exports return data {ok,contentType,bytes}, max96MiB; no files/client calculations. Omitted source uses server live-first selection; explicit archive never falls back."});
+        help["mileagePosting"]=crate::mileage_posting::help();
+        help["commands"].as_array_mut().unwrap().extend(crate::mileage_posting::COMMANDS.map(|s|json!(s)));
         help["openingBalance"]=crate::opening_balance::help();
         help["commands"].as_array_mut().unwrap().extend(crate::opening_balance::COMMANDS.map(|s|json!(s)));
         help["dineroImport"]=crate::dinero_import::help();
@@ -151,6 +153,7 @@ pub fn run(args: &[String]) -> Result<Value, Failure> {
         }
         if arg.starts_with("--") {
             if ![
+                "--body-file",
                 "--vat-or-cvr",
                 "--document-id",
                 "--source",
@@ -241,6 +244,7 @@ pub fn run(args: &[String]) -> Result<Value, Failure> {
         }
     }
     let command = command.ok_or_else(|| invalid("expected remote command; see remote --help"))?;
+    if flags.contains_key("--body-file") && !crate::mileage_posting::accepts(command) {return Err(invalid("body-file only allowed for mileage posting"));}
     if command == "dashboard" { return crate::dashboard_artifact::run(&flags,allow_http,confirmed,preview_reviewed,open); }
     if command == "compliance-report" && !open { return crate::regulatory::compliance(&flags,allow_http,confirmed,preview_reviewed); }
     if open || flags.contains_key("--out") { return Err(invalid("out/open only allowed on dashboard")); }
@@ -345,6 +349,7 @@ pub fn run(args: &[String]) -> Result<Value, Failure> {
     if crate::bank_matches::accepts(command){return crate::bank_matches::run(command,&flags,allow_http,confirmed,preview_reviewed);}
     if flags.contains_key("--max"){return Err(invalid("--max is only supported by bank-suggest-matches"));}
     if crate::exceptions::accepts(command){return crate::exceptions::run(command,&flags,allow_http,confirmed,preview_reviewed);}
+    if crate::mileage_posting::accepts(command){return crate::mileage_posting::run(command,&flags,allow_http,confirmed,preview_reviewed);}
     if crate::mileage::accepts(command){return crate::mileage::run(command,&flags,allow_http,confirmed,preview_reviewed);}
     if crate::accruals::accepts(command){return crate::accruals::run(command,&flags,allow_http,confirmed,preview_reviewed);}
     if crate::assets::accepts(command){return crate::assets::run(command,&flags,allow_http,confirmed,preview_reviewed);}
