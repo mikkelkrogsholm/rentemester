@@ -4044,3 +4044,17 @@ på `fdce3e34`. To versioner har seks livscyklushændelser og seks nye audits.
 journaler, regelanvendelser eller nye exceptions. Genstart og signeret kildefri
 gendannelse til ny ejer/genåbning består (16→17audits).365MCP-navne er entydige.
 Fuld migration og installeret desktopaccept er fortsat åben.
+
+### Oprindelig kontoplan og krævede kontoroller (Group179)
+
+Fire CLI-kommandoer og fire MCP-tools deler den native Rust-kontoplan og
+rollehistorik. Ni syntetiske konti oprettes med korrekte standardbalancer og
+atomisk direct-flag; alle otte krævede roller bekræftes. En ny eksplicit
+bekræftelse af bankrollen giver version2 med bevaret historik.
+
+215 forskellige tests, streng Clippy på otte pakker, build og første
+faktiske prøve består på `72a5027b`. Der oprettes18audits (tre service,
+femten menneskelige) og ingen finansielle posteringer. Genstart og signeret
+kildefri gendannelse til ny ejer/genåbning bevarer konti, flags og historik
+(18→19audits).369MCP-navne er entydige. Hele migrationen og installeret
+desktopaccept er fortsat åben.

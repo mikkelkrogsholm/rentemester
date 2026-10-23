@@ -515,3 +515,26 @@ purchaseparser forbliver streng: amount, reverse-charge, andre attributes og
 textTemplate må ikke accepteres og derefter ignoreres ved faktisk bogføring.
 Forklaring af en hypotese er ingen postingautoritet; understøttede faktiske
 purchases bruger stadig deres uændrede bevis- og anvendelseskontrol.
+
+### Kontoplan, kildeprojektion og historiske rolleaktører (Group179)
+
+Kildens fire kontooperationer bruger små fælles typed helpers i company_setup.
+Nye identiteter kommer fra aktuelle credentials; native human wrappers beholder
+deres hidtidige kald. Den oprindelige eksplicitte rollebekræftelse opretter en
+ny version selv ved samme konto, mens den native wrapper beholder idempotens.
+Kildeprojektionen viser otte krævede roller; de to valgfrie FX-roller bevares
+i det native forløb. Forslag er diagnostik og giver ingen autoritet.
+
+Kontoflagget indsættes atomisk og bruger én eksisterende account_created-audit
+i stedet for TypeScript-navnet accounts_add. Flagget beskytter de eksisterende
+afgrænsede bad-debt/claim-forløb; der er ikke indført en generel journalpolitik.
+En gyldig source-created false-konto afvises af den eksisterende bad-debt-kontrol,
+mens samme fixture lykkes med en almindelig udgiftskonto. Den generelle manual
+postingforskel er fortsat åbent produktscope og hævdes ikke løst her.
+
+SDK skelner mellem historisk proveniens og nutidige credentialassertioner:
+native_seed/system samt bevarede typed agent/system-aktører kan læses; de
+giver ingen adgang i dag. Inputnormalisering bevarer trimmede kontofelter og
+kildens case-insensitive true/false. MCP Add har appliedRules på ydre niveau;
+role-confirm bevarer coreok i data.ok, og CLI-afvisninger bevarer rollediagnostik.
+Begge CLI-skrivninger kræver eksplicit --confirm yes.
