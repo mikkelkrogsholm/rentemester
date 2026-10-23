@@ -1442,3 +1442,5 @@ mod vat_purchase_original;
 mod supplier_commitment_original;
 
 pub mod dimensions_original;
+
+mod posting_rules_original;
