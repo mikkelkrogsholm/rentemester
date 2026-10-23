@@ -416,3 +416,293 @@ fn another_selected_ledger_or_authenticated_subject_cannot_adopt_worker_output()
     assert_eq!(count(&owner, "document_pdf_parse_results"), 0);
     assert_eq!(count(&owner, "document_pdf_parse_attempts"), 0);
 }
+
+// Source-bound bridge, deliberately independent of any runtime JS/provider.
+const ORIGINAL_BENCHMARK_SHA: &str =
+    "d418adf201b5b237a3934778c5fac60f7303f5b683c6a1d3c16380517ab583b7";
+const ORIGINAL_GENERATOR_SHA: &str =
+    "368a0a48b59d97c951347676a18906df4b0a3ceaa50f09d7947a474b7aefe0ca";
+const ORIGINAL_INPUT_SHA: [&str; 9] = [
+    "23bb51253c61e1b77138eaa462bd7fac197623cef8cad233ecfaa4f11be0525a",
+    "1c3b72c640c8fd05fab30097ebac93740d9ff447c37d07762c50a77152fdaa3e",
+    "7dc9b0817eafb7e56147ef06bce969df63199258c1e49dfdb56315cbec28a057",
+    "c16032c9cef4e7b2e71bbdddd3878cbc748e0fdd3c003149dcfe601507e0146f",
+    "9da71021b8402c84e5c63f918ae898baf89b2ea9c30dc235740b17b210cec0f5",
+    "0f736e85c95aadfba6fc7e19d07bb5eea4ffa3ae2655d16b4bc3aa3f6a017df0",
+    "9bfad7a126f0dd483eb5e66fc05ccfafb64735188c76b349e3f76b4a5802c508",
+    "d2c5679ed7960eb9d8b3e27e3b941c415dc70f2f5c279b7fa5d984cbf7297884",
+    "6726115684c9e0b3bcb0d8c129d040fbeb993e451566e45a45d0cbdebb34329d",
+];
+fn original_manifest() -> Value {
+    json!({"schema":"rentemester-original-pdf-benchmark-v1", "sources":[
+        {"path":"scripts/benchmark-pdf-parser.ts","sha256":ORIGINAL_BENCHMARK_SHA,"byteLength":7633},
+        {"path":"tests/fixtures/pdf-parser/synthetic-text-pdf.ts","sha256":ORIGINAL_GENERATOR_SHA,"byteLength":1516}
+    ],"expectedText":"Synthetic parser evidence\nInvoice SYN-001","width":612,"height":792,
+    "inputs":ORIGINAL_INPUT_SHA.iter().enumerate().map(|(i, sha)|json!({"ordinal":i+1,"file":format!("benchmark-{}.pdf",i+1),"sha256":sha,"byteLength":if i==3 {40}else{650},"status":if i==3 {"malformed_pdf"}else{"ok"}})).collect::<Vec<_>>()})
+}
+fn verified_original_corpus(
+    root: &std::path::Path,
+) -> Vec<rentemester_runtime::document::Prepared> {
+    let manifest: Value =
+        serde_json::from_slice(&std::fs::read(root.join("manifest.json")).unwrap()).unwrap();
+    assert_eq!(
+        manifest,
+        original_manifest(),
+        "unknown schema, changed source or corpus refused"
+    );
+    (0..9)
+        .map(|i| {
+            let file = format!("benchmark-{}.pdf", i + 1);
+            let bytes = std::fs::read(root.join(&file)).unwrap();
+            assert_eq!(bytes.len(), if i == 3 { 40 } else { 650 });
+            let prepared = rentemester_runtime::document::Prepared::new(file, bytes).unwrap();
+            assert_eq!(prepared.hash(), ORIGINAL_INPUT_SHA[i], "corpus tamper");
+            prepared
+        })
+        .collect()
+}
+#[test]
+fn original_benchmark_source_pins_and_unknown_manifest_control() {
+    for (bytes, sha) in [
+        (
+            include_bytes!("../../../../scripts/benchmark-pdf-parser.ts").as_slice(),
+            ORIGINAL_BENCHMARK_SHA,
+        ),
+        (
+            include_bytes!("../../../../tests/fixtures/pdf-parser/synthetic-text-pdf.ts")
+                .as_slice(),
+            ORIGINAL_GENERATOR_SHA,
+        ),
+    ] {
+        assert_eq!(
+            rentemester_runtime::document::Prepared::new("source.txt".into(), bytes.to_vec())
+                .unwrap()
+                .hash(),
+            sha
+        );
+    }
+    let dir = tempfile::tempdir().unwrap();
+    let mut unknown = original_manifest();
+    unknown["extra"] = json!(true);
+    std::fs::write(
+        dir.path().join("manifest.json"),
+        serde_json::to_vec(&unknown).unwrap(),
+    )
+    .unwrap();
+    assert!(std::panic::catch_unwind(|| verified_original_corpus(dir.path())).is_err());
+    std::fs::write(
+        dir.path().join("manifest.json"),
+        serde_json::to_vec(&original_manifest()).unwrap(),
+    )
+    .unwrap();
+    std::fs::write(dir.path().join("benchmark-1.pdf"), vec![b'x'; 650]).unwrap();
+    assert!(std::panic::catch_unwind(|| verified_original_corpus(dir.path())).is_err());
+}
+
+/// Opt-in actual native qualification. Four-way test harness, NOT HTTP batch proof.
+#[test]
+#[ignore = "requires explicit RM_PDF_WORKER_BUNDLE, RM_PDF_BENCHMARK_CORPUS and new RM_PDF_BENCHMARK_REPORT"]
+fn actual_original_nine_pinned_bundle_host_benchmark() {
+    use std::{io::Write, path::PathBuf, time::Instant};
+    let bundle =
+        PathBuf::from(std::env::var_os("RM_PDF_WORKER_BUNDLE").expect("explicit bundle required"));
+    let corpus = PathBuf::from(
+        std::env::var_os("RM_PDF_BENCHMARK_CORPUS").expect("explicit corpus required"),
+    );
+    let report = PathBuf::from(
+        std::env::var_os("RM_PDF_BENCHMARK_REPORT").expect("explicit new report required"),
+    );
+    assert!(bundle.is_absolute() && corpus.is_absolute() && report.is_absolute());
+    let mut report_file = std::fs::OpenOptions::new()
+        .write(true)
+        .create_new(true)
+        .open(report)
+        .unwrap();
+    // Leave an honest incomplete receipt if qualification aborts; never overwrite earlier evidence.
+    report_file
+        .write_all(b"{\"qualification\":\"incomplete\"}\n")
+        .unwrap();
+    let config = rentemester_runtime::document_pdf::Config::new(bundle).unwrap();
+    let ident = config.identity().clone();
+    let files = verified_original_corpus(&corpus);
+    let (_dir, mut owner, _cookies, proof, _uid) = setup();
+    let metadata = serde_json::from_value(
+        json!({"source":"synthetic-pdf","documentType":"cash_register_receipt"}),
+    )
+    .unwrap();
+    let ids: Vec<i64> = files
+        .iter()
+        .map(|file| {
+            owner
+                .ingest_document(
+                    &proof,
+                    &Fixed(NOW),
+                    rentemester_application::documents::Ingest {
+                        file,
+                        metadata: &metadata,
+                        today: "2026-01-01",
+                    },
+                )
+                .unwrap()
+                .outcome
+                .unwrap()
+                .value["document"]["id"]
+                .as_i64()
+                .unwrap()
+        })
+        .collect();
+    assert_eq!(ids, (1..=9).collect::<Vec<_>>());
+    let mut resumed = Vec::new();
+    let mut cursors = Vec::new();
+    for cursor in [0, 4, 8] {
+        let page = read(
+            &mut owner,
+            &proof,
+            Read::Pending {
+                identity: ident.clone(),
+                cursor,
+                limit: 4,
+            },
+        )
+        .unwrap();
+        resumed.extend(
+            page["documentIds"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .map(|id| id.as_i64().unwrap()),
+        );
+        cursors.push(page["nextCursor"].clone());
+    }
+    assert_eq!(resumed, ids);
+    assert_eq!(cursors, json!([4, 8, null]).as_array().unwrap().clone());
+    let cold_start = Instant::now();
+    let mut cold = Vec::new();
+    let mut native_results = Vec::new();
+    for chunk in ids.chunks(4) {
+        let admissions: Vec<_> = chunk
+            .iter()
+            .map(|id| {
+                owner
+                    .prepare_document_pdf(&proof, &Fixed(NOW), *id, ident.clone())
+                    .unwrap()
+                    .outcome
+                    .unwrap()
+                    .value
+            })
+            .collect();
+        let results = std::thread::scope(|scope| {
+            let handles: Vec<_> = admissions
+                .iter()
+                .map(|a| {
+                    let config = &config;
+                    scope.spawn(move || {
+                        config
+                            .parse(a.worker_input().expect("cold source required"))
+                            .unwrap()
+                    })
+                })
+                .collect();
+            handles
+                .into_iter()
+                .map(|h| h.join().unwrap())
+                .collect::<Vec<_>>()
+        });
+        for ((id, admission), result) in chunk.iter().zip(admissions).zip(results) {
+            let i = (*id - 1) as usize;
+            assert_eq!(result.input_sha256, ORIGINAL_INPUT_SHA[i]);
+            assert_eq!(
+                serde_json::to_value(result.status).unwrap(),
+                original_manifest()["inputs"][i]["status"]
+            );
+            if i == 3 {
+                assert!(result.pages.is_empty());
+            } else {
+                assert_eq!(result.pages.len(), 1);
+                assert_eq!(
+                    result.pages[0].text,
+                    "Synthetic parser evidence\nInvoice SYN-001"
+                );
+                assert_eq!(
+                    (result.pages[0].width, result.pages[0].height),
+                    (612.0, 792.0)
+                );
+            }
+            native_results.push(serde_json::to_value(&result).unwrap());
+            let value = finish(
+                &mut owner,
+                &proof,
+                admission,
+                Some(Completion {
+                    identity: ident.clone(),
+                    outcome: Ok(result),
+                }),
+            )
+            .unwrap();
+            assert_eq!(value["parse"]["cached"], false);
+            assert_eq!(value["parse"]["documentId"], *id);
+            cold.push(value);
+        }
+    }
+    let cold_ms = cold_start.elapsed().as_secs_f64() * 1000.0;
+    let warm_start = Instant::now();
+    let mut warm = Vec::new();
+    for (i, id) in ids.iter().enumerate() {
+        let admission = owner
+            .prepare_document_pdf(&proof, &Fixed(NOW), *id, ident.clone())
+            .unwrap()
+            .outcome
+            .unwrap()
+            .value;
+        assert!(admission.worker_input().is_none(), "warm must not launch");
+        let value = finish(&mut owner, &proof, admission, None).unwrap();
+        assert_eq!(value["parse"]["cached"], true);
+        assert_eq!(value["parse"]["resultHash"], cold[i]["parse"]["resultHash"]);
+        let text = read(
+            &mut owner,
+            &proof,
+            Read::Text {
+                document_id: *id,
+                offset: 0,
+                limit: 1,
+            },
+        )
+        .unwrap();
+        assert_eq!(text["parse"]["sourceSha256"], ORIGINAL_INPUT_SHA[i]);
+        assert_eq!(text["parse"]["parserId"], ident.parser_id);
+        assert_eq!(text["parse"]["parserVersion"], ident.parser_version);
+        assert_eq!(text["parse"]["contractVersion"], ident.contract_version);
+        if i != 3 {
+            assert_eq!(
+                text["pages"][0]["text"],
+                native_results[i]["pages"][0]["text"]
+            );
+            assert_eq!(text["pages"][0]["width"], 612.0);
+            assert_eq!(text["pages"][0]["height"], 792.0);
+        }
+        warm.push(json!({"result":value,"read":text}));
+    }
+    let warm_ms = warm_start.elapsed().as_secs_f64() * 1000.0;
+    assert_eq!(count(&owner, "journal_entries"), 0);
+    assert_eq!(count(&owner, "documents"), 9);
+    assert_eq!(count(&owner, "document_pdf_parse_results"), 9);
+    assert_eq!(count(&owner, "document_pdf_parse_attempts"), 18);
+    let pending = read(
+        &mut owner,
+        &proof,
+        Read::Pending {
+            identity: ident.clone(),
+            cursor: 0,
+            limit: 10,
+        },
+    )
+    .unwrap();
+    assert_eq!(pending["documentIds"], json!([]));
+    let receipt = json!({"qualification":"completed","scope":"actual Config supervisor + private synthetic host prepare/finish/read; four-way test harness is not HTTP batch proof","manifest":original_manifest(),"identity":{"parserId":ident.parser_id,"parserVersion":ident.parser_version,"contractVersion":ident.contract_version},"resumeCursors":cursors,"orderedDocumentIds":ids,"cold":cold,"nativeResults":native_results,"warm":warm,"pendingAfter":pending,"observations":{"successfulNativeSupervisorCalls":native_results.len(),"warmSupervisorCalls":0,"coldMs":cold_ms,"warmIncludingReadsMs":warm_ms,"successfulDocumentsPerSecond":8.0/(cold_ms/1000.0),"pagesPerSecond":8.0/(cold_ms/1000.0)},"limitations":["No child-launch or max-active telemetry is exposed by current Config; successful parse calls each execute one child in this implementation. Harness width is not measured active children or HTTP batch concurrency.","Ordinary synthetic corpus does not qualify hostile peak memory. Mac RSS sampled at 10ms can overshoot 512MiB; not an exact hard cap. Linux worker AS cap is 512MiB.","PDFium loose character boxes differ semantically from historical PDFjs text-item layout; historical identity and bytes are not relabeled."]});
+    report_file.set_len(0).unwrap();
+    use std::io::{Seek, SeekFrom};
+    report_file.seek(SeekFrom::Start(0)).unwrap();
+    serde_json::to_writer_pretty(&mut report_file, &receipt).unwrap();
+    report_file.write_all(b"\n").unwrap();
+    report_file.sync_all().unwrap();
+}
