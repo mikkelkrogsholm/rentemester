@@ -1,7 +1,7 @@
 use serde_json::{Value, json};
 
 // Existing 312 bindings plus seven original document-party tools.
-const EXPECTED_NATIVE_TOOLS: usize = 339;
+const EXPECTED_NATIVE_TOOLS: usize = 341;
 
 #[test]
 fn pdf_tools_require_confirmation_and_keep_reads_bounded() {
@@ -2257,3 +2257,6 @@ mod budget_original;
 
 #[path = "stdio/vat_original.rs"]
 mod vat_original;
+
+#[path = "stdio/vat_purchase_original.rs"]
+mod vat_purchase_original;

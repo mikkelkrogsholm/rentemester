@@ -38,7 +38,7 @@ fn exact_three_readonly_contracts_and_only_two_new_names() {
         .iter()
         .map(|t| t["name"].as_str().unwrap())
         .collect::<std::collections::BTreeSet<_>>();
-    assert_eq!(names.len(), 339);
+    assert_eq!(names.len(), EXPECTED_NATIVE_TOOLS);
     assert!(!names.contains("vat_filing"));
     for name in ["vat_report", "vat_eu_sales_list", "vat_oss_report"] {
         let t = tools.iter().find(|t| t["name"] == name).unwrap();

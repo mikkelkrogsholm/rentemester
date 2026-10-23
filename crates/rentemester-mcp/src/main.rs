@@ -1,3 +1,4 @@
+mod vat_purchase_original;
 //! Bounded MCP 2025-11-25 stdio adapter. Wire references:
 //! https://modelcontextprotocol.io/specification/2025-11-25/basic/transports
 //! https://modelcontextprotocol.io/specification/2025-11-25/basic/lifecycle

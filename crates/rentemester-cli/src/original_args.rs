@@ -40,7 +40,8 @@ fn boolean(name: &str) -> bool {
 }
 
 fn migrated(args: &[String]) -> bool {
-    crate::vat_original::accepts(args)
+    crate::vat_purchase_original::accepts(args)
+        || crate::vat_original::accepts(args)
         || crate::budget_original::accepts(args)
         || crate::mileage_original::accepts(args)
         || crate::asset_original::accepts(args)
@@ -204,7 +205,7 @@ pub fn prepare(args: Vec<String>) -> Result<Vec<String>, (u8, Error)> {
             cursor += 1;
         } else {
             let (raw, next) = value(&args, cursor)
-                .ok_or_else(|| usage(if output.first().is_some_and(|s|s=="vat") && matches!(name,"--from"|"--to") {"Missing required --from <YYYY-MM-DD> or --to <YYYY-MM-DD>".into()} else {format!("Flag {name} requires a value")}))?;
+                .ok_or_else(|| usage(if output.first().is_some_and(|s|s=="vat") && matches!(name,"--from"|"--to") {"Missing required --from <YYYY-MM-DD> or --to <YYYY-MM-DD>".into()} else if name=="--input" && crate::vat_purchase_original::accepts(&output) {"Missing required --input <file.json>".into()} else {format!("Flag {name} requires a value")}))?;
             if name == "--format" {
                 if !matches!(raw, "json" | "human") {
                     return Err(usage("--format must be json or human".into()));

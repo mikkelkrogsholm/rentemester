@@ -1,3 +1,4 @@
+mod vat_purchase_original;
 mod asset_original;
 mod accrual_original;
 mod mileage_original;
@@ -300,7 +301,11 @@ fn main() -> ExitCode {
     let args = match original_args::prepare(std::env::args().skip(1).collect()) {
         Ok(args) => args,
         Err((code, error)) => {
-            eprintln!("{}: {}; see --help", error.code, error.message);
+            if error.message == "Missing required --input <file.json>" {
+                eprintln!("{}", error.message);
+            } else {
+                eprintln!("{}: {}; see --help", error.code, error.message);
+            }
             return ExitCode::from(code);
         }
     };
@@ -359,7 +364,14 @@ fn main() -> ExitCode {
             return ExitCode::SUCCESS;
         }
     }
-    if args == ["vat"] || args == ["vat", "--help"] { println!("{}", vat_original::help()); return ExitCode::SUCCESS; }
+    let vat_purchase_input = if vat_purchase_original::accepts(&args) {
+        match vat_purchase_original::preflight(&args) {
+            Ok(Some(value)) => Some(value),
+            Ok(None) => { println!("{}",vat_purchase_original::help()); return ExitCode::SUCCESS; }
+            Err(output) => { eprint!("{}",output.stderr); return ExitCode::from(output.exit); }
+        }
+    } else { None };
+    if args == ["vat"] || args == ["vat", "--help"] { let mut help=vat_original::help(); help["purchases"]=vat_purchase_original::help(); println!("{help}"); return ExitCode::SUCCESS; }
     if vat_original::accepts(&args) {
         if let Err(output) = vat_original::preflight(&args) { eprint!("{}", output.stderr); return ExitCode::from(output.exit); }
         if args.iter().any(|s|s=="--help") {println!("{}",vat_original::help());return ExitCode::SUCCESS;}
@@ -498,6 +510,10 @@ fn main() -> ExitCode {
         print!("{}", output.stdout);
         eprint!("{}", output.stderr);
         return ExitCode::from(output.exit);
+    }
+    if let Some(input) = vat_purchase_input {
+        let output=vat_purchase_original::execute(&args,input);
+        print!("{}",output.stdout);eprint!("{}",output.stderr);return ExitCode::from(output.exit);
     }
     if vat_original::accepts(&args) {
         let output=vat_original::execute(&args);print!("{}",output.stdout);eprint!("{}",output.stderr);return ExitCode::from(output.exit);
