@@ -451,7 +451,7 @@ def main():
                 if args.original_expense:
                     tables += ['vat_validation_events', 'vies_validations', 'exceptions', 'bank_transactions', 'bank_journal_reconciliations', 'invoice_extraction_documents', 'invoice_extraction_attempts', 'invoice_extraction_results', 'invoice_extraction_fields', 'invoice_extraction_resolutions']
                 for table in tables:
-                    cursor = db.execute('SELECT * FROM ' + table + (' ORDER BY document_id' if table == 'internal_voucher_evidence' else ' ORDER BY country_code,vat_number' if table == 'vies_validations' else ' ORDER BY bank_transaction_id,journal_entry_id' if table == 'bank_journal_reconciliations' else ' ORDER BY id'))
+                    cursor = db.execute('SELECT * FROM ' + table + (' ORDER BY document_id' if table == 'internal_voucher_evidence' else ' ORDER BY country_code,vat_number' if table == 'vies_validations' else ' ORDER BY bank_transaction_id,journal_entry_id' if table == 'bank_journal_reconciliations' else ' ORDER BY invoice_document_id' if table == 'issued_invoice_postings' else ' ORDER BY id'))
                     rows[table] = [dict(zip([c[0] for c in cursor.description], r)) for r in cursor.fetchall()]
                     if args.original_expense:
                         for row in rows[table]:
