@@ -4675,6 +4675,46 @@
             "error"
           ],
           "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-dimensions_cfo.json#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "report selectors must be strings"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
         }
       ]
     },
@@ -4696,8 +4736,8 @@
           "properties": {
             "id": {
               "type": "integer",
-              "minimum": -9223372036854775808,
-              "maximum": 9223372036854775807
+              "minimum": 1,
+              "maximum": 9007199254740991
             },
             "idempotent": {
               "type": "boolean"
@@ -4735,8 +4775,8 @@
           "properties": {
             "id": {
               "type": "integer",
-              "minimum": -9223372036854775808,
-              "maximum": 9223372036854775807
+              "minimum": 1,
+              "maximum": 9007199254740991
             },
             "idempotent": {
               "type": "boolean"
@@ -4774,8 +4814,8 @@
           "properties": {
             "id": {
               "type": "integer",
-              "minimum": -9223372036854775808,
-              "maximum": 9223372036854775807
+              "minimum": 1,
+              "maximum": 9007199254740991
             },
             "idempotent": {
               "type": "boolean"
@@ -4813,8 +4853,8 @@
           "properties": {
             "id": {
               "type": "integer",
-              "minimum": -9223372036854775808,
-              "maximum": 9223372036854775807
+              "minimum": 1,
+              "maximum": 9007199254740991
             },
             "idempotent": {
               "type": "boolean"
@@ -5020,8 +5060,8 @@
           "properties": {
             "id": {
               "type": "integer",
-              "minimum": -9223372036854775808,
-              "maximum": 9223372036854775807
+              "minimum": 1,
+              "maximum": 9007199254740991
             },
             "idempotent": {
               "type": "boolean"
@@ -5066,8 +5106,8 @@
               "properties": {
                 "id": {
                   "type": "integer",
-                  "minimum": -9223372036854775808,
-                  "maximum": 9223372036854775807
+                  "minimum": 1,
+                  "maximum": 9007199254740991
                 },
                 "idempotent": {
                   "const": true
@@ -5089,13 +5129,13 @@
               "properties": {
                 "id": {
                   "type": "integer",
-                  "minimum": -9223372036854775808,
-                  "maximum": 9223372036854775807
+                  "minimum": 1,
+                  "maximum": 9007199254740991
                 },
                 "supersededId": {
                   "type": "integer",
-                  "minimum": -9223372036854775808,
-                  "maximum": 9223372036854775807
+                  "minimum": 1,
+                  "maximum": 9007199254740991
                 },
                 "idempotent": {
                   "const": false
@@ -5141,8 +5181,8 @@
           "properties": {
             "id": {
               "type": "integer",
-              "minimum": -9223372036854775808,
-              "maximum": 9223372036854775807
+              "minimum": 1,
+              "maximum": 9007199254740991
             },
             "idempotent": {
               "type": "boolean"
@@ -5206,8 +5246,8 @@
               "type": "array",
               "items": {
                 "type": "integer",
-                "minimum": -9223372036854775808,
-                "maximum": 9223372036854775807
+                "minimum": 1,
+                "maximum": 9007199254740991
               },
               "minItems": 1,
               "uniqueItems": true
@@ -7337,6 +7377,176 @@
         "ok",
         "id",
         "idempotent"
+      ],
+      "additionalProperties": false
+    },
+    "MasterSuccessSdk": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "id": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "idempotent": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "ok",
+        "id",
+        "idempotent"
+      ],
+      "additionalProperties": false
+    },
+    "ApplySuccessSdk": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "id": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "idempotent": {
+          "type": "boolean"
+        },
+        "planHash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      },
+      "required": [
+        "ok",
+        "id",
+        "idempotent",
+        "planHash"
+      ],
+      "additionalProperties": false
+    },
+    "ReplaceSuccessSdk": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "id": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "idempotent": {
+              "const": true
+            },
+            "planHash": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            }
+          },
+          "required": [
+            "ok",
+            "id",
+            "idempotent",
+            "planHash"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "id": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "supersededId": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "idempotent": {
+              "const": false
+            },
+            "planHash": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            }
+          },
+          "required": [
+            "ok",
+            "id",
+            "supersededId",
+            "idempotent",
+            "planHash"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "BudgetApplySuccessSdk": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "ids": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "idempotent": {
+          "type": "boolean"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0
+        }
+      },
+      "required": [
+        "ok",
+        "ids",
+        "idempotent",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Refused_cfo_analytics_refused": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "const": "cfo_analytics_refused"
+        },
+        "errors": {
+          "const": [
+            "cfo_analytics_refused"
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "code",
+        "errors"
       ],
       "additionalProperties": false
     }

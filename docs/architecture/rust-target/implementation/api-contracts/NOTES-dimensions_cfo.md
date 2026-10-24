@@ -29,3 +29,5 @@ Result: `PASS exactselected dimensions_cfo 64 resolved sourcebound schema contra
 Completed with 34,009 nodes and 107,681 edges in the independent build output; generated observations were kept outside owned code.
 
 The oracle checks frozen coverage, source hashes, schema resolution and structural contract completeness. It does not replace the lead's independent actual-source semantic review, integration or acceptance. Prior 821 accepted operations/26 partitions remain untouched. All 55 scope, J01–J07, final desktop, release, cutover and retirement acceptance remain retained. No issue closure or commit was performed.
+
+Lead source correction: nativeMCP globalreportselector error precedes CFO; originaldimensionmutation CLI/MCP receipts nowpositiveSafeIDs while rawHTTP SignedIds retained. ActualCFO source-integrity503 cfo_analytics_refused explicitly represented. Non-principal key semantics/currentauthority unchanged.
