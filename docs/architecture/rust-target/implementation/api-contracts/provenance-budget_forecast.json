@@ -1,0 +1,135 @@
+{
+  "partition": "budget_forecast",
+  "issue": 677,
+  "status": "specified",
+  "unresolved": [],
+  "selectedOperationCount": 33,
+  "sources": [
+    {
+      "path": "crates/rentemester-storage/src/budget.rs",
+      "sha256": "6d5160b9122c03c848603b1ff1cc4d0f4b17c9b83367192e87ea6940c7d95894",
+      "needle": "pub fn set("
+    },
+    {
+      "path": "crates/rentemester-application/src/budget.rs",
+      "sha256": "b082e159ce6513439cff55f215077f8cc78b2828b0da99feddb99b08d3ea9c89",
+      "needle": "pub fn execute("
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http/budget.rs",
+      "sha256": "eb0a462542e78c6f68f456ec112facf890346cd768be2b0b4c840220147cc03f",
+      "needle": "pub(super) async fn handle("
+    },
+    {
+      "path": "crates/rentemester-application/src/control_fence.rs",
+      "sha256": "e5b1f8902693d649fc1a46e0c66dc902622781f2c9f65e051e6ed7df11e1ffa6",
+      "needle": "pub(crate) fn execute_authorized_both_with_backup"
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http.rs",
+      "sha256": "d008f013390a87c467b929b094abb4e23cc9921a72a2665d8df4d4dcbc537390",
+      "needle": "fn origin_proof("
+    },
+    {
+      "path": "crates/rentemester-storage/src/budget/dimensions.rs",
+      "sha256": "7f55aa5d711c589d66d839579367ac79c550d72bd08591d95b3388eba422c82e",
+      "needle": "pub fn read("
+    },
+    {
+      "path": "crates/rentemester-storage/src/liquidity_original.rs",
+      "sha256": "9abf652e89fc4687c1b49365c3fa18dbd9f719f5a0228ed0286a5a1905734de6",
+      "needle": "pub fn weekly("
+    },
+    {
+      "path": "crates/rentemester-application/src/budget_original.rs",
+      "sha256": "733323e2d23892edea2fbf9ce4ef269e2cc71a1a94cffb53a2099c0cde4d72a9",
+      "needle": "pub fn execute("
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http/budget_original.rs",
+      "sha256": "2c4ace0e50351c5ed517478836f6ff797ca4cb126ecf7b76b181259534f4009e",
+      "needle": "pub(super) async fn handle("
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http/documents.rs",
+      "sha256": "d6a25bf8f5b30b338a2734805d5a5219ed9bb8de118eeb491ad849df057d5acc",
+      "needle": "pub(super) fn credential("
+    },
+    {
+      "path": "crates/rentemester-storage/src/budget_original.rs",
+      "sha256": "93dee107d1ed8246ceee24a70c884846e4208104c60b3b1e99c7c3aaf76c6a69",
+      "needle": "pub fn vs_actual("
+    },
+    {
+      "path": "crates/rentemester-client/src/budget_original.rs",
+      "sha256": "d1d02260831ebbf7f6f400d8bb9c12d9f85a4faf5ab074284bef26d392646e07",
+      "needle": "impl ApiClient {"
+    },
+    {
+      "path": "crates/rentemester-cli/src/budget_original.rs",
+      "sha256": "841f0e301d12abfde32d46506ba3e8b2bd4907cf1cacafebb3e98464a5b3f2ce",
+      "needle": "pub fn execute("
+    },
+    {
+      "path": "crates/rentemester-cli/src/main.rs",
+      "sha256": "54af368bcb6d626d1ac0378727f6a34761244a21a86b6f5d67e47c27c8f432a6",
+      "needle": "fn main()"
+    },
+    {
+      "path": "crates/rentemester-cli/src/local_binding.rs",
+      "sha256": "94d26249352df53d80d468019ee93e1353394db4ce1c6728491fa6c4e2589dfd",
+      "needle": "pub fn prepare("
+    },
+    {
+      "path": "crates/rentemester-cli/src/original_args.rs",
+      "sha256": "2c8c75a6d4176182e5c0871941d9979b1a15d6848c70b7b281cade3927355a74",
+      "needle": "pub fn option("
+    },
+    {
+      "path": "crates/rentemester-client/src/lib.rs",
+      "sha256": "89c8bc77a2081400d8915cbb988d81be0f349a0bc9487ce687dc3ae3de75accd",
+      "needle": "async fn request("
+    },
+    {
+      "path": "crates/rentemester-client/src/mileage_original.rs",
+      "sha256": "34f052e6b3561a212c5b788f52a832ffedfe1799b9edbf627b322dcf5d11dcd7",
+      "needle": "pub fn validate_original_mileage_shape("
+    },
+    {
+      "path": "crates/rentemester-client/src/budget.rs",
+      "sha256": "01e03e9c46b7c59324166aa3b73937a94454873d9a87d6051e2ba16a2a3c9633",
+      "needle": "impl ApiClient {"
+    },
+    {
+      "path": "crates/rentemester-cli/src/budget.rs",
+      "sha256": "37485e28d3f8e5d82ab1324537c153509f14bf9f93456998b36dd59762e6407e",
+      "needle": "pub fn run("
+    },
+    {
+      "path": "crates/rentemester-mcp/src/budget.rs",
+      "sha256": "a657dfffefe767f6e6586fba1c7a68643f60c9964c82b2784846386a5bc0a9b6",
+      "needle": "pub async fn call("
+    },
+    {
+      "path": "crates/rentemester-mcp/src/tools.rs",
+      "sha256": "8035dc45f8d22d902c18e17b4508ca572f8505dc83a1961fa355dfd1f34c1397",
+      "needle": "if !args.is_object()"
+    },
+    {
+      "path": "crates/rentemester-mcp/src/main.rs",
+      "sha256": "db7b771d69e02d3802906d65437dad8523fd9114ae15e7d3ef33dc696d4e831f",
+      "needle": "impl Session {"
+    },
+    {
+      "path": "crates/rentemester-mcp/src/budget_original.rs",
+      "sha256": "5a35c5cf134125e2277ad5275e637459fffc421a7950c499475b950abc35dcaf",
+      "needle": "pub async fn call("
+    }
+  ],
+  "method": "Graphify query budget forecast first; actual Rust global preprocessing/adapters/storage producers; existing strict oracle only. No runtime or effect replay.",
+  "retainedScope": "Prior626/22 partitions unchanged; whole55/J01-J07/final desktop/release/cutover/retirement not accepted or waived by this partition.",
+  "validation": {
+    "command": "python3 /tmp/r55-677-oracle.py budget_forecast",
+    "result": "PASS exactselected budget_forecast 33 resolved sourcebound schema contracts; semanticreview required; whole677 remains open"
+  }
+}
