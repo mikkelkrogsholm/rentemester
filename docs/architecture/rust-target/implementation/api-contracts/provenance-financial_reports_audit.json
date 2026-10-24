@@ -238,7 +238,7 @@
     },
     {
       "path": "crates/rentemester-storage/src/lib.rs",
-      "sha256": "a2e08bbf0fad9e15a6f40d98d5cdeaf66488ae6f908f3942329b40a498d05b62",
+      "sha256": "82af00f55d58d0d7cd19e519ef06700c201cfa51f753decb20413f35fef04e47",
       "needle": "pub fn trial_balance("
     },
     {

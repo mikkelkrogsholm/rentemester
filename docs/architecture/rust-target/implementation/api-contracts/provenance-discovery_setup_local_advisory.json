@@ -26,7 +26,7 @@
     },
     {
       "path": "crates/rentemester-server/src/main.rs",
-      "sha256": "d4d56f94b147b1e6540928f49f2a1dd28f0c8982436fe59b49a4e29f83004b6e",
+      "sha256": "4a5c40eeb9732b8b8bab3df0d66ecdebae7be9ef19bde3943ca862d25a50d7b4",
       "needle": "fn cockpit_router"
     },
     {
@@ -46,7 +46,7 @@
     },
     {
       "path": "crates/rentemester-server/src/backend.rs",
-      "sha256": "cec69cffd963d1601808c7f423447d378b83d175127db417f2b8ac27404bf333",
+      "sha256": "72110080d7231c7936751d9114f477ff0d9648772c12926b29c78f7d740c5ea2",
       "needle": "pub(crate) fn install_owner"
     },
     {
@@ -71,7 +71,7 @@
     },
     {
       "path": "crates/rentemester-storage/src/lib.rs",
-      "sha256": "a2e08bbf0fad9e15a6f40d98d5cdeaf66488ae6f908f3942329b40a498d05b62",
+      "sha256": "82af00f55d58d0d7cd19e519ef06700c201cfa51f753decb20413f35fef04e47",
       "needle": "fn with_writable_copy"
     },
     {
@@ -141,5 +141,35 @@
     "command": "python3 /tmp/r58-677-oracle.py discovery_setup_local_advisory",
     "result": "PASS exactselected discovery_setup_local_advisory 24 resolved sourcebound schema contracts; semanticreview required; whole677 remains open",
     "scope": "Existing structural/source-hash oracle only; not runtime or semantic acceptance."
+  },
+  "readiness714": {
+    "source_revision": "3a76a5353ffd1d74515f3885437759c1802681eb",
+    "sourceRefs": [
+      {
+        "path": "crates/rentemester-server/src/main.rs",
+        "sha256": "4a5c40eeb9732b8b8bab3df0d66ecdebae7be9ef19bde3943ca862d25a50d7b4",
+        "needle": "fn health_response"
+      },
+      {
+        "path": "crates/rentemester-server/src/backend.rs",
+        "sha256": "72110080d7231c7936751d9114f477ff0d9648772c12926b29c78f7d740c5ea2",
+        "needle": "pub(crate) fn readiness"
+      },
+      {
+        "path": "crates/rentemester-host/src/readiness.rs",
+        "sha256": "f25292abcd87859a30771e172781728d9c8c04a6a0ea26505ca12c39c7a63d66",
+        "needle": "pub fn readiness"
+      },
+      {
+        "path": "crates/rentemester-storage/src/readiness.rs",
+        "sha256": "895dac3b2ae1dca3c2d93922002d2f23475f1655335773a7519144495895c79f",
+        "needle": "pub fn probe"
+      }
+    ],
+    "actualHTTP": {
+      "path": "/tmp/rentemester-rust-reports/r61-server714-actual-health.json",
+      "sha256": "bcb6c4d1f8376af4d725e7ff63a0173373569758060d937ac463a9bffb148cae"
+    },
+    "semantic_change": "Onlyhealth adds exactsanitizedreadiness+503, validexistingfields retainedincludingfirstownersetup. Other artifactupdates refreshcurrent sourcehashes only; acceptedbusinessmethods unchanged."
   }
 }

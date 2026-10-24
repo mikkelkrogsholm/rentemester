@@ -514,7 +514,7 @@
               },
               {
                 "path": "crates/rentemester-server/src/main.rs",
-                "sha256": "d4d56f94b147b1e6540928f49f2a1dd28f0c8982436fe59b49a4e29f83004b6e",
+                "sha256": "4a5c40eeb9732b8b8bab3df0d66ecdebae7be9ef19bde3943ca862d25a50d7b4",
                 "needle": "protocol::install(router, connected)"
               },
               {
@@ -539,7 +539,7 @@
               },
               {
                 "path": "crates/rentemester-host/src/lib.rs",
-                "sha256": "29e700859157eee32bfab98faeb122abbd2d830edbe6e84b2983eaac4fc324cd",
+                "sha256": "02510c0409c25d8b3da0d958784af3768406a6b76452e4ba788556b0a195b8ff",
                 "needle": "fn document_action<T>"
               },
               {

@@ -58,7 +58,7 @@
     },
     {
       "path": "crates/rentemester-host/src/lib.rs",
-      "sha256": "29e700859157eee32bfab98faeb122abbd2d830edbe6e84b2983eaac4fc324cd",
+      "sha256": "02510c0409c25d8b3da0d958784af3768406a6b76452e4ba788556b0a195b8ff",
       "needle": "pub enum OwnerError"
     },
     {

@@ -85,7 +85,7 @@
     },
     {
       "path": "crates/rentemester-server/src/main.rs",
-      "sha256": "d4d56f94b147b1e6540928f49f2a1dd28f0c8982436fe59b49a4e29f83004b6e",
+      "sha256": "4a5c40eeb9732b8b8bab3df0d66ecdebae7be9ef19bde3943ca862d25a50d7b4",
       "needle": ".merge(product_http::router(backend.clone(), &origin))"
     },
     {
@@ -95,7 +95,7 @@
     },
     {
       "path": "crates/rentemester-host/src/lib.rs",
-      "sha256": "29e700859157eee32bfab98faeb122abbd2d830edbe6e84b2983eaac4fc324cd",
+      "sha256": "02510c0409c25d8b3da0d958784af3768406a6b76452e4ba788556b0a195b8ff",
       "needle": "fn control_auth<T>("
     },
     {
@@ -140,7 +140,7 @@
     },
     {
       "path": "crates/rentemester-server/src/backend.rs",
-      "sha256": "cec69cffd963d1601808c7f423447d378b83d175127db417f2b8ac27404bf333",
+      "sha256": "72110080d7231c7936751d9114f477ff0d9648772c12926b29c78f7d740c5ea2",
       "needle": "workspace_context: Some(Box::new(move |proof|"
     },
     {
@@ -310,12 +310,12 @@
     },
     {
       "path": "crates/rentemester-server/src/backend.rs",
-      "sha256": "cec69cffd963d1601808c7f423447d378b83d175127db417f2b8ac27404bf333",
+      "sha256": "72110080d7231c7936751d9114f477ff0d9648772c12926b29c78f7d740c5ea2",
       "needle": "service_lifecycle: Some(Box::new"
     },
     {
       "path": "crates/rentemester-server/src/backend.rs",
-      "sha256": "cec69cffd963d1601808c7f423447d378b83d175127db417f2b8ac27404bf333",
+      "sha256": "72110080d7231c7936751d9114f477ff0d9648772c12926b29c78f7d740c5ea2",
       "needle": "fn unwrap<T>"
     },
     {
@@ -325,7 +325,7 @@
     },
     {
       "path": "crates/rentemester-host/src/lib.rs",
-      "sha256": "29e700859157eee32bfab98faeb122abbd2d830edbe6e84b2983eaac4fc324cd",
+      "sha256": "02510c0409c25d8b3da0d958784af3768406a6b76452e4ba788556b0a195b8ff",
       "needle": "fn control_auth<T>"
     },
     {
@@ -335,7 +335,7 @@
     },
     {
       "path": "crates/rentemester-server/src/main.rs",
-      "sha256": "d4d56f94b147b1e6540928f49f2a1dd28f0c8982436fe59b49a4e29f83004b6e",
+      "sha256": "4a5c40eeb9732b8b8bab3df0d66ecdebae7be9ef19bde3943ca862d25a50d7b4",
       "needle": "protocol::install(router, connected)"
     }
   ],

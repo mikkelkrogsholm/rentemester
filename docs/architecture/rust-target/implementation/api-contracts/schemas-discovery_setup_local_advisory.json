@@ -1092,12 +1092,29 @@
             },
             "workspaceReady": {
               "const": false
+            },
+            "readiness": {
+              "type": "object",
+              "properties": {
+                "status": {
+                  "const": "not_ready"
+                },
+                "code": {
+                  "const": "not_configured"
+                }
+              },
+              "required": [
+                "status",
+                "code"
+              ],
+              "additionalProperties": false
             }
           },
           "required": [
             "ok",
             "backend",
-            "workspaceReady"
+            "workspaceReady",
+            "readiness"
           ],
           "additionalProperties": false
         },
@@ -1123,7 +1140,23 @@
               "const": true
             },
             "setupRequired": {
-              "type": "boolean"
+              "const": false
+            },
+            "readiness": {
+              "type": "object",
+              "properties": {
+                "status": {
+                  "const": "ready"
+                },
+                "code": {
+                  "const": "current"
+                }
+              },
+              "required": [
+                "status",
+                "code"
+              ],
+              "additionalProperties": false
             }
           },
           "required": [
@@ -1133,7 +1166,61 @@
             "authRequired",
             "deploymentProfile",
             "workspaceReady",
-            "setupRequired"
+            "setupRequired",
+            "readiness"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "service": {
+              "const": "rentemester"
+            },
+            "backend": {
+              "const": "rust"
+            },
+            "authRequired": {
+              "const": true
+            },
+            "deploymentProfile": {
+              "const": "hosted"
+            },
+            "workspaceReady": {
+              "const": true
+            },
+            "setupRequired": {
+              "const": true
+            },
+            "readiness": {
+              "type": "object",
+              "properties": {
+                "status": {
+                  "const": "not_ready"
+                },
+                "code": {
+                  "const": "setup_required"
+                }
+              },
+              "required": [
+                "status",
+                "code"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "ok",
+            "service",
+            "backend",
+            "authRequired",
+            "deploymentProfile",
+            "workspaceReady",
+            "setupRequired",
+            "readiness"
           ],
           "additionalProperties": false
         }
@@ -4573,7 +4660,7 @@
         "errors": {
           "type": "array",
           "items": {
-            "const": "Åbn et gyldigt installationslink fra serverens terminal."
+            "const": "\u00c5bn et gyldigt installationslink fra serverens terminal."
           },
           "minItems": 1,
           "maxItems": 1
@@ -4598,7 +4685,7 @@
         "errors": {
           "type": "array",
           "items": {
-            "const": "Prøv igen om lidt."
+            "const": "Pr\u00f8v igen om lidt."
           },
           "minItems": 1,
           "maxItems": 1
@@ -4623,7 +4710,7 @@
         "errors": {
           "type": "array",
           "items": {
-            "const": "Opsætningen kunne ikke bekræftes. Prøv samme e-mail igen, eller kontrollér login."
+            "const": "Ops\u00e6tningen kunne ikke bekr\u00e6ftes. Pr\u00f8v samme e-mail igen, eller kontroll\u00e9r login."
           },
           "minItems": 1,
           "maxItems": 1
@@ -5108,7 +5195,7 @@
           {
             "name": "rehearse-company-migration",
             "usage": "rehearse-company-migration --company PATH",
-            "scope": "experimental full canonical company prefixes0–36 and bounded minimal suffix32–36; no source migration"
+            "scope": "experimental full canonical company prefixes0\u201336 and bounded minimal suffix32\u201336; no source migration"
           },
           {
             "name": "verify-journal-hashes",
@@ -6390,7 +6477,7 @@
         "ok": true,
         "usage": "rentemester-rust rehearse-company-migration --company PATH",
         "format": "rentemester-company-migration-rehearsal/1",
-        "scope": "private-copy full canonical prefixes0–36 and bounded minimal suffix32–36; no source migration or writer authority"
+        "scope": "private-copy full canonical prefixes0\u201336 and bounded minimal suffix32\u201336; no source migration or writer authority"
       }
     },
     "rehearse-control-migrationHelp": {
@@ -6400,6 +6487,169 @@
         "format": "rentemester-control-migration-rehearsal/1",
         "scope": "private control copy only; no writer authority"
       }
+    },
+    "healthUnavailable": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": false
+            },
+            "service": {
+              "const": "rentemester"
+            },
+            "backend": {
+              "const": "rust"
+            },
+            "authRequired": {
+              "const": true
+            },
+            "deploymentProfile": {
+              "const": "hosted"
+            },
+            "workspaceReady": {
+              "const": false
+            },
+            "setupRequired": {
+              "const": false
+            },
+            "readiness": {
+              "type": "object",
+              "properties": {
+                "status": {
+                  "const": "unavailable"
+                },
+                "code": {
+                  "const": "migration_required"
+                }
+              },
+              "required": [
+                "status",
+                "code"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "ok",
+            "service",
+            "backend",
+            "authRequired",
+            "deploymentProfile",
+            "workspaceReady",
+            "setupRequired",
+            "readiness"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": false
+            },
+            "service": {
+              "const": "rentemester"
+            },
+            "backend": {
+              "const": "rust"
+            },
+            "authRequired": {
+              "const": true
+            },
+            "deploymentProfile": {
+              "const": "hosted"
+            },
+            "workspaceReady": {
+              "const": false
+            },
+            "setupRequired": {
+              "const": false
+            },
+            "readiness": {
+              "type": "object",
+              "properties": {
+                "status": {
+                  "const": "unavailable"
+                },
+                "code": {
+                  "const": "unsupported_schema"
+                }
+              },
+              "required": [
+                "status",
+                "code"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "ok",
+            "service",
+            "backend",
+            "authRequired",
+            "deploymentProfile",
+            "workspaceReady",
+            "setupRequired",
+            "readiness"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": false
+            },
+            "service": {
+              "const": "rentemester"
+            },
+            "backend": {
+              "const": "rust"
+            },
+            "authRequired": {
+              "const": true
+            },
+            "deploymentProfile": {
+              "const": "hosted"
+            },
+            "workspaceReady": {
+              "const": false
+            },
+            "setupRequired": {
+              "const": false
+            },
+            "readiness": {
+              "type": "object",
+              "properties": {
+                "status": {
+                  "const": "unavailable"
+                },
+                "code": {
+                  "const": "storage_unavailable"
+                }
+              },
+              "required": [
+                "status",
+                "code"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "ok",
+            "service",
+            "backend",
+            "authRequired",
+            "deploymentProfile",
+            "workspaceReady",
+            "setupRequired",
+            "readiness"
+          ],
+          "additionalProperties": false
+        }
+      ]
     }
   }
 }
