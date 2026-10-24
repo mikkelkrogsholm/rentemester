@@ -22,6 +22,7 @@ fn read(name: &str) -> bool {
 pub fn tools() -> Vec<Value> {
     catalogue().into_iter().map(|mut t| {
         t["description"] = json!(format!("{} Current human credentials only. Native all-scope/sensitivity, retained whole-intent/current-principal replay and pagination/filetype/filename limits apply. No retry; reconcile unknown writes through exact canonical identity/source/history reads. Original bytes max16MiB; ingest JSON max24MiB. Identity-only party creation is unavailable: native creation requires an explicit initial role, which this original grammar does not supply.", t["description"].as_str().unwrap()));
+        if t["name"] == "workspace_party_create" {t["_meta"] = json!({"rentemester/nativeProfile":{"available":false,"code":"NATIVE_BOUNDARY","reason":"Original identity-only creation is not implemented by the role-requiring native writer; never infer a company role."}});}
         t
     }).collect()
 }
@@ -377,6 +378,7 @@ pub async fn call(api: &ApiClient, name: &str, args: Value) -> Result<Value, &'s
         "partyId"
     };
     let selected = args[id_key].as_str().unwrap_or("");
+    let canonical_selected = rentemester_engine::company_knowledge::trim(selected);
     let cursor = args["cursor"].as_u64().unwrap_or(0);
     let cursor = usize::try_from(cursor).map_err(|_| "cursor exceeds native bound")?;
     let limit = args["limit"].as_u64().unwrap_or(25) as usize;
@@ -411,7 +413,7 @@ pub async fn call(api: &ApiClient, name: &str, args: Value) -> Result<Value, &'s
         "workspace_party_propose_merge" => {
             api.mutate_workspace_party(
                 company,
-                PartyMutation::ProposeMerge(selected.into()),
+                PartyMutation::ProposeMerge(canonical_selected.into()),
                 wire,
                 true,
             )
@@ -420,7 +422,7 @@ pub async fn call(api: &ApiClient, name: &str, args: Value) -> Result<Value, &'s
         "workspace_party_approve_merge" => {
             api.mutate_workspace_party(
                 company,
-                PartyMutation::ApproveMerge(selected.into()),
+                PartyMutation::ApproveMerge(canonical_selected.into()),
                 wire,
                 true,
             )
@@ -499,9 +501,10 @@ pub async fn call(api: &ApiClient, name: &str, args: Value) -> Result<Value, &'s
     ) {
         hash(&v["payloadHash"])
     } else if corporate {
-        record(&v["record"]) && (selected.is_empty() || v["record"]["recordId"] == selected)
+        record(&v["record"])
+            && (selected.is_empty() || v["record"]["recordId"] == canonical_selected)
     } else {
-        party(&v["party"]) && v["party"]["partyId"] == selected
+        party(&v["party"]) && v["party"]["partyId"] == canonical_selected
     };
     if v["ok"] != true || !receipt {
         return Ok(if write {
@@ -517,12 +520,13 @@ pub async fn call(api: &ApiClient, name: &str, args: Value) -> Result<Value, &'s
                 != args[k]
                     .as_str()
                     .map(rentemester_engine::company_knowledge::trim)
-        }) || args.get("recordId").is_some_and(|id| r["recordId"] != *id)
-            || !r["links"]
-                .as_array()
-                .unwrap()
-                .iter()
-                .any(|l| l["type"] == "company" && l["id"] == company)
+        }) || args.get("recordId").is_some_and(|id| {
+            r["recordId"].as_str() != id.as_str().map(rentemester_engine::company_knowledge::trim)
+        }) || !r["links"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|l| l["type"] == "company" && l["id"] == company)
         {
             return Ok(unknown());
         }
@@ -554,7 +558,7 @@ pub async fn call(api: &ApiClient, name: &str, args: Value) -> Result<Value, &'s
             Ok(r)
                 if r["ok"] == true
                     && record(&r["record"])
-                    && r["record"]["recordId"] == selected
+                    && r["record"]["recordId"] == canonical_selected
                     && r["record"]["sha256"] == v["sha256"] => {}
             Err(e) => return Ok(transport(e, false, true)),
             _ => {
@@ -588,7 +592,7 @@ pub async fn call(api: &ApiClient, name: &str, args: Value) -> Result<Value, &'s
             Ok(r)
                 if r["ok"] == true
                     && record(&r["record"])
-                    && r["record"]["recordId"] == selected
+                    && r["record"]["recordId"] == canonical_selected
                     && r["record"]["history"].as_array().unwrap().iter().any(|e| {
                         e["event_type"] == event && e["payload_hash"] == v["payloadHash"]
                     }) => {}

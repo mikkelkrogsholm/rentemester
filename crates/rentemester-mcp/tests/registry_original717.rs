@@ -361,3 +361,33 @@ fn malformed_denied_and_lost_write_never_retry() {
         );
     }
 }
+
+#[test]
+fn canonical_selector_receipts_preserve_valid_source_ids() {
+    let (origin, server) = fixture("ok");
+    let rows = run(
+        &origin,
+        session(vec![
+            call(
+                2,
+                "workspace_party_inspect",
+                json!({"company":"synthetic","partyId":" source "}),
+            ),
+            call(
+                3,
+                "corporate_record_inspect",
+                json!({"company":"synthetic","recordId":" record-synthetic "}),
+            ),
+        ]),
+    );
+    assert_eq!(envelope(&rows[1])["ok"], true);
+    assert_eq!(envelope(&rows[2])["ok"], true);
+    let requests = server.join().unwrap();
+    assert_eq!(
+        requests
+            .iter()
+            .filter(|(line, _)| line.starts_with("POST "))
+            .count(),
+        0
+    );
+}
