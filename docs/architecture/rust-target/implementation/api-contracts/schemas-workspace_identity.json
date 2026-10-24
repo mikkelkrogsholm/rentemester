@@ -1,0 +1,1227 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$defs": {
+    "ProtocolFailure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "const": "protocol_incompatible"
+        },
+        "errors": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "const": "HTTP protocol negotiation is incompatible"
+            }
+          ],
+          "minItems": 1,
+          "maxItems": 1
+        }
+      },
+      "required": [
+        "ok",
+        "code",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "NativeRefused": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "const": "request_refused"
+        }
+      },
+      "required": [
+        "code"
+      ],
+      "additionalProperties": false
+    },
+    "NativeDenied": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "const": "Invalid credentials"
+        },
+        "code": {
+          "const": "INVALID_CREDENTIALS"
+        }
+      },
+      "required": [
+        "message",
+        "code"
+      ],
+      "additionalProperties": false
+    },
+    "NativeUnconfirmed": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "const": "Authentication outcome could not be confirmed"
+        },
+        "code": {
+          "const": "AUTH_UNCONFIRMED"
+        }
+      },
+      "required": [
+        "message",
+        "code"
+      ],
+      "additionalProperties": false
+    },
+    "WorkspaceRole": {
+      "type": "string",
+      "enum": [
+        "workspace_owner",
+        "member"
+      ]
+    },
+    "CompanyRole": {
+      "type": "string",
+      "enum": [
+        "owner",
+        "bookkeeper",
+        "reviewer",
+        "reader"
+      ]
+    },
+    "CompanyContext": {
+      "type": "object",
+      "properties": {
+        "slug": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string",
+          "enum": [
+            "owner",
+            "bookkeeper",
+            "reviewer",
+            "reader"
+          ]
+        },
+        "archived": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "slug",
+        "name",
+        "role",
+        "archived"
+      ],
+      "additionalProperties": false
+    },
+    "CompanyActiveProfile": {
+      "type": "object",
+      "properties": {
+        "slug": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string",
+          "enum": [
+            "owner",
+            "bookkeeper",
+            "reviewer",
+            "reader"
+          ]
+        },
+        "archived": {
+          "const": false
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Verbatim companies.created_at SQL TEXT; profile constructor does not parse or normalize it. No date-time format assertion."
+        }
+      },
+      "required": [
+        "slug",
+        "name",
+        "role",
+        "archived",
+        "createdAt"
+      ],
+      "additionalProperties": false
+    },
+    "CompanyArchivedContext": {
+      "type": "object",
+      "properties": {
+        "slug": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string",
+          "enum": [
+            "owner",
+            "bookkeeper",
+            "reviewer",
+            "reader"
+          ]
+        },
+        "archived": {
+          "const": true
+        }
+      },
+      "required": [
+        "slug",
+        "name",
+        "role",
+        "archived"
+      ],
+      "additionalProperties": false
+    },
+    "WorkspaceUser": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "emailVerified": {
+          "type": "boolean"
+        },
+        "twoFactorEnabled": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "email",
+        "emailVerified",
+        "twoFactorEnabled"
+      ],
+      "additionalProperties": false
+    },
+    "Me": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "user": {
+          "$ref": "schemas-workspace_identity.json#/$defs/WorkspaceUser"
+        },
+        "workspaceRole": {
+          "type": "string",
+          "enum": [
+            "workspace_owner",
+            "member"
+          ]
+        },
+        "companies": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-workspace_identity.json#/$defs/CompanyContext"
+          }
+        }
+      },
+      "required": [
+        "ok",
+        "user",
+        "workspaceRole",
+        "companies"
+      ],
+      "additionalProperties": false
+    },
+    "HumanCompanies": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "companies": {
+          "type": "array",
+          "items": {
+            "oneOf": [
+              {
+                "$ref": "schemas-workspace_identity.json#/$defs/CompanyActiveProfile"
+              },
+              {
+                "$ref": "schemas-workspace_identity.json#/$defs/CompanyArchivedContext"
+              }
+            ]
+          }
+        },
+        "count": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000
+        }
+      },
+      "required": [
+        "ok",
+        "companies",
+        "count"
+      ],
+      "additionalProperties": false
+    },
+    "ServiceCompanies": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "companies": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-workspace_identity.json#/$defs/CompanyContext"
+          }
+        },
+        "count": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000
+        }
+      },
+      "required": [
+        "ok",
+        "companies",
+        "count"
+      ],
+      "additionalProperties": false
+    },
+    "Invitation": {
+      "type": "object",
+      "properties": {
+        "invitationId": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-a[0-9a-f]{3}-[0-9a-f]{12}$"
+        },
+        "email": {
+          "type": "string"
+        },
+        "workspaceRole": {
+          "type": "string",
+          "enum": [
+            "workspace_owner",
+            "member"
+          ]
+        },
+        "companySlug": {
+          "type": "string"
+        },
+        "companyRole": {
+          "type": "string",
+          "enum": [
+            "owner",
+            "bookkeeper",
+            "reviewer",
+            "reader"
+          ]
+        },
+        "expiresAt": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d\\d-\\d\\dT\\d\\d:\\d\\d:\\d\\d\\.\\d{3}Z$"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "issued",
+            "delivery_confirmed",
+            "delivery_failed",
+            "cancelled",
+            "accepted"
+          ]
+        },
+        "userId": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d\\d-\\d\\dT\\d\\d:\\d\\d:\\d\\d\\.\\d{3}Z$"
+        }
+      },
+      "required": [
+        "invitationId",
+        "email",
+        "workspaceRole",
+        "companySlug",
+        "companyRole",
+        "expiresAt",
+        "status",
+        "userId",
+        "createdAt"
+      ],
+      "additionalProperties": false
+    },
+    "InvitationResult": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "invitation": {
+          "$ref": "schemas-workspace_identity.json#/$defs/Invitation"
+        }
+      },
+      "required": [
+        "ok",
+        "invitation"
+      ],
+      "additionalProperties": false
+    },
+    "InvitationList": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "invitations": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-workspace_identity.json#/$defs/Invitation"
+          }
+        }
+      },
+      "required": [
+        "ok",
+        "invitations"
+      ],
+      "additionalProperties": false
+    },
+    "IssueInput": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "email": {
+              "type": "string"
+            },
+            "workspaceRole": {
+              "type": "string",
+              "enum": [
+                "workspace_owner",
+                "member"
+              ]
+            },
+            "companySlug": {
+              "type": "string"
+            },
+            "companyRole": {
+              "type": "string",
+              "enum": [
+                "owner",
+                "bookkeeper",
+                "reviewer",
+                "reader"
+              ]
+            }
+          },
+          "required": [
+            "email",
+            "workspaceRole",
+            "companySlug",
+            "companyRole"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "string",
+              "enum": [
+                "workspace_owner",
+                "member"
+              ]
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "string",
+              "enum": [
+                "owner",
+                "bookkeeper",
+                "reviewer",
+                "reader"
+              ]
+            }
+          ],
+          "minItems": 4,
+          "maxItems": 4
+        }
+      ]
+    },
+    "CancelInput": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "invitationId": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "invitationId"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "string"
+            }
+          ],
+          "minItems": 1,
+          "maxItems": 1
+        }
+      ]
+    },
+    "ClaimInput": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "token": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{43}$"
+            },
+            "name": {
+              "type": "string",
+              "description": "For a new identity: trim nonempty, <=4096 UTF-8 bytes, no control characters; existing identity retains its name and credentials and bypasses this name check."
+            },
+            "password": {
+              "type": "string",
+              "writeOnly": true,
+              "description": "12..128 UTF-16 code units on original input; KDF uses shared NFKC policy. Never returned. Existing identity password is not changed."
+            }
+          },
+          "required": [
+            "token",
+            "name",
+            "password"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{43}$"
+            },
+            {
+              "type": "string",
+              "description": "For a new identity: trim nonempty, <=4096 UTF-8 bytes, no control characters; existing identity retains its name and credentials and bypasses this name check."
+            },
+            {
+              "type": "string",
+              "writeOnly": true,
+              "description": "12..128 UTF-16 code units on original input; KDF uses shared NFKC policy. Never returned. Existing identity password is not changed."
+            }
+          ],
+          "minItems": 3,
+          "maxItems": 3
+        }
+      ]
+    },
+    "ClaimResult": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "accepted": {
+              "const": true
+            },
+            "accessReady": {
+              "const": true
+            },
+            "nextStep": {
+              "const": "sign-in"
+            }
+          },
+          "required": [
+            "ok",
+            "accepted",
+            "accessReady",
+            "nextStep"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "accepted": {
+              "const": true
+            },
+            "accessReady": {
+              "const": false
+            },
+            "nextStep": {
+              "const": "verify-email-and-enable-mfa"
+            }
+          },
+          "required": [
+            "ok",
+            "accepted",
+            "accessReady",
+            "nextStep"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "MemberCompany": {
+      "type": "object",
+      "properties": {
+        "companySlug": {
+          "type": "string"
+        },
+        "companyName": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string",
+          "enum": [
+            "owner",
+            "bookkeeper",
+            "reviewer",
+            "reader"
+          ]
+        },
+        "archived": {
+          "const": false
+        }
+      },
+      "required": [
+        "companySlug",
+        "companyName",
+        "role",
+        "archived"
+      ],
+      "additionalProperties": false
+    },
+    "Member": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "emailVerified": {
+          "type": "boolean"
+        },
+        "twoFactorEnabled": {
+          "type": "boolean"
+        },
+        "accessReady": {
+          "type": "boolean"
+        },
+        "workspaceRole": {
+          "type": "string",
+          "enum": [
+            "workspace_owner",
+            "member"
+          ]
+        },
+        "memberships": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-workspace_identity.json#/$defs/MemberCompany"
+          }
+        }
+      },
+      "required": [
+        "userId",
+        "name",
+        "email",
+        "emailVerified",
+        "twoFactorEnabled",
+        "accessReady",
+        "workspaceRole",
+        "memberships"
+      ],
+      "additionalProperties": false
+    },
+    "MemberList": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "members": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-workspace_identity.json#/$defs/Member"
+          }
+        }
+      },
+      "required": [
+        "ok",
+        "members"
+      ],
+      "additionalProperties": false
+    },
+    "AccessInput": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "userId": {
+              "type": "string"
+            },
+            "action": {
+              "const": "set-role"
+            },
+            "workspaceRole": {
+              "type": "string",
+              "enum": [
+                "workspace_owner",
+                "member"
+              ]
+            },
+            "companySlug": {
+              "type": "null"
+            },
+            "role": {
+              "type": "null"
+            }
+          },
+          "required": [
+            "userId",
+            "action",
+            "workspaceRole"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "userId": {
+              "type": "string"
+            },
+            "action": {
+              "const": "disable"
+            },
+            "workspaceRole": {
+              "type": "null"
+            },
+            "companySlug": {
+              "type": "null"
+            },
+            "role": {
+              "type": "null"
+            }
+          },
+          "required": [
+            "userId",
+            "action"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "string"
+            },
+            {
+              "const": "set-role"
+            },
+            {
+              "type": "string",
+              "enum": [
+                "workspace_owner",
+                "member"
+              ]
+            },
+            {
+              "type": "null"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "minItems": 3,
+          "maxItems": 5
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "string"
+            },
+            {
+              "const": "disable"
+            },
+            {
+              "type": "null"
+            },
+            {
+              "type": "null"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "minItems": 2,
+          "maxItems": 5
+        }
+      ]
+    },
+    "CompanyChangeInput": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "userId": {
+              "type": "string"
+            },
+            "action": {
+              "const": "grant"
+            },
+            "workspaceRole": {
+              "type": "null"
+            },
+            "companySlug": {
+              "type": "string"
+            },
+            "role": {
+              "type": "string",
+              "enum": [
+                "owner",
+                "bookkeeper",
+                "reviewer",
+                "reader"
+              ]
+            }
+          },
+          "required": [
+            "userId",
+            "action",
+            "companySlug",
+            "role"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "userId": {
+              "type": "string"
+            },
+            "action": {
+              "const": "revoke"
+            },
+            "workspaceRole": {
+              "type": "null"
+            },
+            "companySlug": {
+              "type": "string"
+            },
+            "role": {
+              "type": "null"
+            }
+          },
+          "required": [
+            "userId",
+            "action",
+            "companySlug"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "string"
+            },
+            {
+              "const": "grant"
+            },
+            {
+              "type": "null"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "string",
+              "enum": [
+                "owner",
+                "bookkeeper",
+                "reviewer",
+                "reader"
+              ]
+            }
+          ],
+          "minItems": 5,
+          "maxItems": 5
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "string"
+            },
+            {
+              "const": "revoke"
+            },
+            {
+              "type": "null"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "minItems": 4,
+          "maxItems": 5
+        }
+      ]
+    },
+    "AccessResult": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "access": {
+              "type": "object",
+              "properties": {
+                "active": {
+                  "const": true
+                },
+                "workspaceRole": {
+                  "type": "string",
+                  "enum": [
+                    "workspace_owner",
+                    "member"
+                  ]
+                }
+              },
+              "required": [
+                "active",
+                "workspaceRole"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "ok",
+            "access"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "access": {
+              "type": "object",
+              "properties": {
+                "active": {
+                  "const": false
+                },
+                "workspaceRole": {
+                  "type": "null"
+                }
+              },
+              "required": [
+                "active",
+                "workspaceRole"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "ok",
+            "access"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "CompanyChangeResult": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "membership": {
+              "type": "object",
+              "properties": {
+                "active": {
+                  "const": true
+                },
+                "role": {
+                  "type": "string",
+                  "enum": [
+                    "owner",
+                    "bookkeeper",
+                    "reviewer",
+                    "reader"
+                  ]
+                }
+              },
+              "required": [
+                "active",
+                "role"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "ok",
+            "membership"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "membership": {
+              "type": "object",
+              "properties": {
+                "active": {
+                  "const": false
+                },
+                "role": {
+                  "type": "null"
+                }
+              },
+              "required": [
+                "active",
+                "role"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "ok",
+            "membership"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "ForwardedControlFailure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "type": "string",
+          "description": "Exact f.error.code forwarded by workspace_access adapter for nonpublic NotCommitted failures, except invalid_credentials/access_denied and auth_delivery_unconfirmed which have dedicated mappings. Includes last_owner, workspace_access_refused, invitation_refused, workspace_transfer_fenced, invalid_control, invalid_auth_clock, control_busy_or_unavailable, connection_refused and underlying native clock/key/control errors."
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "maxItems": 1
+        }
+      },
+      "required": [
+        "ok",
+        "code",
+        "errors"
+      ],
+      "additionalProperties": false,
+      "description": "Adapter constructs errors=[code], exactly one item equal to code (cross-field equality); not arbitrary error data."
+    },
+    "IssuedInvitation": {
+      "type": "object",
+      "properties": {
+        "invitationId": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-a[0-9a-f]{3}-[0-9a-f]{12}$"
+        },
+        "email": {
+          "type": "string"
+        },
+        "workspaceRole": {
+          "type": "string",
+          "enum": [
+            "workspace_owner",
+            "member"
+          ]
+        },
+        "companySlug": {
+          "type": "string"
+        },
+        "companyRole": {
+          "type": "string",
+          "enum": [
+            "owner",
+            "bookkeeper",
+            "reviewer",
+            "reader"
+          ]
+        },
+        "expiresAt": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d\\d-\\d\\dT\\d\\d:\\d\\d:\\d\\d\\.\\d{3}Z$"
+        },
+        "status": {
+          "const": "delivery_confirmed"
+        },
+        "userId": {
+          "type": "null"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d\\d-\\d\\dT\\d\\d:\\d\\d:\\d\\d\\.\\d{3}Z$"
+        }
+      },
+      "required": [
+        "invitationId",
+        "email",
+        "workspaceRole",
+        "companySlug",
+        "companyRole",
+        "expiresAt",
+        "status",
+        "userId",
+        "createdAt"
+      ],
+      "additionalProperties": false
+    },
+    "IssuedInvitationResult": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "invitation": {
+          "$ref": "schemas-workspace_identity.json#/$defs/IssuedInvitation"
+        }
+      },
+      "required": [
+        "ok",
+        "invitation"
+      ],
+      "additionalProperties": false
+    },
+    "CancelledInvitation": {
+      "type": "object",
+      "properties": {
+        "invitationId": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-a[0-9a-f]{3}-[0-9a-f]{12}$"
+        },
+        "email": {
+          "type": "string"
+        },
+        "workspaceRole": {
+          "type": "string",
+          "enum": [
+            "workspace_owner",
+            "member"
+          ]
+        },
+        "companySlug": {
+          "type": "string"
+        },
+        "companyRole": {
+          "type": "string",
+          "enum": [
+            "owner",
+            "bookkeeper",
+            "reviewer",
+            "reader"
+          ]
+        },
+        "expiresAt": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d\\d-\\d\\dT\\d\\d:\\d\\d:\\d\\d\\.\\d{3}Z$"
+        },
+        "status": {
+          "const": "cancelled"
+        },
+        "userId": {
+          "type": "null"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d\\d-\\d\\dT\\d\\d:\\d\\d:\\d\\d\\.\\d{3}Z$"
+        }
+      },
+      "required": [
+        "invitationId",
+        "email",
+        "workspaceRole",
+        "companySlug",
+        "companyRole",
+        "expiresAt",
+        "status",
+        "userId",
+        "createdAt"
+      ],
+      "additionalProperties": false
+    },
+    "CancelledInvitationResult": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "invitation": {
+          "$ref": "schemas-workspace_identity.json#/$defs/CancelledInvitation"
+        }
+      },
+      "required": [
+        "ok",
+        "invitation"
+      ],
+      "additionalProperties": false
+    }
+  }
+}
