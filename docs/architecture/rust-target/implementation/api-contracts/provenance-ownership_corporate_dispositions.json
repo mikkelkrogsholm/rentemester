@@ -211,12 +211,12 @@
     },
     {
       "path": "crates/rentemester-mcp/src/main.rs",
-      "sha256": "f1bd984c541f4c8b8fc6147a7ede20a19923177859b28fa980e6ed48f4c6184a",
+      "sha256": "18b52f0ad0defc3c6c02b7d2922b50d90715f6cb77a126ae70db4ec277b36fb0",
       "needle": "impl Session"
     },
     {
       "path": "crates/rentemester-mcp/src/tools.rs",
-      "sha256": "c9c7557336816a4ac83f921e6d728dc096c3a92b2e6cd431c56b877c95790c44",
+      "sha256": "8773da9d47ab7a40b7dbbbfd65aeca9cdbc19d2277dcee35e250e33e9fc2164d",
       "needle": "pub async fn call"
     },
     {
@@ -1664,5 +1664,680 @@
     "supportedOriginalNames": 27,
     "explicitlyUnavailable": "workspace_party_create; no inferred native role",
     "remaining": "30other original names, supported identity-only create, full31workflow actual binding/annotation/reconnect proof; counts do not establish parity"
+  },
+  "r79OriginalDisposition717": {
+    "new_ids": [
+      "mcp:intercompany_disposition_plan",
+      "mcp:intercompany_disposition_propose",
+      "mcp:intercompany_disposition_approve",
+      "mcp:intercompany_disposition_link",
+      "mcp:intercompany_disposition_status",
+      "mcp:intercompany_disposition_settle",
+      "mcp:intercompany_disposition_reopen",
+      "mcp:intercompany_disposition_supersede"
+    ],
+    "actual_current_definitions": [
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false,
+          "readOnlyHint": true
+        },
+        "description": "Validates both legal sides and source evidence. It has no workspace or ledger effects. Shared native32KiB evidence-only lifecycle; current two-company authority and independent approval remain server-owned. Native calendar, exact integer money and UTF16/NFC bounds apply. No posting, payment, generated IDs/hashes, head refresh or retry. Unknown writes require current-authorized exact-ID status/history reconciliation. Native human credentials only; service credentials are refused by the server. Global status accepts any current admitted company anchor; native plan/mutation routes require an endpoint anchor. Nonendpoint mutation contexts remain an explicit native-profile boundary. Reuse normalized plan disposition and ID for proposal.",
+        "inputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "additionalProperties": false,
+          "properties": {
+            "company": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "disposition": {}
+          },
+          "required": [
+            "company",
+            "disposition"
+          ],
+          "type": "object"
+        },
+        "name": "intercompany_disposition_plan",
+        "outputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "additionalProperties": false,
+          "properties": {
+            "appliedRules": {
+              "description": "Regel-id'er der fyrede for denne handling (sporbarhed). S\u00e6ttes for bogf\u00f8rings-tools; udeladt ellers.",
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "code": {
+              "description": "Stabil maskinl\u00e6sbar fejl-mark\u00f8r for cross-cutting preconditions (fx \"BACKUP_LOCKED\"). S\u00e6ttes kun ved ok=false og kun for fejl der lever uden for det enkelte tools forretningslogik \u2014 agenten kan branche p\u00e5 `code` uden at parse fri-tekst i `errors[]`. Udeladt ved per-tool forretningsfejl.",
+              "type": "string"
+            },
+            "data": {
+              "additionalProperties": {},
+              "description": "Kerne-resultatet ved ok=true. Den pr\u00e6cise feltliste er per-tool og dokumenteret i docs/mcp-tool-surface.md. Udeladt ved ok=false.",
+              "properties": {},
+              "type": "object"
+            },
+            "errors": {
+              "description": "Menneskel\u00e6sbare fejl-/foruds\u00e6tnings-strenge. Tom ved ok=true; ikke-tom ved ok=false.",
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "ok": {
+              "description": "true \u21d2 kaldet lykkedes og `data` er sat; false \u21d2 se `errors`.",
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "ok",
+            "errors"
+          ],
+          "type": "object"
+        },
+        "title": "Dry-run intercompany disposition"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": false,
+          "readOnlyHint": false
+        },
+        "description": "Records immutable source-linked evidence only. Each legal company must still post through its normal flow. Requires actor attribution and confirm:true; retry reads the existing source-hash result. write-reversible. Shared native32KiB evidence-only lifecycle; current two-company authority and independent approval remain server-owned. Native calendar, exact integer money and UTF16/NFC bounds apply. No posting, payment, generated IDs/hashes, head refresh or retry. Unknown writes require current-authorized exact-ID status/history reconciliation. Native human credentials only; service credentials are refused by the server. Global status accepts any current admitted company anchor; native plan/mutation routes require an endpoint anchor. Nonendpoint mutation contexts remain an explicit native-profile boundary. Reuse normalized plan disposition and ID for proposal.",
+        "inputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "additionalProperties": false,
+          "properties": {
+            "company": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "confirm": {
+              "description": "Must be set to true to acknowledge the write side effects of this tool. Omitting it (or sending false) returns an { ok:false, errors:[...] } envelope rather than performing the write.",
+              "type": "boolean"
+            },
+            "disposition": {}
+          },
+          "required": [
+            "company",
+            "disposition"
+          ],
+          "type": "object"
+        },
+        "name": "intercompany_disposition_propose",
+        "outputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "additionalProperties": false,
+          "properties": {
+            "appliedRules": {
+              "description": "Regel-id'er der fyrede for denne handling (sporbarhed). S\u00e6ttes for bogf\u00f8rings-tools; udeladt ellers.",
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "code": {
+              "description": "Stabil maskinl\u00e6sbar fejl-mark\u00f8r for cross-cutting preconditions (fx \"BACKUP_LOCKED\"). S\u00e6ttes kun ved ok=false og kun for fejl der lever uden for det enkelte tools forretningslogik \u2014 agenten kan branche p\u00e5 `code` uden at parse fri-tekst i `errors[]`. Udeladt ved per-tool forretningsfejl.",
+              "type": "string"
+            },
+            "data": {
+              "additionalProperties": {},
+              "description": "Kerne-resultatet ved ok=true. Den pr\u00e6cise feltliste er per-tool og dokumenteret i docs/mcp-tool-surface.md. Udeladt ved ok=false.",
+              "properties": {},
+              "type": "object"
+            },
+            "errors": {
+              "description": "Menneskel\u00e6sbare fejl-/foruds\u00e6tnings-strenge. Tom ved ok=true; ikke-tom ved ok=false.",
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "ok": {
+              "description": "true \u21d2 kaldet lykkedes og `data` er sat; false \u21d2 se `errors`.",
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "ok",
+            "errors"
+          ],
+          "type": "object"
+        },
+        "title": "Propose two-sided intercompany disposition"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": false,
+          "readOnlyHint": false
+        },
+        "description": "Approves an exact proposal with a distinct stable principal; it never posts either ledger. Requires actor attribution and confirm:true; retry reads the exact approval. write-reversible. Shared native32KiB evidence-only lifecycle; current two-company authority and independent approval remain server-owned. Native calendar, exact integer money and UTF16/NFC bounds apply. No posting, payment, generated IDs/hashes, head refresh or retry. Unknown writes require current-authorized exact-ID status/history reconciliation. Native human credentials only; service credentials are refused by the server. Global status accepts any current admitted company anchor; native plan/mutation routes require an endpoint anchor. Nonendpoint mutation contexts remain an explicit native-profile boundary. Reuse normalized plan disposition and ID for proposal.",
+        "inputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "additionalProperties": false,
+          "properties": {
+            "company": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "confirm": {
+              "description": "Must be set to true to acknowledge the write side effects of this tool. Omitting it (or sending false) returns an { ok:false, errors:[...] } envelope rather than performing the write.",
+              "type": "boolean"
+            },
+            "dispositionId": {
+              "minLength": 3,
+              "type": "string"
+            },
+            "payloadHash": {
+              "pattern": "^[a-f0-9]{64}$",
+              "type": "string"
+            }
+          },
+          "required": [
+            "company",
+            "dispositionId",
+            "payloadHash"
+          ],
+          "type": "object"
+        },
+        "name": "intercompany_disposition_approve",
+        "outputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "additionalProperties": false,
+          "properties": {
+            "appliedRules": {
+              "description": "Regel-id'er der fyrede for denne handling (sporbarhed). S\u00e6ttes for bogf\u00f8rings-tools; udeladt ellers.",
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "code": {
+              "description": "Stabil maskinl\u00e6sbar fejl-mark\u00f8r for cross-cutting preconditions (fx \"BACKUP_LOCKED\"). S\u00e6ttes kun ved ok=false og kun for fejl der lever uden for det enkelte tools forretningslogik \u2014 agenten kan branche p\u00e5 `code` uden at parse fri-tekst i `errors[]`. Udeladt ved per-tool forretningsfejl.",
+              "type": "string"
+            },
+            "data": {
+              "additionalProperties": {},
+              "description": "Kerne-resultatet ved ok=true. Den pr\u00e6cise feltliste er per-tool og dokumenteret i docs/mcp-tool-surface.md. Udeladt ved ok=false.",
+              "properties": {},
+              "type": "object"
+            },
+            "errors": {
+              "description": "Menneskel\u00e6sbare fejl-/foruds\u00e6tnings-strenge. Tom ved ok=true; ikke-tom ved ok=false.",
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "ok": {
+              "description": "true \u21d2 kaldet lykkedes og `data` er sat; false \u21d2 se `errors`.",
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "ok",
+            "errors"
+          ],
+          "type": "object"
+        },
+        "title": "Approve exact intercompany disposition"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": false,
+          "readOnlyHint": false
+        },
+        "description": "Validates the current posted journal, source currency/date/side and ledger head, then records one immutable link. It never posts a ledger entry. Requires actor attribution and confirm:true; retry reads the immutable link. write-reversible. Shared native32KiB evidence-only lifecycle; current two-company authority and independent approval remain server-owned. Native calendar, exact integer money and UTF16/NFC bounds apply. No posting, payment, generated IDs/hashes, head refresh or retry. Unknown writes require current-authorized exact-ID status/history reconciliation. Native human credentials only; service credentials are refused by the server. Global status accepts any current admitted company anchor; native plan/mutation routes require an endpoint anchor. Nonendpoint mutation contexts remain an explicit native-profile boundary. Reuse normalized plan disposition and ID for proposal.",
+        "inputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "additionalProperties": false,
+          "properties": {
+            "company": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "confirm": {
+              "description": "Must be set to true to acknowledge the write side effects of this tool. Omitting it (or sending false) returns an { ok:false, errors:[...] } envelope rather than performing the write.",
+              "type": "boolean"
+            },
+            "dispositionId": {
+              "minLength": 3,
+              "type": "string"
+            },
+            "journalEntryId": {
+              "exclusiveMinimum": 0,
+              "maximum": 9007199254740991,
+              "type": "integer"
+            },
+            "ledgerHeadHash": {
+              "anyOf": [
+                {
+                  "pattern": "^[a-f0-9]{64}$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "payloadHash": {
+              "pattern": "^[a-f0-9]{64}$",
+              "type": "string"
+            },
+            "side": {
+              "enum": [
+                "left",
+                "right"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "company",
+            "dispositionId",
+            "payloadHash",
+            "side",
+            "journalEntryId",
+            "ledgerHeadHash"
+          ],
+          "type": "object"
+        },
+        "name": "intercompany_disposition_link",
+        "outputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "additionalProperties": false,
+          "properties": {
+            "appliedRules": {
+              "description": "Regel-id'er der fyrede for denne handling (sporbarhed). S\u00e6ttes for bogf\u00f8rings-tools; udeladt ellers.",
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "code": {
+              "description": "Stabil maskinl\u00e6sbar fejl-mark\u00f8r for cross-cutting preconditions (fx \"BACKUP_LOCKED\"). S\u00e6ttes kun ved ok=false og kun for fejl der lever uden for det enkelte tools forretningslogik \u2014 agenten kan branche p\u00e5 `code` uden at parse fri-tekst i `errors[]`. Udeladt ved per-tool forretningsfejl.",
+              "type": "string"
+            },
+            "data": {
+              "additionalProperties": {},
+              "description": "Kerne-resultatet ved ok=true. Den pr\u00e6cise feltliste er per-tool og dokumenteret i docs/mcp-tool-surface.md. Udeladt ved ok=false.",
+              "properties": {},
+              "type": "object"
+            },
+            "errors": {
+              "description": "Menneskel\u00e6sbare fejl-/foruds\u00e6tnings-strenge. Tom ved ok=true; ikke-tom ved ok=false.",
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "ok": {
+              "description": "true \u21d2 kaldet lykkedes og `data` er sat; false \u21d2 se `errors`.",
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "ok",
+            "errors"
+          ],
+          "type": "object"
+        },
+        "title": "Link independently posted journal"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false,
+          "readOnlyHint": true
+        },
+        "description": "Read-only current status with one-sided, stale/reversed and overdue exceptions. Hidden endpoints are denied before this tool runs. Shared native32KiB evidence-only lifecycle; current two-company authority and independent approval remain server-owned. Native calendar, exact integer money and UTF16/NFC bounds apply. No posting, payment, generated IDs/hashes, head refresh or retry. Unknown writes require current-authorized exact-ID status/history reconciliation. Native human credentials only; service credentials are refused by the server. Global status accepts any current admitted company anchor; native plan/mutation routes require an endpoint anchor. Nonendpoint mutation contexts remain an explicit native-profile boundary. Reuse normalized plan disposition and ID for proposal.",
+        "inputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "additionalProperties": false,
+          "properties": {
+            "asOf": {
+              "type": "string"
+            },
+            "company": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "dispositionId": {
+              "minLength": 3,
+              "type": "string"
+            }
+          },
+          "required": [
+            "company",
+            "dispositionId"
+          ],
+          "type": "object"
+        },
+        "name": "intercompany_disposition_status",
+        "outputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "additionalProperties": false,
+          "properties": {
+            "appliedRules": {
+              "description": "Regel-id'er der fyrede for denne handling (sporbarhed). S\u00e6ttes for bogf\u00f8rings-tools; udeladt ellers.",
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "code": {
+              "description": "Stabil maskinl\u00e6sbar fejl-mark\u00f8r for cross-cutting preconditions (fx \"BACKUP_LOCKED\"). S\u00e6ttes kun ved ok=false og kun for fejl der lever uden for det enkelte tools forretningslogik \u2014 agenten kan branche p\u00e5 `code` uden at parse fri-tekst i `errors[]`. Udeladt ved per-tool forretningsfejl.",
+              "type": "string"
+            },
+            "data": {
+              "additionalProperties": {},
+              "description": "Kerne-resultatet ved ok=true. Den pr\u00e6cise feltliste er per-tool og dokumenteret i docs/mcp-tool-surface.md. Udeladt ved ok=false.",
+              "properties": {},
+              "type": "object"
+            },
+            "errors": {
+              "description": "Menneskel\u00e6sbare fejl-/foruds\u00e6tnings-strenge. Tom ved ok=true; ikke-tom ved ok=false.",
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "ok": {
+              "description": "true \u21d2 kaldet lykkedes og `data` er sat; false \u21d2 se `errors`.",
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "ok",
+            "errors"
+          ],
+          "type": "object"
+        },
+        "title": "Inspect intercompany disposition status"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": false,
+          "readOnlyHint": false
+        },
+        "description": "Appends settlement evidence only after both current legal-ledger links validate; it never posts either ledger. Requires actor attribution and confirm:true; retry reads the settlement state. write-reversible. Shared native32KiB evidence-only lifecycle; current two-company authority and independent approval remain server-owned. Native calendar, exact integer money and UTF16/NFC bounds apply. No posting, payment, generated IDs/hashes, head refresh or retry. Unknown writes require current-authorized exact-ID status/history reconciliation. Native human credentials only; service credentials are refused by the server. Global status accepts any current admitted company anchor; native plan/mutation routes require an endpoint anchor. Nonendpoint mutation contexts remain an explicit native-profile boundary. Reuse normalized plan disposition and ID for proposal.",
+        "inputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "additionalProperties": false,
+          "properties": {
+            "company": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "confirm": {
+              "description": "Must be set to true to acknowledge the write side effects of this tool. Omitting it (or sending false) returns an { ok:false, errors:[...] } envelope rather than performing the write.",
+              "type": "boolean"
+            },
+            "dispositionId": {
+              "minLength": 3,
+              "type": "string"
+            },
+            "payloadHash": {
+              "pattern": "^[a-f0-9]{64}$",
+              "type": "string"
+            },
+            "settlementEvidenceRecordIds": {
+              "items": {
+                "minLength": 3,
+                "type": "string"
+              },
+              "minItems": 1,
+              "type": "array"
+            }
+          },
+          "required": [
+            "company",
+            "dispositionId",
+            "payloadHash",
+            "settlementEvidenceRecordIds"
+          ],
+          "type": "object"
+        },
+        "name": "intercompany_disposition_settle",
+        "outputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "additionalProperties": false,
+          "properties": {
+            "appliedRules": {
+              "description": "Regel-id'er der fyrede for denne handling (sporbarhed). S\u00e6ttes for bogf\u00f8rings-tools; udeladt ellers.",
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "code": {
+              "description": "Stabil maskinl\u00e6sbar fejl-mark\u00f8r for cross-cutting preconditions (fx \"BACKUP_LOCKED\"). S\u00e6ttes kun ved ok=false og kun for fejl der lever uden for det enkelte tools forretningslogik \u2014 agenten kan branche p\u00e5 `code` uden at parse fri-tekst i `errors[]`. Udeladt ved per-tool forretningsfejl.",
+              "type": "string"
+            },
+            "data": {
+              "additionalProperties": {},
+              "description": "Kerne-resultatet ved ok=true. Den pr\u00e6cise feltliste er per-tool og dokumenteret i docs/mcp-tool-surface.md. Udeladt ved ok=false.",
+              "properties": {},
+              "type": "object"
+            },
+            "errors": {
+              "description": "Menneskel\u00e6sbare fejl-/foruds\u00e6tnings-strenge. Tom ved ok=true; ikke-tom ved ok=false.",
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "ok": {
+              "description": "true \u21d2 kaldet lykkedes og `data` er sat; false \u21d2 se `errors`.",
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "ok",
+            "errors"
+          ],
+          "type": "object"
+        },
+        "title": "Settle fully posted intercompany disposition"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": false,
+          "readOnlyHint": false
+        },
+        "description": "Appends a reopen decision only after current journal and ledger-head validation; it never changes a ledger. Requires actor attribution and confirm:true; retry reads the reopen state. write-reversible. Shared native32KiB evidence-only lifecycle; current two-company authority and independent approval remain server-owned. Native calendar, exact integer money and UTF16/NFC bounds apply. No posting, payment, generated IDs/hashes, head refresh or retry. Unknown writes require current-authorized exact-ID status/history reconciliation. Native human credentials only; service credentials are refused by the server. Global status accepts any current admitted company anchor; native plan/mutation routes require an endpoint anchor. Nonendpoint mutation contexts remain an explicit native-profile boundary. Reuse normalized plan disposition and ID for proposal.",
+        "inputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "additionalProperties": false,
+          "properties": {
+            "company": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "confirm": {
+              "description": "Must be set to true to acknowledge the write side effects of this tool. Omitting it (or sending false) returns an { ok:false, errors:[...] } envelope rather than performing the write.",
+              "type": "boolean"
+            },
+            "dispositionId": {
+              "minLength": 3,
+              "type": "string"
+            },
+            "payloadHash": {
+              "pattern": "^[a-f0-9]{64}$",
+              "type": "string"
+            },
+            "reason": {
+              "maxLength": 1000,
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          "required": [
+            "company",
+            "dispositionId",
+            "payloadHash",
+            "reason"
+          ],
+          "type": "object"
+        },
+        "name": "intercompany_disposition_reopen",
+        "outputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "additionalProperties": false,
+          "properties": {
+            "appliedRules": {
+              "description": "Regel-id'er der fyrede for denne handling (sporbarhed). S\u00e6ttes for bogf\u00f8rings-tools; udeladt ellers.",
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "code": {
+              "description": "Stabil maskinl\u00e6sbar fejl-mark\u00f8r for cross-cutting preconditions (fx \"BACKUP_LOCKED\"). S\u00e6ttes kun ved ok=false og kun for fejl der lever uden for det enkelte tools forretningslogik \u2014 agenten kan branche p\u00e5 `code` uden at parse fri-tekst i `errors[]`. Udeladt ved per-tool forretningsfejl.",
+              "type": "string"
+            },
+            "data": {
+              "additionalProperties": {},
+              "description": "Kerne-resultatet ved ok=true. Den pr\u00e6cise feltliste er per-tool og dokumenteret i docs/mcp-tool-surface.md. Udeladt ved ok=false.",
+              "properties": {},
+              "type": "object"
+            },
+            "errors": {
+              "description": "Menneskel\u00e6sbare fejl-/foruds\u00e6tnings-strenge. Tom ved ok=true; ikke-tom ved ok=false.",
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "ok": {
+              "description": "true \u21d2 kaldet lykkedes og `data` er sat; false \u21d2 se `errors`.",
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "ok",
+            "errors"
+          ],
+          "type": "object"
+        },
+        "title": "Reopen settled or superseded intercompany disposition"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": false,
+          "readOnlyHint": false
+        },
+        "description": "Appends a replacement reference to an existing disposition; it never deletes evidence or writes a ledger. Requires actor attribution and confirm:true; retry reads the supersession chain. write-reversible. Shared native32KiB evidence-only lifecycle; current two-company authority and independent approval remain server-owned. Native calendar, exact integer money and UTF16/NFC bounds apply. No posting, payment, generated IDs/hashes, head refresh or retry. Unknown writes require current-authorized exact-ID status/history reconciliation. Native human credentials only; service credentials are refused by the server. Global status accepts any current admitted company anchor; native plan/mutation routes require an endpoint anchor. Nonendpoint mutation contexts remain an explicit native-profile boundary. Reuse normalized plan disposition and ID for proposal.",
+        "inputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "additionalProperties": false,
+          "properties": {
+            "company": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "confirm": {
+              "description": "Must be set to true to acknowledge the write side effects of this tool. Omitting it (or sending false) returns an { ok:false, errors:[...] } envelope rather than performing the write.",
+              "type": "boolean"
+            },
+            "dispositionId": {
+              "minLength": 3,
+              "type": "string"
+            },
+            "payloadHash": {
+              "pattern": "^[a-f0-9]{64}$",
+              "type": "string"
+            },
+            "reason": {
+              "maxLength": 1000,
+              "minLength": 1,
+              "type": "string"
+            },
+            "replacementDispositionId": {
+              "minLength": 3,
+              "type": "string"
+            }
+          },
+          "required": [
+            "company",
+            "dispositionId",
+            "payloadHash",
+            "replacementDispositionId",
+            "reason"
+          ],
+          "type": "object"
+        },
+        "name": "intercompany_disposition_supersede",
+        "outputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "additionalProperties": false,
+          "properties": {
+            "appliedRules": {
+              "description": "Regel-id'er der fyrede for denne handling (sporbarhed). S\u00e6ttes for bogf\u00f8rings-tools; udeladt ellers.",
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "code": {
+              "description": "Stabil maskinl\u00e6sbar fejl-mark\u00f8r for cross-cutting preconditions (fx \"BACKUP_LOCKED\"). S\u00e6ttes kun ved ok=false og kun for fejl der lever uden for det enkelte tools forretningslogik \u2014 agenten kan branche p\u00e5 `code` uden at parse fri-tekst i `errors[]`. Udeladt ved per-tool forretningsfejl.",
+              "type": "string"
+            },
+            "data": {
+              "additionalProperties": {},
+              "description": "Kerne-resultatet ved ok=true. Den pr\u00e6cise feltliste er per-tool og dokumenteret i docs/mcp-tool-surface.md. Udeladt ved ok=false.",
+              "properties": {},
+              "type": "object"
+            },
+            "errors": {
+              "description": "Menneskel\u00e6sbare fejl-/foruds\u00e6tnings-strenge. Tom ved ok=true; ikke-tom ved ok=false.",
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "ok": {
+              "description": "true \u21d2 kaldet lykkedes og `data` er sat; false \u21d2 se `errors`.",
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "ok",
+            "errors"
+          ],
+          "type": "object"
+        },
+        "title": "Supersede active intercompany disposition"
+      }
+    ],
+    "componentProof": {
+      "path": "/tmp/rentemester-rust-reports/r79-intercompany-original717-component-accepted.json",
+      "sha256": "8ce315a57f76a2e2e42397bfe0b2f324544a34fb36b6e699f97b3437620bc4bf"
+    },
+    "currentUniverse": "1556=642HTTP489CLI425MCP; previous1548businessrows/defs and417tooldefinitions unchanged",
+    "nativeProfile": [
+      "Current human credentials, native32KiB/calendar/NFC/integer money bounds; explicitnullID/date businessrefusal, omission/emptyservergeneration retained; no generated clientIDs/hash/keys/retry.",
+      "Globalstatus honors any current admittedcompany anchor and currentbothendpointauthority. Nativeplan/writeendpointanchorconstraint is explicit; no silent route/target rewrite or sourcepermission waiver.",
+      "Existinglinkreplay returns immutable canonicalhead; settledreplay returns existingevidence, neverclaimnewhead/refs were adopted. Nativecurrentledger/head/authority/backup/independentreview checks remainserver-owned."
+    ],
+    "scope": "8supported source-named evidence lifecycle adapters through existing engine/SDK/server, not full717parity/acceptance"
   }
 }

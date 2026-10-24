@@ -35670,6 +35670,1456 @@
         "result"
       ],
       "additionalProperties": false
+    },
+    "OriginalDispositionInputValue": {
+      "anyOf": [
+        {
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/OriginalDispositionInputValue"
+          }
+        },
+        {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": {
+            "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/OriginalDispositionInputValue"
+          },
+          "x-rentemester-arbitrary-json": {
+            "scope": "Only original disposition:z.unknown argument field",
+            "rationale": "Source schema accepts any JSON; native32KiB typed domain admission is business refusal, not an invented outer RPC parse constraint. Never generic success data.",
+            "sourceRefs": [
+              {
+                "path": "src/mcp/tools/intercompany-dispositions.ts",
+                "sha256": "78decae933142096361af65ec75d744158643e4e0e81c72b20a2fcb40df0903d",
+                "needle": "intercompany_disposition_plan"
+              },
+              {
+                "path": "src/core/intercompany-dispositions.ts",
+                "sha256": "8509d24ff2a7328d147d9c7c024a130a27d95cb6441393eec6b8df5d1b37f33d",
+                "needle": "export function planIntercompanyDisposition"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "OriginalDispositionEvent": {
+      "type": "object",
+      "properties": {
+        "event_type": {
+          "type": "string"
+        },
+        "actor": {
+          "type": "string"
+        },
+        "principal_kind": {
+          "enum": [
+            "user",
+            "service"
+          ]
+        },
+        "principal_id": {
+          "type": "string"
+        },
+        "payload_hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "canonical_payload": {
+          "type": "string"
+        },
+        "created_at": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "event_type",
+        "actor",
+        "principal_kind",
+        "principal_id",
+        "payload_hash",
+        "canonical_payload",
+        "created_at"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalDispositionLink": {
+      "type": "object",
+      "properties": {
+        "side": {
+          "enum": [
+            "left",
+            "right"
+          ]
+        },
+        "company_slug": {
+          "type": "string"
+        },
+        "journal_entry_id": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "journal_entry_no": {
+          "type": "string"
+        },
+        "journal_entry_hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "ledger_head_hash": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "linked_at": {
+          "type": "string"
+        },
+        "actor": {
+          "type": "string"
+        },
+        "principal_kind": {
+          "enum": [
+            "user",
+            "service"
+          ]
+        },
+        "principal_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "side",
+        "company_slug",
+        "journal_entry_id",
+        "journal_entry_no",
+        "journal_entry_hash",
+        "ledger_head_hash",
+        "linked_at",
+        "actor",
+        "principal_kind",
+        "principal_id"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalDispositionPlan": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "mode": {
+          "const": "dry-run"
+        },
+        "disposition": {
+          "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/Disposition"
+        },
+        "payloadHash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "ledgerEffects": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/Empty"
+          },
+          "maxItems": 0
+        },
+        "proposedSides": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "const": "left"
+            },
+            {
+              "const": "right"
+            }
+          ],
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "warnings": {
+          "const": [
+            "Each legal company must post separately through its normal policy, document, VAT and period controls."
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "mode",
+        "disposition",
+        "payloadHash",
+        "ledgerEffects",
+        "proposedSides",
+        "warnings"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalDispositionState": {
+      "type": "object",
+      "properties": {
+        "disposition": {
+          "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/Disposition"
+        },
+        "payloadHash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "status": {
+          "enum": [
+            "proposed",
+            "approved",
+            "partly_posted",
+            "posted",
+            "settled",
+            "superseded"
+          ]
+        },
+        "events": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/OriginalDispositionEvent"
+          }
+        },
+        "lifecycleEvents": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/OriginalDispositionEvent"
+          }
+        },
+        "links": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/OriginalDispositionLink"
+          }
+        }
+      },
+      "required": [
+        "disposition",
+        "payloadHash",
+        "status",
+        "events",
+        "lifecycleEvents",
+        "links"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalDispositionStatus": {
+      "type": "object",
+      "properties": {
+        "disposition": {
+          "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/Disposition"
+        },
+        "payloadHash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "status": {
+          "enum": [
+            "proposed",
+            "approved",
+            "partly_posted",
+            "posted",
+            "settled",
+            "superseded"
+          ]
+        },
+        "events": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/OriginalDispositionEvent"
+          }
+        },
+        "lifecycleEvents": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/OriginalDispositionEvent"
+          }
+        },
+        "links": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/OriginalDispositionLink"
+          }
+        },
+        "exceptions": {
+          "type": "array",
+          "items": {
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "enum": [
+                      "stale_or_reversed_journal",
+                      "one_sided_posting"
+                    ]
+                  },
+                  "side": {
+                    "enum": [
+                      "left",
+                      "right"
+                    ]
+                  },
+                  "waivable": {
+                    "const": false
+                  }
+                },
+                "required": [
+                  "kind",
+                  "side",
+                  "waivable"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "const": "overdue_settlement"
+                  },
+                  "dueDate": {
+                    "type": "string"
+                  },
+                  "waivable": {
+                    "const": false
+                  }
+                },
+                "required": [
+                  "kind",
+                  "dueDate",
+                  "waivable"
+                ],
+                "additionalProperties": false
+              }
+            ]
+          }
+        },
+        "balanced": {
+          "type": "boolean"
+        },
+        "scope": {
+          "const": "intercompany-disposition-status"
+        }
+      },
+      "required": [
+        "disposition",
+        "payloadHash",
+        "status",
+        "events",
+        "lifecycleEvents",
+        "links",
+        "exceptions",
+        "balanced",
+        "scope"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalDispositionFailure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "code": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "code"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalDispositionRefusal": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/RpcId"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "const": true
+            },
+            "content": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "const": "text"
+                    },
+                    "text": {
+                      "type": "string",
+                      "contentMediaType": "application/json",
+                      "contentSchema": {
+                        "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/OriginalDispositionFailure"
+                      }
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "text"
+                  ],
+                  "additionalProperties": false
+                }
+              ],
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/OriginalDispositionFailure"
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalDisposition_planArgs": {
+      "additionalProperties": false,
+      "properties": {
+        "company": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "disposition": {
+          "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/OriginalDispositionInputValue"
+        }
+      },
+      "required": [
+        "company",
+        "disposition"
+      ],
+      "type": "object"
+    },
+    "OriginalDisposition_planSuccess": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/RpcId"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "const": false
+            },
+            "content": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "const": "text"
+                    },
+                    "text": {
+                      "type": "string",
+                      "contentMediaType": "application/json",
+                      "contentSchema": {
+                        "type": "object",
+                        "properties": {
+                          "ok": {
+                            "const": true
+                          },
+                          "errors": {
+                            "const": []
+                          },
+                          "data": {
+                            "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/OriginalDispositionPlan"
+                          }
+                        },
+                        "required": [
+                          "ok",
+                          "errors",
+                          "data"
+                        ],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "text"
+                  ],
+                  "additionalProperties": false
+                }
+              ],
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "type": "object",
+              "properties": {
+                "ok": {
+                  "const": true
+                },
+                "errors": {
+                  "const": []
+                },
+                "data": {
+                  "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/OriginalDispositionPlan"
+                }
+              },
+              "required": [
+                "ok",
+                "errors",
+                "data"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalDisposition_proposeArgs": {
+      "additionalProperties": false,
+      "properties": {
+        "company": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "confirm": {
+          "description": "Must be set to true to acknowledge the write side effects of this tool. Omitting it (or sending false) returns an { ok:false, errors:[...] } envelope rather than performing the write.",
+          "type": "boolean"
+        },
+        "disposition": {
+          "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/OriginalDispositionInputValue"
+        }
+      },
+      "required": [
+        "company",
+        "disposition"
+      ],
+      "type": "object"
+    },
+    "OriginalDisposition_proposeSuccess": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/RpcId"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "const": false
+            },
+            "content": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "const": "text"
+                    },
+                    "text": {
+                      "type": "string",
+                      "contentMediaType": "application/json",
+                      "contentSchema": {
+                        "type": "object",
+                        "properties": {
+                          "ok": {
+                            "const": true
+                          },
+                          "errors": {
+                            "const": []
+                          },
+                          "data": {
+                            "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/OriginalDispositionState"
+                          }
+                        },
+                        "required": [
+                          "ok",
+                          "errors",
+                          "data"
+                        ],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "text"
+                  ],
+                  "additionalProperties": false
+                }
+              ],
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "type": "object",
+              "properties": {
+                "ok": {
+                  "const": true
+                },
+                "errors": {
+                  "const": []
+                },
+                "data": {
+                  "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/OriginalDispositionState"
+                }
+              },
+              "required": [
+                "ok",
+                "errors",
+                "data"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalDisposition_approveArgs": {
+      "additionalProperties": false,
+      "properties": {
+        "company": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "confirm": {
+          "description": "Must be set to true to acknowledge the write side effects of this tool. Omitting it (or sending false) returns an { ok:false, errors:[...] } envelope rather than performing the write.",
+          "type": "boolean"
+        },
+        "dispositionId": {
+          "minLength": 3,
+          "type": "string"
+        },
+        "payloadHash": {
+          "pattern": "^[a-f0-9]{64}$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "company",
+        "dispositionId",
+        "payloadHash"
+      ],
+      "type": "object"
+    },
+    "OriginalDisposition_approveSuccess": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/RpcId"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "const": false
+            },
+            "content": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "const": "text"
+                    },
+                    "text": {
+                      "type": "string",
+                      "contentMediaType": "application/json",
+                      "contentSchema": {
+                        "type": "object",
+                        "properties": {
+                          "ok": {
+                            "const": true
+                          },
+                          "errors": {
+                            "const": []
+                          },
+                          "data": {
+                            "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/OriginalDispositionState"
+                          }
+                        },
+                        "required": [
+                          "ok",
+                          "errors",
+                          "data"
+                        ],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "text"
+                  ],
+                  "additionalProperties": false
+                }
+              ],
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "type": "object",
+              "properties": {
+                "ok": {
+                  "const": true
+                },
+                "errors": {
+                  "const": []
+                },
+                "data": {
+                  "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/OriginalDispositionState"
+                }
+              },
+              "required": [
+                "ok",
+                "errors",
+                "data"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalDisposition_linkArgs": {
+      "additionalProperties": false,
+      "properties": {
+        "company": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "confirm": {
+          "description": "Must be set to true to acknowledge the write side effects of this tool. Omitting it (or sending false) returns an { ok:false, errors:[...] } envelope rather than performing the write.",
+          "type": "boolean"
+        },
+        "dispositionId": {
+          "minLength": 3,
+          "type": "string"
+        },
+        "journalEntryId": {
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991,
+          "type": "integer"
+        },
+        "ledgerHeadHash": {
+          "anyOf": [
+            {
+              "pattern": "^[a-f0-9]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "payloadHash": {
+          "pattern": "^[a-f0-9]{64}$",
+          "type": "string"
+        },
+        "side": {
+          "enum": [
+            "left",
+            "right"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "company",
+        "dispositionId",
+        "payloadHash",
+        "side",
+        "journalEntryId",
+        "ledgerHeadHash"
+      ],
+      "type": "object"
+    },
+    "OriginalDisposition_linkSuccess": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/RpcId"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "const": false
+            },
+            "content": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "const": "text"
+                    },
+                    "text": {
+                      "type": "string",
+                      "contentMediaType": "application/json",
+                      "contentSchema": {
+                        "type": "object",
+                        "properties": {
+                          "ok": {
+                            "const": true
+                          },
+                          "errors": {
+                            "const": []
+                          },
+                          "data": {
+                            "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/OriginalDispositionState"
+                          }
+                        },
+                        "required": [
+                          "ok",
+                          "errors",
+                          "data"
+                        ],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "text"
+                  ],
+                  "additionalProperties": false
+                }
+              ],
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "type": "object",
+              "properties": {
+                "ok": {
+                  "const": true
+                },
+                "errors": {
+                  "const": []
+                },
+                "data": {
+                  "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/OriginalDispositionState"
+                }
+              },
+              "required": [
+                "ok",
+                "errors",
+                "data"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalDisposition_statusArgs": {
+      "additionalProperties": false,
+      "properties": {
+        "asOf": {
+          "type": "string"
+        },
+        "company": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "dispositionId": {
+          "minLength": 3,
+          "type": "string"
+        }
+      },
+      "required": [
+        "company",
+        "dispositionId"
+      ],
+      "type": "object"
+    },
+    "OriginalDisposition_statusSuccess": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/RpcId"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "const": false
+            },
+            "content": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "const": "text"
+                    },
+                    "text": {
+                      "type": "string",
+                      "contentMediaType": "application/json",
+                      "contentSchema": {
+                        "type": "object",
+                        "properties": {
+                          "ok": {
+                            "const": true
+                          },
+                          "errors": {
+                            "const": []
+                          },
+                          "data": {
+                            "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/OriginalDispositionStatus"
+                          }
+                        },
+                        "required": [
+                          "ok",
+                          "errors",
+                          "data"
+                        ],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "text"
+                  ],
+                  "additionalProperties": false
+                }
+              ],
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "type": "object",
+              "properties": {
+                "ok": {
+                  "const": true
+                },
+                "errors": {
+                  "const": []
+                },
+                "data": {
+                  "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/OriginalDispositionStatus"
+                }
+              },
+              "required": [
+                "ok",
+                "errors",
+                "data"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalDisposition_settleArgs": {
+      "additionalProperties": false,
+      "properties": {
+        "company": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "confirm": {
+          "description": "Must be set to true to acknowledge the write side effects of this tool. Omitting it (or sending false) returns an { ok:false, errors:[...] } envelope rather than performing the write.",
+          "type": "boolean"
+        },
+        "dispositionId": {
+          "minLength": 3,
+          "type": "string"
+        },
+        "payloadHash": {
+          "pattern": "^[a-f0-9]{64}$",
+          "type": "string"
+        },
+        "settlementEvidenceRecordIds": {
+          "items": {
+            "minLength": 3,
+            "type": "string"
+          },
+          "minItems": 1,
+          "type": "array"
+        }
+      },
+      "required": [
+        "company",
+        "dispositionId",
+        "payloadHash",
+        "settlementEvidenceRecordIds"
+      ],
+      "type": "object"
+    },
+    "OriginalDisposition_settleSuccess": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/RpcId"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "const": false
+            },
+            "content": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "const": "text"
+                    },
+                    "text": {
+                      "type": "string",
+                      "contentMediaType": "application/json",
+                      "contentSchema": {
+                        "type": "object",
+                        "properties": {
+                          "ok": {
+                            "const": true
+                          },
+                          "errors": {
+                            "const": []
+                          },
+                          "data": {
+                            "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/OriginalDispositionState"
+                          }
+                        },
+                        "required": [
+                          "ok",
+                          "errors",
+                          "data"
+                        ],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "text"
+                  ],
+                  "additionalProperties": false
+                }
+              ],
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "type": "object",
+              "properties": {
+                "ok": {
+                  "const": true
+                },
+                "errors": {
+                  "const": []
+                },
+                "data": {
+                  "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/OriginalDispositionState"
+                }
+              },
+              "required": [
+                "ok",
+                "errors",
+                "data"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalDisposition_reopenArgs": {
+      "additionalProperties": false,
+      "properties": {
+        "company": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "confirm": {
+          "description": "Must be set to true to acknowledge the write side effects of this tool. Omitting it (or sending false) returns an { ok:false, errors:[...] } envelope rather than performing the write.",
+          "type": "boolean"
+        },
+        "dispositionId": {
+          "minLength": 3,
+          "type": "string"
+        },
+        "payloadHash": {
+          "pattern": "^[a-f0-9]{64}$",
+          "type": "string"
+        },
+        "reason": {
+          "maxLength": 1000,
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "company",
+        "dispositionId",
+        "payloadHash",
+        "reason"
+      ],
+      "type": "object"
+    },
+    "OriginalDisposition_reopenSuccess": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/RpcId"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "const": false
+            },
+            "content": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "const": "text"
+                    },
+                    "text": {
+                      "type": "string",
+                      "contentMediaType": "application/json",
+                      "contentSchema": {
+                        "type": "object",
+                        "properties": {
+                          "ok": {
+                            "const": true
+                          },
+                          "errors": {
+                            "const": []
+                          },
+                          "data": {
+                            "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/OriginalDispositionState"
+                          }
+                        },
+                        "required": [
+                          "ok",
+                          "errors",
+                          "data"
+                        ],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "text"
+                  ],
+                  "additionalProperties": false
+                }
+              ],
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "type": "object",
+              "properties": {
+                "ok": {
+                  "const": true
+                },
+                "errors": {
+                  "const": []
+                },
+                "data": {
+                  "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/OriginalDispositionState"
+                }
+              },
+              "required": [
+                "ok",
+                "errors",
+                "data"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalDisposition_supersedeArgs": {
+      "additionalProperties": false,
+      "properties": {
+        "company": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "confirm": {
+          "description": "Must be set to true to acknowledge the write side effects of this tool. Omitting it (or sending false) returns an { ok:false, errors:[...] } envelope rather than performing the write.",
+          "type": "boolean"
+        },
+        "dispositionId": {
+          "minLength": 3,
+          "type": "string"
+        },
+        "payloadHash": {
+          "pattern": "^[a-f0-9]{64}$",
+          "type": "string"
+        },
+        "reason": {
+          "maxLength": 1000,
+          "minLength": 1,
+          "type": "string"
+        },
+        "replacementDispositionId": {
+          "minLength": 3,
+          "type": "string"
+        }
+      },
+      "required": [
+        "company",
+        "dispositionId",
+        "payloadHash",
+        "replacementDispositionId",
+        "reason"
+      ],
+      "type": "object"
+    },
+    "OriginalDisposition_supersedeSuccess": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/RpcId"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "const": false
+            },
+            "content": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "const": "text"
+                    },
+                    "text": {
+                      "type": "string",
+                      "contentMediaType": "application/json",
+                      "contentSchema": {
+                        "type": "object",
+                        "properties": {
+                          "ok": {
+                            "const": true
+                          },
+                          "errors": {
+                            "const": []
+                          },
+                          "data": {
+                            "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/OriginalDispositionState"
+                          }
+                        },
+                        "required": [
+                          "ok",
+                          "errors",
+                          "data"
+                        ],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "text"
+                  ],
+                  "additionalProperties": false
+                }
+              ],
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "type": "object",
+              "properties": {
+                "ok": {
+                  "const": true
+                },
+                "errors": {
+                  "const": []
+                },
+                "data": {
+                  "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/OriginalDispositionState"
+                }
+              },
+              "required": [
+                "ok",
+                "errors",
+                "data"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
     }
   }
 }
