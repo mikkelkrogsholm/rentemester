@@ -199,6 +199,7 @@ pub fn list() -> Value {
     tools.extend(crate::workspace_inbox::tools());
     tools.extend(crate::bilagsmail::tools());
     tools.extend(crate::public_einvoice::tools());
+    tools.extend(crate::invoice_public_original717::tools());
     tools.extend(crate::digisense_received::tools());
     tools.extend(crate::corporate_records::tools());
     tools.extend(crate::ownership::tools());
@@ -292,6 +293,7 @@ pub async fn call(api: &ApiClient, name: &str, args: Value) -> Result<Value, &'s
     if !args.is_object() {
         return Err("expected arguments object");
     }
+    if crate::invoice_public_original717::accepts(name) { return crate::invoice_public_original717::call(api,name,args).await; }
     if crate::profile_original89::accepts(name) { return crate::profile_original89::call(api,name,args).await; }
     if crate::archives_original89::accepts(name) { return crate::archives_original89::call(api,name,args).await; }
     if crate::cfo_original89::accepts(name) { return crate::cfo_original89::call(api,name,args).await; }
