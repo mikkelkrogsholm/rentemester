@@ -1,0 +1,28 @@
+# Mileage contract partition — existing #677
+
+Source-only specification of the frozen selected HTTP, CLI and MCP mileage flow. No financial, provider, upload, scanner, authentication or file-publication effects were exercised. Main retains integration and acceptance. Prior 626 contracts/22 partitions and all 55/J01–J07/final desktop/release/cutover/retirement scope remain unchanged.
+
+Registration and original log are documentation only, not journal posting. Posting is a distinct explicit version/source/hash-bound transaction. Original exports prepare server audit and deliver bounded JSON byte arrays; only CLI/MCP publish local fixed-name files, atomic per file rather than as a pair. Failed publication is not rollback and must not trigger another POST.
+
+## Source distinctions and admission order
+
+- Selected coverage is **43 exact IDs**: 16 HTTP, 16 CLI and 11 MCP. The five bare posting aliases are redirected in `main.rs` and retain separate public IDs from their `remote` forms.
+- Global HTTP negotiation precedes leaf proof. `/mileage` HEAD refuses 405 with `Allow: GET` before credentials/body/Owner. Posting and original list/report handlers have no such fence: HEAD runs their current read admission, with response body suppressed by the router. These differences are intentional descriptions of current source, not production changes.
+- Direct registration uses declaration-order full 12-element Serde sequences as well as objects. Direct original export also admits `[from,to,confirm]`. Posting Wire and original LogWire are map-only visitors. MCP globally rejects any non-object arguments before family dispatch; SDK JSON bodies use object validators. No public MCP tuple-array equivalence is claimed.
+- Native tool outer Serde parsing is weaker than advertised `inputSchema`: SDK checks follow it. `domain::validate` does not enforce advertised patterns (including native registration date pattern), but does enforce byte-length/type/required/unknown-field checks. Posting adds strict duplicate-key/date/decimal/hash checks. Original MCP has its separate shape validator and result wrapper.
+- Native CLI errors go to JSON stdout except global preprocessing diagnostics. A posting 4xx core retained by its SDK can appear as `{ok:false,data:core}`. Original CLI uses flat JSON or human success stdout / human failure stderr, plus usage exit2 stderr. Original MCP strips ok/errors/appliedRules into its outer envelope and retains remaining failed report details under `data`.
+- Generic mileage SDK rejects non-success HTTP statuses without retaining their bodies; original mileage SDK preserves only validated operation-specific 422 business receipts; posting SDK preserves parsed 4xx `{ok:false,code,...}`. Neither HTTP success nor missing transport result is a general proof of business completion or rollback. SDK permissive `Value` readers do not widen the actual native output producers documented here.
+
+## Amounts, retained values and recovery
+
+Distances are rounded to hundredths before multiplying the explicitly supplied rate. Native registration numeric rates must survive legacy floating storage without decimal precision loss. Advisories do not choose a rate or determine tax eligibility. Original rows use safe positive IDs and JavaScript numeric projection; native raw IDs are signed i64. SDK original projections enforce finite nonnegative safe-cent amounts and bounded strings/arrays, including count/order/range/sum checks. Stored rate-version payloads are read as `Value` and reconstructed neither by `rate_versions` nor same-version replay: only validated business fields are fixed; uninspected metadata/extra fields have a field-specific recursive JSON contract rather than an arbitrary top-level response escape hatch.
+
+Posting operationKey is unique in the selected ledger and binds exact serialized intent, principal kind+subject, trip, version, document, confirmation and preview hash. Receipts have no expiry/deletion path. A receipt and actual canonical journal/source binding are verified before exact deliberate replay; changed evidence, reversal, authority or intent can refuse. Configuration has independent natural version/configuration dedup, not operationKey replay. Logging has no caller-key dedup and must not be retried blindly.
+
+Physical document hashes and retained extraction consistency, current canonical rules, open periods/posting horizon, account type/normal balance and DKK checks remain server-owned. No mileage handler introduces a fresh-MFA challenge or scanner execution; current authenticated MFA and retained source admission remain required as implemented. Original service attempts may consume usage before business outcome; original flat responses do not expose an invented usage/business wrapper. Export permission is explicitly excluded from control_fence's bookkeeping backup/transfer classification; current actor/service authority is still checked.
+
+## Verification boundary
+
+`python3 /tmp/r55-677-oracle.py mileage` passed with 43 exact selected source-bound operations after correcting HEAD's bodyless protocol representation. This is structural/source-hash evidence only; independent main actual-diff/source review and whole-#677 acceptance remain required. No Cargo, server, browser, network, provider, financial, upload, consent, job or authentication effects were run. Existing runtime/userflow acceptance remains at its prior actual scope without replay.
+
+Lead source correction: native calls reach tools.rs report-selector -32602 before mileage leaf; originaltools bypass earlier. Original successful SDK/tool core errors must be[] per producer and receiptvalidator. Warnings/refusals remain unchanged.

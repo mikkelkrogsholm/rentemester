@@ -1,0 +1,5793 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "schemas-mileage.json",
+  "$defs": {
+    "Empty": {
+      "type": "object",
+      "properties": {},
+      "required": [],
+      "additionalProperties": false
+    },
+    "RegisterObject": {
+      "type": "object",
+      "properties": {
+        "tripDate": {
+          "type": "string"
+        },
+        "purpose": {
+          "type": "string"
+        },
+        "fromLocation": {
+          "type": "string"
+        },
+        "toLocation": {
+          "type": "string"
+        },
+        "kilometers": {
+          "type": "number"
+        },
+        "vehicle": {
+          "type": "string"
+        },
+        "driver": {
+          "type": "string"
+        },
+        "ratePerKm": {
+          "type": "number"
+        },
+        "rateBasis": {
+          "type": "string"
+        },
+        "rateSource": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "notes": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "confirm": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "tripDate",
+        "purpose",
+        "fromLocation",
+        "toLocation",
+        "kilometers",
+        "vehicle",
+        "driver",
+        "ratePerKm",
+        "rateBasis",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "RegisterSequence": {
+      "type": "array",
+      "prefixItems": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "string"
+        },
+        {
+          "type": "string"
+        },
+        {
+          "type": "string"
+        },
+        {
+          "type": "number"
+        },
+        {
+          "type": "string"
+        },
+        {
+          "type": "string"
+        },
+        {
+          "type": "number"
+        },
+        {
+          "type": "string"
+        },
+        {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        {
+          "type": "boolean"
+        }
+      ],
+      "minItems": 12,
+      "maxItems": 12
+    },
+    "RegisterHttp": {
+      "anyOf": [
+        {
+          "$ref": "schemas-mileage.json#/$defs/RegisterObject"
+        },
+        {
+          "$ref": "schemas-mileage.json#/$defs/RegisterSequence"
+        }
+      ]
+    },
+    "RegisterSdk": {
+      "type": "object",
+      "properties": {
+        "tripDate": {
+          "type": "string"
+        },
+        "purpose": {
+          "type": "string",
+          "maxLength": 4096,
+          "x-maxUtf8Bytes": 4096
+        },
+        "fromLocation": {
+          "type": "string",
+          "maxLength": 4096,
+          "x-maxUtf8Bytes": 4096
+        },
+        "toLocation": {
+          "type": "string",
+          "maxLength": 4096,
+          "x-maxUtf8Bytes": 4096
+        },
+        "kilometers": {
+          "type": "number"
+        },
+        "vehicle": {
+          "type": "string",
+          "maxLength": 4096,
+          "x-maxUtf8Bytes": 4096
+        },
+        "driver": {
+          "type": "string",
+          "maxLength": 4096,
+          "x-maxUtf8Bytes": 4096
+        },
+        "ratePerKm": {
+          "type": "number"
+        },
+        "rateBasis": {
+          "type": "string",
+          "maxLength": 4096,
+          "x-maxUtf8Bytes": 4096
+        },
+        "rateSource": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 4096,
+          "x-maxUtf8Bytes": 4096
+        },
+        "notes": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 4096,
+          "x-maxUtf8Bytes": 4096
+        },
+        "confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "tripDate",
+        "purpose",
+        "fromLocation",
+        "toLocation",
+        "kilometers",
+        "vehicle",
+        "driver",
+        "ratePerKm",
+        "rateBasis",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "RegisterAdvertised": {
+      "type": "object",
+      "properties": {
+        "tripDate": {
+          "type": "string",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        },
+        "purpose": {
+          "type": "string",
+          "maxLength": 4096,
+          "x-maxUtf8Bytes": 4096
+        },
+        "fromLocation": {
+          "type": "string",
+          "maxLength": 4096,
+          "x-maxUtf8Bytes": 4096
+        },
+        "toLocation": {
+          "type": "string",
+          "maxLength": 4096,
+          "x-maxUtf8Bytes": 4096
+        },
+        "kilometers": {
+          "type": "number"
+        },
+        "vehicle": {
+          "type": "string",
+          "maxLength": 4096,
+          "x-maxUtf8Bytes": 4096
+        },
+        "driver": {
+          "type": "string",
+          "maxLength": 4096,
+          "x-maxUtf8Bytes": 4096
+        },
+        "ratePerKm": {
+          "type": "number"
+        },
+        "rateBasis": {
+          "type": "string",
+          "maxLength": 4096,
+          "x-maxUtf8Bytes": 4096
+        },
+        "rateSource": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 4096,
+          "x-maxUtf8Bytes": 4096
+        },
+        "notes": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 4096,
+          "x-maxUtf8Bytes": 4096
+        },
+        "confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "tripDate",
+        "purpose",
+        "fromLocation",
+        "toLocation",
+        "kilometers",
+        "vehicle",
+        "driver",
+        "ratePerKm",
+        "rateBasis",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "Registered": {
+      "type": "object",
+      "properties": {
+        "mileageEntryId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "entryNo": {
+          "type": "string"
+        },
+        "amountBasis": {
+          "type": "number"
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "appliedRules": {
+          "const": [
+            "DK-MILEAGE-LOG-001"
+          ]
+        }
+      },
+      "required": [
+        "mileageEntryId",
+        "entryNo",
+        "amountBasis",
+        "warnings",
+        "appliedRules"
+      ],
+      "additionalProperties": false
+    },
+    "Entry": {
+      "type": "object",
+      "properties": {
+        "tripDate": {
+          "type": "string"
+        },
+        "purpose": {
+          "type": "string"
+        },
+        "fromLocation": {
+          "type": "string"
+        },
+        "toLocation": {
+          "type": "string"
+        },
+        "kilometers": {
+          "type": "number"
+        },
+        "vehicle": {
+          "type": "string"
+        },
+        "driver": {
+          "type": "string"
+        },
+        "ratePerKm": {
+          "type": "number"
+        },
+        "rateBasis": {
+          "type": "string"
+        },
+        "rateSource": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "notes": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "id": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "entryNo": {
+          "type": "string"
+        },
+        "amountBasis": {
+          "type": "number"
+        },
+        "createdAt": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "tripDate",
+        "purpose",
+        "fromLocation",
+        "toLocation",
+        "kilometers",
+        "vehicle",
+        "driver",
+        "ratePerKm",
+        "rateBasis",
+        "rateSource",
+        "notes",
+        "id",
+        "entryNo",
+        "amountBasis",
+        "createdAt"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalEntry": {
+      "type": "object",
+      "properties": {
+        "tripDate": {
+          "type": "string"
+        },
+        "purpose": {
+          "type": "string"
+        },
+        "fromLocation": {
+          "type": "string"
+        },
+        "toLocation": {
+          "type": "string"
+        },
+        "kilometers": {
+          "type": "number"
+        },
+        "vehicle": {
+          "type": "string"
+        },
+        "driver": {
+          "type": "string"
+        },
+        "ratePerKm": {
+          "type": "number"
+        },
+        "rateBasis": {
+          "type": "string"
+        },
+        "rateSource": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "notes": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "id": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "entryNo": {
+          "type": "string"
+        },
+        "amountBasis": {
+          "type": "number"
+        },
+        "createdAt": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "tripDate",
+        "purpose",
+        "fromLocation",
+        "toLocation",
+        "kilometers",
+        "vehicle",
+        "driver",
+        "ratePerKm",
+        "rateBasis",
+        "rateSource",
+        "notes",
+        "id",
+        "entryNo",
+        "amountBasis",
+        "createdAt"
+      ],
+      "additionalProperties": false
+    },
+    "FiscalYear": {
+      "type": "object",
+      "properties": {
+        "label": {
+          "type": "string"
+        },
+        "start": {
+          "type": "string"
+        },
+        "end": {
+          "type": "string"
+        },
+        "source": {
+          "const": "live"
+        }
+      },
+      "required": [
+        "label",
+        "start",
+        "end",
+        "source"
+      ],
+      "additionalProperties": false
+    },
+    "Month": {
+      "type": "object",
+      "properties": {
+        "month": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 12
+        },
+        "label": {
+          "enum": [
+            "jan",
+            "feb",
+            "mar",
+            "apr",
+            "maj",
+            "jun",
+            "jul",
+            "aug",
+            "sep",
+            "okt",
+            "nov",
+            "dec"
+          ]
+        },
+        "tripCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "kilometers": {
+          "type": "number"
+        },
+        "amountBasis": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "month",
+        "label",
+        "tripCount",
+        "kilometers",
+        "amountBasis"
+      ],
+      "additionalProperties": false
+    },
+    "Mileage": {
+      "type": "object",
+      "properties": {
+        "slug": {
+          "type": "string"
+        },
+        "company": {
+          "$ref": "schemas-chart_journal.json#/$defs/CompanyProfile"
+        },
+        "selectedYear": {
+          "type": "string"
+        },
+        "archived": {
+          "const": false
+        },
+        "periodStart": {
+          "type": "string"
+        },
+        "periodEnd": {
+          "type": "string"
+        },
+        "fiscalYears": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-mileage.json#/$defs/FiscalYear"
+          }
+        },
+        "entries": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-mileage.json#/$defs/Entry"
+          }
+        },
+        "tripCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "totalKilometers": {
+          "type": "number"
+        },
+        "totalAmountBasis": {
+          "type": "number"
+        },
+        "months": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-mileage.json#/$defs/Month"
+          },
+          "minItems": 12,
+          "maxItems": 12
+        }
+      },
+      "required": [
+        "slug",
+        "company",
+        "selectedYear",
+        "archived",
+        "periodStart",
+        "periodEnd",
+        "fiscalYears",
+        "entries",
+        "tripCount",
+        "totalKilometers",
+        "totalAmountBasis",
+        "months"
+      ],
+      "additionalProperties": false
+    },
+    "MileageEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "mileage": {
+          "$ref": "schemas-mileage.json#/$defs/Mileage"
+        }
+      },
+      "required": [
+        "ok",
+        "mileage"
+      ],
+      "additionalProperties": false
+    },
+    "RegisteredEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "mileage": {
+          "$ref": "schemas-mileage.json#/$defs/Registered"
+        }
+      },
+      "required": [
+        "ok",
+        "mileage"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalLogSdk": {
+      "type": "object",
+      "properties": {
+        "tripDate": {
+          "type": "string",
+          "maxLength": 65536,
+          "x-maxUtf8Bytes": 65536
+        },
+        "purpose": {
+          "type": "string",
+          "maxLength": 65536,
+          "x-maxUtf8Bytes": 65536
+        },
+        "fromLocation": {
+          "type": "string",
+          "maxLength": 65536,
+          "x-maxUtf8Bytes": 65536
+        },
+        "toLocation": {
+          "type": "string",
+          "maxLength": 65536,
+          "x-maxUtf8Bytes": 65536
+        },
+        "kilometers": {
+          "type": "number"
+        },
+        "vehicle": {
+          "type": "string",
+          "maxLength": 65536,
+          "x-maxUtf8Bytes": 65536
+        },
+        "driver": {
+          "type": "string",
+          "maxLength": 65536,
+          "x-maxUtf8Bytes": 65536
+        },
+        "ratePerKm": {
+          "type": "number"
+        },
+        "rateBasis": {
+          "type": "string",
+          "maxLength": 65536,
+          "x-maxUtf8Bytes": 65536
+        },
+        "rateSource": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "notes": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "tripDate",
+        "purpose",
+        "fromLocation",
+        "toLocation",
+        "vehicle",
+        "driver",
+        "rateBasis"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalLogHttp": {
+      "type": "object",
+      "properties": {
+        "tripDate": {
+          "type": "string"
+        },
+        "purpose": {
+          "type": "string"
+        },
+        "fromLocation": {
+          "type": "string"
+        },
+        "toLocation": {
+          "type": "string"
+        },
+        "kilometers": {
+          "type": "number"
+        },
+        "vehicle": {
+          "type": "string"
+        },
+        "driver": {
+          "type": "string"
+        },
+        "ratePerKm": {
+          "type": "number"
+        },
+        "rateBasis": {
+          "type": "string"
+        },
+        "rateSource": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "notes": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "confirm": {
+          "const": true
+        },
+        "expectedActor": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160,
+          "x-maxUtf8Bytes": 160,
+          "description": "trimmed nonempty, no control characters; exact current authenticated actor assertion"
+        }
+      },
+      "required": [
+        "tripDate",
+        "purpose",
+        "fromLocation",
+        "toLocation",
+        "vehicle",
+        "driver",
+        "rateBasis",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "Range": {
+      "type": "object",
+      "properties": {
+        "from": {
+          "type": "string"
+        },
+        "to": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "from",
+        "to"
+      ],
+      "additionalProperties": false
+    },
+    "ExportHttpObject": {
+      "type": "object",
+      "properties": {
+        "from": {
+          "type": "string"
+        },
+        "to": {
+          "type": "string"
+        },
+        "confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "from",
+        "to",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "ExportHttp": {
+      "anyOf": [
+        {
+          "$ref": "schemas-mileage.json#/$defs/ExportHttpObject"
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "const": true
+            }
+          ],
+          "minItems": 3,
+          "maxItems": 3
+        }
+      ]
+    },
+    "OriginalLogSuccess": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "mileageEntryId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "entryNo": {
+          "type": "string"
+        },
+        "amountBasis": {
+          "type": "number"
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "appliedRules": {
+          "const": [
+            "DK-MILEAGE-LOG-001"
+          ]
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0
+        }
+      },
+      "required": [
+        "ok",
+        "mileageEntryId",
+        "entryNo",
+        "amountBasis",
+        "warnings",
+        "appliedRules",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalLogRefusal": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "appliedRules": {
+          "const": [
+            "DK-MILEAGE-LOG-001"
+          ]
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "tripDate is required",
+              "tripDate must be a valid YYYY-MM-DD date",
+              "purpose is required",
+              "fromLocation is required",
+              "toLocation is required",
+              "kilometers must be a positive number",
+              "vehicle is required",
+              "driver is required",
+              "ratePerKm must be a positive number",
+              "rateBasis is required (user-supplied / source-backed)"
+            ]
+          },
+          "minItems": 1,
+          "maxItems": 9
+        }
+      },
+      "required": [
+        "ok",
+        "appliedRules",
+        "warnings",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalList": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "rows": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-mileage.json#/$defs/OriginalEntry"
+          }
+        },
+        "appliedRules": {
+          "const": [
+            "DK-MILEAGE-LOG-001"
+          ]
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0
+        }
+      },
+      "required": [
+        "ok",
+        "count",
+        "rows",
+        "appliedRules",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalReport": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "from": {
+          "type": "string"
+        },
+        "to": {
+          "type": "string"
+        },
+        "entryCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "totalKilometers": {
+          "type": "number"
+        },
+        "totalAmountBasis": {
+          "type": "number"
+        },
+        "entries": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-mileage.json#/$defs/OriginalEntry"
+          }
+        },
+        "appliedRules": {
+          "const": [
+            "DK-MILEAGE-LOG-001"
+          ]
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0
+        }
+      },
+      "required": [
+        "ok",
+        "from",
+        "to",
+        "entryCount",
+        "totalKilometers",
+        "totalAmountBasis",
+        "entries",
+        "appliedRules",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalReportRefusal": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "from": {
+          "type": "string"
+        },
+        "to": {
+          "type": "string"
+        },
+        "entryCount": {
+          "const": 0
+        },
+        "totalKilometers": {
+          "const": 0
+        },
+        "totalAmountBasis": {
+          "const": 0
+        },
+        "entries": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-mileage.json#/$defs/OriginalEntry"
+          },
+          "maxItems": 0
+        },
+        "appliedRules": {
+          "const": [
+            "DK-MILEAGE-LOG-001"
+          ]
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "from must be a valid YYYY-MM-DD date",
+              "to must be a valid YYYY-MM-DD date",
+              "from cannot be after to"
+            ]
+          },
+          "minItems": 1,
+          "maxItems": 2
+        }
+      },
+      "required": [
+        "ok",
+        "from",
+        "to",
+        "entryCount",
+        "totalKilometers",
+        "totalAmountBasis",
+        "entries",
+        "appliedRules",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Artifacts": {
+      "type": "object",
+      "properties": {
+        "json": {
+          "type": "object",
+          "properties": {
+            "filename": {
+              "const": "mileage-log.json"
+            },
+            "contentType": {
+              "const": "application/json; charset=utf-8"
+            },
+            "bytes": {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 255
+              }
+            }
+          },
+          "required": [
+            "filename",
+            "contentType",
+            "bytes"
+          ],
+          "additionalProperties": false
+        },
+        "csv": {
+          "type": "object",
+          "properties": {
+            "filename": {
+              "const": "mileage-log.csv"
+            },
+            "contentType": {
+              "const": "text/csv; charset=utf-8"
+            },
+            "bytes": {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 255
+              }
+            }
+          },
+          "required": [
+            "filename",
+            "contentType",
+            "bytes"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "json",
+        "csv"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalExportHttp": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "from": {
+          "type": "string"
+        },
+        "to": {
+          "type": "string"
+        },
+        "entryCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "totalKilometers": {
+          "type": "number"
+        },
+        "totalAmountBasis": {
+          "type": "number"
+        },
+        "appliedRules": {
+          "const": [
+            "DK-MILEAGE-LOG-001"
+          ]
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0
+        },
+        "artifacts": {
+          "$ref": "schemas-mileage.json#/$defs/Artifacts"
+        }
+      },
+      "required": [
+        "ok",
+        "from",
+        "to",
+        "entryCount",
+        "totalKilometers",
+        "totalAmountBasis",
+        "appliedRules",
+        "errors",
+        "artifacts"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalExportLocal": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "from": {
+          "type": "string"
+        },
+        "to": {
+          "type": "string"
+        },
+        "entryCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "totalKilometers": {
+          "type": "number"
+        },
+        "totalAmountBasis": {
+          "type": "number"
+        },
+        "appliedRules": {
+          "const": [
+            "DK-MILEAGE-LOG-001"
+          ]
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0
+        },
+        "jsonPath": {
+          "type": "string"
+        },
+        "csvPath": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok",
+        "from",
+        "to",
+        "entryCount",
+        "totalKilometers",
+        "totalAmountBasis",
+        "appliedRules",
+        "errors",
+        "jsonPath",
+        "csvPath"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalExportRefusal": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "appliedRules": {
+          "const": [
+            "DK-MILEAGE-LOG-001"
+          ]
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "from must be a valid YYYY-MM-DD date",
+              "to must be a valid YYYY-MM-DD date",
+              "from cannot be after to",
+              "mileage export exceeds the 16 MiB response limit"
+            ]
+          },
+          "minItems": 1,
+          "maxItems": 2
+        }
+      },
+      "required": [
+        "ok",
+        "appliedRules",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalDomainRefusal": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "appliedRules": {
+          "const": [
+            "DK-MILEAGE-LOG-001"
+          ]
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "unauthorized",
+              "access_denied",
+              "invalid_input",
+              "Mileage operation refused by current controls",
+              "outcome_unknown"
+            ]
+          },
+          "minItems": 1,
+          "maxItems": 1
+        }
+      },
+      "required": [
+        "ok",
+        "appliedRules",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "ConfigureHttp": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "x-maxUtf8Bytes": 128
+        },
+        "validFrom": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096,
+          "x-maxUtf8Bytes": 4096
+        },
+        "validTo": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096,
+          "x-maxUtf8Bytes": 4096
+        },
+        "vehicle": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096,
+          "x-maxUtf8Bytes": 4096
+        },
+        "ratePerKm": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096,
+          "x-maxUtf8Bytes": 4096
+        },
+        "basis": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096,
+          "x-maxUtf8Bytes": 4096
+        },
+        "source": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096,
+          "x-maxUtf8Bytes": 4096
+        },
+        "expenseAccountNo": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "x-maxUtf8Bytes": 128
+        },
+        "liabilityAccountNo": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "x-maxUtf8Bytes": 128
+        },
+        "confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "version",
+        "validFrom",
+        "validTo",
+        "vehicle",
+        "ratePerKm",
+        "basis",
+        "source",
+        "expenseAccountNo",
+        "liabilityAccountNo",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "ConfigureSdk": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "x-maxUtf8Bytes": 128
+        },
+        "validFrom": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 10,
+          "format": "date"
+        },
+        "validTo": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 10,
+          "format": "date"
+        },
+        "vehicle": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096,
+          "x-maxUtf8Bytes": 4096
+        },
+        "ratePerKm": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096,
+          "pattern": "^[0-9]+(\\.[0-9]+)?$",
+          "description": "positive decimal with at least one nonzero digit; validFrom <= validTo"
+        },
+        "basis": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096,
+          "x-maxUtf8Bytes": 4096
+        },
+        "source": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096,
+          "x-maxUtf8Bytes": 4096
+        },
+        "expenseAccountNo": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "x-maxUtf8Bytes": 128
+        },
+        "liabilityAccountNo": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "x-maxUtf8Bytes": 128
+        },
+        "confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "version",
+        "validFrom",
+        "validTo",
+        "vehicle",
+        "ratePerKm",
+        "basis",
+        "source",
+        "expenseAccountNo",
+        "liabilityAccountNo",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "PreviewInput": {
+      "type": "object",
+      "properties": {
+        "mileageEntryId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "rateVersion": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "x-maxUtf8Bytes": 128
+        },
+        "documentId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "mileageEntryId",
+        "rateVersion",
+        "documentId"
+      ],
+      "additionalProperties": false
+    },
+    "PostInput": {
+      "type": "object",
+      "properties": {
+        "mileageEntryId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "rateVersion": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "x-maxUtf8Bytes": 128
+        },
+        "documentId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "expectedPreviewHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "operationKey": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "x-maxUtf8Bytes": 128
+        },
+        "confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "mileageEntryId",
+        "rateVersion",
+        "documentId",
+        "expectedPreviewHash",
+        "operationKey",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "ProducedVersion": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "x-maxUtf8Bytes": 128
+        },
+        "validFrom": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096,
+          "x-maxUtf8Bytes": 4096
+        },
+        "validTo": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096,
+          "x-maxUtf8Bytes": 4096
+        },
+        "vehicle": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096,
+          "x-maxUtf8Bytes": 4096
+        },
+        "ratePerKm": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096,
+          "x-maxUtf8Bytes": 4096
+        },
+        "basis": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096,
+          "x-maxUtf8Bytes": 4096
+        },
+        "source": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096,
+          "x-maxUtf8Bytes": 4096
+        },
+        "expenseAccountNo": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "x-maxUtf8Bytes": 128
+        },
+        "liabilityAccountNo": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "x-maxUtf8Bytes": 128
+        },
+        "actor": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "version",
+        "validFrom",
+        "validTo",
+        "vehicle",
+        "ratePerKm",
+        "basis",
+        "source",
+        "expenseAccountNo",
+        "liabilityAccountNo",
+        "actor",
+        "createdAt"
+      ],
+      "additionalProperties": false
+    },
+    "StoredVersionField": {
+      "anyOf": [
+        {
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-mileage.json#/$defs/StoredVersionField"
+          }
+        },
+        {
+          "type": "object",
+          "properties": {},
+          "required": [],
+          "additionalProperties": {
+            "$ref": "schemas-mileage.json#/$defs/StoredVersionField"
+          },
+          "x-arbitrary-json": {
+            "scope": "Fields of retained rate-version payload not inspected by validate_version, including actor/createdAt and historical extra fields",
+            "rationale": "rate_versions parses stored payload as Value, validates business strings/date/rate and version identity, then returns the original value without reconstructing or discarding uninspected fields",
+            "sourceRefs": [
+              {
+                "path": "crates/rentemester-storage/src/mileage_posting.rs",
+                "sha256": "3520600d71a24d534746777821aad0d6c9ae4a99c0ba65ac29c003f052f7ebe6",
+                "needle": "validate_version(&v)?;"
+              }
+            ]
+          }
+        }
+      ],
+      "x-arbitrary-json": {
+        "scope": "Fields of retained rate-version payload not inspected by validate_version, including actor/createdAt and historical extra fields",
+        "rationale": "rate_versions parses stored payload as Value, validates business strings/date/rate and version identity, then returns the original value without reconstructing or discarding uninspected fields",
+        "sourceRefs": [
+          {
+            "path": "crates/rentemester-storage/src/mileage_posting.rs",
+            "sha256": "3520600d71a24d534746777821aad0d6c9ae4a99c0ba65ac29c003f052f7ebe6",
+            "needle": "validate_version(&v)?;"
+          }
+        ]
+      }
+    },
+    "StoredVersion": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "x-maxUtf8Bytes": 128
+        },
+        "validFrom": {
+          "type": "string",
+          "format": "date"
+        },
+        "validTo": {
+          "type": "string",
+          "format": "date"
+        },
+        "vehicle": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096,
+          "x-maxUtf8Bytes": 4096
+        },
+        "ratePerKm": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096,
+          "x-maxUtf8Bytes": 4096
+        },
+        "basis": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096,
+          "x-maxUtf8Bytes": 4096
+        },
+        "source": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096,
+          "x-maxUtf8Bytes": 4096
+        },
+        "expenseAccountNo": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "x-maxUtf8Bytes": 128
+        },
+        "liabilityAccountNo": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "x-maxUtf8Bytes": 128
+        }
+      },
+      "required": [
+        "version",
+        "validFrom",
+        "validTo",
+        "vehicle",
+        "ratePerKm",
+        "basis",
+        "source",
+        "expenseAccountNo",
+        "liabilityAccountNo"
+      ],
+      "additionalProperties": {
+        "$ref": "schemas-mileage.json#/$defs/StoredVersionField"
+      },
+      "x-arbitrary-json": {
+        "scope": "Fields of retained rate-version payload not inspected by validate_version, including actor/createdAt and historical extra fields",
+        "rationale": "rate_versions parses stored payload as Value, validates business strings/date/rate and version identity, then returns the original value without reconstructing or discarding uninspected fields",
+        "sourceRefs": [
+          {
+            "path": "crates/rentemester-storage/src/mileage_posting.rs",
+            "sha256": "3520600d71a24d534746777821aad0d6c9ae4a99c0ba65ac29c003f052f7ebe6",
+            "needle": "validate_version(&v)?;"
+          }
+        ]
+      }
+    },
+    "RateVersions": {
+      "type": "object",
+      "properties": {
+        "rateVersions": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-mileage.json#/$defs/StoredVersion"
+          }
+        }
+      },
+      "required": [
+        "rateVersions"
+      ],
+      "additionalProperties": false
+    },
+    "Configured": {
+      "type": "object",
+      "properties": {
+        "rateVersion": {
+          "$ref": "schemas-mileage.json#/$defs/StoredVersion"
+        },
+        "replayed": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "rateVersion",
+        "replayed"
+      ],
+      "additionalProperties": false
+    },
+    "Preview": {
+      "type": "object",
+      "properties": {
+        "mileageEntryId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "entryNo": {
+          "type": "string"
+        },
+        "tripDate": {
+          "type": "string"
+        },
+        "vehicle": {
+          "type": "string"
+        },
+        "kilometers": {
+          "type": "number"
+        },
+        "ratePerKm": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "number"
+        },
+        "rateVersion": {
+          "type": "string"
+        },
+        "expenseAccountNo": {
+          "type": "string"
+        },
+        "liabilityAccountNo": {
+          "type": "string"
+        },
+        "documentId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "documentHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "previewHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "appliedRules": {
+          "const": [
+            "NATIVE-MILEAGE-POST-1"
+          ]
+        }
+      },
+      "required": [
+        "mileageEntryId",
+        "entryNo",
+        "tripDate",
+        "vehicle",
+        "kilometers",
+        "ratePerKm",
+        "amount",
+        "rateVersion",
+        "expenseAccountNo",
+        "liabilityAccountNo",
+        "documentId",
+        "documentHash",
+        "previewHash",
+        "appliedRules"
+      ],
+      "additionalProperties": false
+    },
+    "Receipt": {
+      "type": "object",
+      "properties": {
+        "mileageEntryId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "entryNo": {
+          "type": "string"
+        },
+        "tripDate": {
+          "type": "string"
+        },
+        "vehicle": {
+          "type": "string"
+        },
+        "kilometers": {
+          "type": "number"
+        },
+        "ratePerKm": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "number"
+        },
+        "rateVersion": {
+          "type": "string"
+        },
+        "expenseAccountNo": {
+          "type": "string"
+        },
+        "liabilityAccountNo": {
+          "type": "string"
+        },
+        "documentId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "documentHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "previewHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "appliedRules": {
+          "const": [
+            "NATIVE-MILEAGE-POST-1"
+          ]
+        },
+        "journalEntryId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "journalEntryNo": {
+          "type": "string"
+        },
+        "replayed": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "mileageEntryId",
+        "entryNo",
+        "tripDate",
+        "vehicle",
+        "kilometers",
+        "ratePerKm",
+        "amount",
+        "rateVersion",
+        "expenseAccountNo",
+        "liabilityAccountNo",
+        "documentId",
+        "documentHash",
+        "previewHash",
+        "appliedRules",
+        "journalEntryId",
+        "journalEntryNo",
+        "replayed"
+      ],
+      "additionalProperties": false
+    },
+    "Postings": {
+      "type": "object",
+      "properties": {
+        "postings": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-mileage.json#/$defs/Receipt"
+          }
+        }
+      },
+      "required": [
+        "postings"
+      ],
+      "additionalProperties": false
+    },
+    "RateVersionsEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "mileagePosting": {
+          "$ref": "schemas-mileage.json#/$defs/RateVersions"
+        }
+      },
+      "required": [
+        "ok",
+        "mileagePosting"
+      ],
+      "additionalProperties": false
+    },
+    "ConfiguredEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "mileagePosting": {
+          "$ref": "schemas-mileage.json#/$defs/Configured"
+        }
+      },
+      "required": [
+        "ok",
+        "mileagePosting"
+      ],
+      "additionalProperties": false
+    },
+    "PreviewEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "mileagePosting": {
+          "$ref": "schemas-mileage.json#/$defs/Preview"
+        }
+      },
+      "required": [
+        "ok",
+        "mileagePosting"
+      ],
+      "additionalProperties": false
+    },
+    "ReceiptEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "mileagePosting": {
+          "$ref": "schemas-mileage.json#/$defs/Receipt"
+        }
+      },
+      "required": [
+        "ok",
+        "mileagePosting"
+      ],
+      "additionalProperties": false
+    },
+    "PostingsEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "mileagePosting": {
+          "$ref": "schemas-mileage.json#/$defs/Postings"
+        }
+      },
+      "required": [
+        "ok",
+        "mileagePosting"
+      ],
+      "additionalProperties": false
+    },
+    "Failure": {
+      "$ref": "schemas-chart_journal.json#/$defs/Failure"
+    },
+    "ProtocolFailure": {
+      "$ref": "schemas-chart_journal.json#/$defs/ProtocolFailure"
+    },
+    "CliFailure": {
+      "$ref": "schemas-chart_journal.json#/$defs/CliFailure"
+    },
+    "NativeToolError": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": false
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": "invalid_input"
+                },
+                "message": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "ok",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": false
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": "transport"
+                },
+                "message": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "ok",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": false
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": "server_refused"
+                },
+                "message": {
+                  "type": "string"
+                },
+                "status": {
+                  "type": "integer",
+                  "minimum": 100,
+                  "maximum": 599
+                }
+              },
+              "required": [
+                "code",
+                "message",
+                "status"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "ok",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": false
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": "protocol"
+                },
+                "message": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "ok",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": false
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": "outcome_unknown"
+                },
+                "message": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "ok",
+            "error"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "OriginalClientFailure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "maxItems": 1
+        }
+      },
+      "required": [
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "LocalExportFailure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "const": "local_export_failed"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "maxItems": 1
+        }
+      },
+      "required": [
+        "ok",
+        "code",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "McpRead": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "year": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "company",
+        "year"
+      ],
+      "additionalProperties": false
+    },
+    "McpCompany": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "company"
+      ],
+      "additionalProperties": false
+    },
+    "McpBody": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "body": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "company",
+        "body"
+      ],
+      "additionalProperties": false
+    },
+    "McpWrite": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "body": {
+          "type": "string"
+        },
+        "confirm": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "company",
+        "body",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "McpOriginalLog": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string",
+          "minLength": 1
+        },
+        "input": {
+          "type": "object",
+          "properties": {
+            "tripDate": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 65536,
+              "x-maxUtf8Bytes": 65536
+            },
+            "purpose": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 65536,
+              "x-maxUtf8Bytes": 65536
+            },
+            "fromLocation": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 65536,
+              "x-maxUtf8Bytes": 65536
+            },
+            "toLocation": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 65536,
+              "x-maxUtf8Bytes": 65536
+            },
+            "kilometers": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "vehicle": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 65536,
+              "x-maxUtf8Bytes": 65536
+            },
+            "driver": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 65536,
+              "x-maxUtf8Bytes": 65536
+            },
+            "ratePerKm": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "rateBasis": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 65536,
+              "x-maxUtf8Bytes": 65536
+            },
+            "rateSource": {
+              "type": "string"
+            },
+            "notes": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "tripDate",
+            "purpose",
+            "fromLocation",
+            "toLocation",
+            "vehicle",
+            "driver",
+            "rateBasis",
+            "kilometers",
+            "ratePerKm"
+          ],
+          "additionalProperties": false
+        },
+        "confirm": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "company",
+        "input"
+      ],
+      "additionalProperties": false
+    },
+    "McpOriginalList": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "company"
+      ],
+      "additionalProperties": false
+    },
+    "McpOriginalReport": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string",
+          "minLength": 1
+        },
+        "from": {
+          "type": "string",
+          "minLength": 1
+        },
+        "to": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "company",
+        "from",
+        "to"
+      ],
+      "additionalProperties": false
+    },
+    "McpOriginalExport": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string",
+          "minLength": 1
+        },
+        "from": {
+          "type": "string",
+          "minLength": 1
+        },
+        "to": {
+          "type": "string",
+          "minLength": 1
+        },
+        "outputDir": {
+          "type": "string",
+          "minLength": 1
+        },
+        "confirm": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "company",
+        "from",
+        "to",
+        "outputDir"
+      ],
+      "additionalProperties": false
+    },
+    "RpcId": {
+      "anyOf": [
+        {
+          "type": "string",
+          "maxLength": 256,
+          "x-maxUtf8Bytes": 256
+        },
+        {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 18446744073709551615
+        }
+      ]
+    },
+    "RpcError": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-mileage.json#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32600
+                },
+                "message": {
+                  "const": "expected one JSON-RPC object"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-mileage.json#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32600
+                },
+                "message": {
+                  "const": "invalid JSON-RPC request"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-mileage.json#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32600
+                },
+                "message": {
+                  "const": "request id already used"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-mileage.json#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32600
+                },
+                "message": {
+                  "const": "already initialized"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-mileage.json#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32000
+                },
+                "message": {
+                  "const": "session request limit reached; reconnect"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-mileage.json#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "expected params object"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-mileage.json#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "initialize requires protocolVersion, capabilities and clientInfo"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-mileage.json#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "task execution not supported"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-mileage.json#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "tool name required"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-mileage.json#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "expected arguments object"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-mileage.json#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "mileage requires only company/year"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-mileage.json#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "register_mileage requires only company/body/confirm"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-mileage.json#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "native mileage body exceeds32KiB"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-mileage.json#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "invalid mileage arguments"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-mileage.json#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "only company allowed"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-mileage.json#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "only company/body allowed"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-mileage.json#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "company/body/confirm required"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-mileage.json#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32002
+                },
+                "message": {
+                  "const": "initialize and notifications/initialized required"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-mileage.json#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32601
+                },
+                "message": {
+                  "const": "method not found"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "type": "null"
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32700
+                },
+                "message": {
+                  "const": "invalid or oversized newline-delimited message"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "type": "null"
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32700
+                },
+                "message": {
+                  "const": "message exceeds tool frame bound; only named original uploads/ownership/consolidation proposals admit larger bounded frames"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "type": "null"
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32700
+                },
+                "message": {
+                  "const": "invalid JSON"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-mileage.json#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "report selectors must be strings"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "MileageEnvelopeCli": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "data": {
+          "$ref": "schemas-mileage.json#/$defs/MileageEnvelope"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "MileageEnvelopeTool": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "type": "boolean"
+            },
+            "data": {
+              "$ref": "schemas-mileage.json#/$defs/MileageEnvelope"
+            }
+          },
+          "required": [
+            "ok",
+            "data"
+          ],
+          "additionalProperties": false
+        },
+        "isError": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "content",
+        "structuredContent",
+        "isError"
+      ],
+      "additionalProperties": false
+    },
+    "RegisteredEnvelopeCli": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "data": {
+          "$ref": "schemas-mileage.json#/$defs/RegisteredEnvelope"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "RegisteredEnvelopeTool": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "type": "boolean"
+            },
+            "data": {
+              "$ref": "schemas-mileage.json#/$defs/RegisteredEnvelope"
+            }
+          },
+          "required": [
+            "ok",
+            "data"
+          ],
+          "additionalProperties": false
+        },
+        "isError": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "content",
+        "structuredContent",
+        "isError"
+      ],
+      "additionalProperties": false
+    },
+    "RateVersionsEnvelopeCli": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "data": {
+          "$ref": "schemas-mileage.json#/$defs/RateVersionsEnvelope"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "RateVersionsEnvelopeTool": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "type": "boolean"
+            },
+            "data": {
+              "$ref": "schemas-mileage.json#/$defs/RateVersionsEnvelope"
+            }
+          },
+          "required": [
+            "ok",
+            "data"
+          ],
+          "additionalProperties": false
+        },
+        "isError": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "content",
+        "structuredContent",
+        "isError"
+      ],
+      "additionalProperties": false
+    },
+    "ConfiguredEnvelopeCli": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "data": {
+          "$ref": "schemas-mileage.json#/$defs/ConfiguredEnvelope"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "ConfiguredEnvelopeTool": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "type": "boolean"
+            },
+            "data": {
+              "$ref": "schemas-mileage.json#/$defs/ConfiguredEnvelope"
+            }
+          },
+          "required": [
+            "ok",
+            "data"
+          ],
+          "additionalProperties": false
+        },
+        "isError": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "content",
+        "structuredContent",
+        "isError"
+      ],
+      "additionalProperties": false
+    },
+    "PreviewEnvelopeCli": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "data": {
+          "$ref": "schemas-mileage.json#/$defs/PreviewEnvelope"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "PreviewEnvelopeTool": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "type": "boolean"
+            },
+            "data": {
+              "$ref": "schemas-mileage.json#/$defs/PreviewEnvelope"
+            }
+          },
+          "required": [
+            "ok",
+            "data"
+          ],
+          "additionalProperties": false
+        },
+        "isError": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "content",
+        "structuredContent",
+        "isError"
+      ],
+      "additionalProperties": false
+    },
+    "ReceiptEnvelopeCli": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "data": {
+          "$ref": "schemas-mileage.json#/$defs/ReceiptEnvelope"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "ReceiptEnvelopeTool": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "type": "boolean"
+            },
+            "data": {
+              "$ref": "schemas-mileage.json#/$defs/ReceiptEnvelope"
+            }
+          },
+          "required": [
+            "ok",
+            "data"
+          ],
+          "additionalProperties": false
+        },
+        "isError": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "content",
+        "structuredContent",
+        "isError"
+      ],
+      "additionalProperties": false
+    },
+    "PostingsEnvelopeCli": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "data": {
+          "$ref": "schemas-mileage.json#/$defs/PostingsEnvelope"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "PostingsEnvelopeTool": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "type": "boolean"
+            },
+            "data": {
+              "$ref": "schemas-mileage.json#/$defs/PostingsEnvelope"
+            }
+          },
+          "required": [
+            "ok",
+            "data"
+          ],
+          "additionalProperties": false
+        },
+        "isError": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "content",
+        "structuredContent",
+        "isError"
+      ],
+      "additionalProperties": false
+    },
+    "NativeFailureTool": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "$ref": "schemas-mileage.json#/$defs/NativeToolError"
+        },
+        "isError": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "content",
+        "structuredContent",
+        "isError"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalLogSuccessTool": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "errors": {
+              "const": []
+            },
+            "appliedRules": {
+              "const": [
+                "DK-MILEAGE-LOG-001"
+              ]
+            },
+            "data": {
+              "type": "object",
+              "properties": {
+                "mileageEntryId": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 9007199254740991
+                },
+                "entryNo": {
+                  "type": "string",
+                  "maxLength": 65536,
+                  "x-maxUtf8Bytes": 65536
+                },
+                "amountBasis": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 90071992547409.9
+                },
+                "warnings": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "maxItems": 128
+                }
+              },
+              "required": [
+                "mileageEntryId",
+                "entryNo",
+                "amountBasis",
+                "warnings"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "ok",
+            "errors",
+            "appliedRules",
+            "data"
+          ],
+          "additionalProperties": false
+        },
+        "isError": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "content",
+        "structuredContent",
+        "isError"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalLogRefusalTool": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": false
+            },
+            "errors": {
+              "type": "array",
+              "items": {
+                "enum": [
+                  "tripDate is required",
+                  "tripDate must be a valid YYYY-MM-DD date",
+                  "purpose is required",
+                  "fromLocation is required",
+                  "toLocation is required",
+                  "kilometers must be a positive number",
+                  "vehicle is required",
+                  "driver is required",
+                  "ratePerKm must be a positive number",
+                  "rateBasis is required (user-supplied / source-backed)"
+                ]
+              },
+              "minItems": 1,
+              "maxItems": 128
+            },
+            "appliedRules": {
+              "const": [
+                "DK-MILEAGE-LOG-001"
+              ]
+            },
+            "data": {
+              "type": "object",
+              "properties": {
+                "warnings": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "maxItems": 128
+                }
+              },
+              "required": [
+                "warnings"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "ok",
+            "errors",
+            "appliedRules",
+            "data"
+          ],
+          "additionalProperties": false
+        },
+        "isError": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "content",
+        "structuredContent",
+        "isError"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalListTool": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "errors": {
+              "const": []
+            },
+            "appliedRules": {
+              "const": [
+                "DK-MILEAGE-LOG-001"
+              ]
+            },
+            "data": {
+              "type": "object",
+              "properties": {
+                "count": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "rows": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "schemas-mileage.json#/$defs/OriginalSdkEntry"
+                  }
+                }
+              },
+              "required": [
+                "count",
+                "rows"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "ok",
+            "errors",
+            "appliedRules",
+            "data"
+          ],
+          "additionalProperties": false
+        },
+        "isError": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "content",
+        "structuredContent",
+        "isError"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalReportTool": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "errors": {
+              "const": []
+            },
+            "appliedRules": {
+              "const": [
+                "DK-MILEAGE-LOG-001"
+              ]
+            },
+            "data": {
+              "type": "object",
+              "properties": {
+                "from": {
+                  "type": "string",
+                  "maxLength": 65536,
+                  "x-maxUtf8Bytes": 65536
+                },
+                "to": {
+                  "type": "string",
+                  "maxLength": 65536,
+                  "x-maxUtf8Bytes": 65536
+                },
+                "entryCount": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 90071992547409.9
+                },
+                "totalKilometers": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 90071992547409.9
+                },
+                "totalAmountBasis": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 90071992547409.9
+                },
+                "entries": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "schemas-mileage.json#/$defs/OriginalSdkEntry"
+                  }
+                }
+              },
+              "required": [
+                "from",
+                "to",
+                "entryCount",
+                "totalKilometers",
+                "totalAmountBasis",
+                "entries"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "ok",
+            "errors",
+            "appliedRules",
+            "data"
+          ],
+          "additionalProperties": false
+        },
+        "isError": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "content",
+        "structuredContent",
+        "isError"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalReportRefusalTool": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": false
+            },
+            "errors": {
+              "type": "array",
+              "items": {
+                "enum": [
+                  "from must be a valid YYYY-MM-DD date",
+                  "to must be a valid YYYY-MM-DD date",
+                  "from cannot be after to"
+                ]
+              },
+              "minItems": 1,
+              "maxItems": 128
+            },
+            "appliedRules": {
+              "const": [
+                "DK-MILEAGE-LOG-001"
+              ]
+            },
+            "data": {
+              "type": "object",
+              "properties": {
+                "from": {
+                  "type": "string",
+                  "maxLength": 65536,
+                  "x-maxUtf8Bytes": 65536
+                },
+                "to": {
+                  "type": "string",
+                  "maxLength": 65536,
+                  "x-maxUtf8Bytes": 65536
+                },
+                "entryCount": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 90071992547409.9
+                },
+                "totalKilometers": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 90071992547409.9
+                },
+                "totalAmountBasis": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 90071992547409.9
+                },
+                "entries": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "schemas-mileage.json#/$defs/OriginalSdkEntry"
+                  },
+                  "maxItems": 0
+                }
+              },
+              "required": [
+                "from",
+                "to",
+                "entryCount",
+                "totalKilometers",
+                "totalAmountBasis",
+                "entries"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "ok",
+            "errors",
+            "appliedRules",
+            "data"
+          ],
+          "additionalProperties": false
+        },
+        "isError": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "content",
+        "structuredContent",
+        "isError"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalExportLocalTool": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "errors": {
+              "const": []
+            },
+            "appliedRules": {
+              "const": [
+                "DK-MILEAGE-LOG-001"
+              ]
+            },
+            "data": {
+              "type": "object",
+              "properties": {
+                "from": {
+                  "type": "string",
+                  "maxLength": 65536,
+                  "x-maxUtf8Bytes": 65536
+                },
+                "to": {
+                  "type": "string",
+                  "maxLength": 65536,
+                  "x-maxUtf8Bytes": 65536
+                },
+                "entryCount": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 90071992547409.9
+                },
+                "totalKilometers": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 90071992547409.9
+                },
+                "totalAmountBasis": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 90071992547409.9
+                },
+                "jsonPath": {
+                  "type": "string"
+                },
+                "csvPath": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "from",
+                "to",
+                "entryCount",
+                "totalKilometers",
+                "totalAmountBasis",
+                "jsonPath",
+                "csvPath"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "ok",
+            "errors",
+            "appliedRules",
+            "data"
+          ],
+          "additionalProperties": false
+        },
+        "isError": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "content",
+        "structuredContent",
+        "isError"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalExportRefusalTool": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": false
+            },
+            "errors": {
+              "type": "array",
+              "items": {
+                "enum": [
+                  "from must be a valid YYYY-MM-DD date",
+                  "to must be a valid YYYY-MM-DD date",
+                  "from cannot be after to",
+                  "mileage export exceeds the 16 MiB response limit"
+                ]
+              },
+              "minItems": 1,
+              "maxItems": 128
+            },
+            "appliedRules": {
+              "const": [
+                "DK-MILEAGE-LOG-001"
+              ]
+            }
+          },
+          "required": [
+            "ok",
+            "errors",
+            "appliedRules"
+          ],
+          "additionalProperties": false
+        },
+        "isError": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "content",
+        "structuredContent",
+        "isError"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalErrorTool": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "content": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "const": "text"
+                  },
+                  "text": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "type",
+                  "text"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "type": "object",
+              "properties": {
+                "ok": {
+                  "const": false
+                },
+                "code": {
+                  "const": "invalid_input"
+                },
+                "errors": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "minItems": 1,
+                  "maxItems": 1
+                }
+              },
+              "required": [
+                "ok",
+                "code",
+                "errors"
+              ],
+              "additionalProperties": false
+            },
+            "isError": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "content",
+            "structuredContent",
+            "isError"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "content": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "const": "text"
+                  },
+                  "text": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "type",
+                  "text"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "type": "object",
+              "properties": {
+                "ok": {
+                  "const": false
+                },
+                "code": {
+                  "const": "transport"
+                },
+                "errors": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "minItems": 1,
+                  "maxItems": 1
+                }
+              },
+              "required": [
+                "ok",
+                "code",
+                "errors"
+              ],
+              "additionalProperties": false
+            },
+            "isError": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "content",
+            "structuredContent",
+            "isError"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "content": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "const": "text"
+                  },
+                  "text": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "type",
+                  "text"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "type": "object",
+              "properties": {
+                "ok": {
+                  "const": false
+                },
+                "code": {
+                  "const": "server_refused"
+                },
+                "errors": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "minItems": 1,
+                  "maxItems": 1
+                }
+              },
+              "required": [
+                "ok",
+                "code",
+                "errors"
+              ],
+              "additionalProperties": false
+            },
+            "isError": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "content",
+            "structuredContent",
+            "isError"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "content": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "const": "text"
+                  },
+                  "text": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "type",
+                  "text"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "type": "object",
+              "properties": {
+                "ok": {
+                  "const": false
+                },
+                "code": {
+                  "const": "protocol"
+                },
+                "errors": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "minItems": 1,
+                  "maxItems": 1
+                }
+              },
+              "required": [
+                "ok",
+                "code",
+                "errors"
+              ],
+              "additionalProperties": false
+            },
+            "isError": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "content",
+            "structuredContent",
+            "isError"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "content": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "const": "text"
+                  },
+                  "text": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "type",
+                  "text"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "type": "object",
+              "properties": {
+                "ok": {
+                  "const": false
+                },
+                "code": {
+                  "const": "outcome_unknown"
+                },
+                "errors": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "minItems": 1,
+                  "maxItems": 1
+                }
+              },
+              "required": [
+                "ok",
+                "code",
+                "errors"
+              ],
+              "additionalProperties": false
+            },
+            "isError": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "content",
+            "structuredContent",
+            "isError"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "content": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "const": "text"
+                  },
+                  "text": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "type",
+                  "text"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "type": "object",
+              "properties": {
+                "ok": {
+                  "const": false
+                },
+                "code": {
+                  "const": "local_export_failed"
+                },
+                "errors": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "minItems": 1,
+                  "maxItems": 1
+                }
+              },
+              "required": [
+                "ok",
+                "code",
+                "errors"
+              ],
+              "additionalProperties": false
+            },
+            "isError": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "content",
+            "structuredContent",
+            "isError"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "content": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "const": "text"
+                  },
+                  "text": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "type",
+                  "text"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "type": "object",
+              "properties": {
+                "ok": {
+                  "const": false
+                },
+                "code": {
+                  "const": "CONFIRM_REQUIRED"
+                },
+                "errors": {
+                  "const": [
+                    "confirm: true required for mileage writes"
+                  ]
+                }
+              },
+              "required": [
+                "ok",
+                "code",
+                "errors"
+              ],
+              "additionalProperties": false
+            },
+            "isError": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "content",
+            "structuredContent",
+            "isError"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "OriginalSdkEntry": {
+      "type": "object",
+      "properties": {
+        "tripDate": {
+          "type": "string",
+          "maxLength": 65536,
+          "x-maxUtf8Bytes": 65536
+        },
+        "purpose": {
+          "type": "string",
+          "maxLength": 65536,
+          "x-maxUtf8Bytes": 65536
+        },
+        "fromLocation": {
+          "type": "string",
+          "maxLength": 65536,
+          "x-maxUtf8Bytes": 65536
+        },
+        "toLocation": {
+          "type": "string",
+          "maxLength": 65536,
+          "x-maxUtf8Bytes": 65536
+        },
+        "kilometers": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 90071992547409.9
+        },
+        "vehicle": {
+          "type": "string",
+          "maxLength": 65536,
+          "x-maxUtf8Bytes": 65536
+        },
+        "driver": {
+          "type": "string",
+          "maxLength": 65536,
+          "x-maxUtf8Bytes": 65536
+        },
+        "ratePerKm": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 90071992547409.9
+        },
+        "rateBasis": {
+          "type": "string",
+          "maxLength": 65536,
+          "x-maxUtf8Bytes": 65536
+        },
+        "rateSource": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "notes": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "id": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "entryNo": {
+          "type": "string",
+          "maxLength": 65536,
+          "x-maxUtf8Bytes": 65536
+        },
+        "amountBasis": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 90071992547409.9
+        },
+        "createdAt": {
+          "type": "string",
+          "maxLength": 65536,
+          "x-maxUtf8Bytes": 65536
+        }
+      },
+      "required": [
+        "tripDate",
+        "purpose",
+        "fromLocation",
+        "toLocation",
+        "kilometers",
+        "vehicle",
+        "driver",
+        "ratePerKm",
+        "rateBasis",
+        "rateSource",
+        "notes",
+        "id",
+        "entryNo",
+        "amountBasis",
+        "createdAt"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalLogSuccessSdk": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "mileageEntryId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "entryNo": {
+          "type": "string",
+          "maxLength": 65536,
+          "x-maxUtf8Bytes": 65536
+        },
+        "amountBasis": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 90071992547409.9
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 128
+        },
+        "appliedRules": {
+          "const": [
+            "DK-MILEAGE-LOG-001"
+          ]
+        },
+        "errors": {
+          "const": []
+        }
+      },
+      "required": [
+        "ok",
+        "mileageEntryId",
+        "entryNo",
+        "amountBasis",
+        "warnings",
+        "appliedRules",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalLogRefusalSdk": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "appliedRules": {
+          "const": [
+            "DK-MILEAGE-LOG-001"
+          ]
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 128
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "tripDate is required",
+              "tripDate must be a valid YYYY-MM-DD date",
+              "purpose is required",
+              "fromLocation is required",
+              "toLocation is required",
+              "kilometers must be a positive number",
+              "vehicle is required",
+              "driver is required",
+              "ratePerKm must be a positive number",
+              "rateBasis is required (user-supplied / source-backed)"
+            ]
+          },
+          "minItems": 1,
+          "maxItems": 128
+        }
+      },
+      "required": [
+        "ok",
+        "appliedRules",
+        "warnings",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalListSdk": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "rows": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-mileage.json#/$defs/OriginalSdkEntry"
+          }
+        },
+        "appliedRules": {
+          "const": [
+            "DK-MILEAGE-LOG-001"
+          ]
+        },
+        "errors": {
+          "const": []
+        }
+      },
+      "required": [
+        "ok",
+        "count",
+        "rows",
+        "appliedRules",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalReportSdk": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "from": {
+          "type": "string",
+          "maxLength": 65536,
+          "x-maxUtf8Bytes": 65536
+        },
+        "to": {
+          "type": "string",
+          "maxLength": 65536,
+          "x-maxUtf8Bytes": 65536
+        },
+        "entryCount": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 90071992547409.9
+        },
+        "totalKilometers": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 90071992547409.9
+        },
+        "totalAmountBasis": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 90071992547409.9
+        },
+        "entries": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-mileage.json#/$defs/OriginalSdkEntry"
+          }
+        },
+        "appliedRules": {
+          "const": [
+            "DK-MILEAGE-LOG-001"
+          ]
+        },
+        "errors": {
+          "const": []
+        }
+      },
+      "required": [
+        "ok",
+        "from",
+        "to",
+        "entryCount",
+        "totalKilometers",
+        "totalAmountBasis",
+        "entries",
+        "appliedRules",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalReportRefusalSdk": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "from": {
+          "type": "string",
+          "maxLength": 65536,
+          "x-maxUtf8Bytes": 65536
+        },
+        "to": {
+          "type": "string",
+          "maxLength": 65536,
+          "x-maxUtf8Bytes": 65536
+        },
+        "entryCount": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 90071992547409.9
+        },
+        "totalKilometers": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 90071992547409.9
+        },
+        "totalAmountBasis": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 90071992547409.9
+        },
+        "entries": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-mileage.json#/$defs/OriginalSdkEntry"
+          },
+          "maxItems": 0
+        },
+        "appliedRules": {
+          "const": [
+            "DK-MILEAGE-LOG-001"
+          ]
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "from must be a valid YYYY-MM-DD date",
+              "to must be a valid YYYY-MM-DD date",
+              "from cannot be after to"
+            ]
+          },
+          "minItems": 1,
+          "maxItems": 128
+        }
+      },
+      "required": [
+        "ok",
+        "from",
+        "to",
+        "entryCount",
+        "totalKilometers",
+        "totalAmountBasis",
+        "entries",
+        "appliedRules",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalExportLocalSdk": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "from": {
+          "type": "string",
+          "maxLength": 65536,
+          "x-maxUtf8Bytes": 65536
+        },
+        "to": {
+          "type": "string",
+          "maxLength": 65536,
+          "x-maxUtf8Bytes": 65536
+        },
+        "entryCount": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 90071992547409.9
+        },
+        "totalKilometers": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 90071992547409.9
+        },
+        "totalAmountBasis": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 90071992547409.9
+        },
+        "appliedRules": {
+          "const": [
+            "DK-MILEAGE-LOG-001"
+          ]
+        },
+        "errors": {
+          "const": []
+        },
+        "jsonPath": {
+          "type": "string"
+        },
+        "csvPath": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok",
+        "from",
+        "to",
+        "entryCount",
+        "totalKilometers",
+        "totalAmountBasis",
+        "appliedRules",
+        "errors",
+        "jsonPath",
+        "csvPath"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalExportRefusalSdk": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "appliedRules": {
+          "const": [
+            "DK-MILEAGE-LOG-001"
+          ]
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "from must be a valid YYYY-MM-DD date",
+              "to must be a valid YYYY-MM-DD date",
+              "from cannot be after to",
+              "mileage export exceeds the 16 MiB response limit"
+            ]
+          },
+          "minItems": 1,
+          "maxItems": 128
+        }
+      },
+      "required": [
+        "ok",
+        "appliedRules",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "CliOriginalLog": {
+      "type": "object",
+      "properties": {
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--service-key-file": {
+          "type": "string"
+        },
+        "--company": {
+          "type": "string"
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--workspace": {
+          "type": "string"
+        },
+        "--json": {
+          "const": true
+        },
+        "--format": {
+          "enum": [
+            "json",
+            "human"
+          ]
+        },
+        "--allow-loopback-http": {
+          "const": true
+        },
+        "--help": {
+          "const": true
+        },
+        "--date": {
+          "type": "string"
+        },
+        "--purpose": {
+          "type": "string"
+        },
+        "--from": {
+          "type": "string"
+        },
+        "--to": {
+          "type": "string"
+        },
+        "--km": {
+          "type": "string"
+        },
+        "--vehicle": {
+          "type": "string"
+        },
+        "--driver": {
+          "type": "string"
+        },
+        "--rate-per-km": {
+          "type": "string"
+        },
+        "--rate-basis": {
+          "type": "string"
+        },
+        "--rate-source": {
+          "type": "string"
+        },
+        "--notes": {
+          "type": "string"
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "CliOriginalList": {
+      "type": "object",
+      "properties": {
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--service-key-file": {
+          "type": "string"
+        },
+        "--company": {
+          "type": "string"
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--workspace": {
+          "type": "string"
+        },
+        "--json": {
+          "const": true
+        },
+        "--format": {
+          "enum": [
+            "json",
+            "human"
+          ]
+        },
+        "--allow-loopback-http": {
+          "const": true
+        },
+        "--help": {
+          "const": true
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "CliOriginalReport": {
+      "type": "object",
+      "properties": {
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--service-key-file": {
+          "type": "string"
+        },
+        "--company": {
+          "type": "string"
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--workspace": {
+          "type": "string"
+        },
+        "--json": {
+          "const": true
+        },
+        "--format": {
+          "enum": [
+            "json",
+            "human"
+          ]
+        },
+        "--allow-loopback-http": {
+          "const": true
+        },
+        "--help": {
+          "const": true
+        },
+        "--from": {
+          "type": "string"
+        },
+        "--to": {
+          "type": "string"
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "CliOriginalExport": {
+      "type": "object",
+      "properties": {
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--service-key-file": {
+          "type": "string"
+        },
+        "--company": {
+          "type": "string"
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--workspace": {
+          "type": "string"
+        },
+        "--json": {
+          "const": true
+        },
+        "--format": {
+          "enum": [
+            "json",
+            "human"
+          ]
+        },
+        "--allow-loopback-http": {
+          "const": true
+        },
+        "--help": {
+          "const": true
+        },
+        "--from": {
+          "type": "string"
+        },
+        "--to": {
+          "type": "string"
+        },
+        "--out": {
+          "type": "string"
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "CliMileage": {
+      "type": "object",
+      "properties": {
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--company": {
+          "type": "string"
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "const": true
+        },
+        "--year": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "--company",
+        "--year"
+      ],
+      "additionalProperties": false
+    },
+    "CliRegisterMileage": {
+      "type": "object",
+      "properties": {
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--company": {
+          "type": "string"
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "const": true
+        },
+        "--confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "--company",
+        "--confirm"
+      ],
+      "additionalProperties": false
+    },
+    "CliMileageRateVersions": {
+      "type": "object",
+      "properties": {
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--company": {
+          "type": "string"
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "const": true
+        }
+      },
+      "required": [
+        "--company"
+      ],
+      "additionalProperties": false
+    },
+    "CliConfigureMileageRates": {
+      "type": "object",
+      "properties": {
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--company": {
+          "type": "string"
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "const": true
+        },
+        "--body-file": {
+          "type": "string"
+        },
+        "--confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "--company",
+        "--body-file",
+        "--confirm"
+      ],
+      "additionalProperties": false
+    },
+    "CliPreviewMileagePost": {
+      "type": "object",
+      "properties": {
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--company": {
+          "type": "string"
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "const": true
+        },
+        "--body-file": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "--company",
+        "--body-file"
+      ],
+      "additionalProperties": false
+    },
+    "CliPostMileage": {
+      "type": "object",
+      "properties": {
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--company": {
+          "type": "string"
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "const": true
+        },
+        "--body-file": {
+          "type": "string"
+        },
+        "--confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "--company",
+        "--body-file",
+        "--confirm"
+      ],
+      "additionalProperties": false
+    },
+    "CliMileagePostings": {
+      "type": "object",
+      "properties": {
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--company": {
+          "type": "string"
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "const": true
+        }
+      },
+      "required": [
+        "--company"
+      ],
+      "additionalProperties": false
+    }
+  }
+}
