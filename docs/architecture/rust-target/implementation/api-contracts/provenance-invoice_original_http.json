@@ -1,0 +1,190 @@
+{
+  "format": "source-bound-api-contracts/1",
+  "partition": "invoice_original_http",
+  "issue": 677,
+  "operationCount": 17,
+  "sourceRefs": [
+    {
+      "path": "protocol/http-v1.json",
+      "sha256": "bd6a775bbe936332a718ee5b56b57ad3c40ac9bc35f8159219bb06d0313d3d15",
+      "needle": "/api/companies/{slug}/invoices/original/issue"
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http.rs",
+      "sha256": "d008f013390a87c467b929b094abb4e23cc9921a72a2665d8df4d4dcbc537390",
+      "needle": "get(invoice_original::handle)"
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http/invoice_lifecycle.rs",
+      "sha256": "414d5eea43b3ecd4c7e099271bf5fcf57eab6f66d3077bfac2aa8117314da5fe",
+      "needle": "fn parse("
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http/invoice_original.rs",
+      "sha256": "ed3f01ab23cedcb813350b499a73ae6e0792a155ab418cfa31324d31758d0043",
+      "needle": "fn parse("
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http/invoice_lifecycle.rs",
+      "sha256": "414d5eea43b3ecd4c7e099271bf5fcf57eab6f66d3077bfac2aa8117314da5fe",
+      "needle": "duplicate JSON field"
+    },
+    {
+      "path": "crates/rentemester-storage/src/invoice_lifecycle.rs",
+      "sha256": "310e2cb3c0a9528d78848739e9a4dd72307839f35b98700a96d8bb33e3df5e62",
+      "needle": "pub fn validate("
+    },
+    {
+      "path": "crates/rentemester-storage/src/invoice_lifecycle.rs",
+      "sha256": "310e2cb3c0a9528d78848739e9a4dd72307839f35b98700a96d8bb33e3df5e62",
+      "needle": "pub fn issue_receipt("
+    },
+    {
+      "path": "crates/rentemester-storage/src/invoice_lifecycle.rs",
+      "sha256": "310e2cb3c0a9528d78848739e9a4dd72307839f35b98700a96d8bb33e3df5e62",
+      "needle": "pub fn envelope("
+    },
+    {
+      "path": "crates/rentemester-storage/src/invoice_lifecycle.rs",
+      "sha256": "310e2cb3c0a9528d78848739e9a4dd72307839f35b98700a96d8bb33e3df5e62",
+      "needle": "pub fn journal_receipt("
+    },
+    {
+      "path": "crates/rentemester-application/src/invoice_lifecycle.rs",
+      "sha256": "90878f7d0982c43253667dba701bc17e59400ddd178fab949b677d7ee552c691",
+      "needle": "fn inner("
+    },
+    {
+      "path": "crates/rentemester-storage/src/invoice_original.rs",
+      "sha256": "d258b8883e16679adb656be818aeec250f31ee02777379801dd3aba4014e46cd",
+      "needle": "fn status("
+    },
+    {
+      "path": "crates/rentemester-storage/src/invoice_original.rs",
+      "sha256": "d258b8883e16679adb656be818aeec250f31ee02777379801dd3aba4014e46cd",
+      "needle": "pub fn read("
+    },
+    {
+      "path": "crates/rentemester-application/src/invoice_original.rs",
+      "sha256": "b9528d1f904acd782f7af821d5436fcfeb79129cf1cb3f782270f1cab740d98b",
+      "needle": "pub(crate) fn authorized("
+    },
+    {
+      "path": "crates/rentemester-client/src/invoice_lifecycle.rs",
+      "sha256": "bb967d7af65958c36d93a003c9bae01b9cf0e073c4e69f49477622d2df3dbd2b",
+      "needle": "pub fn invoice_lifecycle_schema("
+    },
+    {
+      "path": "crates/rentemester-client/src/invoice_original.rs",
+      "sha256": "41e1a4888a2c0669d117e133e60c3ef42c49572d8dc86ff45b5e98d13e8b7650",
+      "needle": "pub fn invoice_original_schema("
+    },
+    {
+      "path": "crates/rentemester-engine/src/sales_invoice.rs",
+      "sha256": "60ee6af1eed8c0b2f63fe9e17d08d01b10991c62ca98206b323d9096ef6d1e23",
+      "needle": "pub struct Input"
+    },
+    {
+      "path": "crates/rentemester-engine/src/sales_invoice.rs",
+      "sha256": "60ee6af1eed8c0b2f63fe9e17d08d01b10991c62ca98206b323d9096ef6d1e23",
+      "needle": "let mut result = json!({\"description\":"
+    },
+    {
+      "path": "crates/rentemester-engine/src/sales_fx.rs",
+      "sha256": "9a6d40401a0ad75a10c2ba15a553938d63a55b738c278660af358d8e1304f4b0",
+      "needle": "pub fn freeze("
+    },
+    {
+      "path": "crates/rentemester-storage/src/sales.rs",
+      "sha256": "1871aeb62135de568f5b08b8ec7127218c86e3b9d28abfb25da244d567f864b1",
+      "needle": "invoice already has journal entry; cannot be booked twice"
+    },
+    {
+      "path": "crates/rentemester-storage/src/invoice_settlement.rs",
+      "sha256": "8d38b71f78101ee1c7569fbb0d3724578f136213bf8f10c0b70b4ba9fc409dfe",
+      "needle": "\"remainingCreditBalance\""
+    },
+    {
+      "path": "crates/rentemester-storage/src/invoice_payment_apply.rs",
+      "sha256": "b9038b09f5b64d401ebfb6bd2426ef9f743c415b3fec9a636c4edc75d3f00746",
+      "needle": "\"paymentId\":payment"
+    },
+    {
+      "path": "crates/rentemester-storage/src/invoice_repair.rs",
+      "sha256": "c04a67d336780e9f7e30ea590dbed1f1f4da3a2528c5fb83e21fbe0d841a5b57",
+      "needle": "\"replacementJournalEntryId\":id"
+    },
+    {
+      "path": "crates/rentemester-storage/src/credit_note.rs",
+      "sha256": "6be253440958109a1db29ce3976f9b3280cd4275fe0dd450ccd3d452b9277645",
+      "needle": "\"journalEntryNo\":result[\"entryNo\"]"
+    },
+    {
+      "path": "crates/rentemester-storage/src/journal_post.rs",
+      "sha256": "88bf4e4ebf8e8181394913ccd1568655f81cebf76f03baaff8cda367e5ef7465",
+      "needle": "let mut value = json!({\"ok\":true"
+    },
+    {
+      "path": "crates/rentemester-storage/src/bookkeeping_batch.rs",
+      "sha256": "660618146176736856b2ae8b2e126082a48e06ccf25f8be69ddefdb2b8e2be96",
+      "needle": "pub(crate) fn rows("
+    },
+    {
+      "path": "src/core/schema.sql",
+      "sha256": "00a425e5e0d08c93a989331f84749b2d8c20ec0fca9823cebf0b5182f31a1f3b",
+      "needle": "CREATE TABLE IF NOT EXISTS invoice_payments"
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http.rs",
+      "sha256": "d008f013390a87c467b929b094abb4e23cc9921a72a2665d8df4d4dcbc537390",
+      "needle": "fn origin_proof("
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http/documents.rs",
+      "sha256": "d6a25bf8f5b30b338a2734805d5a5219ed9bb8de118eeb491ad849df057d5acc",
+      "needle": "pub(super) fn outcome<T>"
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http/service_company.rs",
+      "sha256": "05a672ed51a2c952aba3f7d40ca15bcb0295fdcb907659f84e48dccf79100741",
+      "needle": "pub(super) fn failure("
+    },
+    {
+      "path": "crates/rentemester-application/src/service_company.rs",
+      "sha256": "f3da2c262feb5be6d0394e5693827fa7a1af4b839588956ea4a89e2110abf75e",
+      "needle": "pub enum UsageStage"
+    },
+    {
+      "path": "crates/rentemester-application/src/sales.rs",
+      "sha256": "903b4ab83aa881c7d8a10e019978edc920b0177a8814a54a9c59303dae6f50d8",
+      "needle": "Action::Lifecycle(kind, body)"
+    },
+    {
+      "path": "crates/rentemester-application/src/control_fence.rs",
+      "sha256": "e5b1f8902693d649fc1a46e0c66dc902622781f2c9f65e051e6ed7df11e1ffa6",
+      "needle": "let bookkeeping ="
+    },
+    {
+      "path": "crates/rentemester-server/src/protocol.rs",
+      "sha256": "e1076ab2b8185b48c03017658c75ef3a01b9abacdb75843f64cef4adfc6da38c",
+      "needle": "fn incompatible()"
+    },
+    {
+      "path": "crates/rentemester-storage/src/public_einvoice.rs",
+      "sha256": "1d7e20177f6d05916a5257b6672fbe0fb3d1e6cf2831d000b5a012b2ec78861a",
+      "needle": "fn project("
+    },
+    {
+      "path": "crates/rentemester-storage/src/reminder_claims.rs",
+      "sha256": "212b4bf540b0a4c421df92e04923af7ca7c86538f700101baf5e6a195385e9cf",
+      "needle": "\"registeredClaimBalanceDkk\""
+    },
+    {
+      "path": "crates/rentemester-client/src/lib.rs",
+      "sha256": "89c8bc77a2081400d8915cbb988d81be0f349a0bc9487ce687dc3ae3de75accd",
+      "needle": "const MAX_RESPONSE:"
+    }
+  ],
+  "method": "Current native parser, dispatch and producers read directly; SDK schemas are advertisement only and permissive client data-object validation is not producer proof. No runtime invoice/mail/financial proof replay.",
+  "scope": "Only17 selected HTTP identities; full677 advertised operations/all55/J01-J07/final desktop gates remain retained; parent owns acceptance."
+}
