@@ -2001,7 +2001,7 @@
               "maxLength": 160
             }
           ],
-          "minItems": 2,
+          "minItems": 1,
           "maxItems": 2
         }
       ]
@@ -3167,11 +3167,7 @@
               "const": "2.0"
             },
             "id": {
-              "type": [
-                "string",
-                "integer",
-                "null"
-              ]
+              "type": "null"
             },
             "error": {
               "type": "object",
@@ -3204,11 +3200,7 @@
               "const": "2.0"
             },
             "id": {
-              "type": [
-                "string",
-                "integer",
-                "null"
-              ]
+              "type": "null"
             },
             "error": {
               "type": "object",
@@ -3241,11 +3233,7 @@
               "const": "2.0"
             },
             "id": {
-              "type": [
-                "string",
-                "integer",
-                "null"
-              ]
+              "type": "null"
             },
             "error": {
               "type": "object",
@@ -3278,10 +3266,13 @@
               "const": "2.0"
             },
             "id": {
-              "type": [
-                "string",
-                "integer",
-                "null"
+              "anyOf": [
+                {
+                  "$ref": "schemas-voucher_party_extraction_expense.json#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
               ]
             },
             "error": {
@@ -3315,10 +3306,13 @@
               "const": "2.0"
             },
             "id": {
-              "type": [
-                "string",
-                "integer",
-                "null"
+              "anyOf": [
+                {
+                  "$ref": "schemas-voucher_party_extraction_expense.json#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
               ]
             },
             "error": {
@@ -3352,10 +3346,13 @@
               "const": "2.0"
             },
             "id": {
-              "type": [
-                "string",
-                "integer",
-                "null"
+              "anyOf": [
+                {
+                  "$ref": "schemas-voucher_party_extraction_expense.json#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
               ]
             },
             "error": {
@@ -3389,10 +3386,13 @@
               "const": "2.0"
             },
             "id": {
-              "type": [
-                "string",
-                "integer",
-                "null"
+              "anyOf": [
+                {
+                  "$ref": "schemas-voucher_party_extraction_expense.json#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
               ]
             },
             "error": {
@@ -3426,10 +3426,13 @@
               "const": "2.0"
             },
             "id": {
-              "type": [
-                "string",
-                "integer",
-                "null"
+              "anyOf": [
+                {
+                  "$ref": "schemas-voucher_party_extraction_expense.json#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
               ]
             },
             "error": {
@@ -3463,10 +3466,13 @@
               "const": "2.0"
             },
             "id": {
-              "type": [
-                "string",
-                "integer",
-                "null"
+              "anyOf": [
+                {
+                  "$ref": "schemas-voucher_party_extraction_expense.json#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
               ]
             },
             "error": {
@@ -3500,10 +3506,13 @@
               "const": "2.0"
             },
             "id": {
-              "type": [
-                "string",
-                "integer",
-                "null"
+              "anyOf": [
+                {
+                  "$ref": "schemas-voucher_party_extraction_expense.json#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
               ]
             },
             "error": {
@@ -3537,10 +3546,13 @@
               "const": "2.0"
             },
             "id": {
-              "type": [
-                "string",
-                "integer",
-                "null"
+              "anyOf": [
+                {
+                  "$ref": "schemas-voucher_party_extraction_expense.json#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
               ]
             },
             "error": {
@@ -3574,10 +3586,13 @@
               "const": "2.0"
             },
             "id": {
-              "type": [
-                "string",
-                "integer",
-                "null"
+              "anyOf": [
+                {
+                  "$ref": "schemas-voucher_party_extraction_expense.json#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
               ]
             },
             "error": {
@@ -3611,10 +3626,13 @@
               "const": "2.0"
             },
             "id": {
-              "type": [
-                "string",
-                "integer",
-                "null"
+              "anyOf": [
+                {
+                  "$ref": "schemas-voucher_party_extraction_expense.json#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
               ]
             },
             "error": {
@@ -3648,10 +3666,13 @@
               "const": "2.0"
             },
             "id": {
-              "type": [
-                "string",
-                "integer",
-                "null"
+              "anyOf": [
+                {
+                  "$ref": "schemas-voucher_party_extraction_expense.json#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
               ]
             },
             "error": {
@@ -3685,10 +3706,13 @@
               "const": "2.0"
             },
             "id": {
-              "type": [
-                "string",
-                "integer",
-                "null"
+              "anyOf": [
+                {
+                  "$ref": "schemas-voucher_party_extraction_expense.json#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
               ]
             },
             "error": {
@@ -3722,10 +3746,13 @@
               "const": "2.0"
             },
             "id": {
-              "type": [
-                "string",
-                "integer",
-                "null"
+              "anyOf": [
+                {
+                  "$ref": "schemas-voucher_party_extraction_expense.json#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
               ]
             },
             "error": {
@@ -3759,10 +3786,13 @@
               "const": "2.0"
             },
             "id": {
-              "type": [
-                "string",
-                "integer",
-                "null"
+              "anyOf": [
+                {
+                  "$ref": "schemas-voucher_party_extraction_expense.json#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
               ]
             },
             "error": {
@@ -3796,10 +3826,13 @@
               "const": "2.0"
             },
             "id": {
-              "type": [
-                "string",
-                "integer",
-                "null"
+              "anyOf": [
+                {
+                  "$ref": "schemas-voucher_party_extraction_expense.json#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
               ]
             },
             "error": {
@@ -3833,10 +3866,13 @@
               "const": "2.0"
             },
             "id": {
-              "type": [
-                "string",
-                "integer",
-                "null"
+              "anyOf": [
+                {
+                  "$ref": "schemas-voucher_party_extraction_expense.json#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
               ]
             },
             "error": {
@@ -3870,10 +3906,13 @@
               "const": "2.0"
             },
             "id": {
-              "type": [
-                "string",
-                "integer",
-                "null"
+              "anyOf": [
+                {
+                  "$ref": "schemas-voucher_party_extraction_expense.json#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
               ]
             },
             "error": {
@@ -3907,47 +3946,13 @@
               "const": "2.0"
             },
             "id": {
-              "type": [
-                "string",
-                "integer",
-                "null"
-              ]
-            },
-            "error": {
-              "type": "object",
-              "properties": {
-                "code": {
-                  "const": -32602
+              "anyOf": [
+                {
+                  "$ref": "schemas-voucher_party_extraction_expense.json#/$defs/RpcId"
                 },
-                "message": {
-                  "const": "unknown extraction tool"
+                {
+                  "type": "null"
                 }
-              },
-              "required": [
-                "code",
-                "message"
-              ],
-              "additionalProperties": false
-            }
-          },
-          "required": [
-            "jsonrpc",
-            "id",
-            "error"
-          ],
-          "additionalProperties": false
-        },
-        {
-          "type": "object",
-          "properties": {
-            "jsonrpc": {
-              "const": "2.0"
-            },
-            "id": {
-              "type": [
-                "string",
-                "integer",
-                "null"
               ]
             },
             "error": {
@@ -3981,10 +3986,13 @@
               "const": "2.0"
             },
             "id": {
-              "type": [
-                "string",
-                "integer",
-                "null"
+              "anyOf": [
+                {
+                  "$ref": "schemas-voucher_party_extraction_expense.json#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
               ]
             },
             "error": {
@@ -4018,10 +4026,13 @@
               "const": "2.0"
             },
             "id": {
-              "type": [
-                "string",
-                "integer",
-                "null"
+              "anyOf": [
+                {
+                  "$ref": "schemas-voucher_party_extraction_expense.json#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
               ]
             },
             "error": {
@@ -4055,10 +4066,13 @@
               "const": "2.0"
             },
             "id": {
-              "type": [
-                "string",
-                "integer",
-                "null"
+              "anyOf": [
+                {
+                  "$ref": "schemas-voucher_party_extraction_expense.json#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
               ]
             },
             "error": {
@@ -4092,10 +4106,13 @@
               "const": "2.0"
             },
             "id": {
-              "type": [
-                "string",
-                "integer",
-                "null"
+              "anyOf": [
+                {
+                  "$ref": "schemas-voucher_party_extraction_expense.json#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
               ]
             },
             "error": {
@@ -4129,10 +4146,13 @@
               "const": "2.0"
             },
             "id": {
-              "type": [
-                "string",
-                "integer",
-                "null"
+              "anyOf": [
+                {
+                  "$ref": "schemas-voucher_party_extraction_expense.json#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
               ]
             },
             "error": {
@@ -4166,10 +4186,13 @@
               "const": "2.0"
             },
             "id": {
-              "type": [
-                "string",
-                "integer",
-                "null"
+              "anyOf": [
+                {
+                  "$ref": "schemas-voucher_party_extraction_expense.json#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
               ]
             },
             "error": {
@@ -4203,10 +4226,13 @@
               "const": "2.0"
             },
             "id": {
-              "type": [
-                "string",
-                "integer",
-                "null"
+              "anyOf": [
+                {
+                  "$ref": "schemas-voucher_party_extraction_expense.json#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
               ]
             },
             "error": {
@@ -4240,10 +4266,13 @@
               "const": "2.0"
             },
             "id": {
-              "type": [
-                "string",
-                "integer",
-                "null"
+              "anyOf": [
+                {
+                  "$ref": "schemas-voucher_party_extraction_expense.json#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
               ]
             },
             "error": {
@@ -4277,10 +4306,13 @@
               "const": "2.0"
             },
             "id": {
-              "type": [
-                "string",
-                "integer",
-                "null"
+              "anyOf": [
+                {
+                  "$ref": "schemas-voucher_party_extraction_expense.json#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
               ]
             },
             "error": {
@@ -4314,10 +4346,13 @@
               "const": "2.0"
             },
             "id": {
-              "type": [
-                "string",
-                "integer",
-                "null"
+              "anyOf": [
+                {
+                  "$ref": "schemas-voucher_party_extraction_expense.json#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
               ]
             },
             "error": {
@@ -4351,10 +4386,13 @@
               "const": "2.0"
             },
             "id": {
-              "type": [
-                "string",
-                "integer",
-                "null"
+              "anyOf": [
+                {
+                  "$ref": "schemas-voucher_party_extraction_expense.json#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
               ]
             },
             "error": {
@@ -4388,10 +4426,13 @@
               "const": "2.0"
             },
             "id": {
-              "type": [
-                "string",
-                "integer",
-                "null"
+              "anyOf": [
+                {
+                  "$ref": "schemas-voucher_party_extraction_expense.json#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
               ]
             },
             "error": {
@@ -4425,10 +4466,13 @@
               "const": "2.0"
             },
             "id": {
-              "type": [
-                "string",
-                "integer",
-                "null"
+              "anyOf": [
+                {
+                  "$ref": "schemas-voucher_party_extraction_expense.json#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
               ]
             },
             "error": {
@@ -4462,10 +4506,13 @@
               "const": "2.0"
             },
             "id": {
-              "type": [
-                "string",
-                "integer",
-                "null"
+              "anyOf": [
+                {
+                  "$ref": "schemas-voucher_party_extraction_expense.json#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
               ]
             },
             "error": {
@@ -4499,10 +4546,13 @@
               "const": "2.0"
             },
             "id": {
-              "type": [
-                "string",
-                "integer",
-                "null"
+              "anyOf": [
+                {
+                  "$ref": "schemas-voucher_party_extraction_expense.json#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
               ]
             },
             "error": {
@@ -5664,10 +5714,7 @@
           "const": "2.0"
         },
         "id": {
-          "type": [
-            "string",
-            "integer"
-          ]
+          "$ref": "schemas-voucher_party_extraction_expense.json#/$defs/RpcId"
         },
         "result": {
           "type": "object",
@@ -5747,10 +5794,7 @@
           "const": "2.0"
         },
         "id": {
-          "type": [
-            "string",
-            "integer"
-          ]
+          "$ref": "schemas-voucher_party_extraction_expense.json#/$defs/RpcId"
         },
         "result": {
           "type": "object",
@@ -5902,10 +5946,7 @@
           "const": "2.0"
         },
         "id": {
-          "type": [
-            "string",
-            "integer"
-          ]
+          "$ref": "schemas-voucher_party_extraction_expense.json#/$defs/RpcId"
         },
         "result": {
           "type": "object",
@@ -6007,10 +6048,7 @@
           "const": "2.0"
         },
         "id": {
-          "type": [
-            "string",
-            "integer"
-          ]
+          "$ref": "schemas-voucher_party_extraction_expense.json#/$defs/RpcId"
         },
         "result": {
           "type": "object",
@@ -6086,10 +6124,7 @@
           "const": "2.0"
         },
         "id": {
-          "type": [
-            "string",
-            "integer"
-          ]
+          "$ref": "schemas-voucher_party_extraction_expense.json#/$defs/RpcId"
         },
         "result": {
           "type": "object",
@@ -6272,10 +6307,7 @@
           "const": "2.0"
         },
         "id": {
-          "type": [
-            "string",
-            "integer"
-          ]
+          "$ref": "schemas-voucher_party_extraction_expense.json#/$defs/RpcId"
         },
         "result": {
           "type": "object",
@@ -6354,10 +6386,7 @@
           "const": "2.0"
         },
         "id": {
-          "type": [
-            "string",
-            "integer"
-          ]
+          "$ref": "schemas-voucher_party_extraction_expense.json#/$defs/RpcId"
         },
         "result": {
           "type": "object",
@@ -6490,10 +6519,7 @@
           "const": "2.0"
         },
         "id": {
-          "type": [
-            "string",
-            "integer"
-          ]
+          "$ref": "schemas-voucher_party_extraction_expense.json#/$defs/RpcId"
         },
         "result": {
           "type": "object",
@@ -6608,10 +6634,7 @@
           "const": "2.0"
         },
         "id": {
-          "type": [
-            "string",
-            "integer"
-          ]
+          "$ref": "schemas-voucher_party_extraction_expense.json#/$defs/RpcId"
         },
         "result": {
           "type": "object",
@@ -6706,10 +6729,7 @@
           "const": "2.0"
         },
         "id": {
-          "type": [
-            "string",
-            "integer"
-          ]
+          "$ref": "schemas-voucher_party_extraction_expense.json#/$defs/RpcId"
         },
         "result": {
           "type": "object",
@@ -6799,10 +6819,7 @@
           "const": "2.0"
         },
         "id": {
-          "type": [
-            "string",
-            "integer"
-          ]
+          "$ref": "schemas-voucher_party_extraction_expense.json#/$defs/RpcId"
         },
         "result": {
           "type": "object",
@@ -6904,10 +6921,7 @@
           "const": "2.0"
         },
         "id": {
-          "type": [
-            "string",
-            "integer"
-          ]
+          "$ref": "schemas-voucher_party_extraction_expense.json#/$defs/RpcId"
         },
         "result": {
           "type": "object",
@@ -6999,10 +7013,7 @@
           "const": "2.0"
         },
         "id": {
-          "type": [
-            "string",
-            "integer"
-          ]
+          "$ref": "schemas-voucher_party_extraction_expense.json#/$defs/RpcId"
         },
         "result": {
           "type": "object",
@@ -7097,10 +7108,7 @@
           "const": "2.0"
         },
         "id": {
-          "type": [
-            "string",
-            "integer"
-          ]
+          "$ref": "schemas-voucher_party_extraction_expense.json#/$defs/RpcId"
         },
         "result": {
           "type": "object",
@@ -7179,10 +7187,7 @@
           "const": "2.0"
         },
         "id": {
-          "type": [
-            "string",
-            "integer"
-          ]
+          "$ref": "schemas-voucher_party_extraction_expense.json#/$defs/RpcId"
         },
         "result": {
           "type": "object",
@@ -7271,10 +7276,7 @@
           "const": "2.0"
         },
         "id": {
-          "type": [
-            "string",
-            "integer"
-          ]
+          "$ref": "schemas-voucher_party_extraction_expense.json#/$defs/RpcId"
         },
         "result": {
           "type": "object",
@@ -7350,10 +7352,7 @@
           "const": "2.0"
         },
         "id": {
-          "type": [
-            "string",
-            "integer"
-          ]
+          "$ref": "schemas-voucher_party_extraction_expense.json#/$defs/RpcId"
         },
         "result": {
           "type": "object",
@@ -7442,10 +7441,7 @@
           "const": "2.0"
         },
         "id": {
-          "type": [
-            "string",
-            "integer"
-          ]
+          "$ref": "schemas-voucher_party_extraction_expense.json#/$defs/RpcId"
         },
         "result": {
           "type": "object",
@@ -7518,10 +7514,7 @@
           "const": "2.0"
         },
         "id": {
-          "type": [
-            "string",
-            "integer"
-          ]
+          "$ref": "schemas-voucher_party_extraction_expense.json#/$defs/RpcId"
         },
         "result": {
           "type": "object",
@@ -7591,10 +7584,7 @@
           "const": "2.0"
         },
         "id": {
-          "type": [
-            "string",
-            "integer"
-          ]
+          "$ref": "schemas-voucher_party_extraction_expense.json#/$defs/RpcId"
         },
         "result": {
           "type": "object",
@@ -7676,10 +7666,7 @@
           "const": "2.0"
         },
         "id": {
-          "type": [
-            "string",
-            "integer"
-          ]
+          "$ref": "schemas-voucher_party_extraction_expense.json#/$defs/RpcId"
         },
         "result": {
           "type": "object",
@@ -7749,10 +7736,7 @@
           "const": "2.0"
         },
         "id": {
-          "type": [
-            "string",
-            "integer"
-          ]
+          "$ref": "schemas-voucher_party_extraction_expense.json#/$defs/RpcId"
         },
         "result": {
           "type": "object",
@@ -7828,10 +7812,7 @@
           "const": "2.0"
         },
         "id": {
-          "type": [
-            "string",
-            "integer"
-          ]
+          "$ref": "schemas-voucher_party_extraction_expense.json#/$defs/RpcId"
         },
         "result": {
           "type": "object",
@@ -8099,10 +8080,7 @@
           "const": "2.0"
         },
         "id": {
-          "type": [
-            "string",
-            "integer"
-          ]
+          "$ref": "schemas-voucher_party_extraction_expense.json#/$defs/RpcId"
         },
         "result": {
           "type": "object",
@@ -8181,10 +8159,7 @@
           "const": "2.0"
         },
         "id": {
-          "type": [
-            "string",
-            "integer"
-          ]
+          "$ref": "schemas-voucher_party_extraction_expense.json#/$defs/RpcId"
         },
         "result": {
           "type": "object",
@@ -8452,10 +8427,7 @@
           "const": "2.0"
         },
         "id": {
-          "type": [
-            "string",
-            "integer"
-          ]
+          "$ref": "schemas-voucher_party_extraction_expense.json#/$defs/RpcId"
         },
         "result": {
           "type": "object",
@@ -8568,10 +8540,7 @@
           "const": "2.0"
         },
         "id": {
-          "type": [
-            "string",
-            "integer"
-          ]
+          "$ref": "schemas-voucher_party_extraction_expense.json#/$defs/RpcId"
         },
         "result": {
           "type": "object",
@@ -8763,10 +8732,7 @@
           "const": "2.0"
         },
         "id": {
-          "type": [
-            "string",
-            "integer"
-          ]
+          "$ref": "schemas-voucher_party_extraction_expense.json#/$defs/RpcId"
         },
         "result": {
           "type": "object",
@@ -10305,6 +10271,503 @@
         "decisionHash",
         "reason",
         "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "RpcId": {
+      "anyOf": [
+        {
+          "type": "string",
+          "maxLength": 256,
+          "description": "Session additionally checks UTF-8 byte length <=256."
+        },
+        {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 18446744073709551615
+        }
+      ]
+    },
+    "NativeExtractionFailure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "type": "string"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        }
+      },
+      "required": [
+        "ok",
+        "code",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "NativeExtractionCliRefusal": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "data": {
+          "$ref": "schemas-voucher_party_extraction_expense.json#/$defs/NativeExtractionFailure"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "PartyHistoryOriginalHttp": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "links": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "party_id": {
+                "type": "string"
+              },
+              "party_role": {
+                "enum": [
+                  "issuer",
+                  "supplier",
+                  "customer",
+                  "recipient",
+                  "payer",
+                  "payee",
+                  "processor",
+                  "acquirer",
+                  "related_company",
+                  "establishment",
+                  "location",
+                  "payment_descriptor",
+                  "vendor",
+                  "owner",
+                  "adviser",
+                  "employee",
+                  "authority",
+                  "bank"
+                ]
+              },
+              "event_type": {
+                "enum": [
+                  "linked",
+                  "superseded"
+                ]
+              },
+              "evidence_kind": {
+                "enum": [
+                  "exact_identifier",
+                  "reviewed_legacy_reference"
+                ]
+              },
+              "evidence_json": {
+                "type": "string"
+              },
+              "document_sha256": {
+                "type": "string"
+              },
+              "document_payload_sha256": {
+                "type": "string"
+              },
+              "party_snapshot_json": {
+                "type": "string"
+              },
+              "plan_hash": {
+                "type": "string"
+              },
+              "actor": {
+                "type": "string"
+              },
+              "principal": {
+                "type": "string"
+              },
+              "created_at": {
+                "type": "string"
+              },
+              "id": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9223372036854775807
+              },
+              "reason": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "party_id",
+              "party_role",
+              "event_type",
+              "evidence_kind",
+              "evidence_json",
+              "document_sha256",
+              "document_payload_sha256",
+              "party_snapshot_json",
+              "plan_hash",
+              "actor",
+              "principal",
+              "created_at",
+              "id",
+              "reason"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "ok",
+        "links"
+      ],
+      "additionalProperties": false
+    },
+    "PartyHistoryNativeHttp": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "links": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "party_id": {
+                "type": "string"
+              },
+              "party_role": {
+                "enum": [
+                  "issuer",
+                  "supplier",
+                  "customer",
+                  "recipient",
+                  "payer",
+                  "payee",
+                  "processor",
+                  "acquirer",
+                  "related_company",
+                  "establishment",
+                  "location",
+                  "payment_descriptor",
+                  "vendor",
+                  "owner",
+                  "adviser",
+                  "employee",
+                  "authority",
+                  "bank"
+                ]
+              },
+              "event_type": {
+                "enum": [
+                  "linked",
+                  "superseded"
+                ]
+              },
+              "evidence_kind": {
+                "enum": [
+                  "exact_identifier",
+                  "reviewed_legacy_reference"
+                ]
+              },
+              "evidence_json": {
+                "type": "string"
+              },
+              "document_sha256": {
+                "type": "string"
+              },
+              "document_payload_sha256": {
+                "type": "string"
+              },
+              "party_snapshot_json": {
+                "type": "string"
+              },
+              "plan_hash": {
+                "type": "string"
+              },
+              "actor": {
+                "type": "string"
+              },
+              "principal": {
+                "type": "string"
+              },
+              "created_at": {
+                "type": "string"
+              },
+              "id": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9223372036854775807
+              },
+              "reason": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "idempotency_key": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "party_id",
+              "party_role",
+              "event_type",
+              "evidence_kind",
+              "evidence_json",
+              "document_sha256",
+              "document_payload_sha256",
+              "party_snapshot_json",
+              "plan_hash",
+              "actor",
+              "principal",
+              "created_at",
+              "id",
+              "reason",
+              "idempotency_key"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "ok",
+        "links"
+      ],
+      "additionalProperties": false
+    },
+    "PartyApplyNativeResultHttp": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "id": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9223372036854775807
+        },
+        "idempotent": {
+          "type": "boolean"
+        },
+        "planHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "minLength": 64,
+          "maxLength": 64
+        }
+      },
+      "required": [
+        "ok",
+        "id",
+        "idempotent",
+        "planHash"
+      ],
+      "additionalProperties": false
+    },
+    "PartyApplyResultHttp": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "id": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9223372036854775807
+        },
+        "idempotent": {
+          "type": "boolean"
+        },
+        "planHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "minLength": 64,
+          "maxLength": 64
+        }
+      },
+      "required": [
+        "ok",
+        "id",
+        "idempotent",
+        "planHash"
+      ],
+      "additionalProperties": false
+    },
+    "PartyInternalNativeResultHttp": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "id": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9223372036854775807
+        },
+        "idempotent": {
+          "type": "boolean"
+        },
+        "decisionHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "minLength": 64,
+          "maxLength": 64
+        }
+      },
+      "required": [
+        "ok",
+        "id",
+        "idempotent",
+        "decisionHash"
+      ],
+      "additionalProperties": false
+    },
+    "PartyInternalResultHttp": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "id": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9223372036854775807
+        },
+        "idempotent": {
+          "type": "boolean"
+        },
+        "decisionHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "minLength": 64,
+          "maxLength": 64
+        }
+      },
+      "required": [
+        "ok",
+        "id",
+        "idempotent",
+        "decisionHash"
+      ],
+      "additionalProperties": false
+    },
+    "PartySupersedeNativeResultHttp": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "id": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9223372036854775807
+        },
+        "idempotent": {
+          "type": "boolean"
+        },
+        "planHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "minLength": 64,
+          "maxLength": 64
+        }
+      },
+      "required": [
+        "ok",
+        "id",
+        "idempotent",
+        "planHash"
+      ],
+      "additionalProperties": false
+    },
+    "PartySupersedeResultHttp": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "id": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9223372036854775807
+        },
+        "idempotent": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "ok",
+        "id",
+        "idempotent"
+      ],
+      "additionalProperties": false
+    },
+    "PartyInternalSupersedeNativeResultHttp": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "id": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9223372036854775807
+        },
+        "idempotent": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "ok",
+        "id",
+        "idempotent"
+      ],
+      "additionalProperties": false
+    },
+    "PartyInternalSupersedeResultHttp": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "id": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9223372036854775807
+        },
+        "idempotent": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "ok",
+        "id",
+        "idempotent"
       ],
       "additionalProperties": false
     }

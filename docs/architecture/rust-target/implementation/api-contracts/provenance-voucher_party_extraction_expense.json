@@ -271,5 +271,11 @@
     }
   ],
   "method": "Graphify query first; current global preprocessors/dispatch/HTTP admission/adapters/storage producers read directly. Source-only strict Python validation; no runtime/effect replay. Producer shapes are distinct from permissive SDK readers and advertised schemas.",
-  "scope": "Only frozen52 selected identities. Prior212 accepted operations untouched. Whole677/all55/J01-J07/manual desktop/release/cutover/retirement remain; parent semantic integration and acceptance required."
+  "scope": "Only frozen52 selected identities. Prior212 accepted operations untouched. Whole677/all55/J01-J07/manual desktop/release/cutover/retirement remain; parent semantic integration and acceptance required.",
+  "leadSemanticCorrections": [
+    "defaulted customString actor tuple1..2",
+    "native CLI false-core refusal",
+    "positive i64 raw HTTP event IDs distinct from safe originalSDK",
+    "bounded Session IDs/null framing and selected RPCmessage reachability"
+  ]
 }
