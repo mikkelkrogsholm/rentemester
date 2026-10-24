@@ -161,6 +161,30 @@ fn validate(root: &Path, c: &mut Connection, l: &mut Connection, g: &mut Namespa
         };
         assert_eq!(l.query_row::<i64,_,_>("SELECT count(*) FROM audit_log WHERE event_type=?1 AND entity_id=?2 AND actor='user:u'",rusqlite::params![event,id.to_string()],|r|r.get(0)).unwrap(),1);
         if kind == "issued_invoice" {
+            let (number, encoded): (String, String) = l
+                .query_row(
+                    "SELECT invoice_no,payload_json FROM documents WHERE id=?1",
+                    [id],
+                    |r| Ok((r.get(0)?, r.get(1)?)),
+                )
+                .unwrap();
+            let payload: Value = serde_json::from_str(&encoded).unwrap();
+            assert_eq!(serde_json::from_slice::<Value>(&bytes).unwrap(), payload);
+            assert_eq!(payload["invoiceNumber"].as_str(), Some(number.as_str()));
+            let pdfs: Vec<(String, String)> = l
+                .prepare("SELECT stored_path,payload_json FROM documents WHERE document_type='issued_invoice_pdf' AND invoice_no=?1")
+                .unwrap()
+                .query_map([&number], |r| Ok((r.get(0)?, r.get(1)?)))
+                .unwrap()
+                .map(Result::unwrap)
+                .collect();
+            assert_eq!(pdfs.len(), 1, "each invoice has exactly one PDF");
+            assert_eq!(serde_json::from_str::<Value>(&pdfs[0].1).unwrap(), payload);
+            assert_eq!(
+                std::fs::read(root.join("a").join(&pdfs[0].0)).unwrap(),
+                rentemester_engine::invoice_pdf::build(&payload),
+                "PDF must represent the same immutable invoice payload"
+            );
             let b = json!({"confirm":true,"documentId":id});
             assert!(matches!(
                 run(c, l, g, Action::Lifecycle(Kind::Render, &b)),
