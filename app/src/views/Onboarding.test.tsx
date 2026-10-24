@@ -28,3 +28,15 @@ describe("Onboarding — first run", () => {
     expect(scope.textContent).toMatch(/bilag/i);
   });
 });
+
+test("points the new owner to existing balance and backup panels without conflating verification and restore", () => {
+  renderAt(<Onboarding onCreated={() => {}} />);
+  const scope = screen.getByText(/bogføre direkte i cockpittet/i);
+  expect(scope).toHaveTextContent(/Åbningsbalance under virksomhedens Administrér-side/);
+  expect(scope).toHaveTextContent(/Under Integritet.*Hent workspace-backup.*Vis backupdestinationer/);
+  expect(scope).toHaveTextContent(/konfigureret af serverens administrator/);
+  expect(scope).not.toHaveTextContent(/backup-destinationer og start-saldi.*via kommandolinjen/);
+  const verification = screen.getByText(/Efter eksport kontrollerer du filen/);
+  expect(verification).toHaveTextContent(/desktopappens menu Backup → Kontrollér eksporteret backup….*separat betroet offentlig nøgle/);
+  expect(verification).toHaveTextContent(/erstatter ikke en gendannelsesprøve.*genoprettelse af login/);
+});
