@@ -95,7 +95,7 @@ fn parse(args: &[String]) -> Result<BTreeMap<&str, &str>, Output> {
         rentemester_client::ApiClient::new(s, f.contains_key("--allow-loopback-http"), None)
             .map_err(|_| usage("Invalid explicit server origin"))?;
     }
-    for k in ["--from-party-id", "--into-party-id", "--actor"] {
+    for k in ["--from-party-id", "--actor"] {
         if let Some(v) = f.get(k) {
             if !text(v, if k == "--actor" { 160 } else { 64 }) || matches!(*v, "." | "..") {
                 return Err(usage("Invalid bounded identifier"));
@@ -107,10 +107,16 @@ fn parse(args: &[String]) -> Result<BTreeMap<&str, &str>, Output> {
     {
         return Err(usage("Actor must assert current user:ID"));
     }
-    if f.get("--review-assertion")
-        .is_some_and(|v| v.trim().is_empty() || v.encode_utf16().count() > 500)
-    {
-        return Err(usage("Review assertion required within500 UTF16 units"));
+    for (key, max) in [("--into-party-id", 64), ("--review-assertion", 500)] {
+        if let Some(v) = f.get(key) {
+            let value = rentemester_engine::parties::bounded(v, max)
+                .map_err(|_| usage("Bounded nonblank merge text required"))?;
+            if key == "--into-party-id"
+                && (value.chars().any(char::is_control) || matches!(value.as_str(), "." | ".."))
+            {
+                return Err(usage("Invalid target party identifier"));
+            }
+        }
     }
     if f.get("--proposal-hash").is_some_and(|v| {
         v.len() != 64

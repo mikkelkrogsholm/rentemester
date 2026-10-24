@@ -128,19 +128,24 @@ impl ApiClient {
         let mut value: Value = serde_json::from_slice(&bytes)
             .map_err(|_| Error::InvalidInput("native party JSON object required"))?;
         if let PartyMutation::ProposeMerge(id) = &action {
-            let target = value["intoPartyId"]
-                .as_str()
-                .ok_or(Error::InvalidInput("target required"))?;
-            id_segment(target)?;
-            if target == id
-                || !value["reviewAssertion"]
-                    .as_str()
-                    .is_some_and(|s| !s.trim().is_empty() && s.encode_utf16().count() <= 500)
-            {
-                return Err(Error::InvalidInput(
-                    "distinct target and bounded review required",
-                ));
+            let bounded = |key: &str, max| {
+                rentemester_engine::parties::bounded(
+                    value[key]
+                        .as_str()
+                        .ok_or(Error::InvalidInput("merge text required"))?,
+                    max,
+                )
+                .map_err(|_| Error::InvalidInput("bounded merge text required"))
+            };
+            let target = bounded("intoPartyId", 64)?;
+            let review = bounded("reviewAssertion", 500)?;
+            id_segment(&target)?;
+            if target == *id {
+                return Err(Error::InvalidInput("distinct merge target required"));
             }
+            // Validate the same canonical strings as the server, while sending the original bytes.
+            value["intoPartyId"] = json!(target);
+            value["reviewAssertion"] = json!(review);
         }
         if matches!(action, PartyMutation::ApproveMerge(_)) && !merge_hash(&value["proposalHash"]) {
             return Err(Error::InvalidInput(
@@ -206,7 +211,7 @@ impl ApiClient {
             let valid = result["ok"] == true
                 && if suffix.ends_with("/propose-merge") {
                     use sha2::{Digest, Sha256};
-                    let payload = json!({"intoPartyId":value["intoPartyId"],"reviewAssertion":value["reviewAssertion"].as_str().unwrap().trim()});
+                    let payload = json!({"intoPartyId":value["intoPartyId"],"reviewAssertion":value["reviewAssertion"]});
                     let expected = format!(
                         "{:x}",
                         Sha256::digest(serde_json::to_vec(&payload).unwrap())

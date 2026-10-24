@@ -247,7 +247,20 @@ fn original_and_native_success_exact_flat_json_human_current_actor() {
             true,
         );
         assert!(out.status.success());
-        assert!(String::from_utf8_lossy(&out.stdout).starts_with("✔ "));
+        let label = if op == "propose" {
+            "Foreslår, men udfører aldrig automatisk, en kanonisk partssammenslutning."
+        } else {
+            "Godkender og supersederer den præcise foreslåede partsrelation append-only."
+        };
+        let heading = if label.chars().count() > 60 {
+            format!("{}…", label.chars().take(57).collect::<String>().trim_end())
+        } else {
+            label.into()
+        };
+        assert_eq!(
+            String::from_utf8_lossy(&out.stdout),
+            format!("✔ {heading}\n")
+        );
         assert_eq!(requests.len(), 1);
         let (out, requests) = observe(op, reply(op), 200, &["--actor=user:other"], false, true);
         assert_eq!(out.status.code(), Some(2));
