@@ -1761,7 +1761,7 @@
               "const": false
             },
             "delivery": {
-              "$ref": "schemas-delivery_recurring_http.json#/$defs/AnyDelivery"
+              "$ref": "schemas-delivery_recurring_http.json#/$defs/UnknownDelivery"
             },
             "code": {
               "const": "delivery_unknown"
@@ -1785,7 +1785,7 @@
               "const": false
             },
             "delivery": {
-              "$ref": "schemas-delivery_recurring_http.json#/$defs/AnyDelivery"
+              "$ref": "schemas-delivery_recurring_http.json#/$defs/UnknownDelivery"
             },
             "code": {
               "const": "delivery_unknown"
@@ -1830,7 +1830,7 @@
               "const": false
             },
             "delivery": {
-              "$ref": "schemas-delivery_recurring_http.json#/$defs/AnyDelivery"
+              "$ref": "schemas-delivery_recurring_http.json#/$defs/RefusedDelivery"
             },
             "code": {
               "const": "delivery_refused"
@@ -1854,7 +1854,7 @@
               "const": false
             },
             "delivery": {
-              "$ref": "schemas-delivery_recurring_http.json#/$defs/AnyDelivery"
+              "$ref": "schemas-delivery_recurring_http.json#/$defs/RefusedDelivery"
             },
             "code": {
               "const": "delivery_refused"
@@ -2039,6 +2039,660 @@
         "remainingGenerations"
       ],
       "additionalProperties": false
+    },
+    "AcceptedDelivery": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "invoiceDocumentId": {
+              "type": "integer"
+            },
+            "invoiceNumber": {
+              "type": "string"
+            },
+            "kind": {
+              "type": "string"
+            },
+            "recipient": {
+              "type": "string"
+            },
+            "subject": {
+              "type": "string"
+            },
+            "messageId": {
+              "type": "string"
+            },
+            "bodySha256": {
+              "type": "string"
+            },
+            "pdfSha256": {
+              "type": "string"
+            },
+            "state": {
+              "const": "accepted"
+            },
+            "stateHash": {
+              "type": "string"
+            },
+            "attemptId": {
+              "type": "string"
+            },
+            "humanResolution": {
+              "type": "boolean"
+            },
+            "history": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "eventType": {
+                    "type": "string"
+                  },
+                  "attemptId": {
+                    "type": "string"
+                  },
+                  "attemptIndex": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 4294967295
+                  },
+                  "at": {
+                    "type": "string"
+                  },
+                  "actor": {
+                    "type": "string"
+                  },
+                  "stateHash": {
+                    "type": "string"
+                  },
+                  "reason": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "evidence": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "resolution": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "jsonSha256": {
+                    "type": "string"
+                  },
+                  "pdfSha256": {
+                    "type": "string"
+                  },
+                  "bodySha256": {
+                    "type": "string"
+                  },
+                  "senderIdentity": {
+                    "type": "object",
+                    "properties": {
+                      "host": {
+                        "type": "string"
+                      },
+                      "port": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 65535
+                      },
+                      "fromAddress": {
+                        "type": "string"
+                      },
+                      "fromName": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      }
+                    },
+                    "required": [
+                      "host",
+                      "port",
+                      "fromAddress",
+                      "fromName"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "eventType",
+                  "attemptId",
+                  "attemptIndex",
+                  "at",
+                  "actor",
+                  "stateHash",
+                  "reason",
+                  "evidence",
+                  "resolution",
+                  "jsonSha256",
+                  "pdfSha256",
+                  "bodySha256",
+                  "senderIdentity"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "duplicate": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "invoiceDocumentId",
+            "invoiceNumber",
+            "kind",
+            "recipient",
+            "subject",
+            "messageId",
+            "bodySha256",
+            "pdfSha256",
+            "state",
+            "stateHash",
+            "attemptId",
+            "humanResolution",
+            "history",
+            "duplicate"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "$ref": "schemas-delivery_recurring_http.json#/$defs/LegacyDelivery"
+        }
+      ]
+    },
+    "UnknownDelivery": {
+      "type": "object",
+      "properties": {
+        "invoiceDocumentId": {
+          "type": "integer"
+        },
+        "invoiceNumber": {
+          "type": "string"
+        },
+        "kind": {
+          "type": "string"
+        },
+        "recipient": {
+          "type": "string"
+        },
+        "subject": {
+          "type": "string"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "bodySha256": {
+          "type": "string"
+        },
+        "pdfSha256": {
+          "type": "string"
+        },
+        "state": {
+          "const": "unknown"
+        },
+        "stateHash": {
+          "type": "string"
+        },
+        "attemptId": {
+          "type": "string"
+        },
+        "humanResolution": {
+          "type": "boolean"
+        },
+        "history": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "eventType": {
+                "type": "string"
+              },
+              "attemptId": {
+                "type": "string"
+              },
+              "attemptIndex": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 4294967295
+              },
+              "at": {
+                "type": "string"
+              },
+              "actor": {
+                "type": "string"
+              },
+              "stateHash": {
+                "type": "string"
+              },
+              "reason": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "evidence": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "resolution": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "jsonSha256": {
+                "type": "string"
+              },
+              "pdfSha256": {
+                "type": "string"
+              },
+              "bodySha256": {
+                "type": "string"
+              },
+              "senderIdentity": {
+                "type": "object",
+                "properties": {
+                  "host": {
+                    "type": "string"
+                  },
+                  "port": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 65535
+                  },
+                  "fromAddress": {
+                    "type": "string"
+                  },
+                  "fromName": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "host",
+                  "port",
+                  "fromAddress",
+                  "fromName"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "eventType",
+              "attemptId",
+              "attemptIndex",
+              "at",
+              "actor",
+              "stateHash",
+              "reason",
+              "evidence",
+              "resolution",
+              "jsonSha256",
+              "pdfSha256",
+              "bodySha256",
+              "senderIdentity"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "duplicate": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "invoiceDocumentId",
+        "invoiceNumber",
+        "kind",
+        "recipient",
+        "subject",
+        "messageId",
+        "bodySha256",
+        "pdfSha256",
+        "state",
+        "stateHash",
+        "attemptId",
+        "humanResolution",
+        "history",
+        "duplicate"
+      ],
+      "additionalProperties": false
+    },
+    "RefusedDelivery": {
+      "type": "object",
+      "properties": {
+        "invoiceDocumentId": {
+          "type": "integer"
+        },
+        "invoiceNumber": {
+          "type": "string"
+        },
+        "kind": {
+          "type": "string"
+        },
+        "recipient": {
+          "type": "string"
+        },
+        "subject": {
+          "type": "string"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "bodySha256": {
+          "type": "string"
+        },
+        "pdfSha256": {
+          "type": "string"
+        },
+        "state": {
+          "const": "refused"
+        },
+        "stateHash": {
+          "type": "string"
+        },
+        "attemptId": {
+          "type": "string"
+        },
+        "humanResolution": {
+          "type": "boolean"
+        },
+        "history": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "eventType": {
+                "type": "string"
+              },
+              "attemptId": {
+                "type": "string"
+              },
+              "attemptIndex": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 4294967295
+              },
+              "at": {
+                "type": "string"
+              },
+              "actor": {
+                "type": "string"
+              },
+              "stateHash": {
+                "type": "string"
+              },
+              "reason": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "evidence": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "resolution": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "jsonSha256": {
+                "type": "string"
+              },
+              "pdfSha256": {
+                "type": "string"
+              },
+              "bodySha256": {
+                "type": "string"
+              },
+              "senderIdentity": {
+                "type": "object",
+                "properties": {
+                  "host": {
+                    "type": "string"
+                  },
+                  "port": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 65535
+                  },
+                  "fromAddress": {
+                    "type": "string"
+                  },
+                  "fromName": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "host",
+                  "port",
+                  "fromAddress",
+                  "fromName"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "eventType",
+              "attemptId",
+              "attemptIndex",
+              "at",
+              "actor",
+              "stateHash",
+              "reason",
+              "evidence",
+              "resolution",
+              "jsonSha256",
+              "pdfSha256",
+              "bodySha256",
+              "senderIdentity"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "duplicate": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "invoiceDocumentId",
+        "invoiceNumber",
+        "kind",
+        "recipient",
+        "subject",
+        "messageId",
+        "bodySha256",
+        "pdfSha256",
+        "state",
+        "stateHash",
+        "attemptId",
+        "humanResolution",
+        "history",
+        "duplicate"
+      ],
+      "additionalProperties": false
+    },
+    "EmailSendResult": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "delivery": {
+              "$ref": "schemas-delivery_recurring_http.json#/$defs/AcceptedDelivery"
+            }
+          },
+          "required": [
+            "ok",
+            "delivery"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "delivery": {
+              "$ref": "schemas-delivery_recurring_http.json#/$defs/AcceptedDelivery"
+            },
+            "usage": {
+              "enum": [
+                "not_committed",
+                "outcome_unknown",
+                "committed"
+              ]
+            },
+            "business": {
+              "enum": [
+                "not_attempted",
+                "not_committed",
+                "outcome_unknown",
+                "committed"
+              ]
+            }
+          },
+          "required": [
+            "ok",
+            "delivery",
+            "usage",
+            "business"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "ReconciledDelivery": {
+      "oneOf": [
+        {
+          "$ref": "schemas-delivery_recurring_http.json#/$defs/AcceptedDelivery"
+        },
+        {
+          "$ref": "schemas-delivery_recurring_http.json#/$defs/RefusedDelivery"
+        }
+      ]
+    },
+    "EmailReconcileResult": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "delivery": {
+              "$ref": "schemas-delivery_recurring_http.json#/$defs/ReconciledDelivery"
+            }
+          },
+          "required": [
+            "ok",
+            "delivery"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "delivery": {
+              "$ref": "schemas-delivery_recurring_http.json#/$defs/ReconciledDelivery"
+            },
+            "usage": {
+              "enum": [
+                "not_committed",
+                "outcome_unknown",
+                "committed"
+              ]
+            },
+            "business": {
+              "enum": [
+                "not_attempted",
+                "not_committed",
+                "outcome_unknown",
+                "committed"
+              ]
+            }
+          },
+          "required": [
+            "ok",
+            "delivery",
+            "usage",
+            "business"
+          ],
+          "additionalProperties": false
+        }
+      ]
     }
   }
 }

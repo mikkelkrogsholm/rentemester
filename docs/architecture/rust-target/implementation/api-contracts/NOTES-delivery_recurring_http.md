@@ -25,3 +25,5 @@ The global workspace runner is phased, not all-or-nothing: skipped companies, ev
 Source-only work: no Cargo, running server, browser, network, provider, SMTP/IMAP, mail, financial, consent, job or authentication effects. Existing #692/#709/#711/R44 evidence remains at its actual scope without replay. Accepted 17765f15 sales HEAD and 169606f1 recurring HEAD guards and existing ten-fixture RED/GREEN evidence are retained; no HEAD requests were tested against a live ledger.
 
 The finite oracle validates selection, current source hashes, resolved schemas and all eight fields. It does not replace the parent's actual-callchain semantic review or whole-issue acceptance. Graph extraction uses the independent worker build directory, not the shared graph.
+
+Lead source review binds HTTP status to delivery state: send/retry200 accepted only; reconcile200 accepted/refused;409 unknown only;422 delivery_refused refused only. This is a schema correction, with no runtime effects.
