@@ -1,0 +1,304 @@
+{
+  "partition": "review_rules_drafts",
+  "workIssue": 677,
+  "method": "Graphify query first; actual source callchain verification only; no runtime/effect probes.",
+  "sourceRefs": [
+    {
+      "path": "crates/rentemester-application/src/accounting_draft_original.rs",
+      "sha256": "b878ed31d0ca205475b9927e282f778582cc0c9e0ef6948babbeabc8223de139",
+      "needle": "pub fn write(op: Operation) -> bool {"
+    },
+    {
+      "path": "crates/rentemester-application/src/control_fence.rs",
+      "sha256": "e5b1f8902693d649fc1a46e0c66dc902622781f2c9f65e051e6ed7df11e1ffa6",
+      "needle": "fn error(code: &'static str) -> Error {"
+    },
+    {
+      "path": "crates/rentemester-application/src/posting_rules_original.rs",
+      "sha256": "4e5b7648627527039bf519ef28e25887ab476e9052f569bc87875c671407b030",
+      "needle": "pub fn write(op: Operation) -> bool {"
+    },
+    {
+      "path": "crates/rentemester-application/src/reviewed_bookkeeping.rs",
+      "sha256": "b3d814ba9c8327e6ed6b01eb4de1aced67eb44d01b68d6d7596ddffcaf61caea",
+      "needle": "pub fn execute("
+    },
+    {
+      "path": "crates/rentemester-application/src/service_company.rs",
+      "sha256": "f3da2c262feb5be6d0394e5693827fa7a1af4b839588956ea4a89e2110abf75e",
+      "needle": "pub fn validate_post_input(input: &journal_post::Input) -> Result<(), Error> {"
+    },
+    {
+      "path": "crates/rentemester-cli/src/accounting_draft_original.rs",
+      "sha256": "195493b9cf8ddcaba3815bc78a735ccbfc8ea7a51c65b6780c0a8289bc6a3d24",
+      "needle": "fn operation(s: &str) -> Option<Op> {"
+    },
+    {
+      "path": "crates/rentemester-cli/src/local_binding.rs",
+      "sha256": "94d26249352df53d80d468019ee93e1353394db4ce1c6728491fa6c4e2589dfd",
+      "needle": "fn usage(message: &str) -> (u8, Error) {"
+    },
+    {
+      "path": "crates/rentemester-cli/src/main.rs",
+      "sha256": "54af368bcb6d626d1ac0378727f6a34761244a21a86b6f5d67e47c27c8f432a6",
+      "needle": "fn run(args: Vec<String>) -> Result<serde_json::Value, (u8, Error)> {"
+    },
+    {
+      "path": "crates/rentemester-cli/src/original_args.rs",
+      "sha256": "2c8c75a6d4176182e5c0871941d9979b1a15d6848c70b7b281cade3927355a74",
+      "needle": "pub fn option(token: &str) -> (&str, Option<&str>) {"
+    },
+    {
+      "path": "crates/rentemester-cli/src/original_discovery.rs",
+      "sha256": "9f53986d854b08be50b439ee9ed7cd666249966a1a11b5dbb21308f325ced2f3",
+      "needle": "pub fn help() -> Value {"
+    },
+    {
+      "path": "crates/rentemester-cli/src/posting_rules_original.rs",
+      "sha256": "97d8bd02dd558547eebeb3478e5f05eb3b8bb3910bf412b46fadb4af729af681",
+      "needle": "pub fn accepts(args: &[String]) -> bool {"
+    },
+    {
+      "path": "crates/rentemester-cli/src/remote.rs",
+      "sha256": "9a0d2ee8c626321459749c22642936ad07f9934a4e47eb3c4dc90ad18c7d2e91",
+      "needle": "fn invalid(message: &str) -> Failure {"
+    },
+    {
+      "path": "crates/rentemester-cli/src/reviewed_bookkeeping.rs",
+      "sha256": "be89b68db1a7c5003ab67f9b705e6ed3c017f18502df4c66ac770f14555fecfe",
+      "needle": "fn invalid(s: &str) -> Failure {"
+    },
+    {
+      "path": "crates/rentemester-client/src/accounting_draft_original.rs",
+      "sha256": "fd3d49f4afa15657d3e54159e0d976369fcfd80e24718bd6ffe99d73d074e6d3",
+      "needle": "fn id(v: &Value) -> bool {"
+    },
+    {
+      "path": "crates/rentemester-client/src/credentials.rs",
+      "sha256": "4f304ef30b4c5382ffcbffb2c1b016e894212a1c8fb4fd9871433c7e4fe1da65",
+      "needle": "pub fn read_cookie_file(path: &Path) -> Result<String, Error> {"
+    },
+    {
+      "path": "crates/rentemester-client/src/domain.rs",
+      "sha256": "c2c71c4a8f5be36433e578ed9722f633dacc289cc41b5011d63f2cf7b47c76bb",
+      "needle": "pub(crate) fn object(properties: Value, required: &[&str]) -> Value {"
+    },
+    {
+      "path": "crates/rentemester-client/src/lib.rs",
+      "sha256": "89c8bc77a2081400d8915cbb988d81be0f349a0bc9487ce687dc3ae3de75accd",
+      "needle": "fn company_path(company: &str, resource: &str) -> Result<String, Error> {"
+    },
+    {
+      "path": "crates/rentemester-client/src/local_runtime.rs",
+      "sha256": "87a1c5dad81d21a8e067d4c701f57868210c086a5628c06ee1fbb40110874b7b",
+      "needle": "fn invalid() -> Error {"
+    },
+    {
+      "path": "crates/rentemester-client/src/posting_rules_original.rs",
+      "sha256": "4479d0e18be6be10228a3299e279af684eaa390dc17aa673a1cd8948ddddc883",
+      "needle": "fn object(p: Value, r: &[&str]) -> Value {"
+    },
+    {
+      "path": "crates/rentemester-client/src/protocol.rs",
+      "sha256": "2e31730d5ec64d9a2f21a91559c0a68e3c51e5c4176a013d000e3915f59b5108",
+      "needle": "fn valid_path(path: &str) -> bool {"
+    },
+    {
+      "path": "crates/rentemester-client/src/reviewed_bookkeeping.rs",
+      "sha256": "29eee105055dab313391c4a5cd055673b275ce93113193ca46cbb469d4262871",
+      "needle": "pub fn valid_draft_id(id: &str) -> bool {"
+    },
+    {
+      "path": "crates/rentemester-host/src/accounting_draft_original.rs",
+      "sha256": "9de636ceef22ea4c456ac67bb4f13ddc981ceddba00c6800166dfca2a1745c1b",
+      "needle": "//! Original accounting_draft on the admitted current Owner namespace."
+    },
+    {
+      "path": "crates/rentemester-host/src/lib.rs",
+      "sha256": "29e700859157eee32bfab98faeb122abbd2d830edbe6e84b2983eaac4fc324cd",
+      "needle": "//! Private physical ownership under explicit Linux-broker or macOS-local profiles."
+    },
+    {
+      "path": "crates/rentemester-host/src/posting_rules_original.rs",
+      "sha256": "ee327f59708ebb179a351931a312294d1d30cc5d40f785337eeefa2e8b563d6d",
+      "needle": "//! Original posting_rules on the admitted current Owner namespace."
+    },
+    {
+      "path": "crates/rentemester-mcp/src/main.rs",
+      "sha256": "db7b771d69e02d3802906d65437dad8523fd9114ae15e7d3ef33dc696d4e831f",
+      "needle": "fn help() -> &'static str {"
+    },
+    {
+      "path": "crates/rentemester-mcp/src/posting_rules_original.rs",
+      "sha256": "369ee1b50b0c8c28b2b024bebf1360830be7aaae55552ccd7e8d4cb94f86a0e6",
+      "needle": "pub fn accepts(name: &str) -> bool {"
+    },
+    {
+      "path": "crates/rentemester-mcp/src/reviewed_bookkeeping.rs",
+      "sha256": "9a875464844d621616a3105e93c20b28a5c61b533cc52e3b1b04e6cb7b9d7c5a",
+      "needle": "pub fn accepts(name: &str) -> bool {"
+    },
+    {
+      "path": "crates/rentemester-mcp/src/tools.rs",
+      "sha256": "8035dc45f8d22d902c18e17b4508ca572f8505dc83a1961fa355dfd1f34c1397",
+      "needle": "pub fn list() -> Value {"
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http.rs",
+      "sha256": "d008f013390a87c467b929b094abb4e23cc9921a72a2665d8df4d4dcbc537390",
+      "needle": "pub fn router(native: Arc<Backend>, origin: &str) -> Router {"
+    },
+    {
+      "path": "crates/rentemester-server/src/protocol.rs",
+      "sha256": "e1076ab2b8185b48c03017658c75ef3a01b9abacdb75843f64cef4adfc6da38c",
+      "needle": "pub fn install(router: Router, connected: bool) -> Router {"
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http/accounting_draft_original.rs",
+      "sha256": "3a0a9576e1f71448f606694ca7db87fb3c562d3a45aedccd22aeb10eaf370e05",
+      "needle": "fn domain_error(code: &str, unknown: bool) -> Response {"
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http/posting_rules_original.rs",
+      "sha256": "81fdcee88098c55d45e844caf11c0dff86d5d570bf2eb8f90a2999be235c58bf",
+      "needle": "fn domain_error(code: &str, unknown: bool) -> Response {"
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http/reviewed_bookkeeping.rs",
+      "sha256": "498b9afd4bb6cd7b1aa18549c64d8e2094d0fc8acd394405b0ed3ab49b5c75e9",
+      "needle": "pub(super) async fn handle(State(state): State<Product>, request: Request) -> Response {"
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http/documents.rs",
+      "sha256": "d6a25bf8f5b30b338a2734805d5a5219ed9bb8de118eeb491ad849df057d5acc",
+      "needle": "pub(super) fn credential("
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http/service_company.rs",
+      "sha256": "05a672ed51a2c952aba3f7d40ca15bcb0295fdcb907659f84e48dccf79100741",
+      "needle": "pub(super) fn requested(request: &Request) -> bool {"
+    },
+    {
+      "path": "crates/rentemester-storage/src/accounting_draft_original.rs",
+      "sha256": "f18032b4c7bc5a27e6885fc6f097e22f3e2c46d87c426db6e03efa63b7e40e05",
+      "needle": "fn usage(message: &str) -> Error {"
+    },
+    {
+      "path": "crates/rentemester-storage/src/accounting_drafts.rs",
+      "sha256": "0e48c4882796309a38a1781a9de038d1e2f6b8163877af387a33e53754824f27",
+      "needle": "pub fn refused(message: impl Into<String>) -> Error {"
+    },
+    {
+      "path": "crates/rentemester-storage/src/posting_rules.rs",
+      "sha256": "e512b96dbe3866fb694e2fc74a6642a4a0ce48554b3f5e5fe114601304c98233",
+      "needle": "fn text(s: &str, max: usize) -> Result<(), Error> {"
+    },
+    {
+      "path": "crates/rentemester-storage/src/posting_rules_original.rs",
+      "sha256": "c3f594cbbb42d76013ef1663b4a326a6dc01a80cafcd6d87da7d7b7fa0005498",
+      "needle": "fn object<'a>(v: &'a Value, allowed: &[&str]) -> Result<&'a serde_json::Map<String, Value>, Error> {"
+    },
+    {
+      "path": "crates/rentemester-storage/src/bookkeeping_queue.rs",
+      "sha256": "c6d9cb372125e5e386e3abd3797f14304eca303b2d3416d46ac235b19e5b8cca",
+      "needle": "pub fn read(tx: &Transaction<'_>) -> Result<Value, Error> {"
+    },
+    {
+      "path": "crates/rentemester-storage/src/journal_post.rs",
+      "sha256": "88bf4e4ebf8e8181394913ccd1568655f81cebf76f03baaff8cda367e5ef7465",
+      "needle": "fn failed(_: impl std::fmt::Display) -> Error {"
+    },
+    {
+      "path": "crates/rentemester-engine/src/manual_journal.rs",
+      "sha256": "04b7b758b0be477d99ae5f9e8f633960ef2a19c5f4662555a1d7606b7d829044",
+      "needle": "fn trim_js(value: &str) -> &str {"
+    },
+    {
+      "path": "crates/rentemester-engine/src/money.rs",
+      "sha256": "5d69282ed77ea59f98a9af6bf492427f8f3d478f654712cbfb3b36222fdd661f",
+      "needle": "use crate::Error;"
+    },
+    {
+      "path": "crates/rentemester-engine/src/fx.rs",
+      "sha256": "05fab9a06778a9de1f7e051f949bde836d060c3ad6d00c76ee27f1aa5bdbe486",
+      "needle": "//! Positive fixed-six rate values. Quote/currency identity and journal policy are caller context."
+    },
+    {
+      "path": "crates/rentemester-engine/src/identifiers.rs",
+      "sha256": "530e4467ea2f2e7bb2e0fcdd9969fa82b60b407a6d4a889e7b285caf49ec1854",
+      "needle": "//! Nominal exact SQLite references. Zero/negative existing row IDs are not absence."
+    },
+    {
+      "path": "crates/rentemester-engine/src/decimal.rs",
+      "sha256": "3e0230c5bc6a22e9ab35a5061efb9fe834d99eca23828818b3de42d018599978",
+      "needle": "pub(crate) fn shift(value: &str, power: i32) -> Result<String, Error> {"
+    },
+    {
+      "path": "protocol/http-v1.json",
+      "sha256": "bd6a775bbe936332a718ee5b56b57ad3c40ac9bc35f8159219bb06d0313d3d15",
+      "needle": "{"
+    }
+  ],
+  "selectedIds": [
+    "http:GET /api/companies/{slug}/accounting-drafts",
+    "http:HEAD /api/companies/{slug}/accounting-drafts",
+    "http:POST /api/companies/{slug}/accounting-drafts",
+    "http:POST /api/companies/{slug}/accounting-drafts/{id}/{action}",
+    "http:POST /api/companies/{slug}/original/accounting-draft/approve-and-post",
+    "http:POST /api/companies/{slug}/original/accounting-draft/create",
+    "http:GET /api/companies/{slug}/original/accounting-draft/list",
+    "http:HEAD /api/companies/{slug}/original/accounting-draft/list",
+    "http:POST /api/companies/{slug}/original/accounting-draft/reject",
+    "http:POST /api/companies/{slug}/original/accounting-draft/revise",
+    "http:GET /api/companies/{slug}/original/accounting-draft/show",
+    "http:HEAD /api/companies/{slug}/original/accounting-draft/show",
+    "http:POST /api/companies/{slug}/original/accounting-draft/submit",
+    "http:POST /api/companies/{slug}/original/posting-rules/approve",
+    "http:POST /api/companies/{slug}/original/posting-rules/disable",
+    "http:POST /api/companies/{slug}/original/posting-rules/explain",
+    "http:POST /api/companies/{slug}/original/posting-rules/propose",
+    "http:POST /api/companies/{slug}/original/posting-rules/supersede",
+    "http:POST /api/companies/{slug}/original/posting-rules/test",
+    "http:GET /api/companies/{slug}/posting-rules",
+    "http:HEAD /api/companies/{slug}/posting-rules",
+    "http:POST /api/companies/{slug}/posting-rules/{action}",
+    "http:GET /api/companies/{slug}/reviewed-bank",
+    "http:HEAD /api/companies/{slug}/reviewed-bank",
+    "http:POST /api/companies/{slug}/reviewed-bank",
+    "cli:remote reviewed-bank",
+    "cli:remote accounting-drafts",
+    "cli:remote posting-rules",
+    "cli:remote create-bank-draft",
+    "cli:remote submit-draft",
+    "cli:remote reject-draft",
+    "cli:remote approve-draft",
+    "cli:accounting-draft create",
+    "cli:accounting-draft revise",
+    "cli:accounting-draft submit",
+    "cli:accounting-draft reject",
+    "cli:accounting-draft approve-and-post",
+    "cli:accounting-draft show",
+    "cli:accounting-draft list",
+    "cli:posting-rules propose",
+    "cli:posting-rules approve",
+    "cli:posting-rules disable",
+    "cli:posting-rules supersede",
+    "cli:posting-rules explain",
+    "cli:posting-rules test",
+    "mcp:reviewed_bank",
+    "mcp:accounting_drafts",
+    "mcp:posting_rules",
+    "mcp:create_bank_draft",
+    "mcp:submit_draft",
+    "mcp:reject_draft",
+    "mcp:approve_draft",
+    "mcp:posting_rule_propose",
+    "mcp:posting_rule_approve",
+    "mcp:posting_rule_explain"
+  ],
+  "scope": "55 selected IDs only; main owns semantic integration/acceptance; prior212 unchanged; whole677/all55/J01-J07/manual desktop/release/cutover/retirement not closed.",
+  "checks": {
+    "strictPythonOracle": "PASS exactselected review_rules_drafts 55 resolved sourcebound schema contracts; semanticreview required; whole677 remains open",
+    "graphifyExtract": "Completed --code-only --no-cluster with independent SGD_BUILD_DIR/graphify output, 34009 nodes / 107681 edges. No generated code-scope observations."
+  }
+}

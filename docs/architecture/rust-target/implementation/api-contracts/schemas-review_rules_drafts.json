@@ -1,0 +1,6707 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "schemas-review_rules_drafts.json",
+  "$defs": {
+    "StoredJson": {
+      "x-arbitrary-json": {
+        "scope": "A nested value within retained draft payload or rule conditions/outcome only",
+        "rationale": "Read producer deserializes retained canonical JSON without restricting historical value to current creation constructor. This field is evidence, not new write authority.",
+        "sourceRefs": [
+          {
+            "path": "crates/rentemester-storage/src/accounting_drafts.rs",
+            "sha256": "0e48c4882796309a38a1781a9de038d1e2f6b8163877af387a33e53754824f27",
+            "needle": "fn state(e: &Event)"
+          },
+          {
+            "path": "crates/rentemester-storage/src/posting_rules.rs",
+            "sha256": "e512b96dbe3866fb694e2fc74a6642a4a0ce48554b3f5e5fe114601304c98233",
+            "needle": "pub fn list("
+          }
+        ]
+      },
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "number"
+        },
+        {
+          "type": "string"
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-review_rules_drafts.json#/$defs/StoredJson"
+          }
+        },
+        {
+          "type": "object",
+          "properties": {},
+          "required": [],
+          "additionalProperties": true,
+          "x-arbitrary-json": {
+            "scope": "A nested value within retained draft payload or rule conditions/outcome only",
+            "rationale": "Read producer deserializes retained canonical JSON without restricting historical value to current creation constructor. This field is evidence, not new write authority.",
+            "sourceRefs": [
+              {
+                "path": "crates/rentemester-storage/src/accounting_drafts.rs",
+                "sha256": "0e48c4882796309a38a1781a9de038d1e2f6b8163877af387a33e53754824f27",
+                "needle": "fn state(e: &Event)"
+              },
+              {
+                "path": "crates/rentemester-storage/src/posting_rules.rs",
+                "sha256": "e512b96dbe3866fb694e2fc74a6642a4a0ce48554b3f5e5fe114601304c98233",
+                "needle": "pub fn list("
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "NoBody": {
+      "type": "null",
+      "description": "No HTTP request/response body; null is documentation sentinel, never JSON null on wire."
+    },
+    "BusinessFailure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        }
+      },
+      "required": [
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Failure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "type": "string"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "outcome": {
+          "const": "unknown"
+        }
+      },
+      "required": [
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "ProtocolIncompatible": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "const": "protocol_incompatible"
+        },
+        "errors": {
+          "const": [
+            "HTTP protocol negotiation is incompatible"
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "code",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "SourceLine": {
+      "type": "object",
+      "properties": {
+        "accountNo": {
+          "type": "string"
+        },
+        "debitAmount": {
+          "type": "number"
+        },
+        "creditAmount": {
+          "type": "number"
+        },
+        "vatCode": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "text": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "accountNo"
+      ],
+      "additionalProperties": false
+    },
+    "SourcePayload": {
+      "type": "object",
+      "properties": {
+        "transactionDate": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        },
+        "currency": {
+          "type": "string"
+        },
+        "documentId": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sourceBankTransactionId": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "amountForeign": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "amountDkk": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "fxRateToDkk": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "lines": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-review_rules_drafts.json#/$defs/SourceLine"
+          }
+        }
+      },
+      "required": [
+        "transactionDate",
+        "text",
+        "lines"
+      ],
+      "additionalProperties": false
+    },
+    "NativeLine": {
+      "type": "object",
+      "properties": {
+        "accountNo": {
+          "type": "string"
+        },
+        "debitAmount": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string",
+              "pattern": "^-?(0|[1-9][0-9]*)\\.[0-9]{2}$",
+              "maxLength": 2048
+            }
+          ]
+        },
+        "creditAmount": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string",
+              "pattern": "^-?(0|[1-9][0-9]*)\\.[0-9]{2}$",
+              "maxLength": 2048
+            }
+          ]
+        },
+        "vatCode": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "text": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "accountNo"
+      ],
+      "additionalProperties": false
+    },
+    "NativePayload": {
+      "type": "object",
+      "properties": {
+        "transactionDate": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        },
+        "currency": {
+          "type": "string"
+        },
+        "documentId": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sourceBankTransactionId": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "amountForeign": {
+          "anyOf": [
+            {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "string",
+                  "pattern": "^-?(0|[1-9][0-9]*)\\.[0-9]{2}$",
+                  "maxLength": 2048
+                }
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "amountDkk": {
+          "anyOf": [
+            {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "string",
+                  "pattern": "^-?(0|[1-9][0-9]*)\\.[0-9]{2}$",
+                  "maxLength": 2048
+                }
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "fxRateToDkk": {
+          "anyOf": [
+            {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "string",
+                  "pattern": "^(0|[1-9][0-9]*)\\.[0-9]{6}$",
+                  "maxLength": 2048
+                }
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "lines": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-review_rules_drafts.json#/$defs/NativeLine"
+          }
+        }
+      },
+      "required": [
+        "transactionDate",
+        "text",
+        "lines"
+      ],
+      "additionalProperties": false
+    },
+    "JournalReceipt": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "entryId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "entryNo": {
+          "type": "string"
+        },
+        "entryHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0
+        }
+      },
+      "required": [
+        "ok",
+        "entryId",
+        "entryNo",
+        "entryHash",
+        "appliedRules",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "NativeDraftState": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "version": {
+              "const": 1
+            },
+            "status": {
+              "const": "created"
+            },
+            "payloadHash": {
+              "type": "string"
+            },
+            "eventHash": {
+              "type": "string"
+            },
+            "payload": {
+              "$ref": "schemas-review_rules_drafts.json#/$defs/StoredJson"
+            },
+            "actorId": {
+              "type": "string"
+            },
+            "reason": {
+              "type": "null"
+            },
+            "journalEntryId": {
+              "type": "null"
+            }
+          },
+          "required": [
+            "id",
+            "version",
+            "status",
+            "payloadHash",
+            "eventHash",
+            "payload",
+            "actorId",
+            "reason",
+            "journalEntryId"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "version": {
+              "type": "integer",
+              "minimum": 2,
+              "maximum": 9223372036854775807
+            },
+            "status": {
+              "const": "revised"
+            },
+            "payloadHash": {
+              "type": "string"
+            },
+            "eventHash": {
+              "type": "string"
+            },
+            "payload": {
+              "$ref": "schemas-review_rules_drafts.json#/$defs/StoredJson"
+            },
+            "actorId": {
+              "type": "string"
+            },
+            "reason": {
+              "type": "null"
+            },
+            "journalEntryId": {
+              "type": "null"
+            }
+          },
+          "required": [
+            "id",
+            "version",
+            "status",
+            "payloadHash",
+            "eventHash",
+            "payload",
+            "actorId",
+            "reason",
+            "journalEntryId"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "version": {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            "status": {
+              "const": "submitted"
+            },
+            "payloadHash": {
+              "type": "string"
+            },
+            "eventHash": {
+              "type": "string"
+            },
+            "payload": {
+              "$ref": "schemas-review_rules_drafts.json#/$defs/StoredJson"
+            },
+            "actorId": {
+              "type": "string"
+            },
+            "reason": {
+              "type": "null"
+            },
+            "journalEntryId": {
+              "type": "null"
+            }
+          },
+          "required": [
+            "id",
+            "version",
+            "status",
+            "payloadHash",
+            "eventHash",
+            "payload",
+            "actorId",
+            "reason",
+            "journalEntryId"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "version": {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            "status": {
+              "const": "rejected"
+            },
+            "payloadHash": {
+              "type": "string"
+            },
+            "eventHash": {
+              "type": "string"
+            },
+            "payload": {
+              "$ref": "schemas-review_rules_drafts.json#/$defs/StoredJson"
+            },
+            "actorId": {
+              "type": "string"
+            },
+            "reason": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 1000
+            },
+            "journalEntryId": {
+              "type": "null"
+            }
+          },
+          "required": [
+            "id",
+            "version",
+            "status",
+            "payloadHash",
+            "eventHash",
+            "payload",
+            "actorId",
+            "reason",
+            "journalEntryId"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "version": {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            "status": {
+              "const": "approved_posted"
+            },
+            "payloadHash": {
+              "type": "string"
+            },
+            "eventHash": {
+              "type": "string"
+            },
+            "payload": {
+              "$ref": "schemas-review_rules_drafts.json#/$defs/StoredJson"
+            },
+            "actorId": {
+              "type": "string"
+            },
+            "reason": {
+              "type": "null"
+            },
+            "journalEntryId": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9223372036854775807
+            }
+          },
+          "required": [
+            "id",
+            "version",
+            "status",
+            "payloadHash",
+            "eventHash",
+            "payload",
+            "actorId",
+            "reason",
+            "journalEntryId"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "OriginalDraftState": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "version": {
+              "const": 1
+            },
+            "status": {
+              "const": "created"
+            },
+            "payloadHash": {
+              "type": "string"
+            },
+            "eventHash": {
+              "type": "string"
+            },
+            "payload": {
+              "$ref": "schemas-review_rules_drafts.json#/$defs/StoredJson"
+            },
+            "actorId": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "id",
+            "version",
+            "status",
+            "payloadHash",
+            "eventHash",
+            "payload",
+            "actorId"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "version": {
+              "type": "integer",
+              "minimum": 2,
+              "maximum": 9223372036854775807
+            },
+            "status": {
+              "const": "revised"
+            },
+            "payloadHash": {
+              "type": "string"
+            },
+            "eventHash": {
+              "type": "string"
+            },
+            "payload": {
+              "$ref": "schemas-review_rules_drafts.json#/$defs/StoredJson"
+            },
+            "actorId": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "id",
+            "version",
+            "status",
+            "payloadHash",
+            "eventHash",
+            "payload",
+            "actorId"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "version": {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            "status": {
+              "const": "submitted"
+            },
+            "payloadHash": {
+              "type": "string"
+            },
+            "eventHash": {
+              "type": "string"
+            },
+            "payload": {
+              "$ref": "schemas-review_rules_drafts.json#/$defs/StoredJson"
+            },
+            "actorId": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "id",
+            "version",
+            "status",
+            "payloadHash",
+            "eventHash",
+            "payload",
+            "actorId"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "version": {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            "status": {
+              "const": "rejected"
+            },
+            "payloadHash": {
+              "type": "string"
+            },
+            "eventHash": {
+              "type": "string"
+            },
+            "payload": {
+              "$ref": "schemas-review_rules_drafts.json#/$defs/StoredJson"
+            },
+            "actorId": {
+              "type": "string"
+            },
+            "reason": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "id",
+            "version",
+            "status",
+            "payloadHash",
+            "eventHash",
+            "payload",
+            "actorId",
+            "reason"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "version": {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            "status": {
+              "const": "approved_posted"
+            },
+            "payloadHash": {
+              "type": "string"
+            },
+            "eventHash": {
+              "type": "string"
+            },
+            "payload": {
+              "$ref": "schemas-review_rules_drafts.json#/$defs/StoredJson"
+            },
+            "actorId": {
+              "type": "string"
+            },
+            "journalEntryId": {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            "journal": {
+              "$ref": "schemas-review_rules_drafts.json#/$defs/JournalReceipt"
+            }
+          },
+          "required": [
+            "id",
+            "version",
+            "status",
+            "payloadHash",
+            "eventHash",
+            "payload",
+            "actorId",
+            "journalEntryId"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "DraftInput_create": {
+      "type": "object",
+      "properties": {
+        "draftId": {
+          "type": "string",
+          "pattern": "^\\s*[a-z][a-z0-9-]{0,63}\\s*$"
+        },
+        "confirm": {
+          "const": true
+        },
+        "payload": {
+          "$ref": "schemas-review_rules_drafts.json#/$defs/SourcePayload"
+        }
+      },
+      "required": [
+        "draftId",
+        "confirm",
+        "payload"
+      ],
+      "additionalProperties": false
+    },
+    "DraftHttp_create": {
+      "type": "object",
+      "properties": {
+        "draftId": {
+          "type": "string",
+          "pattern": "^\\s*[a-z][a-z0-9-]{0,63}\\s*$"
+        },
+        "confirm": {
+          "const": true
+        },
+        "payload": {
+          "$ref": "schemas-review_rules_drafts.json#/$defs/SourcePayload"
+        },
+        "actor": {
+          "type": "string"
+        },
+        "principal": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "draftId",
+        "confirm",
+        "payload"
+      ],
+      "additionalProperties": false
+    },
+    "DraftOutput_create": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "accountingDraft": {
+          "$ref": "schemas-review_rules_drafts.json#/$defs/OriginalDraftState"
+        }
+      },
+      "required": [
+        "ok",
+        "accountingDraft"
+      ],
+      "additionalProperties": false
+    },
+    "DraftInput_revise": {
+      "type": "object",
+      "properties": {
+        "draftId": {
+          "type": "string",
+          "pattern": "^\\s*[a-z][a-z0-9-]{0,63}\\s*$"
+        },
+        "confirm": {
+          "const": true
+        },
+        "expectedEventHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "payload": {
+          "$ref": "schemas-review_rules_drafts.json#/$defs/SourcePayload"
+        }
+      },
+      "required": [
+        "draftId",
+        "confirm",
+        "expectedEventHash",
+        "payload"
+      ],
+      "additionalProperties": false
+    },
+    "DraftHttp_revise": {
+      "type": "object",
+      "properties": {
+        "draftId": {
+          "type": "string",
+          "pattern": "^\\s*[a-z][a-z0-9-]{0,63}\\s*$"
+        },
+        "confirm": {
+          "const": true
+        },
+        "expectedEventHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "payload": {
+          "$ref": "schemas-review_rules_drafts.json#/$defs/SourcePayload"
+        },
+        "actor": {
+          "type": "string"
+        },
+        "principal": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "draftId",
+        "confirm",
+        "expectedEventHash",
+        "payload"
+      ],
+      "additionalProperties": false
+    },
+    "DraftOutput_revise": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "accountingDraft": {
+          "$ref": "schemas-review_rules_drafts.json#/$defs/OriginalDraftState"
+        }
+      },
+      "required": [
+        "ok",
+        "accountingDraft"
+      ],
+      "additionalProperties": false
+    },
+    "DraftInput_submit": {
+      "type": "object",
+      "properties": {
+        "draftId": {
+          "type": "string",
+          "pattern": "^\\s*[a-z][a-z0-9-]{0,63}\\s*$"
+        },
+        "confirm": {
+          "const": true
+        },
+        "expectedEventHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      },
+      "required": [
+        "draftId",
+        "confirm",
+        "expectedEventHash"
+      ],
+      "additionalProperties": false
+    },
+    "DraftHttp_submit": {
+      "type": "object",
+      "properties": {
+        "draftId": {
+          "type": "string",
+          "pattern": "^\\s*[a-z][a-z0-9-]{0,63}\\s*$"
+        },
+        "confirm": {
+          "const": true
+        },
+        "expectedEventHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "actor": {
+          "type": "string"
+        },
+        "principal": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "draftId",
+        "confirm",
+        "expectedEventHash"
+      ],
+      "additionalProperties": false
+    },
+    "DraftOutput_submit": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "accountingDraft": {
+          "$ref": "schemas-review_rules_drafts.json#/$defs/OriginalDraftState"
+        }
+      },
+      "required": [
+        "ok",
+        "accountingDraft"
+      ],
+      "additionalProperties": false
+    },
+    "DraftInput_reject": {
+      "type": "object",
+      "properties": {
+        "draftId": {
+          "type": "string",
+          "pattern": "^\\s*[a-z][a-z0-9-]{0,63}\\s*$"
+        },
+        "confirm": {
+          "const": true
+        },
+        "expectedEventHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        }
+      },
+      "required": [
+        "draftId",
+        "confirm",
+        "expectedEventHash",
+        "reason"
+      ],
+      "additionalProperties": false
+    },
+    "DraftHttp_reject": {
+      "type": "object",
+      "properties": {
+        "draftId": {
+          "type": "string",
+          "pattern": "^\\s*[a-z][a-z0-9-]{0,63}\\s*$"
+        },
+        "confirm": {
+          "const": true
+        },
+        "expectedEventHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        },
+        "actor": {
+          "type": "string"
+        },
+        "principal": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "draftId",
+        "confirm",
+        "expectedEventHash",
+        "reason"
+      ],
+      "additionalProperties": false
+    },
+    "DraftOutput_reject": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "accountingDraft": {
+          "$ref": "schemas-review_rules_drafts.json#/$defs/OriginalDraftState"
+        }
+      },
+      "required": [
+        "ok",
+        "accountingDraft"
+      ],
+      "additionalProperties": false
+    },
+    "DraftInput_approve-and-post": {
+      "type": "object",
+      "properties": {
+        "draftId": {
+          "type": "string",
+          "pattern": "^\\s*[a-z][a-z0-9-]{0,63}\\s*$"
+        },
+        "confirm": {
+          "const": true
+        },
+        "expectedEventHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      },
+      "required": [
+        "draftId",
+        "confirm",
+        "expectedEventHash"
+      ],
+      "additionalProperties": false
+    },
+    "DraftHttp_approve-and-post": {
+      "type": "object",
+      "properties": {
+        "draftId": {
+          "type": "string",
+          "pattern": "^\\s*[a-z][a-z0-9-]{0,63}\\s*$"
+        },
+        "confirm": {
+          "const": true
+        },
+        "expectedEventHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "actor": {
+          "type": "string"
+        },
+        "principal": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "draftId",
+        "confirm",
+        "expectedEventHash"
+      ],
+      "additionalProperties": false
+    },
+    "DraftOutput_approve-and-post": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "accountingDraft": {
+          "$ref": "schemas-review_rules_drafts.json#/$defs/OriginalDraftState"
+        }
+      },
+      "required": [
+        "ok",
+        "accountingDraft"
+      ],
+      "additionalProperties": false
+    },
+    "DraftInput_show": {
+      "type": "object",
+      "properties": {
+        "draftId": {
+          "type": "string",
+          "pattern": "^\\s*[a-z][a-z0-9-]{0,63}\\s*$"
+        }
+      },
+      "required": [
+        "draftId"
+      ],
+      "additionalProperties": false
+    },
+    "DraftHttp_show": {
+      "type": "object",
+      "properties": {
+        "draftId": {
+          "type": "string",
+          "pattern": "^\\s*[a-z][a-z0-9-]{0,63}\\s*$"
+        }
+      },
+      "required": [
+        "draftId"
+      ],
+      "additionalProperties": false
+    },
+    "DraftOutput_show": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "accountingDraft": {
+          "anyOf": [
+            {
+              "$ref": "schemas-review_rules_drafts.json#/$defs/OriginalDraftState"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "accountingDraft"
+      ],
+      "additionalProperties": false
+    },
+    "DraftInput_list": {
+      "type": "object",
+      "properties": {},
+      "required": [],
+      "additionalProperties": false
+    },
+    "DraftHttp_list": {
+      "type": "object",
+      "properties": {},
+      "required": [],
+      "additionalProperties": false
+    },
+    "DraftOutput_list": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "accountingDrafts": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-review_rules_drafts.json#/$defs/OriginalDraftState"
+          }
+        }
+      },
+      "required": [
+        "ok",
+        "accountingDrafts"
+      ],
+      "additionalProperties": false
+    },
+    "NativeDraftInputObject": {
+      "type": "object",
+      "properties": {
+        "draftId": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "payload": {
+          "anyOf": [
+            {
+              "$ref": "schemas-review_rules_drafts.json#/$defs/NativePayload"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "expectedEventHash": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "reason": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "confirm": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "NativeDraftInput": {
+      "anyOf": [
+        {
+          "$ref": "schemas-review_rules_drafts.json#/$defs/NativeDraftInputObject"
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "$ref": "schemas-review_rules_drafts.json#/$defs/NativePayload"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          ],
+          "minItems": 5,
+          "maxItems": 5
+        }
+      ]
+    },
+    "BankCreateObject": {
+      "type": "object",
+      "properties": {
+        "bankTransactionId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "expectedSourceHash": {
+          "type": "string"
+        },
+        "documentId": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "accountNo": {
+          "type": "string"
+        },
+        "draftId": {
+          "type": "string"
+        },
+        "confirm": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "bankTransactionId",
+        "expectedSourceHash",
+        "accountNo",
+        "draftId",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "BankCreate": {
+      "anyOf": [
+        {
+          "$ref": "schemas-review_rules_drafts.json#/$defs/BankCreateObject"
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "string"
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": -9223372036854775808,
+                  "maximum": 9223372036854775807
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ],
+          "minItems": 6,
+          "maxItems": 6
+        }
+      ]
+    },
+    "QueueRow": {
+      "type": "object",
+      "properties": {
+        "bankTransactionId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "date": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "number"
+        },
+        "currency": {
+          "type": "string"
+        },
+        "bankAccountNo": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "suggestedAccount": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sourceHash": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "bankTransactionId",
+        "date",
+        "text",
+        "amount",
+        "currency",
+        "bankAccountNo",
+        "suggestedAccount",
+        "sourceHash"
+      ],
+      "additionalProperties": false
+    },
+    "Queue": {
+      "type": "object",
+      "properties": {
+        "rows": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-review_rules_drafts.json#/$defs/QueueRow"
+          },
+          "maxItems": 501
+        },
+        "truncated": {
+          "type": "boolean"
+        },
+        "mode": {
+          "const": "single-reviewed-draft"
+        },
+        "independentReviewerRequired": {
+          "const": true
+        }
+      },
+      "required": [
+        "rows",
+        "truncated",
+        "mode",
+        "independentReviewerRequired"
+      ],
+      "additionalProperties": false
+    },
+    "NativeQueueOutput": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "queue": {
+          "$ref": "schemas-review_rules_drafts.json#/$defs/Queue"
+        }
+      },
+      "required": [
+        "ok",
+        "queue"
+      ],
+      "additionalProperties": false
+    },
+    "NativeDraftListOutput": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "accountingDrafts": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-review_rules_drafts.json#/$defs/NativeDraftState"
+          }
+        }
+      },
+      "required": [
+        "ok",
+        "accountingDrafts"
+      ],
+      "additionalProperties": false
+    },
+    "NativeDraftOutput": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "accountingDraft": {
+          "$ref": "schemas-review_rules_drafts.json#/$defs/NativeDraftState"
+        }
+      },
+      "required": [
+        "ok",
+        "accountingDraft"
+      ],
+      "additionalProperties": false
+    },
+    "RuleConditions": {
+      "type": "object",
+      "properties": {
+        "supplierIdentity": {
+          "type": "string",
+          "maxLength": 256
+        },
+        "documentType": {
+          "type": "string",
+          "maxLength": 256
+        },
+        "supplierCountry": {
+          "type": "string",
+          "maxLength": 256
+        },
+        "supplierVat": {
+          "type": "string",
+          "maxLength": 256
+        },
+        "currency": {
+          "type": "string",
+          "pattern": "^[A-Z]{3}$"
+        },
+        "reverseChargeWording": {
+          "type": "boolean"
+        },
+        "attributes": {
+          "type": "object",
+          "properties": {},
+          "required": [],
+          "additionalProperties": {
+            "type": "string",
+            "maxLength": 256
+          },
+          "maxProperties": 12,
+          "propertyNames": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_.-]{0,63}$"
+          }
+        },
+        "vat": {
+          "enum": [
+            "zero",
+            "positive"
+          ]
+        },
+        "amount": {
+          "type": "object",
+          "properties": {
+            "min": {
+              "type": "number"
+            },
+            "max": {
+              "type": "number"
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "RuleContext": {
+      "type": "object",
+      "properties": {
+        "supplierIdentity": {
+          "type": "string",
+          "maxLength": 256
+        },
+        "documentType": {
+          "type": "string",
+          "maxLength": 256
+        },
+        "supplierCountry": {
+          "type": "string",
+          "maxLength": 256
+        },
+        "supplierVat": {
+          "type": "string",
+          "maxLength": 256
+        },
+        "currency": {
+          "type": "string",
+          "pattern": "^[A-Z]{3}$"
+        },
+        "reverseChargeWording": {
+          "type": "boolean"
+        },
+        "attributes": {
+          "type": "object",
+          "properties": {},
+          "required": [],
+          "additionalProperties": {
+            "type": "string",
+            "maxLength": 256
+          },
+          "maxProperties": 12,
+          "propertyNames": {
+            "pattern": "^[A-Za-z][A-Za-z0-9_.-]{0,63}$"
+          }
+        },
+        "changedBuyer": {
+          "type": "boolean"
+        },
+        "changedSupplier": {
+          "type": "boolean"
+        },
+        "changedVat": {
+          "type": "boolean"
+        },
+        "changedCurrency": {
+          "type": "boolean"
+        },
+        "unusualAmount": {
+          "type": "boolean"
+        },
+        "contradictoryEvidence": {
+          "type": "boolean"
+        },
+        "amount": {
+          "type": "number"
+        },
+        "vatAmount": {
+          "type": "number"
+        },
+        "documentId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "RuleOutcome": {
+      "type": "object",
+      "properties": {
+        "account": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "vatTreatment": {
+          "type": "string",
+          "maxLength": 256
+        },
+        "textTemplate": {
+          "type": "string",
+          "maxLength": 2000
+        },
+        "dimensions": {
+          "type": "object",
+          "properties": {},
+          "required": [],
+          "additionalProperties": {
+            "type": "string",
+            "maxLength": 256
+          },
+          "maxProperties": 12
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "RuleProposal": {
+      "type": "object",
+      "properties": {
+        "ruleId": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "effectiveFrom": {
+          "type": "string",
+          "maxLength": 24
+        },
+        "effectiveTo": {
+          "type": "string",
+          "maxLength": 24
+        },
+        "conditions": {
+          "$ref": "schemas-review_rules_drafts.json#/$defs/RuleConditions"
+        },
+        "outcome": {
+          "$ref": "schemas-review_rules_drafts.json#/$defs/RuleOutcome"
+        },
+        "provenance": {
+          "type": "string",
+          "maxLength": 256
+        },
+        "rationale": {
+          "type": "string",
+          "maxLength": 2000
+        }
+      },
+      "required": [
+        "ruleId",
+        "effectiveFrom",
+        "conditions",
+        "outcome",
+        "provenance",
+        "rationale"
+      ],
+      "additionalProperties": false
+    },
+    "RuleInput_propose": {
+      "type": "object",
+      "properties": {
+        "proposal": {
+          "$ref": "schemas-review_rules_drafts.json#/$defs/RuleProposal"
+        },
+        "confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "proposal",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "RuleHttp_propose": {
+      "type": "object",
+      "properties": {
+        "proposal": {
+          "$ref": "schemas-review_rules_drafts.json#/$defs/RuleProposal"
+        },
+        "confirm": {
+          "const": true
+        },
+        "actor": {
+          "type": "string"
+        },
+        "principal": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "proposal",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "RuleInput_approve": {
+      "type": "object",
+      "properties": {
+        "ruleId": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "expectedPayloadHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "rationale": {
+          "type": "string",
+          "maxLength": 2000
+        },
+        "provenance": {
+          "type": "string",
+          "maxLength": 256
+        },
+        "effectiveAt": {
+          "type": "string",
+          "maxLength": 24
+        },
+        "confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "ruleId",
+        "version",
+        "expectedPayloadHash",
+        "rationale",
+        "provenance",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "RuleHttp_approve": {
+      "type": "object",
+      "properties": {
+        "ruleId": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "expectedPayloadHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "rationale": {
+          "type": "string",
+          "maxLength": 2000
+        },
+        "provenance": {
+          "type": "string",
+          "maxLength": 256
+        },
+        "effectiveAt": {
+          "type": "string",
+          "maxLength": 24
+        },
+        "confirm": {
+          "const": true
+        },
+        "actor": {
+          "type": "string"
+        },
+        "principal": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ruleId",
+        "version",
+        "expectedPayloadHash",
+        "rationale",
+        "provenance",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "RuleInput_disable": {
+      "type": "object",
+      "properties": {
+        "ruleId": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "expectedPayloadHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "rationale": {
+          "type": "string",
+          "maxLength": 2000
+        },
+        "provenance": {
+          "type": "string",
+          "maxLength": 256
+        },
+        "effectiveAt": {
+          "type": "string",
+          "maxLength": 24
+        },
+        "confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "ruleId",
+        "version",
+        "expectedPayloadHash",
+        "rationale",
+        "provenance",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "RuleHttp_disable": {
+      "type": "object",
+      "properties": {
+        "ruleId": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "expectedPayloadHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "rationale": {
+          "type": "string",
+          "maxLength": 2000
+        },
+        "provenance": {
+          "type": "string",
+          "maxLength": 256
+        },
+        "effectiveAt": {
+          "type": "string",
+          "maxLength": 24
+        },
+        "confirm": {
+          "const": true
+        },
+        "actor": {
+          "type": "string"
+        },
+        "principal": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ruleId",
+        "version",
+        "expectedPayloadHash",
+        "rationale",
+        "provenance",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "RuleInput_supersede": {
+      "type": "object",
+      "properties": {
+        "ruleId": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "expectedPayloadHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "rationale": {
+          "type": "string",
+          "maxLength": 2000
+        },
+        "provenance": {
+          "type": "string",
+          "maxLength": 256
+        },
+        "effectiveAt": {
+          "type": "string",
+          "maxLength": 24
+        },
+        "confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "ruleId",
+        "version",
+        "expectedPayloadHash",
+        "rationale",
+        "provenance",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "RuleHttp_supersede": {
+      "type": "object",
+      "properties": {
+        "ruleId": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "expectedPayloadHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "rationale": {
+          "type": "string",
+          "maxLength": 2000
+        },
+        "provenance": {
+          "type": "string",
+          "maxLength": 256
+        },
+        "effectiveAt": {
+          "type": "string",
+          "maxLength": 24
+        },
+        "confirm": {
+          "const": true
+        },
+        "actor": {
+          "type": "string"
+        },
+        "principal": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ruleId",
+        "version",
+        "expectedPayloadHash",
+        "rationale",
+        "provenance",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "RuleInput_explain": {
+      "type": "object",
+      "properties": {
+        "context": {
+          "$ref": "schemas-review_rules_drafts.json#/$defs/RuleContext"
+        },
+        "at": {
+          "type": "string",
+          "maxLength": 24
+        }
+      },
+      "required": [
+        "context"
+      ],
+      "additionalProperties": false
+    },
+    "RuleHttp_explain": {
+      "type": "object",
+      "properties": {
+        "context": {
+          "$ref": "schemas-review_rules_drafts.json#/$defs/RuleContext"
+        },
+        "at": {
+          "type": "string",
+          "maxLength": 24
+        }
+      },
+      "required": [
+        "context"
+      ],
+      "additionalProperties": false
+    },
+    "RuleInput_test": {
+      "type": "object",
+      "properties": {
+        "context": {
+          "$ref": "schemas-review_rules_drafts.json#/$defs/RuleContext"
+        },
+        "at": {
+          "type": "string",
+          "maxLength": 24
+        }
+      },
+      "required": [
+        "context"
+      ],
+      "additionalProperties": false
+    },
+    "RuleHttp_test": {
+      "type": "object",
+      "properties": {
+        "context": {
+          "$ref": "schemas-review_rules_drafts.json#/$defs/RuleContext"
+        },
+        "at": {
+          "type": "string",
+          "maxLength": 24
+        }
+      },
+      "required": [
+        "context"
+      ],
+      "additionalProperties": false
+    },
+    "RuleProposed": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "duplicate": {
+          "type": "boolean"
+        },
+        "version": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "payloadHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0
+        }
+      },
+      "required": [
+        "ok",
+        "duplicate",
+        "version",
+        "payloadHash",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "RuleTransition": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0
+        }
+      },
+      "required": [
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "RuleExplanation": {
+      "type": "object",
+      "properties": {
+        "ruleId": {
+          "type": "string"
+        },
+        "version": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "payloadHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "state": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "matched": {
+          "type": "boolean"
+        },
+        "reasons": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "ruleId",
+        "version",
+        "payloadHash",
+        "state",
+        "matched",
+        "reasons"
+      ],
+      "additionalProperties": false
+    },
+    "RuleEvaluation": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "decision": {
+              "const": "proposed"
+            },
+            "outcome": {
+              "$ref": "schemas-review_rules_drafts.json#/$defs/RuleOutcome"
+            },
+            "matched": {
+              "type": "array",
+              "items": {
+                "$ref": "schemas-review_rules_drafts.json#/$defs/RuleExplanation"
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "explanations": {
+              "type": "array",
+              "items": {
+                "$ref": "schemas-review_rules_drafts.json#/$defs/RuleExplanation"
+              }
+            },
+            "reasons": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "minItems": 0,
+              "maxItems": 0
+            },
+            "dryRun": {
+              "const": true
+            },
+            "ruleVersionId": {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            "payloadHash": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            }
+          },
+          "required": [
+            "decision",
+            "outcome",
+            "matched",
+            "explanations",
+            "reasons",
+            "dryRun",
+            "ruleVersionId",
+            "payloadHash"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "decision": {
+              "const": "human_decision"
+            },
+            "matched": {
+              "type": "array",
+              "items": {
+                "$ref": "schemas-review_rules_drafts.json#/$defs/RuleExplanation"
+              }
+            },
+            "explanations": {
+              "type": "array",
+              "items": {
+                "$ref": "schemas-review_rules_drafts.json#/$defs/RuleExplanation"
+              }
+            },
+            "reasons": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "minItems": 1
+            },
+            "dryRun": {
+              "const": true
+            }
+          },
+          "required": [
+            "decision",
+            "matched",
+            "explanations",
+            "reasons",
+            "dryRun"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "RuleRow": {
+      "type": "object",
+      "properties": {
+        "ruleId": {
+          "type": "string"
+        },
+        "version": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "payloadHash": {
+          "type": "string"
+        },
+        "provenance": {
+          "type": "string"
+        },
+        "rationale": {
+          "type": "string"
+        },
+        "createdBy": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "string"
+        },
+        "conditions": {
+          "$ref": "schemas-review_rules_drafts.json#/$defs/StoredJson"
+        },
+        "outcome": {
+          "$ref": "schemas-review_rules_drafts.json#/$defs/StoredJson"
+        },
+        "effectiveFrom": {
+          "type": "string"
+        },
+        "effectiveTo": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "state": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "ruleId",
+        "version",
+        "payloadHash",
+        "provenance",
+        "rationale",
+        "createdBy",
+        "createdAt",
+        "conditions",
+        "outcome",
+        "effectiveFrom",
+        "effectiveTo",
+        "state"
+      ],
+      "additionalProperties": false
+    },
+    "NativeRuleListOutput": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "postingRules": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-review_rules_drafts.json#/$defs/RuleRow"
+          }
+        }
+      },
+      "required": [
+        "ok",
+        "postingRules"
+      ],
+      "additionalProperties": false
+    },
+    "NativeRuleOutput": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "postingRule": {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "payloadHash": {
+              "type": "string"
+            },
+            "state": {
+              "enum": [
+                "proposed",
+                "approved",
+                "disabled"
+              ]
+            }
+          },
+          "required": [
+            "ok",
+            "payloadHash",
+            "state"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "ok",
+        "postingRule"
+      ],
+      "additionalProperties": false
+    },
+    "NativeAttributesObject": {
+      "type": "object",
+      "properties": {
+        "bankText": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "bankText"
+      ],
+      "additionalProperties": false
+    },
+    "NativeAttributes": {
+      "anyOf": [
+        {
+          "$ref": "schemas-review_rules_drafts.json#/$defs/NativeAttributesObject"
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "string"
+            }
+          ],
+          "minItems": 1,
+          "maxItems": 1
+        }
+      ]
+    },
+    "NativeConditionsObject": {
+      "type": "object",
+      "properties": {
+        "currency": {
+          "type": "string"
+        },
+        "attributes": {
+          "anyOf": [
+            {
+              "$ref": "schemas-review_rules_drafts.json#/$defs/NativeAttributes"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "company": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "supplierIdentity": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "documentType": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "supplierCountry": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "supplierVat": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "vat": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "reverseChargeWording": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "currency"
+      ],
+      "additionalProperties": false
+    },
+    "NativeConditions": {
+      "anyOf": [
+        {
+          "$ref": "schemas-review_rules_drafts.json#/$defs/NativeConditionsObject"
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "string"
+            },
+            {
+              "anyOf": [
+                {
+                  "$ref": "schemas-review_rules_drafts.json#/$defs/NativeAttributes"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": -9223372036854775808,
+                  "maximum": 9223372036854775807
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          ],
+          "minItems": 9,
+          "maxItems": 9
+        }
+      ]
+    },
+    "NativeOutcomeObject": {
+      "type": "object",
+      "properties": {
+        "account": {
+          "type": "string"
+        },
+        "vatTreatment": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "dimensions": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {},
+              "required": [],
+              "additionalProperties": {
+                "type": "string"
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "account"
+      ],
+      "additionalProperties": false
+    },
+    "NativeOutcome": {
+      "anyOf": [
+        {
+          "$ref": "schemas-review_rules_drafts.json#/$defs/NativeOutcomeObject"
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "string"
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "object",
+                  "properties": {},
+                  "required": [],
+                  "additionalProperties": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          ],
+          "minItems": 3,
+          "maxItems": 3
+        }
+      ]
+    },
+    "NativeProposalObject": {
+      "type": "object",
+      "properties": {
+        "ruleId": {
+          "type": "string"
+        },
+        "effectiveFrom": {
+          "type": "string"
+        },
+        "effectiveTo": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "conditions": {
+          "$ref": "schemas-review_rules_drafts.json#/$defs/NativeConditions"
+        },
+        "outcome": {
+          "$ref": "schemas-review_rules_drafts.json#/$defs/NativeOutcome"
+        },
+        "provenance": {
+          "type": "string"
+        },
+        "rationale": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ruleId",
+        "effectiveFrom",
+        "conditions",
+        "outcome",
+        "provenance",
+        "rationale"
+      ],
+      "additionalProperties": false
+    },
+    "NativeProposal": {
+      "anyOf": [
+        {
+          "$ref": "schemas-review_rules_drafts.json#/$defs/NativeProposalObject"
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "$ref": "schemas-review_rules_drafts.json#/$defs/NativeConditions"
+            },
+            {
+              "$ref": "schemas-review_rules_drafts.json#/$defs/NativeOutcome"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            }
+          ],
+          "minItems": 7,
+          "maxItems": 7
+        }
+      ]
+    },
+    "NativeRuleInputObject": {
+      "type": "object",
+      "properties": {
+        "confirm": {
+          "type": "boolean"
+        },
+        "proposal": {
+          "anyOf": [
+            {
+              "$ref": "schemas-review_rules_drafts.json#/$defs/NativeProposal"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "ruleId": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "version": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "expectedPayloadHash": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "rationale": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "provenance": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "NativeRuleInput": {
+      "anyOf": [
+        {
+          "$ref": "schemas-review_rules_drafts.json#/$defs/NativeRuleInputObject"
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "boolean"
+            },
+            {
+              "anyOf": [
+                {
+                  "$ref": "schemas-review_rules_drafts.json#/$defs/NativeProposal"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": -9223372036854775808,
+                  "maximum": 9223372036854775807
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          ],
+          "minItems": 7,
+          "maxItems": 7
+        }
+      ]
+    },
+    "SdkBankCreate": {
+      "type": "object",
+      "properties": {
+        "bankTransactionId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "expectedSourceHash": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 65536
+        },
+        "documentId": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "accountNo": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "draftId": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]{0,63}$"
+        },
+        "confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "bankTransactionId",
+        "expectedSourceHash",
+        "accountNo",
+        "draftId",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "Sdk_submit": {
+      "type": "object",
+      "properties": {
+        "expectedEventHash": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 65536
+        },
+        "confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "expectedEventHash"
+      ],
+      "additionalProperties": false
+    },
+    "Sdk_reject": {
+      "type": "object",
+      "properties": {
+        "expectedEventHash": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 65536
+        },
+        "confirm": {
+          "const": true
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        }
+      },
+      "required": [
+        "expectedEventHash",
+        "reason"
+      ],
+      "additionalProperties": false
+    },
+    "Sdk_approve": {
+      "type": "object",
+      "properties": {
+        "expectedEventHash": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 65536
+        },
+        "confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "expectedEventHash",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "ClientFailure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "type": "string"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "NativeMcpError": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "error": {
+          "type": "object",
+          "properties": {
+            "code": {
+              "enum": [
+                "invalid_input",
+                "transport",
+                "server_refused",
+                "protocol",
+                "outcome_unknown"
+              ]
+            },
+            "message": {
+              "type": "string"
+            },
+            "status": {
+              "type": "integer",
+              "minimum": 100,
+              "maximum": 599
+            }
+          },
+          "required": [
+            "code",
+            "message"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "ok",
+        "error"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalMcpError": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "code": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "RpcError": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 18446744073709551615
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "error": {
+          "type": "object",
+          "properties": {
+            "code": {
+              "enum": [
+                -32700,
+                -32600,
+                -32601,
+                -32602,
+                -32000,
+                -32002
+              ]
+            },
+            "message": {
+              "enum": [
+                "invalid or oversized newline-delimited message",
+                "message exceeds tool frame bound; only named original uploads/ownership/consolidation proposals admit larger bounded frames",
+                "invalid JSON",
+                "expected one JSON-RPC object",
+                "invalid JSON-RPC request",
+                "session request limit reached; reconnect",
+                "request id already used",
+                "expected params object",
+                "already initialized",
+                "initialize requires protocolVersion, capabilities and clientInfo",
+                "initialize and notifications/initialized required",
+                "task execution not supported",
+                "tool name required",
+                "method not found",
+                "expected arguments object",
+                "unknown tool",
+                "unknown posting-rule tool",
+                "object required",
+                "invalid company",
+                "unknown or invalid posting-rule field",
+                "invalid original posting-rule arguments",
+                "reviewed reads require only company",
+                "only submit/reject/approve require explicit draftId",
+                "reviewed writes require company, exact native body string, confirmation and draftId for submit/reject/approve",
+                "only submit/reject/approve require explicit bounded lowercase draftId",
+                "unknown reviewed tool"
+              ]
+            }
+          },
+          "required": [
+            "code",
+            "message"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "error"
+      ],
+      "additionalProperties": false
+    },
+    "CliInput_25": {
+      "type": "object",
+      "properties": {
+        "flags": {
+          "type": "object",
+          "properties": {
+            "--server": {
+              "type": "string"
+            },
+            "--company": {
+              "type": "string"
+            },
+            "--cookie-file": {
+              "type": "string"
+            },
+            "--allow-loopback-http": {
+              "const": true
+            }
+          },
+          "required": [
+            "--server",
+            "--company",
+            "--cookie-file"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "flags"
+      ],
+      "additionalProperties": false
+    },
+    "CliOutput_25": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "data": {
+          "$ref": "schemas-review_rules_drafts.json#/$defs/NativeQueueOutput"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "CliInput_26": {
+      "type": "object",
+      "properties": {
+        "flags": {
+          "type": "object",
+          "properties": {
+            "--server": {
+              "type": "string"
+            },
+            "--company": {
+              "type": "string"
+            },
+            "--cookie-file": {
+              "type": "string"
+            },
+            "--allow-loopback-http": {
+              "const": true
+            }
+          },
+          "required": [
+            "--server",
+            "--company",
+            "--cookie-file"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "flags"
+      ],
+      "additionalProperties": false
+    },
+    "CliOutput_26": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "data": {
+          "$ref": "schemas-review_rules_drafts.json#/$defs/NativeDraftListOutput"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "CliInput_27": {
+      "type": "object",
+      "properties": {
+        "flags": {
+          "type": "object",
+          "properties": {
+            "--server": {
+              "type": "string"
+            },
+            "--company": {
+              "type": "string"
+            },
+            "--cookie-file": {
+              "type": "string"
+            },
+            "--allow-loopback-http": {
+              "const": true
+            }
+          },
+          "required": [
+            "--server",
+            "--company",
+            "--cookie-file"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "flags"
+      ],
+      "additionalProperties": false
+    },
+    "CliOutput_27": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "data": {
+          "$ref": "schemas-review_rules_drafts.json#/$defs/NativeRuleListOutput"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "CliInput_28": {
+      "type": "object",
+      "properties": {
+        "flags": {
+          "type": "object",
+          "properties": {
+            "--server": {
+              "type": "string"
+            },
+            "--company": {
+              "type": "string"
+            },
+            "--cookie-file": {
+              "type": "string"
+            },
+            "--allow-loopback-http": {
+              "const": true
+            },
+            "--confirm": {
+              "const": true
+            }
+          },
+          "required": [
+            "--server",
+            "--company",
+            "--cookie-file",
+            "--confirm"
+          ],
+          "additionalProperties": false
+        },
+        "stdin": {
+          "$ref": "schemas-review_rules_drafts.json#/$defs/SdkBankCreate"
+        }
+      },
+      "required": [
+        "flags",
+        "stdin"
+      ],
+      "additionalProperties": false
+    },
+    "CliOutput_28": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "data": {
+          "$ref": "schemas-review_rules_drafts.json#/$defs/NativeDraftOutput"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "CliInput_29": {
+      "type": "object",
+      "properties": {
+        "flags": {
+          "type": "object",
+          "properties": {
+            "--server": {
+              "type": "string"
+            },
+            "--company": {
+              "type": "string"
+            },
+            "--cookie-file": {
+              "type": "string"
+            },
+            "--allow-loopback-http": {
+              "const": true
+            },
+            "--confirm": {
+              "const": true
+            },
+            "--draft-id": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9-]{0,63}$"
+            }
+          },
+          "required": [
+            "--server",
+            "--company",
+            "--cookie-file",
+            "--confirm",
+            "--draft-id"
+          ],
+          "additionalProperties": false
+        },
+        "stdin": {
+          "$ref": "schemas-review_rules_drafts.json#/$defs/Sdk_submit"
+        }
+      },
+      "required": [
+        "flags",
+        "stdin"
+      ],
+      "additionalProperties": false
+    },
+    "CliOutput_29": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "data": {
+          "$ref": "schemas-review_rules_drafts.json#/$defs/NativeDraftOutput"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "CliInput_30": {
+      "type": "object",
+      "properties": {
+        "flags": {
+          "type": "object",
+          "properties": {
+            "--server": {
+              "type": "string"
+            },
+            "--company": {
+              "type": "string"
+            },
+            "--cookie-file": {
+              "type": "string"
+            },
+            "--allow-loopback-http": {
+              "const": true
+            },
+            "--confirm": {
+              "const": true
+            },
+            "--draft-id": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9-]{0,63}$"
+            }
+          },
+          "required": [
+            "--server",
+            "--company",
+            "--cookie-file",
+            "--confirm",
+            "--draft-id"
+          ],
+          "additionalProperties": false
+        },
+        "stdin": {
+          "$ref": "schemas-review_rules_drafts.json#/$defs/Sdk_reject"
+        }
+      },
+      "required": [
+        "flags",
+        "stdin"
+      ],
+      "additionalProperties": false
+    },
+    "CliOutput_30": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "data": {
+          "$ref": "schemas-review_rules_drafts.json#/$defs/NativeDraftOutput"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "CliInput_31": {
+      "type": "object",
+      "properties": {
+        "flags": {
+          "type": "object",
+          "properties": {
+            "--server": {
+              "type": "string"
+            },
+            "--company": {
+              "type": "string"
+            },
+            "--cookie-file": {
+              "type": "string"
+            },
+            "--allow-loopback-http": {
+              "const": true
+            },
+            "--confirm": {
+              "const": true
+            },
+            "--draft-id": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9-]{0,63}$"
+            }
+          },
+          "required": [
+            "--server",
+            "--company",
+            "--cookie-file",
+            "--confirm",
+            "--draft-id"
+          ],
+          "additionalProperties": false
+        },
+        "stdin": {
+          "$ref": "schemas-review_rules_drafts.json#/$defs/Sdk_approve"
+        }
+      },
+      "required": [
+        "flags",
+        "stdin"
+      ],
+      "additionalProperties": false
+    },
+    "CliOutput_31": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "data": {
+          "$ref": "schemas-review_rules_drafts.json#/$defs/NativeDraftOutput"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "CliInput_32": {
+      "type": "object",
+      "properties": {
+        "flags": {
+          "type": "object",
+          "properties": {
+            "--server": {
+              "type": "string"
+            },
+            "--company": {
+              "type": "string"
+            },
+            "--cookie-file": {
+              "type": "string"
+            },
+            "--allow-loopback-http": {
+              "const": true
+            },
+            "--service-key-file": {
+              "type": "string"
+            },
+            "--company-slug": {
+              "type": "string"
+            },
+            "--workspace": {
+              "type": "string"
+            },
+            "--json": {
+              "const": true
+            },
+            "--format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "--help": {
+              "const": true
+            },
+            "--confirm": {
+              "const": "yes"
+            },
+            "--actor": {
+              "type": "string"
+            },
+            "--principal": {
+              "type": "string"
+            },
+            "--draft-id": {
+              "type": "string"
+            },
+            "--input": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "--server",
+            "--company",
+            "--confirm",
+            "--draft-id",
+            "--input"
+          ],
+          "additionalProperties": false
+        },
+        "operationInput": {
+          "$ref": "schemas-review_rules_drafts.json#/$defs/DraftInput_create"
+        }
+      },
+      "required": [
+        "flags",
+        "operationInput"
+      ],
+      "additionalProperties": false
+    },
+    "CliInput_33": {
+      "type": "object",
+      "properties": {
+        "flags": {
+          "type": "object",
+          "properties": {
+            "--server": {
+              "type": "string"
+            },
+            "--company": {
+              "type": "string"
+            },
+            "--cookie-file": {
+              "type": "string"
+            },
+            "--allow-loopback-http": {
+              "const": true
+            },
+            "--service-key-file": {
+              "type": "string"
+            },
+            "--company-slug": {
+              "type": "string"
+            },
+            "--workspace": {
+              "type": "string"
+            },
+            "--json": {
+              "const": true
+            },
+            "--format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "--help": {
+              "const": true
+            },
+            "--confirm": {
+              "const": "yes"
+            },
+            "--actor": {
+              "type": "string"
+            },
+            "--principal": {
+              "type": "string"
+            },
+            "--draft-id": {
+              "type": "string"
+            },
+            "--expected-event-hash": {
+              "type": "string"
+            },
+            "--input": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "--server",
+            "--company",
+            "--confirm",
+            "--draft-id",
+            "--expected-event-hash",
+            "--input"
+          ],
+          "additionalProperties": false
+        },
+        "operationInput": {
+          "$ref": "schemas-review_rules_drafts.json#/$defs/DraftInput_revise"
+        }
+      },
+      "required": [
+        "flags",
+        "operationInput"
+      ],
+      "additionalProperties": false
+    },
+    "CliInput_34": {
+      "type": "object",
+      "properties": {
+        "flags": {
+          "type": "object",
+          "properties": {
+            "--server": {
+              "type": "string"
+            },
+            "--company": {
+              "type": "string"
+            },
+            "--cookie-file": {
+              "type": "string"
+            },
+            "--allow-loopback-http": {
+              "const": true
+            },
+            "--service-key-file": {
+              "type": "string"
+            },
+            "--company-slug": {
+              "type": "string"
+            },
+            "--workspace": {
+              "type": "string"
+            },
+            "--json": {
+              "const": true
+            },
+            "--format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "--help": {
+              "const": true
+            },
+            "--confirm": {
+              "const": "yes"
+            },
+            "--actor": {
+              "type": "string"
+            },
+            "--principal": {
+              "type": "string"
+            },
+            "--draft-id": {
+              "type": "string"
+            },
+            "--expected-event-hash": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "--server",
+            "--company",
+            "--confirm",
+            "--draft-id",
+            "--expected-event-hash"
+          ],
+          "additionalProperties": false
+        },
+        "operationInput": {
+          "$ref": "schemas-review_rules_drafts.json#/$defs/DraftInput_submit"
+        }
+      },
+      "required": [
+        "flags",
+        "operationInput"
+      ],
+      "additionalProperties": false
+    },
+    "CliInput_35": {
+      "type": "object",
+      "properties": {
+        "flags": {
+          "type": "object",
+          "properties": {
+            "--server": {
+              "type": "string"
+            },
+            "--company": {
+              "type": "string"
+            },
+            "--cookie-file": {
+              "type": "string"
+            },
+            "--allow-loopback-http": {
+              "const": true
+            },
+            "--service-key-file": {
+              "type": "string"
+            },
+            "--company-slug": {
+              "type": "string"
+            },
+            "--workspace": {
+              "type": "string"
+            },
+            "--json": {
+              "const": true
+            },
+            "--format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "--help": {
+              "const": true
+            },
+            "--confirm": {
+              "const": "yes"
+            },
+            "--actor": {
+              "type": "string"
+            },
+            "--principal": {
+              "type": "string"
+            },
+            "--draft-id": {
+              "type": "string"
+            },
+            "--expected-event-hash": {
+              "type": "string"
+            },
+            "--reason": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "--server",
+            "--company",
+            "--confirm",
+            "--draft-id",
+            "--expected-event-hash",
+            "--reason"
+          ],
+          "additionalProperties": false
+        },
+        "operationInput": {
+          "$ref": "schemas-review_rules_drafts.json#/$defs/DraftInput_reject"
+        }
+      },
+      "required": [
+        "flags",
+        "operationInput"
+      ],
+      "additionalProperties": false
+    },
+    "CliInput_36": {
+      "type": "object",
+      "properties": {
+        "flags": {
+          "type": "object",
+          "properties": {
+            "--server": {
+              "type": "string"
+            },
+            "--company": {
+              "type": "string"
+            },
+            "--cookie-file": {
+              "type": "string"
+            },
+            "--allow-loopback-http": {
+              "const": true
+            },
+            "--service-key-file": {
+              "type": "string"
+            },
+            "--company-slug": {
+              "type": "string"
+            },
+            "--workspace": {
+              "type": "string"
+            },
+            "--json": {
+              "const": true
+            },
+            "--format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "--help": {
+              "const": true
+            },
+            "--confirm": {
+              "const": "yes"
+            },
+            "--actor": {
+              "type": "string"
+            },
+            "--principal": {
+              "type": "string"
+            },
+            "--draft-id": {
+              "type": "string"
+            },
+            "--expected-event-hash": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "--server",
+            "--company",
+            "--confirm",
+            "--draft-id",
+            "--expected-event-hash"
+          ],
+          "additionalProperties": false
+        },
+        "operationInput": {
+          "$ref": "schemas-review_rules_drafts.json#/$defs/DraftInput_approve-and-post"
+        }
+      },
+      "required": [
+        "flags",
+        "operationInput"
+      ],
+      "additionalProperties": false
+    },
+    "CliInput_37": {
+      "type": "object",
+      "properties": {
+        "flags": {
+          "type": "object",
+          "properties": {
+            "--server": {
+              "type": "string"
+            },
+            "--company": {
+              "type": "string"
+            },
+            "--cookie-file": {
+              "type": "string"
+            },
+            "--allow-loopback-http": {
+              "const": true
+            },
+            "--service-key-file": {
+              "type": "string"
+            },
+            "--company-slug": {
+              "type": "string"
+            },
+            "--workspace": {
+              "type": "string"
+            },
+            "--json": {
+              "const": true
+            },
+            "--format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "--help": {
+              "const": true
+            },
+            "--draft-id": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "--server",
+            "--company",
+            "--draft-id"
+          ],
+          "additionalProperties": false
+        },
+        "operationInput": {
+          "$ref": "schemas-review_rules_drafts.json#/$defs/DraftInput_show"
+        }
+      },
+      "required": [
+        "flags",
+        "operationInput"
+      ],
+      "additionalProperties": false
+    },
+    "CliInput_38": {
+      "type": "object",
+      "properties": {
+        "flags": {
+          "type": "object",
+          "properties": {
+            "--server": {
+              "type": "string"
+            },
+            "--company": {
+              "type": "string"
+            },
+            "--cookie-file": {
+              "type": "string"
+            },
+            "--allow-loopback-http": {
+              "const": true
+            },
+            "--service-key-file": {
+              "type": "string"
+            },
+            "--company-slug": {
+              "type": "string"
+            },
+            "--workspace": {
+              "type": "string"
+            },
+            "--json": {
+              "const": true
+            },
+            "--format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "--help": {
+              "const": true
+            }
+          },
+          "required": [
+            "--server",
+            "--company"
+          ],
+          "additionalProperties": false
+        },
+        "operationInput": {
+          "$ref": "schemas-review_rules_drafts.json#/$defs/DraftInput_list"
+        }
+      },
+      "required": [
+        "flags",
+        "operationInput"
+      ],
+      "additionalProperties": false
+    },
+    "CliInput_39": {
+      "type": "object",
+      "properties": {
+        "flags": {
+          "type": "object",
+          "properties": {
+            "--server": {
+              "type": "string"
+            },
+            "--company": {
+              "type": "string"
+            },
+            "--cookie-file": {
+              "type": "string"
+            },
+            "--allow-loopback-http": {
+              "const": true
+            },
+            "--service-key-file": {
+              "type": "string"
+            },
+            "--company-slug": {
+              "type": "string"
+            },
+            "--workspace": {
+              "type": "string"
+            },
+            "--json": {
+              "const": true
+            },
+            "--format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "--help": {
+              "const": true
+            },
+            "--confirm": {
+              "const": "yes"
+            },
+            "--actor": {
+              "type": "string"
+            },
+            "--principal": {
+              "type": "string"
+            },
+            "--input": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "--server",
+            "--company",
+            "--confirm",
+            "--input"
+          ],
+          "additionalProperties": false
+        },
+        "operationInput": {
+          "$ref": "schemas-review_rules_drafts.json#/$defs/RuleInput_propose"
+        }
+      },
+      "required": [
+        "flags",
+        "operationInput"
+      ],
+      "additionalProperties": false
+    },
+    "CliInput_40": {
+      "type": "object",
+      "properties": {
+        "flags": {
+          "type": "object",
+          "properties": {
+            "--server": {
+              "type": "string"
+            },
+            "--company": {
+              "type": "string"
+            },
+            "--cookie-file": {
+              "type": "string"
+            },
+            "--allow-loopback-http": {
+              "const": true
+            },
+            "--service-key-file": {
+              "type": "string"
+            },
+            "--company-slug": {
+              "type": "string"
+            },
+            "--workspace": {
+              "type": "string"
+            },
+            "--json": {
+              "const": true
+            },
+            "--format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "--help": {
+              "const": true
+            },
+            "--confirm": {
+              "const": "yes"
+            },
+            "--actor": {
+              "type": "string"
+            },
+            "--principal": {
+              "type": "string"
+            },
+            "--rule-id": {
+              "type": "string"
+            },
+            "--version": {
+              "type": "string"
+            },
+            "--expected-payload-hash": {
+              "type": "string"
+            },
+            "--rationale": {
+              "type": "string"
+            },
+            "--provenance": {
+              "type": "string"
+            },
+            "--effective-at": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "--server",
+            "--company",
+            "--confirm",
+            "--rule-id",
+            "--version",
+            "--expected-payload-hash",
+            "--rationale",
+            "--provenance"
+          ],
+          "additionalProperties": false
+        },
+        "operationInput": {
+          "$ref": "schemas-review_rules_drafts.json#/$defs/RuleInput_approve"
+        }
+      },
+      "required": [
+        "flags",
+        "operationInput"
+      ],
+      "additionalProperties": false
+    },
+    "CliInput_41": {
+      "type": "object",
+      "properties": {
+        "flags": {
+          "type": "object",
+          "properties": {
+            "--server": {
+              "type": "string"
+            },
+            "--company": {
+              "type": "string"
+            },
+            "--cookie-file": {
+              "type": "string"
+            },
+            "--allow-loopback-http": {
+              "const": true
+            },
+            "--service-key-file": {
+              "type": "string"
+            },
+            "--company-slug": {
+              "type": "string"
+            },
+            "--workspace": {
+              "type": "string"
+            },
+            "--json": {
+              "const": true
+            },
+            "--format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "--help": {
+              "const": true
+            },
+            "--confirm": {
+              "const": "yes"
+            },
+            "--actor": {
+              "type": "string"
+            },
+            "--principal": {
+              "type": "string"
+            },
+            "--rule-id": {
+              "type": "string"
+            },
+            "--version": {
+              "type": "string"
+            },
+            "--expected-payload-hash": {
+              "type": "string"
+            },
+            "--rationale": {
+              "type": "string"
+            },
+            "--provenance": {
+              "type": "string"
+            },
+            "--effective-at": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "--server",
+            "--company",
+            "--confirm",
+            "--rule-id",
+            "--version",
+            "--expected-payload-hash",
+            "--rationale",
+            "--provenance"
+          ],
+          "additionalProperties": false
+        },
+        "operationInput": {
+          "$ref": "schemas-review_rules_drafts.json#/$defs/RuleInput_disable"
+        }
+      },
+      "required": [
+        "flags",
+        "operationInput"
+      ],
+      "additionalProperties": false
+    },
+    "CliInput_42": {
+      "type": "object",
+      "properties": {
+        "flags": {
+          "type": "object",
+          "properties": {
+            "--server": {
+              "type": "string"
+            },
+            "--company": {
+              "type": "string"
+            },
+            "--cookie-file": {
+              "type": "string"
+            },
+            "--allow-loopback-http": {
+              "const": true
+            },
+            "--service-key-file": {
+              "type": "string"
+            },
+            "--company-slug": {
+              "type": "string"
+            },
+            "--workspace": {
+              "type": "string"
+            },
+            "--json": {
+              "const": true
+            },
+            "--format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "--help": {
+              "const": true
+            },
+            "--confirm": {
+              "const": "yes"
+            },
+            "--actor": {
+              "type": "string"
+            },
+            "--principal": {
+              "type": "string"
+            },
+            "--rule-id": {
+              "type": "string"
+            },
+            "--version": {
+              "type": "string"
+            },
+            "--expected-payload-hash": {
+              "type": "string"
+            },
+            "--rationale": {
+              "type": "string"
+            },
+            "--provenance": {
+              "type": "string"
+            },
+            "--effective-at": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "--server",
+            "--company",
+            "--confirm",
+            "--rule-id",
+            "--version",
+            "--expected-payload-hash",
+            "--rationale",
+            "--provenance"
+          ],
+          "additionalProperties": false
+        },
+        "operationInput": {
+          "$ref": "schemas-review_rules_drafts.json#/$defs/RuleInput_supersede"
+        }
+      },
+      "required": [
+        "flags",
+        "operationInput"
+      ],
+      "additionalProperties": false
+    },
+    "CliInput_43": {
+      "type": "object",
+      "properties": {
+        "flags": {
+          "type": "object",
+          "properties": {
+            "--server": {
+              "type": "string"
+            },
+            "--company": {
+              "type": "string"
+            },
+            "--cookie-file": {
+              "type": "string"
+            },
+            "--allow-loopback-http": {
+              "const": true
+            },
+            "--service-key-file": {
+              "type": "string"
+            },
+            "--company-slug": {
+              "type": "string"
+            },
+            "--workspace": {
+              "type": "string"
+            },
+            "--json": {
+              "const": true
+            },
+            "--format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "--help": {
+              "const": true
+            },
+            "--context": {
+              "type": "string"
+            },
+            "--at": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "--server",
+            "--company",
+            "--context"
+          ],
+          "additionalProperties": false
+        },
+        "operationInput": {
+          "$ref": "schemas-review_rules_drafts.json#/$defs/RuleInput_explain"
+        }
+      },
+      "required": [
+        "flags",
+        "operationInput"
+      ],
+      "additionalProperties": false
+    },
+    "CliInput_44": {
+      "type": "object",
+      "properties": {
+        "flags": {
+          "type": "object",
+          "properties": {
+            "--server": {
+              "type": "string"
+            },
+            "--company": {
+              "type": "string"
+            },
+            "--cookie-file": {
+              "type": "string"
+            },
+            "--allow-loopback-http": {
+              "const": true
+            },
+            "--service-key-file": {
+              "type": "string"
+            },
+            "--company-slug": {
+              "type": "string"
+            },
+            "--workspace": {
+              "type": "string"
+            },
+            "--json": {
+              "const": true
+            },
+            "--format": {
+              "enum": [
+                "json",
+                "human"
+              ]
+            },
+            "--help": {
+              "const": true
+            },
+            "--context": {
+              "type": "string"
+            },
+            "--at": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "--server",
+            "--company",
+            "--context"
+          ],
+          "additionalProperties": false
+        },
+        "operationInput": {
+          "$ref": "schemas-review_rules_drafts.json#/$defs/RuleInput_test"
+        }
+      },
+      "required": [
+        "flags",
+        "operationInput"
+      ],
+      "additionalProperties": false
+    },
+    "McpInput_45": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "company"
+      ],
+      "additionalProperties": false
+    },
+    "McpSuccess_45": {
+      "type": "object",
+      "properties": {
+        "isError": {
+          "const": false
+        },
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "data": {
+              "$ref": "schemas-review_rules_drafts.json#/$defs/NativeQueueOutput"
+            }
+          },
+          "required": [
+            "ok",
+            "data"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "isError",
+        "content",
+        "structuredContent"
+      ],
+      "additionalProperties": false
+    },
+    "McpSuccess_45Rpc": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 18446744073709551615
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "result": {
+          "$ref": "schemas-review_rules_drafts.json#/$defs/McpSuccess_45"
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "McpFailure_45": {
+      "type": "object",
+      "properties": {
+        "isError": {
+          "const": true
+        },
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "$ref": "schemas-review_rules_drafts.json#/$defs/NativeMcpError"
+        }
+      },
+      "required": [
+        "isError",
+        "content",
+        "structuredContent"
+      ],
+      "additionalProperties": false
+    },
+    "McpFailure_45Rpc": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 18446744073709551615
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "result": {
+          "$ref": "schemas-review_rules_drafts.json#/$defs/McpFailure_45"
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "McpInput_46": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "company"
+      ],
+      "additionalProperties": false
+    },
+    "McpSuccess_46": {
+      "type": "object",
+      "properties": {
+        "isError": {
+          "const": false
+        },
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "data": {
+              "$ref": "schemas-review_rules_drafts.json#/$defs/NativeDraftListOutput"
+            }
+          },
+          "required": [
+            "ok",
+            "data"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "isError",
+        "content",
+        "structuredContent"
+      ],
+      "additionalProperties": false
+    },
+    "McpSuccess_46Rpc": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 18446744073709551615
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "result": {
+          "$ref": "schemas-review_rules_drafts.json#/$defs/McpSuccess_46"
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "McpFailure_46": {
+      "type": "object",
+      "properties": {
+        "isError": {
+          "const": true
+        },
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "$ref": "schemas-review_rules_drafts.json#/$defs/NativeMcpError"
+        }
+      },
+      "required": [
+        "isError",
+        "content",
+        "structuredContent"
+      ],
+      "additionalProperties": false
+    },
+    "McpFailure_46Rpc": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 18446744073709551615
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "result": {
+          "$ref": "schemas-review_rules_drafts.json#/$defs/McpFailure_46"
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "McpInput_47": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "company"
+      ],
+      "additionalProperties": false
+    },
+    "McpSuccess_47": {
+      "type": "object",
+      "properties": {
+        "isError": {
+          "const": false
+        },
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "data": {
+              "$ref": "schemas-review_rules_drafts.json#/$defs/NativeRuleListOutput"
+            }
+          },
+          "required": [
+            "ok",
+            "data"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "isError",
+        "content",
+        "structuredContent"
+      ],
+      "additionalProperties": false
+    },
+    "McpSuccess_47Rpc": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 18446744073709551615
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "result": {
+          "$ref": "schemas-review_rules_drafts.json#/$defs/McpSuccess_47"
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "McpFailure_47": {
+      "type": "object",
+      "properties": {
+        "isError": {
+          "const": true
+        },
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "$ref": "schemas-review_rules_drafts.json#/$defs/NativeMcpError"
+        }
+      },
+      "required": [
+        "isError",
+        "content",
+        "structuredContent"
+      ],
+      "additionalProperties": false
+    },
+    "McpFailure_47Rpc": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 18446744073709551615
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "result": {
+          "$ref": "schemas-review_rules_drafts.json#/$defs/McpFailure_47"
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "McpInput_48": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "body": {
+          "type": "string"
+        },
+        "confirm": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "company",
+        "body",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "McpSuccess_48": {
+      "type": "object",
+      "properties": {
+        "isError": {
+          "const": false
+        },
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "data": {
+              "$ref": "schemas-review_rules_drafts.json#/$defs/NativeDraftOutput"
+            }
+          },
+          "required": [
+            "ok",
+            "data"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "isError",
+        "content",
+        "structuredContent"
+      ],
+      "additionalProperties": false
+    },
+    "McpSuccess_48Rpc": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 18446744073709551615
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "result": {
+          "$ref": "schemas-review_rules_drafts.json#/$defs/McpSuccess_48"
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "McpFailure_48": {
+      "type": "object",
+      "properties": {
+        "isError": {
+          "const": true
+        },
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "$ref": "schemas-review_rules_drafts.json#/$defs/NativeMcpError"
+        }
+      },
+      "required": [
+        "isError",
+        "content",
+        "structuredContent"
+      ],
+      "additionalProperties": false
+    },
+    "McpFailure_48Rpc": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 18446744073709551615
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "result": {
+          "$ref": "schemas-review_rules_drafts.json#/$defs/McpFailure_48"
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "McpInput_49": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "body": {
+          "type": "string"
+        },
+        "confirm": {
+          "type": "boolean"
+        },
+        "draftId": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]{0,63}$"
+        }
+      },
+      "required": [
+        "company",
+        "body",
+        "confirm",
+        "draftId"
+      ],
+      "additionalProperties": false
+    },
+    "McpSuccess_49": {
+      "type": "object",
+      "properties": {
+        "isError": {
+          "const": false
+        },
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "data": {
+              "$ref": "schemas-review_rules_drafts.json#/$defs/NativeDraftOutput"
+            }
+          },
+          "required": [
+            "ok",
+            "data"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "isError",
+        "content",
+        "structuredContent"
+      ],
+      "additionalProperties": false
+    },
+    "McpSuccess_49Rpc": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 18446744073709551615
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "result": {
+          "$ref": "schemas-review_rules_drafts.json#/$defs/McpSuccess_49"
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "McpFailure_49": {
+      "type": "object",
+      "properties": {
+        "isError": {
+          "const": true
+        },
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "$ref": "schemas-review_rules_drafts.json#/$defs/NativeMcpError"
+        }
+      },
+      "required": [
+        "isError",
+        "content",
+        "structuredContent"
+      ],
+      "additionalProperties": false
+    },
+    "McpFailure_49Rpc": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 18446744073709551615
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "result": {
+          "$ref": "schemas-review_rules_drafts.json#/$defs/McpFailure_49"
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "McpInput_50": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "body": {
+          "type": "string"
+        },
+        "confirm": {
+          "type": "boolean"
+        },
+        "draftId": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]{0,63}$"
+        }
+      },
+      "required": [
+        "company",
+        "body",
+        "confirm",
+        "draftId"
+      ],
+      "additionalProperties": false
+    },
+    "McpSuccess_50": {
+      "type": "object",
+      "properties": {
+        "isError": {
+          "const": false
+        },
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "data": {
+              "$ref": "schemas-review_rules_drafts.json#/$defs/NativeDraftOutput"
+            }
+          },
+          "required": [
+            "ok",
+            "data"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "isError",
+        "content",
+        "structuredContent"
+      ],
+      "additionalProperties": false
+    },
+    "McpSuccess_50Rpc": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 18446744073709551615
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "result": {
+          "$ref": "schemas-review_rules_drafts.json#/$defs/McpSuccess_50"
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "McpFailure_50": {
+      "type": "object",
+      "properties": {
+        "isError": {
+          "const": true
+        },
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "$ref": "schemas-review_rules_drafts.json#/$defs/NativeMcpError"
+        }
+      },
+      "required": [
+        "isError",
+        "content",
+        "structuredContent"
+      ],
+      "additionalProperties": false
+    },
+    "McpFailure_50Rpc": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 18446744073709551615
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "result": {
+          "$ref": "schemas-review_rules_drafts.json#/$defs/McpFailure_50"
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "McpInput_51": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "body": {
+          "type": "string"
+        },
+        "confirm": {
+          "type": "boolean"
+        },
+        "draftId": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]{0,63}$"
+        }
+      },
+      "required": [
+        "company",
+        "body",
+        "confirm",
+        "draftId"
+      ],
+      "additionalProperties": false
+    },
+    "McpSuccess_51": {
+      "type": "object",
+      "properties": {
+        "isError": {
+          "const": false
+        },
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "data": {
+              "$ref": "schemas-review_rules_drafts.json#/$defs/NativeDraftOutput"
+            }
+          },
+          "required": [
+            "ok",
+            "data"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "isError",
+        "content",
+        "structuredContent"
+      ],
+      "additionalProperties": false
+    },
+    "McpSuccess_51Rpc": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 18446744073709551615
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "result": {
+          "$ref": "schemas-review_rules_drafts.json#/$defs/McpSuccess_51"
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "McpFailure_51": {
+      "type": "object",
+      "properties": {
+        "isError": {
+          "const": true
+        },
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "$ref": "schemas-review_rules_drafts.json#/$defs/NativeMcpError"
+        }
+      },
+      "required": [
+        "isError",
+        "content",
+        "structuredContent"
+      ],
+      "additionalProperties": false
+    },
+    "McpFailure_51Rpc": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 18446744073709551615
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "result": {
+          "$ref": "schemas-review_rules_drafts.json#/$defs/McpFailure_51"
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "McpInput_52": {
+      "type": "object",
+      "properties": {
+        "proposal": {
+          "$ref": "schemas-review_rules_drafts.json#/$defs/RuleProposal"
+        },
+        "confirm": {
+          "type": "boolean"
+        },
+        "company": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_-]+$"
+        }
+      },
+      "required": [
+        "company",
+        "proposal"
+      ],
+      "additionalProperties": false
+    },
+    "McpSuccess_52": {
+      "type": "object",
+      "properties": {
+        "isError": {
+          "const": false
+        },
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "errors": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 0
+            },
+            "data": {
+              "type": "object",
+              "properties": {
+                "duplicate": {
+                  "type": "boolean"
+                },
+                "version": {
+                  "type": "integer",
+                  "minimum": -9223372036854775808,
+                  "maximum": 9223372036854775807
+                },
+                "payloadHash": {
+                  "type": "string",
+                  "pattern": "^[0-9a-f]{64}$"
+                }
+              },
+              "required": [
+                "duplicate",
+                "version",
+                "payloadHash"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "ok",
+            "errors",
+            "data"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "isError",
+        "content",
+        "structuredContent"
+      ],
+      "additionalProperties": false
+    },
+    "McpSuccess_52Rpc": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 18446744073709551615
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "result": {
+          "$ref": "schemas-review_rules_drafts.json#/$defs/McpSuccess_52"
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "McpFailure_52": {
+      "type": "object",
+      "properties": {
+        "isError": {
+          "const": true
+        },
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "$ref": "schemas-review_rules_drafts.json#/$defs/OriginalMcpError"
+        }
+      },
+      "required": [
+        "isError",
+        "content",
+        "structuredContent"
+      ],
+      "additionalProperties": false
+    },
+    "McpFailure_52Rpc": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 18446744073709551615
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "result": {
+          "$ref": "schemas-review_rules_drafts.json#/$defs/McpFailure_52"
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "McpInput_53": {
+      "type": "object",
+      "properties": {
+        "ruleId": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "expectedPayloadHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "rationale": {
+          "type": "string",
+          "maxLength": 2000
+        },
+        "provenance": {
+          "type": "string",
+          "maxLength": 256
+        },
+        "effectiveAt": {
+          "type": "string",
+          "maxLength": 24
+        },
+        "confirm": {
+          "type": "boolean"
+        },
+        "company": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_-]+$"
+        }
+      },
+      "required": [
+        "company",
+        "ruleId",
+        "version",
+        "expectedPayloadHash",
+        "rationale",
+        "provenance"
+      ],
+      "additionalProperties": false
+    },
+    "McpSuccess_53": {
+      "type": "object",
+      "properties": {
+        "isError": {
+          "const": false
+        },
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "errors": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 0
+            },
+            "data": {
+              "type": "object",
+              "properties": {},
+              "required": [],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "ok",
+            "errors",
+            "data"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "isError",
+        "content",
+        "structuredContent"
+      ],
+      "additionalProperties": false
+    },
+    "McpSuccess_53Rpc": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 18446744073709551615
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "result": {
+          "$ref": "schemas-review_rules_drafts.json#/$defs/McpSuccess_53"
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "McpFailure_53": {
+      "type": "object",
+      "properties": {
+        "isError": {
+          "const": true
+        },
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "$ref": "schemas-review_rules_drafts.json#/$defs/OriginalMcpError"
+        }
+      },
+      "required": [
+        "isError",
+        "content",
+        "structuredContent"
+      ],
+      "additionalProperties": false
+    },
+    "McpFailure_53Rpc": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 18446744073709551615
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "result": {
+          "$ref": "schemas-review_rules_drafts.json#/$defs/McpFailure_53"
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "McpInput_54": {
+      "type": "object",
+      "properties": {
+        "context": {
+          "$ref": "schemas-review_rules_drafts.json#/$defs/RuleContext"
+        },
+        "at": {
+          "type": "string",
+          "maxLength": 24
+        },
+        "company": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_-]+$"
+        }
+      },
+      "required": [
+        "company",
+        "context"
+      ],
+      "additionalProperties": false
+    },
+    "McpSuccess_54": {
+      "type": "object",
+      "properties": {
+        "isError": {
+          "const": false
+        },
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "errors": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 0
+            },
+            "data": {
+              "anyOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "decision": {
+                      "const": "proposed"
+                    },
+                    "outcome": {
+                      "$ref": "schemas-review_rules_drafts.json#/$defs/RuleOutcome"
+                    },
+                    "matched": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "schemas-review_rules_drafts.json#/$defs/RuleExplanation"
+                      }
+                    },
+                    "explanations": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "schemas-review_rules_drafts.json#/$defs/RuleExplanation"
+                      }
+                    },
+                    "reasons": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "dryRun": {
+                      "const": true
+                    },
+                    "ruleVersionId": {
+                      "type": "integer",
+                      "minimum": -9223372036854775808,
+                      "maximum": 9223372036854775807
+                    },
+                    "payloadHash": {
+                      "type": "string",
+                      "pattern": "^[0-9a-f]{64}$"
+                    }
+                  },
+                  "required": [
+                    "decision",
+                    "outcome",
+                    "matched",
+                    "explanations",
+                    "reasons",
+                    "dryRun",
+                    "ruleVersionId",
+                    "payloadHash"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "decision": {
+                      "const": "human_decision"
+                    },
+                    "matched": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "schemas-review_rules_drafts.json#/$defs/RuleExplanation"
+                      }
+                    },
+                    "explanations": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "schemas-review_rules_drafts.json#/$defs/RuleExplanation"
+                      }
+                    },
+                    "reasons": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "dryRun": {
+                      "const": true
+                    }
+                  },
+                  "required": [
+                    "decision",
+                    "matched",
+                    "explanations",
+                    "reasons",
+                    "dryRun"
+                  ],
+                  "additionalProperties": false
+                }
+              ]
+            }
+          },
+          "required": [
+            "ok",
+            "errors",
+            "data"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "isError",
+        "content",
+        "structuredContent"
+      ],
+      "additionalProperties": false
+    },
+    "McpSuccess_54Rpc": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 18446744073709551615
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "result": {
+          "$ref": "schemas-review_rules_drafts.json#/$defs/McpSuccess_54"
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "McpFailure_54": {
+      "type": "object",
+      "properties": {
+        "isError": {
+          "const": true
+        },
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "$ref": "schemas-review_rules_drafts.json#/$defs/OriginalMcpError"
+        }
+      },
+      "required": [
+        "isError",
+        "content",
+        "structuredContent"
+      ],
+      "additionalProperties": false
+    },
+    "McpFailure_54Rpc": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 18446744073709551615
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "result": {
+          "$ref": "schemas-review_rules_drafts.json#/$defs/McpFailure_54"
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    }
+  }
+}
