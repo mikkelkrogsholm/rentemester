@@ -7,6 +7,12 @@ enum Command {
     Generate(i64, rentemester_storage::recurring_invoices::Generate),
 }
 pub(super) async fn handle(State(state): State<Product>, request: Request) -> Response {
+    // GET-backed HEAD must never select template creation or invoice generation.
+    if request.method() == axum::http::Method::HEAD {
+        let mut response = refused(StatusCode::METHOD_NOT_ALLOWED, "method_not_allowed");
+        response.headers_mut().insert("allow", axum::http::HeaderValue::from_static("GET"));
+        return response;
+    }
     let company_slug=request.uri().path().split('/').nth(3).unwrap_or("").to_owned();
     let mutation = request.method() != axum::http::Method::GET;
     let cookie = match proof(&state, &request, mutation) {

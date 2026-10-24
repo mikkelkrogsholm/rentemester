@@ -9,6 +9,12 @@ enum Command {
     Generate(original::Generate),
 }
 pub(super) async fn handle(State(state): State<Product>, request: Request) -> Response {
+    // GET-backed HEAD must never select template creation or invoice generation.
+    if request.method() == axum::http::Method::HEAD {
+        let mut response = refused(StatusCode::METHOD_NOT_ALLOWED, "method_not_allowed");
+        response.headers_mut().insert("allow", axum::http::HeaderValue::from_static("GET"));
+        return response;
+    }
     let slug = request
         .uri()
         .path()
