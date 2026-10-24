@@ -422,7 +422,7 @@
         "reportingLines": {
           "type": "array",
           "items": {
-            "$ref": "#/$defs/consolidation_LineOut"
+            "$ref": "#/$defs/consolidation_Line"
           }
         },
         "accountMappings": {
@@ -2823,7 +2823,7 @@
         "groups": {
           "type": "array",
           "items": {
-            "$ref": "#/$defs/intercompany_GroupOut"
+            "$ref": "#/$defs/intercompany_Group"
           }
         },
         "confirm": {
@@ -7519,6 +7519,46 @@
                 },
                 "message": {
                   "const": "intercompany mutation requires only company/body/confirm"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "report selectors must be strings"
                 }
               },
               "required": [

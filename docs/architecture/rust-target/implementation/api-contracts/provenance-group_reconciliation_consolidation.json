@@ -228,5 +228,6 @@
       "needle": "pub async fn call("
     }
   ],
-  "scope": "Source-only selected contracts; main owns semantic review/integration/acceptance; whole677 remains open."
+  "scope": "Source-only selected contracts; main owns semantic review/integration/acceptance; whole677 remains open.",
+  "leadReviewRepair": "Lead source review: added reachable global report-selector RPC pair; rawHTTP manifest nested Group and consolidation reportingLine now use existing input tuple/object variants while output and SDK forms stay distinct. Removed duplicate exact-action oneOf refs that rejected legitimate lifecycle bodies; per-action rules/authority and all partial-report evidence retained."
 }
