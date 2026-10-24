@@ -1,0 +1,1066 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "schemas-identity_cli.json",
+  "title": "Native remote identity CLI invocation and returned JSON contracts",
+  "$defs": {
+    "Failure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "enum": [
+            "invalid_input",
+            "transport",
+            "server_refused",
+            "protocol",
+            "outcome_unknown"
+          ]
+        },
+        "errors": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1,
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "ok",
+        "code",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Failure_invalid_input": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "const": "invalid_input"
+        },
+        "errors": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1,
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "ok",
+        "code",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Failure_transport": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "const": "transport"
+        },
+        "errors": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1,
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "ok",
+        "code",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Failure_server_refused": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "const": "server_refused"
+        },
+        "errors": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1,
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "ok",
+        "code",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Failure_protocol": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "const": "protocol"
+        },
+        "errors": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1,
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "ok",
+        "code",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Failure_outcome_unknown": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "const": "outcome_unknown"
+        },
+        "errors": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1,
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "ok",
+        "code",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Authenticated": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "status": {
+              "const": "authenticated"
+            }
+          },
+          "required": [
+            "status"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "EnrollmentRequired": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "const": "mfa_enrollment_required"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "const": "MFA enrollment required; complete enrollment in server UI"
+          },
+          "minItems": 1,
+          "maxItems": 1
+        }
+      },
+      "required": [
+        "ok",
+        "code",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "MeOutput": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "data": {
+          "$ref": "schemas-workspace_identity.json#/$defs/Me"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "HumanCompaniesOutput": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "data": {
+          "$ref": "schemas-workspace_identity.json#/$defs/HumanCompanies"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "ServiceCompaniesOutput": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "data": {
+          "$ref": "schemas-workspace_identity.json#/$defs/ServiceCompanies"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "InventoryOutput": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "data": {
+          "$ref": "schemas-service_identity.json#/$defs/Inventory"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "CreateOutput": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "data": {
+          "$ref": "schemas-service_identity.json#/$defs/IssuedCreate"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "RotateOutput": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "data": {
+          "$ref": "schemas-service_identity.json#/$defs/IssuedRotate"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "RevokeOutput": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "data": {
+          "$ref": "schemas-service_identity.json#/$defs/Revoked"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "RecoverOutput": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "data": {
+          "$ref": "schemas-service_identity.json#/$defs/Recovery"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "JsonValue": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "number"
+        },
+        {
+          "type": "string"
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-identity_cli.json#/$defs/JsonValue"
+          }
+        },
+        {
+          "type": "object",
+          "properties": {},
+          "required": [],
+          "additionalProperties": {
+            "$ref": "schemas-identity_cli.json#/$defs/JsonValue"
+          },
+          "x-arbitrary-json": {
+            "scope": "Successful HTTP response value inside remote returned data (SDK tolerance, not a native server receipt promise)",
+            "rationale": "request parses serde_json::Value without receipt validation; wrapper copies the complete value and derives outer ok from a boolean field or true. Unknown response fields are preserved.",
+            "sourceRefs": [
+              {
+                "path": "crates/rentemester-client/src/lib.rs",
+                "sha256": "89c8bc77a2081400d8915cbb988d81be0f349a0bc9487ce687dc3ae3de75accd",
+                "needle": "serde_json::from_slice(&bytes)"
+              },
+              {
+                "path": "crates/rentemester-cli/src/remote.rs",
+                "sha256": "9a0d2ee8c626321459749c22642936ad07f9934a4e47eb3c4dc90ad18c7d2e91",
+                "needle": "Ok(json!({\"ok\":response.get"
+              }
+            ]
+          }
+        }
+      ],
+      "x-arbitrary-json": {
+        "scope": "Successful HTTP response value inside remote returned data (SDK tolerance, not a native server receipt promise)",
+        "rationale": "request parses serde_json::Value without receipt validation; wrapper copies the complete value and derives outer ok from a boolean field or true. Unknown response fields are preserved.",
+        "sourceRefs": [
+          {
+            "path": "crates/rentemester-client/src/lib.rs",
+            "sha256": "89c8bc77a2081400d8915cbb988d81be0f349a0bc9487ce687dc3ae3de75accd",
+            "needle": "serde_json::from_slice(&bytes)"
+          },
+          {
+            "path": "crates/rentemester-cli/src/remote.rs",
+            "sha256": "9a0d2ee8c626321459749c22642936ad07f9934a4e47eb3c4dc90ad18c7d2e91",
+            "needle": "Ok(json!({\"ok\":response.get"
+          }
+        ]
+      }
+    },
+    "SdkAcceptedOutput": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "data": {
+          "$ref": "schemas-identity_cli.json#/$defs/JsonValue"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false,
+      "description": "Tolerance schema only; outer ok equals data.ok if boolean, otherwise true. Exit 1 only when outer ok is false; no server body schema validation."
+    },
+    "loginInput": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "const": "remote login"
+        },
+        "flags": {
+          "type": "object",
+          "properties": {
+            "--server": {
+              "type": "string",
+              "minLength": 1
+            },
+            "--allow-loopback-http": {
+              "const": true
+            },
+            "--email": {
+              "type": "string",
+              "minLength": 1,
+              "description": "At most4096 UTF8 bytes; no email syntax check in CLI/SDK."
+            },
+            "--factor": {
+              "enum": [
+                "totp",
+                "backup"
+              ]
+            },
+            "--session-out": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "--server",
+            "--email",
+            "--factor",
+            "--session-out"
+          ],
+          "additionalProperties": false
+        },
+        "stdin": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "description": "Password:1..4096 UTF8 bytes, newline terminated."
+            },
+            {
+              "type": "string",
+              "minLength": 1,
+              "description": "Factor code:1..4096 UTF8 bytes, newline terminated; read only after pending challenge."
+            }
+          ],
+          "minItems": 2,
+          "maxItems": 2,
+          "description": "Logical secret lines; actual input is plaintext UTF8 pipe, not a JSON array. LF required, optional preceding CR stripped; terminal refused. Extra trailing input not consumed."
+        }
+      },
+      "required": [
+        "command",
+        "flags",
+        "stdin"
+      ],
+      "additionalProperties": false
+    },
+    "meInput": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "const": "remote me"
+        },
+        "flags": {
+          "type": "object",
+          "properties": {
+            "--server": {
+              "type": "string",
+              "minLength": 1
+            },
+            "--allow-loopback-http": {
+              "const": true
+            },
+            "--cookie-file": {
+              "type": "string",
+              "minLength": 1
+            },
+            "--service-key-file": {
+              "type": "string",
+              "minLength": 1
+            },
+            "--query": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Accepted generic value flag, ignored by this operation; not an HTTP filter."
+            },
+            "--cursor": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Accepted generic value flag, ignored by this operation; not an HTTP filter."
+            },
+            "--limit": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Accepted generic value flag, ignored by this operation; not an HTTP filter."
+            },
+            "--include-proposed": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Accepted generic value flag, ignored by this operation; not an HTTP filter."
+            },
+            "--include-archived": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Accepted generic value flag, ignored by this operation; not an HTTP filter."
+            },
+            "--party-id": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Accepted generic value flag, ignored by this operation; not an HTTP filter."
+            },
+            "--source-id": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Accepted generic value flag, ignored by this operation; not an HTTP filter."
+            },
+            "--output": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Accepted generic value flag, ignored by this operation; not an HTTP filter."
+            },
+            "--record-id": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Accepted generic value flag, ignored by this operation; not an HTTP filter."
+            },
+            "--snapshot-id": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Accepted generic value flag, ignored by this operation; not an HTTP filter."
+            },
+            "--run-key": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Accepted generic value flag, ignored by this operation; not an HTTP filter."
+            },
+            "--accounting-from": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Accepted generic value flag, ignored by this operation; not an HTTP filter."
+            },
+            "--accounting-to": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Accepted generic value flag, ignored by this operation; not an HTTP filter."
+            },
+            "--bank-from": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Accepted generic value flag, ignored by this operation; not an HTTP filter."
+            },
+            "--bank-to": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Accepted generic value flag, ignored by this operation; not an HTTP filter."
+            }
+          },
+          "required": [
+            "--server"
+          ],
+          "additionalProperties": false,
+          "oneOf": [
+            {
+              "required": [
+                "--cookie-file"
+              ],
+              "not": {
+                "required": [
+                  "--service-key-file"
+                ]
+              }
+            },
+            {
+              "required": [
+                "--service-key-file"
+              ],
+              "not": {
+                "required": [
+                  "--cookie-file"
+                ]
+              }
+            }
+          ]
+        },
+        "stdin": {
+          "type": "null"
+        }
+      },
+      "required": [
+        "command",
+        "flags",
+        "stdin"
+      ],
+      "additionalProperties": false
+    },
+    "companiesInput": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "const": "remote companies"
+        },
+        "flags": {
+          "type": "object",
+          "properties": {
+            "--server": {
+              "type": "string",
+              "minLength": 1
+            },
+            "--allow-loopback-http": {
+              "const": true
+            },
+            "--cookie-file": {
+              "type": "string",
+              "minLength": 1
+            },
+            "--service-key-file": {
+              "type": "string",
+              "minLength": 1
+            },
+            "--query": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Accepted generic value flag, ignored by this operation; not an HTTP filter."
+            },
+            "--cursor": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Accepted generic value flag, ignored by this operation; not an HTTP filter."
+            },
+            "--limit": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Accepted generic value flag, ignored by this operation; not an HTTP filter."
+            },
+            "--include-proposed": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Accepted generic value flag, ignored by this operation; not an HTTP filter."
+            },
+            "--include-archived": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Accepted generic value flag, ignored by this operation; not an HTTP filter."
+            },
+            "--party-id": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Accepted generic value flag, ignored by this operation; not an HTTP filter."
+            },
+            "--source-id": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Accepted generic value flag, ignored by this operation; not an HTTP filter."
+            },
+            "--output": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Accepted generic value flag, ignored by this operation; not an HTTP filter."
+            },
+            "--record-id": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Accepted generic value flag, ignored by this operation; not an HTTP filter."
+            },
+            "--snapshot-id": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Accepted generic value flag, ignored by this operation; not an HTTP filter."
+            },
+            "--run-key": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Accepted generic value flag, ignored by this operation; not an HTTP filter."
+            },
+            "--accounting-from": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Accepted generic value flag, ignored by this operation; not an HTTP filter."
+            },
+            "--accounting-to": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Accepted generic value flag, ignored by this operation; not an HTTP filter."
+            },
+            "--bank-from": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Accepted generic value flag, ignored by this operation; not an HTTP filter."
+            },
+            "--bank-to": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Accepted generic value flag, ignored by this operation; not an HTTP filter."
+            }
+          },
+          "required": [
+            "--server"
+          ],
+          "additionalProperties": false,
+          "oneOf": [
+            {
+              "required": [
+                "--cookie-file"
+              ],
+              "not": {
+                "required": [
+                  "--service-key-file"
+                ]
+              }
+            },
+            {
+              "required": [
+                "--service-key-file"
+              ],
+              "not": {
+                "required": [
+                  "--cookie-file"
+                ]
+              }
+            }
+          ]
+        },
+        "stdin": {
+          "type": "null"
+        }
+      },
+      "required": [
+        "command",
+        "flags",
+        "stdin"
+      ],
+      "additionalProperties": false
+    },
+    "service-principalsInput": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "const": "remote service-principals"
+        },
+        "flags": {
+          "type": "object",
+          "properties": {
+            "--server": {
+              "type": "string",
+              "minLength": 1
+            },
+            "--allow-loopback-http": {
+              "const": true
+            },
+            "--cookie-file": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "--server",
+            "--cookie-file"
+          ],
+          "additionalProperties": false
+        },
+        "stdin": {
+          "type": "null"
+        }
+      },
+      "required": [
+        "command",
+        "flags",
+        "stdin"
+      ],
+      "additionalProperties": false
+    },
+    "create-service-principalInput": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "const": "remote create-service-principal"
+        },
+        "flags": {
+          "type": "object",
+          "properties": {
+            "--server": {
+              "type": "string",
+              "minLength": 1
+            },
+            "--allow-loopback-http": {
+              "const": true
+            },
+            "--cookie-file": {
+              "type": "string",
+              "minLength": 1
+            },
+            "--confirm": {
+              "const": true
+            }
+          },
+          "required": [
+            "--server",
+            "--cookie-file",
+            "--confirm"
+          ],
+          "additionalProperties": false
+        },
+        "stdin": {
+          "$ref": "schemas-identity_cli.json#/$defs/NativeCreateBody"
+        }
+      },
+      "required": [
+        "command",
+        "flags",
+        "stdin"
+      ],
+      "additionalProperties": false
+    },
+    "rotate-service-principalInput": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "const": "remote rotate-service-principal"
+        },
+        "flags": {
+          "type": "object",
+          "properties": {
+            "--server": {
+              "type": "string",
+              "minLength": 1
+            },
+            "--allow-loopback-http": {
+              "const": true
+            },
+            "--cookie-file": {
+              "type": "string",
+              "minLength": 1
+            },
+            "--confirm": {
+              "const": true
+            }
+          },
+          "required": [
+            "--server",
+            "--cookie-file",
+            "--confirm"
+          ],
+          "additionalProperties": false
+        },
+        "stdin": {
+          "$ref": "schemas-identity_cli.json#/$defs/NativeRotateBody"
+        }
+      },
+      "required": [
+        "command",
+        "flags",
+        "stdin"
+      ],
+      "additionalProperties": false
+    },
+    "revoke-service-principalInput": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "const": "remote revoke-service-principal"
+        },
+        "flags": {
+          "type": "object",
+          "properties": {
+            "--server": {
+              "type": "string",
+              "minLength": 1
+            },
+            "--allow-loopback-http": {
+              "const": true
+            },
+            "--cookie-file": {
+              "type": "string",
+              "minLength": 1
+            },
+            "--confirm": {
+              "const": true
+            }
+          },
+          "required": [
+            "--server",
+            "--cookie-file",
+            "--confirm"
+          ],
+          "additionalProperties": false
+        },
+        "stdin": {
+          "$ref": "schemas-identity_cli.json#/$defs/NativeRevokeBody"
+        }
+      },
+      "required": [
+        "command",
+        "flags",
+        "stdin"
+      ],
+      "additionalProperties": false
+    },
+    "recover-service-principalInput": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "const": "remote recover-service-principal"
+        },
+        "flags": {
+          "type": "object",
+          "properties": {
+            "--server": {
+              "type": "string",
+              "minLength": 1
+            },
+            "--allow-loopback-http": {
+              "const": true
+            },
+            "--cookie-file": {
+              "type": "string",
+              "minLength": 1
+            },
+            "--confirm": {
+              "const": true
+            }
+          },
+          "required": [
+            "--server",
+            "--cookie-file",
+            "--confirm"
+          ],
+          "additionalProperties": false
+        },
+        "stdin": {
+          "$ref": "schemas-identity_cli.json#/$defs/NativeRecoverBody"
+        }
+      },
+      "required": [
+        "command",
+        "flags",
+        "stdin"
+      ],
+      "additionalProperties": false
+    },
+    "NativeCreateBody": {
+      "type": "object",
+      "properties": {
+        "confirm": {
+          "const": true
+        },
+        "displayName": {
+          "type": "string",
+          "description": "Trimmed before storage validation: nonblank, <=1024 UTF-8 bytes and <=120 Unicode scalar values after trim, no control characters.",
+          "minLength": 1
+        },
+        "operationId": {
+          "$ref": "schemas-service_identity.json#/$defs/OperationIdInput"
+        },
+        "expiresInSeconds": {
+          "type": "integer",
+          "minimum": 86400,
+          "maximum": 31536000
+        }
+      },
+      "required": [
+        "confirm",
+        "displayName"
+      ],
+      "additionalProperties": false,
+      "description": "Native SDK pre-dispatch shape. Exact JSON bytes <=8192; forwarded unchanged. Server strict parser additionally refuses duplicate fields. UTF8 byte bounds and trim/control constraints are enforced in SDK code, not JSON Schema character counts."
+    },
+    "NativeRotateBody": {
+      "type": "object",
+      "properties": {
+        "confirm": {
+          "const": true
+        },
+        "serviceAccountId": {
+          "$ref": "schemas-service_identity.json#/$defs/Identifier"
+        },
+        "credentialId": {
+          "$ref": "schemas-service_identity.json#/$defs/Identifier"
+        },
+        "operationId": {
+          "$ref": "schemas-service_identity.json#/$defs/OperationIdInput"
+        },
+        "expiresInSeconds": {
+          "type": "integer",
+          "minimum": 86400,
+          "maximum": 31536000,
+          "default": 7776000
+        }
+      },
+      "required": [
+        "confirm",
+        "serviceAccountId",
+        "credentialId"
+      ],
+      "additionalProperties": false,
+      "description": "Native SDK pre-dispatch shape. Exact JSON bytes <=8192; forwarded unchanged. Server strict parser additionally refuses duplicate fields. UTF8 byte bounds and trim/control constraints are enforced in SDK code, not JSON Schema character counts."
+    },
+    "NativeRevokeBody": {
+      "type": "object",
+      "properties": {
+        "confirm": {
+          "const": true
+        },
+        "serviceAccountId": {
+          "$ref": "schemas-service_identity.json#/$defs/Identifier"
+        },
+        "credentialId": {
+          "$ref": "schemas-service_identity.json#/$defs/Identifier"
+        },
+        "operationId": {
+          "$ref": "schemas-service_identity.json#/$defs/OperationIdInput"
+        }
+      },
+      "required": [
+        "confirm",
+        "serviceAccountId",
+        "credentialId"
+      ],
+      "additionalProperties": false,
+      "description": "Native SDK pre-dispatch shape. Exact JSON bytes <=8192; forwarded unchanged. Server strict parser additionally refuses duplicate fields. UTF8 byte bounds and trim/control constraints are enforced in SDK code, not JSON Schema character counts."
+    },
+    "NativeRecoverBody": {
+      "type": "object",
+      "properties": {
+        "confirm": {
+          "const": true
+        },
+        "operationId": {
+          "$ref": "schemas-service_identity.json#/$defs/OperationIdInput"
+        }
+      },
+      "required": [
+        "confirm",
+        "operationId"
+      ],
+      "additionalProperties": false,
+      "description": "Native SDK pre-dispatch shape. Exact JSON bytes <=8192; forwarded unchanged. Server strict parser additionally refuses duplicate fields. UTF8 byte bounds and trim/control constraints are enforced in SDK code, not JSON Schema character counts."
+    }
+  }
+}
