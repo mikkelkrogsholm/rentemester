@@ -70,7 +70,7 @@
               ]
             }
           ],
-          "minItems": 3,
+          "minItems": 4,
           "maxItems": 4
         }
       ]
@@ -8989,6 +8989,752 @@
         "lines",
         "note",
         "sourceArchiveImportIds"
+      ],
+      "additionalProperties": false
+    },
+    "OpeningSdkLineObject": {
+      "type": "object",
+      "properties": {
+        "accountNo": {
+          "type": "string",
+          "minLength": 1
+        },
+        "debitAmount": {
+          "type": "string",
+          "minLength": 1,
+          "x-validation": "Any nonempty String; SDK does not invoke Money::parse, validate canonical decimal pattern, sign, balance or precision."
+        },
+        "creditAmount": {
+          "type": "string",
+          "minLength": 1,
+          "x-validation": "Any nonempty String; SDK does not invoke Money::parse, validate canonical decimal pattern, sign, balance or precision."
+        },
+        "text": {
+          "anyOf": [
+            {
+              "type": "string",
+              "x-maxUtf8Bytes": 65536
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "accountNo"
+      ],
+      "additionalProperties": false
+    },
+    "OpeningSdkLine": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/OpeningSdkLineObject"
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "string",
+              "minLength": 1,
+              "x-validation": "Any nonempty String; SDK does not invoke Money::parse, validate canonical decimal pattern, sign, balance or precision."
+            },
+            {
+              "type": "string",
+              "minLength": 1,
+              "x-validation": "Any nonempty String; SDK does not invoke Money::parse, validate canonical decimal pattern, sign, balance or precision."
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "x-maxUtf8Bytes": 65536
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          ],
+          "minItems": 4,
+          "maxItems": 4
+        }
+      ],
+      "x-validation": "Map debitAmount/creditAmount omission defaults None; explicit null refuses via optional_amount String::deserialize. Tuple has all 4 positions and requires nonempty string amounts, nullable text. accountNo is nonempty without trim/control/length checks; text nullable <=65536 UTF8 bytes."
+    },
+    "OpeningSdkInputObject": {
+      "type": "object",
+      "properties": {
+        "cutOverDate": {
+          "type": "string",
+          "minLength": 1
+        },
+        "lines": {
+          "type": "array",
+          "minItems": 2,
+          "items": {
+            "$ref": "#/$defs/OpeningSdkLine"
+          }
+        },
+        "note": {
+          "anyOf": [
+            {
+              "type": "string",
+              "x-maxUtf8Bytes": 4096
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sourceArchiveImportIds": {
+          "type": "array",
+          "maxItems": 32,
+          "items": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "x-validation": "Duplicates allowed by SDK; map omission defaults empty Vec. Null and non-integer values refuse."
+        }
+      },
+      "required": [
+        "cutOverDate",
+        "lines"
+      ],
+      "additionalProperties": false,
+      "x-validation": "SDK cutOverDate need only be nonempty; no Date parser, Gregorian pattern, whitespace trim or horizon/period check. Server decides valid Date/accounting. sourceArchiveImportIds duplicates remain admitted by SDK."
+    },
+    "OpeningSdkInput": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/OpeningSdkInputObject"
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "array",
+              "minItems": 2,
+              "items": {
+                "$ref": "#/$defs/OpeningSdkLine"
+              }
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "x-maxUtf8Bytes": 4096
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "type": "array",
+              "maxItems": 32,
+              "items": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              },
+              "x-validation": "Duplicates allowed by SDK; map omission defaults empty Vec. Null and non-integer values refuse."
+            }
+          ],
+          "minItems": 3,
+          "maxItems": 4
+        }
+      ],
+      "x-validation": "SDK cutOverDate need only be nonempty; no Date parser, Gregorian pattern, whitespace trim or horizon/period check. Server decides valid Date/accounting. sourceArchiveImportIds duplicates remain admitted by SDK."
+    },
+    "SyntheticSdkInputObject": {
+      "type": "object",
+      "properties": {
+        "sourceSystem": {
+          "const": "synthetic-csv"
+        },
+        "content": {
+          "type": "string",
+          "minLength": 1,
+          "x-maxUtf8Bytes": 49152
+        }
+      },
+      "required": [
+        "sourceSystem",
+        "content"
+      ],
+      "additionalProperties": false
+    },
+    "SyntheticSdkInput": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/SyntheticSdkInputObject"
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "const": "synthetic-csv"
+            },
+            {
+              "type": "string",
+              "minLength": 1,
+              "x-maxUtf8Bytes": 49152
+            }
+          ],
+          "minItems": 2,
+          "maxItems": 2
+        }
+      ]
+    },
+    "OpeningSdkPlanInput": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/OpeningSdkInput"
+        },
+        {
+          "$ref": "#/$defs/SyntheticSdkInput"
+        }
+      ],
+      "x-maxRawUtf8Bytes": 65536
+    },
+    "OpeningSdkApplyObject": {
+      "type": "object",
+      "properties": {
+        "input": {
+          "$ref": "#/$defs/OpeningSdkPlanInput"
+        },
+        "planHash": {
+          "type": "string",
+          "minLength": 64,
+          "maxLength": 64,
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "idempotencyKey": {
+          "type": "string",
+          "minLength": 1
+        },
+        "confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "input",
+        "planHash",
+        "idempotencyKey",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "OpeningSdkApply": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/OpeningSdkApplyObject"
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "$ref": "#/$defs/OpeningSdkPlanInput"
+            },
+            {
+              "type": "string",
+              "minLength": 64,
+              "maxLength": 64,
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "const": true
+            }
+          ],
+          "minItems": 4,
+          "maxItems": 4
+        }
+      ],
+      "x-maxRawUtf8Bytes": 65536
+    },
+    "McpOpeningPlan": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "body": {
+          "type": "string",
+          "contentMediaType": "application/json",
+          "contentSchema": {
+            "$ref": "schemas-period_opening_dinero.json#/$defs/OpeningSdkPlanInput"
+          },
+          "x-maxUtf8Bytes": 65536
+        }
+      },
+      "required": [
+        "company",
+        "body"
+      ],
+      "additionalProperties": false
+    },
+    "McpOpeningApply": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "body": {
+          "type": "string",
+          "contentMediaType": "application/json",
+          "contentSchema": {
+            "$ref": "schemas-period_opening_dinero.json#/$defs/OpeningSdkApply"
+          },
+          "x-maxUtf8Bytes": 65536
+        },
+        "confirm": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "company",
+        "body",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "DineroSdkPlanObject": {
+      "type": "object",
+      "properties": {
+        "fileName": {
+          "type": "string",
+          "minLength": 1
+        },
+        "contentBase64": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "fileName",
+        "contentBase64"
+      ],
+      "additionalProperties": false
+    },
+    "DineroSdkPlan": {
+      "oneOf": [
+        {
+          "$ref": "schemas-period_opening_dinero.json#/$defs/DineroSdkPlanObject"
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "string",
+              "minLength": 1
+            }
+          ],
+          "minItems": 2,
+          "maxItems": 2
+        }
+      ]
+    },
+    "McpDineroPlan": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "body": {
+          "type": "string",
+          "contentMediaType": "application/json",
+          "contentSchema": {
+            "$ref": "schemas-period_opening_dinero.json#/$defs/DineroSdkPlan"
+          },
+          "x-maxUtf8Bytes": 36700160
+        }
+      },
+      "required": [
+        "company",
+        "body"
+      ],
+      "additionalProperties": false
+    },
+    "DineroSdkApplyObject": {
+      "type": "object",
+      "properties": {
+        "fileName": {
+          "type": "string",
+          "minLength": 1
+        },
+        "contentBase64": {
+          "type": "string",
+          "minLength": 1
+        },
+        "planHash": {
+          "type": "string",
+          "minLength": 64,
+          "maxLength": 64,
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "idempotencyKey": {
+          "type": "string",
+          "minLength": 1
+        },
+        "confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "fileName",
+        "contentBase64",
+        "planHash",
+        "idempotencyKey",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "DineroSdkApply": {
+      "oneOf": [
+        {
+          "$ref": "schemas-period_opening_dinero.json#/$defs/DineroSdkApplyObject"
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "string",
+              "minLength": 64,
+              "maxLength": 64,
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "const": true
+            }
+          ],
+          "minItems": 5,
+          "maxItems": 5
+        }
+      ]
+    },
+    "McpDineroApply": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "body": {
+          "type": "string",
+          "contentMediaType": "application/json",
+          "contentSchema": {
+            "$ref": "schemas-period_opening_dinero.json#/$defs/DineroSdkApply"
+          },
+          "x-maxUtf8Bytes": 36700160
+        },
+        "confirm": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "company",
+        "body",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "PeriodSdkReview": {
+      "type": "object",
+      "properties": {
+        "periodStart": {
+          "type": "string"
+        },
+        "periodEnd": {
+          "type": "string"
+        },
+        "confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "periodStart",
+        "periodEnd",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "McpPeriodReview": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "body": {
+          "type": "string",
+          "contentMediaType": "application/json",
+          "contentSchema": {
+            "$ref": "schemas-period_opening_dinero.json#/$defs/PeriodSdkReview"
+          },
+          "x-maxUtf8Bytes": 262144
+        },
+        "confirm": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "company",
+        "body",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "PeriodSdkClose": {
+      "type": "object",
+      "properties": {
+        "periodStart": {
+          "type": "string"
+        },
+        "periodEnd": {
+          "type": "string"
+        },
+        "confirm": {
+          "const": true
+        },
+        "kind": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "vat_period",
+            "vat_quarter",
+            "fiscal_year",
+            "custom",
+            null
+          ]
+        },
+        "packetHash": {
+          "type": "string",
+          "minLength": 1
+        },
+        "reviewId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9223372036854775807
+        },
+        "reference": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "x-maxUtf8Bytes": 4096
+        },
+        "reason": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "x-maxUtf8Bytes": 4096
+        },
+        "force": {
+          "type": [
+            "boolean",
+            "null"
+          ],
+          "enum": [
+            false,
+            null
+          ]
+        }
+      },
+      "required": [
+        "periodStart",
+        "periodEnd",
+        "confirm",
+        "packetHash",
+        "reviewId"
+      ],
+      "additionalProperties": false
+    },
+    "McpPeriodClose": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "body": {
+          "type": "string",
+          "contentMediaType": "application/json",
+          "contentSchema": {
+            "$ref": "schemas-period_opening_dinero.json#/$defs/PeriodSdkClose"
+          },
+          "x-maxUtf8Bytes": 262144
+        },
+        "confirm": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "company",
+        "body",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "PeriodSdkReopen": {
+      "type": "object",
+      "properties": {
+        "periodStart": {
+          "type": "string"
+        },
+        "periodEnd": {
+          "type": "string"
+        },
+        "confirm": {
+          "const": true
+        },
+        "kind": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "vat_period",
+            "vat_quarter",
+            "fiscal_year",
+            "custom",
+            null
+          ]
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "x-maxUtf8Bytes": 4096
+        }
+      },
+      "required": [
+        "periodStart",
+        "periodEnd",
+        "confirm",
+        "reason"
+      ],
+      "additionalProperties": false
+    },
+    "McpPeriodReopen": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "body": {
+          "type": "string",
+          "contentMediaType": "application/json",
+          "contentSchema": {
+            "$ref": "schemas-period_opening_dinero.json#/$defs/PeriodSdkReopen"
+          },
+          "x-maxUtf8Bytes": 262144
+        },
+        "confirm": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "company",
+        "body",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "PeriodSdkReport": {
+      "type": "object",
+      "properties": {
+        "periodStart": {
+          "type": "string"
+        },
+        "periodEnd": {
+          "type": "string"
+        },
+        "confirm": {
+          "const": true
+        },
+        "kind": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "vat_period",
+            "vat_quarter",
+            "fiscal_year",
+            "custom",
+            null
+          ]
+        },
+        "packetHash": {
+          "type": "string",
+          "minLength": 1
+        },
+        "reference": {
+          "type": "string",
+          "minLength": 1,
+          "x-maxUtf8Bytes": 4096
+        }
+      },
+      "required": [
+        "periodStart",
+        "periodEnd",
+        "confirm",
+        "packetHash",
+        "reference"
+      ],
+      "additionalProperties": false
+    },
+    "McpPeriodReport": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "body": {
+          "type": "string",
+          "contentMediaType": "application/json",
+          "contentSchema": {
+            "$ref": "schemas-period_opening_dinero.json#/$defs/PeriodSdkReport"
+          },
+          "x-maxUtf8Bytes": 262144
+        },
+        "confirm": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "company",
+        "body",
+        "confirm"
       ],
       "additionalProperties": false
     }
