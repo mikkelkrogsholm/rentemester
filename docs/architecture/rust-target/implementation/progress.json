@@ -1,14 +1,14 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "R83/R84 originalCLI716 group/company/reg supportednativeprofiles accepted; whole716open",
-  "code_revision": "f2e10a9701984ef180a2d822bdb4fe64ee369727",
+  "current_increment": "R85/R86 commonRustcompany create -> rename -> inspect accepted; originalfivefieldgap resolved, legacyHTTPinputs retained; whole716open",
+  "code_revision": "8d298d9e4f5de2e9dcc6de24f61ecd035aa9c8af",
   "spec_revision": "971249492f96da3d630e32bb0828ec3f7831e6b4",
-  "state": "original_cli_profiles_component_accepted_whole716_open",
+  "state": "company_profile_flow_component_accepted_whole716_open",
   "issues_closed": 40,
   "next": [
-    "Complete the concrete common-server company creation/profile fields already required by originalCLI/websetup; keep singleRustengine andcurrentauthority/backup/writer/fiscal/VAT/bank controls.",
-    "Thenremaining48originalCLIkeys/positiveoverview/path/bootstrap/full265compatibility;40of55closed15open/allfinalgates unchanged, installedmanualdesktopLAST."
+    "48other original literalCLIkeys; positivegroupoverview; firstworkspace/rootbootstrap/canonicalpath and full265peroperation runtime/files/confirmation/streams/0-1-2 acceptance.",
+    "40of55originalissuesclosed15open; full717workflows/reconnect andall55J01-J07/finalnative/release/cutover/retirement remain; manualinstalleddesktopLAST."
   ],
   "preserve_unrelated_paths": [
     ".claude/settings.json",
@@ -18,7 +18,7 @@
     ".gitattributes"
   ],
   "all_goal_requirements_complete": false,
-  "previous_verified_increment": "R81/R82 originalpartyCLI4commandflow accepted, whole716coverage still open",
+  "previous_verified_increment": "R83/R84 originalCLI716 group/company/reg supportednativeprofiles accepted; whole716open",
   "evidence": {
     "combined_browser_log": "/tmp/rm-platform5-combined.log",
     "combined_browser_exit": 0,
@@ -16600,6 +16600,10 @@
       "sha256": "38b60fee114ae7a375af27382ad0a4a5191f60ee0b8c90186ec66ddcc76fc800",
       "github_closed_at": "2026-10-24T13:38:08Z",
       "status": "COMPLETE original R42 scope/allthree criteria; actual GitHub CLOSED flow:done after explicit single-edge consumed server identity amendment"
+    },
+    "r86_company_profile_flow": {
+      "path": "/private/tmp/rentemester-rust-reports/r86-company716-create-edit-inspect-qualified.json",
+      "sha256": "8544a480f8ca8a406a3bb9988c76a78031c7687eec9a051fc0f0a2083ee4a3c4"
     }
   },
   "verified_history": [
@@ -18780,6 +18784,18 @@
       "remaining": [
         "48original literalCLIkeys stillwithout currentcontractnames, pluspositivegroupoverviewAPI; companycreationaddress/postalCode/city/paymentTermsDays andprofile-name/backendfields, canonicalworkspace-root/archivedcreatedAt andfirstbootstrap/full265peroperationcriteria. Theseareexplicitfull716remainders, not scopecuts.",
         "All55originalscope/J01-J07/commonmotor/sameReactwebTauri/finalnative/release/cutover/retirement remain; manualinstalleddesktopLAST."
+      ]
+    },
+    {
+      "issue": 716,
+      "wholeIssueClosed": false,
+      "source_revision": "8d298d9e4f5de2e9dcc6de24f61ecd035aa9c8af",
+      "report": "/tmp/rentemester-rust-reports/r86-company716-create-edit-inspect-qualified.json",
+      "sha256": "8544a480f8ca8a406a3bb9988c76a78031c7687eec9a051fc0f0a2083ee4a3c4",
+      "scope": "Lead reviewed storage/SDK/CLI actualdiffs and canonical realSQLite/compiledCLI fixtures. Five originalCLI fields now use sameexisting Rustbackend; receiptintent bindsnormalizedreadback, one write/no retry. Found legacy7-position HTTPregression and reproducedREDthenpreserved7prefix+4optionaldefaulttails; new6teststorageproof/other15cases reusedunchanged. Exactcurrent38partition/source/schema/retryqualifier retainsalloldbusinessrows/defs exceptexplicitoptionalinputs/tworeviewedCLIgrammars. Actual425MCPcatalogue has423identicaldefinitions andonly2optionalinputextensions. No newfinancial/provider/MFA/nativeGUIeffects.",
+      "remaining": [
+        "48other original literalCLIkeys; positivegroupoverview; firstworkspace/rootbootstrap/canonicalpath and full265peroperation runtime/files/confirmation/streams/0-1-2 acceptance.",
+        "40of55originalissuesclosed15open; full717workflows/reconnect andall55J01-J07/finalnative/release/cutover/retirement remain; manualinstalleddesktopLAST."
       ]
     }
   ],
