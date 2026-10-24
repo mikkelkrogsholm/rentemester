@@ -1,15 +1,15 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "R44 #712 existing nativeaccountsecurity +sameReactUI completeflow accepted e3c32ecd: password/recovery/sessioncontrols productionwiring, accountboundconfirmation andrequest-expiry generationrace repaired.",
-  "code_revision": "e3c32ecd0c69e3f9f3ab901141b97b0357c270c4",
-  "spec_revision": "sha256:515f3907be1c7f0fcd8e4ab1861d4b958d6a1e4cd4c06f1bfe382edd7cb5e246",
-  "state": "37of55originalissues CLOSED,18OPEN. CurrentsharedReact/Rust accountsecuritywholeflow accepted: realnormalMFA passwordchange/rotation, oldpasswordrefusal, list/single/all revocation, newpassword+MFA afterrestart andunchangedcanonicalledger. Source-reviewed staleordinary401/newrefresh race hasRED/GREEN86tests; current401/cancel/loading failclosed retained. Whole712OPEN onlyremainingoriginal677/fullnativefinalqualification andall55/J01-J07/release/cutover/retirement gates.",
+  "current_increment": "R45 #677 exactnativeidentitycounterparts accepted:8CLI leaves+7MCPtools, reviewedglobalprivateUnixpreparation andactualSerde positionalarguments; combinedsource/schemaPASS.",
+  "code_revision": "770dfd898e4b93081dc70e51c1c32eed3e36f541",
+  "spec_revision": "sha256:ed059b805ada094ec7f4c62d937eae82cb2a452279ad8c8bfafddad2aaebcbd6",
+  "state": "37of55originalissues CLOSED,18OPEN.42identityHTTP+15nativeCLI/MCP exactcontracts accepted. Whole677everyadvertisedoperation remainscriticaldependency; next existingcustomer/invoicelifecycle74contracts inparallel. AcceptedR44sharedaccountsecurity andalloriginalfinalgates retained.",
   "issues_closed": 37,
   "next": [
-    "Finish original677 exactinput/success/refusal/parse-protocol+retry for everyadvertisedHTTP/CLI/MCPoperation;42identitysubset retained, sourcebindings/currentcallbackinstallation updated.",
-    "Triageremainingexistingissues againstretainedacceptedcode/evidence andcloseimmediatelywhenfullscopepasses; nooptionalpolish oracceptedbusiness/provider replay.",
-    "FinalinstallednativeTauri/WebKit vault/cancel/account/platform/accessibility/J07 andallrelease/cutover/retirement requirements remainlast."
+    "Complete exactcustomer/invoice lifecycle contracts acrossnative/originalHTTP/CLI/MCP using4isolated source-onlyworkers, no financialeffect replay.",
+    "Finish everyother advertised677operation exactschemas/retry, thenclosewholeissue onlywhenallcriteria accepted.",
+    "Continue existing remainingissues fromretainedcode/evidence; finalinstalleddesktop/platform/accessibility/J01-J07/release/cutover/retirement gates remain."
   ],
   "preserve_unrelated_paths": [
     ".claude/settings.json",
@@ -19,7 +19,7 @@
     ".gitattributes"
   ],
   "all_goal_requirements_complete": false,
-  "previous_verified_increment": "R43 #678 exactdesktopcompiler gap accepted f25e6952; R05 #67742identitycontracts accepted c052a73d. R42 #712candidatefcd6ae0b remainsunaccepted foractualpasswordrotation browser/session boundary.",
+  "previous_verified_increment": "R44 #712 existing nativeaccountsecurity +sameReactUI completeflow accepted e3c32ecd: password/recovery/sessioncontrols productionwiring, accountboundconfirmation andrequest-expiry generationrace repaired.",
   "evidence": {
     "combined_browser_log": "/tmp/rm-platform5-combined.log",
     "combined_browser_exit": 0,
@@ -16139,6 +16139,23 @@
         "CurrentinstalledTauriWebKit nativevault/cancel/exactserver/account/platform/accessibility qualification finalmanualdesktoplast",
         "Alloriginal712/55/J01-J07/release/cutover/retirement scope retained"
       ]
+    },
+    "r45_identity677_native_component": {
+      "issue": 677,
+      "status": "15selectednativecontracts component accepted; whole677OPEN",
+      "source_revision": "770dfd898e4b93081dc70e51c1c32eed3e36f541",
+      "report": "/tmp/rentemester-rust-reports/r45-identity677-native-component-accepted.json",
+      "sha256": "b55c5d2ef13543f2b2dc2585696f0c7886c3c53da1b11fd5e393f743b2c4c2ea",
+      "sgd_run": "rust-r45-identity677-native-contracts-20261024T034849.104841000",
+      "operation_counts": {
+        "identity_cli": 8,
+        "identity_mcp": 7
+      },
+      "whole_issue_accepted": false,
+      "remaining": [
+        "Other597 currentHTTP operations and remainingnativeCLI/MCP exact input/success/refusal/parse-protocol/retry contracts",
+        "Global677 fullscope and all55 originalissues/J01-J07/finalmanualdesktop/release/cutover/retirement gates retained"
+      ]
     }
   },
   "verified_history": [
@@ -18236,7 +18253,7 @@
   "workflow": {
     "task_state_authority": "GitHub issues remain authoritative for delivery status; SGD Go state owns local scoped execution only",
     "policy": "docs/development-workflow.md",
-    "current_issue": null,
+    "current_issue": 677,
     "progress_file_role": "evidence/recovery facts only; no product or local execution queue",
     "product_acceptance_unchanged": true,
     "ci": {
