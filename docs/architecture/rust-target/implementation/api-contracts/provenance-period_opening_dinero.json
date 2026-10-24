@@ -1,0 +1,148 @@
+{
+  "partition": "period_opening_dinero",
+  "status": "specified",
+  "method": "Graphify query first; actual source parser/adaptor/application/storage reading. Source-only; no effects or runtime acceptance replay.",
+  "sourceRefs": [
+    {
+      "path": "crates/rentemester-server/src/product_http/dinero_import.rs",
+      "sha256": "967d85354a22a4a6b316846bb1b183e1a5be8633f7da60218b355fd01dd4c1c3",
+      "needle": "pub(super) async fn handle"
+    },
+    {
+      "path": "crates/rentemester-application/src/dinero_import.rs",
+      "sha256": "9b291743dd8221e10d25a96e0fc546c12a57a7c139889ce7c6d6f9ae3d93b9b7",
+      "needle": "pub enum Action"
+    },
+    {
+      "path": "crates/rentemester-storage/src/dinero_import.rs",
+      "sha256": "a0ee3fa1ac0f236e5d7cfcce646c90d294c31a92335148fb90056381903dc878",
+      "needle": "pub fn "
+    },
+    {
+      "path": "crates/rentemester-client/src/dinero_import.rs",
+      "sha256": "f70c4610a95bec3d45939a762ff301c3b1a19c26e46d2969dd88903b0f0d00a9",
+      "needle": "impl ApiClient"
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http/opening_balance.rs",
+      "sha256": "42275bd9159bc700c0f2f182271b4bbac70b7800f2bc319846a3a8638a8142a7",
+      "needle": "pub(super) async fn handle"
+    },
+    {
+      "path": "crates/rentemester-application/src/opening_balance.rs",
+      "sha256": "4926154f8ec36084be75e8e05fa4ac022b4e7c57c38ae64a3d794bd329268c6f",
+      "needle": "pub enum Action"
+    },
+    {
+      "path": "crates/rentemester-storage/src/opening_balance.rs",
+      "sha256": "2aa9f356500b6828a128a7fd73d13f66d25a93accd982d200d10c243330f692e",
+      "needle": "pub fn "
+    },
+    {
+      "path": "crates/rentemester-client/src/opening_balance.rs",
+      "sha256": "d87ed569bc32e8d9cac79a3a77c1e551fba726339c082e3a36110e053297a9a6",
+      "needle": "impl ApiClient"
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http/periods.rs",
+      "sha256": "493915f92d83b9c3401b48ede0b016c8d0ba832ab2bedf40f212875e342f362a",
+      "needle": "pub(super) async fn handle"
+    },
+    {
+      "path": "crates/rentemester-application/src/periods.rs",
+      "sha256": "c3120891d24bd50a024e5a287ce2cff5993f9384ce2b4821ed681257101787f7",
+      "needle": "pub enum Action"
+    },
+    {
+      "path": "crates/rentemester-storage/src/periods.rs",
+      "sha256": "c0d0953fecb87f617026bd3bde4e165ef63a4ae4299d294cee9cfc2ff7f2d38f",
+      "needle": "pub fn "
+    },
+    {
+      "path": "crates/rentemester-client/src/periods.rs",
+      "sha256": "f30b8791728de8f6ad13b78ea55c12b7728227b6eb67af745e3454fa32bf5d77",
+      "needle": "impl ApiClient"
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http/periods_original.rs",
+      "sha256": "640e289c53306d963bbd2de4615598b7390f809e69411d85a20afb53566e92a2",
+      "needle": "pub(super) async fn handle"
+    },
+    {
+      "path": "crates/rentemester-client/src/period_original.rs",
+      "sha256": "c5fecae55cc41410705d3a626f658de75f4bf4f6bc15a001b2a1c576b794a468",
+      "needle": "impl ApiClient"
+    },
+    {
+      "path": "crates/rentemester-storage/src/periods/original.rs",
+      "sha256": "e365f0a261e8dde1baa873ecd6316b6f569a83a82e6de4148049f827d9a00eb0",
+      "needle": "pub struct CloseInput"
+    },
+    {
+      "path": "crates/rentemester-storage/src/idempotency.rs",
+      "sha256": "22fca6c8188fadb6cedd0a011fb53fe909c70ec0c9fc1acda7e9c1be3a50b19b",
+      "needle": "const RETENTION_MS: i64 = 30 * 86_400_000;"
+    },
+    {
+      "path": "crates/rentemester-cli/src/period_original.rs",
+      "sha256": "8d984c21ca677e473b95f691745145863a3aa7cb07432279a970b2fcb18414f4",
+      "needle": "pub fn "
+    },
+    {
+      "path": "crates/rentemester-cli/src/local_binding.rs",
+      "sha256": "94d26249352df53d80d468019ee93e1353394db4ce1c6728491fa6c4e2589dfd",
+      "needle": "pub fn prepare"
+    },
+    {
+      "path": "crates/rentemester-cli/src/main.rs",
+      "sha256": "54af368bcb6d626d1ac0378727f6a34761244a21a86b6f5d67e47c27c8f432a6",
+      "needle": "fn main"
+    },
+    {
+      "path": "crates/rentemester-cli/src/remote.rs",
+      "sha256": "9a0d2ee8c626321459749c22642936ad07f9934a4e47eb3c4dc90ad18c7d2e91",
+      "needle": "pub fn "
+    },
+    {
+      "path": "crates/rentemester-cli/src/dinero_import.rs",
+      "sha256": "906a69e97a106c21e7f197e1c3b577579a157f73b53f4ae34a23a60205e14240",
+      "needle": "pub fn "
+    },
+    {
+      "path": "crates/rentemester-cli/src/opening_balance.rs",
+      "sha256": "3d7154e765396da768dd06e2830375c8baa71fb8053615473932c1033104e707",
+      "needle": "pub fn "
+    },
+    {
+      "path": "crates/rentemester-mcp/src/periods.rs",
+      "sha256": "c0d33756f078e8156b4be8be5f0a95a2834fe429e69d3723c191afc95eb6aae0",
+      "needle": "pub async fn call"
+    },
+    {
+      "path": "crates/rentemester-mcp/src/tools.rs",
+      "sha256": "8035dc45f8d22d902c18e17b4508ca572f8505dc83a1961fa355dfd1f34c1397",
+      "needle": "if !args.is_object()"
+    },
+    {
+      "path": "crates/rentemester-mcp/src/main.rs",
+      "sha256": "db7b771d69e02d3802906d65437dad8523fd9114ae15e7d3ef33dc696d4e831f",
+      "needle": "impl Session"
+    },
+    {
+      "path": "crates/rentemester-mcp/src/dinero_import.rs",
+      "sha256": "7967154756651a9beed045c9ab6cd0abffd19121346821a64a1d0cda39f07147",
+      "needle": "pub async fn call"
+    },
+    {
+      "path": "crates/rentemester-mcp/src/opening_balance.rs",
+      "sha256": "5cb4cef526accb16d899897f5a47ec027dc74e091ec9035e970044cfb1f52593",
+      "needle": "pub async fn call"
+    }
+  ],
+  "unresolved": [],
+  "operationCount": 64,
+  "validation": {
+    "command": "python3 /tmp/r56-677-oracle.py period_opening_dinero",
+    "scope": "Exact64 IDs/current hashes/reference/schema structural checks only; main retains independent semantic acceptance."
+  }
+}
