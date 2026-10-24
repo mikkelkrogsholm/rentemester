@@ -1,14 +1,15 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "R92/R93 originalCLIarchive list/detail andsharedSDKprojection accepted; whole716open",
-  "code_revision": "55a8c20e3f9a47301ba22185232f77255d2016ff",
+  "current_increment": "R94/R95originalimport run syntheticCSV/Dinero completecanonicalacceptance/dryrunrollback/sourceflatreceipts/current1605contracts; whole716open",
+  "code_revision": "05202690004a447403b8cdfc8300cf7097626518",
   "spec_revision": "971249492f96da3d630e32bb0828ec3f7831e6b4",
-  "state": "original_archive_cli_component_accepted_whole716_open",
+  "state": "original_import_run_component_accepted_whole716_open",
   "issues_closed": 41,
   "next": [
-    "716:45otheroriginalCLIkeys,import run/positivegroupoverview/bootstrap/canonicalpaths/actorpolicy/defaultlauncher/full265peroperationanddiagnostic/renderingcompatibility remain.",
-    "71718otheroriginalMCPnames/31workflow/service/reconnect andall55/J01-J07/release/cutover/retirement/manualinstalleddesktopLAST remain.41closed14open."
+    "716:44otheroriginalCLIkeys,positivegroupoverview/firstworkspace/bootstrap/canonicalpaths/actorconfig/defaultlauncher/full265peroperationdiagnostic-renderingacceptance remain.",
+    "71718originalMCPnames/31workflow/service/reconnect andall55/J01-J07/fullparity/release/cutover/retirement/manualinstalleddesktopLAST remain;41actuallyclosed14open.",
+    "Nextproductflowtowardbookkeeping:J01/J02/J05independentexportedbackupverificationinstandardTaurishellusingexistingverifier;manualinstalledacceptanceLAST."
   ],
   "preserve_unrelated_paths": [
     ".claude/settings.json",
@@ -18,7 +19,7 @@
     ".gitattributes"
   ],
   "all_goal_requirements_complete": false,
-  "previous_verified_increment": "R91 full713 integration accepted and actually closed;41of55closed14open",
+  "previous_verified_increment": "R92/R93 originalCLIarchive list/detail andsharedSDKprojection accepted; whole716open",
   "evidence": {
     "combined_browser_log": "/tmp/rm-platform5-combined.log",
     "combined_browser_exit": 0,
@@ -16620,6 +16621,10 @@
     "r93_original_archive_cli": {
       "path": "/private/tmp/rentemester-rust-reports/r93-original-archive-cli716-current-contracts-qualified.json",
       "sha256": "f994a05ba478bcdceb692145f886751a29239848ddba06b6541e843c070fc944"
+    },
+    "r95_original_import_run": {
+      "path": "/private/tmp/rentemester-rust-reports/r95-original-import-run716-current-contracts-qualified.json",
+      "sha256": "a11de1b8bab273e5d986ce8c93ca1cfece6a51f259cfa25fe8e190ff9b3ee888"
     }
   },
   "verified_history": [
@@ -18864,6 +18869,19 @@
       "remaining": [
         "716:45otheroriginalCLIkeys,import run/positivegroupoverview/bootstrap/canonicalpaths/actorpolicy/defaultlauncher/full265peroperationanddiagnostic/renderingcompatibility remain.",
         "71718otheroriginalMCPnames/31workflow/service/reconnect andall55/J01-J07/release/cutover/retirement/manualinstalleddesktopLAST remain.41closed14open."
+      ]
+    },
+    {
+      "issue": 716,
+      "wholeIssueClosed": false,
+      "source_revision": "05202690004a447403b8cdfc8300cf7097626518",
+      "report": "/tmp/rentemester-rust-reports/r95-original-import-run716-current-contracts-qualified.json",
+      "sha256": "a11de1b8bab273e5d986ce8c93ca1cfece6a51f259cfa25fe8e190ff9b3ee888",
+      "scope": "OriginalCLIoneunkeyedimportusingcanonicalRustserver/two-parserfullrollbackandprovenance;33actualdistinctcases/current1605contracts/429MCPexactunchanged. No live data/installeddesktop/cutoverclaim.",
+      "remaining": [
+        "716:44otheroriginalCLIkeys,positivegroupoverview/firstworkspace/bootstrap/canonicalpaths/actorconfig/defaultlauncher/full265peroperationdiagnostic-renderingacceptance remain.",
+        "71718originalMCPnames/31workflow/service/reconnect andall55/J01-J07/fullparity/release/cutover/retirement/manualinstalleddesktopLAST remain;41actuallyclosed14open.",
+        "Nextproductflowtowardbookkeeping:J01/J02/J05independentexportedbackupverificationinstandardTaurishellusingexistingverifier;manualinstalledacceptanceLAST."
       ]
     }
   ],

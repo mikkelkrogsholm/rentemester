@@ -226,7 +226,7 @@
             "dato": "transaction_date",
             "rentedato": "booking_date",
             "tekst": "text",
-            "bel\u00f8b": "amount",
+            "beløb": "amount",
             "valuta": "currency",
             "saldo": "balance_after",
             "afsender": "counterparty_name",

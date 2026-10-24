@@ -5036,8 +5036,8 @@
       "const": {
         "commands": [
           {
-            "name": "import systems|contacts|archive",
-            "scope": "offline parser discovery, explicit contact CSV import and read-only physically verified archive list/year history through common Rust server; current authority and original fallback role, no ledger posting or retry; import run unavailable",
+            "name": "import run|systems|contacts|archive",
+            "scope": "offline parser discovery, explicit contact CSV import and read-only physically verified archive list/year history through common Rust server; current authority and original fallback role; original import run reconciles chart/company and adopts opening balances and Dinero history in one explicit unkeyed source POST, no retry; --dry-run VALUE is presence-valued; canonical readback after unknown outcome",
             "usage": "import --help"
           },
           {
@@ -8597,13 +8597,15 @@
     "OriginalImportHelp": {
       "const": {
         "commands": [
+          "import run --company SLUG|PATH --file EXPORT [--system synthetic-csv|dinero] [--dry-run VALUE]",
           "import systems [--format json|human]",
           "import archive --company SLUG|PATH [--system dinero] [--year INTEGER] [--format json|human]",
           "import contacts --company SLUG|PATH --file Kontakter.csv [--enrich-cvr] [--default-role customer|vendor]"
         ],
         "connection": "Existing --server ORIGIN or verified --local-profile ABS_PRIVATE_PROFILE; --cookie-file PRIVATE_FILE. --workspace is verified local workspace equality only. --allow-loopback-http is explicit.",
-        "controls": "Explicit command confirms one write. Current cookie authority; optional --actor user:ID equality check only. Master data only: no journal, accounts, mappings or opening balances. Default role vendor; explicit original CSV requires only Kontaktnavn. Server classifies nonzero sales/purchases independently. CVR enrichment optional; operator credentials/cache unchanged. No automatic retry: outcome_unknown requires canonical contacts/audit readback before another explicit write.",
-        "unavailable": "import run is not implemented here. Archive is read-only historical reference data outside the live ledger; every list/detail revalidates current authority and physical originals. --system is trimmed/default dinero; omitted or blank --year lists years."
+        "controls": "Explicit command confirms one write. Current cookie authority; optional --actor user:ID equality check only. Contact import changes master data only. Run reconciles the source chart/company and adopts opening balances and Dinero history. Default role vendor; explicit original CSV requires only Kontaktnavn. Server classifies nonzero sales/purchases independently. CVR enrichment optional; operator credentials/cache unchanged. No automatic retry: outcome_unknown requires canonical contacts/audit readback before another explicit write.",
+        "example": "import run --example writes the original synthetic CSV sample without credentials or source-file access.",
+        "run": "Original complete server import; --dry-run VALUE is presence-valued (even false means dry-run). No generated key/hash or retry. Lost or invalid receipts require canonical imports/opening/journals/source readback. Archive: Archive is read-only historical reference data outside the live ledger; every list/detail revalidates current authority and physical originals. --system is trimmed/default dinero; omitted or blank --year lists years."
       }
     },
     "OriginalCliArchiveSuccess": {

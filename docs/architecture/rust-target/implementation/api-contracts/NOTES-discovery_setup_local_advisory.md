@@ -136,3 +136,35 @@ every original parser diagnostic or table rendering detail. Full717/all55/J01-J0
 and final release/cutover/retirement/manual installed desktop LAST remain. There
 are41 actually closed original issues and14 open. No financial/provider/auth/
 desktop effects were replayed to qualify this read flow.
+
+## 2026-10-24 — Original import run (R94/R95)
+
+Adds only `POST /api/companies/{slug}/import-original` and `cli:import run`,
+with closed typed original source/result schemas. The one unkeyed invocation
+uses the common Rust engine/server for synthetic CSV and Dinero. Complete
+dry-run execution rolls back business effects; known source parser/refusal
+results retain original counts/errors/audit. Current human/owner/namespace,
+financial backup/transfer/source/ledger fences remain; native keyed contracts
+are unchanged. The main agent must qualify the absent-cutover refusal repair
+before this update; missing dates are omitted rather than accepted as null.
+
+The current qualification targets contain19 new distinct cases:6 SDK,7 CLI,
+3 storage,2 application and1 server parser, plus11 retained contact/archive CLI
+cases (30 total). This is not an actual end-to-end HTTP import acceptance claim.
+Runtime qualified root/import help replaces only current help constants;
+current source hashes refresh without rewriting historical captures. All1601
+preceding business contracts and all429 MCP definitions remain unchanged.
+Current1605 operations =645 HTTP +531 CLI +429 MCP across the same38 partitions.
+
+Whole716 remains open:44 other original keys, bootstrap/canonical selection,
+actor/config/default launcher and full265 compatibility remain. Full717,
+all55/J01-J07 and final release/cutover/retirement/manual installed desktop LAST
+remain; no unlock, provider setup, new engine or unattended work is added.
+
+The regenerated source-bound manifest also exposed two already-registered static
+GET/HEAD aliases for `workspace-parties/create-identity`, previously missing from
+the642-operation manifest. These retain the generic opaque-ID inspect and early
+HEAD405 contracts; no runtime route or party behavior is added here. Their typed
+rows now match the actual645-route manifest. The initial1603 count assumption
+failed exact-set verification and was corrected from actual registration and
+existing handler/test source, without weakening the verifier or old contracts.

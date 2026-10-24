@@ -509,7 +509,7 @@
             "sourceRefs": [
               {
                 "path": "protocol/http-v1.json",
-                "sha256": "611961e905b87ed6a8ee9cbdde0bf9a15c7a45b11f1fdca420053367da5b06a0",
+                "sha256": "b47155845c7748bd48a3d5e87cb72a471ef5c3b6acbcad9b23d3673d3089dfe8",
                 "needle": "/api/recurring-invoices/run-workspace"
               },
               {
@@ -519,7 +519,7 @@
               },
               {
                 "path": "crates/rentemester-server/src/product_http.rs",
-                "sha256": "da0eeb763fc8ea5758862cf2ef77a2b23ac128b5d259d03dd2c4cb83af124aca",
+                "sha256": "cfdc1d6e5ef822e3edc01807edb25c232bf36f64150257f383e11b15543b3d86",
                 "needle": "fn proof("
               },
               {
@@ -1767,7 +1767,7 @@
               "const": "delivery_unknown"
             },
             "message": {
-              "const": "SMTP-resultatet er ukendt. Afklar den eksisterende afsendelse f\u00f8r et nyt fors\u00f8g."
+              "const": "SMTP-resultatet er ukendt. Afklar den eksisterende afsendelse før et nyt forsøg."
             }
           },
           "required": [
@@ -1791,7 +1791,7 @@
               "const": "delivery_unknown"
             },
             "message": {
-              "const": "SMTP-resultatet er ukendt. Afklar den eksisterende afsendelse f\u00f8r et nyt fors\u00f8g."
+              "const": "SMTP-resultatet er ukendt. Afklar den eksisterende afsendelse før et nyt forsøg."
             },
             "usage": {
               "enum": [
@@ -1836,7 +1836,7 @@
               "const": "delivery_refused"
             },
             "message": {
-              "const": "SMTP-serveren afviste afsendelsen. Et nyt fors\u00f8g kr\u00e6ver s\u00e6rskilt gennemgang."
+              "const": "SMTP-serveren afviste afsendelsen. Et nyt forsøg kræver særskilt gennemgang."
             }
           },
           "required": [
@@ -1860,7 +1860,7 @@
               "const": "delivery_refused"
             },
             "message": {
-              "const": "SMTP-serveren afviste afsendelsen. Et nyt fors\u00f8g kr\u00e6ver s\u00e6rskilt gennemgang."
+              "const": "SMTP-serveren afviste afsendelsen. Et nyt forsøg kræver særskilt gennemgang."
             },
             "usage": {
               "enum": [
