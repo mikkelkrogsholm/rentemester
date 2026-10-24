@@ -9,6 +9,8 @@ pub const MAX_PARTY_BODY: usize = 256 * 1024;
 #[derive(Clone)]
 pub enum PartyMutation {
     Create,
+    ProposeMerge(String),
+    ApproveMerge(String),
     Role(String),
     Assertion(String),
     Alias(String),
@@ -22,6 +24,14 @@ pub fn party_body_schema(action: &PartyMutation) -> Value {
     );
     let review = json!({"type":"string","enum":["proposed","approved","rejected"]});
     match action {
+        PartyMutation::ProposeMerge(_) => object(
+            json!({"intoPartyId":{"type":"string","minLength":1,"maxLength":64},"reviewAssertion":{"type":"string","minLength":1,"maxLength":500},"confirm":{"const":true}}),
+            &["intoPartyId", "reviewAssertion", "confirm"],
+        ),
+        PartyMutation::ApproveMerge(_) => object(
+            json!({"proposalHash":{"type":"string","minLength":64,"maxLength":64,"pattern":"^[0-9a-f]{64}$"},"confirm":{"const":true}}),
+            &["proposalHash", "confirm"],
+        ),
         PartyMutation::Create => object(
             json!({"partyId":{"type":["string","null"],"maxLength":64},"kind":{"type":"string","enum":["person","organization","public_authority","financial_institution"]},"name":{"type":"string","minLength":1,"maxLength":320},"aliases":{"type":"array","maxItems":16,"items":{"type":"string","minLength":1,"maxLength":160}},"identifiers":{"type":"array","items":object(json!({"country":text,"identifier":{"type":["string","null"]},"identifierKind":{"type":"string","enum":["dk_cvr","eu_vat","non_eu"]}}),&["country","identifierKind"])},"source":text,"observedAt":text,"reviewAssertion":text,"role":role,"defaults":defaults,"confirm":{"const":true}}),
             &[
@@ -117,6 +127,43 @@ impl ApiClient {
         }
         let mut value: Value = serde_json::from_slice(&bytes)
             .map_err(|_| Error::InvalidInput("native party JSON object required"))?;
+        if let PartyMutation::ProposeMerge(id) = &action {
+            let bounded = |key: &str, max| {
+                let text = value[key]
+                    .as_str()
+                    .ok_or(Error::InvalidInput("merge text required"))?
+                    .trim_matches(|c: char| {
+                        c != '\u{0085}' && (c.is_whitespace() || c == '\u{feff}')
+                    });
+                if text.is_empty() || text.encode_utf16().count() > max {
+                    Err(Error::InvalidInput("bounded merge text required"))
+                } else {
+                    Ok(text.to_owned())
+                }
+            };
+            let target = bounded("intoPartyId", 64)?;
+            let review = bounded("reviewAssertion", 500)?;
+            id_segment(&target)?;
+            if target == *id {
+                return Err(Error::InvalidInput("distinct merge target required"));
+            }
+            // Validate the same canonical strings as the server, while sending the original bytes.
+            value["intoPartyId"] = json!(target);
+            value["reviewAssertion"] = json!(review);
+        }
+        if matches!(action, PartyMutation::ApproveMerge(_)) && !merge_hash(&value["proposalHash"]) {
+            return Err(Error::InvalidInput(
+                "exact lowercase proposal hash required",
+            ));
+        }
+        let merge = matches!(
+            action,
+            PartyMutation::ProposeMerge(_) | PartyMutation::ApproveMerge(_)
+        );
+        let source = match &action {
+            PartyMutation::ProposeMerge(id) | PartyMutation::ApproveMerge(id) => id.clone(),
+            _ => String::new(),
+        };
         let mut schema = party_body_schema(&action);
         // Defaults are arbitrary source JSON under a fixed whitelist; never interpret accounting defaults.
         if let Some(defaults) = value
@@ -143,6 +190,12 @@ impl ApiClient {
             &schema,
         )?;
         let suffix = match action {
+            PartyMutation::ProposeMerge(id) => {
+                format!("workspace-parties/{}/propose-merge", id_segment(&id)?)
+            }
+            PartyMutation::ApproveMerge(id) => {
+                format!("workspace-parties/{}/approve-merge", id_segment(&id)?)
+            }
             PartyMutation::Create => "workspace-parties".into(),
             PartyMutation::Role(id) => format!("workspace-parties/{}/role", id_segment(&id)?),
             PartyMutation::Assertion(id) => {
@@ -150,14 +203,97 @@ impl ApiClient {
             }
             PartyMutation::Alias(id) => format!("workspace-parties/{}/alias", id_segment(&id)?),
         };
-        self.request(
-            Method::POST,
-            &company_path(company, &suffix)?,
-            &[],
-            Some(bytes),
-        )
-        .await
+        let result = self
+            .request(
+                Method::POST,
+                &company_path(company, &suffix)?,
+                &[],
+                Some(bytes),
+            )
+            .await?;
+        if merge && result["ok"] != false {
+            let valid = result["ok"] == true
+                && if suffix.ends_with("/propose-merge") {
+                    use sha2::{Digest, Sha256};
+                    let payload = json!({"intoPartyId":value["intoPartyId"],"reviewAssertion":value["reviewAssertion"]});
+                    let expected = format!(
+                        "{:x}",
+                        Sha256::digest(serde_json::to_vec(&payload).unwrap())
+                    );
+                    result["proposalHash"].as_str() == Some(expected.as_str())
+                } else {
+                    merge_receipt(&result["party"], &source, &value["proposalHash"])
+                };
+            if !valid {
+                return Err(Error::OutcomeUnknown);
+            }
+        }
+        Ok(result)
     }
+}
+fn merge_hash(v: &Value) -> bool {
+    v.as_str().is_some_and(|s| {
+        s.len() == 64
+            && s.bytes()
+                .all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b))
+    })
+}
+fn merge_receipt(p: &Value, source: &str, hash: &Value) -> bool {
+    p["partyId"] == source
+        && matches!(
+            p["kind"].as_str(),
+            Some("person" | "organization" | "public_authority" | "financial_institution")
+        )
+        && ["name", "source", "observedAt", "reviewAssertion"]
+            .iter()
+            .all(|k| p[k].as_str().is_some_and(|s| !s.is_empty()))
+        && ["identifiers", "aliases", "assertions", "roles"]
+            .iter()
+            .all(|k| p[k].is_array())
+        && p["roles"].as_array().is_some_and(|rows| {
+            rows.iter().all(|r| {
+                r["companySlug"].is_string() && r["role"].is_string() && r["defaults"].is_object()
+            })
+        })
+        && p["identifiers"].as_array().is_some_and(|rows| {
+            rows.iter().all(|r| {
+                ["country", "identifier", "identifierKind"]
+                    .iter()
+                    .all(|k| r[k].is_string())
+            })
+        })
+        && p["aliases"].as_array().is_some_and(|rows| {
+            rows.iter().all(|r| {
+                ["alias", "source", "review_state"]
+                    .iter()
+                    .all(|k| r[k].is_string())
+                    && r.get("observed_at").is_some()
+                    && r.get("payload_hash").is_some()
+            })
+        })
+        && p["assertions"].as_array().is_some_and(|rows| {
+            rows.iter().all(|r| {
+                ["field", "value", "source", "observed_at", "review_state"]
+                    .iter()
+                    .all(|k| r[k].is_string())
+                    && merge_hash(&r["payload_hash"])
+            })
+        })
+        && p["history"].as_array().is_some_and(|events| {
+            events.iter().all(|e| {
+                merge_hash(&e["payload_hash"])
+                    && ["event_type", "actor", "created_at"]
+                        .iter()
+                        .all(|k| e[k].as_str().is_some_and(|s| !s.is_empty()))
+            }) && ["proposed_merge", "approved_merge", "superseded"]
+                .iter()
+                .all(|kind| {
+                    events
+                        .iter()
+                        .any(|e| e["event_type"] == *kind && e["payload_hash"] == *hash)
+                })
+                && events.iter().any(|e| e["event_type"] == "created")
+        })
 }
 // Shared shape validator counts UTF-8; native text bounds are UTF-16 and remain server-owned.
 fn relax_utf8(v: &mut Value) {

@@ -11,6 +11,8 @@ pub fn accepts(s: &str) -> bool {
             | "link_workspace_party_role"
             | "assert_workspace_party_field"
             | "assert_workspace_party_alias"
+            | "propose_workspace_party_merge"
+            | "approve_workspace_party_merge"
     )
 }
 pub fn tools() -> Vec<Value> {
@@ -30,6 +32,8 @@ pub fn tools() -> Vec<Value> {
     ];
     for (name, action, id) in [
         ("create_workspace_party", PartyMutation::Create, false),
+        ("propose_workspace_party_merge", PartyMutation::ProposeMerge(String::new()), true),
+        ("approve_workspace_party_merge", PartyMutation::ApproveMerge(String::new()), true),
         (
             "link_workspace_party_role",
             PartyMutation::Role(String::new()),
@@ -56,7 +60,7 @@ pub fn tools() -> Vec<Value> {
                 .unwrap()
                 .push(json!("partyId"));
         }
-        tools.push(tool(name,"Exact native256KiB once, inner/outer confirm. Current anchor CompanyMasterData; global field/alias assertions additionally require MasterData for EVERY associated company (archived/hidden refuses). Immutable canonical identity plus source provenance; no automatic accounting/contacts updates, merge, inferred defaults, keys or retries. Unknown outcomes require canonical workspace_party/list/history reads.",schema,false));
+        tools.push(tool(name,"Exact native256KiB once, inner/outer confirm. Current anchor CompanyMasterData; global field/alias assertions additionally require MasterData for EVERY associated company (archived/hidden refuses). Immutable canonical identity plus source provenance; no automatic accounting/contacts updates or inferred defaults, keys or retries. Unknown outcomes require canonical workspace_party/list/history reads.",schema,false));
     }
     tools
 }
@@ -112,6 +116,8 @@ pub async fn call(
         ("link_workspace_party_role", Some(id)) => PartyMutation::Role(id),
         ("assert_workspace_party_field", Some(id)) => PartyMutation::Assertion(id),
         ("assert_workspace_party_alias", Some(id)) => PartyMutation::Alias(id),
+        ("propose_workspace_party_merge", Some(id)) => PartyMutation::ProposeMerge(id),
+        ("approve_workspace_party_merge", Some(id)) => PartyMutation::ApproveMerge(id),
         _ => return Err("partyId required only for existing party mutation"),
     };
     Ok(api
