@@ -1,0 +1,32 @@
+{
+  "issue": 677,
+  "partition": "bank_intake_accounts",
+  "method": "Graphify query first; current Rust handler/application/storage and SDK/CLI/MCP source trace, no runtime replay.",
+  "sourceRefs": [
+    {
+      "path": "crates/rentemester-application/src/bank.rs",
+      "sha256": "e895e88c5d222014cb63640926ee46b0cfe632c658aa225b9dec8f7ad93f1993",
+      "needle": "pub fn execute("
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http/bank.rs",
+      "sha256": "131bfeb583029c20071093c40d1fb1945f2cde78e9e22113e27a3a5f1d224cf8",
+      "needle": "pub(super) async fn handle"
+    },
+    {
+      "path": "crates/rentemester-storage/src/bank_queries.rs",
+      "sha256": "25d3069cd5e1c2f765b631c30862cfb2c38d749146b76e0bd7dcb8222d3fe443",
+      "needle": "pub fn list("
+    },
+    {
+      "path": "crates/rentemester-storage/src/bank.rs",
+      "sha256": "d4f3d3b56e8e8e3514a8d41c9f43adf420fd6b364aee2ccf4fdc3053f84dfcec",
+      "needle": "pub fn read("
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http/bank_accounts_original.rs",
+      "sha256": "1ead6fa551b0b90924cd59313d6f6f7180690453d8426d8a7505b9238b8d95c3",
+      "needle": "fn parse("
+    }
+  ]
+}

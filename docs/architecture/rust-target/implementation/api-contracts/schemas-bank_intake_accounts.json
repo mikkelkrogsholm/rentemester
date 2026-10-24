@@ -1,0 +1,3536 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "schemas-bank_intake_accounts.json",
+  "$defs": {
+    "Empty": {
+      "type": "object",
+      "properties": {},
+      "required": [],
+      "additionalProperties": false
+    },
+    "Failure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "type": "string"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "ok",
+        "code",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "BusinessFailure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "code": {
+          "const": "NOT_FOUND"
+        }
+      },
+      "required": [
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "ServiceFailure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "type": "string"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "usage": {
+          "enum": [
+            "not_committed",
+            "outcome_unknown",
+            "committed"
+          ]
+        },
+        "business": {
+          "enum": [
+            "not_attempted",
+            "not_committed",
+            "outcome_unknown",
+            "committed"
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "code",
+        "errors",
+        "usage",
+        "business"
+      ],
+      "additionalProperties": false
+    },
+    "ProtocolFailure": {
+      "$ref": "schemas-chart_journal.json#/$defs/ProtocolFailure"
+    },
+    "Account": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "slug": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "currency": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "string"
+        },
+        "bankName": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "registrationNo": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "accountNo": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "iban": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "bic": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "accountOwner": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "customerNo": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "ledgerAccountNo": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "active": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "slug",
+        "name",
+        "currency",
+        "createdAt",
+        "bankName",
+        "registrationNo",
+        "accountNo",
+        "iban",
+        "bic",
+        "accountOwner",
+        "customerNo",
+        "ledgerAccountNo",
+        "active"
+      ],
+      "additionalProperties": false
+    },
+    "Company": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "cvr": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "country": {
+          "type": "string"
+        },
+        "currency": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "cvr",
+        "country",
+        "currency"
+      ],
+      "additionalProperties": false
+    },
+    "Profiles": {
+      "const": [
+        {
+          "name": "danske-bank",
+          "label": "Danske Bank account export",
+          "delimiter": ";",
+          "encoding": "utf8",
+          "dateOrder": "dmy",
+          "columns": {
+            "dato": "transaction_date",
+            "rentedato": "booking_date",
+            "tekst": "text",
+            "beløb": "amount",
+            "valuta": "currency",
+            "saldo": "balance_after",
+            "afsender": "counterparty_name",
+            "oprindelig afsender": "counterparty_name",
+            "modtagerkonto": "counterparty_account",
+            "besked": "message",
+            "arkivreference": "archive_reference",
+            "kundereference": "customer_reference"
+          }
+        }
+      ]
+    },
+    "Accounts": {
+      "type": "object",
+      "properties": {
+        "slug": {
+          "type": "string"
+        },
+        "company": {
+          "$ref": "schemas-bank_intake_accounts.json#/$defs/Company"
+        },
+        "accounts": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-bank_intake_accounts.json#/$defs/Account"
+          }
+        },
+        "profiles": {
+          "$ref": "schemas-bank_intake_accounts.json#/$defs/Profiles"
+        }
+      },
+      "required": [
+        "slug",
+        "company",
+        "accounts",
+        "profiles"
+      ],
+      "additionalProperties": false
+    },
+    "History": {
+      "type": "array",
+      "items": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "const": "direct"
+              },
+              "id": {
+                "type": "integer",
+                "minimum": -9223372036854775808,
+                "maximum": 9223372036854775807
+              },
+              "journalHash": {
+                "type": "string"
+              },
+              "entryNo": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "kind",
+              "id",
+              "journalHash",
+              "entryNo"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "const": "append-only"
+              },
+              "id": {
+                "type": "integer",
+                "minimum": -9223372036854775808,
+                "maximum": 9223372036854775807
+              },
+              "journalEntryId": {
+                "type": "integer",
+                "minimum": -9223372036854775808,
+                "maximum": 9223372036854775807
+              },
+              "matchMethod": {
+                "type": "string"
+              },
+              "sourceReference": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "note": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "actor": {
+                "type": "string"
+              },
+              "createdAt": {
+                "type": "string"
+              },
+              "entryNo": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "kind",
+              "id",
+              "journalEntryId",
+              "matchMethod",
+              "sourceReference",
+              "note",
+              "actor",
+              "createdAt",
+              "entryNo"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "const": "correction"
+              },
+              "id": {
+                "type": "integer",
+                "minimum": -9223372036854775808,
+                "maximum": 9223372036854775807
+              },
+              "supersedes": {
+                "type": "string"
+              },
+              "bankAccountNo": {
+                "type": "string"
+              },
+              "replacementJournalHash": {
+                "type": "string"
+              },
+              "planHash": {
+                "type": "string"
+              },
+              "reason": {
+                "type": "string"
+              },
+              "actor": {
+                "type": "string"
+              },
+              "principalKind": {
+                "type": "string"
+              },
+              "principalSubjectId": {
+                "type": "string"
+              },
+              "createdAt": {
+                "type": "string"
+              },
+              "replacementEntryNo": {
+                "type": "string"
+              },
+              "oldEntryNo": {
+                "type": "string"
+              },
+              "oldJournalEntryId": {
+                "type": "integer",
+                "minimum": -9223372036854775808,
+                "maximum": 9223372036854775807
+              },
+              "replacementJournalEntryId": {
+                "type": "integer",
+                "minimum": -9223372036854775808,
+                "maximum": 9223372036854775807
+              },
+              "bankAmountDkk": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "kind",
+              "id",
+              "supersedes",
+              "bankAccountNo",
+              "replacementJournalHash",
+              "planHash",
+              "reason",
+              "actor",
+              "principalKind",
+              "principalSubjectId",
+              "createdAt",
+              "replacementEntryNo",
+              "oldEntryNo",
+              "oldJournalEntryId",
+              "replacementJournalEntryId",
+              "bankAmountDkk"
+            ],
+            "additionalProperties": false
+          }
+        ]
+      }
+    },
+    "StoredRaw": {
+      "type": [
+        "null",
+        "boolean",
+        "number",
+        "string",
+        "array",
+        "object"
+      ],
+      "properties": {},
+      "required": [],
+      "additionalProperties": true,
+      "items": {
+        "$ref": "#/$defs/StoredRaw"
+      },
+      "x-arbitrary-json": {
+        "scope": "bank.transactions[].raw historical raw_json only",
+        "rationale": "Read producer deserializes stored raw_json as serde_json::Value, wider than current named-profile string-map writer. Not top-level data.",
+        "sourceRefs": [
+          {
+            "path": "crates/rentemester-storage/src/bank.rs",
+            "sha256": "d4f3d3b56e8e8e3514a8d41c9f43adf420fd6b364aee2ccf4fdc3053f84dfcec",
+            "needle": "serde_json::from_str::<Value>(&raw)"
+          }
+        ]
+      }
+    },
+    "Transaction": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "date": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "number"
+        },
+        "runningBalance": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "reconciliationStatus": {
+          "enum": [
+            "matched",
+            "unmatched"
+          ]
+        },
+        "reconciliationProblem": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "journalEntryNo": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "reconciliationId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "reconciliationNote": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "reconciliationActor": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "reconciliationProof": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "bookingDate": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "reference": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "counterpartyName": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "counterpartyAccount": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "message": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "archiveReference": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "customerReference": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "sourceFileHash": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "importBatchId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "balanceAfter": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "raw": {
+          "$ref": "schemas-bank_intake_accounts.json#/$defs/StoredRaw"
+        },
+        "reconciliationHistory": {
+          "$ref": "schemas-bank_intake_accounts.json#/$defs/History"
+        }
+      },
+      "required": [
+        "id",
+        "date",
+        "text",
+        "amount",
+        "runningBalance",
+        "reconciliationStatus",
+        "reconciliationProblem",
+        "journalEntryNo",
+        "reconciliationId",
+        "reconciliationNote",
+        "reconciliationActor",
+        "reconciliationProof",
+        "bookingDate",
+        "reference",
+        "counterpartyName",
+        "counterpartyAccount",
+        "message",
+        "archiveReference",
+        "customerReference",
+        "sourceFileHash",
+        "importBatchId",
+        "balanceAfter",
+        "raw",
+        "reconciliationHistory"
+      ],
+      "additionalProperties": false
+    },
+    "Bank": {
+      "type": "object",
+      "properties": {
+        "slug": {
+          "type": "string"
+        },
+        "selectedYear": {
+          "type": "string"
+        },
+        "archived": {
+          "const": false
+        },
+        "manualReconciliationAvailable": {
+          "const": true
+        },
+        "reconciliationCorrectionAvailable": {
+          "const": true
+        },
+        "company": {
+          "$ref": "schemas-bank_intake_accounts.json#/$defs/Company"
+        },
+        "fiscalYears": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "label": {
+                "type": "string"
+              },
+              "start": {
+                "type": "string"
+              },
+              "end": {
+                "type": "string"
+              },
+              "source": {
+                "const": "live"
+              }
+            },
+            "required": [
+              "label",
+              "start",
+              "end",
+              "source"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "periodStart": {
+          "type": "string"
+        },
+        "periodEnd": {
+          "type": "string"
+        },
+        "accounts": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-bank_intake_accounts.json#/$defs/Account"
+          }
+        },
+        "bookedBalance": {
+          "type": "number"
+        },
+        "actualBalance": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "difference": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "bankStatementStatus": {
+          "enum": [
+            "none",
+            "no-balance-column",
+            "unavailable",
+            "available"
+          ]
+        },
+        "bankStatementProblem": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "matchedCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "unmatchedCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "transactions": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-bank_intake_accounts.json#/$defs/Transaction"
+          }
+        }
+      },
+      "required": [
+        "slug",
+        "selectedYear",
+        "archived",
+        "manualReconciliationAvailable",
+        "reconciliationCorrectionAvailable",
+        "company",
+        "fiscalYears",
+        "periodStart",
+        "periodEnd",
+        "accounts",
+        "bookedBalance",
+        "actualBalance",
+        "difference",
+        "bankStatementStatus",
+        "bankStatementProblem",
+        "matchedCount",
+        "unmatchedCount",
+        "transactions"
+      ],
+      "additionalProperties": false
+    },
+    "Receipt": {
+      "type": "object",
+      "properties": {
+        "importBatchId": {
+          "type": "string"
+        },
+        "sourceFileHash": {
+          "type": "string"
+        },
+        "bankAccountId": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "imported": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "skippedDuplicates": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "skippedDuplicateRows": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "bankAccountSlug": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "profile": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "balanceWarnings": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "exceptionsCreated": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "firstBalance": {
+          "type": "number"
+        },
+        "lastBalance": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "importBatchId",
+        "sourceFileHash",
+        "bankAccountId",
+        "imported",
+        "skippedDuplicates",
+        "skippedDuplicateRows",
+        "bankAccountSlug",
+        "profile",
+        "balanceWarnings",
+        "exceptionsCreated"
+      ],
+      "additionalProperties": false
+    },
+    "QueryRow": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "transactionDate": {
+          "type": "string"
+        },
+        "bookingDate": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "text": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "number"
+        },
+        "currency": {
+          "type": "string"
+        },
+        "reference": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "importBatchId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "bankAccountId": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "ledgerStatus": {
+          "type": "string"
+        },
+        "reconciliationStatus": {
+          "enum": [
+            "matched",
+            "unmatched"
+          ]
+        },
+        "journalEntryId": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "journalEntryNo": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "transactionDate",
+        "bookingDate",
+        "text",
+        "amount",
+        "currency",
+        "reference",
+        "importBatchId",
+        "bankAccountId",
+        "ledgerStatus",
+        "reconciliationStatus",
+        "journalEntryId",
+        "journalEntryNo"
+      ],
+      "additionalProperties": false
+    },
+    "ListData": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "rows": {
+              "type": "array",
+              "items": {
+                "$ref": "schemas-bank_intake_accounts.json#/$defs/QueryRow"
+              }
+            },
+            "count": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "required": [
+            "rows",
+            "count"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "rows": {
+              "type": "array",
+              "items": {
+                "$ref": "schemas-bank_intake_accounts.json#/$defs/QueryRow"
+              }
+            },
+            "total": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "count": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 5000
+            },
+            "offset": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "hasMore": {
+              "const": false
+            }
+          },
+          "required": [
+            "rows",
+            "total",
+            "count",
+            "limit",
+            "offset",
+            "hasMore"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "rows": {
+              "type": "array",
+              "items": {
+                "$ref": "schemas-bank_intake_accounts.json#/$defs/QueryRow"
+              }
+            },
+            "total": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "count": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 5000
+            },
+            "offset": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "hasMore": {
+              "const": true
+            },
+            "nextOffset": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "required": [
+            "rows",
+            "total",
+            "count",
+            "limit",
+            "offset",
+            "hasMore",
+            "nextOffset"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "ReportData": {
+      "type": "object",
+      "properties": {
+        "periodStart": {
+          "type": "string"
+        },
+        "periodEnd": {
+          "type": "string"
+        },
+        "matchedCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "unmatchedCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "matchedAmountTotal": {
+          "type": "number"
+        },
+        "unmatchedAmountTotal": {
+          "type": "number"
+        },
+        "matched": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "bankTransactionId": {
+                "type": "integer",
+                "minimum": -9223372036854775808,
+                "maximum": 9223372036854775807
+              },
+              "transactionDate": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              },
+              "amount": {
+                "type": "number"
+              },
+              "journalEntryId": {
+                "type": "integer",
+                "minimum": -9223372036854775808,
+                "maximum": 9223372036854775807
+              },
+              "journalEntryNo": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "bankTransactionId",
+              "transactionDate",
+              "text",
+              "amount",
+              "journalEntryId",
+              "journalEntryNo"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "unmatched": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "bankTransactionId": {
+                "type": "integer",
+                "minimum": -9223372036854775808,
+                "maximum": 9223372036854775807
+              },
+              "transactionDate": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              },
+              "amount": {
+                "type": "number"
+              },
+              "importBatchId": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "bankTransactionId",
+              "transactionDate",
+              "text",
+              "amount",
+              "importBatchId"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "periodStart",
+        "periodEnd",
+        "matchedCount",
+        "unmatchedCount",
+        "matchedAmountTotal",
+        "unmatchedAmountTotal",
+        "matched",
+        "unmatched"
+      ],
+      "additionalProperties": false
+    },
+    "AccountListData": {
+      "type": "object",
+      "properties": {
+        "count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "accounts": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-bank_intake_accounts.json#/$defs/Account"
+          }
+        }
+      },
+      "required": [
+        "count",
+        "accounts"
+      ],
+      "additionalProperties": false
+    },
+    "AccountData": {
+      "type": "object",
+      "properties": {
+        "account": {
+          "$ref": "schemas-bank_intake_accounts.json#/$defs/Account"
+        }
+      },
+      "required": [
+        "account"
+      ],
+      "additionalProperties": false
+    },
+    "ListOriginal": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "data": {
+          "$ref": "schemas-bank_intake_accounts.json#/$defs/ListData"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0
+        }
+      },
+      "required": [
+        "ok",
+        "data",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "ReportOriginal": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "data": {
+          "$ref": "schemas-bank_intake_accounts.json#/$defs/ReportData"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0
+        },
+        "appliedRules": {
+          "const": [
+            "DK-BOOKKEEPING-RECONCILIATION-001"
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "data",
+        "errors",
+        "appliedRules"
+      ],
+      "additionalProperties": false
+    },
+    "ReportBusinessFailure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "code": {
+          "const": "NOT_FOUND"
+        },
+        "appliedRules": {
+          "const": [
+            "DK-BOOKKEEPING-RECONCILIATION-001"
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "appliedRules"
+      ],
+      "additionalProperties": false
+    },
+    "AccountListOriginal": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "data": {
+          "$ref": "schemas-bank_intake_accounts.json#/$defs/AccountListData"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0
+        }
+      },
+      "required": [
+        "ok",
+        "data",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "AccountOriginal": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "data": {
+          "$ref": "schemas-bank_intake_accounts.json#/$defs/AccountData"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0
+        }
+      },
+      "required": [
+        "ok",
+        "data",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "ImportOriginal": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "data": {
+          "$ref": "schemas-bank_intake_accounts.json#/$defs/Receipt"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0
+        }
+      },
+      "required": [
+        "ok",
+        "data",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "AccountsNative": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "bankAccounts": {
+          "$ref": "schemas-bank_intake_accounts.json#/$defs/Accounts"
+        }
+      },
+      "required": [
+        "ok",
+        "bankAccounts"
+      ],
+      "additionalProperties": false
+    },
+    "AccountsNativeService": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "bankAccounts": {
+          "$ref": "schemas-bank_intake_accounts.json#/$defs/Accounts"
+        },
+        "usage": {
+          "const": "committed"
+        },
+        "business": {
+          "const": "committed"
+        }
+      },
+      "required": [
+        "ok",
+        "bankAccounts",
+        "usage",
+        "business"
+      ],
+      "additionalProperties": false
+    },
+    "BankNative": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "bank": {
+          "$ref": "schemas-bank_intake_accounts.json#/$defs/Bank"
+        }
+      },
+      "required": [
+        "ok",
+        "bank"
+      ],
+      "additionalProperties": false
+    },
+    "BankNativeService": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "bank": {
+          "$ref": "schemas-bank_intake_accounts.json#/$defs/Bank"
+        },
+        "usage": {
+          "const": "committed"
+        },
+        "business": {
+          "const": "committed"
+        }
+      },
+      "required": [
+        "ok",
+        "bank",
+        "usage",
+        "business"
+      ],
+      "additionalProperties": false
+    },
+    "CreatedNative": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "bankAccount": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            "slug": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "id",
+            "slug"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "ok",
+        "bankAccount"
+      ],
+      "additionalProperties": false
+    },
+    "CreatedNativeService": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "bankAccount": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            "slug": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "id",
+            "slug"
+          ],
+          "additionalProperties": false
+        },
+        "usage": {
+          "const": "committed"
+        },
+        "business": {
+          "const": "committed"
+        }
+      },
+      "required": [
+        "ok",
+        "bankAccount",
+        "usage",
+        "business"
+      ],
+      "additionalProperties": false
+    },
+    "ImportedNative": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "import": {
+          "$ref": "schemas-bank_intake_accounts.json#/$defs/Receipt"
+        }
+      },
+      "required": [
+        "ok",
+        "import"
+      ],
+      "additionalProperties": false
+    },
+    "ImportedNativeService": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "import": {
+          "$ref": "schemas-bank_intake_accounts.json#/$defs/Receipt"
+        },
+        "usage": {
+          "const": "committed"
+        },
+        "business": {
+          "const": "committed"
+        }
+      },
+      "required": [
+        "ok",
+        "import",
+        "usage",
+        "business"
+      ],
+      "additionalProperties": false
+    },
+    "UpdatedNative": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "bankAccount": {
+          "$ref": "schemas-bank_intake_accounts.json#/$defs/Account"
+        }
+      },
+      "required": [
+        "ok",
+        "bankAccount"
+      ],
+      "additionalProperties": false
+    },
+    "UpdatedNativeService": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "bankAccount": {
+          "$ref": "schemas-bank_intake_accounts.json#/$defs/Account"
+        },
+        "usage": {
+          "const": "committed"
+        },
+        "business": {
+          "const": "committed"
+        }
+      },
+      "required": [
+        "ok",
+        "bankAccount",
+        "usage",
+        "business"
+      ],
+      "additionalProperties": false
+    },
+    "CreateHttpObject": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "slug": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "bankName": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "registrationNo": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "accountNo": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "iban": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "bic": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "accountOwner": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "customerNo": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "currency": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "ledgerAccountNo": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "additionalProperties": false
+    },
+    "CreateHttp": {
+      "oneOf": [
+        {
+          "$ref": "schemas-bank_intake_accounts.json#/$defs/CreateHttpObject"
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "string"
+            },
+            {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          ],
+          "minItems": 11,
+          "maxItems": 11
+        }
+      ]
+    },
+    "CreateSdk": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "slug": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "bankName": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "registrationNo": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "accountNo": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "iban": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "bic": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "accountOwner": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "customerNo": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "currency": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "ledgerAccountNo": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "additionalProperties": false
+    },
+    "ImportHttpObject": {
+      "type": "object",
+      "properties": {
+        "confirm": {
+          "type": "boolean"
+        },
+        "csvContent": {
+          "type": "string"
+        },
+        "csvBase64": {
+          "type": "string"
+        },
+        "account": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "profile": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "ImportHttp": {
+      "$ref": "schemas-bank_intake_accounts.json#/$defs/ImportHttpObject"
+    },
+    "ImportSdk": {
+      "type": "object",
+      "properties": {
+        "confirm": {
+          "const": true
+        },
+        "csvContent": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 26214400
+        },
+        "csvBase64": {
+          "type": "string",
+          "minLength": 4,
+          "maxLength": 34952536
+        },
+        "account": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 128
+        },
+        "profile": {
+          "enum": [
+            null,
+            "",
+            "danske-bank"
+          ]
+        }
+      },
+      "required": [
+        "confirm"
+      ],
+      "additionalProperties": false,
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "confirm": {
+              "const": true
+            },
+            "csvContent": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 26214400
+            },
+            "account": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "maxLength": 128
+            },
+            "profile": {
+              "enum": [
+                null,
+                "",
+                "danske-bank"
+              ]
+            }
+          },
+          "required": [
+            "confirm",
+            "csvContent"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "confirm": {
+              "const": true
+            },
+            "csvBase64": {
+              "type": "string",
+              "minLength": 4,
+              "maxLength": 34952536
+            },
+            "account": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "maxLength": 128
+            },
+            "profile": {
+              "enum": [
+                null,
+                "",
+                "danske-bank"
+              ]
+            }
+          },
+          "required": [
+            "confirm",
+            "csvBase64"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "AccountCreateHttp": {
+      "type": "object",
+      "properties": {
+        "confirm": {
+          "type": "boolean"
+        },
+        "name": {
+          "type": "string"
+        },
+        "slug": {
+          "type": "string"
+        },
+        "bankName": {
+          "type": "string"
+        },
+        "registrationNo": {
+          "type": "string"
+        },
+        "accountNo": {
+          "type": "string"
+        },
+        "iban": {
+          "type": "string"
+        },
+        "bic": {
+          "type": "string"
+        },
+        "accountOwner": {
+          "type": "string"
+        },
+        "customerNo": {
+          "type": "string"
+        },
+        "currency": {
+          "type": "string"
+        },
+        "ledgerAccountNo": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "confirm",
+        "name"
+      ],
+      "additionalProperties": false
+    },
+    "AccountUpdateHttp": {
+      "type": "object",
+      "properties": {
+        "confirm": {
+          "type": "boolean"
+        },
+        "name": {
+          "type": "string"
+        },
+        "bankName": {
+          "type": "string"
+        },
+        "registrationNo": {
+          "type": "string"
+        },
+        "accountNo": {
+          "type": "string"
+        },
+        "iban": {
+          "type": "string"
+        },
+        "bic": {
+          "type": "string"
+        },
+        "accountOwner": {
+          "type": "string"
+        },
+        "customerNo": {
+          "type": "string"
+        },
+        "currency": {
+          "type": "string"
+        },
+        "ledgerAccountNo": {
+          "type": "string"
+        },
+        "active": {
+          "type": "boolean"
+        },
+        "account": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        }
+      },
+      "required": [
+        "confirm",
+        "account"
+      ],
+      "additionalProperties": false
+    },
+    "AccountPatchHttp": {
+      "type": "object",
+      "properties": {
+        "confirm": {
+          "type": "boolean"
+        },
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "bankName": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "registrationNo": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "accountNo": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "iban": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "bic": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "accountOwner": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "customerNo": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "currency": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "ledgerAccountNo": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "active": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "FiltersHttp": {
+      "type": "object",
+      "properties": {
+        "from": {
+          "type": "string"
+        },
+        "to": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "textMatch": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "string"
+        },
+        "account": {
+          "type": "string"
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "ListHttpQuery": {
+      "type": "object",
+      "properties": {
+        "from": {
+          "type": "string"
+        },
+        "to": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "textMatch": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "string"
+        },
+        "account": {
+          "type": "string"
+        },
+        "limit": {
+          "type": "string",
+          "pattern": "^[0-9]+$"
+        },
+        "offset": {
+          "type": "string",
+          "pattern": "^[0-9]+$"
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "ReportHttpQuery": {
+      "type": "object",
+      "properties": {
+        "from": {
+          "type": "string"
+        },
+        "to": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "textMatch": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "string"
+        },
+        "account": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "from",
+        "to"
+      ],
+      "additionalProperties": false
+    },
+    "AccountHttpQuery": {
+      "type": "object",
+      "properties": {
+        "includeInactive": {
+          "enum": [
+            "true",
+            "false"
+          ]
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "BankHttpQuery": {
+      "type": "object",
+      "properties": {
+        "year": {
+          "type": "string"
+        },
+        "source": {
+          "enum": [
+            "live",
+            "archive"
+          ]
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "RpcId": {
+      "oneOf": [
+        {
+          "type": "string",
+          "maxLength": 256,
+          "x-maxUtf8Bytes": 256
+        },
+        {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 18446744073709551615
+        }
+      ]
+    },
+    "RpcErrorId": {
+      "oneOf": [
+        {
+          "$ref": "schemas-bank_intake_accounts.json#/$defs/RpcId"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "RpcError": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "type": "null"
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32700
+                },
+                "message": {
+                  "const": "invalid or oversized newline-delimited message"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "type": "null"
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32700
+                },
+                "message": {
+                  "const": "invalid JSON"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "type": "null"
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32700
+                },
+                "message": {
+                  "const": "message exceeds tool frame bound; only named original uploads/ownership/consolidation proposals admit larger bounded frames"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "$ref": "schemas-bank_intake_accounts.json#/$defs/RpcErrorId"
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32600
+                },
+                "message": {
+                  "const": "expected one JSON-RPC object"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "$ref": "schemas-bank_intake_accounts.json#/$defs/RpcErrorId"
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32600
+                },
+                "message": {
+                  "const": "invalid JSON-RPC request"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "$ref": "schemas-bank_intake_accounts.json#/$defs/RpcErrorId"
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32600
+                },
+                "message": {
+                  "const": "request id already used"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "$ref": "schemas-bank_intake_accounts.json#/$defs/RpcErrorId"
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32600
+                },
+                "message": {
+                  "const": "already initialized"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "$ref": "schemas-bank_intake_accounts.json#/$defs/RpcErrorId"
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32000
+                },
+                "message": {
+                  "const": "session request limit reached; reconnect"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "$ref": "schemas-bank_intake_accounts.json#/$defs/RpcErrorId"
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32002
+                },
+                "message": {
+                  "const": "initialize and notifications/initialized required"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "$ref": "schemas-bank_intake_accounts.json#/$defs/RpcErrorId"
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32601
+                },
+                "message": {
+                  "const": "method not found"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "$ref": "schemas-bank_intake_accounts.json#/$defs/RpcErrorId"
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "expected params object"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "$ref": "schemas-bank_intake_accounts.json#/$defs/RpcErrorId"
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "initialize requires protocolVersion, capabilities and clientInfo"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "$ref": "schemas-bank_intake_accounts.json#/$defs/RpcErrorId"
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "task execution not supported"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "$ref": "schemas-bank_intake_accounts.json#/$defs/RpcErrorId"
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "tool name required"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "$ref": "schemas-bank_intake_accounts.json#/$defs/RpcErrorId"
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "expected arguments object"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "$ref": "schemas-bank_intake_accounts.json#/$defs/RpcErrorId"
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "nonempty company required"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "$ref": "schemas-bank_intake_accounts.json#/$defs/RpcErrorId"
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "optional filters must be strings, never null"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "$ref": "schemas-bank_intake_accounts.json#/$defs/RpcErrorId"
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "invalid bank page selector"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "$ref": "schemas-bank_intake_accounts.json#/$defs/RpcErrorId"
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "includeInactive must be boolean, never null"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "$ref": "schemas-bank_intake_accounts.json#/$defs/RpcErrorId"
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "unknown bank read argument"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "$ref": "schemas-bank_intake_accounts.json#/$defs/RpcErrorId"
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "status must be all|matched|unmatched"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "$ref": "schemas-bank_intake_accounts.json#/$defs/RpcErrorId"
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "reconciliation requires nonempty from/to"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "$ref": "schemas-bank_intake_accounts.json#/$defs/RpcErrorId"
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "import body unavailable"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "$ref": "schemas-bank_intake_accounts.json#/$defs/RpcErrorId"
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "unknown bank_import argument"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "$ref": "schemas-bank_intake_accounts.json#/$defs/RpcErrorId"
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "optional import arguments must be strings, never null"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "$ref": "schemas-bank_intake_accounts.json#/$defs/RpcErrorId"
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "confirm must be boolean"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "$ref": "schemas-bank_intake_accounts.json#/$defs/RpcErrorId"
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "profile must be danske-bank"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "$ref": "schemas-bank_intake_accounts.json#/$defs/RpcErrorId"
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "optional strings reject null/nonstrings"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "$ref": "schemas-bank_intake_accounts.json#/$defs/RpcErrorId"
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "account body unavailable"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "$ref": "schemas-bank_intake_accounts.json#/$defs/RpcErrorId"
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "confirm/active must be boolean"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "$ref": "schemas-bank_intake_accounts.json#/$defs/RpcErrorId"
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "company/account/name must be nonempty"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "$ref": "schemas-bank_intake_accounts.json#/$defs/RpcErrorId"
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "unknown bank_account_update field"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "$ref": "schemas-bank_intake_accounts.json#/$defs/RpcErrorId"
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "company and account required"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "$ref": "schemas-bank_intake_accounts.json#/$defs/RpcErrorId"
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "bank_accounts requires only company"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "$ref": "schemas-bank_intake_accounts.json#/$defs/RpcErrorId"
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "invalid bank read arguments"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "$ref": "schemas-bank_intake_accounts.json#/$defs/RpcErrorId"
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "bank/payable write requires company, native body and confirm:true"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "$ref": "schemas-bank_intake_accounts.json#/$defs/RpcErrorId"
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "bank/payable read filters must be strings"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "$ref": "schemas-bank_intake_accounts.json#/$defs/RpcErrorId"
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "only pay_payable requires a positive payable id"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "$ref": "schemas-bank_intake_accounts.json#/$defs/RpcErrorId"
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "explicit confirmation required"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "AdapterFailure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "code": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "NativeToolFailure": {
+      "$ref": "schemas-chart_journal.json#/$defs/NativeToolError"
+    }
+  }
+}
