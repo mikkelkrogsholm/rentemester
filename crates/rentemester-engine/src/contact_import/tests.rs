@@ -38,3 +38,90 @@ fn cvr_mapping_preserves_temporal_source_publicity_full_business_metadata_and_id
     assert_eq!(c.share_capital.unwrap().to_string(), "40000");
     assert!(CvrCompany::map(&e, "87654321").is_err());
 }
+
+#[test]
+fn original_headers_are_explicit_and_history_overrides_both_fallbacks() {
+    let raw = "\u{feff} KoNtAkTnAvN ;Total salg;Total køb\n\"No; history\";;\nSales;-2;0\nPurchases;0;3\nBoth;1;1\n";
+    assert!(parse(raw).is_err());
+    let p = parse_original(raw).unwrap();
+    assert!(p.errors.is_empty());
+    for fallback in [Role::Customer, Role::Vendor] {
+        let roles: Vec<_> = p
+            .contacts
+            .iter()
+            .map(|c| c.roles_with_default(fallback))
+            .collect();
+        assert_eq!(
+            roles,
+            vec![
+                vec![fallback],
+                vec![Role::Customer],
+                vec![Role::Vendor],
+                vec![Role::Customer, Role::Vendor]
+            ]
+        );
+    }
+    assert!(parse_original("Kontaktnavn\nMinimal\n").is_ok());
+    for raw in [
+        "CVR-nummer\n12345678",
+        "Kontaktnavn;KONTAKTNAVN\na;b",
+        "Kontaktnavn\n\"bad",
+    ] {
+        assert!(parse_original(raw).is_err());
+    }
+    let p = parse_original("Kontaktnavn;Total salg;Betalingsfrist i dage\n;1;0\nBad;NaN;0\nUnsafe;0;9007199254740992\nGood;0;730\n").unwrap();
+    assert_eq!(p.contacts.len(), 1);
+    assert_eq!(p.errors.len(), 3);
+}
+
+#[test]
+fn default_role_wire_is_exact_optional_and_appended_after_old_sequence() {
+    let old = json!({"fileName":"contacts.csv","content":"Kontaktnavn\nA","confirm":true});
+    assert_eq!(
+        serde_json::from_value::<Input>(old.clone())
+            .unwrap()
+            .default_role,
+        None
+    );
+    let seq: Input =
+        serde_json::from_value(json!(["contacts.csv", "Kontaktnavn\nA", false, true])).unwrap();
+    assert!(seq.confirm);
+    assert!(!seq.enrich_cvr);
+    assert_eq!(seq.default_role, None);
+    for (value, expected) in [
+        (json!("customer"), Role::Customer),
+        (json!("vendor"), Role::Vendor),
+    ] {
+        let mut v = old.clone();
+        v["defaultRole"] = value;
+        assert_eq!(
+            serde_json::from_value::<Input>(v).unwrap().default_role,
+            Some(expected)
+        );
+    }
+    for value in [
+        json!("Customer"),
+        json!("both"),
+        json!(""),
+        json!(false),
+        json!(1),
+        json!({}),
+        json!([]),
+    ] {
+        let mut v = old.clone();
+        v["defaultRole"] = value;
+        assert!(serde_json::from_value::<Input>(v).is_err());
+    }
+    let mut v = old;
+    v["actor"] = json!("user:untrusted");
+    assert!(serde_json::from_value::<Input>(v).is_err());
+    let seq: Input = serde_json::from_value(json!([
+        "contacts.csv",
+        "Kontaktnavn\nA",
+        false,
+        true,
+        "customer"
+    ]))
+    .unwrap();
+    assert_eq!(seq.default_role, Some(Role::Customer));
+}

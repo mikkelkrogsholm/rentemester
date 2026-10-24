@@ -27,6 +27,7 @@ pub struct Lookup {
 pub struct Prepared {
     parsed: Parsed,
     enrich: bool,
+    default_role: Role,
     pub lookup_needs: Vec<LookupNeed>,
 }
 fn refused(message: &str) -> Error {
@@ -65,12 +66,17 @@ pub fn prepare(tx: &Transaction<'_>, input: &Input, now: &str) -> Result<Prepare
     if input.file_name.trim().is_empty() {
         return Err(Error::new("contact_import_invalid", "fileName required"));
     }
-    let parsed = rentemester_engine::contact_import::parse(&input.content)?;
+    let parsed = if input.default_role.is_some() {
+        rentemester_engine::contact_import::parse_original(&input.content)?
+    } else {
+        rentemester_engine::contact_import::parse(&input.content)?
+    };
+    let default_role = input.default_role.unwrap_or(Role::Vendor);
     let now = rentemester_engine::company_knowledge::iso(now)?;
     let mut needs = BTreeSet::new();
     if input.enrich_cvr {
         for c in &parsed.contacts {
-            for role in c.roles() {
+            for role in c.roles_with_default(default_role) {
                 if exists(tx, role, c)? {
                     continue;
                 }
@@ -97,6 +103,7 @@ pub fn prepare(tx: &Transaction<'_>, input: &Input, now: &str) -> Result<Prepare
     Ok(Prepared {
         parsed,
         enrich: input.enrich_cvr,
+        default_role,
         lookup_needs: needs.into_iter().map(|cvr| LookupNeed { cvr }).collect(),
     })
 }
@@ -198,7 +205,7 @@ pub fn execute(
     let mut successful: BTreeMap<String, CvrCompany> = BTreeMap::new();
     for c in &prepared.parsed.contacts {
         let mut contact_enriched = false;
-        for role in c.roles() {
+        for role in c.roles_with_default(prepared.default_role) {
             if exists(tx, role, c)? {
                 skipped += 1;
                 continue;
