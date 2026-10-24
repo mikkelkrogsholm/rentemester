@@ -1,0 +1,37 @@
+{
+  "observedAt": "2026-10-24T20:10:46.432393+00:00",
+  "sourceRevisionBeforeDocumentation": "1a8109761fcd052fe7d076cfb3102e40929d7f0a",
+  "sourceHashes": {
+    "crates/rentemester-application/src/bank/original_tests.rs": "907b3a2b6c6ac59a2b2bbe38aebfe053cf2baac365240d5d8cb2190089b1f445",
+    "crates/rentemester-client/src/bank_import.rs": "4c6a146732c7470aae9729ed67281e3846f213e111f40476a8afecd5ccb47295",
+    "crates/rentemester-client/src/bank_payables.rs": "0861bf173f6f8cc5a218c22d4132c35641d11c3b9abf46f695476006e3248f88",
+    "crates/rentemester-client/tests/bank_import.rs": "f1a65f713053bdba169e308dd1102221de70eb19926d427f0eeb32bf17449048",
+    "crates/rentemester-client/tests/common/mod.rs": "ba1e00be3ffd2648f43b6cb40e2a9e6b7ff713e5a79ef4f57085b5ee093e97e3",
+    "crates/rentemester-engine/src/agent_discovery/bank.rs": "87cb8af3e3a35890ba8bcfb66a53d1fd0172587dc27029b045eb9ebcaeaf1131",
+    "crates/rentemester-engine/src/bank/bytes.rs": "aa2549c4fe9afb66f915aa115097c183da74a16ac5a7607516ea08c140ee056e",
+    "crates/rentemester-mcp/src/bank_import.rs": "5a271cf9dfab3de4e0450176eef7daf899b31554a0aecbbeae56edcc836cff75",
+    "crates/rentemester-mcp/src/main.rs": "0bf7a8989b8a06bb15a16b75cc6e785b327f545d18cdd70a1f87d3be8f421ae7",
+    "crates/rentemester-mcp/src/tools.rs": "5ca93ccba22dc81a768738c6fd31a4498d2fb5e4314fa1b6d6568a008393b5f2",
+    "crates/rentemester-mcp/tests/bank_roadmap713.rs": "e3e85c2609510ea9199821eda4d66403be0d31fec0a01ea91f0ba479cae0c736",
+    "crates/rentemester-storage/src/audit_bank.rs": "5f2f36431582016d303c57d275688627c8ff3488da7725920cabff3b3d0f91dd",
+    "crates/rentemester-storage/src/bank.rs": "d4f3d3b56e8e8e3514a8d41c9f43adf420fd6b364aee2ccf4fdc3053f84dfcec",
+    "crates/rentemester-storage/src/bank/byte_tests.rs": "8973eff2eef35f08e8b872d2f825ee8a5f588e48ad3b8ca8846aa7a5bc0aedf5",
+    "crates/rentemester-storage/src/bank_original/tests.rs": "4169e362548d4b8c22327fb59cf9e180e6a5a3ce65069ad5ca1d8220651f7dea",
+    "crates/rentemester-storage/src/bank_reconciliation.rs": "e99c88050baf1158b0db31c095664db43e122d0f1a0e8206860bb3fbd5d5d6d3",
+    "crates/rentemester-storage/src/bank_reconciliation/correction.rs": "c8ada532b87ab9f0732db745151961b68cdd6873996f86ab98a804d03df3fbb4",
+    "crates/rentemester-storage/src/periods/bank_audit.rs": "2abd29fd45becebd1b573ecc8740e075df0c0ea69fa3fdfa9c4bb0f07b128992",
+    "docs/bank-import-idempotency.md": "35e3f081171e7acc053feee1509f6df6269323eae697ed525fe445cabc5a4e6c",
+    "protocol/http-v1.json": "611961e905b87ed6a8ee9cbdde0bf9a15c7a45b11f1fdca420053367da5b06a0",
+    "src/agent-discovery-catalog.ts": "e9394d03e4aa6759a43d1bd613f6126e6cb0522df17d2dab1be29ff783e8fd02",
+    "src/core/bank.ts": "aa7b915f6e4eedc6dd84a4abac555a003a62d77eb7598a08d77a20d06c8c4c12",
+    "src/core/workspace-control.ts": "3756b0accd9d2e39c9da4db203a62c0967f5d3e3f00ff6f338402bb37096deb8"
+  },
+  "upstreamSnapshot": {
+    "path": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/observations/r91-bank-upstream-issues.json",
+    "sha256": "bdd67d0c4f80adeca8b145ab71027da90bad766f9e314b95d0b4933fc32bed85"
+  },
+  "currentBinary": {
+    "path": "/Users/mikkelfreltoftkrogsholm/.codex/worktrees/rust-sgd-pilot/rentemester/.sgd/builds/r89-qualified/rentemester-mcp",
+    "sha256": "bb0f5b421f86e87dbcbfb79fcb1abf8b04750fa114b9dce5da11344e9d39299e"
+  }
+}
