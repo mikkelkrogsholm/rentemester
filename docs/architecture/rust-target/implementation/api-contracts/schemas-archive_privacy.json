@@ -3316,7 +3316,11 @@
               ]
             },
             {
-              "type": "null"
+              "type": [
+                "string",
+                "null"
+              ],
+              "description": "Array slot bypasses named get(asOf) transport guard; nonnull string deserializes then storage refuses business422, not parse400. Object asOf remains forbidden400."
             },
             {
               "type": "boolean"

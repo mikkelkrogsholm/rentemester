@@ -17,3 +17,5 @@ CLI bare privacy and gdpr discover/forget/audit-log aliases normalize to remote/
 - Only four owned flat files changed. No Cargo, server, browser, network or effectful operation was run.
 
 Schema scope: native producer shapes are specified rather than promoting permissive SDK `Value` readers into arbitrary top-level data. Failure message/code strings remain dynamic for transitive SQL/admission diagnostics; concrete HTTP mapping branches accompany those typed envelopes. Original source values are canonical six-decimal strings and money is separately quantized two-decimal text. Source refs are current SHA-256 byte bindings.
+
+Lead source repair: raw erasure tuple asOf accepts string/null at parser; nonnull string reaches storage business422. Object named asOf still fails400. No privacy control relaxed or effects replayed.
