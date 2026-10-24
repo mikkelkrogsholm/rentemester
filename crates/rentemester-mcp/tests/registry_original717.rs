@@ -90,6 +90,19 @@ fn event(kind: &str, h: &str) -> Value {
 fn party() -> Value {
     json!({"partyId":"source","kind":"organization","name":"Synthetic","source":"fixture","observedAt":"2026-01-01T00:00:00.000Z","reviewAssertion":"Reviewed","identifiers":[],"aliases":[],"assertions":[],"roles":[{"companySlug":"synthetic","role":"vendor","defaults":{"currency":"DKK"}}],"history":[event("created",SHA),event("proposed_merge",MERGE),event("approved_merge",MERGE),event("superseded",MERGE)]})
 }
+fn identity_party() -> Value {
+    let mut p = party();
+    p["roles"] = json!([]);
+    p["history"] = json!([event("created", SHA)]);
+    p["identifiers"] =
+        json!([{"country":"DK","identifierKind":"dk_cvr","identifier":"DK12345678"}]);
+    p["aliases"] = json!([{"alias":"synthetic alias","source":"fixture","observed_at":"2026-01-01T00:00:00.000Z","review_state":"approved","payload_hash":SHA}]);
+    p["assertions"] = json!([
+        {"field":"name","value":"Synthetic","source":"fixture","observed_at":"2026-01-01T00:00:00.000Z","review_state":"approved","payload_hash":SHA},
+        {"field":"identifier","value":"DK:dk_cvr:DK12345678","source":"fixture","observed_at":"2026-01-01T00:00:00.000Z","review_state":"approved","payload_hash":SHA}
+    ]);
+    p
+}
 fn record() -> Value {
     json!({"recordId":"record-synthetic","type":"articles","filename":"synthetic.txt","source":"fixture","receivedAt":"2026-01-01T00:00:00.000Z","recordDate":null,"retentionUntil":null,"uploader":"provenance-not-authority","sensitivity":"normal","sha256":SHA,"links":[{"type":"company","id":"synthetic"},{"type":"legacy_evidence_ref","id":"synthetic-proof"}],"history":[event("ingested",SHA),event("linked",SHA),event("enriched",SHA),event("superseded",SHA)]})
 }
@@ -154,6 +167,21 @@ fn fixture(mode: &str) -> (String, thread::JoinHandle<Vec<(String, Value)>>) {
                 }
                 let v = if mode == "bad" {
                     json!({"ok":true,"record":{"recordId":"wrong"},"party":{"partyId":"wrong"},"payloadHash":"invalid","proposalHash":"invalid"})
+                } else if line.contains("/create-identity ") {
+                    let mut p = identity_party();
+                    match mode.as_str() {
+                        "wrong-id" => p["partyId"] = json!("other"),
+                        "wrong-name" => p["name"] = json!("Other"),
+                        "wrong-role" => p["roles"] = party()["roles"].clone(),
+                        "wrong-source" => p["source"] = json!("other"),
+                        "wrong-identifier" => p["identifiers"] = json!([]),
+                        "wrong-assertion" => p["assertions"] = json!([]),
+                        "wrong-alias" => p["aliases"] = json!([]),
+                        "wrong-observed" => p["observedAt"] = json!("2026-01-02T00:00:00.000Z"),
+                        "wrong-review" => p["reviewAssertion"] = json!("Other"),
+                        _ => {}
+                    }
+                    json!({"ok":true,"party":p})
                 } else if line.contains("/download ") {
                     json!({"ok":true,"bytesBase64":"aGVsbG8K","sha256":SHA})
                 } else if line.contains("/propose-merge ") {
@@ -189,7 +217,7 @@ fn cases() -> Vec<(&'static str, Value)> {
         ),
         (
             "workspace_party_create",
-            json!({"company":"synthetic","kind":"organization","name":"Synthetic","source":"fixture","observedAt":"2026-01-01","reviewAssertion":"Reviewed","confirm":true}),
+            json!({"company":"synthetic","partyId":" source ","kind":"organization","name":" Synthetic ","aliases":[" Synthetic alias "],"identifiers":[{"country":" dk ","identifierKind":"dk_cvr","identifier":"12 34 56 78"}],"source":" fixture ","observedAt":"2026-01-01","reviewAssertion":" Reviewed ","confirm":true}),
         ),
         (
             "workspace_party_link_role",
@@ -257,12 +285,16 @@ fn exact_original_stream_and_native_coexistence() {
                 .contains(&json!("confirm"))
         );
         let e = envelope(&rows[i + 2]);
+        assert_eq!(e["ok"], true, "{name}: {e}");
+        assert_eq!(e["errors"], json!([]));
+        assert!(e.get("appliedRules").is_none());
         if *name == "workspace_party_create" {
-            assert_eq!(e["code"], "NATIVE_BOUNDARY");
-        } else {
-            assert_eq!(e["ok"], true, "{name}: {e}");
-            assert_eq!(e["errors"], json!([]));
-            assert!(e.get("appliedRules").is_none());
+            assert!(t.get("_meta").is_none());
+            assert!(!t["description"].as_str().unwrap().contains("unavailable"));
+            assert_eq!(e["data"], json!({"party":identity_party()}));
+        }
+        if *name == "workspace_party_link_role" {
+            assert_eq!(e["data"]["party"]["roles"], party()["roles"]);
         }
     }
     assert!(
@@ -281,7 +313,28 @@ fn exact_original_stream_and_native_coexistence() {
             .iter()
             .filter(|(l, _)| l.starts_with("POST "))
             .count(),
-        7
+        8
+    );
+    let writes: Vec<_> = requests
+        .iter()
+        .filter(|(l, _)| l.starts_with("POST "))
+        .collect();
+    assert_eq!(
+        writes[0].0,
+        "POST /api/companies/synthetic/workspace-parties/create-identity HTTP/1.1"
+    );
+    let mut expected = cases
+        .iter()
+        .find(|(n, _)| *n == "workspace_party_create")
+        .unwrap()
+        .1
+        .clone();
+    expected.as_object_mut().unwrap().remove("company");
+    assert_eq!(writes[0].1, expected); // Supplied intent, including selector and whitespace, unchanged.
+    assert!(writes[0].1.get("role").is_none() && writes[0].1.get("defaults").is_none());
+    assert_eq!(
+        writes[1].0,
+        "POST /api/companies/synthetic/workspace-parties/source/role HTTP/1.1"
     );
     let ingest = requests
         .iter()
@@ -390,4 +443,126 @@ fn canonical_selector_receipts_preserve_valid_source_ids() {
             .count(),
         0
     );
+}
+
+#[test]
+fn identity_create_mismatched_or_lost_receipts_are_unknown_once() {
+    for mode in [
+        "bad",
+        "lost",
+        "wrong-id",
+        "wrong-name",
+        "wrong-role",
+        "wrong-source",
+        "wrong-identifier",
+        "wrong-assertion",
+        "wrong-alias",
+        "wrong-observed",
+        "wrong-review",
+    ] {
+        let (origin, server) = fixture(mode);
+        let args = cases()
+            .into_iter()
+            .find(|(n, _)| *n == "workspace_party_create")
+            .unwrap()
+            .1;
+        let rows = run(
+            &origin,
+            session(vec![call(2, "workspace_party_create", args)]),
+        );
+        assert_eq!(
+            envelope(&rows[1])["code"],
+            "outcome_unknown",
+            "{mode}: {:?}",
+            rows[1]
+        );
+        let requests = server.join().unwrap();
+        assert_eq!(
+            requests
+                .iter()
+                .filter(|(l, _)| l.starts_with("POST "))
+                .count(),
+            1,
+            "{mode}"
+        );
+        assert_eq!(requests.len(), 2, "no automatic readback or retry: {mode}");
+    }
+}
+
+#[test]
+fn identity_grammar_rejects_role_defaults_and_authority_overrides() {
+    let args = cases()
+        .into_iter()
+        .find(|(n, _)| *n == "workspace_party_create")
+        .unwrap()
+        .1;
+    let mut calls = Vec::new();
+    for (key, value) in [
+        ("role", json!("vendor")),
+        ("defaults", json!({})),
+        ("actor", json!("user:other")),
+        ("principal", json!("other")),
+        ("companySlug", json!("other")),
+    ] {
+        let mut a = args.clone();
+        a[key] = value;
+        calls.push(call(calls.len() as u64 + 2, "workspace_party_create", a));
+    }
+    let rows = run("http://127.0.0.1:9", session(calls));
+    for r in &rows[1..] {
+        assert!(r.get("error").is_some(), "{r}");
+    }
+    let create = rentemester_client::party_body_schema(&rentemester_client::PartyMutation::Create);
+    assert!(
+        create["required"]
+            .as_array()
+            .unwrap()
+            .contains(&json!("role"))
+    );
+    let identity =
+        rentemester_client::party_body_schema(&rentemester_client::PartyMutation::CreateIdentity);
+    assert_eq!(identity["additionalProperties"], false);
+    assert!(identity["properties"].get("role").is_none());
+    assert!(identity["properties"].get("defaults").is_none());
+}
+
+#[test]
+fn sdk_identity_rejects_unknown_fields_and_native_create_still_requires_role() {
+    use rentemester_client::{ApiClient, Error, PartyMutation};
+    let api = ApiClient::new("http://127.0.0.1:9", true, Some("session=synthetic".into())).unwrap();
+    let rt = tokio::runtime::Runtime::new().unwrap();
+    let mut body = cases()
+        .into_iter()
+        .find(|(n, _)| *n == "workspace_party_create")
+        .unwrap()
+        .1;
+    body.as_object_mut().unwrap().remove("company");
+    for (key, value) in [
+        ("role", json!("vendor")),
+        ("defaults", json!({})),
+        ("actor", json!("user:other")),
+        ("principal", json!("other")),
+        ("company", json!("other")),
+    ] {
+        let mut invalid = body.clone();
+        invalid[key] = value;
+        let e = rt
+            .block_on(api.mutate_workspace_party(
+                "synthetic",
+                PartyMutation::CreateIdentity,
+                serde_json::to_vec(&invalid).unwrap(),
+                true,
+            ))
+            .unwrap_err();
+        assert!(matches!(e, Error::InvalidInput(_)), "{key}: {e}");
+    }
+    let e = rt
+        .block_on(api.mutate_workspace_party(
+            "synthetic",
+            PartyMutation::Create,
+            serde_json::to_vec(&body).unwrap(),
+            true,
+        ))
+        .unwrap_err();
+    assert!(matches!(e, Error::InvalidInput(_)), "{e}");
 }

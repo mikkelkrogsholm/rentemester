@@ -9,6 +9,7 @@ pub const MAX_PARTY_BODY: usize = 256 * 1024;
 #[derive(Clone)]
 pub enum PartyMutation {
     Create,
+    CreateIdentity,
     ProposeMerge(String),
     ApproveMerge(String),
     Role(String),
@@ -32,6 +33,18 @@ pub fn party_body_schema(action: &PartyMutation) -> Value {
             json!({"proposalHash":{"type":"string","minLength":64,"maxLength":64,"pattern":"^[0-9a-f]{64}$"},"confirm":{"const":true}}),
             &["proposalHash", "confirm"],
         ),
+        PartyMutation::CreateIdentity => {
+            // Same identity grammar as native Create, without any company role/defaults.
+            let mut schema = party_body_schema(&PartyMutation::Create);
+            let properties = schema["properties"].as_object_mut().unwrap();
+            properties.remove("role");
+            properties.remove("defaults");
+            schema["required"]
+                .as_array_mut()
+                .unwrap()
+                .retain(|v| v != "role");
+            schema
+        }
         PartyMutation::Create => object(
             json!({"partyId":{"type":["string","null"],"maxLength":64},"kind":{"type":"string","enum":["person","organization","public_authority","financial_institution"]},"name":{"type":"string","minLength":1,"maxLength":320},"aliases":{"type":"array","maxItems":16,"items":{"type":"string","minLength":1,"maxLength":160}},"identifiers":{"type":"array","items":object(json!({"country":text,"identifier":{"type":["string","null"]},"identifierKind":{"type":"string","enum":["dk_cvr","eu_vat","non_eu"]}}),&["country","identifierKind"])},"source":text,"observedAt":text,"reviewAssertion":text,"role":role,"defaults":defaults,"confirm":{"const":true}}),
             &[
@@ -197,6 +210,7 @@ impl ApiClient {
                 format!("workspace-parties/{}/approve-merge", id_segment(&id)?)
             }
             PartyMutation::Create => "workspace-parties".into(),
+            PartyMutation::CreateIdentity => "workspace-parties/create-identity".into(),
             PartyMutation::Role(id) => format!("workspace-parties/{}/role", id_segment(&id)?),
             PartyMutation::Assertion(id) => {
                 format!("workspace-parties/{}/assertion", id_segment(&id)?)
