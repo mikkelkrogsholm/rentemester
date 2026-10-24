@@ -226,7 +226,7 @@
             "dato": "transaction_date",
             "rentedato": "booking_date",
             "tekst": "text",
-            "beløb": "amount",
+            "bel\u00f8b": "amount",
             "valuta": "currency",
             "saldo": "balance_after",
             "afsender": "counterparty_name",
@@ -3510,6 +3510,72 @@
             "error"
           ],
           "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "$ref": "schemas-bank_intake_accounts.json#/$defs/RpcErrorId"
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "amount must be a finite number"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "$ref": "schemas-bank_intake_accounts.json#/$defs/RpcErrorId"
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "report selectors must be strings"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
         }
       ]
     },
@@ -4354,7 +4420,7 @@
                 "type": "string",
                 "contentMediaType": "application/json",
                 "contentSchema": {
-                  "oneOf": [
+                  "anyOf": [
                     {
                       "$ref": "schemas-bank_intake_accounts.json#/$defs/BusinessFailure"
                     },
@@ -4378,7 +4444,7 @@
           "maxItems": 1
         },
         "structuredContent": {
-          "oneOf": [
+          "anyOf": [
             {
               "$ref": "schemas-bank_intake_accounts.json#/$defs/BusinessFailure"
             },
@@ -4464,15 +4530,6 @@
         "--vat-or-cvr": {
           "type": "string"
         },
-        "--document-id": {
-          "type": "string"
-        },
-        "--status": {
-          "type": "string"
-        },
-        "--as-of": {
-          "type": "string"
-        },
         "--include-proposed": {
           "type": "string"
         },
@@ -4501,12 +4558,6 @@
           "type": "string"
         },
         "--limit": {
-          "type": "string"
-        },
-        "--from": {
-          "type": "string"
-        },
-        "--to": {
           "type": "string"
         },
         "--year": {
@@ -4542,15 +4593,6 @@
         "--vat-or-cvr": {
           "type": "string"
         },
-        "--document-id": {
-          "type": "string"
-        },
-        "--status": {
-          "type": "string"
-        },
-        "--as-of": {
-          "type": "string"
-        },
         "--include-proposed": {
           "type": "string"
         },
@@ -4579,12 +4621,6 @@
           "type": "string"
         },
         "--limit": {
-          "type": "string"
-        },
-        "--from": {
-          "type": "string"
-        },
-        "--to": {
           "type": "string"
         }
       },
@@ -4617,15 +4653,6 @@
         "--vat-or-cvr": {
           "type": "string"
         },
-        "--document-id": {
-          "type": "string"
-        },
-        "--status": {
-          "type": "string"
-        },
-        "--as-of": {
-          "type": "string"
-        },
         "--include-proposed": {
           "type": "string"
         },
@@ -4654,12 +4681,6 @@
           "type": "string"
         },
         "--limit": {
-          "type": "string"
-        },
-        "--from": {
-          "type": "string"
-        },
-        "--to": {
           "type": "string"
         },
         "--confirm": {
@@ -4695,15 +4716,6 @@
         "--vat-or-cvr": {
           "type": "string"
         },
-        "--document-id": {
-          "type": "string"
-        },
-        "--status": {
-          "type": "string"
-        },
-        "--as-of": {
-          "type": "string"
-        },
         "--include-proposed": {
           "type": "string"
         },
@@ -4732,12 +4744,6 @@
           "type": "string"
         },
         "--limit": {
-          "type": "string"
-        },
-        "--from": {
-          "type": "string"
-        },
-        "--to": {
           "type": "string"
         },
         "--confirm": {

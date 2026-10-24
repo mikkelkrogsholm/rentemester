@@ -32,3 +32,5 @@ The partial schema is not semantically frozen. Import full positional parse vers
 ## Lead completion
 
 The original incomplete worker receipt above is preserved. Lead recovered the intended35 operation rows by fixing the exact engine decode re-export anchor, not restarting a model. Source status is known; original import omits null account/profile keys and has a separate receipt. Native service create/PATCH success is not advertised; read usage permits not_committed or committed and CLI/MCP retain supported service envelopes. Original Wire decoder sequences are distinguished from later command/null/selector validation. Strict checks and semantic review are required before integration; no runtime/provider/financial effects were replayed.
+
+Final lead repair: original business/adapter failure alternatives overlap and use anyOf; RPC -32602 includes finite-amount and global report-selector guards. Native bank accepted flags exclude document-id/status/as-of/from/to, refused before credential/client dispatch by remote.rs. Generic recognized but unused flags retain their actual behavior.
