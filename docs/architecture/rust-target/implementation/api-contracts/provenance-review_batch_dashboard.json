@@ -1,0 +1,316 @@
+{
+  "partition": "review_batch_dashboard",
+  "status": "specified",
+  "operations": 58,
+  "unresolved": [],
+  "method": "Graphify query first, source trace only; no runtime/userflow/effect replay.",
+  "sourceRefs": [
+    {
+      "path": "crates/rentemester-server/src/product_http.rs",
+      "sha256": "d008f013390a87c467b929b094abb4e23cc9921a72a2665d8df4d4dcbc537390",
+      "needle": "//! Thin browser adapter over the same owner used for authentication."
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http/bookkeeping_batch.rs",
+      "sha256": "98e798775b65914ee22cb3834ea4bf30220f523d61d567be78f323ad4043c819",
+      "needle": "//! Exact native batch HTTP scopes and current authorized read-first recovery."
+    },
+    {
+      "path": "crates/rentemester-engine/src/bookkeeping_batch.rs",
+      "sha256": "98b3d281d98bc661950de5daad1a03e8f119099a189ee498c7a181d6a3bab330",
+      "needle": "//! Explicit reviewed native atomic batch scope. No accounting calculations or caller identity."
+    },
+    {
+      "path": "crates/rentemester-application/src/bookkeeping_batch.rs",
+      "sha256": "ec5300500c525759ae6868e7574614477c2d7ef79f7a4ebff7e0288b3b77f270",
+      "needle": "//! One current control authorization and ONE company IMMEDIATE transaction for an entire batch."
+    },
+    {
+      "path": "crates/rentemester-storage/src/bookkeeping_batch.rs",
+      "sha256": "660618146176736856b2ae8b2e126082a48e06ccf25f8be69ddefdb2b8e2be96",
+      "needle": "//! Native atomic_v1 batches."
+    },
+    {
+      "path": "crates/rentemester-storage/src/bookkeeping_batch/workbench.rs",
+      "sha256": "7c60de4fd9b104b812cfeadd02bc898787e75cf6bb1c9477f8bad8f46fc1699c",
+      "needle": "//! Source-shaped filtered workbench over the SAME complete native plan/universe."
+    },
+    {
+      "path": "crates/rentemester-storage/src/bookkeeping_batch/checks.rs",
+      "sha256": "c150304efeb0aa7af53b4667806d81c1051fa436a7c0135e3c00882394ed241a",
+      "needle": "//! Mandatory current native readers; no injected success callbacks or whole-year substitution."
+    },
+    {
+      "path": "crates/rentemester-storage/src/legacy-company-schemas.json",
+      "sha256": "e2390746dbb0245f4d128158e146405994ce9b75f93e702b2e04d9e9d04aeb7b",
+      "needle": "{"
+    },
+    {
+      "path": "crates/rentemester-storage/src/purchase_vat.rs",
+      "sha256": "e68a00599e6083ac730c178577ed01e1ca4b8c5438c4312b81266275b11914f5",
+      "needle": "result[\"providerReference\"] = raw"
+    },
+    {
+      "path": "crates/rentemester-storage/src/purchase_rules.rs",
+      "sha256": "794f5a09b2aba3d52c26b6ffce7ca04155afeba63b0dcc0f435666d488695d09",
+      "needle": "//! Reviewed purchase-rule proofs. No VAT calculation, journal write or implied fallback."
+    },
+    {
+      "path": "crates/rentemester-storage/src/invoice_extraction.rs",
+      "sha256": "7bdefe7b0f34c77842f887e0633928f49654617c038e1bb6857c1d99d9de6ab1",
+      "needle": "//! Immutable extraction history on an admitted caller transaction. Namespace physical proof belongs to the host."
+    },
+    {
+      "path": "crates/rentemester-application/src/control_fence.rs",
+      "sha256": "e5b1f8902693d649fc1a46e0c66dc902622781f2c9f65e051e6ed7df11e1ffa6",
+      "needle": "//! Internal admitted-connection orchestration, not a product writer or authentication provider."
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http/dashboard_json.rs",
+      "sha256": "16f3a6b15c5174780831b032545bc36cc103d6adcfb5d62d81101851c033db6b",
+      "needle": "//! Original dashboard JSON, composed under one current-authorized source read."
+    },
+    {
+      "path": "crates/rentemester-application/src/dashboard_json.rs",
+      "sha256": "557fdb02e03badadea6ce3cc46645de18b7f89e50d8c6b8fd7ed2801c9d98f7a",
+      "needle": "//! Original dashboard JSON with current company authority and retained-source assurance."
+    },
+    {
+      "path": "crates/rentemester-storage/src/dashboard_json.rs",
+      "sha256": "7acb8dfa80e800e5021d38d7fa0b0d68dd52401d36c65a5c573e492e88fe7c2e",
+      "needle": "//! Original company dashboard JSON from shared admitted, source-aware readers."
+    },
+    {
+      "path": "crates/rentemester-storage/src/imported_receivables.rs",
+      "sha256": "9cf90bdb7d907e166009102e52607d545226d08f6a3a325069a024790bb47b53",
+      "needle": "//! External source records. These are never native issued invoices or permission to collect twice."
+    },
+    {
+      "path": "crates/rentemester-storage/src/public_einvoice.rs",
+      "sha256": "1d7e20177f6d05916a5257b6672fbe0fb3d1e6cf2831d000b5a012b2ec78861a",
+      "needle": "//! Durable public-invoice transport evidence. Caller holds current authority and transactions."
+    },
+    {
+      "path": "crates/rentemester-storage/src/audit_log.rs",
+      "sha256": "acdf51565c55908f1dd4d46e53121eb47274633b6cdcdffdaaec0978d2bbeb7a",
+      "needle": "//! Bounded, read-only inspection of the company audit history."
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http/dashboard_artifact.rs",
+      "sha256": "f6c5ef775649effc386a6df14159d0d9c5fcae740578c8224dd84266d3d1bfac",
+      "needle": "//! Download the shared standalone dashboard; local files and opening belong to the CLI."
+    },
+    {
+      "path": "crates/rentemester-application/src/dashboard_artifact.rs",
+      "sha256": "2a6b4df3e6e51ffed4f34885d91d708811cc12b3cb090ea7dac8df90533559a9",
+      "needle": "//! Standalone HTML uses the same current authority and physical sources as native reports."
+    },
+    {
+      "path": "crates/rentemester-storage/src/dashboard_artifact.rs",
+      "sha256": "c3e3af9a0a3596a427db2b5488821096863353844e90f9d0b90aa595cb9918c2",
+      "needle": "//! Standalone dashboard data composed exclusively on the caller's admitted read transaction."
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http/exceptions.rs",
+      "sha256": "7ccf44ceac32aba8617522b56442d21fc8f986a787d3fcdc7daa057bf99ed850",
+      "needle": "use super::*;"
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http/exceptions_original.rs",
+      "sha256": "351b7672fb0fb2a6df0332a5596be5a262daea4247afbf8a10bab6041f4f07b9",
+      "needle": "//! Original flat exception contracts over the native queue and current authority fences."
+    },
+    {
+      "path": "crates/rentemester-storage/src/exceptions.rs",
+      "sha256": "5a342d927d5e6e6e21a0b999c52106dee8c58f091635514e6f3199a8ce9023e2",
+      "needle": "//! Review queue state only. Resolving a task never posts or repairs its underlying invariant."
+    },
+    {
+      "path": "crates/rentemester-application/src/exceptions.rs",
+      "sha256": "97709970925fb7ece93d60422d394c0c66ccdef93bc57ef28885700a9eb92228",
+      "needle": "//! Queue reads and review-only decisions under current company authority."
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http/archive_reports.rs",
+      "sha256": "1fd0432b1885c5b468b43da1909a897cde570827849b680d446c02037f117f29",
+      "needle": "//! Exact read selectors and canonical outer envelopes for ordinary source-selected views."
+    },
+    {
+      "path": "crates/rentemester-application/src/archive_reports.rs",
+      "sha256": "bb634c280ffb40503316f43c884000b80188f57d5e0ba2394ad71dc6122940fb",
+      "needle": "//! Ordinary source-selected company reads on one current-authority/physical-source barrier."
+    },
+    {
+      "path": "crates/rentemester-storage/src/archive_reports.rs",
+      "sha256": "7408b98d020a230d1f5fc3886e376ac1e7a321e3fc5302817ebe5fcea187365c",
+      "needle": "//! Fixed ordinary archive reports over complete physical original proofs in the admitted transaction."
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http/integrity.rs",
+      "sha256": "c4bfd6f046b3d0013cb5008fd9e6ebe607b73c6724fa2d42befe7e75b6f610f8",
+      "needle": "use super::*;"
+    },
+    {
+      "path": "crates/rentemester-application/src/integrity.rs",
+      "sha256": "ea3ec9a78f789e55fecf5c1781e157296ad4d1b7b8eb9de929d46cda8ee677f5",
+      "needle": "//! Current company-read authorization and owned-transaction hash-chain observation."
+    },
+    {
+      "path": "crates/rentemester-storage/src/integrity.rs",
+      "sha256": "d67c83a7bc5e3d32f7e1d62d14f707c85c88e9c770d2155112ce6e30e99bee85",
+      "needle": "//! Read-only journal hash-chain scope. No backup/compliance claim without trusted evidence."
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http/multi_year.rs",
+      "sha256": "5d9ee2af71b2f30eb8db45877f7e2a56b74821453c24e48d4ce74d8bcca633af",
+      "needle": "use super::*;"
+    },
+    {
+      "path": "crates/rentemester-application/src/multi_year.rs",
+      "sha256": "1cb34b8cdd7a78173c228f6b6f8190e7fab3f31301b106b6561753c1d2e08c28",
+      "needle": "//! Comparison reads share current company-read authority with individual financial reports."
+    },
+    {
+      "path": "crates/rentemester-storage/src/multi_year.rs",
+      "sha256": "563fe3c518193e2c0d614e6d32558f025ed781e50e2ba1683ccd992f8ec1988c",
+      "needle": "//! Multi-year figures from observed live periods and classified archive balances, never invented years."
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http/obligations.rs",
+      "sha256": "72994a2d6361cfa117a1a9c242158d79ca2a1409bf18f6737fdcdfec80109ee2",
+      "needle": "use super::*;"
+    },
+    {
+      "path": "crates/rentemester-application/src/obligations.rs",
+      "sha256": "464028482f1d9c99e2a84b56a129f308f3a5468dd2f809a53b810c1afc947f65",
+      "needle": "//! Obligation reads use the current company-read fence without mutations."
+    },
+    {
+      "path": "crates/rentemester-storage/src/obligations.rs",
+      "sha256": "dc254286f525b22242a275707d960c75522bda25a21a8fb83315e2c5243c80ed",
+      "needle": "//! Authorized read projection. Balances are exact; no payment or filing is inferred."
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http/portfolio_cashflow.rs",
+      "sha256": "f673239188447eb3e9874c1bfc5a7a947c1854c81f9194760ba58ab1b4b9d465",
+      "needle": "//! Native financial overview selectors and current-authorized reads."
+    },
+    {
+      "path": "crates/rentemester-application/src/portfolio_cashflow.rs",
+      "sha256": "ac20a6eec2f316b757b699321050050b5ec2c2b0f7f8549e2c12b59f8776209b",
+      "needle": "//! Current company visibility and report reads; no read-time discovery or writes."
+    },
+    {
+      "path": "crates/rentemester-cli/src/main.rs",
+      "sha256": "54af368bcb6d626d1ac0378727f6a34761244a21a86b6f5d67e47c27c8f432a6",
+      "needle": "mod mileage_posting;"
+    },
+    {
+      "path": "crates/rentemester-cli/src/local_binding.rs",
+      "sha256": "94d26249352df53d80d468019ee93e1353394db4ce1c6728491fa6c4e2589dfd",
+      "needle": "//! One explicit transport join before every existing CLI dispatcher; no server lifecycle."
+    },
+    {
+      "path": "crates/rentemester-cli/src/remote.rs",
+      "sha256": "9a0d2ee8c626321459749c22642936ad07f9934a4e47eb3c4dc90ad18c7d2e91",
+      "needle": "use rentemester_client::{"
+    },
+    {
+      "path": "crates/rentemester-cli/src/original_args.rs",
+      "sha256": "2c8c75a6d4176182e5c0871941d9979b1a15d6848c70b7b281cade3927355a74",
+      "needle": "//! Source-backed argv structure only. Family adapters own allowed flags and domain types."
+    },
+    {
+      "path": "crates/rentemester-cli/src/bookkeeping_batch.rs",
+      "sha256": "49e0d5af0c805806a333aa50aaebb071871fa5bf0faf8de581159f77689b1f97",
+      "needle": "use rentemester_client::{"
+    },
+    {
+      "path": "crates/rentemester-cli/src/bookkeeping_batch_original.rs",
+      "sha256": "5b0f2415a3f51d20104ee286e2cd06dc04b1f8b89edb3810c2d051f5b17ddeb9",
+      "needle": "//! Flat source argv; native cookie authority and atomic receipts remain authoritative."
+    },
+    {
+      "path": "crates/rentemester-client/src/bookkeeping_batch.rs",
+      "sha256": "60a82d99c4bc5506df2a3e231f34193d4576b7b32f7aecfbc1ac9b15b973f2a8",
+      "needle": "//! Exact reviewed batch transport. Server owns source proofs, policy, money and authority."
+    },
+    {
+      "path": "crates/rentemester-client/src/bookkeeping_batch_original.rs",
+      "sha256": "3c08105af1d13f6693374741992769f272aa8440a00c9b60190b6b114374781f",
+      "needle": "//! Six source operations over the unchanged native atomic batch transport."
+    },
+    {
+      "path": "crates/rentemester-cli/src/dashboard_artifact.rs",
+      "sha256": "63ce0ecff487087ca2b71b3ce658815b753809634e010c961fad515112dd957a",
+      "needle": "//! The explicit dashboard artifact command owns local file publication only."
+    },
+    {
+      "path": "crates/rentemester-client/src/dashboard_artifact.rs",
+      "sha256": "9db50913f7c5c442f3aa823eed3eb54abb2fa47e6e5bd40ef2eeaa636f128711",
+      "needle": "//! Exact server-owned static HTML. No local files or financial calculations."
+    },
+    {
+      "path": "crates/rentemester-cli/src/exceptions.rs",
+      "sha256": "f29225aebf33360931053b2faa6f1c47853f950ed7252e91ad013f2487513989",
+      "needle": "use rentemester_client::{ApiClient, MAX_EXCEPTION_BODY, exception_resolve_schema};"
+    },
+    {
+      "path": "crates/rentemester-cli/src/exceptions_original.rs",
+      "sha256": "1f35261aa6b12592cad1f20dd8908044ed6c9ab6e0721dc5f355daefe5e826bf",
+      "needle": "//! Original exception commands; server authentication owns review attribution."
+    },
+    {
+      "path": "crates/rentemester-client/src/exceptions.rs",
+      "sha256": "72c36cf996cf75b663686472079cd0344b72d7aeae3db3cdfd039e7239bee947",
+      "needle": "//! Canonical task reads and explicit review resolution; neither performs bookkeeping."
+    },
+    {
+      "path": "crates/rentemester-client/src/exceptions_original.rs",
+      "sha256": "88f75970c00960e1207ffecef9e5602118dea714d9532756af383edc77693838",
+      "needle": "//! Source-flat exception transport. Native methods and their contracts are unchanged."
+    },
+    {
+      "path": "crates/rentemester-mcp/src/main.rs",
+      "sha256": "db7b771d69e02d3802906d65437dad8523fd9114ae15e7d3ef33dc696d4e831f",
+      "needle": "//! Bounded MCP 2025-11-25 stdio adapter. Wire references:"
+    },
+    {
+      "path": "crates/rentemester-mcp/src/tools.rs",
+      "sha256": "8035dc45f8d22d902c18e17b4508ca572f8505dc83a1961fa355dfd1f34c1397",
+      "needle": "use rentemester_client::{ApiClient, Confirmation, DomainMutation, Error, JournalMutation, Report};"
+    },
+    {
+      "path": "crates/rentemester-mcp/src/bookkeeping_batch.rs",
+      "sha256": "e35d1370b7dfbf9fc2f5bb00743f0bfe2c5aaf902fe4a0e140a5e629acead125",
+      "needle": "use crate::tools::{company_schema, native_body, tool};"
+    },
+    {
+      "path": "crates/rentemester-mcp/src/dashboard_artifact.rs",
+      "sha256": "8f9585e3a7d8c80fa4c313b4630293f7a16f963f7d75b689d6ca0714dd8fd50d",
+      "needle": "use crate::tools::tool;"
+    },
+    {
+      "path": "crates/rentemester-mcp/src/exceptions.rs",
+      "sha256": "68ff87041e7b146cc7169b5c600e5c7f7640cdb9ca9f2e22a94d1393dc857f81",
+      "needle": "//! Existing source tool names, source envelopes, shared original HTTP transport."
+    },
+    {
+      "path": "crates/rentemester-mcp/src/portfolio_cashflow.rs",
+      "sha256": "557d8ed5cf6187db6ea4abd12665eb8365dd8fd42223322ee7d1a6cd6a26b58b",
+      "needle": "//! Read-only authoritative reports; no source/default/amount inference."
+    },
+    {
+      "path": "crates/rentemester-client/src/portfolio_cashflow.rs",
+      "sha256": "3106755fa5166e8bf01d54bcca8194b27b5d8c24b0cbf371d8ca21a548c2f0fc",
+      "needle": "//! Canonical current-authority portfolio and imported bank history; no local aggregation."
+    }
+  ],
+  "acceptance": "Independent strict oracle is structural evidence only; actual source/diff acceptance belongs to parent. Prior1285 operations/34 partitions unchanged; full55/J01-J07/finaldesktop/release/cutover/retirement retained.",
+  "checks": {
+    "oracleCommand": "python3 /tmp/r58-677-oracle.py review_batch_dashboard",
+    "oracleResult": "PASS exactselected review_batch_dashboard 58 resolved sourcebound schema contracts; semanticreview required; whole677 remains open",
+    "graphify": "graphify query before source; graphify extract . --code-only --no-cluster --out \"$SGD_BUILD_DIR/graphify\" completed:34009 nodes/107681 edges, output outside owned code.",
+    "notRun": "No Cargo, server, browser, network, provider, SMTP/IMAP, posting, scanner, job, authentication or runtime effects."
+  }
+}
