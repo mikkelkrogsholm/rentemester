@@ -1,0 +1,3558 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$defs": {
+    "NativeParty": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "maxLength": 16384,
+              "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+              "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control."
+            },
+            "address": {
+              "type": "string",
+              "maxLength": 16384,
+              "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+              "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control."
+            },
+            "vatOrCvr": {
+              "type": "string",
+              "maxLength": 16384,
+              "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+              "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control."
+            },
+            "eanNumber": {
+              "type": "string",
+              "maxLength": 16384,
+              "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+              "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control."
+            },
+            "publicRecipient": {
+              "type": "boolean"
+            },
+            "buyerReference": {
+              "type": "string",
+              "maxLength": 16384,
+              "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+              "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control."
+            },
+            "orderReference": {
+              "type": "string",
+              "maxLength": 16384,
+              "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+              "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control."
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "string",
+              "maxLength": 16384,
+              "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+              "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control."
+            },
+            {
+              "type": "string",
+              "maxLength": 16384,
+              "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+              "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control."
+            },
+            {
+              "type": "string",
+              "maxLength": 16384,
+              "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+              "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control."
+            },
+            {
+              "type": "string",
+              "maxLength": 16384,
+              "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+              "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control."
+            },
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "maxLength": 16384,
+              "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+              "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control."
+            },
+            {
+              "type": "string",
+              "maxLength": 16384,
+              "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+              "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control."
+            }
+          ],
+          "minItems": 7,
+          "maxItems": 7
+        }
+      ],
+      "description": "Serde derive from_value accepts object or exact positional sequence in declaration order. Missing Option object fields default None; sequence fields have no serde(default), so exact tuple length. Storage bounded() rejects null recursively before deserialization."
+    },
+    "NativeLine": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "description": {
+              "type": "string",
+              "maxLength": 16384,
+              "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+              "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control."
+            },
+            "unitCode": {
+              "type": "string",
+              "maxLength": 16384,
+              "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+              "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control."
+            },
+            "quantity": {
+              "type": "number"
+            },
+            "unitPriceExVat": {
+              "type": "number"
+            },
+            "taxClassification": {
+              "type": "string",
+              "maxLength": 16384,
+              "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+              "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control."
+            },
+            "vatRate": {
+              "type": "number"
+            },
+            "reverseChargeBasis": {
+              "type": "string",
+              "maxLength": 16384,
+              "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+              "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control."
+            }
+          },
+          "required": [
+            "description"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "string",
+              "maxLength": 16384,
+              "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+              "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control."
+            },
+            {
+              "type": "string",
+              "maxLength": 16384,
+              "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+              "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control."
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "string",
+              "maxLength": 16384,
+              "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+              "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control."
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "string",
+              "maxLength": 16384,
+              "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+              "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control."
+            }
+          ],
+          "minItems": 7,
+          "maxItems": 7
+        }
+      ],
+      "description": "Serde derive from_value accepts object or exact positional sequence in declaration order. Missing Option object fields default None; sequence fields have no serde(default), so exact tuple length. Storage bounded() rejects null recursively before deserialization."
+    },
+    "NativeSimplifiedTotals": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "grossAmount": {
+              "type": "number"
+            },
+            "vatRate": {
+              "type": "number"
+            },
+            "vatComputationBasis": {
+              "type": "string",
+              "maxLength": 16384,
+              "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+              "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control."
+            },
+            "vatAmount": {
+              "type": "number"
+            },
+            "netAmount": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "grossAmount",
+            "vatRate"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "string",
+              "maxLength": 16384,
+              "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+              "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control."
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "minItems": 5,
+          "maxItems": 5
+        }
+      ],
+      "description": "Serde derive from_value accepts object or exact positional sequence in declaration order. Missing Option object fields default None; sequence fields have no serde(default), so exact tuple length. Storage bounded() rejects null recursively before deserialization."
+    },
+    "NativeInput": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "invoiceType": {
+              "type": "string",
+              "maxLength": 16384,
+              "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+              "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control."
+            },
+            "totals": {
+              "$ref": "schemas-invoice_original_http.json#/$defs/NativeSimplifiedTotals"
+            },
+            "issueDate": {
+              "type": "string",
+              "maxLength": 16384,
+              "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+              "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control."
+            },
+            "deliveryDate": {
+              "type": "string",
+              "maxLength": 16384,
+              "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+              "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control."
+            },
+            "deliveryPeriodStart": {
+              "type": "string",
+              "maxLength": 16384,
+              "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+              "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control."
+            },
+            "deliveryPeriodEnd": {
+              "type": "string",
+              "maxLength": 16384,
+              "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+              "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control."
+            },
+            "unitCode": {
+              "type": "string",
+              "maxLength": 16384,
+              "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+              "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control."
+            },
+            "lines": {
+              "type": "array",
+              "items": {
+                "$ref": "schemas-invoice_original_http.json#/$defs/NativeLine"
+              },
+              "maxItems": 200
+            },
+            "vatRatePercent": {
+              "type": "number"
+            },
+            "vatTreatment": {
+              "type": "string",
+              "maxLength": 16384,
+              "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+              "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control."
+            },
+            "reverseChargeBasis": {
+              "type": "string",
+              "maxLength": 16384,
+              "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+              "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control."
+            },
+            "reverseChargeNote": {
+              "type": "string",
+              "maxLength": 16384,
+              "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+              "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control."
+            },
+            "customerId": {
+              "type": "integer"
+            },
+            "invoiceNumber": {
+              "type": "string",
+              "maxLength": 16384,
+              "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+              "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control."
+            },
+            "dueDate": {
+              "type": "string",
+              "maxLength": 16384,
+              "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+              "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control."
+            },
+            "currency": {
+              "type": "string",
+              "maxLength": 16384,
+              "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+              "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control."
+            },
+            "fxRateToDkk": {
+              "type": "number"
+            },
+            "seller": {
+              "$ref": "schemas-invoice_original_http.json#/$defs/NativeParty"
+            },
+            "buyer": {
+              "$ref": "schemas-invoice_original_http.json#/$defs/NativeParty"
+            }
+          },
+          "required": [
+            "issueDate",
+            "lines"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "string",
+              "maxLength": 16384,
+              "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+              "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control."
+            },
+            {
+              "$ref": "schemas-invoice_original_http.json#/$defs/NativeSimplifiedTotals"
+            },
+            {
+              "type": "string",
+              "maxLength": 16384,
+              "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+              "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control."
+            },
+            {
+              "type": "string",
+              "maxLength": 16384,
+              "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+              "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control."
+            },
+            {
+              "type": "string",
+              "maxLength": 16384,
+              "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+              "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control."
+            },
+            {
+              "type": "string",
+              "maxLength": 16384,
+              "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+              "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control."
+            },
+            {
+              "type": "string",
+              "maxLength": 16384,
+              "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+              "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control."
+            },
+            {
+              "type": "array",
+              "items": {
+                "$ref": "schemas-invoice_original_http.json#/$defs/NativeLine"
+              },
+              "maxItems": 200
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "string",
+              "maxLength": 16384,
+              "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+              "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control."
+            },
+            {
+              "type": "string",
+              "maxLength": 16384,
+              "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+              "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control."
+            },
+            {
+              "type": "string",
+              "maxLength": 16384,
+              "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+              "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control."
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "string",
+              "maxLength": 16384,
+              "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+              "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control."
+            },
+            {
+              "type": "string",
+              "maxLength": 16384,
+              "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+              "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control."
+            },
+            {
+              "type": "string",
+              "maxLength": 16384,
+              "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+              "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control."
+            },
+            {
+              "type": "number"
+            },
+            {
+              "$ref": "schemas-invoice_original_http.json#/$defs/NativeParty"
+            },
+            {
+              "$ref": "schemas-invoice_original_http.json#/$defs/NativeParty"
+            }
+          ],
+          "minItems": 19,
+          "maxItems": 19
+        }
+      ],
+      "description": "Serde derive from_value accepts object or exact positional sequence in declaration order. Missing Option object fields default None; sequence fields have no serde(default), so exact tuple length. Storage bounded() rejects null recursively before deserialization."
+    },
+    "IssuePayload": {
+      "type": "object",
+      "properties": {
+        "invoiceType": {
+          "enum": [
+            "full",
+            "simplified"
+          ]
+        },
+        "vatTreatment": {
+          "type": "string",
+          "maxLength": 16384,
+          "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+          "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control."
+        },
+        "issueDate": {
+          "type": "string",
+          "maxLength": 16384,
+          "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+          "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control."
+        },
+        "invoiceNumber": {
+          "type": "string",
+          "maxLength": 16384,
+          "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+          "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control."
+        },
+        "reverseChargeBasis": {
+          "type": "string",
+          "maxLength": 16384,
+          "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+          "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control."
+        },
+        "reverseChargeNote": {
+          "type": "string",
+          "maxLength": 16384,
+          "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+          "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control."
+        },
+        "currency": {
+          "type": "string",
+          "maxLength": 16384,
+          "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+          "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control."
+        },
+        "dueDate": {
+          "type": "string",
+          "maxLength": 16384,
+          "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+          "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control."
+        },
+        "deliveryDate": {
+          "type": "string",
+          "maxLength": 16384,
+          "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+          "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control."
+        },
+        "deliveryPeriodStart": {
+          "type": "string",
+          "maxLength": 16384,
+          "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+          "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control."
+        },
+        "deliveryPeriodEnd": {
+          "type": "string",
+          "maxLength": 16384,
+          "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+          "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control."
+        },
+        "unitCode": {
+          "type": "string",
+          "maxLength": 16384,
+          "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+          "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control."
+        },
+        "seller": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "maxLength": 16384,
+              "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+              "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control."
+            },
+            "address": {
+              "type": "string",
+              "maxLength": 16384,
+              "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+              "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control."
+            },
+            "vatOrCvr": {
+              "type": "string",
+              "maxLength": 16384,
+              "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+              "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control."
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        },
+        "buyer": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "maxLength": 16384,
+              "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+              "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control."
+            },
+            "address": {
+              "type": "string",
+              "maxLength": 16384,
+              "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+              "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control."
+            },
+            "vatOrCvr": {
+              "type": "string",
+              "maxLength": 16384,
+              "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+              "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control."
+            },
+            "eanNumber": {
+              "type": "string",
+              "maxLength": 16384,
+              "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+              "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control."
+            },
+            "publicRecipient": {
+              "type": "boolean"
+            },
+            "buyerReference": {
+              "type": "string",
+              "maxLength": 16384,
+              "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+              "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control."
+            },
+            "orderReference": {
+              "type": "string",
+              "maxLength": 16384,
+              "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+              "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control."
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        },
+        "lines": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "description": {
+                "type": "string",
+                "maxLength": 16384,
+                "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+                "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control."
+              },
+              "unitCode": {
+                "type": "string",
+                "maxLength": 16384,
+                "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+                "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control."
+              },
+              "quantity": {
+                "type": "number"
+              },
+              "unitPriceExVat": {
+                "type": "number"
+              },
+              "taxClassification": {
+                "type": "string",
+                "maxLength": 16384,
+                "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+                "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control."
+              },
+              "vatRate": {
+                "type": "number"
+              },
+              "reverseChargeBasis": {
+                "type": "string",
+                "maxLength": 16384,
+                "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+                "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control."
+              },
+              "lineTotalExVat": {
+                "type": "number"
+              }
+            },
+            "required": [],
+            "additionalProperties": false
+          },
+          "maxItems": 200
+        },
+        "totals": {
+          "type": "object",
+          "properties": {
+            "netAmount": {
+              "type": "number"
+            },
+            "vatRate": {
+              "type": "number"
+            },
+            "vatAmount": {
+              "type": "number"
+            },
+            "grossAmount": {
+              "type": "number"
+            },
+            "fxRateToDkk": {
+              "type": "number"
+            },
+            "netAmountDkk": {
+              "type": "number"
+            },
+            "vatAmountDkk": {
+              "type": "number"
+            },
+            "grossAmountDkk": {
+              "type": "number"
+            },
+            "vatComputationBasis": {
+              "type": "string",
+              "maxLength": 16384,
+              "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+              "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control."
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "invoiceType"
+      ],
+      "additionalProperties": false
+    },
+    "issueInput": {
+      "type": "object",
+      "properties": {
+        "payload": {
+          "$ref": "schemas-invoice_original_http.json#/$defs/IssuePayload"
+        },
+        "customerId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "payload",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "createInput": {
+      "type": "object",
+      "properties": {
+        "payload": {
+          "$ref": "schemas-invoice_original_http.json#/$defs/NativeInput"
+        },
+        "customerId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "payload",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "renderInput": {
+      "type": "object",
+      "properties": {
+        "documentId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "invoiceNumber": {
+          "type": "string",
+          "maxLength": 2000,
+          "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+          "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control.",
+          "minLength": 1
+        },
+        "confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "confirm"
+      ],
+      "additionalProperties": false,
+      "anyOf": [
+        {
+          "required": [
+            "documentId"
+          ],
+          "type": "object",
+          "properties": {
+            "documentId": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "invoiceNumber": {
+              "type": "string",
+              "maxLength": 2000,
+              "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+              "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control.",
+              "minLength": 1
+            },
+            "confirm": {
+              "const": true
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "required": [
+            "invoiceNumber"
+          ],
+          "type": "object",
+          "properties": {
+            "documentId": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "invoiceNumber": {
+              "type": "string",
+              "maxLength": 2000,
+              "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+              "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control.",
+              "minLength": 1
+            },
+            "confirm": {
+              "const": true
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "postInput": {
+      "type": "object",
+      "properties": {
+        "documentId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "invoiceNumber": {
+          "type": "string",
+          "maxLength": 2000,
+          "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+          "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control.",
+          "minLength": 1
+        },
+        "revenueAccountNo": {
+          "type": "string",
+          "maxLength": 2000,
+          "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+          "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control.",
+          "minLength": 1
+        },
+        "confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "confirm"
+      ],
+      "additionalProperties": false,
+      "anyOf": [
+        {
+          "required": [
+            "documentId"
+          ],
+          "type": "object",
+          "properties": {
+            "documentId": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "invoiceNumber": {
+              "type": "string",
+              "maxLength": 2000,
+              "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+              "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control.",
+              "minLength": 1
+            },
+            "revenueAccountNo": {
+              "type": "string",
+              "maxLength": 2000,
+              "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+              "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control.",
+              "minLength": 1
+            },
+            "confirm": {
+              "const": true
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "required": [
+            "invoiceNumber"
+          ],
+          "type": "object",
+          "properties": {
+            "documentId": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "invoiceNumber": {
+              "type": "string",
+              "maxLength": 2000,
+              "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+              "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control.",
+              "minLength": 1
+            },
+            "revenueAccountNo": {
+              "type": "string",
+              "maxLength": 2000,
+              "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+              "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control.",
+              "minLength": 1
+            },
+            "confirm": {
+              "const": true
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "repair-postingInput": {
+      "type": "object",
+      "properties": {
+        "documentId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "invoiceNumber": {
+          "type": "string",
+          "maxLength": 2000,
+          "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+          "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control.",
+          "minLength": 1
+        },
+        "revenueAccountNo": {
+          "type": "string",
+          "maxLength": 2000,
+          "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+          "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control.",
+          "minLength": 1
+        },
+        "legacyJournalEntryId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "reason": {
+          "type": "string",
+          "maxLength": 2000,
+          "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+          "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control.",
+          "minLength": 1
+        },
+        "confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "legacyJournalEntryId",
+        "reason",
+        "revenueAccountNo",
+        "confirm"
+      ],
+      "additionalProperties": false,
+      "anyOf": [
+        {
+          "required": [
+            "documentId"
+          ],
+          "type": "object",
+          "properties": {
+            "documentId": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "invoiceNumber": {
+              "type": "string",
+              "maxLength": 2000,
+              "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+              "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control.",
+              "minLength": 1
+            },
+            "revenueAccountNo": {
+              "type": "string",
+              "maxLength": 2000,
+              "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+              "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control.",
+              "minLength": 1
+            },
+            "legacyJournalEntryId": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "reason": {
+              "type": "string",
+              "maxLength": 2000,
+              "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+              "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control.",
+              "minLength": 1
+            },
+            "confirm": {
+              "const": true
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "required": [
+            "invoiceNumber"
+          ],
+          "type": "object",
+          "properties": {
+            "documentId": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "invoiceNumber": {
+              "type": "string",
+              "maxLength": 2000,
+              "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+              "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control.",
+              "minLength": 1
+            },
+            "revenueAccountNo": {
+              "type": "string",
+              "maxLength": 2000,
+              "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+              "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control.",
+              "minLength": 1
+            },
+            "legacyJournalEntryId": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "reason": {
+              "type": "string",
+              "maxLength": 2000,
+              "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+              "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control.",
+              "minLength": 1
+            },
+            "confirm": {
+              "const": true
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "settle-bankInput": {
+      "type": "object",
+      "properties": {
+        "payload": {
+          "type": "object",
+          "properties": {
+            "invoiceDocumentId": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "invoiceNumber": {
+              "type": "string",
+              "maxLength": 2000,
+              "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+              "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control.",
+              "minLength": 1
+            },
+            "bankTransactionId": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "bankAccountNo": {
+              "type": "string",
+              "maxLength": 2000,
+              "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+              "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control.",
+              "minLength": 1
+            },
+            "receivableAccountNo": {
+              "type": "string",
+              "maxLength": 2000,
+              "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+              "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control.",
+              "minLength": 1
+            },
+            "paymentDate": {
+              "type": "string",
+              "maxLength": 2000,
+              "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+              "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control.",
+              "minLength": 1
+            },
+            "amount": {
+              "type": "number"
+            },
+            "bankTransactionReference": {
+              "type": "string",
+              "maxLength": 2000,
+              "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+              "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control.",
+              "minLength": 1
+            }
+          },
+          "required": [],
+          "additionalProperties": false,
+          "oneOf": [
+            {
+              "required": [
+                "bankTransactionId"
+              ],
+              "not": {
+                "required": [
+                  "bankTransactionReference"
+                ]
+              },
+              "type": "object",
+              "properties": {
+                "invoiceDocumentId": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 9007199254740991
+                },
+                "invoiceNumber": {
+                  "type": "string",
+                  "maxLength": 2000,
+                  "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+                  "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control.",
+                  "minLength": 1
+                },
+                "bankTransactionId": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 9007199254740991
+                },
+                "bankAccountNo": {
+                  "type": "string",
+                  "maxLength": 2000,
+                  "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+                  "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control.",
+                  "minLength": 1
+                },
+                "receivableAccountNo": {
+                  "type": "string",
+                  "maxLength": 2000,
+                  "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+                  "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control.",
+                  "minLength": 1
+                },
+                "paymentDate": {
+                  "type": "string",
+                  "maxLength": 2000,
+                  "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+                  "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control.",
+                  "minLength": 1
+                },
+                "amount": {
+                  "type": "number"
+                },
+                "bankTransactionReference": {
+                  "type": "string",
+                  "maxLength": 2000,
+                  "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+                  "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control.",
+                  "minLength": 1
+                }
+              },
+              "additionalProperties": false
+            },
+            {
+              "required": [
+                "bankTransactionReference"
+              ],
+              "not": {
+                "required": [
+                  "bankTransactionId"
+                ]
+              },
+              "type": "object",
+              "properties": {
+                "invoiceDocumentId": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 9007199254740991
+                },
+                "invoiceNumber": {
+                  "type": "string",
+                  "maxLength": 2000,
+                  "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+                  "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control.",
+                  "minLength": 1
+                },
+                "bankTransactionId": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 9007199254740991
+                },
+                "bankAccountNo": {
+                  "type": "string",
+                  "maxLength": 2000,
+                  "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+                  "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control.",
+                  "minLength": 1
+                },
+                "receivableAccountNo": {
+                  "type": "string",
+                  "maxLength": 2000,
+                  "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+                  "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control.",
+                  "minLength": 1
+                },
+                "paymentDate": {
+                  "type": "string",
+                  "maxLength": 2000,
+                  "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+                  "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control.",
+                  "minLength": 1
+                },
+                "amount": {
+                  "type": "number"
+                },
+                "bankTransactionReference": {
+                  "type": "string",
+                  "maxLength": 2000,
+                  "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+                  "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control.",
+                  "minLength": 1
+                }
+              },
+              "additionalProperties": false
+            }
+          ]
+        },
+        "confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "payload",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "refund-bankInput": {
+      "type": "object",
+      "properties": {
+        "payload": {
+          "type": "object",
+          "properties": {
+            "invoiceDocumentId": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "invoiceNumber": {
+              "type": "string",
+              "maxLength": 2000,
+              "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+              "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control.",
+              "minLength": 1
+            },
+            "bankTransactionId": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "bankAccountNo": {
+              "type": "string",
+              "maxLength": 2000,
+              "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+              "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control.",
+              "minLength": 1
+            },
+            "receivableAccountNo": {
+              "type": "string",
+              "maxLength": 2000,
+              "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+              "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control.",
+              "minLength": 1
+            },
+            "paymentDate": {
+              "type": "string",
+              "maxLength": 2000,
+              "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+              "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control.",
+              "minLength": 1
+            },
+            "amount": {
+              "type": "number"
+            },
+            "bankTransactionReference": {
+              "type": "string",
+              "maxLength": 2000,
+              "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+              "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control.",
+              "minLength": 1
+            },
+            "refundDate": {
+              "type": "string",
+              "maxLength": 2000,
+              "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+              "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control.",
+              "minLength": 1
+            }
+          },
+          "required": [],
+          "additionalProperties": false,
+          "oneOf": [
+            {
+              "required": [
+                "bankTransactionId"
+              ],
+              "not": {
+                "required": [
+                  "bankTransactionReference"
+                ]
+              },
+              "type": "object",
+              "properties": {
+                "invoiceDocumentId": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 9007199254740991
+                },
+                "invoiceNumber": {
+                  "type": "string",
+                  "maxLength": 2000,
+                  "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+                  "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control.",
+                  "minLength": 1
+                },
+                "bankTransactionId": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 9007199254740991
+                },
+                "bankAccountNo": {
+                  "type": "string",
+                  "maxLength": 2000,
+                  "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+                  "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control.",
+                  "minLength": 1
+                },
+                "receivableAccountNo": {
+                  "type": "string",
+                  "maxLength": 2000,
+                  "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+                  "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control.",
+                  "minLength": 1
+                },
+                "paymentDate": {
+                  "type": "string",
+                  "maxLength": 2000,
+                  "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+                  "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control.",
+                  "minLength": 1
+                },
+                "amount": {
+                  "type": "number"
+                },
+                "bankTransactionReference": {
+                  "type": "string",
+                  "maxLength": 2000,
+                  "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+                  "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control.",
+                  "minLength": 1
+                },
+                "refundDate": {
+                  "type": "string",
+                  "maxLength": 2000,
+                  "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+                  "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control.",
+                  "minLength": 1
+                }
+              },
+              "additionalProperties": false
+            },
+            {
+              "required": [
+                "bankTransactionReference"
+              ],
+              "not": {
+                "required": [
+                  "bankTransactionId"
+                ]
+              },
+              "type": "object",
+              "properties": {
+                "invoiceDocumentId": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 9007199254740991
+                },
+                "invoiceNumber": {
+                  "type": "string",
+                  "maxLength": 2000,
+                  "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+                  "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control.",
+                  "minLength": 1
+                },
+                "bankTransactionId": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 9007199254740991
+                },
+                "bankAccountNo": {
+                  "type": "string",
+                  "maxLength": 2000,
+                  "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+                  "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control.",
+                  "minLength": 1
+                },
+                "receivableAccountNo": {
+                  "type": "string",
+                  "maxLength": 2000,
+                  "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+                  "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control.",
+                  "minLength": 1
+                },
+                "paymentDate": {
+                  "type": "string",
+                  "maxLength": 2000,
+                  "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+                  "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control.",
+                  "minLength": 1
+                },
+                "amount": {
+                  "type": "number"
+                },
+                "bankTransactionReference": {
+                  "type": "string",
+                  "maxLength": 2000,
+                  "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+                  "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control.",
+                  "minLength": 1
+                },
+                "refundDate": {
+                  "type": "string",
+                  "maxLength": 2000,
+                  "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+                  "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control.",
+                  "minLength": 1
+                }
+              },
+              "additionalProperties": false
+            }
+          ]
+        },
+        "confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "payload",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "credit-noteInput": {
+      "type": "object",
+      "properties": {
+        "payload": {
+          "type": "object",
+          "properties": {
+            "originalInvoiceDocumentId": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "originalInvoiceNumber": {
+              "type": "string",
+              "maxLength": 2000,
+              "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+              "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control.",
+              "minLength": 1
+            },
+            "issueDate": {
+              "type": "string",
+              "maxLength": 2000,
+              "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+              "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control.",
+              "minLength": 1
+            },
+            "reason": {
+              "type": "string",
+              "maxLength": 2000,
+              "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+              "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control.",
+              "minLength": 1
+            },
+            "creditNoteNumber": {
+              "type": "string",
+              "maxLength": 2000,
+              "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+              "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control.",
+              "minLength": 1
+            },
+            "grossAmount": {
+              "type": "number"
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        },
+        "confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "payload",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "apply-paymentInput": {
+      "type": "object",
+      "properties": {
+        "payload": {
+          "type": "object",
+          "properties": {
+            "invoiceDocumentId": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "invoiceNumber": {
+              "type": "string",
+              "maxLength": 2000,
+              "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+              "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control.",
+              "minLength": 1
+            },
+            "bankTransactionId": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "bankAccountNo": {
+              "type": "string",
+              "maxLength": 2000,
+              "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+              "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control.",
+              "minLength": 1
+            },
+            "receivableAccountNo": {
+              "type": "string",
+              "maxLength": 2000,
+              "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+              "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control.",
+              "minLength": 1
+            },
+            "paymentDate": {
+              "type": "string",
+              "maxLength": 2000,
+              "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+              "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control.",
+              "minLength": 1
+            },
+            "amount": {
+              "type": "number"
+            },
+            "journalEntryId": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "note": {
+              "type": "string",
+              "maxLength": 2000,
+              "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+              "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control."
+            }
+          },
+          "required": [
+            "paymentDate",
+            "amount"
+          ],
+          "additionalProperties": false,
+          "anyOf": [
+            {
+              "required": [
+                "invoiceDocumentId"
+              ],
+              "type": "object",
+              "properties": {
+                "invoiceDocumentId": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 9007199254740991
+                },
+                "invoiceNumber": {
+                  "type": "string",
+                  "maxLength": 2000,
+                  "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+                  "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control.",
+                  "minLength": 1
+                },
+                "bankTransactionId": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 9007199254740991
+                },
+                "bankAccountNo": {
+                  "type": "string",
+                  "maxLength": 2000,
+                  "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+                  "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control.",
+                  "minLength": 1
+                },
+                "receivableAccountNo": {
+                  "type": "string",
+                  "maxLength": 2000,
+                  "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+                  "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control.",
+                  "minLength": 1
+                },
+                "paymentDate": {
+                  "type": "string",
+                  "maxLength": 2000,
+                  "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+                  "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control.",
+                  "minLength": 1
+                },
+                "amount": {
+                  "type": "number"
+                },
+                "journalEntryId": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 9007199254740991
+                },
+                "note": {
+                  "type": "string",
+                  "maxLength": 2000,
+                  "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+                  "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control."
+                }
+              },
+              "additionalProperties": false
+            },
+            {
+              "required": [
+                "invoiceNumber"
+              ],
+              "type": "object",
+              "properties": {
+                "invoiceDocumentId": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 9007199254740991
+                },
+                "invoiceNumber": {
+                  "type": "string",
+                  "maxLength": 2000,
+                  "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+                  "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control.",
+                  "minLength": 1
+                },
+                "bankTransactionId": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 9007199254740991
+                },
+                "bankAccountNo": {
+                  "type": "string",
+                  "maxLength": 2000,
+                  "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+                  "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control.",
+                  "minLength": 1
+                },
+                "receivableAccountNo": {
+                  "type": "string",
+                  "maxLength": 2000,
+                  "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+                  "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control.",
+                  "minLength": 1
+                },
+                "paymentDate": {
+                  "type": "string",
+                  "maxLength": 2000,
+                  "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+                  "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control.",
+                  "minLength": 1
+                },
+                "amount": {
+                  "type": "number"
+                },
+                "journalEntryId": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 9007199254740991
+                },
+                "note": {
+                  "type": "string",
+                  "maxLength": 2000,
+                  "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]*$",
+                  "description": "Storage bounded() limits UTF-8 bytes, not Unicode codepoints, to16384; no char::is_control."
+                }
+              },
+              "additionalProperties": false
+            }
+          ]
+        },
+        "confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "payload",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "listQuery": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "enum": [
+            "open",
+            "paid",
+            "credited",
+            "refunded",
+            "overpaid",
+            "written_off",
+            "overdue",
+            "all"
+          ]
+        },
+        "from": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        },
+        "to": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        },
+        "customerCvr": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        },
+        "customer": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        },
+        "invoiceNumber": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        },
+        "minAmount": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        },
+        "maxAmount": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        },
+        "asOf": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "findQuery": {
+      "type": "object",
+      "properties": {
+        "query": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        },
+        "customer": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        },
+        "invoiceNumber": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        },
+        "amount": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        },
+        "minAmount": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        },
+        "maxAmount": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        },
+        "asOf": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "statusQuery": {
+      "type": "object",
+      "properties": {
+        "documentId": {
+          "type": "string",
+          "pattern": "^[0-9]+$",
+          "description": "ASCII digits parsed to i64 for documentId (1..9007199254740991), u64 for minDays (0..9007199254740991). Leading zeroes accepted."
+        },
+        "invoiceNumber": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        },
+        "asOf": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        }
+      },
+      "required": [],
+      "additionalProperties": false,
+      "anyOf": [
+        {
+          "required": [
+            "documentId"
+          ],
+          "type": "object",
+          "properties": {
+            "documentId": {
+              "type": "string",
+              "pattern": "^[0-9]+$",
+              "description": "ASCII digits parsed to i64 for documentId (1..9007199254740991), u64 for minDays (0..9007199254740991). Leading zeroes accepted."
+            },
+            "invoiceNumber": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 1024
+            },
+            "asOf": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 1024
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "required": [
+            "invoiceNumber"
+          ],
+          "type": "object",
+          "properties": {
+            "documentId": {
+              "type": "string",
+              "pattern": "^[0-9]+$",
+              "description": "ASCII digits parsed to i64 for documentId (1..9007199254740991), u64 for minDays (0..9007199254740991). Leading zeroes accepted."
+            },
+            "invoiceNumber": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 1024
+            },
+            "asOf": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 1024
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "overdueQuery": {
+      "type": "object",
+      "properties": {
+        "asOf": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        },
+        "minDays": {
+          "type": "string",
+          "pattern": "^[0-9]+$",
+          "description": "ASCII digits parsed to i64 for documentId (1..9007199254740991), u64 for minDays (0..9007199254740991). Leading zeroes accepted."
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "BusinessFalse": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        }
+      },
+      "required": [
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Failure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "type": "string"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        }
+      },
+      "required": [
+        "ok",
+        "code",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "ServiceFailure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "type": "string"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "usage": {
+          "enum": [
+            "not_committed",
+            "outcome_unknown",
+            "committed"
+          ]
+        },
+        "business": {
+          "enum": [
+            "not_attempted",
+            "not_committed",
+            "outcome_unknown",
+            "committed"
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "code",
+        "errors",
+        "usage",
+        "business"
+      ],
+      "additionalProperties": false
+    },
+    "ProtocolIncompatible": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "const": "protocol_incompatible"
+        },
+        "errors": {
+          "const": [
+            "HTTP protocol negotiation is incompatible"
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "code",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "issueData": {
+      "type": "object",
+      "properties": {
+        "documentId": {
+          "type": "integer"
+        },
+        "pdfDocumentId": {
+          "type": "integer"
+        },
+        "invoiceNumber": {
+          "type": "string"
+        },
+        "sha256": {
+          "type": "string"
+        },
+        "storedPath": {
+          "type": "string"
+        },
+        "pdfSha256": {
+          "type": "string"
+        },
+        "pdfStoredPath": {
+          "type": "string"
+        },
+        "notes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "documentId",
+        "invoiceNumber",
+        "sha256",
+        "storedPath",
+        "pdfDocumentId",
+        "pdfSha256",
+        "pdfStoredPath"
+      ],
+      "additionalProperties": false
+    },
+    "ComputedLines": {
+      "type": "array",
+      "items": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "description": {
+                "type": "string"
+              },
+              "taxClassification": {
+                "type": "string"
+              },
+              "quantity": {
+                "type": "number"
+              },
+              "unitPriceExVat": {
+                "type": "number"
+              },
+              "lineTotalExVat": {
+                "type": "number"
+              },
+              "vatRate": {
+                "type": "number"
+              },
+              "vatBase": {
+                "type": "number"
+              },
+              "vatAmount": {
+                "type": "number"
+              },
+              "vatBaseDkk": {
+                "type": "number"
+              },
+              "vatAmountDkk": {
+                "type": "number"
+              },
+              "reverseChargeBasis": {
+                "type": "string"
+              },
+              "unitCode": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "description",
+              "quantity",
+              "unitPriceExVat",
+              "lineTotalExVat",
+              "taxClassification",
+              "vatRate",
+              "vatBase",
+              "vatAmount"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "description": {
+                "type": "string"
+              },
+              "unitCode": {
+                "type": "string"
+              },
+              "vatBaseDkk": {
+                "type": "number"
+              },
+              "vatAmountDkk": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "description"
+            ],
+            "additionalProperties": false
+          }
+        ]
+      }
+    },
+    "createData": {
+      "type": "object",
+      "properties": {
+        "documentId": {
+          "type": "integer"
+        },
+        "pdfDocumentId": {
+          "type": "integer"
+        },
+        "invoiceNumber": {
+          "type": "string"
+        },
+        "sha256": {
+          "type": "string"
+        },
+        "storedPath": {
+          "type": "string"
+        },
+        "pdfSha256": {
+          "type": "string"
+        },
+        "pdfStoredPath": {
+          "type": "string"
+        },
+        "notes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "computed": {
+          "type": "object",
+          "properties": {
+            "lines": {
+              "$ref": "schemas-invoice_original_http.json#/$defs/ComputedLines"
+            },
+            "netAmount": {
+              "type": "number"
+            },
+            "vatRate": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "vatRatePercent": {
+              "type": "number"
+            },
+            "vatAmount": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "grossAmount": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "lines",
+            "netAmount",
+            "vatRate",
+            "vatRatePercent",
+            "vatAmount",
+            "grossAmount"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "documentId",
+        "invoiceNumber",
+        "sha256",
+        "storedPath",
+        "pdfDocumentId",
+        "pdfSha256",
+        "pdfStoredPath",
+        "computed"
+      ],
+      "additionalProperties": false
+    },
+    "renderData": {
+      "type": "object",
+      "properties": {
+        "renderDocumentId": {
+          "type": "integer"
+        },
+        "invoiceNumber": {
+          "type": "string"
+        },
+        "storedPath": {
+          "type": "string"
+        },
+        "sha256": {
+          "type": "string"
+        },
+        "contentType": {
+          "const": "application/pdf"
+        }
+      },
+      "required": [
+        "renderDocumentId",
+        "invoiceNumber",
+        "storedPath",
+        "sha256",
+        "contentType"
+      ],
+      "additionalProperties": false
+    },
+    "postData": {
+      "type": "object",
+      "properties": {
+        "entryId": {
+          "type": "integer"
+        },
+        "entryNo": {
+          "type": "string"
+        },
+        "entryHash": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "entryId",
+        "entryNo",
+        "entryHash"
+      ],
+      "additionalProperties": false
+    },
+    "settle-bankData": {
+      "type": "object",
+      "properties": {
+        "entryId": {
+          "type": "integer"
+        },
+        "paymentId": {
+          "type": "integer"
+        },
+        "entryNo": {
+          "type": "string"
+        },
+        "invoiceNumber": {
+          "type": "string"
+        },
+        "principalAmount": {
+          "type": "number"
+        },
+        "claimAmount": {
+          "type": "number"
+        },
+        "openBalance": {
+          "type": "number"
+        },
+        "principalAmountDkk": {
+          "type": "number"
+        },
+        "bankAmountDkk": {
+          "type": "number"
+        },
+        "realizedFxAmountDkk": {
+          "type": "number"
+        },
+        "claimOpenBalance": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "currency": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "entryId",
+        "paymentId",
+        "entryNo",
+        "invoiceNumber",
+        "principalAmount",
+        "claimAmount",
+        "openBalance",
+        "principalAmountDkk",
+        "bankAmountDkk",
+        "realizedFxAmountDkk",
+        "claimOpenBalance",
+        "currency"
+      ],
+      "additionalProperties": false
+    },
+    "refund-bankData": {
+      "type": "object",
+      "properties": {
+        "entryId": {
+          "type": "integer"
+        },
+        "refundId": {
+          "type": "integer"
+        },
+        "entryNo": {
+          "type": "string"
+        },
+        "invoiceNumber": {
+          "type": "string"
+        },
+        "remainingCreditBalance": {
+          "type": "number"
+        },
+        "principalAmountDkk": {
+          "type": "number"
+        },
+        "bankAmountDkk": {
+          "type": "number"
+        },
+        "realizedFxAmountDkk": {
+          "type": "number"
+        },
+        "currency": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "entryId",
+        "refundId",
+        "entryNo",
+        "invoiceNumber",
+        "remainingCreditBalance",
+        "principalAmountDkk",
+        "bankAmountDkk",
+        "realizedFxAmountDkk",
+        "currency"
+      ],
+      "additionalProperties": false
+    },
+    "credit-noteData": {
+      "type": "object",
+      "properties": {
+        "documentId": {
+          "type": "integer"
+        },
+        "creditNoteNumber": {
+          "type": "string"
+        },
+        "originalInvoiceNumber": {
+          "type": "string"
+        },
+        "journalEntryId": {
+          "type": "integer"
+        },
+        "journalEntryNo": {
+          "type": "string"
+        },
+        "sha256": {
+          "type": "string"
+        },
+        "storedPath": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "documentId",
+        "creditNoteNumber",
+        "originalInvoiceNumber",
+        "journalEntryId",
+        "journalEntryNo",
+        "sha256",
+        "storedPath"
+      ],
+      "additionalProperties": false
+    },
+    "apply-paymentData": {
+      "type": "object",
+      "properties": {
+        "paymentId": {
+          "type": "integer"
+        },
+        "journalEntryId": {
+          "type": "integer"
+        },
+        "invoiceDocumentId": {
+          "type": "integer"
+        },
+        "invoiceNumber": {
+          "type": "string"
+        },
+        "openBalance": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "paymentId",
+        "journalEntryId",
+        "invoiceDocumentId",
+        "invoiceNumber",
+        "openBalance"
+      ],
+      "additionalProperties": false
+    },
+    "repair-postingData": {
+      "type": "object",
+      "properties": {
+        "invoiceDocumentId": {
+          "type": "integer"
+        },
+        "legacyJournalEntryId": {
+          "type": "integer"
+        },
+        "replacementJournalEntryId": {
+          "type": "integer"
+        },
+        "reversalJournalEntryId": {
+          "type": "integer"
+        },
+        "entryId": {
+          "type": "integer"
+        },
+        "replacementJournalEntryNo": {
+          "type": "string"
+        },
+        "reversalJournalEntryNo": {
+          "type": "string"
+        },
+        "entryNo": {
+          "type": "string"
+        },
+        "entryHash": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "invoiceDocumentId",
+        "legacyJournalEntryId",
+        "replacementJournalEntryId",
+        "reversalJournalEntryId",
+        "entryId",
+        "replacementJournalEntryNo",
+        "reversalJournalEntryNo",
+        "entryNo",
+        "entryHash"
+      ],
+      "additionalProperties": false
+    },
+    "InvoiceRow": {
+      "type": "object",
+      "properties": {
+        "documentId": {
+          "type": "integer"
+        },
+        "invoiceNumber": {
+          "type": "string"
+        },
+        "invoiceDate": {
+          "type": "string"
+        },
+        "customerName": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "customerCvr": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "buyerEanNumber": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "buyerPublicRecipient": {
+          "type": "boolean"
+        },
+        "peppolStatus": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "status": {
+                  "enum": [
+                    "acknowledged",
+                    "failed",
+                    "in_progress",
+                    "uncertain",
+                    "queued",
+                    "retryable"
+                  ]
+                },
+                "submissionReference": {
+                  "type": "string"
+                },
+                "transmissionId": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "acknowledgedAt": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "status",
+                "submissionReference",
+                "transmissionId",
+                "acknowledgedAt"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "grossAmount": {
+          "type": "number"
+        },
+        "currency": {
+          "type": "string"
+        },
+        "openBalance": {
+          "type": "number"
+        },
+        "claimOpenBalance": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "status": {
+          "enum": [
+            "open",
+            "paid",
+            "credited",
+            "refunded",
+            "overpaid",
+            "written_off"
+          ]
+        },
+        "effectiveDueDate": {
+          "type": "string"
+        },
+        "isOverdue": {
+          "type": "boolean"
+        },
+        "overdueDays": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "documentId",
+        "invoiceNumber",
+        "invoiceDate",
+        "customerName",
+        "customerCvr",
+        "buyerEanNumber",
+        "buyerPublicRecipient",
+        "peppolStatus",
+        "grossAmount",
+        "currency",
+        "openBalance",
+        "claimOpenBalance",
+        "status",
+        "effectiveDueDate",
+        "isOverdue",
+        "overdueDays"
+      ],
+      "additionalProperties": false
+    },
+    "listData": {
+      "type": "object",
+      "properties": {
+        "count": {
+          "type": "integer"
+        },
+        "status": {
+          "enum": [
+            "all",
+            "open",
+            "paid",
+            "credited",
+            "refunded",
+            "overpaid",
+            "written_off",
+            "overdue"
+          ]
+        },
+        "asOfDate": {
+          "type": "string"
+        },
+        "rows": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-invoice_original_http.json#/$defs/InvoiceRow"
+          }
+        },
+        "query": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "count",
+        "status",
+        "asOfDate",
+        "rows"
+      ],
+      "additionalProperties": false
+    },
+    "findData": {
+      "type": "object",
+      "properties": {
+        "count": {
+          "type": "integer"
+        },
+        "status": {
+          "enum": [
+            "all",
+            "open",
+            "paid",
+            "credited",
+            "refunded",
+            "overpaid",
+            "written_off",
+            "overdue"
+          ]
+        },
+        "asOfDate": {
+          "type": "string"
+        },
+        "rows": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-invoice_original_http.json#/$defs/InvoiceRow"
+          }
+        },
+        "query": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "count",
+        "status",
+        "asOfDate",
+        "rows"
+      ],
+      "additionalProperties": false
+    },
+    "overdueData": {
+      "type": "object",
+      "properties": {
+        "count": {
+          "type": "integer"
+        },
+        "status": {
+          "enum": [
+            "all",
+            "open",
+            "paid",
+            "credited",
+            "refunded",
+            "overpaid",
+            "written_off",
+            "overdue"
+          ]
+        },
+        "asOfDate": {
+          "type": "string"
+        },
+        "rows": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-invoice_original_http.json#/$defs/InvoiceRow"
+          }
+        },
+        "query": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "count",
+        "status",
+        "asOfDate",
+        "rows"
+      ],
+      "additionalProperties": false
+    },
+    "statusData": {
+      "type": "object",
+      "properties": {
+        "grossAmount": {
+          "type": "number"
+        },
+        "creditedAmount": {
+          "type": "number"
+        },
+        "paidAmount": {
+          "type": "number"
+        },
+        "openBalance": {
+          "type": "number"
+        },
+        "registeredClaimBalanceDkk": {
+          "type": "number"
+        },
+        "totalReminderFees": {
+          "type": "number"
+        },
+        "totalCompensationClaims": {
+          "type": "number"
+        },
+        "totalInterestClaims": {
+          "type": "number"
+        },
+        "totalInterestCorrections": {
+          "type": "number"
+        },
+        "totalClaimPayments": {
+          "type": "number"
+        },
+        "totalBadDebtWrittenOff": {
+          "type": "number"
+        },
+        "invoiceDocumentId": {
+          "type": "integer"
+        },
+        "invoiceNumber": {
+          "type": "string"
+        },
+        "claimOpenBalance": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "currency": {
+          "type": "string"
+        },
+        "principalCurrency": {
+          "type": "string"
+        },
+        "claimCurrency": {
+          "const": "DKK"
+        },
+        "asOfDate": {
+          "type": "string"
+        },
+        "effectiveDueDate": {
+          "type": "string"
+        },
+        "isOverdue": {
+          "type": "boolean"
+        },
+        "overdueDays": {
+          "type": "integer"
+        },
+        "status": {
+          "enum": [
+            "open",
+            "paid",
+            "credited",
+            "refunded",
+            "overpaid",
+            "written_off"
+          ]
+        },
+        "payments": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "paymentId": {
+                "type": "integer"
+              },
+              "paymentDate": {
+                "type": "string"
+              },
+              "amount": {
+                "type": "number"
+              },
+              "bankTransactionId": {
+                "anyOf": [
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "journalEntryId": {
+                "type": "integer"
+              },
+              "note": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "paymentId",
+              "paymentDate",
+              "amount",
+              "bankTransactionId",
+              "journalEntryId",
+              "note"
+            ],
+            "additionalProperties": false
+          },
+          "maxItems": 5000
+        },
+        "creditNotes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "documentId": {
+                "type": "integer"
+              },
+              "creditNoteNumber": {
+                "type": "string"
+              },
+              "amount": {
+                "type": "number"
+              },
+              "issueDate": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "documentId",
+              "creditNoteNumber",
+              "amount",
+              "issueDate"
+            ],
+            "additionalProperties": false
+          },
+          "maxItems": 5000
+        },
+        "refunds": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "refundId": {
+                "type": "integer"
+              },
+              "refundDate": {
+                "type": "string"
+              },
+              "amount": {
+                "type": "number"
+              },
+              "bankTransactionId": {
+                "anyOf": [
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "journalEntryId": {
+                "type": "integer"
+              },
+              "note": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "refundId",
+              "refundDate",
+              "amount",
+              "bankTransactionId",
+              "journalEntryId",
+              "note"
+            ],
+            "additionalProperties": false
+          },
+          "maxItems": 5000
+        },
+        "claimPayments": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "claimPaymentId": {
+                "type": "integer"
+              },
+              "paymentDate": {
+                "type": "string"
+              },
+              "amount": {
+                "type": "number"
+              },
+              "bankTransactionId": {
+                "anyOf": [
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "journalEntryId": {
+                "type": "integer"
+              },
+              "note": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "claimPaymentId",
+              "paymentDate",
+              "amount",
+              "bankTransactionId",
+              "journalEntryId",
+              "note"
+            ],
+            "additionalProperties": false
+          },
+          "maxItems": 5000
+        },
+        "badDebtWriteOffs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "writeOffId": {
+                "type": "integer"
+              },
+              "writeOffDate": {
+                "type": "string"
+              },
+              "grossAmount": {
+                "type": "number"
+              },
+              "netAmount": {
+                "type": "number"
+              },
+              "vatAmount": {
+                "type": "number"
+              },
+              "journalEntryId": {
+                "type": "integer"
+              },
+              "note": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "writeOffId",
+              "writeOffDate",
+              "grossAmount",
+              "netAmount",
+              "vatAmount",
+              "journalEntryId",
+              "note"
+            ],
+            "additionalProperties": false
+          },
+          "maxItems": 5000
+        },
+        "reminders": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "reminderId": {
+                "type": "integer"
+              },
+              "reminderDate": {
+                "type": "string"
+              },
+              "feeAmount": {
+                "type": "number"
+              },
+              "note": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "journalEntryId": {
+                "anyOf": [
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "reminderId",
+              "reminderDate",
+              "feeAmount",
+              "note",
+              "journalEntryId"
+            ],
+            "additionalProperties": false
+          },
+          "maxItems": 5000
+        },
+        "compensationClaims": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "claimId": {
+                "type": "integer"
+              },
+              "claimDate": {
+                "type": "string"
+              },
+              "amountDkk": {
+                "type": "number"
+              },
+              "note": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "journalEntryId": {
+                "anyOf": [
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "claimId",
+              "claimDate",
+              "amountDkk",
+              "note",
+              "journalEntryId"
+            ],
+            "additionalProperties": false
+          },
+          "maxItems": 5000
+        },
+        "interestClaims": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "claimId": {
+                "type": "integer"
+              },
+              "claimDate": {
+                "type": "string"
+              },
+              "amountDkk": {
+                "type": "number"
+              },
+              "referenceRatePercent": {
+                "type": "number"
+              },
+              "annualInterestRatePercent": {
+                "type": "number"
+              },
+              "overdueDays": {
+                "type": "integer"
+              },
+              "note": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "journalEntryId": {
+                "anyOf": [
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "claimId",
+              "claimDate",
+              "amountDkk",
+              "referenceRatePercent",
+              "annualInterestRatePercent",
+              "overdueDays",
+              "note",
+              "journalEntryId"
+            ],
+            "additionalProperties": false
+          },
+          "maxItems": 5000
+        },
+        "interestCorrections": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "correctionId": {
+                "type": "integer"
+              },
+              "correctionDate": {
+                "type": "string"
+              },
+              "amountDkk": {
+                "type": "number"
+              },
+              "journalEntryId": {
+                "type": "integer"
+              }
+            },
+            "required": [
+              "correctionId",
+              "correctionDate",
+              "amountDkk",
+              "journalEntryId"
+            ],
+            "additionalProperties": false
+          },
+          "maxItems": 5000
+        },
+        "dueDate": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "grossAmount",
+        "creditedAmount",
+        "paidAmount",
+        "openBalance",
+        "registeredClaimBalanceDkk",
+        "totalReminderFees",
+        "totalCompensationClaims",
+        "totalInterestClaims",
+        "totalInterestCorrections",
+        "totalClaimPayments",
+        "totalBadDebtWrittenOff",
+        "invoiceDocumentId",
+        "invoiceNumber",
+        "claimOpenBalance",
+        "currency",
+        "principalCurrency",
+        "claimCurrency",
+        "asOfDate",
+        "effectiveDueDate",
+        "isOverdue",
+        "overdueDays",
+        "status",
+        "payments",
+        "creditNotes",
+        "refunds",
+        "claimPayments",
+        "badDebtWriteOffs",
+        "reminders",
+        "compensationClaims",
+        "interestClaims",
+        "interestCorrections"
+      ],
+      "additionalProperties": false
+    },
+    "issueSuccess": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "data": {
+          "$ref": "schemas-invoice_original_http.json#/$defs/issueData"
+        },
+        "errors": {
+          "const": []
+        }
+      },
+      "required": [
+        "ok",
+        "data",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "createSuccess": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "data": {
+          "$ref": "schemas-invoice_original_http.json#/$defs/createData"
+        },
+        "errors": {
+          "const": []
+        }
+      },
+      "required": [
+        "ok",
+        "data",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "renderSuccess": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "data": {
+          "$ref": "schemas-invoice_original_http.json#/$defs/renderData"
+        },
+        "errors": {
+          "const": []
+        }
+      },
+      "required": [
+        "ok",
+        "data",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "postSuccess": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "data": {
+          "$ref": "schemas-invoice_original_http.json#/$defs/postData"
+        },
+        "errors": {
+          "const": []
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "ok",
+        "data",
+        "errors",
+        "appliedRules"
+      ],
+      "additionalProperties": false
+    },
+    "settle-bankSuccess": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "data": {
+          "$ref": "schemas-invoice_original_http.json#/$defs/settle-bankData"
+        },
+        "errors": {
+          "const": []
+        }
+      },
+      "required": [
+        "ok",
+        "data",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "refund-bankSuccess": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "data": {
+          "$ref": "schemas-invoice_original_http.json#/$defs/refund-bankData"
+        },
+        "errors": {
+          "const": []
+        }
+      },
+      "required": [
+        "ok",
+        "data",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "credit-noteSuccess": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "data": {
+          "$ref": "schemas-invoice_original_http.json#/$defs/credit-noteData"
+        },
+        "errors": {
+          "const": []
+        }
+      },
+      "required": [
+        "ok",
+        "data",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "apply-paymentSuccess": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "data": {
+          "$ref": "schemas-invoice_original_http.json#/$defs/apply-paymentData"
+        },
+        "errors": {
+          "const": []
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "ok",
+        "data",
+        "errors",
+        "appliedRules"
+      ],
+      "additionalProperties": false
+    },
+    "repair-postingSuccess": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "data": {
+          "$ref": "schemas-invoice_original_http.json#/$defs/repair-postingData"
+        },
+        "errors": {
+          "const": []
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "ok",
+        "data",
+        "errors",
+        "appliedRules"
+      ],
+      "additionalProperties": false
+    },
+    "listSuccess": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "data": {
+          "$ref": "schemas-invoice_original_http.json#/$defs/listData"
+        },
+        "errors": {
+          "const": []
+        }
+      },
+      "required": [
+        "ok",
+        "data",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "findSuccess": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "data": {
+          "$ref": "schemas-invoice_original_http.json#/$defs/findData"
+        },
+        "errors": {
+          "const": []
+        }
+      },
+      "required": [
+        "ok",
+        "data",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "statusSuccess": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "data": {
+          "$ref": "schemas-invoice_original_http.json#/$defs/statusData"
+        },
+        "errors": {
+          "const": []
+        }
+      },
+      "required": [
+        "ok",
+        "data",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "overdueSuccess": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "data": {
+          "$ref": "schemas-invoice_original_http.json#/$defs/overdueData"
+        },
+        "errors": {
+          "const": []
+        }
+      },
+      "required": [
+        "ok",
+        "data",
+        "errors"
+      ],
+      "additionalProperties": false
+    }
+  }
+}
