@@ -30,3 +30,7 @@ The first four contracts connect public parsing/output/refusal/protocol represen
 No runtime, Cargo, server, browser, network, SMTP/IMAP, provider, posting, financial, upload, scanner, consent, job or auth effects were executed. No live-provider approval or universal replay key is claimed. Repeated observation is not replay; missing response and changed authority do not establish rollback of control/service metadata.
 
 Only the four owned flat files changed. Prior accepted partitions, all55/J01–J07/final desktop/release/cutover/retirement, and accepted runtime/userflow evidence retain their actual scope without replay. No commit/push/merge or issue status change.
+
+
+## Lead source-review repair
+Actual service_company constructors append required usage/business on admitted results. Four native report envelopes now retain a distinct human branch and service branch (business committed; usage committed/not_committed). Failures retain human shape plus required serialized service stages; status correlation and HEAD stripping remain explicit. Existing raw Money, nested audit availability, arbitrary evidence JSON and CLI/MCP adapters are unchanged.

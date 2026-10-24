@@ -282,5 +282,15 @@
       "needle": "pub async fn portfolio_overview(&self, as_of: Option<&str>) -> Result<Value, Error> {"
     }
   ],
-  "scope": "Only42 frozen report/audit operations. Prior821/26 partitions and all55/J01-J07/final desktop/release/cutover/retirement unchanged; no global closure or runtime replay."
+  "scope": "Only42 frozen report/audit operations. Prior821/26 partitions and all55/J01-J07/final desktop/release/cutover/retirement unchanged; no global closure or runtime replay.",
+  "leadReviewRepair": {
+    "scope": "Four success envelopes retain human branch and require both service stage fields; Failure retains human branch plus exact serialized service stages. No runtime effects replayed.",
+    "sourceRefs": [
+      {
+        "path": "crates/rentemester-server/src/product_http/service_company.rs",
+        "sha256": "05a672ed51a2c952aba3f7d40ca15bcb0295fdcb907659f84e48dccf79100741",
+        "needle": "pub(super) fn failure("
+      }
+    ]
+  }
 }

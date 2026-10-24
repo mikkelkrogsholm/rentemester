@@ -678,27 +678,65 @@
       "additionalProperties": false
     },
     "TrialEnvelope": {
-      "type": "object",
-      "properties": {
-        "ok": {
-          "const": true
-        },
-        "trialBalance": {
-          "oneOf": [
-            {
-              "$ref": "#/$defs/LiveTrial"
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
             },
-            {
-              "$ref": "#/$defs/ArchiveTrial"
+            "trialBalance": {
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/LiveTrial"
+                },
+                {
+                  "$ref": "#/$defs/ArchiveTrial"
+                }
+              ]
             }
-          ]
+          },
+          "required": [
+            "ok",
+            "trialBalance"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "trialBalance": {
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/LiveTrial"
+                },
+                {
+                  "$ref": "#/$defs/ArchiveTrial"
+                }
+              ]
+            },
+            "usage": {
+              "enum": [
+                "committed",
+                "not_committed"
+              ]
+            },
+            "business": {
+              "const": "committed"
+            }
+          },
+          "required": [
+            "ok",
+            "trialBalance",
+            "usage",
+            "business"
+          ],
+          "additionalProperties": false
         }
-      },
-      "required": [
-        "ok",
-        "trialBalance"
-      ],
-      "additionalProperties": false
+      ]
     },
     "LiveIncome": {
       "type": "object",
@@ -1096,27 +1134,65 @@
       "additionalProperties": false
     },
     "IncomeEnvelope": {
-      "type": "object",
-      "properties": {
-        "ok": {
-          "const": true
-        },
-        "incomeStatement": {
-          "oneOf": [
-            {
-              "$ref": "#/$defs/LiveIncome"
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
             },
-            {
-              "$ref": "#/$defs/ArchiveIncome"
+            "incomeStatement": {
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/LiveIncome"
+                },
+                {
+                  "$ref": "#/$defs/ArchiveIncome"
+                }
+              ]
             }
-          ]
+          },
+          "required": [
+            "ok",
+            "incomeStatement"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "incomeStatement": {
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/LiveIncome"
+                },
+                {
+                  "$ref": "#/$defs/ArchiveIncome"
+                }
+              ]
+            },
+            "usage": {
+              "enum": [
+                "committed",
+                "not_committed"
+              ]
+            },
+            "business": {
+              "const": "committed"
+            }
+          },
+          "required": [
+            "ok",
+            "incomeStatement",
+            "usage",
+            "business"
+          ],
+          "additionalProperties": false
         }
-      },
-      "required": [
-        "ok",
-        "incomeStatement"
-      ],
-      "additionalProperties": false
+      ]
     },
     "LiveBalance": {
       "type": "object",
@@ -1705,27 +1781,65 @@
       "additionalProperties": false
     },
     "BalanceEnvelope": {
-      "type": "object",
-      "properties": {
-        "ok": {
-          "const": true
-        },
-        "balance": {
-          "oneOf": [
-            {
-              "$ref": "#/$defs/LiveBalance"
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
             },
-            {
-              "$ref": "#/$defs/ArchiveBalance"
+            "balance": {
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/LiveBalance"
+                },
+                {
+                  "$ref": "#/$defs/ArchiveBalance"
+                }
+              ]
             }
-          ]
+          },
+          "required": [
+            "ok",
+            "balance"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "balance": {
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/LiveBalance"
+                },
+                {
+                  "$ref": "#/$defs/ArchiveBalance"
+                }
+              ]
+            },
+            "usage": {
+              "enum": [
+                "committed",
+                "not_committed"
+              ]
+            },
+            "business": {
+              "const": "committed"
+            }
+          },
+          "required": [
+            "ok",
+            "balance",
+            "usage",
+            "business"
+          ],
+          "additionalProperties": false
         }
-      },
-      "required": [
-        "ok",
-        "balance"
-      ],
-      "additionalProperties": false
+      ]
     },
     "DatedAccount": {
       "type": "object",
@@ -2769,29 +2883,75 @@
       "additionalProperties": false
     },
     "Failure": {
-      "type": "object",
-      "properties": {
-        "ok": {
-          "const": false
-        },
-        "code": {
-          "type": "string"
-        },
-        "errors": {
-          "type": "array",
-          "items": {
-            "type": "string"
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": false
+            },
+            "code": {
+              "type": "string"
+            },
+            "errors": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "minItems": 1,
+              "maxItems": 1
+            }
           },
-          "minItems": 1,
-          "maxItems": 1
+          "required": [
+            "ok",
+            "code",
+            "errors"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": false
+            },
+            "code": {
+              "type": "string"
+            },
+            "errors": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "usage": {
+              "enum": [
+                "not_committed",
+                "outcome_unknown",
+                "committed"
+              ]
+            },
+            "business": {
+              "enum": [
+                "not_attempted",
+                "not_committed",
+                "outcome_unknown",
+                "committed"
+              ]
+            }
+          },
+          "required": [
+            "ok",
+            "code",
+            "errors",
+            "usage",
+            "business"
+          ],
+          "additionalProperties": false
         }
-      },
-      "required": [
-        "ok",
-        "code",
-        "errors"
-      ],
-      "additionalProperties": false
+      ]
     },
     "CliFailure": {
       "$ref": "#/$defs/Failure"
@@ -3659,27 +3819,65 @@
       "additionalProperties": false
     },
     "OverviewEnvelope": {
-      "type": "object",
-      "properties": {
-        "ok": {
-          "const": true
-        },
-        "overview": {
-          "oneOf": [
-            {
-              "$ref": "#/$defs/LiveOverview"
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
             },
-            {
-              "$ref": "#/$defs/ArchiveOverview"
+            "overview": {
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/LiveOverview"
+                },
+                {
+                  "$ref": "#/$defs/ArchiveOverview"
+                }
+              ]
             }
-          ]
+          },
+          "required": [
+            "ok",
+            "overview"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "overview": {
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/LiveOverview"
+                },
+                {
+                  "$ref": "#/$defs/ArchiveOverview"
+                }
+              ]
+            },
+            "usage": {
+              "enum": [
+                "committed",
+                "not_committed"
+              ]
+            },
+            "business": {
+              "const": "committed"
+            }
+          },
+          "required": [
+            "ok",
+            "overview",
+            "usage",
+            "business"
+          ],
+          "additionalProperties": false
         }
-      },
-      "required": [
-        "ok",
-        "overview"
-      ],
-      "additionalProperties": false
+      ]
     },
     "OverviewBasis": {
       "type": "object",
