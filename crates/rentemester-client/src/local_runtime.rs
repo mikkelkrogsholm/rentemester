@@ -193,6 +193,21 @@ pub(crate) fn process_endpoint(origin: &str) -> Result<Option<PathBuf>, Error> {
         .transpose()
 }
 impl ApiClient {
+    /// Original read workspace is a binding assertion, never authorization.
+    /// No remote identity producer exists for this ABI; do not discover a profile
+    /// or route an unverified workspace assertion over the logical TCP origin.
+    pub fn assert_original_workspace89(&self, requested: &str) -> Result<(), Error> {
+        let local = self.local.as_ref().ok_or(Error::InvalidInput(
+            "original CFO workspace assertion requires an explicit verified local profile; authenticated remote workspace identity is unavailable",
+        ))?;
+        local.endpoint()?;
+        if requested != local.workspace_id()
+            && local.workspace_root().to_str() != Some(requested)
+        {
+            return Err(Error::InvalidInput("workspace differs from explicit verified local runtime binding"));
+        }
+        Ok(())
+    }
     /// Explicit Unix constructor; existing authentication/header rules remain unchanged.
     pub fn new_local(local: &LocalRuntime, cookie: Option<String>) -> Result<Self, Error> {
         let socket = local.endpoint()?;

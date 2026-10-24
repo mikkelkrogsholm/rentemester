@@ -206,3 +206,24 @@ async fn every_new_client_revalidates_and_stopped_socket_never_uses_live_tcp_ori
     assert!(tcp.accept().is_err());
     fs::remove_dir_all(path).unwrap();
 }
+
+#[test]
+fn original_workspace89() {
+    let tcp = TcpListener::bind("127.0.0.1:0").unwrap();
+    let origin = format!("http://{}", tcp.local_addr().unwrap());
+    let (path, listener) = profile("original-workspace89", &origin);
+    let local = LocalRuntime::load(&path).unwrap();
+    let api = ApiClient::new_local(&local, Some("session=synthetic".into())).unwrap();
+    assert!(api.assert_original_workspace89("synthetic-workspace").is_ok());
+    assert!(api.assert_original_workspace89(path.join("workspace").to_str().unwrap()).is_ok());
+    for wrong in ["", "other", path.to_str().unwrap()] {
+        assert!(api.assert_original_workspace89(wrong).is_err());
+    }
+    descriptor(&path, "http://127.0.0.1:10");
+    assert!(api.assert_original_workspace89("synthetic-workspace").is_err());
+    let remote = ApiClient::new(&origin, true, Some("session=synthetic".into())).unwrap();
+    assert!(remote.assert_original_workspace89("synthetic-workspace").is_err());
+    tcp.set_nonblocking(true).unwrap(); assert!(tcp.accept().is_err());
+    listener.set_nonblocking(true).unwrap(); assert!(listener.accept().is_err());
+    fs::remove_dir_all(path).unwrap();
+}

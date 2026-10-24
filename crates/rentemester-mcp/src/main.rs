@@ -1,10 +1,10 @@
-mod profile_original89;
-mod archives_original89;
-mod cfo_original89;
 //! Bounded MCP 2025-11-25 stdio adapter. Wire references:
 //! https://modelcontextprotocol.io/specification/2025-11-25/basic/transports
 //! https://modelcontextprotocol.io/specification/2025-11-25/basic/lifecycle
 //! https://modelcontextprotocol.io/specification/2025-11-25/server/tools
+mod profile_original89;
+mod archives_original89;
+mod cfo_original89;
 mod registry_original717;
 mod knowledge_ownership_original717;
 mod inbox_original717;
