@@ -225,7 +225,7 @@ fn schema(name: &str) -> Value {
             .unwrap()
             .push(json!("sourceId"));
         if write(op) {
-            s["properties"]["companySlug"] = json!({"type":"string","minLength":1,"maxLength":100});
+            s["properties"]["companySlug"] = json!({"type":"string","minLength":1,"maxLength":128});
             s["required"]
                 .as_array_mut()
                 .unwrap()
@@ -277,8 +277,13 @@ fn transport(e: Error, mutation: bool) -> Value {
         Error::Refused { .. } => "server_refused",
         Error::InvalidInput(_) => "invalid_input",
         Error::OutcomeUnknown => "outcome_unknown",
+        Error::Protocol => {
+            return fail(
+                "Server protocol admission refused before the inbox request; no mutation sent",
+                "protocol",
+            );
+        }
         _ if mutation => "outcome_unknown",
-        Error::Protocol => "protocol",
         _ => "transport",
     };
     fail(

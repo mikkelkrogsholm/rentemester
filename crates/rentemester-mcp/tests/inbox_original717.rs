@@ -509,3 +509,51 @@ fn stage_only_future_metadata_and_empty_metadata_are_preserved() {
         assert_eq!(body["metadata"], metadata);
     }
 }
+
+#[test]
+fn explicit_native_target_longer_than_one_hundred() {
+    let catalogue: Value = serde_json::from_slice(
+        &Command::new(BIN)
+            .arg("--catalogue")
+            .output()
+            .unwrap()
+            .stdout,
+    )
+    .unwrap();
+    let tool = catalogue["tools"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|t| t["name"] == "workspace_inbox_assign")
+        .unwrap();
+    assert!(
+        tool["inputSchema"]["properties"]["companySlug"]["maxLength"]
+            .as_u64()
+            .is_none_or(|max| max >= 101),
+        "valid native destination must not be capped100"
+    );
+    let target = "t".repeat(101);
+    for op in ["assign", "complete"] {
+        let mut input = args(op);
+        input["companySlug"] = json!(target);
+        let mut core = response(op);
+        core["source"]["assignments"][0]["companySlug"] = json!(target);
+        for event in core["source"]["history"].as_array_mut().unwrap() {
+            if event["payload"].get("companySlug").is_some() {
+                event["payload"]["companySlug"] = json!(target);
+            }
+        }
+        if let Some(h) = core["source"]["handoffs"]
+            .as_array_mut()
+            .and_then(|h| h.first_mut())
+        {
+            h["companySlug"] = json!(target);
+        }
+        let (got, wires) = invoke(op, input, core, 200, false, false);
+        assert_eq!(
+            got["ok"], true,
+            "valid101character target must reach native destination: {got}"
+        );
+        assert_eq!(wires.iter().filter(|w| w.starts_with("POST ")).count(), 1);
+    }
+}
