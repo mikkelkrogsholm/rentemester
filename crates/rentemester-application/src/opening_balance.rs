@@ -230,10 +230,16 @@ pub fn execute(
                                     | "company_setup_refused"
                             ) =>
                         {
-                            Ok(
-                                json!({"ok":false,"sourceSystem":"synthetic-csv","openingBalanceLineCount":rentemester_engine::synthetic_import::parse(input.content.as_bytes()).map_or(0, |s| s.opening_balances.len()),"historicalEntriesSkipped":0,
-                                "auditTrail":["Import transaction rolled back"],"appliedRules":["DK-BOOKKEEPING-BALANCED-001"],"errors":[error.message]}),
+                            let parsed = rentemester_engine::synthetic_import::parse(
+                                input.content.as_bytes(),
                             )
+                            .ok();
+                            let mut value = json!({"ok":false,"sourceSystem":"synthetic-csv","openingBalanceLineCount":parsed.as_ref().map_or(0, |s| s.opening_balances.len()),"historicalEntriesSkipped":0,
+                                "auditTrail":["Import transaction rolled back"],"appliedRules":["DK-BOOKKEEPING-BALANCED-001"],"errors":[error.message]});
+                            if let Some(source) = parsed {
+                                value["cutOverDate"] = json!(source.cut_over_date);
+                            }
+                            Ok(value)
                         }
                         Err(error) => Err(error),
                     }

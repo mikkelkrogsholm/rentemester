@@ -214,6 +214,7 @@ fn original_import94_synthetic_dryrun_current_authority_full_rollback_then_post_
     .value;
     assert_eq!(repeated["ok"], false);
     assert_eq!(repeated["openingBalanceLineCount"], 2);
+    assert_eq!(repeated["cutOverDate"], "2025-01-01");
     assert_eq!(
         snapshot(&f.company),
         accepted,
@@ -319,4 +320,45 @@ fn original_import94_dinero_zip_dryrun_cleans_owned_files_preserves_preexisting_
             .unwrap()
             .ok
     );
+    // Reuse the admitted company and verified source files, with no new fixture.
+    // Chart-only migration has no cut-over date, including its repeat refusal.
+    let mut decoded = store::decode_source(raw).unwrap();
+    decoded.files.retain(|file| {
+        file.path == "Firmaoplysninger.csv" || file.path.ends_with("/Kontoplan.csv")
+    });
+    let package = rentemester_engine::dinero_import::containers::package(&decoded.files).unwrap();
+    let chart = Prepared::new("dinero-directory-source.json".into(), package).unwrap();
+    let chart_result = dinero_import::execute(
+        &mut f.control,
+        &mut f.company,
+        &mut f.guard,
+        context(&f.cookie),
+        dinero_import::Action::OriginalRun(&chart, false),
+    )
+    .unwrap()
+    .value;
+    let dinero_import::Output::Json(chart_result) = chart_result else {
+        panic!("JSON required")
+    };
+    assert_eq!(chart_result["ok"], true);
+    assert!(chart_result.get("cutOverDate").is_none());
+    let rows = snapshot(&f.company);
+    let existing = files(&f.root.join("a"));
+    let repeat = dinero_import::execute(
+        &mut f.control,
+        &mut f.company,
+        &mut f.guard,
+        context(&f.cookie),
+        dinero_import::Action::OriginalRun(&chart, false),
+    )
+    .unwrap()
+    .value;
+    let dinero_import::Output::Json(repeat) = repeat else {
+        panic!("JSON required")
+    };
+    assert_eq!(repeat["ok"], false);
+    assert!(repeat.get("cutOverDate").is_none());
+    assert_eq!(repeat["openingBalanceLineCount"], 0);
+    assert_eq!(snapshot(&f.company), rows);
+    assert_eq!(files(&f.root.join("a")), existing);
 }

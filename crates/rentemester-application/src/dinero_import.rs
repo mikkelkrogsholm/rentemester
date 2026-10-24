@@ -237,11 +237,13 @@ pub fn execute(
                                             | "company_setup_refused"
                                     ) =>
                                 {
-                                    Ok(Output::Json(
-                                        json!({"ok":false,"sourceSystem":"dinero","cutOverDate":decoded.parsed.cut_over_date,
+                                    let mut value = json!({"ok":false,"sourceSystem":"dinero",
                                         "openingBalanceLineCount":decoded.parsed.opening_lines.len(),"historicalEntriesSkipped":decoded.parsed.vouchers.len(),
-                                        "auditTrail":["Dinero import transaction rolled back"],"appliedRules":["DK-BOOKKEEPING-BALANCED-001"],"errors":[error.message]}),
-                                    ))
+                                        "auditTrail":["Dinero import transaction rolled back"],"appliedRules":["DK-BOOKKEEPING-BALANCED-001"],"errors":[error.message]});
+                                    if let Some(date) = decoded.parsed.cut_over_date {
+                                        value["cutOverDate"] = json!(date);
+                                    }
+                                    Ok(Output::Json(value))
                                 }
                                 Err(error) => Err(error),
                             }
