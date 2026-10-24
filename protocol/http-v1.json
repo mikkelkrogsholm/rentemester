@@ -1172,6 +1172,11 @@
       "capability": "HEAD /api/companies/{slug}/documents/{id}/party-links"
     },
     {
+      "method": "POST",
+      "path": "/api/companies/{slug}/efaktura/modtag",
+      "capability": "POST /api/companies/{slug}/efaktura/modtag"
+    },
+    {
       "method": "GET",
       "path": "/api/companies/{slug}/eliminations",
       "capability": "GET /api/companies/{slug}/eliminations"
@@ -1648,8 +1653,18 @@
     },
     {
       "method": "POST",
+      "path": "/api/companies/{slug}/invoices/public-onboard",
+      "capability": "POST /api/companies/{slug}/invoices/public-onboard"
+    },
+    {
+      "method": "POST",
       "path": "/api/companies/{slug}/invoices/public-register",
       "capability": "POST /api/companies/{slug}/invoices/public-register"
+    },
+    {
+      "method": "POST",
+      "path": "/api/companies/{slug}/invoices/public-register-pair",
+      "capability": "POST /api/companies/{slug}/invoices/public-register-pair"
     },
     {
       "method": "GET",
@@ -3097,6 +3112,11 @@
       "capability": "HEAD /api/workspace/backup-destinations/{id}/remote-verifications/{operation}"
     },
     {
+      "method": "POST",
+      "path": "/api/workspace/efaktura/modtag",
+      "capability": "POST /api/workspace/efaktura/modtag"
+    },
+    {
       "method": "GET",
       "path": "/api/workspace/invitations",
       "capability": "GET /api/workspace/invitations"
@@ -3182,5 +3202,5 @@
       "capability": "POST /api/workspace/transfer/{action}"
     }
   ],
-  "manifestId": "4151f2c03ddce74b956fa08c188fe16fa86bcf1b211b75f9f555f2ed1f9b1eb8"
+  "manifestId": "9f25546bd4c5d69d1971baf1d90d7842adfc63f7aa73eeab1e8071397ba7e6ac"
 }

@@ -385,3 +385,26 @@ pub fn finish(
         control_reusable: refreshed.control_reusable,
     })
 }
+
+/// Read-only effect preflight: the normal write-authority/backup fence is checked,
+/// but the callback performs no mutation and requires no provider configuration.
+pub fn preflight(
+    control: &mut Connection,
+    company: &mut Connection,
+    guard: &mut NamespaceGuard,
+    context: Context<'_>,
+) -> Result<Committed<()>, Failure> {
+    physical(guard, control, company)?;
+    control_fence::execute_cookie_subject(
+        control,
+        company,
+        CookieAuthorization {
+            cookie: context.cookie,
+            clock: context.clock,
+            requirement: SessionRequirement::Current,
+        },
+        context.selection,
+        Permission::CompanyDocumentsUpload,
+        |_, _| Ok(()),
+    )
+}

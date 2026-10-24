@@ -199,6 +199,7 @@ pub fn list() -> Value {
     tools.extend(crate::workspace_inbox::tools());
     tools.extend(crate::bilagsmail::tools());
     tools.extend(crate::public_einvoice::tools());
+    tools.extend(crate::digisense_received::tools());
     tools.extend(crate::corporate_records::tools());
     tools.extend(crate::ownership::tools());
     tools.extend(crate::intercompany::tools());
@@ -361,6 +362,7 @@ pub async fn call(api: &ApiClient, name: &str, args: Value) -> Result<Value, &'s
         name if crate::intercompany::accepts(name)=>crate::intercompany::call(api,name,args).await?,
         name if crate::ownership::accepts(name)=>crate::ownership::call(api,name,args).await?,
         name if crate::corporate_records::accepts(name)=>crate::corporate_records::call(api,name,args).await?,
+        name if crate::digisense_received::accepts(name) => crate::digisense_received::call(api,name,args).await?,
         name if crate::public_einvoice::accepts(name) => crate::public_einvoice::call(api,name,args).await?,
         name if crate::bilagsmail::accepts(name) => crate::bilagsmail::call(api,name,args).await?,
         name if crate::workspace_inbox::accepts(name) => {

@@ -37,6 +37,24 @@ fn wrap<T, U>(
     }
 }
 impl Owner {
+    pub fn preflight_digisense_received(
+        &mut self,
+        cookie: &VerifiedCookie,
+        clock: &dyn Clock,
+    ) -> ReceiveAttempt<()> {
+        self.document_action(cookie, clock, intake::preflight)
+    }
+    /// Current catalog, without a caller-supplied filesystem/workspace selector.
+    pub fn digisense_received_catalog(
+        &mut self,
+        cookies: &rentemester_runtime::auth::CookieVerifier,
+        cookie: &VerifiedCookie,
+        clock: &dyn Clock,
+    ) -> AuthAttempt<Value> {
+        let assertion = self.workspace.clone();
+        self.recurring_workspace_catalog(cookies, cookie, clock, &assertion)
+    }
+
     /// Environment and generation are trusted live operator-client values, not request fields.
     pub fn prepare_digisense_received(
         &mut self,
