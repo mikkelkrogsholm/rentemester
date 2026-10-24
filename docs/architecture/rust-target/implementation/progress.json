@@ -1,15 +1,15 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "R38#691 fullyaccepted/published/closed. NextnecessaryR18#692 whole concurrent/interrupted invoice issuance proof on freshsyntheticworkspaces; no completed690profile effects replay.",
-  "code_revision": "9c07b90820a5b089f3cac5b2e51fae65210930f9",
+  "current_increment": "R18 #692 invoice crash/concurrency and R36 #709 explicit email/recurrence are fully accepted and actually closed. Next necessary original issue is selected by current whole-scope triage; no duplicate accepted financial/provider work.",
+  "code_revision": "f313f2171cfe2c429d60208b16843db30477c033",
   "spec_revision": "sha256:73b6036e3b99feaf547ff3881dd7ef2ea6ea6ec5743bb139d362f97570ca8da6",
-  "state": "34of55 originalissues actuallyCLOSED,21OPEN;691CLOSEDflowdone with fulloriginalacceptance9c07b908/1ff1f45f. Actual original9PDFsource/status/text/geometry/rotation parity; PDFjs2items/PDFium40items explicit; cold9nativeConfig/warm0/9results18attempts/nojournals. Global4slotsharedscheduler4tests andhost9tests+actualoptinPASS, fullSGDcombineddone. Realretained65/66/167/63/78hashesverified; umask022earlyrefusal retained/repaired0077 withoutgatechange. Macsampled512MiB/10msovershoot/nohardAS and noOSchildpeaktelemetry claim remain honest. All otheroriginalscope/J01-J07/677fullschemas/release/cutover/retirement/manualdesktoplast remain binding.",
-  "issues_closed": 34,
+  "state": "36 of55 original issues actually CLOSED;19 OPEN. #692 has whole real issuance JSON/PDF/DB crash/concurrency proof and corrected semantic pair assertions. #709 reuses valid accepted lifecycle, explicit delivery, unknown-outcome and source-free restore evidence; no unchanged journey replay. All original scope and final gates retained. Physical OS sleep/final installed J07 remain final epic acceptance; #611 remains OPEN.",
+  "issues_closed": 36,
   "next": [
-    "Close existing692 after wholeactualconcurrent/interrupted issuance JSON+PDF+DB proof and documentedexplicitnumber/readback retry. Preserve all priorfinishedinvoices, unsupportedkeyrefusals, no automaticretry or newidempotencyframework.",
-    "Complete677 exactadvertisedHTTP/MCP/CLI schemas and operation-specific retry/key/readback/provider contracts; handshakealone notwholecompletion.",
-    "OnecommonRustmotor/server andsameReactweb/Tauri; manualinstalleddesktopacceptancelast."
+    "Select smallest necessary whole original issue after current #711 source/evidence triage; close accepted scope promptly without extra perfection.",
+    "Complete #677 exact advertised HTTP/MCP/CLI operation schemas and retry/readback/provider contracts; accepted handshake component alone is not whole completion.",
+    "One common Rust motor/server and same React web/Tauri UI; manual installed desktop acceptance remains last."
   ],
   "preserve_unrelated_paths": [
     ".claude/settings.json",
@@ -19,7 +19,7 @@
     ".gitattributes"
   ],
   "all_goal_requirements_complete": false,
-  "previous_verified_increment": "R08 #680 whole original scope and all3criteria accepted c258572a; next necessary wholeclosure #691 original PDF benchmark/PDFium semantic and boundedworker proof.714 healthproposal retained behind677/712 dependencies.",
+  "previous_verified_increment": "R38#691 fullyaccepted/published/closed. NextnecessaryR18#692 whole concurrent/interrupted invoice issuance proof on freshsyntheticworkspaces; no completed690profile effects replay.",
   "evidence": {
     "combined_browser_log": "/tmp/rm-platform5-combined.log",
     "combined_browser_exit": 0,
@@ -15899,6 +15899,66 @@
         "Allotheroriginalissues/J01-J07/release/distribution/cutover/retirement/manualdesktoplast remain binding"
       ],
       "no_financial_provider_or_gui_replay": true
+    },
+    "r18_issuance692": {
+      "issue": 692,
+      "status": "Full original scope accepted; GitHub CLOSED flow:done",
+      "whole_issue_accepted": true,
+      "source_revision": "f313f2171cfe2c429d60208b16843db30477c033",
+      "report": "/tmp/rentemester-rust-reports/r18-issuance692-accepted.json",
+      "manifest": "/tmp/rentemester-rust-reports/r18-issuance692-accepted.json",
+      "sha256": "db3318a172a0a51939649c8aa5ae8d591cca497ae9864b8e235f20baa128c4e8",
+      "sgd_run": "rust-r18-issuance692-closure-20261024T000046.353161000",
+      "model_revision": "sha256:eaac3170917f823def9d2297c14ed7b1626b2b48dfa5e28be42a001ea28f14f8",
+      "criteria": [
+        {
+          "criterion": "Concurrent scoped numbering and one immutable issued snapshot",
+          "evidence": "Six concurrent normal/original/Create callers queue at one authoritative owner,6unique numbers; two same explicit number contenders yield1winner1refusal,7completepairs/14documents/sequence7. Per-row SHA, JSON/payload/number/PDF byte binding and one audit perdoc checked."
+        },
+        {
+          "criterion": "Read/render immutable and interruption without orphan success",
+          "evidence": "Normal and original Issue killed/reaped at JSONpublished/PDFpublished/registered/precommit/postcommit plus Create registered=11actualcases. Independent reopen distinguishes zero DBsuccess/audits/sequence beforecommit vs exactlyone completepair aftercommit. Read/render preserve bytes+inodes; corrupt JSON/PDF refuses without replacement."
+        },
+        {
+          "criterion": "Mandatory/mismatched refusal and supported safe retry",
+          "evidence": "Missingbuyer/mismatchedtotals have0documents/files/sequence. Authoritative List before explicit-number retry: provenrollback completesonce, committednumber refuses; zero journal/posting/mail/Peppol/recurringdelivery. Human and service attribution retained."
+        }
+      ],
+      "limits": [
+        "Concurrency is real callers serialized by one authoritative owner, matching server architecture; not concurrent independent SQLitewriters.",
+        "Complete unregistered content-hashfiles can remain after precommit death; inventoried1afterJSON/2afterPDF; no issued DBsuccess. Existing recovery does not garbagecollect them.",
+        "Fixedclock retry reuses exactfiles; actual-now bytes maydiffer. No automatic reissue/resend or newrequestkey scheme.",
+        "Testhelpers use existing real macOS protectednamespace/private0077 and syntheticdata. No livecompany/provider/desktop replay.",
+        "Separate enhancement#612 remains pending beyondcutover; no original scope deleted.",
+        "Allother55originalscope/J01-J07/hosted/release/distribution/cutover/retirement and manualdesktoplast remainbinding."
+      ],
+      "lead_repair": "Rejected initial green candidate030364c3; direct22e9cb6c binds invoice number/JSON/payload/PDF bytes;5PASS,11actualSIGKILL cases and immutable source evidence."
+    },
+    "r36_email709": {
+      "issue": 709,
+      "status": "Full original scope accepted; GitHub CLOSED flow:done",
+      "whole_issue_accepted": true,
+      "source_revision": "f313f2171cfe2c429d60208b16843db30477c033",
+      "report": "/tmp/rentemester-rust-reports/r36-email709-accepted.json",
+      "manifest": "/tmp/rentemester-rust-reports/r36-email709-accepted.json",
+      "sha256": "bd10b833543dce2f1e6bbde95f4a5cb4b75310544658b6f4dd2fb5aa21274129",
+      "sgd_run": "rust-r36-email709-closure-20261024T002159.565952000",
+      "model_revision": "sha256:eaac3170917f823def9d2297c14ed7b1626b2b48dfa5e28be42a001ea28f14f8",
+      "criteria": {
+        "oneOccurrenceAndUnknownSend": "Raw50 durable4generations/lostreply accepted requests1 and accepted690 actual two immutablepairs/currentexactrefusals; raw102 acceptedduplicate sameattemptID, definite550+explicitreviewedretry, DATA/noACK processdeath→restart→unknownblocking→explicit evidence reconciliation. No blind resend or implicitpost.",
+        "inertInspectionAndCredentials": "Source status/list/read and explicit email_dry_run neverinvoke sender. Genuine102 smtpSecretAbsentFromBusinessWorkspace and155 credentialsAbsent sourcefree restore. Privateprovidercredentials stay outside ledger/report/logs; acceptedfocusedrefusal/redaction retained.",
+        "existingEnhancement": "#611 verified OPEN. Synthetic localTLS/nativeSMTPcontractproof does not claim completion of whole real-email enhancement or externalmailboxdelivery.",
+        "localHostedLifecycleAndJ07Technical": "Accepted690 actual activebrowserclose/reopen/native restart, explicitpause/catchup/skip/dispatch,3stale/resolvedrefusals,13sharedUItests, trustedCopenhagenUTC midnight/spring/fallDST andboundedmissedreadonlycalendar. UIshows lastactual/next/missed/queue/error, stopsmissed/unknown/restore, noimplied localunattendedservice. Retainedhosted53/restore52 explicitservice/currentgrantor/inactiveimportedauthority. Fullphysicalsleep/installedmanualJ07 remainsfinalepicgate."
+      },
+      "limits": [
+        "Synthetic localTLSprovider, no new external account/finalmailboxdelivery qualification",
+        "No physicalOSsleep or installedmanualJ07 claim; retainedfinalepicgates",
+        "Absent old53/55rawfiles represented only by accepted690 retainedverification, not freshly rehashed",
+        "Supported local scheduler is generation-only; issue/post/send separate. No new generalunattended intake/backup service.",
+        "No liveprofile/provider/MFA/financialeffects replayed. Completed690two invoicesand696ledgeruntouched.",
+        "All55originalscope/J01-J07/hosted/platformdistribution/cutover/retirement/manualdesktoplast gates preserved; fullmissionnotaccepted."
+      ],
+      "not_reexecuted": "Accepted #690/50/102/155 exact original scope; current domain source unchanged.4SDKtest fixture imports separately exact-diff qualified and accepted SDK protocol component bound; no provider/financial/GUI replay."
     }
   },
   "verified_history": [
