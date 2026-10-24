@@ -606,3 +606,6 @@ mod test_transport;
 
 mod digisense_received;
 pub use digisense_received::{MAX_DIGISENSE_RECEIVED_BODY,digisense_received_schema,validate_digisense_received};
+
+mod archive_original;
+pub use archive_original::query_original_archive;
