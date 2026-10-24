@@ -575,6 +575,45 @@ impl Owner {
             rentemester_application::session_read::execute(control, cookies, clock, proof)
         })
     }
+    /// Current-password self change through the admitted control handle.
+    pub fn change_password(
+        &mut self,
+        runtime: &rentemester_application::password_change::Runtime<'_>,
+        proof: &VerifiedCookie,
+        current_password: &str,
+        new_password: &str,
+        revoke_other_sessions: bool,
+    ) -> AuthAttempt<rentemester_application::password_change::Outcome> {
+        self.control_auth(runtime.cookies.workspace(), |control| {
+            rentemester_application::password_change::execute(
+                control, runtime, proof, current_password, new_password, revoke_other_sessions,
+            )
+        })
+    }
+    /// Password-bound view/regeneration; never selects a caller-supplied subject.
+    pub fn manage_backup_codes(
+        &mut self,
+        runtime: &rentemester_application::backup_management::Runtime<'_>,
+        proof: &VerifiedCookie,
+        password: &str,
+        operation: rentemester_application::backup_management::Operation,
+    ) -> AuthAttempt<rentemester_runtime::mfa::BackupCodeList> {
+        self.control_auth(runtime.cookies.workspace(), |control| {
+            rentemester_application::backup_management::execute(
+                control, runtime, proof, password, operation,
+            )
+        })
+    }
+    pub fn control_sessions(
+        &mut self,
+        runtime: &rentemester_application::session_control::Runtime<'_>,
+        proof: &VerifiedCookie,
+        operation: rentemester_application::session_control::Operation<'_>,
+    ) -> AuthAttempt<rentemester_application::session_control::Outcome> {
+        self.control_auth(runtime.cookies.workspace(), |control| {
+            rentemester_application::session_control::execute(control, runtime, proof, operation)
+        })
+    }
     pub fn sign_out(
         &mut self,
         runtime: &rentemester_application::session_control::Runtime<'_>,

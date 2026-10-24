@@ -506,6 +506,9 @@ impl Backend {
         let complete = self.clone();
         let service_context = self.clone();
         let service_lifecycle = self.clone();
+        let backup_management = self.clone();
+        let password_change = self.clone();
+        let session_control = self.clone();
         let handlers = AuthHandlers {
             cookies: self.cookies.clone(),
             sign_in: Box::new(move |input| {
@@ -646,8 +649,21 @@ impl Backend {
                     .map(|_| ())
                 }),
             }),
-            backup_management: None,
-            password_change: None,
+            backup_management: Some(Box::new(move |input| {
+                unwrap(backup_management.owner.lock().map_err(|_| unavailable())?
+                    .manage_backup_codes(&backup_management.mfa(), input.proof(),
+                        input.password(), input.operation()))
+            })),
+            password_change: Some(Box::new(move |input| {
+                let runtime = rentemester_application::password_change::Runtime {
+                    cookies: &password_change.cookies,
+                    clock: &SystemClock,
+                    audit_key_version: 1,
+                };
+                unwrap(password_change.owner.lock().map_err(|_| unavailable())?
+                    .change_password(&runtime, input.proof(), input.current_password(),
+                        input.new_password(), input.revoke_other_sessions()))
+            })),
             service_context: Some(Box::new(move |key| {
                 unwrap(service_context.owner.lock().map_err(|_| unavailable())?
                     .service_context(&SystemClock, &key))
@@ -656,7 +672,15 @@ impl Backend {
                 unwrap(service_lifecycle.owner.lock().map_err(|_| unavailable())?
                     .service_lifecycle(&service_lifecycle.cookies, &SystemClock, input.proof(), input.operation()))
             })),
-            session_control: None,
+            session_control: Some(Box::new(move |input| {
+                let runtime = rentemester_application::session_control::Runtime {
+                    cookies: &session_control.cookies,
+                    clock: &SystemClock,
+                    audit_key_version: 1,
+                };
+                unwrap(session_control.owner.lock().map_err(|_| unavailable())?
+                    .control_sessions(&runtime, input.proof(), input.operation()))
+            })),
         };
         let reset_request = self.clone();
         let reset_callback = self.clone();
