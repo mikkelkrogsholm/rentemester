@@ -2928,6 +2928,18 @@
         },
         "confirm": {
           "const": true
+        },
+        "defaultRole": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "customer",
+            "vendor",
+            null
+          ],
+          "description": "Optional defaulted trailing role. Omitted/null preserves strict native headers/vendor fallback; explicit customer/vendor selects original CSV acceptance and only changes no-history fallback."
         }
       },
       "required": [
@@ -2956,10 +2968,22 @@
             },
             {
               "const": true
+            },
+            {
+              "type": [
+                "string",
+                "null"
+              ],
+              "enum": [
+                "customer",
+                "vendor",
+                null
+              ],
+              "description": "Optional defaulted trailing role. Omitted/null preserves strict native headers/vendor fallback; explicit customer/vendor selects original CSV acceptance and only changes no-history fallback."
             }
           ],
           "minItems": 4,
-          "maxItems": 4
+          "maxItems": 5
         }
       ]
     },
@@ -6610,6 +6634,14 @@
         },
         "confirm": {
           "const": true
+        },
+        "defaultRole": {
+          "type": "string",
+          "enum": [
+            "customer",
+            "vendor"
+          ],
+          "description": "Omission preserves strict native headers and vendor fallback. Explicit value selects original CSV policy: only Kontaktnavn required. Sales/purchases independently select roles; fallback only without nonzero history."
         }
       },
       "required": [

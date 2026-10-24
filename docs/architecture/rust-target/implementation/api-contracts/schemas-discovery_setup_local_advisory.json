@@ -4660,7 +4660,7 @@
         "errors": {
           "type": "array",
           "items": {
-            "const": "\u00c5bn et gyldigt installationslink fra serverens terminal."
+            "const": "Åbn et gyldigt installationslink fra serverens terminal."
           },
           "minItems": 1,
           "maxItems": 1
@@ -4685,7 +4685,7 @@
         "errors": {
           "type": "array",
           "items": {
-            "const": "Pr\u00f8v igen om lidt."
+            "const": "Prøv igen om lidt."
           },
           "minItems": 1,
           "maxItems": 1
@@ -4710,7 +4710,7 @@
         "errors": {
           "type": "array",
           "items": {
-            "const": "Ops\u00e6tningen kunne ikke bekr\u00e6ftes. Pr\u00f8v samme e-mail igen, eller kontroll\u00e9r login."
+            "const": "Opsætningen kunne ikke bekræftes. Prøv samme e-mail igen, eller kontrollér login."
           },
           "minItems": 1,
           "maxItems": 1
@@ -5036,6 +5036,11 @@
       "const": {
         "commands": [
           {
+            "name": "import systems|contacts",
+            "scope": "offline parser discovery and explicit contact CSV import through common Rust server; current authority and original fallback role, no ledger posting or retry",
+            "usage": "import --help"
+          },
+          {
             "name": "group",
             "scope": "26 supported native profiles for group evidence/mapping/elimination/consolidation through the common Rust server; overview explicitly unavailable until its read API exists; current authority, independent review and no company ledger mutation",
             "usage": "group --help"
@@ -5237,7 +5242,7 @@
           },
           {
             "name": "rehearse-company-migration",
-            "scope": "experimental full canonical company prefixes0\u201336 and bounded minimal suffix32\u201336; no source migration",
+            "scope": "experimental full canonical company prefixes0–36 and bounded minimal suffix32–36; no source migration",
             "usage": "rehearse-company-migration --company PATH"
           },
           {
@@ -6522,7 +6527,7 @@
         "ok": true,
         "usage": "rentemester-rust rehearse-company-migration --company PATH",
         "format": "rentemester-company-migration-rehearsal/1",
-        "scope": "private-copy full canonical prefixes0\u201336 and bounded minimal suffix32\u201336; no source migration or writer authority"
+        "scope": "private-copy full canonical prefixes0–36 and bounded minimal suffix32–36; no source migration or writer authority"
       }
     },
     "rehearse-control-migrationHelp": {
@@ -7909,9 +7914,9 @@
             },
             "vatPeriodLabel": {
               "enum": [
-                "m\u00e5ned",
+                "måned",
                 "kvartal",
-                "halv\u00e5r",
+                "halvår",
                 "ikke momsregistreret"
               ]
             },
@@ -8483,6 +8488,122 @@
         "errors"
       ],
       "additionalProperties": false
+    },
+    "OriginalImportSummary": {
+      "type": "object",
+      "properties": {
+        "parsed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "customersCreated": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "vendorsCreated": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "skipped": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "enriched": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "enrichmentFailures": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "parsed",
+        "customersCreated",
+        "vendorsCreated",
+        "skipped",
+        "enriched",
+        "enrichmentFailures"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalImportContacts": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "summary": {
+          "$ref": "schemas-discovery_setup_local_advisory.json#/$defs/OriginalImportSummary"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "ok",
+        "summary",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalImportFailure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalImportSystems": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "systems": {
+          "const": [
+            {
+              "system": "synthetic-csv",
+              "label": "Synthetic CSV (import-framework example)"
+            },
+            {
+              "system": "dinero",
+              "label": "Dinero (data export — chart of accounts, master data & opening balance)"
+            }
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "systems"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalImportHelp": {
+      "const": {
+        "commands": [
+          "import systems [--format json|human]",
+          "import contacts --company SLUG|PATH --file Kontakter.csv [--enrich-cvr] [--default-role customer|vendor]"
+        ],
+        "connection": "Existing --server ORIGIN or verified --local-profile ABS_PRIVATE_PROFILE; --cookie-file PRIVATE_FILE. --workspace is verified local workspace equality only. --allow-loopback-http is explicit.",
+        "controls": "Explicit command confirms one write. Current cookie authority; optional --actor user:ID equality check only. Master data only: no journal, accounts, mappings or opening balances. Default role vendor; explicit original CSV requires only Kontaktnavn. Server classifies nonzero sales/purchases independently. CVR enrichment optional; operator credentials/cache unchanged. No automatic retry: outcome_unknown requires canonical contacts/audit readback before another explicit write.",
+        "unavailable": "import run and import archive are not implemented here."
+      }
     }
   }
 }

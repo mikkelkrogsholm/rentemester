@@ -169,7 +169,7 @@
     },
     {
       "path": "crates/rentemester-cli/src/main.rs",
-      "sha256": "5c9e470a43e86c5b88ebe796647982ad0c0bc38998d4d7c664ff748a7fa8e81a",
+      "sha256": "5302ca3300e5a14111457a1af56bf4d14e7bb90d7ed9a63acca0feee81c7672a",
       "needle": "match run(args)"
     },
     {
@@ -179,7 +179,7 @@
     },
     {
       "path": "crates/rentemester-cli/src/local_binding.rs",
-      "sha256": "d1e69ce28cb5c805a917a363ec8743981a3a314a2634ccaf333348b6a2414246",
+      "sha256": "8aaf9f3194b723c0bf06dae7b1f367f45a7700190f1a337b113fb24e4f0d293d",
       "needle": "pub fn prepare("
     },
     {
