@@ -1,0 +1,6570 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$defs": {
+    "Id": {
+      "anyOf": [
+        {
+          "type": "string",
+          "x-maxUtf8Bytes": 256
+        },
+        {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 18446744073709551615
+        }
+      ]
+    },
+    "Empty": {
+      "type": "object",
+      "properties": {},
+      "required": [],
+      "additionalProperties": false
+    },
+    "Failure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "type": "string"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "maxItems": 1
+        }
+      },
+      "required": [
+        "ok",
+        "code",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "CliFailure": {
+      "$ref": "schemas-identity_cli.json#/$defs/Failure"
+    },
+    "NativeToolFailure": {
+      "$ref": "schemas-invoice_mcp.json#/$defs/NativeErrorResult"
+    },
+    "Payment": {
+      "type": "object",
+      "properties": {
+        "bankName": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "registrationNo": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "accountNo": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "iban": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "CreationObject": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "slug": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "cvr": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "fiscalYearStartMonth": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "fiscalYearLabelStrategy": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "vatPeriodType": {
+          "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/RawJsonValue"
+        },
+        "payment": {
+          "anyOf": [
+            {
+              "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/PaymentSerde"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "additionalProperties": false
+    },
+    "PaymentSerde": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "bankName": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "registrationNo": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "accountNo": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "iban": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          ],
+          "minItems": 4,
+          "maxItems": 4
+        }
+      ]
+    },
+    "CreationHttp": {
+      "anyOf": [
+        {
+          "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/CreationObject"
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "string"
+            },
+            {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            {
+              "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/RawJsonValue"
+            },
+            {
+              "anyOf": [
+                {
+                  "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/PaymentSerde"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          ],
+          "minItems": 7,
+          "maxItems": 7
+        }
+      ]
+    },
+    "Profile": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "country": {
+          "type": "string"
+        },
+        "currency": {
+          "type": "string"
+        },
+        "fiscalYearLabelStrategy": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "string"
+        },
+        "cvr": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "address": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "postalCode": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "city": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "companyForm": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "industryCode": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "industryText": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "cvrStatus": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "cvrSyncedAt": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "vatPeriodType": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "id": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "fiscalYearStartMonth": {
+          "type": "integer",
+          "minimum": -2147483648,
+          "maximum": 2147483647
+        },
+        "paymentTermsDays": {
+          "type": "integer",
+          "minimum": -2147483648,
+          "maximum": 2147483647
+        },
+        "auditWaived": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "payment": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "bankName": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "registrationNo": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "accountNo": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "iban": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "bankName",
+                "registrationNo",
+                "accountNo",
+                "iban"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "name",
+        "country",
+        "currency",
+        "fiscalYearLabelStrategy",
+        "createdAt",
+        "cvr",
+        "address",
+        "postalCode",
+        "city",
+        "companyForm",
+        "industryCode",
+        "industryText",
+        "cvrStatus",
+        "cvrSyncedAt",
+        "vatPeriodType",
+        "id",
+        "fiscalYearStartMonth",
+        "paymentTermsDays",
+        "auditWaived",
+        "payment"
+      ],
+      "additionalProperties": false
+    },
+    "ProfilePatch": {
+      "type": "object",
+      "properties": {
+        "cvr": {
+          "type": "string"
+        },
+        "address": {
+          "type": "string"
+        },
+        "postalCode": {
+          "type": "string"
+        },
+        "city": {
+          "type": "string"
+        },
+        "vatPeriodType": {
+          "enum": [
+            "month",
+            "quarter",
+            "half-year",
+            null
+          ]
+        },
+        "paymentTermsDays": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 365
+        },
+        "payment": {
+          "type": "object",
+          "properties": {
+            "bankName": {
+              "type": "string"
+            },
+            "registrationNo": {
+              "type": "string"
+            },
+            "accountNo": {
+              "type": "string"
+            },
+            "iban": {
+              "type": "string"
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "CustomerObject": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "address": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "vatOrCvr": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "email": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "phone": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "website": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "eanNumber": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "paymentTermsDays": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "defaultCurrency": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "notes": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "additionalProperties": false
+    },
+    "CustomerSerde": {
+      "anyOf": [
+        {
+          "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/CustomerObject"
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "string"
+            },
+            {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": -9223372036854775808,
+                  "maximum": 9223372036854775807
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          ],
+          "minItems": 10,
+          "maxItems": 10
+        }
+      ]
+    },
+    "CustomerPatch": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "address": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "vatOrCvr": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "email": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "phone": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "website": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "eanNumber": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "paymentTermsDays": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "defaultCurrency": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "notes": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [],
+      "additionalProperties": false,
+      "minProperties": 1
+    },
+    "CustomerSdkPatch": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "address": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 4096
+        },
+        "vatOrCvr": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 4096
+        },
+        "email": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 4096
+        },
+        "phone": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 4096
+        },
+        "website": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 4096
+        },
+        "eanNumber": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 4096
+        },
+        "paymentTermsDays": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "defaultCurrency": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 3
+        },
+        "notes": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 4096
+        }
+      },
+      "required": [],
+      "additionalProperties": false,
+      "minProperties": 1
+    },
+    "CustomerSdkCreate": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "address": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 4096
+        },
+        "vatOrCvr": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 4096
+        },
+        "email": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 4096
+        },
+        "phone": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 4096
+        },
+        "website": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 4096
+        },
+        "eanNumber": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 4096
+        },
+        "paymentTermsDays": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "defaultCurrency": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 3
+        },
+        "notes": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 4096
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "additionalProperties": false,
+      "minProperties": 1
+    },
+    "CustomerOriginalInput": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "address": {
+          "type": "string"
+        },
+        "vatOrCvr": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "phone": {
+          "type": "string"
+        },
+        "website": {
+          "type": "string"
+        },
+        "eanNumber": {
+          "type": "string"
+        },
+        "paymentTermsDays": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9223372036854775807
+        },
+        "defaultCurrency": {
+          "type": "string"
+        },
+        "notes": {
+          "type": "string"
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "CustomerOriginalHttpInput": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "address": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "vatOrCvr": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "email": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "phone": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "website": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "eanNumber": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "paymentTermsDays": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "defaultCurrency": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "notes": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "CustomerOriginalCreate": {
+      "type": "object",
+      "properties": {
+        "input": {
+          "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/CustomerOriginalHttpInput"
+        },
+        "fromCvr": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "input",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "CustomerOriginalHttp": {
+      "anyOf": [
+        {
+          "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/CustomerOriginalCreate"
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/CustomerOriginalHttpInput"
+            },
+            {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            {
+              "const": true
+            }
+          ],
+          "minItems": 3,
+          "maxItems": 3
+        }
+      ]
+    },
+    "CustomerRow": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "address": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "vatOrCvr": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "email": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "phone": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "website": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "eanNumber": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "paymentTermsDays": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "defaultCurrency": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "notes": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "id": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "archived": {
+          "type": "boolean"
+        },
+        "createdAt": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "name",
+        "address",
+        "vatOrCvr",
+        "email",
+        "phone",
+        "website",
+        "eanNumber",
+        "paymentTermsDays",
+        "defaultCurrency",
+        "notes",
+        "id",
+        "archived",
+        "createdAt"
+      ],
+      "additionalProperties": false
+    },
+    "CustomerSdkRow": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "address": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "vatOrCvr": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "email": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "phone": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "website": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "eanNumber": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "paymentTermsDays": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "defaultCurrency": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "notes": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "id": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "archived": {
+          "type": "boolean"
+        },
+        "createdAt": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "name",
+        "address",
+        "vatOrCvr",
+        "email",
+        "phone",
+        "website",
+        "eanNumber",
+        "paymentTermsDays",
+        "defaultCurrency",
+        "notes",
+        "id",
+        "archived",
+        "createdAt"
+      ],
+      "additionalProperties": false
+    },
+    "CustomerList": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "rows": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/CustomerRow"
+          }
+        },
+        "errors": {
+          "const": []
+        }
+      },
+      "required": [
+        "ok",
+        "count",
+        "rows",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "CustomerSdkList": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "rows": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/CustomerSdkRow"
+          }
+        },
+        "errors": {
+          "const": []
+        }
+      },
+      "required": [
+        "ok",
+        "count",
+        "rows",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "CustomerPage": {
+      "type": "object",
+      "properties": {
+        "rows": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/CustomerSdkRow"
+          }
+        },
+        "total": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "limit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 5000
+        },
+        "offset": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 18446744073709551615
+        },
+        "hasMore": {
+          "type": "boolean"
+        },
+        "nextOffset": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "rows",
+        "total",
+        "count",
+        "limit",
+        "offset",
+        "hasMore"
+      ],
+      "additionalProperties": false
+    },
+    "CustomerCreated": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "customerId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9223372036854775807
+        },
+        "appliedRules": {
+          "const": [
+            "DK-MASTER-DATA-CUSTOMER-001"
+          ]
+        },
+        "errors": {
+          "const": []
+        }
+      },
+      "required": [
+        "ok",
+        "customerId",
+        "appliedRules",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "VendorObject": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "address": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "vatOrCvr": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "countryCode": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "identifierKind": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "email": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "phone": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "website": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "defaultExpenseAccount": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "defaultVatTreatment": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "notes": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "additionalProperties": false
+    },
+    "VendorSerde": {
+      "anyOf": [
+        {
+          "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/VendorObject"
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "string"
+            },
+            {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          ],
+          "minItems": 11,
+          "maxItems": 11
+        }
+      ]
+    },
+    "VendorPatch": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "address": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "vatOrCvr": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "countryCode": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "identifierKind": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "email": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "phone": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "website": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "defaultExpenseAccount": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "defaultVatTreatment": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "notes": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [],
+      "additionalProperties": false,
+      "minProperties": 1
+    },
+    "VendorSdkPatch": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "address": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 4096
+        },
+        "vatOrCvr": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 4096
+        },
+        "countryCode": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 4096
+        },
+        "identifierKind": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 4096
+        },
+        "email": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 4096
+        },
+        "phone": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 4096
+        },
+        "website": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 4096
+        },
+        "defaultExpenseAccount": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 4096
+        },
+        "defaultVatTreatment": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 4096
+        },
+        "notes": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 4096
+        }
+      },
+      "required": [],
+      "additionalProperties": false,
+      "minProperties": 1
+    },
+    "VendorSdkCreate": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "x-maxUtf8Bytes": 256
+        },
+        "address": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 4096
+        },
+        "vatOrCvr": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 4096
+        },
+        "countryCode": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 4096
+        },
+        "identifierKind": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 4096
+        },
+        "email": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 4096
+        },
+        "phone": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 4096
+        },
+        "website": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 4096
+        },
+        "defaultExpenseAccount": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 4096
+        },
+        "defaultVatTreatment": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 4096
+        },
+        "notes": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 4096
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "additionalProperties": false,
+      "minProperties": 1
+    },
+    "VendorOriginalInput": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "address": {
+          "type": "string"
+        },
+        "vatOrCvr": {
+          "type": "string"
+        },
+        "countryCode": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 2
+        },
+        "identifierKind": {
+          "enum": [
+            "dk_cvr",
+            "eu_vat",
+            "non_eu"
+          ]
+        },
+        "email": {
+          "type": "string"
+        },
+        "phone": {
+          "type": "string"
+        },
+        "website": {
+          "type": "string"
+        },
+        "defaultExpenseAccount": {
+          "type": "string"
+        },
+        "defaultVatTreatment": {
+          "type": "string"
+        },
+        "notes": {
+          "type": "string"
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "VendorOriginalHttpInput": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "address": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "vatOrCvr": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "countryCode": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "identifierKind": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "email": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "phone": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "website": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "defaultExpenseAccount": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "defaultVatTreatment": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "notes": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "VendorOriginalCreate": {
+      "type": "object",
+      "properties": {
+        "input": {
+          "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/VendorOriginalHttpInput"
+        },
+        "fromCvr": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "input",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "VendorOriginalHttp": {
+      "anyOf": [
+        {
+          "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/VendorOriginalCreate"
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/VendorOriginalHttpInput"
+            },
+            {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            {
+              "const": true
+            }
+          ],
+          "minItems": 3,
+          "maxItems": 3
+        }
+      ]
+    },
+    "VendorRow": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "address": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "vatOrCvr": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "countryCode": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "identifierKind": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "email": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "phone": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "website": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "defaultExpenseAccount": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "defaultVatTreatment": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "notes": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "identityStatus": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "id": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "archived": {
+          "type": "boolean"
+        },
+        "createdAt": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "name",
+        "address",
+        "vatOrCvr",
+        "countryCode",
+        "identifierKind",
+        "email",
+        "phone",
+        "website",
+        "defaultExpenseAccount",
+        "defaultVatTreatment",
+        "notes",
+        "identityStatus",
+        "id",
+        "archived",
+        "createdAt"
+      ],
+      "additionalProperties": false
+    },
+    "VendorSdkRow": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "address": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "vatOrCvr": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "countryCode": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "identifierKind": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "email": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "phone": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "website": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "defaultExpenseAccount": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "defaultVatTreatment": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "notes": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "identityStatus": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "id": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "archived": {
+          "type": "boolean"
+        },
+        "createdAt": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "name",
+        "address",
+        "vatOrCvr",
+        "countryCode",
+        "identifierKind",
+        "email",
+        "phone",
+        "website",
+        "defaultExpenseAccount",
+        "defaultVatTreatment",
+        "notes",
+        "identityStatus",
+        "id",
+        "archived",
+        "createdAt"
+      ],
+      "additionalProperties": false
+    },
+    "VendorList": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "rows": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/VendorRow"
+          }
+        },
+        "errors": {
+          "const": []
+        }
+      },
+      "required": [
+        "ok",
+        "count",
+        "rows",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "VendorSdkList": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "rows": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/VendorSdkRow"
+          }
+        },
+        "errors": {
+          "const": []
+        }
+      },
+      "required": [
+        "ok",
+        "count",
+        "rows",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "VendorPage": {
+      "type": "object",
+      "properties": {
+        "rows": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/VendorSdkRow"
+          }
+        },
+        "total": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "limit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 5000
+        },
+        "offset": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 18446744073709551615
+        },
+        "hasMore": {
+          "type": "boolean"
+        },
+        "nextOffset": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "rows",
+        "total",
+        "count",
+        "limit",
+        "offset",
+        "hasMore"
+      ],
+      "additionalProperties": false
+    },
+    "VendorCreated": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "vendorId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9223372036854775807
+        },
+        "appliedRules": {
+          "const": [
+            "DK-MASTER-DATA-VENDOR-001"
+          ]
+        },
+        "errors": {
+          "const": []
+        }
+      },
+      "required": [
+        "ok",
+        "vendorId",
+        "appliedRules",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "DeleteObject": {
+      "type": "object",
+      "properties": {
+        "confirm": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "DeleteHttp": {
+      "anyOf": [
+        {
+          "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/DeleteObject"
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "boolean"
+            }
+          ],
+          "minItems": 1,
+          "maxItems": 1
+        }
+      ]
+    },
+    "ContactChanged": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9223372036854775807
+        },
+        "ok": {
+          "const": true
+        }
+      },
+      "required": [
+        "id",
+        "ok"
+      ],
+      "additionalProperties": false
+    },
+    "ContactDeleted": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9223372036854775807
+        },
+        "deleted": {
+          "const": true
+        }
+      },
+      "required": [
+        "id",
+        "deleted"
+      ],
+      "additionalProperties": false
+    },
+    "CvrCompany": {
+      "type": "object",
+      "properties": {
+        "address": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "postalCode": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "city": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "companyFormShort": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "companyFormLong": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "status": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "industryCode": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "industryText": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "email": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "phone": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "website": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "startDate": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "fiscalYearStart": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "fiscalYearEnd": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "shareCapitalCurrency": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "cvr": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "municipalityCode": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "companyFormCode": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "fiscalYearStartMonth": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 255
+        },
+        "auditWaived": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "shareCapital": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "employees": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "advertisingProtected": {
+          "type": "boolean"
+        },
+        "management": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "role": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "name",
+              "role"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "address",
+        "postalCode",
+        "city",
+        "companyFormShort",
+        "companyFormLong",
+        "status",
+        "industryCode",
+        "industryText",
+        "email",
+        "phone",
+        "website",
+        "startDate",
+        "fiscalYearStart",
+        "fiscalYearEnd",
+        "shareCapitalCurrency",
+        "cvr",
+        "name",
+        "municipalityCode",
+        "companyFormCode",
+        "fiscalYearStartMonth",
+        "auditWaived",
+        "shareCapital",
+        "employees",
+        "advertisingProtected",
+        "management"
+      ],
+      "additionalProperties": false
+    },
+    "CvrFound": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "company": {
+          "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/CvrCompany"
+        },
+        "cached": {
+          "type": "boolean"
+        },
+        "fetchedAt": {
+          "type": "string"
+        },
+        "errors": {
+          "const": []
+        }
+      },
+      "required": [
+        "ok",
+        "company",
+        "cached",
+        "fetchedAt",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "CvrFailed": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "cached": {
+          "const": false
+        },
+        "company": {
+          "type": "null"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "maxItems": 1
+        }
+      },
+      "required": [
+        "ok",
+        "cached",
+        "company",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "CvrLookup": {
+      "anyOf": [
+        {
+          "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/CvrFound"
+        },
+        {
+          "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/CvrFailed"
+        }
+      ]
+    },
+    "Sync": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "cvr": {
+              "type": "string"
+            },
+            "company": {
+              "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/CvrCompany"
+            },
+            "cached": {
+              "type": "boolean"
+            },
+            "updatedFields": {
+              "type": "array",
+              "items": {
+                "enum": [
+                  "name",
+                  "address",
+                  "postalCode",
+                  "city",
+                  "companyForm",
+                  "industryCode",
+                  "industryText",
+                  "cvrStatus",
+                  "auditWaived"
+                ]
+              }
+            },
+            "fiscalYearStartMonth": {
+              "type": "object",
+              "properties": {
+                "current": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ],
+                  "minimum": 0
+                },
+                "cvr": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ],
+                  "minimum": 0,
+                  "maximum": 255
+                },
+                "matches": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "current",
+                "cvr",
+                "matches"
+              ],
+              "additionalProperties": false
+            },
+            "errors": {
+              "const": []
+            }
+          },
+          "required": [
+            "ok",
+            "cvr",
+            "company",
+            "cached",
+            "updatedFields",
+            "fiscalYearStartMonth",
+            "errors"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": false
+            },
+            "cvr": {
+              "type": "string"
+            },
+            "errors": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "minItems": 1,
+              "maxItems": 1
+            }
+          },
+          "required": [
+            "ok",
+            "errors"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "CvrStatus": {
+      "type": "object",
+      "properties": {
+        "configured": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "configured"
+      ],
+      "additionalProperties": false
+    },
+    "Validation": {
+      "type": "object",
+      "properties": {
+        "countryCode": {
+          "type": "string"
+        },
+        "vatNumber": {
+          "type": "string"
+        },
+        "normalized": {
+          "type": "string"
+        },
+        "validatedAt": {
+          "type": "string"
+        },
+        "expiresAt": {
+          "type": "string"
+        },
+        "valid": {
+          "type": "boolean"
+        },
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "x-maxUtf8Bytes": 8192
+        },
+        "address": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "x-maxUtf8Bytes": 32768
+        },
+        "rawResponse": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "x-maxUtf8Bytes": 262144
+        }
+      },
+      "required": [
+        "countryCode",
+        "vatNumber",
+        "normalized",
+        "validatedAt",
+        "expiresAt",
+        "valid",
+        "name",
+        "address",
+        "rawResponse"
+      ],
+      "additionalProperties": false
+    },
+    "Vies": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "validation": {
+          "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/Validation"
+        }
+      },
+      "required": [
+        "ok",
+        "validation"
+      ],
+      "additionalProperties": false
+    },
+    "VatOriginal": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "validation": {
+          "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/Validation"
+        },
+        "appliedRules": {
+          "const": [
+            "DK-VAT-REVERSE-CHARGE-001"
+          ]
+        },
+        "errors": {
+          "const": []
+        }
+      },
+      "required": [
+        "ok",
+        "validation",
+        "appliedRules",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "VatHttp": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "cvr": {
+              "type": "string"
+            },
+            "confirm": {
+              "const": true
+            }
+          },
+          "required": [
+            "cvr",
+            "confirm"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "string"
+            },
+            {
+              "const": true
+            }
+          ],
+          "minItems": 2,
+          "maxItems": 2
+        }
+      ]
+    },
+    "ViesHttp": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "vatOrCvr": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "vatOrCvr"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "string"
+            }
+          ],
+          "minItems": 1,
+          "maxItems": 1
+        }
+      ]
+    },
+    "ImportObject": {
+      "type": "object",
+      "properties": {
+        "fileName": {
+          "type": "string"
+        },
+        "content": {
+          "type": "string"
+        },
+        "enrichCvr": {
+          "type": "boolean"
+        },
+        "confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "fileName",
+        "content",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "ImportHttp": {
+      "anyOf": [
+        {
+          "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/ImportObject"
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            },
+            {
+              "const": true
+            }
+          ],
+          "minItems": 4,
+          "maxItems": 4
+        }
+      ]
+    },
+    "Import": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "import": {
+          "type": "object",
+          "properties": {
+            "detected": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "const": "dinero-contacts"
+                },
+                "label": {
+                  "const": "Dinero \u2014 Kontakter (kunder og leverand\u00f8rer)"
+                },
+                "system": {
+                  "const": "Dinero"
+                },
+                "dataType": {
+                  "const": "contacts"
+                }
+              },
+              "required": [
+                "id",
+                "label",
+                "system",
+                "dataType"
+              ],
+              "additionalProperties": false
+            },
+            "summary": {
+              "type": "object",
+              "properties": {
+                "parsed": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "customersCreated": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "vendorsCreated": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "skipped": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "enriched": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "enrichmentFailures": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "required": [
+                "parsed",
+                "customersCreated",
+                "vendorsCreated",
+                "skipped",
+                "enriched",
+                "enrichmentFailures"
+              ],
+              "additionalProperties": false
+            },
+            "errors": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "required": [
+            "detected",
+            "summary",
+            "errors"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "ok",
+        "import"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalFailure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "code": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "ImportFailure": {
+      "anyOf": [
+        {
+          "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/Failure"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": false
+            },
+            "code": {
+              "enum": [
+                "contact_import_storage_unavailable",
+                "contact_storage_unavailable"
+              ]
+            },
+            "errors": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "outcome": {
+              "const": "not_committed"
+            }
+          },
+          "required": [
+            "ok",
+            "code",
+            "errors",
+            "outcome"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "ProfileEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "company": {
+          "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/Profile"
+        }
+      },
+      "required": [
+        "ok",
+        "company"
+      ],
+      "additionalProperties": false
+    },
+    "CvrEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "cvr": {
+          "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/CvrLookup"
+        }
+      },
+      "required": [
+        "ok",
+        "cvr"
+      ],
+      "additionalProperties": false
+    },
+    "SyncEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "sync": {
+          "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/Sync"
+        }
+      },
+      "required": [
+        "ok",
+        "sync"
+      ],
+      "additionalProperties": false
+    },
+    "StatusEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "cvrStatus": {
+          "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/CvrStatus"
+        }
+      },
+      "required": [
+        "ok",
+        "cvrStatus"
+      ],
+      "additionalProperties": false
+    },
+    "CustomerChangedEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "customer": {
+          "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/ContactChanged"
+        }
+      },
+      "required": [
+        "ok",
+        "customer"
+      ],
+      "additionalProperties": false
+    },
+    "VendorChangedEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "vendor": {
+          "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/ContactChanged"
+        }
+      },
+      "required": [
+        "ok",
+        "vendor"
+      ],
+      "additionalProperties": false
+    },
+    "CustomerDeletedEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "customer": {
+          "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/ContactDeleted"
+        }
+      },
+      "required": [
+        "ok",
+        "customer"
+      ],
+      "additionalProperties": false
+    },
+    "VendorDeletedEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "vendor": {
+          "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/ContactDeleted"
+        }
+      },
+      "required": [
+        "ok",
+        "vendor"
+      ],
+      "additionalProperties": false
+    },
+    "CompanyCreated": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "company": {
+          "type": "object",
+          "properties": {
+            "slug": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "slug",
+            "name"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "ok",
+        "company"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalCvrFailure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "code": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "cached": {
+          "type": "boolean"
+        },
+        "fetchedAt": {
+          "type": "string"
+        },
+        "company": {
+          "type": "null"
+        }
+      },
+      "required": [
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalCvr": {
+      "anyOf": [
+        {
+          "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/CvrFound"
+        },
+        {
+          "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/CvrFailed"
+        }
+      ]
+    },
+    "OriginalToolFailure": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/Id"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "type": "boolean"
+            },
+            "content": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "const": "text"
+                  },
+                  "text": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "type",
+                  "text"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "type": "object",
+              "properties": {
+                "ok": {
+                  "const": false
+                },
+                "code": {
+                  "type": "string"
+                },
+                "errors": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "minItems": 1
+                },
+                "appliedRules": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "required": [
+                "ok",
+                "errors"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "RpcError": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "const": null
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32700
+                },
+                "message": {
+                  "const": "invalid or oversized newline-delimited message"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "const": null
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32700
+                },
+                "message": {
+                  "const": "invalid JSON"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "const": null
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32700
+                },
+                "message": {
+                  "const": "message exceeds tool frame bound; only named original uploads/ownership/consolidation proposals admit larger bounded frames"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/Id"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32600
+                },
+                "message": {
+                  "const": "expected one JSON-RPC object"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/Id"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32600
+                },
+                "message": {
+                  "const": "invalid JSON-RPC request"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/Id"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32600
+                },
+                "message": {
+                  "const": "request id already used"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/Id"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32600
+                },
+                "message": {
+                  "const": "already initialized"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/Id"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32000
+                },
+                "message": {
+                  "const": "session request limit reached; reconnect"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/Id"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "expected params object"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/Id"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "initialize requires protocolVersion, capabilities and clientInfo"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/Id"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32002
+                },
+                "message": {
+                  "const": "initialize and notifications/initialized required"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/Id"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "task execution not supported"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/Id"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "tool name required"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/Id"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32601
+                },
+                "message": {
+                  "const": "method not found"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/Id"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "expected arguments object"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/Id"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "create_company requires only body and confirm:true"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/Id"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "company creation exceeds native16KiB"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/Id"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "company_profile requires only company"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/Id"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "setup requires only company/body/confirm"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/Id"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "setup body exceeds native16KiB"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/Id"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "requires only company, exact confirmed body and confirm:true"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/Id"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "explicit confirmation and native12MiB body required"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/Id"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "cvr_status accepts no arguments"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/Id"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "cvr_lookup requires only company/cvr/confirm:true"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/Id"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "company_sync_cvr requires only company/confirm:true"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/Id"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "invalid original master data arguments"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/Id"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "invalid company slug"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/Id"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "master data request exceeds 256KiB"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/Id"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "invalid source list response"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/Id"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "report selectors must be strings"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/Id"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "updates/deletions require positive id; issue_invoice requires previewReviewed:true"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/Id"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "invalid domain mutation arguments"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/Id"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "explicit confirmation and reviewed invoice preview required"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/Id"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "exact company/vatOrCvr/confirm required"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/Id"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "explicit confirm:true required"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "Arguments44": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "company"
+      ],
+      "additionalProperties": false
+    },
+    "Success44": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/Id"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "type": "boolean"
+            },
+            "content": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "const": "text"
+                  },
+                  "text": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "type",
+                  "text"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "type": "object",
+              "properties": {
+                "ok": {
+                  "type": "boolean"
+                },
+                "data": {
+                  "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/ProfileEnvelope"
+                }
+              },
+              "required": [
+                "ok",
+                "data"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Arguments45": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "confirm": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "company",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "Success45": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/Id"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "type": "boolean"
+            },
+            "content": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "const": "text"
+                  },
+                  "text": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "type",
+                  "text"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "type": "object",
+              "properties": {
+                "ok": {
+                  "type": "boolean"
+                },
+                "data": {
+                  "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/Sync"
+                }
+              },
+              "required": [
+                "ok",
+                "data"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Arguments46": {
+      "type": "object",
+      "properties": {
+        "body": {
+          "type": "string",
+          "contentMediaType": "application/json",
+          "contentSchema": {
+            "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/CreationSdk"
+          },
+          "x-maxUtf8Bytes": 16384
+        },
+        "confirm": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "body",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "Success46": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/Id"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "type": "boolean"
+            },
+            "content": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "const": "text"
+                  },
+                  "text": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "type",
+                  "text"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "type": "object",
+              "properties": {
+                "ok": {
+                  "type": "boolean"
+                },
+                "data": {
+                  "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/CompanyCreated"
+                }
+              },
+              "required": [
+                "ok",
+                "data"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Arguments47": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "body": {
+          "type": "string",
+          "contentMediaType": "application/json",
+          "contentSchema": {
+            "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/VendorSdkCreate"
+          },
+          "x-maxUtf8Bytes": 262144
+        },
+        "confirm": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "company",
+        "body",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "Success47": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/Id"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "type": "boolean"
+            },
+            "content": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "const": "text"
+                  },
+                  "text": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "type",
+                  "text"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "type": "object",
+              "properties": {
+                "ok": {
+                  "type": "boolean"
+                },
+                "data": {
+                  "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/VendorChangedEnvelope"
+                }
+              },
+              "required": [
+                "ok",
+                "data"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Arguments48": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "confirm": {
+          "type": "boolean"
+        },
+        "input": {
+          "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/CustomerOriginalInput"
+        },
+        "fromCvr": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "company",
+        "input"
+      ],
+      "additionalProperties": false
+    },
+    "Success48": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/Id"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "type": "boolean"
+            },
+            "content": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "const": "text"
+                  },
+                  "text": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "type",
+                  "text"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "type": "object",
+              "properties": {
+                "ok": {
+                  "const": true
+                },
+                "data": {
+                  "type": "object",
+                  "properties": {
+                    "customerId": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 9223372036854775807
+                    }
+                  },
+                  "required": [
+                    "customerId"
+                  ],
+                  "additionalProperties": false
+                },
+                "errors": {
+                  "const": []
+                },
+                "appliedRules": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "required": [
+                "ok",
+                "data",
+                "errors"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Arguments49": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "archived": {
+          "type": "boolean"
+        },
+        "limit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 5000
+        },
+        "offset": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 18446744073709551615
+        }
+      },
+      "required": [
+        "company"
+      ],
+      "additionalProperties": false
+    },
+    "Success49": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/Id"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "type": "boolean"
+            },
+            "content": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "const": "text"
+                  },
+                  "text": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "type",
+                  "text"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "type": "object",
+              "properties": {
+                "ok": {
+                  "const": true
+                },
+                "data": {
+                  "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/CustomerPage"
+                },
+                "errors": {
+                  "const": []
+                },
+                "appliedRules": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "required": [
+                "ok",
+                "data",
+                "errors"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Arguments50": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "confirm": {
+          "type": "boolean"
+        },
+        "cvr": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "company",
+        "cvr"
+      ],
+      "additionalProperties": false
+    },
+    "Success50": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/Id"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "type": "boolean"
+            },
+            "content": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "const": "text"
+                  },
+                  "text": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "type",
+                  "text"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "type": "object",
+              "properties": {
+                "ok": {
+                  "const": true
+                },
+                "data": {
+                  "type": "object",
+                  "properties": {
+                    "validation": {
+                      "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/Validation"
+                    }
+                  },
+                  "required": [
+                    "validation"
+                  ],
+                  "additionalProperties": false
+                },
+                "errors": {
+                  "const": []
+                },
+                "appliedRules": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "required": [
+                "ok",
+                "data",
+                "errors"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Arguments51": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "confirm": {
+          "type": "boolean"
+        },
+        "cvr": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "company",
+        "confirm",
+        "cvr"
+      ],
+      "additionalProperties": false
+    },
+    "Success51": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/Id"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "type": "boolean"
+            },
+            "content": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "const": "text"
+                  },
+                  "text": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "type",
+                  "text"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "type": "object",
+              "properties": {
+                "ok": {
+                  "type": "boolean"
+                },
+                "data": {
+                  "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/CvrLookup"
+                }
+              },
+              "required": [
+                "ok",
+                "data"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Arguments52": {
+      "type": "object",
+      "properties": {},
+      "required": [],
+      "additionalProperties": false
+    },
+    "Success52": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/Id"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "type": "boolean"
+            },
+            "content": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "const": "text"
+                  },
+                  "text": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "type",
+                  "text"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "type": "object",
+              "properties": {
+                "ok": {
+                  "type": "boolean"
+                },
+                "data": {
+                  "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/CvrStatus"
+                }
+              },
+              "required": [
+                "ok",
+                "data"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Arguments53": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "body": {
+          "type": "string",
+          "contentMediaType": "application/json",
+          "contentSchema": {
+            "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/DeleteObject"
+          },
+          "x-maxUtf8Bytes": 262144
+        },
+        "confirm": {
+          "type": "boolean"
+        },
+        "id": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9223372036854775807
+        }
+      },
+      "required": [
+        "company",
+        "body",
+        "confirm",
+        "id"
+      ],
+      "additionalProperties": false
+    },
+    "Success53": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/Id"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "type": "boolean"
+            },
+            "content": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "const": "text"
+                  },
+                  "text": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "type",
+                  "text"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "type": "object",
+              "properties": {
+                "ok": {
+                  "type": "boolean"
+                },
+                "data": {
+                  "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/CustomerDeletedEnvelope"
+                }
+              },
+              "required": [
+                "ok",
+                "data"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Arguments54": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "body": {
+          "type": "string",
+          "contentMediaType": "application/json",
+          "contentSchema": {
+            "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/DeleteObject"
+          },
+          "x-maxUtf8Bytes": 262144
+        },
+        "confirm": {
+          "type": "boolean"
+        },
+        "id": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9223372036854775807
+        }
+      },
+      "required": [
+        "company",
+        "body",
+        "confirm",
+        "id"
+      ],
+      "additionalProperties": false
+    },
+    "Success54": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/Id"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "type": "boolean"
+            },
+            "content": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "const": "text"
+                  },
+                  "text": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "type",
+                  "text"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "type": "object",
+              "properties": {
+                "ok": {
+                  "type": "boolean"
+                },
+                "data": {
+                  "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/VendorDeletedEnvelope"
+                }
+              },
+              "required": [
+                "ok",
+                "data"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Arguments55": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "body": {
+          "type": "string",
+          "contentMediaType": "application/json",
+          "contentSchema": {
+            "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/ImportSdk"
+          },
+          "x-maxUtf8Bytes": 12582912
+        },
+        "confirm": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "company",
+        "body",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "Success55": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/Id"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "type": "boolean"
+            },
+            "content": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "const": "text"
+                  },
+                  "text": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "type",
+                  "text"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "type": "object",
+              "properties": {
+                "ok": {
+                  "type": "boolean"
+                },
+                "data": {
+                  "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/Import"
+                }
+              },
+              "required": [
+                "ok",
+                "data"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Arguments56": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "body": {
+          "type": "string",
+          "contentMediaType": "application/json",
+          "contentSchema": {
+            "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/ProfilePatch"
+          },
+          "x-maxUtf8Bytes": 16384
+        },
+        "confirm": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "company",
+        "body",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "Success56": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/Id"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "type": "boolean"
+            },
+            "content": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "const": "text"
+                  },
+                  "text": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "type",
+                  "text"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "type": "object",
+              "properties": {
+                "ok": {
+                  "type": "boolean"
+                },
+                "data": {
+                  "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/ProfileEnvelope"
+                }
+              },
+              "required": [
+                "ok",
+                "data"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Arguments57": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "body": {
+          "type": "string",
+          "contentMediaType": "application/json",
+          "contentSchema": {
+            "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/CustomerSdkPatch"
+          },
+          "x-maxUtf8Bytes": 262144
+        },
+        "confirm": {
+          "type": "boolean"
+        },
+        "id": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9223372036854775807
+        }
+      },
+      "required": [
+        "company",
+        "body",
+        "confirm",
+        "id"
+      ],
+      "additionalProperties": false
+    },
+    "Success57": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/Id"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "type": "boolean"
+            },
+            "content": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "const": "text"
+                  },
+                  "text": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "type",
+                  "text"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "type": "object",
+              "properties": {
+                "ok": {
+                  "type": "boolean"
+                },
+                "data": {
+                  "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/CustomerChangedEnvelope"
+                }
+              },
+              "required": [
+                "ok",
+                "data"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Arguments58": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "body": {
+          "type": "string",
+          "contentMediaType": "application/json",
+          "contentSchema": {
+            "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/VendorSdkPatch"
+          },
+          "x-maxUtf8Bytes": 262144
+        },
+        "confirm": {
+          "type": "boolean"
+        },
+        "id": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9223372036854775807
+        }
+      },
+      "required": [
+        "company",
+        "body",
+        "confirm",
+        "id"
+      ],
+      "additionalProperties": false
+    },
+    "Success58": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/Id"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "type": "boolean"
+            },
+            "content": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "const": "text"
+                  },
+                  "text": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "type",
+                  "text"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "type": "object",
+              "properties": {
+                "ok": {
+                  "type": "boolean"
+                },
+                "data": {
+                  "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/VendorChangedEnvelope"
+                }
+              },
+              "required": [
+                "ok",
+                "data"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Arguments59": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "confirm": {
+          "type": "boolean"
+        },
+        "input": {
+          "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/VendorOriginalInput"
+        },
+        "fromCvr": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "company",
+        "input"
+      ],
+      "additionalProperties": false
+    },
+    "Success59": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/Id"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "type": "boolean"
+            },
+            "content": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "const": "text"
+                  },
+                  "text": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "type",
+                  "text"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "type": "object",
+              "properties": {
+                "ok": {
+                  "const": true
+                },
+                "data": {
+                  "type": "object",
+                  "properties": {
+                    "vendorId": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 9223372036854775807
+                    }
+                  },
+                  "required": [
+                    "vendorId"
+                  ],
+                  "additionalProperties": false
+                },
+                "errors": {
+                  "const": []
+                },
+                "appliedRules": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "required": [
+                "ok",
+                "data",
+                "errors"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Arguments60": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "archived": {
+          "type": "boolean"
+        },
+        "limit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 5000
+        },
+        "offset": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 18446744073709551615
+        }
+      },
+      "required": [
+        "company"
+      ],
+      "additionalProperties": false
+    },
+    "Success60": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/Id"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "type": "boolean"
+            },
+            "content": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "const": "text"
+                  },
+                  "text": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "type",
+                  "text"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "type": "object",
+              "properties": {
+                "ok": {
+                  "const": true
+                },
+                "data": {
+                  "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/VendorPage"
+                },
+                "errors": {
+                  "const": []
+                },
+                "appliedRules": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "required": [
+                "ok",
+                "data",
+                "errors"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Arguments61": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "confirm": {
+          "type": "boolean"
+        },
+        "vatOrCvr": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "company",
+        "confirm",
+        "vatOrCvr"
+      ],
+      "additionalProperties": false
+    },
+    "Success61": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/Id"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "type": "boolean"
+            },
+            "content": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "const": "text"
+                  },
+                  "text": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "type",
+                  "text"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "type": "object",
+              "properties": {
+                "ok": {
+                  "type": "boolean"
+                },
+                "data": {
+                  "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/Vies"
+                }
+              },
+              "required": [
+                "ok",
+                "data"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "CreationSdk": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "slug": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "cvr": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "fiscalYearStartMonth": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "fiscalYearLabelStrategy": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "vatPeriodType": {
+          "enum": [
+            "month",
+            "quarter",
+            "half-year",
+            null
+          ]
+        },
+        "payment": {
+          "anyOf": [
+            {
+              "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/Payment"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "additionalProperties": false
+    },
+    "ImportSdk": {
+      "type": "object",
+      "properties": {
+        "fileName": {
+          "type": "string",
+          "minLength": 1
+        },
+        "content": {
+          "type": "string",
+          "minLength": 1
+        },
+        "enrichCvr": {
+          "type": "boolean"
+        },
+        "confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "fileName",
+        "content",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "RawJsonValue": {
+      "type": [
+        "object",
+        "array",
+        "string",
+        "number",
+        "boolean",
+        "null"
+      ],
+      "properties": {},
+      "additionalProperties": true,
+      "items": {
+        "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/RawJsonValue"
+      },
+      "x-arbitrary-json": {
+        "scope": "Only direct rawHTTP untyped Serde Value fields / Map PATCH member values before domain validation",
+        "rationale": "Creation Input vat_period_type is Value; raw profile Map and sales PATCH Value object are parsed first and domain validator rejects unknown keys/types as business refusal. This describes parsing only, not successful mutation or authorization.",
+        "sourceRefs": [
+          {
+            "path": "crates/rentemester-storage/src/company_creation.rs",
+            "sha256": "29fa9b0bca64197904c1ce914f5c28b6688dcac49a183f029413fad9ec42b53b",
+            "needle": "pub vat_period_type: Value,"
+          }
+        ]
+      }
+    },
+    "RawPatchHttp": {
+      "type": "object",
+      "properties": {},
+      "additionalProperties": {
+        "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/RawJsonValue"
+      },
+      "description": "Raw transport Map/object. Domain accepted keys/types remain named business schemas and their current fail-closed application controls; SDK preflight remains narrower."
+    }
+  }
+}
