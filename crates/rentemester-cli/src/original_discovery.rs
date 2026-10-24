@@ -3,6 +3,8 @@ use serde_json::{Value, json};
 
 pub fn help() -> Value {
     json!({"ok":true,"localBinding":"Existing migrated commands may select --local-profile ABS_PRIVATE_PROFILE instead of --server/--allow-loopback-http. Join only: same server via private Unix socket with normal cookie/service authentication. Bounded company selection supports explicit slug or verified workspace path and RENTEMESTER_COMPANY fallback for migrated company commands only. Identity remains server-owned; no caller-selected actor. Whole-product parity is unfinished and the default launcher is unchanged.","commands":[
+        {"name":"corporate-record ingest|list|inspect|download|link|enrich|supersede","usage":"corporate-record --help","scope":"original legal evidence lifecycle through current credential authority, explicit company anchor and local/remote binding; no retry"},
+        {"name":"ownership query|propose|review|apply|history|projection","usage":"ownership --help","scope":"original reviewed effective-dated ownership; current principal assertions, independent review and exact hashes; no partial graph promoted to complete projection"},
         {"name":"system healthcheck","usage":"system healthcheck --company PATH [--json | --format json|human]","scope":"offline read-only five filesystem checks and protected snapshot schema diagnostic; remote health is aggregate-only and cannot substitute this report"},
         {"name":"bookkeeping-batch plan|persist|dry-run|approve|apply|status","usage":"bookkeeping-batch --help","scope":"reviewed expected hash, four explicitly confirmed writes including durable dry-run; current human cookie authority, atomic_v1 receipts and legacy inspect-only history; no retry"},
         {"name":"accounting-draft create|revise|submit|reject|approve-and-post|show|list","usage":"accounting-draft --help","scope":"local JSON-FILE input, five explicitly confirmed writes, current typed credential assertions, independent review and exact replay; no retry"},
@@ -157,7 +159,7 @@ fn invalid(message: &str) -> crate::dated_reports::Output {
 fn recognized(root: &str) -> bool {
     matches!(
         root,
-        "audit" | "bookkeeping-batch" | "accounting-draft" | "accounts" | "posting-rules" | "dimensions" | "supplier-commitment" | "vat" | "asset"
+        "corporate-record" | "ownership" | "audit" | "bookkeeping-batch" | "accounting-draft" | "accounts" | "posting-rules" | "dimensions" | "supplier-commitment" | "vat" | "asset"
             | "accrual"
             | "mileage"
             | "budget"

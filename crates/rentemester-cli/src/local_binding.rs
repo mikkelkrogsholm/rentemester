@@ -5,6 +5,8 @@ fn usage(message: &str) -> (u8, Error) {
     (2, Error::new("invalid_input", message))
 }
 pub fn prepare(args: Vec<String>) -> Result<Vec<String>, (u8, Error)> {
+    let registry = crate::corporate_records_original::accepts(&args) || crate::ownership_original::accepts(&args);
+    let mut workspace_assertion = None;
     let mut remaining = Vec::new();
     let mut profile = None;
     let mut cursor = 0;
@@ -44,6 +46,15 @@ pub fn prepare(args: Vec<String>) -> Result<Vec<String>, (u8, Error)> {
             cursor += 1;
             continue;
         }
+        if registry && normal && (arg == "--workspace" || arg.starts_with("--workspace=")) {
+            if workspace_assertion.is_some() { return Err(usage("duplicate --workspace assertion")); }
+            let value = if let Some(value) = arg.strip_prefix("--workspace=") { value.to_owned() } else {
+                cursor += 1;
+                args.get(cursor).filter(|v| !v.starts_with("--")).ok_or_else(|| usage("--workspace requires an exact verified local workspace"))?.clone()
+            };
+            if value.is_empty() { return Err(usage("empty --workspace assertion")); }
+            workspace_assertion = Some(value); cursor += 1; continue;
+        }
         remaining.push(arg.clone());
         cursor += 1;
     }
@@ -69,6 +80,7 @@ pub fn prepare(args: Vec<String>) -> Result<Vec<String>, (u8, Error)> {
         check_path_syntax(company)?;
     }
     let Some(profile) = profile else {
+        if workspace_assertion.is_some() { return Err(usage("--workspace assertion requires explicit --local-profile")); }
         if let Some(company) = company {
             insert_company(&mut remaining, company);
         }
@@ -93,6 +105,9 @@ pub fn prepare(args: Vec<String>) -> Result<Vec<String>, (u8, Error)> {
     }
     let local = LocalRuntime::load(std::path::Path::new(&profile))
         .map_err(|e| (2, Error::new("invalid_input", e.to_string())))?;
+    if workspace_assertion.as_ref().is_some_and(|w| std::path::Path::new(w) != local.workspace_root()) {
+        return Err(usage("--workspace differs from verified local workspace"));
+    }
     if let Some(company) = company {
         assert_workspace(&local)?;
         let company = if knowledge {

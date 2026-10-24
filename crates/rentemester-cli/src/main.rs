@@ -1,3 +1,5 @@
+mod corporate_records_original;
+mod ownership_original;
 mod mileage_posting;
 mod bookkeeping_batch_original;
 mod accounting_draft_original;
@@ -551,10 +553,29 @@ fn main() -> ExitCode {
             Err(o) => { eprint!("{}",o.stderr); return ExitCode::from(o.exit); }
         }
     }
+    if corporate_records_original::accepts(&args) {
+        match corporate_records_original::preflight(&args) {
+            Ok(true) => { println!("{}",corporate_records_original::help()); return ExitCode::SUCCESS; }
+            Ok(false) => {}
+            Err(o) => { print!("{}",o.stdout); eprint!("{}",o.stderr); return ExitCode::from(o.exit); }
+        }
+    }
+    if ownership_original::accepts(&args) {
+        match ownership_original::preflight(&args) {
+            Ok(true) => { println!("{}",ownership_original::help()); return ExitCode::SUCCESS; }
+            Ok(false) => {}
+            Err(o) => { print!("{}",o.stdout); eprint!("{}",o.stderr); return ExitCode::from(o.exit); }
+        }
+    }
+    let registry_args = (corporate_records_original::accepts(&args) || ownership_original::accepts(&args)).then(|| args.clone());
     let audit_args = audit_verify_original::accepts(&args).then(|| args.clone());
     let args = match local_binding::prepare(args) {
         Ok(args) => args,
         Err((code, error)) => {
+            if let Some(args) = &registry_args {
+                let o = if corporate_records_original::accepts(args) { corporate_records_original::binding_refusal(args) } else { ownership_original::binding_refusal(args) };
+                print!("{}",o.stdout); eprint!("{}",o.stderr); return ExitCode::from(o.exit);
+            }
             if let Some(args) = &audit_args {
                 let o = audit_verify_original::refusal(args,"Audit verification unavailable: local binding refused");
                 print!("{}",o.stdout); eprint!("{}",o.stderr); return ExitCode::from(o.exit);
@@ -572,6 +593,14 @@ fn main() -> ExitCode {
     };
     if audit_verify_original::accepts(&args) {
         let o = audit_verify_original::execute(&args);
+        print!("{}",o.stdout); eprint!("{}",o.stderr); return ExitCode::from(o.exit);
+    }
+    if corporate_records_original::accepts(&args) {
+        let o = corporate_records_original::execute(&args);
+        print!("{}",o.stdout); eprint!("{}",o.stderr); return ExitCode::from(o.exit);
+    }
+    if ownership_original::accepts(&args) {
+        let o = ownership_original::execute(&args);
         print!("{}",o.stdout); eprint!("{}",o.stderr); return ExitCode::from(o.exit);
     }
     if bookkeeping_batch_original::accepts(&args) {
