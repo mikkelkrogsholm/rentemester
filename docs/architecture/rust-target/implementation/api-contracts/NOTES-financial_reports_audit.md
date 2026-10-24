@@ -40,3 +40,39 @@ Actual service_company constructors append required usage/business on admitted r
 New advertised `cli:audit verify` reuses the unchanged validated native full verifier. Available findings project flat `{ok,entries,errors}`: clean0, corrupt1; native `remote audit-verify` remains exit0 observation wrapper. JSON/human/globalformat and private local/remote bindings have six compiled fixtures. A real128byte preflight bug was corrected by delegating fullPATH validation to existinglocalbinding; a valid80byteslug gives a >128bytefullpath with unchangedfixedworkspace/shortsocket, RED2/GREEN0 and no TCPfallback. An initialinvalidworkspaceRoot test was diagnosed and retained, not usedto weakennamespace rules.
 
 Unavailable/credential/protocol/authorization/localbinding failures are sanitizedcatch-shaped errors with no inventedcount/schema. Originaloffline pending-schema inspection remains explicitly unsupported bynativev1; full716/launcher/otherR01 requirements and714/712manualdependencies remainopen. ActualcompiledRoothelp differs byonly thisonecommand; all1490prioroperation semantics remainunchanged, with affectedcurrent sourcehashes refreshed. Currentuniverse is1491:639HTTP465CLI387MCP across38partitions. No financial/provider/authentication effects replayed.
+
+## #716 original regulatory CLI correction
+
+`cli:reg coverage` and `cli:reg citations` now explicitly describe the original
+source CLI, intentionally correcting the old generic `{ok,report,coverage}`
+presentation. The native internal `regulatory::run` and compliance API semantics
+are preserved. No such CLI rows were present in this private partition at base;
+these two source-operation rows are now explicit, without changing other rows or
+existing definitions. Shared discovery/source pins/current union remain lead-owned.
+
+Coverage projects the actual bundled engine counts to the source flat field names,
+including per-source counts and optional reportPath/errors. Human coverage uses
+the exact source multiline layout and routes failed results to stderr/exit1.
+Citations returns either review or reportPath, never a coverage wrapper, and its
+human no-out output is verbatim engine Markdown plus the console LF. Report files
+contain only renderer bytes (not the console LF). Engine source integrity errors
+refuse before report publication: they are not silently erased by source projection.
+
+The source parser stores duplicate valued flags in a Map: last --out wins, and
+trimmed blank --out is absent. Split/attached values, last-format versus --json
+precedence, passive help and parse failures are exercised through the actual
+compiled executable. OS write failures are exit1 stderr diagnostics, never success;
+filesystem writes are not claimed atomic and may leave truncated/partial output.
+Only explicitly requested local output is written; no directory creation,
+company/login/network/Unix-owner binding, scanner, source regeneration or legal
+approval is involved. Server authority/POST/unknown-remote-write fixtures would be
+inapplicable to these offline operations, not a waiver for another family.
+
+Targeted proof: `CARGO_BUILD_JOBS=2 python3 scripts/rust/cargo-guard.py cargo test
+-p rentemester-cli --test original_reg716` passed against the current bundled
+corpus and actual `CARGO_BIN_EXE_rentemester-rust`: both keys, piped default,
+JSON/human, out/no-out, exact file bytes, invalid/failed output, duplicate/blank
+out, global output precedence, help/no file effects, invalid authority flags and
+parser exits. No expensive corpus regeneration or crawler was run. Native/MCP
+rows and schemas retain their previous semantics; this does not claim all old
+regulatory CLI presentation schemas unchanged, whole-issue acceptance, or closure.

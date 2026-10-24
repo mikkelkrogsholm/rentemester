@@ -9897,6 +9897,222 @@
         "output"
       ],
       "additionalProperties": false
+    },
+    "OriginalRegSource716": {
+      "type": "object",
+      "properties": {
+        "sourceId": {
+          "type": "string"
+        },
+        "inScopeOperativeProvisions": {
+          "$ref": "#/$defs/Count"
+        },
+        "inScopeCitedProvisions": {
+          "$ref": "#/$defs/Count"
+        },
+        "operativeProvisions": {
+          "$ref": "#/$defs/Count"
+        },
+        "citedProvisions": {
+          "$ref": "#/$defs/Count"
+        }
+      },
+      "required": [
+        "sourceId",
+        "inScopeOperativeProvisions",
+        "inScopeCitedProvisions",
+        "operativeProvisions",
+        "citedProvisions"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalRegCoverage716": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "inScopeOperativeProvisions": {
+          "$ref": "#/$defs/Count"
+        },
+        "inScopeCitedProvisions": {
+          "$ref": "#/$defs/Count"
+        },
+        "operativeProvisions": {
+          "$ref": "#/$defs/Count"
+        },
+        "citedProvisions": {
+          "$ref": "#/$defs/Count"
+        },
+        "closureErrors": {
+          "$ref": "#/$defs/Count"
+        },
+        "driftErrors": {
+          "$ref": "#/$defs/Count"
+        },
+        "scopeErrors": {
+          "$ref": "#/$defs/Count"
+        },
+        "uncitedRules": {
+          "$ref": "#/$defs/Count"
+        },
+        "perSource": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/OriginalRegSource716"
+          }
+        },
+        "reportPath": {
+          "type": "string"
+        },
+        "errors": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "ok",
+        "inScopeOperativeProvisions",
+        "inScopeCitedProvisions",
+        "operativeProvisions",
+        "citedProvisions",
+        "closureErrors",
+        "driftErrors",
+        "scopeErrors",
+        "uncitedRules",
+        "perSource"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "ok": {
+                "const": true
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "closureErrors": {
+                "const": 0
+              },
+              "driftErrors": {
+                "const": 0
+              },
+              "scopeErrors": {
+                "const": 0
+              }
+            },
+            "not": {
+              "required": [
+                "errors"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "OriginalRegCitations716": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "review": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "ok",
+            "review"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "reportPath": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "ok",
+            "reportPath"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "OriginalRegInput716": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "enum": [
+            "reg coverage",
+            "reg citations"
+          ]
+        },
+        "--out": {
+          "type": "string"
+        },
+        "--format": {
+          "enum": [
+            "json",
+            "human"
+          ]
+        },
+        "--json": {
+          "const": true
+        },
+        "--help": {
+          "const": true
+        }
+      },
+      "required": [
+        "command"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalRegHelp716": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "commands": {
+          "const": [
+            "reg coverage [--out <file.md>] [--format json|human]",
+            "reg citations [--out <file.md>] [--format json|human]"
+          ]
+        },
+        "flags": {
+          "const": [
+            "--out",
+            "--format",
+            "--json",
+            "--help"
+          ]
+        },
+        "offline": {
+          "const": true
+        }
+      },
+      "required": [
+        "ok",
+        "commands",
+        "flags",
+        "offline"
+      ],
+      "additionalProperties": false
     }
   }
 }

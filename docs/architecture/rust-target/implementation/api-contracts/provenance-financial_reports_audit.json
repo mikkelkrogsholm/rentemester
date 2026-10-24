@@ -3,8 +3,24 @@
   "partition": "financial_reports_audit",
   "status": "specified",
   "unresolved": [],
-  "operationCount": 42,
+  "operationCount": 45,
   "operationIds": [
+    "cli:audit verify",
+    "cli:reg citations",
+    "cli:reg coverage",
+    "cli:remote audit-log-list",
+    "cli:remote audit-verify",
+    "cli:remote balance",
+    "cli:remote cashflow",
+    "cli:remote income-statement",
+    "cli:remote overview",
+    "cli:remote portfolio",
+    "cli:remote report-export",
+    "cli:remote trial-balance",
+    "cli:report balance",
+    "cli:report profit-loss",
+    "cli:report trial-balance",
+    "cli:trial-balance",
     "http:GET /api/companies/{slug}/audit-log",
     "http:GET /api/companies/{slug}/audit-verify",
     "http:GET /api/companies/{slug}/balance",
@@ -25,19 +41,6 @@
     "http:HEAD /api/companies/{slug}/trial-balance",
     "http:HEAD /api/companies/{slug}/{report}/export",
     "http:HEAD /api/portfolio/overview",
-    "cli:remote audit-log-list",
-    "cli:remote audit-verify",
-    "cli:remote balance",
-    "cli:remote cashflow",
-    "cli:remote income-statement",
-    "cli:remote overview",
-    "cli:remote portfolio",
-    "cli:remote report-export",
-    "cli:remote trial-balance",
-    "cli:report balance",
-    "cli:report profit-loss",
-    "cli:report trial-balance",
-    "cli:trial-balance",
     "mcp:audit_log_list",
     "mcp:audit_verify",
     "mcp:balance",
@@ -280,6 +283,36 @@
       "path": "crates/rentemester-client/src/portfolio_overview.rs",
       "sha256": "d4cf6e82adcc277f5d6eefb746d0e43717c6a30669696e4963ccc51645b021b9",
       "needle": "pub async fn portfolio_overview(&self, as_of: Option<&str>) -> Result<Value, Error> {"
+    },
+    {
+      "path": "crates/rentemester-cli/src/regulatory.rs",
+      "sha256": "78f113d6428ed2b51f8577da9b4bfc49e317a3f8d3ed5f0ce2c1e3a3334b98c5",
+      "needle": "fn project_coverage"
+    },
+    {
+      "path": "crates/rentemester-cli/tests/original_reg716.rs",
+      "sha256": "8b13ce97ba4d33d12547b98da2017f3971b3a55bdee62474b91f02c5f61ac8bb",
+      "needle": "fn original_reg716_current_corpus_streams_files_and_passive_refusals"
+    },
+    {
+      "path": "crates/rentemester-engine/src/regulatory.rs",
+      "sha256": "32d23e837d1bf35f1d0b4bb81ed67884b9d850b40c36316c69c33d144fc3a8e4",
+      "needle": "pub fn bundled_coverage"
+    },
+    {
+      "path": "src/cli/reg.ts",
+      "sha256": "e748813982c4cdd79951cd8e5b1534586dfe9b0ee15615e1f4476de4b53122dd",
+      "needle": "dispatch.on(\"reg\", \"coverage\""
+    },
+    {
+      "path": "src/cli-args.ts",
+      "sha256": "fbae2623fddf0c35672a5b330fa0315c39cc6975a29f873e48d43e9a45f66efc",
+      "needle": "flags.set(name, value)"
+    },
+    {
+      "path": "src/cli-meta/compliance-specs.ts",
+      "sha256": "da722554bbe757761ea515c38cb87d847620b6e0ae73f056ededec362ef6283f",
+      "needle": "key: \"reg citations\""
     }
   ],
   "scope": "Only42 frozen report/audit operations. Prior821/26 partitions and all55/J01-J07/final desktop/release/cutover/retirement unchanged; no global closure or runtime replay.",
@@ -342,5 +375,10 @@
       "path": "/tmp/rentemester-rust-reports/r63-audit716-compatibility-proof.json",
       "sha256": "e4ce7de0246577c50ce0fd4b1e5a06f08234fa92b1d4644f61c2b3949497bca0"
     }
+  },
+  "originalReg716": {
+    "correction": "Source CLI execute no longer exposes generic native run envelope; native run/compliance unchanged. No reg rows existed in this private partition at base; two original operation rows are made explicit here.",
+    "test": "CARGO_BUILD_JOBS=2 python3 scripts/rust/cargo-guard.py cargo test -p rentemester-cli --test original_reg716",
+    "scope": "Actual compiled CLI/current bundled corpus, no HTTP/Unix fixtures appropriate for offline commands."
   }
 }
