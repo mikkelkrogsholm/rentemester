@@ -1,7 +1,7 @@
 import { afterEach, expect, it, vi } from "bun:test";
 import { restoreGlobals, stubGlobal } from "../../test/globals";
 import { withProtocol } from "../../test/protocol";
-import { request, requestBlob } from "./_shared";
+import { invalidateAuthObservations, request, requestBlob } from "./_shared";
 
 afterEach(restoreGlobals);
 
@@ -38,3 +38,30 @@ it("binary body read failure after dispatch preserves uncertain write guidance",
   await expect(requestBlob("/api/write", { method: "POST" })).rejects.toMatchObject({ code: "internal", message: expect.stringContaining("Kontrollér status") });
   expect(fetchMock.mock.calls.filter(([url]) => url === "/api/write")).toHaveLength(1);
 });
+
+for (const binary of [false, true]) {
+  it(`${binary ? "binary" : "JSON"} malformed 401 bodies retain request-bound expiry authority`, async () => {
+    const expired = vi.fn();
+    const target = new EventTarget();
+    target.addEventListener("rentemester:auth-expired", expired);
+    stubGlobal("window", target);
+    let finishBody!: () => void;
+    let bodyStarted!: () => void;
+    const started = new Promise<void>(resolve => { bodyStarted = resolve; });
+    const pendingBody = new Promise<void>(resolve => { finishBody = resolve; });
+    stubGlobal("fetch", vi.fn(withProtocol(async () => ({
+      ok: false, status: 401,
+      json: async () => { bodyStarted(); await pendingBody; throw new SyntaxError("invalid JSON"); },
+    }))));
+    const invoke = binary ? requestBlob : request;
+    const oldRequest = invoke("/api/read").catch(error => error);
+    await started;
+    invalidateAuthObservations();
+    finishBody();
+    expect(await oldRequest).toMatchObject({ code: "unauthorized", status: 401 });
+    expect(expired).not.toHaveBeenCalled();
+    // The same malformed response under current authority must still expire.
+    await expect(invoke("/api/read")).rejects.toMatchObject({ code: "unauthorized", status: 401 });
+    expect(expired).toHaveBeenCalledTimes(1);
+  });
+}
