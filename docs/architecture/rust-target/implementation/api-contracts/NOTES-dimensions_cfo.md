@@ -31,3 +31,29 @@ Completed with 34,009 nodes and 107,681 edges in the independent build output; g
 The oracle checks frozen coverage, source hashes, schema resolution and structural contract completeness. It does not replace the lead's independent actual-source semantic review, integration or acceptance. Prior 821 accepted operations/26 partitions remain untouched. All 55 scope, J01–J07, final desktop, release, cutover and retirement acceptance remain retained. No issue closure or commit was performed.
 
 Lead source correction: nativeMCP globalreportselector error precedes CFO; originaldimensionmutation CLI/MCP receipts nowpositiveSafeIDs while rawHTTP SignedIds retained. ActualCFO source-integrity503 cfo_analytics_refused explicitly represented. Non-principal key semantics/currentauthority unchanged.
+
+## 2026-10-24 — Original profile/archive/CFO read flow (R89/R90)
+
+Four original read names now use the existing common Rust server and SDK. The
+profile returns exactly19 fields, including non-VAT and shifted-year span. Archive
+list/detail verify current physical originals before filtering and project raw
+six-decimal witnesses as representable source numbers, never rounded Money2. CFO
+asserts the freshly verified local workspace root/ID and retains source-linked,
+partial, non-consolidated and approved-group states. Original remote workspace
+assertions remain unavailable; native CFO still supports remote mode. Filesystem
+company selectors remain an explicit unsupported binding, with no local fallback.
+
+Thirteen actual compiled stdio/SDK cases passed on the combined reviewed source;
+the actual429-tool catalogue retains424 exact definitions and changes only the
+native CFO description to reflect its already-existing verified archive producer.
+The four original inputs and annotations match the retained original registry.
+The failed shared-module-ordering worker run, candidates and receipts remain
+preserved; supported SGD committed-snapshot adoption avoids new model calls.
+
+Current operation contracts total1600 (642 HTTP,529 CLI,429 MCP) in38 partitions.
+These four closed producer-shaped contracts add to all1596 preceding operations;
+only current source hashes refresh. Historical captures remain immutable. This
+accepts this read flow, not whole717:18 other original names,31 original workflow
+descriptions, full operation/service/reconnect acceptance and all55 issue scopes
+remain. Manual installed desktop acceptance stays last. No auth/provider/financial
+or desktop effects were replayed.

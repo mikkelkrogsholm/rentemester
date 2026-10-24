@@ -7549,6 +7549,770 @@
         "errors"
       ],
       "additionalProperties": false
+    },
+    "OriginalRead89_cfo_analytics_query_Arguments": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "additionalProperties": false,
+      "properties": {
+        "account": {
+          "type": "string"
+        },
+        "aggregate": {
+          "enum": [
+            "none",
+            "sum"
+          ],
+          "type": "string"
+        },
+        "companySlug": {
+          "type": "string"
+        },
+        "companySlugs": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 100,
+          "type": "array"
+        },
+        "currency": {
+          "type": "string"
+        },
+        "cursor": {
+          "type": "string"
+        },
+        "dimension": {
+          "type": "string"
+        },
+        "from": {
+          "type": "string"
+        },
+        "groupProfileId": {
+          "type": "string"
+        },
+        "limit": {
+          "maximum": 200,
+          "minimum": 1,
+          "type": "integer"
+        },
+        "party": {
+          "description": "Exact canonical workspace party ID; names and document text are not identity filters.",
+          "type": "string"
+        },
+        "scope": {
+          "enum": [
+            "company",
+            "portfolio",
+            "group"
+          ],
+          "type": "string"
+        },
+        "to": {
+          "type": "string"
+        },
+        "workspace": {
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "workspace",
+        "scope",
+        "from",
+        "to"
+      ],
+      "type": "object"
+    },
+    "OriginalRead89_cfo_analytics_query_Id": {
+      "anyOf": [
+        {
+          "type": "string",
+          "maxLength": 256,
+          "x-maxUtf8Bytes": 256
+        },
+        {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 18446744073709551615
+        }
+      ]
+    },
+    "OriginalRead89_cfo_analytics_query_Data": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "schemaVersion": {
+              "const": "rentemester-cfo-analytics-v1"
+            },
+            "scope": {
+              "enum": [
+                "company",
+                "portfolio"
+              ]
+            },
+            "status": {
+              "enum": [
+                "ready",
+                "incomplete"
+              ]
+            },
+            "asOf": {
+              "type": "string"
+            },
+            "from": {
+              "type": "string"
+            },
+            "to": {
+              "type": "string"
+            },
+            "companies": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "partial": {
+              "type": "boolean"
+            },
+            "mode": {
+              "enum": [
+                "juxtaposed-non-consolidated",
+                "legal-company"
+              ]
+            },
+            "aggregate": {
+              "enum": [
+                "none",
+                "sum"
+              ]
+            },
+            "limitations": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "rows": {
+              "type": "array",
+              "items": {
+                "$ref": "schemas-dimensions_cfo.json#/$defs/CfoRow"
+              },
+              "maxItems": 200
+            },
+            "page": {
+              "type": "object",
+              "properties": {
+                "limit": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 200
+                },
+                "nextCursor": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "limit",
+                "nextCursor"
+              ],
+              "additionalProperties": false
+            },
+            "freshness": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "source": {
+                    "type": "string"
+                  },
+                  "companySlug": {
+                    "type": "string"
+                  },
+                  "latestTransactionDate": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "source",
+                  "companySlug",
+                  "latestTransactionDate"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "evidenceCompleteness": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "companySlug": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "const": "ready"
+                  },
+                  "postedWithoutDocument": {
+                    "type": "integer",
+                    "minimum": -9223372036854775808,
+                    "maximum": 9223372036854775807
+                  },
+                  "openExceptions": {
+                    "type": "integer",
+                    "minimum": -9223372036854775808,
+                    "maximum": 9223372036854775807
+                  }
+                },
+                "required": [
+                  "companySlug",
+                  "status",
+                  "postedWithoutDocument",
+                  "openExceptions"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "reconciliation": {
+              "$ref": "schemas-dimensions_cfo.json#/$defs/Reconciliation"
+            }
+          },
+          "required": [
+            "schemaVersion",
+            "scope",
+            "status",
+            "asOf",
+            "from",
+            "to",
+            "companies",
+            "partial",
+            "mode",
+            "aggregate",
+            "limitations",
+            "rows",
+            "page",
+            "freshness",
+            "evidenceCompleteness",
+            "reconciliation"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "schemaVersion": {
+              "const": "rentemester-cfo-analytics-v1"
+            },
+            "scope": {
+              "const": "group"
+            },
+            "status": {
+              "enum": [
+                "ready",
+                "unsupported"
+              ]
+            },
+            "asOf": {
+              "type": "string"
+            },
+            "limitations": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "group": {
+              "oneOf": [
+                {
+                  "$ref": "schemas-dimensions_cfo.json#/$defs/ConsolidatedGroup"
+                },
+                {
+                  "$ref": "schemas-dimensions_cfo.json#/$defs/UnsupportedGroup"
+                }
+              ]
+            }
+          },
+          "required": [
+            "schemaVersion",
+            "scope",
+            "status",
+            "asOf",
+            "limitations",
+            "group"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "OriginalRead89_cfo_analytics_query_SuccessEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "data": {
+          "$ref": "schemas-dimensions_cfo.json#/$defs/OriginalRead89_cfo_analytics_query_Data"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0
+        }
+      },
+      "required": [
+        "ok",
+        "data",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalRead89_cfo_analytics_query_FailureEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "code": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalRead89_cfo_analytics_query_Success": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-dimensions_cfo.json#/$defs/OriginalRead89_cfo_analytics_query_Id"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "const": false
+            },
+            "content": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "const": "text"
+                  },
+                  "text": {
+                    "type": "string",
+                    "contentMediaType": "application/json",
+                    "contentSchema": {
+                      "$ref": "schemas-dimensions_cfo.json#/$defs/OriginalRead89_cfo_analytics_query_SuccessEnvelope"
+                    }
+                  }
+                },
+                "required": [
+                  "type",
+                  "text"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "$ref": "schemas-dimensions_cfo.json#/$defs/OriginalRead89_cfo_analytics_query_SuccessEnvelope"
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalRead89_cfo_analytics_query_Failure": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-dimensions_cfo.json#/$defs/OriginalRead89_cfo_analytics_query_Id"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "const": true
+            },
+            "content": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "const": "text"
+                  },
+                  "text": {
+                    "type": "string",
+                    "contentMediaType": "application/json",
+                    "contentSchema": {
+                      "$ref": "schemas-dimensions_cfo.json#/$defs/OriginalRead89_cfo_analytics_query_FailureEnvelope"
+                    }
+                  }
+                },
+                "required": [
+                  "type",
+                  "text"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "$ref": "schemas-dimensions_cfo.json#/$defs/OriginalRead89_cfo_analytics_query_FailureEnvelope"
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalRead89_cfo_analytics_query_Parse": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "type": "null"
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32700
+                },
+                "message": {
+                  "enum": [
+                    "invalid or oversized newline-delimited message",
+                    "invalid JSON",
+                    "message exceeds tool frame bound; only named original uploads/ownership/consolidation proposals admit larger bounded frames"
+                  ]
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-dimensions_cfo.json#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32600
+                },
+                "message": {
+                  "enum": [
+                    "expected one JSON-RPC object",
+                    "invalid JSON-RPC request",
+                    "request id already used",
+                    "already initialized"
+                  ]
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-dimensions_cfo.json#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32000
+                },
+                "message": {
+                  "enum": [
+                    "session request limit reached; reconnect"
+                  ]
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-dimensions_cfo.json#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "enum": [
+                    "expected params object",
+                    "initialize requires protocolVersion, capabilities and clientInfo",
+                    "task execution not supported",
+                    "tool name required",
+                    "expected arguments object"
+                  ]
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-dimensions_cfo.json#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32002
+                },
+                "message": {
+                  "enum": [
+                    "initialize and notifications/initialized required"
+                  ]
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-dimensions_cfo.json#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32601
+                },
+                "message": {
+                  "enum": [
+                    "method not found"
+                  ]
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-dimensions_cfo.json#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "enum": [
+                    "invalid original CFO arguments"
+                  ]
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        }
+      ]
     }
   }
 }
