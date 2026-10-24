@@ -1,0 +1,205 @@
+{
+  "issue": 677,
+  "partition": "dimensions_cfo",
+  "status": "specified",
+  "unresolved": [],
+  "operationCount": 64,
+  "method": "Graphify query FIRST, then actual Rust native/original HTTP, global CLI/MCP guard, SDK transport and application/host/storage producers. Source-only; no Cargo/server/provider/effect replay.",
+  "sourceRefs": [
+    {
+      "path": "crates/rentemester-engine/src/cfo_analytics.rs",
+      "sha256": "59b5f3f0863c0d989aacca924debcbbb2d3ad722b47b22ad68d0ed7c47c21629",
+      "needle": "pub fn render("
+    },
+    {
+      "path": "crates/rentemester-storage/src/cfo_analytics.rs",
+      "sha256": "9333d825c8cd44a96ce606d50821862836a0ce4290d30d7ffe919864c40de677",
+      "needle": "pub fn collect_with_archives("
+    },
+    {
+      "path": "crates/rentemester-application/src/cfo_analytics.rs",
+      "sha256": "72693d74fed0166baa1c8be0ff48b0a182c94c6b1843a8b1ea36dcd6914e05ac",
+      "needle": "pub fn authorize("
+    },
+    {
+      "path": "crates/rentemester-host/src/cfo_analytics.rs",
+      "sha256": "a9c170f01f1b3b5ce1282acd44bb67d3b3e0d0a7543b855b0b784a5351c19212",
+      "needle": "pub fn cfo_analytics("
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http/cfo_analytics.rs",
+      "sha256": "02faba9f61cebe660afede9eff5466492c6e8f876d56fb030acc2defa6015739",
+      "needle": "pub(super) async fn handle("
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http.rs",
+      "sha256": "d008f013390a87c467b929b094abb4e23cc9921a72a2665d8df4d4dcbc537390",
+      "needle": "fn proof("
+    },
+    {
+      "path": "crates/rentemester-engine/src/consolidation.rs",
+      "sha256": "2f512ca54f1a2c56212746036661662f13422fc3e364af89e27be4b656faf1f9",
+      "needle": "\"scope\":\"consolidated-report\""
+    },
+    {
+      "path": "crates/rentemester-storage/src/dimensions.rs",
+      "sha256": "1f9fa531a49208bf3be61c78f2d3b5b7a348a5977c0951cc44d117ef732d6ae9",
+      "needle": "pub fn definitions("
+    },
+    {
+      "path": "crates/rentemester-application/src/dimensions.rs",
+      "sha256": "a1019ae8381b5dbf1adce60adc2125595b103352802cab1fbdc6db4a0062585a",
+      "needle": "pub fn execute("
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http/dimensions.rs",
+      "sha256": "14400f9444bffb39f5534e127f22cef1b404c34b501a3ca6d8fdf11c5ac7cbfa",
+      "needle": "pub(super) async fn handle("
+    },
+    {
+      "path": "crates/rentemester-application/src/control_fence.rs",
+      "sha256": "e5b1f8902693d649fc1a46e0c66dc902622781f2c9f65e051e6ed7df11e1ffa6",
+      "needle": "pub(crate) fn execute_cookie_subject"
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http/documents.rs",
+      "sha256": "d6a25bf8f5b30b338a2734805d5a5219ed9bb8de118eeb491ad849df057d5acc",
+      "needle": "pub(super) fn outcome<T>"
+    },
+    {
+      "path": "crates/rentemester-host/src/lib.rs",
+      "sha256": "29e700859157eee32bfab98faeb122abbd2d830edbe6e84b2983eaac4fc324cd",
+      "needle": "pub fn dimensions("
+    },
+    {
+      "path": "crates/rentemester-storage/src/dimensions.rs",
+      "sha256": "1f9fa531a49208bf3be61c78f2d3b5b7a348a5977c0951cc44d117ef732d6ae9",
+      "needle": "pub fn members("
+    },
+    {
+      "path": "crates/rentemester-storage/src/dimensions.rs",
+      "sha256": "1f9fa531a49208bf3be61c78f2d3b5b7a348a5977c0951cc44d117ef732d6ae9",
+      "needle": "pub fn assignments("
+    },
+    {
+      "path": "crates/rentemester-application/src/dimensions_original.rs",
+      "sha256": "d743f123c2241504cdf22ea937376794a5a0460e3668eecc19b459e57f22ff74",
+      "needle": "pub fn execute("
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http/dimensions_original.rs",
+      "sha256": "8a75bf9a8f9d38de7497f14293819f0da5b731037410590edc4ac548d913b160",
+      "needle": "pub(super) async fn handle("
+    },
+    {
+      "path": "crates/rentemester-host/src/dimensions_original.rs",
+      "sha256": "da0b924187c10cc8083f16c52796a32a3299433b358702e46829224e5c6c5599",
+      "needle": "pub fn original_dimensions("
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http/service_company.rs",
+      "sha256": "05a672ed51a2c952aba3f7d40ca15bcb0295fdcb907659f84e48dccf79100741",
+      "needle": "pub(super) fn proof("
+    },
+    {
+      "path": "crates/rentemester-storage/src/dimensions/original.rs",
+      "sha256": "e8158c6df7d2f2ff913edffe29f266f2a7efc412d19be7cd318fb3ece97a3c68",
+      "needle": "pub fn budgets("
+    },
+    {
+      "path": "crates/rentemester-storage/src/dimensions.rs",
+      "sha256": "1f9fa531a49208bf3be61c78f2d3b5b7a348a5977c0951cc44d117ef732d6ae9",
+      "needle": "pub fn apply("
+    },
+    {
+      "path": "crates/rentemester-storage/src/dimensions.rs",
+      "sha256": "1f9fa531a49208bf3be61c78f2d3b5b7a348a5977c0951cc44d117ef732d6ae9",
+      "needle": "pub fn master("
+    },
+    {
+      "path": "crates/rentemester-storage/src/dimensions.rs",
+      "sha256": "1f9fa531a49208bf3be61c78f2d3b5b7a348a5977c0951cc44d117ef732d6ae9",
+      "needle": "pub fn plan("
+    },
+    {
+      "path": "crates/rentemester-storage/src/dimensions.rs",
+      "sha256": "1f9fa531a49208bf3be61c78f2d3b5b7a348a5977c0951cc44d117ef732d6ae9",
+      "needle": "pub fn supersede("
+    },
+    {
+      "path": "crates/rentemester-storage/src/dimensions/original.rs",
+      "sha256": "e8158c6df7d2f2ff913edffe29f266f2a7efc412d19be7cd318fb3ece97a3c68",
+      "needle": "pub fn budget_apply("
+    },
+    {
+      "path": "crates/rentemester-storage/src/dimensions/original.rs",
+      "sha256": "e8158c6df7d2f2ff913edffe29f266f2a7efc412d19be7cd318fb3ece97a3c68",
+      "needle": "pub fn budget_plan("
+    },
+    {
+      "path": "crates/rentemester-client/src/dimensions_original.rs",
+      "sha256": "192df4257bc5082f1416d6cfdf703f9692081cf496f188fc3179a62c3283f1f3",
+      "needle": "impl ApiClient {"
+    },
+    {
+      "path": "crates/rentemester-cli/src/dimensions_original.rs",
+      "sha256": "85be9aeb5962f474724620c51898f083135d5e06632fdd14a241bc68b0880977",
+      "needle": "pub fn execute("
+    },
+    {
+      "path": "crates/rentemester-cli/src/main.rs",
+      "sha256": "54af368bcb6d626d1ac0378727f6a34761244a21a86b6f5d67e47c27c8f432a6",
+      "needle": "local_binding::prepare(args)"
+    },
+    {
+      "path": "crates/rentemester-cli/src/local_binding.rs",
+      "sha256": "94d26249352df53d80d468019ee93e1353394db4ce1c6728491fa6c4e2589dfd",
+      "needle": "pub fn prepare("
+    },
+    {
+      "path": "crates/rentemester-cli/src/remote.rs",
+      "sha256": "9a0d2ee8c626321459749c22642936ad07f9934a4e47eb3c4dc90ad18c7d2e91",
+      "needle": "pub(crate) fn client_error("
+    },
+    {
+      "path": "crates/rentemester-cli/src/original_args.rs",
+      "sha256": "2c8c75a6d4176182e5c0871941d9979b1a15d6848c70b7b281cade3927355a74",
+      "needle": "pub fn option("
+    },
+    {
+      "path": "crates/rentemester-client/src/cfo_analytics.rs",
+      "sha256": "38aa954abd06ebe2529966ca8cf8132e976404caecbe61ec9fb7c191126d469e",
+      "needle": "impl ApiClient {"
+    },
+    {
+      "path": "crates/rentemester-cli/src/cfo_analytics.rs",
+      "sha256": "6b54980f37367d3a8daa1f403c11b7281d45dce972c7eb227b810fee576c71a8",
+      "needle": "pub fn run("
+    },
+    {
+      "path": "crates/rentemester-mcp/src/cfo_analytics.rs",
+      "sha256": "e4378f4cc06c553184896bb783b801de48c5141418961fc2850531a638eb97a9",
+      "needle": "pub async fn call("
+    },
+    {
+      "path": "crates/rentemester-mcp/src/tools.rs",
+      "sha256": "8035dc45f8d22d902c18e17b4508ca572f8505dc83a1961fa355dfd1f34c1397",
+      "needle": "if !args.is_object()"
+    },
+    {
+      "path": "crates/rentemester-mcp/src/main.rs",
+      "sha256": "db7b771d69e02d3802906d65437dad8523fd9114ae15e7d3ef33dc696d4e831f",
+      "needle": "impl Session {"
+    },
+    {
+      "path": "crates/rentemester-mcp/src/dimensions_original.rs",
+      "sha256": "f4b93069943d6d7d51f96375e2119ed79240c685a6722158a4cc92bbcc466c93",
+      "needle": "pub async fn call("
+    }
+  ],
+  "acceptance": "Existing strict oracle checks source hashes and shapes, not semantic or runtime acceptance; lead owns integration/acceptance. All55/J01-J07/finaldesktop/release/cutover/retirement remain; no global issue closure.",
+  "checks": {
+    "strictOracle": "PASS exactselected dimensions_cfo 64 resolved sourcebound schema contracts; semanticreview required; whole677 remains open",
+    "graphifyExtract": "Completed --code-only --no-cluster under independent SGD_BUILD_DIR/graphify (34009 nodes,107681 edges); generated observations outside owned code."
+  }
+}

@@ -1,0 +1,7554 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "schemas-dimensions_cfo.json",
+  "$defs": {
+    "Empty": {
+      "type": "object",
+      "properties": {},
+      "required": [],
+      "additionalProperties": false
+    },
+    "SignedId": {
+      "type": "integer",
+      "minimum": -9223372036854775808,
+      "maximum": 9223372036854775807
+    },
+    "SafeId": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 9007199254740991
+    },
+    "Money": {
+      "type": "string",
+      "pattern": "^-?[0-9]+\\.[0-9]{2}$"
+    },
+    "Hash": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "Allocation": {
+      "type": "object",
+      "properties": {
+        "dimensionId": {
+          "type": "string"
+        },
+        "memberId": {
+          "type": "string"
+        },
+        "amountMinor": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "currency": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "dimensionId",
+        "memberId",
+        "amountMinor",
+        "currency"
+      ],
+      "additionalProperties": false
+    },
+    "MasterObject": {
+      "type": "object",
+      "properties": {
+        "confirm": {
+          "type": "boolean"
+        },
+        "dimensionId": {
+          "type": "string"
+        },
+        "kind": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "memberId": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "status": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "effectiveFrom": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "effectiveTo": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "action": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "supersedesId": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "confirm",
+        "dimensionId"
+      ],
+      "additionalProperties": false
+    },
+    "AssignmentObject": {
+      "type": "object",
+      "properties": {
+        "journalLineId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "allocations": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-dimensions_cfo.json#/$defs/AllocationHttp"
+          }
+        },
+        "source": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sourceRef": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "planHash": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "idempotencyKey": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "reason": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "reviewedImport": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "confirm": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "expectedAssignmentId": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "journalLineId",
+        "allocations"
+      ],
+      "additionalProperties": false
+    },
+    "SupersedeObject": {
+      "type": "object",
+      "properties": {
+        "confirm": {
+          "type": "boolean"
+        },
+        "assignmentId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "reason": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "confirm",
+        "assignmentId",
+        "reason"
+      ],
+      "additionalProperties": false
+    },
+    "MasterTuple": {
+      "type": "array",
+      "prefixItems": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "string"
+        },
+        {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      ],
+      "minItems": 10,
+      "maxItems": 10
+    },
+    "MasterHttp": {
+      "oneOf": [
+        {
+          "$ref": "schemas-dimensions_cfo.json#/$defs/MasterObject"
+        },
+        {
+          "$ref": "schemas-dimensions_cfo.json#/$defs/MasterTuple"
+        }
+      ]
+    },
+    "AssignmentTuple": {
+      "type": "array",
+      "prefixItems": [
+        {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-dimensions_cfo.json#/$defs/AllocationHttp"
+          }
+        },
+        {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      ],
+      "minItems": 10,
+      "maxItems": 10
+    },
+    "AssignmentHttp": {
+      "oneOf": [
+        {
+          "$ref": "schemas-dimensions_cfo.json#/$defs/AssignmentObject"
+        },
+        {
+          "$ref": "schemas-dimensions_cfo.json#/$defs/AssignmentTuple"
+        }
+      ]
+    },
+    "SupersedeTuple": {
+      "type": "array",
+      "prefixItems": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        {
+          "type": "string"
+        }
+      ],
+      "minItems": 3,
+      "maxItems": 3
+    },
+    "SupersedeHttp": {
+      "oneOf": [
+        {
+          "$ref": "schemas-dimensions_cfo.json#/$defs/SupersedeObject"
+        },
+        {
+          "$ref": "schemas-dimensions_cfo.json#/$defs/SupersedeTuple"
+        }
+      ]
+    },
+    "Plan": {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "const": "rentemester-accounting-dimensions-v1"
+        },
+        "journalLineId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "journalEntryId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "journalEntryHash": {
+          "type": "string"
+        },
+        "lineCurrency": {
+          "type": "string"
+        },
+        "lineAmountMinor": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "allocations": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-dimensions_cfo.json#/$defs/Allocation"
+          },
+          "minItems": 1
+        },
+        "source": {
+          "enum": [
+            "reviewed",
+            "imported"
+          ]
+        },
+        "sourceRef": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "planHash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "journalLineId",
+        "journalEntryId",
+        "journalEntryHash",
+        "lineCurrency",
+        "lineAmountMinor",
+        "allocations",
+        "source",
+        "sourceRef",
+        "planHash"
+      ],
+      "additionalProperties": false
+    },
+    "BudgetAllocation": {
+      "type": "object",
+      "properties": {
+        "dimensionId": {
+          "type": "string"
+        },
+        "memberId": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 90071992547409.9,
+          "multipleOf": 0.01
+        }
+      },
+      "required": [
+        "dimensionId",
+        "memberId",
+        "amount"
+      ],
+      "additionalProperties": false
+    },
+    "BudgetPlan": {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "const": "rentemester-dimension-budget-v1"
+        },
+        "accountNo": {
+          "type": "string"
+        },
+        "period": {
+          "type": "string"
+        },
+        "accountBudget": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 90071992547409.9,
+          "multipleOf": 0.01
+        },
+        "allocations": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-dimensions_cfo.json#/$defs/BudgetAllocation"
+          },
+          "minItems": 1
+        },
+        "sourceRef": {
+          "type": "string"
+        },
+        "planHash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "accountNo",
+        "period",
+        "accountBudget",
+        "allocations",
+        "sourceRef",
+        "planHash"
+      ],
+      "additionalProperties": false
+    },
+    "PlanSuccess": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "plan": {
+          "$ref": "schemas-dimensions_cfo.json#/$defs/Plan"
+        }
+      },
+      "required": [
+        "ok",
+        "plan"
+      ],
+      "additionalProperties": false
+    },
+    "BudgetPlanSuccess": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "plan": {
+          "$ref": "schemas-dimensions_cfo.json#/$defs/BudgetPlan"
+        }
+      },
+      "required": [
+        "ok",
+        "plan"
+      ],
+      "additionalProperties": false
+    },
+    "MasterSuccess": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "id": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "idempotent": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "ok",
+        "id",
+        "idempotent"
+      ],
+      "additionalProperties": false
+    },
+    "ApplySuccess": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "id": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "idempotent": {
+          "type": "boolean"
+        },
+        "planHash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      },
+      "required": [
+        "ok",
+        "id",
+        "idempotent",
+        "planHash"
+      ],
+      "additionalProperties": false
+    },
+    "NativeApplySuccess": {
+      "oneOf": [
+        {
+          "$ref": "schemas-dimensions_cfo.json#/$defs/ApplySuccess"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "id": {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            "supersededId": {
+              "type": "null"
+            },
+            "idempotent": {
+              "const": false
+            },
+            "planHash": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            }
+          },
+          "required": [
+            "ok",
+            "id",
+            "supersededId",
+            "idempotent",
+            "planHash"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "ReplaceSuccess": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "id": {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            "idempotent": {
+              "const": true
+            },
+            "planHash": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            }
+          },
+          "required": [
+            "ok",
+            "id",
+            "idempotent",
+            "planHash"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "id": {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            "supersededId": {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            "idempotent": {
+              "const": false
+            },
+            "planHash": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            }
+          },
+          "required": [
+            "ok",
+            "id",
+            "supersededId",
+            "idempotent",
+            "planHash"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "BudgetApplySuccess": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "ids": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": -9223372036854775808,
+            "maximum": 9223372036854775807
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "idempotent": {
+          "type": "boolean"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0
+        }
+      },
+      "required": [
+        "ok",
+        "ids",
+        "idempotent",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "DefinitionRow": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "actor": {
+          "type": "string"
+        },
+        "principal": {
+          "type": "string"
+        },
+        "created_at": {
+          "type": "string"
+        },
+        "dimension_id": {
+          "type": "string"
+        },
+        "kind": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "active",
+            "inactive",
+            "superseded"
+          ]
+        },
+        "event_type": {
+          "enum": [
+            "defined",
+            "activated",
+            "deactivated",
+            "renamed",
+            "superseded"
+          ]
+        },
+        "supersedes_dimension_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "actor",
+        "principal",
+        "created_at",
+        "dimension_id",
+        "kind",
+        "name",
+        "status",
+        "event_type",
+        "supersedes_dimension_id"
+      ],
+      "additionalProperties": false
+    },
+    "MemberRow": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "actor": {
+          "type": "string"
+        },
+        "principal": {
+          "type": "string"
+        },
+        "created_at": {
+          "type": "string"
+        },
+        "dimension_id": {
+          "type": "string"
+        },
+        "member_id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "active",
+            "inactive",
+            "superseded"
+          ]
+        },
+        "effective_from": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "effective_to": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "event_type": {
+          "enum": [
+            "defined",
+            "activated",
+            "deactivated",
+            "renamed",
+            "superseded"
+          ]
+        },
+        "supersedes_member_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "actor",
+        "principal",
+        "created_at",
+        "dimension_id",
+        "member_id",
+        "name",
+        "status",
+        "effective_from",
+        "effective_to",
+        "event_type",
+        "supersedes_member_id"
+      ],
+      "additionalProperties": false
+    },
+    "AssignmentRow": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "actor": {
+          "type": "string"
+        },
+        "principal": {
+          "type": "string"
+        },
+        "created_at": {
+          "type": "string"
+        },
+        "journal_line_id": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "journal_entry_id": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "journal_entry_hash": {
+          "type": "string"
+        },
+        "line_currency": {
+          "type": "string"
+        },
+        "line_amount_minor": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "allocations_json": {
+          "type": "string",
+          "description": "Stored JSON text, not a JSON array on the wire; canonical allocations at creation, validated stored json_valid history on read."
+        },
+        "source": {
+          "enum": [
+            "reviewed",
+            "imported"
+          ]
+        },
+        "plan_hash": {
+          "type": "string"
+        },
+        "event_type": {
+          "enum": [
+            "assigned",
+            "superseded"
+          ]
+        },
+        "supersedes_assignment_id": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "idempotency_key": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "reason": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "source_ref": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "actor",
+        "principal",
+        "created_at",
+        "journal_line_id",
+        "journal_entry_id",
+        "journal_entry_hash",
+        "line_currency",
+        "line_amount_minor",
+        "allocations_json",
+        "source",
+        "plan_hash",
+        "event_type",
+        "supersedes_assignment_id",
+        "idempotency_key",
+        "reason",
+        "source_ref"
+      ],
+      "additionalProperties": false
+    },
+    "BudgetRow": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "actor": {
+          "type": "string"
+        },
+        "principal": {
+          "type": "string"
+        },
+        "created_at": {
+          "type": "string"
+        },
+        "dimension_id": {
+          "type": "string"
+        },
+        "member_id": {
+          "type": "string"
+        },
+        "account_no": {
+          "type": "string"
+        },
+        "period": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 90071992547409.9,
+          "multipleOf": 0.01
+        },
+        "source_ref": {
+          "type": "string"
+        },
+        "plan_hash": {
+          "type": "string"
+        },
+        "event_type": {
+          "const": "allocated"
+        },
+        "supersedes_budget_id": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "idempotency_key": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "reason": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "actor",
+        "principal",
+        "created_at",
+        "dimension_id",
+        "member_id",
+        "account_no",
+        "period",
+        "amount",
+        "source_ref",
+        "plan_hash",
+        "event_type",
+        "supersedes_budget_id",
+        "idempotency_key",
+        "reason"
+      ],
+      "additionalProperties": false
+    },
+    "DefinitionListSuccess": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "definitions": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-dimensions_cfo.json#/$defs/DefinitionRow"
+          }
+        }
+      },
+      "required": [
+        "ok",
+        "definitions"
+      ],
+      "additionalProperties": false
+    },
+    "MemberListSuccess": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "members": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-dimensions_cfo.json#/$defs/MemberRow"
+          }
+        }
+      },
+      "required": [
+        "ok",
+        "members"
+      ],
+      "additionalProperties": false
+    },
+    "AssignmentListSuccess": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "assignments": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-dimensions_cfo.json#/$defs/AssignmentRow"
+          }
+        }
+      },
+      "required": [
+        "ok",
+        "assignments"
+      ],
+      "additionalProperties": false
+    },
+    "BudgetListSuccess": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "budgets": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-dimensions_cfo.json#/$defs/BudgetRow"
+          }
+        }
+      },
+      "required": [
+        "ok",
+        "budgets"
+      ],
+      "additionalProperties": false
+    },
+    "BusinessFailure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        }
+      },
+      "required": [
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "NativeFailure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "type": "string"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "maxItems": 1
+        }
+      },
+      "required": [
+        "ok",
+        "code",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "UnknownFailure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "const": "outcome_unknown"
+        },
+        "outcome": {
+          "const": "unknown"
+        },
+        "errors": {
+          "const": [
+            "Write outcome unknown; read canonical dimensions before another action"
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "code",
+        "outcome",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Sdk_define": {
+      "type": "object",
+      "properties": {
+        "dimensionId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "x-validation": "nonblank; no control characters; Unicode scalar count bound"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160,
+          "x-validation": "nonblank; no control characters; Unicode scalar count bound"
+        },
+        "kind": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "x-validation": "nonblank; no control characters; Unicode scalar count bound"
+        },
+        "confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "dimensionId",
+        "name",
+        "kind",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "Http_define": {
+      "type": "object",
+      "properties": {
+        "dimensionId": {
+          "type": "string"
+        },
+        "name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "kind": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "confirm": {
+          "type": "boolean"
+        },
+        "actor": {
+          "type": "string"
+        },
+        "principal": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "dimensionId",
+        "name",
+        "kind",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "Mcp_define": {
+      "type": "object",
+      "properties": {
+        "dimensionId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "x-validation": "nonblank; no control characters; Unicode scalar count bound"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160,
+          "x-validation": "nonblank; no control characters; Unicode scalar count bound"
+        },
+        "kind": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "x-validation": "nonblank; no control characters; Unicode scalar count bound"
+        },
+        "confirm": {
+          "type": "boolean"
+        },
+        "company": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9_-]+$"
+        }
+      },
+      "required": [
+        "company",
+        "dimensionId",
+        "name",
+        "kind"
+      ],
+      "additionalProperties": false
+    },
+    "Sdk_member": {
+      "type": "object",
+      "properties": {
+        "dimensionId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "x-validation": "nonblank; no control characters; Unicode scalar count bound"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160,
+          "x-validation": "nonblank; no control characters; Unicode scalar count bound"
+        },
+        "memberId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "x-validation": "nonblank; no control characters; Unicode scalar count bound"
+        },
+        "status": {
+          "enum": [
+            "active",
+            "inactive"
+          ]
+        },
+        "effectiveFrom": {
+          "type": "string",
+          "format": "date"
+        },
+        "effectiveTo": {
+          "type": "string",
+          "format": "date"
+        },
+        "confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "dimensionId",
+        "memberId",
+        "name",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "Http_member": {
+      "type": "object",
+      "properties": {
+        "dimensionId": {
+          "type": "string"
+        },
+        "name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "memberId": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "status": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "effectiveFrom": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "effectiveTo": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "confirm": {
+          "type": "boolean"
+        },
+        "actor": {
+          "type": "string"
+        },
+        "principal": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "dimensionId",
+        "memberId",
+        "name",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "Mcp_member": {
+      "type": "object",
+      "properties": {
+        "dimensionId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "x-validation": "nonblank; no control characters; Unicode scalar count bound"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160,
+          "x-validation": "nonblank; no control characters; Unicode scalar count bound"
+        },
+        "memberId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "x-validation": "nonblank; no control characters; Unicode scalar count bound"
+        },
+        "status": {
+          "enum": [
+            "active",
+            "inactive"
+          ]
+        },
+        "effectiveFrom": {
+          "type": "string",
+          "format": "date"
+        },
+        "effectiveTo": {
+          "type": "string",
+          "format": "date"
+        },
+        "confirm": {
+          "type": "boolean"
+        },
+        "company": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9_-]+$"
+        }
+      },
+      "required": [
+        "company",
+        "dimensionId",
+        "memberId",
+        "name"
+      ],
+      "additionalProperties": false
+    },
+    "Sdk_definition-lifecycle": {
+      "type": "object",
+      "properties": {
+        "dimensionId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "x-validation": "nonblank; no control characters; Unicode scalar count bound"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160,
+          "x-validation": "nonblank; no control characters; Unicode scalar count bound"
+        },
+        "action": {
+          "enum": [
+            "activate",
+            "deactivate",
+            "rename",
+            "supersede"
+          ]
+        },
+        "supersedesId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "x-validation": "nonblank; no control characters; Unicode scalar count bound"
+        },
+        "confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "dimensionId",
+        "action",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "Http_definition-lifecycle": {
+      "type": "object",
+      "properties": {
+        "dimensionId": {
+          "type": "string"
+        },
+        "name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "action": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "supersedesId": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "confirm": {
+          "type": "boolean"
+        },
+        "actor": {
+          "type": "string"
+        },
+        "principal": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "dimensionId",
+        "action",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "Mcp_definition-lifecycle": {
+      "type": "object",
+      "properties": {
+        "dimensionId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "x-validation": "nonblank; no control characters; Unicode scalar count bound"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160,
+          "x-validation": "nonblank; no control characters; Unicode scalar count bound"
+        },
+        "action": {
+          "enum": [
+            "activate",
+            "deactivate",
+            "rename",
+            "supersede"
+          ]
+        },
+        "supersedesId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "x-validation": "nonblank; no control characters; Unicode scalar count bound"
+        },
+        "confirm": {
+          "type": "boolean"
+        },
+        "company": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9_-]+$"
+        }
+      },
+      "required": [
+        "company",
+        "dimensionId",
+        "action"
+      ],
+      "additionalProperties": false
+    },
+    "Sdk_member-lifecycle": {
+      "type": "object",
+      "properties": {
+        "dimensionId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "x-validation": "nonblank; no control characters; Unicode scalar count bound"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160,
+          "x-validation": "nonblank; no control characters; Unicode scalar count bound"
+        },
+        "memberId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "x-validation": "nonblank; no control characters; Unicode scalar count bound"
+        },
+        "action": {
+          "enum": [
+            "activate",
+            "deactivate",
+            "rename",
+            "supersede"
+          ]
+        },
+        "supersedesId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "x-validation": "nonblank; no control characters; Unicode scalar count bound"
+        },
+        "confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "dimensionId",
+        "memberId",
+        "action",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "Http_member-lifecycle": {
+      "type": "object",
+      "properties": {
+        "dimensionId": {
+          "type": "string"
+        },
+        "name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "memberId": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "action": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "supersedesId": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "confirm": {
+          "type": "boolean"
+        },
+        "actor": {
+          "type": "string"
+        },
+        "principal": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "dimensionId",
+        "memberId",
+        "action",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "Mcp_member-lifecycle": {
+      "type": "object",
+      "properties": {
+        "dimensionId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "x-validation": "nonblank; no control characters; Unicode scalar count bound"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160,
+          "x-validation": "nonblank; no control characters; Unicode scalar count bound"
+        },
+        "memberId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "x-validation": "nonblank; no control characters; Unicode scalar count bound"
+        },
+        "action": {
+          "enum": [
+            "activate",
+            "deactivate",
+            "rename",
+            "supersede"
+          ]
+        },
+        "supersedesId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "x-validation": "nonblank; no control characters; Unicode scalar count bound"
+        },
+        "confirm": {
+          "type": "boolean"
+        },
+        "company": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9_-]+$"
+        }
+      },
+      "required": [
+        "company",
+        "dimensionId",
+        "memberId",
+        "action"
+      ],
+      "additionalProperties": false
+    },
+    "Sdk_definitions": {
+      "type": "object",
+      "properties": {},
+      "required": [],
+      "additionalProperties": false
+    },
+    "Http_definitions": {
+      "type": "object",
+      "properties": {},
+      "required": [],
+      "additionalProperties": false
+    },
+    "Mcp_definitions": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9_-]+$"
+        }
+      },
+      "required": [
+        "company"
+      ],
+      "additionalProperties": false
+    },
+    "Sdk_members": {
+      "type": "object",
+      "properties": {
+        "dimensionId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "x-validation": "nonblank; no control characters; Unicode scalar count bound"
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "Http_members": {
+      "type": "object",
+      "properties": {
+        "dimensionId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "x-validation": "nonblank; no control characters; Unicode scalar count bound"
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "Mcp_members": {
+      "type": "object",
+      "properties": {
+        "dimensionId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "x-validation": "nonblank; no control characters; Unicode scalar count bound"
+        },
+        "company": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9_-]+$"
+        }
+      },
+      "required": [
+        "company"
+      ],
+      "additionalProperties": false
+    },
+    "Sdk_plan": {
+      "type": "object",
+      "properties": {
+        "allocations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "dimensionId": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "x-validation": "nonblank; no control characters; Unicode scalar count bound"
+              },
+              "memberId": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "x-validation": "nonblank; no control characters; Unicode scalar count bound"
+              },
+              "amountMinor": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              },
+              "currency": {
+                "type": "string",
+                "minLength": 3,
+                "maxLength": 3
+              }
+            },
+            "required": [
+              "dimensionId",
+              "memberId",
+              "amountMinor",
+              "currency"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 10000
+        },
+        "sourceRef": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500,
+          "x-validation": "nonblank; no control characters; Unicode scalar count bound"
+        },
+        "journalLineId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "source": {
+          "enum": [
+            "reviewed",
+            "imported"
+          ]
+        },
+        "reviewedImport": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "allocations",
+        "journalLineId"
+      ],
+      "additionalProperties": false
+    },
+    "Http_plan": {
+      "type": "object",
+      "properties": {
+        "allocations": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-dimensions_cfo.json#/$defs/AllocationHttp"
+          }
+        },
+        "sourceRef": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "journalLineId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "source": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "reviewedImport": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "allocations",
+        "journalLineId"
+      ],
+      "additionalProperties": false
+    },
+    "Mcp_plan": {
+      "type": "object",
+      "properties": {
+        "allocations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "dimensionId": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "x-validation": "nonblank; no control characters; Unicode scalar count bound"
+              },
+              "memberId": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "x-validation": "nonblank; no control characters; Unicode scalar count bound"
+              },
+              "amountMinor": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              },
+              "currency": {
+                "type": "string",
+                "minLength": 3,
+                "maxLength": 3
+              }
+            },
+            "required": [
+              "dimensionId",
+              "memberId",
+              "amountMinor",
+              "currency"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 10000
+        },
+        "sourceRef": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500,
+          "x-validation": "nonblank; no control characters; Unicode scalar count bound"
+        },
+        "journalLineId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "source": {
+          "enum": [
+            "reviewed",
+            "imported"
+          ]
+        },
+        "reviewedImport": {
+          "type": "boolean"
+        },
+        "company": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9_-]+$"
+        }
+      },
+      "required": [
+        "company",
+        "allocations",
+        "journalLineId"
+      ],
+      "additionalProperties": false
+    },
+    "Sdk_apply": {
+      "type": "object",
+      "properties": {
+        "allocations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "dimensionId": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "x-validation": "nonblank; no control characters; Unicode scalar count bound"
+              },
+              "memberId": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "x-validation": "nonblank; no control characters; Unicode scalar count bound"
+              },
+              "amountMinor": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              },
+              "currency": {
+                "type": "string",
+                "minLength": 3,
+                "maxLength": 3
+              }
+            },
+            "required": [
+              "dimensionId",
+              "memberId",
+              "amountMinor",
+              "currency"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 10000
+        },
+        "sourceRef": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500,
+          "x-validation": "nonblank; no control characters; Unicode scalar count bound"
+        },
+        "journalLineId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "source": {
+          "enum": [
+            "reviewed",
+            "imported"
+          ]
+        },
+        "reviewedImport": {
+          "type": "boolean"
+        },
+        "planHash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "idempotencyKey": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200,
+          "x-validation": "nonblank; no control characters; Unicode scalar count bound"
+        },
+        "confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "allocations",
+        "journalLineId",
+        "planHash",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "Http_apply": {
+      "type": "object",
+      "properties": {
+        "allocations": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-dimensions_cfo.json#/$defs/AllocationHttp"
+          }
+        },
+        "sourceRef": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "journalLineId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "source": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "reviewedImport": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "planHash": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "idempotencyKey": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "confirm": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "actor": {
+          "type": "string"
+        },
+        "principal": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "allocations",
+        "journalLineId",
+        "planHash",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "Mcp_apply": {
+      "type": "object",
+      "properties": {
+        "allocations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "dimensionId": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "x-validation": "nonblank; no control characters; Unicode scalar count bound"
+              },
+              "memberId": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "x-validation": "nonblank; no control characters; Unicode scalar count bound"
+              },
+              "amountMinor": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              },
+              "currency": {
+                "type": "string",
+                "minLength": 3,
+                "maxLength": 3
+              }
+            },
+            "required": [
+              "dimensionId",
+              "memberId",
+              "amountMinor",
+              "currency"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 10000
+        },
+        "sourceRef": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500,
+          "x-validation": "nonblank; no control characters; Unicode scalar count bound"
+        },
+        "journalLineId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "source": {
+          "enum": [
+            "reviewed",
+            "imported"
+          ]
+        },
+        "reviewedImport": {
+          "type": "boolean"
+        },
+        "planHash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "idempotencyKey": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200,
+          "x-validation": "nonblank; no control characters; Unicode scalar count bound"
+        },
+        "confirm": {
+          "type": "boolean"
+        },
+        "company": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9_-]+$"
+        }
+      },
+      "required": [
+        "company",
+        "allocations",
+        "journalLineId",
+        "planHash"
+      ],
+      "additionalProperties": false
+    },
+    "Sdk_replace": {
+      "type": "object",
+      "properties": {
+        "allocations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "dimensionId": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "x-validation": "nonblank; no control characters; Unicode scalar count bound"
+              },
+              "memberId": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "x-validation": "nonblank; no control characters; Unicode scalar count bound"
+              },
+              "amountMinor": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              },
+              "currency": {
+                "type": "string",
+                "minLength": 3,
+                "maxLength": 3
+              }
+            },
+            "required": [
+              "dimensionId",
+              "memberId",
+              "amountMinor",
+              "currency"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 10000
+        },
+        "sourceRef": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500,
+          "x-validation": "nonblank; no control characters; Unicode scalar count bound"
+        },
+        "journalLineId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "source": {
+          "enum": [
+            "reviewed",
+            "imported"
+          ]
+        },
+        "reviewedImport": {
+          "type": "boolean"
+        },
+        "planHash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "idempotencyKey": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200,
+          "x-validation": "nonblank; no control characters; Unicode scalar count bound"
+        },
+        "expectedAssignmentId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000,
+          "x-validation": "nonblank; no control characters; Unicode scalar count bound"
+        },
+        "confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "allocations",
+        "journalLineId",
+        "planHash",
+        "expectedAssignmentId",
+        "reason",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "Http_replace": {
+      "type": "object",
+      "properties": {
+        "allocations": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-dimensions_cfo.json#/$defs/AllocationHttp"
+          }
+        },
+        "sourceRef": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "journalLineId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "source": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "reviewedImport": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "planHash": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "idempotencyKey": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "expectedAssignmentId": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "reason": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "confirm": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "actor": {
+          "type": "string"
+        },
+        "principal": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "allocations",
+        "journalLineId",
+        "planHash",
+        "expectedAssignmentId",
+        "reason",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "Mcp_replace": {
+      "type": "object",
+      "properties": {
+        "allocations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "dimensionId": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "x-validation": "nonblank; no control characters; Unicode scalar count bound"
+              },
+              "memberId": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "x-validation": "nonblank; no control characters; Unicode scalar count bound"
+              },
+              "amountMinor": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              },
+              "currency": {
+                "type": "string",
+                "minLength": 3,
+                "maxLength": 3
+              }
+            },
+            "required": [
+              "dimensionId",
+              "memberId",
+              "amountMinor",
+              "currency"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 10000
+        },
+        "sourceRef": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500,
+          "x-validation": "nonblank; no control characters; Unicode scalar count bound"
+        },
+        "journalLineId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "source": {
+          "enum": [
+            "reviewed",
+            "imported"
+          ]
+        },
+        "reviewedImport": {
+          "type": "boolean"
+        },
+        "planHash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "idempotencyKey": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200,
+          "x-validation": "nonblank; no control characters; Unicode scalar count bound"
+        },
+        "expectedAssignmentId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000,
+          "x-validation": "nonblank; no control characters; Unicode scalar count bound"
+        },
+        "confirm": {
+          "type": "boolean"
+        },
+        "company": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9_-]+$"
+        }
+      },
+      "required": [
+        "company",
+        "allocations",
+        "journalLineId",
+        "planHash",
+        "expectedAssignmentId",
+        "reason"
+      ],
+      "additionalProperties": false
+    },
+    "Sdk_supersede": {
+      "type": "object",
+      "properties": {
+        "assignmentId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000,
+          "x-validation": "nonblank; no control characters; Unicode scalar count bound"
+        },
+        "confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "assignmentId",
+        "reason",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "Http_supersede": {
+      "type": "object",
+      "properties": {
+        "confirm": {
+          "type": "boolean"
+        },
+        "assignmentId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "reason": {
+          "type": "string"
+        },
+        "actor": {
+          "type": "string"
+        },
+        "principal": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "confirm",
+        "assignmentId",
+        "reason"
+      ],
+      "additionalProperties": false
+    },
+    "Mcp_supersede": {
+      "type": "object",
+      "properties": {
+        "assignmentId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000,
+          "x-validation": "nonblank; no control characters; Unicode scalar count bound"
+        },
+        "confirm": {
+          "type": "boolean"
+        },
+        "company": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9_-]+$"
+        }
+      },
+      "required": [
+        "company",
+        "assignmentId",
+        "reason"
+      ],
+      "additionalProperties": false
+    },
+    "Sdk_list": {
+      "type": "object",
+      "properties": {
+        "journalLineId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "journalLineId"
+      ],
+      "additionalProperties": false
+    },
+    "Http_list": {
+      "type": "object",
+      "properties": {
+        "journalLineId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "journalLineId"
+      ],
+      "additionalProperties": false
+    },
+    "Mcp_list": {
+      "type": "object",
+      "properties": {
+        "journalLineId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "company": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9_-]+$"
+        }
+      },
+      "required": [
+        "company",
+        "journalLineId"
+      ],
+      "additionalProperties": false
+    },
+    "Sdk_budget-plan": {
+      "type": "object",
+      "properties": {
+        "allocations": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-dimensions_cfo.json#/$defs/BudgetAllocation"
+          },
+          "minItems": 1,
+          "maxItems": 10000
+        },
+        "sourceRef": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500,
+          "x-validation": "nonblank; no control characters; Unicode scalar count bound"
+        },
+        "accountNo": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "x-validation": "nonblank; no control characters; Unicode scalar count bound"
+        },
+        "period": {
+          "type": "string",
+          "pattern": "^[0-9]{4}-[0-9]{2}$",
+          "x-validation": "actual calendar month"
+        }
+      },
+      "required": [
+        "allocations",
+        "accountNo",
+        "period",
+        "sourceRef"
+      ],
+      "additionalProperties": false
+    },
+    "Http_budget-plan": {
+      "type": "object",
+      "properties": {
+        "allocations": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-dimensions_cfo.json#/$defs/BudgetAllocationHttp"
+          }
+        },
+        "sourceRef": {
+          "type": "string"
+        },
+        "accountNo": {
+          "type": "string"
+        },
+        "period": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "allocations",
+        "accountNo",
+        "period",
+        "sourceRef"
+      ],
+      "additionalProperties": false
+    },
+    "Mcp_budget-plan": {
+      "type": "object",
+      "properties": {
+        "allocations": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-dimensions_cfo.json#/$defs/BudgetAllocation"
+          },
+          "minItems": 1,
+          "maxItems": 10000
+        },
+        "sourceRef": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500,
+          "x-validation": "nonblank; no control characters; Unicode scalar count bound"
+        },
+        "accountNo": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "x-validation": "nonblank; no control characters; Unicode scalar count bound"
+        },
+        "period": {
+          "type": "string",
+          "pattern": "^[0-9]{4}-[0-9]{2}$",
+          "x-validation": "actual calendar month"
+        },
+        "company": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9_-]+$"
+        }
+      },
+      "required": [
+        "company",
+        "allocations",
+        "accountNo",
+        "period",
+        "sourceRef"
+      ],
+      "additionalProperties": false
+    },
+    "Sdk_budget-apply": {
+      "type": "object",
+      "properties": {
+        "allocations": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-dimensions_cfo.json#/$defs/BudgetAllocation"
+          },
+          "minItems": 1,
+          "maxItems": 10000
+        },
+        "sourceRef": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500,
+          "x-validation": "nonblank; no control characters; Unicode scalar count bound"
+        },
+        "accountNo": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "x-validation": "nonblank; no control characters; Unicode scalar count bound"
+        },
+        "period": {
+          "type": "string",
+          "pattern": "^[0-9]{4}-[0-9]{2}$",
+          "x-validation": "actual calendar month"
+        },
+        "planHash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "idempotencyKey": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200,
+          "x-validation": "nonblank; no control characters; Unicode scalar count bound"
+        },
+        "confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "allocations",
+        "accountNo",
+        "period",
+        "sourceRef",
+        "planHash",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "Http_budget-apply": {
+      "type": "object",
+      "properties": {
+        "allocations": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-dimensions_cfo.json#/$defs/BudgetAllocationHttp"
+          }
+        },
+        "sourceRef": {
+          "type": "string"
+        },
+        "accountNo": {
+          "type": "string"
+        },
+        "period": {
+          "type": "string"
+        },
+        "planHash": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "idempotencyKey": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "confirm": {
+          "type": "boolean"
+        },
+        "actor": {
+          "type": "string"
+        },
+        "principal": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "allocations",
+        "accountNo",
+        "period",
+        "sourceRef",
+        "planHash",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "Mcp_budget-apply": {
+      "type": "object",
+      "properties": {
+        "allocations": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-dimensions_cfo.json#/$defs/BudgetAllocation"
+          },
+          "minItems": 1,
+          "maxItems": 10000
+        },
+        "sourceRef": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500,
+          "x-validation": "nonblank; no control characters; Unicode scalar count bound"
+        },
+        "accountNo": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "x-validation": "nonblank; no control characters; Unicode scalar count bound"
+        },
+        "period": {
+          "type": "string",
+          "pattern": "^[0-9]{4}-[0-9]{2}$",
+          "x-validation": "actual calendar month"
+        },
+        "planHash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "idempotencyKey": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200,
+          "x-validation": "nonblank; no control characters; Unicode scalar count bound"
+        },
+        "confirm": {
+          "type": "boolean"
+        },
+        "company": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9_-]+$"
+        }
+      },
+      "required": [
+        "company",
+        "allocations",
+        "accountNo",
+        "period",
+        "sourceRef",
+        "planHash"
+      ],
+      "additionalProperties": false
+    },
+    "Sdk_budgets": {
+      "type": "object",
+      "properties": {},
+      "required": [],
+      "additionalProperties": false
+    },
+    "Http_budgets": {
+      "type": "object",
+      "properties": {},
+      "required": [],
+      "additionalProperties": false
+    },
+    "Mcp_budgets": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9_-]+$"
+        }
+      },
+      "required": [
+        "company"
+      ],
+      "additionalProperties": false
+    },
+    "AllocationHttp": {
+      "oneOf": [
+        {
+          "$ref": "schemas-dimensions_cfo.json#/$defs/AllocationObject"
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "string"
+            }
+          ],
+          "minItems": 4,
+          "maxItems": 4
+        }
+      ]
+    },
+    "BudgetAllocationHttp": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "dimensionId": {
+              "type": "string"
+            },
+            "memberId": {
+              "type": "string"
+            },
+            "amount": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "dimensionId",
+            "memberId",
+            "amount"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "minItems": 3,
+          "maxItems": 3
+        }
+      ]
+    },
+    "CfoMcp": {
+      "type": "object",
+      "properties": {
+        "scope": {
+          "type": "string"
+        },
+        "from": {
+          "type": "string"
+        },
+        "to": {
+          "type": "string"
+        },
+        "companySlugs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "groupProfileId": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "account": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "party": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "dimension": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "currency": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "aggregate": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "cursor": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "limit": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 65535
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "scope",
+        "from",
+        "to"
+      ],
+      "additionalProperties": false
+    },
+    "CfoQuery": {
+      "type": "object",
+      "properties": {
+        "scope": {
+          "enum": [
+            "company",
+            "portfolio",
+            "group"
+          ]
+        },
+        "from": {
+          "type": "string",
+          "format": "date"
+        },
+        "to": {
+          "type": "string",
+          "format": "date"
+        },
+        "companySlug": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          },
+          "maxItems": 1000
+        },
+        "groupProfileId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "account": {
+          "type": "string",
+          "minLength": 1
+        },
+        "party": {
+          "type": "string",
+          "minLength": 1
+        },
+        "dimension": {
+          "type": "string",
+          "minLength": 1
+        },
+        "currency": {
+          "type": "string",
+          "minLength": 1
+        },
+        "cursor": {
+          "type": "string",
+          "minLength": 1
+        },
+        "aggregate": {
+          "enum": [
+            "none",
+            "sum"
+          ]
+        },
+        "limit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 200
+        }
+      },
+      "required": [
+        "scope",
+        "from",
+        "to"
+      ],
+      "additionalProperties": false
+    },
+    "Dimension": {
+      "type": "object",
+      "properties": {
+        "dimensionId": {
+          "type": "string"
+        },
+        "memberId": {
+          "type": "string"
+        },
+        "amountMinor": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "currency": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "dimensionId",
+        "memberId",
+        "amountMinor",
+        "currency"
+      ],
+      "additionalProperties": false
+    },
+    "PartyLink": {
+      "type": "object",
+      "properties": {
+        "linkId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "role": {
+          "type": "string"
+        },
+        "evidenceKind": {
+          "type": "string"
+        },
+        "planHash": {
+          "type": "string"
+        },
+        "linkedAt": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "linkId",
+        "role",
+        "evidenceKind",
+        "planHash",
+        "linkedAt"
+      ],
+      "additionalProperties": false
+    },
+    "CfoRow": {
+      "type": "object",
+      "properties": {
+        "companySlug": {
+          "type": "string"
+        },
+        "sourceType": {
+          "enum": [
+            "ledger",
+            "archive"
+          ]
+        },
+        "sourceHash": {
+          "type": "string"
+        },
+        "sourceId": {
+          "type": "string"
+        },
+        "journalEntryId": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "journalEntryNo": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "documentId": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "documentHash": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "partyId": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "partyName": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "documentPartyName": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "partyLinkProvenance": {
+          "anyOf": [
+            {
+              "$ref": "schemas-dimensions_cfo.json#/$defs/PartyLink"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "accountNo": {
+          "type": "string"
+        },
+        "accountName": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "transactionDate": {
+          "type": "string"
+        },
+        "currency": {
+          "type": "string"
+        },
+        "amount": {
+          "$ref": "schemas-dimensions_cfo.json#/$defs/Money"
+        },
+        "text": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "dimensions": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-dimensions_cfo.json#/$defs/Dimension"
+          }
+        }
+      },
+      "required": [
+        "companySlug",
+        "sourceType",
+        "sourceHash",
+        "sourceId",
+        "journalEntryId",
+        "journalEntryNo",
+        "documentId",
+        "documentHash",
+        "partyId",
+        "partyName",
+        "documentPartyName",
+        "partyLinkProvenance",
+        "accountNo",
+        "accountName",
+        "transactionDate",
+        "currency",
+        "amount",
+        "text",
+        "dimensions"
+      ],
+      "additionalProperties": false
+    },
+    "Reconciliation": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "rowCount": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "sourceHashes": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "method": {
+              "const": "sum(all matching rows.amount) by verified base currency; every row links to its canonical journal/archive source"
+            },
+            "amountByCurrency": {
+              "type": "object",
+              "properties": {},
+              "required": [],
+              "additionalProperties": {
+                "$ref": "schemas-dimensions_cfo.json#/$defs/Money"
+              }
+            }
+          },
+          "required": [
+            "rowCount",
+            "sourceHashes",
+            "method",
+            "amountByCurrency"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "rowCount": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "sourceHashes": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "method": {
+              "const": "sum(all matching rows.amount) by verified base currency; every row links to its canonical journal/archive source"
+            },
+            "omitted": {
+              "const": "portfolio aggregate not requested or access is partial"
+            }
+          },
+          "required": [
+            "rowCount",
+            "sourceHashes",
+            "method",
+            "omitted"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "CfoCompanySuccess": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "schemaVersion": {
+          "const": "rentemester-cfo-analytics-v1"
+        },
+        "scope": {
+          "enum": [
+            "company",
+            "portfolio"
+          ]
+        },
+        "status": {
+          "enum": [
+            "ready",
+            "incomplete"
+          ]
+        },
+        "asOf": {
+          "type": "string"
+        },
+        "from": {
+          "type": "string"
+        },
+        "to": {
+          "type": "string"
+        },
+        "companies": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "partial": {
+          "type": "boolean"
+        },
+        "mode": {
+          "enum": [
+            "juxtaposed-non-consolidated",
+            "legal-company"
+          ]
+        },
+        "aggregate": {
+          "enum": [
+            "none",
+            "sum"
+          ]
+        },
+        "limitations": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "rows": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-dimensions_cfo.json#/$defs/CfoRow"
+          },
+          "maxItems": 200
+        },
+        "page": {
+          "type": "object",
+          "properties": {
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200
+            },
+            "nextCursor": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": [
+            "limit",
+            "nextCursor"
+          ],
+          "additionalProperties": false
+        },
+        "freshness": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "source": {
+                "type": "string"
+              },
+              "companySlug": {
+                "type": "string"
+              },
+              "latestTransactionDate": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "source",
+              "companySlug",
+              "latestTransactionDate"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "evidenceCompleteness": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "companySlug": {
+                "type": "string"
+              },
+              "status": {
+                "const": "ready"
+              },
+              "postedWithoutDocument": {
+                "type": "integer",
+                "minimum": -9223372036854775808,
+                "maximum": 9223372036854775807
+              },
+              "openExceptions": {
+                "type": "integer",
+                "minimum": -9223372036854775808,
+                "maximum": 9223372036854775807
+              }
+            },
+            "required": [
+              "companySlug",
+              "status",
+              "postedWithoutDocument",
+              "openExceptions"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "reconciliation": {
+          "$ref": "schemas-dimensions_cfo.json#/$defs/Reconciliation"
+        }
+      },
+      "required": [
+        "ok",
+        "schemaVersion",
+        "scope",
+        "status",
+        "asOf",
+        "from",
+        "to",
+        "companies",
+        "partial",
+        "mode",
+        "aggregate",
+        "limitations",
+        "rows",
+        "page",
+        "freshness",
+        "evidenceCompleteness",
+        "reconciliation"
+      ],
+      "additionalProperties": false
+    },
+    "ConsolidatedGroup": {
+      "type": "object",
+      "properties": {
+        "scope": {
+          "const": "consolidated-report"
+        },
+        "profileId": {
+          "type": "string"
+        },
+        "profileHash": {
+          "type": "string"
+        },
+        "groupId": {
+          "type": "string"
+        },
+        "period": {
+          "type": "object",
+          "properties": {
+            "from": {
+              "type": "string"
+            },
+            "to": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "from",
+            "to"
+          ],
+          "additionalProperties": false
+        },
+        "currency": {
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "ready",
+            "blocked"
+          ]
+        },
+        "blockers": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "rawCompanySums": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "lineId": {
+                "type": "string"
+              },
+              "byCompany": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "companySlug": {
+                      "type": "string"
+                    },
+                    "amount": {
+                      "$ref": "schemas-dimensions_cfo.json#/$defs/Money"
+                    },
+                    "sourceHashes": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "required": [
+                    "companySlug",
+                    "amount",
+                    "sourceHashes"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "total": {
+                "$ref": "schemas-dimensions_cfo.json#/$defs/Money"
+              }
+            },
+            "required": [
+              "lineId",
+              "byCompany",
+              "total"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "appliedEliminations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "eliminationId": {
+                "type": "string"
+              },
+              "payloadHash": {
+                "type": "string"
+              },
+              "adjustments": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "lineId": {
+                      "type": "string"
+                    },
+                    "amount": {
+                      "$ref": "schemas-dimensions_cfo.json#/$defs/Money"
+                    }
+                  },
+                  "required": [
+                    "lineId",
+                    "amount"
+                  ],
+                  "additionalProperties": false
+                },
+                "minItems": 2,
+                "maxItems": 2
+              }
+            },
+            "required": [
+              "eliminationId",
+              "payloadHash",
+              "adjustments"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "consolidatedFigures": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "lineId": {
+                    "type": "string"
+                  },
+                  "label": {
+                    "type": "string"
+                  },
+                  "section": {
+                    "type": "string"
+                  },
+                  "rawCompanySum": {
+                    "$ref": "schemas-dimensions_cfo.json#/$defs/Money"
+                  },
+                  "eliminationAdjustment": {
+                    "$ref": "schemas-dimensions_cfo.json#/$defs/Money"
+                  },
+                  "consolidatedAmount": {
+                    "$ref": "schemas-dimensions_cfo.json#/$defs/Money"
+                  }
+                },
+                "required": [
+                  "lineId",
+                  "label",
+                  "section",
+                  "rawCompanySum",
+                  "eliminationAdjustment",
+                  "consolidatedAmount"
+                ],
+                "additionalProperties": false
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sourceSnapshots": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "companySlug": {
+                "type": "string"
+              },
+              "ledgerHeadHash": {
+                "type": "string"
+              },
+              "entryCount": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "integrityScope": {
+                "const": "native_period_sources_and_physical_originals"
+              }
+            },
+            "required": [
+              "companySlug",
+              "ledgerHeadHash",
+              "entryCount",
+              "integrityScope"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "scope",
+        "profileId",
+        "profileHash",
+        "groupId",
+        "period",
+        "currency",
+        "status",
+        "blockers",
+        "rawCompanySums",
+        "appliedEliminations",
+        "consolidatedFigures",
+        "sourceSnapshots"
+      ],
+      "additionalProperties": false
+    },
+    "UnsupportedGroup": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "const": "blocked"
+        },
+        "blockers": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "consolidatedFigures": {
+          "type": "null"
+        },
+        "sourceSnapshots": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0
+        }
+      },
+      "required": [
+        "status",
+        "blockers",
+        "consolidatedFigures",
+        "sourceSnapshots"
+      ],
+      "additionalProperties": false
+    },
+    "CfoGroupSuccess": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "schemaVersion": {
+          "const": "rentemester-cfo-analytics-v1"
+        },
+        "scope": {
+          "const": "group"
+        },
+        "status": {
+          "enum": [
+            "ready",
+            "unsupported"
+          ]
+        },
+        "asOf": {
+          "type": "string"
+        },
+        "limitations": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "group": {
+          "oneOf": [
+            {
+              "$ref": "schemas-dimensions_cfo.json#/$defs/ConsolidatedGroup"
+            },
+            {
+              "$ref": "schemas-dimensions_cfo.json#/$defs/UnsupportedGroup"
+            }
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "schemaVersion",
+        "scope",
+        "status",
+        "asOf",
+        "limitations",
+        "group"
+      ],
+      "additionalProperties": false
+    },
+    "CfoSuccess": {
+      "oneOf": [
+        {
+          "$ref": "schemas-dimensions_cfo.json#/$defs/CfoCompanySuccess"
+        },
+        {
+          "$ref": "schemas-dimensions_cfo.json#/$defs/CfoGroupSuccess"
+        }
+      ]
+    },
+    "CfoCliSuccess": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "data": {
+          "$ref": "schemas-dimensions_cfo.json#/$defs/CfoSuccess"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "CfoReturnedFailure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "data": {
+          "$ref": "schemas-dimensions_cfo.json#/$defs/NativeFailure"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "CfoToolSuccess": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "data": {
+          "$ref": "schemas-dimensions_cfo.json#/$defs/CfoSuccess"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalToolFailure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "code": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "CliFailure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "enum": [
+            "invalid_input",
+            "transport",
+            "server_refused",
+            "protocol",
+            "outcome_unknown"
+          ]
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "maxItems": 1
+        }
+      },
+      "required": [
+        "ok",
+        "code",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "ToolClientFailure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "error": {
+          "type": "object",
+          "properties": {
+            "code": {
+              "enum": [
+                "invalid_input",
+                "transport",
+                "server_refused",
+                "protocol",
+                "outcome_unknown"
+              ]
+            },
+            "message": {
+              "type": "string"
+            },
+            "status": {
+              "type": "integer",
+              "minimum": 100,
+              "maximum": 599
+            }
+          },
+          "required": [
+            "code",
+            "message"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "ok",
+        "error"
+      ],
+      "additionalProperties": false
+    },
+    "RpcId": {
+      "anyOf": [
+        {
+          "type": "string",
+          "maxLength": 256,
+          "x-maxUtf8Bytes": 256
+        },
+        {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 18446744073709551615
+        }
+      ]
+    },
+    "RpcError": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "type": "null"
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32700
+                },
+                "message": {
+                  "enum": [
+                    "invalid or oversized newline-delimited message",
+                    "invalid JSON",
+                    "message exceeds tool frame bound; only named original uploads/ownership/consolidation proposals admit larger bounded frames"
+                  ]
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-dimensions_cfo.json#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32600
+                },
+                "message": {
+                  "enum": [
+                    "expected one JSON-RPC object",
+                    "invalid JSON-RPC request",
+                    "request id already used",
+                    "already initialized"
+                  ]
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-dimensions_cfo.json#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32000
+                },
+                "message": {
+                  "enum": [
+                    "session request limit reached; reconnect"
+                  ]
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-dimensions_cfo.json#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "enum": [
+                    "expected params object",
+                    "initialize requires protocolVersion, capabilities and clientInfo",
+                    "task execution not supported",
+                    "tool name required",
+                    "expected arguments object",
+                    "company required",
+                    "invalid company slug",
+                    "unexpected dimensions identity assertion",
+                    "confirm must be boolean",
+                    "invalid original dimensions arguments",
+                    "exact documented read-only CFO selectors required"
+                  ]
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-dimensions_cfo.json#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32002
+                },
+                "message": {
+                  "enum": [
+                    "initialize and notifications/initialized required"
+                  ]
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-dimensions_cfo.json#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32601
+                },
+                "message": {
+                  "enum": [
+                    "method not found"
+                  ]
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-dimensions_cfo.json#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "report selectors must be strings"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "ToolCore_define": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "idempotent": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "id",
+            "idempotent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "ToolCore_member": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "idempotent": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "id",
+            "idempotent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "ToolCore_definition-lifecycle": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "idempotent": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "id",
+            "idempotent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "ToolCore_member-lifecycle": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "idempotent": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "id",
+            "idempotent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "ToolCore_definitions": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "definitions": {
+              "type": "array",
+              "items": {
+                "$ref": "schemas-dimensions_cfo.json#/$defs/DefinitionRow"
+              }
+            }
+          },
+          "required": [
+            "definitions"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "ToolCore_members": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "members": {
+              "type": "array",
+              "items": {
+                "$ref": "schemas-dimensions_cfo.json#/$defs/MemberRow"
+              }
+            }
+          },
+          "required": [
+            "members"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "ToolCore_list": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "assignments": {
+              "type": "array",
+              "items": {
+                "$ref": "schemas-dimensions_cfo.json#/$defs/AssignmentRow"
+              }
+            }
+          },
+          "required": [
+            "assignments"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "ToolCore_budgets": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "budgets": {
+              "type": "array",
+              "items": {
+                "$ref": "schemas-dimensions_cfo.json#/$defs/BudgetRow"
+              }
+            }
+          },
+          "required": [
+            "budgets"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "ToolCore_plan": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0
+        },
+        "data": {
+          "$ref": "schemas-dimensions_cfo.json#/$defs/PlanSuccess"
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "ToolCore_apply": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "idempotent": {
+              "type": "boolean"
+            },
+            "planHash": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            }
+          },
+          "required": [
+            "id",
+            "idempotent",
+            "planHash"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "ToolCore_replace": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0
+        },
+        "data": {
+          "oneOf": [
+            {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 9007199254740991
+                },
+                "idempotent": {
+                  "const": true
+                },
+                "planHash": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "id",
+                "idempotent",
+                "planHash"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 9007199254740991
+                },
+                "supersededId": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 9007199254740991
+                },
+                "idempotent": {
+                  "const": false
+                },
+                "planHash": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "id",
+                "supersededId",
+                "idempotent",
+                "planHash"
+              ],
+              "additionalProperties": false
+            }
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "ToolCore_supersede": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "idempotent": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "id",
+            "idempotent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "ToolCore_budget-plan": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0
+        },
+        "data": {
+          "$ref": "schemas-dimensions_cfo.json#/$defs/BudgetPlanSuccess"
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "ToolCore_budget-apply": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "ids": {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              },
+              "minItems": 1,
+              "uniqueItems": true
+            },
+            "idempotent": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "ids",
+            "idempotent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Tool_define": {
+      "type": "object",
+      "properties": {
+        "isError": {
+          "const": false
+        },
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "$ref": "schemas-dimensions_cfo.json#/$defs/ToolCore_define"
+        }
+      },
+      "required": [
+        "isError",
+        "content",
+        "structuredContent"
+      ],
+      "additionalProperties": false
+    },
+    "Tool_member": {
+      "type": "object",
+      "properties": {
+        "isError": {
+          "const": false
+        },
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "$ref": "schemas-dimensions_cfo.json#/$defs/ToolCore_member"
+        }
+      },
+      "required": [
+        "isError",
+        "content",
+        "structuredContent"
+      ],
+      "additionalProperties": false
+    },
+    "Tool_definition-lifecycle": {
+      "type": "object",
+      "properties": {
+        "isError": {
+          "const": false
+        },
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "$ref": "schemas-dimensions_cfo.json#/$defs/ToolCore_definition-lifecycle"
+        }
+      },
+      "required": [
+        "isError",
+        "content",
+        "structuredContent"
+      ],
+      "additionalProperties": false
+    },
+    "Tool_member-lifecycle": {
+      "type": "object",
+      "properties": {
+        "isError": {
+          "const": false
+        },
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "$ref": "schemas-dimensions_cfo.json#/$defs/ToolCore_member-lifecycle"
+        }
+      },
+      "required": [
+        "isError",
+        "content",
+        "structuredContent"
+      ],
+      "additionalProperties": false
+    },
+    "Tool_definitions": {
+      "type": "object",
+      "properties": {
+        "isError": {
+          "const": false
+        },
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "$ref": "schemas-dimensions_cfo.json#/$defs/ToolCore_definitions"
+        }
+      },
+      "required": [
+        "isError",
+        "content",
+        "structuredContent"
+      ],
+      "additionalProperties": false
+    },
+    "Tool_members": {
+      "type": "object",
+      "properties": {
+        "isError": {
+          "const": false
+        },
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "$ref": "schemas-dimensions_cfo.json#/$defs/ToolCore_members"
+        }
+      },
+      "required": [
+        "isError",
+        "content",
+        "structuredContent"
+      ],
+      "additionalProperties": false
+    },
+    "Tool_list": {
+      "type": "object",
+      "properties": {
+        "isError": {
+          "const": false
+        },
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "$ref": "schemas-dimensions_cfo.json#/$defs/ToolCore_list"
+        }
+      },
+      "required": [
+        "isError",
+        "content",
+        "structuredContent"
+      ],
+      "additionalProperties": false
+    },
+    "Tool_budgets": {
+      "type": "object",
+      "properties": {
+        "isError": {
+          "const": false
+        },
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "$ref": "schemas-dimensions_cfo.json#/$defs/ToolCore_budgets"
+        }
+      },
+      "required": [
+        "isError",
+        "content",
+        "structuredContent"
+      ],
+      "additionalProperties": false
+    },
+    "Tool_plan": {
+      "type": "object",
+      "properties": {
+        "isError": {
+          "const": false
+        },
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "$ref": "schemas-dimensions_cfo.json#/$defs/ToolCore_plan"
+        }
+      },
+      "required": [
+        "isError",
+        "content",
+        "structuredContent"
+      ],
+      "additionalProperties": false
+    },
+    "Tool_apply": {
+      "type": "object",
+      "properties": {
+        "isError": {
+          "const": false
+        },
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "$ref": "schemas-dimensions_cfo.json#/$defs/ToolCore_apply"
+        }
+      },
+      "required": [
+        "isError",
+        "content",
+        "structuredContent"
+      ],
+      "additionalProperties": false
+    },
+    "Tool_replace": {
+      "type": "object",
+      "properties": {
+        "isError": {
+          "const": false
+        },
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "$ref": "schemas-dimensions_cfo.json#/$defs/ToolCore_replace"
+        }
+      },
+      "required": [
+        "isError",
+        "content",
+        "structuredContent"
+      ],
+      "additionalProperties": false
+    },
+    "Tool_supersede": {
+      "type": "object",
+      "properties": {
+        "isError": {
+          "const": false
+        },
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "$ref": "schemas-dimensions_cfo.json#/$defs/ToolCore_supersede"
+        }
+      },
+      "required": [
+        "isError",
+        "content",
+        "structuredContent"
+      ],
+      "additionalProperties": false
+    },
+    "Tool_budget-plan": {
+      "type": "object",
+      "properties": {
+        "isError": {
+          "const": false
+        },
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "$ref": "schemas-dimensions_cfo.json#/$defs/ToolCore_budget-plan"
+        }
+      },
+      "required": [
+        "isError",
+        "content",
+        "structuredContent"
+      ],
+      "additionalProperties": false
+    },
+    "Tool_budget-apply": {
+      "type": "object",
+      "properties": {
+        "isError": {
+          "const": false
+        },
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "$ref": "schemas-dimensions_cfo.json#/$defs/ToolCore_budget-apply"
+        }
+      },
+      "required": [
+        "isError",
+        "content",
+        "structuredContent"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalToolFailureResult": {
+      "type": "object",
+      "properties": {
+        "isError": {
+          "const": true
+        },
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "$ref": "schemas-dimensions_cfo.json#/$defs/OriginalToolFailure"
+        }
+      },
+      "required": [
+        "isError",
+        "content",
+        "structuredContent"
+      ],
+      "additionalProperties": false
+    },
+    "CfoToolSuccessResult": {
+      "type": "object",
+      "properties": {
+        "isError": {
+          "const": false
+        },
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "$ref": "schemas-dimensions_cfo.json#/$defs/CfoToolSuccess"
+        }
+      },
+      "required": [
+        "isError",
+        "content",
+        "structuredContent"
+      ],
+      "additionalProperties": false
+    },
+    "CfoToolReturnedFailureResult": {
+      "type": "object",
+      "properties": {
+        "isError": {
+          "const": true
+        },
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "$ref": "schemas-dimensions_cfo.json#/$defs/CfoReturnedFailure"
+        }
+      },
+      "required": [
+        "isError",
+        "content",
+        "structuredContent"
+      ],
+      "additionalProperties": false
+    },
+    "CfoToolClientFailureResult": {
+      "type": "object",
+      "properties": {
+        "isError": {
+          "const": true
+        },
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "$ref": "schemas-dimensions_cfo.json#/$defs/ToolClientFailure"
+        }
+      },
+      "required": [
+        "isError",
+        "content",
+        "structuredContent"
+      ],
+      "additionalProperties": false
+    },
+    "Cli_define": {
+      "type": "object",
+      "properties": {
+        "--dimension-id": {
+          "type": "string"
+        },
+        "--name": {
+          "type": "string"
+        },
+        "--kind": {
+          "type": "string"
+        },
+        "--confirm": {
+          "const": "yes"
+        },
+        "--company": {
+          "type": "string"
+        },
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--service-key-file": {
+          "type": "string"
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--workspace": {
+          "type": "string"
+        },
+        "--json": {
+          "const": true
+        },
+        "--help": {
+          "const": true
+        },
+        "--format": {
+          "enum": [
+            "json",
+            "human"
+          ]
+        },
+        "--allow-loopback-http": {
+          "const": true
+        },
+        "--actor": {
+          "type": "string"
+        },
+        "--principal": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "--dimension-id",
+        "--name",
+        "--kind",
+        "--confirm",
+        "--company"
+      ],
+      "additionalProperties": false
+    },
+    "Cli_member": {
+      "type": "object",
+      "properties": {
+        "--dimension-id": {
+          "type": "string"
+        },
+        "--name": {
+          "type": "string"
+        },
+        "--member-id": {
+          "type": "string"
+        },
+        "--status": {
+          "type": "string"
+        },
+        "--effective-from": {
+          "type": "string"
+        },
+        "--effective-to": {
+          "type": "string"
+        },
+        "--confirm": {
+          "const": "yes"
+        },
+        "--company": {
+          "type": "string"
+        },
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--service-key-file": {
+          "type": "string"
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--workspace": {
+          "type": "string"
+        },
+        "--json": {
+          "const": true
+        },
+        "--help": {
+          "const": true
+        },
+        "--format": {
+          "enum": [
+            "json",
+            "human"
+          ]
+        },
+        "--allow-loopback-http": {
+          "const": true
+        },
+        "--actor": {
+          "type": "string"
+        },
+        "--principal": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "--dimension-id",
+        "--member-id",
+        "--name",
+        "--confirm",
+        "--company"
+      ],
+      "additionalProperties": false
+    },
+    "Cli_definition-lifecycle": {
+      "type": "object",
+      "properties": {
+        "--dimension-id": {
+          "type": "string"
+        },
+        "--name": {
+          "type": "string"
+        },
+        "--action": {
+          "type": "string"
+        },
+        "--supersedes-id": {
+          "type": "string"
+        },
+        "--confirm": {
+          "const": "yes"
+        },
+        "--company": {
+          "type": "string"
+        },
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--service-key-file": {
+          "type": "string"
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--workspace": {
+          "type": "string"
+        },
+        "--json": {
+          "const": true
+        },
+        "--help": {
+          "const": true
+        },
+        "--format": {
+          "enum": [
+            "json",
+            "human"
+          ]
+        },
+        "--allow-loopback-http": {
+          "const": true
+        },
+        "--actor": {
+          "type": "string"
+        },
+        "--principal": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "--dimension-id",
+        "--action",
+        "--confirm",
+        "--company"
+      ],
+      "additionalProperties": false
+    },
+    "Cli_member-lifecycle": {
+      "type": "object",
+      "properties": {
+        "--dimension-id": {
+          "type": "string"
+        },
+        "--name": {
+          "type": "string"
+        },
+        "--member-id": {
+          "type": "string"
+        },
+        "--action": {
+          "type": "string"
+        },
+        "--supersedes-id": {
+          "type": "string"
+        },
+        "--confirm": {
+          "const": "yes"
+        },
+        "--company": {
+          "type": "string"
+        },
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--service-key-file": {
+          "type": "string"
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--workspace": {
+          "type": "string"
+        },
+        "--json": {
+          "const": true
+        },
+        "--help": {
+          "const": true
+        },
+        "--format": {
+          "enum": [
+            "json",
+            "human"
+          ]
+        },
+        "--allow-loopback-http": {
+          "const": true
+        },
+        "--actor": {
+          "type": "string"
+        },
+        "--principal": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "--dimension-id",
+        "--member-id",
+        "--action",
+        "--confirm",
+        "--company"
+      ],
+      "additionalProperties": false
+    },
+    "Cli_definitions": {
+      "type": "object",
+      "properties": {
+        "--company": {
+          "type": "string"
+        },
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--service-key-file": {
+          "type": "string"
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--workspace": {
+          "type": "string"
+        },
+        "--json": {
+          "const": true
+        },
+        "--help": {
+          "const": true
+        },
+        "--format": {
+          "enum": [
+            "json",
+            "human"
+          ]
+        },
+        "--allow-loopback-http": {
+          "const": true
+        }
+      },
+      "required": [
+        "--company"
+      ],
+      "additionalProperties": false
+    },
+    "Cli_members": {
+      "type": "object",
+      "properties": {
+        "--dimension-id": {
+          "type": "string"
+        },
+        "--company": {
+          "type": "string"
+        },
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--service-key-file": {
+          "type": "string"
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--workspace": {
+          "type": "string"
+        },
+        "--json": {
+          "const": true
+        },
+        "--help": {
+          "const": true
+        },
+        "--format": {
+          "enum": [
+            "json",
+            "human"
+          ]
+        },
+        "--allow-loopback-http": {
+          "const": true
+        }
+      },
+      "required": [
+        "--company"
+      ],
+      "additionalProperties": false
+    },
+    "Cli_plan": {
+      "type": "object",
+      "properties": {
+        "--allocations": {
+          "type": "string",
+          "contentSchema": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "dimensionId": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 64,
+                  "x-validation": "nonblank; no control characters; Unicode scalar count bound"
+                },
+                "memberId": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 64,
+                  "x-validation": "nonblank; no control characters; Unicode scalar count bound"
+                },
+                "amountMinor": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 9007199254740991
+                },
+                "currency": {
+                  "type": "string",
+                  "minLength": 3,
+                  "maxLength": 3
+                }
+              },
+              "required": [
+                "dimensionId",
+                "memberId",
+                "amountMinor",
+                "currency"
+              ],
+              "additionalProperties": false
+            },
+            "minItems": 1,
+            "maxItems": 10000
+          },
+          "contentMediaType": "application/json"
+        },
+        "--source-ref": {
+          "type": "string"
+        },
+        "--journal-line-id": {
+          "type": "string"
+        },
+        "--source": {
+          "type": "string"
+        },
+        "--reviewed-import": {
+          "enum": [
+            "yes",
+            "no"
+          ]
+        },
+        "--company": {
+          "type": "string"
+        },
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--service-key-file": {
+          "type": "string"
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--workspace": {
+          "type": "string"
+        },
+        "--json": {
+          "const": true
+        },
+        "--help": {
+          "const": true
+        },
+        "--format": {
+          "enum": [
+            "json",
+            "human"
+          ]
+        },
+        "--allow-loopback-http": {
+          "const": true
+        }
+      },
+      "required": [
+        "--allocations",
+        "--journal-line-id",
+        "--company"
+      ],
+      "additionalProperties": false
+    },
+    "Cli_apply": {
+      "type": "object",
+      "properties": {
+        "--allocations": {
+          "type": "string",
+          "contentSchema": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "dimensionId": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 64,
+                  "x-validation": "nonblank; no control characters; Unicode scalar count bound"
+                },
+                "memberId": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 64,
+                  "x-validation": "nonblank; no control characters; Unicode scalar count bound"
+                },
+                "amountMinor": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 9007199254740991
+                },
+                "currency": {
+                  "type": "string",
+                  "minLength": 3,
+                  "maxLength": 3
+                }
+              },
+              "required": [
+                "dimensionId",
+                "memberId",
+                "amountMinor",
+                "currency"
+              ],
+              "additionalProperties": false
+            },
+            "minItems": 1,
+            "maxItems": 10000
+          },
+          "contentMediaType": "application/json"
+        },
+        "--source-ref": {
+          "type": "string"
+        },
+        "--journal-line-id": {
+          "type": "string"
+        },
+        "--source": {
+          "type": "string"
+        },
+        "--reviewed-import": {
+          "enum": [
+            "yes",
+            "no"
+          ]
+        },
+        "--plan-hash": {
+          "type": "string"
+        },
+        "--idempotency-key": {
+          "type": "string"
+        },
+        "--confirm": {
+          "const": "yes"
+        },
+        "--company": {
+          "type": "string"
+        },
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--service-key-file": {
+          "type": "string"
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--workspace": {
+          "type": "string"
+        },
+        "--json": {
+          "const": true
+        },
+        "--help": {
+          "const": true
+        },
+        "--format": {
+          "enum": [
+            "json",
+            "human"
+          ]
+        },
+        "--allow-loopback-http": {
+          "const": true
+        },
+        "--actor": {
+          "type": "string"
+        },
+        "--principal": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "--allocations",
+        "--journal-line-id",
+        "--plan-hash",
+        "--confirm",
+        "--company"
+      ],
+      "additionalProperties": false
+    },
+    "Cli_replace": {
+      "type": "object",
+      "properties": {
+        "--allocations": {
+          "type": "string",
+          "contentSchema": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "dimensionId": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 64,
+                  "x-validation": "nonblank; no control characters; Unicode scalar count bound"
+                },
+                "memberId": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 64,
+                  "x-validation": "nonblank; no control characters; Unicode scalar count bound"
+                },
+                "amountMinor": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 9007199254740991
+                },
+                "currency": {
+                  "type": "string",
+                  "minLength": 3,
+                  "maxLength": 3
+                }
+              },
+              "required": [
+                "dimensionId",
+                "memberId",
+                "amountMinor",
+                "currency"
+              ],
+              "additionalProperties": false
+            },
+            "minItems": 1,
+            "maxItems": 10000
+          },
+          "contentMediaType": "application/json"
+        },
+        "--source-ref": {
+          "type": "string"
+        },
+        "--journal-line-id": {
+          "type": "string"
+        },
+        "--source": {
+          "type": "string"
+        },
+        "--reviewed-import": {
+          "enum": [
+            "yes",
+            "no"
+          ]
+        },
+        "--plan-hash": {
+          "type": "string"
+        },
+        "--idempotency-key": {
+          "type": "string"
+        },
+        "--expected-assignment-id": {
+          "type": "string"
+        },
+        "--reason": {
+          "type": "string"
+        },
+        "--confirm": {
+          "const": "yes"
+        },
+        "--company": {
+          "type": "string"
+        },
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--service-key-file": {
+          "type": "string"
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--workspace": {
+          "type": "string"
+        },
+        "--json": {
+          "const": true
+        },
+        "--help": {
+          "const": true
+        },
+        "--format": {
+          "enum": [
+            "json",
+            "human"
+          ]
+        },
+        "--allow-loopback-http": {
+          "const": true
+        },
+        "--actor": {
+          "type": "string"
+        },
+        "--principal": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "--allocations",
+        "--journal-line-id",
+        "--plan-hash",
+        "--expected-assignment-id",
+        "--reason",
+        "--confirm",
+        "--company"
+      ],
+      "additionalProperties": false
+    },
+    "Cli_supersede": {
+      "type": "object",
+      "properties": {
+        "--assignment-id": {
+          "type": "string"
+        },
+        "--reason": {
+          "type": "string"
+        },
+        "--confirm": {
+          "const": "yes"
+        },
+        "--company": {
+          "type": "string"
+        },
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--service-key-file": {
+          "type": "string"
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--workspace": {
+          "type": "string"
+        },
+        "--json": {
+          "const": true
+        },
+        "--help": {
+          "const": true
+        },
+        "--format": {
+          "enum": [
+            "json",
+            "human"
+          ]
+        },
+        "--allow-loopback-http": {
+          "const": true
+        },
+        "--actor": {
+          "type": "string"
+        },
+        "--principal": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "--assignment-id",
+        "--reason",
+        "--confirm",
+        "--company"
+      ],
+      "additionalProperties": false
+    },
+    "Cli_list": {
+      "type": "object",
+      "properties": {
+        "--journal-line-id": {
+          "type": "string"
+        },
+        "--company": {
+          "type": "string"
+        },
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--service-key-file": {
+          "type": "string"
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--workspace": {
+          "type": "string"
+        },
+        "--json": {
+          "const": true
+        },
+        "--help": {
+          "const": true
+        },
+        "--format": {
+          "enum": [
+            "json",
+            "human"
+          ]
+        },
+        "--allow-loopback-http": {
+          "const": true
+        }
+      },
+      "required": [
+        "--journal-line-id",
+        "--company"
+      ],
+      "additionalProperties": false
+    },
+    "Cli_budget-plan": {
+      "type": "object",
+      "properties": {
+        "--allocations": {
+          "type": "string",
+          "contentSchema": {
+            "type": "array",
+            "items": {
+              "$ref": "schemas-dimensions_cfo.json#/$defs/BudgetAllocation"
+            },
+            "minItems": 1,
+            "maxItems": 10000
+          },
+          "contentMediaType": "application/json"
+        },
+        "--source-ref": {
+          "type": "string"
+        },
+        "--account": {
+          "type": "string"
+        },
+        "--period": {
+          "type": "string"
+        },
+        "--company": {
+          "type": "string"
+        },
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--service-key-file": {
+          "type": "string"
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--workspace": {
+          "type": "string"
+        },
+        "--json": {
+          "const": true
+        },
+        "--help": {
+          "const": true
+        },
+        "--format": {
+          "enum": [
+            "json",
+            "human"
+          ]
+        },
+        "--allow-loopback-http": {
+          "const": true
+        }
+      },
+      "required": [
+        "--allocations",
+        "--account",
+        "--period",
+        "--source-ref",
+        "--company"
+      ],
+      "additionalProperties": false
+    },
+    "Cli_budget-apply": {
+      "type": "object",
+      "properties": {
+        "--allocations": {
+          "type": "string",
+          "contentSchema": {
+            "type": "array",
+            "items": {
+              "$ref": "schemas-dimensions_cfo.json#/$defs/BudgetAllocation"
+            },
+            "minItems": 1,
+            "maxItems": 10000
+          },
+          "contentMediaType": "application/json"
+        },
+        "--source-ref": {
+          "type": "string"
+        },
+        "--account": {
+          "type": "string"
+        },
+        "--period": {
+          "type": "string"
+        },
+        "--plan-hash": {
+          "type": "string"
+        },
+        "--idempotency-key": {
+          "type": "string"
+        },
+        "--confirm": {
+          "const": "yes"
+        },
+        "--company": {
+          "type": "string"
+        },
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--service-key-file": {
+          "type": "string"
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--workspace": {
+          "type": "string"
+        },
+        "--json": {
+          "const": true
+        },
+        "--help": {
+          "const": true
+        },
+        "--format": {
+          "enum": [
+            "json",
+            "human"
+          ]
+        },
+        "--allow-loopback-http": {
+          "const": true
+        },
+        "--actor": {
+          "type": "string"
+        },
+        "--principal": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "--allocations",
+        "--account",
+        "--period",
+        "--source-ref",
+        "--plan-hash",
+        "--confirm",
+        "--company"
+      ],
+      "additionalProperties": false
+    },
+    "Cli_budgets": {
+      "type": "object",
+      "properties": {
+        "--company": {
+          "type": "string"
+        },
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--service-key-file": {
+          "type": "string"
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--workspace": {
+          "type": "string"
+        },
+        "--json": {
+          "const": true
+        },
+        "--help": {
+          "const": true
+        },
+        "--format": {
+          "enum": [
+            "json",
+            "human"
+          ]
+        },
+        "--allow-loopback-http": {
+          "const": true
+        }
+      },
+      "required": [
+        "--company"
+      ],
+      "additionalProperties": false
+    },
+    "Cli_cfo": {
+      "type": "object",
+      "properties": {
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--scope": {
+          "type": "string"
+        },
+        "--from": {
+          "type": "string"
+        },
+        "--to": {
+          "type": "string"
+        },
+        "--company": {
+          "type": "string"
+        },
+        "--company-slugs-json": {
+          "type": "string"
+        },
+        "--group-profile-id": {
+          "type": "string"
+        },
+        "--account": {
+          "type": "string"
+        },
+        "--party": {
+          "type": "string"
+        },
+        "--dimension": {
+          "type": "string"
+        },
+        "--currency": {
+          "type": "string"
+        },
+        "--aggregate": {
+          "type": "string"
+        },
+        "--cursor": {
+          "type": "string"
+        },
+        "--limit": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "const": true
+        }
+      },
+      "required": [
+        "--scope",
+        "--from",
+        "--to",
+        "--cookie-file"
+      ],
+      "additionalProperties": false
+    },
+    "Refused_origin_refused": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "const": "origin_refused"
+        },
+        "errors": {
+          "const": [
+            "origin_refused"
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "code",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Refused_unauthorized": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "const": "unauthorized"
+        },
+        "errors": {
+          "const": [
+            "unauthorized"
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "code",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Refused_company_not_found": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "const": "company_not_found"
+        },
+        "errors": {
+          "const": [
+            "company_not_found"
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "code",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Refused_invalid_query": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "const": "invalid_query"
+        },
+        "errors": {
+          "const": [
+            "invalid_query"
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "code",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Refused_invalid_input": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "const": "invalid_input"
+        },
+        "errors": {
+          "const": [
+            "invalid_input"
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "code",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Refused_invalid_journal_line": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "const": "invalid_journal_line"
+        },
+        "errors": {
+          "const": [
+            "invalid_journal_line"
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "code",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Refused_busy": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "const": "busy"
+        },
+        "errors": {
+          "const": [
+            "busy"
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "code",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Refused_outcome_unconfirmed": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "const": "outcome_unconfirmed"
+        },
+        "errors": {
+          "const": [
+            "outcome_unconfirmed"
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "code",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Refused_outcome_unknown": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "const": "outcome_unknown"
+        },
+        "errors": {
+          "const": [
+            "outcome_unknown"
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "code",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Refused_invalid_credentials": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "const": "invalid_credentials"
+        },
+        "errors": {
+          "const": [
+            "invalid_credentials"
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "code",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Refused_access_denied": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "const": "access_denied"
+        },
+        "errors": {
+          "const": [
+            "access_denied"
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "code",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Refused_cfo_source_unavailable": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "const": "cfo_source_unavailable"
+        },
+        "errors": {
+          "const": [
+            "cfo_source_unavailable"
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "code",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Refused_cfo_analytics_invalid": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "const": "cfo_analytics_invalid"
+        },
+        "errors": {
+          "const": [
+            "cfo_analytics_invalid"
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "code",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Refused_invalid_date": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "const": "invalid_date"
+        },
+        "errors": {
+          "const": [
+            "invalid_date"
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "code",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "AllocationObject": {
+      "type": "object",
+      "properties": {
+        "dimensionId": {
+          "type": "string"
+        },
+        "memberId": {
+          "type": "string"
+        },
+        "amountMinor": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "currency": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "dimensionId",
+        "memberId",
+        "amountMinor",
+        "currency"
+      ],
+      "additionalProperties": false
+    },
+    "SupersedeSuccess": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "id": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "idempotent": {
+          "const": false
+        }
+      },
+      "required": [
+        "ok",
+        "id",
+        "idempotent"
+      ],
+      "additionalProperties": false
+    },
+    "MasterSuccessSdk": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "id": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "idempotent": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "ok",
+        "id",
+        "idempotent"
+      ],
+      "additionalProperties": false
+    },
+    "ApplySuccessSdk": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "id": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "idempotent": {
+          "type": "boolean"
+        },
+        "planHash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      },
+      "required": [
+        "ok",
+        "id",
+        "idempotent",
+        "planHash"
+      ],
+      "additionalProperties": false
+    },
+    "ReplaceSuccessSdk": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "id": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "idempotent": {
+              "const": true
+            },
+            "planHash": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            }
+          },
+          "required": [
+            "ok",
+            "id",
+            "idempotent",
+            "planHash"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "id": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "supersededId": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "idempotent": {
+              "const": false
+            },
+            "planHash": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            }
+          },
+          "required": [
+            "ok",
+            "id",
+            "supersededId",
+            "idempotent",
+            "planHash"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "BudgetApplySuccessSdk": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "ids": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "idempotent": {
+          "type": "boolean"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0
+        }
+      },
+      "required": [
+        "ok",
+        "ids",
+        "idempotent",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Refused_cfo_analytics_refused": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "const": "cfo_analytics_refused"
+        },
+        "errors": {
+          "const": [
+            "cfo_analytics_refused"
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "code",
+        "errors"
+      ],
+      "additionalProperties": false
+    }
+  }
+}
