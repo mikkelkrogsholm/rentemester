@@ -359,7 +359,7 @@ pub fn finish(
                 &record,
                 document_id,
                 reason,
-                subject,
+                &format!("user:{subject}"),
             )?;
             let document = if let Some(reason) = reason {
                 json!({"internalId":internal_id,"status":"quarantined","errors":[reason.code()]})

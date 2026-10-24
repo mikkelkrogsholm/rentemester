@@ -164,6 +164,11 @@ fn admitted_original_exact_dedup_quarantine_and_reopen() {
     let db = o.held.0.as_ref().unwrap().company.as_ref().unwrap();
     let audits:i64=db.query_row("SELECT count(*) FROM audit_log WHERE event_type IN ('digisense_document_received','digisense_document_quarantined')",[],|r|r.get(0)).unwrap();
     assert_eq!(audits, 4);
+    let noncanonical: i64 = db.query_row("SELECT count(*) FROM audit_log WHERE event_type IN ('document_ingest','digisense_document_received','digisense_document_quarantined') AND actor!='user:u'", [], |r| r.get(0)).unwrap();
+    assert_eq!(
+        noncanonical, 0,
+        "document and receive/quarantine audits bind the same canonical current user"
+    );
     let held = prepare(&mut o, &p);
     let root = o.root.clone();
     drop(o);

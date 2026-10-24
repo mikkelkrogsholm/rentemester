@@ -34,13 +34,21 @@ pub fn normalize_participant(id: &str) -> &str {
     let trimmed = id.trim();
     trimmed.rsplit(':').next().unwrap_or(trimmed)
 }
-fn amount(value: Option<String>) -> Option<Value> {
-    let filtered: String = value?
+fn amount(value: Option<String>) -> Result<Option<Value>, Error> {
+    let Some(value) = value else { return Ok(None) };
+    let normalized = value
         .chars()
         .filter(|c| c.is_ascii_digit() || matches!(c, '.' | ',' | '-'))
-        .collect();
-    let n: f64 = filtered.replacen(',', ".", 1).parse().ok()?;
-    serde_json::Number::from_f64(n).map(Value::Number)
+        .collect::<String>()
+        .replacen(',', ".", 1);
+    let exact = crate::money::Money::parse(&normalized).map_err(|_| invalid())?;
+    let number: serde_json::Number = normalized.parse().map_err(|_| invalid())?;
+    // The legacy Metadata wire is numeric. Refuse if its representation changes
+    // the exact cent amount instead of silently rounding provider evidence.
+    if crate::money::Money::parse(&number.to_string()).map_err(|_| invalid())? != exact {
+        return Err(invalid());
+    }
+    Ok(Some(Value::Number(number)))
 }
 fn identity(value: &str) -> String {
     normalize_participant(value)
@@ -123,12 +131,22 @@ pub fn build_received_metadata(
         None => format!("Modtaget e-faktura ({kind})"),
     };
     let ptext = |node: Option<Node<'_, '_>>, name: &str| node.and_then(|n| text(n, name));
+    let amount_inc_vat = if overrides.get("amountIncVat").is_some() {
+        None
+    } else {
+        amount(text(root, "PayableAmount"))?
+    };
+    let vat_amount = if overrides.get("vatAmount").is_some() {
+        None
+    } else {
+        amount(text(root, "TaxAmount"))?
+    };
     let mut value = json!({
         "source":"digisense_modtag", "documentType":"purchase_sale",
         "issueDate":text(root,"IssueDate").or_else(|| listed(record,"receivedAt").map(|s|s.split('T').next().unwrap_or("").to_owned())),
         "invoiceNo":invoice.or_else(||listed(record,"documentId")),
         "deliveryDescription":description,
-        "amountIncVat":amount(text(root,"PayableAmount")),
+        "amountIncVat":amount_inc_vat,
         "currency":text(root,"DocumentCurrencyCode").unwrap_or_else(||"DKK".into()),
         "sender":{
             "name":nonempty(listed(record,"senderName")).or_else(||ptext(supplier,"Name")),
@@ -140,7 +158,7 @@ pub fn build_received_metadata(
             "address":ptext(customer,"StreetName").or_else(||ptext(customer,"Line")),
             "vatOrCvr":ptext(customer,"CompanyID").or_else(||listed(record,"destinationParticipantId").map(|s|normalize_participant(&s).to_owned()))
         },
-        "vatAmount":amount(text(root,"TaxAmount"))
+        "vatAmount":vat_amount
     });
     if let Some(fields) = overrides.as_object() {
         for (key, replacement) in fields {
@@ -168,6 +186,43 @@ pub fn build_received_metadata(
 mod tests {
     use super::*;
     const XML: &[u8] = br#"<Invoice><ID>INV-7</ID><IssueDate>2026-01-02</IssueDate><DocumentCurrencyCode>EUR</DocumentCurrencyCode><AccountingSupplierParty><Party><Name>XML supplier</Name><StreetName>Road 7</StreetName><CompanyID>DK12345678</CompanyID></Party></AccountingSupplierParty><AccountingCustomerParty><Party><Name>Buyer</Name><CompanyID>DK87654321</CompanyID></Party></AccountingCustomerParty><PayableAmount>125.50</PayableAmount><TaxAmount>25.10</TaxAmount></Invoice>"#;
+    #[test]
+    fn money_extraction_preserves_cents_or_refuses_without_silent_rounding() {
+        for raw in ["9007199254740993.01", "0.0049999999999999999"] {
+            let xml = String::from_utf8(XML.to_vec())
+                .unwrap()
+                .replace("125.50", raw);
+            assert!(
+                build_received_metadata(&json!({}), xml.as_bytes(), &Value::Null).is_err(),
+                "{raw}"
+            );
+            // An explicit supported human override remains authoritative.
+            let resolved =
+                build_received_metadata(&json!({}), xml.as_bytes(), &json!({"amountIncVat":125.5}))
+                    .unwrap();
+            assert_eq!(
+                crate::document::money(resolved.amount_inc_vat.as_ref().unwrap())
+                    .unwrap()
+                    .decimal(),
+                "125.50"
+            );
+        }
+        let xml = String::from_utf8(XML.to_vec())
+            .unwrap()
+            .replace("25.10", "9007199254740993.01");
+        assert!(build_received_metadata(&json!({}), xml.as_bytes(), &Value::Null).is_err());
+        for raw in ["0.29", "125.50", "-1.005"] {
+            let xml = String::from_utf8(XML.to_vec())
+                .unwrap()
+                .replace("125.50", raw);
+            let metadata =
+                build_received_metadata(&json!({}), xml.as_bytes(), &Value::Null).unwrap();
+            assert_eq!(
+                crate::document::money(metadata.amount_inc_vat.as_ref().unwrap()).unwrap(),
+                crate::money::Money::parse(raw).unwrap()
+            );
+        }
+    }
     #[test]
     fn source_precedence_and_partial_party_override() {
         let record = json!({"senderName":"Listing supplier","documentType":"Invoice","documentId":"fallback","destinationParticipantId":"DK:CVR:87654321"});
