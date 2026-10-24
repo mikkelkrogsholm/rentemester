@@ -1,11 +1,11 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "R91 full713bankbaseline/upstream integration accepted; pending GitHub closure",
+  "current_increment": "R91 full713 integration accepted and actually closed;41of55closed14open",
   "code_revision": "ced2964c7affc5f22bed6d1cb41fbcce343126ac",
   "spec_revision": "971249492f96da3d630e32bb0828ec3f7831e6b4",
-  "state": "bank_roadmap713_whole_accepted_ready_to_close",
-  "issues_closed": 40,
+  "state": "bank_roadmap713_whole_accepted_and_github_closed",
+  "issues_closed": 41,
   "next": [
     "All11existingupstreambankissues remainopen under363 including futureprovideridentity/consent/secretgenerations/preparestageplanapply/fake/sandbox/release.643strongidentity/ambiguousCSVprovideroverlap and642fullschema/migration/allprojectionacceptance not claimed.",
     "712finalTaurilogin/cancellation/OSsecrets and717fulloriginalworkflow/service/reconnect remainopen. Full55issueepic/J01-J07/release/cutover/retirement/manualinstalleddesktopLAST retained."
@@ -18838,7 +18838,7 @@
     {
       "issue": 713,
       "wholeIssueAccepted": true,
-      "wholeIssueClosed": false,
+      "wholeIssueClosed": true,
       "source_revision": "ced2964c7affc5f22bed6d1cb41fbcce343126ac",
       "report": "/tmp/rentemester-rust-reports/r91-byo-bank713-whole-accepted.json",
       "sha256": "e42a419f734eb02556896acff5222464fab2ae4cc56e01cad2d1c216b3a8e2ca",
@@ -18846,7 +18846,9 @@
       "remaining": [
         "All11existingupstreambankissues remainopen under363 including futureprovideridentity/consent/secretgenerations/preparestageplanapply/fake/sandbox/release.643strongidentity/ambiguousCSVprovideroverlap and642fullschema/migration/allprojectionacceptance not claimed.",
         "712finalTaurilogin/cancellation/OSsecrets and717fulloriginalworkflow/service/reconnect remainopen. Full55issueepic/J01-J07/release/cutover/retirement/manualinstalleddesktopLAST retained."
-      ]
+      ],
+      "githubClosure": "https://github.com/mikkelkrogsholm/rentemester/issues/713#issuecomment-6389018269",
+      "githubClosedAt": "2026-10-24T20:14:36Z"
     }
   ],
   "scope_clarifications": [
