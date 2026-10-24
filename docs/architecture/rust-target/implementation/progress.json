@@ -1,14 +1,14 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "WholeR16#688 accepted/closed: explicitpartyproposal/exacthashapproval/supersession throughcommonRustserver+SDK/nativeCLI/originalCLI/MCP. Currenthuman bothfullcompanyscopes/backupunion/transferfence, twoatomicapprovalevents, noidentity/ledgerrewrite; actual18combinedcompiledchecks, canonicalreceiptRED/GREEN,1513currentcontracts and1505priorsemantics retained.",
-  "code_revision": "b15175f06245aa0ef4ed3aae6293708f40ee8739",
-  "spec_revision": "sha256:156adae3fcc2c69cfaf35e65d3786dec22aef5b6b775b7270342843cefceb8ab",
-  "state": "39of55originalissues actuallyCLOSED16OPEN. Whole688scopegapresolvedwithretainedpriorcollision/account/contact/documentparty/history/restoreevidence. Remaininginterfaces/release/cutover/retirement/J01-J07/manualinstalleddesktoplast retained; no whole716/717orproductioncutoverclaimed.",
-  "issues_closed": 37,
+  "current_increment": "R71/R72 supported original workspace inbox CLI journey accepted: upload -> inspect/status -> explicit target assignment -> document completion using common Rust server. Nine compiled fixtures and four actual receipt RED/GREEN probes; current1519 contracts retain old1513 semantics. Whole716 remains OPEN.",
+  "code_revision": "230deeabee09070ae157c1028d233b71fdf082be",
+  "spec_revision": "sha256:d6bcb5bea19f3d3dc15988149a69e8601401056e50468459b6cc2f22f054d83c",
+  "state": "39of55 original issues actually CLOSED,16OPEN. Supported R71/R72 native CLI profile accepted; whole716 compatibility/launcher gaps remain. No live cutover; installed manual desktop last.",
+  "issues_closed": 39,
   "next": [
-    "Continue necessaryoriginalCLI716workspace-inbox/company-knowledge throughcurrentRustAPIs asoneevidence-to-advisoryjourney, isolateddisjointadapters; no newengine orprovider effects.",
-    "713closuretriage: existingR01classification/CSVproofs valid,712dependencyopen andcase-to-evidence/fake-contract binding stillrequired; unfinished363provider/consent/generation/preparedsync roadmap stayspending, no newBYOimplementationunderrewrite."
+    "Close next whole original issue using actual existing evidence: reconcile precise714 prerequisite against consumed headless identity contract, retaining whole712/native-vault/manual-desktop gates.",
+    "Whole716 original compatibility and launcher remain; existing knowledge aliases need explicit versioned path, no silent behavior change."
   ],
   "preserve_unrelated_paths": [
     ".claude/settings.json",
@@ -18,7 +18,7 @@
     ".gitattributes"
   ],
   "all_goal_requirements_complete": false,
-  "previous_verified_increment": "R67/R68 thirteen original corporate-record/ownership CLI commands accepted: sameRustSDK/engine; exactflatJSON/human0/1/2, verifiedlocal/remote/currentprincipal, sourcebytes/SHA, independentreview/exacttokens and honestunknownreceipts. Combined17compiledchecks and exact1505contracts (639HTTP479CLI387MCP/38partitions).",
+  "previous_verified_increment": "WholeR16#688 accepted/closed: explicitpartyproposal/exacthashapproval/supersession throughcommonRustserver+SDK/nativeCLI/originalCLI/MCP. Currenthuman bothfullcompanyscopes/backupunion/transferfence, twoatomicapprovalevents, noidentity/ledgerrewrite; actual18combinedcompiledchecks, canonicalreceiptRED/GREEN,1513currentcontracts and1505priorsemantics retained.",
   "evidence": {
     "combined_browser_log": "/tmp/rm-platform5-combined.log",
     "combined_browser_exit": 0,
@@ -16390,6 +16390,49 @@
       "sha256": "fb80eba991a8c9a68d898b964914a28f2a6616cfe1ba5f521c04b64f98d5c7a5",
       "sgd_run": "rust-r70-party-merge688-contracts-20261024T121805.043641000",
       "full_scope_preserved": true
+    },
+    "r71_r72_original_inbox716": {
+      "issue": 716,
+      "whole_issue_accepted": false,
+      "supported_original_inbox_profile_accepted": true,
+      "source_revision": "5f034ba8956cfec959f9c01259ed334a4826a70f",
+      "contract_revision": "230deeabee09070ae157c1028d233b71fdf082be",
+      "sgd_run": "rust-r72-original-inbox716-contracts-20261024T132640.754756000",
+      "model_revision": "sha256:d6bcb5bea19f3d3dc15988149a69e8601401056e50468459b6cc2f22f054d83c",
+      "component_report": {
+        "path": "/tmp/rentemester-rust-reports/r71-original-inbox716-component-accepted.json",
+        "sha256": "f04ab8450621da531f128b5927c3d4fa7aba36b99d0a21cabd1571e6cc94e9a5"
+      },
+      "checks": [
+        {
+          "check": "inbox_evidence",
+          "path": "/private/tmp/rentemester-r34-708-clean/.sgd/runs/rust-r72-original-inbox716-contracts-20261024T132640.754756000/acceptance/119bd8bfb3d72e13c2b961d6a2b524ae86fb675a24d520e8ef2c67348f401a66/inbox_evidence.log",
+          "sha256": "8ea3cd8a3bfb1d77c47146477319d47bb17b542abbc23f7190e5fc8f15023fd4",
+          "passed": true
+        },
+        {
+          "check": "current_universe",
+          "path": "/private/tmp/rentemester-r34-708-clean/.sgd/runs/rust-r72-original-inbox716-contracts-20261024T132640.754756000/acceptance/b89cfaa3c448847cd93162c697421e95394c5dd1d63eb8048b9d731581c3330f/current_universe.log",
+          "sha256": "efc5d1aaac847b9b7ff4785dddff1d4e5ca84d2fbe05c2445a84a4b2ccf9a19f",
+          "passed": true
+        }
+      ],
+      "current_operations": {
+        "total": 1519,
+        "http": 641,
+        "cli": 489,
+        "mcp": 389,
+        "partitions": 38
+      },
+      "previous_1513_business_rows_and_definitions_preserved": true,
+      "remaining": [
+        "Full original716 all actor/selector/stream/exit/launcher/native compatibility, including original transport/filename/pagination cases; private candidate does not replace live launcher",
+        "Existing company-knowledge native aliases require explicit versioned original compatibility, never silent wrapper/stdin change",
+        "Whole714/712 prerequisite and final installed manual desktop/release/cutover/retirement gates retained"
+      ],
+      "accepted_at": "2026-10-24T13:27:22.949113+00:00",
+      "report": "/tmp/rentemester-rust-reports/r72-original-inbox716-contracts-accepted.json",
+      "sha256": "52c48c55b9bc037811beab5e91703e70c10de2334283f4404a5a55b5c5807b63"
     }
   },
   "verified_history": [
@@ -18469,6 +18512,15 @@
         "All other original issues/J01-J07/release/cutover/retirement remain; installed manual desktop/physical OS sleep qualification last",
         "No original accepted outbound/CVR/VIES/financial effects replayed"
       ]
+    },
+    {
+      "increment": "R71/R72 original workspace inbox native CLI profile",
+      "issue": 716,
+      "whole_issue_accepted": false,
+      "report": "/tmp/rentemester-rust-reports/r72-original-inbox716-contracts-accepted.json",
+      "sha256": "52c48c55b9bc037811beab5e91703e70c10de2334283f4404a5a55b5c5807b63",
+      "source_revision": "5f034ba8956cfec959f9c01259ed334a4826a70f",
+      "contract_revision": "230deeabee09070ae157c1028d233b71fdf082be"
     }
   ],
   "scope_clarifications": [
@@ -18487,7 +18539,7 @@
   "workflow": {
     "task_state_authority": "GitHub issues remain authoritative for delivery status; SGD Go state owns local scoped execution only",
     "policy": "docs/development-workflow.md",
-    "current_issue": 688,
+    "current_issue": 716,
     "progress_file_role": "evidence/recovery facts only; no product or local execution queue",
     "product_acceptance_unchanged": true,
     "ci": {
