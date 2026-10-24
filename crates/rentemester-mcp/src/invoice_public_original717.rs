@@ -3,13 +3,16 @@ use rentemester_client::{ApiClient, Error, OriginalPublicInvoiceKind as Kind};
 use serde_json::{Value, json};
 
 pub fn accepts(name: &str) -> bool {
-    matches!(name, "peppol_submit_public_invoice" | "efaktura_send")
+    matches!(
+        name,
+        "peppol_submit_public_invoice" | "efaktura_send" | "efaktura_status"
+    )
 }
 fn object(properties: Value, required: &[&str]) -> Value {
     json!({"type":"object","properties":properties,"required":required,"additionalProperties":false})
 }
 pub fn tools() -> Vec<Value> {
-    ["peppol_submit_public_invoice", "efaktura_send"].into_iter().map(|name| {
+    let mut tools: Vec<Value> = ["peppol_submit_public_invoice", "efaktura_send"].into_iter().map(|name| {
         let peppol = name == "peppol_submit_public_invoice";
         let text = json!({"type":"string","minLength":1});
         let mut fields = json!({"company":text,"documentId":{"type":"integer","minimum":1,"maximum":9007199254740991u64},"invoiceNumber":{"type":"string"},"confirm":{"type":"boolean"}});
@@ -33,7 +36,20 @@ pub fn tools() -> Vec<Value> {
         tool["annotations"] = json!({"readOnlyHint":false,"destructiveHint":false,"idempotentHint":true,"openWorldHint":!peppol});
         tool["outputSchema"] = object(json!({"ok":{"type":"boolean"},"errors":{"type":"array","items":{"type":"string"}},"data":{"type":"object"},"appliedRules":{"type":"array","items":{"type":"string"}},"code":{"type":"string"}}),&["ok","errors"]);
         tool
-    }).collect()
+    }).collect();
+    let mut status = crate::tools::tool(
+        "efaktura_status",
+        "Status only for an accepted native Digisense submission; never delivers or reserves delivery. Acknowledged receipts are cached without provider I/O; nonterminal observations return ok:false. Explicit company slug and current human cookie, fresh MFA, CompanyExternalSend and current ledger binding required. Optional digisenseCompanyKey is an assertion, not configuration. One status observation at most; no retry, readback or status loop. Native evidence retained; 16KiB body and 16MiB response limits.",
+        object(
+            json!({"company":{"type":"string","minLength":1},"documentId":{"type":"integer","minimum":1,"maximum":9007199254740991u64},"digisenseCompanyKey":{"type":"string","minLength":1},"confirm":{"type":"boolean"}}),
+            &["company", "documentId"],
+        ),
+        false,
+    );
+    status["annotations"] = json!({"readOnlyHint":false,"destructiveHint":false,"idempotentHint":true,"openWorldHint":true});
+    status["outputSchema"] = tools[0]["outputSchema"].clone();
+    tools.push(status);
+    tools
 }
 fn result(value: Value) -> Value {
     json!({"content":[{"type":"text","text":value.to_string()}],"structuredContent":value,"isError":value["ok"]!=true})
@@ -54,16 +70,19 @@ fn xml_safe(s: &str) -> bool {
     !s.trim().is_empty() && s.len()<=4096 && s.chars().all(|c| matches!(c,'\t'|'\n'|'\r'|'\u{20}'..='\u{d7ff}'|'\u{e000}'..='\u{fffd}'|'\u{10000}'..='\u{10ffff}'))
 }
 pub async fn call(api: &ApiClient, name: &str, args: Value) -> Result<Value, &'static str> {
+    let status = name == "efaktura_status";
     let peppol = match name {
         "peppol_submit_public_invoice" => true,
-        "efaktura_send" => false,
+        "efaktura_send" | "efaktura_status" => false,
         _ => return Err("unknown public invoice tool"),
     };
     let mut o = args
         .as_object()
         .ok_or("expected original public invoice object")?
         .clone();
-    let allowed: &[&str] = if peppol {
+    let allowed: &[&str] = if status {
+        &["company", "documentId", "digisenseCompanyKey", "confirm"]
+    } else if peppol {
         &[
             "company",
             "documentId",
@@ -89,6 +108,9 @@ pub async fn call(api: &ApiClient, name: &str, args: Value) -> Result<Value, &'s
         .remove("company")
         .and_then(|v| v.as_str().filter(|s| !s.is_empty()).map(str::to_owned))
         .ok_or("company required")?;
+    if status && !o.contains_key("documentId") {
+        return Err("documentId required");
+    }
     if let Some(id) = o.get("documentId") {
         let n = id
             .as_f64()
@@ -145,7 +167,7 @@ pub async fn call(api: &ApiClient, name: &str, args: Value) -> Result<Value, &'s
             .is_some_and(|v| !v.as_str().is_some_and(|s| s.len() <= 256 && xml_safe(s)))
         || o.get("companyKey").is_some_and(|v| {
             !v.as_str()
-                .is_some_and(|s| s.len() <= 512 && !s.trim().is_empty())
+                .is_some_and(|s| s.len() <= 512 && (status || !s.trim().is_empty()))
         })
         || ["accessPoint", "acknowledgement"].iter().any(|k| {
             o.get(*k)
@@ -170,37 +192,40 @@ pub async fn call(api: &ApiClient, name: &str, args: Value) -> Result<Value, &'s
     } else {
         Kind::TransmitDigisense
     };
-    Ok(
-        match api.invoice_public_original(&company, kind, bytes).await {
-            Ok(mut core) => {
-                let fields = core.as_object_mut().unwrap();
-                let ok = fields.remove("ok").unwrap();
-                let errors = fields.remove("errors").unwrap();
-                let rules = fields.remove("appliedRules");
-                let mut envelope = json!({"ok":ok,"errors":errors});
-                if let Some(rules) = rules.filter(|v| {
-                    v.as_array()
-                        .is_some_and(|a| !a.is_empty() && a.iter().all(Value::is_string))
-                }) {
-                    envelope["appliedRules"] = rules;
-                }
-                if ok == true {
-                    envelope["data"] = core;
-                } else if let Some(code) = core.get("code").filter(|v| v.is_string()) {
-                    envelope["code"] = code.clone();
-                }
-                result(envelope)
+    let response = if status {
+        api.invoice_public_original_status(&company, bytes).await
+    } else {
+        api.invoice_public_original(&company, kind, bytes).await
+    };
+    Ok(match response {
+        Ok(mut core) => {
+            let fields = core.as_object_mut().unwrap();
+            let ok = fields.remove("ok").unwrap();
+            let errors = fields.remove("errors").unwrap();
+            let rules = fields.remove("appliedRules");
+            let mut envelope = json!({"ok":ok,"errors":errors});
+            if let Some(rules) = rules.filter(|v| {
+                v.as_array()
+                    .is_some_and(|a| !a.is_empty() && a.iter().all(Value::is_string))
+            }) {
+                envelope["appliedRules"] = rules;
             }
-            Err(e) => {
-                let code = match e {
-                    Error::InvalidInput(_) => "invalid_input",
-                    Error::Refused { .. } => "server_refused",
-                    Error::Transport => "transport",
-                    Error::Protocol => "protocol",
-                    Error::OutcomeUnknown => "outcome_unknown",
-                };
-                refusal(code, e)
+            if ok == true {
+                envelope["data"] = core;
+            } else if let Some(code) = core.get("code").filter(|v| v.is_string()) {
+                envelope["code"] = code.clone();
             }
-        },
-    )
+            result(envelope)
+        }
+        Err(e) => {
+            let code = match e {
+                Error::InvalidInput(_) => "invalid_input",
+                Error::Refused { .. } => "server_refused",
+                Error::Transport => "transport",
+                Error::Protocol => "protocol",
+                Error::OutcomeUnknown => "outcome_unknown",
+            };
+            refusal(code, e)
+        }
+    })
 }

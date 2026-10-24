@@ -545,6 +545,7 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
         .route("/api/companies/{slug}/invoices/original/export-public-oioubl", post(public_einvoice::handle))
         .route("/api/companies/{slug}/invoices/original/submit-public-peppol", post(public_einvoice::handle))
         .route("/api/companies/{slug}/invoices/original/transmit-digisense", post(public_einvoice::handle))
+        .route("/api/companies/{slug}/invoices/original/status-digisense", post(public_einvoice::handle))
         .route("/api/companies/{slug}/invoices/public-submissions", get(public_einvoice::handle))
         .route("/api/companies/{slug}/invoices/public-config", get(public_einvoice::handle))
         .route("/api/companies/{slug}/invoices/public-register", post(public_einvoice::handle))

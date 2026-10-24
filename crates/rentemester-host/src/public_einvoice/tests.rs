@@ -737,3 +737,227 @@ fn pair_current_identity_and_original_outbound_consent_do_not_imply_receive_cons
             .is_err()
     );
 }
+
+#[test]
+fn original_status_observe_only_binding_cache_pending_failed_and_revocation() {
+    use serde_json::json;
+    for terminal in ["delivered", "unable-to-deliver"] {
+        let (_dir, mut owner, _cookies, proof, _uid) = setup();
+        let (id, _) = issued(&mut owner);
+        register_provider(&mut owner);
+        assert!(
+            owner
+                .start_public_einvoice(
+                    &proof,
+                    &Fixed(NOW),
+                    Intent::OriginalStatus(json!({"documentId":id,"confirm":true})),
+                    "test"
+                )
+                .unwrap()
+                .outcome
+                .is_err()
+        );
+        let validation = pending(
+            owner
+                .start_public_einvoice(&proof, &Fixed(NOW), Intent::Send(id), "test")
+                .unwrap()
+                .outcome
+                .unwrap()
+                .value,
+        );
+        let delivery = pending(
+            owner
+                .finish_public_einvoice(&proof, &Fixed(NOW), validation, Outcome::Validated(true))
+                .unwrap()
+                .outcome
+                .unwrap()
+                .value,
+        );
+        owner
+            .finish_public_einvoice(
+                &proof,
+                &Fixed(NOW),
+                delivery,
+                Outcome::Delivered(Some(app::Observation {
+                    document_id: Some("provider-id".into()),
+                    status: "queued-for-delivery".into(),
+                })),
+            )
+            .unwrap()
+            .outcome
+            .unwrap();
+        assert!(
+            owner
+                .start_public_einvoice(
+                    &proof,
+                    &Fixed(NOW),
+                    Intent::OriginalStatus(
+                        json!({"documentId":id,"confirm":true,"companyKey":"wrong"})
+                    ),
+                    "test"
+                )
+                .unwrap()
+                .outcome
+                .is_err()
+        );
+        for key in [None, Some(" \t "), Some(" synthetic-key ")] {
+            let mut body = json!({"documentId":id,"confirm":true});
+            if let Some(key) = key {
+                body["companyKey"] = json!(key);
+            }
+            let observe = pending(
+                owner
+                    .start_public_einvoice(
+                        &proof,
+                        &Fixed(NOW),
+                        Intent::OriginalStatus(body),
+                        "test",
+                    )
+                    .unwrap()
+                    .outcome
+                    .unwrap()
+                    .value,
+            );
+            assert!(matches!(
+                observe.request(),
+                Request::Observe {
+                    company_key: "synthetic-key",
+                    document_id: "provider-id"
+                }
+            ));
+            let Next::Complete(row) = owner
+                .finish_public_einvoice(
+                    &proof,
+                    &Fixed(NOW),
+                    observe,
+                    Outcome::Observed(Some(app::Observation {
+                        document_id: Some("provider-id".into()),
+                        status: "queued-for-delivery".into(),
+                    })),
+                )
+                .unwrap()
+                .outcome
+                .unwrap()
+                .value
+            else {
+                panic!("one observation only")
+            };
+            assert_eq!(row["submission"]["status"], "prepared");
+        }
+        let observe = pending(
+            owner
+                .start_public_einvoice(
+                    &proof,
+                    &Fixed(NOW),
+                    Intent::OriginalStatus(json!({"documentId":id,"confirm":true})),
+                    "test",
+                )
+                .unwrap()
+                .outcome
+                .unwrap()
+                .value,
+        );
+        owner
+            .finish_public_einvoice(
+                &proof,
+                &Fixed(NOW),
+                observe,
+                Outcome::Observed(Some(app::Observation {
+                    document_id: Some("provider-id".into()),
+                    status: terminal.into(),
+                })),
+            )
+            .unwrap()
+            .outcome
+            .unwrap();
+        let Next::Complete(cached) = owner
+            .start_public_einvoice(
+                &proof,
+                &Fixed(NOW),
+                Intent::OriginalStatus(json!({"documentId":id,"confirm":true})),
+                "test",
+            )
+            .unwrap()
+            .outcome
+            .unwrap()
+            .value
+        else {
+            panic!("terminal must cache")
+        };
+        assert_eq!(
+            cached["submission"]["status"],
+            if terminal == "delivered" {
+                "acknowledged"
+            } else {
+                "failed"
+            }
+        );
+    }
+    for mutate_source in [false, true] {
+        let (dir, mut owner, _cookies, proof, _uid) = setup();
+        let (id, path) = issued(&mut owner);
+        register_provider(&mut owner);
+        let validation = pending(
+            owner
+                .start_public_einvoice(&proof, &Fixed(NOW), Intent::Send(id), "test")
+                .unwrap()
+                .outcome
+                .unwrap()
+                .value,
+        );
+        let delivery = pending(
+            owner
+                .finish_public_einvoice(&proof, &Fixed(NOW), validation, Outcome::Validated(true))
+                .unwrap()
+                .outcome
+                .unwrap()
+                .value,
+        );
+        owner
+            .finish_public_einvoice(
+                &proof,
+                &Fixed(NOW),
+                delivery,
+                Outcome::Delivered(Some(app::Observation {
+                    document_id: Some("provider-id".into()),
+                    status: "queued-for-delivery".into(),
+                })),
+            )
+            .unwrap()
+            .outcome
+            .unwrap();
+        let observe = pending(
+            owner
+                .start_public_einvoice(
+                    &proof,
+                    &Fixed(NOW),
+                    Intent::OriginalStatus(json!({"documentId":id,"confirm":true})),
+                    "test",
+                )
+                .unwrap()
+                .outcome
+                .unwrap()
+                .value,
+        );
+        if mutate_source {
+            std::fs::write(dir.path().join("workspace/a").join(path), b"tampered").unwrap();
+        } else {
+            revoke(&mut owner);
+        }
+        assert!(
+            owner
+                .finish_public_einvoice(
+                    &proof,
+                    &Fixed(NOW),
+                    observe,
+                    Outcome::Observed(Some(app::Observation {
+                        document_id: Some("provider-id".into()),
+                        status: "delivered".into()
+                    }))
+                )
+                .unwrap()
+                .outcome
+                .is_err()
+        );
+    }
+}

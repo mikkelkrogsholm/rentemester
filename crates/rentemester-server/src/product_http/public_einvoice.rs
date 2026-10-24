@@ -69,6 +69,7 @@ fn valid_original(action: &str, body: &Value) -> bool {
             "acknowledgement",
             "confirm",
         ],
+        "status-digisense" => &["documentId", "companyKey", "confirm"],
         "transmit-digisense" => &["documentId", "invoiceNumber", "companyKey", "confirm"],
         _ => return false,
     };
@@ -90,6 +91,14 @@ fn valid_original(action: &str, body: &Value) -> bool {
         return false;
     }
     if !o.contains_key("documentId") && !o.contains_key("invoiceNumber") {
+        return false;
+    }
+    if action == "status-digisense"
+        && (body["confirm"] != true
+            || !o.contains_key("documentId")
+            || o.get("companyKey")
+                .is_some_and(|k| !k.as_str().is_some_and(|s| !s.is_empty() && s.len() <= 512)))
+    {
         return false;
     }
     if action == "submit-public-peppol" {
@@ -130,11 +139,27 @@ fn original_result(value: Value) -> Value {
     row["errors"] = json!([]);
     row
 }
+fn original_status_result(value: Value) -> Value {
+    let Some(mut row) = value.get("submission").cloned() else {
+        return value;
+    };
+    let complete = matches!(row["status"].as_str(), Some("acknowledged" | "failed"));
+    row["ok"] = json!(complete);
+    row["appliedRules"] = json!(["DK-PEPPOL-SUBMIT-001"]);
+    row["errors"] = if complete {
+        json!([])
+    } else {
+        json!(["PEPPOL submission remains nonterminal"])
+    };
+    row
+}
 pub(super) async fn handle(State(state): State<Product>, request: Request) -> Response {
     // GET-backed HEAD must refuse before credentials or provider send dispatch.
     if request.method() == axum::http::Method::HEAD {
         let mut response = refused(StatusCode::METHOD_NOT_ALLOWED, "method_not_allowed");
-        response.headers_mut().insert("allow", axum::http::HeaderValue::from_static("GET"));
+        response
+            .headers_mut()
+            .insert("allow", axum::http::HeaderValue::from_static("GET"));
         return response;
     }
     let path = request.uri().path().to_owned();
@@ -175,7 +200,9 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
             if !valid_original(action, &body) {
                 return refused(StatusCode::BAD_REQUEST, "invalid_input");
             }
-            if action == "transmit-digisense" {
+            if action == "status-digisense" {
+                Some(Intent::OriginalStatus(body))
+            } else if action == "transmit-digisense" {
                 Some(Intent::OriginalSend(body))
             } else {
                 artifact = Some((
@@ -269,7 +296,9 @@ pub(super) async fn handle(State(state): State<Product>, request: Request) -> Re
         match drive(&state, &slug, &cookie, intent) {
             Ok(value) => response(
                 StatusCode::OK,
-                if original {
+                if path.ends_with("/original/status-digisense") {
+                    original_status_result(value)
+                } else if original {
                     original_result(value)
                 } else {
                     value
@@ -524,5 +553,41 @@ mod original_tests {
         assert_eq!(r["status"], "uncertain");
         assert_eq!(r["duplicate"], false);
         assert!(r["transmissionId"].is_null());
+    }
+}
+
+#[cfg(test)]
+mod original_tests_status {
+    use super::*;
+    #[test]
+    fn status_body_and_projection() {
+        for body in [
+            json!({"documentId":1,"confirm":true}),
+            json!({"documentId":1,"confirm":true,"companyKey":" \t"}),
+        ] {
+            assert!(valid_original("status-digisense", &body));
+        }
+        for body in [
+            json!({"invoiceNumber":"n","confirm":true}),
+            json!({"documentId":1,"confirm":false}),
+            json!({"documentId":1,"confirm":true,"companyKey":null}),
+            json!({"documentId":1,"confirm":true,"actor":"u"}),
+            json!({"documentId":1,"confirm":true,"companyKey":""}),
+        ] {
+            assert!(!valid_original("status-digisense", &body));
+        }
+        for (status, ok) in [
+            ("prepared", false),
+            ("acknowledged", true),
+            ("failed", true),
+        ] {
+            let result = original_status_result(
+                json!({"submission":{"status":status,"history":["canonical"],"envelope":"exact"}}),
+            );
+            assert_eq!(result["ok"], ok);
+            assert_eq!(result["errors"].as_array().unwrap().is_empty(), ok);
+            assert_eq!(result["envelope"], "exact");
+            assert_eq!(result["history"], json!(["canonical"]));
+        }
     }
 }
