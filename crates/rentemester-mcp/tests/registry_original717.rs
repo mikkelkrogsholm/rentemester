@@ -566,3 +566,14 @@ fn sdk_identity_rejects_unknown_fields_and_native_create_still_requires_role() {
         .unwrap_err();
     assert!(matches!(e, Error::InvalidInput(_)), "{e}");
 }
+
+#[test]
+fn identity_create_normalized_alias_duplicates() {
+    let (origin, server) = fixture("good");
+    let mut args = cases().into_iter().find(|(n,_)| *n=="workspace_party_create").unwrap().1;
+    args["aliases"] = json!([" Synthetic alias ", "Synthetic alias", "SYNTHETIC ALIAS"]);
+    let rows = run(&origin,session(vec![call(2,"workspace_party_create",args)]));
+    let requests=server.join().unwrap();
+    assert_eq!(requests.iter().filter(|(l,_)| l.starts_with("POST ")).count(),1);
+    assert_eq!(envelope(&rows[1])["ok"],true,"canonical alias rows legitimately deduplicate: {:?}", rows[1]);
+}

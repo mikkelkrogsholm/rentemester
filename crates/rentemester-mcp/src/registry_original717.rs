@@ -236,7 +236,7 @@ fn created_identity(p: &Value, args: &Value) -> bool {
     {
         return false;
     }
-    let aliases: Vec<String> = args["aliases"]
+    let aliases: std::collections::BTreeSet<String> = args["aliases"]
         .as_array()
         .into_iter()
         .flatten()
@@ -401,17 +401,8 @@ pub async fn call(api: &ApiClient, name: &str, args: Value) -> Result<Value, &'s
             }
         }
     }
-    if let Some(a) = args["aliases"].as_array() {
-        let mut seen = std::collections::BTreeSet::new();
-        for v in a {
-            if !text(v, 160)
-                || !seen.insert(
-                    rentemester_engine::company_knowledge::trim(v.as_str().unwrap()).to_lowercase(),
-                )
-            {
-                return Err("invalid or duplicate-equivalent alias");
-            }
-        }
+    if args["aliases"].as_array().is_some_and(|a| a.iter().any(|v| !text(v,160))) {
+        return Err("invalid bounded alias");
     }
     if let Some(a) = args["links"].as_array() {
         if a.len() > 4096 {
