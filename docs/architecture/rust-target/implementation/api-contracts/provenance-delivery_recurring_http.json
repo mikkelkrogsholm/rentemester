@@ -1,0 +1,192 @@
+{
+  "workIssue": 677,
+  "partition": "delivery_recurring_http",
+  "status": "specified",
+  "unresolved": [],
+  "sourceRefs": [
+    {
+      "path": "protocol/http-v1.json",
+      "sha256": "bd6a775bbe936332a718ee5b56b57ad3c40ac9bc35f8159219bb06d0313d3d15",
+      "needle": "/api/recurring-invoices/run-workspace"
+    },
+    {
+      "path": "crates/rentemester-server/src/main.rs",
+      "sha256": "d4d56f94b147b1e6540928f49f2a1dd28f0c8982436fe59b49a4e29f83004b6e",
+      "needle": "protocol::install(router, connected)"
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http.rs",
+      "sha256": "d008f013390a87c467b929b094abb4e23cc9921a72a2665d8df4d4dcbc537390",
+      "needle": "fn proof("
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http/documents.rs",
+      "sha256": "d6a25bf8f5b30b338a2734805d5a5219ed9bb8de118eeb491ad849df057d5acc",
+      "needle": "pub(super) fn outcome<T>"
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http/service_company.rs",
+      "sha256": "05a672ed51a2c952aba3f7d40ca15bcb0295fdcb907659f84e48dccf79100741",
+      "needle": "pub(super) fn failure("
+    },
+    {
+      "path": "crates/rentemester-server/src/protocol.rs",
+      "sha256": "e1076ab2b8185b48c03017658c75ef3a01b9abacdb75843f64cef4adfc6da38c",
+      "needle": "fn admitted("
+    },
+    {
+      "path": "crates/rentemester-host/src/lib.rs",
+      "sha256": "29e700859157eee32bfab98faeb122abbd2d830edbe6e84b2983eaac4fc324cd",
+      "needle": "fn document_action<T>"
+    },
+    {
+      "path": "crates/rentemester-application/src/control_fence.rs",
+      "sha256": "e5b1f8902693d649fc1a46e0c66dc902622781f2c9f65e051e6ed7df11e1ffa6",
+      "needle": "fn execute_resolved<T>"
+    },
+    {
+      "path": "crates/rentemester-application/src/service_company.rs",
+      "sha256": "f3da2c262feb5be6d0394e5693827fa7a1af4b839588956ea4a89e2110abf75e",
+      "needle": "pub enum UsageStage"
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http/invoice_email.rs",
+      "sha256": "fbfc6603f9063d5b3a2e2173652a6996c78571657b318cdd107afb1f335fd7bd",
+      "needle": "pub(super) async fn handle("
+    },
+    {
+      "path": "crates/rentemester-host/src/invoice_email.rs",
+      "sha256": "db25aa1b526fac97f17f8f6ded7057ad05799b469b17821e9a22553ba3c6052a",
+      "needle": "pub fn invoice_email_status("
+    },
+    {
+      "path": "crates/rentemester-application/src/invoice_email.rs",
+      "sha256": "b68f8d5b08be276526a30a398b445be4c35a08b4cb142de0b0bc75c336689677",
+      "needle": "pub fn status("
+    },
+    {
+      "path": "crates/rentemester-application/src/invoice_email/service.rs",
+      "sha256": "d249ba763102db86cf931e7c538ca1df444a56edca5708301ab7ca720249d832",
+      "needle": "pub fn status_service("
+    },
+    {
+      "path": "crates/rentemester-storage/src/invoice_email.rs",
+      "sha256": "b9a7f45d92d38cb7c9d6ef510d08a95f024b2d3847d772b764f3fdbf955d3724",
+      "needle": "pub fn rows("
+    },
+    {
+      "path": "crates/rentemester-runtime/src/invoice_mail.rs",
+      "sha256": "6839953998892259472b9a22d332c03e5155e1d62c2d18f28e64041744d38352",
+      "needle": "pub fn build("
+    },
+    {
+      "path": "crates/rentemester-client/src/invoice_email.rs",
+      "sha256": "7f3b86de1ebef6e62d810466531fd290bd7e5b7a0df8545a929f2fa6218b2885",
+      "needle": "pub fn invoice_email_body_schema("
+    },
+    {
+      "path": "crates/rentemester-server/src/backend.rs",
+      "sha256": "cec69cffd963d1601808c7f423447d378b83d175127db417f2b8ac27404bf333",
+      "needle": "pub(crate) fn lock_company("
+    },
+    {
+      "path": "crates/rentemester-application/src/sales.rs",
+      "sha256": "903b4ab83aa881c7d8a10e019978edc920b0177a8814a54a9c59303dae6f50d8",
+      "needle": "pub(crate) fn issue_payload_with_principal("
+    },
+    {
+      "path": "crates/rentemester-storage/src/sales.rs",
+      "sha256": "1871aeb62135de568f5b08b8ec7127218c86e3b9d28abfb25da244d567f864b1",
+      "needle": "pub fn register_with_principal("
+    },
+    {
+      "path": "crates/rentemester-engine/src/invoice_validation.rs",
+      "sha256": "c6b4983406542d83ede085f43132fa9bb9072a740141672600548ecb23ebe8c2",
+      "needle": "pub fn validate("
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http/recurring_invoices.rs",
+      "sha256": "00ded637b2600dcbe391aad63b99362529d223a55abb5347b81e01dfc2faf542",
+      "needle": "pub(super) async fn handle("
+    },
+    {
+      "path": "crates/rentemester-application/src/recurring_invoices.rs",
+      "sha256": "2d866dd5011f55249ec552267a82f9393a4760fdbd7db054fc4a0ecd2892ba7e",
+      "needle": "pub fn execute_service("
+    },
+    {
+      "path": "crates/rentemester-storage/src/recurring_invoices.rs",
+      "sha256": "d9a4a5104fe0e6ebd5f060766c8adb16d3deaa744bcc0d555fc435a73cdf4bf7",
+      "needle": "pub fn list("
+    },
+    {
+      "path": "crates/rentemester-client/src/recurring_invoices.rs",
+      "sha256": "3c3982b490d45b8378a54026c51dcf134ff0a5788fe087ed1316c2bf4f480643",
+      "needle": "pub fn recurring_invoice_body_schema("
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http/recurring_original.rs",
+      "sha256": "b60dd0463b96632d89ffd88c787056059c3ffb669ee38d3fdf13146da5034679",
+      "needle": "pub(super) async fn handle("
+    },
+    {
+      "path": "crates/rentemester-host/src/service_sales.rs",
+      "sha256": "c0ac15d8be0cd29e9c245cc9b5fda5ba3b3481dde490e4f7db674446a6449635",
+      "needle": "pub fn recurring_invoices_service("
+    },
+    {
+      "path": "crates/rentemester-storage/src/recurring_invoices/original.rs",
+      "sha256": "554a95e5327cb6d3d0f56e47c398deb44bb0b17168296a3f7f2b5477c6ab9dba",
+      "needle": "pub fn generation_result("
+    },
+    {
+      "path": "crates/rentemester-client/src/recurring_original.rs",
+      "sha256": "3d8c79b8fa2a6ec4d602ca4bbd71c6ca644fc481b72c9a324240646fac2ad6bd",
+      "needle": "pub fn recurring_workspace_schema("
+    },
+    {
+      "path": "crates/rentemester-storage/src/invoice_lifecycle.rs",
+      "sha256": "310e2cb3c0a9528d78848739e9a4dd72307839f35b98700a96d8bb33e3df5e62",
+      "needle": "pub fn validate("
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http/recurring_workspace.rs",
+      "sha256": "e0b4ffa5372d4531d0167da20cff246210ef0619c8ca2116f3b77a45015a7f11",
+      "needle": "pub(super) async fn handle("
+    },
+    {
+      "path": "crates/rentemester-host/src/recurring_workspace.rs",
+      "sha256": "1b4684f5ae2522c74dc25e1c6073e9ab68c5452bbf7011d8093729fca5784813",
+      "needle": "pub fn recurring_workspace_catalog("
+    },
+    {
+      "path": "crates/rentemester-application/src/recurring_workspace.rs",
+      "sha256": "8c4c98980d4e2569ca2d9c4ae1b3a1117907badcd4e3ebc1502c9fdc72b3bbda",
+      "needle": "pub fn execute("
+    },
+    {
+      "path": "crates/rentemester-storage/src/recurring_workspace.rs",
+      "sha256": "ba5298e4985ab47bc0e5598f0d2e9ffcccf44a4cf81dcaf1c11969f84100ec2f",
+      "needle": "pub fn plan("
+    },
+    {
+      "path": "crates/rentemester-storage/src/recurring_workspace/validation.rs",
+      "sha256": "5bf065d3ba0b90a215476383b85185f3f33de7d7542952d4a70e62a6acf25f3b",
+      "needle": "pub fn validate_history("
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http/public_einvoice.rs",
+      "sha256": "6c4937ba60b7c93ca86880d8dbf332d8fcf4429db649f03f4aab88b277a4d363",
+      "needle": "pub(super) fn drive("
+    }
+  ],
+  "method": "Source-only full native advertisement -> global protocol -> product proof/parser -> Owner -> application current fences -> storage producer and recovery. SDK input discovery is not exact success proof.",
+  "retainedEvidence": "Existing #692/#709/#711/R44 retained at original scope without replay. Accepted17765f15 sales HEAD and169606f1 recurring HEAD early405 source retained; existing ten HEAD fixture RED/GREEN not replayed against ledger.",
+  "acceptance": "Only15 selected HTTP identities; parent owns semantic acceptance. Full #677 all advertised operations/all55/J01-J07/final manual desktop/release/cutover/retirement remain open.",
+  "validation": {
+    "oracle": "python3 /tmp/r49-677-oracle.py delivery_recurring_http",
+    "result": "PASS exactselected delivery_recurring_http 15 resolved sourcebound schema contracts; semanticreview required; whole677 remains open",
+    "graphExtraction": "graphify extract . --code-only --no-cluster --out \"$SGD_BUILD_DIR/graphify\" completed; 34009 nodes,107681 edges; independent output only",
+    "effects": "No Cargo/server/browser/network/provider/mail/financial/consent/job/auth calls"
+  }
+}
