@@ -1,0 +1,8 @@
+{
+  "issue": 677,
+  "partition": "financial_reports_audit",
+  "status": "specified",
+  "unresolved": [],
+  "method": "Graphify query first; actual immutable Rust source inspection; source-only oracle. No runtime effects or replay.",
+  "sourceRefs": []
+}
