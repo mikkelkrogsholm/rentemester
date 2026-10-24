@@ -17,6 +17,10 @@ pub fn company_creation_body_schema() -> Value {
         json!({
             "name":{"type":"string","minLength":1,"maxLength":1024},
             "slug":text,"cvr":text,
+            "address":{"type":["string","null"],"maxLength":1024},
+            "postalCode":{"type":["string","null"],"maxLength":1024},
+            "city":{"type":["string","null"],"maxLength":1024},
+            "paymentTermsDays":{"type":["integer","null"],"minimum":0,"maximum":365},
             "fiscalYearStartMonth":{"type":["string","null"],"description":"Native string month 1 through 12; omitted uses server default"},
             "fiscalYearLabelStrategy":{"type":["string","null"],"description":"Native end-year/start-year/span; server validates"},
             "vatPeriodType":{"type":["string","null"],"description":"Native month/quarter/half-year or explicit null for no VAT registration; omitted uses server default"},
@@ -74,5 +78,51 @@ impl ApiClient {
             return Err(Error::OutcomeUnknown);
         }
         Ok(value)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn accepts(value: Value) -> bool {
+        body(
+            &serde_json::to_vec(&value).unwrap(),
+            &company_creation_body_schema(),
+        )
+        .is_ok()
+    }
+
+    #[test]
+    fn creation_schema_extends_identity_without_changing_old_inputs() {
+        for value in [
+            json!({"name":"Synthetic"}),
+            json!({"name":"Synthetic","address":null,"postalCode":null,"city":null,"paymentTermsDays":null}),
+            json!({"name":"Synthetic","address":" Road 1 ","postalCode":"1234","city":"Town","paymentTermsDays":0}),
+            json!({"name":"Synthetic","address":"","postalCode":" ","city":"Town","paymentTermsDays":365,"payment":{"bankName":"Synthetic bank"}}),
+        ] {
+            assert!(accepts(value));
+        }
+    }
+
+    #[test]
+    fn creation_schema_refuses_wrong_types_ranges_and_unknown_authority() {
+        for (field, value) in [
+            ("paymentTermsDays", json!(-1)),
+            ("paymentTermsDays", json!(366)),
+            ("paymentTermsDays", json!(1.5)),
+            ("paymentTermsDays", json!("0")),
+            ("paymentTermsDays", json!(false)),
+            ("address", json!(7)),
+            ("postalCode", json!([])),
+            ("city", json!({})),
+            ("city", json!("x".repeat(1025))),
+            ("actor", json!("user:synthetic")),
+            ("companyId", json!(1)),
+        ] {
+            let mut input = json!({"name":"Synthetic"});
+            input[field] = value;
+            assert!(!accepts(input), "accepted invalid {field}");
+        }
     }
 }
