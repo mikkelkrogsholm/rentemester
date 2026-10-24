@@ -154,16 +154,20 @@ fn party(linked: bool) -> Value {
     }
     p
 }
-fn observe(
+fn observe(op: &str, response: Value, extra: &[&str], protocol: bool) -> (Output, Vec<(String, Value)>) {
+    observe_input(op, response, extra, protocol, identity())
+}
+fn observe_input(
     op: &str,
     response: Value,
     extra: &[&str],
     protocol: bool,
+    input_body: Value,
 ) -> (Output, Vec<(String, Value)>) {
     let (origin, worker) = fixture(response, 200, protocol);
     let cookie = cookie();
     let input = cookie.with_extension("json");
-    std::fs::write(&input, identity().to_string()).unwrap();
+    std::fs::write(&input, input_body.to_string()).unwrap();
     let mut a = vec![
         "party".to_owned(),
         op.into(),
@@ -333,5 +337,24 @@ fn strict_flags_and_actor_no_mutation() {
                 .iter()
                 .any(|c| c["name"] == n)
         );
+    }
+}
+
+#[test]
+fn original_absent_null_and_empty_party_id_are_allocated_only_by_server() {
+    for selector in [None, Some(Value::Null), Some(json!(""))] {
+        let mut input = identity();
+        input.as_object_mut().unwrap().remove("partyId");
+        if let Some(v) = selector { input["partyId"] = v; }
+        let mut canonical = party(false);
+        canonical["partyId"] = json!("party-server-generated");
+        let (out, requests) = observe_input("create", json!({"ok":true,"party":canonical.clone()}), &["--json"], true, input.clone());
+        assert_eq!(out.status.code(), Some(0), "input={} stdout={} stderr={}", input, String::from_utf8_lossy(&out.stdout), String::from_utf8_lossy(&out.stderr));
+        assert!(out.stderr.is_empty());
+        assert_eq!(serde_json::from_slice::<Value>(&out.stdout).unwrap(), json!({"ok":true,"party":canonical}));
+        input["confirm"] = json!(true);
+        assert_eq!(requests.len(), 1);
+        assert_eq!(requests[0].0, "POST /api/companies/synthetic/workspace-parties/create-identity HTTP/1.1");
+        assert_eq!(requests[0].1, input);
     }
 }

@@ -529,7 +529,9 @@ fn created_identity(p: &Value, args: &Value) -> bool {
             .any(|k| p[k].as_str() != args[k].as_str().map(trim))
         || args
             .get("partyId")
-            .is_some_and(|id| p["partyId"].as_str() != id.as_str().map(trim))
+            .and_then(Value::as_str)
+            .filter(|id| !id.is_empty())
+            .is_some_and(|id| p["partyId"].as_str() != Some(trim(id)))
         || p["observedAt"].as_str() != iso(args["observedAt"].as_str().unwrap()).ok().as_deref()
         || !p["history"]
             .as_array()
@@ -644,7 +646,7 @@ fn lifecycle(f: &BTreeMap<&str, &str>, machine: bool, op: &str) -> Output {
                 }
             }
             if !body["observedAt"].as_str().is_some_and(|s| iso(s).is_ok())
-                || body.get("partyId").is_some_and(|v| !id(v))
+                || body.get("partyId").is_some_and(|v| !v.is_null() && v != "" && !id(v))
             {
                 return Err(usage("Invalid identity selector or ISO instant"));
             }
