@@ -38816,6 +38816,451 @@
         "--cookie-file"
       ],
       "additionalProperties": false
+    },
+    "Group716ReportRaw": {
+      "type": "object",
+      "properties": {
+        "lineId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "byCompany": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "companySlug": {
+                "type": "string",
+                "minLength": 1
+              },
+              "amount": {
+                "type": "number",
+                "minimum": -90071992547409.9,
+                "maximum": 90071992547409.9,
+                "description": "Only canonical native decimal strings with safe integer cents and exact JSON-number decimal round trip are projected; otherwise exit1."
+              },
+              "sourceHashes": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "pattern": "^[0-9a-f]{64}$"
+                }
+              }
+            },
+            "required": [
+              "companySlug",
+              "amount",
+              "sourceHashes"
+            ],
+            "additionalProperties": true
+          }
+        },
+        "total": {
+          "type": "number",
+          "minimum": -90071992547409.9,
+          "maximum": 90071992547409.9,
+          "description": "Only canonical native decimal strings with safe integer cents and exact JSON-number decimal round trip are projected; otherwise exit1."
+        }
+      },
+      "required": [
+        "lineId",
+        "byCompany",
+        "total"
+      ],
+      "additionalProperties": true
+    },
+    "Group716ReportElimination": {
+      "type": "object",
+      "properties": {
+        "eliminationId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "payloadHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "adjustments": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "lineId": {
+                "type": "string",
+                "minLength": 1
+              },
+              "amount": {
+                "type": "number",
+                "minimum": -90071992547409.9,
+                "maximum": 90071992547409.9,
+                "description": "Only canonical native decimal strings with safe integer cents and exact JSON-number decimal round trip are projected; otherwise exit1."
+              }
+            },
+            "required": [
+              "lineId",
+              "amount"
+            ],
+            "additionalProperties": true
+          }
+        }
+      },
+      "required": [
+        "eliminationId",
+        "payloadHash",
+        "adjustments"
+      ],
+      "additionalProperties": true
+    },
+    "Group716ReportFigure": {
+      "type": "object",
+      "properties": {
+        "lineId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1
+        },
+        "section": {
+          "enum": [
+            "asset",
+            "liability",
+            "equity",
+            "income",
+            "expense"
+          ]
+        },
+        "rawCompanySum": {
+          "type": "number",
+          "minimum": -90071992547409.9,
+          "maximum": 90071992547409.9,
+          "description": "Only canonical native decimal strings with safe integer cents and exact JSON-number decimal round trip are projected; otherwise exit1."
+        },
+        "eliminationAdjustment": {
+          "type": "number",
+          "minimum": -90071992547409.9,
+          "maximum": 90071992547409.9,
+          "description": "Only canonical native decimal strings with safe integer cents and exact JSON-number decimal round trip are projected; otherwise exit1."
+        },
+        "consolidatedAmount": {
+          "type": "number",
+          "minimum": -90071992547409.9,
+          "maximum": 90071992547409.9,
+          "description": "Only canonical native decimal strings with safe integer cents and exact JSON-number decimal round trip are projected; otherwise exit1."
+        }
+      },
+      "required": [
+        "lineId",
+        "label",
+        "section",
+        "rawCompanySum",
+        "eliminationAdjustment",
+        "consolidatedAmount"
+      ],
+      "additionalProperties": true
+    },
+    "Group716ConsolidatedReport": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "scope": {
+              "const": "consolidated-report"
+            },
+            "period": {
+              "type": "object",
+              "properties": {
+                "from": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "to": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "from",
+                "to"
+              ],
+              "additionalProperties": false
+            },
+            "status": {
+              "const": "ready"
+            },
+            "blockers": {
+              "type": "array",
+              "maxItems": 0
+            },
+            "profileId": {
+              "type": "string",
+              "minLength": 1
+            },
+            "profileHash": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "groupId": {
+              "type": "string",
+              "minLength": 1
+            },
+            "currency": {
+              "type": "string",
+              "minLength": 1
+            },
+            "rawCompanySums": {
+              "type": "array",
+              "items": {
+                "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/Group716ReportRaw"
+              }
+            },
+            "appliedEliminations": {
+              "type": "array",
+              "items": {
+                "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/Group716ReportElimination"
+              }
+            },
+            "sourceSnapshots": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "companySlug": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "ledgerHeadHash": {
+                    "oneOf": [
+                      {
+                        "type": "string",
+                        "pattern": "^[0-9a-f]{64}$"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "entryCount": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  }
+                },
+                "required": [
+                  "companySlug",
+                  "ledgerHeadHash",
+                  "entryCount"
+                ],
+                "additionalProperties": true
+              }
+            },
+            "consolidatedFigures": {
+              "type": "array",
+              "items": {
+                "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/Group716ReportFigure"
+              },
+              "minItems": 1
+            }
+          },
+          "required": [
+            "ok",
+            "scope",
+            "period",
+            "status",
+            "blockers",
+            "rawCompanySums",
+            "appliedEliminations",
+            "sourceSnapshots",
+            "consolidatedFigures",
+            "profileId",
+            "profileHash",
+            "groupId",
+            "currency"
+          ],
+          "additionalProperties": true
+        },
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "scope": {
+              "const": "consolidated-report"
+            },
+            "period": {
+              "type": "object",
+              "properties": {
+                "from": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "to": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "from",
+                "to"
+              ],
+              "additionalProperties": false
+            },
+            "status": {
+              "const": "blocked"
+            },
+            "blockers": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              },
+              "minItems": 1
+            },
+            "profileId": {
+              "type": "string",
+              "minLength": 1
+            },
+            "profileHash": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "groupId": {
+              "type": "string",
+              "minLength": 1
+            },
+            "currency": {
+              "type": "string",
+              "minLength": 1
+            },
+            "rawCompanySums": {
+              "type": "array",
+              "items": {
+                "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/Group716ReportRaw"
+              }
+            },
+            "appliedEliminations": {
+              "type": "array",
+              "items": {
+                "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/Group716ReportElimination"
+              }
+            },
+            "sourceSnapshots": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "companySlug": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "ledgerHeadHash": {
+                    "oneOf": [
+                      {
+                        "type": "string",
+                        "pattern": "^[0-9a-f]{64}$"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "entryCount": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  }
+                },
+                "required": [
+                  "companySlug",
+                  "ledgerHeadHash",
+                  "entryCount"
+                ],
+                "additionalProperties": true
+              }
+            },
+            "consolidatedFigures": {
+              "type": "null"
+            }
+          },
+          "required": [
+            "ok",
+            "scope",
+            "period",
+            "status",
+            "blockers",
+            "rawCompanySums",
+            "appliedEliminations",
+            "sourceSnapshots",
+            "consolidatedFigures"
+          ],
+          "additionalProperties": true
+        }
+      ]
+    },
+    "Group716_consolidated_reportInput": {
+      "type": "object",
+      "properties": {
+        "--workspace": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--company": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--server": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--local-profile": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--cookie-file": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--json": {
+          "type": "boolean"
+        },
+        "--format": {
+          "enum": [
+            "json",
+            "human"
+          ]
+        },
+        "--allow-loopback-http": {
+          "type": "boolean"
+        },
+        "--help": {
+          "type": "boolean"
+        },
+        "--profile-id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--from": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--as-of": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "--company",
+        "--cookie-file",
+        "--profile-id",
+        "--from",
+        "--as-of"
+      ],
+      "additionalProperties": false
     }
   }
 }

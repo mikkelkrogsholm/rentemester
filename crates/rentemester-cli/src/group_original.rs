@@ -1054,32 +1054,136 @@ async fn run(api: &ApiClient, op: &str, f: &BTreeMap<&str, &str>) -> Result<Valu
             .group_consolidated_report(f["--profile-id"], f["--from"], f["--as-of"])
             .await
             .map_err(|e| client_error(e, false))?;
-        if v["ok"] != true
-            || v["scope"] != "consolidated-report"
-            || v["period"] != json!({"from":f["--from"],"to":f["--as-of"]})
-            || !v["blockers"].is_array()
-        {
-            return Err(error("Malformed consolidated report", "protocol"));
-        }
-        if v["status"] == "blocked" || !v["blockers"].as_array().unwrap().is_empty() {
-            return Err(error(
-                "Consolidated report blocked; no partial figures admitted",
-                "consolidation_blocked",
-            ));
-        }
-        if v["status"] != "ready"
-            || v["profileId"] != f["--profile-id"]
-            || !hash(&v["profileHash"])
-            || !v["rawCompanySums"].is_array()
-            || !v["appliedEliminations"].is_array()
-            || !v["sourceSnapshots"].is_array()
-            || !v["consolidatedFigures"].is_object()
-        {
-            return Err(error("Missing consolidated figures", "protocol"));
-        }
-        return Ok(v);
+        return project_consolidated_report(v, f["--profile-id"], f["--from"], f["--as-of"])
+            .ok_or_else(|| {
+                error(
+                    "Malformed or unrepresentable consolidated report",
+                    "protocol",
+                )
+            });
     }
     Err(error("Unsupported group command", "invalid_input"))
+}
+// Convert only documented source money fields, never accounting calculations.
+// Require an exact canonical decimal -> safe source JSON number -> decimal round trip.
+fn source_money(v: &mut Value) -> Option<()> {
+    use rentemester_engine::money::Money;
+    let raw = v.as_str()?;
+    let money = Money::parse(raw).ok()?;
+    if money.decimal() != raw {
+        return None;
+    }
+    let cents = raw
+        .trim_start_matches('-')
+        .replace('.', "")
+        .parse::<u64>()
+        .ok()?;
+    if cents > 9_007_199_254_740_991 {
+        return None;
+    }
+    let number = raw.parse::<serde_json::Number>().ok()?;
+    let numeric = Value::Number(number);
+    let spelling = rentemester_engine::imported_receivables::canonical(&numeric).ok()?;
+    if Money::parse(&spelling).ok()? != money {
+        return None;
+    }
+    *v = Value::Number(spelling.parse().ok()?);
+    Some(())
+}
+fn report_text(v: &Value, key: &str) -> bool {
+    v[key].as_str().is_some_and(|s| !s.is_empty())
+}
+fn project_consolidated_report(mut v: Value, profile: &str, from: &str, to: &str) -> Option<Value> {
+    if v["ok"] != true
+        || v["scope"] != "consolidated-report"
+        || v["period"] != json!({"from":from,"to":to})
+    {
+        return None;
+    }
+    let blockers = v["blockers"].as_array()?;
+    if !blockers
+        .iter()
+        .all(|v| v.as_str().is_some_and(|s| !s.is_empty()))
+    {
+        return None;
+    }
+    match v["status"].as_str()? {
+        "blocked"
+            if !blockers.is_empty() && v.get("consolidatedFigures").is_some_and(Value::is_null) => {
+        }
+        "ready"
+            if blockers.is_empty()
+                && v["profileId"] == profile
+                && hash(&v["profileHash"])
+                && report_text(&v, "groupId")
+                && report_text(&v, "currency")
+                && v["consolidatedFigures"].is_array() => {}
+        _ => return None,
+    }
+    if v.get("profileId").is_some_and(|id| id != profile) {
+        return None;
+    }
+    for row in v["rawCompanySums"].as_array_mut()? {
+        if !report_text(row, "lineId") {
+            return None;
+        }
+        source_money(row.get_mut("total")?)?;
+        for company in row["byCompany"].as_array_mut()? {
+            if !report_text(company, "companySlug")
+                || !company["sourceHashes"].as_array()?.iter().all(hash)
+            {
+                return None;
+            }
+            source_money(company.get_mut("amount")?)?;
+        }
+    }
+    for row in v["appliedEliminations"].as_array_mut()? {
+        if !report_text(row, "eliminationId") || !hash(&row["payloadHash"]) {
+            return None;
+        }
+        for adjustment in row["adjustments"].as_array_mut()? {
+            if !report_text(adjustment, "lineId") {
+                return None;
+            }
+            source_money(adjustment.get_mut("amount")?)?;
+        }
+    }
+    for source in v["sourceSnapshots"].as_array()? {
+        if !report_text(source, "companySlug")
+            || !source
+                .get("ledgerHeadHash")
+                .is_some_and(|v| v.is_null() || hash(v))
+            || source["entryCount"]
+                .as_u64()
+                .is_none_or(|n| n > 9_007_199_254_740_991)
+        {
+            return None;
+        }
+    }
+    if let Some(figures) = v["consolidatedFigures"].as_array_mut() {
+        if figures.is_empty() {
+            return None;
+        }
+        for row in figures {
+            if !report_text(row, "lineId")
+                || !report_text(row, "label")
+                || !matches!(
+                    row["section"].as_str(),
+                    Some("asset" | "liability" | "equity" | "income" | "expense")
+                )
+            {
+                return None;
+            }
+            for key in [
+                "rawCompanySum",
+                "eliminationAdjustment",
+                "consolidatedAmount",
+            ] {
+                source_money(row.get_mut(key)?)?;
+            }
+        }
+    }
+    Some(v)
 }
 fn emit(v: Value, f: &BTreeMap<&str, &str>, op: &str) -> Output {
     let ok = v["ok"] == true;

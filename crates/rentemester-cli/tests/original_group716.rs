@@ -579,3 +579,113 @@ fn elimination_lifecycle_strict_explicit_sourcehash_and_reconcile_projection() {
         assert!(wires.iter().all(|s| s.starts_with("GET ")));
     }
 }
+
+// Production producer: engine/consolidation.rs::calculate returns arrays and
+// Money decimal strings; blocked reports keep source evidence and null figures.
+fn native_consolidated_report() -> Value {
+    use rentemester_engine::consolidation::{self, Ledger, Profile};
+    let profile: Profile = serde_json::from_str(include_str!(
+        "../../rentemester-engine/src/consolidation/profile-source-canonical.json"
+    ))
+    .unwrap();
+    let ledgers: Vec<Ledger> = ["a","b"].into_iter().map(|slug| serde_json::from_value(json!({
+        "companySlug":slug,"currency":"DKK","ledgerHeadHash":"d".repeat(64),"entryCount":1,
+        "accounts":[{"accountNo":"1000","accountType":"asset","active":true},{"accountNo":"3000","accountType":"income","active":true}],
+        "pnl":[{"accountNo":"3000","accountType":"income","amount":"-12.34","sourceHash":"b".repeat(64)}],
+        "cumulativeResult":[{"accountNo":"3000","accountType":"income","amount":"-12.34","sourceHash":"b".repeat(64)}],
+        "balance":[{"accountNo":"1000","accountType":"asset","amount":"12.34","sourceHash":"b".repeat(64)}]
+    })).unwrap()).collect();
+    let mut report = consolidation::calculate(
+        &profile,
+        &"a".repeat(64),
+        "2026-01-01",
+        "2026-10-20",
+        &ledgers,
+        &[],
+        &[],
+        vec![],
+        |s| rentemester_engine::sha256_bytes(s.as_bytes()),
+    )
+    .unwrap();
+    assert_eq!(report["status"], "ready");
+    // The HTTP producer adds ok after the common engine returns.
+    report["ok"] = json!(true);
+    report
+}
+#[test]
+fn consolidated_report_native_arrays_checked_numbers_and_blocked_source_read() {
+    let flags = || {
+        strings(&[
+            "--profile-id",
+            "synthetic-profile",
+            "--from",
+            "2026-01-01",
+            "--as-of",
+            "2026-10-20",
+        ])
+    };
+    let native = native_consolidated_report();
+    let mut expected = native.clone();
+    for row in expected["rawCompanySums"].as_array_mut().unwrap() {
+        row["total"] = json!(24.68);
+        for company in row["byCompany"].as_array_mut().unwrap() {
+            company["amount"] = json!(12.34);
+        }
+    }
+    for row in expected["consolidatedFigures"].as_array_mut().unwrap() {
+        let amount = if matches!(row["lineId"].as_str(), Some("assets" | "result" | "sales")) {
+            json!(24.68)
+        } else {
+            json!(0)
+        };
+        row["rawCompanySum"] = amount.clone();
+        row["eliminationAdjustment"] = json!(0);
+        row["consolidatedAmount"] = amount;
+    }
+    let (out, wires) = invoke("consolidated-report", flags(), native.clone(), false);
+    assert_eq!(
+        out.status.code(),
+        Some(0),
+        "{}",
+        String::from_utf8_lossy(&out.stdout)
+    );
+    assert!(out.stderr.is_empty());
+    assert_eq!(
+        serde_json::from_slice::<Value>(&out.stdout).unwrap(),
+        expected
+    );
+    assert_eq!(wires.len(), 1);
+    assert!(wires[0].starts_with("GET /api/group-consolidated-report?"));
+    // The producer returns a truthful blocked read, not a failed command or partial figures.
+    let blocked = json!({"ok":true,"scope":"consolidated-report","period":{"from":"2026-01-01","to":"2026-10-20"},"status":"blocked","blockers":["all active group companies must be visible"],"rawCompanySums":[],"appliedEliminations":[],"consolidatedFigures":null,"sourceSnapshots":[]});
+    let (out, wires) = invoke("consolidated-report", flags(), blocked.clone(), false);
+    assert_eq!(out.status.code(), Some(0));
+    assert!(out.stderr.is_empty());
+    assert_eq!(
+        serde_json::from_slice::<Value>(&out.stdout).unwrap(),
+        blocked
+    );
+    assert_eq!(wires.len(), 1);
+    for bad in 0..6 {
+        let mut v = native.clone();
+        match bad {
+            0 => v["consolidatedFigures"] = json!({}),
+            1 => v["status"] = json!("invented"),
+            2 => {
+                v["status"] = json!("blocked");
+                v["blockers"] = json!(["blocked"]);
+            }
+            3 => v["rawCompanySums"][0]["total"] = json!("90071992547409.91"),
+            4 => v["blockers"] = json!(["blocked"]),
+            _ => v["consolidatedFigures"][0]["consolidatedAmount"] = json!("NaN"),
+        }
+        let (out, wires) = invoke("consolidated-report", flags(), v, false);
+        assert_eq!(out.status.code(), Some(1), "case{bad}");
+        assert!(out.stderr.is_empty());
+        assert_eq!(
+            serde_json::from_slice::<Value>(&out.stdout).unwrap()["ok"],
+            false
+        );
+        assert_eq!(wires.len(), 1);
+    }
+}

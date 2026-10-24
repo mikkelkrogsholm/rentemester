@@ -231,12 +231,12 @@
     },
     {
       "path": "crates/rentemester-cli/src/group_original.rs",
-      "sha256": "8b7ca3f485c6aa5c22da29b558f12741f6cfe6841caa600d6f5f94fe8f8c72ff",
+      "sha256": "1192b660818d4d0f74e25cea0eef66bb59c756c8ef9a02d03075b8f3e20e4289",
       "needle": "pub fn execute"
     },
     {
       "path": "crates/rentemester-cli/tests/original_group716.rs",
-      "sha256": "1d10cbae274bac166a6f97a8df8856adf88a370ec40fcd825d6dc68c72d118e7",
+      "sha256": "bdcb7a76a357fefa1c05db376e9ba40362d48fbcf42e2bb28de3808644ef7558",
       "needle": "const BIN"
     },
     {
@@ -475,7 +475,7 @@
     "unknown remote flag; see remote --help",
     "update/deletion requires positive --id"
   ],
-  "operationCount": 114,
+  "operationCount": 115,
   "validation": {
     "oracle": "/tmp/r57-677-oracle.py ownership_corporate_dispositions",
     "scope": "Exact selected IDs, source hashes, strict schema resolution; actual semantic review remains main-owned.",
@@ -2362,14 +2362,32 @@
   },
   "groupOriginal716": {
     "status": "partial_candidate_not_accepted",
-    "operationRows": 21,
+    "operationRows": 22,
     "tested": "Actual compiled CLI current642route protocol synthetic HTTP. Eight disposition keys, three validators, manifest/mapping/profile lifecycles and five elimination lifecycle keys plus reconciliation/list exercised.",
     "missingProof": [
       "overview SDK capability absent",
-      "consolidated-report positive native producer receipt fixture",
       "Unix owner binding/current authority negative fixtures",
       "strict partition oracle not run",
       "complete source projection and strict receipt review for non-disposition reads"
-    ]
+    ],
+    "reportRepair": {
+      "scope": "Three diagnosed consolidated-report defects only; ready native array, checked exact source numbers, blocked authoritative read preserves null figures/blockers/evidence exit0. Other rows/definitions preserved.",
+      "tests": "Existing compiled original_group716 target; actual common engine calculate fixture, RED array rejection then GREEN ready/blocked and malformed/unsafe cases.",
+      "redLog": "/tmp/r83-group-report-red.log",
+      "greenLog": "/tmp/r83-group-report-green.log",
+      "whole716Accepted": false,
+      "producer": "Ready fixture calls existing rentemester_engine::consolidation::calculate with existing canonical profile, two synthetic ledgers and SHA256 source evidence; actual arrays/decimal strings, no financial runtime.",
+      "result": "PASS all6 compiled original_group716 tests; actual native producer ready, canonical numeric amounts, blocked null read, six malformed/unsafe cases; no retry.",
+      "evidenceHashes": {
+        "/tmp/r83-group-report-red.log": "8672fd17a8c50cc9f1eacf0bad4b802786432f175910805dd3051cab5540a1ca",
+        "/tmp/r83-group-report-green.log": "9c7339878772e965b4d2d625271d92dae096e922364eb2338a7625bcd4b87bfa"
+      },
+      "graphify": {
+        "command": "graphify extract . --code-only --no-cluster --out \"$SGD_BUILD_DIR/graphify\"",
+        "result": "completed successfully; independent worker build output only",
+        "log": "/tmp/r83-group-report-graphify.log",
+        "sha256": "ec86e5fdfb957a8bd1bed60c3db36ab1f713fb17f6b3edee5b36cce278f1529f"
+      }
+    }
   }
 }
