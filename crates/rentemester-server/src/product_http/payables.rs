@@ -6,6 +6,12 @@ enum Command {
     Pay(i64, rentemester_storage::payables::Payment),
 }
 pub(super) async fn handle(State(state): State<Product>, request: Request) -> Response {
+    // A GET-backed HEAD must never select payable registration.
+    if request.method() == axum::http::Method::HEAD {
+        let mut response = refused(StatusCode::METHOD_NOT_ALLOWED, "method_not_allowed");
+        response.headers_mut().insert("allow", axum::http::HeaderValue::from_static("GET"));
+        return response;
+    }
     let company_slug = request
         .uri()
         .path()

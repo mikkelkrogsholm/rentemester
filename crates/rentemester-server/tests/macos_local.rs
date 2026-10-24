@@ -176,7 +176,7 @@ async fn sales_head_requests_cannot_enter_mutation_dispatch() {
     let originals = artifacts(&root.join("a"));
     let client = reqwest::Client::builder().no_proxy().build().unwrap();
     let invoice = r#"{"issueDate":"2026-01-01","buyer":{"name":"Synthetic Buyer","address":"Synthetic Street"},"lines":[{"description":"Synthetic","quantity":1,"unitPriceExVat":100}]}"#;
-    for path in ["contacts", "invoices", "invoices/1/pdf", "recurring-invoices", "recurring-invoices/original/list", "accounts", "company", "accounting-drafts", "posting-rules", "reviewed-bank"] {
+    for path in ["contacts", "invoices", "invoices/1/pdf", "recurring-invoices", "recurring-invoices/original/list", "accounts", "company", "accounting-drafts", "posting-rules", "reviewed-bank", "payables"] {
         for body in ["", invoice] {
             let response = client.request(reqwest::Method::HEAD, format!("{origin}/api/companies/a/{path}"))
                 .header("origin", &origin)
