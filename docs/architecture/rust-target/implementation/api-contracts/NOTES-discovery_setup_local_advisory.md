@@ -1,0 +1,29 @@
+# Discovery, installer bootstrap and local advisory contracts (#677)
+
+This partition specifies exactly 24 selected operation identities. It does not close #677 or expand accepted runtime evidence. Prior 1,285 operations / 34 partitions, all 55 scope items, J01–J07, final desktop acceptance, release, cutover and retirement remain retained. Main owns independent source/diff review and integration.
+
+## Evidence and boundaries
+
+Graphify was queried first (`discovery setup first-owner agent capabilities rehearsal`), followed by actual Rust source reading. The graph returned mostly original TypeScript discovery context; it was navigation context, not a wire-shape authority. All source references bind current file SHA-256 and actual constructor needles. Only the four owned flat artifacts are written. No Cargo, server, browser, network, provider, authentication, migration rehearsal or accounting operation was executed. No live provider approval is claimed.
+
+The original Axum implicit HEAD behavior on these five discovery/health/protocol routes is **not** the R54 early-405 accounting-route fence. These HEAD requests execute their GET closure/validation and strip response bodies. Negotiation can refuse first; `/api/protocol` intentionally bypasses negotiation. The full connected manifest is distinct from the ten-operation disconnected projection; neither is authorization.
+
+Discovery is finite supplier and native bank metadata, not full original parity, rule-bundle loading, source readiness or accounting approval. Supplier workflow has four steps; bank workflow has thirteen. `workspaceConnected` reflects router identity installation. HTTP resolves only its exact registration allowlist, with unresolved reasons retained; aliases still need actual surface resolution. Metadata schemas describe the native producer, not arbitrary JSON accepted by the permissive SDK `Value` reader.
+
+## Global grammar and transport order
+
+Root discovery is argv-only and precedes local binding: even supplied profile and credential paths are not opened. Native remote and local rehearsal dialects remain opaque to original argument normalization. Later `local_binding` consumes split/attached global `--local-profile`, validates private Unix transport/exact logical origin and injects internal server/loopback flags; there is no child server or TCP fallback. Those injected flags do not make rehearsal commands accept server options. Root help, remote family help and each rehearsal help are discovery modes, not separate business capabilities.
+
+MCP framing/session admission precedes tools, and `tools::call` requires an arguments object before all original/native dispatch. Selected leaf argument errors remain JSON-RPC -32602; SDK/HTTP failures instead become tool results. Notifications never execute tools. Integer request IDs cover signed i64/unsigned u64; strings have a 256 UTF-8-byte limit, not merely 256 code points. `content[0].text` is the compact serialization of `structuredContent`; `isError` correlates with its `ok:false`. Startup diagnostics are not RPC messages.
+
+The SDK fetches a fresh bare manifest for every send, before credentials on the target request; response limits are 1 MiB manifest and 16 MiB JSON. These selected GETs discard non-success HTTP bodies (including 422), retaining only status. This must not be generalized to unrelated original-family 422-preserving adapters. There is no selected write `outcome_unknown` helper branch exposed as a GET tool failure.
+
+## Bootstrap and copied-input ownership
+
+First-owner setup is a conditional local installer bearer capability, not open signup. Strict origin/host/header checks precede capacity and body parsing. Direct HTTP serde accepts an object or exact positional sequence in declaration order **name, email, password**. It does not accept null/unknown/duplicate object fields. The token is one-hour, serialized by a mutex, and consumed only after complete successful installation. Bootstrap may commit reservation, identity, verification intent/handoff and access in stages; a 503 or absent result is not rollback. Same canonical email reservation recovery is not a generic request-key retry. Current operator/workspace and legacy-adoption controls remain intact; no SQL identities are seeded by these artifacts.
+
+The three local rehearsals capture explicitly selected owned/synthetic inputs only. They can create, recover, normalize and migrate private temporary copies and then check close/discard. They never authorize live adoption. Company data/ledger.sqlite and control .rentemester/workspace-control.sqlite are distinct paths; source WAL/journal capture, nofollow/regular-file checks, 512 MiB bound and four paired stable captures are retained. Report hashes and preserved projections concern the copy. Failure can follow copy commits/cleanup work; missing output is not proof of rollback, nor authority absence proof of no effects. Control refusal messages are deliberately sanitized, unlike company SQLite/IO errors.
+
+## Validation
+
+The existing strict Python oracle is the structural/source-hash check. Final command `python3 /tmp/r58-677-oracle.py discovery_setup_local_advisory` returned `PASS exactselected discovery_setup_local_advisory 24 resolved sourcebound schema contracts; semanticreview required; whole677 remains open`. An initial check identified a missing bodyless-input representation annotation; it was corrected before the final PASS. This does not replace main's semantic review or accepted runtime/userflow evidence. The worker runs no new harness or effects. Required `graphify extract . --code-only --no-cluster --out "$SGD_BUILD_DIR/graphify"` completed successfully (34,009 nodes / 107,681 edges), with generated observations in the independent build output, outside owned code.
