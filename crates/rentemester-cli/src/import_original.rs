@@ -1,9 +1,13 @@
-//! Original contact-import adapter. CSV parsing and all classification stay on the server.
+//! Original import adapters. Parsing and all accounting stay on the common server.
 use crate::dated_reports::Output;
 use rentemester_client::{ApiClient, Error};
 use serde_json::{Value, json};
 use std::{collections::BTreeMap, io::Read};
+#[path = "dinero_import/local.rs"]
+mod original_source;
 const LIMIT: usize = 12 * 1024 * 1024;
+const RUN_LABEL: &str = "Migrerer en virksomhed fra et andet bogføringssystem ind i Rentemester. Parser eksportfilen med den valgte per-system-parser og bogfører resultatet som virksomhedens primobalance (#179). Idempotent: præcis én import/primobalance pr. virksomhed.";
+const RUN_EXAMPLE: &str = include_str!("../../../examples/import-synthetic.csv");
 fn usage(s: impl AsRef<str>) -> Output {
     Output {
         stdout: String::new(),
@@ -16,10 +20,10 @@ pub fn accepts(a: &[String]) -> bool {
 }
 pub fn needs_company(a: &[String]) -> bool {
     a.get(1)
-        .is_some_and(|s| matches!(s.as_str(), "contacts" | "archive"))
+        .is_some_and(|s| matches!(s.as_str(), "contacts" | "archive" | "run"))
 }
 pub fn help() -> Value {
-    json!({"commands":["import systems [--format json|human]","import archive --company SLUG|PATH [--system dinero] [--year INTEGER] [--format json|human]","import contacts --company SLUG|PATH --file Kontakter.csv [--enrich-cvr] [--default-role customer|vendor]"],"connection":"Existing --server ORIGIN or verified --local-profile ABS_PRIVATE_PROFILE; --cookie-file PRIVATE_FILE. --workspace is verified local workspace equality only. --allow-loopback-http is explicit.","controls":"Explicit command confirms one write. Current cookie authority; optional --actor user:ID equality check only. Master data only: no journal, accounts, mappings or opening balances. Default role vendor; explicit original CSV requires only Kontaktnavn. Server classifies nonzero sales/purchases independently. CVR enrichment optional; operator credentials/cache unchanged. No automatic retry: outcome_unknown requires canonical contacts/audit readback before another explicit write.","unavailable":"import run is not implemented here. Archive is read-only historical reference data outside the live ledger; every list/detail revalidates current authority and physical originals. --system is trimmed/default dinero; omitted or blank --year lists years."})
+    json!({"commands":["import run --company SLUG|PATH --file EXPORT [--system synthetic-csv|dinero] [--dry-run VALUE]","import systems [--format json|human]","import archive --company SLUG|PATH [--system dinero] [--year INTEGER] [--format json|human]","import contacts --company SLUG|PATH --file Kontakter.csv [--enrich-cvr] [--default-role customer|vendor]"],"connection":"Existing --server ORIGIN or verified --local-profile ABS_PRIVATE_PROFILE; --cookie-file PRIVATE_FILE. --workspace is verified local workspace equality only. --allow-loopback-http is explicit.","controls":"Explicit command confirms one write. Current cookie authority; optional --actor user:ID equality check only. Contact import changes master data only. Run reconciles the source chart/company and adopts opening balances and Dinero history. Default role vendor; explicit original CSV requires only Kontaktnavn. Server classifies nonzero sales/purchases independently. CVR enrichment optional; operator credentials/cache unchanged. No automatic retry: outcome_unknown requires canonical contacts/audit readback before another explicit write.","example":"import run --example writes the original synthetic CSV sample without credentials or source-file access.","run":"Original complete server import; --dry-run VALUE is presence-valued (even false means dry-run). No generated key/hash or retry. Lost or invalid receipts require canonical imports/opening/journals/source readback. Archive: Archive is read-only historical reference data outside the live ledger; every list/detail revalidates current authority and physical originals. --system is trimmed/default dinero; omitted or blank --year lists years."})
 }
 fn parse(a: &[String]) -> Result<BTreeMap<&str, &str>, Output> {
     if a == ["import"] || a == ["import", "--help"] {
@@ -28,9 +32,9 @@ fn parse(a: &[String]) -> Result<BTreeMap<&str, &str>, Output> {
     let op = a
         .get(1)
         .map(String::as_str)
-        .filter(|s| matches!(*s, "systems" | "contacts" | "archive"))
+        .filter(|s| matches!(*s, "systems" | "contacts" | "archive" | "run"))
         .ok_or_else(|| {
-            usage("Only import systems, import contacts and import archive are supported; see import --help")
+            usage("Supported: import run, systems, contacts and archive; see import --help")
         })?;
     let mut f = BTreeMap::new();
     let mut i = 2;
@@ -49,13 +53,14 @@ fn parse(a: &[String]) -> Result<BTreeMap<&str, &str>, Output> {
                 | "--help"
                 | "--allow-loopback-http"
         ) && !(op == "contacts" && matches!(k, "--file" | "--enrich-cvr" | "--default-role"))
+            && !(op == "run" && matches!(k, "--file" | "--system" | "--dry-run" | "--example"))
             && !(op == "archive" && matches!(k, "--system" | "--year"))
         {
             return Err(usage(format!("Unknown import flag {k}")));
         }
         let (v, next) = if matches!(
             k,
-            "--json" | "--help" | "--allow-loopback-http" | "--enrich-cvr"
+            "--json" | "--help" | "--allow-loopback-http" | "--enrich-cvr" | "--example"
         ) {
             if attached.is_some() {
                 return Err(usage("Boolean flag takes no value"));
@@ -75,11 +80,14 @@ fn parse(a: &[String]) -> Result<BTreeMap<&str, &str>, Output> {
     {
         return Err(usage("--format must be human or json"));
     }
-    if f.contains_key("--help") {
+    if f.contains_key("--help") || f.contains_key("--example") {
         return Ok(f);
     }
     if op == "systems" {
         return Ok(f);
+    }
+    if op == "run" {
+        run_body(&f)?;
     }
     let role = f.get("--default-role").map(|s| s.trim()).unwrap_or("");
     if !matches!(role, "" | "customer" | "vendor") {
@@ -115,7 +123,7 @@ fn parse(a: &[String]) -> Result<BTreeMap<&str, &str>, Output> {
     }
     if op == "contacts" {
         body(&f)?;
-    } else {
+    } else if op == "archive" {
         archive_year(&f)?;
     }
     Ok(f)
@@ -162,6 +170,9 @@ fn body(f: &BTreeMap<&str, &str>) -> Result<Vec<u8>, Output> {
 }
 pub fn preflight(a: &[String]) -> Result<bool, Output> {
     let f = parse(a)?;
+    if f.contains_key("--example") {
+        return Err(run_example());
+    }
     if f.contains_key("--help") {
         return Ok(true);
     }
@@ -208,6 +219,12 @@ fn emit(v: Value, machine: bool) -> Output {
     }
 }
 pub fn binding_refusal(a: &[String]) -> Output {
+    if a.get(1).is_some_and(|s| s == "run") {
+        return emit_run(
+            json!({"ok":false,"errors":["Verified runtime/owner/company binding refused; no operation dispatched"]}),
+            machine(a),
+        );
+    }
     if a.get(1).is_some_and(|s| s == "archive") {
         return emit_archive(
             json!({"ok":false,"years":[],"errors":["Verified runtime/owner/company binding refused; no operation dispatched"]}),
@@ -267,6 +284,9 @@ pub fn execute(a: &[String]) -> Output {
         Ok(f) => f,
         Err(o) => return o,
     };
+    if f.contains_key("--example") {
+        return run_example();
+    }
     if f.contains_key("--help") {
         return Output {
             stdout: format!("{}\n", help()),
@@ -280,6 +300,9 @@ pub fn execute(a: &[String]) -> Output {
             json!({"ok":true,"systems":[{"system":"synthetic-csv","label":"Synthetic CSV (import-framework example)"},{"system":"dinero","label":"Dinero (data export — chart of accounts, master data & opening balance)"}]}),
             m,
         );
+    }
+    if a[1] == "run" {
+        return execute_run(&f, m);
     }
     if a[1] == "archive" {
         return execute_archive(&f, m);
@@ -487,5 +510,127 @@ fn execute_archive(f: &BTreeMap<&str, &str>, machine: bool) -> Output {
             let (_, e) = crate::remote::client_error(e);
             fail(format!("{}: {}", e.code, e.message))
         }
+    }
+}
+
+fn run_body(f: &BTreeMap<&str, &str>) -> Result<Vec<u8>, Output> {
+    let path = std::path::Path::new(
+        f.get("--file")
+            .copied()
+            .filter(|s| !s.is_empty())
+            .ok_or_else(|| usage("Missing required --file <export-file-or-directory>"))?,
+    );
+    if !path.try_exists().unwrap_or(false) {
+        return Err(usage("Export path does not exist"));
+    }
+    let system = f
+        .get("--system")
+        .map(|s| s.trim())
+        .filter(|s| !s.is_empty())
+        .unwrap_or("synthetic-csv");
+    let (name, bytes) = match system {
+        "synthetic-csv" => {
+            let (bytes, _) = original_source::stable_file(path, 48 * 1024).map_err(|_| {
+                usage("Synthetic source must be a stable regular UTF-8 file <=48 KiB")
+            })?;
+            let name = path
+                .file_name()
+                .and_then(|n| n.to_str())
+                .ok_or_else(|| usage("Source basename must be UTF-8"))?;
+            (name.to_owned(), bytes)
+        }
+        "dinero" => original_source::source(path).map_err(|e| usage(e.message))?,
+        _ => return Err(usage("Unknown --system; available: synthetic-csv, dinero")),
+    };
+    rentemester_client::original_import_body(system, &name, &bytes, f.contains_key("--dry-run"))
+        .map_err(|e| usage(e.to_string()))
+}
+fn execute_run(f: &BTreeMap<&str, &str>, machine: bool) -> Output {
+    let bytes = match run_body(f) {
+        Ok(b) => b,
+        Err(o) => return o,
+    };
+    let fail = |s: String| emit_run(json!({"ok":false,"errors":[s]}), machine);
+    let api = match crate::remote::credential_client(
+        f["--server"],
+        f.contains_key("--allow-loopback-http"),
+        f,
+        false,
+    ) {
+        Ok(api) => api,
+        Err((_, e)) => return fail(format!("{}: {}", e.code, e.message)),
+    };
+    let rt = match tokio::runtime::Runtime::new() {
+        Ok(rt) => rt,
+        Err(_) => return fail("Runtime unavailable".into()),
+    };
+    let result = rt.block_on(async {
+        if let Some(actor) = f.get("--actor") {
+            let me = api.me().await?;
+            let id = me["user"]["id"].as_str().ok_or(Error::Protocol)?;
+            if *actor != format!("user:{id}") {
+                return Err(Error::InvalidInput(
+                    "actor differs from current cookie user",
+                ));
+            }
+        }
+        api.import_original(f["--company"], bytes).await
+    });
+    match result {
+        Ok(v) => emit_run(v, machine),
+        Err(e) => {
+            let (_, e) = crate::remote::client_error(e);
+            fail(format!(
+                "{}: {}; no automatic retry; read canonical imports/opening/journals/source before another explicit action",
+                e.code, e.message
+            ))
+        }
+    }
+}
+
+fn run_example() -> Output {
+    Output {
+        stdout: RUN_EXAMPLE.to_owned(),
+        stderr: String::new(),
+        exit: 0,
+    }
+}
+
+// Match the original generic renderer: JSON stays on stdout; human failures
+// use stderr and successful opening adoption shows its posting number.
+fn emit_run(v: Value, machine: bool) -> Output {
+    let failed = v["ok"] == false;
+    if machine {
+        return Output {
+            stdout: format!("{}\n", serde_json::to_string_pretty(&v).unwrap()),
+            stderr: String::new(),
+            exit: u8::from(failed),
+        };
+    }
+    if failed {
+        let mut stderr = format!("✘ {RUN_LABEL} failed\n");
+        for error in v["errors"].as_array().into_iter().flatten() {
+            stderr.push_str(&format!("  → {}\n", error.as_str().unwrap()));
+        }
+        return Output {
+            stdout: String::new(),
+            stderr,
+            exit: 1,
+        };
+    }
+    let first = RUN_LABEL.split(". ").next().unwrap();
+    let heading = if first.chars().count() > 60 {
+        format!("{}…", first.chars().take(57).collect::<String>())
+    } else {
+        first.to_owned()
+    };
+    let mut stdout = format!("✔ {heading}\n");
+    if let Some(number) = v["entryNo"].as_str() {
+        stdout.push_str(&format!("  Posteringsnummer: {number}\n"));
+    }
+    Output {
+        stdout,
+        stderr: String::new(),
+        exit: 0,
     }
 }
