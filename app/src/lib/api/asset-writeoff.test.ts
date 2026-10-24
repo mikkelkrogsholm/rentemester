@@ -37,7 +37,7 @@ describe("original Rust immediate write-off binding", () => {
       expect(posts(transport)).toHaveLength(1);
     });
   }
-  for (const patch of [{ entryId: null }, { entryId: Number.MAX_SAFE_INTEGER + 1 }, { entryNo: "" }, { entryHash: "bad" }, { writeOffId: 0 }, { cost: 12 }, { thresholdDkk: null }, { appliedRules: [] }, { errors: ["bad"] }]) {
+  for (const patch of [{ entryId: null }, { entryId: Number.MAX_SAFE_INTEGER + 1 }, { entryNo: "" }, { entryHash: "bad" }, { writeOffId: 0 }, { cost: 12 }, { thresholdDkk: null }, { thresholdDkk: input.cost - 0.01 }, { appliedRules: ["unrelated-rule"] }, { appliedRules: [] }, { errors: ["bad"] }]) {
     test(`invalid success stays unknown: ${JSON.stringify(patch)}`, async () => {
       const transport = install({ ...receipt, ...patch });
       await expect(assetsApi.writeOffNativeAsset("synthetic", input, confirmation)).rejects.toMatchObject({ code: "internal" });

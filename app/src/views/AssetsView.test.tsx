@@ -245,7 +245,7 @@ describe("native immediate write-off owner review", () => {
         { accountNo: "EX", name: "Synthetic expense", active: true, type: "expense", normalBalance: "debit" },
         { accountNo: "OLD", name: "Inactive", active: false, type: "expense", normalBalance: "debit" },
       ] } },
-      "POST /api/companies/acme-aps/asset/original/write-off": { ok: true, entryId: 17, entryNo: "2026-17", entryHash: "a".repeat(64), writeOffId: 9, cost: 1234.56, thresholdDkk: 36000, appliedRules: ["rule"], errors: [] },
+      "POST /api/companies/acme-aps/asset/original/write-off": { ok: true, entryId: 17, entryNo: "2026-17", entryHash: "a".repeat(64), writeOffId: 9, cost: 1234.56, thresholdDkk: 36000, appliedRules: ["DK-ASSET-WRITEOFF-001"], errors: [] },
     };
   }
   async function fillReview() {
@@ -274,6 +274,9 @@ describe("native immediate write-off owner review", () => {
     expect(writes).toHaveLength(1);
     expect(writes[0]?.[0]).toContain("/asset/original/write-off");
     expect(JSON.parse(String(writes[0]?.[1]?.body)).confirmImmediateWriteOff).toBe(true);
+    await userEvent.click(screen.getByRole("button", { name: "Færdig" }));
+    expect(screen.queryByRole("dialog", { name: "Kassér ændringer?" })).toBeNull();
+    expect(screen.queryByRole("dialog", { name: "Straksafskriv småanskaffelse" })).toBeNull();
     expect(transport.mock.calls.filter(([url]) => String(url).endsWith("/assets")).length).toBeGreaterThan(1);
   });
   test("unknown receipt remains locked after read-only refresh, dismissal and provider reload", async () => {
@@ -295,12 +298,23 @@ describe("native immediate write-off owner review", () => {
       first.unmount();
       mount();
       await userEvent.click(await screen.findByRole("button", { name: "Straksafskriv" }));
-      expect(await screen.findByText(/en opdateret liste frigiver ikke låsen/)).toBeInTheDocument();
+      expect(await screen.findByText(/Serverens resultat kunne ikke bekræftes/)).toBeInTheDocument();
       expect(screen.getByLabelText("Navn")).toBeDisabled();
-      await userEvent.click(screen.getByRole("button", { name: "Opdatér anlæg og journal" }));
+      await userEvent.click(screen.getByRole("button", { name: "Kontrollér status" }));
       expect(screen.getByLabelText("Navn")).toBeDisabled();
       expect(transport.mock.calls.filter(([, init]) => init?.method === "POST")).toHaveLength(1);
+      await userEvent.click(screen.getByRole("button", { name: "Resultatet er afklaret" }));
+      expect(screen.getByLabelText("Navn")).toBeDisabled();
+      await userEvent.click(screen.getByRole("button", { name: "Jeg har kontrolleret resultatet" }));
+      expect(screen.getByLabelText("Navn")).toBeEnabled();
+      expect(transport.mock.calls.filter(([, init]) => init?.method === "POST")).toHaveLength(1);
     } finally { sessionStorage.removeItem("rentemester:uncertain-operations:v1"); }
+  });
+  test("a fresh native form closes without discarding untouched fields", async () => {
+    mockFetch(nativeRoutes()); renderView();
+    await userEvent.click(await screen.findByRole("button", { name: "Straksafskriv" }));
+    await userEvent.click(screen.getByRole("button", { name: "Annullér" }));
+    expect(screen.queryByRole("dialog")).toBeNull();
   });
   test("cancel review sends nothing and allows editing", async () => {
     mockFetch(nativeRoutes()); renderView(); const review = await fillReview();

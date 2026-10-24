@@ -33,8 +33,8 @@ export const assetsApi = {
         confirmImmediateWriteOff: true, confirm: true }),
     });
     if (!obj(value) || value.ok !== true || !safeId(value.entryId) || !safeId(value.writeOffId) || !bounded(value.entryNo, 500) || !hash(value.entryHash)
-      || !money(value.cost) || typeof value.cost !== "number" || value.cost <= 0 || value.cost !== input.cost || !money(value.thresholdDkk) || typeof value.thresholdDkk !== "number" || value.thresholdDkk <= 0
-      || !strings(value.appliedRules) || value.appliedRules.length === 0 || !Array.isArray(value.errors) || value.errors.length !== 0)
+      || !money(value.cost) || typeof value.cost !== "number" || value.cost <= 0 || value.cost !== input.cost || !money(value.thresholdDkk) || typeof value.thresholdDkk !== "number" || value.thresholdDkk < input.cost
+      || !strings(value.appliedRules) || !value.appliedRules.includes("DK-ASSET-WRITEOFF-001") || !Array.isArray(value.errors) || value.errors.length !== 0)
       throw new ApiError("internal", "Resultatet er ukendt: kvitteringen kunne ikke valideres. Afstem anlæg og journal manuelt før en ny handling.", 0);
     return value as unknown as NativeAssetWriteOffReceipt;
   },

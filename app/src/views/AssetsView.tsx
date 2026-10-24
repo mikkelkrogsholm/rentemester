@@ -31,6 +31,7 @@ import { useEffect, useRef, useState } from "react";
 import { useOptionalAuth } from "../lib/auth-context";
 import { useCapabilities } from "../lib/useCapabilities";
 import { useMutationBlock } from "../lib/mutation-memory";
+import { UnknownMutationNotice } from "../components/UnknownMutationNotice";
 import type { AssetWriteOffInput, NativeAssetWriteOffReceipt } from "../lib/types/assets";
 import { useParams } from "react-router-dom";
 import { api, ApiError } from "../lib/api";
@@ -609,7 +610,9 @@ function WriteOffModal({
   const currentAllowed = useRef(allowed);
   currentAllowed.current = allowed;
   const scope = `/companies/${slug}/assets`;
-  const sendLock = useMutationBlock(`${scope}:native-writeoff`);
+  // Observe the same persisted barrier owned by ConfirmDialog, including after remount.
+  const sendLock = useMutationBlock(`${scope}:Bekræft straksafskrivning:native-writeoff-review`);
+  const reviewedContext = useRef(auth?.context);
   const [review, setReview] = useState<AssetWriteOffInput | null>(null);
   const [receipt, setReceipt] = useState<NativeAssetWriteOffReceipt | null>(null);
   const active = useRef(true);
@@ -638,7 +641,7 @@ function WriteOffModal({
   const [busy, setBusy] = useState(false);
 
   const outcome = useMutationOutcome(onRefresh);
-  const guard = useDiscardGuard(Boolean(name || cost || purchaseDocumentId || note) || category !== "smaaanskaffelser" || acquisitionDate !== todayIso() || transactionDate !== todayIso() || expenseAccountNo !== DEFAULT_EXPENSE_ACCOUNT || thresholdRuleSource !== DEFAULT_THRESHOLD_RULE, onDismiss);
+  const guard = useDiscardGuard(!receipt && (Boolean(name || cost || purchaseDocumentId || note) || category !== "smaaanskaffelser" || acquisitionDate !== todayIso() || transactionDate !== todayIso() || expenseAccountNo !== (nativeAccounts ? "" : DEFAULT_EXPENSE_ACCOUNT) || thresholdRuleSource !== (nativeAccounts ? "" : DEFAULT_THRESHOLD_RULE)), onDismiss);
   const { onClose } = guard;
 
   async function handleSubmit(event: React.FormEvent) {
@@ -673,6 +676,7 @@ function WriteOffModal({
       if (nativeAccounts) {
         if (!chart.data?.accounts.some(a => a.accountNo === expenseAccountNo && a.active === true && a.type === "expense" && a.normalBalance === "debit")) throw new Error("Vælg en aktiv udgiftskonto fra kontoplanen.");
         if (docs.error || chart.error || docs.loading || chart.loading) throw new Error("Opdatér bilag og kontoplan før gennemgang.");
+        reviewedContext.current = context.current;
         setReview(input);
         return;
       }
@@ -700,7 +704,7 @@ function WriteOffModal({
     {nativeAccounts && <>
       <p>Betaling: virksomhedens aktuelt konfigurerede bankrolle. Mangler mappingen, afviser serveren: konfigurér bankrollen under Administrér før ny handling. Der vælges ingen standardkonto her.</p>
       {(docs.error || chart.error) && <p role="alert">{docs.error || chart.error}</p>}
-      {sendLock.blocked && <div role="alert">Resultatet er ukendt. Gentag ikke handlingen. Afstem bilaget manuelt med anlæg, journal og eventuelle undtagelser; en opdateret liste frigiver ikke låsen.<Button onClick={() => { void refreshNative().catch(err => onError(String(err))); }}>Opdatér anlæg og journal</Button></div>}
+      {sendLock.blocked && !review && <UnknownMutationNotice onRefresh={refreshNative} onRelease={sendLock.release} persistent={sendLock.persistent} verifyPersistence={sendLock.verifyPersistence} />}
       {receipt && <div role="status">Bogført: {receipt.entryNo} (#{receipt.entryId}) · Straksafskrivning #{receipt.writeOffId}<p>Journalhash: <code>{receipt.entryHash}</code></p></div>}
     </>}
       {guard.confirmation}
@@ -794,8 +798,9 @@ function WriteOffModal({
               onChange={(e) => setNote(e.target.value)}
             />
           </label>
+          </fieldset>
           <div className="row-actions">
-            <Button requiredPermission="company.ledger.post" type="submit" className="btn" disabled={outcome.blocked || (busy)}>
+            <Button requiredPermission="company.ledger.post" type="submit" className="btn" disabled={outcome.blocked || busy || nativeBlocked || !!review}>
               {busy ? "Bogfører…" : nativeAccounts ? "Gennemgå straksafskrivning" : "Straksafskriv"}
             </Button>
             <Button variant="secondary"
@@ -804,10 +809,9 @@ function WriteOffModal({
               onClick={onClose}
               disabled={busy}
             >
-              Annullér
+              {receipt ? "Færdig" : "Annullér"}
             </Button>
           </div>
-          </fieldset>
         </form>
         {nativeAccounts && review && <ConfirmDialog title="Bekræft straksafskrivning" confirmLabel="Bekræft og bogfør straksafskrivning" confirmKind="danger" operationScope={scope} operationKey="native-writeoff-review" confirmDisabled={nativeBlocked} onRefresh={refreshNative} onClose={() => setReview(null)} body={<>
           <p>Virksomhed: {slug} · Bilag #{review.purchaseDocumentId} · {review.name} · {review.category}</p>
@@ -816,16 +820,13 @@ function WriteOffModal({
           <p>Hjemmel: {review.thresholdRuleSource} · Note: {review.note || "Ingen"}</p>
           <p>Jeg bekræfter straksafskrivning og bogføring. Serveren kontrollerer tærskel, moms og journal; dette er ikke en skatteretlig godkendelse.</p>
         </>} onConfirm={async () => {
-          if (sendLock.isBlocked() || !currentAllowed.current) throw new ApiError("access_denied", "Gennemgangen er ikke længere gyldig.", 403);
-          const originalContext = context.current;
-          if (!sendLock.block()) throw new Error("Beskyttelsen mod gentagelse kunne ikke gemmes.");
+          if (!active.current || !currentAllowed.current || context.current !== reviewedContext.current) throw new ApiError("access_denied", "Gennemgangen er ikke længere gyldig.", 403);
+          const originalContext = reviewedContext.current;
           try {
             const result = await api.writeOffNativeAsset(slug, review, { confirm: true, confirmImmediateWriteOff: true });
-            sendLock.release();
             if (active.current && currentAllowed.current && context.current === originalContext) { setReceipt(result); onRefresh(); }
           } catch (err) {
             const failure = err as { status?: number; code?: string };
-            if (failure.status && failure.status >= 400 && failure.status < 500 && failure.status !== 408 && failure.code !== "internal") sendLock.release();
             if (active.current && currentAllowed.current && context.current === originalContext && !(failure.status && failure.status >= 400 && failure.status < 500 && failure.status !== 408 && failure.code !== "internal")) {
               // Read-only reconciliation never releases the pre-send lock or resends.
               void refreshNative().catch(() => {});
