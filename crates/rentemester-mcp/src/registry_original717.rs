@@ -1,7 +1,619 @@
-//! R74_PRIVATE_STANDIN: never qualify or publish this implementation.
-use serde_json::{Value,json};
-use rentemester_client::ApiClient;
-const NAMES: &[&str] = &["workspace_party_search", "workspace_party_inspect", "workspace_party_create", "workspace_party_link_role", "workspace_party_propose_merge", "workspace_party_approve_merge", "corporate_record_list", "corporate_record_inspect", "corporate_record_download", "corporate_record_ingest", "corporate_record_link", "corporate_record_enrich", "corporate_record_supersede"];
-pub fn accepts(name:&str)->bool { NAMES.contains(&name) }
-pub fn tools()->Vec<Value>{ NAMES.iter().map(|name|crate::tools::tool(name,"R74_PRIVATE_STANDIN",json!({"type":"object","properties":{},"additionalProperties":false}),true)).collect() }
-pub async fn call(_api:&ApiClient,_name:&str,_args:Value)->Result<Value,&'static str>{ Err("R74_PRIVATE_STANDIN") }
+//! Original flat registry tools over the common authenticated server.
+//! Identity-only creation cannot be mapped to the native atomic create+role writer.
+use rentemester_client::{ApiClient, CorporateRecordMutation, Error, PartyMutation};
+use serde_json::{Value, json};
+const CATALOGUE: &str = r###"[{"name":"workspace_party_search","title":"Search visible workspace parties","description":"Lists canonical parties only when they have a role in the explicitly authorized company. Filtering occurs before pagination.","annotations":{"readOnlyHint":true,"destructiveHint":false,"idempotentHint":true,"openWorldHint":false},"inputSchema":{"$schema":"https://json-schema.org/draft/2020-12/schema","type":"object","properties":{"company":{"type":"string","minLength":1},"query":{"type":"string"},"cursor":{"type":"integer","minimum":0,"maximum":9007199254740991},"limit":{"type":"integer","minimum":1,"maximum":100}},"required":["company"],"additionalProperties":false},"outputSchema":{"$schema":"https://json-schema.org/draft/2020-12/schema","type":"object","properties":{"ok":{"type":"boolean","description":"true \u21d2 kaldet lykkedes og `data` er sat; false \u21d2 se `errors`."},"data":{"description":"Kerne-resultatet ved ok=true. Den pr\u00e6cise feltliste er per-tool og dokumenteret i docs/mcp-tool-surface.md. Udeladt ved ok=false.","type":"object","properties":{},"additionalProperties":{}},"errors":{"type":"array","items":{"type":"string"},"description":"Menneskel\u00e6sbare fejl-/foruds\u00e6tnings-strenge. Tom ved ok=true; ikke-tom ved ok=false."},"appliedRules":{"description":"Regel-id'er der fyrede for denne handling (sporbarhed). S\u00e6ttes for bogf\u00f8rings-tools; udeladt ellers.","type":"array","items":{"type":"string"}},"code":{"description":"Stabil maskinl\u00e6sbar fejl-mark\u00f8r for cross-cutting preconditions (fx \"BACKUP_LOCKED\"). S\u00e6ttes kun ved ok=false og kun for fejl der lever uden for det enkelte tools forretningslogik \u2014 agenten kan branche p\u00e5 `code` uden at parse fri-tekst i `errors[]`. Udeladt ved per-tool forretningsfejl.","type":"string"}},"required":["ok","errors"],"additionalProperties":false}},{"name":"workspace_party_inspect","title":"Inspect a visible workspace party","description":"Returns canonical/provenance evidence with inaccessible company roles removed.","annotations":{"readOnlyHint":true,"destructiveHint":false,"idempotentHint":true,"openWorldHint":false},"inputSchema":{"$schema":"https://json-schema.org/draft/2020-12/schema","type":"object","properties":{"company":{"type":"string","minLength":1},"partyId":{"type":"string","minLength":3}},"required":["company","partyId"],"additionalProperties":false},"outputSchema":{"$schema":"https://json-schema.org/draft/2020-12/schema","type":"object","properties":{"ok":{"type":"boolean","description":"true \u21d2 kaldet lykkedes og `data` er sat; false \u21d2 se `errors`."},"data":{"description":"Kerne-resultatet ved ok=true. Den pr\u00e6cise feltliste er per-tool og dokumenteret i docs/mcp-tool-surface.md. Udeladt ved ok=false.","type":"object","properties":{},"additionalProperties":{}},"errors":{"type":"array","items":{"type":"string"},"description":"Menneskel\u00e6sbare fejl-/foruds\u00e6tnings-strenge. Tom ved ok=true; ikke-tom ved ok=false."},"appliedRules":{"description":"Regel-id'er der fyrede for denne handling (sporbarhed). S\u00e6ttes for bogf\u00f8rings-tools; udeladt ellers.","type":"array","items":{"type":"string"}},"code":{"description":"Stabil maskinl\u00e6sbar fejl-mark\u00f8r for cross-cutting preconditions (fx \"BACKUP_LOCKED\"). S\u00e6ttes kun ved ok=false og kun for fejl der lever uden for det enkelte tools forretningslogik \u2014 agenten kan branche p\u00e5 `code` uden at parse fri-tekst i `errors[]`. Udeladt ved per-tool forretningsfejl.","type":"string"}},"required":["ok","errors"],"additionalProperties":false}},{"name":"workspace_party_create","title":"Create canonical workspace party","description":"Creates source-backed canonical identity; it never creates a ledger record. Link a company role separately. Requires actor attribution and confirm:true; retry reads canonical state. write-reversible.","annotations":{"readOnlyHint":false,"destructiveHint":false,"idempotentHint":false,"openWorldHint":false},"inputSchema":{"$schema":"https://json-schema.org/draft/2020-12/schema","type":"object","properties":{"company":{"type":"string","minLength":1},"kind":{"type":"string","enum":["person","organization","public_authority","financial_institution"]},"name":{"type":"string","minLength":1},"aliases":{"maxItems":16,"type":"array","items":{"type":"string"}},"identifiers":{"type":"array","items":{"type":"object","properties":{"country":{"type":"string"},"identifier":{"type":"string"},"identifierKind":{"type":"string","enum":["dk_cvr","eu_vat","non_eu"]}},"required":["country","identifierKind"],"additionalProperties":false}},"source":{"type":"string","minLength":1},"observedAt":{"type":"string","minLength":1},"reviewAssertion":{"type":"string","minLength":1},"partyId":{"type":"string"},"confirm":{"description":"Must be set to true to acknowledge the write side effects of this tool. Omitting it (or sending false) returns an { ok:false, errors:[...] } envelope rather than performing the write.","type":"boolean"}},"required":["company","kind","name","source","observedAt","reviewAssertion"],"additionalProperties":false},"outputSchema":{"$schema":"https://json-schema.org/draft/2020-12/schema","type":"object","properties":{"ok":{"type":"boolean","description":"true \u21d2 kaldet lykkedes og `data` er sat; false \u21d2 se `errors`."},"data":{"description":"Kerne-resultatet ved ok=true. Den pr\u00e6cise feltliste er per-tool og dokumenteret i docs/mcp-tool-surface.md. Udeladt ved ok=false.","type":"object","properties":{},"additionalProperties":{}},"errors":{"type":"array","items":{"type":"string"},"description":"Menneskel\u00e6sbare fejl-/foruds\u00e6tnings-strenge. Tom ved ok=true; ikke-tom ved ok=false."},"appliedRules":{"description":"Regel-id'er der fyrede for denne handling (sporbarhed). S\u00e6ttes for bogf\u00f8rings-tools; udeladt ellers.","type":"array","items":{"type":"string"}},"code":{"description":"Stabil maskinl\u00e6sbar fejl-mark\u00f8r for cross-cutting preconditions (fx \"BACKUP_LOCKED\"). S\u00e6ttes kun ved ok=false og kun for fejl der lever uden for det enkelte tools forretningslogik \u2014 agenten kan branche p\u00e5 `code` uden at parse fri-tekst i `errors[]`. Udeladt ved per-tool forretningsfejl.","type":"string"}},"required":["ok","errors"],"additionalProperties":false}},{"name":"workspace_party_link_role","title":"Link company-scoped party role","description":"Adds one company-local role/default profile without exposing or changing other companies. Requires actor attribution and confirm:true; retry reads canonical state. write-reversible.","annotations":{"readOnlyHint":false,"destructiveHint":false,"idempotentHint":false,"openWorldHint":false},"inputSchema":{"$schema":"https://json-schema.org/draft/2020-12/schema","type":"object","properties":{"company":{"type":"string","minLength":1},"partyId":{"type":"string","minLength":3},"role":{"type":"string","enum":["customer","vendor","owner","adviser","employee","authority","bank"]},"defaults":{"type":"object","properties":{"account":{"type":"string"},"vat":{"type":"string"},"currency":{"type":"string"},"paymentTermsDays":{"type":"integer","minimum":-9007199254740991,"maximum":9007199254740991}},"additionalProperties":false},"confirm":{"description":"Must be set to true to acknowledge the write side effects of this tool. Omitting it (or sending false) returns an { ok:false, errors:[...] } envelope rather than performing the write.","type":"boolean"}},"required":["company","partyId","role"],"additionalProperties":false},"outputSchema":{"$schema":"https://json-schema.org/draft/2020-12/schema","type":"object","properties":{"ok":{"type":"boolean","description":"true \u21d2 kaldet lykkedes og `data` er sat; false \u21d2 se `errors`."},"data":{"description":"Kerne-resultatet ved ok=true. Den pr\u00e6cise feltliste er per-tool og dokumenteret i docs/mcp-tool-surface.md. Udeladt ved ok=false.","type":"object","properties":{},"additionalProperties":{}},"errors":{"type":"array","items":{"type":"string"},"description":"Menneskel\u00e6sbare fejl-/foruds\u00e6tnings-strenge. Tom ved ok=true; ikke-tom ved ok=false."},"appliedRules":{"description":"Regel-id'er der fyrede for denne handling (sporbarhed). S\u00e6ttes for bogf\u00f8rings-tools; udeladt ellers.","type":"array","items":{"type":"string"}},"code":{"description":"Stabil maskinl\u00e6sbar fejl-mark\u00f8r for cross-cutting preconditions (fx \"BACKUP_LOCKED\"). S\u00e6ttes kun ved ok=false og kun for fejl der lever uden for det enkelte tools forretningslogik \u2014 agenten kan branche p\u00e5 `code` uden at parse fri-tekst i `errors[]`. Udeladt ved per-tool forretningsfejl.","type":"string"}},"required":["ok","errors"],"additionalProperties":false}},{"name":"workspace_party_propose_merge","title":"Propose party merge","description":"Records a reviewable duplicate proposal. It never auto-merges based on name or amount. Requires actor attribution and confirm:true; retry reads canonical state. write-reversible.","annotations":{"readOnlyHint":false,"destructiveHint":false,"idempotentHint":false,"openWorldHint":false},"inputSchema":{"$schema":"https://json-schema.org/draft/2020-12/schema","type":"object","properties":{"company":{"type":"string","minLength":1},"fromPartyId":{"type":"string","minLength":3},"intoPartyId":{"type":"string","minLength":3},"reviewAssertion":{"type":"string","minLength":1},"confirm":{"description":"Must be set to true to acknowledge the write side effects of this tool. Omitting it (or sending false) returns an { ok:false, errors:[...] } envelope rather than performing the write.","type":"boolean"}},"required":["company","fromPartyId","intoPartyId","reviewAssertion"],"additionalProperties":false},"outputSchema":{"$schema":"https://json-schema.org/draft/2020-12/schema","type":"object","properties":{"ok":{"type":"boolean","description":"true \u21d2 kaldet lykkedes og `data` er sat; false \u21d2 se `errors`."},"data":{"description":"Kerne-resultatet ved ok=true. Den pr\u00e6cise feltliste er per-tool og dokumenteret i docs/mcp-tool-surface.md. Udeladt ved ok=false.","type":"object","properties":{},"additionalProperties":{}},"errors":{"type":"array","items":{"type":"string"},"description":"Menneskel\u00e6sbare fejl-/foruds\u00e6tnings-strenge. Tom ved ok=true; ikke-tom ved ok=false."},"appliedRules":{"description":"Regel-id'er der fyrede for denne handling (sporbarhed). S\u00e6ttes for bogf\u00f8rings-tools; udeladt ellers.","type":"array","items":{"type":"string"}},"code":{"description":"Stabil maskinl\u00e6sbar fejl-mark\u00f8r for cross-cutting preconditions (fx \"BACKUP_LOCKED\"). S\u00e6ttes kun ved ok=false og kun for fejl der lever uden for det enkelte tools forretningslogik \u2014 agenten kan branche p\u00e5 `code` uden at parse fri-tekst i `errors[]`. Udeladt ved per-tool forretningsfejl.","type":"string"}},"required":["ok","errors"],"additionalProperties":false}},{"name":"workspace_party_approve_merge","title":"Approve party merge","description":"Approves exactly one proposal hash and supersedes the source party append-only. Requires actor attribution and confirm:true; retry reads canonical state. write-reversible.","annotations":{"readOnlyHint":false,"destructiveHint":false,"idempotentHint":false,"openWorldHint":false},"inputSchema":{"$schema":"https://json-schema.org/draft/2020-12/schema","type":"object","properties":{"company":{"type":"string","minLength":1},"fromPartyId":{"type":"string","minLength":3},"proposalHash":{"type":"string","pattern":"^[a-f0-9]{64}$"},"confirm":{"description":"Must be set to true to acknowledge the write side effects of this tool. Omitting it (or sending false) returns an { ok:false, errors:[...] } envelope rather than performing the write.","type":"boolean"}},"required":["company","fromPartyId","proposalHash"],"additionalProperties":false},"outputSchema":{"$schema":"https://json-schema.org/draft/2020-12/schema","type":"object","properties":{"ok":{"type":"boolean","description":"true \u21d2 kaldet lykkedes og `data` er sat; false \u21d2 se `errors`."},"data":{"description":"Kerne-resultatet ved ok=true. Den pr\u00e6cise feltliste er per-tool og dokumenteret i docs/mcp-tool-surface.md. Udeladt ved ok=false.","type":"object","properties":{},"additionalProperties":{}},"errors":{"type":"array","items":{"type":"string"},"description":"Menneskel\u00e6sbare fejl-/foruds\u00e6tnings-strenge. Tom ved ok=true; ikke-tom ved ok=false."},"appliedRules":{"description":"Regel-id'er der fyrede for denne handling (sporbarhed). S\u00e6ttes for bogf\u00f8rings-tools; udeladt ellers.","type":"array","items":{"type":"string"}},"code":{"description":"Stabil maskinl\u00e6sbar fejl-mark\u00f8r for cross-cutting preconditions (fx \"BACKUP_LOCKED\"). S\u00e6ttes kun ved ok=false og kun for fejl der lever uden for det enkelte tools forretningslogik \u2014 agenten kan branche p\u00e5 `code` uden at parse fri-tekst i `errors[]`. Udeladt ved per-tool forretningsfejl.","type":"string"}},"required":["ok","errors"],"additionalProperties":false}},{"name":"corporate_record_list","title":"List visible corporate records","description":"Lists only records whose entire declared company scope is authorized, before pagination.","annotations":{"readOnlyHint":true,"destructiveHint":false,"idempotentHint":true,"openWorldHint":false},"inputSchema":{"$schema":"https://json-schema.org/draft/2020-12/schema","type":"object","properties":{"company":{"type":"string","minLength":1},"cursor":{"type":"integer","minimum":0,"maximum":9007199254740991},"limit":{"type":"integer","minimum":1,"maximum":100}},"required":["company"],"additionalProperties":false},"outputSchema":{"$schema":"https://json-schema.org/draft/2020-12/schema","type":"object","properties":{"ok":{"type":"boolean","description":"true \u21d2 kaldet lykkedes og `data` er sat; false \u21d2 se `errors`."},"data":{"description":"Kerne-resultatet ved ok=true. Den pr\u00e6cise feltliste er per-tool og dokumenteret i docs/mcp-tool-surface.md. Udeladt ved ok=false.","type":"object","properties":{},"additionalProperties":{}},"errors":{"type":"array","items":{"type":"string"},"description":"Menneskel\u00e6sbare fejl-/foruds\u00e6tnings-strenge. Tom ved ok=true; ikke-tom ved ok=false."},"appliedRules":{"description":"Regel-id'er der fyrede for denne handling (sporbarhed). S\u00e6ttes for bogf\u00f8rings-tools; udeladt ellers.","type":"array","items":{"type":"string"}},"code":{"description":"Stabil maskinl\u00e6sbar fejl-mark\u00f8r for cross-cutting preconditions (fx \"BACKUP_LOCKED\"). S\u00e6ttes kun ved ok=false og kun for fejl der lever uden for det enkelte tools forretningslogik \u2014 agenten kan branche p\u00e5 `code` uden at parse fri-tekst i `errors[]`. Udeladt ved per-tool forretningsfejl.","type":"string"}},"required":["ok","errors"],"additionalProperties":false}},{"name":"corporate_record_inspect","title":"Inspect a visible corporate record","description":"Returns metadata, source hash, links and append-only history; original bytes are separate.","annotations":{"readOnlyHint":true,"destructiveHint":false,"idempotentHint":true,"openWorldHint":false},"inputSchema":{"$schema":"https://json-schema.org/draft/2020-12/schema","type":"object","properties":{"company":{"type":"string","minLength":1},"recordId":{"type":"string","minLength":3}},"required":["company","recordId"],"additionalProperties":false},"outputSchema":{"$schema":"https://json-schema.org/draft/2020-12/schema","type":"object","properties":{"ok":{"type":"boolean","description":"true \u21d2 kaldet lykkedes og `data` er sat; false \u21d2 se `errors`."},"data":{"description":"Kerne-resultatet ved ok=true. Den pr\u00e6cise feltliste er per-tool og dokumenteret i docs/mcp-tool-surface.md. Udeladt ved ok=false.","type":"object","properties":{},"additionalProperties":{}},"errors":{"type":"array","items":{"type":"string"},"description":"Menneskel\u00e6sbare fejl-/foruds\u00e6tnings-strenge. Tom ved ok=true; ikke-tom ved ok=false."},"appliedRules":{"description":"Regel-id'er der fyrede for denne handling (sporbarhed). S\u00e6ttes for bogf\u00f8rings-tools; udeladt ellers.","type":"array","items":{"type":"string"}},"code":{"description":"Stabil maskinl\u00e6sbar fejl-mark\u00f8r for cross-cutting preconditions (fx \"BACKUP_LOCKED\"). S\u00e6ttes kun ved ok=false og kun for fejl der lever uden for det enkelte tools forretningslogik \u2014 agenten kan branche p\u00e5 `code` uden at parse fri-tekst i `errors[]`. Udeladt ved per-tool forretningsfejl.","type":"string"}},"required":["ok","errors"],"additionalProperties":false}},{"name":"corporate_record_download","title":"Download verified corporate record bytes","description":"Returns original immutable bytes only after SHA-256 verification and scope authorization.","annotations":{"readOnlyHint":true,"destructiveHint":false,"idempotentHint":true,"openWorldHint":false},"inputSchema":{"$schema":"https://json-schema.org/draft/2020-12/schema","type":"object","properties":{"company":{"type":"string","minLength":1},"recordId":{"type":"string","minLength":3}},"required":["company","recordId"],"additionalProperties":false},"outputSchema":{"$schema":"https://json-schema.org/draft/2020-12/schema","type":"object","properties":{"ok":{"type":"boolean","description":"true \u21d2 kaldet lykkedes og `data` er sat; false \u21d2 se `errors`."},"data":{"description":"Kerne-resultatet ved ok=true. Den pr\u00e6cise feltliste er per-tool og dokumenteret i docs/mcp-tool-surface.md. Udeladt ved ok=false.","type":"object","properties":{},"additionalProperties":{}},"errors":{"type":"array","items":{"type":"string"},"description":"Menneskel\u00e6sbare fejl-/foruds\u00e6tnings-strenge. Tom ved ok=true; ikke-tom ved ok=false."},"appliedRules":{"description":"Regel-id'er der fyrede for denne handling (sporbarhed). S\u00e6ttes for bogf\u00f8rings-tools; udeladt ellers.","type":"array","items":{"type":"string"}},"code":{"description":"Stabil maskinl\u00e6sbar fejl-mark\u00f8r for cross-cutting preconditions (fx \"BACKUP_LOCKED\"). S\u00e6ttes kun ved ok=false og kun for fejl der lever uden for det enkelte tools forretningslogik \u2014 agenten kan branche p\u00e5 `code` uden at parse fri-tekst i `errors[]`. Udeladt ved per-tool forretningsfejl.","type":"string"}},"required":["ok","errors"],"additionalProperties":false}},{"name":"corporate_record_ingest","title":"Ingest immutable corporate evidence","description":"Stores governance evidence bytes/hash and metadata. It never posts, files or changes group state. Requires actor attribution and confirm:true; retry reads canonical state. write-reversible.","annotations":{"readOnlyHint":false,"destructiveHint":false,"idempotentHint":false,"openWorldHint":false},"inputSchema":{"$schema":"https://json-schema.org/draft/2020-12/schema","type":"object","properties":{"company":{"type":"string","minLength":1},"recordId":{"type":"string"},"type":{"type":"string","enum":["incorporation","articles","registration","shareholder_register","shareholder_agreement","board_resolution","general_meeting_minutes","capital_or_dividend_resolution","annual_report","auditor_deliverable","intercompany_agreement","ownership_register","share_transfer","authority_letter","bank_mandate","tax_registration","other"]},"bytesBase64":{"type":"string","minLength":1,"maxLength":22369624},"filename":{"type":"string","minLength":1},"source":{"type":"string","minLength":1},"receivedAt":{"type":"string","minLength":1},"recordDate":{"type":"string"},"retentionUntil":{"type":"string"},"uploader":{"type":"string","minLength":1},"sensitivity":{"type":"string","enum":["normal","confidential","restricted"]},"links":{"type":"array","items":{"type":"object","properties":{"type":{"type":"string","enum":["company","party","ownership","disposition","legacy_evidence_ref"]},"id":{"type":"string","minLength":1}},"required":["type","id"],"additionalProperties":false}},"confirm":{"description":"Must be set to true to acknowledge the write side effects of this tool. Omitting it (or sending false) returns an { ok:false, errors:[...] } envelope rather than performing the write.","type":"boolean"}},"required":["company","type","bytesBase64","filename","source","receivedAt","uploader"],"additionalProperties":false},"outputSchema":{"$schema":"https://json-schema.org/draft/2020-12/schema","type":"object","properties":{"ok":{"type":"boolean","description":"true \u21d2 kaldet lykkedes og `data` er sat; false \u21d2 se `errors`."},"data":{"description":"Kerne-resultatet ved ok=true. Den pr\u00e6cise feltliste er per-tool og dokumenteret i docs/mcp-tool-surface.md. Udeladt ved ok=false.","type":"object","properties":{},"additionalProperties":{}},"errors":{"type":"array","items":{"type":"string"},"description":"Menneskel\u00e6sbare fejl-/foruds\u00e6tnings-strenge. Tom ved ok=true; ikke-tom ved ok=false."},"appliedRules":{"description":"Regel-id'er der fyrede for denne handling (sporbarhed). S\u00e6ttes for bogf\u00f8rings-tools; udeladt ellers.","type":"array","items":{"type":"string"}},"code":{"description":"Stabil maskinl\u00e6sbar fejl-mark\u00f8r for cross-cutting preconditions (fx \"BACKUP_LOCKED\"). S\u00e6ttes kun ved ok=false og kun for fejl der lever uden for det enkelte tools forretningslogik \u2014 agenten kan branche p\u00e5 `code` uden at parse fri-tekst i `errors[]`. Udeladt ved per-tool forretningsfejl.","type":"string"}},"required":["ok","errors"],"additionalProperties":false}},{"name":"corporate_record_link","title":"Link corporate record","description":"Adds an audited typed link without altering original evidence bytes. Requires actor attribution and confirm:true; retry reads canonical state. write-reversible.","annotations":{"readOnlyHint":false,"destructiveHint":false,"idempotentHint":false,"openWorldHint":false},"inputSchema":{"$schema":"https://json-schema.org/draft/2020-12/schema","type":"object","properties":{"company":{"type":"string","minLength":1},"recordId":{"type":"string","minLength":3},"type":{"type":"string","enum":["company","party","ownership","disposition","legacy_evidence_ref"]},"id":{"type":"string","minLength":1},"confirm":{"description":"Must be set to true to acknowledge the write side effects of this tool. Omitting it (or sending false) returns an { ok:false, errors:[...] } envelope rather than performing the write.","type":"boolean"}},"required":["company","recordId","type","id"],"additionalProperties":false},"outputSchema":{"$schema":"https://json-schema.org/draft/2020-12/schema","type":"object","properties":{"ok":{"type":"boolean","description":"true \u21d2 kaldet lykkedes og `data` er sat; false \u21d2 se `errors`."},"data":{"description":"Kerne-resultatet ved ok=true. Den pr\u00e6cise feltliste er per-tool og dokumenteret i docs/mcp-tool-surface.md. Udeladt ved ok=false.","type":"object","properties":{},"additionalProperties":{}},"errors":{"type":"array","items":{"type":"string"},"description":"Menneskel\u00e6sbare fejl-/foruds\u00e6tnings-strenge. Tom ved ok=true; ikke-tom ved ok=false."},"appliedRules":{"description":"Regel-id'er der fyrede for denne handling (sporbarhed). S\u00e6ttes for bogf\u00f8rings-tools; udeladt ellers.","type":"array","items":{"type":"string"}},"code":{"description":"Stabil maskinl\u00e6sbar fejl-mark\u00f8r for cross-cutting preconditions (fx \"BACKUP_LOCKED\"). S\u00e6ttes kun ved ok=false og kun for fejl der lever uden for det enkelte tools forretningslogik \u2014 agenten kan branche p\u00e5 `code` uden at parse fri-tekst i `errors[]`. Udeladt ved per-tool forretningsfejl.","type":"string"}},"required":["ok","errors"],"additionalProperties":false}},{"name":"corporate_record_enrich","title":"Enrich corporate record metadata","description":"Appends a source assertion without changing immutable original bytes or source hash. Requires actor attribution and confirm:true; retry reads canonical state. write-reversible.","annotations":{"readOnlyHint":false,"destructiveHint":false,"idempotentHint":false,"openWorldHint":false},"inputSchema":{"$schema":"https://json-schema.org/draft/2020-12/schema","type":"object","properties":{"company":{"type":"string","minLength":1},"recordId":{"type":"string","minLength":3},"assertion":{"type":"string","minLength":1,"maxLength":2000},"confirm":{"description":"Must be set to true to acknowledge the write side effects of this tool. Omitting it (or sending false) returns an { ok:false, errors:[...] } envelope rather than performing the write.","type":"boolean"}},"required":["company","recordId","assertion"],"additionalProperties":false},"outputSchema":{"$schema":"https://json-schema.org/draft/2020-12/schema","type":"object","properties":{"ok":{"type":"boolean","description":"true \u21d2 kaldet lykkedes og `data` er sat; false \u21d2 se `errors`."},"data":{"description":"Kerne-resultatet ved ok=true. Den pr\u00e6cise feltliste er per-tool og dokumenteret i docs/mcp-tool-surface.md. Udeladt ved ok=false.","type":"object","properties":{},"additionalProperties":{}},"errors":{"type":"array","items":{"type":"string"},"description":"Menneskel\u00e6sbare fejl-/foruds\u00e6tnings-strenge. Tom ved ok=true; ikke-tom ved ok=false."},"appliedRules":{"description":"Regel-id'er der fyrede for denne handling (sporbarhed). S\u00e6ttes for bogf\u00f8rings-tools; udeladt ellers.","type":"array","items":{"type":"string"}},"code":{"description":"Stabil maskinl\u00e6sbar fejl-mark\u00f8r for cross-cutting preconditions (fx \"BACKUP_LOCKED\"). S\u00e6ttes kun ved ok=false og kun for fejl der lever uden for det enkelte tools forretningslogik \u2014 agenten kan branche p\u00e5 `code` uden at parse fri-tekst i `errors[]`. Udeladt ved per-tool forretningsfejl.","type":"string"}},"required":["ok","errors"],"additionalProperties":false}},{"name":"corporate_record_supersede","title":"Supersede corporate record","description":"Appends a correction chain; it never replaces or deletes original bytes. Requires actor attribution and confirm:true; retry reads canonical state. write-reversible.","annotations":{"readOnlyHint":false,"destructiveHint":false,"idempotentHint":false,"openWorldHint":false},"inputSchema":{"$schema":"https://json-schema.org/draft/2020-12/schema","type":"object","properties":{"company":{"type":"string","minLength":1},"recordId":{"type":"string","minLength":3},"replacementRecordId":{"type":"string","minLength":3},"reason":{"type":"string","minLength":1},"confirm":{"description":"Must be set to true to acknowledge the write side effects of this tool. Omitting it (or sending false) returns an { ok:false, errors:[...] } envelope rather than performing the write.","type":"boolean"}},"required":["company","recordId","replacementRecordId","reason"],"additionalProperties":false},"outputSchema":{"$schema":"https://json-schema.org/draft/2020-12/schema","type":"object","properties":{"ok":{"type":"boolean","description":"true \u21d2 kaldet lykkedes og `data` er sat; false \u21d2 se `errors`."},"data":{"description":"Kerne-resultatet ved ok=true. Den pr\u00e6cise feltliste er per-tool og dokumenteret i docs/mcp-tool-surface.md. Udeladt ved ok=false.","type":"object","properties":{},"additionalProperties":{}},"errors":{"type":"array","items":{"type":"string"},"description":"Menneskel\u00e6sbare fejl-/foruds\u00e6tnings-strenge. Tom ved ok=true; ikke-tom ved ok=false."},"appliedRules":{"description":"Regel-id'er der fyrede for denne handling (sporbarhed). S\u00e6ttes for bogf\u00f8rings-tools; udeladt ellers.","type":"array","items":{"type":"string"}},"code":{"description":"Stabil maskinl\u00e6sbar fejl-mark\u00f8r for cross-cutting preconditions (fx \"BACKUP_LOCKED\"). S\u00e6ttes kun ved ok=false og kun for fejl der lever uden for det enkelte tools forretningslogik \u2014 agenten kan branche p\u00e5 `code` uden at parse fri-tekst i `errors[]`. Udeladt ved per-tool forretningsfejl.","type":"string"}},"required":["ok","errors"],"additionalProperties":false}}]"###;
+pub fn accepts(name: &str) -> bool {
+    catalogue().iter().any(|t| t["name"] == name)
+}
+fn catalogue() -> Vec<Value> {
+    serde_json::from_str(CATALOGUE).expect("static source catalogue")
+}
+fn read(name: &str) -> bool {
+    matches!(
+        name,
+        "workspace_party_search"
+            | "workspace_party_inspect"
+            | "corporate_record_list"
+            | "corporate_record_inspect"
+            | "corporate_record_download"
+    )
+}
+pub fn tools() -> Vec<Value> {
+    catalogue().into_iter().map(|mut t| {
+        t["description"] = json!(format!("{} Current human credentials only. Native all-scope/sensitivity, retained whole-intent/current-principal replay and pagination/filetype/filename limits apply. No retry; reconcile unknown writes through exact canonical identity/source/history reads. Original bytes max16MiB; ingest JSON max24MiB. Identity-only party creation is unavailable: native creation requires an explicit initial role, which this original grammar does not supply.", t["description"].as_str().unwrap()));
+        if t["name"] == "workspace_party_create" {t["_meta"] = json!({"rentemester/nativeProfile":{"available":false,"code":"NATIVE_BOUNDARY","reason":"Original identity-only creation is not implemented by the role-requiring native writer; never infer a company role."}});}
+        t
+    }).collect()
+}
+fn schema(name: &str) -> Value {
+    catalogue().into_iter().find(|t| t["name"] == name).unwrap()["inputSchema"].clone()
+}
+// Strict original grammar: optional is not nullable; validate before confirmation/transport.
+fn valid(v: &Value, s: &Value) -> bool {
+    if s.as_object().is_some_and(|s| s.is_empty()) {
+        return true;
+    }
+    if s["enum"].as_array().is_some_and(|a| !a.contains(v)) {
+        return false;
+    }
+    match s["type"].as_str() {
+        Some("object") => v.as_object().is_some_and(|o| {
+            s["required"]
+                .as_array()
+                .is_none_or(|a| a.iter().all(|k| o.contains_key(k.as_str().unwrap())))
+                && o.iter()
+                    .all(|(k, v)| s["properties"].get(k).is_some_and(|s| valid(v, s)))
+        }),
+        Some("array") => v.as_array().is_some_and(|a| {
+            s["maxItems"].as_u64().is_none_or(|n| a.len() as u64 <= n)
+                && a.iter().all(|v| valid(v, &s["items"]))
+        }),
+        Some("string") => v.as_str().is_some_and(|t| {
+            let n = t.encode_utf16().count() as u64;
+            s["minLength"].as_u64().is_none_or(|m| n >= m)
+                && s["maxLength"].as_u64().is_none_or(|m| n <= m)
+                && (s.get("pattern").is_none() || hash(v))
+        }),
+        Some("integer") => v.as_i64().is_some_and(|n| {
+            s["minimum"].as_i64().is_none_or(|m| n >= m)
+                && s["maximum"].as_i64().is_none_or(|m| n <= m)
+        }),
+        Some("number") => v.is_number(),
+        Some("boolean") => v.is_boolean(),
+        _ => false,
+    }
+}
+fn result(e: Value) -> Value {
+    json!({"isError":e["ok"]!=true,"content":[{"type":"text","text":e.to_string()}],"structuredContent":e})
+}
+fn fail(message: &str, code: Option<&str>) -> Value {
+    let mut e = json!({"ok":false,"errors":[message]});
+    if let Some(c) = code {
+        e["code"] = json!(c);
+    }
+    result(e)
+}
+fn success(data: Value) -> Value {
+    result(json!({"ok":true,"data":data,"errors":[]}))
+}
+fn hash(v: &Value) -> bool {
+    v.as_str().is_some_and(|s| {
+        s.len() == 64
+            && s.bytes()
+                .all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b))
+    })
+}
+fn text(v: &Value, max: usize) -> bool {
+    v.as_str()
+        .is_some_and(|s| rentemester_engine::company_knowledge::text(s, max).is_ok())
+}
+fn id(v: &Value) -> bool {
+    text(v, 64)
+        && v.as_str()
+            .is_some_and(|s| !matches!(s, "." | "..") && !s.chars().any(char::is_control))
+}
+fn iso(v: &Value) -> bool {
+    v.as_str()
+        .is_some_and(|s| rentemester_engine::company_knowledge::iso(s).is_ok())
+}
+fn history(v: &Value) -> bool {
+    v.as_array().is_some_and(|a| {
+        !a.is_empty()
+            && a.iter().all(|e| {
+                hash(&e["payload_hash"])
+                    && ["event_type", "actor", "created_at"]
+                        .iter()
+                        .all(|k| e[k].as_str().is_some_and(|s| !s.is_empty()))
+                    && iso(&e["created_at"])
+            })
+    })
+}
+fn record(v: &Value) -> bool {
+    id(&v["recordId"])
+        && ["type", "filename", "source", "uploader", "sensitivity"]
+            .iter()
+            .all(|k| text(&v[k], 320))
+        && hash(&v["sha256"])
+        && iso(&v["receivedAt"])
+        && ["recordDate", "retentionUntil"]
+            .iter()
+            .all(|k| v.get(k).is_some_and(|v| v.is_null() || iso(v)))
+        && v["links"].as_array().is_some_and(|a| {
+            a.iter().all(|l| {
+                matches!(
+                    l["type"].as_str(),
+                    Some("company" | "party" | "ownership" | "disposition" | "legacy_evidence_ref")
+                ) && text(&l["id"], 256)
+            })
+        })
+        && history(&v["history"])
+}
+fn party(v: &Value) -> bool {
+    id(&v["partyId"])
+        && matches!(
+            v["kind"].as_str(),
+            Some("person" | "organization" | "public_authority" | "financial_institution")
+        )
+        && ["name", "source", "reviewAssertion"]
+            .iter()
+            .all(|k| text(&v[k], 500))
+        && iso(&v["observedAt"])
+        && history(&v["history"])
+        && v["identifiers"].as_array().is_some_and(|a| {
+            a.iter().all(|i| {
+                ["country", "identifier", "identifierKind"]
+                    .iter()
+                    .all(|k| i[k].is_string())
+            })
+        })
+        && v["roles"].as_array().is_some_and(|a| {
+            a.iter().all(|r| {
+                r["companySlug"].is_string() && r["role"].is_string() && r["defaults"].is_object()
+            })
+        })
+        && v["aliases"].as_array().is_some_and(|a| {
+            a.iter().all(|r| {
+                r["alias"].is_string()
+                    && r["source"].is_string()
+                    && r["review_state"].is_string()
+                    && r.get("observed_at").is_some_and(|v| v.is_null() || iso(v))
+                    && r.get("payload_hash")
+                        .is_some_and(|v| v.is_null() || hash(v))
+            })
+        })
+        && v["assertions"].as_array().is_some_and(|a| {
+            a.iter().all(|r| {
+                ["field", "value", "source", "review_state"]
+                    .iter()
+                    .all(|k| r[k].is_string())
+                    && iso(&r["observed_at"])
+                    && hash(&r["payload_hash"])
+            })
+        })
+}
+fn unknown() -> Value {
+    fail(
+        "operation outcome unknown; read canonical exact party/record, original bytes and full history before further action; do not assume rollback or resend",
+        Some("outcome_unknown"),
+    )
+}
+fn transport(e: Error, write: bool, corporate: bool) -> Value {
+    match e {
+        Error::OutcomeUnknown => unknown(),
+        Error::Protocol => fail(
+            "Server protocol admission refused before the registry request; no mutation sent",
+            Some("protocol"),
+        ),
+        Error::Transport if write => unknown(),
+        Error::Refused { status: 404 } => fail(
+            if corporate {
+                "corporate record not found"
+            } else {
+                "party not found"
+            },
+            Some(if corporate {
+                "CORPORATE_RECORD_NOT_FOUND"
+            } else {
+                "PARTY_NOT_FOUND"
+            }),
+        ),
+        other => fail(
+            &other.to_string(),
+            Some(match other {
+                Error::InvalidInput(_) => "invalid_input",
+                Error::Refused { .. } => "server_refused",
+                Error::Protocol => "protocol",
+                _ => "transport",
+            }),
+        ),
+    }
+}
+// Canonical RFC4648 spelling and the original storage bound; never rewrite bytes.
+fn original(v: &Value) -> bool {
+    let Some(s) = v.as_str() else {
+        return false;
+    };
+    if s.is_empty() || s.len() > 22_369_624 || s.len() % 4 != 0 {
+        return false;
+    }
+    let table = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    let mut decoded = 0;
+    for (i, c) in s.as_bytes().chunks_exact(4).enumerate() {
+        let last = (i + 1) * 4 == s.len();
+        let Some(a) = table.iter().position(|b| *b == c[0]) else {
+            return false;
+        };
+        let Some(b) = table.iter().position(|b| *b == c[1]) else {
+            return false;
+        };
+        let _ = a;
+        if c[2] == b'=' {
+            if !last || c[3] != b'=' || b % 16 != 0 {
+                return false;
+            }
+            decoded += 1;
+        } else {
+            let Some(d) = table.iter().position(|b| *b == c[2]) else {
+                return false;
+            };
+            if c[3] == b'=' {
+                if !last || d % 4 != 0 {
+                    return false;
+                }
+                decoded += 2;
+            } else {
+                if !table.contains(&c[3]) {
+                    return false;
+                }
+                decoded += 3;
+            }
+        }
+    }
+    decoded <= 16 * 1024 * 1024
+}
+pub async fn call(api: &ApiClient, name: &str, args: Value) -> Result<Value, &'static str> {
+    if !accepts(name) || !valid(&args, &schema(name)) {
+        return Err("invalid original registry arguments");
+    }
+    let company = args["company"].as_str().unwrap();
+    if company.len() > 128
+        || !company
+            .bytes()
+            .all(|b| b.is_ascii_alphanumeric() || b"-_".contains(&b))
+    {
+        return Err("invalid company slug");
+    }
+    for key in [
+        "partyId",
+        "fromPartyId",
+        "intoPartyId",
+        "recordId",
+        "replacementRecordId",
+    ] {
+        if args.get(key).is_some_and(|v| !id(v)) {
+            return Err("invalid bounded registry identifier");
+        }
+    }
+    if args
+        .get("query")
+        .is_some_and(|v| v.as_str().unwrap().encode_utf16().count() > 512)
+    {
+        return Err("native query bound exceeded");
+    }
+    for (key, max) in [
+        ("name", 320),
+        (
+            "source",
+            if name.starts_with("workspace_") {
+                160
+            } else {
+                320
+            },
+        ),
+        ("reviewAssertion", 500),
+        ("filename", 320),
+        ("uploader", 160),
+        ("assertion", 2000),
+        ("reason", 1000),
+        ("id", 256),
+    ] {
+        if args.get(key).is_some_and(|v| !text(v, max)) {
+            return Err("invalid canonical registry text");
+        }
+    }
+    for key in ["observedAt", "receivedAt", "recordDate", "retentionUntil"] {
+        if args.get(key).is_some_and(|v| !iso(v)) {
+            return Err("invalid registry ISO instant");
+        }
+    }
+    if let Some(a) = args["identifiers"].as_array() {
+        let mut seen = std::collections::BTreeSet::new();
+        for v in a {
+            let i = serde_json::from_value::<rentemester_engine::parties::Identifier>(v.clone())
+                .map_err(|_| "invalid party identifier")?;
+            let r =
+                rentemester_engine::parties::identity(&i).map_err(|_| "invalid party identity")?;
+            if !seen.insert((r.country, r.identifier_kind, r.identifier)) {
+                return Err("duplicate-equivalent party identifier");
+            }
+        }
+    }
+    if let Some(a) = args["aliases"].as_array() {
+        let mut seen = std::collections::BTreeSet::new();
+        for v in a {
+            if !text(v, 160)
+                || !seen.insert(
+                    rentemester_engine::company_knowledge::trim(v.as_str().unwrap()).to_lowercase(),
+                )
+            {
+                return Err("invalid or duplicate-equivalent alias");
+            }
+        }
+    }
+    if let Some(a) = args["links"].as_array() {
+        if a.len() > 4096 {
+            return Err("native links bound exceeded");
+        }
+        let mut seen = std::collections::BTreeSet::new();
+        for l in a {
+            if !text(&l["id"], 256)
+                || !seen.insert((
+                    l["type"].as_str().unwrap(),
+                    rentemester_engine::company_knowledge::trim(l["id"].as_str().unwrap()),
+                ))
+            {
+                return Err("invalid or duplicate-equivalent link");
+            }
+        }
+    }
+    if name == "workspace_party_propose_merge"
+        && rentemester_engine::company_knowledge::trim(args["fromPartyId"].as_str().unwrap())
+            == rentemester_engine::company_knowledge::trim(args["intoPartyId"].as_str().unwrap())
+    {
+        return Err("distinct merge parties required");
+    }
+    if args.get("bytesBase64").is_some_and(|v| !original(v)) {
+        return Err("canonical original base64 within16MiB required");
+    }
+    let write = !read(name);
+    if write && args["confirm"] != true {
+        return Ok(fail(
+            &format!("confirm: true required for write tool {name}"),
+            Some("CONFIRM_REQUIRED"),
+        ));
+    }
+    if name == "workspace_party_create" {
+        return Ok(fail(
+            "identity-only creation unavailable: native party writer requires an initial company role; original input has no role, and the adapter will not infer one",
+            Some("NATIVE_BOUNDARY"),
+        ));
+    }
+    let corporate = name.starts_with("corporate_");
+    let id_key = if corporate {
+        "recordId"
+    } else if name.ends_with("merge") {
+        "fromPartyId"
+    } else {
+        "partyId"
+    };
+    let selected = args[id_key].as_str().unwrap_or("");
+    let canonical_selected = rentemester_engine::company_knowledge::trim(selected);
+    let cursor = args["cursor"].as_u64().unwrap_or(0);
+    let cursor = usize::try_from(cursor).map_err(|_| "cursor exceeds native bound")?;
+    let limit = args["limit"].as_u64().unwrap_or(25) as usize;
+    let mut body = args.clone();
+    let fields = body.as_object_mut().unwrap();
+    fields.remove("company");
+    if !corporate {
+        fields.remove(id_key);
+    }
+    // Native corporate command structs accept recordId, preserving supplied intent.
+    let wire = serde_json::to_vec(&body).map_err(|_| "registry serialization failed")?;
+    let max = if name == "corporate_record_ingest" {
+        rentemester_client::MAX_CORPORATE_INGEST_BODY
+    } else if corporate {
+        rentemester_client::MAX_CORPORATE_BODY
+    } else {
+        rentemester_client::MAX_PARTY_BODY
+    };
+    if write && wire.len() > max {
+        return Err("native registry body bound exceeded");
+    }
+    let outcome = match name {
+        "workspace_party_search" => {
+            api.workspace_parties(company, args["query"].as_str(), cursor, limit)
+                .await
+        }
+        "workspace_party_inspect" => api.workspace_party(company, selected).await,
+        "workspace_party_link_role" => {
+            api.mutate_workspace_party(company, PartyMutation::Role(selected.into()), wire, true)
+                .await
+        }
+        "workspace_party_propose_merge" => {
+            api.mutate_workspace_party(
+                company,
+                PartyMutation::ProposeMerge(canonical_selected.into()),
+                wire,
+                true,
+            )
+            .await
+        }
+        "workspace_party_approve_merge" => {
+            api.mutate_workspace_party(
+                company,
+                PartyMutation::ApproveMerge(canonical_selected.into()),
+                wire,
+                true,
+            )
+            .await
+        }
+        "corporate_record_list" => api.corporate_records(company, cursor, limit).await,
+        "corporate_record_inspect" => api.corporate_record(company, selected).await,
+        "corporate_record_download" => api.corporate_record_original(company, selected).await,
+        "corporate_record_ingest" => {
+            api.mutate_corporate_record(company, CorporateRecordMutation::Ingest, wire, true)
+                .await
+        }
+        "corporate_record_link" => {
+            api.mutate_corporate_record(
+                company,
+                CorporateRecordMutation::Link(selected.into()),
+                wire,
+                true,
+            )
+            .await
+        }
+        "corporate_record_enrich" => {
+            api.mutate_corporate_record(
+                company,
+                CorporateRecordMutation::Enrich(selected.into()),
+                wire,
+                true,
+            )
+            .await
+        }
+        "corporate_record_supersede" => {
+            api.mutate_corporate_record(
+                company,
+                CorporateRecordMutation::Supersede(selected.into()),
+                wire,
+                true,
+            )
+            .await
+        }
+        _ => return Err("unknown registry tool"),
+    };
+    let v = match outcome {
+        Ok(v) => v,
+        Err(e) => return Ok(transport(e, write, corporate)),
+    };
+    if v["ok"] == false {
+        if let Some(errors) = v["errors"]
+            .as_array()
+            .filter(|a| !a.is_empty() && a.iter().all(Value::is_string))
+        {
+            let mut e = json!({"ok":false,"errors":errors});
+            if let Some(c) = v.get("code").filter(|c| c.is_string()) {
+                e["code"] = c.clone();
+            }
+            return Ok(result(e));
+        }
+        return Ok(fail(
+            "registry server refused operation",
+            Some("server_refused"),
+        ));
+    }
+    let list = matches!(name, "workspace_party_search" | "corporate_record_list");
+    let receipt = if list {
+        v["rows"].as_array().is_some_and(|a| {
+            a.len() <= limit && a.iter().all(if corporate { record } else { party })
+        }) && v["count"].is_u64()
+            && v.get("nextCursor")
+                .is_some_and(|v| v.is_null() || v.as_u64().is_some_and(|n| n > cursor as u64))
+    } else if name == "corporate_record_download" {
+        original(&v["bytesBase64"]) && hash(&v["sha256"])
+    } else if name == "workspace_party_propose_merge" {
+        hash(&v["proposalHash"])
+    } else if matches!(
+        name,
+        "corporate_record_enrich" | "corporate_record_supersede"
+    ) {
+        hash(&v["payloadHash"])
+    } else if corporate {
+        record(&v["record"])
+            && (selected.is_empty() || v["record"]["recordId"] == canonical_selected)
+    } else {
+        party(&v["party"]) && v["party"]["partyId"] == canonical_selected
+    };
+    if v["ok"] != true || !receipt {
+        return Ok(if write {
+            unknown()
+        } else {
+            fail("invalid canonical registry response", Some("protocol"))
+        });
+    }
+    if name == "corporate_record_ingest" {
+        let r = &v["record"];
+        if ["type", "filename", "source", "uploader"].iter().any(|k| {
+            r[k].as_str()
+                != args[k]
+                    .as_str()
+                    .map(rentemester_engine::company_knowledge::trim)
+        }) || args.get("recordId").is_some_and(|id| {
+            r["recordId"].as_str() != id.as_str().map(rentemester_engine::company_knowledge::trim)
+        }) || !r["links"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|l| l["type"] == "company" && l["id"] == company)
+        {
+            return Ok(unknown());
+        }
+    }
+    if name == "workspace_party_link_role"
+        && !v["party"]["roles"].as_array().unwrap().iter().any(|r| {
+            r["companySlug"] == company
+                && r["role"] == args["role"]
+                && r["defaults"] == args.get("defaults").cloned().unwrap_or(json!({}))
+        })
+    {
+        return Ok(unknown());
+    }
+    if name == "corporate_record_link"
+        && !v["record"]["links"].as_array().unwrap().iter().any(|l| {
+            l["type"] == args["type"]
+                && l["id"].as_str()
+                    == args["id"]
+                        .as_str()
+                        .map(rentemester_engine::company_knowledge::trim)
+        })
+    {
+        return Ok(unknown());
+    }
+    // Native download owns SHA verification. Bind the receipt to exact canonical source
+    // readback, without inventing filename/MIME or claiming client hash verification.
+    if name == "corporate_record_download" {
+        match api.corporate_record(company, selected).await {
+            Ok(r)
+                if r["ok"] == true
+                    && record(&r["record"])
+                    && r["record"]["recordId"] == canonical_selected
+                    && r["record"]["sha256"] == v["sha256"] => {}
+            Err(e) => return Ok(transport(e, false, true)),
+            _ => {
+                return Ok(fail(
+                    "download proof differs from canonical exact-source receipt",
+                    Some("protocol"),
+                ));
+            }
+        }
+    }
+    if name == "corporate_record_ingest" {
+        let rid = v["record"]["recordId"].as_str().unwrap();
+        match api.corporate_record_original(company, rid).await {
+            Ok(r)
+                if r["ok"] == true
+                    && r["bytesBase64"] == args["bytesBase64"]
+                    && r["sha256"] == v["record"]["sha256"] => {}
+            _ => return Ok(unknown()),
+        }
+    }
+    if matches!(
+        name,
+        "corporate_record_enrich" | "corporate_record_supersede"
+    ) {
+        let event = if name.ends_with("enrich") {
+            "enriched"
+        } else {
+            "superseded"
+        };
+        match api.corporate_record(company, selected).await {
+            Ok(r)
+                if r["ok"] == true
+                    && record(&r["record"])
+                    && r["record"]["recordId"] == canonical_selected
+                    && r["record"]["history"].as_array().unwrap().iter().any(|e| {
+                        e["event_type"] == event && e["payload_hash"] == v["payloadHash"]
+                    }) => {}
+            _ => return Ok(unknown()),
+        }
+    }
+    let data = if list {
+        json!({"rows":v["rows"],"count":v["count"],"nextCursor":v["nextCursor"]})
+    } else if name == "corporate_record_download" {
+        json!({"bytesBase64":v["bytesBase64"],"sha256":v["sha256"]})
+    } else if name == "workspace_party_propose_merge" {
+        json!({"proposalHash":v["proposalHash"]})
+    } else if matches!(
+        name,
+        "corporate_record_enrich" | "corporate_record_supersede"
+    ) {
+        json!({"payloadHash":v["payloadHash"]})
+    } else if corporate {
+        json!({"record":v["record"]})
+    } else {
+        json!({"party":v["party"]})
+    };
+    Ok(success(data))
+}
