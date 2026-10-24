@@ -1,0 +1,5823 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$defs": {
+    "Empty": {
+      "type": "object",
+      "properties": {},
+      "required": [],
+      "additionalProperties": false
+    },
+    "I64": {
+      "type": "integer",
+      "minimum": -9223372036854775808,
+      "maximum": 9223372036854775807
+    },
+    "Hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "Company": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "country": {
+          "type": "string"
+        },
+        "currency": {
+          "type": "string"
+        },
+        "fiscalYearLabelStrategy": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "string"
+        },
+        "cvr": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "address": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "postalCode": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "city": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "companyForm": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "industryCode": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "industryText": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "cvrStatus": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "cvrSyncedAt": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "vatPeriodType": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "id": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "fiscalYearStartMonth": {
+          "type": "integer"
+        },
+        "paymentTermsDays": {
+          "type": "integer"
+        },
+        "auditWaived": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "payment": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "bankName": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "registrationNo": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "accountNo": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "iban": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "bankName",
+                "registrationNo",
+                "accountNo",
+                "iban"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "name",
+        "country",
+        "currency",
+        "fiscalYearLabelStrategy",
+        "createdAt",
+        "cvr",
+        "address",
+        "postalCode",
+        "city",
+        "companyForm",
+        "industryCode",
+        "industryText",
+        "cvrStatus",
+        "cvrSyncedAt",
+        "vatPeriodType",
+        "id",
+        "fiscalYearStartMonth",
+        "paymentTermsDays",
+        "auditWaived",
+        "payment"
+      ],
+      "additionalProperties": false
+    },
+    "Coverage": {
+      "type": "object",
+      "properties": {
+        "complete": {
+          "const": false
+        },
+        "notice": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "complete",
+        "notice"
+      ],
+      "additionalProperties": false
+    },
+    "Subject": {
+      "type": "object",
+      "properties": {
+        "cvr": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "cvr",
+        "name"
+      ],
+      "additionalProperties": false
+    },
+    "HoldEvent": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "holdId": {
+          "type": "string"
+        },
+        "subjectReference": {
+          "type": "string"
+        },
+        "subjectAliases": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "operation": {
+          "enum": [
+            "place",
+            "release"
+          ]
+        },
+        "reason": {
+          "type": "string"
+        },
+        "actor": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "holdId",
+        "subjectReference",
+        "subjectAliases",
+        "operation",
+        "reason",
+        "actor",
+        "createdAt"
+      ],
+      "additionalProperties": false
+    },
+    "Holds": {
+      "type": "object",
+      "properties": {
+        "active": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-archive_privacy.json#/$defs/HoldEvent"
+          },
+          "minItems": 0
+        },
+        "history": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-archive_privacy.json#/$defs/HoldEvent"
+          },
+          "minItems": 0
+        }
+      },
+      "required": [
+        "active",
+        "history"
+      ],
+      "additionalProperties": false
+    },
+    "Record": {
+      "type": "object",
+      "properties": {
+        "source": {
+          "enum": [
+            "customers",
+            "vendors",
+            "documents",
+            "bank_transactions",
+            "journal_entries",
+            "journal_lines",
+            "audit_log"
+          ]
+        },
+        "sourceRowId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "label": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "personalData": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "address": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "email": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "vatOrCvr": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "name",
+            "address",
+            "email",
+            "vatOrCvr"
+          ],
+          "additionalProperties": false
+        },
+        "retainUntil": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "retentionUnknown": {
+          "type": "boolean"
+        },
+        "underRetention": {
+          "type": "boolean"
+        },
+        "erased": {
+          "type": "boolean"
+        },
+        "underLegalHold": {
+          "type": "boolean"
+        },
+        "erasable": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "source",
+        "sourceRowId",
+        "label",
+        "personalData",
+        "retainUntil",
+        "retentionUnknown",
+        "underRetention",
+        "erased",
+        "underLegalHold",
+        "erasable"
+      ],
+      "additionalProperties": false
+    },
+    "ExportCore": {
+      "type": "object",
+      "properties": {
+        "slug": {
+          "type": "string"
+        },
+        "company": {
+          "$ref": "schemas-archive_privacy.json#/$defs/Company"
+        },
+        "export": {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "asOf": {
+              "type": "string"
+            },
+            "appliedRules": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "const": "GDPR-SUBJECT-EXPORT"
+                },
+                {
+                  "const": "DK-BOOKKEEPING-RETENTION-001"
+                }
+              ],
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "subject": {
+              "$ref": "schemas-archive_privacy.json#/$defs/Subject"
+            },
+            "legalHolds": {
+              "$ref": "schemas-archive_privacy.json#/$defs/Holds"
+            },
+            "records": {
+              "type": "array",
+              "items": {
+                "$ref": "schemas-archive_privacy.json#/$defs/Record"
+              },
+              "minItems": 0
+            },
+            "errors": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "minItems": 0,
+              "maxItems": 0
+            },
+            "coverage": {
+              "$ref": "schemas-archive_privacy.json#/$defs/Coverage"
+            }
+          },
+          "required": [
+            "ok",
+            "asOf",
+            "appliedRules",
+            "subject",
+            "legalHolds",
+            "records",
+            "errors",
+            "coverage"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "slug",
+        "company",
+        "export"
+      ],
+      "additionalProperties": false
+    },
+    "ErasureCore": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "asOf": {
+          "type": "string"
+        },
+        "subject": {
+          "$ref": "schemas-archive_privacy.json#/$defs/Subject"
+        },
+        "appliedRules": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "const": "GDPR-RETENTION-BOUNDED-ERASURE"
+            },
+            {
+              "const": "DK-BOOKKEEPING-RETENTION-001"
+            }
+          ],
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "erasedCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "refusedCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "alreadyErasedCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "erased": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "source": {
+                "type": "string"
+              },
+              "sourceRowId": {
+                "type": "integer",
+                "minimum": -9223372036854775808,
+                "maximum": 9223372036854775807
+              },
+              "label": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "redactedFields": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "minItems": 0
+              }
+            },
+            "required": [
+              "source",
+              "sourceRowId",
+              "label",
+              "redactedFields"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 0
+        },
+        "refused": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "source": {
+                "type": "string"
+              },
+              "sourceRowId": {
+                "type": "integer",
+                "minimum": -9223372036854775808,
+                "maximum": 9223372036854775807
+              },
+              "label": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "retainUntil": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "reason": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "source",
+              "sourceRowId",
+              "label",
+              "retainUntil",
+              "reason"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 0
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 0,
+          "maxItems": 0
+        },
+        "coverage": {
+          "$ref": "schemas-archive_privacy.json#/$defs/Coverage"
+        }
+      },
+      "required": [
+        "ok",
+        "asOf",
+        "subject",
+        "appliedRules",
+        "erasedCount",
+        "refusedCount",
+        "alreadyErasedCount",
+        "erased",
+        "refused",
+        "errors",
+        "coverage"
+      ],
+      "additionalProperties": false
+    },
+    "HoldCore": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "asOf": {
+          "type": "string"
+        },
+        "legalHolds": {
+          "$ref": "schemas-archive_privacy.json#/$defs/Holds"
+        }
+      },
+      "required": [
+        "ok",
+        "asOf",
+        "legalHolds"
+      ],
+      "additionalProperties": false
+    },
+    "AuditPayload": {
+      "type": "object",
+      "properties": {
+        "slug": {
+          "type": "string"
+        },
+        "generatedOn": {
+          "type": "string"
+        },
+        "asOf": {
+          "type": "string"
+        },
+        "since": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "until": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "actor": {
+          "type": "string"
+        },
+        "events": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "created_at": {
+                "type": "string"
+              },
+              "event_type": {
+                "type": "string"
+              },
+              "entity_type": {
+                "type": "string"
+              },
+              "entity_id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "message": {
+                "type": "string"
+              },
+              "actor": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "created_at",
+              "event_type",
+              "entity_type",
+              "entity_id",
+              "message",
+              "actor"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 0
+        }
+      },
+      "required": [
+        "slug",
+        "generatedOn",
+        "asOf",
+        "since",
+        "until",
+        "actor",
+        "events"
+      ],
+      "additionalProperties": false
+    },
+    "AuditCore": {
+      "type": "object",
+      "properties": {
+        "format": {
+          "const": "rentemester-gdpr-audit/1"
+        },
+        "canonicalPayload": {
+          "type": "string",
+          "contentMediaType": "application/json",
+          "contentSchema": {
+            "$ref": "schemas-archive_privacy.json#/$defs/AuditPayload"
+          }
+        },
+        "fingerprint": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "signature": {
+          "type": "string"
+        },
+        "algorithm": {
+          "const": "Ed25519"
+        },
+        "signerPublicFingerprint": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "signerPublicKey": {
+          "type": "string"
+        },
+        "trustNotice": {
+          "const": "Verification requires an independently trusted public key; embedded metadata does not establish trust"
+        }
+      },
+      "required": [
+        "format",
+        "canonicalPayload",
+        "fingerprint",
+        "signature",
+        "algorithm",
+        "signerPublicFingerprint",
+        "signerPublicKey",
+        "trustNotice"
+      ],
+      "additionalProperties": false
+    },
+    "RetentionCore": {
+      "type": "object",
+      "properties": {
+        "slug": {
+          "type": "string"
+        },
+        "company": {
+          "$ref": "schemas-archive_privacy.json#/$defs/Company"
+        },
+        "report": {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "asOf": {
+              "type": "string"
+            },
+            "appliedRules": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "const": "DK-BOOKKEEPING-RETENTION-001"
+                }
+              ],
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "rows": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "table": {
+                    "enum": [
+                      "documents",
+                      "journal_entries",
+                      "bank_transactions"
+                    ]
+                  },
+                  "total": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "expired": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "nextExpiry": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "oldestExpired": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "unknown": {
+                    "type": "integer",
+                    "minimum": 0
+                  }
+                },
+                "required": [
+                  "table",
+                  "total",
+                  "expired",
+                  "nextExpiry",
+                  "oldestExpired",
+                  "unknown"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 3,
+              "maxItems": 3
+            },
+            "errors": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "minItems": 0,
+              "maxItems": 0
+            }
+          },
+          "required": [
+            "ok",
+            "asOf",
+            "appliedRules",
+            "rows",
+            "errors"
+          ],
+          "additionalProperties": false
+        },
+        "legalCitation": {
+          "type": "object",
+          "properties": {
+            "sourceId": {
+              "const": "DK-BOGFORINGSLOVEN-2022-700"
+            },
+            "note": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "sourceId",
+            "note"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "slug",
+        "company",
+        "report",
+        "legalCitation"
+      ],
+      "additionalProperties": false
+    },
+    "gdpr-exportOutput": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "gdpr": {
+          "$ref": "schemas-archive_privacy.json#/$defs/ExportCore"
+        }
+      },
+      "required": [
+        "ok",
+        "gdpr"
+      ],
+      "additionalProperties": false
+    },
+    "gdpr-discoverOutput": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "gdprDiscovery": {
+          "$ref": "schemas-archive_privacy.json#/$defs/ExportCore"
+        }
+      },
+      "required": [
+        "ok",
+        "gdprDiscovery"
+      ],
+      "additionalProperties": false
+    },
+    "gdpr-eraseOutput": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "gdprErasure": {
+          "$ref": "schemas-archive_privacy.json#/$defs/ErasureCore"
+        }
+      },
+      "required": [
+        "ok",
+        "gdprErasure"
+      ],
+      "additionalProperties": false
+    },
+    "gdpr-forgetOutput": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "gdprErasure": {
+          "$ref": "schemas-archive_privacy.json#/$defs/ErasureCore"
+        }
+      },
+      "required": [
+        "ok",
+        "gdprErasure"
+      ],
+      "additionalProperties": false
+    },
+    "gdpr-legal-holdOutput": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "gdprLegalHold": {
+          "$ref": "schemas-archive_privacy.json#/$defs/HoldCore"
+        }
+      },
+      "required": [
+        "ok",
+        "gdprLegalHold"
+      ],
+      "additionalProperties": false
+    },
+    "gdpr-audit-logOutput": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "gdprAudit": {
+          "$ref": "schemas-archive_privacy.json#/$defs/AuditCore"
+        }
+      },
+      "required": [
+        "ok",
+        "gdprAudit"
+      ],
+      "additionalProperties": false
+    },
+    "retentionOutput": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "retention": {
+          "$ref": "schemas-archive_privacy.json#/$defs/RetentionCore"
+        }
+      },
+      "required": [
+        "ok",
+        "retention"
+      ],
+      "additionalProperties": false
+    },
+    "SubjectInputObject": {
+      "type": "object",
+      "properties": {
+        "cvr": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "asOf": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "confirm": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "SubjectInputHttp": {
+      "anyOf": [
+        {
+          "$ref": "schemas-archive_privacy.json#/$defs/SubjectInputObject"
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            {
+              "type": "boolean"
+            }
+          ],
+          "minItems": 4,
+          "maxItems": 4
+        }
+      ]
+    },
+    "ForgetInputObject": {
+      "type": "object",
+      "properties": {
+        "cvr": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "afterRetentionExpiry": {
+          "type": "boolean"
+        },
+        "confirm": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "afterRetentionExpiry",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "ForgetInputHttp": {
+      "anyOf": [
+        {
+          "$ref": "schemas-archive_privacy.json#/$defs/ForgetInputObject"
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "boolean"
+            }
+          ],
+          "minItems": 4,
+          "maxItems": 4
+        }
+      ]
+    },
+    "HoldInputObject": {
+      "type": "object",
+      "properties": {
+        "cvr": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "holdId": {
+          "type": "string"
+        },
+        "operation": {
+          "type": "string"
+        },
+        "reason": {
+          "type": "string"
+        },
+        "confirm": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "holdId",
+        "operation",
+        "reason",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "HoldInputHttp": {
+      "anyOf": [
+        {
+          "$ref": "schemas-archive_privacy.json#/$defs/HoldInputObject"
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ],
+          "minItems": 6,
+          "maxItems": 6
+        }
+      ]
+    },
+    "AuditInputObject": {
+      "type": "object",
+      "properties": {
+        "since": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "until": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "asOf": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "confirm": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "AuditInputHttp": {
+      "anyOf": [
+        {
+          "$ref": "schemas-archive_privacy.json#/$defs/AuditInputObject"
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            {
+              "type": "boolean"
+            }
+          ],
+          "minItems": 4,
+          "maxItems": 4
+        }
+      ]
+    },
+    "PlanObject": {
+      "type": "object",
+      "properties": {
+        "fileName": {
+          "type": "string"
+        },
+        "contentBase64": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "fileName",
+        "contentBase64"
+      ],
+      "additionalProperties": false
+    },
+    "PlanHttp": {
+      "anyOf": [
+        {
+          "$ref": "schemas-archive_privacy.json#/$defs/PlanObject"
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            }
+          ],
+          "minItems": 2,
+          "maxItems": 2
+        }
+      ]
+    },
+    "PlanSdk": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "fileName": {
+              "type": "string",
+              "minLength": 1
+            },
+            "contentBase64": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "fileName",
+            "contentBase64"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "string",
+              "minLength": 1
+            }
+          ],
+          "minItems": 2,
+          "maxItems": 2
+        }
+      ]
+    },
+    "ApplyObject": {
+      "type": "object",
+      "properties": {
+        "fileName": {
+          "type": "string"
+        },
+        "contentBase64": {
+          "type": "string"
+        },
+        "planHash": {
+          "type": "string"
+        },
+        "idempotencyKey": {
+          "type": "string"
+        },
+        "confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "fileName",
+        "contentBase64",
+        "planHash",
+        "idempotencyKey",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "ApplyHttp": {
+      "anyOf": [
+        {
+          "$ref": "schemas-archive_privacy.json#/$defs/ApplyObject"
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "const": true
+            }
+          ],
+          "minItems": 5,
+          "maxItems": 5
+        }
+      ]
+    },
+    "ApplySdk": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "fileName": {
+              "type": "string",
+              "minLength": 1
+            },
+            "contentBase64": {
+              "type": "string",
+              "minLength": 1
+            },
+            "planHash": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "idempotencyKey": {
+              "type": "string",
+              "minLength": 1
+            },
+            "confirm": {
+              "const": true
+            }
+          },
+          "required": [
+            "fileName",
+            "contentBase64",
+            "planHash",
+            "idempotencyKey",
+            "confirm"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "const": true
+            }
+          ],
+          "minItems": 5,
+          "maxItems": 5
+        }
+      ]
+    },
+    "gdpr-exportSdk": {
+      "type": "object",
+      "properties": {
+        "cvr": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "confirm": {
+          "const": true
+        },
+        "asOf": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "gdpr-discoverSdk": {
+      "type": "object",
+      "properties": {
+        "cvr": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "confirm": {
+          "const": true
+        },
+        "asOf": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "gdpr-eraseSdk": {
+      "type": "object",
+      "properties": {
+        "cvr": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "gdpr-forgetSdk": {
+      "type": "object",
+      "properties": {
+        "cvr": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "confirm": {
+          "const": true
+        },
+        "afterRetentionExpiry": {
+          "const": true
+        }
+      },
+      "required": [
+        "confirm",
+        "afterRetentionExpiry"
+      ],
+      "additionalProperties": false
+    },
+    "gdpr-legal-holdSdk": {
+      "type": "object",
+      "properties": {
+        "cvr": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "confirm": {
+          "const": true
+        },
+        "holdId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        },
+        "operation": {
+          "enum": [
+            "place",
+            "release"
+          ]
+        }
+      },
+      "required": [
+        "confirm",
+        "holdId",
+        "reason",
+        "operation"
+      ],
+      "additionalProperties": false
+    },
+    "gdpr-audit-logSdk": {
+      "type": "object",
+      "properties": {
+        "since": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "until": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "asOf": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "ArchivePlan": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "plan": {
+          "type": "object",
+          "properties": {
+            "format": {
+              "const": "rentemester-native-closed-history/1"
+            },
+            "status": {
+              "const": "ready"
+            },
+            "planHash": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "source": {
+              "type": "object",
+              "properties": {
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[0-9a-f]{64}$"
+                },
+                "sizeBytes": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 26214400
+                }
+              },
+              "required": [
+                "sha256",
+                "sizeBytes"
+              ],
+              "additionalProperties": false
+            },
+            "declaredCurrency": {
+              "type": "string"
+            },
+            "currencyDeclaration": {
+              "const": "operator"
+            },
+            "excludedLatestYear": {
+              "type": "integer"
+            },
+            "years": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "fiscalYear": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 9999
+                  },
+                  "postingCount": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "balanceCount": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "hasBalances": {
+                    "type": "boolean"
+                  },
+                  "status": {
+                    "enum": [
+                      "new",
+                      "retained"
+                    ]
+                  }
+                },
+                "required": [
+                  "fiscalYear",
+                  "postingCount",
+                  "balanceCount",
+                  "hasBalances",
+                  "status"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "maxItems": 31
+            },
+            "limitations": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "minItems": 0,
+              "maxItems": 0
+            }
+          },
+          "required": [
+            "format",
+            "status",
+            "planHash",
+            "source",
+            "declaredCurrency",
+            "currencyDeclaration",
+            "excludedLatestYear",
+            "years",
+            "limitations"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "ok",
+        "plan"
+      ],
+      "additionalProperties": false
+    },
+    "ArchiveApply": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "archiveImport": {
+          "type": "object",
+          "properties": {
+            "importId": {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            "sourceSha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "planHash": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "excludedLatestYear": {
+              "type": "integer"
+            },
+            "declaredCurrency": {
+              "type": "string"
+            },
+            "years": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "fiscalYear": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 9999
+                  },
+                  "postingCount": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "balanceCount": {
+                    "type": "integer",
+                    "minimum": 0
+                  }
+                },
+                "required": [
+                  "fiscalYear",
+                  "postingCount",
+                  "balanceCount"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "maxItems": 31
+            }
+          },
+          "required": [
+            "importId",
+            "sourceSha256",
+            "planHash",
+            "excludedLatestYear",
+            "declaredCurrency",
+            "years"
+          ],
+          "additionalProperties": false
+        },
+        "idempotency": {
+          "$ref": "schemas-chart_journal.json#/$defs/Receipt"
+        }
+      },
+      "required": [
+        "ok",
+        "archiveImport",
+        "idempotency"
+      ],
+      "additionalProperties": false
+    },
+    "Money": {
+      "type": "string",
+      "pattern": "^-?(0|[1-9][0-9]*)\\.[0-9]{2}$"
+    },
+    "SourceAmount": {
+      "type": "string",
+      "pattern": "^-?(0|[1-9][0-9]*)\\.[0-9]{6}$",
+      "description": "Magnitude <=9007199254740991; canonical signed six decimals; money separately quantized."
+    },
+    "Balance": {
+      "type": "object",
+      "properties": {
+        "lineNo": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "accountNo": {
+          "type": "string"
+        },
+        "accountName": {
+          "type": "string"
+        },
+        "amount": {
+          "$ref": "schemas-archive_privacy.json#/$defs/Money"
+        },
+        "sourceAmount": {
+          "$ref": "schemas-archive_privacy.json#/$defs/SourceAmount"
+        }
+      },
+      "required": [
+        "lineNo",
+        "accountNo",
+        "accountName",
+        "amount",
+        "sourceAmount"
+      ],
+      "additionalProperties": false
+    },
+    "Posting": {
+      "type": "object",
+      "properties": {
+        "lineNo": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "accountNo": {
+          "type": "string"
+        },
+        "accountName": {
+          "type": "string"
+        },
+        "amount": {
+          "$ref": "schemas-archive_privacy.json#/$defs/Money"
+        },
+        "sourceAmount": {
+          "$ref": "schemas-archive_privacy.json#/$defs/SourceAmount"
+        },
+        "transactionDate": {
+          "type": "string"
+        },
+        "voucher": {
+          "type": "string"
+        },
+        "voucherType": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        },
+        "vatType": {
+          "type": "string"
+        },
+        "runningBalance": {
+          "anyOf": [
+            {
+              "$ref": "schemas-archive_privacy.json#/$defs/Money"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sourceRunningBalance": {
+          "anyOf": [
+            {
+              "$ref": "schemas-archive_privacy.json#/$defs/SourceAmount"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "lineNo",
+        "accountNo",
+        "accountName",
+        "amount",
+        "sourceAmount",
+        "transactionDate",
+        "voucher",
+        "voucherType",
+        "text",
+        "vatType",
+        "runningBalance",
+        "sourceRunningBalance"
+      ],
+      "additionalProperties": false
+    },
+    "ArchiveYear": {
+      "type": "object",
+      "properties": {
+        "fiscalYear": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9999
+        },
+        "postingCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "balanceCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sourceSystem": {
+          "const": "dinero"
+        },
+        "importedAt": {
+          "type": "string"
+        },
+        "importId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "sourceHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "parserContract": {
+          "const": "rentemester-native-closed-history/1"
+        },
+        "declaredCurrency": {
+          "type": "string"
+        },
+        "hasBalances": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "fiscalYear",
+        "postingCount",
+        "balanceCount",
+        "sourceSystem",
+        "importedAt",
+        "importId",
+        "sourceHash",
+        "parserContract",
+        "declaredCurrency",
+        "hasBalances"
+      ],
+      "additionalProperties": false
+    },
+    "ArchiveYearDetail": {
+      "type": "object",
+      "properties": {
+        "fiscalYear": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9999
+        },
+        "postingCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "balanceCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sourceSystem": {
+          "const": "dinero"
+        },
+        "importedAt": {
+          "type": "string"
+        },
+        "importId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "sourceHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "parserContract": {
+          "const": "rentemester-native-closed-history/1"
+        },
+        "declaredCurrency": {
+          "type": "string"
+        },
+        "hasBalances": {
+          "type": "boolean"
+        },
+        "postings": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-archive_privacy.json#/$defs/Posting"
+          },
+          "minItems": 0,
+          "maxItems": 100000
+        },
+        "balances": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-archive_privacy.json#/$defs/Balance"
+          },
+          "minItems": 0,
+          "maxItems": 100000
+        }
+      },
+      "required": [
+        "fiscalYear",
+        "postingCount",
+        "balanceCount",
+        "sourceSystem",
+        "importedAt",
+        "importId",
+        "sourceHash",
+        "parserContract",
+        "declaredCurrency",
+        "hasBalances",
+        "postings",
+        "balances"
+      ],
+      "additionalProperties": false
+    },
+    "ArchiveList": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "years": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-archive_privacy.json#/$defs/ArchiveYear"
+          },
+          "minItems": 0
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 0,
+          "maxItems": 0
+        }
+      },
+      "required": [
+        "ok",
+        "years",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "ArchiveDetail": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "years": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-archive_privacy.json#/$defs/ArchiveYearDetail"
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 0,
+          "maxItems": 0
+        }
+      },
+      "required": [
+        "ok",
+        "years",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalBytes": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "contentType": {
+          "const": "application/json"
+        },
+        "bytes": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255
+          },
+          "minItems": 1,
+          "maxItems": 26214400
+        }
+      },
+      "required": [
+        "ok",
+        "contentType",
+        "bytes"
+      ],
+      "additionalProperties": false
+    },
+    "Package": {
+      "type": "object",
+      "properties": {
+        "format": {
+          "const": "rentemester-dinero-archive-source/1"
+        },
+        "currency": {
+          "type": "string"
+        },
+        "files": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "string"
+              },
+              "contentBase64": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "path",
+              "contentBase64"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 0,
+          "maxItems": 64
+        }
+      },
+      "required": [
+        "format",
+        "currency",
+        "files"
+      ],
+      "additionalProperties": false
+    },
+    "CliFailure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "enum": [
+            "invalid_input",
+            "transport",
+            "server_refused",
+            "protocol",
+            "outcome_unknown"
+          ]
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "maxItems": 1
+        }
+      },
+      "required": [
+        "ok",
+        "code",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "SdkFailure": {
+      "$ref": "schemas-workspace_knowledge.json#/$defs/ClientFailure"
+    },
+    "RpcId": {
+      "oneOf": [
+        {
+          "type": "string",
+          "maxLength": 256,
+          "x-utf8-maxBytes": 256
+        },
+        {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 18446744073709551615
+        }
+      ]
+    },
+    "RpcError": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "type": "null"
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32700
+                },
+                "message": {
+                  "const": "invalid or oversized newline-delimited message"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "type": "null"
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32700
+                },
+                "message": {
+                  "const": "message exceeds tool frame bound; only named original uploads/ownership/consolidation proposals admit larger bounded frames"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "type": "null"
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32700
+                },
+                "message": {
+                  "const": "invalid JSON"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-archive_privacy.json#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32600
+                },
+                "message": {
+                  "const": "expected one JSON-RPC object"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-archive_privacy.json#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32600
+                },
+                "message": {
+                  "const": "invalid JSON-RPC request"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-archive_privacy.json#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32600
+                },
+                "message": {
+                  "const": "request id already used"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-archive_privacy.json#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32600
+                },
+                "message": {
+                  "const": "already initialized"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-archive_privacy.json#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32000
+                },
+                "message": {
+                  "const": "session request limit reached; reconnect"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-archive_privacy.json#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32002
+                },
+                "message": {
+                  "const": "initialize and notifications/initialized required"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-archive_privacy.json#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32601
+                },
+                "message": {
+                  "const": "method not found"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-archive_privacy.json#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "expected params object"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-archive_privacy.json#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "initialize requires protocolVersion, capabilities and clientInfo"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-archive_privacy.json#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "task execution not supported"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-archive_privacy.json#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "tool name required"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-archive_privacy.json#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "expected arguments object"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-archive_privacy.json#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "exact company and read-only body required"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-archive_privacy.json#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "native35MiB source body required"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-archive_privacy.json#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "exact company, body and confirm:true required"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-archive_privacy.json#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "explicit confirmation and native35MiB source body required"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-archive_privacy.json#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "exact company and optional fiscalYear required"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-archive_privacy.json#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "exact company and importId required"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-archive_privacy.json#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "retention requires only company"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-archive_privacy.json#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "privacy requires only company/body/confirm"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-archive_privacy.json#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "privacy body exceeds native16KiB"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-archive_privacy.json#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "const": "report selectors must be strings"
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "PrivacyBusinessFailure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "type": "string"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "maxItems": 1
+        }
+      },
+      "required": [
+        "ok",
+        "code",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "ArchiveBusinessFailure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "type": "string"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "outcome": {
+          "const": "not_committed"
+        }
+      },
+      "required": [
+        "ok",
+        "code",
+        "errors",
+        "outcome"
+      ],
+      "additionalProperties": false
+    },
+    "EraseInputObject": {
+      "type": "object",
+      "properties": {
+        "cvr": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "confirm": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "EraseInputHttp": {
+      "anyOf": [
+        {
+          "$ref": "schemas-archive_privacy.json#/$defs/EraseInputObject"
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            {
+              "type": "null"
+            },
+            {
+              "type": "boolean"
+            }
+          ],
+          "minItems": 4,
+          "maxItems": 4
+        }
+      ]
+    },
+    "SubjectInputConfirmedObject": {
+      "type": "object",
+      "properties": {
+        "cvr": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "asOf": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "ForgetInputConfirmedObject": {
+      "type": "object",
+      "properties": {
+        "cvr": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "afterRetentionExpiry": {
+          "type": "boolean"
+        },
+        "confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "afterRetentionExpiry",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "HoldInputConfirmedObject": {
+      "type": "object",
+      "properties": {
+        "cvr": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "holdId": {
+          "type": "string"
+        },
+        "operation": {
+          "type": "string"
+        },
+        "reason": {
+          "type": "string"
+        },
+        "confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "holdId",
+        "operation",
+        "reason",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "AuditInputConfirmedObject": {
+      "type": "object",
+      "properties": {
+        "since": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "until": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "asOf": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "archive_import_planArguments": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "body": {
+          "type": "string",
+          "description": "Exact UTF-8 native JSON string; byte bound checked before HTTP",
+          "x-utf8-maxBytes": 36700160
+        }
+      },
+      "required": [
+        "company",
+        "body"
+      ],
+      "additionalProperties": false
+    },
+    "archive_import_applyArguments": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "body": {
+          "type": "string",
+          "description": "Exact UTF-8 native JSON string; byte bound checked before HTTP",
+          "x-utf8-maxBytes": 36700160
+        },
+        "confirm": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "company",
+        "body",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "archive_import_originalArguments": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "importId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        }
+      },
+      "required": [
+        "company",
+        "importId"
+      ],
+      "additionalProperties": false
+    },
+    "archivesArguments": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "fiscalYear": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 65535
+        }
+      },
+      "required": [
+        "company"
+      ],
+      "additionalProperties": false
+    },
+    "retentionArguments": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "company"
+      ],
+      "additionalProperties": false
+    },
+    "gdpr_exportArguments": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "body": {
+          "type": "string",
+          "description": "Exact UTF-8 native JSON string; byte bound checked before HTTP",
+          "x-utf8-maxBytes": 16384
+        },
+        "confirm": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "company",
+        "body",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "gdpr_eraseArguments": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "body": {
+          "type": "string",
+          "description": "Exact UTF-8 native JSON string; byte bound checked before HTTP",
+          "x-utf8-maxBytes": 16384
+        },
+        "confirm": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "company",
+        "body",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "gdpr_discoverArguments": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "body": {
+          "type": "string",
+          "description": "Exact UTF-8 native JSON string; byte bound checked before HTTP",
+          "x-utf8-maxBytes": 16384
+        },
+        "confirm": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "company",
+        "body",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "gdpr_forgetArguments": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "body": {
+          "type": "string",
+          "description": "Exact UTF-8 native JSON string; byte bound checked before HTTP",
+          "x-utf8-maxBytes": 16384
+        },
+        "confirm": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "company",
+        "body",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "gdpr_legal_holdArguments": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "body": {
+          "type": "string",
+          "description": "Exact UTF-8 native JSON string; byte bound checked before HTTP",
+          "x-utf8-maxBytes": 16384
+        },
+        "confirm": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "company",
+        "body",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "gdpr_audit_logArguments": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "body": {
+          "type": "string",
+          "description": "Exact UTF-8 native JSON string; byte bound checked before HTTP",
+          "x-utf8-maxBytes": 16384
+        },
+        "confirm": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "company",
+        "body",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "gdpr-audit-logFlags": {
+      "type": "object",
+      "properties": {
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--company": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "const": true
+        },
+        "--confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "--server",
+        "--cookie-file",
+        "--company",
+        "--confirm"
+      ],
+      "additionalProperties": false
+    },
+    "gdpr-audit-logCliSuccess": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "data": {
+          "$ref": "schemas-archive_privacy.json#/$defs/gdpr-audit-logOutput"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "gdpr-discoverFlags": {
+      "type": "object",
+      "properties": {
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--company": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "const": true
+        },
+        "--confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "--server",
+        "--cookie-file",
+        "--company",
+        "--confirm"
+      ],
+      "additionalProperties": false
+    },
+    "gdpr-discoverCliSuccess": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "data": {
+          "$ref": "schemas-archive_privacy.json#/$defs/gdpr-discoverOutput"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "gdpr-forgetFlags": {
+      "type": "object",
+      "properties": {
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--company": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "const": true
+        },
+        "--confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "--server",
+        "--cookie-file",
+        "--company",
+        "--confirm"
+      ],
+      "additionalProperties": false
+    },
+    "gdpr-forgetCliSuccess": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "data": {
+          "$ref": "schemas-archive_privacy.json#/$defs/gdpr-forgetOutput"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "gdpr-eraseFlags": {
+      "type": "object",
+      "properties": {
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--company": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "const": true
+        },
+        "--confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "--server",
+        "--cookie-file",
+        "--company",
+        "--confirm"
+      ],
+      "additionalProperties": false
+    },
+    "gdpr-eraseCliSuccess": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "data": {
+          "$ref": "schemas-archive_privacy.json#/$defs/gdpr-eraseOutput"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "gdpr-exportFlags": {
+      "type": "object",
+      "properties": {
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--company": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "const": true
+        },
+        "--confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "--server",
+        "--cookie-file",
+        "--company",
+        "--confirm"
+      ],
+      "additionalProperties": false
+    },
+    "gdpr-exportCliSuccess": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "data": {
+          "$ref": "schemas-archive_privacy.json#/$defs/gdpr-exportOutput"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "gdpr-legal-holdFlags": {
+      "type": "object",
+      "properties": {
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--company": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "const": true
+        },
+        "--confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "--server",
+        "--cookie-file",
+        "--company",
+        "--confirm"
+      ],
+      "additionalProperties": false
+    },
+    "gdpr-legal-holdCliSuccess": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "data": {
+          "$ref": "schemas-archive_privacy.json#/$defs/gdpr-legal-holdOutput"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "archive-import-applyFlags": {
+      "type": "object",
+      "properties": {
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--company": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "const": true
+        },
+        "--confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "--server",
+        "--cookie-file",
+        "--company",
+        "--confirm"
+      ],
+      "additionalProperties": false
+    },
+    "archive-import-applyCliSuccess": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "data": {
+          "$ref": "schemas-archive_privacy.json#/$defs/ArchiveApply"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "archive-import-applyCliBusinessFailure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "data": {
+          "anyOf": [
+            {
+              "$ref": "schemas-archive_privacy.json#/$defs/ArchiveBusinessFailure"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "ok": {
+                  "const": false
+                },
+                "code": {
+                  "type": "string"
+                },
+                "errors": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "minItems": 1,
+                  "maxItems": 1
+                }
+              },
+              "required": [
+                "ok",
+                "code",
+                "errors"
+              ],
+              "additionalProperties": false
+            }
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "archive-import-originalFlags": {
+      "type": "object",
+      "properties": {
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--company": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "const": true
+        },
+        "--import-id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "--server",
+        "--cookie-file",
+        "--company",
+        "--import-id"
+      ],
+      "additionalProperties": false
+    },
+    "archive-import-originalCliSuccess": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "data": {
+          "$ref": "schemas-archive_privacy.json#/$defs/OriginalBytes"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "archive-import-originalCliBusinessFailure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "data": {
+          "anyOf": [
+            {
+              "$ref": "schemas-archive_privacy.json#/$defs/ArchiveBusinessFailure"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "ok": {
+                  "const": false
+                },
+                "code": {
+                  "type": "string"
+                },
+                "errors": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "minItems": 1,
+                  "maxItems": 1
+                }
+              },
+              "required": [
+                "ok",
+                "code",
+                "errors"
+              ],
+              "additionalProperties": false
+            }
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "archive-import-planFlags": {
+      "type": "object",
+      "properties": {
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--company": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "const": true
+        }
+      },
+      "required": [
+        "--server",
+        "--cookie-file",
+        "--company"
+      ],
+      "additionalProperties": false
+    },
+    "archive-import-planCliSuccess": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "data": {
+          "$ref": "schemas-archive_privacy.json#/$defs/ArchivePlan"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "archive-import-planCliBusinessFailure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "data": {
+          "anyOf": [
+            {
+              "$ref": "schemas-archive_privacy.json#/$defs/ArchiveBusinessFailure"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "ok": {
+                  "const": false
+                },
+                "code": {
+                  "type": "string"
+                },
+                "errors": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "minItems": 1,
+                  "maxItems": 1
+                }
+              },
+              "required": [
+                "ok",
+                "code",
+                "errors"
+              ],
+              "additionalProperties": false
+            }
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "ArchiveOptionalYear": {
+      "anyOf": [
+        {
+          "$ref": "schemas-archive_privacy.json#/$defs/ArchiveList"
+        },
+        {
+          "$ref": "schemas-archive_privacy.json#/$defs/ArchiveDetail"
+        }
+      ]
+    },
+    "archivesFlags": {
+      "type": "object",
+      "properties": {
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--company": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "const": true
+        },
+        "--fiscal-year": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "--server",
+        "--cookie-file",
+        "--company"
+      ],
+      "additionalProperties": false
+    },
+    "archivesCliSuccess": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "data": {
+          "$ref": "schemas-archive_privacy.json#/$defs/ArchiveOptionalYear"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "archivesCliBusinessFailure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "data": {
+          "anyOf": [
+            {
+              "$ref": "schemas-archive_privacy.json#/$defs/ArchiveBusinessFailure"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "ok": {
+                  "const": false
+                },
+                "code": {
+                  "type": "string"
+                },
+                "errors": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "minItems": 1,
+                  "maxItems": 1
+                }
+              },
+              "required": [
+                "ok",
+                "code",
+                "errors"
+              ],
+              "additionalProperties": false
+            }
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "retentionFlags": {
+      "type": "object",
+      "properties": {
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--company": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "const": true
+        }
+      },
+      "required": [
+        "--server",
+        "--cookie-file",
+        "--company"
+      ],
+      "additionalProperties": false
+    },
+    "retentionCliSuccess": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "data": {
+          "$ref": "schemas-archive_privacy.json#/$defs/retentionOutput"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "archive-import-applyStructuredSuccess": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "data": {
+          "$ref": "schemas-archive_privacy.json#/$defs/ArchiveApply"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "archive-import-applyToolSuccess": {
+      "type": "object",
+      "properties": {
+        "isError": {
+          "const": false
+        },
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string",
+                "contentMediaType": "application/json",
+                "contentSchema": {
+                  "$ref": "schemas-archive_privacy.json#/$defs/archive-import-applyStructuredSuccess"
+                }
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "$ref": "schemas-archive_privacy.json#/$defs/archive-import-applyStructuredSuccess"
+        }
+      },
+      "required": [
+        "isError",
+        "content",
+        "structuredContent"
+      ],
+      "additionalProperties": false
+    },
+    "archive-import-applyToolFailure": {
+      "type": "object",
+      "properties": {
+        "isError": {
+          "const": true
+        },
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string",
+                "contentMediaType": "application/json",
+                "contentSchema": {
+                  "anyOf": [
+                    {
+                      "$ref": "schemas-archive_privacy.json#/$defs/SdkFailure"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "ok": {
+                          "const": false
+                        },
+                        "data": {
+                          "anyOf": [
+                            {
+                              "$ref": "schemas-archive_privacy.json#/$defs/ArchiveBusinessFailure"
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "ok": {
+                                  "const": false
+                                },
+                                "code": {
+                                  "type": "string"
+                                },
+                                "errors": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "string"
+                                  },
+                                  "minItems": 1,
+                                  "maxItems": 1
+                                }
+                              },
+                              "required": [
+                                "ok",
+                                "code",
+                                "errors"
+                              ],
+                              "additionalProperties": false
+                            }
+                          ]
+                        }
+                      },
+                      "required": [
+                        "ok",
+                        "data"
+                      ],
+                      "additionalProperties": false
+                    }
+                  ]
+                }
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "anyOf": [
+            {
+              "$ref": "schemas-archive_privacy.json#/$defs/SdkFailure"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "ok": {
+                  "const": false
+                },
+                "data": {
+                  "anyOf": [
+                    {
+                      "$ref": "schemas-archive_privacy.json#/$defs/ArchiveBusinessFailure"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "ok": {
+                          "const": false
+                        },
+                        "code": {
+                          "type": "string"
+                        },
+                        "errors": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          },
+                          "minItems": 1,
+                          "maxItems": 1
+                        }
+                      },
+                      "required": [
+                        "ok",
+                        "code",
+                        "errors"
+                      ],
+                      "additionalProperties": false
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "ok",
+                "data"
+              ],
+              "additionalProperties": false
+            }
+          ]
+        }
+      },
+      "required": [
+        "isError",
+        "content",
+        "structuredContent"
+      ],
+      "additionalProperties": false
+    },
+    "archive-import-originalStructuredSuccess": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "data": {
+          "$ref": "schemas-archive_privacy.json#/$defs/OriginalBytes"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "archive-import-originalToolSuccess": {
+      "type": "object",
+      "properties": {
+        "isError": {
+          "const": false
+        },
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string",
+                "contentMediaType": "application/json",
+                "contentSchema": {
+                  "$ref": "schemas-archive_privacy.json#/$defs/archive-import-originalStructuredSuccess"
+                }
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "$ref": "schemas-archive_privacy.json#/$defs/archive-import-originalStructuredSuccess"
+        }
+      },
+      "required": [
+        "isError",
+        "content",
+        "structuredContent"
+      ],
+      "additionalProperties": false
+    },
+    "archive-import-originalToolFailure": {
+      "type": "object",
+      "properties": {
+        "isError": {
+          "const": true
+        },
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string",
+                "contentMediaType": "application/json",
+                "contentSchema": {
+                  "anyOf": [
+                    {
+                      "$ref": "schemas-archive_privacy.json#/$defs/SdkFailure"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "ok": {
+                          "const": false
+                        },
+                        "data": {
+                          "anyOf": [
+                            {
+                              "$ref": "schemas-archive_privacy.json#/$defs/ArchiveBusinessFailure"
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "ok": {
+                                  "const": false
+                                },
+                                "code": {
+                                  "type": "string"
+                                },
+                                "errors": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "string"
+                                  },
+                                  "minItems": 1,
+                                  "maxItems": 1
+                                }
+                              },
+                              "required": [
+                                "ok",
+                                "code",
+                                "errors"
+                              ],
+                              "additionalProperties": false
+                            }
+                          ]
+                        }
+                      },
+                      "required": [
+                        "ok",
+                        "data"
+                      ],
+                      "additionalProperties": false
+                    }
+                  ]
+                }
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "anyOf": [
+            {
+              "$ref": "schemas-archive_privacy.json#/$defs/SdkFailure"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "ok": {
+                  "const": false
+                },
+                "data": {
+                  "anyOf": [
+                    {
+                      "$ref": "schemas-archive_privacy.json#/$defs/ArchiveBusinessFailure"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "ok": {
+                          "const": false
+                        },
+                        "code": {
+                          "type": "string"
+                        },
+                        "errors": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          },
+                          "minItems": 1,
+                          "maxItems": 1
+                        }
+                      },
+                      "required": [
+                        "ok",
+                        "code",
+                        "errors"
+                      ],
+                      "additionalProperties": false
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "ok",
+                "data"
+              ],
+              "additionalProperties": false
+            }
+          ]
+        }
+      },
+      "required": [
+        "isError",
+        "content",
+        "structuredContent"
+      ],
+      "additionalProperties": false
+    },
+    "archive-import-planStructuredSuccess": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "data": {
+          "$ref": "schemas-archive_privacy.json#/$defs/ArchivePlan"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "archive-import-planToolSuccess": {
+      "type": "object",
+      "properties": {
+        "isError": {
+          "const": false
+        },
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string",
+                "contentMediaType": "application/json",
+                "contentSchema": {
+                  "$ref": "schemas-archive_privacy.json#/$defs/archive-import-planStructuredSuccess"
+                }
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "$ref": "schemas-archive_privacy.json#/$defs/archive-import-planStructuredSuccess"
+        }
+      },
+      "required": [
+        "isError",
+        "content",
+        "structuredContent"
+      ],
+      "additionalProperties": false
+    },
+    "archive-import-planToolFailure": {
+      "type": "object",
+      "properties": {
+        "isError": {
+          "const": true
+        },
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string",
+                "contentMediaType": "application/json",
+                "contentSchema": {
+                  "anyOf": [
+                    {
+                      "$ref": "schemas-archive_privacy.json#/$defs/SdkFailure"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "ok": {
+                          "const": false
+                        },
+                        "data": {
+                          "anyOf": [
+                            {
+                              "$ref": "schemas-archive_privacy.json#/$defs/ArchiveBusinessFailure"
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "ok": {
+                                  "const": false
+                                },
+                                "code": {
+                                  "type": "string"
+                                },
+                                "errors": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "string"
+                                  },
+                                  "minItems": 1,
+                                  "maxItems": 1
+                                }
+                              },
+                              "required": [
+                                "ok",
+                                "code",
+                                "errors"
+                              ],
+                              "additionalProperties": false
+                            }
+                          ]
+                        }
+                      },
+                      "required": [
+                        "ok",
+                        "data"
+                      ],
+                      "additionalProperties": false
+                    }
+                  ]
+                }
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "anyOf": [
+            {
+              "$ref": "schemas-archive_privacy.json#/$defs/SdkFailure"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "ok": {
+                  "const": false
+                },
+                "data": {
+                  "anyOf": [
+                    {
+                      "$ref": "schemas-archive_privacy.json#/$defs/ArchiveBusinessFailure"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "ok": {
+                          "const": false
+                        },
+                        "code": {
+                          "type": "string"
+                        },
+                        "errors": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          },
+                          "minItems": 1,
+                          "maxItems": 1
+                        }
+                      },
+                      "required": [
+                        "ok",
+                        "code",
+                        "errors"
+                      ],
+                      "additionalProperties": false
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "ok",
+                "data"
+              ],
+              "additionalProperties": false
+            }
+          ]
+        }
+      },
+      "required": [
+        "isError",
+        "content",
+        "structuredContent"
+      ],
+      "additionalProperties": false
+    },
+    "archivesStructuredSuccess": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "data": {
+          "$ref": "schemas-archive_privacy.json#/$defs/ArchiveOptionalYear"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "archivesToolSuccess": {
+      "type": "object",
+      "properties": {
+        "isError": {
+          "const": false
+        },
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string",
+                "contentMediaType": "application/json",
+                "contentSchema": {
+                  "$ref": "schemas-archive_privacy.json#/$defs/archivesStructuredSuccess"
+                }
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "$ref": "schemas-archive_privacy.json#/$defs/archivesStructuredSuccess"
+        }
+      },
+      "required": [
+        "isError",
+        "content",
+        "structuredContent"
+      ],
+      "additionalProperties": false
+    },
+    "archivesToolFailure": {
+      "type": "object",
+      "properties": {
+        "isError": {
+          "const": true
+        },
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string",
+                "contentMediaType": "application/json",
+                "contentSchema": {
+                  "anyOf": [
+                    {
+                      "$ref": "schemas-archive_privacy.json#/$defs/SdkFailure"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "ok": {
+                          "const": false
+                        },
+                        "data": {
+                          "anyOf": [
+                            {
+                              "$ref": "schemas-archive_privacy.json#/$defs/ArchiveBusinessFailure"
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "ok": {
+                                  "const": false
+                                },
+                                "code": {
+                                  "type": "string"
+                                },
+                                "errors": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "string"
+                                  },
+                                  "minItems": 1,
+                                  "maxItems": 1
+                                }
+                              },
+                              "required": [
+                                "ok",
+                                "code",
+                                "errors"
+                              ],
+                              "additionalProperties": false
+                            }
+                          ]
+                        }
+                      },
+                      "required": [
+                        "ok",
+                        "data"
+                      ],
+                      "additionalProperties": false
+                    }
+                  ]
+                }
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "anyOf": [
+            {
+              "$ref": "schemas-archive_privacy.json#/$defs/SdkFailure"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "ok": {
+                  "const": false
+                },
+                "data": {
+                  "anyOf": [
+                    {
+                      "$ref": "schemas-archive_privacy.json#/$defs/ArchiveBusinessFailure"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "ok": {
+                          "const": false
+                        },
+                        "code": {
+                          "type": "string"
+                        },
+                        "errors": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          },
+                          "minItems": 1,
+                          "maxItems": 1
+                        }
+                      },
+                      "required": [
+                        "ok",
+                        "code",
+                        "errors"
+                      ],
+                      "additionalProperties": false
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "ok",
+                "data"
+              ],
+              "additionalProperties": false
+            }
+          ]
+        }
+      },
+      "required": [
+        "isError",
+        "content",
+        "structuredContent"
+      ],
+      "additionalProperties": false
+    },
+    "gdpr-audit-logStructuredSuccess": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "data": {
+          "$ref": "schemas-archive_privacy.json#/$defs/gdpr-audit-logOutput"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "gdpr-audit-logToolSuccess": {
+      "type": "object",
+      "properties": {
+        "isError": {
+          "const": false
+        },
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string",
+                "contentMediaType": "application/json",
+                "contentSchema": {
+                  "$ref": "schemas-archive_privacy.json#/$defs/gdpr-audit-logStructuredSuccess"
+                }
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "$ref": "schemas-archive_privacy.json#/$defs/gdpr-audit-logStructuredSuccess"
+        }
+      },
+      "required": [
+        "isError",
+        "content",
+        "structuredContent"
+      ],
+      "additionalProperties": false
+    },
+    "gdpr-audit-logToolFailure": {
+      "type": "object",
+      "properties": {
+        "isError": {
+          "const": true
+        },
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string",
+                "contentMediaType": "application/json",
+                "contentSchema": {
+                  "$ref": "schemas-archive_privacy.json#/$defs/SdkFailure"
+                }
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "$ref": "schemas-archive_privacy.json#/$defs/SdkFailure"
+        }
+      },
+      "required": [
+        "isError",
+        "content",
+        "structuredContent"
+      ],
+      "additionalProperties": false
+    },
+    "gdpr-discoverStructuredSuccess": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "data": {
+          "$ref": "schemas-archive_privacy.json#/$defs/gdpr-discoverOutput"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "gdpr-discoverToolSuccess": {
+      "type": "object",
+      "properties": {
+        "isError": {
+          "const": false
+        },
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string",
+                "contentMediaType": "application/json",
+                "contentSchema": {
+                  "$ref": "schemas-archive_privacy.json#/$defs/gdpr-discoverStructuredSuccess"
+                }
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "$ref": "schemas-archive_privacy.json#/$defs/gdpr-discoverStructuredSuccess"
+        }
+      },
+      "required": [
+        "isError",
+        "content",
+        "structuredContent"
+      ],
+      "additionalProperties": false
+    },
+    "gdpr-discoverToolFailure": {
+      "type": "object",
+      "properties": {
+        "isError": {
+          "const": true
+        },
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string",
+                "contentMediaType": "application/json",
+                "contentSchema": {
+                  "$ref": "schemas-archive_privacy.json#/$defs/SdkFailure"
+                }
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "$ref": "schemas-archive_privacy.json#/$defs/SdkFailure"
+        }
+      },
+      "required": [
+        "isError",
+        "content",
+        "structuredContent"
+      ],
+      "additionalProperties": false
+    },
+    "gdpr-eraseStructuredSuccess": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "data": {
+          "$ref": "schemas-archive_privacy.json#/$defs/gdpr-eraseOutput"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "gdpr-eraseToolSuccess": {
+      "type": "object",
+      "properties": {
+        "isError": {
+          "const": false
+        },
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string",
+                "contentMediaType": "application/json",
+                "contentSchema": {
+                  "$ref": "schemas-archive_privacy.json#/$defs/gdpr-eraseStructuredSuccess"
+                }
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "$ref": "schemas-archive_privacy.json#/$defs/gdpr-eraseStructuredSuccess"
+        }
+      },
+      "required": [
+        "isError",
+        "content",
+        "structuredContent"
+      ],
+      "additionalProperties": false
+    },
+    "gdpr-eraseToolFailure": {
+      "type": "object",
+      "properties": {
+        "isError": {
+          "const": true
+        },
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string",
+                "contentMediaType": "application/json",
+                "contentSchema": {
+                  "$ref": "schemas-archive_privacy.json#/$defs/SdkFailure"
+                }
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "$ref": "schemas-archive_privacy.json#/$defs/SdkFailure"
+        }
+      },
+      "required": [
+        "isError",
+        "content",
+        "structuredContent"
+      ],
+      "additionalProperties": false
+    },
+    "gdpr-exportStructuredSuccess": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "data": {
+          "$ref": "schemas-archive_privacy.json#/$defs/gdpr-exportOutput"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "gdpr-exportToolSuccess": {
+      "type": "object",
+      "properties": {
+        "isError": {
+          "const": false
+        },
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string",
+                "contentMediaType": "application/json",
+                "contentSchema": {
+                  "$ref": "schemas-archive_privacy.json#/$defs/gdpr-exportStructuredSuccess"
+                }
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "$ref": "schemas-archive_privacy.json#/$defs/gdpr-exportStructuredSuccess"
+        }
+      },
+      "required": [
+        "isError",
+        "content",
+        "structuredContent"
+      ],
+      "additionalProperties": false
+    },
+    "gdpr-exportToolFailure": {
+      "type": "object",
+      "properties": {
+        "isError": {
+          "const": true
+        },
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string",
+                "contentMediaType": "application/json",
+                "contentSchema": {
+                  "$ref": "schemas-archive_privacy.json#/$defs/SdkFailure"
+                }
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "$ref": "schemas-archive_privacy.json#/$defs/SdkFailure"
+        }
+      },
+      "required": [
+        "isError",
+        "content",
+        "structuredContent"
+      ],
+      "additionalProperties": false
+    },
+    "gdpr-forgetStructuredSuccess": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "data": {
+          "$ref": "schemas-archive_privacy.json#/$defs/gdpr-forgetOutput"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "gdpr-forgetToolSuccess": {
+      "type": "object",
+      "properties": {
+        "isError": {
+          "const": false
+        },
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string",
+                "contentMediaType": "application/json",
+                "contentSchema": {
+                  "$ref": "schemas-archive_privacy.json#/$defs/gdpr-forgetStructuredSuccess"
+                }
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "$ref": "schemas-archive_privacy.json#/$defs/gdpr-forgetStructuredSuccess"
+        }
+      },
+      "required": [
+        "isError",
+        "content",
+        "structuredContent"
+      ],
+      "additionalProperties": false
+    },
+    "gdpr-forgetToolFailure": {
+      "type": "object",
+      "properties": {
+        "isError": {
+          "const": true
+        },
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string",
+                "contentMediaType": "application/json",
+                "contentSchema": {
+                  "$ref": "schemas-archive_privacy.json#/$defs/SdkFailure"
+                }
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "$ref": "schemas-archive_privacy.json#/$defs/SdkFailure"
+        }
+      },
+      "required": [
+        "isError",
+        "content",
+        "structuredContent"
+      ],
+      "additionalProperties": false
+    },
+    "gdpr-legal-holdStructuredSuccess": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "data": {
+          "$ref": "schemas-archive_privacy.json#/$defs/gdpr-legal-holdOutput"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "gdpr-legal-holdToolSuccess": {
+      "type": "object",
+      "properties": {
+        "isError": {
+          "const": false
+        },
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string",
+                "contentMediaType": "application/json",
+                "contentSchema": {
+                  "$ref": "schemas-archive_privacy.json#/$defs/gdpr-legal-holdStructuredSuccess"
+                }
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "$ref": "schemas-archive_privacy.json#/$defs/gdpr-legal-holdStructuredSuccess"
+        }
+      },
+      "required": [
+        "isError",
+        "content",
+        "structuredContent"
+      ],
+      "additionalProperties": false
+    },
+    "gdpr-legal-holdToolFailure": {
+      "type": "object",
+      "properties": {
+        "isError": {
+          "const": true
+        },
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string",
+                "contentMediaType": "application/json",
+                "contentSchema": {
+                  "$ref": "schemas-archive_privacy.json#/$defs/SdkFailure"
+                }
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "$ref": "schemas-archive_privacy.json#/$defs/SdkFailure"
+        }
+      },
+      "required": [
+        "isError",
+        "content",
+        "structuredContent"
+      ],
+      "additionalProperties": false
+    },
+    "retentionStructuredSuccess": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "data": {
+          "$ref": "schemas-archive_privacy.json#/$defs/retentionOutput"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "retentionToolSuccess": {
+      "type": "object",
+      "properties": {
+        "isError": {
+          "const": false
+        },
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string",
+                "contentMediaType": "application/json",
+                "contentSchema": {
+                  "$ref": "schemas-archive_privacy.json#/$defs/retentionStructuredSuccess"
+                }
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "$ref": "schemas-archive_privacy.json#/$defs/retentionStructuredSuccess"
+        }
+      },
+      "required": [
+        "isError",
+        "content",
+        "structuredContent"
+      ],
+      "additionalProperties": false
+    },
+    "retentionToolFailure": {
+      "type": "object",
+      "properties": {
+        "isError": {
+          "const": true
+        },
+        "content": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string",
+                "contentMediaType": "application/json",
+                "contentSchema": {
+                  "$ref": "schemas-archive_privacy.json#/$defs/SdkFailure"
+                }
+              }
+            },
+            "required": [
+              "type",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "$ref": "schemas-archive_privacy.json#/$defs/SdkFailure"
+        }
+      },
+      "required": [
+        "isError",
+        "content",
+        "structuredContent"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

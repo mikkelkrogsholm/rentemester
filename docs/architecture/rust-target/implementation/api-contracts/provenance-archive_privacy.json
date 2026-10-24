@@ -1,0 +1,210 @@
+{
+  "partition": "archive_privacy",
+  "issue": 677,
+  "status": "specified",
+  "unresolved": [],
+  "method": "Graphify query then current source-only constructor trace; no runtime replay or provider acceptance.",
+  "sourceRefs": [
+    {
+      "path": "crates/rentemester-server/src/product_http/archive_import.rs",
+      "sha256": "d5ebda23f59e8fba523bb8c3aef8260bfc696668590ff29db2d6eae75e22c81b",
+      "needle": "pub(super) async fn handle"
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http/gdpr.rs",
+      "sha256": "ebb1fc88e175f054a325e450b7a9337920061483cd7c6b18435006ea8532659b",
+      "needle": "pub(super) async fn handle"
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http.rs",
+      "sha256": "d008f013390a87c467b929b094abb4e23cc9921a72a2665d8df4d4dcbc537390",
+      "needle": "fn proof("
+    },
+    {
+      "path": "crates/rentemester-storage/src/archive_import.rs",
+      "sha256": "3122e2ae441b270c831e4564fed01d825d4514a70eb48ece4024eaa454da077d",
+      "needle": "fn receipt("
+    },
+    {
+      "path": "crates/rentemester-storage/src/archive_import/history.rs",
+      "sha256": "dcf35ec9c6dfd47b7a40c3ff87f93f60c5c92ff176b5597850818f8f49194963",
+      "needle": "pub fn read("
+    },
+    {
+      "path": "crates/rentemester-storage/src/gdpr.rs",
+      "sha256": "ef27c1b1b8fe1f2ee094b13e596389e723b5599bc430192e38c64e97907846d6",
+      "needle": "pub fn export("
+    },
+    {
+      "path": "crates/rentemester-storage/src/retention.rs",
+      "sha256": "1b7987c838604e6a03821f3860e09b9db3ca7bc2ca9435ceeac48c812e5c843f",
+      "needle": "pub fn read("
+    },
+    {
+      "path": "crates/rentemester-storage/src/legal_holds.rs",
+      "sha256": "e9805ef1e16f75d0b4f9960614c0f1040d18572358011736a84e3a98997b57b9",
+      "needle": "pub(crate) fn state("
+    },
+    {
+      "path": "crates/rentemester-runtime/src/gdpr_audit.rs",
+      "sha256": "ad40f2b64f0562ead616697f7584d973620f4e8a0b6ad8b0c170bd2708d54b12",
+      "needle": "pub fn seal("
+    },
+    {
+      "path": "crates/rentemester-storage/src/company_setup.rs",
+      "sha256": "d86fe1737935ae8e0b5b8b963f4978380526b180d2367ee1b65ce04a872c10d3",
+      "needle": "pub fn profile("
+    },
+    {
+      "path": "crates/rentemester-application/src/archive_import.rs",
+      "sha256": "a856c8dd73ec5bd92b9bad495f4ffffaace53aca3a2e8dd5ae1d6d109aa0d731",
+      "needle": "pub fn execute("
+    },
+    {
+      "path": "crates/rentemester-application/src/gdpr.rs",
+      "sha256": "655e698887ac7ca4d6cc6e8515ab144c0977b6dbfe8156b5782af32be6622d35",
+      "needle": "pub fn execute("
+    },
+    {
+      "path": "crates/rentemester-host/src/lib.rs",
+      "sha256": "29e700859157eee32bfab98faeb122abbd2d830edbe6e84b2983eaac4fc324cd",
+      "needle": "fn document_action"
+    },
+    {
+      "path": "crates/rentemester-application/src/control_fence.rs",
+      "sha256": "e5b1f8902693d649fc1a46e0c66dc902622781f2c9f65e051e6ed7df11e1ffa6",
+      "needle": "SessionRequirement"
+    },
+    {
+      "path": "crates/rentemester-storage/src/idempotency.rs",
+      "sha256": "22fca6c8188fadb6cedd0a011fb53fe909c70ec0c9fc1acda7e9c1be3a50b19b",
+      "needle": "const RETENTION_MS"
+    },
+    {
+      "path": "crates/rentemester-engine/src/archive_import.rs",
+      "sha256": "f9031e80686cc1efda414b24011e757bb7575522748d9fa5d5de776c75f8c6e2",
+      "needle": "pub const FORMAT"
+    },
+    {
+      "path": "crates/rentemester-cli/src/main.rs",
+      "sha256": "54af368bcb6d626d1ac0378727f6a34761244a21a86b6f5d67e47c27c8f432a6",
+      "needle": "fn main()"
+    },
+    {
+      "path": "crates/rentemester-cli/src/original_args.rs",
+      "sha256": "2c8c75a6d4176182e5c0871941d9979b1a15d6848c70b7b281cade3927355a74",
+      "needle": "fn prepare_inner"
+    },
+    {
+      "path": "crates/rentemester-cli/src/local_binding.rs",
+      "sha256": "94d26249352df53d80d468019ee93e1353394db4ce1c6728491fa6c4e2589dfd",
+      "needle": "pub fn prepare("
+    },
+    {
+      "path": "crates/rentemester-cli/src/remote.rs",
+      "sha256": "9a0d2ee8c626321459749c22642936ad07f9934a4e47eb3c4dc90ad18c7d2e91",
+      "needle": "pub(crate) fn client_error"
+    },
+    {
+      "path": "crates/rentemester-cli/src/archive_import.rs",
+      "sha256": "11ed1e3c3bfcadfe5d4f885521ad6dea4033922e3c130184f2c70f18240b1a5b",
+      "needle": "pub fn run("
+    },
+    {
+      "path": "crates/rentemester-cli/src/privacy.rs",
+      "sha256": "81865470c264070a32ad2fdd23ca99a58e289fc47d122c47c6f323e3d34275e8",
+      "needle": "pub fn run("
+    },
+    {
+      "path": "crates/rentemester-mcp/src/archive_import.rs",
+      "sha256": "8895ed8d7853b3152205280e4c55961db0063f4b3f6cba48fe3def3317e3c71d",
+      "needle": "pub async fn call("
+    },
+    {
+      "path": "crates/rentemester-mcp/src/privacy.rs",
+      "sha256": "66af478d756f3349e3628c74940ad92830a729f5619ad85336a35d945515937b",
+      "needle": "pub async fn call("
+    },
+    {
+      "path": "crates/rentemester-mcp/src/tools.rs",
+      "sha256": "8035dc45f8d22d902c18e17b4508ca572f8505dc83a1961fa355dfd1f34c1397",
+      "needle": "expected arguments object"
+    },
+    {
+      "path": "crates/rentemester-mcp/src/main.rs",
+      "sha256": "db7b771d69e02d3802906d65437dad8523fd9114ae15e7d3ef33dc696d4e831f",
+      "needle": "impl Session"
+    },
+    {
+      "path": "crates/rentemester-client/src/archive_import.rs",
+      "sha256": "715c5e193c94d288c257676d92401c7427d00980a778cba4bc8dfc7069e4e211",
+      "needle": "async fn archive_read"
+    },
+    {
+      "path": "crates/rentemester-client/src/privacy.rs",
+      "sha256": "b99f68e89579b1b2c13617ee71cc6ac6633f699da17ccc72cad65a75443892d2",
+      "needle": "pub async fn privacy_operation"
+    },
+    {
+      "path": "crates/rentemester-client/src/lib.rs",
+      "sha256": "89c8bc77a2081400d8915cbb988d81be0f349a0bc9487ce687dc3ae3de75accd",
+      "needle": "async fn request("
+    },
+    {
+      "path": "crates/rentemester-client/src/domain.rs",
+      "sha256": "c2c71c4a8f5be36433e578ed9722f633dacc289cc41b5011d63f2cf7b47c76bb",
+      "needle": "fn validate("
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http/documents.rs",
+      "sha256": "d6a25bf8f5b30b338a2734805d5a5219ed9bb8de118eeb491ad849df057d5acc",
+      "needle": "pub(super) fn outcome"
+    },
+    {
+      "path": "crates/rentemester-storage/src/cookie_session.rs",
+      "sha256": "cc174b10535dd19129becf965a4c63f909231d02f8891e838c9fbf2ada971bce",
+      "needle": "pub fn resolve("
+    },
+    {
+      "path": "crates/rentemester-storage/src/workspace_transfer.rs",
+      "sha256": "751e5c0dfb984c2bc1685680abb3ae5ac07efb57f71b20c186758b3ba41f24b9",
+      "needle": "pub fn require_business_write"
+    },
+    {
+      "path": "crates/rentemester-storage/src/backup_governance.rs",
+      "sha256": "d0fb21c0064a9ac44eedd2e8fff007d8c05c9261c3862686f15d8c7efa706e28",
+      "needle": "Error::new"
+    },
+    {
+      "path": "crates/rentemester-storage/src/control_access.rs",
+      "sha256": "2e27d14481cc6120ea30bfed9d0b62cf9a8ad08c34aaa1c4eed5410cf6d0d753",
+      "needle": "pub fn observe_human"
+    },
+    {
+      "path": "crates/rentemester-engine/src/fiscal_year.rs",
+      "sha256": "695bcddf67ff6365c6600c19bb5729ce95efdd48a67ab33b6f76c91c48d47988",
+      "needle": "pub fn parse"
+    },
+    {
+      "path": "crates/rentemester-runtime/src/document.rs",
+      "sha256": "2e579571ea931d221645658501f42fca61a083ad0c27122128fc69ea00595cc7",
+      "needle": "MAX_BYTES"
+    },
+    {
+      "path": "crates/rentemester-server/src/protocol.rs",
+      "sha256": "e1076ab2b8185b48c03017658c75ef3a01b9abacdb75843f64cef4adfc6da38c",
+      "needle": "fn incompatible()"
+    },
+    {
+      "path": "crates/rentemester-application/src/backup_status.rs",
+      "sha256": "3f0fa53c99cc8572149dcb1bce41916292a678bfd83deb107e7027e8546bda48",
+      "needle": "pub"
+    },
+    {
+      "path": "src/core/schema.sql",
+      "sha256": "00a425e5e0d08c93a989331f84749b2d8c20ec0fca9823cebf0b5182f31a1f3b",
+      "needle": "CREATE TABLE IF NOT EXISTS audit_log"
+    }
+  ],
+  "operations": 48
+}
