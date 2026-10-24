@@ -1963,7 +1963,7 @@
           "const": true
         },
         "writeOffAvailable": {
-          "const": false
+          "const": true
         },
         "assets": {
           "type": "array",

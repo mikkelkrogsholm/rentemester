@@ -1,14 +1,14 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "R100/R101 original efaktura_status accepted: atomiccurrentbinding/verifiedACKcache/oneObserve/pendingfalse;27actualcases/correctserverBIN/current1609;whole717open",
-  "code_revision": "f44f82df5fe79fb475f7aab4546d2a8bc3f7c5e4",
+  "current_increment": "R102/R103 owner immediate-writeoff in shared React/Rust accepted; actual2journals4lines/source refusal/lost accepted reply lock/restart/signed recovery; whole718 remains",
+  "code_revision": "a532b90a7fa6201909da9d0f60ac3bdb5ec3392e",
   "spec_revision": "971249492f96da3d630e32bb0828ec3f7831e6b4",
-  "state": "original_public_invoice_status_component_accepted_whole717_open",
+  "state": "owner_immediate_writeoff718_component_accepted",
   "issues_closed": 41,
   "next": [
-    "717:15 otheroriginalnames/31workflows/full per-operation/error/discovery/revocation/isolation/protocol/reconnect remain; original operator setup stays exactscope. Nextneededownerflow718:bindexistingWriteOffModaltoacceptedRustsourcewriter/explicitreview/flatvalidatedreceipt/outcomelock; currentUIdisabledgap.",
-    "All55 original issues/J01-J07/release/cutover/manualinstalleddesktopLAST gates preserved.41actuallyclosed14open; no live-data/defaultlauncher/installedapp switch."
+    "718: all other original React screens/capabilities/file/export/local-hosted/keyboard/actionable-error acceptance and full J03/J04 must be mapped to accepted evidence; this flow alone does not close718.",
+    "All55 original issues/J01-J07/release/cutover/manual installed desktop LAST remain.41closed14open. No live/default launcher or installed app switched."
   ],
   "preserve_unrelated_paths": [
     ".claude/settings.json",
@@ -18,7 +18,7 @@
     ".gitattributes"
   ],
   "all_goal_requirements_complete": false,
-  "previous_verified_increment": "R98/R99 original public-invoice MCP flow accepted: source-flat PEPPOL/Digisense through common Rust server;11actualcases/current1607;whole717open",
+  "previous_verified_increment": "R100/R101 original efaktura_status accepted: atomiccurrentbinding/verifiedACKcache/oneObserve/pendingfalse;27actualcases/correctserverBIN/current1609;whole717open",
   "evidence": {
     "combined_browser_log": "/tmp/rm-platform5-combined.log",
     "combined_browser_exit": 0,
@@ -16636,6 +16636,10 @@
     "r101_original_public_invoice_status": {
       "path": "/private/tmp/rentemester-rust-reports/r101-original-public-invoice-status717-current-contracts-qualified.json",
       "sha256": "612fb18b89bb0b8707cbb8fa1d186befe457a55ca24bcc6c7678fd30e46d5955"
+    },
+    "r103_owner_writeoff718": {
+      "path": "/private/tmp/rentemester-rust-reports/r103-owner-writeoff718-current-contracts-qualified.json",
+      "sha256": "9749adaa416dd8d284cf70a3d5f5969b1ea2181351da5f5aa7a4d1d8d0e81bd6"
     }
   },
   "verified_history": [
@@ -18930,6 +18934,18 @@
       "remaining": [
         "717:15 otheroriginalnames/31workflows/full per-operation/error/discovery/revocation/isolation/protocol/reconnect remain; original operator setup stays exactscope. Nextneededownerflow718:bindexistingWriteOffModaltoacceptedRustsourcewriter/explicitreview/flatvalidatedreceipt/outcomelock; currentUIdisabledgap.",
         "All55 original issues/J01-J07/release/cutover/manualinstalleddesktopLAST gates preserved.41actuallyclosed14open; no live-data/defaultlauncher/installedapp switch."
+      ]
+    },
+    {
+      "issue": 718,
+      "wholeIssueClosed": false,
+      "source_revision": "a532b90a7fa6201909da9d0f60ac3bdb5ec3392e",
+      "report": "/tmp/rentemester-rust-reports/r103-owner-writeoff718-current-contracts-qualified.json",
+      "sha256": "9749adaa416dd8d284cf70a3d5f5969b1ea2181351da5f5aa7a4d1d8d0e81bd6",
+      "scope": "ExistingUI->acceptedRustsourcewriter; currentaccount/bill review/explicitack/receipt/history;56targetedcases/actualbrowser/noautomaticretry;whole718open",
+      "remaining": [
+        "718: all other original React screens/capabilities/file/export/local-hosted/keyboard/actionable-error acceptance and full J03/J04 must be mapped to accepted evidence; this flow alone does not close718.",
+        "All55 original issues/J01-J07/release/cutover/manual installed desktop LAST remain.41closed14open. No live/default launcher or installed app switched."
       ]
     }
   ],

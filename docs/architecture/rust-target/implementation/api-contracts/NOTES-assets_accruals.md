@@ -28,3 +28,44 @@ The parent owns semantic review, integration and acceptance. This partition does
 One artifact-generation Python syntax error was corrected; no new test setup was introduced. Existing accepted runtime/user-flow proofs were not replayed. No live-provider approval is claimed.
 
 Lead source review retained existing exact original appliedRules/no-code transport/domain refusal constructors (already correct in finalworker). HEAD success/refusal/protocol schemas are explicitly pre-strip constructors with zero wire bytes. Disposal receipt read has no clockexpiry check while outcome retained; apply replay30days remains distinct. DisposalMCP SDK validates inner confirm as invalid_input, never shared CONFIRM_REQUIRED.
+
+## 2026-10-25 — Owner immediate write-off through shared React/Rust
+
+The existing Straksafskriv form now binds explicitly to the accepted original
+Rust writer. It selects a current active expense account and existing purchase
+document, freezes a review before explicit confirmation, and validates the flat
+journal/write-off receipt. The current configured bank role remains visible;
+no client account default, VAT deduction or legal eligibility is inferred.
+The source-bound AssetList.writeOffAvailable capability is now true. All1609
+existing operations remain; no new engine or HTTP route was introduced.
+
+A parsed exact source422 refusal may persist a supported exception. Malformed
+receipts, transport failures and unknown writes retain the existing persisted
+ConfirmDialog barrier. Reads never release it. Explicit human reconciliation
+uses the existing release acknowledgement and sends no write. Main review
+repaired a double-lock trap, native default/posted-close behavior and the
+review context/receipt binding before accepting the candidate. Bun behavior
+and shared transport policies for other callers remain.
+
+56 distinct targeted cases passed:35 UI/API,20 shared confirmation/transport
+and1 storage. The frozen Bun build invocation printed help; it is not build
+evidence. A separate proper app-directory build ran design checks, TypeScript
+and the existing bundler. An initial actual-browser selector failed before any
+financial POST. The wrapped-label mismatch was reproduced independently; the
+qualifier now uses the actual combobox accessible name. The failed profile and
+logs remain, with zero journals verified before a fresh isolated fixture.
+
+Actual React against Rust then verified normal two-user MFA, review and
+explicit confirmation, one source refusal retaining an eligibility exception,
+and a genuinely accepted response deliberately lost before the browser saw it.
+The latter remained blocked across read, reload and reopening without resending.
+Exactly2journals/4lines,2bill-linked write-off histories and3exceptions were
+verified, followed by restart and signed source-free recovery. Original bytes
+and exact history survived. The qualifier executes no CLI/MCP business matrix;
+those older artifacts are supplied only for the reused lifecycle contract.
+Synthetic explicit gross amounts are not tax advice or live-use acceptance.
+
+This completes this bounded owner flow, not whole718. Other original screens,
+capabilities, file/export/error/keyboard/local-hosted scenarios and J03/J04 must
+retain full evidence. All55 original issues, release/cutover and final manual
+installed-desktop acceptance remain. No live data or installed launcher changed.
