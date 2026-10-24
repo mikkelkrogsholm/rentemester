@@ -1,0 +1,173 @@
+{
+  "workIssue": 677,
+  "partition": "service_identity",
+  "sourceCommit": "da30984a56fc08877f0dbdaba799527b05447c66",
+  "productionDeltaContext": "6fcf4fe1",
+  "schemaDialect": "https://json-schema.org/draft/2020-12/schema",
+  "operationIds": [
+    "http:GET /api/workspace/service-principals",
+    "http:HEAD /api/workspace/service-principals",
+    "http:POST /api/workspace/service-principals",
+    "http:POST /api/workspace/service-principals/recover",
+    "http:POST /api/workspace/service-principals/revoke",
+    "http:POST /api/workspace/service-principals/rotate"
+  ],
+  "sourceRefs": [
+    {
+      "path": "crates/rentemester-server/src/auth_http/lifecycle.rs",
+      "sha256": "c9bcdbe1e9bb19349293ad21deb6368d6d0eab8000f0a550460cd1a0d4e948c6",
+      "needle": "pub(super) fn routes"
+    },
+    {
+      "path": "crates/rentemester-server/src/auth_http/lifecycle.rs",
+      "sha256": "c9bcdbe1e9bb19349293ad21deb6368d6d0eab8000f0a550460cd1a0d4e948c6",
+      "needle": "fn action(w: Wire, kind: u8)"
+    },
+    {
+      "path": "crates/rentemester-server/src/auth_http/lifecycle.rs",
+      "sha256": "c9bcdbe1e9bb19349293ad21deb6368d6d0eab8000f0a550460cd1a0d4e948c6",
+      "needle": "async fn execute"
+    },
+    {
+      "path": "crates/rentemester-server/src/auth_http.rs",
+      "sha256": "022eb38c8933d7b8d778a24ac45851427fbbe390ab3231b00299a5c69c2495f8",
+      "needle": "fn gates("
+    },
+    {
+      "path": "crates/rentemester-server/src/auth_http.rs",
+      "sha256": "022eb38c8933d7b8d778a24ac45851427fbbe390ab3231b00299a5c69c2495f8",
+      "needle": "fn native_failure"
+    },
+    {
+      "path": "crates/rentemester-server/src/lib.rs",
+      "sha256": "5819de8ad093998b2e7580ecf51022bc2f3d075f2ac8515400cb391eb588aa11",
+      "needle": "fn admission_for("
+    },
+    {
+      "path": "crates/rentemester-server/src/lib.rs",
+      "sha256": "5819de8ad093998b2e7580ecf51022bc2f3d075f2ac8515400cb391eb588aa11",
+      "needle": "fn allow_peer_route_at"
+    },
+    {
+      "path": "crates/rentemester-server/src/lib.rs",
+      "sha256": "5819de8ad093998b2e7580ecf51022bc2f3d075f2ac8515400cb391eb588aa11",
+      "needle": "async fn body_bytes"
+    },
+    {
+      "path": "crates/rentemester-server/src/lib.rs",
+      "sha256": "5819de8ad093998b2e7580ecf51022bc2f3d075f2ac8515400cb391eb588aa11",
+      "needle": "fn response("
+    },
+    {
+      "path": "crates/rentemester-application/src/service_lifecycle.rs",
+      "sha256": "4afac82bbe567d1569a49d2ee759fcfc679089b65bf891ace040c1527c6d2874",
+      "needle": "pub fn execute("
+    },
+    {
+      "path": "crates/rentemester-storage/src/service_lifecycle.rs",
+      "sha256": "0bf4a67be90295c40646dc4f6eec7d9f3a11639748eabce3be3cea7e145df7a8",
+      "needle": "fn inventory("
+    },
+    {
+      "path": "crates/rentemester-storage/src/service_lifecycle.rs",
+      "sha256": "0bf4a67be90295c40646dc4f6eec7d9f3a11639748eabce3be3cea7e145df7a8",
+      "needle": "struct Issued<'a>"
+    },
+    {
+      "path": "crates/rentemester-storage/src/service_lifecycle.rs",
+      "sha256": "0bf4a67be90295c40646dc4f6eec7d9f3a11639748eabce3be3cea7e145df7a8",
+      "needle": "fn recover("
+    },
+    {
+      "path": "crates/rentemester-storage/src/service_lifecycle.rs",
+      "sha256": "0bf4a67be90295c40646dc4f6eec7d9f3a11639748eabce3be3cea7e145df7a8",
+      "needle": "pub fn execute("
+    },
+    {
+      "path": "crates/rentemester-storage/src/service_lifecycle.rs",
+      "sha256": "0bf4a67be90295c40646dc4f6eec7d9f3a11639748eabce3be3cea7e145df7a8",
+      "needle": "fn history("
+    },
+    {
+      "path": "crates/rentemester-storage/src/service_lifecycle.rs",
+      "sha256": "0bf4a67be90295c40646dc4f6eec7d9f3a11639748eabce3be3cea7e145df7a8",
+      "needle": "pub fn uuid("
+    },
+    {
+      "path": "crates/rentemester-runtime/src/auth.rs",
+      "sha256": "4cbe7f4ef162b1e576e788b305eaf6273c759854eb4c50c9b7c62c41227539eb",
+      "needle": "pub fn verify_optional("
+    },
+    {
+      "path": "crates/rentemester-runtime/src/auth.rs",
+      "sha256": "4cbe7f4ef162b1e576e788b305eaf6273c759854eb4c50c9b7c62c41227539eb",
+      "needle": "fn verify_named("
+    },
+    {
+      "path": "crates/rentemester-runtime/src/service_key.rs",
+      "sha256": "7ece2f1538c41db0f09add0993c55d30a6836da193f4517ae1e72935a899c1e7",
+      "needle": "pub fn generate("
+    },
+    {
+      "path": "crates/rentemester-storage/src/cookie_session.rs",
+      "sha256": "cc174b10535dd19129becf965a4c63f909231d02f8891e838c9fbf2ada971bce",
+      "needle": "pub fn resolve("
+    },
+    {
+      "path": "crates/rentemester-storage/src/session_control.rs",
+      "sha256": "8330f26bc7e2f2f7e5b9a79dc09f2348ac8369446dabe53a048d9f283696ac19",
+      "needle": "pub fn authorize("
+    },
+    {
+      "path": "crates/rentemester-storage/src/control_access.rs",
+      "sha256": "2e27d14481cc6120ea30bfed9d0b62cf9a8ad08c34aaa1c4eed5410cf6d0d753",
+      "needle": "pub fn observe_human("
+    },
+    {
+      "path": "crates/rentemester-storage/src/workspace_transfer.rs",
+      "sha256": "751e5c0dfb984c2bc1685680abb3ae5ac07efb57f71b20c186758b3ba41f24b9",
+      "needle": "pub fn require_business_write("
+    },
+    {
+      "path": "crates/rentemester-server/src/backend.rs",
+      "sha256": "c37ce198666ee382ce5d3290ff50e08025db1dfd3daf43284079e2bd208bb5ee",
+      "needle": "service_lifecycle: Some(Box::new"
+    },
+    {
+      "path": "crates/rentemester-server/src/backend.rs",
+      "sha256": "c37ce198666ee382ce5d3290ff50e08025db1dfd3daf43284079e2bd208bb5ee",
+      "needle": "fn unwrap<T>"
+    },
+    {
+      "path": "crates/rentemester-host/src/service_identity.rs",
+      "sha256": "60986533a2d4e82143f22daab7c2182a7646820ce8bff983e76c0d08f9c8ed71",
+      "needle": "pub fn service_lifecycle("
+    },
+    {
+      "path": "crates/rentemester-host/src/lib.rs",
+      "sha256": "e80b24b5b6927b76eee026252f63b1264580f57cdc55dab301cee6e634b9247c",
+      "needle": "fn control_auth<T>"
+    },
+    {
+      "path": "crates/rentemester-server/src/protocol.rs",
+      "sha256": "e1076ab2b8185b48c03017658c75ef3a01b9abacdb75843f64cef4adfc6da38c",
+      "needle": "fn incompatible("
+    },
+    {
+      "path": "crates/rentemester-server/src/protocol.rs",
+      "sha256": "e1076ab2b8185b48c03017658c75ef3a01b9abacdb75843f64cef4adfc6da38c",
+      "needle": "fn admitted("
+    },
+    {
+      "path": "crates/rentemester-server/src/main.rs",
+      "sha256": "d4d56f94b147b1e6540928f49f2a1dd28f0c8982436fe59b49a4e29f83004b6e",
+      "needle": "protocol::install(router, connected)"
+    }
+  ],
+  "method": "Graphify query first, current native route/parser/guard/producer/history/transaction source review. No SDK or legacy TypeScript substitution. Source hashes bind current bytes.",
+  "retainedAcceptance": {
+    "protocol": "Existing accepted master 686324...; not rerun",
+    "identity712": "d95949983f76072a57570f73387097f4cc0c0ba420199e668d3d73c5a85b7abd actual HTTPS/OS Keychain accepted; not rerun"
+  },
+  "limits": "Six selected HTTP operations only, not complete interface/registry or #677 closure; no CLI/MCP contract. Structural oracle does not establish runtime or acceptance."
+}
