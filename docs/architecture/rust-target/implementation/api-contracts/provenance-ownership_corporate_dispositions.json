@@ -211,12 +211,12 @@
     },
     {
       "path": "crates/rentemester-mcp/src/main.rs",
-      "sha256": "aa79b11fa9c34d6813de19007bc0986b4e8ad42be0d702090336a1e3c48bdfed",
+      "sha256": "f1bd984c541f4c8b8fc6147a7ede20a19923177859b28fa980e6ed48f4c6184a",
       "needle": "impl Session"
     },
     {
       "path": "crates/rentemester-mcp/src/tools.rs",
-      "sha256": "8035dc45f8d22d902c18e17b4508ca572f8505dc83a1961fa355dfd1f34c1397",
+      "sha256": "c9c7557336816a4ac83f921e6d728dc096c3a92b2e6cd431c56b877c95790c44",
       "needle": "pub async fn call"
     },
     {
@@ -514,5 +514,1155 @@
       "sha256": "ab38980101033b43e8f2b5657d1e41f54975f99869149115d12bcd54a6a7299e"
     },
     "review": "Twoisolatedadapter owners, actualdiff/source review and boundedleadrepairs. Combined10corporate7ownershipchecks and nostandinsPASS. ProseRED2/GREEN1/fullpositivewiremetadata, malformedreceiptRED0 -> safeunknown; nativeengine/SDK/backend unchanged. Full716/all55 retained."
+  },
+  "r75Original717": {
+    "definitions": [
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false,
+          "readOnlyHint": true
+        },
+        "description": "Lists only records whose entire declared company scope is authorized, before pagination. Current human credentials only. Native all-scope/sensitivity, retained whole-intent/current-principal replay and pagination/filetype/filename limits apply. No retry; reconcile unknown writes through exact canonical identity/source/history reads. Original bytes max16MiB; ingest JSON max24MiB. Identity-only party creation is unavailable: native creation requires an explicit initial role, which this original grammar does not supply.",
+        "inputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "additionalProperties": false,
+          "properties": {
+            "company": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "cursor": {
+              "maximum": 9007199254740991,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "limit": {
+              "maximum": 100,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "company"
+          ],
+          "type": "object"
+        },
+        "name": "corporate_record_list",
+        "outputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "additionalProperties": false,
+          "properties": {
+            "appliedRules": {
+              "description": "Regel-id'er der fyrede for denne handling (sporbarhed). S\u00e6ttes for bogf\u00f8rings-tools; udeladt ellers.",
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "code": {
+              "description": "Stabil maskinl\u00e6sbar fejl-mark\u00f8r for cross-cutting preconditions (fx \"BACKUP_LOCKED\"). S\u00e6ttes kun ved ok=false og kun for fejl der lever uden for det enkelte tools forretningslogik \u2014 agenten kan branche p\u00e5 `code` uden at parse fri-tekst i `errors[]`. Udeladt ved per-tool forretningsfejl.",
+              "type": "string"
+            },
+            "data": {
+              "additionalProperties": {},
+              "description": "Kerne-resultatet ved ok=true. Den pr\u00e6cise feltliste er per-tool og dokumenteret i docs/mcp-tool-surface.md. Udeladt ved ok=false.",
+              "properties": {},
+              "type": "object"
+            },
+            "errors": {
+              "description": "Menneskel\u00e6sbare fejl-/foruds\u00e6tnings-strenge. Tom ved ok=true; ikke-tom ved ok=false.",
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "ok": {
+              "description": "true \u21d2 kaldet lykkedes og `data` er sat; false \u21d2 se `errors`.",
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "ok",
+            "errors"
+          ],
+          "type": "object"
+        },
+        "title": "List visible corporate records"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false,
+          "readOnlyHint": true
+        },
+        "description": "Returns metadata, source hash, links and append-only history; original bytes are separate. Current human credentials only. Native all-scope/sensitivity, retained whole-intent/current-principal replay and pagination/filetype/filename limits apply. No retry; reconcile unknown writes through exact canonical identity/source/history reads. Original bytes max16MiB; ingest JSON max24MiB. Identity-only party creation is unavailable: native creation requires an explicit initial role, which this original grammar does not supply.",
+        "inputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "additionalProperties": false,
+          "properties": {
+            "company": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "recordId": {
+              "minLength": 3,
+              "type": "string"
+            }
+          },
+          "required": [
+            "company",
+            "recordId"
+          ],
+          "type": "object"
+        },
+        "name": "corporate_record_inspect",
+        "outputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "additionalProperties": false,
+          "properties": {
+            "appliedRules": {
+              "description": "Regel-id'er der fyrede for denne handling (sporbarhed). S\u00e6ttes for bogf\u00f8rings-tools; udeladt ellers.",
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "code": {
+              "description": "Stabil maskinl\u00e6sbar fejl-mark\u00f8r for cross-cutting preconditions (fx \"BACKUP_LOCKED\"). S\u00e6ttes kun ved ok=false og kun for fejl der lever uden for det enkelte tools forretningslogik \u2014 agenten kan branche p\u00e5 `code` uden at parse fri-tekst i `errors[]`. Udeladt ved per-tool forretningsfejl.",
+              "type": "string"
+            },
+            "data": {
+              "additionalProperties": {},
+              "description": "Kerne-resultatet ved ok=true. Den pr\u00e6cise feltliste er per-tool og dokumenteret i docs/mcp-tool-surface.md. Udeladt ved ok=false.",
+              "properties": {},
+              "type": "object"
+            },
+            "errors": {
+              "description": "Menneskel\u00e6sbare fejl-/foruds\u00e6tnings-strenge. Tom ved ok=true; ikke-tom ved ok=false.",
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "ok": {
+              "description": "true \u21d2 kaldet lykkedes og `data` er sat; false \u21d2 se `errors`.",
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "ok",
+            "errors"
+          ],
+          "type": "object"
+        },
+        "title": "Inspect a visible corporate record"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false,
+          "readOnlyHint": true
+        },
+        "description": "Returns original immutable bytes only after SHA-256 verification and scope authorization. Current human credentials only. Native all-scope/sensitivity, retained whole-intent/current-principal replay and pagination/filetype/filename limits apply. No retry; reconcile unknown writes through exact canonical identity/source/history reads. Original bytes max16MiB; ingest JSON max24MiB. Identity-only party creation is unavailable: native creation requires an explicit initial role, which this original grammar does not supply.",
+        "inputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "additionalProperties": false,
+          "properties": {
+            "company": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "recordId": {
+              "minLength": 3,
+              "type": "string"
+            }
+          },
+          "required": [
+            "company",
+            "recordId"
+          ],
+          "type": "object"
+        },
+        "name": "corporate_record_download",
+        "outputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "additionalProperties": false,
+          "properties": {
+            "appliedRules": {
+              "description": "Regel-id'er der fyrede for denne handling (sporbarhed). S\u00e6ttes for bogf\u00f8rings-tools; udeladt ellers.",
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "code": {
+              "description": "Stabil maskinl\u00e6sbar fejl-mark\u00f8r for cross-cutting preconditions (fx \"BACKUP_LOCKED\"). S\u00e6ttes kun ved ok=false og kun for fejl der lever uden for det enkelte tools forretningslogik \u2014 agenten kan branche p\u00e5 `code` uden at parse fri-tekst i `errors[]`. Udeladt ved per-tool forretningsfejl.",
+              "type": "string"
+            },
+            "data": {
+              "additionalProperties": {},
+              "description": "Kerne-resultatet ved ok=true. Den pr\u00e6cise feltliste er per-tool og dokumenteret i docs/mcp-tool-surface.md. Udeladt ved ok=false.",
+              "properties": {},
+              "type": "object"
+            },
+            "errors": {
+              "description": "Menneskel\u00e6sbare fejl-/foruds\u00e6tnings-strenge. Tom ved ok=true; ikke-tom ved ok=false.",
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "ok": {
+              "description": "true \u21d2 kaldet lykkedes og `data` er sat; false \u21d2 se `errors`.",
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "ok",
+            "errors"
+          ],
+          "type": "object"
+        },
+        "title": "Download verified corporate record bytes"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": false,
+          "readOnlyHint": false
+        },
+        "description": "Stores governance evidence bytes/hash and metadata. It never posts, files or changes group state. Requires actor attribution and confirm:true; retry reads canonical state. write-reversible. Current human credentials only. Native all-scope/sensitivity, retained whole-intent/current-principal replay and pagination/filetype/filename limits apply. No retry; reconcile unknown writes through exact canonical identity/source/history reads. Original bytes max16MiB; ingest JSON max24MiB. Identity-only party creation is unavailable: native creation requires an explicit initial role, which this original grammar does not supply.",
+        "inputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "additionalProperties": false,
+          "properties": {
+            "bytesBase64": {
+              "maxLength": 22369624,
+              "minLength": 1,
+              "type": "string"
+            },
+            "company": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "confirm": {
+              "description": "Must be set to true to acknowledge the write side effects of this tool. Omitting it (or sending false) returns an { ok:false, errors:[...] } envelope rather than performing the write.",
+              "type": "boolean"
+            },
+            "filename": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "links": {
+              "items": {
+                "additionalProperties": false,
+                "properties": {
+                  "id": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "type": {
+                    "enum": [
+                      "company",
+                      "party",
+                      "ownership",
+                      "disposition",
+                      "legacy_evidence_ref"
+                    ],
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "type",
+                  "id"
+                ],
+                "type": "object"
+              },
+              "type": "array"
+            },
+            "receivedAt": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "recordDate": {
+              "type": "string"
+            },
+            "recordId": {
+              "type": "string"
+            },
+            "retentionUntil": {
+              "type": "string"
+            },
+            "sensitivity": {
+              "enum": [
+                "normal",
+                "confidential",
+                "restricted"
+              ],
+              "type": "string"
+            },
+            "source": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "type": {
+              "enum": [
+                "incorporation",
+                "articles",
+                "registration",
+                "shareholder_register",
+                "shareholder_agreement",
+                "board_resolution",
+                "general_meeting_minutes",
+                "capital_or_dividend_resolution",
+                "annual_report",
+                "auditor_deliverable",
+                "intercompany_agreement",
+                "ownership_register",
+                "share_transfer",
+                "authority_letter",
+                "bank_mandate",
+                "tax_registration",
+                "other"
+              ],
+              "type": "string"
+            },
+            "uploader": {
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          "required": [
+            "company",
+            "type",
+            "bytesBase64",
+            "filename",
+            "source",
+            "receivedAt",
+            "uploader"
+          ],
+          "type": "object"
+        },
+        "name": "corporate_record_ingest",
+        "outputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "additionalProperties": false,
+          "properties": {
+            "appliedRules": {
+              "description": "Regel-id'er der fyrede for denne handling (sporbarhed). S\u00e6ttes for bogf\u00f8rings-tools; udeladt ellers.",
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "code": {
+              "description": "Stabil maskinl\u00e6sbar fejl-mark\u00f8r for cross-cutting preconditions (fx \"BACKUP_LOCKED\"). S\u00e6ttes kun ved ok=false og kun for fejl der lever uden for det enkelte tools forretningslogik \u2014 agenten kan branche p\u00e5 `code` uden at parse fri-tekst i `errors[]`. Udeladt ved per-tool forretningsfejl.",
+              "type": "string"
+            },
+            "data": {
+              "additionalProperties": {},
+              "description": "Kerne-resultatet ved ok=true. Den pr\u00e6cise feltliste er per-tool og dokumenteret i docs/mcp-tool-surface.md. Udeladt ved ok=false.",
+              "properties": {},
+              "type": "object"
+            },
+            "errors": {
+              "description": "Menneskel\u00e6sbare fejl-/foruds\u00e6tnings-strenge. Tom ved ok=true; ikke-tom ved ok=false.",
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "ok": {
+              "description": "true \u21d2 kaldet lykkedes og `data` er sat; false \u21d2 se `errors`.",
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "ok",
+            "errors"
+          ],
+          "type": "object"
+        },
+        "title": "Ingest immutable corporate evidence"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": false,
+          "readOnlyHint": false
+        },
+        "description": "Adds an audited typed link without altering original evidence bytes. Requires actor attribution and confirm:true; retry reads canonical state. write-reversible. Current human credentials only. Native all-scope/sensitivity, retained whole-intent/current-principal replay and pagination/filetype/filename limits apply. No retry; reconcile unknown writes through exact canonical identity/source/history reads. Original bytes max16MiB; ingest JSON max24MiB. Identity-only party creation is unavailable: native creation requires an explicit initial role, which this original grammar does not supply.",
+        "inputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "additionalProperties": false,
+          "properties": {
+            "company": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "confirm": {
+              "description": "Must be set to true to acknowledge the write side effects of this tool. Omitting it (or sending false) returns an { ok:false, errors:[...] } envelope rather than performing the write.",
+              "type": "boolean"
+            },
+            "id": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "recordId": {
+              "minLength": 3,
+              "type": "string"
+            },
+            "type": {
+              "enum": [
+                "company",
+                "party",
+                "ownership",
+                "disposition",
+                "legacy_evidence_ref"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "company",
+            "recordId",
+            "type",
+            "id"
+          ],
+          "type": "object"
+        },
+        "name": "corporate_record_link",
+        "outputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "additionalProperties": false,
+          "properties": {
+            "appliedRules": {
+              "description": "Regel-id'er der fyrede for denne handling (sporbarhed). S\u00e6ttes for bogf\u00f8rings-tools; udeladt ellers.",
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "code": {
+              "description": "Stabil maskinl\u00e6sbar fejl-mark\u00f8r for cross-cutting preconditions (fx \"BACKUP_LOCKED\"). S\u00e6ttes kun ved ok=false og kun for fejl der lever uden for det enkelte tools forretningslogik \u2014 agenten kan branche p\u00e5 `code` uden at parse fri-tekst i `errors[]`. Udeladt ved per-tool forretningsfejl.",
+              "type": "string"
+            },
+            "data": {
+              "additionalProperties": {},
+              "description": "Kerne-resultatet ved ok=true. Den pr\u00e6cise feltliste er per-tool og dokumenteret i docs/mcp-tool-surface.md. Udeladt ved ok=false.",
+              "properties": {},
+              "type": "object"
+            },
+            "errors": {
+              "description": "Menneskel\u00e6sbare fejl-/foruds\u00e6tnings-strenge. Tom ved ok=true; ikke-tom ved ok=false.",
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "ok": {
+              "description": "true \u21d2 kaldet lykkedes og `data` er sat; false \u21d2 se `errors`.",
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "ok",
+            "errors"
+          ],
+          "type": "object"
+        },
+        "title": "Link corporate record"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": false,
+          "readOnlyHint": false
+        },
+        "description": "Appends a source assertion without changing immutable original bytes or source hash. Requires actor attribution and confirm:true; retry reads canonical state. write-reversible. Current human credentials only. Native all-scope/sensitivity, retained whole-intent/current-principal replay and pagination/filetype/filename limits apply. No retry; reconcile unknown writes through exact canonical identity/source/history reads. Original bytes max16MiB; ingest JSON max24MiB. Identity-only party creation is unavailable: native creation requires an explicit initial role, which this original grammar does not supply.",
+        "inputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "additionalProperties": false,
+          "properties": {
+            "assertion": {
+              "maxLength": 2000,
+              "minLength": 1,
+              "type": "string"
+            },
+            "company": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "confirm": {
+              "description": "Must be set to true to acknowledge the write side effects of this tool. Omitting it (or sending false) returns an { ok:false, errors:[...] } envelope rather than performing the write.",
+              "type": "boolean"
+            },
+            "recordId": {
+              "minLength": 3,
+              "type": "string"
+            }
+          },
+          "required": [
+            "company",
+            "recordId",
+            "assertion"
+          ],
+          "type": "object"
+        },
+        "name": "corporate_record_enrich",
+        "outputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "additionalProperties": false,
+          "properties": {
+            "appliedRules": {
+              "description": "Regel-id'er der fyrede for denne handling (sporbarhed). S\u00e6ttes for bogf\u00f8rings-tools; udeladt ellers.",
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "code": {
+              "description": "Stabil maskinl\u00e6sbar fejl-mark\u00f8r for cross-cutting preconditions (fx \"BACKUP_LOCKED\"). S\u00e6ttes kun ved ok=false og kun for fejl der lever uden for det enkelte tools forretningslogik \u2014 agenten kan branche p\u00e5 `code` uden at parse fri-tekst i `errors[]`. Udeladt ved per-tool forretningsfejl.",
+              "type": "string"
+            },
+            "data": {
+              "additionalProperties": {},
+              "description": "Kerne-resultatet ved ok=true. Den pr\u00e6cise feltliste er per-tool og dokumenteret i docs/mcp-tool-surface.md. Udeladt ved ok=false.",
+              "properties": {},
+              "type": "object"
+            },
+            "errors": {
+              "description": "Menneskel\u00e6sbare fejl-/foruds\u00e6tnings-strenge. Tom ved ok=true; ikke-tom ved ok=false.",
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "ok": {
+              "description": "true \u21d2 kaldet lykkedes og `data` er sat; false \u21d2 se `errors`.",
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "ok",
+            "errors"
+          ],
+          "type": "object"
+        },
+        "title": "Enrich corporate record metadata"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": false,
+          "readOnlyHint": false
+        },
+        "description": "Appends a correction chain; it never replaces or deletes original bytes. Requires actor attribution and confirm:true; retry reads canonical state. write-reversible. Current human credentials only. Native all-scope/sensitivity, retained whole-intent/current-principal replay and pagination/filetype/filename limits apply. No retry; reconcile unknown writes through exact canonical identity/source/history reads. Original bytes max16MiB; ingest JSON max24MiB. Identity-only party creation is unavailable: native creation requires an explicit initial role, which this original grammar does not supply.",
+        "inputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "additionalProperties": false,
+          "properties": {
+            "company": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "confirm": {
+              "description": "Must be set to true to acknowledge the write side effects of this tool. Omitting it (or sending false) returns an { ok:false, errors:[...] } envelope rather than performing the write.",
+              "type": "boolean"
+            },
+            "reason": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "recordId": {
+              "minLength": 3,
+              "type": "string"
+            },
+            "replacementRecordId": {
+              "minLength": 3,
+              "type": "string"
+            }
+          },
+          "required": [
+            "company",
+            "recordId",
+            "replacementRecordId",
+            "reason"
+          ],
+          "type": "object"
+        },
+        "name": "corporate_record_supersede",
+        "outputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "additionalProperties": false,
+          "properties": {
+            "appliedRules": {
+              "description": "Regel-id'er der fyrede for denne handling (sporbarhed). S\u00e6ttes for bogf\u00f8rings-tools; udeladt ellers.",
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "code": {
+              "description": "Stabil maskinl\u00e6sbar fejl-mark\u00f8r for cross-cutting preconditions (fx \"BACKUP_LOCKED\"). S\u00e6ttes kun ved ok=false og kun for fejl der lever uden for det enkelte tools forretningslogik \u2014 agenten kan branche p\u00e5 `code` uden at parse fri-tekst i `errors[]`. Udeladt ved per-tool forretningsfejl.",
+              "type": "string"
+            },
+            "data": {
+              "additionalProperties": {},
+              "description": "Kerne-resultatet ved ok=true. Den pr\u00e6cise feltliste er per-tool og dokumenteret i docs/mcp-tool-surface.md. Udeladt ved ok=false.",
+              "properties": {},
+              "type": "object"
+            },
+            "errors": {
+              "description": "Menneskel\u00e6sbare fejl-/foruds\u00e6tnings-strenge. Tom ved ok=true; ikke-tom ved ok=false.",
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "ok": {
+              "description": "true \u21d2 kaldet lykkedes og `data` er sat; false \u21d2 se `errors`.",
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "ok",
+            "errors"
+          ],
+          "type": "object"
+        },
+        "title": "Supersede corporate record"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false,
+          "readOnlyHint": true
+        },
+        "description": "Original flat registry inputs. Current authenticated authority only; no ledger/legal/group-manifest effects. Writes require outer confirm:true. Native bounds: knowledge256KiB/value32768 UTF-16/depth64; ownership proposal2MiB/2048 facts, review/apply32KiB. Native whole-intent/current-principal replay is stronger than legacy dedup. Native ISO dates only (no locale-dependent dates). No retries; unknown writes require canonical exact-source/context/history readback before further explicit action.",
+        "inputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "additionalProperties": false,
+          "properties": {
+            "asOf": {
+              "minLength": 10,
+              "type": "string"
+            },
+            "company": {
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          "required": [
+            "company",
+            "asOf"
+          ],
+          "type": "object"
+        },
+        "name": "ownership_graph_query",
+        "outputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "additionalProperties": false,
+          "properties": {
+            "appliedRules": {
+              "description": "Regel-id'er der fyrede for denne handling (sporbarhed). S\u00e6ttes for bogf\u00f8rings-tools; udeladt ellers.",
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "code": {
+              "description": "Stabil maskinl\u00e6sbar fejl-mark\u00f8r for cross-cutting preconditions (fx \"BACKUP_LOCKED\"). S\u00e6ttes kun ved ok=false og kun for fejl der lever uden for det enkelte tools forretningslogik \u2014 agenten kan branche p\u00e5 `code` uden at parse fri-tekst i `errors[]`. Udeladt ved per-tool forretningsfejl.",
+              "type": "string"
+            },
+            "data": {
+              "additionalProperties": {},
+              "description": "Kerne-resultatet ved ok=true. Den pr\u00e6cise feltliste er per-tool og dokumenteret i docs/mcp-tool-surface.md. Udeladt ved ok=false.",
+              "properties": {},
+              "type": "object"
+            },
+            "errors": {
+              "description": "Menneskel\u00e6sbare fejl-/foruds\u00e6tnings-strenge. Tom ved ok=true; ikke-tom ved ok=false.",
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "ok": {
+              "description": "true \u21d2 kaldet lykkedes og `data` er sat; false \u21d2 se `errors`.",
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "ok",
+            "errors"
+          ],
+          "type": "object"
+        },
+        "title": "Query approved ownership and control facts"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false,
+          "readOnlyHint": true
+        },
+        "description": "Original flat registry inputs. Current authenticated authority only; no ledger/legal/group-manifest effects. Writes require outer confirm:true. Native bounds: knowledge256KiB/value32768 UTF-16/depth64; ownership proposal2MiB/2048 facts, review/apply32KiB. Native whole-intent/current-principal replay is stronger than legacy dedup. Native ISO dates only (no locale-dependent dates). No retries; unknown writes require canonical exact-source/context/history readback before further explicit action.",
+        "inputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "additionalProperties": false,
+          "properties": {
+            "company": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "snapshotId": {
+              "minLength": 3,
+              "type": "string"
+            }
+          },
+          "required": [
+            "company"
+          ],
+          "type": "object"
+        },
+        "name": "ownership_snapshot_history",
+        "outputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "additionalProperties": false,
+          "properties": {
+            "appliedRules": {
+              "description": "Regel-id'er der fyrede for denne handling (sporbarhed). S\u00e6ttes for bogf\u00f8rings-tools; udeladt ellers.",
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "code": {
+              "description": "Stabil maskinl\u00e6sbar fejl-mark\u00f8r for cross-cutting preconditions (fx \"BACKUP_LOCKED\"). S\u00e6ttes kun ved ok=false og kun for fejl der lever uden for det enkelte tools forretningslogik \u2014 agenten kan branche p\u00e5 `code` uden at parse fri-tekst i `errors[]`. Udeladt ved per-tool forretningsfejl.",
+              "type": "string"
+            },
+            "data": {
+              "additionalProperties": {},
+              "description": "Kerne-resultatet ved ok=true. Den pr\u00e6cise feltliste er per-tool og dokumenteret i docs/mcp-tool-surface.md. Udeladt ved ok=false.",
+              "properties": {},
+              "type": "object"
+            },
+            "errors": {
+              "description": "Menneskel\u00e6sbare fejl-/foruds\u00e6tnings-strenge. Tom ved ok=true; ikke-tom ved ok=false.",
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "ok": {
+              "description": "true \u21d2 kaldet lykkedes og `data` er sat; false \u21d2 se `errors`.",
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "ok",
+            "errors"
+          ],
+          "type": "object"
+        },
+        "title": "Read redacted ownership snapshot history"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": false,
+          "readOnlyHint": false
+        },
+        "description": "Original flat registry inputs. Current authenticated authority only; no ledger/legal/group-manifest effects. Writes require outer confirm:true. Native bounds: knowledge256KiB/value32768 UTF-16/depth64; ownership proposal2MiB/2048 facts, review/apply32KiB. Native whole-intent/current-principal replay is stronger than legacy dedup. Native ISO dates only (no locale-dependent dates). No retries; unknown writes require canonical exact-source/context/history readback before further explicit action.",
+        "inputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "additionalProperties": false,
+          "properties": {
+            "company": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "confirm": {
+              "description": "Must be set to true to acknowledge the write side effects of this tool. Omitting it (or sending false) returns an { ok:false, errors:[...] } envelope rather than performing the write.",
+              "type": "boolean"
+            },
+            "facts": {
+              "items": {
+                "additionalProperties": false,
+                "properties": {
+                  "controlType": {
+                    "enum": [
+                      "equity",
+                      "voting",
+                      "board",
+                      "agreement",
+                      "other"
+                    ],
+                    "type": "string"
+                  },
+                  "economicBasisPoints": {
+                    "maximum": 10000,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "economicIntervalBasisPoints": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "max": {
+                        "maximum": 10000,
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      "min": {
+                        "maximum": 10000,
+                        "minimum": 0,
+                        "type": "integer"
+                      }
+                    },
+                    "required": [
+                      "min",
+                      "max"
+                    ],
+                    "type": "object"
+                  },
+                  "evidenceRefs": {
+                    "items": {
+                      "minLength": 1,
+                      "type": "string"
+                    },
+                    "maxItems": 32,
+                    "minItems": 1,
+                    "type": "array"
+                  },
+                  "jurisdiction": {
+                    "maxLength": 2,
+                    "minLength": 2,
+                    "type": "string"
+                  },
+                  "ownedCompanySlug": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "owner": {
+                    "oneOf": [
+                      {
+                        "additionalProperties": false,
+                        "properties": {
+                          "companySlug": {
+                            "minLength": 1,
+                            "type": "string"
+                          },
+                          "kind": {
+                            "const": "company",
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "kind",
+                          "companySlug"
+                        ],
+                        "type": "object"
+                      },
+                      {
+                        "additionalProperties": false,
+                        "properties": {
+                          "kind": {
+                            "const": "party",
+                            "type": "string"
+                          },
+                          "partyId": {
+                            "minLength": 3,
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "kind",
+                          "partyId"
+                        ],
+                        "type": "object"
+                      }
+                    ]
+                  },
+                  "shareClass": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "validFrom": {
+                    "minLength": 10,
+                    "type": "string"
+                  },
+                  "validToExclusive": {
+                    "minLength": 10,
+                    "type": "string"
+                  },
+                  "votingBasisPoints": {
+                    "maximum": 10000,
+                    "minimum": 0,
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "owner",
+                  "ownedCompanySlug",
+                  "validFrom",
+                  "controlType",
+                  "jurisdiction",
+                  "evidenceRefs"
+                ],
+                "type": "object"
+              },
+              "maxItems": 2048,
+              "minItems": 1,
+              "type": "array"
+            },
+            "observedAt": {
+              "minLength": 10,
+              "type": "string"
+            },
+            "snapshotId": {
+              "minLength": 3,
+              "type": "string"
+            },
+            "source": {
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          "required": [
+            "company",
+            "source",
+            "observedAt",
+            "facts"
+          ],
+          "type": "object"
+        },
+        "name": "ownership_snapshot_propose",
+        "outputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "additionalProperties": false,
+          "properties": {
+            "appliedRules": {
+              "description": "Regel-id'er der fyrede for denne handling (sporbarhed). S\u00e6ttes for bogf\u00f8rings-tools; udeladt ellers.",
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "code": {
+              "description": "Stabil maskinl\u00e6sbar fejl-mark\u00f8r for cross-cutting preconditions (fx \"BACKUP_LOCKED\"). S\u00e6ttes kun ved ok=false og kun for fejl der lever uden for det enkelte tools forretningslogik \u2014 agenten kan branche p\u00e5 `code` uden at parse fri-tekst i `errors[]`. Udeladt ved per-tool forretningsfejl.",
+              "type": "string"
+            },
+            "data": {
+              "additionalProperties": {},
+              "description": "Kerne-resultatet ved ok=true. Den pr\u00e6cise feltliste er per-tool og dokumenteret i docs/mcp-tool-surface.md. Udeladt ved ok=false.",
+              "properties": {},
+              "type": "object"
+            },
+            "errors": {
+              "description": "Menneskel\u00e6sbare fejl-/foruds\u00e6tnings-strenge. Tom ved ok=true; ikke-tom ved ok=false.",
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "ok": {
+              "description": "true \u21d2 kaldet lykkedes og `data` er sat; false \u21d2 se `errors`.",
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "ok",
+            "errors"
+          ],
+          "type": "object"
+        },
+        "title": "Propose source-backed ownership snapshot"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": false,
+          "readOnlyHint": false
+        },
+        "description": "Original flat registry inputs. Current authenticated authority only; no ledger/legal/group-manifest effects. Writes require outer confirm:true. Native bounds: knowledge256KiB/value32768 UTF-16/depth64; ownership proposal2MiB/2048 facts, review/apply32KiB. Native whole-intent/current-principal replay is stronger than legacy dedup. Native ISO dates only (no locale-dependent dates). No retries; unknown writes require canonical exact-source/context/history readback before further explicit action.",
+        "inputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "additionalProperties": false,
+          "properties": {
+            "company": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "confirm": {
+              "description": "Must be set to true to acknowledge the write side effects of this tool. Omitting it (or sending false) returns an { ok:false, errors:[...] } envelope rather than performing the write.",
+              "type": "boolean"
+            },
+            "decision": {
+              "enum": [
+                "approved",
+                "rejected"
+              ],
+              "type": "string"
+            },
+            "snapshotId": {
+              "minLength": 3,
+              "type": "string"
+            }
+          },
+          "required": [
+            "company",
+            "snapshotId",
+            "decision"
+          ],
+          "type": "object"
+        },
+        "name": "ownership_snapshot_review",
+        "outputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "additionalProperties": false,
+          "properties": {
+            "appliedRules": {
+              "description": "Regel-id'er der fyrede for denne handling (sporbarhed). S\u00e6ttes for bogf\u00f8rings-tools; udeladt ellers.",
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "code": {
+              "description": "Stabil maskinl\u00e6sbar fejl-mark\u00f8r for cross-cutting preconditions (fx \"BACKUP_LOCKED\"). S\u00e6ttes kun ved ok=false og kun for fejl der lever uden for det enkelte tools forretningslogik \u2014 agenten kan branche p\u00e5 `code` uden at parse fri-tekst i `errors[]`. Udeladt ved per-tool forretningsfejl.",
+              "type": "string"
+            },
+            "data": {
+              "additionalProperties": {},
+              "description": "Kerne-resultatet ved ok=true. Den pr\u00e6cise feltliste er per-tool og dokumenteret i docs/mcp-tool-surface.md. Udeladt ved ok=false.",
+              "properties": {},
+              "type": "object"
+            },
+            "errors": {
+              "description": "Menneskel\u00e6sbare fejl-/foruds\u00e6tnings-strenge. Tom ved ok=true; ikke-tom ved ok=false.",
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "ok": {
+              "description": "true \u21d2 kaldet lykkedes og `data` er sat; false \u21d2 se `errors`.",
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "ok",
+            "errors"
+          ],
+          "type": "object"
+        },
+        "title": "Review ownership snapshot"
+      },
+      {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": false,
+          "readOnlyHint": false
+        },
+        "description": "Original flat registry inputs. Current authenticated authority only; no ledger/legal/group-manifest effects. Writes require outer confirm:true. Native bounds: knowledge256KiB/value32768 UTF-16/depth64; ownership proposal2MiB/2048 facts, review/apply32KiB. Native whole-intent/current-principal replay is stronger than legacy dedup. Native ISO dates only (no locale-dependent dates). No retries; unknown writes require canonical exact-source/context/history readback before further explicit action.",
+        "inputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "additionalProperties": false,
+          "properties": {
+            "company": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "confirm": {
+              "description": "Must be set to true to acknowledge the write side effects of this tool. Omitting it (or sending false) returns an { ok:false, errors:[...] } envelope rather than performing the write.",
+              "type": "boolean"
+            },
+            "diffHash": {
+              "pattern": "^[a-f0-9]{64}$",
+              "type": "string"
+            },
+            "snapshotHash": {
+              "pattern": "^[a-f0-9]{64}$",
+              "type": "string"
+            },
+            "snapshotId": {
+              "minLength": 3,
+              "type": "string"
+            }
+          },
+          "required": [
+            "company",
+            "snapshotId",
+            "snapshotHash",
+            "diffHash"
+          ],
+          "type": "object"
+        },
+        "name": "ownership_snapshot_apply",
+        "outputSchema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "additionalProperties": false,
+          "properties": {
+            "appliedRules": {
+              "description": "Regel-id'er der fyrede for denne handling (sporbarhed). S\u00e6ttes for bogf\u00f8rings-tools; udeladt ellers.",
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "code": {
+              "description": "Stabil maskinl\u00e6sbar fejl-mark\u00f8r for cross-cutting preconditions (fx \"BACKUP_LOCKED\"). S\u00e6ttes kun ved ok=false og kun for fejl der lever uden for det enkelte tools forretningslogik \u2014 agenten kan branche p\u00e5 `code` uden at parse fri-tekst i `errors[]`. Udeladt ved per-tool forretningsfejl.",
+              "type": "string"
+            },
+            "data": {
+              "additionalProperties": {},
+              "description": "Kerne-resultatet ved ok=true. Den pr\u00e6cise feltliste er per-tool og dokumenteret i docs/mcp-tool-surface.md. Udeladt ved ok=false.",
+              "properties": {},
+              "type": "object"
+            },
+            "errors": {
+              "description": "Menneskel\u00e6sbare fejl-/foruds\u00e6tnings-strenge. Tom ved ok=true; ikke-tom ved ok=false.",
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "ok": {
+              "description": "true \u21d2 kaldet lykkedes og `data` er sat; false \u21d2 se `errors`.",
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "ok",
+            "errors"
+          ],
+          "type": "object"
+        },
+        "title": "Apply exact approved ownership diff"
+      }
+    ],
+    "componentProof": {
+      "path": "/tmp/rentemester-rust-reports/r74-original-registry717-component-accepted.json",
+      "sha256": "70b8ec11b4d56eb43dcff2d4db56f7e9fd3f6c08c48d91481b7f9ce2cc4ee117"
+    },
+    "currentUniverse": "1547=641HTTP489CLI417MCP; prior1519business contracts retained",
+    "whole717Accepted": false,
+    "supportedOriginalNames": 27,
+    "explicitlyUnavailable": "workspace_party_create; no inferred native role",
+    "remaining": "30other original names, supported identity-only create, full31workflow actual binding/annotation/reconnect proof; counts do not establish parity"
   }
 }

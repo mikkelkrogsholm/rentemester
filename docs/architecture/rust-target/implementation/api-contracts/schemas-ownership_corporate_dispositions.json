@@ -32948,6 +32948,2728 @@
           "additionalProperties": false
         }
       ]
+    },
+    "Original717_corporate_record_list_Args": {
+      "additionalProperties": false,
+      "properties": {
+        "company": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "cursor": {
+          "maximum": 9007199254740991,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "limit": {
+          "maximum": 100,
+          "minimum": 1,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "company"
+      ],
+      "type": "object"
+    },
+    "Original717_corporate_record_list_Data": {
+      "type": "object",
+      "properties": {
+        "rows": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/Record"
+          },
+          "maxItems": 100
+        },
+        "count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "nextCursor": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 0
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "rows",
+        "count",
+        "nextCursor"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_corporate_record_list_Envelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "const": []
+        },
+        "data": {
+          "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/Original717_corporate_record_list_Data"
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_corporate_record_list_Failure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "code": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_corporate_record_list_Success": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/RpcId"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "const": false
+            },
+            "content": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "const": "text"
+                    },
+                    "text": {
+                      "type": "string",
+                      "contentMediaType": "application/json",
+                      "contentSchema": {
+                        "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/Original717_corporate_record_list_Envelope"
+                      }
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "text"
+                  ],
+                  "additionalProperties": false
+                }
+              ],
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/Original717_corporate_record_list_Envelope"
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_corporate_record_list_Refusal": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/RpcId"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "const": true
+            },
+            "content": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "const": "text"
+                    },
+                    "text": {
+                      "type": "string",
+                      "contentMediaType": "application/json",
+                      "contentSchema": {
+                        "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/Original717_corporate_record_list_Failure"
+                      }
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "text"
+                  ],
+                  "additionalProperties": false
+                }
+              ],
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/Original717_corporate_record_list_Failure"
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_corporate_record_inspect_Args": {
+      "additionalProperties": false,
+      "properties": {
+        "company": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "recordId": {
+          "minLength": 3,
+          "type": "string"
+        }
+      },
+      "required": [
+        "company",
+        "recordId"
+      ],
+      "type": "object"
+    },
+    "Original717_corporate_record_inspect_Data": {
+      "type": "object",
+      "properties": {
+        "record": {
+          "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/Record"
+        }
+      },
+      "required": [
+        "record"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_corporate_record_inspect_Envelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "const": []
+        },
+        "data": {
+          "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/Original717_corporate_record_inspect_Data"
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_corporate_record_inspect_Failure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "code": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_corporate_record_inspect_Success": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/RpcId"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "const": false
+            },
+            "content": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "const": "text"
+                    },
+                    "text": {
+                      "type": "string",
+                      "contentMediaType": "application/json",
+                      "contentSchema": {
+                        "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/Original717_corporate_record_inspect_Envelope"
+                      }
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "text"
+                  ],
+                  "additionalProperties": false
+                }
+              ],
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/Original717_corporate_record_inspect_Envelope"
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_corporate_record_inspect_Refusal": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/RpcId"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "const": true
+            },
+            "content": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "const": "text"
+                    },
+                    "text": {
+                      "type": "string",
+                      "contentMediaType": "application/json",
+                      "contentSchema": {
+                        "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/Original717_corporate_record_inspect_Failure"
+                      }
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "text"
+                  ],
+                  "additionalProperties": false
+                }
+              ],
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/Original717_corporate_record_inspect_Failure"
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_corporate_record_download_Args": {
+      "additionalProperties": false,
+      "properties": {
+        "company": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "recordId": {
+          "minLength": 3,
+          "type": "string"
+        }
+      },
+      "required": [
+        "company",
+        "recordId"
+      ],
+      "type": "object"
+    },
+    "Original717_corporate_record_download_Data": {
+      "type": "object",
+      "properties": {
+        "bytesBase64": {
+          "type": "string",
+          "contentEncoding": "base64",
+          "minLength": 4,
+          "maxLength": 22369624
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      },
+      "required": [
+        "bytesBase64",
+        "sha256"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_corporate_record_download_Envelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "const": []
+        },
+        "data": {
+          "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/Original717_corporate_record_download_Data"
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_corporate_record_download_Failure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "code": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_corporate_record_download_Success": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/RpcId"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "const": false
+            },
+            "content": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "const": "text"
+                    },
+                    "text": {
+                      "type": "string",
+                      "contentMediaType": "application/json",
+                      "contentSchema": {
+                        "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/Original717_corporate_record_download_Envelope"
+                      }
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "text"
+                  ],
+                  "additionalProperties": false
+                }
+              ],
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/Original717_corporate_record_download_Envelope"
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_corporate_record_download_Refusal": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/RpcId"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "const": true
+            },
+            "content": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "const": "text"
+                    },
+                    "text": {
+                      "type": "string",
+                      "contentMediaType": "application/json",
+                      "contentSchema": {
+                        "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/Original717_corporate_record_download_Failure"
+                      }
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "text"
+                  ],
+                  "additionalProperties": false
+                }
+              ],
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/Original717_corporate_record_download_Failure"
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_corporate_record_ingest_Args": {
+      "additionalProperties": false,
+      "properties": {
+        "bytesBase64": {
+          "maxLength": 22369624,
+          "minLength": 1,
+          "type": "string"
+        },
+        "company": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "confirm": {
+          "description": "Must be set to true to acknowledge the write side effects of this tool. Omitting it (or sending false) returns an { ok:false, errors:[...] } envelope rather than performing the write.",
+          "type": "boolean"
+        },
+        "filename": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "links": {
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "type": {
+                "enum": [
+                  "company",
+                  "party",
+                  "ownership",
+                  "disposition",
+                  "legacy_evidence_ref"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "id"
+            ],
+            "type": "object"
+          },
+          "type": "array"
+        },
+        "receivedAt": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "recordDate": {
+          "type": "string"
+        },
+        "recordId": {
+          "type": "string"
+        },
+        "retentionUntil": {
+          "type": "string"
+        },
+        "sensitivity": {
+          "enum": [
+            "normal",
+            "confidential",
+            "restricted"
+          ],
+          "type": "string"
+        },
+        "source": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "type": {
+          "enum": [
+            "incorporation",
+            "articles",
+            "registration",
+            "shareholder_register",
+            "shareholder_agreement",
+            "board_resolution",
+            "general_meeting_minutes",
+            "capital_or_dividend_resolution",
+            "annual_report",
+            "auditor_deliverable",
+            "intercompany_agreement",
+            "ownership_register",
+            "share_transfer",
+            "authority_letter",
+            "bank_mandate",
+            "tax_registration",
+            "other"
+          ],
+          "type": "string"
+        },
+        "uploader": {
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "company",
+        "type",
+        "bytesBase64",
+        "filename",
+        "source",
+        "receivedAt",
+        "uploader"
+      ],
+      "type": "object"
+    },
+    "Original717_corporate_record_ingest_Data": {
+      "type": "object",
+      "properties": {
+        "record": {
+          "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/Record"
+        }
+      },
+      "required": [
+        "record"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_corporate_record_ingest_Envelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "const": []
+        },
+        "data": {
+          "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/Original717_corporate_record_ingest_Data"
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_corporate_record_ingest_Failure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "code": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_corporate_record_ingest_Success": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/RpcId"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "const": false
+            },
+            "content": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "const": "text"
+                    },
+                    "text": {
+                      "type": "string",
+                      "contentMediaType": "application/json",
+                      "contentSchema": {
+                        "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/Original717_corporate_record_ingest_Envelope"
+                      }
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "text"
+                  ],
+                  "additionalProperties": false
+                }
+              ],
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/Original717_corporate_record_ingest_Envelope"
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_corporate_record_ingest_Refusal": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/RpcId"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "const": true
+            },
+            "content": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "const": "text"
+                    },
+                    "text": {
+                      "type": "string",
+                      "contentMediaType": "application/json",
+                      "contentSchema": {
+                        "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/Original717_corporate_record_ingest_Failure"
+                      }
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "text"
+                  ],
+                  "additionalProperties": false
+                }
+              ],
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/Original717_corporate_record_ingest_Failure"
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_corporate_record_link_Args": {
+      "additionalProperties": false,
+      "properties": {
+        "company": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "confirm": {
+          "description": "Must be set to true to acknowledge the write side effects of this tool. Omitting it (or sending false) returns an { ok:false, errors:[...] } envelope rather than performing the write.",
+          "type": "boolean"
+        },
+        "id": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "recordId": {
+          "minLength": 3,
+          "type": "string"
+        },
+        "type": {
+          "enum": [
+            "company",
+            "party",
+            "ownership",
+            "disposition",
+            "legacy_evidence_ref"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "company",
+        "recordId",
+        "type",
+        "id"
+      ],
+      "type": "object"
+    },
+    "Original717_corporate_record_link_Data": {
+      "type": "object",
+      "properties": {
+        "record": {
+          "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/Record"
+        }
+      },
+      "required": [
+        "record"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_corporate_record_link_Envelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "const": []
+        },
+        "data": {
+          "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/Original717_corporate_record_link_Data"
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_corporate_record_link_Failure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "code": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_corporate_record_link_Success": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/RpcId"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "const": false
+            },
+            "content": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "const": "text"
+                    },
+                    "text": {
+                      "type": "string",
+                      "contentMediaType": "application/json",
+                      "contentSchema": {
+                        "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/Original717_corporate_record_link_Envelope"
+                      }
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "text"
+                  ],
+                  "additionalProperties": false
+                }
+              ],
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/Original717_corporate_record_link_Envelope"
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_corporate_record_link_Refusal": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/RpcId"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "const": true
+            },
+            "content": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "const": "text"
+                    },
+                    "text": {
+                      "type": "string",
+                      "contentMediaType": "application/json",
+                      "contentSchema": {
+                        "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/Original717_corporate_record_link_Failure"
+                      }
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "text"
+                  ],
+                  "additionalProperties": false
+                }
+              ],
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/Original717_corporate_record_link_Failure"
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_corporate_record_enrich_Args": {
+      "additionalProperties": false,
+      "properties": {
+        "assertion": {
+          "maxLength": 2000,
+          "minLength": 1,
+          "type": "string"
+        },
+        "company": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "confirm": {
+          "description": "Must be set to true to acknowledge the write side effects of this tool. Omitting it (or sending false) returns an { ok:false, errors:[...] } envelope rather than performing the write.",
+          "type": "boolean"
+        },
+        "recordId": {
+          "minLength": 3,
+          "type": "string"
+        }
+      },
+      "required": [
+        "company",
+        "recordId",
+        "assertion"
+      ],
+      "type": "object"
+    },
+    "Original717_corporate_record_enrich_Data": {
+      "type": "object",
+      "properties": {
+        "payloadHash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      },
+      "required": [
+        "payloadHash"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_corporate_record_enrich_Envelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "const": []
+        },
+        "data": {
+          "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/Original717_corporate_record_enrich_Data"
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_corporate_record_enrich_Failure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "code": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_corporate_record_enrich_Success": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/RpcId"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "const": false
+            },
+            "content": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "const": "text"
+                    },
+                    "text": {
+                      "type": "string",
+                      "contentMediaType": "application/json",
+                      "contentSchema": {
+                        "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/Original717_corporate_record_enrich_Envelope"
+                      }
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "text"
+                  ],
+                  "additionalProperties": false
+                }
+              ],
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/Original717_corporate_record_enrich_Envelope"
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_corporate_record_enrich_Refusal": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/RpcId"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "const": true
+            },
+            "content": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "const": "text"
+                    },
+                    "text": {
+                      "type": "string",
+                      "contentMediaType": "application/json",
+                      "contentSchema": {
+                        "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/Original717_corporate_record_enrich_Failure"
+                      }
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "text"
+                  ],
+                  "additionalProperties": false
+                }
+              ],
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/Original717_corporate_record_enrich_Failure"
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_corporate_record_supersede_Args": {
+      "additionalProperties": false,
+      "properties": {
+        "company": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "confirm": {
+          "description": "Must be set to true to acknowledge the write side effects of this tool. Omitting it (or sending false) returns an { ok:false, errors:[...] } envelope rather than performing the write.",
+          "type": "boolean"
+        },
+        "reason": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "recordId": {
+          "minLength": 3,
+          "type": "string"
+        },
+        "replacementRecordId": {
+          "minLength": 3,
+          "type": "string"
+        }
+      },
+      "required": [
+        "company",
+        "recordId",
+        "replacementRecordId",
+        "reason"
+      ],
+      "type": "object"
+    },
+    "Original717_corporate_record_supersede_Data": {
+      "type": "object",
+      "properties": {
+        "payloadHash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      },
+      "required": [
+        "payloadHash"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_corporate_record_supersede_Envelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "const": []
+        },
+        "data": {
+          "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/Original717_corporate_record_supersede_Data"
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_corporate_record_supersede_Failure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "code": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_corporate_record_supersede_Success": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/RpcId"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "const": false
+            },
+            "content": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "const": "text"
+                    },
+                    "text": {
+                      "type": "string",
+                      "contentMediaType": "application/json",
+                      "contentSchema": {
+                        "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/Original717_corporate_record_supersede_Envelope"
+                      }
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "text"
+                  ],
+                  "additionalProperties": false
+                }
+              ],
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/Original717_corporate_record_supersede_Envelope"
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_corporate_record_supersede_Refusal": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/RpcId"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "const": true
+            },
+            "content": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "const": "text"
+                    },
+                    "text": {
+                      "type": "string",
+                      "contentMediaType": "application/json",
+                      "contentSchema": {
+                        "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/Original717_corporate_record_supersede_Failure"
+                      }
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "text"
+                  ],
+                  "additionalProperties": false
+                }
+              ],
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/Original717_corporate_record_supersede_Failure"
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_ownership_graph_query_Args": {
+      "additionalProperties": false,
+      "properties": {
+        "asOf": {
+          "minLength": 10,
+          "type": "string"
+        },
+        "company": {
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "company",
+        "asOf"
+      ],
+      "type": "object"
+    },
+    "Original717_ownership_graph_query_Data": {
+      "type": "object",
+      "properties": {
+        "asOf": {
+          "type": "string"
+        },
+        "facts": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/Fact"
+          }
+        },
+        "partial": {
+          "type": "boolean"
+        },
+        "consolidation": {
+          "type": "object",
+          "properties": {
+            "eligible": {
+              "const": false
+            },
+            "reason": {
+              "enum": [
+                "hidden endpoints",
+                "party, interval or non-exact ownership requires explicit supported scope",
+                "existing v1 manifest remains authoritative"
+              ]
+            }
+          },
+          "required": [
+            "eligible",
+            "reason"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "asOf",
+        "facts",
+        "partial",
+        "consolidation"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_ownership_graph_query_Envelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "const": []
+        },
+        "data": {
+          "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/Original717_ownership_graph_query_Data"
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_ownership_graph_query_Failure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "code": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_ownership_graph_query_Success": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/RpcId"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "const": false
+            },
+            "content": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "const": "text"
+                    },
+                    "text": {
+                      "type": "string",
+                      "contentMediaType": "application/json",
+                      "contentSchema": {
+                        "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/Original717_ownership_graph_query_Envelope"
+                      }
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "text"
+                  ],
+                  "additionalProperties": false
+                }
+              ],
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/Original717_ownership_graph_query_Envelope"
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_ownership_graph_query_Refusal": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/RpcId"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "const": true
+            },
+            "content": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "const": "text"
+                    },
+                    "text": {
+                      "type": "string",
+                      "contentMediaType": "application/json",
+                      "contentSchema": {
+                        "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/Original717_ownership_graph_query_Failure"
+                      }
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "text"
+                  ],
+                  "additionalProperties": false
+                }
+              ],
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/Original717_ownership_graph_query_Failure"
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_ownership_snapshot_history_Args": {
+      "additionalProperties": false,
+      "properties": {
+        "company": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "snapshotId": {
+          "minLength": 3,
+          "type": "string"
+        }
+      },
+      "required": [
+        "company"
+      ],
+      "type": "object"
+    },
+    "Original717_ownership_snapshot_history_Data": {
+      "type": "object",
+      "properties": {
+        "history": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/Snapshot"
+          }
+        }
+      },
+      "required": [
+        "history"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_ownership_snapshot_history_Envelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "const": []
+        },
+        "data": {
+          "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/Original717_ownership_snapshot_history_Data"
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_ownership_snapshot_history_Failure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "code": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_ownership_snapshot_history_Success": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/RpcId"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "const": false
+            },
+            "content": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "const": "text"
+                    },
+                    "text": {
+                      "type": "string",
+                      "contentMediaType": "application/json",
+                      "contentSchema": {
+                        "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/Original717_ownership_snapshot_history_Envelope"
+                      }
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "text"
+                  ],
+                  "additionalProperties": false
+                }
+              ],
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/Original717_ownership_snapshot_history_Envelope"
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_ownership_snapshot_history_Refusal": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/RpcId"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "const": true
+            },
+            "content": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "const": "text"
+                    },
+                    "text": {
+                      "type": "string",
+                      "contentMediaType": "application/json",
+                      "contentSchema": {
+                        "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/Original717_ownership_snapshot_history_Failure"
+                      }
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "text"
+                  ],
+                  "additionalProperties": false
+                }
+              ],
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/Original717_ownership_snapshot_history_Failure"
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_ownership_snapshot_propose_Args": {
+      "additionalProperties": false,
+      "properties": {
+        "company": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "confirm": {
+          "description": "Must be set to true to acknowledge the write side effects of this tool. Omitting it (or sending false) returns an { ok:false, errors:[...] } envelope rather than performing the write.",
+          "type": "boolean"
+        },
+        "facts": {
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "controlType": {
+                "enum": [
+                  "equity",
+                  "voting",
+                  "board",
+                  "agreement",
+                  "other"
+                ],
+                "type": "string"
+              },
+              "economicBasisPoints": {
+                "maximum": 10000,
+                "minimum": 0,
+                "type": "integer"
+              },
+              "economicIntervalBasisPoints": {
+                "additionalProperties": false,
+                "properties": {
+                  "max": {
+                    "maximum": 10000,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "min": {
+                    "maximum": 10000,
+                    "minimum": 0,
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "min",
+                  "max"
+                ],
+                "type": "object"
+              },
+              "evidenceRefs": {
+                "items": {
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "maxItems": 32,
+                "minItems": 1,
+                "type": "array"
+              },
+              "jurisdiction": {
+                "maxLength": 2,
+                "minLength": 2,
+                "type": "string"
+              },
+              "ownedCompanySlug": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "owner": {
+                "oneOf": [
+                  {
+                    "additionalProperties": false,
+                    "properties": {
+                      "companySlug": {
+                        "minLength": 1,
+                        "type": "string"
+                      },
+                      "kind": {
+                        "const": "company",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "kind",
+                      "companySlug"
+                    ],
+                    "type": "object"
+                  },
+                  {
+                    "additionalProperties": false,
+                    "properties": {
+                      "kind": {
+                        "const": "party",
+                        "type": "string"
+                      },
+                      "partyId": {
+                        "minLength": 3,
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "kind",
+                      "partyId"
+                    ],
+                    "type": "object"
+                  }
+                ]
+              },
+              "shareClass": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "validFrom": {
+                "minLength": 10,
+                "type": "string"
+              },
+              "validToExclusive": {
+                "minLength": 10,
+                "type": "string"
+              },
+              "votingBasisPoints": {
+                "maximum": 10000,
+                "minimum": 0,
+                "type": "integer"
+              }
+            },
+            "required": [
+              "owner",
+              "ownedCompanySlug",
+              "validFrom",
+              "controlType",
+              "jurisdiction",
+              "evidenceRefs"
+            ],
+            "type": "object"
+          },
+          "maxItems": 2048,
+          "minItems": 1,
+          "type": "array"
+        },
+        "observedAt": {
+          "minLength": 10,
+          "type": "string"
+        },
+        "snapshotId": {
+          "minLength": 3,
+          "type": "string"
+        },
+        "source": {
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "company",
+        "source",
+        "observedAt",
+        "facts"
+      ],
+      "type": "object"
+    },
+    "Original717_ownership_snapshot_propose_Data": {
+      "type": "object",
+      "properties": {
+        "snapshot": {
+          "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/Snapshot"
+        }
+      },
+      "required": [
+        "snapshot"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_ownership_snapshot_propose_Envelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "const": []
+        },
+        "data": {
+          "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/Original717_ownership_snapshot_propose_Data"
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_ownership_snapshot_propose_Failure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "code": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_ownership_snapshot_propose_Success": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/RpcId"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "const": false
+            },
+            "content": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "const": "text"
+                    },
+                    "text": {
+                      "type": "string",
+                      "contentMediaType": "application/json",
+                      "contentSchema": {
+                        "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/Original717_ownership_snapshot_propose_Envelope"
+                      }
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "text"
+                  ],
+                  "additionalProperties": false
+                }
+              ],
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/Original717_ownership_snapshot_propose_Envelope"
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_ownership_snapshot_propose_Refusal": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/RpcId"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "const": true
+            },
+            "content": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "const": "text"
+                    },
+                    "text": {
+                      "type": "string",
+                      "contentMediaType": "application/json",
+                      "contentSchema": {
+                        "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/Original717_ownership_snapshot_propose_Failure"
+                      }
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "text"
+                  ],
+                  "additionalProperties": false
+                }
+              ],
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/Original717_ownership_snapshot_propose_Failure"
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_ownership_snapshot_review_Args": {
+      "additionalProperties": false,
+      "properties": {
+        "company": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "confirm": {
+          "description": "Must be set to true to acknowledge the write side effects of this tool. Omitting it (or sending false) returns an { ok:false, errors:[...] } envelope rather than performing the write.",
+          "type": "boolean"
+        },
+        "decision": {
+          "enum": [
+            "approved",
+            "rejected"
+          ],
+          "type": "string"
+        },
+        "snapshotId": {
+          "minLength": 3,
+          "type": "string"
+        }
+      },
+      "required": [
+        "company",
+        "snapshotId",
+        "decision"
+      ],
+      "type": "object"
+    },
+    "Original717_ownership_snapshot_review_Data": {
+      "type": "object",
+      "properties": {
+        "snapshot": {
+          "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/Snapshot"
+        }
+      },
+      "required": [
+        "snapshot"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_ownership_snapshot_review_Envelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "const": []
+        },
+        "data": {
+          "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/Original717_ownership_snapshot_review_Data"
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_ownership_snapshot_review_Failure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "code": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_ownership_snapshot_review_Success": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/RpcId"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "const": false
+            },
+            "content": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "const": "text"
+                    },
+                    "text": {
+                      "type": "string",
+                      "contentMediaType": "application/json",
+                      "contentSchema": {
+                        "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/Original717_ownership_snapshot_review_Envelope"
+                      }
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "text"
+                  ],
+                  "additionalProperties": false
+                }
+              ],
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/Original717_ownership_snapshot_review_Envelope"
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_ownership_snapshot_review_Refusal": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/RpcId"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "const": true
+            },
+            "content": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "const": "text"
+                    },
+                    "text": {
+                      "type": "string",
+                      "contentMediaType": "application/json",
+                      "contentSchema": {
+                        "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/Original717_ownership_snapshot_review_Failure"
+                      }
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "text"
+                  ],
+                  "additionalProperties": false
+                }
+              ],
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/Original717_ownership_snapshot_review_Failure"
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_ownership_snapshot_apply_Args": {
+      "additionalProperties": false,
+      "properties": {
+        "company": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "confirm": {
+          "description": "Must be set to true to acknowledge the write side effects of this tool. Omitting it (or sending false) returns an { ok:false, errors:[...] } envelope rather than performing the write.",
+          "type": "boolean"
+        },
+        "diffHash": {
+          "pattern": "^[a-f0-9]{64}$",
+          "type": "string"
+        },
+        "snapshotHash": {
+          "pattern": "^[a-f0-9]{64}$",
+          "type": "string"
+        },
+        "snapshotId": {
+          "minLength": 3,
+          "type": "string"
+        }
+      },
+      "required": [
+        "company",
+        "snapshotId",
+        "snapshotHash",
+        "diffHash"
+      ],
+      "type": "object"
+    },
+    "Original717_ownership_snapshot_apply_Data": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "enum": [
+            "applied",
+            "unchanged"
+          ]
+        },
+        "snapshot": {
+          "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/Snapshot"
+        }
+      },
+      "required": [
+        "status",
+        "snapshot"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_ownership_snapshot_apply_Envelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "const": []
+        },
+        "data": {
+          "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/Original717_ownership_snapshot_apply_Data"
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_ownership_snapshot_apply_Failure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "code": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_ownership_snapshot_apply_Success": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/RpcId"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "const": false
+            },
+            "content": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "const": "text"
+                    },
+                    "text": {
+                      "type": "string",
+                      "contentMediaType": "application/json",
+                      "contentSchema": {
+                        "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/Original717_ownership_snapshot_apply_Envelope"
+                      }
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "text"
+                  ],
+                  "additionalProperties": false
+                }
+              ],
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/Original717_ownership_snapshot_apply_Envelope"
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_ownership_snapshot_apply_Refusal": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/RpcId"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "const": true
+            },
+            "content": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "const": "text"
+                    },
+                    "text": {
+                      "type": "string",
+                      "contentMediaType": "application/json",
+                      "contentSchema": {
+                        "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/Original717_ownership_snapshot_apply_Failure"
+                      }
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "text"
+                  ],
+                  "additionalProperties": false
+                }
+              ],
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/Original717_ownership_snapshot_apply_Failure"
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
     }
   }
 }

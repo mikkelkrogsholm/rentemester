@@ -113,3 +113,9 @@ pub mod compliance_report;
 pub mod mileage_posting;
 
 pub mod digisense_received;
+
+/// Exact SHA-256 of original bytes. A digest does not attest provenance or grant authority.
+pub fn sha256_bytes(bytes: &[u8]) -> String {
+    use sha2::{Digest, Sha256};
+    format!("{:x}", Sha256::digest(bytes))
+}

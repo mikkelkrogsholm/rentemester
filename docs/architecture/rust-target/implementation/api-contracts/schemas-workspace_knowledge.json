@@ -7942,6 +7942,3528 @@
           "additionalProperties": false
         }
       ]
+    },
+    "Original717_workspace_party_search_Args": {
+      "additionalProperties": false,
+      "properties": {
+        "company": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "cursor": {
+          "maximum": 9007199254740991,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "limit": {
+          "maximum": 100,
+          "minimum": 1,
+          "type": "integer"
+        },
+        "query": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "company"
+      ],
+      "type": "object"
+    },
+    "Original717_workspace_party_search_Data": {
+      "type": "object",
+      "properties": {
+        "rows": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-workspace_knowledge.json#/$defs/Party"
+          }
+        },
+        "count": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 18446744073709551615
+        },
+        "nextCursor": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 18446744073709551615
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "rows",
+        "count",
+        "nextCursor"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_workspace_party_search_Envelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "const": []
+        },
+        "data": {
+          "$ref": "schemas-workspace_knowledge.json#/$defs/Original717_workspace_party_search_Data"
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_workspace_party_search_Failure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "code": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_workspace_party_search_Success": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-workspace_knowledge.json#/$defs/RpcId"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "const": false
+            },
+            "content": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "const": "text"
+                    },
+                    "text": {
+                      "type": "string",
+                      "contentMediaType": "application/json",
+                      "contentSchema": {
+                        "$ref": "schemas-workspace_knowledge.json#/$defs/Original717_workspace_party_search_Envelope"
+                      }
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "text"
+                  ],
+                  "additionalProperties": false
+                }
+              ],
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "$ref": "schemas-workspace_knowledge.json#/$defs/Original717_workspace_party_search_Envelope"
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_workspace_party_search_Refusal": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-workspace_knowledge.json#/$defs/RpcId"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "const": true
+            },
+            "content": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "const": "text"
+                    },
+                    "text": {
+                      "type": "string",
+                      "contentMediaType": "application/json",
+                      "contentSchema": {
+                        "$ref": "schemas-workspace_knowledge.json#/$defs/Original717_workspace_party_search_Failure"
+                      }
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "text"
+                  ],
+                  "additionalProperties": false
+                }
+              ],
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "$ref": "schemas-workspace_knowledge.json#/$defs/Original717_workspace_party_search_Failure"
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_workspace_party_inspect_Args": {
+      "additionalProperties": false,
+      "properties": {
+        "company": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "partyId": {
+          "minLength": 3,
+          "type": "string"
+        }
+      },
+      "required": [
+        "company",
+        "partyId"
+      ],
+      "type": "object"
+    },
+    "Original717_workspace_party_inspect_Data": {
+      "type": "object",
+      "properties": {
+        "party": {
+          "$ref": "schemas-workspace_knowledge.json#/$defs/Party"
+        }
+      },
+      "required": [
+        "party"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_workspace_party_inspect_Envelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "const": []
+        },
+        "data": {
+          "$ref": "schemas-workspace_knowledge.json#/$defs/Original717_workspace_party_inspect_Data"
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_workspace_party_inspect_Failure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "code": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_workspace_party_inspect_Success": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-workspace_knowledge.json#/$defs/RpcId"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "const": false
+            },
+            "content": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "const": "text"
+                    },
+                    "text": {
+                      "type": "string",
+                      "contentMediaType": "application/json",
+                      "contentSchema": {
+                        "$ref": "schemas-workspace_knowledge.json#/$defs/Original717_workspace_party_inspect_Envelope"
+                      }
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "text"
+                  ],
+                  "additionalProperties": false
+                }
+              ],
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "$ref": "schemas-workspace_knowledge.json#/$defs/Original717_workspace_party_inspect_Envelope"
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_workspace_party_inspect_Refusal": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-workspace_knowledge.json#/$defs/RpcId"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "const": true
+            },
+            "content": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "const": "text"
+                    },
+                    "text": {
+                      "type": "string",
+                      "contentMediaType": "application/json",
+                      "contentSchema": {
+                        "$ref": "schemas-workspace_knowledge.json#/$defs/Original717_workspace_party_inspect_Failure"
+                      }
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "text"
+                  ],
+                  "additionalProperties": false
+                }
+              ],
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "$ref": "schemas-workspace_knowledge.json#/$defs/Original717_workspace_party_inspect_Failure"
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_workspace_party_create_Args": {
+      "additionalProperties": false,
+      "properties": {
+        "aliases": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 16,
+          "type": "array"
+        },
+        "company": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "confirm": {
+          "description": "Must be set to true to acknowledge the write side effects of this tool. Omitting it (or sending false) returns an { ok:false, errors:[...] } envelope rather than performing the write.",
+          "type": "boolean"
+        },
+        "identifiers": {
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "country": {
+                "type": "string"
+              },
+              "identifier": {
+                "type": "string"
+              },
+              "identifierKind": {
+                "enum": [
+                  "dk_cvr",
+                  "eu_vat",
+                  "non_eu"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "country",
+              "identifierKind"
+            ],
+            "type": "object"
+          },
+          "type": "array"
+        },
+        "kind": {
+          "enum": [
+            "person",
+            "organization",
+            "public_authority",
+            "financial_institution"
+          ],
+          "type": "string"
+        },
+        "name": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "observedAt": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "partyId": {
+          "type": "string"
+        },
+        "reviewAssertion": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "source": {
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "company",
+        "kind",
+        "name",
+        "source",
+        "observedAt",
+        "reviewAssertion"
+      ],
+      "type": "object"
+    },
+    "Original717_workspace_party_create_Failure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "code": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_workspace_party_create_Refusal": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-workspace_knowledge.json#/$defs/RpcId"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "const": true
+            },
+            "content": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "const": "text"
+                    },
+                    "text": {
+                      "type": "string",
+                      "contentMediaType": "application/json",
+                      "contentSchema": {
+                        "$ref": "schemas-workspace_knowledge.json#/$defs/Original717_workspace_party_create_Failure"
+                      }
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "text"
+                  ],
+                  "additionalProperties": false
+                }
+              ],
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "$ref": "schemas-workspace_knowledge.json#/$defs/Original717_workspace_party_create_Failure"
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_workspace_party_link_role_Args": {
+      "additionalProperties": false,
+      "properties": {
+        "company": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "confirm": {
+          "description": "Must be set to true to acknowledge the write side effects of this tool. Omitting it (or sending false) returns an { ok:false, errors:[...] } envelope rather than performing the write.",
+          "type": "boolean"
+        },
+        "defaults": {
+          "additionalProperties": false,
+          "properties": {
+            "account": {
+              "type": "string"
+            },
+            "currency": {
+              "type": "string"
+            },
+            "paymentTermsDays": {
+              "maximum": 9007199254740991,
+              "minimum": -9007199254740991,
+              "type": "integer"
+            },
+            "vat": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "partyId": {
+          "minLength": 3,
+          "type": "string"
+        },
+        "role": {
+          "enum": [
+            "customer",
+            "vendor",
+            "owner",
+            "adviser",
+            "employee",
+            "authority",
+            "bank"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "company",
+        "partyId",
+        "role"
+      ],
+      "type": "object"
+    },
+    "Original717_workspace_party_link_role_Data": {
+      "type": "object",
+      "properties": {
+        "party": {
+          "$ref": "schemas-workspace_knowledge.json#/$defs/Party"
+        }
+      },
+      "required": [
+        "party"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_workspace_party_link_role_Envelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "const": []
+        },
+        "data": {
+          "$ref": "schemas-workspace_knowledge.json#/$defs/Original717_workspace_party_link_role_Data"
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_workspace_party_link_role_Failure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "code": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_workspace_party_link_role_Success": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-workspace_knowledge.json#/$defs/RpcId"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "const": false
+            },
+            "content": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "const": "text"
+                    },
+                    "text": {
+                      "type": "string",
+                      "contentMediaType": "application/json",
+                      "contentSchema": {
+                        "$ref": "schemas-workspace_knowledge.json#/$defs/Original717_workspace_party_link_role_Envelope"
+                      }
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "text"
+                  ],
+                  "additionalProperties": false
+                }
+              ],
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "$ref": "schemas-workspace_knowledge.json#/$defs/Original717_workspace_party_link_role_Envelope"
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_workspace_party_link_role_Refusal": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-workspace_knowledge.json#/$defs/RpcId"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "const": true
+            },
+            "content": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "const": "text"
+                    },
+                    "text": {
+                      "type": "string",
+                      "contentMediaType": "application/json",
+                      "contentSchema": {
+                        "$ref": "schemas-workspace_knowledge.json#/$defs/Original717_workspace_party_link_role_Failure"
+                      }
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "text"
+                  ],
+                  "additionalProperties": false
+                }
+              ],
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "$ref": "schemas-workspace_knowledge.json#/$defs/Original717_workspace_party_link_role_Failure"
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_workspace_party_propose_merge_Args": {
+      "additionalProperties": false,
+      "properties": {
+        "company": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "confirm": {
+          "description": "Must be set to true to acknowledge the write side effects of this tool. Omitting it (or sending false) returns an { ok:false, errors:[...] } envelope rather than performing the write.",
+          "type": "boolean"
+        },
+        "fromPartyId": {
+          "minLength": 3,
+          "type": "string"
+        },
+        "intoPartyId": {
+          "minLength": 3,
+          "type": "string"
+        },
+        "reviewAssertion": {
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "company",
+        "fromPartyId",
+        "intoPartyId",
+        "reviewAssertion"
+      ],
+      "type": "object"
+    },
+    "Original717_workspace_party_propose_merge_Data": {
+      "type": "object",
+      "properties": {
+        "proposalHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      },
+      "required": [
+        "proposalHash"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_workspace_party_propose_merge_Envelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "const": []
+        },
+        "data": {
+          "$ref": "schemas-workspace_knowledge.json#/$defs/Original717_workspace_party_propose_merge_Data"
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_workspace_party_propose_merge_Failure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "code": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_workspace_party_propose_merge_Success": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-workspace_knowledge.json#/$defs/RpcId"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "const": false
+            },
+            "content": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "const": "text"
+                    },
+                    "text": {
+                      "type": "string",
+                      "contentMediaType": "application/json",
+                      "contentSchema": {
+                        "$ref": "schemas-workspace_knowledge.json#/$defs/Original717_workspace_party_propose_merge_Envelope"
+                      }
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "text"
+                  ],
+                  "additionalProperties": false
+                }
+              ],
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "$ref": "schemas-workspace_knowledge.json#/$defs/Original717_workspace_party_propose_merge_Envelope"
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_workspace_party_propose_merge_Refusal": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-workspace_knowledge.json#/$defs/RpcId"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "const": true
+            },
+            "content": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "const": "text"
+                    },
+                    "text": {
+                      "type": "string",
+                      "contentMediaType": "application/json",
+                      "contentSchema": {
+                        "$ref": "schemas-workspace_knowledge.json#/$defs/Original717_workspace_party_propose_merge_Failure"
+                      }
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "text"
+                  ],
+                  "additionalProperties": false
+                }
+              ],
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "$ref": "schemas-workspace_knowledge.json#/$defs/Original717_workspace_party_propose_merge_Failure"
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_workspace_party_approve_merge_Args": {
+      "additionalProperties": false,
+      "properties": {
+        "company": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "confirm": {
+          "description": "Must be set to true to acknowledge the write side effects of this tool. Omitting it (or sending false) returns an { ok:false, errors:[...] } envelope rather than performing the write.",
+          "type": "boolean"
+        },
+        "fromPartyId": {
+          "minLength": 3,
+          "type": "string"
+        },
+        "proposalHash": {
+          "pattern": "^[a-f0-9]{64}$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "company",
+        "fromPartyId",
+        "proposalHash"
+      ],
+      "type": "object"
+    },
+    "Original717_workspace_party_approve_merge_Data": {
+      "type": "object",
+      "properties": {
+        "party": {
+          "$ref": "schemas-workspace_knowledge.json#/$defs/Party"
+        }
+      },
+      "required": [
+        "party"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_workspace_party_approve_merge_Envelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "const": []
+        },
+        "data": {
+          "$ref": "schemas-workspace_knowledge.json#/$defs/Original717_workspace_party_approve_merge_Data"
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_workspace_party_approve_merge_Failure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "code": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_workspace_party_approve_merge_Success": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-workspace_knowledge.json#/$defs/RpcId"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "const": false
+            },
+            "content": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "const": "text"
+                    },
+                    "text": {
+                      "type": "string",
+                      "contentMediaType": "application/json",
+                      "contentSchema": {
+                        "$ref": "schemas-workspace_knowledge.json#/$defs/Original717_workspace_party_approve_merge_Envelope"
+                      }
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "text"
+                  ],
+                  "additionalProperties": false
+                }
+              ],
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "$ref": "schemas-workspace_knowledge.json#/$defs/Original717_workspace_party_approve_merge_Envelope"
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_workspace_party_approve_merge_Refusal": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-workspace_knowledge.json#/$defs/RpcId"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "const": true
+            },
+            "content": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "const": "text"
+                    },
+                    "text": {
+                      "type": "string",
+                      "contentMediaType": "application/json",
+                      "contentSchema": {
+                        "$ref": "schemas-workspace_knowledge.json#/$defs/Original717_workspace_party_approve_merge_Failure"
+                      }
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "text"
+                  ],
+                  "additionalProperties": false
+                }
+              ],
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "$ref": "schemas-workspace_knowledge.json#/$defs/Original717_workspace_party_approve_merge_Failure"
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_company_knowledge_context_Args": {
+      "additionalProperties": false,
+      "properties": {
+        "asOf": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "company": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "includeProposed": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "company"
+      ],
+      "type": "object"
+    },
+    "Original717_company_knowledge_context_Data": {
+      "type": "object",
+      "properties": {
+        "context": {
+          "type": "object",
+          "properties": {
+            "companySlug": {
+              "type": "string"
+            },
+            "asOf": {
+              "type": "string"
+            },
+            "assertions": {
+              "type": "array",
+              "items": {
+                "$ref": "schemas-workspace_knowledge.json#/$defs/KnowledgeAssertion"
+              }
+            },
+            "conflicts": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "safeForProductBehavior": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "companySlug",
+            "asOf",
+            "assertions",
+            "conflicts",
+            "safeForProductBehavior"
+          ],
+          "additionalProperties": false
+        },
+        "history": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-workspace_knowledge.json#/$defs/KnowledgeAssertion"
+          }
+        }
+      },
+      "required": [
+        "context",
+        "history"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_company_knowledge_context_Envelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "const": []
+        },
+        "data": {
+          "$ref": "schemas-workspace_knowledge.json#/$defs/Original717_company_knowledge_context_Data"
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_company_knowledge_context_Failure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "code": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_company_knowledge_context_Success": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-workspace_knowledge.json#/$defs/RpcId"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "const": false
+            },
+            "content": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "const": "text"
+                    },
+                    "text": {
+                      "type": "string",
+                      "contentMediaType": "application/json",
+                      "contentSchema": {
+                        "$ref": "schemas-workspace_knowledge.json#/$defs/Original717_company_knowledge_context_Envelope"
+                      }
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "text"
+                  ],
+                  "additionalProperties": false
+                }
+              ],
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "$ref": "schemas-workspace_knowledge.json#/$defs/Original717_company_knowledge_context_Envelope"
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_company_knowledge_context_Refusal": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-workspace_knowledge.json#/$defs/RpcId"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "const": true
+            },
+            "content": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "const": "text"
+                    },
+                    "text": {
+                      "type": "string",
+                      "contentMediaType": "application/json",
+                      "contentSchema": {
+                        "$ref": "schemas-workspace_knowledge.json#/$defs/Original717_company_knowledge_context_Failure"
+                      }
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "text"
+                  ],
+                  "additionalProperties": false
+                }
+              ],
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "$ref": "schemas-workspace_knowledge.json#/$defs/Original717_company_knowledge_context_Failure"
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_company_knowledge_propose_Args": {
+      "additionalProperties": false,
+      "properties": {
+        "assertionId": {
+          "type": "string"
+        },
+        "certainty": {
+          "enum": [
+            "confirmed",
+            "probable",
+            "uncertain"
+          ],
+          "type": "string"
+        },
+        "company": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "confirm": {
+          "description": "Must be set to true to acknowledge the write side effects of this tool. Omitting it (or sending false) returns an { ok:false, errors:[...] } envelope rather than performing the write.",
+          "type": "boolean"
+        },
+        "predicate": {
+          "enum": [
+            "business_description",
+            "operating_status",
+            "products_services",
+            "revenue_models",
+            "markets",
+            "customer_types",
+            "industry_tags",
+            "operational_systems",
+            "document_sources",
+            "reporting_dimensions",
+            "responsible_party",
+            "canonical_reference"
+          ],
+          "type": "string"
+        },
+        "source": {
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "enum": [
+                "user",
+                "registry",
+                "party",
+                "corporate_record",
+                "external_snapshot",
+                "canonical_setting"
+              ],
+              "type": "string"
+            },
+            "ref": {
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "ref"
+          ],
+          "type": "object"
+        },
+        "validFrom": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "validToExclusive": {
+          "type": "string"
+        },
+        "value": {
+          "$ref": "schemas-workspace_knowledge.json#/$defs/Json_KnowledgeValue"
+        }
+      },
+      "required": [
+        "company",
+        "predicate",
+        "value",
+        "source",
+        "validFrom"
+      ],
+      "type": "object"
+    },
+    "Original717_company_knowledge_propose_Data": {
+      "type": "object",
+      "properties": {
+        "assertion": {
+          "$ref": "schemas-workspace_knowledge.json#/$defs/KnowledgeAssertion"
+        }
+      },
+      "required": [
+        "assertion"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_company_knowledge_propose_Envelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "const": []
+        },
+        "data": {
+          "$ref": "schemas-workspace_knowledge.json#/$defs/Original717_company_knowledge_propose_Data"
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_company_knowledge_propose_Failure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "code": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_company_knowledge_propose_Success": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-workspace_knowledge.json#/$defs/RpcId"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "const": false
+            },
+            "content": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "const": "text"
+                    },
+                    "text": {
+                      "type": "string",
+                      "contentMediaType": "application/json",
+                      "contentSchema": {
+                        "$ref": "schemas-workspace_knowledge.json#/$defs/Original717_company_knowledge_propose_Envelope"
+                      }
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "text"
+                  ],
+                  "additionalProperties": false
+                }
+              ],
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "$ref": "schemas-workspace_knowledge.json#/$defs/Original717_company_knowledge_propose_Envelope"
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_company_knowledge_propose_Refusal": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-workspace_knowledge.json#/$defs/RpcId"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "const": true
+            },
+            "content": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "const": "text"
+                    },
+                    "text": {
+                      "type": "string",
+                      "contentMediaType": "application/json",
+                      "contentSchema": {
+                        "$ref": "schemas-workspace_knowledge.json#/$defs/Original717_company_knowledge_propose_Failure"
+                      }
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "text"
+                  ],
+                  "additionalProperties": false
+                }
+              ],
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "$ref": "schemas-workspace_knowledge.json#/$defs/Original717_company_knowledge_propose_Failure"
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_company_knowledge_review_Args": {
+      "additionalProperties": false,
+      "properties": {
+        "assertionId": {
+          "minLength": 3,
+          "type": "string"
+        },
+        "company": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "confirm": {
+          "description": "Must be set to true to acknowledge the write side effects of this tool. Omitting it (or sending false) returns an { ok:false, errors:[...] } envelope rather than performing the write.",
+          "type": "boolean"
+        },
+        "decision": {
+          "enum": [
+            "approved",
+            "rejected"
+          ],
+          "type": "string"
+        },
+        "reason": {
+          "maxLength": 1000,
+          "type": "string"
+        }
+      },
+      "required": [
+        "company",
+        "assertionId",
+        "decision"
+      ],
+      "type": "object"
+    },
+    "Original717_company_knowledge_review_Data": {
+      "type": "object",
+      "properties": {
+        "assertion": {
+          "$ref": "schemas-workspace_knowledge.json#/$defs/KnowledgeAssertion"
+        }
+      },
+      "required": [
+        "assertion"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_company_knowledge_review_Envelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "const": []
+        },
+        "data": {
+          "$ref": "schemas-workspace_knowledge.json#/$defs/Original717_company_knowledge_review_Data"
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_company_knowledge_review_Failure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "code": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_company_knowledge_review_Success": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-workspace_knowledge.json#/$defs/RpcId"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "const": false
+            },
+            "content": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "const": "text"
+                    },
+                    "text": {
+                      "type": "string",
+                      "contentMediaType": "application/json",
+                      "contentSchema": {
+                        "$ref": "schemas-workspace_knowledge.json#/$defs/Original717_company_knowledge_review_Envelope"
+                      }
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "text"
+                  ],
+                  "additionalProperties": false
+                }
+              ],
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "$ref": "schemas-workspace_knowledge.json#/$defs/Original717_company_knowledge_review_Envelope"
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_company_knowledge_review_Refusal": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-workspace_knowledge.json#/$defs/RpcId"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "const": true
+            },
+            "content": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "const": "text"
+                    },
+                    "text": {
+                      "type": "string",
+                      "contentMediaType": "application/json",
+                      "contentSchema": {
+                        "$ref": "schemas-workspace_knowledge.json#/$defs/Original717_company_knowledge_review_Failure"
+                      }
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "text"
+                  ],
+                  "additionalProperties": false
+                }
+              ],
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "$ref": "schemas-workspace_knowledge.json#/$defs/Original717_company_knowledge_review_Failure"
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_company_knowledge_supersede_Args": {
+      "additionalProperties": false,
+      "properties": {
+        "assertionId": {
+          "minLength": 3,
+          "type": "string"
+        },
+        "company": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "confirm": {
+          "description": "Must be set to true to acknowledge the write side effects of this tool. Omitting it (or sending false) returns an { ok:false, errors:[...] } envelope rather than performing the write.",
+          "type": "boolean"
+        },
+        "replacement": {
+          "additionalProperties": false,
+          "properties": {
+            "assertionId": {
+              "type": "string"
+            },
+            "certainty": {
+              "enum": [
+                "confirmed",
+                "probable",
+                "uncertain"
+              ],
+              "type": "string"
+            },
+            "predicate": {
+              "enum": [
+                "business_description",
+                "operating_status",
+                "products_services",
+                "revenue_models",
+                "markets",
+                "customer_types",
+                "industry_tags",
+                "operational_systems",
+                "document_sources",
+                "reporting_dimensions",
+                "responsible_party",
+                "canonical_reference"
+              ],
+              "type": "string"
+            },
+            "source": {
+              "additionalProperties": false,
+              "properties": {
+                "kind": {
+                  "enum": [
+                    "user",
+                    "registry",
+                    "party",
+                    "corporate_record",
+                    "external_snapshot",
+                    "canonical_setting"
+                  ],
+                  "type": "string"
+                },
+                "ref": {
+                  "minLength": 1,
+                  "type": "string"
+                }
+              },
+              "required": [
+                "kind",
+                "ref"
+              ],
+              "type": "object"
+            },
+            "validFrom": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "validToExclusive": {
+              "type": "string"
+            },
+            "value": {
+              "$ref": "schemas-workspace_knowledge.json#/$defs/Json_KnowledgeValue"
+            }
+          },
+          "required": [
+            "predicate",
+            "value",
+            "source",
+            "validFrom"
+          ],
+          "type": "object"
+        }
+      },
+      "required": [
+        "company",
+        "assertionId",
+        "replacement"
+      ],
+      "type": "object"
+    },
+    "Original717_company_knowledge_supersede_Data": {
+      "type": "object",
+      "properties": {
+        "superseded": {
+          "$ref": "schemas-workspace_knowledge.json#/$defs/KnowledgeAssertion"
+        },
+        "replacement": {
+          "$ref": "schemas-workspace_knowledge.json#/$defs/KnowledgeAssertion"
+        }
+      },
+      "required": [
+        "superseded",
+        "replacement"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_company_knowledge_supersede_Envelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "const": []
+        },
+        "data": {
+          "$ref": "schemas-workspace_knowledge.json#/$defs/Original717_company_knowledge_supersede_Data"
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_company_knowledge_supersede_Failure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "code": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_company_knowledge_supersede_Success": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-workspace_knowledge.json#/$defs/RpcId"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "const": false
+            },
+            "content": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "const": "text"
+                    },
+                    "text": {
+                      "type": "string",
+                      "contentMediaType": "application/json",
+                      "contentSchema": {
+                        "$ref": "schemas-workspace_knowledge.json#/$defs/Original717_company_knowledge_supersede_Envelope"
+                      }
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "text"
+                  ],
+                  "additionalProperties": false
+                }
+              ],
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "$ref": "schemas-workspace_knowledge.json#/$defs/Original717_company_knowledge_supersede_Envelope"
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_company_knowledge_supersede_Refusal": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-workspace_knowledge.json#/$defs/RpcId"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "const": true
+            },
+            "content": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "const": "text"
+                    },
+                    "text": {
+                      "type": "string",
+                      "contentMediaType": "application/json",
+                      "contentSchema": {
+                        "$ref": "schemas-workspace_knowledge.json#/$defs/Original717_company_knowledge_supersede_Failure"
+                      }
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "text"
+                  ],
+                  "additionalProperties": false
+                }
+              ],
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "$ref": "schemas-workspace_knowledge.json#/$defs/Original717_company_knowledge_supersede_Failure"
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_workspace_inbox_list_Args": {
+      "additionalProperties": false,
+      "properties": {
+        "company": {
+          "maxLength": 128,
+          "minLength": 1,
+          "type": "string"
+        },
+        "cursor": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "limit": {
+          "maximum": 100,
+          "minimum": 1,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "company"
+      ],
+      "type": "object"
+    },
+    "Original717_workspace_inbox_list_Data": {
+      "type": "object",
+      "properties": {
+        "rows": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-workspace_knowledge.json#/$defs/InboxSource"
+          }
+        },
+        "count": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "nextCursor": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 18446744073709551615
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "rows",
+        "count",
+        "nextCursor"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_workspace_inbox_list_Envelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "const": []
+        },
+        "data": {
+          "$ref": "schemas-workspace_knowledge.json#/$defs/Original717_workspace_inbox_list_Data"
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_workspace_inbox_list_Failure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "code": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_workspace_inbox_list_Success": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-workspace_knowledge.json#/$defs/RpcId"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "const": false
+            },
+            "content": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "const": "text"
+                    },
+                    "text": {
+                      "type": "string",
+                      "contentMediaType": "application/json",
+                      "contentSchema": {
+                        "$ref": "schemas-workspace_knowledge.json#/$defs/Original717_workspace_inbox_list_Envelope"
+                      }
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "text"
+                  ],
+                  "additionalProperties": false
+                }
+              ],
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "$ref": "schemas-workspace_knowledge.json#/$defs/Original717_workspace_inbox_list_Envelope"
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_workspace_inbox_list_Refusal": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-workspace_knowledge.json#/$defs/RpcId"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "const": true
+            },
+            "content": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "const": "text"
+                    },
+                    "text": {
+                      "type": "string",
+                      "contentMediaType": "application/json",
+                      "contentSchema": {
+                        "$ref": "schemas-workspace_knowledge.json#/$defs/Original717_workspace_inbox_list_Failure"
+                      }
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "text"
+                  ],
+                  "additionalProperties": false
+                }
+              ],
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "$ref": "schemas-workspace_knowledge.json#/$defs/Original717_workspace_inbox_list_Failure"
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_workspace_inbox_inspect_Args": {
+      "additionalProperties": false,
+      "properties": {
+        "company": {
+          "maxLength": 128,
+          "minLength": 1,
+          "type": "string"
+        },
+        "sourceId": {
+          "maxLength": 100,
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "company",
+        "sourceId"
+      ],
+      "type": "object"
+    },
+    "Original717_workspace_inbox_inspect_Data": {
+      "type": "object",
+      "properties": {
+        "source": {
+          "$ref": "schemas-workspace_knowledge.json#/$defs/InboxSource"
+        }
+      },
+      "required": [
+        "source"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_workspace_inbox_inspect_Envelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "const": []
+        },
+        "data": {
+          "$ref": "schemas-workspace_knowledge.json#/$defs/Original717_workspace_inbox_inspect_Data"
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_workspace_inbox_inspect_Failure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "code": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_workspace_inbox_inspect_Success": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-workspace_knowledge.json#/$defs/RpcId"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "const": false
+            },
+            "content": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "const": "text"
+                    },
+                    "text": {
+                      "type": "string",
+                      "contentMediaType": "application/json",
+                      "contentSchema": {
+                        "$ref": "schemas-workspace_knowledge.json#/$defs/Original717_workspace_inbox_inspect_Envelope"
+                      }
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "text"
+                  ],
+                  "additionalProperties": false
+                }
+              ],
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "$ref": "schemas-workspace_knowledge.json#/$defs/Original717_workspace_inbox_inspect_Envelope"
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_workspace_inbox_inspect_Refusal": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-workspace_knowledge.json#/$defs/RpcId"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "const": true
+            },
+            "content": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "const": "text"
+                    },
+                    "text": {
+                      "type": "string",
+                      "contentMediaType": "application/json",
+                      "contentSchema": {
+                        "$ref": "schemas-workspace_knowledge.json#/$defs/Original717_workspace_inbox_inspect_Failure"
+                      }
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "text"
+                  ],
+                  "additionalProperties": false
+                }
+              ],
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "$ref": "schemas-workspace_knowledge.json#/$defs/Original717_workspace_inbox_inspect_Failure"
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_workspace_inbox_status_Args": {
+      "additionalProperties": false,
+      "properties": {
+        "company": {
+          "maxLength": 128,
+          "minLength": 1,
+          "type": "string"
+        },
+        "sourceId": {
+          "maxLength": 100,
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "company",
+        "sourceId"
+      ],
+      "type": "object"
+    },
+    "Original717_workspace_inbox_status_Data": {
+      "type": "object",
+      "properties": {
+        "source": {
+          "$ref": "schemas-workspace_knowledge.json#/$defs/InboxSource"
+        }
+      },
+      "required": [
+        "source"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_workspace_inbox_status_Envelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "const": []
+        },
+        "data": {
+          "$ref": "schemas-workspace_knowledge.json#/$defs/Original717_workspace_inbox_status_Data"
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_workspace_inbox_status_Failure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "code": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_workspace_inbox_status_Success": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-workspace_knowledge.json#/$defs/RpcId"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "const": false
+            },
+            "content": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "const": "text"
+                    },
+                    "text": {
+                      "type": "string",
+                      "contentMediaType": "application/json",
+                      "contentSchema": {
+                        "$ref": "schemas-workspace_knowledge.json#/$defs/Original717_workspace_inbox_status_Envelope"
+                      }
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "text"
+                  ],
+                  "additionalProperties": false
+                }
+              ],
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "$ref": "schemas-workspace_knowledge.json#/$defs/Original717_workspace_inbox_status_Envelope"
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_workspace_inbox_status_Refusal": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-workspace_knowledge.json#/$defs/RpcId"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "const": true
+            },
+            "content": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "const": "text"
+                    },
+                    "text": {
+                      "type": "string",
+                      "contentMediaType": "application/json",
+                      "contentSchema": {
+                        "$ref": "schemas-workspace_knowledge.json#/$defs/Original717_workspace_inbox_status_Failure"
+                      }
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "text"
+                  ],
+                  "additionalProperties": false
+                }
+              ],
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "$ref": "schemas-workspace_knowledge.json#/$defs/Original717_workspace_inbox_status_Failure"
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_workspace_inbox_ingest_Args": {
+      "additionalProperties": false,
+      "properties": {
+        "bytesBase64": {
+          "maxLength": 34952536,
+          "minLength": 1,
+          "type": "string"
+        },
+        "candidates": {
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "companySlug": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "evidence": {
+                "maxLength": 1000,
+                "minLength": 1,
+                "type": "string"
+              },
+              "evidenceKind": {
+                "enum": [
+                  "recipient_alias",
+                  "buyer_vat",
+                  "buyer_name",
+                  "account",
+                  "portal"
+                ]
+              }
+            },
+            "required": [
+              "companySlug",
+              "evidenceKind",
+              "evidence"
+            ],
+            "type": "object"
+          },
+          "maxItems": 100,
+          "type": "array"
+        },
+        "company": {
+          "maxLength": 128,
+          "minLength": 1,
+          "type": "string"
+        },
+        "confirm": {
+          "type": "boolean"
+        },
+        "filename": {
+          "maxLength": 255,
+          "minLength": 1,
+          "type": "string"
+        },
+        "idempotencyKey": {
+          "maxLength": 200,
+          "minLength": 1,
+          "type": "string"
+        },
+        "metadata": {
+          "$ref": "schemas-workspace_knowledge.json#/$defs/Json_InboxMetadata"
+        },
+        "mimeType": {
+          "maxLength": 160,
+          "minLength": 1,
+          "type": "string"
+        },
+        "receivedAt": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "sourceId": {
+          "maxLength": 100,
+          "minLength": 1,
+          "type": "string"
+        },
+        "transport": {
+          "const": "upload"
+        },
+        "transportIdentity": {
+          "maxLength": 512,
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "idempotencyKey",
+        "bytesBase64",
+        "filename",
+        "mimeType",
+        "transport",
+        "receivedAt",
+        "metadata",
+        "company"
+      ],
+      "type": "object"
+    },
+    "Original717_workspace_inbox_ingest_Data": {
+      "type": "object",
+      "properties": {
+        "source": {
+          "$ref": "schemas-workspace_knowledge.json#/$defs/InboxSource"
+        }
+      },
+      "required": [
+        "source"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_workspace_inbox_ingest_Envelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "const": []
+        },
+        "data": {
+          "$ref": "schemas-workspace_knowledge.json#/$defs/Original717_workspace_inbox_ingest_Data"
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_workspace_inbox_ingest_Failure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "code": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_workspace_inbox_ingest_Success": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-workspace_knowledge.json#/$defs/RpcId"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "const": false
+            },
+            "content": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "const": "text"
+                    },
+                    "text": {
+                      "type": "string",
+                      "contentMediaType": "application/json",
+                      "contentSchema": {
+                        "$ref": "schemas-workspace_knowledge.json#/$defs/Original717_workspace_inbox_ingest_Envelope"
+                      }
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "text"
+                  ],
+                  "additionalProperties": false
+                }
+              ],
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "$ref": "schemas-workspace_knowledge.json#/$defs/Original717_workspace_inbox_ingest_Envelope"
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_workspace_inbox_ingest_Refusal": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-workspace_knowledge.json#/$defs/RpcId"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "const": true
+            },
+            "content": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "const": "text"
+                    },
+                    "text": {
+                      "type": "string",
+                      "contentMediaType": "application/json",
+                      "contentSchema": {
+                        "$ref": "schemas-workspace_knowledge.json#/$defs/Original717_workspace_inbox_ingest_Failure"
+                      }
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "text"
+                  ],
+                  "additionalProperties": false
+                }
+              ],
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "$ref": "schemas-workspace_knowledge.json#/$defs/Original717_workspace_inbox_ingest_Failure"
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_workspace_inbox_assign_Args": {
+      "additionalProperties": false,
+      "properties": {
+        "company": {
+          "maxLength": 128,
+          "minLength": 1,
+          "type": "string"
+        },
+        "companySlug": {
+          "maxLength": 128,
+          "minLength": 1,
+          "type": "string"
+        },
+        "confirm": {
+          "type": "boolean"
+        },
+        "sourceId": {
+          "maxLength": 100,
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "company",
+        "sourceId",
+        "companySlug"
+      ],
+      "type": "object"
+    },
+    "Original717_workspace_inbox_assign_Data": {
+      "type": "object",
+      "properties": {
+        "source": {
+          "$ref": "schemas-workspace_knowledge.json#/$defs/InboxSource"
+        }
+      },
+      "required": [
+        "source"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_workspace_inbox_assign_Envelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "const": []
+        },
+        "data": {
+          "$ref": "schemas-workspace_knowledge.json#/$defs/Original717_workspace_inbox_assign_Data"
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_workspace_inbox_assign_Failure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "code": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_workspace_inbox_assign_Success": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-workspace_knowledge.json#/$defs/RpcId"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "const": false
+            },
+            "content": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "const": "text"
+                    },
+                    "text": {
+                      "type": "string",
+                      "contentMediaType": "application/json",
+                      "contentSchema": {
+                        "$ref": "schemas-workspace_knowledge.json#/$defs/Original717_workspace_inbox_assign_Envelope"
+                      }
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "text"
+                  ],
+                  "additionalProperties": false
+                }
+              ],
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "$ref": "schemas-workspace_knowledge.json#/$defs/Original717_workspace_inbox_assign_Envelope"
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_workspace_inbox_assign_Refusal": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-workspace_knowledge.json#/$defs/RpcId"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "const": true
+            },
+            "content": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "const": "text"
+                    },
+                    "text": {
+                      "type": "string",
+                      "contentMediaType": "application/json",
+                      "contentSchema": {
+                        "$ref": "schemas-workspace_knowledge.json#/$defs/Original717_workspace_inbox_assign_Failure"
+                      }
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "text"
+                  ],
+                  "additionalProperties": false
+                }
+              ],
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "$ref": "schemas-workspace_knowledge.json#/$defs/Original717_workspace_inbox_assign_Failure"
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_workspace_inbox_complete_Args": {
+      "additionalProperties": false,
+      "properties": {
+        "company": {
+          "maxLength": 128,
+          "minLength": 1,
+          "type": "string"
+        },
+        "companySlug": {
+          "maxLength": 128,
+          "minLength": 1,
+          "type": "string"
+        },
+        "confirm": {
+          "type": "boolean"
+        },
+        "sourceId": {
+          "maxLength": 100,
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "company",
+        "sourceId",
+        "companySlug"
+      ],
+      "type": "object"
+    },
+    "Original717_workspace_inbox_complete_Data": {
+      "type": "object",
+      "properties": {
+        "source": {
+          "$ref": "schemas-workspace_knowledge.json#/$defs/InboxSource"
+        }
+      },
+      "required": [
+        "source"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_workspace_inbox_complete_Envelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "const": []
+        },
+        "data": {
+          "$ref": "schemas-workspace_knowledge.json#/$defs/Original717_workspace_inbox_complete_Data"
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_workspace_inbox_complete_Failure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "code": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_workspace_inbox_complete_Success": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-workspace_knowledge.json#/$defs/RpcId"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "const": false
+            },
+            "content": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "const": "text"
+                    },
+                    "text": {
+                      "type": "string",
+                      "contentMediaType": "application/json",
+                      "contentSchema": {
+                        "$ref": "schemas-workspace_knowledge.json#/$defs/Original717_workspace_inbox_complete_Envelope"
+                      }
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "text"
+                  ],
+                  "additionalProperties": false
+                }
+              ],
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "$ref": "schemas-workspace_knowledge.json#/$defs/Original717_workspace_inbox_complete_Envelope"
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Original717_workspace_inbox_complete_Refusal": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "schemas-workspace_knowledge.json#/$defs/RpcId"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "const": true
+            },
+            "content": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "const": "text"
+                    },
+                    "text": {
+                      "type": "string",
+                      "contentMediaType": "application/json",
+                      "contentSchema": {
+                        "$ref": "schemas-workspace_knowledge.json#/$defs/Original717_workspace_inbox_complete_Failure"
+                      }
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "text"
+                  ],
+                  "additionalProperties": false
+                }
+              ],
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "$ref": "schemas-workspace_knowledge.json#/$defs/Original717_workspace_inbox_complete_Failure"
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
     }
   }
 }

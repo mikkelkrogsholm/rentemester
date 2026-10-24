@@ -15,37 +15,37 @@
   "sourceRefs": [
     {
       "path": "crates/rentemester-mcp/src/tools.rs",
-      "sha256": "8035dc45f8d22d902c18e17b4508ca572f8505dc83a1961fa355dfd1f34c1397",
+      "sha256": "c9c7557336816a4ac83f921e6d728dc096c3a92b2e6cd431c56b877c95790c44",
       "needle": "pub fn list()"
     },
     {
       "path": "crates/rentemester-mcp/src/tools.rs",
-      "sha256": "8035dc45f8d22d902c18e17b4508ca572f8505dc83a1961fa355dfd1f34c1397",
+      "sha256": "c9c7557336816a4ac83f921e6d728dc096c3a92b2e6cd431c56b877c95790c44",
       "needle": "pub async fn call("
     },
     {
       "path": "crates/rentemester-mcp/src/tools.rs",
-      "sha256": "8035dc45f8d22d902c18e17b4508ca572f8505dc83a1961fa355dfd1f34c1397",
+      "sha256": "c9c7557336816a4ac83f921e6d728dc096c3a92b2e6cd431c56b877c95790c44",
       "needle": "let value = match outcome"
     },
     {
       "path": "crates/rentemester-mcp/src/tools.rs",
-      "sha256": "8035dc45f8d22d902c18e17b4508ca572f8505dc83a1961fa355dfd1f34c1397",
+      "sha256": "c9c7557336816a4ac83f921e6d728dc096c3a92b2e6cd431c56b877c95790c44",
       "needle": "\"structuredContent\":value"
     },
     {
       "path": "crates/rentemester-mcp/src/main.rs",
-      "sha256": "aa79b11fa9c34d6813de19007bc0986b4e8ad42be0d702090336a1e3c48bdfed",
+      "sha256": "f1bd984c541f4c8b8fc6147a7ede20a19923177859b28fa980e6ed48f4c6184a",
       "needle": "async fn handle("
     },
     {
       "path": "crates/rentemester-mcp/src/main.rs",
-      "sha256": "aa79b11fa9c34d6813de19007bc0986b4e8ad42be0d702090336a1e3c48bdfed",
+      "sha256": "f1bd984c541f4c8b8fc6147a7ede20a19923177859b28fa980e6ed48f4c6184a",
       "needle": "fn serve("
     },
     {
       "path": "crates/rentemester-mcp/src/main.rs",
-      "sha256": "aa79b11fa9c34d6813de19007bc0986b4e8ad42be0d702090336a1e3c48bdfed",
+      "sha256": "f1bd984c541f4c8b8fc6147a7ede20a19923177859b28fa980e6ed48f4c6184a",
       "needle": "fn config("
     },
     {
@@ -70,7 +70,7 @@
     },
     {
       "path": "crates/rentemester-mcp/src/tools.rs",
-      "sha256": "8035dc45f8d22d902c18e17b4508ca572f8505dc83a1961fa355dfd1f34c1397",
+      "sha256": "c9c7557336816a4ac83f921e6d728dc096c3a92b2e6cd431c56b877c95790c44",
       "needle": "\"me\" | \"companies\" =>"
     },
     {
@@ -351,7 +351,7 @@
     "diagnosis": "LeafSerdearraybehavior incorrectly treated as publicargumentcontract; actualglobalobjectguard precedes all dispatch. Retracted that acceptance claim and restored object-onlypublicschemas, explicitguard sourcepin andexactoutererrormessage. Otheracceptedidentityscope retained; no runtimeproductbehaviorchanged.",
     "sourceRef": {
       "path": "crates/rentemester-mcp/src/tools.rs",
-      "sha256": "8035dc45f8d22d902c18e17b4508ca572f8505dc83a1961fa355dfd1f34c1397",
+      "sha256": "c9c7557336816a4ac83f921e6d728dc096c3a92b2e6cd431c56b877c95790c44",
       "needle": "if !args.is_object()"
     }
   }
