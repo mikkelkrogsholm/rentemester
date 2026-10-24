@@ -186,3 +186,5 @@ mod document_access;
 pub mod compliance;
 
 pub mod mileage_posting;
+
+pub mod digisense_received;

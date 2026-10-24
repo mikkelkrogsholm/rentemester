@@ -111,3 +111,5 @@ pub mod regulatory;
 pub mod compliance_report;
 
 pub mod mileage_posting;
+
+pub mod digisense_received;
