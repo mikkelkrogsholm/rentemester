@@ -1,0 +1,10 @@
+{
+  "partition": "vat_annual_regulatory",
+  "status": "blocked",
+  "accepted": false,
+  "graphQuery": "graphify query \"vat annual regulatory\"",
+  "evidenceScope": "Actual source reading only; no runtime or financial/provider effects replayed.",
+  "blocker": "Two generation attempts failed before writing schemas with NameError: name 'REDACTED' is not defined in binary-download byte bound expression. Setup expansion stopped at the required two-failure limit.",
+  "recovery": "Lead must complete exact schemas and all selected operation rows, review source semantics, and obtain existing strict oracle PASS. Empty operations intentionally fail coverage rather than claim completion.",
+  "findings": "NOTES-vat_annual_regulatory.md"
+}

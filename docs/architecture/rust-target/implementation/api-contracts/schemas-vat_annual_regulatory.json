@@ -1,0 +1,6 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "schemas-vat_annual_regulatory.json",
+  "$comment": "INCOMPLETE DELIVERY. No operation is specified; do not accept this partition. See NOTES-vat_annual_regulatory.md for the concrete two-attempt generation blocker and source findings.",
+  "$defs": {}
+}
