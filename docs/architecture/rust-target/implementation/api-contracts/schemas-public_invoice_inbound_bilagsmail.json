@@ -8186,12 +8186,12 @@
         "sourceRefs": [
           {
             "path": "crates/rentemester-mcp/src/invoice_public_original717.rs",
-            "sha256": "1a5ef3e0874a28d773d9ebfed40d13b344efc013437d6445d346e89b29cb0e88",
+            "sha256": "aa2bf2521ce79bf9d8caa21b3dae62ef84e44673180eccf5fe3ae75ccfe923f4",
             "needle": "pub async fn call("
           },
           {
             "path": "crates/rentemester-client/src/invoice_public_original.rs",
-            "sha256": "743581651a63ab5d8bc399fb00a4117f9477fa72af2217c718a60f1010731a93",
+            "sha256": "4fad40f3740c20df58ac911d4b9bd80e8ced8c43b0a267d6b98ba0ded547736d",
             "needle": "pub async fn invoice_public_original("
           }
         ]
@@ -9153,6 +9153,666 @@
         "params"
       ],
       "additionalProperties": false
+    },
+    "OriginalStatus100Advertised": {
+      "const": {
+        "annotations": {
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true,
+          "readOnlyHint": false
+        },
+        "description": "Status only for an accepted native Digisense submission; never delivers or reserves delivery. Acknowledged receipts are cached without provider I/O; nonterminal observations return ok:false. Explicit company slug and current human cookie, fresh MFA, CompanyExternalSend and current ledger binding required. Optional digisenseCompanyKey is an assertion, not configuration. One status observation at most; no retry, readback or status loop. Native evidence retained; 16KiB body and 16MiB response limits.",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "company": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "confirm": {
+              "type": "boolean"
+            },
+            "digisenseCompanyKey": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "documentId": {
+              "maximum": 9007199254740991,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "company",
+            "documentId"
+          ],
+          "type": "object"
+        },
+        "name": "efaktura_status",
+        "outputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "appliedRules": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "code": {
+              "type": "string"
+            },
+            "data": {
+              "type": "object"
+            },
+            "errors": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "ok": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "ok",
+            "errors"
+          ],
+          "type": "object"
+        }
+      }
+    },
+    "OriginalStatus100Arguments": {
+      "additionalProperties": false,
+      "properties": {
+        "company": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "confirm": {
+          "type": "boolean"
+        },
+        "digisenseCompanyKey": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "documentId": {
+          "maximum": 9007199254740991,
+          "minimum": 1,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "company",
+        "documentId"
+      ],
+      "type": "object"
+    },
+    "OriginalStatus100Request": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "#/$defs/Id"
+        },
+        "method": {
+          "const": "tools/call"
+        },
+        "params": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "const": "efaktura_status"
+            },
+            "arguments": {
+              "$ref": "#/$defs/OriginalStatus100Arguments"
+            }
+          },
+          "required": [
+            "name"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "method",
+        "params"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalStatus100Body": {
+      "type": "object",
+      "properties": {
+        "documentId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "companyKey": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        },
+        "confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "documentId",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalStatus100Rpc": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "type": "null"
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32700
+                },
+                "message": {
+                  "enum": [
+                    "invalid or oversized newline-delimited message",
+                    "invalid JSON",
+                    "message exceeds tool frame bound; only named original uploads/ownership/consolidation proposals admit larger bounded frames"
+                  ]
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "$ref": "#/$defs/ErrorId"
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32600
+                },
+                "message": {
+                  "enum": [
+                    "expected one JSON-RPC object",
+                    "invalid JSON-RPC request",
+                    "request id already used",
+                    "already initialized"
+                  ]
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "$ref": "#/$defs/ErrorId"
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32000
+                },
+                "message": {
+                  "enum": [
+                    "session request limit reached; reconnect"
+                  ]
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "$ref": "#/$defs/ErrorId"
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32002
+                },
+                "message": {
+                  "enum": [
+                    "initialize and notifications/initialized required"
+                  ]
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "$ref": "#/$defs/ErrorId"
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32601
+                },
+                "message": {
+                  "enum": [
+                    "method not found"
+                  ]
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "$ref": "#/$defs/ErrorId"
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "enum": [
+                    "expected params object",
+                    "initialize requires protocolVersion, capabilities and clientInfo",
+                    "task execution not supported",
+                    "tool name required",
+                    "expected arguments object",
+                    "unknown public invoice field",
+                    "company required",
+                    "documentId required",
+                    "documentId must be a positive safe integer",
+                    "confirm must be boolean",
+                    "digisenseCompanyKey must be nonempty string"
+                  ]
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "OriginalStatus100Producer": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "submissionReference": {
+              "type": "string"
+            },
+            "idempotencyKey": {
+              "type": "string"
+            },
+            "oioublSha256": {
+              "type": "string"
+            },
+            "envelopeSha256": {
+              "type": "string"
+            },
+            "envelope": {
+              "type": "string"
+            },
+            "status": {
+              "enum": [
+                "acknowledged",
+                "failed"
+              ]
+            },
+            "id": {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            "invoiceDocumentId": {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            "invoiceNumber": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "transmissionId": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "legacy": {
+              "const": false
+            },
+            "duplicate": {
+              "type": "boolean"
+            },
+            "redeliveryBlocked": {
+              "const": true
+            },
+            "providerStatus": {
+              "enum": [
+                "delivery-uncertain",
+                "delivered",
+                "queued-for-delivery",
+                "document-not-valid",
+                "unable-to-deliver",
+                "unknown-server-error",
+                "temporary-upstream-error"
+              ]
+            },
+            "companyKey": {
+              "type": "string"
+            },
+            "environment": {
+              "enum": [
+                "test",
+                "production"
+              ]
+            },
+            "stateHash": {
+              "type": "string"
+            },
+            "history": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/PublicEvent"
+              },
+              "minItems": 1
+            },
+            "ok": {
+              "const": true
+            },
+            "appliedRules": {
+              "type": "array",
+              "items": {
+                "const": "DK-PEPPOL-SUBMIT-001"
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "errors": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 0
+            }
+          },
+          "required": [
+            "submissionReference",
+            "idempotencyKey",
+            "oioublSha256",
+            "envelopeSha256",
+            "envelope",
+            "status",
+            "id",
+            "invoiceDocumentId",
+            "invoiceNumber",
+            "transmissionId",
+            "legacy",
+            "duplicate",
+            "redeliveryBlocked",
+            "providerStatus",
+            "companyKey",
+            "environment",
+            "stateHash",
+            "history",
+            "ok",
+            "appliedRules",
+            "errors"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "submissionReference": {
+              "type": "string"
+            },
+            "idempotencyKey": {
+              "type": "string"
+            },
+            "oioublSha256": {
+              "type": "string"
+            },
+            "envelopeSha256": {
+              "type": "string"
+            },
+            "envelope": {
+              "type": "string"
+            },
+            "status": {
+              "enum": [
+                "prepared"
+              ]
+            },
+            "id": {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            "invoiceDocumentId": {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            "invoiceNumber": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "transmissionId": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "legacy": {
+              "const": false
+            },
+            "duplicate": {
+              "type": "boolean"
+            },
+            "redeliveryBlocked": {
+              "const": true
+            },
+            "providerStatus": {
+              "enum": [
+                "delivery-uncertain",
+                "delivered",
+                "queued-for-delivery",
+                "document-not-valid",
+                "unable-to-deliver",
+                "unknown-server-error",
+                "temporary-upstream-error"
+              ]
+            },
+            "companyKey": {
+              "type": "string"
+            },
+            "environment": {
+              "enum": [
+                "test",
+                "production"
+              ]
+            },
+            "stateHash": {
+              "type": "string"
+            },
+            "history": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/PublicEvent"
+              },
+              "minItems": 1
+            },
+            "ok": {
+              "const": false
+            },
+            "appliedRules": {
+              "type": "array",
+              "items": {
+                "const": "DK-PEPPOL-SUBMIT-001"
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "errors": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "minItems": 1
+            }
+          },
+          "required": [
+            "submissionReference",
+            "idempotencyKey",
+            "oioublSha256",
+            "envelopeSha256",
+            "envelope",
+            "status",
+            "id",
+            "invoiceDocumentId",
+            "invoiceNumber",
+            "transmissionId",
+            "legacy",
+            "duplicate",
+            "redeliveryBlocked",
+            "providerStatus",
+            "companyKey",
+            "environment",
+            "stateHash",
+            "history",
+            "ok",
+            "appliedRules",
+            "errors"
+          ],
+          "additionalProperties": false
+        }
+      ]
     }
   }
 }

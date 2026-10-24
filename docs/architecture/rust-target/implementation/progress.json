@@ -1,13 +1,13 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "R98/R99 original public-invoice MCP flow accepted: source-flat PEPPOL/Digisense through common Rust server;11actualcases/current1607;whole717open",
-  "code_revision": "acf4fd95ce0ca531937b244201c605c52e03e795",
+  "current_increment": "R100/R101 original efaktura_status accepted: atomiccurrentbinding/verifiedACKcache/oneObserve/pendingfalse;27actualcases/correctserverBIN/current1609;whole717open",
+  "code_revision": "f44f82df5fe79fb475f7aab4546d2a8bc3f7c5e4",
   "spec_revision": "971249492f96da3d630e32bb0828ec3f7831e6b4",
-  "state": "original_public_invoice_mcp_component_accepted_whole717_open",
+  "state": "original_public_invoice_status_component_accepted_whole717_open",
   "issues_closed": 41,
   "next": [
-    "717:16 original names and31 workflow descriptions/full per-operation/error/discovery/revocation/isolation/protocol/reconnect acceptance remain. efaktura_status and original operator setup remain exact existing scope.",
+    "717:15 otheroriginalnames/31workflows/full per-operation/error/discovery/revocation/isolation/protocol/reconnect remain; original operator setup stays exactscope. Nextneededownerflow718:bindexistingWriteOffModaltoacceptedRustsourcewriter/explicitreview/flatvalidatedreceipt/outcomelock; currentUIdisabledgap.",
     "All55 original issues/J01-J07/release/cutover/manualinstalleddesktopLAST gates preserved.41actuallyclosed14open; no live-data/defaultlauncher/installedapp switch."
   ],
   "preserve_unrelated_paths": [
@@ -18,7 +18,7 @@
     ".gitattributes"
   ],
   "all_goal_requirements_complete": false,
-  "previous_verified_increment": "R96/R97ownerindependentexportedbackupverificationinstandardTauri/sharedReactaccepted;14actualcases/current1605unchangedcontracts;whole721open",
+  "previous_verified_increment": "R98/R99 original public-invoice MCP flow accepted: source-flat PEPPOL/Digisense through common Rust server;11actualcases/current1607;whole717open",
   "evidence": {
     "combined_browser_log": "/tmp/rm-platform5-combined.log",
     "combined_browser_exit": 0,
@@ -16632,6 +16632,10 @@
     "r99_original_public_invoice_mcp": {
       "path": "/private/tmp/rentemester-rust-reports/r99-original-public-invoice-mcp717-current-contracts-qualified.json",
       "sha256": "74f9b6eb9c46ca1ca4c69d04b3d72116216a410f252041821868cb3d45bce2ed"
+    },
+    "r101_original_public_invoice_status": {
+      "path": "/private/tmp/rentemester-rust-reports/r101-original-public-invoice-status717-current-contracts-qualified.json",
+      "sha256": "612fb18b89bb0b8707cbb8fa1d186befe457a55ca24bcc6c7678fd30e46d5955"
     }
   },
   "verified_history": [
@@ -18913,6 +18917,18 @@
       "scope": "OriginalPEPPOL/DigisenseMCPadapter,sourcegrammar/envelope/confirmation/currentauthority/artifacts/no-retry;11compiledcases/current1607contracts. No provider/MFA/HTTPendtoend/installed/live-data claim.",
       "remaining": [
         "717:16 original names and31 workflow descriptions/full per-operation/error/discovery/revocation/isolation/protocol/reconnect acceptance remain. efaktura_status and original operator setup remain exact existing scope.",
+        "All55 original issues/J01-J07/release/cutover/manualinstalleddesktopLAST gates preserved.41actuallyclosed14open; no live-data/defaultlauncher/installedapp switch."
+      ]
+    },
+    {
+      "issue": 717,
+      "wholeIssueClosed": false,
+      "source_revision": "f44f82df5fe79fb475f7aab4546d2a8bc3f7c5e4",
+      "report": "/tmp/rentemester-rust-reports/r101-original-public-invoice-status717-current-contracts-qualified.json",
+      "sha256": "612fb18b89bb0b8707cbb8fa1d186befe457a55ca24bcc6c7678fd30e46d5955",
+      "scope": "Originalstatususesatomicassertion/ACKcache/oneObserve/pendingfalse/nativeunchanged;27actualcasesincludingcorrectserverBIN/current1609;no whole717/liveclaim.",
+      "remaining": [
+        "717:15 otheroriginalnames/31workflows/full per-operation/error/discovery/revocation/isolation/protocol/reconnect remain; original operator setup stays exactscope. Nextneededownerflow718:bindexistingWriteOffModaltoacceptedRustsourcewriter/explicitreview/flatvalidatedreceipt/outcomelock; currentUIdisabledgap.",
         "All55 original issues/J01-J07/release/cutover/manualinstalleddesktopLAST gates preserved.41actuallyclosed14open; no live-data/defaultlauncher/installedapp switch."
       ]
     }

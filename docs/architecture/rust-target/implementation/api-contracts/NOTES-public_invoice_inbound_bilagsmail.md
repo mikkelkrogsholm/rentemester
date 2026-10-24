@@ -118,3 +118,41 @@ names,31 original workflow descriptions and full per-operation/discovery/service
 revocation/isolation/protocol/reconnect acceptance remain under717. Every original
 issue/J01-J07/release/cutover obligation remains; manual installed desktop is last.
 No live data, default launcher or installed application was switched.
+
+## 2026-10-25 — Original Digisense status through the shared Rust service
+
+`efaktura_status` now preserves the original flat company/documentId/optional
+company-key assertion/confirmation grammar. A necessary additive original HTTP
+binding reuses the existing admitted status-only Observe operation. Native
+RefreshStatus, its DTO/tool/CLI and all four original producer commands remain.
+The optional assertion is trimmed server-side inside the same fresh-MFA and
+CompanyExternalSend transaction. Blank means no explicit assertion, never a
+waiver of the current ledger's own registered binding. Source, current binding
+and permission are rechecked before appending observations after provider I/O.
+
+Verified acknowledged and accepted failed results are cached. A queued native
+provider-ID can trigger one Observe; status has no Validate/Deliver/reservation
+path. Pending remains ok:false with errors; acknowledged and accepted terminal
+failure return ok:true. HTTP retains canonical native evidence; MCP preserves
+original envelope, text/structuredContent agreement and no-data-on-failure.
+Legacy/manual/missing-ID boundaries and curated diagnostics remain explicit.
+No new engine, provider setup, timer, automatic resend or readback was added.
+
+27 distinct compiled cases passed:10host,3server binary,5SDK,7MCP,2catalogue.
+The initially frozen server --lib selector ran zero cases; this is not validation.
+The lead diagnosed the target and ran the actual three existing binary-target
+cases on the same candidate; source-bound evidence is retained. Initial fixture
+failures were isolated: append-only test setup, stale protocol fixture and
+nonblocking accepted socket. Existing physical-file tampering/current manifest/
+blocking socket fixtures repaired those without changing production controls.
+Raw failures and fixes remain. SGD reused exact source-tree PASS receipts rather
+than replaying accepted effects. These are layered headless proofs, not fresh
+human-MFA/live-provider/HTTP end-to-end or installed desktop qualification.
+
+Current coverage is1609=646HTTP/531CLI/432MCP. All1607 preceding business
+contracts and431 preceding actual MCP definitions are retained, with current
+source hashes. Whole717 still needs15 original names,31 workflows and full
+per-operation/discovery/revocation/isolation/protocol/reconnect acceptance.
+All55/J01-J07/release/cutover/final installed-desktop requirements remain.
+Next concrete owner gap is718's original immediate-writeoff UI binding to the
+already accepted Rust writer. No live data or installed app was switched.
