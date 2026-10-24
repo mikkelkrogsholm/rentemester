@@ -40,7 +40,8 @@ fn boolean(name: &str) -> bool {
 }
 
 fn migrated(args: &[String]) -> bool {
-    crate::corporate_records_original::accepts(args)
+    crate::party_original::accepts(args)
+        || crate::corporate_records_original::accepts(args)
         || crate::ownership_original::accepts(args)
         || crate::system_healthcheck_original::accepts(args)
         || crate::audit_verify_original::accepts(args)
@@ -181,7 +182,7 @@ fn prepare_inner(args: Vec<String>, stdout_is_terminal: Option<bool>) -> Result<
         && command.first().is_some_and(|s| {
             matches!(
                 s.as_str(),
-                "corporate-record" | "ownership" | "audit" | "bookkeeping-batch" | "accounting-draft" | "accounts" | "posting-rules" | "dimensions" | "supplier-commitment" | "vat" | "customer"
+                "party" | "corporate-record" | "ownership" | "audit" | "bookkeeping-batch" | "accounting-draft" | "accounts" | "posting-rules" | "dimensions" | "supplier-commitment" | "vat" | "customer"
                     | "budget"
                     | "asset"
                     | "accrual"
@@ -281,7 +282,8 @@ fn prepare_inner(args: Vec<String>, stdout_is_terminal: Option<bool>) -> Result<
     // default distinguishes a terminal report from piped flat JSON.
     if !json
         && format == Some("human")
-        && (crate::corporate_records_original::accepts(&output)
+        && (crate::party_original::accepts(&output)
+            || crate::corporate_records_original::accepts(&output)
             || crate::ownership_original::accepts(&output)
             || crate::document_party_original::accepts(&output)
             || crate::invoice_extraction_original::accepts(&output)

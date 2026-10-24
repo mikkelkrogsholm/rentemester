@@ -15,10 +15,12 @@ pub fn accepts(s: &str) -> bool {
             | "link-workspace-party-role"
             | "assert-workspace-party-field"
             | "assert-workspace-party-alias"
+            | "propose-workspace-party-merge"
+            | "approve-workspace-party-merge"
     )
 }
 pub fn help() -> Value {
-    json!({"usage":"workspace-parties --company SLUG [--query TEXT] [--cursor N] [--limit 1..100]; workspace-party --company SLUG --party-id ID. create-workspace-party --company SLUG --confirm < native.json; link-workspace-party-role/assert-workspace-party-field/assert-workspace-party-alias additionally --party-id ID. Explicit server/private MFA cookie required.","policy":"CompanyRead visible full company-set projection before pagination. Create and role use current anchor MasterData; global field/alias assertions require current MasterData for ALL associated companies and an existing visible association. Archived/hidden associations refuse, no owner bypass. Immutable identity plus append-only source assertions; never updates accounting/contacts or infers defaults. No merge, keys, automatic retry. Unknown outcomes require canonical party/list/history reads.","bodySchemas":{"create":party_body_schema(&PartyMutation::Create),"role":party_body_schema(&PartyMutation::Role(String::new())),"assertion":party_body_schema(&PartyMutation::Assertion(String::new())),"alias":party_body_schema(&PartyMutation::Alias(String::new()))}})
+    json!({"usage":"workspace-parties --company SLUG [--query TEXT] [--cursor N] [--limit 1..100]; workspace-party --company SLUG --party-id ID. create-workspace-party --company SLUG --confirm < native.json; link-workspace-party-role/assert-workspace-party-field/assert-workspace-party-alias additionally --party-id ID. Explicit server/private MFA cookie required.","policy":"CompanyRead visible full company-set projection before pagination. Create and role use current anchor MasterData; global field/alias assertions require current MasterData for ALL associated companies and an existing visible association. Archived/hidden associations refuse, no owner bypass. Immutable identity plus append-only source assertions; never updates accounting/contacts or infers defaults. Explicit propose-workspace-party-merge/approve-workspace-party-merge use --party-id and confirmed native JSON; both full writable party scopes required. No keys or automatic retry. Unknown outcomes require canonical party/list/history reads.","bodySchemas":{"proposeMerge":party_body_schema(&PartyMutation::ProposeMerge(String::new())),"approveMerge":party_body_schema(&PartyMutation::ApproveMerge(String::new())),"create":party_body_schema(&PartyMutation::Create),"role":party_body_schema(&PartyMutation::Role(String::new())),"assertion":party_body_schema(&PartyMutation::Assertion(String::new())),"alias":party_body_schema(&PartyMutation::Alias(String::new()))}})
 }
 pub fn run(
     command: &str,
@@ -93,6 +95,8 @@ pub fn run(
                     "create-workspace-party" => PartyMutation::Create,
                     "link-workspace-party-role" => PartyMutation::Role(id.unwrap().into()),
                     "assert-workspace-party-field" => PartyMutation::Assertion(id.unwrap().into()),
+                    "propose-workspace-party-merge" => PartyMutation::ProposeMerge(id.unwrap().into()),
+                    "approve-workspace-party-merge" => PartyMutation::ApproveMerge(id.unwrap().into()),
                     _ => PartyMutation::Alias(id.unwrap().into()),
                 };
                 api.mutate_workspace_party(company, action, bytes, confirm)

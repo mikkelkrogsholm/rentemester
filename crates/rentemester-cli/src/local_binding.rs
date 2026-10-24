@@ -5,7 +5,7 @@ fn usage(message: &str) -> (u8, Error) {
     (2, Error::new("invalid_input", message))
 }
 pub fn prepare(args: Vec<String>) -> Result<Vec<String>, (u8, Error)> {
-    let registry = crate::corporate_records_original::accepts(&args) || crate::ownership_original::accepts(&args);
+    let registry = crate::party_original::accepts(&args) || crate::corporate_records_original::accepts(&args) || crate::ownership_original::accepts(&args);
     let mut workspace_assertion = None;
     let mut remaining = Vec::new();
     let mut profile = None;
