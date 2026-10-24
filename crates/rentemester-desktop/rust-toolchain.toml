@@ -1,0 +1,6 @@
+# Desktop dependencies require Rust >=1.95. The server/Linux baseline remains
+# pinned separately at the workspace root; both compile the same shared motor.
+[toolchain]
+channel = "1.99.1"
+profile = "minimal"
+components = ["rustfmt", "clippy"]

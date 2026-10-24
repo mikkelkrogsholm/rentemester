@@ -19,15 +19,21 @@ if [ ! -f "$web_source/index.html" ]; then
 fi
 # Preserve dev/debug defaults; the guard enforces the shared cache used at assembly.
 profile=${RENTEMESTER_DESKTOP_PROFILE:-dev}
+# Resolve the exact desktop pin; a moving +stable can silently change the app.
+desktop_channel=$(sed -n 's/^channel = "\([^"]*\)"/\1/p' crates/rentemester-desktop/rust-toolchain.toml)
+if [ -z "$desktop_channel" ]; then
+  echo "Missing pinned desktop Rust toolchain." >&2
+  exit 2
+fi
 target_dir=${CARGO_TARGET_DIR:-"$root/target"}
 target=${CARGO_BUILD_TARGET:-}
 # Build the server and shared-web desktop host serially in the guarded cache.
 CARGO_PROFILE_DEV_DEBUG=0 CARGO_INCREMENTAL=0 python3 scripts/rust/cargo-guard.py cargo build --locked --profile "$profile" -p rentemester-server -j 1
-CARGO_PROFILE_DEV_DEBUG=0 CARGO_INCREMENTAL=0 python3 scripts/rust/cargo-guard.py cargo +stable build --locked --profile "$profile" -p rentemester-desktop --bin rentemester-desktop -j 1
+CARGO_PROFILE_DEV_DEBUG=0 CARGO_INCREMENTAL=0 python3 scripts/rust/cargo-guard.py cargo +"$desktop_channel" build --locked --profile "$profile" -p rentemester-desktop --bin rentemester-desktop -j 1
 revision=$(git rev-parse HEAD)
 version=$(sed -n '/^\[workspace.package\]/,/^\[/s/^version = "\([^"]*\)"/\1/p' Cargo.toml)
 server_toolchain=$(rustc --version)
-desktop_toolchain=$(rustc +stable --version)
+desktop_toolchain=$(rustc +"$desktop_channel" --version)
 architecture=$(uname -m)
 if [ -n "$target" ]; then architecture=${target%%-*}; fi
 set -- --root "$root" --target-dir "$target_dir" --profile "$profile" --target "$target" \
