@@ -1,0 +1,6326 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$defs": {
+    "assets_Register": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "category": {
+          "type": "string"
+        },
+        "acquisitionDate": {
+          "type": "string"
+        },
+        "cost": {
+          "type": "number"
+        },
+        "usefulLifeMonths": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "purchaseDocumentId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "assetAccountNo": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "depreciationExpenseAccountNo": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "accumulatedDepreciationAccountNo": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "note": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "confirm": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "name",
+        "category",
+        "acquisitionDate",
+        "cost",
+        "usefulLifeMonths",
+        "purchaseDocumentId",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "assets_RegisterHttp": {
+      "oneOf": [
+        {
+          "$ref": "schemas-assets_accruals.json#/$defs/assets_Register"
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 4294967295
+            },
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "type": "boolean"
+            }
+          ],
+          "minItems": 11,
+          "maxItems": 11
+        }
+      ]
+    },
+    "assets_Depreciate": {
+      "type": "object",
+      "properties": {
+        "transactionDate": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "periodIndex": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 4294967295
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "confirm": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "assets_DepreciateHttp": {
+      "oneOf": [
+        {
+          "$ref": "schemas-assets_accruals.json#/$defs/assets_Depreciate"
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 4294967295
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "type": "boolean"
+            }
+          ],
+          "minItems": 3,
+          "maxItems": 3
+        }
+      ]
+    },
+    "accruals_Register": {
+      "type": "object",
+      "properties": {
+        "accrualType": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "totalAmount": {
+          "type": "number"
+        },
+        "recognitionPeriods": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "firstRecognitionDate": {
+          "type": "string"
+        },
+        "registrationDate": {
+          "type": "string"
+        },
+        "periodStepMonths": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "resultAccountNo": {
+          "type": "string"
+        },
+        "balanceAccountNo": {
+          "type": "string"
+        },
+        "settlementAccountNo": {
+          "type": "string"
+        },
+        "documentId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "note": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "confirm": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "accrualType",
+        "description",
+        "totalAmount",
+        "recognitionPeriods",
+        "firstRecognitionDate",
+        "registrationDate",
+        "periodStepMonths",
+        "resultAccountNo",
+        "balanceAccountNo",
+        "settlementAccountNo",
+        "documentId",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "accruals_RegisterHttp": {
+      "oneOf": [
+        {
+          "$ref": "schemas-assets_accruals.json#/$defs/accruals_Register"
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 4294967295
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 4294967295
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "type": "boolean"
+            }
+          ],
+          "minItems": 13,
+          "maxItems": 13
+        }
+      ]
+    },
+    "accruals_Recognize": {
+      "type": "object",
+      "properties": {
+        "periodIndex": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "transactionDate": {
+          "type": "string"
+        },
+        "settlementAccountNo": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "confirm": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "periodIndex",
+        "transactionDate",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "accruals_RecognizeHttp": {
+      "oneOf": [
+        {
+          "$ref": "schemas-assets_accruals.json#/$defs/accruals_Recognize"
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 4294967295
+            },
+            {
+              "type": "string"
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "type": "boolean"
+            }
+          ],
+          "minItems": 4,
+          "maxItems": 4
+        }
+      ]
+    },
+    "asset_original_Register": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "category": {
+          "type": "string"
+        },
+        "acquisitionDate": {
+          "type": "string"
+        },
+        "cost": {
+          "type": "number"
+        },
+        "usefulLifeMonths": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "documentId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "assetAccount": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "depreciationAccount": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "accumulatedAccount": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "note": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "name",
+        "category",
+        "acquisitionDate",
+        "cost",
+        "usefulLifeMonths",
+        "documentId"
+      ],
+      "additionalProperties": false
+    },
+    "asset_original_RegisterHttp": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "maxLength": 4096
+        },
+        "category": {
+          "type": "string",
+          "maxLength": 4096
+        },
+        "acquisitionDate": {
+          "type": "string",
+          "maxLength": 4096
+        },
+        "cost": {
+          "type": "number"
+        },
+        "usefulLifeMonths": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 12000
+        },
+        "documentId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "assetAccount": {
+          "type": "string",
+          "maxLength": 4096
+        },
+        "depreciationAccount": {
+          "type": "string",
+          "maxLength": 4096
+        },
+        "accumulatedAccount": {
+          "type": "string",
+          "maxLength": 4096
+        },
+        "note": {
+          "type": "string",
+          "maxLength": 4096
+        },
+        "confirm": {
+          "const": true
+        },
+        "expectedActor": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160,
+          "description": "UTF8 bytes, trimmed, no control characters; exact current credential assertion, never authority."
+        }
+      },
+      "required": [
+        "name",
+        "category",
+        "acquisitionDate",
+        "cost",
+        "usefulLifeMonths",
+        "documentId",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "asset_original_Depreciate": {
+      "type": "object",
+      "properties": {
+        "period": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "date": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "period",
+        "date"
+      ],
+      "additionalProperties": false
+    },
+    "asset_original_DepreciateHttp": {
+      "type": "object",
+      "properties": {
+        "period": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 12000
+        },
+        "date": {
+          "type": "string",
+          "maxLength": 4096
+        },
+        "confirm": {
+          "const": true
+        },
+        "expectedActor": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160,
+          "description": "UTF8 bytes, trimmed, no control characters; exact current credential assertion, never authority."
+        }
+      },
+      "required": [
+        "period",
+        "date",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "accrual_original_Register": {
+      "type": "object",
+      "properties": {
+        "accrualType": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "totalAmount": {
+          "type": "number"
+        },
+        "recognitionPeriods": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "firstRecognitionDate": {
+          "type": "string"
+        },
+        "resultAccountNo": {
+          "type": "string"
+        },
+        "registrationDate": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "periodStepMonths": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 4294967295
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "balanceAccountNo": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "settlementAccountNo": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "documentId": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "note": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "accrualType",
+        "description",
+        "totalAmount",
+        "recognitionPeriods",
+        "firstRecognitionDate",
+        "resultAccountNo"
+      ],
+      "additionalProperties": false
+    },
+    "accrual_original_RegisterHttp": {
+      "type": "object",
+      "properties": {
+        "accrualType": {
+          "type": "string",
+          "maxLength": 4096
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 4096
+        },
+        "totalAmount": {
+          "type": "number"
+        },
+        "recognitionPeriods": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 4294967295
+        },
+        "firstRecognitionDate": {
+          "type": "string",
+          "maxLength": 4096
+        },
+        "resultAccountNo": {
+          "type": "string",
+          "maxLength": 4096
+        },
+        "registrationDate": {
+          "type": "string",
+          "maxLength": 4096
+        },
+        "periodStepMonths": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 4294967295
+        },
+        "balanceAccountNo": {
+          "type": "string",
+          "maxLength": 4096
+        },
+        "settlementAccountNo": {
+          "type": "string",
+          "maxLength": 4096
+        },
+        "documentId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "note": {
+          "type": "string",
+          "maxLength": 4096
+        },
+        "confirm": {
+          "const": true
+        },
+        "expectedActor": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160,
+          "description": "UTF8 bytes, trimmed, no control characters; exact current credential assertion, never authority."
+        }
+      },
+      "required": [
+        "accrualType",
+        "description",
+        "totalAmount",
+        "recognitionPeriods",
+        "firstRecognitionDate",
+        "resultAccountNo",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "accrual_original_Recognize": {
+      "type": "object",
+      "properties": {
+        "period": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "date": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "settlementAccountNo": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "period"
+      ],
+      "additionalProperties": false
+    },
+    "accrual_original_RecognizeHttp": {
+      "type": "object",
+      "properties": {
+        "period": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 4294967295
+        },
+        "date": {
+          "type": "string",
+          "maxLength": 4096
+        },
+        "settlementAccountNo": {
+          "type": "string",
+          "maxLength": 4096
+        },
+        "confirm": {
+          "const": true
+        },
+        "expectedActor": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160,
+          "description": "UTF8 bytes, trimmed, no control characters; exact current credential assertion, never authority."
+        }
+      },
+      "required": [
+        "period",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "asset_disposal_Preview": {
+      "type": "object",
+      "properties": {
+        "transactionDate": {
+          "type": "string"
+        },
+        "documentId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "reason": {
+          "type": "string"
+        },
+        "lossAccountNo": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "transactionDate",
+        "documentId",
+        "reason"
+      ],
+      "additionalProperties": false
+    },
+    "asset_disposal_PreviewHttp": {
+      "oneOf": [
+        {
+          "$ref": "schemas-assets_accruals.json#/$defs/asset_disposal_Preview"
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "string"
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          ],
+          "minItems": 4,
+          "maxItems": 4
+        }
+      ]
+    },
+    "asset_disposal_Dispose": {
+      "type": "object",
+      "properties": {
+        "transactionDate": {
+          "type": "string"
+        },
+        "documentId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "reason": {
+          "type": "string"
+        },
+        "lossAccountNo": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "expectedPlanHash": {
+          "type": "string"
+        },
+        "idempotencyKey": {
+          "type": "string"
+        },
+        "confirm": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "transactionDate",
+        "documentId",
+        "reason",
+        "expectedPlanHash",
+        "idempotencyKey",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "asset_disposal_DisposeHttp": {
+      "oneOf": [
+        {
+          "$ref": "schemas-assets_accruals.json#/$defs/asset_disposal_Dispose"
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "string"
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ],
+          "minItems": 7,
+          "maxItems": 7
+        }
+      ]
+    },
+    "asset_original_WriteOff": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "category": {
+          "type": "string"
+        },
+        "acquisitionDate": {
+          "type": "string"
+        },
+        "cost": {
+          "type": "number"
+        },
+        "documentId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "expenseAccount": {
+          "type": "string"
+        },
+        "date": {
+          "type": "string"
+        },
+        "thresholdRuleSource": {
+          "type": "string"
+        },
+        "confirmImmediateWriteOff": {
+          "type": "boolean"
+        },
+        "paymentAccount": {
+          "type": "string"
+        },
+        "note": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "category",
+        "acquisitionDate",
+        "cost",
+        "documentId",
+        "expenseAccount",
+        "date",
+        "thresholdRuleSource",
+        "confirmImmediateWriteOff"
+      ],
+      "additionalProperties": false
+    },
+    "asset_original_WriteOffHttp": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "category": {
+          "type": "string"
+        },
+        "acquisitionDate": {
+          "type": "string"
+        },
+        "cost": {
+          "type": "number"
+        },
+        "documentId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "expenseAccount": {
+          "type": "string"
+        },
+        "date": {
+          "type": "string"
+        },
+        "thresholdRuleSource": {
+          "type": "string"
+        },
+        "confirmImmediateWriteOff": {
+          "type": "boolean"
+        },
+        "paymentAccount": {
+          "type": "string"
+        },
+        "note": {
+          "type": "string"
+        },
+        "confirm": {
+          "const": true
+        },
+        "expectedActor": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160
+        }
+      },
+      "required": [
+        "name",
+        "category",
+        "acquisitionDate",
+        "cost",
+        "documentId",
+        "expenseAccount",
+        "date",
+        "thresholdRuleSource",
+        "confirmImmediateWriteOff",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "asset_original_RegisterSdk": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "maxLength": 500,
+          "minLength": 1
+        },
+        "category": {
+          "type": "string",
+          "maxLength": 500,
+          "minLength": 1
+        },
+        "acquisitionDate": {
+          "type": "string",
+          "maxLength": 10,
+          "minLength": 1
+        },
+        "cost": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 90071992547409.9,
+          "description": "Actual SDK requires exact cents (tolerance 1e-6 after multiplication by100)."
+        },
+        "usefulLifeMonths": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 12000
+        },
+        "documentId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "assetAccount": {
+          "type": "string",
+          "maxLength": 128,
+          "minLength": 1
+        },
+        "depreciationAccount": {
+          "type": "string",
+          "maxLength": 128,
+          "minLength": 1
+        },
+        "accumulatedAccount": {
+          "type": "string",
+          "maxLength": 128,
+          "minLength": 1
+        },
+        "note": {
+          "type": "string",
+          "maxLength": 4096
+        }
+      },
+      "required": [
+        "name",
+        "category",
+        "acquisitionDate",
+        "cost",
+        "usefulLifeMonths",
+        "documentId"
+      ],
+      "additionalProperties": false
+    },
+    "asset_original_DepreciateSdk": {
+      "type": "object",
+      "properties": {
+        "period": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 12000
+        },
+        "date": {
+          "type": "string",
+          "maxLength": 10,
+          "minLength": 1
+        }
+      },
+      "required": [
+        "period",
+        "date"
+      ],
+      "additionalProperties": false
+    },
+    "asset_original_WriteOffSdk": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "maxLength": 500,
+          "minLength": 1
+        },
+        "category": {
+          "type": "string",
+          "maxLength": 500,
+          "minLength": 1
+        },
+        "acquisitionDate": {
+          "type": "string",
+          "maxLength": 10,
+          "minLength": 1
+        },
+        "cost": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 90071992547409.9,
+          "description": "Actual SDK requires exact cents (tolerance 1e-6 after multiplication by100)."
+        },
+        "documentId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "expenseAccount": {
+          "type": "string",
+          "maxLength": 128,
+          "minLength": 1
+        },
+        "date": {
+          "type": "string",
+          "maxLength": 10,
+          "minLength": 1
+        },
+        "thresholdRuleSource": {
+          "type": "string",
+          "maxLength": 1000,
+          "minLength": 1
+        },
+        "confirmImmediateWriteOff": {
+          "type": "boolean"
+        },
+        "paymentAccount": {
+          "type": "string",
+          "maxLength": 128,
+          "minLength": 1
+        },
+        "note": {
+          "type": "string",
+          "maxLength": 4096
+        }
+      },
+      "required": [
+        "name",
+        "category",
+        "acquisitionDate",
+        "cost",
+        "documentId",
+        "expenseAccount",
+        "date",
+        "thresholdRuleSource",
+        "confirmImmediateWriteOff"
+      ],
+      "additionalProperties": false
+    },
+    "accrual_original_RegisterSdk": {
+      "type": "object",
+      "properties": {
+        "accrualType": {
+          "enum": [
+            "prepaid_expense",
+            "accrued_expense",
+            "deferred_revenue"
+          ]
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 500,
+          "minLength": 1
+        },
+        "totalAmount": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 90071992547409.9,
+          "description": "Actual SDK requires exact cents (tolerance 1e-6 after multiplication by100)."
+        },
+        "recognitionPeriods": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 12000
+        },
+        "firstRecognitionDate": {
+          "type": "string",
+          "maxLength": 10,
+          "minLength": 1
+        },
+        "resultAccountNo": {
+          "type": "string",
+          "maxLength": 128,
+          "minLength": 1
+        },
+        "registrationDate": {
+          "type": "string",
+          "maxLength": 10,
+          "minLength": 1
+        },
+        "periodStepMonths": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1200
+        },
+        "balanceAccountNo": {
+          "type": "string",
+          "maxLength": 128,
+          "minLength": 1
+        },
+        "settlementAccountNo": {
+          "type": "string",
+          "maxLength": 128,
+          "minLength": 1
+        },
+        "documentId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "note": {
+          "type": "string",
+          "maxLength": 4096
+        }
+      },
+      "required": [
+        "accrualType",
+        "description",
+        "totalAmount",
+        "recognitionPeriods",
+        "firstRecognitionDate",
+        "resultAccountNo"
+      ],
+      "additionalProperties": false
+    },
+    "accrual_original_RecognizeSdk": {
+      "type": "object",
+      "properties": {
+        "period": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 12000
+        },
+        "date": {
+          "type": "string",
+          "maxLength": 10,
+          "minLength": 1
+        },
+        "settlementAccountNo": {
+          "type": "string",
+          "maxLength": 128,
+          "minLength": 1
+        }
+      },
+      "required": [
+        "period"
+      ],
+      "additionalProperties": false
+    },
+    "assets_RegisterSdk": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500
+        },
+        "category": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500
+        },
+        "acquisitionDate": {
+          "type": "string"
+        },
+        "cost": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "usefulLifeMonths": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 4294967295
+        },
+        "purchaseDocumentId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "assetAccountNo": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "depreciationExpenseAccountNo": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "accumulatedDepreciationAccountNo": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "note": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 4096
+        },
+        "confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "name",
+        "category",
+        "acquisitionDate",
+        "cost",
+        "usefulLifeMonths",
+        "purchaseDocumentId",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "assets_DepreciateSdk": {
+      "type": "object",
+      "properties": {
+        "transactionDate": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "periodIndex": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 4294967295
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "accruals_RegisterSdk": {
+      "type": "object",
+      "properties": {
+        "accrualType": {
+          "enum": [
+            "prepaid_expense",
+            "accrued_expense",
+            "deferred_revenue"
+          ]
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500
+        },
+        "totalAmount": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "recognitionPeriods": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "firstRecognitionDate": {
+          "type": "string"
+        },
+        "registrationDate": {
+          "type": "string"
+        },
+        "periodStepMonths": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "resultAccountNo": {
+          "type": "string"
+        },
+        "balanceAccountNo": {
+          "type": "string"
+        },
+        "settlementAccountNo": {
+          "type": "string"
+        },
+        "documentId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "note": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 4096
+        },
+        "confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "accrualType",
+        "description",
+        "totalAmount",
+        "recognitionPeriods",
+        "firstRecognitionDate",
+        "registrationDate",
+        "periodStepMonths",
+        "resultAccountNo",
+        "balanceAccountNo",
+        "settlementAccountNo",
+        "documentId",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "accruals_RecognizeSdk": {
+      "type": "object",
+      "properties": {
+        "periodIndex": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "transactionDate": {
+          "type": "string"
+        },
+        "settlementAccountNo": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "periodIndex",
+        "transactionDate",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "AssetRow": {
+      "type": "object",
+      "properties": {
+        "assetId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "name": {
+          "type": "string"
+        },
+        "category": {
+          "type": "string"
+        },
+        "acquisitionDate": {
+          "type": "string"
+        },
+        "cost": {
+          "type": "number",
+          "description": "JSON numeric DKK from sales_invoice::wire, never a decimal string."
+        },
+        "usefulLifeMonths": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "postedPeriods": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "accumulatedDepreciation": {
+          "type": "number",
+          "description": "JSON numeric DKK from sales_invoice::wire, never a decimal string."
+        },
+        "netBookValue": {
+          "type": "number",
+          "description": "JSON numeric DKK from sales_invoice::wire, never a decimal string."
+        },
+        "status": {
+          "enum": [
+            "active",
+            "fully-depreciated",
+            "disposed"
+          ]
+        },
+        "disposalDate": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "disposalId": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "disposalJournalEntryId": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "assetId",
+        "name",
+        "category",
+        "acquisitionDate",
+        "cost",
+        "usefulLifeMonths",
+        "postedPeriods",
+        "accumulatedDepreciation",
+        "netBookValue",
+        "status",
+        "disposalDate",
+        "disposalId",
+        "disposalJournalEntryId"
+      ],
+      "additionalProperties": false
+    },
+    "NativeAssetRow": {
+      "type": "object",
+      "properties": {
+        "assetId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "name": {
+          "type": "string"
+        },
+        "category": {
+          "type": "string"
+        },
+        "acquisitionDate": {
+          "type": "string"
+        },
+        "cost": {
+          "type": "number",
+          "description": "JSON numeric DKK from sales_invoice::wire, never a decimal string."
+        },
+        "usefulLifeMonths": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "postedPeriods": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "accumulatedDepreciation": {
+          "type": "number",
+          "description": "JSON numeric DKK from sales_invoice::wire, never a decimal string."
+        },
+        "netBookValue": {
+          "type": "number",
+          "description": "JSON numeric DKK from sales_invoice::wire, never a decimal string."
+        },
+        "status": {
+          "enum": [
+            "active",
+            "fully-depreciated",
+            "disposed"
+          ]
+        },
+        "disposalDate": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "disposalId": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "disposalJournalEntryId": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "remainingPeriods": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "assetId",
+        "name",
+        "category",
+        "acquisitionDate",
+        "cost",
+        "usefulLifeMonths",
+        "postedPeriods",
+        "accumulatedDepreciation",
+        "netBookValue",
+        "status",
+        "disposalDate",
+        "disposalId",
+        "disposalJournalEntryId",
+        "remainingPeriods"
+      ],
+      "additionalProperties": false
+    },
+    "AssetTotals": {
+      "type": "object",
+      "properties": {
+        "cost": {
+          "type": "number",
+          "description": "JSON numeric DKK from sales_invoice::wire, never a decimal string."
+        },
+        "accumulatedDepreciation": {
+          "type": "number",
+          "description": "JSON numeric DKK from sales_invoice::wire, never a decimal string."
+        },
+        "netBookValue": {
+          "type": "number",
+          "description": "JSON numeric DKK from sales_invoice::wire, never a decimal string."
+        },
+        "activeCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "disposedCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "fullyDepreciatedCount": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "cost",
+        "accumulatedDepreciation",
+        "netBookValue",
+        "activeCount",
+        "disposedCount",
+        "fullyDepreciatedCount"
+      ],
+      "additionalProperties": false
+    },
+    "AssetReport": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "assets": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-assets_accruals.json#/$defs/AssetRow"
+          }
+        },
+        "totals": {
+          "$ref": "schemas-assets_accruals.json#/$defs/AssetTotals"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0
+        }
+      },
+      "required": [
+        "ok",
+        "assets",
+        "totals",
+        "errors"
+      ],
+      "additionalProperties": false,
+      "description": "Raw producer shape. Original SDK additionally imposes safe positive IDs, exact cents, bounded strings/rules, semantic sums/period bounds and hash checks as described by selected rows; not arbitrary SDK Value."
+    },
+    "WriteOffRow": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "name": {
+          "type": "string"
+        },
+        "category": {
+          "type": "string"
+        },
+        "acquisitionDate": {
+          "type": "string"
+        },
+        "writeOffDate": {
+          "type": "string"
+        },
+        "cost": {
+          "type": "number",
+          "description": "JSON numeric DKK from sales_invoice::wire, never a decimal string."
+        },
+        "expenseAccountNo": {
+          "type": "string"
+        },
+        "thresholdDkk": {
+          "type": "number",
+          "description": "JSON numeric DKK from sales_invoice::wire, never a decimal string."
+        },
+        "thresholdRuleSource": {
+          "type": "string"
+        },
+        "note": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "purchaseDocumentId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "journalEntryId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "category",
+        "acquisitionDate",
+        "writeOffDate",
+        "cost",
+        "expenseAccountNo",
+        "thresholdDkk",
+        "thresholdRuleSource",
+        "note",
+        "purchaseDocumentId",
+        "journalEntryId"
+      ],
+      "additionalProperties": false
+    },
+    "AssetList": {
+      "type": "object",
+      "properties": {
+        "slug": {
+          "type": "string"
+        },
+        "company": {
+          "$ref": "schemas-chart_journal.json#/$defs/CompanyProfile"
+        },
+        "nativeAssetAccounts": {
+          "const": true
+        },
+        "writeOffAvailable": {
+          "const": false
+        },
+        "assets": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-assets_accruals.json#/$defs/NativeAssetRow"
+          }
+        },
+        "writeOffs": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-assets_accruals.json#/$defs/WriteOffRow"
+          }
+        },
+        "totals": {
+          "type": "object",
+          "properties": {
+            "cost": {
+              "type": "number",
+              "description": "JSON numeric DKK from sales_invoice::wire, never a decimal string."
+            },
+            "accumulatedDepreciation": {
+              "type": "number",
+              "description": "JSON numeric DKK from sales_invoice::wire, never a decimal string."
+            },
+            "netBookValue": {
+              "type": "number",
+              "description": "JSON numeric DKK from sales_invoice::wire, never a decimal string."
+            },
+            "activeCount": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "disposedCount": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "fullyDepreciatedCount": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "writeOffCount": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "writeOffTotal": {
+              "type": "number",
+              "description": "JSON numeric DKK from sales_invoice::wire, never a decimal string."
+            }
+          },
+          "required": [
+            "cost",
+            "accumulatedDepreciation",
+            "netBookValue",
+            "activeCount",
+            "disposedCount",
+            "fullyDepreciatedCount",
+            "writeOffCount",
+            "writeOffTotal"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "slug",
+        "company",
+        "nativeAssetAccounts",
+        "writeOffAvailable",
+        "assets",
+        "writeOffs",
+        "totals"
+      ],
+      "additionalProperties": false
+    },
+    "Next": {
+      "type": "object",
+      "properties": {
+        "assetId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "totalPeriods": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "postedPeriods": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "remainingPeriods": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "status": {
+          "enum": [
+            "active",
+            "fully-depreciated",
+            "disposed"
+          ]
+        },
+        "nextPeriodIndex": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 4294967295
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "nextPeriodAmount": {
+          "anyOf": [
+            {
+              "type": "number",
+              "description": "JSON numeric DKK from sales_invoice::wire, never a decimal string."
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "assetId",
+        "totalPeriods",
+        "postedPeriods",
+        "remainingPeriods",
+        "status",
+        "nextPeriodIndex",
+        "nextPeriodAmount"
+      ],
+      "additionalProperties": false
+    },
+    "AccrualRow": {
+      "type": "object",
+      "properties": {
+        "accrualId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "accrualType": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "totalAmount": {
+          "type": "number",
+          "description": "JSON numeric DKK from sales_invoice::wire, never a decimal string."
+        },
+        "recognitionPeriods": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "recognizedPeriods": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "recognizedAmount": {
+          "type": "number",
+          "description": "JSON numeric DKK from sales_invoice::wire, never a decimal string."
+        },
+        "remainingAmount": {
+          "type": "number",
+          "description": "JSON numeric DKK from sales_invoice::wire, never a decimal string."
+        },
+        "fullyRecognized": {
+          "type": "boolean"
+        },
+        "balanceAccountNo": {
+          "type": "string"
+        },
+        "resultAccountNo": {
+          "type": "string"
+        },
+        "firstRecognitionDate": {
+          "type": "string"
+        },
+        "periodStepMonths": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        }
+      },
+      "required": [
+        "accrualId",
+        "accrualType",
+        "description",
+        "totalAmount",
+        "recognitionPeriods",
+        "recognizedPeriods",
+        "recognizedAmount",
+        "remainingAmount",
+        "fullyRecognized",
+        "balanceAccountNo",
+        "resultAccountNo",
+        "firstRecognitionDate",
+        "periodStepMonths"
+      ],
+      "additionalProperties": false
+    },
+    "AccrualReport": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "accruals": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-assets_accruals.json#/$defs/AccrualRow"
+          }
+        },
+        "totals": {
+          "type": "object",
+          "properties": {
+            "totalAmount": {
+              "type": "number",
+              "description": "JSON numeric DKK from sales_invoice::wire, never a decimal string."
+            },
+            "recognizedAmount": {
+              "type": "number",
+              "description": "JSON numeric DKK from sales_invoice::wire, never a decimal string."
+            },
+            "remainingAmount": {
+              "type": "number",
+              "description": "JSON numeric DKK from sales_invoice::wire, never a decimal string."
+            }
+          },
+          "required": [
+            "totalAmount",
+            "recognizedAmount",
+            "remainingAmount"
+          ],
+          "additionalProperties": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0
+        }
+      },
+      "required": [
+        "ok",
+        "accruals",
+        "totals",
+        "errors"
+      ],
+      "additionalProperties": false,
+      "description": "Raw producer shape. Original SDK additionally imposes safe positive IDs, exact cents, bounded strings/rules, semantic sums/period bounds and hash checks as described by selected rows; not arbitrary SDK Value."
+    },
+    "AccrualList": {
+      "type": "object",
+      "properties": {
+        "slug": {
+          "type": "string"
+        },
+        "nativeAccruals": {
+          "const": true
+        },
+        "company": {
+          "$ref": "schemas-chart_journal.json#/$defs/CompanyProfile"
+        },
+        "report": {
+          "$ref": "schemas-assets_accruals.json#/$defs/AccrualReport"
+        }
+      },
+      "required": [
+        "slug",
+        "nativeAccruals",
+        "company",
+        "report"
+      ],
+      "additionalProperties": false
+    },
+    "Schedule": {
+      "type": "object",
+      "properties": {
+        "accrualId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "schedule": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "periodIndex": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 4294967295
+              },
+              "recognitionDate": {
+                "type": "string"
+              },
+              "amount": {
+                "type": "number",
+                "description": "JSON numeric DKK from sales_invoice::wire, never a decimal string."
+              },
+              "recognized": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "periodIndex",
+              "recognitionDate",
+              "amount",
+              "recognized"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "documentId": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "accrualType": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "accrualId",
+        "schedule",
+        "documentId",
+        "accrualType"
+      ],
+      "additionalProperties": false
+    },
+    "AssetRegistered": {
+      "type": "object",
+      "properties": {
+        "assetId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "totalPeriods": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "periodAmount": {
+          "type": "number",
+          "description": "JSON numeric DKK from sales_invoice::wire, never a decimal string."
+        }
+      },
+      "required": [
+        "assetId",
+        "totalPeriods",
+        "periodAmount"
+      ],
+      "additionalProperties": false
+    },
+    "Depreciated": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0
+        },
+        "entryId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "entryNo": {
+          "type": "string"
+        },
+        "entryHash": {
+          "type": "string"
+        },
+        "assetId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "periodIndex": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "periodAmount": {
+          "type": "number",
+          "description": "JSON numeric DKK from sales_invoice::wire, never a decimal string."
+        }
+      },
+      "required": [
+        "ok",
+        "appliedRules",
+        "errors",
+        "entryId",
+        "entryNo",
+        "entryHash",
+        "assetId",
+        "periodIndex",
+        "periodAmount"
+      ],
+      "additionalProperties": false,
+      "description": "Raw producer shape. Original SDK additionally imposes safe positive IDs, exact cents, bounded strings/rules, semantic sums/period bounds and hash checks as described by selected rows; not arbitrary SDK Value."
+    },
+    "AccrualRegistered": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0
+        },
+        "entryId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "entryNo": {
+          "type": "string"
+        },
+        "entryHash": {
+          "type": "string"
+        },
+        "accrualId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "accrualType": {
+          "type": "string"
+        },
+        "totalPeriods": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "periodAmount": {
+          "type": "number",
+          "description": "JSON numeric DKK from sales_invoice::wire, never a decimal string."
+        }
+      },
+      "required": [
+        "ok",
+        "appliedRules",
+        "errors",
+        "entryId",
+        "entryNo",
+        "entryHash",
+        "accrualId",
+        "accrualType",
+        "totalPeriods",
+        "periodAmount"
+      ],
+      "additionalProperties": false,
+      "description": "Raw producer shape. Original SDK additionally imposes safe positive IDs, exact cents, bounded strings/rules, semantic sums/period bounds and hash checks as described by selected rows; not arbitrary SDK Value."
+    },
+    "Recognized": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0
+        },
+        "entryId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "entryNo": {
+          "type": "string"
+        },
+        "entryHash": {
+          "type": "string"
+        },
+        "accrualId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "periodIndex": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "periodAmount": {
+          "type": "number",
+          "description": "JSON numeric DKK from sales_invoice::wire, never a decimal string."
+        },
+        "recognizedPeriods": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "totalPeriods": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "fullyRecognized": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "ok",
+        "appliedRules",
+        "errors",
+        "entryId",
+        "entryNo",
+        "entryHash",
+        "accrualId",
+        "periodIndex",
+        "periodAmount",
+        "recognizedPeriods",
+        "totalPeriods",
+        "fullyRecognized"
+      ],
+      "additionalProperties": false,
+      "description": "Raw producer shape. Original SDK additionally imposes safe positive IDs, exact cents, bounded strings/rules, semantic sums/period bounds and hash checks as described by selected rows; not arbitrary SDK Value."
+    },
+    "WrittenOff": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0
+        },
+        "entryId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "entryNo": {
+          "type": "string"
+        },
+        "entryHash": {
+          "type": "string"
+        },
+        "writeOffId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "cost": {
+          "type": "number",
+          "description": "JSON numeric DKK from sales_invoice::wire, never a decimal string."
+        },
+        "thresholdDkk": {
+          "type": "integer",
+          "enum": [
+            33100,
+            34400,
+            36000
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "appliedRules",
+        "errors",
+        "entryId",
+        "entryNo",
+        "entryHash",
+        "writeOffId",
+        "cost",
+        "thresholdDkk"
+      ],
+      "additionalProperties": false,
+      "description": "Raw producer shape. Original SDK additionally imposes safe positive IDs, exact cents, bounded strings/rules, semantic sums/period bounds and hash checks as described by selected rows; not arbitrary SDK Value."
+    },
+    "OriginalAssetRegistered": {
+      "type": "object",
+      "properties": {
+        "assetId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "totalPeriods": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "periodAmount": {
+          "type": "number",
+          "description": "JSON numeric DKK from sales_invoice::wire, never a decimal string."
+        },
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "assetId",
+        "totalPeriods",
+        "periodAmount",
+        "ok",
+        "errors",
+        "appliedRules"
+      ],
+      "additionalProperties": false,
+      "description": "Raw producer shape. Original SDK additionally imposes safe positive IDs, exact cents, bounded strings/rules, semantic sums/period bounds and hash checks as described by selected rows; not arbitrary SDK Value."
+    },
+    "DisposalPreview": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "disposalPreview": {
+          "type": "object",
+          "properties": {
+            "assetId": {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            "transactionDate": {
+              "type": "string"
+            },
+            "documentId": {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            "reason": {
+              "type": "string"
+            },
+            "lossAccountNo": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "cost": {
+              "type": "number",
+              "description": "JSON numeric DKK from sales_invoice::wire, never a decimal string."
+            },
+            "accumulatedDepreciation": {
+              "type": "number",
+              "description": "JSON numeric DKK from sales_invoice::wire, never a decimal string."
+            },
+            "carryingValue": {
+              "type": "number",
+              "description": "JSON numeric DKK from sales_invoice::wire, never a decimal string."
+            },
+            "lines": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "accountNo": {
+                    "type": "string"
+                  },
+                  "debit": {
+                    "type": "number",
+                    "description": "JSON numeric DKK from sales_invoice::wire, never a decimal string."
+                  },
+                  "credit": {
+                    "type": "number",
+                    "description": "JSON numeric DKK from sales_invoice::wire, never a decimal string."
+                  }
+                },
+                "required": [
+                  "accountNo",
+                  "debit",
+                  "credit"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 2,
+              "maxItems": 3
+            },
+            "planHash": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            }
+          },
+          "required": [
+            "assetId",
+            "transactionDate",
+            "documentId",
+            "reason",
+            "lossAccountNo",
+            "cost",
+            "accumulatedDepreciation",
+            "carryingValue",
+            "lines",
+            "planHash"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "ok",
+        "disposalPreview"
+      ],
+      "additionalProperties": false
+    },
+    "Disposal": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "disposal": {
+          "type": "object",
+          "properties": {
+            "disposalId": {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            "assetId": {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            "transactionDate": {
+              "type": "string"
+            },
+            "documentId": {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            "reason": {
+              "type": "string"
+            },
+            "cost": {
+              "type": "number",
+              "description": "JSON numeric DKK from sales_invoice::wire, never a decimal string."
+            },
+            "accumulatedDepreciation": {
+              "type": "number",
+              "description": "JSON numeric DKK from sales_invoice::wire, never a decimal string."
+            },
+            "carryingValueWrittenOff": {
+              "type": "number",
+              "description": "JSON numeric DKK from sales_invoice::wire, never a decimal string."
+            },
+            "remainingCarryingValue": {
+              "const": 0
+            },
+            "journalEntryId": {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            "journalEntryNo": {
+              "type": "string"
+            },
+            "journalEntryHash": {
+              "type": "string"
+            },
+            "replayed": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "disposalId",
+            "assetId",
+            "transactionDate",
+            "documentId",
+            "reason",
+            "cost",
+            "accumulatedDepreciation",
+            "carryingValueWrittenOff",
+            "remainingCarryingValue",
+            "journalEntryId",
+            "journalEntryNo",
+            "journalEntryHash",
+            "replayed"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "ok",
+        "disposal"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalFailure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "ok",
+        "appliedRules",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "SourceToolFailure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "enum": [
+            "CONFIRM_REQUIRED",
+            "invalid_input",
+            "server_refused",
+            "transport",
+            "protocol",
+            "outcome_unknown"
+          ]
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "ok",
+        "code",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "SourceCliFailure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "RpcError": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "type": "null"
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32700
+                },
+                "message": {
+                  "enum": [
+                    "invalid or oversized newline-delimited message",
+                    "invalid JSON",
+                    "message exceeds tool frame bound; only named original uploads/ownership/consolidation proposals admit larger bounded frames"
+                  ]
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "maxLength": 256,
+                      "description": "UTF8 byte bound enforced by Session"
+                    },
+                    {
+                      "type": "integer",
+                      "minimum": -9223372036854775808,
+                      "maximum": 9223372036854775807
+                    },
+                    {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 18446744073709551615
+                    }
+                  ]
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32600
+                },
+                "message": {
+                  "enum": [
+                    "expected one JSON-RPC object",
+                    "invalid JSON-RPC request",
+                    "request id already used",
+                    "already initialized"
+                  ]
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "maxLength": 256,
+                      "description": "UTF8 byte bound enforced by Session"
+                    },
+                    {
+                      "type": "integer",
+                      "minimum": -9223372036854775808,
+                      "maximum": 9223372036854775807
+                    },
+                    {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 18446744073709551615
+                    }
+                  ]
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32000
+                },
+                "message": {
+                  "enum": [
+                    "session request limit reached; reconnect"
+                  ]
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "maxLength": 256,
+                      "description": "UTF8 byte bound enforced by Session"
+                    },
+                    {
+                      "type": "integer",
+                      "minimum": -9223372036854775808,
+                      "maximum": 9223372036854775807
+                    },
+                    {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 18446744073709551615
+                    }
+                  ]
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "enum": [
+                    "accrual body exceeds native256KiB",
+                    "accrual_schedule requires only company/id",
+                    "accruals requires only company",
+                    "asset body exceeds native256KiB",
+                    "assets requires only company",
+                    "company required",
+                    "confirm must be boolean",
+                    "depreciate requires only company/id/body/confirm",
+                    "expected arguments object",
+                    "expected params object",
+                    "expectedActor must be string",
+                    "initialize requires protocolVersion, capabilities and clientInfo",
+                    "invalid accrual schema: null/unknown/identity/key/type fields refused",
+                    "invalid asset schema: null/unknown/identity/key/type fields refused",
+                    "invalid expectedActor assertion",
+                    "key required",
+                    "next_asset_depreciation requires only company/id",
+                    "positive exact accrual id required",
+                    "positive exact asset id required",
+                    "positive safe accrualId required",
+                    "positive safe assetId required",
+                    "recognize requires only company/id/body/confirm",
+                    "register requires only company/body/confirm",
+                    "report only accepts company",
+                    "report selectors must be strings",
+                    "task execution not supported",
+                    "tool name required",
+                    "unknown receipt field"
+                  ]
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "maxLength": 256,
+                      "description": "UTF8 byte bound enforced by Session"
+                    },
+                    {
+                      "type": "integer",
+                      "minimum": -9223372036854775808,
+                      "maximum": 9223372036854775807
+                    },
+                    {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 18446744073709551615
+                    }
+                  ]
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32002
+                },
+                "message": {
+                  "enum": [
+                    "initialize and notifications/initialized required"
+                  ]
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "maxLength": 256,
+                      "description": "UTF8 byte bound enforced by Session"
+                    },
+                    {
+                      "type": "integer",
+                      "minimum": -9223372036854775808,
+                      "maximum": 9223372036854775807
+                    },
+                    {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 18446744073709551615
+                    }
+                  ]
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32601
+                },
+                "message": {
+                  "enum": [
+                    "method not found"
+                  ]
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "RpcId": {
+      "anyOf": [
+        {
+          "type": "string",
+          "maxLength": 256,
+          "description": "UTF8 bytes <=256"
+        },
+        {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 18446744073709551615
+        }
+      ]
+    },
+    "Empty": {
+      "type": "object",
+      "properties": {},
+      "required": [],
+      "additionalProperties": false
+    },
+    "NativeAccrualRegistered": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0
+        },
+        "entryId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "entryNo": {
+          "type": "string"
+        },
+        "entryHash": {
+          "type": "string"
+        },
+        "accrualId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "accrualType": {
+          "type": "string"
+        },
+        "totalPeriods": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "periodAmount": {
+          "type": "number",
+          "description": "JSON numeric DKK from sales_invoice::wire, never a decimal string."
+        },
+        "schedule": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "periodIndex": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 4294967295
+              },
+              "recognitionDate": {
+                "type": "string"
+              },
+              "amount": {
+                "type": "number",
+                "description": "JSON numeric DKK from sales_invoice::wire, never a decimal string."
+              },
+              "recognized": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "periodIndex",
+              "recognitionDate",
+              "amount",
+              "recognized"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "ok",
+        "appliedRules",
+        "errors",
+        "entryId",
+        "entryNo",
+        "entryHash",
+        "accrualId",
+        "accrualType",
+        "totalPeriods",
+        "periodAmount",
+        "schedule"
+      ],
+      "additionalProperties": false
+    },
+    "asset_disposal_PreviewSdk": {
+      "type": "object",
+      "properties": {
+        "transactionDate": {
+          "type": "string"
+        },
+        "documentId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "lossAccountNo": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        }
+      },
+      "required": [
+        "transactionDate",
+        "documentId",
+        "reason"
+      ],
+      "additionalProperties": false
+    },
+    "asset_disposal_DisposeSdk": {
+      "type": "object",
+      "properties": {
+        "transactionDate": {
+          "type": "string"
+        },
+        "documentId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "lossAccountNo": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "expectedPlanHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "idempotencyKey": {
+          "type": "string",
+          "description": "8..160 UTF16 units, nonblank; exact original bytes"
+        },
+        "confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "transactionDate",
+        "documentId",
+        "reason",
+        "expectedPlanHash",
+        "idempotencyKey",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "Input_assets": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "company"
+      ],
+      "additionalProperties": false
+    },
+    "Input_next_asset_depreciation": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "id": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "company",
+        "id"
+      ],
+      "additionalProperties": false
+    },
+    "Input_accruals": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "company"
+      ],
+      "additionalProperties": false
+    },
+    "Input_accrual_schedule": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "id": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "company",
+        "id"
+      ],
+      "additionalProperties": false
+    },
+    "Input_register_asset": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "body": {
+          "type": "string",
+          "maxLength": 262144,
+          "contentMediaType": "application/json",
+          "contentSchema": {
+            "$ref": "schemas-assets_accruals.json#/$defs/assets_RegisterSdk"
+          },
+          "description": "Exact UTF8 JSON object bytes; actual SDK does not enforce advertised date regex."
+        },
+        "confirm": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "company",
+        "body",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "Input_depreciate_asset": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "id": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "body": {
+          "type": "string",
+          "maxLength": 262144,
+          "contentMediaType": "application/json",
+          "contentSchema": {
+            "$ref": "schemas-assets_accruals.json#/$defs/assets_DepreciateSdk"
+          },
+          "description": "Exact UTF8 JSON object bytes; actual SDK does not enforce advertised date regex."
+        },
+        "confirm": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "company",
+        "id",
+        "body",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "Input_register_accrual": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "body": {
+          "type": "string",
+          "maxLength": 262144,
+          "contentMediaType": "application/json",
+          "contentSchema": {
+            "$ref": "schemas-assets_accruals.json#/$defs/accruals_RegisterSdk"
+          },
+          "description": "Exact UTF8 JSON object bytes; actual SDK does not enforce advertised date regex."
+        },
+        "confirm": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "company",
+        "body",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "Input_recognize_accrual": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "id": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "body": {
+          "type": "string",
+          "maxLength": 262144,
+          "contentMediaType": "application/json",
+          "contentSchema": {
+            "$ref": "schemas-assets_accruals.json#/$defs/accruals_RecognizeSdk"
+          },
+          "description": "Exact UTF8 JSON object bytes; actual SDK does not enforce advertised date regex."
+        },
+        "confirm": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "company",
+        "id",
+        "body",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "Input_asset_register": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string",
+          "maxLength": 500,
+          "minLength": 1
+        },
+        "category": {
+          "type": "string",
+          "maxLength": 500,
+          "minLength": 1
+        },
+        "acquisitionDate": {
+          "type": "string",
+          "maxLength": 10,
+          "minLength": 1
+        },
+        "cost": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 90071992547409.9,
+          "description": "Actual SDK requires exact cents (tolerance 1e-6 after multiplication by100)."
+        },
+        "usefulLifeMonths": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 12000
+        },
+        "documentId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "assetAccount": {
+          "type": "string",
+          "maxLength": 128,
+          "minLength": 1
+        },
+        "depreciationAccount": {
+          "type": "string",
+          "maxLength": 128,
+          "minLength": 1
+        },
+        "accumulatedAccount": {
+          "type": "string",
+          "maxLength": 128,
+          "minLength": 1
+        },
+        "note": {
+          "type": "string",
+          "maxLength": 4096
+        },
+        "confirm": {
+          "type": "boolean"
+        },
+        "expectedActor": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160,
+          "description": "UTF16 bound and current identity equality assertion; omission of confirm allowed and returns CONFIRM_REQUIRED."
+        }
+      },
+      "required": [
+        "company",
+        "name",
+        "category",
+        "acquisitionDate",
+        "cost",
+        "usefulLifeMonths",
+        "documentId"
+      ],
+      "additionalProperties": false
+    },
+    "Input_asset_depreciate": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "period": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 12000
+        },
+        "date": {
+          "type": "string",
+          "maxLength": 10,
+          "minLength": 1
+        },
+        "confirm": {
+          "type": "boolean"
+        },
+        "expectedActor": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160,
+          "description": "UTF16 bound and current identity equality assertion; omission of confirm allowed and returns CONFIRM_REQUIRED."
+        },
+        "assetId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "company",
+        "period",
+        "date",
+        "assetId"
+      ],
+      "additionalProperties": false
+    },
+    "Input_asset_write_off": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string",
+          "maxLength": 500,
+          "minLength": 1
+        },
+        "category": {
+          "type": "string",
+          "maxLength": 500,
+          "minLength": 1
+        },
+        "acquisitionDate": {
+          "type": "string",
+          "maxLength": 10,
+          "minLength": 1
+        },
+        "cost": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 90071992547409.9,
+          "description": "Actual SDK requires exact cents (tolerance 1e-6 after multiplication by100)."
+        },
+        "documentId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "expenseAccount": {
+          "type": "string",
+          "maxLength": 128,
+          "minLength": 1
+        },
+        "date": {
+          "type": "string",
+          "maxLength": 10,
+          "minLength": 1
+        },
+        "thresholdRuleSource": {
+          "type": "string",
+          "maxLength": 1000,
+          "minLength": 1
+        },
+        "confirmImmediateWriteOff": {
+          "type": "boolean"
+        },
+        "paymentAccount": {
+          "type": "string",
+          "maxLength": 128,
+          "minLength": 1
+        },
+        "note": {
+          "type": "string",
+          "maxLength": 4096
+        },
+        "confirm": {
+          "type": "boolean"
+        },
+        "expectedActor": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160,
+          "description": "UTF16 bound and current identity equality assertion; omission of confirm allowed and returns CONFIRM_REQUIRED."
+        }
+      },
+      "required": [
+        "company",
+        "name",
+        "category",
+        "acquisitionDate",
+        "cost",
+        "documentId",
+        "expenseAccount",
+        "date",
+        "thresholdRuleSource",
+        "confirmImmediateWriteOff"
+      ],
+      "additionalProperties": false
+    },
+    "Input_asset_register_report": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "company"
+      ],
+      "additionalProperties": false
+    },
+    "Input_accrual_register": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "accrualType": {
+          "enum": [
+            "prepaid_expense",
+            "accrued_expense",
+            "deferred_revenue"
+          ]
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 500,
+          "minLength": 1
+        },
+        "totalAmount": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 90071992547409.9,
+          "description": "Actual SDK requires exact cents (tolerance 1e-6 after multiplication by100)."
+        },
+        "recognitionPeriods": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 12000
+        },
+        "firstRecognitionDate": {
+          "type": "string",
+          "maxLength": 10,
+          "minLength": 1
+        },
+        "resultAccountNo": {
+          "type": "string",
+          "maxLength": 128,
+          "minLength": 1
+        },
+        "registrationDate": {
+          "type": "string",
+          "maxLength": 10,
+          "minLength": 1
+        },
+        "periodStepMonths": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1200
+        },
+        "balanceAccountNo": {
+          "type": "string",
+          "maxLength": 128,
+          "minLength": 1
+        },
+        "settlementAccountNo": {
+          "type": "string",
+          "maxLength": 128,
+          "minLength": 1
+        },
+        "documentId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "note": {
+          "type": "string",
+          "maxLength": 4096
+        },
+        "confirm": {
+          "type": "boolean"
+        },
+        "expectedActor": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160,
+          "description": "UTF16 bound and current identity equality assertion; omission of confirm allowed and returns CONFIRM_REQUIRED."
+        }
+      },
+      "required": [
+        "company",
+        "accrualType",
+        "description",
+        "totalAmount",
+        "recognitionPeriods",
+        "firstRecognitionDate",
+        "resultAccountNo"
+      ],
+      "additionalProperties": false
+    },
+    "Input_accrual_recognize": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "period": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 12000
+        },
+        "date": {
+          "type": "string",
+          "maxLength": 10,
+          "minLength": 1
+        },
+        "settlementAccountNo": {
+          "type": "string",
+          "maxLength": 128,
+          "minLength": 1
+        },
+        "confirm": {
+          "type": "boolean"
+        },
+        "expectedActor": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160,
+          "description": "UTF16 bound and current identity equality assertion; omission of confirm allowed and returns CONFIRM_REQUIRED."
+        },
+        "accrualId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "company",
+        "period",
+        "accrualId"
+      ],
+      "additionalProperties": false
+    },
+    "Input_accrual_register_report": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "company"
+      ],
+      "additionalProperties": false
+    },
+    "Input_asset_disposal_preview": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "assetId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "transactionDate": {
+          "type": "string"
+        },
+        "documentId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "lossAccountNo": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        }
+      },
+      "required": [
+        "company",
+        "assetId",
+        "transactionDate",
+        "documentId",
+        "reason"
+      ],
+      "additionalProperties": false
+    },
+    "Input_asset_dispose": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "assetId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "transactionDate": {
+          "type": "string"
+        },
+        "documentId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "lossAccountNo": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "expectedPlanHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "idempotencyKey": {
+          "type": "string",
+          "description": "8..160 UTF16 units, nonblank; exact original bytes"
+        },
+        "confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "company",
+        "assetId",
+        "transactionDate",
+        "documentId",
+        "reason",
+        "expectedPlanHash",
+        "idempotencyKey",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "Input_asset_disposal_receipt": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "assetId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "key": {
+          "type": "string",
+          "description": "8..160 UTF16 units, nonblank"
+        }
+      },
+      "required": [
+        "company",
+        "assetId",
+        "key"
+      ],
+      "additionalProperties": false
+    },
+    "Http_assets_list": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "assets": {
+          "$ref": "schemas-assets_accruals.json#/$defs/AssetList"
+        }
+      },
+      "required": [
+        "ok",
+        "assets"
+      ],
+      "additionalProperties": false
+    },
+    "Http_assets_next": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "nextDepreciation": {
+          "$ref": "schemas-assets_accruals.json#/$defs/Next"
+        }
+      },
+      "required": [
+        "ok",
+        "nextDepreciation"
+      ],
+      "additionalProperties": false
+    },
+    "Http_assets_register": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "asset": {
+          "$ref": "schemas-assets_accruals.json#/$defs/AssetRegistered"
+        }
+      },
+      "required": [
+        "ok",
+        "asset"
+      ],
+      "additionalProperties": false
+    },
+    "Http_assets_depreciate": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "depreciation": {
+          "$ref": "schemas-assets_accruals.json#/$defs/Depreciated"
+        }
+      },
+      "required": [
+        "ok",
+        "depreciation"
+      ],
+      "additionalProperties": false
+    },
+    "Http_accruals_list": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "accruals": {
+          "$ref": "schemas-assets_accruals.json#/$defs/AccrualList"
+        }
+      },
+      "required": [
+        "ok",
+        "accruals"
+      ],
+      "additionalProperties": false
+    },
+    "Http_accruals_schedule": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "accrualSchedule": {
+          "$ref": "schemas-assets_accruals.json#/$defs/Schedule"
+        }
+      },
+      "required": [
+        "ok",
+        "accrualSchedule"
+      ],
+      "additionalProperties": false
+    },
+    "Http_accruals_register": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "accrual": {
+          "$ref": "schemas-assets_accruals.json#/$defs/NativeAccrualRegistered"
+        }
+      },
+      "required": [
+        "ok",
+        "accrual"
+      ],
+      "additionalProperties": false
+    },
+    "Http_accruals_recognize": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "recognition": {
+          "$ref": "schemas-assets_accruals.json#/$defs/Recognized"
+        }
+      },
+      "required": [
+        "ok",
+        "recognition"
+      ],
+      "additionalProperties": false
+    },
+    "Http_asset_original_report": {
+      "$ref": "schemas-assets_accruals.json#/$defs/AssetReport"
+    },
+    "Http_asset_original_register": {
+      "$ref": "schemas-assets_accruals.json#/$defs/OriginalAssetRegistered"
+    },
+    "Http_asset_original_depreciate": {
+      "$ref": "schemas-assets_accruals.json#/$defs/Depreciated"
+    },
+    "Http_asset_original_write-off": {
+      "$ref": "schemas-assets_accruals.json#/$defs/WrittenOff"
+    },
+    "Http_accrual_original_report": {
+      "$ref": "schemas-assets_accruals.json#/$defs/AccrualReport"
+    },
+    "Http_accrual_original_register": {
+      "$ref": "schemas-assets_accruals.json#/$defs/AccrualRegistered"
+    },
+    "Http_accrual_original_recognize": {
+      "$ref": "schemas-assets_accruals.json#/$defs/Recognized"
+    },
+    "Http_asset_disposal_preview": {
+      "$ref": "schemas-assets_accruals.json#/$defs/DisposalPreview"
+    },
+    "Http_asset_disposal_dispose": {
+      "$ref": "schemas-assets_accruals.json#/$defs/Disposal"
+    },
+    "Http_asset_disposal_receipt": {
+      "$ref": "schemas-assets_accruals.json#/$defs/Disposal"
+    },
+    "Tool_assets": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "const": "text"
+                },
+                "text": {
+                  "type": "string",
+                  "description": "Compact JSON of structuredContent, identical value."
+                }
+              },
+              "required": [
+                "type",
+                "text"
+              ],
+              "additionalProperties": false
+            }
+          ],
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "data": {
+              "$ref": "schemas-assets_accruals.json#/$defs/Http_assets_list"
+            }
+          },
+          "required": [
+            "ok",
+            "data"
+          ],
+          "additionalProperties": false
+        },
+        "isError": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "content",
+        "structuredContent",
+        "isError"
+      ],
+      "additionalProperties": false
+    },
+    "ToolFailure_assets": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "const": "text"
+                },
+                "text": {
+                  "type": "string",
+                  "description": "Compact JSON of structuredContent, identical value."
+                }
+              },
+              "required": [
+                "type",
+                "text"
+              ],
+              "additionalProperties": false
+            }
+          ],
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "$ref": "schemas-chart_journal.json#/$defs/NativeToolError"
+        },
+        "isError": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "content",
+        "structuredContent",
+        "isError"
+      ],
+      "additionalProperties": false
+    },
+    "Tool_next_asset_depreciation": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "const": "text"
+                },
+                "text": {
+                  "type": "string",
+                  "description": "Compact JSON of structuredContent, identical value."
+                }
+              },
+              "required": [
+                "type",
+                "text"
+              ],
+              "additionalProperties": false
+            }
+          ],
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "data": {
+              "$ref": "schemas-assets_accruals.json#/$defs/Http_assets_next"
+            }
+          },
+          "required": [
+            "ok",
+            "data"
+          ],
+          "additionalProperties": false
+        },
+        "isError": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "content",
+        "structuredContent",
+        "isError"
+      ],
+      "additionalProperties": false
+    },
+    "ToolFailure_next_asset_depreciation": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "const": "text"
+                },
+                "text": {
+                  "type": "string",
+                  "description": "Compact JSON of structuredContent, identical value."
+                }
+              },
+              "required": [
+                "type",
+                "text"
+              ],
+              "additionalProperties": false
+            }
+          ],
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "$ref": "schemas-chart_journal.json#/$defs/NativeToolError"
+        },
+        "isError": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "content",
+        "structuredContent",
+        "isError"
+      ],
+      "additionalProperties": false
+    },
+    "Tool_accruals": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "const": "text"
+                },
+                "text": {
+                  "type": "string",
+                  "description": "Compact JSON of structuredContent, identical value."
+                }
+              },
+              "required": [
+                "type",
+                "text"
+              ],
+              "additionalProperties": false
+            }
+          ],
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "data": {
+              "$ref": "schemas-assets_accruals.json#/$defs/Http_accruals_list"
+            }
+          },
+          "required": [
+            "ok",
+            "data"
+          ],
+          "additionalProperties": false
+        },
+        "isError": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "content",
+        "structuredContent",
+        "isError"
+      ],
+      "additionalProperties": false
+    },
+    "ToolFailure_accruals": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "const": "text"
+                },
+                "text": {
+                  "type": "string",
+                  "description": "Compact JSON of structuredContent, identical value."
+                }
+              },
+              "required": [
+                "type",
+                "text"
+              ],
+              "additionalProperties": false
+            }
+          ],
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "$ref": "schemas-chart_journal.json#/$defs/NativeToolError"
+        },
+        "isError": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "content",
+        "structuredContent",
+        "isError"
+      ],
+      "additionalProperties": false
+    },
+    "Tool_accrual_schedule": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "const": "text"
+                },
+                "text": {
+                  "type": "string",
+                  "description": "Compact JSON of structuredContent, identical value."
+                }
+              },
+              "required": [
+                "type",
+                "text"
+              ],
+              "additionalProperties": false
+            }
+          ],
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "data": {
+              "$ref": "schemas-assets_accruals.json#/$defs/Http_accruals_schedule"
+            }
+          },
+          "required": [
+            "ok",
+            "data"
+          ],
+          "additionalProperties": false
+        },
+        "isError": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "content",
+        "structuredContent",
+        "isError"
+      ],
+      "additionalProperties": false
+    },
+    "ToolFailure_accrual_schedule": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "const": "text"
+                },
+                "text": {
+                  "type": "string",
+                  "description": "Compact JSON of structuredContent, identical value."
+                }
+              },
+              "required": [
+                "type",
+                "text"
+              ],
+              "additionalProperties": false
+            }
+          ],
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "$ref": "schemas-chart_journal.json#/$defs/NativeToolError"
+        },
+        "isError": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "content",
+        "structuredContent",
+        "isError"
+      ],
+      "additionalProperties": false
+    },
+    "Tool_register_asset": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "const": "text"
+                },
+                "text": {
+                  "type": "string",
+                  "description": "Compact JSON of structuredContent, identical value."
+                }
+              },
+              "required": [
+                "type",
+                "text"
+              ],
+              "additionalProperties": false
+            }
+          ],
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "data": {
+              "$ref": "schemas-assets_accruals.json#/$defs/Http_assets_register"
+            }
+          },
+          "required": [
+            "ok",
+            "data"
+          ],
+          "additionalProperties": false
+        },
+        "isError": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "content",
+        "structuredContent",
+        "isError"
+      ],
+      "additionalProperties": false
+    },
+    "ToolFailure_register_asset": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "const": "text"
+                },
+                "text": {
+                  "type": "string",
+                  "description": "Compact JSON of structuredContent, identical value."
+                }
+              },
+              "required": [
+                "type",
+                "text"
+              ],
+              "additionalProperties": false
+            }
+          ],
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "$ref": "schemas-chart_journal.json#/$defs/NativeToolError"
+        },
+        "isError": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "content",
+        "structuredContent",
+        "isError"
+      ],
+      "additionalProperties": false
+    },
+    "Tool_depreciate_asset": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "const": "text"
+                },
+                "text": {
+                  "type": "string",
+                  "description": "Compact JSON of structuredContent, identical value."
+                }
+              },
+              "required": [
+                "type",
+                "text"
+              ],
+              "additionalProperties": false
+            }
+          ],
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "data": {
+              "$ref": "schemas-assets_accruals.json#/$defs/Http_assets_depreciate"
+            }
+          },
+          "required": [
+            "ok",
+            "data"
+          ],
+          "additionalProperties": false
+        },
+        "isError": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "content",
+        "structuredContent",
+        "isError"
+      ],
+      "additionalProperties": false
+    },
+    "ToolFailure_depreciate_asset": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "const": "text"
+                },
+                "text": {
+                  "type": "string",
+                  "description": "Compact JSON of structuredContent, identical value."
+                }
+              },
+              "required": [
+                "type",
+                "text"
+              ],
+              "additionalProperties": false
+            }
+          ],
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "$ref": "schemas-chart_journal.json#/$defs/NativeToolError"
+        },
+        "isError": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "content",
+        "structuredContent",
+        "isError"
+      ],
+      "additionalProperties": false
+    },
+    "Tool_register_accrual": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "const": "text"
+                },
+                "text": {
+                  "type": "string",
+                  "description": "Compact JSON of structuredContent, identical value."
+                }
+              },
+              "required": [
+                "type",
+                "text"
+              ],
+              "additionalProperties": false
+            }
+          ],
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "data": {
+              "$ref": "schemas-assets_accruals.json#/$defs/Http_accruals_register"
+            }
+          },
+          "required": [
+            "ok",
+            "data"
+          ],
+          "additionalProperties": false
+        },
+        "isError": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "content",
+        "structuredContent",
+        "isError"
+      ],
+      "additionalProperties": false
+    },
+    "ToolFailure_register_accrual": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "const": "text"
+                },
+                "text": {
+                  "type": "string",
+                  "description": "Compact JSON of structuredContent, identical value."
+                }
+              },
+              "required": [
+                "type",
+                "text"
+              ],
+              "additionalProperties": false
+            }
+          ],
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "$ref": "schemas-chart_journal.json#/$defs/NativeToolError"
+        },
+        "isError": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "content",
+        "structuredContent",
+        "isError"
+      ],
+      "additionalProperties": false
+    },
+    "Tool_recognize_accrual": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "const": "text"
+                },
+                "text": {
+                  "type": "string",
+                  "description": "Compact JSON of structuredContent, identical value."
+                }
+              },
+              "required": [
+                "type",
+                "text"
+              ],
+              "additionalProperties": false
+            }
+          ],
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "data": {
+              "$ref": "schemas-assets_accruals.json#/$defs/Http_accruals_recognize"
+            }
+          },
+          "required": [
+            "ok",
+            "data"
+          ],
+          "additionalProperties": false
+        },
+        "isError": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "content",
+        "structuredContent",
+        "isError"
+      ],
+      "additionalProperties": false
+    },
+    "ToolFailure_recognize_accrual": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "const": "text"
+                },
+                "text": {
+                  "type": "string",
+                  "description": "Compact JSON of structuredContent, identical value."
+                }
+              },
+              "required": [
+                "type",
+                "text"
+              ],
+              "additionalProperties": false
+            }
+          ],
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "$ref": "schemas-chart_journal.json#/$defs/NativeToolError"
+        },
+        "isError": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "content",
+        "structuredContent",
+        "isError"
+      ],
+      "additionalProperties": false
+    },
+    "Tool_asset_register": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "const": "text"
+                },
+                "text": {
+                  "type": "string",
+                  "description": "Compact JSON of structuredContent, identical value."
+                }
+              },
+              "required": [
+                "type",
+                "text"
+              ],
+              "additionalProperties": false
+            }
+          ],
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "errors": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 0
+            },
+            "data": {
+              "type": "object",
+              "properties": {
+                "assetId": {
+                  "type": "integer",
+                  "minimum": -9223372036854775808,
+                  "maximum": 9223372036854775807
+                },
+                "totalPeriods": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 4294967295
+                },
+                "periodAmount": {
+                  "type": "number",
+                  "description": "JSON numeric DKK from sales_invoice::wire, never a decimal string."
+                }
+              },
+              "required": [
+                "assetId",
+                "totalPeriods",
+                "periodAmount"
+              ],
+              "additionalProperties": false
+            },
+            "appliedRules": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "required": [
+            "ok",
+            "errors",
+            "data",
+            "appliedRules"
+          ],
+          "additionalProperties": false
+        },
+        "isError": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "content",
+        "structuredContent",
+        "isError"
+      ],
+      "additionalProperties": false
+    },
+    "ToolFailure_asset_register": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "const": "text"
+                },
+                "text": {
+                  "type": "string",
+                  "description": "Compact JSON of structuredContent, identical value."
+                }
+              },
+              "required": [
+                "type",
+                "text"
+              ],
+              "additionalProperties": false
+            }
+          ],
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "anyOf": [
+            {
+              "$ref": "schemas-assets_accruals.json#/$defs/SourceToolFailure"
+            },
+            {
+              "$ref": "schemas-assets_accruals.json#/$defs/OriginalFailure"
+            }
+          ]
+        },
+        "isError": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "content",
+        "structuredContent",
+        "isError"
+      ],
+      "additionalProperties": false
+    },
+    "Tool_asset_depreciate": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "const": "text"
+                },
+                "text": {
+                  "type": "string",
+                  "description": "Compact JSON of structuredContent, identical value."
+                }
+              },
+              "required": [
+                "type",
+                "text"
+              ],
+              "additionalProperties": false
+            }
+          ],
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "errors": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 0
+            },
+            "data": {
+              "type": "object",
+              "properties": {
+                "entryId": {
+                  "type": "integer",
+                  "minimum": -9223372036854775808,
+                  "maximum": 9223372036854775807
+                },
+                "entryNo": {
+                  "type": "string"
+                },
+                "entryHash": {
+                  "type": "string"
+                },
+                "assetId": {
+                  "type": "integer",
+                  "minimum": -9223372036854775808,
+                  "maximum": 9223372036854775807
+                },
+                "periodIndex": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 4294967295
+                },
+                "periodAmount": {
+                  "type": "number",
+                  "description": "JSON numeric DKK from sales_invoice::wire, never a decimal string."
+                }
+              },
+              "required": [
+                "entryId",
+                "entryNo",
+                "entryHash",
+                "assetId",
+                "periodIndex",
+                "periodAmount"
+              ],
+              "additionalProperties": false
+            },
+            "appliedRules": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "required": [
+            "ok",
+            "errors",
+            "data",
+            "appliedRules"
+          ],
+          "additionalProperties": false
+        },
+        "isError": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "content",
+        "structuredContent",
+        "isError"
+      ],
+      "additionalProperties": false
+    },
+    "ToolFailure_asset_depreciate": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "const": "text"
+                },
+                "text": {
+                  "type": "string",
+                  "description": "Compact JSON of structuredContent, identical value."
+                }
+              },
+              "required": [
+                "type",
+                "text"
+              ],
+              "additionalProperties": false
+            }
+          ],
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "anyOf": [
+            {
+              "$ref": "schemas-assets_accruals.json#/$defs/SourceToolFailure"
+            },
+            {
+              "$ref": "schemas-assets_accruals.json#/$defs/OriginalFailure"
+            }
+          ]
+        },
+        "isError": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "content",
+        "structuredContent",
+        "isError"
+      ],
+      "additionalProperties": false
+    },
+    "Tool_asset_write_off": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "const": "text"
+                },
+                "text": {
+                  "type": "string",
+                  "description": "Compact JSON of structuredContent, identical value."
+                }
+              },
+              "required": [
+                "type",
+                "text"
+              ],
+              "additionalProperties": false
+            }
+          ],
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "errors": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 0
+            },
+            "data": {
+              "type": "object",
+              "properties": {
+                "entryId": {
+                  "type": "integer",
+                  "minimum": -9223372036854775808,
+                  "maximum": 9223372036854775807
+                },
+                "entryNo": {
+                  "type": "string"
+                },
+                "entryHash": {
+                  "type": "string"
+                },
+                "writeOffId": {
+                  "type": "integer",
+                  "minimum": -9223372036854775808,
+                  "maximum": 9223372036854775807
+                },
+                "cost": {
+                  "type": "number",
+                  "description": "JSON numeric DKK from sales_invoice::wire, never a decimal string."
+                },
+                "thresholdDkk": {
+                  "type": "integer",
+                  "enum": [
+                    33100,
+                    34400,
+                    36000
+                  ]
+                }
+              },
+              "required": [
+                "entryId",
+                "entryNo",
+                "entryHash",
+                "writeOffId",
+                "cost",
+                "thresholdDkk"
+              ],
+              "additionalProperties": false
+            },
+            "appliedRules": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "required": [
+            "ok",
+            "errors",
+            "data",
+            "appliedRules"
+          ],
+          "additionalProperties": false
+        },
+        "isError": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "content",
+        "structuredContent",
+        "isError"
+      ],
+      "additionalProperties": false
+    },
+    "ToolFailure_asset_write_off": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "const": "text"
+                },
+                "text": {
+                  "type": "string",
+                  "description": "Compact JSON of structuredContent, identical value."
+                }
+              },
+              "required": [
+                "type",
+                "text"
+              ],
+              "additionalProperties": false
+            }
+          ],
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "anyOf": [
+            {
+              "$ref": "schemas-assets_accruals.json#/$defs/SourceToolFailure"
+            },
+            {
+              "$ref": "schemas-assets_accruals.json#/$defs/OriginalFailure"
+            }
+          ]
+        },
+        "isError": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "content",
+        "structuredContent",
+        "isError"
+      ],
+      "additionalProperties": false
+    },
+    "Tool_asset_register_report": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "const": "text"
+                },
+                "text": {
+                  "type": "string",
+                  "description": "Compact JSON of structuredContent, identical value."
+                }
+              },
+              "required": [
+                "type",
+                "text"
+              ],
+              "additionalProperties": false
+            }
+          ],
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "errors": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 0
+            },
+            "data": {
+              "type": "object",
+              "properties": {
+                "assets": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "schemas-assets_accruals.json#/$defs/AssetRow"
+                  }
+                },
+                "totals": {
+                  "$ref": "schemas-assets_accruals.json#/$defs/AssetTotals"
+                }
+              },
+              "required": [
+                "assets",
+                "totals"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "ok",
+            "errors",
+            "data"
+          ],
+          "additionalProperties": false
+        },
+        "isError": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "content",
+        "structuredContent",
+        "isError"
+      ],
+      "additionalProperties": false
+    },
+    "ToolFailure_asset_register_report": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "const": "text"
+                },
+                "text": {
+                  "type": "string",
+                  "description": "Compact JSON of structuredContent, identical value."
+                }
+              },
+              "required": [
+                "type",
+                "text"
+              ],
+              "additionalProperties": false
+            }
+          ],
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "anyOf": [
+            {
+              "$ref": "schemas-assets_accruals.json#/$defs/SourceToolFailure"
+            },
+            {
+              "$ref": "schemas-assets_accruals.json#/$defs/OriginalFailure"
+            }
+          ]
+        },
+        "isError": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "content",
+        "structuredContent",
+        "isError"
+      ],
+      "additionalProperties": false
+    },
+    "Tool_accrual_register": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "const": "text"
+                },
+                "text": {
+                  "type": "string",
+                  "description": "Compact JSON of structuredContent, identical value."
+                }
+              },
+              "required": [
+                "type",
+                "text"
+              ],
+              "additionalProperties": false
+            }
+          ],
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "errors": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 0
+            },
+            "data": {
+              "type": "object",
+              "properties": {
+                "entryId": {
+                  "type": "integer",
+                  "minimum": -9223372036854775808,
+                  "maximum": 9223372036854775807
+                },
+                "entryNo": {
+                  "type": "string"
+                },
+                "entryHash": {
+                  "type": "string"
+                },
+                "accrualId": {
+                  "type": "integer",
+                  "minimum": -9223372036854775808,
+                  "maximum": 9223372036854775807
+                },
+                "accrualType": {
+                  "type": "string"
+                },
+                "totalPeriods": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 4294967295
+                },
+                "periodAmount": {
+                  "type": "number",
+                  "description": "JSON numeric DKK from sales_invoice::wire, never a decimal string."
+                }
+              },
+              "required": [
+                "entryId",
+                "entryNo",
+                "entryHash",
+                "accrualId",
+                "accrualType",
+                "totalPeriods",
+                "periodAmount"
+              ],
+              "additionalProperties": false
+            },
+            "appliedRules": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "required": [
+            "ok",
+            "errors",
+            "data",
+            "appliedRules"
+          ],
+          "additionalProperties": false
+        },
+        "isError": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "content",
+        "structuredContent",
+        "isError"
+      ],
+      "additionalProperties": false
+    },
+    "ToolFailure_accrual_register": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "const": "text"
+                },
+                "text": {
+                  "type": "string",
+                  "description": "Compact JSON of structuredContent, identical value."
+                }
+              },
+              "required": [
+                "type",
+                "text"
+              ],
+              "additionalProperties": false
+            }
+          ],
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "anyOf": [
+            {
+              "$ref": "schemas-assets_accruals.json#/$defs/SourceToolFailure"
+            },
+            {
+              "$ref": "schemas-assets_accruals.json#/$defs/OriginalFailure"
+            }
+          ]
+        },
+        "isError": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "content",
+        "structuredContent",
+        "isError"
+      ],
+      "additionalProperties": false
+    },
+    "Tool_accrual_recognize": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "const": "text"
+                },
+                "text": {
+                  "type": "string",
+                  "description": "Compact JSON of structuredContent, identical value."
+                }
+              },
+              "required": [
+                "type",
+                "text"
+              ],
+              "additionalProperties": false
+            }
+          ],
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "errors": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 0
+            },
+            "data": {
+              "type": "object",
+              "properties": {
+                "entryId": {
+                  "type": "integer",
+                  "minimum": -9223372036854775808,
+                  "maximum": 9223372036854775807
+                },
+                "entryNo": {
+                  "type": "string"
+                },
+                "entryHash": {
+                  "type": "string"
+                },
+                "accrualId": {
+                  "type": "integer",
+                  "minimum": -9223372036854775808,
+                  "maximum": 9223372036854775807
+                },
+                "periodIndex": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 4294967295
+                },
+                "periodAmount": {
+                  "type": "number",
+                  "description": "JSON numeric DKK from sales_invoice::wire, never a decimal string."
+                },
+                "recognizedPeriods": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "totalPeriods": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 4294967295
+                },
+                "fullyRecognized": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "entryId",
+                "entryNo",
+                "entryHash",
+                "accrualId",
+                "periodIndex",
+                "periodAmount",
+                "recognizedPeriods",
+                "totalPeriods",
+                "fullyRecognized"
+              ],
+              "additionalProperties": false
+            },
+            "appliedRules": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "required": [
+            "ok",
+            "errors",
+            "data",
+            "appliedRules"
+          ],
+          "additionalProperties": false
+        },
+        "isError": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "content",
+        "structuredContent",
+        "isError"
+      ],
+      "additionalProperties": false
+    },
+    "ToolFailure_accrual_recognize": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "const": "text"
+                },
+                "text": {
+                  "type": "string",
+                  "description": "Compact JSON of structuredContent, identical value."
+                }
+              },
+              "required": [
+                "type",
+                "text"
+              ],
+              "additionalProperties": false
+            }
+          ],
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "anyOf": [
+            {
+              "$ref": "schemas-assets_accruals.json#/$defs/SourceToolFailure"
+            },
+            {
+              "$ref": "schemas-assets_accruals.json#/$defs/OriginalFailure"
+            }
+          ]
+        },
+        "isError": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "content",
+        "structuredContent",
+        "isError"
+      ],
+      "additionalProperties": false
+    },
+    "Tool_accrual_register_report": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "const": "text"
+                },
+                "text": {
+                  "type": "string",
+                  "description": "Compact JSON of structuredContent, identical value."
+                }
+              },
+              "required": [
+                "type",
+                "text"
+              ],
+              "additionalProperties": false
+            }
+          ],
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "errors": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 0
+            },
+            "data": {
+              "type": "object",
+              "properties": {
+                "accruals": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "schemas-assets_accruals.json#/$defs/AccrualRow"
+                  }
+                },
+                "totals": {
+                  "type": "object",
+                  "properties": {
+                    "totalAmount": {
+                      "type": "number",
+                      "description": "JSON numeric DKK from sales_invoice::wire, never a decimal string."
+                    },
+                    "recognizedAmount": {
+                      "type": "number",
+                      "description": "JSON numeric DKK from sales_invoice::wire, never a decimal string."
+                    },
+                    "remainingAmount": {
+                      "type": "number",
+                      "description": "JSON numeric DKK from sales_invoice::wire, never a decimal string."
+                    }
+                  },
+                  "required": [
+                    "totalAmount",
+                    "recognizedAmount",
+                    "remainingAmount"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "accruals",
+                "totals"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "ok",
+            "errors",
+            "data"
+          ],
+          "additionalProperties": false
+        },
+        "isError": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "content",
+        "structuredContent",
+        "isError"
+      ],
+      "additionalProperties": false
+    },
+    "ToolFailure_accrual_register_report": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "const": "text"
+                },
+                "text": {
+                  "type": "string",
+                  "description": "Compact JSON of structuredContent, identical value."
+                }
+              },
+              "required": [
+                "type",
+                "text"
+              ],
+              "additionalProperties": false
+            }
+          ],
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "anyOf": [
+            {
+              "$ref": "schemas-assets_accruals.json#/$defs/SourceToolFailure"
+            },
+            {
+              "$ref": "schemas-assets_accruals.json#/$defs/OriginalFailure"
+            }
+          ]
+        },
+        "isError": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "content",
+        "structuredContent",
+        "isError"
+      ],
+      "additionalProperties": false
+    },
+    "Tool_asset_disposal_preview": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "const": "text"
+                },
+                "text": {
+                  "type": "string",
+                  "description": "Compact JSON of structuredContent, identical value."
+                }
+              },
+              "required": [
+                "type",
+                "text"
+              ],
+              "additionalProperties": false
+            }
+          ],
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "$ref": "schemas-assets_accruals.json#/$defs/Http_asset_disposal_preview"
+        },
+        "isError": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "content",
+        "structuredContent",
+        "isError"
+      ],
+      "additionalProperties": false
+    },
+    "ToolFailure_asset_disposal_preview": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "const": "text"
+                },
+                "text": {
+                  "type": "string",
+                  "description": "Compact JSON of structuredContent, identical value."
+                }
+              },
+              "required": [
+                "type",
+                "text"
+              ],
+              "additionalProperties": false
+            }
+          ],
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "anyOf": [
+            {
+              "$ref": "schemas-assets_accruals.json#/$defs/SourceToolFailure"
+            },
+            {
+              "$ref": "schemas-assets_accruals.json#/$defs/OriginalFailure"
+            }
+          ]
+        },
+        "isError": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "content",
+        "structuredContent",
+        "isError"
+      ],
+      "additionalProperties": false
+    },
+    "Tool_asset_dispose": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "const": "text"
+                },
+                "text": {
+                  "type": "string",
+                  "description": "Compact JSON of structuredContent, identical value."
+                }
+              },
+              "required": [
+                "type",
+                "text"
+              ],
+              "additionalProperties": false
+            }
+          ],
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "$ref": "schemas-assets_accruals.json#/$defs/Http_asset_disposal_dispose"
+        },
+        "isError": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "content",
+        "structuredContent",
+        "isError"
+      ],
+      "additionalProperties": false
+    },
+    "ToolFailure_asset_dispose": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "const": "text"
+                },
+                "text": {
+                  "type": "string",
+                  "description": "Compact JSON of structuredContent, identical value."
+                }
+              },
+              "required": [
+                "type",
+                "text"
+              ],
+              "additionalProperties": false
+            }
+          ],
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "anyOf": [
+            {
+              "$ref": "schemas-assets_accruals.json#/$defs/SourceToolFailure"
+            },
+            {
+              "$ref": "schemas-assets_accruals.json#/$defs/OriginalFailure"
+            }
+          ]
+        },
+        "isError": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "content",
+        "structuredContent",
+        "isError"
+      ],
+      "additionalProperties": false
+    },
+    "Tool_asset_disposal_receipt": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "const": "text"
+                },
+                "text": {
+                  "type": "string",
+                  "description": "Compact JSON of structuredContent, identical value."
+                }
+              },
+              "required": [
+                "type",
+                "text"
+              ],
+              "additionalProperties": false
+            }
+          ],
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "$ref": "schemas-assets_accruals.json#/$defs/Http_asset_disposal_receipt"
+        },
+        "isError": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "content",
+        "structuredContent",
+        "isError"
+      ],
+      "additionalProperties": false
+    },
+    "ToolFailure_asset_disposal_receipt": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "const": "text"
+                },
+                "text": {
+                  "type": "string",
+                  "description": "Compact JSON of structuredContent, identical value."
+                }
+              },
+              "required": [
+                "type",
+                "text"
+              ],
+              "additionalProperties": false
+            }
+          ],
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "anyOf": [
+            {
+              "$ref": "schemas-assets_accruals.json#/$defs/SourceToolFailure"
+            },
+            {
+              "$ref": "schemas-assets_accruals.json#/$defs/OriginalFailure"
+            }
+          ]
+        },
+        "isError": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "content",
+        "structuredContent",
+        "isError"
+      ],
+      "additionalProperties": false
+    }
+  }
+}
