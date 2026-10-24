@@ -19,6 +19,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
   if mode=='large':return self.reply(200,b'x'*(1024*1024+1))
   if mode=='malformed':return self.reply(200,b'not JSON synthetic-private-api-key-74')
   if path.path.endswith('/validate-auth'):
+   if mode=='auth-missing-fields':return self.reply(200,{'companyKeyConstraint':None})
    if mode=='auth-refused':return self.reply(403,{'signatureSecret':'never-publish'})
    return self.reply(200,{'apiLicenseKey':'wrong-key' if mode=='auth-wrong' else 'synthetic-private-api-key-74','signatureSecret':'never-publish','testGlnNumber':'5790000000000','companyKeyConstraint':'restricted_key' if mode=='auth-constrained' else None,'label':'Synthetic'})
   if path.path.endswith('/list-participants-for-company'):

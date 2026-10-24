@@ -36,11 +36,11 @@ impl Client {
         #[derive(Deserialize)]
         #[serde(rename_all = "camelCase", deny_unknown_fields)]
         struct Auth {
-            api_license_key: Option<String>,
-            signature_secret: Option<String>,
-            test_gln_number: Option<String>,
+            api_license_key: String,
+            signature_secret: String,
+            test_gln_number: String,
             company_key_constraint: Option<String>,
-            label: Option<String>,
+            label: String,
         }
         // An empty success is not authorization evidence; the source response
         // explicitly carries a nullable applicable-company constraint.
@@ -52,17 +52,14 @@ impl Client {
             return Err(Error::Protocol);
         }
         drop(value);
-        let mut v: Auth = serde_json::from_slice(&bytes).map_err(|_| Error::Protocol)?;
-        let key = v.api_license_key.take().map(Zeroizing::new);
-        let signature = v.signature_secret.take().map(Zeroizing::new);
-        if key
-            .as_ref()
-            .is_some_and(|k| k.as_str() != self.secret.as_str())
-            || signature.as_ref().is_some_and(|s| !text(s, 4096))
-            || v.test_gln_number
-                .as_ref()
-                .is_some_and(|s| s.len() != 13 || !s.bytes().all(|b| b.is_ascii_digit()))
-            || v.label.as_ref().is_some_and(|s| !text(s, 4096))
+        let v: Auth = serde_json::from_slice(&bytes).map_err(|_| Error::Protocol)?;
+        let key = Zeroizing::new(v.api_license_key);
+        let signature = Zeroizing::new(v.signature_secret);
+        if key.as_str() != self.secret.as_str()
+            || !text(&signature, 4096)
+            || v.test_gln_number.len() != 13
+            || !v.test_gln_number.bytes().all(|b| b.is_ascii_digit())
+            || !text(&v.label, 4096)
             || v.company_key_constraint
                 .as_ref()
                 .is_some_and(|s| !company_key(s) || s.contains(self.secret.as_str()))

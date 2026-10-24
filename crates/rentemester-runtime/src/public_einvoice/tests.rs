@@ -304,7 +304,13 @@ fn onboarding_auth_constraint_private_and_bounded_tls() {
     assert!(constrained.permits("restricted_key"));
     assert!(!constrained.permits("other_key"));
     assert!(!constrained.permits_new_company());
-    for mode in ["auth-wrong", "auth-refused", "malformed", "hang"] {
+    for mode in [
+        "auth-wrong",
+        "auth-refused",
+        "auth-missing-fields",
+        "malformed",
+        "hang",
+    ] {
         assert!(client(&f, mode).validate_auth().is_err());
     }
 }
