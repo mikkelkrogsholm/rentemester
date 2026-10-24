@@ -107,20 +107,25 @@ fn verified_local_company_path_uses_unix_not_origin_tcp() {
     let home=fs::canonicalize(std::env::var_os("HOME").unwrap()).unwrap();
     let path=home.join(format!(".rm-audit716-{}",std::process::id()));
     fs::DirBuilder::new().mode(0o700).create(&path).unwrap();
-    fs::DirBuilder::new().mode(0o700).create(path.join("workspace")).unwrap();
-    fs::create_dir(path.join("workspace/synthetic")).unwrap();
+    let workspace=path.join("workspace");
+    let company=format!("synthetic-{}","x".repeat(70));
+    fs::DirBuilder::new().mode(0o700).create(&workspace).unwrap();
+    fs::create_dir(workspace.join(&company)).unwrap();
     let tcp=std::net::TcpListener::bind("127.0.0.1:0").unwrap();
     let origin=format!("http://{}",tcp.local_addr().unwrap());tcp.set_nonblocking(true).unwrap();
     let listener=UnixListener::bind(path.join("r.sock")).unwrap();fs::set_permissions(path.join("r.sock"),fs::Permissions::from_mode(0o600)).unwrap();
-    fs::write(path.join("r.json"),json!({"format":"rentemester-local-runtime/1","origin":origin,"socket":"r.sock","workspaceRoot":path.join("workspace"),"workspaceId":"synthetic"}).to_string()).unwrap();
+    fs::write(path.join("r.json"),json!({"format":"rentemester-local-runtime/1","origin":origin,"socket":"r.sock","workspaceRoot":workspace,"workspaceId":"synthetic"}).to_string()).unwrap();
     fs::set_permissions(path.join("r.json"),fs::Permissions::from_mode(0o600)).unwrap();
     fs::write(path.join("cookie"),"session=synthetic").unwrap();fs::set_permissions(path.join("cookie"),fs::Permissions::from_mode(0o600)).unwrap();
+    let expected_path=format!("GET /api/companies/{company}/audit-verify HTTP/1.1");
+    let mut response=report();response["audit"]["slug"]=json!(&company);
     let task=thread::spawn(move|| {
         let (mut s,_)=common::unix_accept(&listener).unwrap();s.set_read_timeout(Some(Duration::from_secs(5))).unwrap();let mut bytes=Vec::new();
         while !bytes.ends_with(b"\r\n\r\n") {let mut b=[0];s.read_exact(&mut b).unwrap();bytes.push(b[0]);}
-        let request=String::from_utf8(bytes).unwrap();assert!(request.starts_with("GET /api/companies/synthetic/audit-verify HTTP/1.1"));assert!(request.to_lowercase().contains("cookie: session=synthetic"));
-        let body=report().to_string();write!(s,"HTTP/1.1 200 OK\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{body}",body.len()).unwrap();
+        let request=String::from_utf8(bytes).unwrap();assert!(request.starts_with(&expected_path));assert!(request.to_lowercase().contains("cookie: session=synthetic"));
+        let body=response.to_string();write!(s,"HTTP/1.1 200 OK\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{body}",body.len()).unwrap();
     });
-    let o=call(&["--local-profile",path.to_str().unwrap(),"audit","verify","--company",path.join("workspace/synthetic").to_str().unwrap(),"--cookie-file",path.join("cookie").to_str().unwrap()]);
-    task.join().unwrap();assert_eq!(o.status.code(),Some(0),"{}",String::from_utf8_lossy(&o.stderr));assert_eq!(serde_json::from_slice::<Value>(&o.stdout).unwrap(),json!({"ok":true,"entries":7,"errors":[]}));assert!(tcp.accept().is_err());fs::remove_dir_all(path).unwrap();
+    assert!(workspace.join(&company).as_os_str().len()>128);
+    let o=call(&["--local-profile",path.to_str().unwrap(),"audit","verify","--company",workspace.join(&company).to_str().unwrap(),"--cookie-file",path.join("cookie").to_str().unwrap()]);
+    assert_eq!(o.status.code(),Some(0),"{}",String::from_utf8_lossy(&o.stderr));task.join().unwrap();assert_eq!(serde_json::from_slice::<Value>(&o.stdout).unwrap(),json!({"ok":true,"entries":7,"errors":[]}));assert!(tcp.accept().is_err());fs::remove_dir_all(path).unwrap();
 }

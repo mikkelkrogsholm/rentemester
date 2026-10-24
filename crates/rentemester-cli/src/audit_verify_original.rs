@@ -37,7 +37,7 @@ fn parse(args: &[String]) -> Result<BTreeMap<&str, &str>, Output> {
     }
     if flags.contains_key("--help") { return Ok(flags); }
     let company = flags.get("--company").ok_or_else(|| usage("Explicit --company required"))?;
-    if company.len() > 128 || (!flags.contains_key("--local-profile") && !company.bytes().all(|b| b.is_ascii_alphanumeric() || b == b'-' || b == b'_')) { return Err(usage("Invalid company selector")); }
+    if !flags.contains_key("--local-profile") && (company.len() > 128 || !company.bytes().all(|b| b.is_ascii_alphanumeric() || b == b'-' || b == b'_')) { return Err(usage("Invalid company selector")); }
     if !flags.contains_key("--server") && !flags.contains_key("--local-profile") { return Err(usage("Explicit transport required")); }
     if !flags.contains_key("--cookie-file") && !flags.contains_key("--service-key-file") { return Err(usage("Explicit private credential required")); }
     Ok(flags)
