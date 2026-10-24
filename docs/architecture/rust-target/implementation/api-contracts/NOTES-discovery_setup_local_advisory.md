@@ -86,3 +86,25 @@ MFA, restart, provider, browser or installed-desktop acceptance. Existing common
 pipeline evidence is reused, not replayed. Whole #716 still retains the other 48
 literal keys, positive overview, first-workspace/root bootstrap, path/full
 compatibility and final manual installed-desktop acceptance; this is not closure.
+
+## 2026-10-24 — R86 compatibility qualification of R85 company fields
+
+Before public delivery, lead reproduced the R85 seven-position HTTP sequence
+regression in one actual compiled storage test, then retained the original seven
+positions and appended four explicitly defaulted optional fields. Old seven-item
+inputs and extended eight-through-eleven-item inputs now deserialize to the same
+canonical settings; excess fields still refuse. Object inputs, SDK schemas and
+native admission/write fences are unchanged. The R85 note above records the
+reviewed intermediate defect, not a remaining public compatibility waiver.
+
+CreationHttp now records the preserved seven-position prefix plus optional tail.
+CreationObject describes raw Serde admission (optional text and i64/null terms);
+CreationSdk retains its existing 1024-character and 0..365 validation. The common
+settings writer still enforces bounded UTF-8/canonical text and 0..365 days on
+both paths. Separating parse admission from business refusal does not weaken any
+runtime validation. Existing definitions/properties and required fields remain.
+The only native MCP catalogue differences are the same optional four creation
+properties and optional profile name, inherited from the common SDK. All425 tool
+identities, descriptions, authority/confirmation flags, outer body-string bounds
+and other423 definitions remain unchanged. No actual financial/provider/MFA or
+installed-desktop effects are repeated. All1594 operation identities remain.

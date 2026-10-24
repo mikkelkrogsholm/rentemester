@@ -317,7 +317,7 @@
       },
       {
         "path": "crates/rentemester-storage/src/company_creation.rs",
-        "sha256": "2186d577cce0c0ae1f2a879028611b72ed0cadbcefa994614210c6d093a82dde",
+        "sha256": "b9e7f0a0357a8456cb921429b204139105615e2a594e4bdd053aa76299370537",
         "needle": "pub fn settings"
       },
       {

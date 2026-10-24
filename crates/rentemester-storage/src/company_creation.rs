@@ -9,15 +9,20 @@ pub struct Input {
     pub name: String,
     pub slug: Option<String>,
     pub cvr: Option<String>,
-    pub address: Option<String>,
-    pub postal_code: Option<String>,
-    pub city: Option<String>,
-    pub payment_terms_days: Option<i64>,
     pub fiscal_year_start_month: Option<String>,
     pub fiscal_year_label_strategy: Option<String>,
     #[serde(default = "default_vat")]
     pub vat_period_type: Value,
     pub payment: Option<Payment>,
+    // Keep the existing seven-position HTTP sequence prefix; additions are optional tails.
+    #[serde(default)]
+    pub address: Option<String>,
+    #[serde(default)]
+    pub postal_code: Option<String>,
+    #[serde(default)]
+    pub city: Option<String>,
+    #[serde(default)]
+    pub payment_terms_days: Option<i64>,
 }
 #[derive(Deserialize, serde::Serialize)]
 #[serde(deny_unknown_fields, rename_all = "camelCase")]

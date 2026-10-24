@@ -129,30 +129,27 @@
           "type": [
             "string",
             "null"
-          ],
-          "maxLength": 1024
+          ]
         },
         "postalCode": {
           "type": [
             "string",
             "null"
-          ],
-          "maxLength": 1024
+          ]
         },
         "city": {
           "type": [
             "string",
             "null"
-          ],
-          "maxLength": 1024
+          ]
         },
         "paymentTermsDays": {
           "type": [
             "integer",
             "null"
           ],
-          "minimum": 0,
-          "maximum": 365
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
         }
       },
       "required": [
@@ -262,6 +259,31 @@
               ]
             },
             {
+              "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/RawJsonValue"
+            },
+            {
+              "anyOf": [
+                {
+                  "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/PaymentSerde"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            {
               "type": [
                 "string",
                 "null"
@@ -274,34 +296,9 @@
               ],
               "minimum": -9223372036854775808,
               "maximum": 9223372036854775807
-            },
-            {
-              "type": [
-                "string",
-                "null"
-              ]
-            },
-            {
-              "type": [
-                "string",
-                "null"
-              ]
-            },
-            {
-              "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/RawJsonValue"
-            },
-            {
-              "anyOf": [
-                {
-                  "$ref": "schemas-masterdata_cvr_contacts.json#/$defs/PaymentSerde"
-                },
-                {
-                  "type": "null"
-                }
-              ]
             }
           ],
-          "minItems": 11,
+          "minItems": 7,
           "maxItems": 11
         }
       ]
@@ -6642,7 +6639,7 @@
         "sourceRefs": [
           {
             "path": "crates/rentemester-storage/src/company_creation.rs",
-            "sha256": "2186d577cce0c0ae1f2a879028611b72ed0cadbcefa994614210c6d093a82dde",
+            "sha256": "b9e7f0a0357a8456cb921429b204139105615e2a594e4bdd053aa76299370537",
             "needle": "pub vat_period_type: Value,"
           }
         ]

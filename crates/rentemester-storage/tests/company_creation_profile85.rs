@@ -186,3 +186,27 @@ fn initializer_profile_refusal_rolls_back_settings_and_bank_without_retrying_nam
     assert_eq!(db.query_row("SELECT COUNT(*) FROM audit_log WHERE event_type IN ('company_profile_update','bank_account_created')", [], |r|r.get::<_,i64>(0)).unwrap(), 0);
     no_ledger_effects(&db);
 }
+
+#[test]
+fn legacy_sequence_and_optional_trailing_fields_preserve_the_same_canonical_input() {
+    let old = json!(["Synthetic", null, "12345678", "4", "span", null, null]);
+    let input: company_creation::Input = serde_json::from_value(old.clone()).expect("existing seven-position HTTP input remains valid");
+    let settings = company_creation::settings(&input).unwrap();
+    assert_eq!(settings.month, 4);
+    assert_eq!(settings.strategy, "span");
+    assert_eq!(settings.profile["cvr"], "12345678");
+    assert!(!settings.profile.contains_key("paymentTermsDays"));
+    for count in 0..=4 {
+        let mut sequence = old.as_array().unwrap().clone();
+        sequence.extend([json!(" Road "), json!(" 1234 "), json!(" Town "), json!(0)].into_iter().take(count));
+        let i: company_creation::Input = serde_json::from_value(json!(sequence)).unwrap();
+        let s = company_creation::settings(&i).unwrap();
+        if count > 0 { assert_eq!(s.profile["address"], "Road"); }
+        if count > 1 { assert_eq!(s.profile["postalCode"], "1234"); }
+        if count > 2 { assert_eq!(s.profile["city"], "Town"); }
+        if count > 3 { assert_eq!(s.profile["paymentTermsDays"], 0); }
+    }
+    let mut excess = old.as_array().unwrap().clone();
+    excess.extend([Value::Null, Value::Null, Value::Null, Value::Null, Value::Null]);
+    assert!(serde_json::from_value::<company_creation::Input>(json!(excess)).is_err());
+}
