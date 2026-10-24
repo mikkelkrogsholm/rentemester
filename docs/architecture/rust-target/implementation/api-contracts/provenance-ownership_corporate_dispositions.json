@@ -475,7 +475,7 @@
     "unknown remote flag; see remote --help",
     "update/deletion requires positive --id"
   ],
-  "operationCount": 115,
+  "operationCount": 120,
   "validation": {
     "oracle": "/tmp/r57-677-oracle.py ownership_corporate_dispositions",
     "scope": "Exact selected IDs, source hashes, strict schema resolution; actual semantic review remains main-owned.",
@@ -2362,7 +2362,7 @@
   },
   "groupOriginal716": {
     "status": "partial_candidate_not_accepted",
-    "operationRows": 22,
+    "operationRows": 27,
     "tested": "Actual compiled CLI current642route protocol synthetic HTTP. Eight disposition keys, three validators, manifest/mapping/profile lifecycles and five elimination lifecycle keys plus reconciliation/list exercised.",
     "missingProof": [
       "overview SDK capability absent",
@@ -2388,6 +2388,18 @@
         "log": "/tmp/r83-group-report-graphify.log",
         "sha256": "ec86e5fdfb957a8bd1bed60c3db36ab1f713fb17f6b3edee5b36cce278f1529f"
       }
+    },
+    "contractCompletion": {
+      "identities": [
+        "cli:group validate-mapping",
+        "cli:group validate-profile",
+        "cli:group reconcile",
+        "cli:group eliminations",
+        "cli:group overview"
+      ],
+      "qualification": "First four have existing compiled positive fixtures; reconcile/eliminations fixtures cover empty read output, not all nonempty variants. Overview is exact typed unavailable disposition, not positive readiness proof. No product/test changes or rerun. Prior six-test logs unchanged.",
+      "whole716Accepted": false,
+      "strictOracle": "PASS existing /tmp/r05-677-strict-contract-oracle.py Oracle.row for each of five new rows: strict schemas/refs/source SHA/needle/wire/refusal/retry checks. Exact27group identities asserted. No runtime replay."
     }
   }
 }

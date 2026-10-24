@@ -39261,6 +39261,1345 @@
         "--as-of"
       ],
       "additionalProperties": false
+    },
+    "Group716Mapping": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "groupId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "leftCompanySlug": {
+          "type": "string",
+          "minLength": 1
+        },
+        "rightCompanySlug": {
+          "type": "string",
+          "minLength": 1
+        },
+        "leftAccountNos": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1
+        },
+        "rightAccountNos": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1
+        },
+        "evidenceRefs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1
+        },
+        "leftPosition": {
+          "enum": [
+            "receivable",
+            "payable"
+          ]
+        },
+        "rightPosition": {
+          "enum": [
+            "receivable",
+            "payable"
+          ]
+        },
+        "validFrom": {
+          "type": "string",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        },
+        "validToExclusive": {
+          "type": "string",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        }
+      },
+      "required": [
+        "id",
+        "groupId",
+        "leftCompanySlug",
+        "rightCompanySlug",
+        "leftAccountNos",
+        "rightAccountNos",
+        "evidenceRefs",
+        "leftPosition",
+        "rightPosition",
+        "validFrom"
+      ],
+      "additionalProperties": false
+    },
+    "Group716Profile": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "const": 1
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "groupId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "currency": {
+          "type": "string",
+          "pattern": "^[A-Z]{3}$"
+        },
+        "reportingLines": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "label": {
+                "type": "string",
+                "minLength": 1
+              },
+              "section": {
+                "enum": [
+                  "asset",
+                  "liability",
+                  "equity",
+                  "income",
+                  "expense"
+                ]
+              },
+              "displayOrder": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 4294967295
+              },
+              "role": {
+                "const": "current-result"
+              }
+            },
+            "required": [
+              "id",
+              "label",
+              "section",
+              "displayOrder"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 5,
+          "maxItems": 512
+        },
+        "accountMappings": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "companySlug": {
+                "type": "string",
+                "minLength": 1
+              },
+              "accountNo": {
+                "type": "string",
+                "minLength": 1
+              },
+              "reportingLineId": {
+                "type": "string",
+                "minLength": 1
+              },
+              "validFrom": {
+                "type": "string",
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+              },
+              "validToExclusive": {
+                "type": "string",
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+              }
+            },
+            "required": [
+              "id",
+              "companySlug",
+              "accountNo",
+              "reportingLineId",
+              "validFrom"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1,
+          "maxItems": 4096
+        },
+        "evidenceRefs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1,
+          "maxItems": 32
+        },
+        "validFrom": {
+          "type": "string",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        },
+        "validToExclusive": {
+          "type": "string",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        }
+      },
+      "required": [
+        "version",
+        "id",
+        "groupId",
+        "currency",
+        "reportingLines",
+        "accountMappings",
+        "evidenceRefs",
+        "validFrom"
+      ],
+      "additionalProperties": false
+    },
+    "Group716ReconciliationRow": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "mappingId": {
+              "type": "string",
+              "minLength": 1
+            },
+            "mappingHash": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "left": {
+              "type": "object",
+              "properties": {
+                "companySlug": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "currency": {
+                  "type": "string",
+                  "pattern": "^[A-Z]{3}$"
+                },
+                "position": {
+                  "enum": [
+                    "receivable",
+                    "payable"
+                  ]
+                },
+                "balance": {
+                  "type": "string",
+                  "pattern": "^-?(0|[1-9][0-9]*)\\.[0-9]{2}$"
+                },
+                "accountNos": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "minItems": 1
+                },
+                "sourceRefs": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "entryId": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9223372036854775807
+                      },
+                      "entryNo": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "lineId": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9223372036854775807
+                      },
+                      "accountNo": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "transactionDate": {
+                        "type": "string",
+                        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+                      },
+                      "amount": {
+                        "type": "string",
+                        "pattern": "^-?(0|[1-9][0-9]*)\\.[0-9]{2}$"
+                      }
+                    },
+                    "required": [
+                      "entryId",
+                      "entryNo",
+                      "lineId",
+                      "accountNo",
+                      "transactionDate",
+                      "amount"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "sourceSnapshot": {
+                  "type": "object",
+                  "properties": {
+                    "ledgerHeadHash": {
+                      "oneOf": [
+                        {
+                          "type": "string",
+                          "pattern": "^[0-9a-f]{64}$"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "entryCount": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9223372036854775807
+                    },
+                    "selectionHash": {
+                      "type": "string",
+                      "pattern": "^[0-9a-f]{64}$"
+                    },
+                    "integrityScope": {
+                      "const": "native_journal_hash_chain_and_selected_canonical_lines"
+                    },
+                    "sourceAssurance": {
+                      "const": "native_period_sources_and_physical_originals"
+                    }
+                  },
+                  "required": [
+                    "ledgerHeadHash",
+                    "entryCount",
+                    "selectionHash",
+                    "integrityScope",
+                    "sourceAssurance"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "companySlug",
+                "currency",
+                "position",
+                "balance",
+                "accountNos",
+                "sourceRefs",
+                "sourceSnapshot"
+              ],
+              "additionalProperties": false
+            },
+            "right": {
+              "type": "object",
+              "properties": {
+                "companySlug": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "currency": {
+                  "type": "string",
+                  "pattern": "^[A-Z]{3}$"
+                },
+                "position": {
+                  "enum": [
+                    "receivable",
+                    "payable"
+                  ]
+                },
+                "balance": {
+                  "type": "string",
+                  "pattern": "^-?(0|[1-9][0-9]*)\\.[0-9]{2}$"
+                },
+                "accountNos": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "minItems": 1
+                },
+                "sourceRefs": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "entryId": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9223372036854775807
+                      },
+                      "entryNo": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "lineId": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9223372036854775807
+                      },
+                      "accountNo": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "transactionDate": {
+                        "type": "string",
+                        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+                      },
+                      "amount": {
+                        "type": "string",
+                        "pattern": "^-?(0|[1-9][0-9]*)\\.[0-9]{2}$"
+                      }
+                    },
+                    "required": [
+                      "entryId",
+                      "entryNo",
+                      "lineId",
+                      "accountNo",
+                      "transactionDate",
+                      "amount"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "sourceSnapshot": {
+                  "type": "object",
+                  "properties": {
+                    "ledgerHeadHash": {
+                      "oneOf": [
+                        {
+                          "type": "string",
+                          "pattern": "^[0-9a-f]{64}$"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "entryCount": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9223372036854775807
+                    },
+                    "selectionHash": {
+                      "type": "string",
+                      "pattern": "^[0-9a-f]{64}$"
+                    },
+                    "integrityScope": {
+                      "const": "native_journal_hash_chain_and_selected_canonical_lines"
+                    },
+                    "sourceAssurance": {
+                      "const": "native_period_sources_and_physical_originals"
+                    }
+                  },
+                  "required": [
+                    "ledgerHeadHash",
+                    "entryCount",
+                    "selectionHash",
+                    "integrityScope",
+                    "sourceAssurance"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "companySlug",
+                "currency",
+                "position",
+                "balance",
+                "accountNos",
+                "sourceRefs",
+                "sourceSnapshot"
+              ],
+              "additionalProperties": false
+            },
+            "status": {
+              "enum": [
+                "matched",
+                "mismatch"
+              ]
+            },
+            "difference": {
+              "type": "string",
+              "pattern": "^-?(0|[1-9][0-9]*)\\.[0-9]{2}$"
+            },
+            "reason": {
+              "const": "exact-native-currency-difference"
+            },
+            "blockers": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              },
+              "maxItems": 0
+            }
+          },
+          "required": [
+            "mappingId",
+            "mappingHash",
+            "left",
+            "right",
+            "status",
+            "difference",
+            "reason",
+            "blockers"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "mappingId": {
+              "type": "string",
+              "minLength": 1
+            },
+            "status": {
+              "const": "not-comparable"
+            },
+            "reason": {
+              "const": "blocked"
+            },
+            "blockers": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              },
+              "minItems": 1
+            }
+          },
+          "required": [
+            "mappingId",
+            "status",
+            "reason",
+            "blockers"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "mappingId": {
+              "type": "string",
+              "minLength": 1
+            },
+            "mappingHash": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "left": {
+              "type": "object",
+              "properties": {
+                "companySlug": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "currency": {
+                  "type": "string",
+                  "pattern": "^[A-Z]{3}$"
+                },
+                "position": {
+                  "enum": [
+                    "receivable",
+                    "payable"
+                  ]
+                },
+                "balance": {
+                  "type": "string",
+                  "pattern": "^-?(0|[1-9][0-9]*)\\.[0-9]{2}$"
+                },
+                "accountNos": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "minItems": 1
+                },
+                "sourceRefs": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "entryId": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9223372036854775807
+                      },
+                      "entryNo": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "lineId": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9223372036854775807
+                      },
+                      "accountNo": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "transactionDate": {
+                        "type": "string",
+                        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+                      },
+                      "amount": {
+                        "type": "string",
+                        "pattern": "^-?(0|[1-9][0-9]*)\\.[0-9]{2}$"
+                      }
+                    },
+                    "required": [
+                      "entryId",
+                      "entryNo",
+                      "lineId",
+                      "accountNo",
+                      "transactionDate",
+                      "amount"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "sourceSnapshot": {
+                  "type": "object",
+                  "properties": {
+                    "ledgerHeadHash": {
+                      "oneOf": [
+                        {
+                          "type": "string",
+                          "pattern": "^[0-9a-f]{64}$"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "entryCount": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9223372036854775807
+                    },
+                    "selectionHash": {
+                      "type": "string",
+                      "pattern": "^[0-9a-f]{64}$"
+                    },
+                    "integrityScope": {
+                      "const": "native_journal_hash_chain_and_selected_canonical_lines"
+                    },
+                    "sourceAssurance": {
+                      "const": "native_period_sources_and_physical_originals"
+                    }
+                  },
+                  "required": [
+                    "ledgerHeadHash",
+                    "entryCount",
+                    "selectionHash",
+                    "integrityScope",
+                    "sourceAssurance"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "companySlug",
+                "currency",
+                "position",
+                "balance",
+                "accountNos",
+                "sourceRefs",
+                "sourceSnapshot"
+              ],
+              "additionalProperties": false
+            },
+            "right": {
+              "type": "object",
+              "properties": {
+                "companySlug": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "currency": {
+                  "type": "string",
+                  "pattern": "^[A-Z]{3}$"
+                },
+                "position": {
+                  "enum": [
+                    "receivable",
+                    "payable"
+                  ]
+                },
+                "balance": {
+                  "type": "string",
+                  "pattern": "^-?(0|[1-9][0-9]*)\\.[0-9]{2}$"
+                },
+                "accountNos": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "minItems": 1
+                },
+                "sourceRefs": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "entryId": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9223372036854775807
+                      },
+                      "entryNo": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "lineId": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9223372036854775807
+                      },
+                      "accountNo": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "transactionDate": {
+                        "type": "string",
+                        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+                      },
+                      "amount": {
+                        "type": "string",
+                        "pattern": "^-?(0|[1-9][0-9]*)\\.[0-9]{2}$"
+                      }
+                    },
+                    "required": [
+                      "entryId",
+                      "entryNo",
+                      "lineId",
+                      "accountNo",
+                      "transactionDate",
+                      "amount"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "sourceSnapshot": {
+                  "type": "object",
+                  "properties": {
+                    "ledgerHeadHash": {
+                      "oneOf": [
+                        {
+                          "type": "string",
+                          "pattern": "^[0-9a-f]{64}$"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "entryCount": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9223372036854775807
+                    },
+                    "selectionHash": {
+                      "type": "string",
+                      "pattern": "^[0-9a-f]{64}$"
+                    },
+                    "integrityScope": {
+                      "const": "native_journal_hash_chain_and_selected_canonical_lines"
+                    },
+                    "sourceAssurance": {
+                      "const": "native_period_sources_and_physical_originals"
+                    }
+                  },
+                  "required": [
+                    "ledgerHeadHash",
+                    "entryCount",
+                    "selectionHash",
+                    "integrityScope",
+                    "sourceAssurance"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "companySlug",
+                "currency",
+                "position",
+                "balance",
+                "accountNos",
+                "sourceRefs",
+                "sourceSnapshot"
+              ],
+              "additionalProperties": false
+            },
+            "status": {
+              "const": "not-comparable"
+            },
+            "reason": {
+              "const": "currency-mismatch"
+            },
+            "blockers": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              },
+              "minItems": 1
+            }
+          },
+          "required": [
+            "mappingId",
+            "mappingHash",
+            "left",
+            "right",
+            "status",
+            "reason",
+            "blockers"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "Group716Reconciliation": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "scope": {
+          "const": "intercompany-reconciliation"
+        },
+        "asOf": {
+          "type": "string",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        },
+        "rows": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/Group716ReconciliationRow"
+          }
+        }
+      },
+      "required": [
+        "ok",
+        "scope",
+        "asOf",
+        "rows"
+      ],
+      "additionalProperties": false
+    },
+    "Group716EliminationSide": {
+      "type": "object",
+      "properties": {
+        "companySlug": {
+          "type": "string",
+          "minLength": 1
+        },
+        "accountNos": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1
+        },
+        "selectionHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "ledgerHeadHash": {
+          "oneOf": [
+            {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "entryCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9223372036854775807
+        },
+        "creditOre": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]*)$"
+        },
+        "debitOre": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]*)$"
+        },
+        "position": {
+          "enum": [
+            "receivable",
+            "payable"
+          ]
+        }
+      },
+      "required": [
+        "companySlug",
+        "accountNos",
+        "selectionHash",
+        "ledgerHeadHash",
+        "entryCount"
+      ],
+      "additionalProperties": false
+    },
+    "Group716BalancePayload": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "enum": [
+            1,
+            2
+          ]
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "kind": {
+          "const": "intercompany-balance"
+        },
+        "groupId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "mappingId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "mappingHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "asOf": {
+          "type": "string",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        },
+        "currency": {
+          "type": "string",
+          "pattern": "^[A-Z]{3}$"
+        },
+        "amountOre": {
+          "type": "string",
+          "pattern": "^[1-9][0-9]*$",
+          "maxLength": 2048
+        },
+        "left": {
+          "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/Group716EliminationSide"
+        },
+        "right": {
+          "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/Group716EliminationSide"
+        },
+        "evidenceRefs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1,
+          "maxItems": 32
+        }
+      },
+      "required": [
+        "version",
+        "id",
+        "kind",
+        "groupId",
+        "mappingId",
+        "mappingHash",
+        "asOf",
+        "currency",
+        "amountOre",
+        "left",
+        "right",
+        "evidenceRefs"
+      ],
+      "additionalProperties": false
+    },
+    "Group716AppliedEliminations": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "scope": {
+          "const": "consolidation-eliminations"
+        },
+        "asOf": {
+          "type": "string",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        },
+        "eliminations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "eliminationId": {
+                "type": "string",
+                "minLength": 1
+              },
+              "payloadHash": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              "eventHash": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              "payload": {
+                "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/Group716BalancePayload"
+              }
+            },
+            "required": [
+              "eliminationId",
+              "payloadHash",
+              "eventHash",
+              "payload"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "ok",
+        "scope",
+        "asOf",
+        "eliminations"
+      ],
+      "additionalProperties": false
+    },
+    "Group716OverviewUnavailable": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "const": "Existing SDK/current HTTP does not expose source structure overview with current ledger-availability facts; manifest alone cannot prove source readiness"
+            }
+          ],
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "code": {
+          "const": "unsupported_native_profile"
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "code"
+      ],
+      "additionalProperties": false
+    },
+    "Group716_validate_mappingInput": {
+      "type": "object",
+      "properties": {
+        "--workspace": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--company": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--server": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--local-profile": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--cookie-file": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--json": {
+          "type": "boolean"
+        },
+        "--format": {
+          "enum": [
+            "json",
+            "human"
+          ]
+        },
+        "--allow-loopback-http": {
+          "type": "boolean"
+        },
+        "--help": {
+          "type": "boolean"
+        },
+        "--mapping": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "--company",
+        "--cookie-file",
+        "--mapping"
+      ],
+      "additionalProperties": false
+    },
+    "Group716ValidatedMapping": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "mapping": {
+          "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/Group716Mapping"
+        }
+      },
+      "required": [
+        "ok",
+        "mapping"
+      ],
+      "additionalProperties": false
+    },
+    "Group716_validate_profileInput": {
+      "type": "object",
+      "properties": {
+        "--workspace": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--company": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--server": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--local-profile": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--cookie-file": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--json": {
+          "type": "boolean"
+        },
+        "--format": {
+          "enum": [
+            "json",
+            "human"
+          ]
+        },
+        "--allow-loopback-http": {
+          "type": "boolean"
+        },
+        "--help": {
+          "type": "boolean"
+        },
+        "--profile": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "--company",
+        "--cookie-file",
+        "--profile"
+      ],
+      "additionalProperties": false
+    },
+    "Group716ValidatedProfile": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "profile": {
+          "$ref": "schemas-ownership_corporate_dispositions.json#/$defs/Group716Profile"
+        }
+      },
+      "required": [
+        "ok",
+        "profile"
+      ],
+      "additionalProperties": false
+    },
+    "Group716_reconcileInput": {
+      "type": "object",
+      "properties": {
+        "--workspace": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--company": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--server": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--local-profile": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--cookie-file": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--json": {
+          "type": "boolean"
+        },
+        "--format": {
+          "enum": [
+            "json",
+            "human"
+          ]
+        },
+        "--allow-loopback-http": {
+          "type": "boolean"
+        },
+        "--help": {
+          "type": "boolean"
+        },
+        "--as-of": {
+          "type": "string",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        }
+      },
+      "required": [
+        "--company",
+        "--cookie-file",
+        "--as-of"
+      ],
+      "additionalProperties": false
+    },
+    "Group716_eliminationsInput": {
+      "type": "object",
+      "properties": {
+        "--workspace": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--company": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--server": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--local-profile": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--cookie-file": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--json": {
+          "type": "boolean"
+        },
+        "--format": {
+          "enum": [
+            "json",
+            "human"
+          ]
+        },
+        "--allow-loopback-http": {
+          "type": "boolean"
+        },
+        "--help": {
+          "type": "boolean"
+        },
+        "--as-of": {
+          "type": "string",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        }
+      },
+      "required": [
+        "--company",
+        "--cookie-file",
+        "--as-of"
+      ],
+      "additionalProperties": false
+    },
+    "Group716_overviewInput": {
+      "type": "object",
+      "properties": {
+        "--workspace": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--company": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--server": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--local-profile": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--cookie-file": {
+          "type": "string",
+          "minLength": 1
+        },
+        "--json": {
+          "type": "boolean"
+        },
+        "--format": {
+          "enum": [
+            "json",
+            "human"
+          ]
+        },
+        "--allow-loopback-http": {
+          "type": "boolean"
+        },
+        "--help": {
+          "type": "boolean"
+        },
+        "--as-of": {
+          "type": "string",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        }
+      },
+      "required": [
+        "--company",
+        "--cookie-file",
+        "--as-of"
+      ],
+      "additionalProperties": false
     }
   }
 }
