@@ -5036,8 +5036,8 @@
       "const": {
         "commands": [
           {
-            "name": "import systems|contacts",
-            "scope": "offline parser discovery and explicit contact CSV import through common Rust server; current authority and original fallback role, no ledger posting or retry",
+            "name": "import systems|contacts|archive",
+            "scope": "offline parser discovery, explicit contact CSV import and read-only physically verified archive list/year history through common Rust server; current authority and original fallback role, no ledger posting or retry; import run unavailable",
             "usage": "import --help"
           },
           {
@@ -8598,12 +8598,252 @@
       "const": {
         "commands": [
           "import systems [--format json|human]",
+          "import archive --company SLUG|PATH [--system dinero] [--year INTEGER] [--format json|human]",
           "import contacts --company SLUG|PATH --file Kontakter.csv [--enrich-cvr] [--default-role customer|vendor]"
         ],
         "connection": "Existing --server ORIGIN or verified --local-profile ABS_PRIVATE_PROFILE; --cookie-file PRIVATE_FILE. --workspace is verified local workspace equality only. --allow-loopback-http is explicit.",
         "controls": "Explicit command confirms one write. Current cookie authority; optional --actor user:ID equality check only. Master data only: no journal, accounts, mappings or opening balances. Default role vendor; explicit original CSV requires only Kontaktnavn. Server classifies nonzero sales/purchases independently. CVR enrichment optional; operator credentials/cache unchanged. No automatic retry: outcome_unknown requires canonical contacts/audit readback before another explicit write.",
-        "unavailable": "import run and import archive are not implemented here."
+        "unavailable": "import run is not implemented here. Archive is read-only historical reference data outside the live ledger; every list/detail revalidates current authority and physical originals. --system is trimmed/default dinero; omitted or blank --year lists years."
       }
+    },
+    "OriginalCliArchiveSuccess": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "years": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "fiscalYear": {
+                    "type": "integer",
+                    "minimum": 1000,
+                    "maximum": 9999
+                  },
+                  "sourceSystem": {
+                    "const": "dinero"
+                  },
+                  "postingCount": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "balanceCount": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "importedAt": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "fiscalYear",
+                  "sourceSystem",
+                  "postingCount",
+                  "balanceCount",
+                  "importedAt"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "errors": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 0
+            }
+          },
+          "required": [
+            "ok",
+            "years",
+            "errors"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "years": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "fiscalYear": {
+                    "type": "integer",
+                    "minimum": 1000,
+                    "maximum": 9999
+                  },
+                  "sourceSystem": {
+                    "const": "dinero"
+                  },
+                  "postingCount": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "balanceCount": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "importedAt": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "postings": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "lineNo": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 9007199254740991
+                        },
+                        "accountNo": {
+                          "type": "string"
+                        },
+                        "accountName": {
+                          "type": "string"
+                        },
+                        "transactionDate": {
+                          "type": "string"
+                        },
+                        "voucher": {
+                          "type": "string"
+                        },
+                        "voucherType": {
+                          "type": "string"
+                        },
+                        "text": {
+                          "type": "string"
+                        },
+                        "vatType": {
+                          "type": "string"
+                        },
+                        "amount": {
+                          "type": "number"
+                        },
+                        "runningBalance": {
+                          "type": [
+                            "number",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "lineNo",
+                        "accountNo",
+                        "accountName",
+                        "transactionDate",
+                        "voucher",
+                        "voucherType",
+                        "text",
+                        "vatType",
+                        "amount",
+                        "runningBalance"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "balances": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "lineNo": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 9007199254740991
+                        },
+                        "accountNo": {
+                          "type": "string"
+                        },
+                        "accountName": {
+                          "type": "string"
+                        },
+                        "amount": {
+                          "type": "number"
+                        }
+                      },
+                      "required": [
+                        "lineNo",
+                        "accountNo",
+                        "accountName",
+                        "amount"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                },
+                "required": [
+                  "fiscalYear",
+                  "sourceSystem",
+                  "postingCount",
+                  "balanceCount",
+                  "importedAt",
+                  "postings",
+                  "balances"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "errors": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 0
+            }
+          },
+          "required": [
+            "ok",
+            "years",
+            "errors"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "OriginalCliArchiveFailure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "years": {
+          "type": "array",
+          "items": {
+            "type": "null"
+          },
+          "maxItems": 0
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        }
+      },
+      "required": [
+        "ok",
+        "years",
+        "errors"
+      ],
+      "additionalProperties": false
     }
   }
 }

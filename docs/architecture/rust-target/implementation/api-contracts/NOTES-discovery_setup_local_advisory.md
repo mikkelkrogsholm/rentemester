@@ -108,3 +108,31 @@ properties and optional profile name, inherited from the common SDK. All425 tool
 identities, descriptions, authority/confirmation flags, outer body-string bounds
 and other423 definitions remain unchanged. No actual financial/provider/MFA or
 installed-desktop effects are repeated. All1594 operation identities remain.
+
+## 2026-10-24 — Original CLI archive list/detail (R92/R93)
+
+The original `import archive` command now reads the same guarded Rust archive
+history as the accepted original MCP tools. Shared SDK wire projection replaces
+the MCP-private projection; CLI and MCP both call the existing canonical engine
+decimal witness verifier. No new engine, dependency, HTTP route or local data
+fallback was added. Current protocol/credentials/physical originals and list-before-
+filter/detail revalidation remain. JSON is the original flat ok/years/errors
+result, with raw six-decimal numeric amounts rather than rounded native Money2.
+
+Six compiled CLI cases cover list/detail/numeric year forms, arbitrary source and
+absent out-of-range year after authorization, parser0/1/2 streams, source loss and
+private Unix owner/workspace/protocol refusal. Five unchanged original MCP archive
+and five unchanged contact CLI cases pass and are reused by SGD on the identical
+combined tree. All429 actual MCP definitions remain exactly unchanged. Current
+operation contracts total1601=642 HTTP,530 CLI,429 MCP, retaining all preceding
+1600 business operations/definitions except additive help and two shared-source
+bindings. Historical captures/evidence remain immutable.
+
+Whole716 stays open:45 other original literal command keys, import run, positive
+group overview, first-workspace/bootstrap/canonical selection/actor policy/default
+launcher and full265 operation/error/rendering compatibility remain. This note
+describes the current explicit native binding; it does not assert completion of
+every original parser diagnostic or table rendering detail. Full717/all55/J01-J07
+and final release/cutover/retirement/manual installed desktop LAST remain. There
+are41 actually closed original issues and14 open. No financial/provider/auth/
+desktop effects were replayed to qualify this read flow.

@@ -3345,9 +3345,9 @@
             },
             "reverseChargeBasis": {
               "enum": [
-                "DK_MOMSLOVEN_\u00a746_STK_1_NR_3",
-                "DK_MOMSLOVEN_\u00a746_STK_1_NR_6",
-                "DK_MOMSLOVEN_\u00a746_STK_1_NR_7",
+                "DK_MOMSLOVEN_§46_STK_1_NR_3",
+                "DK_MOMSLOVEN_§46_STK_1_NR_6",
+                "DK_MOMSLOVEN_§46_STK_1_NR_7",
                 "EU_MOMSDIREKTIV_ART_196",
                 "EU_MOMSDIREKTIV_ART_199"
               ]
@@ -5372,7 +5372,7 @@
             "sourceRefs": [
               {
                 "path": "crates/rentemester-client/src/lib.rs",
-                "sha256": "89c8bc77a2081400d8915cbb988d81be0f349a0bc9487ce687dc3ae3de75accd",
+                "sha256": "3fbb9c7f47bde3f1cda32fb9c710f7a4cb635eff534596c3233b61771deb28ef",
                 "needle": "serde_json::from_slice(&bytes).map_err"
               }
             ]
@@ -7154,9 +7154,9 @@
                 },
                 "reverseChargeBasis": {
                   "enum": [
-                    "DK_MOMSLOVEN_\u00a746_STK_1_NR_3",
-                    "DK_MOMSLOVEN_\u00a746_STK_1_NR_6",
-                    "DK_MOMSLOVEN_\u00a746_STK_1_NR_7",
+                    "DK_MOMSLOVEN_§46_STK_1_NR_3",
+                    "DK_MOMSLOVEN_§46_STK_1_NR_6",
+                    "DK_MOMSLOVEN_§46_STK_1_NR_7",
                     "EU_MOMSDIREKTIV_ART_196",
                     "EU_MOMSDIREKTIV_ART_199"
                   ]

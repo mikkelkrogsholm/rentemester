@@ -1,14 +1,14 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "R91 full713 integration accepted and actually closed;41of55closed14open",
-  "code_revision": "ced2964c7affc5f22bed6d1cb41fbcce343126ac",
+  "current_increment": "R92/R93 originalCLIarchive list/detail andsharedSDKprojection accepted; whole716open",
+  "code_revision": "55a8c20e3f9a47301ba22185232f77255d2016ff",
   "spec_revision": "971249492f96da3d630e32bb0828ec3f7831e6b4",
-  "state": "bank_roadmap713_whole_accepted_and_github_closed",
+  "state": "original_archive_cli_component_accepted_whole716_open",
   "issues_closed": 41,
   "next": [
-    "All11existingupstreambankissues remainopen under363 including futureprovideridentity/consent/secretgenerations/preparestageplanapply/fake/sandbox/release.643strongidentity/ambiguousCSVprovideroverlap and642fullschema/migration/allprojectionacceptance not claimed.",
-    "712finalTaurilogin/cancellation/OSsecrets and717fulloriginalworkflow/service/reconnect remainopen. Full55issueepic/J01-J07/release/cutover/retirement/manualinstalleddesktopLAST retained."
+    "716:45otheroriginalCLIkeys,import run/positivegroupoverview/bootstrap/canonicalpaths/actorpolicy/defaultlauncher/full265peroperationanddiagnostic/renderingcompatibility remain.",
+    "71718otheroriginalMCPnames/31workflow/service/reconnect andall55/J01-J07/release/cutover/retirement/manualinstalleddesktopLAST remain.41closed14open."
   ],
   "preserve_unrelated_paths": [
     ".claude/settings.json",
@@ -18,7 +18,7 @@
     ".gitattributes"
   ],
   "all_goal_requirements_complete": false,
-  "previous_verified_increment": "R89/R90 original profile -> verified archive -> CFO read flow accepted; whole717 open",
+  "previous_verified_increment": "R91 full713 integration accepted and actually closed;41of55closed14open",
   "evidence": {
     "combined_browser_log": "/tmp/rm-platform5-combined.log",
     "combined_browser_exit": 0,
@@ -16616,6 +16616,10 @@
     "r91_bank713_whole": {
       "path": "/private/tmp/rentemester-rust-reports/r91-byo-bank713-whole-accepted.json",
       "sha256": "e42a419f734eb02556896acff5222464fab2ae4cc56e01cad2d1c216b3a8e2ca"
+    },
+    "r93_original_archive_cli": {
+      "path": "/private/tmp/rentemester-rust-reports/r93-original-archive-cli716-current-contracts-qualified.json",
+      "sha256": "f994a05ba478bcdceb692145f886751a29239848ddba06b6541e843c070fc944"
     }
   },
   "verified_history": [
@@ -18849,6 +18853,18 @@
       ],
       "githubClosure": "https://github.com/mikkelkrogsholm/rentemester/issues/713#issuecomment-6389018269",
       "githubClosedAt": "2026-10-24T20:14:36Z"
+    },
+    {
+      "issue": 716,
+      "wholeIssueClosed": false,
+      "source_revision": "55a8c20e3f9a47301ba22185232f77255d2016ff",
+      "report": "/tmp/rentemester-rust-reports/r93-original-archive-cli716-current-contracts-qualified.json",
+      "sha256": "f994a05ba478bcdceb692145f886751a29239848ddba06b6541e843c070fc944",
+      "scope": "OriginalCLIarchiveread/sharedSDK/current1601contracts;16actualcompiledcases/429exactunchangedMCPdefinitions, no financial/provider/auth/desktopreplay.",
+      "remaining": [
+        "716:45otheroriginalCLIkeys,import run/positivegroupoverview/bootstrap/canonicalpaths/actorpolicy/defaultlauncher/full265peroperationanddiagnostic/renderingcompatibility remain.",
+        "71718otheroriginalMCPnames/31workflow/service/reconnect andall55/J01-J07/release/cutover/retirement/manualinstalleddesktopLAST remain.41closed14open."
+      ]
     }
   ],
   "scope_clarifications": [
