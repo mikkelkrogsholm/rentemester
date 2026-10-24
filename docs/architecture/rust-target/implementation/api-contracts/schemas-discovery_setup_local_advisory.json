@@ -7847,6 +7847,632 @@
     },
     "OriginalHealthcheckHelp": {
       "const": "system healthcheck --company PATH [--json | --format json|human]\nOffline read-only company diagnostic: company_root, data_dir, ledger, documents, config and protected snapshot schema inspection. Explicit company path required; no environment/default company. No server, cookie, local-profile, actor, stdin, repair or mutation inputs. Remote health is aggregate-only and cannot substitute this report. Human diagnostics (including failures) go to stdout; explicit JSON is pretty-printed, flat and unwrapped. Exit 0 clean, 1 diagnostic failure, 2 usage.\n"
+    },
+    "OriginalCompanyProfile": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "profile": {
+          "type": "object",
+          "properties": {
+            "cvr": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "address": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "postalCode": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "city": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "name": {
+              "type": "string"
+            },
+            "paymentTermsDays": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 365
+            },
+            "vatPeriodType": {
+              "enum": [
+                "month",
+                "quarter",
+                "half-year",
+                null
+              ]
+            },
+            "vatPeriodLabel": {
+              "enum": [
+                "m\u00e5ned",
+                "kvartal",
+                "halv\u00e5r",
+                "ikke momsregistreret"
+              ]
+            },
+            "vatRegistered": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "cvr",
+            "address",
+            "postalCode",
+            "city",
+            "name",
+            "paymentTermsDays",
+            "vatPeriodType",
+            "vatPeriodLabel",
+            "vatRegistered"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "ok",
+        "profile"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalCompanyList": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "message": {
+          "type": "string"
+        },
+        "workspace": {
+          "type": "null"
+        },
+        "count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "companies": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "slug": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "archived": {
+                "type": "boolean"
+              },
+              "createdAt": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "slug",
+              "name",
+              "archived"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "ok",
+        "message",
+        "workspace",
+        "count",
+        "companies"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalCompanyAdd": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "message": {
+          "type": "string"
+        },
+        "workspaceCreated": {
+          "const": false
+        },
+        "slug": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "hasPaymentDetails": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "ok",
+        "message",
+        "workspaceCreated",
+        "slug",
+        "name",
+        "hasPaymentDetails"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalCompanySetProfile": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "settings": {
+          "type": "object",
+          "properties": {
+            "cvr": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "address": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "postalCode": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "city": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "companyForm": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "industryCode": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "industryText": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "cvrStatus": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "cvrSyncedAt": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "id": {
+              "type": "integer"
+            },
+            "name": {
+              "type": "string"
+            },
+            "country": {
+              "type": "string"
+            },
+            "currency": {
+              "type": "string"
+            },
+            "fiscalYearStartMonth": {
+              "type": "integer"
+            },
+            "fiscalYearLabelStrategy": {
+              "enum": [
+                "end-year",
+                "start-year",
+                "span"
+              ]
+            },
+            "auditWaived": {
+              "type": [
+                "boolean",
+                "null"
+              ]
+            },
+            "paymentTermsDays": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 365
+            },
+            "vatPeriodType": {
+              "enum": [
+                "month",
+                "quarter",
+                "half-year",
+                null
+              ]
+            }
+          },
+          "required": [
+            "cvr",
+            "address",
+            "postalCode",
+            "city",
+            "companyForm",
+            "industryCode",
+            "industryText",
+            "cvrStatus",
+            "cvrSyncedAt",
+            "id",
+            "name",
+            "country",
+            "currency",
+            "fiscalYearStartMonth",
+            "fiscalYearLabelStrategy",
+            "auditWaived",
+            "paymentTermsDays",
+            "vatPeriodType"
+          ],
+          "additionalProperties": false
+        },
+        "updatedFields": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "name",
+              "cvr",
+              "address",
+              "postalCode",
+              "city",
+              "paymentTermsDays",
+              "payment",
+              "vatPeriodType"
+            ]
+          }
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0
+        },
+        "vatPeriodType": {
+          "enum": [
+            "month",
+            "quarter",
+            "half-year",
+            null
+          ]
+        },
+        "vatRegistered": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "ok",
+        "settings",
+        "updatedFields",
+        "errors",
+        "vatPeriodType",
+        "vatRegistered"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalCompanySyncCvr": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "cvr": {
+          "type": "string"
+        },
+        "company": {
+          "type": "object",
+          "properties": {
+            "address": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "postalCode": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "city": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "companyFormShort": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "companyFormLong": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "status": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "industryCode": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "industryText": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "email": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "phone": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "website": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "startDate": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "fiscalYearStart": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "fiscalYearEnd": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "shareCapitalCurrency": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "municipalityCode": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "companyFormCode": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "fiscalYearStartMonth": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "employees": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "cvr": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            },
+            "auditWaived": {
+              "type": [
+                "boolean",
+                "null"
+              ]
+            },
+            "shareCapital": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "advertisingProtected": {
+              "type": "boolean"
+            },
+            "management": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "role": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "name",
+                  "role"
+                ],
+                "additionalProperties": false
+              }
+            }
+          },
+          "required": [
+            "address",
+            "postalCode",
+            "city",
+            "companyFormShort",
+            "companyFormLong",
+            "status",
+            "industryCode",
+            "industryText",
+            "email",
+            "phone",
+            "website",
+            "startDate",
+            "fiscalYearStart",
+            "fiscalYearEnd",
+            "shareCapitalCurrency",
+            "municipalityCode",
+            "companyFormCode",
+            "fiscalYearStartMonth",
+            "employees",
+            "cvr",
+            "name",
+            "auditWaived",
+            "shareCapital",
+            "advertisingProtected",
+            "management"
+          ],
+          "additionalProperties": false
+        },
+        "cached": {
+          "type": "boolean"
+        },
+        "updatedFields": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "fiscalYearStartMonth": {
+          "type": "object",
+          "properties": {
+            "current": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "cvr": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "matches": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "current",
+            "cvr",
+            "matches"
+          ],
+          "additionalProperties": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "ok",
+        "cvr",
+        "company",
+        "cached",
+        "updatedFields",
+        "fiscalYearStartMonth",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalCompanyFailure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalCompanySyncFailure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "cvr": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
     }
   }
 }

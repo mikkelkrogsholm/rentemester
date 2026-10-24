@@ -265,5 +265,88 @@
       "sha256": "ce56668da295d297cdb732eb3226fe5f60432d3bd82c9f9273bf4a7898868e0d"
     },
     "legacy_discovery_correction": "Sixactuallegacydispatchhandlers atsrc/cli/workspace-registry.ts55-60 lackedindividualcli-meta specs/advertised265CLI inventory. Humanlabels fallbackliteralcommand. Newpassivefamilyhelp is explicitcorrection; frozenR01inventory/history notrewritten."
+  },
+  "r83OriginalCompany716": {
+    "operations": [
+      "cli:company add",
+      "cli:company list",
+      "cli:company profile",
+      "cli:company set-profile",
+      "cli:company sync-cvr"
+    ],
+    "sourceRefs": [
+      {
+        "path": "crates/rentemester-cli/src/company_original.rs",
+        "sha256": "6d5a01d4f06e9c3bc03019873ab73bb6b1492ce001daa19dd8e06ff5ec2ec3e6",
+        "needle": "pub fn execute"
+      },
+      {
+        "path": "crates/rentemester-cli/tests/original_company716.rs",
+        "sha256": "14904c5386b17095bed398c2db0177b95fd45456c5f397dff9199306010e7560",
+        "needle": "fn five_original_keys_body_projection_and_streams"
+      },
+      {
+        "path": "src/cli-meta/company-specs.ts",
+        "sha256": "97589c88ba337683264602f8297423efc6811bc260bb59a13f09a0b0ec34a434",
+        "needle": "key: \"company add\""
+      },
+      {
+        "path": "src/cli/company.ts",
+        "sha256": "9920952134a2886d0e98011532e0f97465b16eca3c2a9a65ef5776cdffce69e5",
+        "needle": "export function register"
+      },
+      {
+        "path": "crates/rentemester-client/src/company_creation.rs",
+        "sha256": "6695de5cbec741838c76580477ca008b42122aae6f79cbeeba200b7f616d929d",
+        "needle": "pub async fn create_company"
+      },
+      {
+        "path": "crates/rentemester-client/src/company_setup.rs",
+        "sha256": "17ea42bc4b4bc3746c6f721179fe89036742a1896372d30471fcae8ae18f1bfb",
+        "needle": "pub async fn company_setup_mutation"
+      },
+      {
+        "path": "crates/rentemester-client/src/cvr.rs",
+        "sha256": "74fc574758be75015896112edc3c3c794a02dbdc446bf3a637803976e242ef41",
+        "needle": "pub async fn sync_company_cvr"
+      },
+      {
+        "path": "crates/rentemester-storage/src/company_setup.rs",
+        "sha256": "d86fe1737935ae8e0b5b8b963f4978380526b180d2367ee1b65ce04a872c10d3",
+        "needle": "pub fn update_profile"
+      },
+      {
+        "path": "crates/rentemester-storage/src/company_creation.rs",
+        "sha256": "29fa9b0bca64197904c1ce914f5c28b6688dcac49a183f029413fad9ec42b53b",
+        "needle": "pub fn settings"
+      },
+      {
+        "path": "crates/rentemester-storage/src/cvr.rs",
+        "sha256": "995dfb3841e362a9456ea580cfda1065c8b11bf0bbe98102c0e3f320adbe2990",
+        "needle": "Synced company stamdata"
+      },
+      {
+        "path": "crates/rentemester-application/src/company_creation.rs",
+        "sha256": "09247cfa0848fd7f38c96813b6d727f1aab51ecd453550d8e9687320c5f90be0",
+        "needle": "pub fn execute"
+      },
+      {
+        "path": "crates/rentemester-application/src/company_setup.rs",
+        "sha256": "708764be073c7916ed700cf3838ea154de4f4957e5f931a3b45a86bf0fa82bd3",
+        "needle": "pub fn execute"
+      },
+      {
+        "path": "src/cli-format/common.ts",
+        "sha256": "6a86e8ba3ed0236b8f70dded6ebb9c1eb32e64ffc9f7e315bf6d5336c87fad05",
+        "needle": "function buildHumanSuccess"
+      }
+    ],
+    "runtimeEvidence": "CARGO_BIN_EXE_rentemester-rust integration target original_company716; real protocol/http-v1.json 642 routes; HTTP and verified private Unix owner fixture; no live CVR/provider calls",
+    "boundaries": [
+      "No first-workspace bootstrap/root operator proof; connected creation only",
+      "Typed server missing creation address/postalCode/city/paymentTermsDays and profile update name: exact exit1 predispatch blockers",
+      "Remote source workspace/companyRoot/ledger path output unavailable, never forged; full716 remains open"
+    ],
+    "retry": "No automatic retry; malformed/mismatched successful write outcome_unknown, current list/profile readback before explicit action"
   }
 }
