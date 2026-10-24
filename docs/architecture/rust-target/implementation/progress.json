@@ -1,13 +1,14 @@
 {
   "goal": "Complete Rust server/web and shared-web Rust desktop local/remote, CLI/MCP with maximal useful parallel development; epic #672 remains open",
   "branch": "codex/rust-platform",
-  "current_increment": "R63/R64 original audit verify CLI accepted: one native verifier; authoritative flat clean/findings JSON and humanstreams exit0/1, explicit private local/remote transport, failclosed unavailable/protocol/auth refusal. Sixcompiledchecks and valid longPATH RED2/GREEN0; nativeobservation untouched. Exact1491contracts:639HTTP465CLI387MCP/38partitions.",
-  "code_revision": "fe541864783dca8c774d28057e99e549258ef36d",
-  "spec_revision": "sha256:9d2e231b92eda3258f20b507ec7e10bf6c1daa3a1d0583fa369b4cf8f41fb2bc",
+  "current_increment": "R65/R66 original local system healthcheck accepted: fivefilesystemfacts and truthfulschema via existingprotectedSnapshot/catalogue. FlatJSON explicitmode, humanstdout evenpipe, exact0/1/2; no source/sidecarwrites/network/authority. FourstoragefourCLItests and actualancestorRED/GREEN; exact1492contracts639HTTP466CLI387MCP/38partitions.",
+  "code_revision": "8b7d53cc27bca1b7d012dfba403e06b5995d2f50",
+  "spec_revision": "sha256:b7407e2a529a58a32b40a479c8c2ae982aa8bd0c8431c7021fd2896832e56f76",
   "state": "39of55originalissues actuallyCLOSED16OPEN. Whole716 originalCLI/launcher/offlineschema parity stillOPEN;714/712finalinstalledmanualdependency retained, desktoplast. Alloriginal55/J01-J07/release/cutover/retirement retained.",
   "issues_closed": 37,
   "next": [
-    "Close next smallest necessary existing wholeissue from current39/55acceptedstate; full716originalCLI/launcher and714/712finalnative dependencies remain explicit."
+    "Nextnecessary716batch: original corporate-record sevencommands and ownership sixcommands as one legal-evidence toreviewedownershipjourney; existingRustAPIs reused, independentadapterownership andoneleadcentralintegration/contracts refresh.",
+    "Full716/714/712andfinalinstalledmanualdesktoplast remain; neverclose onpartialacceptance."
   ],
   "preserve_unrelated_paths": [
     ".claude/settings.json",
@@ -17,7 +18,7 @@
     ".gitattributes"
   ],
   "all_goal_requirements_complete": false,
-  "previous_verified_increment": "R61/R62 #714 headlessreadiness accepted: strictreadonly schema/history/physical/integrity/namespace states, current/setup200 and sanitizedunavailable503 with noauthorityroutes. Firstownersetup and originalstartupdisposal controls preserved. ActualHTTP7new+retainedno-config,5storage2servertests and exact1490currentcontracts source/binary/logbound.",
+  "previous_verified_increment": "R63/R64 original audit verify CLI accepted: one native verifier; authoritative flat clean/findings JSON and humanstreams exit0/1, explicit private local/remote transport, failclosed unavailable/protocol/auth refusal. Sixcompiledchecks and valid longPATH RED2/GREEN0; nativeobservation untouched. Exact1491contracts:639HTTP465CLI387MCP/38partitions.",
   "evidence": {
     "combined_browser_log": "/tmp/rm-platform5-combined.log",
     "combined_browser_exit": 0,
@@ -16335,6 +16336,20 @@
         "Original offline pending-schema metadata branch unsupported bynativev1; explicitfailclosed boundary, no acceptancewaiver",
         "Whole714/712 dependencies and finalinstalledmanualdesktoplast retained",
         "All55/J01-J07/security/accounting/backup/provider/release/cutover/retirement retained"
+      ]
+    },
+    "r65_r66_original_healthcheck716": {
+      "issue": 716,
+      "whole_issue_accepted": false,
+      "status": "Originallocalhealthcheckaccepted, full716open",
+      "source_revision": "8b7d53cc27bca1b7d012dfba403e06b5995d2f50",
+      "report": "/tmp/rentemester-rust-reports/r66-original-healthcheck716-contracts-accepted.json",
+      "sha256": "4a4ecf70ec9442258ef88125b848c0953161fc33b1b8afd48f995dee35d117a6",
+      "sgd_run": "rust-r66-original-healthcheck716-contracts-20261024T100921.886684000",
+      "remaining": [
+        "Full716originalR01CLI actor/selector/output/exit/launcher compatibility; acceptedlocalhealthcheck/audit are components",
+        "Dependencies714/712/finalinstalledmanualdesktop remain; no live/defaultlauncher cutover",
+        "All55originalissues/J01-J07/security/accounting/backup/provider/release/cutover/retirement retained"
       ]
     }
   },
