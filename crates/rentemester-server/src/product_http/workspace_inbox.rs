@@ -17,6 +17,12 @@ pub(super) async fn handle(
     axum::extract::Path(parameters): axum::extract::Path<std::collections::HashMap<String, String>>,
     request: Request,
 ) -> Response {
+    // GET-backed HEAD must refuse before credentials, body parsing or mutation dispatch.
+    if request.method() == axum::http::Method::HEAD {
+        let mut response = refused(StatusCode::METHOD_NOT_ALLOWED, "method_not_allowed");
+        response.headers_mut().insert("allow", axum::http::HeaderValue::from_static("GET"));
+        return response;
+    }
     let path = request.uri().path().to_owned();
     let parts = path.split('/').collect::<Vec<_>>();
     let anchor = parameters.get("slug").cloned().unwrap_or_default();

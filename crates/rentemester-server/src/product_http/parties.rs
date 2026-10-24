@@ -10,6 +10,12 @@ enum Command {
     Alias(String, app::Alias),
 }
 pub(super) async fn handle(State(state): State<Product>, request: Request) -> Response {
+    // GET-backed HEAD must refuse before credentials, body parsing or mutation dispatch.
+    if request.method() == axum::http::Method::HEAD {
+        let mut response = refused(StatusCode::METHOD_NOT_ALLOWED, "method_not_allowed");
+        response.headers_mut().insert("allow", axum::http::HeaderValue::from_static("GET"));
+        return response;
+    }
     let path = request.uri().path().to_owned();
     let parts: Vec<_> = path.split('/').collect();
     let slug = parts.get(3).unwrap_or(&"").to_string();

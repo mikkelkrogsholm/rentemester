@@ -53,7 +53,7 @@
     },
     {
       "path": "crates/rentemester-server/src/product_http/supplier_commitments.rs",
-      "sha256": "c70b9ab3ee1d2f3c0f0af75ec9c0d9b60a8ef3d3c02525100ca857977993b45e",
+      "sha256": "0e9e83a71db9d9794be9c9bee703da764e85934cde5d81226be7818fc0a800c5",
       "needle": "pub(super) async fn handle"
     },
     {

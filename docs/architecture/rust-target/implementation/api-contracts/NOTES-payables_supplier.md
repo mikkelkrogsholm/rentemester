@@ -34,3 +34,5 @@ Run the supplied existing strict oracle from this worker root:
 Its structural result does not replace main's independent constructor/diff/source semantic review. The final worker response records the actual result, not a fabricated pass. Graphify AST extraction is directed to the independent SGD build output, not owned documentation or the common graph.
 
 Lead final review correction: workerfinal already wires recursive nested Http constructors; retain them. Native service payable read usage can be not_committed or committed, distinct from committed business read. Existing native payableHEAD is405 before anyquery/body/currentauthority; two supplierHEAD inputs/constructors explicitly retain observedpre-fixApply until batchedmethodfix beforeexternalpublication. No financial/provider replay.
+
+R54 producer correction supersedes retained R53 pre-fix HEAD snapshot: early405 Allow:GET before any proof/body/Owner now prevents reminder Settle and supplier Apply. Existing fixture covers58HEADcases29routes plus normal GETPOST authority and ledger/accounts/company/audit/artifacts unchanged. No accepted financial/provider effects replayed.

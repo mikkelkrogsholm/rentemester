@@ -33,7 +33,7 @@
     },
     {
       "path": "crates/rentemester-server/src/product_http/reminder_claims.rs",
-      "sha256": "44a71c9dd998828186fa7b9cd4ae9e02ad0c869c361cae6377dac5502cd50481",
+      "sha256": "9bd97e22bb0ec699d907d5266a2c0e67193f521ff6feba7f751e0efc06bc0848",
       "needle": "pub(super) async fn handle("
     },
     {
