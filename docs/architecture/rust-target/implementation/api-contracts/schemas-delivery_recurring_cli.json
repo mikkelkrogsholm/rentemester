@@ -2031,54 +2031,20 @@
       "additionalProperties": false
     },
     "EmailReceipt": {
-      "type": "object",
-      "properties": {
-        "ok": {
-          "type": "boolean"
+      "oneOf": [
+        {
+          "$ref": "schemas-delivery_recurring_cli.json#/$defs/EmailAccepted"
         },
-        "delivery": {
-          "anyOf": [
-            {
-              "$ref": "schemas-delivery_recurring_cli.json#/$defs/EmailDelivery"
-            },
-            {
-              "$ref": "schemas-delivery_recurring_cli.json#/$defs/LegacyDelivery"
-            }
-          ]
+        {
+          "$ref": "schemas-delivery_recurring_cli.json#/$defs/EmailReconciledRefused"
         },
-        "code": {
-          "enum": [
-            "delivery_unknown",
-            "delivery_refused"
-          ]
+        {
+          "$ref": "schemas-delivery_recurring_cli.json#/$defs/EmailUnknown"
         },
-        "message": {
-          "enum": [
-            "SMTP-resultatet er ukendt. Afklar den eksisterende afsendelse før et nyt forsøg.",
-            "SMTP-serveren afviste afsendelsen. Et nyt forsøg kræver særskilt gennemgang."
-          ]
-        },
-        "usage": {
-          "enum": [
-            "not_committed",
-            "outcome_unknown",
-            "committed"
-          ]
-        },
-        "business": {
-          "enum": [
-            "not_attempted",
-            "not_committed",
-            "outcome_unknown",
-            "committed"
-          ]
+        {
+          "$ref": "schemas-delivery_recurring_cli.json#/$defs/EmailRefused"
         }
-      },
-      "required": [
-        "ok",
-        "delivery"
-      ],
-      "additionalProperties": false
+      ]
     },
     "FrozenNativePayload": {
       "type": "object",
@@ -2188,14 +2154,7 @@
           "type": "string"
         },
         "payload": {
-          "anyOf": [
-            {
-              "$ref": "schemas-delivery_recurring_cli.json#/$defs/FrozenNativePayload"
-            },
-            {
-              "$ref": "schemas-delivery_recurring_cli.json#/$defs/FrozenOriginalPayload"
-            }
-          ]
+          "$ref": "schemas-delivery_recurring_cli.json#/$defs/StoredTemplateValue"
         }
       },
       "required": [
@@ -3464,20 +3423,56 @@
       "additionalProperties": false
     },
     "Output_remote_invoice-email-send": {
-      "type": "object",
-      "properties": {
-        "ok": {
-          "type": "boolean"
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "data": {
+              "$ref": "schemas-delivery_recurring_cli.json#/$defs/EmailAccepted"
+            }
+          },
+          "required": [
+            "ok",
+            "data"
+          ],
+          "additionalProperties": false
         },
-        "data": {
-          "$ref": "schemas-delivery_recurring_cli.json#/$defs/EmailReceipt"
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": false
+            },
+            "data": {
+              "$ref": "schemas-delivery_recurring_cli.json#/$defs/EmailUnknown"
+            }
+          },
+          "required": [
+            "ok",
+            "data"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": false
+            },
+            "data": {
+              "$ref": "schemas-delivery_recurring_cli.json#/$defs/EmailRefused"
+            }
+          },
+          "required": [
+            "ok",
+            "data"
+          ],
+          "additionalProperties": false
         }
-      },
-      "required": [
-        "ok",
-        "data"
-      ],
-      "additionalProperties": false
+      ]
     },
     "Input_remote_invoice-email-reconcile": {
       "type": "object",
@@ -3561,20 +3556,40 @@
       "additionalProperties": false
     },
     "Output_remote_invoice-email-reconcile": {
-      "type": "object",
-      "properties": {
-        "ok": {
-          "type": "boolean"
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "data": {
+              "$ref": "schemas-delivery_recurring_cli.json#/$defs/EmailAccepted"
+            }
+          },
+          "required": [
+            "ok",
+            "data"
+          ],
+          "additionalProperties": false
         },
-        "data": {
-          "$ref": "schemas-delivery_recurring_cli.json#/$defs/EmailReceipt"
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "data": {
+              "$ref": "schemas-delivery_recurring_cli.json#/$defs/EmailReconciledRefused"
+            }
+          },
+          "required": [
+            "ok",
+            "data"
+          ],
+          "additionalProperties": false
         }
-      },
-      "required": [
-        "ok",
-        "data"
-      ],
-      "additionalProperties": false
+      ]
     },
     "Input_remote_invoice-email-retry": {
       "type": "object",
@@ -3658,20 +3673,56 @@
       "additionalProperties": false
     },
     "Output_remote_invoice-email-retry": {
-      "type": "object",
-      "properties": {
-        "ok": {
-          "type": "boolean"
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "data": {
+              "$ref": "schemas-delivery_recurring_cli.json#/$defs/EmailAccepted"
+            }
+          },
+          "required": [
+            "ok",
+            "data"
+          ],
+          "additionalProperties": false
         },
-        "data": {
-          "$ref": "schemas-delivery_recurring_cli.json#/$defs/EmailReceipt"
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": false
+            },
+            "data": {
+              "$ref": "schemas-delivery_recurring_cli.json#/$defs/EmailUnknown"
+            }
+          },
+          "required": [
+            "ok",
+            "data"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": false
+            },
+            "data": {
+              "$ref": "schemas-delivery_recurring_cli.json#/$defs/EmailRefused"
+            }
+          },
+          "required": [
+            "ok",
+            "data"
+          ],
+          "additionalProperties": false
         }
-      },
-      "required": [
-        "ok",
-        "data"
-      ],
-      "additionalProperties": false
+      ]
     },
     "Input_remote_recurring-invoices": {
       "type": "object",
@@ -5543,6 +5594,514 @@
       },
       "required": [
         "invoiceType"
+      ],
+      "additionalProperties": false
+    },
+    "StoredTemplateValue": {
+      "anyOf": [
+        {
+          "type": [
+            "null",
+            "boolean",
+            "number",
+            "string"
+          ]
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-delivery_recurring_cli.json#/$defs/StoredTemplateValue"
+          }
+        },
+        {
+          "type": "object",
+          "properties": {},
+          "required": [],
+          "additionalProperties": {
+            "$ref": "schemas-delivery_recurring_cli.json#/$defs/StoredTemplateValue"
+          },
+          "x-arbitrary-json": {
+            "scope": "Specification.payload stored JSON and recursive descendants only",
+            "rationale": "load parses payload_json into Value and scheduled_spec returns t.payload unchanged; current creation constructors do not establish a closed historical read schema.",
+            "sourceRefs": [
+              {
+                "path": "crates/rentemester-storage/src/recurring_invoices.rs",
+                "sha256": "d9a4a5104fe0e6ebd5f060766c8adb16d3deaa744bcc0d555fc435a73cdf4bf7",
+                "needle": "pub fn scheduled_spec("
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "EmailAcceptedDelivery": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "invoiceDocumentId": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "invoiceNumber": {
+              "type": "string"
+            },
+            "kind": {
+              "enum": [
+                "invoice",
+                "reminder"
+              ]
+            },
+            "recipient": {
+              "type": "string"
+            },
+            "subject": {
+              "type": "string"
+            },
+            "messageId": {
+              "type": "string"
+            },
+            "bodySha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$",
+              "minLength": 64,
+              "maxLength": 64
+            },
+            "pdfSha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$",
+              "minLength": 64,
+              "maxLength": 64
+            },
+            "state": {
+              "const": "accepted"
+            },
+            "stateHash": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$",
+              "minLength": 64,
+              "maxLength": 64
+            },
+            "attemptId": {
+              "type": "string"
+            },
+            "humanResolution": {
+              "type": "boolean"
+            },
+            "history": {
+              "type": "array",
+              "items": {
+                "$ref": "schemas-delivery_recurring_cli.json#/$defs/EmailHistory"
+              }
+            },
+            "duplicate": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "invoiceDocumentId",
+            "invoiceNumber",
+            "kind",
+            "recipient",
+            "subject",
+            "messageId",
+            "bodySha256",
+            "pdfSha256",
+            "state",
+            "stateHash",
+            "attemptId",
+            "humanResolution",
+            "history",
+            "duplicate"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "$ref": "schemas-delivery_recurring_cli.json#/$defs/LegacyDelivery"
+        }
+      ]
+    },
+    "EmailAccepted": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "delivery": {
+          "$ref": "schemas-delivery_recurring_cli.json#/$defs/EmailAcceptedDelivery"
+        },
+        "usage": {
+          "enum": [
+            "not_committed",
+            "outcome_unknown",
+            "committed"
+          ]
+        },
+        "business": {
+          "enum": [
+            "not_attempted",
+            "not_committed",
+            "outcome_unknown",
+            "committed"
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "delivery"
+      ],
+      "additionalProperties": false
+    },
+    "EmailReconciledRefusedDelivery": {
+      "type": "object",
+      "properties": {
+        "invoiceDocumentId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "invoiceNumber": {
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "invoice",
+            "reminder"
+          ]
+        },
+        "recipient": {
+          "type": "string"
+        },
+        "subject": {
+          "type": "string"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "bodySha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "minLength": 64,
+          "maxLength": 64
+        },
+        "pdfSha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "minLength": 64,
+          "maxLength": 64
+        },
+        "state": {
+          "const": "refused"
+        },
+        "stateHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "minLength": 64,
+          "maxLength": 64
+        },
+        "attemptId": {
+          "type": "string"
+        },
+        "humanResolution": {
+          "type": "boolean"
+        },
+        "history": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-delivery_recurring_cli.json#/$defs/EmailHistory"
+          }
+        },
+        "duplicate": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "invoiceDocumentId",
+        "invoiceNumber",
+        "kind",
+        "recipient",
+        "subject",
+        "messageId",
+        "bodySha256",
+        "pdfSha256",
+        "state",
+        "stateHash",
+        "attemptId",
+        "humanResolution",
+        "history",
+        "duplicate"
+      ],
+      "additionalProperties": false
+    },
+    "EmailReconciledRefused": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "delivery": {
+          "$ref": "schemas-delivery_recurring_cli.json#/$defs/EmailReconciledRefusedDelivery"
+        },
+        "usage": {
+          "enum": [
+            "not_committed",
+            "outcome_unknown",
+            "committed"
+          ]
+        },
+        "business": {
+          "enum": [
+            "not_attempted",
+            "not_committed",
+            "outcome_unknown",
+            "committed"
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "delivery"
+      ],
+      "additionalProperties": false
+    },
+    "EmailUnknownDelivery": {
+      "type": "object",
+      "properties": {
+        "invoiceDocumentId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "invoiceNumber": {
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "invoice",
+            "reminder"
+          ]
+        },
+        "recipient": {
+          "type": "string"
+        },
+        "subject": {
+          "type": "string"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "bodySha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "minLength": 64,
+          "maxLength": 64
+        },
+        "pdfSha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "minLength": 64,
+          "maxLength": 64
+        },
+        "state": {
+          "const": "unknown"
+        },
+        "stateHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "minLength": 64,
+          "maxLength": 64
+        },
+        "attemptId": {
+          "type": "string"
+        },
+        "humanResolution": {
+          "type": "boolean"
+        },
+        "history": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-delivery_recurring_cli.json#/$defs/EmailHistory"
+          }
+        },
+        "duplicate": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "invoiceDocumentId",
+        "invoiceNumber",
+        "kind",
+        "recipient",
+        "subject",
+        "messageId",
+        "bodySha256",
+        "pdfSha256",
+        "state",
+        "stateHash",
+        "attemptId",
+        "humanResolution",
+        "history",
+        "duplicate"
+      ],
+      "additionalProperties": false
+    },
+    "EmailUnknown": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "delivery": {
+          "$ref": "schemas-delivery_recurring_cli.json#/$defs/EmailUnknownDelivery"
+        },
+        "code": {
+          "const": "delivery_unknown"
+        },
+        "message": {
+          "const": "SMTP-resultatet er ukendt. Afklar den eksisterende afsendelse f\u00f8r et nyt fors\u00f8g."
+        },
+        "usage": {
+          "enum": [
+            "not_committed",
+            "outcome_unknown",
+            "committed"
+          ]
+        },
+        "business": {
+          "enum": [
+            "not_attempted",
+            "not_committed",
+            "outcome_unknown",
+            "committed"
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "delivery",
+        "code",
+        "message"
+      ],
+      "additionalProperties": false
+    },
+    "EmailRefusedDelivery": {
+      "type": "object",
+      "properties": {
+        "invoiceDocumentId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "invoiceNumber": {
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "invoice",
+            "reminder"
+          ]
+        },
+        "recipient": {
+          "type": "string"
+        },
+        "subject": {
+          "type": "string"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "bodySha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "minLength": 64,
+          "maxLength": 64
+        },
+        "pdfSha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "minLength": 64,
+          "maxLength": 64
+        },
+        "state": {
+          "const": "refused"
+        },
+        "stateHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "minLength": 64,
+          "maxLength": 64
+        },
+        "attemptId": {
+          "type": "string"
+        },
+        "humanResolution": {
+          "type": "boolean"
+        },
+        "history": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-delivery_recurring_cli.json#/$defs/EmailHistory"
+          }
+        },
+        "duplicate": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "invoiceDocumentId",
+        "invoiceNumber",
+        "kind",
+        "recipient",
+        "subject",
+        "messageId",
+        "bodySha256",
+        "pdfSha256",
+        "state",
+        "stateHash",
+        "attemptId",
+        "humanResolution",
+        "history",
+        "duplicate"
+      ],
+      "additionalProperties": false
+    },
+    "EmailRefused": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "delivery": {
+          "$ref": "schemas-delivery_recurring_cli.json#/$defs/EmailRefusedDelivery"
+        },
+        "code": {
+          "const": "delivery_refused"
+        },
+        "message": {
+          "const": "SMTP-serveren afviste afsendelsen. Et nyt fors\u00f8g kr\u00e6ver s\u00e6rskilt gennemgang."
+        },
+        "usage": {
+          "enum": [
+            "not_committed",
+            "outcome_unknown",
+            "committed"
+          ]
+        },
+        "business": {
+          "enum": [
+            "not_attempted",
+            "not_committed",
+            "outcome_unknown",
+            "committed"
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "delivery",
+        "code",
+        "message"
       ],
       "additionalProperties": false
     }

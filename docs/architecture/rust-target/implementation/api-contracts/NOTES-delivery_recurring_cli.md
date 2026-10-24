@@ -32,3 +32,5 @@ The accepted `17765f15` sales HEAD and `169606f1` recurring early405 guards and 
 - `graphify extract . --code-only --no-cluster --out "$SGD_BUILD_DIR/graphify"`: completed in independent worker build output, 34,009 nodes / 107,681 edges; no tracked graph edits.
 
 These are source/structural checks only. They do not substitute for main's actual diff and call-chain review or establish global #677 closure. No commit is created: the runner captures the four owned files.
+
+Lead source review corrections: historical Specification.payload is an explicitly source-bound arbitrary stored Value, while current constructors remain separately closed. Email receipt and outer CLI ok are correlated with actual accepted/reconciled-refused/unknown/refused states. Workspace HTTP422 bodies are discarded by generic transport; HTTP200 partial results remain complete business exit1 data.
