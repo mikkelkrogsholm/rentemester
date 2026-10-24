@@ -1,0 +1,8407 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$defs": {
+    "Register": {
+      "type": "object",
+      "properties": {
+        "documentId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "billDate": {
+          "type": "string"
+        },
+        "dueDate": {
+          "type": "string"
+        },
+        "expenseAccountNo": {
+          "type": "string"
+        },
+        "vatTreatment": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "vendorId": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "note": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "confirm": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "documentId",
+        "billDate",
+        "dueDate",
+        "expenseAccountNo",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "RegisterHttp": {
+      "anyOf": [
+        {
+          "$ref": "schemas-payables_supplier.json#/$defs/Register"
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": -9223372036854775808,
+                  "maximum": 9223372036854775807
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "type": "boolean"
+            }
+          ],
+          "minItems": 8,
+          "maxItems": 8
+        }
+      ]
+    },
+    "Payment": {
+      "type": "object",
+      "properties": {
+        "bankTransactionId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "paymentDate": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "amount": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "paymentAccountNo": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "note": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "confirm": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "bankTransactionId",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "PaymentHttp": {
+      "anyOf": [
+        {
+          "$ref": "schemas-payables_supplier.json#/$defs/Payment"
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "type": "boolean"
+            }
+          ],
+          "minItems": 6,
+          "maxItems": 6
+        }
+      ]
+    },
+    "OriginalRegister": {
+      "type": "object",
+      "properties": {
+        "documentId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "billDate": {
+          "type": "string"
+        },
+        "dueDate": {
+          "type": "string"
+        },
+        "expenseAccount": {
+          "type": "string"
+        },
+        "confirm": {
+          "type": "boolean"
+        },
+        "vatTreatment": {
+          "type": "string"
+        },
+        "vendorId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "note": {
+          "type": "string"
+        },
+        "idempotencyKey": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "documentId",
+        "billDate",
+        "dueDate",
+        "expenseAccount",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalRegisterHttp": {
+      "anyOf": [
+        {
+          "$ref": "schemas-payables_supplier.json#/$defs/OriginalRegister"
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            }
+          ],
+          "minItems": 5,
+          "maxItems": 9
+        }
+      ]
+    },
+    "OriginalPay": {
+      "type": "object",
+      "properties": {
+        "payableId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "bankTransactionId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "confirm": {
+          "type": "boolean"
+        },
+        "amount": {
+          "type": "number"
+        },
+        "date": {
+          "type": "string"
+        },
+        "paymentAccount": {
+          "type": "string"
+        },
+        "note": {
+          "type": "string"
+        },
+        "idempotencyKey": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "payableId",
+        "bankTransactionId",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalPayHttp": {
+      "anyOf": [
+        {
+          "$ref": "schemas-payables_supplier.json#/$defs/OriginalPay"
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            }
+          ],
+          "minItems": 3,
+          "maxItems": 8
+        }
+      ]
+    },
+    "CommitmentInput": {
+      "type": "object",
+      "properties": {
+        "commitmentId": {
+          "type": "string"
+        },
+        "vendorPartyId": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "businessPurpose": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "number"
+        },
+        "currency": {
+          "type": "string"
+        },
+        "frequency": {
+          "type": "string"
+        },
+        "nextDate": {
+          "type": "string"
+        },
+        "startDate": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "renewalDate": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "noticeDate": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "endDate": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "evidenceRefs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "vatProposal": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "commitmentId",
+        "vendorPartyId",
+        "type",
+        "description",
+        "businessPurpose",
+        "amount",
+        "currency",
+        "frequency",
+        "nextDate",
+        "evidenceRefs"
+      ],
+      "additionalProperties": false
+    },
+    "CommitmentInputHttp": {
+      "anyOf": [
+        {
+          "$ref": "schemas-payables_supplier.json#/$defs/CommitmentInput"
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          ],
+          "minItems": 15,
+          "maxItems": 15
+        }
+      ]
+    },
+    "OriginalCommitmentInput": {
+      "type": "object",
+      "properties": {
+        "vendorSnapshot": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "status": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "commitmentId": {
+          "type": "string"
+        },
+        "vendorPartyId": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "businessPurpose": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "number"
+        },
+        "currency": {
+          "type": "string"
+        },
+        "frequency": {
+          "type": "string"
+        },
+        "nextDate": {
+          "type": "string"
+        },
+        "startDate": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "renewalDate": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "noticeDate": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "endDate": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "evidenceRefs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "vatProposal": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "commitmentId",
+        "vendorPartyId",
+        "type",
+        "description",
+        "businessPurpose",
+        "amount",
+        "currency",
+        "frequency",
+        "nextDate",
+        "evidenceRefs"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalCommitmentInputHttp": {
+      "anyOf": [
+        {
+          "$ref": "schemas-payables_supplier.json#/$defs/OriginalCommitmentInput"
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          ],
+          "minItems": 17,
+          "maxItems": 17
+        }
+      ]
+    },
+    "Plan": {
+      "type": "object",
+      "properties": {
+        "commitment": {
+          "$ref": "schemas-payables_supplier.json#/$defs/CommitmentInput"
+        }
+      },
+      "required": [
+        "commitment"
+      ],
+      "additionalProperties": false
+    },
+    "PlanHttp": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "commitment": {
+              "$ref": "schemas-payables_supplier.json#/$defs/CommitmentInputHttp"
+            }
+          },
+          "required": [
+            "commitment"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "$ref": "schemas-payables_supplier.json#/$defs/CommitmentInputHttp"
+            }
+          ],
+          "minItems": 1,
+          "maxItems": 1
+        }
+      ]
+    },
+    "Apply": {
+      "type": "object",
+      "properties": {
+        "commitment": {
+          "$ref": "schemas-payables_supplier.json#/$defs/CommitmentInput"
+        },
+        "payloadHash": {
+          "type": "string"
+        },
+        "confirm": {
+          "type": "boolean"
+        },
+        "idempotencyKey": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "commitment",
+        "payloadHash",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "ApplyHttp": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "commitment": {
+              "$ref": "schemas-payables_supplier.json#/$defs/CommitmentInputHttp"
+            },
+            "payloadHash": {
+              "type": "string"
+            },
+            "confirm": {
+              "type": "boolean"
+            },
+            "idempotencyKey": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": [
+            "commitment",
+            "payloadHash",
+            "confirm"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "$ref": "schemas-payables_supplier.json#/$defs/CommitmentInputHttp"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          ],
+          "minItems": 4,
+          "maxItems": 4
+        }
+      ]
+    },
+    "Change": {
+      "type": "object",
+      "properties": {
+        "commitmentId": {
+          "type": "string"
+        },
+        "action": {
+          "type": "string"
+        },
+        "reason": {
+          "type": "string"
+        },
+        "confirm": {
+          "type": "boolean"
+        },
+        "expectedPayloadHash": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "commitmentId",
+        "action",
+        "reason",
+        "confirm",
+        "expectedPayloadHash"
+      ],
+      "additionalProperties": false
+    },
+    "ChangeHttp": {
+      "anyOf": [
+        {
+          "$ref": "schemas-payables_supplier.json#/$defs/Change"
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string"
+            }
+          ],
+          "minItems": 5,
+          "maxItems": 5
+        }
+      ]
+    },
+    "EvidenceInput": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "id"
+      ],
+      "additionalProperties": false
+    },
+    "EvidenceInputHttp": {
+      "anyOf": [
+        {
+          "$ref": "schemas-payables_supplier.json#/$defs/EvidenceInput"
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            }
+          ],
+          "minItems": 2,
+          "maxItems": 2
+        }
+      ]
+    },
+    "Match": {
+      "type": "object",
+      "properties": {
+        "commitmentId": {
+          "type": "string"
+        },
+        "occurrenceDate": {
+          "type": "string"
+        },
+        "evidence": {
+          "$ref": "schemas-payables_supplier.json#/$defs/EvidenceInput"
+        },
+        "confirm": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "commitmentId",
+        "occurrenceDate",
+        "evidence",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "MatchHttp": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "commitmentId": {
+              "type": "string"
+            },
+            "occurrenceDate": {
+              "type": "string"
+            },
+            "evidence": {
+              "$ref": "schemas-payables_supplier.json#/$defs/EvidenceInputHttp"
+            },
+            "confirm": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "commitmentId",
+            "occurrenceDate",
+            "evidence",
+            "confirm"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "schemas-payables_supplier.json#/$defs/EvidenceInputHttp"
+            },
+            {
+              "type": "boolean"
+            }
+          ],
+          "minItems": 4,
+          "maxItems": 4
+        }
+      ]
+    },
+    "OriginalPlan": {
+      "type": "object",
+      "properties": {
+        "commitment": {
+          "$ref": "schemas-payables_supplier.json#/$defs/OriginalCommitmentInput"
+        }
+      },
+      "required": [
+        "commitment"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalPlanHttp": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "commitment": {
+              "$ref": "schemas-payables_supplier.json#/$defs/OriginalCommitmentInputHttp"
+            }
+          },
+          "required": [
+            "commitment"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "$ref": "schemas-payables_supplier.json#/$defs/OriginalCommitmentInputHttp"
+            }
+          ],
+          "minItems": 1,
+          "maxItems": 1
+        }
+      ]
+    },
+    "OriginalApply": {
+      "type": "object",
+      "properties": {
+        "commitment": {
+          "$ref": "schemas-payables_supplier.json#/$defs/OriginalCommitmentInput"
+        },
+        "payloadHash": {
+          "type": "string"
+        },
+        "idempotencyKey": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "confirm": {
+          "type": "boolean"
+        },
+        "actor": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160,
+          "description": "UTF-8 bytes <=160, trimmed, no control characters; equality assertion against current authenticated principal, not identity selection."
+        }
+      },
+      "required": [
+        "commitment",
+        "payloadHash",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalApplyHttp": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "commitment": {
+              "$ref": "schemas-payables_supplier.json#/$defs/OriginalCommitmentInputHttp"
+            },
+            "payloadHash": {
+              "type": "string"
+            },
+            "idempotencyKey": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "confirm": {
+              "type": "boolean"
+            },
+            "actor": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 160,
+              "description": "UTF-8 bytes <=160, trimmed, no control characters; equality assertion against current authenticated principal, not identity selection."
+            }
+          },
+          "required": [
+            "commitment",
+            "payloadHash",
+            "confirm"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "$ref": "schemas-payables_supplier.json#/$defs/OriginalCommitmentInputHttp"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 160,
+              "description": "UTF-8 bytes <=160, trimmed, no control characters; equality assertion against current authenticated principal, not identity selection."
+            }
+          ],
+          "minItems": 4,
+          "maxItems": 5
+        }
+      ]
+    },
+    "OriginalChange": {
+      "type": "object",
+      "properties": {
+        "commitmentId": {
+          "type": "string"
+        },
+        "action": {
+          "type": "string"
+        },
+        "reason": {
+          "type": "string"
+        },
+        "confirm": {
+          "type": "boolean"
+        },
+        "actor": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160,
+          "description": "UTF-8 bytes <=160, trimmed, no control characters; equality assertion against current authenticated principal, not identity selection."
+        }
+      },
+      "required": [
+        "commitmentId",
+        "action",
+        "reason",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalChangeHttp": {
+      "anyOf": [
+        {
+          "$ref": "schemas-payables_supplier.json#/$defs/OriginalChange"
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 160,
+              "description": "UTF-8 bytes <=160, trimmed, no control characters; equality assertion against current authenticated principal, not identity selection."
+            }
+          ],
+          "minItems": 4,
+          "maxItems": 5
+        }
+      ]
+    },
+    "OriginalMatch": {
+      "type": "object",
+      "properties": {
+        "commitmentId": {
+          "type": "string"
+        },
+        "occurrenceDate": {
+          "type": "string"
+        },
+        "evidence": {
+          "$ref": "schemas-payables_supplier.json#/$defs/EvidenceInput"
+        },
+        "confirm": {
+          "type": "boolean"
+        },
+        "actor": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160,
+          "description": "UTF-8 bytes <=160, trimmed, no control characters; equality assertion against current authenticated principal, not identity selection."
+        }
+      },
+      "required": [
+        "commitmentId",
+        "occurrenceDate",
+        "evidence",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalMatchHttp": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "commitmentId": {
+              "type": "string"
+            },
+            "occurrenceDate": {
+              "type": "string"
+            },
+            "evidence": {
+              "$ref": "schemas-payables_supplier.json#/$defs/EvidenceInputHttp"
+            },
+            "confirm": {
+              "type": "boolean"
+            },
+            "actor": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 160,
+              "description": "UTF-8 bytes <=160, trimmed, no control characters; equality assertion against current authenticated principal, not identity selection."
+            }
+          },
+          "required": [
+            "commitmentId",
+            "occurrenceDate",
+            "evidence",
+            "confirm"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "schemas-payables_supplier.json#/$defs/EvidenceInputHttp"
+            },
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 160,
+              "description": "UTF-8 bytes <=160, trimmed, no control characters; equality assertion against current authenticated principal, not identity selection."
+            }
+          ],
+          "minItems": 4,
+          "maxItems": 5
+        }
+      ]
+    },
+    "Empty": {
+      "type": "object",
+      "properties": {},
+      "required": [],
+      "additionalProperties": false
+    },
+    "PayableQuery": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string"
+        },
+        "asOf": {
+          "type": "string"
+        },
+        "asOfDate": {
+          "type": "string"
+        },
+        "supplier": {
+          "type": "string"
+        },
+        "from": {
+          "type": "string"
+        },
+        "to": {
+          "type": "string"
+        },
+        "vendorId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "minDays": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "NativePayableQuery": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string"
+        },
+        "asOf": {
+          "type": "string",
+          "maxLength": 32
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "CommitmentQuery": {
+      "type": "object",
+      "properties": {
+        "startDate": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 10
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "MatchesQuery": {
+      "type": "object",
+      "properties": {
+        "commitmentId": {
+          "type": "string"
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "AlertsQuery": {
+      "type": "object",
+      "properties": {
+        "asOf": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "asOf"
+      ],
+      "additionalProperties": false
+    },
+    "Registered": {
+      "type": "object",
+      "properties": {
+        "payableId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "documentId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "supplierName": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "billNo": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "grossAmount": {
+          "type": "number"
+        },
+        "netAmount": {
+          "type": "number"
+        },
+        "vatAmount": {
+          "type": "number"
+        },
+        "dueDate": {
+          "type": "string"
+        },
+        "entryId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "entryNo": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "payableId",
+        "documentId",
+        "supplierName",
+        "billNo",
+        "grossAmount",
+        "netAmount",
+        "vatAmount",
+        "dueDate",
+        "entryId",
+        "entryNo"
+      ],
+      "additionalProperties": false
+    },
+    "Paid": {
+      "type": "object",
+      "properties": {
+        "paymentId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "journalEntryId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "payableId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "openBalance": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "paymentId",
+        "journalEntryId",
+        "payableId",
+        "openBalance"
+      ],
+      "additionalProperties": false
+    },
+    "PayableRow": {
+      "type": "object",
+      "properties": {
+        "payableId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "documentId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "billNo": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "billDate": {
+          "type": "string"
+        },
+        "dueDate": {
+          "type": "string"
+        },
+        "supplierName": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "vendorId": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "grossAmount": {
+          "type": "number"
+        },
+        "paidAmount": {
+          "type": "number"
+        },
+        "openBalance": {
+          "type": "number"
+        },
+        "currency": {
+          "const": "DKK"
+        },
+        "status": {
+          "enum": [
+            "paid",
+            "open"
+          ]
+        },
+        "isOverdue": {
+          "type": "boolean"
+        },
+        "overdueDays": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "agingBucket": {
+          "enum": [
+            "not-due",
+            "0-30",
+            "31-60",
+            "61-90",
+            "90+"
+          ]
+        }
+      },
+      "required": [
+        "payableId",
+        "documentId",
+        "billNo",
+        "billDate",
+        "dueDate",
+        "supplierName",
+        "vendorId",
+        "grossAmount",
+        "paidAmount",
+        "openBalance",
+        "currency",
+        "status",
+        "isOverdue",
+        "overdueDays",
+        "agingBucket"
+      ],
+      "additionalProperties": false
+    },
+    "DatedPayables": {
+      "type": "object",
+      "properties": {
+        "asOfDate": {
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "all",
+            "open",
+            "paid",
+            "overdue"
+          ]
+        },
+        "count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "rows": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-payables_supplier.json#/$defs/PayableRow"
+          }
+        },
+        "totalOpenBalance": {
+          "type": "number"
+        },
+        "overdueOpenBalance": {
+          "type": "number"
+        },
+        "notYetDueOpenBalance": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "asOfDate",
+        "status",
+        "count",
+        "rows",
+        "totalOpenBalance",
+        "overdueOpenBalance",
+        "notYetDueOpenBalance"
+      ],
+      "additionalProperties": false
+    },
+    "Unregistered": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "documentNo": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "invoiceNo": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "invoiceDate": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "supplierName": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "amountIncVat": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "vatAmount": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "currency": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "documentNo",
+        "invoiceNo",
+        "invoiceDate",
+        "supplierName",
+        "amountIncVat",
+        "vatAmount",
+        "currency"
+      ],
+      "additionalProperties": false
+    },
+    "CorrectionCandidate": {
+      "type": "object",
+      "properties": {
+        "documentNo": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "invoiceNo": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "invoiceDate": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "supplierName": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "amountIncVat": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "vatAmount": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "currency": {
+          "type": "string"
+        },
+        "documentId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "bankTransactionId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "bankDate": {
+          "type": "string"
+        },
+        "originalJournalEntryId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "originalJournalEntryNo": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "documentNo",
+        "invoiceNo",
+        "invoiceDate",
+        "supplierName",
+        "amountIncVat",
+        "vatAmount",
+        "currency",
+        "documentId",
+        "bankTransactionId",
+        "bankDate",
+        "originalJournalEntryId",
+        "originalJournalEntryNo"
+      ],
+      "additionalProperties": false
+    },
+    "Payables": {
+      "type": "object",
+      "properties": {
+        "slug": {
+          "type": "string"
+        },
+        "ledgerUuid": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{32}$"
+        },
+        "selectedYear": {
+          "type": "string"
+        },
+        "archived": {
+          "const": false
+        },
+        "archivedSource": {
+          "type": "null"
+        },
+        "company": {
+          "$ref": "schemas-invoice_native_http.json#/$defs/Company"
+        },
+        "fiscalYears": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "label": {
+                "type": "string"
+              },
+              "start": {
+                "type": "string"
+              },
+              "end": {
+                "type": "string"
+              },
+              "source": {
+                "const": "live"
+              }
+            },
+            "required": [
+              "label",
+              "start",
+              "end",
+              "source"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "periodStart": {
+          "type": "string"
+        },
+        "periodEnd": {
+          "type": "string"
+        },
+        "asOfDate": {
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "all",
+            "open",
+            "paid",
+            "overdue"
+          ]
+        },
+        "count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "rows": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-payables_supplier.json#/$defs/PayableRow"
+          }
+        },
+        "totalOpenBalance": {
+          "type": "number"
+        },
+        "overdueOpenBalance": {
+          "type": "number"
+        },
+        "notYetDueOpenBalance": {
+          "type": "number"
+        },
+        "unregisteredDocuments": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-payables_supplier.json#/$defs/Unregistered"
+          },
+          "maxItems": 200
+        },
+        "directBankCorrectionCandidates": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-payables_supplier.json#/$defs/CorrectionCandidate"
+          },
+          "maxItems": 200
+        },
+        "expenseAccounts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "accountNo": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "defaultVatCode": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "accountNo",
+              "name",
+              "defaultVatCode"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "vendors": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-invoice_native_http.json#/$defs/VendorRow"
+          }
+        }
+      },
+      "required": [
+        "slug",
+        "ledgerUuid",
+        "selectedYear",
+        "archived",
+        "archivedSource",
+        "company",
+        "fiscalYears",
+        "periodStart",
+        "periodEnd",
+        "asOfDate",
+        "status",
+        "count",
+        "rows",
+        "totalOpenBalance",
+        "overdueOpenBalance",
+        "notYetDueOpenBalance",
+        "unregisteredDocuments",
+        "directBankCorrectionCandidates",
+        "expenseAccounts",
+        "vendors"
+      ],
+      "additionalProperties": false
+    },
+    "Failure": {
+      "$ref": "schemas-chart_journal.json#/$defs/Failure"
+    },
+    "BusinessFailure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Applied": {
+      "type": "object",
+      "properties": {
+        "commitmentId": {
+          "type": "string"
+        },
+        "payloadHash": {
+          "type": "string"
+        },
+        "idempotent": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "commitmentId",
+        "payloadHash",
+        "idempotent"
+      ],
+      "additionalProperties": false
+    },
+    "Changed": {
+      "type": "object",
+      "properties": {
+        "commitmentId": {
+          "type": "string"
+        },
+        "payloadHash": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "commitmentId",
+        "payloadHash",
+        "status"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalChanged": {
+      "type": "object",
+      "properties": {
+        "payloadHash": {
+          "type": "string"
+        },
+        "idempotent": {
+          "const": false
+        },
+        "ok": {
+          "const": true
+        }
+      },
+      "required": [
+        "payloadHash",
+        "idempotent",
+        "ok"
+      ],
+      "additionalProperties": false
+    },
+    "Variance": {
+      "type": "object",
+      "properties": {
+        "amount": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "dateDays": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "late": {
+          "type": "boolean"
+        },
+        "currency": {
+          "type": "object",
+          "properties": {
+            "expected": {
+              "type": "string"
+            },
+            "actual": {
+              "type": "string"
+            },
+            "status": {
+              "enum": [
+                "same",
+                "unsupported_fx"
+              ]
+            }
+          },
+          "required": [
+            "expected",
+            "actual",
+            "status"
+          ],
+          "additionalProperties": false
+        },
+        "party": {
+          "type": "object",
+          "properties": {
+            "expected": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "actual": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "status": {
+              "enum": [
+                "missing",
+                "same",
+                "mismatch"
+              ]
+            }
+          },
+          "required": [
+            "expected",
+            "actual",
+            "status"
+          ],
+          "additionalProperties": false
+        },
+        "documentation": {
+          "enum": [
+            "present",
+            "missing"
+          ]
+        },
+        "comparability": {
+          "enum": [
+            "native_currency",
+            "unsupported_fx"
+          ]
+        }
+      },
+      "required": [
+        "amount",
+        "dateDays",
+        "late",
+        "currency",
+        "party",
+        "documentation",
+        "comparability"
+      ],
+      "additionalProperties": false
+    },
+    "Matched": {
+      "type": "object",
+      "properties": {
+        "idempotent": {
+          "type": "boolean"
+        },
+        "payloadHash": {
+          "type": "string"
+        },
+        "variance": {
+          "$ref": "schemas-payables_supplier.json#/$defs/Variance"
+        }
+      },
+      "required": [
+        "idempotent",
+        "payloadHash",
+        "variance"
+      ],
+      "additionalProperties": false
+    },
+    "CanonicalEvidence": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "date": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "number"
+        },
+        "currency": {
+          "type": "string"
+        },
+        "partyId": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "documented": {
+          "type": "boolean"
+        },
+        "sourceHash": {
+          "type": "string"
+        },
+        "documentId": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "kind",
+        "id",
+        "date",
+        "amount",
+        "currency",
+        "partyId",
+        "documented",
+        "sourceHash",
+        "documentId"
+      ],
+      "additionalProperties": false
+    },
+    "Stored_expected": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "string"
+        },
+        {
+          "type": "number"
+        },
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-payables_supplier.json#/$defs/Stored_expected"
+          }
+        },
+        {
+          "type": "object",
+          "properties": {},
+          "required": [],
+          "additionalProperties": {
+            "$ref": "schemas-payables_supplier.json#/$defs/Stored_expected"
+          }
+        }
+      ],
+      "x-arbitrary-json": {
+        "scope": "expected",
+        "rationale": "Read producer parses retained JSON Value rather than reconstructing from the current creation struct; historical stored fields remain JSON, not just current constructors.",
+        "sourceRefs": [
+          {
+            "path": "crates/rentemester-storage/src/supplier_commitments.rs",
+            "sha256": "fdbda498cd8d9135ae0ad259caf95ca713f36afa69f5b1428e1ae9a0978cfe90",
+            "needle": "let mut p: Value = serde_json::from_str(&raw)"
+          }
+        ]
+      }
+    },
+    "Stored_evidence": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "string"
+        },
+        {
+          "type": "number"
+        },
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-payables_supplier.json#/$defs/Stored_evidence"
+          }
+        },
+        {
+          "type": "object",
+          "properties": {},
+          "required": [],
+          "additionalProperties": {
+            "$ref": "schemas-payables_supplier.json#/$defs/Stored_evidence"
+          }
+        }
+      ],
+      "x-arbitrary-json": {
+        "scope": "evidence",
+        "rationale": "Read producer parses retained JSON Value rather than reconstructing from the current creation struct; historical stored fields remain JSON, not just current constructors.",
+        "sourceRefs": [
+          {
+            "path": "crates/rentemester-storage/src/supplier_commitments.rs",
+            "sha256": "fdbda498cd8d9135ae0ad259caf95ca713f36afa69f5b1428e1ae9a0978cfe90",
+            "needle": "let mut p: Value = serde_json::from_str(&raw)"
+          }
+        ]
+      }
+    },
+    "Stored_proposal": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "string"
+        },
+        {
+          "type": "number"
+        },
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-payables_supplier.json#/$defs/Stored_proposal"
+          }
+        },
+        {
+          "type": "object",
+          "properties": {},
+          "required": [],
+          "additionalProperties": {
+            "$ref": "schemas-payables_supplier.json#/$defs/Stored_proposal"
+          }
+        }
+      ],
+      "x-arbitrary-json": {
+        "scope": "proposal",
+        "rationale": "Read producer parses retained JSON Value rather than reconstructing from the current creation struct; historical stored fields remain JSON, not just current constructors.",
+        "sourceRefs": [
+          {
+            "path": "crates/rentemester-storage/src/supplier_commitments.rs",
+            "sha256": "fdbda498cd8d9135ae0ad259caf95ca713f36afa69f5b1428e1ae9a0978cfe90",
+            "needle": "let p: Value = serde_json::from_str(&payload)"
+          }
+        ]
+      }
+    },
+    "MatchRow": {
+      "type": "object",
+      "properties": {
+        "commitmentId": {
+          "type": "string"
+        },
+        "occurrenceDate": {
+          "type": "string"
+        },
+        "expected": {
+          "$ref": "schemas-payables_supplier.json#/$defs/Stored_expected"
+        },
+        "evidence": {
+          "$ref": "schemas-payables_supplier.json#/$defs/Stored_evidence"
+        },
+        "variance": {
+          "$ref": "schemas-payables_supplier.json#/$defs/Variance"
+        },
+        "payloadHash": {
+          "type": "string"
+        },
+        "actor": {
+          "type": "string"
+        },
+        "principal": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "commitmentId",
+        "occurrenceDate",
+        "expected",
+        "evidence",
+        "variance",
+        "payloadHash",
+        "actor",
+        "principal",
+        "createdAt"
+      ],
+      "additionalProperties": false
+    },
+    "Alert": {
+      "type": "object",
+      "properties": {
+        "commitmentId": {
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "notice",
+            "renewal"
+          ]
+        },
+        "date": {
+          "type": "string"
+        },
+        "severity": {
+          "enum": [
+            "due",
+            "upcoming"
+          ]
+        }
+      },
+      "required": [
+        "commitmentId",
+        "kind",
+        "date",
+        "severity"
+      ],
+      "additionalProperties": false
+    },
+    "Proposal": {
+      "type": "object",
+      "properties": {
+        "commitmentId": {
+          "type": "string"
+        },
+        "vendorPartyId": {
+          "type": "string"
+        },
+        "vendorSnapshot": {
+          "type": "string"
+        },
+        "vendorProvenance": {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "ledger_vendor"
+            },
+            "vendor": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "integer",
+                  "minimum": -9223372036854775808,
+                  "maximum": 9223372036854775807
+                },
+                "name": {
+                  "type": "string"
+                },
+                "vatOrCvr": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "countryCode": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "identifierKind": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "id",
+                "name",
+                "vatOrCvr",
+                "countryCode",
+                "identifierKind"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "kind",
+            "vendor"
+          ],
+          "additionalProperties": false
+        },
+        "type": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "businessPurpose": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "number"
+        },
+        "currency": {
+          "type": "string"
+        },
+        "frequency": {
+          "type": "string"
+        },
+        "nextDate": {
+          "type": "string"
+        },
+        "startDate": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "renewalDate": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "noticeDate": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "endDate": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "vatProposal": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "previousPayloadHash": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "evidenceRefs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "sourceEvidence": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "documentId": {
+                "type": "integer",
+                "minimum": -9223372036854775808,
+                "maximum": 9223372036854775807
+              },
+              "sha256": {
+                "type": "string"
+              },
+              "filename": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "documentId",
+              "sha256",
+              "filename"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "status": {
+          "const": "active"
+        },
+        "requestedInput": {
+          "$ref": "schemas-payables_supplier.json#/$defs/SerializedCommitmentInput"
+        },
+        "payloadHash": {
+          "type": "string"
+        },
+        "schedule": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "date": {
+                "type": "string"
+              },
+              "amount": {
+                "type": "number"
+              },
+              "currency": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "date",
+              "amount",
+              "currency"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "commitmentId",
+        "vendorPartyId",
+        "vendorSnapshot",
+        "vendorProvenance",
+        "type",
+        "description",
+        "businessPurpose",
+        "amount",
+        "currency",
+        "frequency",
+        "nextDate",
+        "startDate",
+        "renewalDate",
+        "noticeDate",
+        "endDate",
+        "vatProposal",
+        "previousPayloadHash",
+        "evidenceRefs",
+        "sourceEvidence",
+        "status",
+        "requestedInput",
+        "payloadHash",
+        "schedule",
+        "warnings"
+      ],
+      "additionalProperties": false
+    },
+    "SerializedCommitmentInput": {
+      "type": "object",
+      "properties": {
+        "commitmentId": {
+          "type": "string"
+        },
+        "vendorPartyId": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "businessPurpose": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "number"
+        },
+        "currency": {
+          "type": "string"
+        },
+        "frequency": {
+          "type": "string"
+        },
+        "nextDate": {
+          "type": "string"
+        },
+        "startDate": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "renewalDate": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "noticeDate": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "endDate": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "evidenceRefs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "vatProposal": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "commitmentId",
+        "vendorPartyId",
+        "type",
+        "description",
+        "businessPurpose",
+        "amount",
+        "currency",
+        "frequency",
+        "nextDate",
+        "startDate",
+        "renewalDate",
+        "noticeDate",
+        "endDate",
+        "evidenceRefs",
+        "vatProposal"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalListRow": {
+      "type": "object",
+      "properties": {
+        "commitment_id": {
+          "type": "string"
+        },
+        "payload_json": {
+          "type": "string"
+        },
+        "payload_hash": {
+          "type": "string"
+        },
+        "created_at": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "commitment_id",
+        "payload_json",
+        "payload_hash",
+        "created_at"
+      ],
+      "additionalProperties": false
+    },
+    "HistoryRow": {
+      "type": "object",
+      "properties": {
+        "commitmentId": {
+          "type": "string"
+        },
+        "event": {
+          "type": "string"
+        },
+        "payload": {
+          "$ref": "schemas-payables_supplier.json#/$defs/Stored_proposal"
+        },
+        "payloadHash": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "string"
+        },
+        "actor": {
+          "type": "string"
+        },
+        "principal": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "commitmentId",
+        "event",
+        "payload",
+        "payloadHash",
+        "createdAt",
+        "actor",
+        "principal"
+      ],
+      "additionalProperties": false
+    },
+    "Stored_amount": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "string"
+        },
+        {
+          "type": "number"
+        },
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-payables_supplier.json#/$defs/Stored_amount"
+          }
+        },
+        {
+          "type": "object",
+          "properties": {},
+          "required": [],
+          "additionalProperties": {
+            "$ref": "schemas-payables_supplier.json#/$defs/Stored_amount"
+          }
+        }
+      ],
+      "x-arbitrary-json": {
+        "scope": "amount",
+        "rationale": "Read producer parses retained JSON Value rather than reconstructing from the current creation struct; historical stored fields remain JSON, not just current constructors.",
+        "sourceRefs": [
+          {
+            "path": "crates/rentemester-storage/src/supplier_commitments.rs",
+            "sha256": "fdbda498cd8d9135ae0ad259caf95ca713f36afa69f5b1428e1ae9a0978cfe90",
+            "needle": "let p = &row[\"payload\"]"
+          }
+        ]
+      }
+    },
+    "Stored_currency": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "string"
+        },
+        {
+          "type": "number"
+        },
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-payables_supplier.json#/$defs/Stored_currency"
+          }
+        },
+        {
+          "type": "object",
+          "properties": {},
+          "required": [],
+          "additionalProperties": {
+            "$ref": "schemas-payables_supplier.json#/$defs/Stored_currency"
+          }
+        }
+      ],
+      "x-arbitrary-json": {
+        "scope": "currency",
+        "rationale": "Read producer parses retained JSON Value rather than reconstructing from the current creation struct; historical stored fields remain JSON, not just current constructors.",
+        "sourceRefs": [
+          {
+            "path": "crates/rentemester-storage/src/supplier_commitments.rs",
+            "sha256": "fdbda498cd8d9135ae0ad259caf95ca713f36afa69f5b1428e1ae9a0978cfe90",
+            "needle": "let p = &row[\"payload\"]"
+          }
+        ]
+      }
+    },
+    "Stored_businessPurpose": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "string"
+        },
+        {
+          "type": "number"
+        },
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-payables_supplier.json#/$defs/Stored_businessPurpose"
+          }
+        },
+        {
+          "type": "object",
+          "properties": {},
+          "required": [],
+          "additionalProperties": {
+            "$ref": "schemas-payables_supplier.json#/$defs/Stored_businessPurpose"
+          }
+        }
+      ],
+      "x-arbitrary-json": {
+        "scope": "businessPurpose",
+        "rationale": "Read producer parses retained JSON Value rather than reconstructing from the current creation struct; historical stored fields remain JSON, not just current constructors.",
+        "sourceRefs": [
+          {
+            "path": "crates/rentemester-storage/src/supplier_commitments.rs",
+            "sha256": "fdbda498cd8d9135ae0ad259caf95ca713f36afa69f5b1428e1ae9a0978cfe90",
+            "needle": "let p = &row[\"payload\"]"
+          }
+        ]
+      }
+    },
+    "Stored_evidenceRefs": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "string"
+        },
+        {
+          "type": "number"
+        },
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-payables_supplier.json#/$defs/Stored_evidenceRefs"
+          }
+        },
+        {
+          "type": "object",
+          "properties": {},
+          "required": [],
+          "additionalProperties": {
+            "$ref": "schemas-payables_supplier.json#/$defs/Stored_evidenceRefs"
+          }
+        }
+      ],
+      "x-arbitrary-json": {
+        "scope": "evidenceRefs",
+        "rationale": "Read producer parses retained JSON Value rather than reconstructing from the current creation struct; historical stored fields remain JSON, not just current constructors.",
+        "sourceRefs": [
+          {
+            "path": "crates/rentemester-storage/src/supplier_commitments.rs",
+            "sha256": "fdbda498cd8d9135ae0ad259caf95ca713f36afa69f5b1428e1ae9a0978cfe90",
+            "needle": "let p = &row[\"payload\"]"
+          }
+        ]
+      }
+    },
+    "CommitmentRow": {
+      "type": "object",
+      "properties": {
+        "commitmentId": {
+          "type": "string"
+        },
+        "payloadHash": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "string"
+        },
+        "vendor": {
+          "type": "string"
+        },
+        "purpose": {
+          "$ref": "schemas-payables_supplier.json#/$defs/Stored_businessPurpose"
+        },
+        "amount": {
+          "$ref": "schemas-payables_supplier.json#/$defs/Stored_amount"
+        },
+        "currency": {
+          "$ref": "schemas-payables_supplier.json#/$defs/Stored_currency"
+        },
+        "frequency": {
+          "$ref": "schemas-payables_supplier.json#/$defs/Stored_frequency"
+        },
+        "nextDate": {
+          "$ref": "schemas-payables_supplier.json#/$defs/Stored_nextDate"
+        },
+        "renewalDate": {
+          "$ref": "schemas-payables_supplier.json#/$defs/Stored_renewalDate"
+        },
+        "status": {
+          "type": "string"
+        },
+        "evidenceRefs": {
+          "$ref": "schemas-payables_supplier.json#/$defs/Stored_evidenceRefs"
+        },
+        "missingDocument": {
+          "const": false
+        },
+        "proposal": {
+          "$ref": "schemas-payables_supplier.json#/$defs/Stored_proposal"
+        }
+      },
+      "required": [
+        "commitmentId",
+        "payloadHash",
+        "createdAt",
+        "vendor",
+        "purpose",
+        "amount",
+        "currency",
+        "frequency",
+        "nextDate",
+        "renewalDate",
+        "status",
+        "evidenceRefs",
+        "missingDocument",
+        "proposal"
+      ],
+      "additionalProperties": false
+    },
+    "Occurrence": {
+      "type": "object",
+      "properties": {
+        "commitmentId": {
+          "type": "string"
+        },
+        "date": {
+          "type": "string"
+        },
+        "amount": {
+          "$ref": "schemas-payables_supplier.json#/$defs/Stored_amount"
+        },
+        "currency": {
+          "$ref": "schemas-payables_supplier.json#/$defs/Stored_currency"
+        },
+        "payloadHash": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "commitmentId",
+        "date",
+        "amount",
+        "currency",
+        "payloadHash"
+      ],
+      "additionalProperties": false
+    },
+    "ForecastSource": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "source": {
+              "type": "string"
+            },
+            "amount": {
+              "type": "number"
+            },
+            "reference": {
+              "type": "string"
+            },
+            "assumption": {
+              "type": "boolean"
+            },
+            "settlementStatus": {
+              "enum": [
+                "unknown",
+                null
+              ]
+            }
+          },
+          "required": [
+            "source",
+            "amount",
+            "reference",
+            "assumption",
+            "settlementStatus"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "source": {
+              "const": "undated_budget"
+            },
+            "amount": {
+              "type": "number"
+            },
+            "reference": {
+              "type": "string"
+            },
+            "assumption": {
+              "const": true
+            }
+          },
+          "required": [
+            "source",
+            "amount",
+            "reference",
+            "assumption"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "ForecastPeriod": {
+      "type": "object",
+      "properties": {
+        "weekStart": {
+          "type": "string"
+        },
+        "openingCash": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "closingCash": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "scenarioClosingCash": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sources": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-payables_supplier.json#/$defs/ForecastSource"
+          }
+        },
+        "excluded": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "source": {
+                "type": "string"
+              },
+              "amount": {
+                "type": "number"
+              },
+              "currency": {
+                "type": "string"
+              },
+              "reason": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "source",
+              "amount",
+              "currency",
+              "reason"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "receivables": {
+          "type": "number"
+        },
+        "payables": {
+          "type": "number"
+        },
+        "commitments": {
+          "type": "number"
+        },
+        "budgets": {
+          "type": "number"
+        },
+        "scenarios": {
+          "type": "number"
+        },
+        "obligations": {
+          "type": "number"
+        },
+        "intercompany": {
+          "type": "number"
+        },
+        "undatedBudgetAssumptions": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "weekStart",
+        "openingCash",
+        "closingCash",
+        "scenarioClosingCash",
+        "sources",
+        "excluded",
+        "receivables",
+        "payables",
+        "commitments",
+        "budgets",
+        "scenarios",
+        "obligations",
+        "intercompany",
+        "undatedBudgetAssumptions"
+      ],
+      "additionalProperties": false
+    },
+    "Forecast": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "startDate": {
+          "type": "string"
+        },
+        "currency": {
+          "type": "string"
+        },
+        "openingCash": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "openingCashBasis": {
+          "enum": [
+            "confirmed_bank_ledger",
+            "unavailable"
+          ]
+        },
+        "lowestPoint": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "periods": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-payables_supplier.json#/$defs/ForecastPeriod"
+          },
+          "minItems": 13,
+          "maxItems": 13
+        },
+        "completeness": {
+          "type": "object",
+          "properties": {
+            "status": {
+              "const": "incomplete"
+            },
+            "included": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "excluded": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "required": [
+            "status",
+            "included",
+            "excluded"
+          ],
+          "additionalProperties": false
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0
+        },
+        "appliedRules": {
+          "const": [
+            "native-liquidity-13-week-v1"
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "startDate",
+        "currency",
+        "openingCash",
+        "openingCashBasis",
+        "lowestPoint",
+        "periods",
+        "completeness",
+        "errors",
+        "appliedRules"
+      ],
+      "additionalProperties": false
+    },
+    "Commitments": {
+      "type": "object",
+      "properties": {
+        "slug": {
+          "type": "string"
+        },
+        "company": {
+          "$ref": "schemas-chart_journal.json#/$defs/CompanyProfile"
+        },
+        "fiscalYears": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "label": {
+                "type": "string"
+              },
+              "start": {
+                "type": "string"
+              },
+              "end": {
+                "type": "string"
+              },
+              "source": {
+                "const": "live"
+              }
+            },
+            "required": [
+              "label",
+              "start",
+              "end",
+              "source"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "selectedYear": {
+          "type": "string"
+        },
+        "startDate": {
+          "type": "string"
+        },
+        "commitments": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-payables_supplier.json#/$defs/CommitmentRow"
+          }
+        },
+        "occurrences": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-payables_supplier.json#/$defs/Occurrence"
+          }
+        },
+        "history": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-payables_supplier.json#/$defs/HistoryRow"
+          }
+        },
+        "matches": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-payables_supplier.json#/$defs/MatchRow"
+          }
+        },
+        "alerts": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-payables_supplier.json#/$defs/Alert"
+          }
+        },
+        "vendors": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-invoice_native_http.json#/$defs/VendorRow"
+          }
+        },
+        "documents": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-document_ingest_pdf.json#/$defs/NativeRow"
+          }
+        },
+        "evidenceOptions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string"
+              },
+              "id": {
+                "type": "string"
+              },
+              "date": {
+                "type": "string"
+              },
+              "amount": {
+                "type": "number"
+              },
+              "currency": {
+                "type": "string"
+              },
+              "label": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "kind",
+              "id",
+              "date",
+              "amount",
+              "currency",
+              "label"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "forecast": {
+          "$ref": "schemas-payables_supplier.json#/$defs/Forecast"
+        }
+      },
+      "required": [
+        "slug",
+        "company",
+        "fiscalYears",
+        "selectedYear",
+        "startDate",
+        "commitments",
+        "occurrences",
+        "history",
+        "matches",
+        "alerts",
+        "vendors",
+        "documents",
+        "evidenceOptions",
+        "forecast"
+      ],
+      "additionalProperties": false
+    },
+    "RegisteredEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "payable": {
+          "$ref": "schemas-payables_supplier.json#/$defs/Registered"
+        },
+        "usage": {
+          "enum": [
+            "committed"
+          ]
+        },
+        "business": {
+          "enum": [
+            "committed"
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "payable"
+      ],
+      "additionalProperties": false
+    },
+    "PaidEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "payment": {
+          "$ref": "schemas-payables_supplier.json#/$defs/Paid"
+        },
+        "usage": {
+          "enum": [
+            "committed"
+          ]
+        },
+        "business": {
+          "enum": [
+            "committed"
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "payment"
+      ],
+      "additionalProperties": false
+    },
+    "PayablesEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "payables": {
+          "$ref": "schemas-payables_supplier.json#/$defs/Payables"
+        },
+        "usage": {
+          "enum": [
+            "committed"
+          ]
+        },
+        "business": {
+          "enum": [
+            "committed"
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "payables"
+      ],
+      "additionalProperties": false
+    },
+    "ProposalEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "plan": {
+          "$ref": "schemas-payables_supplier.json#/$defs/Proposal"
+        }
+      },
+      "required": [
+        "ok",
+        "plan"
+      ],
+      "additionalProperties": false
+    },
+    "AppliedEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "supplierCommitment": {
+          "$ref": "schemas-payables_supplier.json#/$defs/Applied"
+        }
+      },
+      "required": [
+        "ok",
+        "supplierCommitment"
+      ],
+      "additionalProperties": false
+    },
+    "ChangedEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "supplierCommitment": {
+          "$ref": "schemas-payables_supplier.json#/$defs/Changed"
+        }
+      },
+      "required": [
+        "ok",
+        "supplierCommitment"
+      ],
+      "additionalProperties": false
+    },
+    "MatchedEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "supplierCommitmentMatch": {
+          "$ref": "schemas-payables_supplier.json#/$defs/Matched"
+        }
+      },
+      "required": [
+        "ok",
+        "supplierCommitmentMatch"
+      ],
+      "additionalProperties": false
+    },
+    "CommitmentsEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "supplierCommitments": {
+          "$ref": "schemas-payables_supplier.json#/$defs/Commitments"
+        }
+      },
+      "required": [
+        "ok",
+        "supplierCommitments"
+      ],
+      "additionalProperties": false
+    },
+    "MatchesEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "matches": {
+          "type": "object",
+          "properties": {
+            "rows": {
+              "type": "array",
+              "items": {
+                "$ref": "schemas-payables_supplier.json#/$defs/MatchRow"
+              }
+            }
+          },
+          "required": [
+            "rows"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "ok",
+        "matches"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalRegisteredData": {
+      "type": "object",
+      "properties": {
+        "payableId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "documentId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "supplierName": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "billNo": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "grossAmount": {
+          "type": "number"
+        },
+        "netAmount": {
+          "type": "number"
+        },
+        "vatAmount": {
+          "type": "number"
+        },
+        "dueDate": {
+          "type": "string"
+        },
+        "entryId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "entryNo": {
+          "type": "string"
+        },
+        "entryHash": {
+          "type": "string"
+        },
+        "idempotency": {
+          "$ref": "schemas-chart_journal.json#/$defs/Idempotency"
+        }
+      },
+      "required": [
+        "payableId",
+        "documentId",
+        "supplierName",
+        "billNo",
+        "grossAmount",
+        "netAmount",
+        "vatAmount",
+        "dueDate",
+        "entryId",
+        "entryNo",
+        "entryHash"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalRegistered": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "data": {
+          "$ref": "schemas-payables_supplier.json#/$defs/OriginalRegisteredData"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "ok",
+        "data",
+        "errors",
+        "appliedRules"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalPaidData": {
+      "type": "object",
+      "properties": {
+        "paymentId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "journalEntryId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "payableId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "openBalance": {
+          "type": "number"
+        },
+        "idempotency": {
+          "$ref": "schemas-chart_journal.json#/$defs/Idempotency"
+        }
+      },
+      "required": [
+        "paymentId",
+        "journalEntryId",
+        "payableId",
+        "openBalance"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalPaid": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "data": {
+          "$ref": "schemas-payables_supplier.json#/$defs/OriginalPaidData"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "ok",
+        "data",
+        "errors",
+        "appliedRules"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalDatedPayablesData": {
+      "type": "object",
+      "properties": {
+        "asOfDate": {
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "all",
+            "open",
+            "paid",
+            "overdue"
+          ]
+        },
+        "count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "rows": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-payables_supplier.json#/$defs/PayableRow"
+          }
+        },
+        "totalOpenBalance": {
+          "type": "number"
+        },
+        "overdueOpenBalance": {
+          "type": "number"
+        },
+        "notYetDueOpenBalance": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "asOfDate",
+        "status",
+        "count",
+        "rows",
+        "totalOpenBalance",
+        "overdueOpenBalance",
+        "notYetDueOpenBalance"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalDatedPayables": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "data": {
+          "$ref": "schemas-payables_supplier.json#/$defs/OriginalDatedPayablesData"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "ok",
+        "data",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalApplied": {
+      "type": "object",
+      "properties": {
+        "commitmentId": {
+          "type": "string"
+        },
+        "payloadHash": {
+          "type": "string"
+        },
+        "idempotent": {
+          "type": "boolean"
+        },
+        "ok": {
+          "const": true
+        }
+      },
+      "required": [
+        "commitmentId",
+        "payloadHash",
+        "idempotent",
+        "ok"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalMatched": {
+      "type": "object",
+      "properties": {
+        "idempotent": {
+          "type": "boolean"
+        },
+        "payloadHash": {
+          "type": "string"
+        },
+        "variance": {
+          "$ref": "schemas-payables_supplier.json#/$defs/Variance"
+        },
+        "ok": {
+          "const": true
+        }
+      },
+      "required": [
+        "idempotent",
+        "payloadHash",
+        "variance",
+        "ok"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalProposal": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "proposal": {
+          "$ref": "schemas-payables_supplier.json#/$defs/Proposal"
+        }
+      },
+      "required": [
+        "ok",
+        "proposal"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalCommitments": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "rows": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-payables_supplier.json#/$defs/OriginalListRow"
+          }
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0
+        }
+      },
+      "required": [
+        "ok",
+        "rows",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalMatches": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "rows": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-payables_supplier.json#/$defs/MatchRow"
+          }
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0
+        }
+      },
+      "required": [
+        "ok",
+        "rows",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalAlerts": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "rows": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-payables_supplier.json#/$defs/Alert"
+          }
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0
+        }
+      },
+      "required": [
+        "ok",
+        "rows",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "RegisterSdk": {
+      "type": "object",
+      "properties": {
+        "documentId": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "billDate": {
+          "type": "string",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        },
+        "dueDate": {
+          "type": "string",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        },
+        "expenseAccountNo": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "vatTreatment": {
+          "enum": [
+            "standard",
+            "exempt",
+            "non_deductible",
+            null
+          ]
+        },
+        "vendorId": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1
+        },
+        "note": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 4096
+        },
+        "confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "documentId",
+        "billDate",
+        "dueDate",
+        "expenseAccountNo",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "PaymentSdk": {
+      "type": "object",
+      "properties": {
+        "bankTransactionId": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "paymentDate": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 4096
+        },
+        "amount": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "exclusiveMinimum": 0
+        },
+        "paymentAccountNo": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 4096
+        },
+        "note": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 4096
+        },
+        "confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "bankTransactionId",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "PlanSdk": {
+      "type": "object",
+      "properties": {
+        "commitment": {
+          "$ref": "schemas-payables_supplier.json#/$defs/CommitmentInputSdk"
+        }
+      },
+      "required": [
+        "commitment"
+      ],
+      "additionalProperties": false
+    },
+    "ApplySdk": {
+      "type": "object",
+      "properties": {
+        "commitment": {
+          "$ref": "schemas-payables_supplier.json#/$defs/CommitmentInputSdk"
+        },
+        "payloadHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "minLength": 64,
+          "maxLength": 64
+        },
+        "confirm": {
+          "const": true
+        },
+        "idempotencyKey": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1,
+          "maxLength": 160
+        }
+      },
+      "required": [
+        "commitment",
+        "payloadHash",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "ChangeSdk": {
+      "type": "object",
+      "properties": {
+        "commitmentId": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 96
+        },
+        "action": {
+          "enum": [
+            "paused",
+            "ended",
+            "superseded"
+          ]
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        },
+        "confirm": {
+          "const": true
+        },
+        "expectedPayloadHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "minLength": 64,
+          "maxLength": 64
+        }
+      },
+      "required": [
+        "commitmentId",
+        "action",
+        "reason",
+        "confirm",
+        "expectedPayloadHash"
+      ],
+      "additionalProperties": false
+    },
+    "MatchSdk": {
+      "type": "object",
+      "properties": {
+        "commitmentId": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 96
+        },
+        "occurrenceDate": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 10,
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        },
+        "evidence": {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "enum": [
+                "canonical_document",
+                "payable",
+                "bank_transaction"
+              ]
+            },
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 20,
+              "pattern": "^[1-9][0-9]*$"
+            }
+          },
+          "required": [
+            "kind",
+            "id"
+          ],
+          "additionalProperties": false
+        },
+        "confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "commitmentId",
+        "occurrenceDate",
+        "evidence",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "CommitmentInputSdk": {
+      "type": "object",
+      "properties": {
+        "commitmentId": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 96
+        },
+        "vendorPartyId": {
+          "type": "string",
+          "minLength": 8,
+          "maxLength": 96,
+          "pattern": "^vendor:[1-9][0-9]*$"
+        },
+        "type": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        },
+        "businessPurpose": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        },
+        "amount": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "currency": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 3,
+          "pattern": "^[A-Z]{3}$"
+        },
+        "frequency": {
+          "enum": [
+            "weekly",
+            "monthly",
+            "quarterly",
+            "yearly"
+          ]
+        },
+        "nextDate": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 10,
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        },
+        "startDate": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 10,
+          "maxLength": 10,
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        },
+        "renewalDate": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 10,
+          "maxLength": 10,
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        },
+        "noticeDate": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 10,
+          "maxLength": 10,
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        },
+        "endDate": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 10,
+          "maxLength": 10,
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        },
+        "evidenceRefs": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 20,
+          "items": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 160,
+            "pattern": "^document:[1-9][0-9]*$"
+          }
+        },
+        "vatProposal": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 2000
+        }
+      },
+      "required": [
+        "commitmentId",
+        "vendorPartyId",
+        "type",
+        "description",
+        "businessPurpose",
+        "amount",
+        "currency",
+        "frequency",
+        "nextDate",
+        "evidenceRefs"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalRegisterSdk": {
+      "type": "object",
+      "properties": {
+        "documentId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "billDate": {
+          "type": "string"
+        },
+        "dueDate": {
+          "type": "string"
+        },
+        "expenseAccount": {
+          "type": "string",
+          "minLength": 1
+        },
+        "confirm": {
+          "const": true
+        },
+        "vatTreatment": {
+          "enum": [
+            "standard",
+            "exempt",
+            "non_deductible"
+          ]
+        },
+        "vendorId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "note": {
+          "type": "string"
+        },
+        "idempotencyKey": {
+          "type": "string",
+          "minLength": 1,
+          "description": "At most128 UTF16 code units."
+        }
+      },
+      "required": [
+        "documentId",
+        "billDate",
+        "dueDate",
+        "expenseAccount",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalPaySdk": {
+      "type": "object",
+      "properties": {
+        "payableId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "bankTransactionId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "confirm": {
+          "const": true
+        },
+        "amount": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "date": {
+          "type": "string"
+        },
+        "paymentAccount": {
+          "type": "string"
+        },
+        "note": {
+          "type": "string"
+        },
+        "idempotencyKey": {
+          "type": "string",
+          "minLength": 1,
+          "description": "At most128 UTF16 code units."
+        }
+      },
+      "required": [
+        "payableId",
+        "bankTransactionId",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalCommitmentInputSdk": {
+      "type": "object",
+      "properties": {
+        "vendorSnapshot": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000,
+          "pattern": "^[^\\u0000-\\u001f\\u007f]*$"
+        },
+        "status": {
+          "enum": [
+            "active",
+            "paused",
+            "ended",
+            "unresolved"
+          ]
+        },
+        "commitmentId": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 96,
+          "pattern": "^[^\\u0000-\\u001f\\u007f]*$"
+        },
+        "vendorPartyId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000,
+          "pattern": "^[^\\u0000-\\u001f\\u007f]*$"
+        },
+        "type": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000,
+          "pattern": "^[^\\u0000-\\u001f\\u007f]*$"
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000,
+          "pattern": "^[^\\u0000-\\u001f\\u007f]*$"
+        },
+        "businessPurpose": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000,
+          "pattern": "^[^\\u0000-\\u001f\\u007f]*$"
+        },
+        "amount": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "currency": {
+          "type": "string",
+          "pattern": "^[A-Z]{3}$"
+        },
+        "frequency": {
+          "enum": [
+            "weekly",
+            "monthly",
+            "quarterly",
+            "yearly"
+          ]
+        },
+        "nextDate": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000,
+          "pattern": "^[^\\u0000-\\u001f\\u007f]*$"
+        },
+        "startDate": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000,
+          "pattern": "^[^\\u0000-\\u001f\\u007f]*$"
+        },
+        "renewalDate": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000,
+          "pattern": "^[^\\u0000-\\u001f\\u007f]*$"
+        },
+        "noticeDate": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000,
+          "pattern": "^[^\\u0000-\\u001f\\u007f]*$"
+        },
+        "endDate": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000,
+          "pattern": "^[^\\u0000-\\u001f\\u007f]*$"
+        },
+        "evidenceRefs": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 100,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000
+          }
+        },
+        "vatProposal": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000,
+          "pattern": "^[^\\u0000-\\u001f\\u007f]*$"
+        }
+      },
+      "required": [
+        "commitmentId",
+        "vendorPartyId",
+        "type",
+        "description",
+        "businessPurpose",
+        "amount",
+        "currency",
+        "frequency",
+        "nextDate",
+        "evidenceRefs"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalPlanSdk": {
+      "type": "object",
+      "properties": {
+        "commitment": {
+          "$ref": "schemas-payables_supplier.json#/$defs/OriginalCommitmentInputSdk"
+        }
+      },
+      "required": [
+        "commitment"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalApplySdk": {
+      "type": "object",
+      "properties": {
+        "commitment": {
+          "$ref": "schemas-payables_supplier.json#/$defs/OriginalCommitmentInputSdk"
+        },
+        "payloadHash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "idempotencyKey": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        },
+        "confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "commitment",
+        "payloadHash",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalChangeSdk": {
+      "type": "object",
+      "properties": {
+        "commitmentId": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 96
+        },
+        "action": {
+          "enum": [
+            "paused",
+            "ended",
+            "superseded"
+          ]
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        },
+        "confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "commitmentId",
+        "action",
+        "reason",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalMatchSdk": {
+      "type": "object",
+      "properties": {
+        "commitmentId": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 96
+        },
+        "occurrenceDate": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        },
+        "evidence": {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "enum": [
+                "canonical_document",
+                "payable",
+                "bank_transaction"
+              ]
+            },
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2000
+            }
+          },
+          "required": [
+            "kind",
+            "id"
+          ],
+          "additionalProperties": false
+        },
+        "confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "commitmentId",
+        "occurrenceDate",
+        "evidence",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalMatchesSdk": {
+      "type": "object",
+      "properties": {
+        "commitmentId": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 96
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "OriginalAlertsSdk": {
+      "type": "object",
+      "properties": {
+        "asOf": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        }
+      },
+      "required": [
+        "asOf"
+      ],
+      "additionalProperties": false
+    },
+    "RpcId": {
+      "anyOf": [
+        {
+          "type": "string",
+          "maxLength": 256,
+          "description": "Session additionally bounds UTF-8 byte length to256."
+        },
+        {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 18446744073709551615
+        }
+      ]
+    },
+    "RpcError": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "type": "null"
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32700
+                },
+                "message": {
+                  "enum": [
+                    "invalid or oversized newline-delimited message",
+                    "invalid JSON",
+                    "message exceeds tool frame bound; only named original uploads/ownership/consolidation proposals admit larger bounded frames"
+                  ]
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-payables_supplier.json#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32600
+                },
+                "message": {
+                  "enum": [
+                    "expected one JSON-RPC object",
+                    "invalid JSON-RPC request",
+                    "request id already used",
+                    "already initialized"
+                  ]
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-payables_supplier.json#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32000
+                },
+                "message": {
+                  "enum": [
+                    "session request limit reached; reconnect"
+                  ]
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-payables_supplier.json#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32002
+                },
+                "message": {
+                  "enum": [
+                    "initialize and notifications/initialized required"
+                  ]
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-payables_supplier.json#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32601
+                },
+                "message": {
+                  "enum": [
+                    "method not found"
+                  ]
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "schemas-payables_supplier.json#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "enum": [
+                    "expected params object",
+                    "initialize requires protocolVersion, capabilities and clientInfo",
+                    "task execution not supported",
+                    "tool name required",
+                    "expected arguments object",
+                    "report selectors must be strings",
+                    "bank/payable read filters must be strings",
+                    "invalid payables read arguments",
+                    "only pay_payable requires a positive payable id",
+                    "bank/payable write requires company, native body and confirm:true",
+                    "explicit confirmation required",
+                    "startDate must be a real ISO date string",
+                    "supplier_commitments accepts company and optional startDate only",
+                    "matches read accepts company only",
+                    "read-only plan accepts company and exact body only, no confirmation",
+                    "commitment write requires company, exact body and confirm:true",
+                    "explicit commitment confirmation required",
+                    "unknown payable field; no native aliases/identity/body",
+                    "confirm must be boolean",
+                    "positive safe IDs/nonnegative minDays required",
+                    "positive finite amount required",
+                    "optional strings reject null/nonstrings",
+                    "nonempty company/expenseAccount/key required",
+                    "idempotencyKey exceeds128",
+                    "invalid status",
+                    "invalid VAT treatment",
+                    "required payable field absent",
+                    "company required",
+                    "original supplier commitment input schema differs"
+                  ]
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "NativeAdapterFailure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "error": {
+          "type": "object",
+          "properties": {
+            "code": {
+              "enum": [
+                "invalid_input",
+                "transport",
+                "server_refused",
+                "protocol",
+                "outcome_unknown"
+              ]
+            },
+            "message": {
+              "type": "string"
+            },
+            "status": {
+              "type": "integer",
+              "minimum": 100,
+              "maximum": 599
+            }
+          },
+          "required": [
+            "code",
+            "message"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "ok",
+        "error"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalAdapterFailure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "enum": [
+            "invalid_input",
+            "server_refused",
+            "transport",
+            "protocol",
+            "outcome_unknown",
+            "CONFIRM_REQUIRED",
+            "PERIOD_CLOSED",
+            "PRECONDITION_MISSING",
+            "NOT_FOUND",
+            "NOT_VAT_REGISTERED"
+          ]
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "CliFailure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "error": {
+          "type": "object",
+          "properties": {
+            "code": {
+              "type": "string"
+            },
+            "message": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "code",
+            "message"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "ok",
+        "error"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalPayableFailure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "type": "string"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "NativeCliFailure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "type": "string"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "ok",
+        "code",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "NativeFailureTool": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "const": "text"
+                },
+                "text": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "type",
+                "text"
+              ],
+              "additionalProperties": false
+            }
+          ],
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "$ref": "schemas-payables_supplier.json#/$defs/NativeAdapterFailure"
+        },
+        "isError": {
+          "const": true
+        }
+      },
+      "required": [
+        "content",
+        "structuredContent",
+        "isError"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalFailureTool": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "const": "text"
+                },
+                "text": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "type",
+                "text"
+              ],
+              "additionalProperties": false
+            }
+          ],
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "anyOf": [
+            {
+              "$ref": "schemas-payables_supplier.json#/$defs/OriginalAdapterFailure"
+            },
+            {
+              "$ref": "schemas-payables_supplier.json#/$defs/BusinessFailure"
+            }
+          ]
+        },
+        "isError": {
+          "const": true
+        }
+      },
+      "required": [
+        "content",
+        "structuredContent",
+        "isError"
+      ],
+      "additionalProperties": false
+    },
+    "RegisterBody": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 262144,
+      "contentMediaType": "application/json",
+      "contentSchema": {
+        "$ref": "schemas-payables_supplier.json#/$defs/RegisterSdk"
+      },
+      "description": "Exact UTF8 body, SDK additionally enforces262144 bytes; object guard excludes positional arrays."
+    },
+    "PaymentBody": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 262144,
+      "contentMediaType": "application/json",
+      "contentSchema": {
+        "$ref": "schemas-payables_supplier.json#/$defs/PaymentSdk"
+      },
+      "description": "Exact UTF8 body, SDK additionally enforces262144 bytes; object guard excludes positional arrays."
+    },
+    "PlanBody": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 262144,
+      "contentMediaType": "application/json",
+      "contentSchema": {
+        "$ref": "schemas-payables_supplier.json#/$defs/PlanSdk"
+      },
+      "description": "Exact UTF8 body, SDK additionally enforces262144 bytes; object guard excludes positional arrays."
+    },
+    "ApplyBody": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 262144,
+      "contentMediaType": "application/json",
+      "contentSchema": {
+        "$ref": "schemas-payables_supplier.json#/$defs/ApplySdk"
+      },
+      "description": "Exact UTF8 body, SDK additionally enforces262144 bytes; object guard excludes positional arrays."
+    },
+    "ChangeBody": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 262144,
+      "contentMediaType": "application/json",
+      "contentSchema": {
+        "$ref": "schemas-payables_supplier.json#/$defs/ChangeSdk"
+      },
+      "description": "Exact UTF8 body, SDK additionally enforces262144 bytes; object guard excludes positional arrays."
+    },
+    "MatchBody": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 262144,
+      "contentMediaType": "application/json",
+      "contentSchema": {
+        "$ref": "schemas-payables_supplier.json#/$defs/MatchSdk"
+      },
+      "description": "Exact UTF8 body, SDK additionally enforces262144 bytes; object guard excludes positional arrays."
+    },
+    "Stored_frequency": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "string"
+        },
+        {
+          "type": "number"
+        },
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-payables_supplier.json#/$defs/Stored_proposal"
+          }
+        },
+        {
+          "type": "object",
+          "properties": {},
+          "required": [],
+          "additionalProperties": {
+            "$ref": "schemas-payables_supplier.json#/$defs/Stored_proposal"
+          }
+        }
+      ],
+      "x-arbitrary-json": {
+        "scope": "Stored commitment payload.frequency",
+        "rationale": "Read producer parses retained JSON Value rather than reconstructing from the current creation struct; historical stored fields remain JSON, not just current constructors.",
+        "sourceRefs": [
+          {
+            "path": "crates/rentemester-storage/src/supplier_commitments.rs",
+            "sha256": "fdbda498cd8d9135ae0ad259caf95ca713f36afa69f5b1428e1ae9a0978cfe90",
+            "needle": "let p: Value = serde_json::from_str(&payload)"
+          }
+        ]
+      }
+    },
+    "Stored_nextDate": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "string"
+        },
+        {
+          "type": "number"
+        },
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-payables_supplier.json#/$defs/Stored_proposal"
+          }
+        },
+        {
+          "type": "object",
+          "properties": {},
+          "required": [],
+          "additionalProperties": {
+            "$ref": "schemas-payables_supplier.json#/$defs/Stored_proposal"
+          }
+        }
+      ],
+      "x-arbitrary-json": {
+        "scope": "Stored commitment payload.nextDate",
+        "rationale": "Read producer parses retained JSON Value rather than reconstructing from the current creation struct; historical stored fields remain JSON, not just current constructors.",
+        "sourceRefs": [
+          {
+            "path": "crates/rentemester-storage/src/supplier_commitments.rs",
+            "sha256": "fdbda498cd8d9135ae0ad259caf95ca713f36afa69f5b1428e1ae9a0978cfe90",
+            "needle": "let p: Value = serde_json::from_str(&payload)"
+          }
+        ]
+      }
+    },
+    "Stored_renewalDate": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "string"
+        },
+        {
+          "type": "number"
+        },
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-payables_supplier.json#/$defs/Stored_proposal"
+          }
+        },
+        {
+          "type": "object",
+          "properties": {},
+          "required": [],
+          "additionalProperties": {
+            "$ref": "schemas-payables_supplier.json#/$defs/Stored_proposal"
+          }
+        }
+      ],
+      "x-arbitrary-json": {
+        "scope": "Stored commitment payload.renewalDate",
+        "rationale": "Read producer parses retained JSON Value rather than reconstructing from the current creation struct; historical stored fields remain JSON, not just current constructors.",
+        "sourceRefs": [
+          {
+            "path": "crates/rentemester-storage/src/supplier_commitments.rs",
+            "sha256": "fdbda498cd8d9135ae0ad259caf95ca713f36afa69f5b1428e1ae9a0978cfe90",
+            "needle": "let p: Value = serde_json::from_str(&payload)"
+          }
+        ]
+      }
+    },
+    "Operation26Flags": {
+      "type": "object",
+      "properties": {
+        "--company": {
+          "type": "string"
+        },
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "const": true
+        },
+        "--help": {
+          "const": true
+        },
+        "--service-key-file": {
+          "type": "string"
+        },
+        "--status": {
+          "enum": [
+            "open",
+            "paid",
+            "overdue",
+            "all"
+          ]
+        },
+        "--as-of": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "--company"
+      ],
+      "additionalProperties": false
+    },
+    "Operation26CliOutput": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "data": {
+          "$ref": "schemas-payables_supplier.json#/$defs/PayablesEnvelope"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Operation27Flags": {
+      "type": "object",
+      "properties": {
+        "--company": {
+          "type": "string"
+        },
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "const": true
+        },
+        "--help": {
+          "const": true
+        },
+        "--service-key-file": {
+          "type": "string"
+        },
+        "--confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "--company",
+        "--confirm"
+      ],
+      "additionalProperties": false
+    },
+    "Operation27CliOutput": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "data": {
+          "$ref": "schemas-payables_supplier.json#/$defs/RegisteredEnvelope"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Operation28Flags": {
+      "type": "object",
+      "properties": {
+        "--company": {
+          "type": "string"
+        },
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "const": true
+        },
+        "--help": {
+          "const": true
+        },
+        "--service-key-file": {
+          "type": "string"
+        },
+        "--confirm": {
+          "const": true
+        },
+        "--id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "--company",
+        "--confirm",
+        "--id"
+      ],
+      "additionalProperties": false
+    },
+    "Operation28CliOutput": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "data": {
+          "$ref": "schemas-payables_supplier.json#/$defs/PaidEnvelope"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Operation29Flags": {
+      "type": "object",
+      "properties": {
+        "--company": {
+          "type": "string"
+        },
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "const": true
+        },
+        "--help": {
+          "const": true
+        },
+        "--service-key-file": {
+          "type": "string"
+        },
+        "--json": {
+          "const": true
+        },
+        "--status": {
+          "type": "string"
+        },
+        "--as-of": {
+          "type": "string"
+        },
+        "--supplier": {
+          "type": "string"
+        },
+        "--vendor-id": {
+          "type": "string"
+        },
+        "--from": {
+          "type": "string"
+        },
+        "--to": {
+          "type": "string"
+        },
+        "--min-days": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "--company"
+      ],
+      "additionalProperties": false
+    },
+    "Operation29CliOutput": {
+      "type": "object",
+      "properties": {
+        "asOfDate": {
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "all",
+            "open",
+            "paid",
+            "overdue"
+          ]
+        },
+        "count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "rows": {
+          "type": "array",
+          "items": {
+            "$ref": "schemas-payables_supplier.json#/$defs/PayableRow"
+          }
+        },
+        "totalOpenBalance": {
+          "type": "number"
+        },
+        "overdueOpenBalance": {
+          "type": "number"
+        },
+        "notYetDueOpenBalance": {
+          "type": "number"
+        },
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "const": []
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "asOfDate",
+        "status",
+        "count",
+        "rows",
+        "totalOpenBalance",
+        "overdueOpenBalance",
+        "notYetDueOpenBalance",
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Operation30Flags": {
+      "type": "object",
+      "properties": {
+        "--company": {
+          "type": "string"
+        },
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "const": true
+        },
+        "--help": {
+          "const": true
+        },
+        "--service-key-file": {
+          "type": "string"
+        },
+        "--json": {
+          "const": true
+        },
+        "--document-id": {
+          "type": "string"
+        },
+        "--bill-date": {
+          "type": "string"
+        },
+        "--due-date": {
+          "type": "string"
+        },
+        "--expense-account": {
+          "type": "string"
+        },
+        "--vat-treatment": {
+          "type": "string"
+        },
+        "--vendor-id": {
+          "type": "string"
+        },
+        "--note": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "--company",
+        "--document-id",
+        "--bill-date",
+        "--due-date",
+        "--expense-account"
+      ],
+      "additionalProperties": false
+    },
+    "Operation30CliOutput": {
+      "type": "object",
+      "properties": {
+        "payableId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "documentId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "supplierName": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "billNo": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "grossAmount": {
+          "type": "number"
+        },
+        "netAmount": {
+          "type": "number"
+        },
+        "vatAmount": {
+          "type": "number"
+        },
+        "dueDate": {
+          "type": "string"
+        },
+        "entryId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "entryNo": {
+          "type": "string"
+        },
+        "entryHash": {
+          "type": "string"
+        },
+        "idempotency": {
+          "$ref": "schemas-chart_journal.json#/$defs/Idempotency"
+        },
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "const": []
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "payableId",
+        "documentId",
+        "supplierName",
+        "billNo",
+        "grossAmount",
+        "netAmount",
+        "vatAmount",
+        "dueDate",
+        "entryId",
+        "entryNo",
+        "entryHash",
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Operation31Flags": {
+      "type": "object",
+      "properties": {
+        "--company": {
+          "type": "string"
+        },
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "const": true
+        },
+        "--help": {
+          "const": true
+        },
+        "--service-key-file": {
+          "type": "string"
+        },
+        "--json": {
+          "const": true
+        },
+        "--payable-id": {
+          "type": "string"
+        },
+        "--bank-transaction-id": {
+          "type": "string"
+        },
+        "--amount": {
+          "type": "string"
+        },
+        "--date": {
+          "type": "string"
+        },
+        "--payment-account": {
+          "type": "string"
+        },
+        "--note": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "--company",
+        "--payable-id",
+        "--bank-transaction-id"
+      ],
+      "additionalProperties": false
+    },
+    "Operation31CliOutput": {
+      "type": "object",
+      "properties": {
+        "paymentId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "journalEntryId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "payableId": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "openBalance": {
+          "type": "number"
+        },
+        "idempotency": {
+          "$ref": "schemas-chart_journal.json#/$defs/Idempotency"
+        },
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "const": []
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "paymentId",
+        "journalEntryId",
+        "payableId",
+        "openBalance",
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "Operation32Flags": {
+      "type": "object",
+      "properties": {
+        "--company": {
+          "type": "string"
+        },
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "const": true
+        },
+        "--help": {
+          "const": true
+        },
+        "--start-date": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "--company"
+      ],
+      "additionalProperties": false
+    },
+    "Operation32CliOutput": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "data": {
+          "$ref": "schemas-payables_supplier.json#/$defs/CommitmentsEnvelope"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Operation33Flags": {
+      "type": "object",
+      "properties": {
+        "--company": {
+          "type": "string"
+        },
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "const": true
+        },
+        "--help": {
+          "const": true
+        }
+      },
+      "required": [
+        "--company"
+      ],
+      "additionalProperties": false
+    },
+    "Operation33CliOutput": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "data": {
+          "$ref": "schemas-payables_supplier.json#/$defs/MatchesEnvelope"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Operation34Flags": {
+      "type": "object",
+      "properties": {
+        "--company": {
+          "type": "string"
+        },
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "const": true
+        },
+        "--help": {
+          "const": true
+        }
+      },
+      "required": [
+        "--company"
+      ],
+      "additionalProperties": false
+    },
+    "Operation34CliOutput": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "data": {
+          "$ref": "schemas-payables_supplier.json#/$defs/ProposalEnvelope"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Operation35Flags": {
+      "type": "object",
+      "properties": {
+        "--company": {
+          "type": "string"
+        },
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "const": true
+        },
+        "--help": {
+          "const": true
+        },
+        "--confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "--company",
+        "--confirm"
+      ],
+      "additionalProperties": false
+    },
+    "Operation35CliOutput": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "data": {
+          "$ref": "schemas-payables_supplier.json#/$defs/AppliedEnvelope"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Operation36Flags": {
+      "type": "object",
+      "properties": {
+        "--company": {
+          "type": "string"
+        },
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "const": true
+        },
+        "--help": {
+          "const": true
+        },
+        "--confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "--company",
+        "--confirm"
+      ],
+      "additionalProperties": false
+    },
+    "Operation36CliOutput": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "data": {
+          "$ref": "schemas-payables_supplier.json#/$defs/ChangedEnvelope"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Operation37Flags": {
+      "type": "object",
+      "properties": {
+        "--company": {
+          "type": "string"
+        },
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "const": true
+        },
+        "--help": {
+          "const": true
+        },
+        "--confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "--company",
+        "--confirm"
+      ],
+      "additionalProperties": false
+    },
+    "Operation37CliOutput": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "data": {
+          "$ref": "schemas-payables_supplier.json#/$defs/MatchedEnvelope"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "Operation38Flags": {
+      "type": "object",
+      "properties": {
+        "--company": {
+          "type": "string"
+        },
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "const": true
+        },
+        "--help": {
+          "const": true
+        },
+        "--service-key-file": {
+          "type": "string"
+        },
+        "--json": {
+          "const": true
+        },
+        "--format": {
+          "enum": [
+            "human",
+            "json"
+          ]
+        },
+        "--workspace": {
+          "type": "string"
+        },
+        "--input": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "--company"
+      ],
+      "additionalProperties": false
+    },
+    "Operation39Flags": {
+      "type": "object",
+      "properties": {
+        "--company": {
+          "type": "string"
+        },
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "const": true
+        },
+        "--help": {
+          "const": true
+        },
+        "--service-key-file": {
+          "type": "string"
+        },
+        "--json": {
+          "const": true
+        },
+        "--format": {
+          "enum": [
+            "human",
+            "json"
+          ]
+        },
+        "--workspace": {
+          "type": "string"
+        },
+        "--input": {
+          "type": "string"
+        },
+        "--plan-hash": {
+          "type": "string"
+        },
+        "--idempotency-key": {
+          "type": "string"
+        },
+        "--confirm": {
+          "const": "yes"
+        },
+        "--actor": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "--company"
+      ],
+      "additionalProperties": false
+    },
+    "Operation40Flags": {
+      "type": "object",
+      "properties": {
+        "--company": {
+          "type": "string"
+        },
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "const": true
+        },
+        "--help": {
+          "const": true
+        },
+        "--service-key-file": {
+          "type": "string"
+        },
+        "--json": {
+          "const": true
+        },
+        "--format": {
+          "enum": [
+            "human",
+            "json"
+          ]
+        },
+        "--workspace": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "--company"
+      ],
+      "additionalProperties": false
+    },
+    "Operation41Flags": {
+      "type": "object",
+      "properties": {
+        "--company": {
+          "type": "string"
+        },
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "const": true
+        },
+        "--help": {
+          "const": true
+        },
+        "--service-key-file": {
+          "type": "string"
+        },
+        "--json": {
+          "const": true
+        },
+        "--format": {
+          "enum": [
+            "human",
+            "json"
+          ]
+        },
+        "--workspace": {
+          "type": "string"
+        },
+        "--id": {
+          "type": "string"
+        },
+        "--action": {
+          "type": "string"
+        },
+        "--reason": {
+          "type": "string"
+        },
+        "--confirm": {
+          "const": "yes"
+        },
+        "--actor": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "--company"
+      ],
+      "additionalProperties": false
+    },
+    "Operation42Flags": {
+      "type": "object",
+      "properties": {
+        "--company": {
+          "type": "string"
+        },
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "const": true
+        },
+        "--help": {
+          "const": true
+        },
+        "--service-key-file": {
+          "type": "string"
+        },
+        "--json": {
+          "const": true
+        },
+        "--format": {
+          "enum": [
+            "human",
+            "json"
+          ]
+        },
+        "--workspace": {
+          "type": "string"
+        },
+        "--input": {
+          "type": "string"
+        },
+        "--confirm": {
+          "const": "yes"
+        },
+        "--actor": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "--company"
+      ],
+      "additionalProperties": false
+    },
+    "Operation43Flags": {
+      "type": "object",
+      "properties": {
+        "--company": {
+          "type": "string"
+        },
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "const": true
+        },
+        "--help": {
+          "const": true
+        },
+        "--service-key-file": {
+          "type": "string"
+        },
+        "--json": {
+          "const": true
+        },
+        "--format": {
+          "enum": [
+            "human",
+            "json"
+          ]
+        },
+        "--workspace": {
+          "type": "string"
+        },
+        "--id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "--company"
+      ],
+      "additionalProperties": false
+    },
+    "Operation44Flags": {
+      "type": "object",
+      "properties": {
+        "--company": {
+          "type": "string"
+        },
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "const": true
+        },
+        "--help": {
+          "const": true
+        },
+        "--service-key-file": {
+          "type": "string"
+        },
+        "--json": {
+          "const": true
+        },
+        "--format": {
+          "enum": [
+            "human",
+            "json"
+          ]
+        },
+        "--workspace": {
+          "type": "string"
+        },
+        "--as-of": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "--company"
+      ],
+      "additionalProperties": false
+    },
+    "Operation45Arguments": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string"
+        },
+        "asOf": {
+          "type": "string",
+          "maxLength": 32
+        },
+        "company": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "company"
+      ],
+      "additionalProperties": false
+    },
+    "Operation45Result": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "const": "text"
+                },
+                "text": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "type",
+                "text"
+              ],
+              "additionalProperties": false
+            }
+          ],
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "data": {
+              "$ref": "schemas-payables_supplier.json#/$defs/PayablesEnvelope"
+            }
+          },
+          "required": [
+            "ok",
+            "data"
+          ],
+          "additionalProperties": false
+        },
+        "isError": {
+          "const": false
+        }
+      },
+      "required": [
+        "content",
+        "structuredContent",
+        "isError"
+      ],
+      "additionalProperties": false
+    },
+    "Operation46Arguments": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "body": {
+          "$ref": "schemas-payables_supplier.json#/$defs/RegisterBody"
+        },
+        "confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "company",
+        "body",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "Operation46Result": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "const": "text"
+                },
+                "text": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "type",
+                "text"
+              ],
+              "additionalProperties": false
+            }
+          ],
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "data": {
+              "$ref": "schemas-payables_supplier.json#/$defs/RegisteredEnvelope"
+            }
+          },
+          "required": [
+            "ok",
+            "data"
+          ],
+          "additionalProperties": false
+        },
+        "isError": {
+          "const": false
+        }
+      },
+      "required": [
+        "content",
+        "structuredContent",
+        "isError"
+      ],
+      "additionalProperties": false
+    },
+    "Operation47Arguments": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "body": {
+          "$ref": "schemas-payables_supplier.json#/$defs/PaymentBody"
+        },
+        "confirm": {
+          "const": true
+        },
+        "id": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9223372036854775807
+        }
+      },
+      "required": [
+        "company",
+        "body",
+        "confirm",
+        "id"
+      ],
+      "additionalProperties": false
+    },
+    "Operation47Result": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "const": "text"
+                },
+                "text": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "type",
+                "text"
+              ],
+              "additionalProperties": false
+            }
+          ],
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "data": {
+              "$ref": "schemas-payables_supplier.json#/$defs/PaidEnvelope"
+            }
+          },
+          "required": [
+            "ok",
+            "data"
+          ],
+          "additionalProperties": false
+        },
+        "isError": {
+          "const": false
+        }
+      },
+      "required": [
+        "content",
+        "structuredContent",
+        "isError"
+      ],
+      "additionalProperties": false
+    },
+    "Operation48Arguments": {
+      "type": "object",
+      "properties": {
+        "documentId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "billDate": {
+          "type": "string"
+        },
+        "dueDate": {
+          "type": "string"
+        },
+        "expenseAccount": {
+          "type": "string",
+          "minLength": 1
+        },
+        "confirm": {
+          "type": "boolean"
+        },
+        "vatTreatment": {
+          "enum": [
+            "standard",
+            "exempt",
+            "non_deductible"
+          ]
+        },
+        "vendorId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "note": {
+          "type": "string"
+        },
+        "idempotencyKey": {
+          "type": "string",
+          "minLength": 1,
+          "description": "At most128 UTF16 code units."
+        },
+        "company": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "documentId",
+        "billDate",
+        "dueDate",
+        "expenseAccount",
+        "company"
+      ],
+      "additionalProperties": false
+    },
+    "Operation48Result": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "const": "text"
+                },
+                "text": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "type",
+                "text"
+              ],
+              "additionalProperties": false
+            }
+          ],
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "$ref": "schemas-payables_supplier.json#/$defs/OriginalRegistered"
+        },
+        "isError": {
+          "const": false
+        }
+      },
+      "required": [
+        "content",
+        "structuredContent",
+        "isError"
+      ],
+      "additionalProperties": false
+    },
+    "Operation49Arguments": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string"
+        },
+        "asOf": {
+          "type": "string"
+        },
+        "asOfDate": {
+          "type": "string"
+        },
+        "supplier": {
+          "type": "string"
+        },
+        "from": {
+          "type": "string"
+        },
+        "to": {
+          "type": "string"
+        },
+        "vendorId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "minDays": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "company": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "company"
+      ],
+      "additionalProperties": false
+    },
+    "Operation49Result": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "const": "text"
+                },
+                "text": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "type",
+                "text"
+              ],
+              "additionalProperties": false
+            }
+          ],
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "$ref": "schemas-payables_supplier.json#/$defs/OriginalDatedPayables"
+        },
+        "isError": {
+          "const": false
+        }
+      },
+      "required": [
+        "content",
+        "structuredContent",
+        "isError"
+      ],
+      "additionalProperties": false
+    },
+    "Operation50Arguments": {
+      "type": "object",
+      "properties": {
+        "payableId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "bankTransactionId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "confirm": {
+          "type": "boolean"
+        },
+        "amount": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "date": {
+          "type": "string"
+        },
+        "paymentAccount": {
+          "type": "string"
+        },
+        "note": {
+          "type": "string"
+        },
+        "idempotencyKey": {
+          "type": "string",
+          "minLength": 1,
+          "description": "At most128 UTF16 code units."
+        },
+        "company": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "payableId",
+        "bankTransactionId",
+        "company"
+      ],
+      "additionalProperties": false
+    },
+    "Operation50Result": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "const": "text"
+                },
+                "text": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "type",
+                "text"
+              ],
+              "additionalProperties": false
+            }
+          ],
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "$ref": "schemas-payables_supplier.json#/$defs/OriginalPaid"
+        },
+        "isError": {
+          "const": false
+        }
+      },
+      "required": [
+        "content",
+        "structuredContent",
+        "isError"
+      ],
+      "additionalProperties": false
+    },
+    "Operation51Arguments": {
+      "type": "object",
+      "properties": {
+        "startDate": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 10
+        },
+        "company": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "company"
+      ],
+      "additionalProperties": false
+    },
+    "Operation51Result": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "const": "text"
+                },
+                "text": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "type",
+                "text"
+              ],
+              "additionalProperties": false
+            }
+          ],
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "data": {
+              "$ref": "schemas-payables_supplier.json#/$defs/CommitmentsEnvelope"
+            }
+          },
+          "required": [
+            "ok",
+            "data"
+          ],
+          "additionalProperties": false
+        },
+        "isError": {
+          "const": false
+        }
+      },
+      "required": [
+        "content",
+        "structuredContent",
+        "isError"
+      ],
+      "additionalProperties": false
+    },
+    "Operation52Arguments": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "company"
+      ],
+      "additionalProperties": false
+    },
+    "Operation52Result": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "const": "text"
+                },
+                "text": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "type",
+                "text"
+              ],
+              "additionalProperties": false
+            }
+          ],
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "data": {
+              "$ref": "schemas-payables_supplier.json#/$defs/MatchesEnvelope"
+            }
+          },
+          "required": [
+            "ok",
+            "data"
+          ],
+          "additionalProperties": false
+        },
+        "isError": {
+          "const": false
+        }
+      },
+      "required": [
+        "content",
+        "structuredContent",
+        "isError"
+      ],
+      "additionalProperties": false
+    },
+    "Operation53Arguments": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "body": {
+          "$ref": "schemas-payables_supplier.json#/$defs/PlanBody"
+        }
+      },
+      "required": [
+        "company",
+        "body"
+      ],
+      "additionalProperties": false
+    },
+    "Operation53Result": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "const": "text"
+                },
+                "text": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "type",
+                "text"
+              ],
+              "additionalProperties": false
+            }
+          ],
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "data": {
+              "$ref": "schemas-payables_supplier.json#/$defs/ProposalEnvelope"
+            }
+          },
+          "required": [
+            "ok",
+            "data"
+          ],
+          "additionalProperties": false
+        },
+        "isError": {
+          "const": false
+        }
+      },
+      "required": [
+        "content",
+        "structuredContent",
+        "isError"
+      ],
+      "additionalProperties": false
+    },
+    "Operation54Arguments": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "body": {
+          "$ref": "schemas-payables_supplier.json#/$defs/ApplyBody"
+        },
+        "confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "company",
+        "body",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "Operation54Result": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "const": "text"
+                },
+                "text": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "type",
+                "text"
+              ],
+              "additionalProperties": false
+            }
+          ],
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "data": {
+              "$ref": "schemas-payables_supplier.json#/$defs/AppliedEnvelope"
+            }
+          },
+          "required": [
+            "ok",
+            "data"
+          ],
+          "additionalProperties": false
+        },
+        "isError": {
+          "const": false
+        }
+      },
+      "required": [
+        "content",
+        "structuredContent",
+        "isError"
+      ],
+      "additionalProperties": false
+    },
+    "Operation55Arguments": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "body": {
+          "$ref": "schemas-payables_supplier.json#/$defs/ChangeBody"
+        },
+        "confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "company",
+        "body",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "Operation55Result": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "const": "text"
+                },
+                "text": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "type",
+                "text"
+              ],
+              "additionalProperties": false
+            }
+          ],
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "data": {
+              "$ref": "schemas-payables_supplier.json#/$defs/ChangedEnvelope"
+            }
+          },
+          "required": [
+            "ok",
+            "data"
+          ],
+          "additionalProperties": false
+        },
+        "isError": {
+          "const": false
+        }
+      },
+      "required": [
+        "content",
+        "structuredContent",
+        "isError"
+      ],
+      "additionalProperties": false
+    },
+    "Operation56Arguments": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "body": {
+          "$ref": "schemas-payables_supplier.json#/$defs/MatchBody"
+        },
+        "confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "company",
+        "body",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "Operation56Result": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "const": "text"
+                },
+                "text": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "type",
+                "text"
+              ],
+              "additionalProperties": false
+            }
+          ],
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "data": {
+              "$ref": "schemas-payables_supplier.json#/$defs/MatchedEnvelope"
+            }
+          },
+          "required": [
+            "ok",
+            "data"
+          ],
+          "additionalProperties": false
+        },
+        "isError": {
+          "const": false
+        }
+      },
+      "required": [
+        "content",
+        "structuredContent",
+        "isError"
+      ],
+      "additionalProperties": false
+    },
+    "Operation57Arguments": {
+      "type": "object",
+      "properties": {
+        "commitment": {
+          "$ref": "schemas-payables_supplier.json#/$defs/OriginalCommitmentInputSdk"
+        },
+        "company": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "commitment",
+        "company"
+      ],
+      "additionalProperties": false
+    },
+    "Operation57Result": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "const": "text"
+                },
+                "text": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "type",
+                "text"
+              ],
+              "additionalProperties": false
+            }
+          ],
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "errors": {
+              "const": []
+            },
+            "data": {
+              "type": "object",
+              "properties": {
+                "proposal": {
+                  "$ref": "schemas-payables_supplier.json#/$defs/Proposal"
+                }
+              },
+              "required": [
+                "proposal"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "ok",
+            "errors",
+            "data"
+          ],
+          "additionalProperties": false
+        },
+        "isError": {
+          "const": false
+        }
+      },
+      "required": [
+        "content",
+        "structuredContent",
+        "isError"
+      ],
+      "additionalProperties": false
+    },
+    "Operation58Arguments": {
+      "type": "object",
+      "properties": {
+        "commitment": {
+          "$ref": "schemas-payables_supplier.json#/$defs/OriginalCommitmentInputSdk"
+        },
+        "payloadHash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "idempotencyKey": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        },
+        "confirm": {
+          "type": "boolean"
+        },
+        "company": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "commitment",
+        "payloadHash",
+        "company"
+      ],
+      "additionalProperties": false
+    },
+    "Operation58Result": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "const": "text"
+                },
+                "text": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "type",
+                "text"
+              ],
+              "additionalProperties": false
+            }
+          ],
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "errors": {
+              "const": []
+            },
+            "data": {
+              "type": "object",
+              "properties": {
+                "commitmentId": {
+                  "type": "string"
+                },
+                "payloadHash": {
+                  "type": "string"
+                },
+                "idempotent": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "commitmentId",
+                "payloadHash",
+                "idempotent"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "ok",
+            "errors",
+            "data"
+          ],
+          "additionalProperties": false
+        },
+        "isError": {
+          "const": false
+        }
+      },
+      "required": [
+        "content",
+        "structuredContent",
+        "isError"
+      ],
+      "additionalProperties": false
+    },
+    "Operation59Arguments": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "company"
+      ],
+      "additionalProperties": false
+    },
+    "Operation59Result": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "const": "text"
+                },
+                "text": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "type",
+                "text"
+              ],
+              "additionalProperties": false
+            }
+          ],
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "errors": {
+              "const": []
+            },
+            "data": {
+              "type": "object",
+              "properties": {
+                "rows": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "schemas-payables_supplier.json#/$defs/OriginalListRow"
+                  }
+                }
+              },
+              "required": [
+                "rows"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "ok",
+            "errors",
+            "data"
+          ],
+          "additionalProperties": false
+        },
+        "isError": {
+          "const": false
+        }
+      },
+      "required": [
+        "content",
+        "structuredContent",
+        "isError"
+      ],
+      "additionalProperties": false
+    },
+    "Operation60Arguments": {
+      "type": "object",
+      "properties": {
+        "commitmentId": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 96
+        },
+        "action": {
+          "enum": [
+            "paused",
+            "ended",
+            "superseded"
+          ]
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        },
+        "confirm": {
+          "type": "boolean"
+        },
+        "company": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "commitmentId",
+        "action",
+        "reason",
+        "company"
+      ],
+      "additionalProperties": false
+    },
+    "Operation60Result": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "const": "text"
+                },
+                "text": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "type",
+                "text"
+              ],
+              "additionalProperties": false
+            }
+          ],
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "errors": {
+              "const": []
+            },
+            "data": {
+              "type": "object",
+              "properties": {
+                "payloadHash": {
+                  "type": "string"
+                },
+                "idempotent": {
+                  "const": false
+                }
+              },
+              "required": [
+                "payloadHash",
+                "idempotent"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "ok",
+            "errors",
+            "data"
+          ],
+          "additionalProperties": false
+        },
+        "isError": {
+          "const": false
+        }
+      },
+      "required": [
+        "content",
+        "structuredContent",
+        "isError"
+      ],
+      "additionalProperties": false
+    },
+    "Operation61Arguments": {
+      "type": "object",
+      "properties": {
+        "commitmentId": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 96
+        },
+        "occurrenceDate": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        },
+        "evidence": {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "enum": [
+                "canonical_document",
+                "payable",
+                "bank_transaction"
+              ]
+            },
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2000
+            }
+          },
+          "required": [
+            "kind",
+            "id"
+          ],
+          "additionalProperties": false
+        },
+        "confirm": {
+          "type": "boolean"
+        },
+        "company": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "commitmentId",
+        "occurrenceDate",
+        "evidence",
+        "company"
+      ],
+      "additionalProperties": false
+    },
+    "Operation61Result": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "const": "text"
+                },
+                "text": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "type",
+                "text"
+              ],
+              "additionalProperties": false
+            }
+          ],
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "errors": {
+              "const": []
+            },
+            "data": {
+              "type": "object",
+              "properties": {
+                "idempotent": {
+                  "type": "boolean"
+                },
+                "payloadHash": {
+                  "type": "string"
+                },
+                "variance": {
+                  "$ref": "schemas-payables_supplier.json#/$defs/Variance"
+                }
+              },
+              "required": [
+                "idempotent",
+                "payloadHash",
+                "variance"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "ok",
+            "errors",
+            "data"
+          ],
+          "additionalProperties": false
+        },
+        "isError": {
+          "const": false
+        }
+      },
+      "required": [
+        "content",
+        "structuredContent",
+        "isError"
+      ],
+      "additionalProperties": false
+    },
+    "Operation62Arguments": {
+      "type": "object",
+      "properties": {
+        "commitmentId": {
+          "type": "string"
+        },
+        "company": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "company"
+      ],
+      "additionalProperties": false
+    },
+    "Operation62Result": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "const": "text"
+                },
+                "text": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "type",
+                "text"
+              ],
+              "additionalProperties": false
+            }
+          ],
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "errors": {
+              "const": []
+            },
+            "data": {
+              "type": "object",
+              "properties": {
+                "rows": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "schemas-payables_supplier.json#/$defs/MatchRow"
+                  }
+                }
+              },
+              "required": [
+                "rows"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "ok",
+            "errors",
+            "data"
+          ],
+          "additionalProperties": false
+        },
+        "isError": {
+          "const": false
+        }
+      },
+      "required": [
+        "content",
+        "structuredContent",
+        "isError"
+      ],
+      "additionalProperties": false
+    },
+    "Operation63Arguments": {
+      "type": "object",
+      "properties": {
+        "asOf": {
+          "type": "string"
+        },
+        "company": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "asOf",
+        "company"
+      ],
+      "additionalProperties": false
+    },
+    "Operation63Result": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "const": "text"
+                },
+                "text": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "type",
+                "text"
+              ],
+              "additionalProperties": false
+            }
+          ],
+          "minItems": 1,
+          "maxItems": 1
+        },
+        "structuredContent": {
+          "type": "object",
+          "properties": {
+            "ok": {
+              "const": true
+            },
+            "errors": {
+              "const": []
+            },
+            "data": {
+              "type": "object",
+              "properties": {
+                "rows": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "schemas-payables_supplier.json#/$defs/Alert"
+                  }
+                }
+              },
+              "required": [
+                "rows"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "ok",
+            "errors",
+            "data"
+          ],
+          "additionalProperties": false
+        },
+        "isError": {
+          "const": false
+        }
+      },
+      "required": [
+        "content",
+        "structuredContent",
+        "isError"
+      ],
+      "additionalProperties": false
+    }
+  }
+}
