@@ -304,7 +304,7 @@ impl Backend {
                 config.runtime_profile,
             )?
         } else {
-            Owner::open_with_profile(
+            Owner::open_ready_with_profile(
                 &config.root,
                 config.broker_uid,
                 &config.workspace,
@@ -438,6 +438,14 @@ impl Backend {
                 &config.cookie_key,
             )?,
         }))
+    }
+    pub(crate) fn readiness(&self) -> rentemester_storage::readiness::Readiness {
+        use rentemester_storage::readiness::{Code, Readiness};
+        let Ok(mut owner) = self.owner.lock() else { return Readiness::new(Code::StorageUnavailable); };
+        let result = owner.readiness();
+        if !result.unusable() && self.setup_pending.load(std::sync::atomic::Ordering::Acquire) {
+            Readiness::new(Code::SetupRequired)
+        } else { result }
     }
     pub(crate) fn install_owner(
         &self,

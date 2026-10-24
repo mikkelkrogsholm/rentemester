@@ -1,6 +1,7 @@
 //! Private physical ownership under explicit Linux-broker or macOS-local profiles.
 //! This is not schema adoption, fresh initialization, or transport authorization.
 //! Never open other regular descriptors for owned database inodes in this process.
+mod readiness;
 mod budget_original;
 mod journal_original;
 mod invoice_compensation;
@@ -31,6 +32,7 @@ use std::path::Path;
 pub enum OwnerError {
     Namespace(NamespaceError),
     Database,
+    StorageUnusable(rentemester_storage::readiness::Readiness),
     Retired,
     Context,
 }
@@ -38,6 +40,7 @@ impl std::fmt::Display for OwnerError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.write_str(match self {
             Self::Namespace(error) => error.code(),
+            Self::StorageUnusable(_) => "broker_storage_unusable",
             Self::Database => "broker_database_refused",
             Self::Retired => "broker_owner_retired",
             Self::Context => "broker_context_refused",
