@@ -1,0 +1,6496 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "schemas-document_ingest_pdf.json",
+  "$defs": {
+    "Party": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "address": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "vatOrCvr": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "countryCode": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "identifierKind": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "PartyWire": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/Party"
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          ],
+          "minItems": 5,
+          "maxItems": 5
+        }
+      ]
+    },
+    "VatLine": {
+      "type": "object",
+      "properties": {
+        "classification": {
+          "type": "string"
+        },
+        "netAmount": {
+          "type": "number"
+        },
+        "vatAmount": {
+          "type": [
+            "number",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "classification",
+        "netAmount"
+      ],
+      "additionalProperties": false
+    },
+    "VatLineWire": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/VatLine"
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": [
+                "number",
+                "null"
+              ]
+            }
+          ],
+          "minItems": 3,
+          "maxItems": 3
+        }
+      ]
+    },
+    "MetadataMap": {
+      "type": "object",
+      "properties": {
+        "source": {
+          "type": "string"
+        },
+        "documentType": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "issueDate": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "invoiceNo": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "deliveryDescription": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "amountIncVat": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "currency": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "sender": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/PartyWire"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "recipient": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/PartyWire"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "vatAmount": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "purchaseVatLines": {
+          "oneOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/VatLineWire"
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "reverseChargeWordingConfirmed": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "danishSimplifiedPurchaseInvoice": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "paymentDetails": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "exemptionCode": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "sourceBankTransactionId": {
+          "oneOf": [
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "accountingRationale": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "source"
+      ],
+      "additionalProperties": false
+    },
+    "MetadataWire": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/MetadataMap"
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "string"
+            },
+            {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            {
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/PartyWire"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/PartyWire"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            {
+              "oneOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/$defs/VatLineWire"
+                  }
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "type": [
+                "boolean",
+                "null"
+              ]
+            },
+            {
+              "type": [
+                "boolean",
+                "null"
+              ]
+            },
+            {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            {
+              "oneOf": [
+                {
+                  "type": "integer",
+                  "minimum": -9223372036854775808,
+                  "maximum": 9223372036854775807
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          ],
+          "minItems": 17,
+          "maxItems": 17
+        }
+      ]
+    },
+    "HttpUpload": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "confirm": {
+              "type": "boolean"
+            },
+            "fileName": {
+              "type": "string"
+            },
+            "fileBase64": {
+              "type": "string"
+            },
+            "metadata": {
+              "$ref": "#/$defs/MetadataWire"
+            },
+            "force": {
+              "type": "boolean"
+            },
+            "vendorId": {
+              "oneOf": [
+                {
+                  "type": "integer",
+                  "minimum": -9223372036854775808,
+                  "maximum": 9223372036854775807
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": [
+            "confirm",
+            "fileName",
+            "fileBase64",
+            "metadata"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/$defs/MetadataWire"
+            },
+            {
+              "type": "boolean"
+            },
+            {
+              "oneOf": [
+                {
+                  "type": "integer",
+                  "minimum": -9223372036854775808,
+                  "maximum": 9223372036854775807
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          ],
+          "minItems": 6,
+          "maxItems": 6
+        }
+      ]
+    },
+    "HttpEnrich": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "metadata": {
+              "$ref": "#/$defs/MetadataWire"
+            },
+            "confirm": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "metadata",
+            "confirm"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "$ref": "#/$defs/MetadataWire"
+            },
+            {
+              "type": "boolean"
+            }
+          ],
+          "minItems": 2,
+          "maxItems": 2
+        }
+      ]
+    },
+    "HttpContext": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "sourceReference": {
+              "type": "string"
+            },
+            "businessUseReason": {
+              "type": "string"
+            },
+            "confirm": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "sourceReference",
+            "businessUseReason",
+            "confirm"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ],
+          "minItems": 3,
+          "maxItems": 3
+        }
+      ]
+    },
+    "HttpConfirm": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "confirm": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "confirm"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "boolean"
+            }
+          ],
+          "minItems": 1,
+          "maxItems": 1
+        }
+      ]
+    },
+    "HttpPending": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "confirm": {
+              "type": "boolean"
+            },
+            "cursor": {
+              "oneOf": [
+                {
+                  "type": "integer",
+                  "minimum": -9223372036854775808,
+                  "maximum": 9223372036854775807
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "limit": {
+              "oneOf": [
+                {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 18446744073709551615
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": [
+            "confirm"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "boolean"
+            },
+            {
+              "oneOf": [
+                {
+                  "type": "integer",
+                  "minimum": -9223372036854775808,
+                  "maximum": 9223372036854775807
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            {
+              "oneOf": [
+                {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 18446744073709551615
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          ],
+          "minItems": 3,
+          "maxItems": 3
+        }
+      ]
+    },
+    "OriginalMetadata": {
+      "type": "object",
+      "properties": {
+        "source": {
+          "type": "string"
+        },
+        "issueDate": {
+          "type": "string"
+        },
+        "invoiceNo": {
+          "type": "string"
+        },
+        "deliveryDescription": {
+          "type": "string"
+        },
+        "currency": {
+          "type": "string"
+        },
+        "paymentDetails": {
+          "type": "string"
+        },
+        "documentType": {
+          "enum": [
+            "purchase_sale",
+            "cash_register_receipt",
+            "internal_voucher"
+          ]
+        },
+        "amountIncVat": {
+          "type": "number"
+        },
+        "vatAmount": {
+          "type": "number"
+        },
+        "sender": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "address": {
+              "type": "string"
+            },
+            "vatOrCvr": {
+              "type": "string"
+            },
+            "countryCode": {
+              "type": "string",
+              "minLength": 2,
+              "maxLength": 2
+            },
+            "identifierKind": {
+              "enum": [
+                "dk_cvr",
+                "eu_vat",
+                "non_eu"
+              ]
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        },
+        "recipient": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "address": {
+              "type": "string"
+            },
+            "vatOrCvr": {
+              "type": "string"
+            },
+            "countryCode": {
+              "type": "string",
+              "minLength": 2,
+              "maxLength": 2
+            },
+            "identifierKind": {
+              "enum": [
+                "dk_cvr",
+                "eu_vat",
+                "non_eu"
+              ]
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        },
+        "purchaseVatLines": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "classification": {
+                "enum": [
+                  "dk_purchase_25",
+                  "exempt"
+                ]
+              },
+              "netAmount": {
+                "type": "number",
+                "minimum": 0
+              },
+              "vatAmount": {
+                "type": "number",
+                "minimum": 0
+              }
+            },
+            "required": [
+              "classification",
+              "netAmount"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1
+        },
+        "reverseChargeWordingConfirmed": {
+          "type": "boolean"
+        },
+        "danishSimplifiedPurchaseInvoice": {
+          "type": "boolean"
+        },
+        "exemptionCode": {
+          "enum": [
+            "FOREIGN_PHYSICAL_ONLY",
+            null
+          ]
+        },
+        "sourceBankTransactionId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "accountingRationale": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        }
+      },
+      "required": [
+        "source"
+      ],
+      "additionalProperties": false
+    },
+    "NativeAdvertisedUpload": {
+      "type": "object",
+      "properties": {
+        "confirm": {
+          "const": true
+        },
+        "fileName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 255
+        },
+        "fileBase64": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 34952536
+        },
+        "metadata": {
+          "type": "object",
+          "properties": {
+            "source": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 1024
+            },
+            "documentType": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "issueDate": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "invoiceNo": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "deliveryDescription": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "amountIncVat": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "currency": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "sender": {
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/Party"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "recipient": {
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/Party"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "vatAmount": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "purchaseVatLines": {
+              "oneOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/$defs/VatLine"
+                  },
+                  "maxItems": 1000
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "reverseChargeWordingConfirmed": {
+              "type": [
+                "boolean",
+                "null"
+              ]
+            },
+            "danishSimplifiedPurchaseInvoice": {
+              "type": [
+                "boolean",
+                "null"
+              ]
+            },
+            "paymentDetails": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "exemptionCode": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "sourceBankTransactionId": {
+              "oneOf": [
+                {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 9007199254740991
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "accountingRationale": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "source"
+          ],
+          "additionalProperties": false
+        },
+        "force": {
+          "const": false
+        },
+        "vendorId": {
+          "type": "null"
+        }
+      },
+      "required": [
+        "confirm",
+        "fileName",
+        "fileBase64",
+        "metadata"
+      ],
+      "additionalProperties": false
+    },
+    "NativeForwardedMetadata": {
+      "type": "object",
+      "properties": {},
+      "required": [],
+      "additionalProperties": true,
+      "x-arbitrary-json": {
+        "scope": "ingest_document native request metadata before HTTP deserialization",
+        "rationale": "SDK validates only is_object; server MetadataWire supplies the closed accepted grammar and domain validation. Not an arbitrary response escape hatch.",
+        "sourceRefs": [
+          {
+            "path": "crates/rentemester-client/src/documents.rs",
+            "sha256": "7689f96bd74cc993ecf3183ac3935f8356360efb1d078129fe4e91804147c669",
+            "needle": "pub fn document_ingest_schema()"
+          }
+        ]
+      }
+    },
+    "NativeSdkUpload": {
+      "type": "object",
+      "properties": {
+        "confirm": {
+          "const": true
+        },
+        "fileName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 255
+        },
+        "fileBase64": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 34952536
+        },
+        "metadata": {
+          "$ref": "#/$defs/NativeForwardedMetadata"
+        },
+        "force": {
+          "const": false
+        },
+        "vendorId": {
+          "type": "null"
+        }
+      },
+      "required": [
+        "confirm",
+        "fileName",
+        "fileBase64",
+        "metadata"
+      ],
+      "additionalProperties": false
+    },
+    "StoredVatValue": {
+      "type": [
+        "null",
+        "boolean",
+        "number",
+        "string",
+        "array",
+        "object"
+      ],
+      "properties": {},
+      "required": [],
+      "additionalProperties": true,
+      "items": {
+        "$ref": "#/$defs/StoredVatValue"
+      },
+      "x-arbitrary-json": {
+        "scope": "documents[*].purchaseVatLines read from historical payload_json only",
+        "rationale": "Both storage lists parse arbitrary stored JSON then index purchaseVatLines; read producer does not apply current creation VatLine constructors. Original SDK further rejects nonnull values outside its current array-of-lines reader.",
+        "sourceRefs": [
+          {
+            "path": "crates/rentemester-storage/src/documents.rs",
+            "sha256": "fd270bb7bdb8859233603537a65ee9a410b17d0d6f7237621c955362ef13fcb1",
+            "needle": "pub fn list("
+          },
+          {
+            "path": "crates/rentemester-storage/src/documents_original.rs",
+            "sha256": "7fd338b3eb066473c2991f79bcf37ebd2cc66cf6beaf70f378fc404bdacea4db",
+            "needle": "pub fn list("
+          }
+        ]
+      }
+    },
+    "OriginalRow": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "documentNo": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "source": {
+          "type": "string"
+        },
+        "originalFilename": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "documentType": {
+          "type": "string"
+        },
+        "invoiceDate": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "amountIncVat": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "currency": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "storedPath": {
+          "type": "null"
+        },
+        "senderVatOrCvr": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "supplierCountryCode": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "supplierIdentifierKind": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "supplierIdentityStatus": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "sourceBankTransactionId": {
+          "oneOf": [
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "accountingRationale": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "preparedBy": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "preparedByProgram": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "purchaseVatLines": {
+          "$ref": "#/$defs/StoredVatValue"
+        }
+      },
+      "required": [
+        "id",
+        "documentNo",
+        "source",
+        "originalFilename",
+        "documentType",
+        "invoiceDate",
+        "amountIncVat",
+        "currency",
+        "status",
+        "storedPath",
+        "senderVatOrCvr",
+        "supplierCountryCode",
+        "supplierIdentifierKind",
+        "supplierIdentityStatus",
+        "sourceBankTransactionId",
+        "accountingRationale",
+        "preparedBy",
+        "preparedByProgram",
+        "purchaseVatLines"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalSdkRow": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "documentNo": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "source": {
+          "type": "string"
+        },
+        "originalFilename": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "documentType": {
+          "type": "string"
+        },
+        "invoiceDate": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "amountIncVat": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "currency": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "storedPath": {
+          "type": "null"
+        },
+        "senderVatOrCvr": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "supplierCountryCode": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "supplierIdentifierKind": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "supplierIdentityStatus": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "sourceBankTransactionId": {
+          "oneOf": [
+            {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "accountingRationale": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "preparedBy": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "preparedByProgram": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "purchaseVatLines": {
+          "oneOf": [
+            {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "classification": {
+                    "enum": [
+                      "dk_purchase_25",
+                      "exempt"
+                    ]
+                  },
+                  "netAmount": {
+                    "type": "number",
+                    "minimum": 0
+                  },
+                  "vatAmount": {
+                    "type": "number",
+                    "minimum": 0
+                  }
+                },
+                "required": [
+                  "classification",
+                  "netAmount"
+                ],
+                "additionalProperties": false
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "documentNo",
+        "source",
+        "originalFilename",
+        "documentType",
+        "invoiceDate",
+        "amountIncVat",
+        "currency",
+        "status",
+        "storedPath",
+        "senderVatOrCvr",
+        "supplierCountryCode",
+        "supplierIdentifierKind",
+        "supplierIdentityStatus",
+        "sourceBankTransactionId",
+        "accountingRationale",
+        "preparedBy",
+        "preparedByProgram",
+        "purchaseVatLines"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalCliList": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "document_no": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "source": {
+            "type": "string"
+          },
+          "original_filename": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "document_type": {
+            "type": "string"
+          },
+          "invoice_date": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "amount_inc_vat": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "currency": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "stored_path": {
+            "type": "null"
+          },
+          "sender_vat_cvr": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "supplier_country_code": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "supplier_identifier_kind": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "supplier_identity_status": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "source_bank_transaction_id": {
+            "oneOf": [
+              {
+                "type": "integer",
+                "minimum": -9223372036854775808,
+                "maximum": 9223372036854775807
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "accounting_rationale": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "prepared_by": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "prepared_by_program": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "purchase_vat_lines": {
+            "oneOf": [
+              {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "classification": {
+                      "enum": [
+                        "dk_purchase_25",
+                        "exempt"
+                      ]
+                    },
+                    "netAmount": {
+                      "type": "number",
+                      "minimum": 0
+                    },
+                    "vatAmount": {
+                      "type": "number",
+                      "minimum": 0
+                    }
+                  },
+                  "required": [
+                    "classification",
+                    "netAmount"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "document_no",
+          "source",
+          "original_filename",
+          "document_type",
+          "invoice_date",
+          "amount_inc_vat",
+          "currency",
+          "status",
+          "stored_path",
+          "sender_vat_cvr",
+          "supplier_country_code",
+          "supplier_identifier_kind",
+          "supplier_identity_status",
+          "source_bank_transaction_id",
+          "accounting_rationale",
+          "prepared_by",
+          "prepared_by_program",
+          "purchase_vat_lines"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "OriginalList": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "documents": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/OriginalRow"
+          }
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0
+        }
+      },
+      "required": [
+        "ok",
+        "documents",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalSdkList": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "documents": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/OriginalSdkRow"
+          }
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0
+        }
+      },
+      "required": [
+        "ok",
+        "documents",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "NativeRow": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 9223372036854775807
+        },
+        "documentNo": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "source": {
+          "type": "string"
+        },
+        "filename": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "documentType": {
+          "type": "string"
+        },
+        "supplierName": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "supplierVatOrCvr": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "supplierCountryCode": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "supplierIdentifierKind": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "supplierIdentityStatus": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "invoiceNo": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "invoiceDate": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "amountIncVat": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "currency": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "hasFile": {
+          "type": "boolean"
+        },
+        "journalEntryId": {
+          "oneOf": [
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "journalEntryNo": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "journalEntryText": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "journalEntryTotal": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "sourceBankTransactionId": {
+          "oneOf": [
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "accountingRationale": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "preparedBy": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "preparedByProgram": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "sha256Hash": {
+          "type": "string"
+        },
+        "mimeType": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "retainUntil": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "voucherRef": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "purchaseVatLines": {
+          "$ref": "#/$defs/StoredVatValue"
+        }
+      },
+      "required": [
+        "id",
+        "documentNo",
+        "source",
+        "filename",
+        "documentType",
+        "supplierName",
+        "supplierVatOrCvr",
+        "supplierCountryCode",
+        "supplierIdentifierKind",
+        "supplierIdentityStatus",
+        "invoiceNo",
+        "invoiceDate",
+        "amountIncVat",
+        "currency",
+        "status",
+        "hasFile",
+        "journalEntryId",
+        "journalEntryNo",
+        "journalEntryText",
+        "journalEntryTotal",
+        "sourceBankTransactionId",
+        "accountingRationale",
+        "preparedBy",
+        "preparedByProgram",
+        "sha256Hash",
+        "mimeType",
+        "retainUntil",
+        "voucherRef",
+        "purchaseVatLines"
+      ],
+      "additionalProperties": false
+    },
+    "NativeListCore": {
+      "type": "object",
+      "properties": {
+        "slug": {
+          "type": "string"
+        },
+        "company": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "cvr": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "country": {
+              "type": "string"
+            },
+            "currency": {
+              "type": "string"
+            },
+            "fiscalYearStartMonth": {
+              "type": "integer"
+            },
+            "fiscalYearLabelStrategy": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "name",
+            "cvr",
+            "country",
+            "currency",
+            "fiscalYearStartMonth",
+            "fiscalYearLabelStrategy"
+          ],
+          "additionalProperties": false
+        },
+        "documents": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/NativeRow"
+          }
+        },
+        "linkedCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "unlinkedCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "slug",
+        "company",
+        "documents",
+        "linkedCount",
+        "unlinkedCount"
+      ],
+      "additionalProperties": false
+    },
+    "NativeList": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "documents": {
+          "$ref": "#/$defs/NativeListCore"
+        }
+      },
+      "required": [
+        "ok",
+        "documents"
+      ],
+      "additionalProperties": false
+    },
+    "NativeIngest": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "document": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            "documentNo": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "id",
+            "documentNo"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "ok",
+        "document"
+      ],
+      "additionalProperties": false
+    },
+    "NativeListService": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "documents": {
+          "$ref": "#/$defs/NativeListCore"
+        },
+        "usage": {
+          "enum": [
+            "committed",
+            "not_committed"
+          ]
+        },
+        "business": {
+          "const": "committed"
+        }
+      },
+      "required": [
+        "ok",
+        "documents",
+        "usage",
+        "business"
+      ],
+      "additionalProperties": false
+    },
+    "NativeIngestService": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "document": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            "documentNo": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "id",
+            "documentNo"
+          ],
+          "additionalProperties": false
+        },
+        "usage": {
+          "const": "committed"
+        },
+        "business": {
+          "const": "committed"
+        }
+      },
+      "required": [
+        "ok",
+        "document",
+        "usage",
+        "business"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalIngest": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "documentId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "documentNo": {
+          "type": "string"
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "storedPath": {
+          "type": "null"
+        },
+        "message": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok",
+        "documentId",
+        "documentNo",
+        "sha256",
+        "storedPath",
+        "message"
+      ],
+      "additionalProperties": false,
+      "description": "message equals Bilag {documentNo} er indl\u00e6st."
+    },
+    "Enriched": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "documentId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "enriched": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "ok",
+        "documentId",
+        "enriched"
+      ],
+      "additionalProperties": false
+    },
+    "ContextSet": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "documentId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "applied": {
+          "type": "boolean"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0
+        }
+      },
+      "required": [
+        "ok",
+        "documentId",
+        "applied",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalBytes": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "original": {
+          "type": "object",
+          "properties": {
+            "contentType": {
+              "type": "string"
+            },
+            "bytes": {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 255
+              },
+              "minItems": 1,
+              "maxItems": 26214400
+            }
+          },
+          "required": [
+            "contentType",
+            "bytes"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "ok",
+        "original"
+      ],
+      "additionalProperties": false
+    },
+    "PdfSummary": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "documentId": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "status": {
+              "const": "ok"
+            },
+            "errorCode": {
+              "const": null
+            },
+            "pageCount": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 200
+            },
+            "itemCount": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 200000
+            },
+            "textLength": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 5242880
+            },
+            "resultHash": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "cached": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "documentId",
+            "status",
+            "errorCode",
+            "pageCount",
+            "itemCount",
+            "textLength",
+            "resultHash",
+            "cached"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "documentId": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "status": {
+              "const": "no_text_layer"
+            },
+            "errorCode": {
+              "const": "no_text_layer"
+            },
+            "pageCount": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 200
+            },
+            "itemCount": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 200000
+            },
+            "textLength": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 5242880
+            },
+            "resultHash": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "cached": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "documentId",
+            "status",
+            "errorCode",
+            "pageCount",
+            "itemCount",
+            "textLength",
+            "resultHash",
+            "cached"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "documentId": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "status": {
+              "const": "malformed_pdf"
+            },
+            "errorCode": {
+              "const": "malformed_pdf"
+            },
+            "pageCount": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 200
+            },
+            "itemCount": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 200000
+            },
+            "textLength": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 5242880
+            },
+            "resultHash": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "cached": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "documentId",
+            "status",
+            "errorCode",
+            "pageCount",
+            "itemCount",
+            "textLength",
+            "resultHash",
+            "cached"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "documentId": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "status": {
+              "const": "encrypted_pdf"
+            },
+            "errorCode": {
+              "const": "encrypted_pdf"
+            },
+            "pageCount": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 200
+            },
+            "itemCount": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 200000
+            },
+            "textLength": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 5242880
+            },
+            "resultHash": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "cached": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "documentId",
+            "status",
+            "errorCode",
+            "pageCount",
+            "itemCount",
+            "textLength",
+            "resultHash",
+            "cached"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "documentId": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "status": {
+              "const": "unsupported_pdf"
+            },
+            "errorCode": {
+              "const": "unsupported_pdf"
+            },
+            "pageCount": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 200
+            },
+            "itemCount": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 200000
+            },
+            "textLength": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 5242880
+            },
+            "resultHash": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "cached": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "documentId",
+            "status",
+            "errorCode",
+            "pageCount",
+            "itemCount",
+            "textLength",
+            "resultHash",
+            "cached"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "documentId": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "status": {
+              "const": "resource_limit"
+            },
+            "errorCode": {
+              "const": "page_limit"
+            },
+            "pageCount": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 200
+            },
+            "itemCount": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 200000
+            },
+            "textLength": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 5242880
+            },
+            "resultHash": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "cached": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "documentId",
+            "status",
+            "errorCode",
+            "pageCount",
+            "itemCount",
+            "textLength",
+            "resultHash",
+            "cached"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "documentId": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "status": {
+              "const": "resource_limit"
+            },
+            "errorCode": {
+              "const": "item_limit"
+            },
+            "pageCount": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 200
+            },
+            "itemCount": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 200000
+            },
+            "textLength": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 5242880
+            },
+            "resultHash": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "cached": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "documentId",
+            "status",
+            "errorCode",
+            "pageCount",
+            "itemCount",
+            "textLength",
+            "resultHash",
+            "cached"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "documentId": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "status": {
+              "const": "resource_limit"
+            },
+            "errorCode": {
+              "const": "text_limit"
+            },
+            "pageCount": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 200
+            },
+            "itemCount": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 200000
+            },
+            "textLength": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 5242880
+            },
+            "resultHash": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "cached": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "documentId",
+            "status",
+            "errorCode",
+            "pageCount",
+            "itemCount",
+            "textLength",
+            "resultHash",
+            "cached"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "PdfStatus": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "documentId": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "status": {
+              "const": "ok"
+            },
+            "errorCode": {
+              "const": null
+            },
+            "pageCount": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 200
+            },
+            "itemCount": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 200000
+            },
+            "textLength": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 5242880
+            },
+            "resultHash": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "sourceSha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "parserId": {
+              "type": "string"
+            },
+            "parserVersion": {
+              "type": "string"
+            },
+            "contractVersion": {
+              "enum": [
+                "document-pdf-text-v1",
+                "document-pdf-text-pdfium-v1"
+              ]
+            }
+          },
+          "required": [
+            "documentId",
+            "status",
+            "errorCode",
+            "pageCount",
+            "itemCount",
+            "textLength",
+            "resultHash",
+            "sourceSha256",
+            "parserId",
+            "parserVersion",
+            "contractVersion"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "documentId": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "status": {
+              "const": "no_text_layer"
+            },
+            "errorCode": {
+              "const": "no_text_layer"
+            },
+            "pageCount": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 200
+            },
+            "itemCount": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 200000
+            },
+            "textLength": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 5242880
+            },
+            "resultHash": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "sourceSha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "parserId": {
+              "type": "string"
+            },
+            "parserVersion": {
+              "type": "string"
+            },
+            "contractVersion": {
+              "enum": [
+                "document-pdf-text-v1",
+                "document-pdf-text-pdfium-v1"
+              ]
+            }
+          },
+          "required": [
+            "documentId",
+            "status",
+            "errorCode",
+            "pageCount",
+            "itemCount",
+            "textLength",
+            "resultHash",
+            "sourceSha256",
+            "parserId",
+            "parserVersion",
+            "contractVersion"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "documentId": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "status": {
+              "const": "malformed_pdf"
+            },
+            "errorCode": {
+              "const": "malformed_pdf"
+            },
+            "pageCount": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 200
+            },
+            "itemCount": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 200000
+            },
+            "textLength": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 5242880
+            },
+            "resultHash": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "sourceSha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "parserId": {
+              "type": "string"
+            },
+            "parserVersion": {
+              "type": "string"
+            },
+            "contractVersion": {
+              "enum": [
+                "document-pdf-text-v1",
+                "document-pdf-text-pdfium-v1"
+              ]
+            }
+          },
+          "required": [
+            "documentId",
+            "status",
+            "errorCode",
+            "pageCount",
+            "itemCount",
+            "textLength",
+            "resultHash",
+            "sourceSha256",
+            "parserId",
+            "parserVersion",
+            "contractVersion"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "documentId": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "status": {
+              "const": "encrypted_pdf"
+            },
+            "errorCode": {
+              "const": "encrypted_pdf"
+            },
+            "pageCount": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 200
+            },
+            "itemCount": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 200000
+            },
+            "textLength": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 5242880
+            },
+            "resultHash": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "sourceSha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "parserId": {
+              "type": "string"
+            },
+            "parserVersion": {
+              "type": "string"
+            },
+            "contractVersion": {
+              "enum": [
+                "document-pdf-text-v1",
+                "document-pdf-text-pdfium-v1"
+              ]
+            }
+          },
+          "required": [
+            "documentId",
+            "status",
+            "errorCode",
+            "pageCount",
+            "itemCount",
+            "textLength",
+            "resultHash",
+            "sourceSha256",
+            "parserId",
+            "parserVersion",
+            "contractVersion"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "documentId": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "status": {
+              "const": "unsupported_pdf"
+            },
+            "errorCode": {
+              "const": "unsupported_pdf"
+            },
+            "pageCount": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 200
+            },
+            "itemCount": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 200000
+            },
+            "textLength": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 5242880
+            },
+            "resultHash": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "sourceSha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "parserId": {
+              "type": "string"
+            },
+            "parserVersion": {
+              "type": "string"
+            },
+            "contractVersion": {
+              "enum": [
+                "document-pdf-text-v1",
+                "document-pdf-text-pdfium-v1"
+              ]
+            }
+          },
+          "required": [
+            "documentId",
+            "status",
+            "errorCode",
+            "pageCount",
+            "itemCount",
+            "textLength",
+            "resultHash",
+            "sourceSha256",
+            "parserId",
+            "parserVersion",
+            "contractVersion"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "documentId": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "status": {
+              "const": "resource_limit"
+            },
+            "errorCode": {
+              "const": "page_limit"
+            },
+            "pageCount": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 200
+            },
+            "itemCount": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 200000
+            },
+            "textLength": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 5242880
+            },
+            "resultHash": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "sourceSha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "parserId": {
+              "type": "string"
+            },
+            "parserVersion": {
+              "type": "string"
+            },
+            "contractVersion": {
+              "enum": [
+                "document-pdf-text-v1",
+                "document-pdf-text-pdfium-v1"
+              ]
+            }
+          },
+          "required": [
+            "documentId",
+            "status",
+            "errorCode",
+            "pageCount",
+            "itemCount",
+            "textLength",
+            "resultHash",
+            "sourceSha256",
+            "parserId",
+            "parserVersion",
+            "contractVersion"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "documentId": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "status": {
+              "const": "resource_limit"
+            },
+            "errorCode": {
+              "const": "item_limit"
+            },
+            "pageCount": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 200
+            },
+            "itemCount": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 200000
+            },
+            "textLength": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 5242880
+            },
+            "resultHash": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "sourceSha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "parserId": {
+              "type": "string"
+            },
+            "parserVersion": {
+              "type": "string"
+            },
+            "contractVersion": {
+              "enum": [
+                "document-pdf-text-v1",
+                "document-pdf-text-pdfium-v1"
+              ]
+            }
+          },
+          "required": [
+            "documentId",
+            "status",
+            "errorCode",
+            "pageCount",
+            "itemCount",
+            "textLength",
+            "resultHash",
+            "sourceSha256",
+            "parserId",
+            "parserVersion",
+            "contractVersion"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "documentId": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "status": {
+              "const": "resource_limit"
+            },
+            "errorCode": {
+              "const": "text_limit"
+            },
+            "pageCount": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 200
+            },
+            "itemCount": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 200000
+            },
+            "textLength": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 5242880
+            },
+            "resultHash": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "sourceSha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "parserId": {
+              "type": "string"
+            },
+            "parserVersion": {
+              "type": "string"
+            },
+            "contractVersion": {
+              "enum": [
+                "document-pdf-text-v1",
+                "document-pdf-text-pdfium-v1"
+              ]
+            }
+          },
+          "required": [
+            "documentId",
+            "status",
+            "errorCode",
+            "pageCount",
+            "itemCount",
+            "textLength",
+            "resultHash",
+            "sourceSha256",
+            "parserId",
+            "parserVersion",
+            "contractVersion"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "PdfParse": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "parse": {
+          "$ref": "#/$defs/PdfSummary"
+        }
+      },
+      "required": [
+        "ok",
+        "parse"
+      ],
+      "additionalProperties": false
+    },
+    "PdfRead": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "parse": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/PdfStatus"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "parse"
+      ],
+      "additionalProperties": false
+    },
+    "PdfText": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "parse": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/PdfStatus"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "pages": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "pageNumber": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 200
+              },
+              "width": {
+                "type": "number",
+                "exclusiveMinimum": 0
+              },
+              "height": {
+                "type": "number",
+                "exclusiveMinimum": 0
+              },
+              "rotation": {
+                "enum": [
+                  0,
+                  90,
+                  180,
+                  270
+                ]
+              },
+              "text": {
+                "type": "string"
+              },
+              "itemCount": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 25000
+              },
+              "layoutHash": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              }
+            },
+            "required": [
+              "pageNumber",
+              "width",
+              "height",
+              "rotation",
+              "text",
+              "itemCount",
+              "layoutHash"
+            ],
+            "additionalProperties": false
+          },
+          "maxItems": 10
+        },
+        "offset": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "limit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10
+        },
+        "nextOffset": {
+          "oneOf": [
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "parse",
+        "pages",
+        "offset",
+        "limit",
+        "nextOffset"
+      ],
+      "additionalProperties": false
+    },
+    "PdfBatch": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "batch": {
+          "type": "object",
+          "properties": {
+            "requested": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "parsed": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "failed": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "cursor": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "nextCursor": {
+              "oneOf": [
+                {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "resume": {
+              "oneOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "documentIds": {
+                      "type": "array",
+                      "items": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 9007199254740991
+                      },
+                      "maxItems": 100
+                    }
+                  },
+                  "required": [
+                    "documentIds"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": [
+            "requested",
+            "parsed",
+            "failed",
+            "cursor",
+            "nextCursor",
+            "resume"
+          ],
+          "additionalProperties": false,
+          "description": "parsed + failed = requested; resume is null iff no failed business results; cursor/nextCursor from ascending selected plan."
+        }
+      },
+      "required": [
+        "ok",
+        "batch"
+      ],
+      "additionalProperties": false
+    },
+    "PdfOperationalFailure": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "errors": {
+          "const": [
+            "PDF_PARSE_FAILED"
+          ]
+        },
+        "errorCode": {
+          "enum": [
+            "source_invalid",
+            "source_unavailable",
+            "timeout",
+            "stdout_limit",
+            "stderr_limit",
+            "crashed",
+            "protocol_violation",
+            "tampered_result",
+            "internal",
+            "worker_unavailable",
+            "memory_limit"
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "errorCode"
+      ],
+      "additionalProperties": false
+    },
+    "Refusal": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "type": "string"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "ok",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "ServiceRefusal": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "type": "string"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "appliedRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "usage": {
+          "enum": [
+            "not_committed",
+            "outcome_unknown",
+            "committed"
+          ]
+        },
+        "business": {
+          "enum": [
+            "not_attempted",
+            "not_committed",
+            "outcome_unknown",
+            "committed"
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "usage",
+        "business"
+      ],
+      "additionalProperties": false
+    },
+    "CliError": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "code": {
+          "type": "string"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "ok",
+        "code",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "NativeToolError": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": false
+        },
+        "error": {
+          "type": "object",
+          "properties": {
+            "code": {
+              "enum": [
+                "invalid_input",
+                "transport",
+                "server_refused",
+                "protocol",
+                "outcome_unknown"
+              ]
+            },
+            "message": {
+              "type": "string"
+            },
+            "status": {
+              "type": "integer",
+              "minimum": 100,
+              "maximum": 599
+            }
+          },
+          "required": [
+            "code",
+            "message"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "ok",
+        "error"
+      ],
+      "additionalProperties": false
+    },
+    "RpcId": {
+      "oneOf": [
+        {
+          "type": "string",
+          "maxLength": 256
+        },
+        {
+          "type": "integer",
+          "minimum": -9223372036854775808,
+          "maximum": 18446744073709551615
+        }
+      ]
+    },
+    "RpcError": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "type": "null"
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32700
+                },
+                "message": {
+                  "enum": [
+                    "invalid JSON",
+                    "invalid or oversized newline-delimited message",
+                    "message exceeds tool frame bound; only named original uploads/ownership/consolidation proposals admit larger bounded frames"
+                  ]
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32602
+                },
+                "message": {
+                  "enum": [
+                    "document serialization failed",
+                    "document_original requires only company and positive exact id",
+                    "document_original requires positive exact id",
+                    "expected arguments object",
+                    "expected documented PDF arguments",
+                    "expected params object",
+                    "ingest_document body exceeds native35MiB UTF-8 JSON bound",
+                    "ingest_document requires only company, exact body string and confirmation",
+                    "initialize requires protocolVersion, capabilities and clientInfo",
+                    "invalid company slug",
+                    "invalid domain read arguments",
+                    "invalid original document arguments",
+                    "invalid original documents list response",
+                    "positive exact document id required",
+                    "report selectors must be strings",
+                    "task execution not supported",
+                    "tool name required",
+                    "unexpected PDF arguments or missing explicit confirmation",
+                    "year allowed only on invoices"
+                  ]
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32601
+                },
+                "message": {
+                  "enum": [
+                    "method not found"
+                  ]
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32600
+                },
+                "message": {
+                  "enum": [
+                    "already initialized",
+                    "expected one JSON-RPC object",
+                    "invalid JSON-RPC request",
+                    "request id already used"
+                  ]
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32002
+                },
+                "message": {
+                  "enum": [
+                    "initialize and notifications/initialized required"
+                  ]
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jsonrpc": {
+              "const": "2.0"
+            },
+            "id": {
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/RpcId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "const": -32000
+                },
+                "message": {
+                  "enum": [
+                    "session request limit reached; reconnect"
+                  ]
+                }
+              },
+              "required": [
+                "code",
+                "message"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "jsonrpc",
+            "id",
+            "error"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "NativeListNativeEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "data": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/NativeList"
+            },
+            {
+              "$ref": "#/$defs/NativeListService"
+            }
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false,
+      "description": "ok equals data.ok when boolean, else true"
+    },
+    "NativeListNativeRpc": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "#/$defs/RpcId"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "type": "boolean"
+            },
+            "content": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "const": "text"
+                  },
+                  "text": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "type",
+                  "text"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "$ref": "#/$defs/NativeListNativeEnvelope"
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false,
+          "description": "isError = structuredContent.ok != true; content[0].text = compact JSON serialization of structuredContent"
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "NativeIngestNativeEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "data": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/NativeIngest"
+            },
+            {
+              "$ref": "#/$defs/NativeIngestService"
+            }
+          ]
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false,
+      "description": "ok equals data.ok when boolean, else true"
+    },
+    "NativeIngestNativeRpc": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "#/$defs/RpcId"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "type": "boolean"
+            },
+            "content": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "const": "text"
+                  },
+                  "text": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "type",
+                  "text"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "$ref": "#/$defs/NativeIngestNativeEnvelope"
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false,
+          "description": "isError = structuredContent.ok != true; content[0].text = compact JSON serialization of structuredContent"
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalBytesNativeEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "data": {
+          "$ref": "#/$defs/OriginalBytes"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false,
+      "description": "ok equals data.ok when boolean, else true"
+    },
+    "OriginalBytesNativeRpc": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "#/$defs/RpcId"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "type": "boolean"
+            },
+            "content": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "const": "text"
+                  },
+                  "text": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "type",
+                  "text"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "$ref": "#/$defs/OriginalBytesNativeEnvelope"
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false,
+          "description": "isError = structuredContent.ok != true; content[0].text = compact JSON serialization of structuredContent"
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "PdfParseNativeEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "data": {
+          "$ref": "#/$defs/PdfParse"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false,
+      "description": "ok equals data.ok when boolean, else true"
+    },
+    "PdfParseNativeRpc": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "#/$defs/RpcId"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "type": "boolean"
+            },
+            "content": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "const": "text"
+                  },
+                  "text": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "type",
+                  "text"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "$ref": "#/$defs/PdfParseNativeEnvelope"
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false,
+          "description": "isError = structuredContent.ok != true; content[0].text = compact JSON serialization of structuredContent"
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "PdfReadNativeEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "data": {
+          "$ref": "#/$defs/PdfRead"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false,
+      "description": "ok equals data.ok when boolean, else true"
+    },
+    "PdfReadNativeRpc": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "#/$defs/RpcId"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "type": "boolean"
+            },
+            "content": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "const": "text"
+                  },
+                  "text": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "type",
+                  "text"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "$ref": "#/$defs/PdfReadNativeEnvelope"
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false,
+          "description": "isError = structuredContent.ok != true; content[0].text = compact JSON serialization of structuredContent"
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "PdfTextNativeEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "data": {
+          "$ref": "#/$defs/PdfText"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false,
+      "description": "ok equals data.ok when boolean, else true"
+    },
+    "PdfTextNativeRpc": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "#/$defs/RpcId"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "type": "boolean"
+            },
+            "content": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "const": "text"
+                  },
+                  "text": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "type",
+                  "text"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "$ref": "#/$defs/PdfTextNativeEnvelope"
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false,
+          "description": "isError = structuredContent.ok != true; content[0].text = compact JSON serialization of structuredContent"
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "PdfBatchNativeEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "data": {
+          "$ref": "#/$defs/PdfBatch"
+        }
+      },
+      "required": [
+        "ok",
+        "data"
+      ],
+      "additionalProperties": false,
+      "description": "ok equals data.ok when boolean, else true"
+    },
+    "PdfBatchNativeRpc": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "#/$defs/RpcId"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "type": "boolean"
+            },
+            "content": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "const": "text"
+                  },
+                  "text": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "type",
+                  "text"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "$ref": "#/$defs/PdfBatchNativeEnvelope"
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false,
+          "description": "isError = structuredContent.ok != true; content[0].text = compact JSON serialization of structuredContent"
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalIngestOriginalEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "documentId": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "documentNo": {
+              "type": "string"
+            },
+            "sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "storedPath": {
+              "type": "null"
+            },
+            "message": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "documentId",
+            "documentNo",
+            "sha256",
+            "storedPath",
+            "message"
+          ],
+          "additionalProperties": false,
+          "description": "message equals Bilag {documentNo} er indl\u00e6st."
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalIngestOriginalRpc": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "#/$defs/RpcId"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "type": "boolean"
+            },
+            "content": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "const": "text"
+                  },
+                  "text": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "type",
+                  "text"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "$ref": "#/$defs/OriginalIngestOriginalEnvelope"
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false,
+          "description": "isError = structuredContent.ok != true; content[0].text = compact JSON serialization of structuredContent"
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "EnrichedOriginalEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "documentId": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "enriched": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "documentId",
+            "enriched"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "EnrichedOriginalRpc": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "#/$defs/RpcId"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "type": "boolean"
+            },
+            "content": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "const": "text"
+                  },
+                  "text": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "type",
+                  "text"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "$ref": "#/$defs/EnrichedOriginalEnvelope"
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false,
+          "description": "isError = structuredContent.ok != true; content[0].text = compact JSON serialization of structuredContent"
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "ContextSetOriginalEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "documentId": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "applied": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "documentId",
+            "applied"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "ContextSetOriginalRpc": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "#/$defs/RpcId"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "type": "boolean"
+            },
+            "content": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "const": "text"
+                  },
+                  "text": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "type",
+                  "text"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "$ref": "#/$defs/ContextSetOriginalEnvelope"
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false,
+          "description": "isError = structuredContent.ok != true; content[0].text = compact JSON serialization of structuredContent"
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "PdfParseOriginalEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "parse": {
+              "$ref": "#/$defs/PdfSummary"
+            }
+          },
+          "required": [
+            "parse"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "PdfParseOriginalRpc": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "#/$defs/RpcId"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "type": "boolean"
+            },
+            "content": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "const": "text"
+                  },
+                  "text": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "type",
+                  "text"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "$ref": "#/$defs/PdfParseOriginalEnvelope"
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false,
+          "description": "isError = structuredContent.ok != true; content[0].text = compact JSON serialization of structuredContent"
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "PdfReadOriginalEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "parse": {
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/PdfStatus"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": [
+            "parse"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "PdfReadOriginalRpc": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "#/$defs/RpcId"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "type": "boolean"
+            },
+            "content": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "const": "text"
+                  },
+                  "text": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "type",
+                  "text"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "$ref": "#/$defs/PdfReadOriginalEnvelope"
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false,
+          "description": "isError = structuredContent.ok != true; content[0].text = compact JSON serialization of structuredContent"
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "PdfTextOriginalEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "parse": {
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/PdfStatus"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "pages": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "pageNumber": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 200
+                  },
+                  "width": {
+                    "type": "number",
+                    "exclusiveMinimum": 0
+                  },
+                  "height": {
+                    "type": "number",
+                    "exclusiveMinimum": 0
+                  },
+                  "rotation": {
+                    "enum": [
+                      0,
+                      90,
+                      180,
+                      270
+                    ]
+                  },
+                  "text": {
+                    "type": "string"
+                  },
+                  "itemCount": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 25000
+                  },
+                  "layoutHash": {
+                    "type": "string",
+                    "pattern": "^[0-9a-f]{64}$"
+                  }
+                },
+                "required": [
+                  "pageNumber",
+                  "width",
+                  "height",
+                  "rotation",
+                  "text",
+                  "itemCount",
+                  "layoutHash"
+                ],
+                "additionalProperties": false
+              },
+              "maxItems": 10
+            },
+            "offset": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 10
+            },
+            "nextOffset": {
+              "oneOf": [
+                {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": [
+            "parse",
+            "pages",
+            "offset",
+            "limit",
+            "nextOffset"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "PdfTextOriginalRpc": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "#/$defs/RpcId"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "type": "boolean"
+            },
+            "content": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "const": "text"
+                  },
+                  "text": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "type",
+                  "text"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "$ref": "#/$defs/PdfTextOriginalEnvelope"
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false,
+          "description": "isError = structuredContent.ok != true; content[0].text = compact JSON serialization of structuredContent"
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "PdfBatchOriginalEnvelope": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 0
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "batch": {
+              "type": "object",
+              "properties": {
+                "requested": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 100
+                },
+                "parsed": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 100
+                },
+                "failed": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 100
+                },
+                "cursor": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "nextCursor": {
+                  "oneOf": [
+                    {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "resume": {
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "documentIds": {
+                          "type": "array",
+                          "items": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 9007199254740991
+                          },
+                          "maxItems": 100
+                        }
+                      },
+                      "required": [
+                        "documentIds"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "requested",
+                "parsed",
+                "failed",
+                "cursor",
+                "nextCursor",
+                "resume"
+              ],
+              "additionalProperties": false,
+              "description": "parsed + failed = requested; resume is null iff no failed business results; cursor/nextCursor from ascending selected plan."
+            }
+          },
+          "required": [
+            "batch"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "ok",
+        "errors",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "PdfBatchOriginalRpc": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "#/$defs/RpcId"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "type": "boolean"
+            },
+            "content": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "const": "text"
+                  },
+                  "text": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "type",
+                  "text"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "$ref": "#/$defs/PdfBatchOriginalEnvelope"
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false,
+          "description": "isError = structuredContent.ok != true; content[0].text = compact JSON serialization of structuredContent"
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalListRpc": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "#/$defs/RpcId"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "type": "boolean"
+            },
+            "content": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "const": "text"
+                  },
+                  "text": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "type",
+                  "text"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "type": "object",
+              "properties": {
+                "ok": {
+                  "const": true
+                },
+                "errors": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "maxItems": 0
+                },
+                "data": {
+                  "type": "object",
+                  "properties": {
+                    "documents": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/$defs/OriginalSdkRow"
+                      }
+                    },
+                    "total": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "count": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "limit": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 5000
+                    },
+                    "offset": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "hasMore": {
+                      "type": "boolean"
+                    },
+                    "nextOffset": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    }
+                  },
+                  "required": [
+                    "documents",
+                    "total",
+                    "count",
+                    "limit",
+                    "offset",
+                    "hasMore"
+                  ],
+                  "additionalProperties": false,
+                  "description": "nextOffset exists iff hasMore; count=documents.length; nextOffset=offset+count < total"
+                }
+              },
+              "required": [
+                "ok",
+                "errors",
+                "data"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false,
+          "description": "isError = structuredContent.ok != true; content[0].text = compact JSON serialization of structuredContent"
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "NativeFailureRpc": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "#/$defs/RpcId"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "type": "boolean"
+            },
+            "content": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "const": "text"
+                  },
+                  "text": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "type",
+                  "text"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "$ref": "#/$defs/NativeToolError"
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false,
+          "description": "isError = structuredContent.ok != true; content[0].text = compact JSON serialization of structuredContent"
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "OriginalFailureRpc": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "#/$defs/RpcId"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "type": "boolean"
+            },
+            "content": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "const": "text"
+                  },
+                  "text": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "type",
+                  "text"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "type": "object",
+              "properties": {
+                "ok": {
+                  "const": false
+                },
+                "errors": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "code": {
+                  "type": "string"
+                },
+                "appliedRules": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "required": [
+                "ok",
+                "errors"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false,
+          "description": "isError = structuredContent.ok != true; content[0].text = compact JSON serialization of structuredContent"
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "NativeBusinessFailureRpc": {
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "#/$defs/RpcId"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "isError": {
+              "type": "boolean"
+            },
+            "content": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "const": "text"
+                  },
+                  "text": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "type",
+                  "text"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "maxItems": 1
+            },
+            "structuredContent": {
+              "type": "object",
+              "properties": {
+                "ok": {
+                  "type": "boolean"
+                },
+                "data": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/$defs/Refusal"
+                    },
+                    {
+                      "$ref": "#/$defs/PdfOperationalFailure"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "ok",
+                "data"
+              ],
+              "additionalProperties": false,
+              "description": "ok equals data.ok when boolean, else true"
+            }
+          },
+          "required": [
+            "isError",
+            "content",
+            "structuredContent"
+          ],
+          "additionalProperties": false,
+          "description": "isError = structuredContent.ok != true; content[0].text = compact JSON serialization of structuredContent"
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Input16": {
+      "type": "object",
+      "properties": {
+        "--company": {
+          "type": "string"
+        },
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "type": "boolean"
+        },
+        "--service-key-file": {
+          "type": "string"
+        },
+        "--run-key": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Recognized surviving remote value flag, unused by documents and not forwarded as filter."
+        },
+        "--accounting-from": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Recognized surviving remote value flag, unused by documents and not forwarded as filter."
+        },
+        "--accounting-to": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Recognized surviving remote value flag, unused by documents and not forwarded as filter."
+        },
+        "--bank-from": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Recognized surviving remote value flag, unused by documents and not forwarded as filter."
+        },
+        "--bank-to": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Recognized surviving remote value flag, unused by documents and not forwarded as filter."
+        },
+        "--include-proposed": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Recognized surviving remote value flag, unused by documents and not forwarded as filter."
+        },
+        "--include-archived": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Recognized surviving remote value flag, unused by documents and not forwarded as filter."
+        },
+        "--party-id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Recognized surviving remote value flag, unused by documents and not forwarded as filter."
+        },
+        "--source-id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Recognized surviving remote value flag, unused by documents and not forwarded as filter."
+        },
+        "--output": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Recognized surviving remote value flag, unused by documents and not forwarded as filter."
+        },
+        "--record-id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Recognized surviving remote value flag, unused by documents and not forwarded as filter."
+        },
+        "--snapshot-id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Recognized surviving remote value flag, unused by documents and not forwarded as filter."
+        },
+        "--query": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Recognized surviving remote value flag, unused by documents and not forwarded as filter."
+        },
+        "--cursor": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Recognized surviving remote value flag, unused by documents and not forwarded as filter."
+        },
+        "--limit": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Recognized surviving remote value flag, unused by documents and not forwarded as filter."
+        }
+      },
+      "required": [
+        "--company"
+      ],
+      "additionalProperties": false
+    },
+    "Input17": {
+      "type": "object",
+      "properties": {
+        "--company": {
+          "type": "string"
+        },
+        "stdin": {
+          "type": "string",
+          "contentMediaType": "application/json",
+          "description": "UTF-8 encoded NativeSdkUpload; byte limit36700160; server MetadataWire validation still applies"
+        },
+        "--confirm": {
+          "const": true
+        },
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "type": "boolean"
+        },
+        "--service-key-file": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "--company",
+        "stdin",
+        "--confirm"
+      ],
+      "additionalProperties": false
+    },
+    "Input18": {
+      "type": "object",
+      "properties": {
+        "--company": {
+          "type": "string"
+        },
+        "--id": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "type": "boolean"
+        },
+        "--service-key-file": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "--company",
+        "--id"
+      ],
+      "additionalProperties": false
+    },
+    "Input19": {
+      "type": "object",
+      "properties": {
+        "--company": {
+          "type": "string"
+        },
+        "--id": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "--confirm": {
+          "const": true
+        },
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "--company",
+        "--id",
+        "--confirm"
+      ],
+      "additionalProperties": false
+    },
+    "Input20": {
+      "type": "object",
+      "properties": {
+        "--company": {
+          "type": "string"
+        },
+        "--id": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "--company",
+        "--id"
+      ],
+      "additionalProperties": false
+    },
+    "Input21": {
+      "type": "object",
+      "properties": {
+        "--company": {
+          "type": "string"
+        },
+        "--id": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "--cursor": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "--limit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10
+        },
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "--company",
+        "--id"
+      ],
+      "additionalProperties": false
+    },
+    "Input22": {
+      "type": "object",
+      "properties": {
+        "--company": {
+          "type": "string"
+        },
+        "--confirm": {
+          "const": true
+        },
+        "--cursor": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "--limit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100
+        },
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "--company",
+        "--confirm"
+      ],
+      "additionalProperties": false
+    },
+    "Input23": {
+      "type": "object",
+      "properties": {
+        "--metadata": {
+          "type": "string"
+        },
+        "--file": {
+          "type": "string"
+        },
+        "--vendor-id": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "--force": {
+          "type": "boolean"
+        },
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "type": "boolean"
+        },
+        "--service-key-file": {
+          "type": "string"
+        },
+        "--json": {
+          "type": "boolean"
+        },
+        "--format": {
+          "enum": [
+            "json",
+            "human"
+          ]
+        },
+        "--help": {
+          "type": "boolean"
+        },
+        "--company": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "--company",
+        "--metadata",
+        "--file"
+      ],
+      "additionalProperties": false
+    },
+    "Input24": {
+      "type": "object",
+      "properties": {
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "type": "boolean"
+        },
+        "--service-key-file": {
+          "type": "string"
+        },
+        "--json": {
+          "type": "boolean"
+        },
+        "--format": {
+          "enum": [
+            "json",
+            "human"
+          ]
+        },
+        "--help": {
+          "type": "boolean"
+        },
+        "--company": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "--company"
+      ],
+      "additionalProperties": false
+    },
+    "Input25": {
+      "type": "object",
+      "properties": {
+        "--document-id": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "--metadata": {
+          "type": "string"
+        },
+        "--confirm": {
+          "const": "yes"
+        },
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "type": "boolean"
+        },
+        "--service-key-file": {
+          "type": "string"
+        },
+        "--json": {
+          "type": "boolean"
+        },
+        "--format": {
+          "enum": [
+            "json",
+            "human"
+          ]
+        },
+        "--help": {
+          "type": "boolean"
+        },
+        "--company": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "--company",
+        "--document-id",
+        "--metadata",
+        "--confirm"
+      ],
+      "additionalProperties": false
+    },
+    "Input26": {
+      "type": "object",
+      "properties": {
+        "--document-id": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "--source-reference": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        },
+        "--business-use-reason": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        },
+        "--confirm": {
+          "const": "yes"
+        },
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "type": "boolean"
+        },
+        "--service-key-file": {
+          "type": "string"
+        },
+        "--json": {
+          "type": "boolean"
+        },
+        "--format": {
+          "enum": [
+            "json",
+            "human"
+          ]
+        },
+        "--help": {
+          "type": "boolean"
+        },
+        "--company": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "--company",
+        "--document-id",
+        "--source-reference",
+        "--business-use-reason",
+        "--confirm"
+      ],
+      "additionalProperties": false
+    },
+    "Input27": {
+      "type": "object",
+      "properties": {
+        "--document-id": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "--confirm": {
+          "const": "yes"
+        },
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "type": "boolean"
+        },
+        "--service-key-file": {
+          "type": "string"
+        },
+        "--json": {
+          "type": "boolean"
+        },
+        "--format": {
+          "enum": [
+            "json",
+            "human"
+          ]
+        },
+        "--help": {
+          "type": "boolean"
+        },
+        "--company": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "--company",
+        "--document-id",
+        "--confirm"
+      ],
+      "additionalProperties": false
+    },
+    "Input28": {
+      "type": "object",
+      "properties": {
+        "--confirm": {
+          "const": "yes"
+        },
+        "--cursor": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "--limit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100
+        },
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "type": "boolean"
+        },
+        "--service-key-file": {
+          "type": "string"
+        },
+        "--json": {
+          "type": "boolean"
+        },
+        "--format": {
+          "enum": [
+            "json",
+            "human"
+          ]
+        },
+        "--help": {
+          "type": "boolean"
+        },
+        "--company": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "--company",
+        "--confirm"
+      ],
+      "additionalProperties": false
+    },
+    "Input29": {
+      "type": "object",
+      "properties": {
+        "--document-id": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "type": "boolean"
+        },
+        "--service-key-file": {
+          "type": "string"
+        },
+        "--json": {
+          "type": "boolean"
+        },
+        "--format": {
+          "enum": [
+            "json",
+            "human"
+          ]
+        },
+        "--help": {
+          "type": "boolean"
+        },
+        "--company": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "--company",
+        "--document-id"
+      ],
+      "additionalProperties": false
+    },
+    "Input30": {
+      "type": "object",
+      "properties": {
+        "--document-id": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "--offset": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "--limit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10
+        },
+        "--server": {
+          "type": "string"
+        },
+        "--cookie-file": {
+          "type": "string"
+        },
+        "--local-profile": {
+          "type": "string"
+        },
+        "--allow-loopback-http": {
+          "type": "boolean"
+        },
+        "--service-key-file": {
+          "type": "string"
+        },
+        "--json": {
+          "type": "boolean"
+        },
+        "--format": {
+          "enum": [
+            "json",
+            "human"
+          ]
+        },
+        "--help": {
+          "type": "boolean"
+        },
+        "--company": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "--company",
+        "--document-id"
+      ],
+      "additionalProperties": false
+    },
+    "Input31": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "company"
+      ],
+      "additionalProperties": false
+    },
+    "Input32": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "body": {
+          "type": "string",
+          "contentMediaType": "application/json",
+          "description": "UTF-8 encoded NativeSdkUpload; byte limit36700160; server MetadataWire validation still applies"
+        },
+        "confirm": {
+          "const": true
+        }
+      },
+      "required": [
+        "company",
+        "body",
+        "confirm"
+      ],
+      "additionalProperties": false
+    },
+    "Input33": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "id": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "company",
+        "id"
+      ],
+      "additionalProperties": false
+    },
+    "Input34": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "id": {
+          "oneOf": [
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "confirm": {
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "offset": {
+          "type": "null"
+        },
+        "cursor": {
+          "type": "null"
+        },
+        "limit": {
+          "type": "null"
+        }
+      },
+      "required": [
+        "company"
+      ],
+      "additionalProperties": false,
+      "description": "Callable Serde grammar, including explicit null Options. Leaf requires write confirm Some(true), selected id Some positive safe integer and SDK paging bounds; unexpected nonnull selectors RPC-refuse. Advertised tool schema is narrower."
+    },
+    "Input35": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "id": {
+          "oneOf": [
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "confirm": {
+          "type": "null"
+        },
+        "offset": {
+          "type": "null"
+        },
+        "cursor": {
+          "type": "null"
+        },
+        "limit": {
+          "type": "null"
+        }
+      },
+      "required": [
+        "company"
+      ],
+      "additionalProperties": false,
+      "description": "Callable Serde grammar, including explicit null Options. Leaf requires write confirm Some(true), selected id Some positive safe integer and SDK paging bounds; unexpected nonnull selectors RPC-refuse. Advertised tool schema is narrower."
+    },
+    "Input36": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "id": {
+          "oneOf": [
+            {
+              "type": "integer",
+              "minimum": -9223372036854775808,
+              "maximum": 9223372036854775807
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "offset": {
+          "oneOf": [
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 18446744073709551615
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "limit": {
+          "oneOf": [
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 255
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "confirm": {
+          "type": "null"
+        },
+        "cursor": {
+          "type": "null"
+        }
+      },
+      "required": [
+        "company"
+      ],
+      "additionalProperties": false,
+      "description": "Callable Serde grammar, including explicit null Options. Leaf requires write confirm Some(true), selected id Some positive safe integer and SDK paging bounds; unexpected nonnull selectors RPC-refuse. Advertised tool schema is narrower."
+    },
+    "Input37": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "confirm": {
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "cursor": {
+          "oneOf": [
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 18446744073709551615
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "limit": {
+          "oneOf": [
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 255
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "id": {
+          "type": "null"
+        },
+        "offset": {
+          "type": "null"
+        }
+      },
+      "required": [
+        "company"
+      ],
+      "additionalProperties": false,
+      "description": "Callable Serde grammar, including explicit null Options. Leaf requires write confirm Some(true), selected id Some positive safe integer and SDK paging bounds; unexpected nonnull selectors RPC-refuse. Advertised tool schema is narrower."
+    },
+    "Input38": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "metadata": {
+          "$ref": "#/$defs/OriginalMetadata"
+        },
+        "filePath": {
+          "type": "string"
+        },
+        "vendorId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "force": {
+          "type": "boolean"
+        },
+        "confirm": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "company",
+        "metadata",
+        "filePath"
+      ],
+      "additionalProperties": false
+    },
+    "Input39": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "offset": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "limit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 5000
+        }
+      },
+      "required": [
+        "company"
+      ],
+      "additionalProperties": false
+    },
+    "Input40": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "documentId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "metadata": {
+          "$ref": "#/$defs/OriginalMetadata"
+        },
+        "confirm": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "company",
+        "documentId",
+        "metadata"
+      ],
+      "additionalProperties": false
+    },
+    "Input41": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "documentId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "sourceReference": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        },
+        "businessUseReason": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        },
+        "confirm": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "company",
+        "documentId",
+        "sourceReference",
+        "businessUseReason"
+      ],
+      "additionalProperties": false
+    },
+    "Input42": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "documentId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "confirm": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "company",
+        "documentId"
+      ],
+      "additionalProperties": false
+    },
+    "Input43": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "confirm": {
+          "type": "boolean"
+        },
+        "cursor": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "limit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100
+        }
+      },
+      "required": [
+        "company"
+      ],
+      "additionalProperties": false
+    },
+    "Input44": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "documentId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "company",
+        "documentId"
+      ],
+      "additionalProperties": false
+    },
+    "Input45": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "type": "string"
+        },
+        "documentId": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "offset": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "limit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10
+        }
+      },
+      "required": [
+        "company",
+        "documentId"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

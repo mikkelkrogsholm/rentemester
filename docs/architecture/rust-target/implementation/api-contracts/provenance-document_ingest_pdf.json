@@ -1,0 +1,314 @@
+{
+  "partition": "document_ingest_pdf",
+  "issue": 677,
+  "status": "specified",
+  "unresolved": [],
+  "operationCount": 46,
+  "operationIds": [
+    "http:GET /api/companies/{slug}/documents",
+    "http:HEAD /api/companies/{slug}/documents",
+    "http:POST /api/companies/{slug}/documents/ingest",
+    "http:POST /api/companies/{slug}/documents/original/ingest",
+    "http:GET /api/companies/{slug}/documents/original/list",
+    "http:HEAD /api/companies/{slug}/documents/original/list",
+    "http:POST /api/companies/{slug}/documents/original/{id}/company-context",
+    "http:POST /api/companies/{slug}/documents/original/{id}/enrich",
+    "http:POST /api/companies/{slug}/documents/parse-pending",
+    "http:GET /api/companies/{slug}/documents/{id}/file",
+    "http:HEAD /api/companies/{slug}/documents/{id}/file",
+    "http:POST /api/companies/{slug}/documents/{id}/parse",
+    "http:GET /api/companies/{slug}/documents/{id}/parse-status",
+    "http:HEAD /api/companies/{slug}/documents/{id}/parse-status",
+    "http:GET /api/companies/{slug}/documents/{id}/parsed-text",
+    "http:HEAD /api/companies/{slug}/documents/{id}/parsed-text",
+    "cli:remote documents",
+    "cli:remote ingest-document",
+    "cli:remote document-original",
+    "cli:remote parse-document",
+    "cli:remote document-parse-status",
+    "cli:remote document-parsed-text",
+    "cli:remote parse-pending-documents",
+    "cli:documents ingest",
+    "cli:documents list",
+    "cli:documents enrich",
+    "cli:documents set-company-context",
+    "cli:documents parse",
+    "cli:documents parse-pending",
+    "cli:documents parse-status",
+    "cli:documents parsed-text",
+    "mcp:documents",
+    "mcp:ingest_document",
+    "mcp:document_original",
+    "mcp:parse_document",
+    "mcp:document_parse_status",
+    "mcp:document_parsed_text",
+    "mcp:parse_pending_documents",
+    "mcp:documents_ingest",
+    "mcp:documents_list",
+    "mcp:documents_enrich",
+    "mcp:documents_set_company_context",
+    "mcp:documents_parse",
+    "mcp:documents_parse_pending",
+    "mcp:documents_parse_status",
+    "mcp:documents_parsed_text"
+  ],
+  "sourceRefs": [
+    {
+      "path": "protocol/http-v1.json",
+      "sha256": "bd6a775bbe936332a718ee5b56b57ad3c40ac9bc35f8159219bb06d0313d3d15",
+      "needle": "/api/companies/{slug}/documents"
+    },
+    {
+      "path": "crates/rentemester-server/src/main.rs",
+      "sha256": "d4d56f94b147b1e6540928f49f2a1dd28f0c8982436fe59b49a4e29f83004b6e",
+      "needle": "protocol::install(router, connected)"
+    },
+    {
+      "path": "crates/rentemester-server/src/protocol.rs",
+      "sha256": "e1076ab2b8185b48c03017658c75ef3a01b9abacdb75843f64cef4adfc6da38c",
+      "needle": "fn admitted("
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http.rs",
+      "sha256": "d008f013390a87c467b929b094abb4e23cc9921a72a2665d8df4d4dcbc537390",
+      "needle": "fn origin_proof("
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http/documents.rs",
+      "sha256": "d6a25bf8f5b30b338a2734805d5a5219ed9bb8de118eeb491ad849df057d5acc",
+      "needle": "struct Upload"
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http/documents_original.rs",
+      "sha256": "b3adf9b853c387744107f6039d6f320591c27703a4046470080186ee79d729c7",
+      "needle": "pub(super) async fn handle("
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http/document_pdf.rs",
+      "sha256": "34f4c2d46078f2df208be73f7045336a61790f9b93c2e5b557faef06606c73e8",
+      "needle": "pub(super) async fn handle("
+    },
+    {
+      "path": "crates/rentemester-server/src/product_http/service_company.rs",
+      "sha256": "05a672ed51a2c952aba3f7d40ca15bcb0295fdcb907659f84e48dccf79100741",
+      "needle": "pub(super) fn failure("
+    },
+    {
+      "path": "crates/rentemester-server/src/document_pdf.rs",
+      "sha256": "e6414df4a3bfc99762199a590d4773c0ceca36f05dbe5a6dda562d5cab75a213",
+      "needle": "pub(crate) fn build("
+    },
+    {
+      "path": "crates/rentemester-host/src/lib.rs",
+      "sha256": "29e700859157eee32bfab98faeb122abbd2d830edbe6e84b2983eaac4fc324cd",
+      "needle": "fn document_action<T>"
+    },
+    {
+      "path": "crates/rentemester-host/src/documents_original.rs",
+      "sha256": "7c2da64caaf7eba03923e6bfdeb52569a652954d4f93ae9e1236a60e618654fa",
+      "needle": "pub fn documents_original("
+    },
+    {
+      "path": "crates/rentemester-host/src/document_pdf.rs",
+      "sha256": "0c5a147f227f70041bc0e7e55c658b51c7270ab33afce6b7d6718f4fc5d3fb16",
+      "needle": "pub fn prepare_document_pdf("
+    },
+    {
+      "path": "crates/rentemester-application/src/control_fence.rs",
+      "sha256": "e5b1f8902693d649fc1a46e0c66dc902622781f2c9f65e051e6ed7df11e1ffa6",
+      "needle": "fn execute_resolved<T>"
+    },
+    {
+      "path": "crates/rentemester-application/src/documents.rs",
+      "sha256": "921eec72376bbfac48c325d99f594872358e04d44fc95a091a4e008ce9bf2d8a",
+      "needle": "pub fn finish_ingest_registered("
+    },
+    {
+      "path": "crates/rentemester-application/src/documents/service.rs",
+      "sha256": "1772a46db7c8da49f3dd8676674b26da3c00d6f6c33fd3389ca52368107c8573",
+      "needle": "pub fn finish_service("
+    },
+    {
+      "path": "crates/rentemester-application/src/documents_original.rs",
+      "sha256": "44592c4815529e355ebab9ac1c2a3b756b764011b65072ef8a99c28ab4c5dfcd",
+      "needle": "pub fn execute("
+    },
+    {
+      "path": "crates/rentemester-application/src/document_pdf.rs",
+      "sha256": "bd0e3caf6c594827a47823263aed3c53340beec572756332e79c86dfaad46c46",
+      "needle": "fn finish_tx("
+    },
+    {
+      "path": "crates/rentemester-application/src/document_access.rs",
+      "sha256": "29597f0f15f9ee288546aa30a6680b2fe59ec090fe40dcd0ae9279ece3a095c8",
+      "needle": "pub(crate) fn human<T>"
+    },
+    {
+      "path": "crates/rentemester-application/src/service_company.rs",
+      "sha256": "f3da2c262feb5be6d0394e5693827fa7a1af4b839588956ea4a89e2110abf75e",
+      "needle": "pub enum UsageStage"
+    },
+    {
+      "path": "crates/rentemester-storage/src/documents.rs",
+      "sha256": "fd270bb7bdb8859233603537a65ee9a410b17d0d6f7237621c955362ef13fcb1",
+      "needle": "pub fn list("
+    },
+    {
+      "path": "crates/rentemester-storage/src/documents_original.rs",
+      "sha256": "7fd338b3eb066473c2991f79bcf37ebd2cc66cf6beaf70f378fc404bdacea4db",
+      "needle": "pub fn list("
+    },
+    {
+      "path": "crates/rentemester-storage/src/document_pdf.rs",
+      "sha256": "1a0a1c18061f9ec37cdae6611f05117ff4b503238642224f19382a89f2d6cb3d",
+      "needle": "fn status_value("
+    },
+    {
+      "path": "crates/rentemester-engine/src/document.rs",
+      "sha256": "ce4665e5d3972423dd422d02fbd7a8374ea028cc9d7d5f90f88bd8725286097d",
+      "needle": "pub struct Metadata"
+    },
+    {
+      "path": "crates/rentemester-engine/src/document_pdf.rs",
+      "sha256": "e9fba6dfec9f0a6f3895694243fde83224ca7370d85a68c34918e304c063e049",
+      "needle": "pub enum Status"
+    },
+    {
+      "path": "crates/rentemester-runtime/src/document.rs",
+      "sha256": "2e579571ea931d221645658501f42fca61a083ad0c27122128fc69ea00595cc7",
+      "needle": "pub fn new("
+    },
+    {
+      "path": "crates/rentemester-runtime/src/document_pdf.rs",
+      "sha256": "072fe277da7ca83c910ea51d2c308a5a3c8191c15a9943042b7add1c87d06be8",
+      "needle": "const MAX_INPUT:"
+    },
+    {
+      "path": "crates/rentemester-client/src/documents.rs",
+      "sha256": "7689f96bd74cc993ecf3183ac3935f8356360efb1d078129fe4e91804147c669",
+      "needle": "pub fn document_ingest_schema()"
+    },
+    {
+      "path": "crates/rentemester-client/src/documents_original.rs",
+      "sha256": "ad8f4cb5a674fc20c057f529b6e7ab078efe1ee92b1c7e987d9e6004da65ef4e",
+      "needle": "pub fn documents_original_schema("
+    },
+    {
+      "path": "crates/rentemester-client/src/document_pdf.rs",
+      "sha256": "969bda7ee52b8fc1de6702fb1afc9bb7d666e2587d810d77f45b68c7179e01f7",
+      "needle": "async fn pdf_request("
+    },
+    {
+      "path": "crates/rentemester-client/src/domain.rs",
+      "sha256": "c2c71c4a8f5be36433e578ed9722f633dacc289cc41b5011d63f2cf7b47c76bb",
+      "needle": "pub async fn documents("
+    },
+    {
+      "path": "crates/rentemester-client/src/lib.rs",
+      "sha256": "89c8bc77a2081400d8915cbb988d81be0f349a0bc9487ce687dc3ae3de75accd",
+      "needle": "async fn request("
+    },
+    {
+      "path": "crates/rentemester-client/src/protocol.rs",
+      "sha256": "2e31730d5ec64d9a2f21a91559c0a68e3c51e5c4176a013d000e3915f59b5108",
+      "needle": "pub(super) async fn negotiate("
+    },
+    {
+      "path": "crates/rentemester-client/src/local_runtime.rs",
+      "sha256": "87a1c5dad81d21a8e067d4c701f57868210c086a5628c06ee1fbb40110874b7b",
+      "needle": "pub fn load("
+    },
+    {
+      "path": "crates/rentemester-client/src/credentials.rs",
+      "sha256": "4f304ef30b4c5382ffcbffb2c1b016e894212a1c8fb4fd9871433c7e4fe1da65",
+      "needle": "pub fn read_service_key_file("
+    },
+    {
+      "path": "crates/rentemester-cli/src/main.rs",
+      "sha256": "54af368bcb6d626d1ac0378727f6a34761244a21a86b6f5d67e47c27c8f432a6",
+      "needle": "let args = match local_binding::prepare(args)"
+    },
+    {
+      "path": "crates/rentemester-cli/src/local_binding.rs",
+      "sha256": "94d26249352df53d80d468019ee93e1353394db4ce1c6728491fa6c4e2589dfd",
+      "needle": "pub fn prepare("
+    },
+    {
+      "path": "crates/rentemester-cli/src/original_args.rs",
+      "sha256": "2c8c75a6d4176182e5c0871941d9979b1a15d6848c70b7b281cade3927355a74",
+      "needle": "pub fn option("
+    },
+    {
+      "path": "crates/rentemester-cli/src/original_discovery.rs",
+      "sha256": "9f53986d854b08be50b439ee9ed7cd666249966a1a11b5dbb21308f325ced2f3",
+      "needle": "pub fn execute("
+    },
+    {
+      "path": "crates/rentemester-cli/src/remote.rs",
+      "sha256": "9a0d2ee8c626321459749c22642936ad07f9934a4e47eb3c4dc90ad18c7d2e91",
+      "needle": "pub(crate) fn client_error("
+    },
+    {
+      "path": "crates/rentemester-cli/src/documents.rs",
+      "sha256": "d81a08f47d75789d462ce90479c839140f689d4cf44d9147b96ef3acc071e7bb",
+      "needle": "pub fn run("
+    },
+    {
+      "path": "crates/rentemester-cli/src/documents_original.rs",
+      "sha256": "3b71970d959574181f95503137b32c6da6c1fa97717fb87470ff835b31ddaa53",
+      "needle": "pub fn execute("
+    },
+    {
+      "path": "crates/rentemester-cli/src/document_pdf.rs",
+      "sha256": "277c5ce9aec3ce7af51c9b4970d742dc879545a8cb68b95e44277e57b8a97272",
+      "needle": "pub fn run("
+    },
+    {
+      "path": "crates/rentemester-mcp/src/main.rs",
+      "sha256": "db7b771d69e02d3802906d65437dad8523fd9114ae15e7d3ef33dc696d4e831f",
+      "needle": "impl Session"
+    },
+    {
+      "path": "crates/rentemester-mcp/src/tools.rs",
+      "sha256": "8035dc45f8d22d902c18e17b4508ca572f8505dc83a1961fa355dfd1f34c1397",
+      "needle": "if !args.is_object()"
+    },
+    {
+      "path": "crates/rentemester-mcp/src/documents.rs",
+      "sha256": "4b45f889efe2f4968d9b65babda0b8e4132293a96f349ba26081029d5cf66f88",
+      "needle": "pub async fn call("
+    },
+    {
+      "path": "crates/rentemester-mcp/src/documents_original.rs",
+      "sha256": "3587747f240379a9fa62420890fda0c0fca99eb314fa0bde75b19c56198f876d",
+      "needle": "fn wrap("
+    },
+    {
+      "path": "crates/rentemester-mcp/src/document_pdf.rs",
+      "sha256": "0ff5b7594375dc4d27454441e7bab8c44d5d5eb482783bc37d471c63babb2d39",
+      "needle": "pub async fn call("
+    },
+    {
+      "path": "crates/rentemester-host/src/document_ingest.rs",
+      "sha256": "dc3a986aa666e6a53e5b2a0cb0623ae02ea5a372b815a75b1f99c5d33f47572b",
+      "needle": "pub(super) fn service_document_action<T>"
+    },
+    {
+      "path": "crates/rentemester-runtime/src/document_scanner.rs",
+      "sha256": "7578bac1bd91502ff12017cafae2a1cf29ad6289b5b8b1a00ace131e38b9c2e7",
+      "needle": "pub trait Scanner"
+    },
+    {
+      "path": "crates/rentemester-application/src/service_company/precharged.rs",
+      "sha256": "b04e173a9af60904dad2a3727e0fe4fa7b3c930171ef2eb2792a4f06dfcdb88f",
+      "needle": "pub(crate) fn prepare<T>"
+    },
+    {
+      "path": "crates/rentemester-application/src/access.rs",
+      "sha256": "07d55edfa4bf1636927aae51caddb01531851f0b61a161de1aeac46970e902b9",
+      "needle": "CompanyDocumentsUpload"
+    }
+  ],
+  "method": "Graphify query first; actual global parser/transport/HTTP/host/application/storage/engine producers read; source-only declarations. Strict oracle is structural evidence only, main owns semantic acceptance.",
+  "retainedScope": "Prior212 untouched. Whole677 all55/J01-J07, final installed desktop/manual acceptance, release/cutover/retirement remain."
+}
