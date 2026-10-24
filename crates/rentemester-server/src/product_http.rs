@@ -12,6 +12,7 @@ mod public_einvoice;
 mod digisense_received;
 mod archive_import;
 mod dinero_import;
+mod import_original;
 mod opening_balance;
 mod archive_reports;
 mod dated_reports;
@@ -234,6 +235,7 @@ pub fn router(native: Arc<Backend>, origin: &str) -> Router {
         .route("/api/companies/{slug}/opening-balance/plan",post(opening_balance::handle))
         .route("/api/companies/{slug}/opening-balance/apply",post(opening_balance::handle))
         .route("/api/companies/{slug}/archive-import/plan",post(archive_import::handle))
+        .route("/api/companies/{slug}/import-original",post(import_original::handle))
         .route("/api/companies/{slug}/imports/dinero/plan",post(dinero_import::handle))
         .route("/api/companies/{slug}/imports/dinero/apply",post(dinero_import::handle))
         .route("/api/companies/{slug}/imports/dinero",get(dinero_import::handle))

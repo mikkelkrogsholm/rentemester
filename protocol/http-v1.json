@@ -1302,6 +1302,11 @@
       "capability": "POST /api/companies/{slug}/import"
     },
     {
+      "method": "POST",
+      "path": "/api/companies/{slug}/import-original",
+      "capability": "POST /api/companies/{slug}/import-original"
+    },
+    {
       "method": "GET",
       "path": "/api/companies/{slug}/imports/dinero",
       "capability": "GET /api/companies/{slug}/imports/dinero"
@@ -2887,6 +2892,16 @@
       "capability": "POST /api/companies/{slug}/workspace-parties"
     },
     {
+      "method": "GET",
+      "path": "/api/companies/{slug}/workspace-parties/create-identity",
+      "capability": "GET /api/companies/{slug}/workspace-parties/create-identity"
+    },
+    {
+      "method": "HEAD",
+      "path": "/api/companies/{slug}/workspace-parties/create-identity",
+      "capability": "HEAD /api/companies/{slug}/workspace-parties/create-identity"
+    },
+    {
       "method": "POST",
       "path": "/api/companies/{slug}/workspace-parties/create-identity",
       "capability": "POST /api/companies/{slug}/workspace-parties/create-identity"
@@ -3217,5 +3232,5 @@
       "capability": "POST /api/workspace/transfer/{action}"
     }
   ],
-  "manifestId": "64a59a3fdb74a2a83f2f3d32330a8fad1e43ebd1a8615ad93151c1b07d25bab0"
+  "manifestId": "cd5ce1794c6063ecd79e03106339c5a80e9022a99b7a9fc33e92b3e97188a62f"
 }
